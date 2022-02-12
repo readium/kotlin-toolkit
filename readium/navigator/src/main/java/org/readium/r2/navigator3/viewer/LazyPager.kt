@@ -1,30 +1,31 @@
 package org.readium.r2.navigator3.viewer
 
-import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.listSaver
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
 import dev.chrisbanes.snapper.SnapOffsets
-import org.readium.r2.navigator3.gestures.ScrollState
-import org.readium.r2.navigator3.gestures.ZoomableState
-import org.readium.r2.navigator3.gestures.scrollable
+import org.readium.r2.navigator3.gestures.*
+import org.readium.r2.navigator3.lazy.LazyItemScope
 import org.readium.r2.navigator3.lazy.LazyList
 import org.readium.r2.navigator3.lazy.LazyListScope
-import org.readium.r2.navigator3.lazy.LazyListState
 import org.readium.r2.navigator3.lazy.rememberStateOfItemsProvider
-import timber.log.Timber
 
 @Composable
 @OptIn(ExperimentalSnapperApi::class)
@@ -38,7 +39,8 @@ internal fun LazyPager(
     horizontalArrangement: Arrangement.Horizontal? = null,
     verticalAlignment: Alignment.Vertical? = null,
     horizontalAlignment: Alignment.Horizontal? = null,
-    content: LazyListScope.() -> Unit
+    count: Int,
+    itemContent: @Composable LazyItemScope.(index: Int, scale: Float) -> Unit,
 ) {
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val reverseLayout =  if (isVertical || !isRtl) reverseDirection else !reverseDirection
@@ -52,14 +54,55 @@ internal fun LazyPager(
         maximumFlingDistance = { it.currentItem?.size?.toFloat() ?: 0f }
     )
 
+    val dummyScrollableState = ScrollableState { 0f }
+
     @Suppress("NAME_SHADOWING")
     val modifier = modifier.scrollable(
-        horizontalState = if (isVertical) state.otherScrollState else state.lazyListState,
-        verticalState = if (isVertical) state.lazyListState else state.otherScrollState,
+        horizontalState = if (isVertical) dummyScrollableState else state.lazyListState,
+        verticalState = if (isVertical) state.lazyListState else dummyScrollableState,
         reverseDirection = reverseScrollDirection,
         interactionSource = state.lazyListState.internalInteractionSource,
         flingBehavior = flingBehavior
     )
+
+    // We only consume nested flings in the main-axis, allowing cross-axis flings to propagate
+    // as normal
+    val consumeFlingNestedScrollConnection = ConsumeFlingNestedScrollConnection(
+        consumeHorizontal = !isVertical,
+        consumeVertical = isVertical,
+    )
+
+   val content: (LazyListScope).() -> Unit = {
+       items(count = count) { index ->
+
+           val pageState = remember { PageZoomState(1f, Offset.Zero)}
+
+           Box(
+               Modifier
+                   .nestedScroll(connection = consumeFlingNestedScrollConnection)
+                   .fillParentMaxSize()
+                   .wrapContentSize()
+                   .scrollable(
+                       horizontalState = pageState.horizontalScrollState,
+                       verticalState = pageState.verticalScrollState,
+                       reverseDirection = reverseScrollDirection,
+                   )
+                   .scrolling(
+                       state = pageState.verticalScrollState,
+                       isVertical = true,
+                       reverseScrolling = reverseScrollDirection
+                   )
+                   .scrolling(
+                       state = pageState.horizontalScrollState,
+                       isVertical = false,
+                       reverseScrolling = reverseScrollDirection
+                   )
+                   .zoomable(pageState)
+           ) {
+               itemContent(index, pageState.scaleState.value)
+           }
+       }
+   }
 
     LazyList(
         modifier = modifier,
@@ -76,86 +119,60 @@ internal fun LazyPager(
     )
 }
 
-
-internal class LazyPagerState(
-    private val lazyOrientation: Orientation,
-    firstVisibleItemIndex: Int = 0,
-    firstVisibleItemScrollOffset: Int = 0,
-    oppositeDirectionScrollOffset: Int = 0,
-    scale: Float = 1f,
+private class PageZoomState(
+    initialScale: Float,
+    initialOffset: Offset
 ) : ZoomableState {
-    val lazyListState: LazyListState =
-        LazyListState(firstVisibleItemIndex, firstVisibleItemScrollOffset)
 
-    val otherScrollState: ScrollState =
-        ScrollState(oppositeDirectionScrollOffset)
+    val horizontalScrollState: ScrollState = ScrollState(initialOffset.x.toInt())
 
-    override var scaleState: MutableState<Float> =
-        mutableStateOf(scale)
+    val verticalScrollState: ScrollState = ScrollState(initialOffset.y.toInt())
+
+    override var scaleState: MutableState<Float> = mutableStateOf(initialScale)
 
     override fun onScaleChanged(zoomChange: Float, centroid: Offset) {
-        val lazyAxisCentroid =
-            if (lazyOrientation == Orientation.Horizontal) centroid.x else centroid.y
+        val horizontalDelta = centroid.x * zoomChange - centroid.x
+        horizontalScrollState.dispatchRawDelta(horizontalDelta)
 
-        val firstVisibleItemScrollOffset = lazyListState.firstVisibleItemScrollOffsetNonObservable
-        val scrollToBeConsumed = lazyListState.scrollToBeConsumed
-
-        //FIXME: there is still a bug between resources
-        val lazyAxisDelta =
-            firstVisibleItemScrollOffset * zoomChange - firstVisibleItemScrollOffset +
-                    scrollToBeConsumed * zoomChange - scrollToBeConsumed +
-                    lazyAxisCentroid * zoomChange - lazyAxisCentroid
-
-        Timber.d("lazyAxisDelta $lazyAxisDelta")
-        lazyListState.dispatchRawDelta(lazyAxisDelta)
-
-        val otherAxisCentroid =
-            if (lazyOrientation == Orientation.Horizontal) centroid.y else centroid.x
-
-        val otherAxisDelta = otherAxisCentroid * zoomChange - otherAxisCentroid
-
-        otherScrollState.dispatchRawDelta(otherAxisDelta)
-    }
-
-    companion object {
-        val Saver: Saver<LazyPagerState, *> = listSaver(
-            save = {
-                listOf(
-                    it.lazyOrientation == Orientation.Vertical,
-                    it.lazyListState.firstVisibleItemIndex,
-                    it.lazyListState.firstVisibleItemScrollOffset,
-                    it.otherScrollState.value,
-                    it.scaleState.value
-                )
-            },
-            restore = {
-                LazyPagerState(
-                    if (it[0] as Boolean) Orientation.Vertical else Orientation.Horizontal,
-                    firstVisibleItemIndex = it[1] as Int,
-                    firstVisibleItemScrollOffset = it[2] as Int,
-                    oppositeDirectionScrollOffset = it[3] as Int,
-                    scale = it[4] as Float
-                )
-            }
-        )
+        val verticalDelta = centroid.y * zoomChange - centroid.y
+        verticalScrollState.dispatchRawDelta(verticalDelta)
     }
 }
 
-@Composable
-internal fun rememberLazyPagerState(
-    isLazyVertical: Boolean,
-    initialFirstVisibleItemIndex: Int = 0,
-    initialFirstVisibleItemScrollOffset: Int = 0,
-    initialOppositeDirectionScrollOffset: Int = 0,
-    initialScale: Float = 1f,
-): LazyPagerState {
-    return rememberSaveable(saver = LazyPagerState.Saver) {
-        LazyPagerState(
-            if (isLazyVertical) Orientation.Vertical else Orientation.Horizontal,
-            initialFirstVisibleItemIndex,
-            initialFirstVisibleItemScrollOffset,
-            initialOppositeDirectionScrollOffset,
-            initialScale
-        )
+private class ConsumeFlingNestedScrollConnection(
+    private val consumeHorizontal: Boolean,
+    private val consumeVertical: Boolean,
+) : NestedScrollConnection {
+    override fun onPostScroll(
+        consumed: Offset,
+        available: Offset,
+        source: NestedScrollSource
+    ): Offset = when (source) {
+        // We can consume all resting fling scrolls so that they don't propagate up to the
+        // Pager
+        NestedScrollSource.Fling -> available.consume(consumeHorizontal, consumeVertical)
+        else -> Offset.Zero
     }
+
+    override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+        // We can consume all post fling velocity on the main-axis
+        // so that it doesn't propagate up to the Pager
+        return available.consume(consumeHorizontal, consumeVertical)
+    }
+
+    private fun Offset.consume(
+        consumeHorizontal: Boolean,
+        consumeVertical: Boolean,
+    ): Offset = Offset(
+        x = if (consumeHorizontal) this.x else 0f,
+        y = if (consumeVertical) this.y else 0f,
+    )
+
+    private fun Velocity.consume(
+        consumeHorizontal: Boolean,
+        consumeVertical: Boolean,
+    ): Velocity = Velocity(
+        x = if (consumeHorizontal) this.x else 0f,
+        y = if (consumeVertical) this.y else 0f,
+    )
 }

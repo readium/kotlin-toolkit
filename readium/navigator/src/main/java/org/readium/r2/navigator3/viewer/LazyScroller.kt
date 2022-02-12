@@ -1,28 +1,21 @@
 package org.readium.r2.navigator3.viewer
 
-import androidx.compose.foundation.gestures.FlingBehavior
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.listSaver
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import org.readium.r2.navigator3.gestures.*
+import org.readium.r2.navigator3.gestures.scrollable
+import org.readium.r2.navigator3.gestures.scrolling
+import org.readium.r2.navigator3.gestures.zoomable
+import org.readium.r2.navigator3.lazy.LazyItemScope
 import org.readium.r2.navigator3.lazy.LazyList
 import org.readium.r2.navigator3.lazy.LazyListScope
-import org.readium.r2.navigator3.lazy.LazyListState
 import org.readium.r2.navigator3.lazy.rememberStateOfItemsProvider
-import timber.log.Timber
 
 @Composable
 internal fun LazyScroller(
@@ -35,7 +28,8 @@ internal fun LazyScroller(
     horizontalArrangement: Arrangement.Horizontal? = null,
     verticalAlignment: Alignment.Vertical? = null,
     horizontalAlignment: Alignment.Horizontal? = null,
-    content: LazyListScope.() -> Unit
+    count: Int,
+    itemContent: @Composable LazyItemScope.(index: Int) -> Unit
 ) {
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val reverseLayout =  if (isVertical || !isRtl) reverseDirection else !reverseDirection
@@ -58,6 +52,12 @@ internal fun LazyScroller(
         reverseScrolling = reverseScrollDirection
     ).zoomable(state)
 
+    val content: (LazyListScope).() -> Unit = {
+        items(count = count) { index ->
+            itemContent(index)
+        }
+    }
+
     LazyList(
         modifier = modifier,
         stateOfItemsProvider = rememberStateOfItemsProvider(content),
@@ -71,88 +71,4 @@ internal fun LazyScroller(
         isVertical = isVertical,
         reverseLayout = reverseLayout
     )
-}
-
-
-internal class LazyScrollerState(
-    private val lazyOrientation: Orientation,
-    firstVisibleItemIndex: Int = 0,
-    firstVisibleItemScrollOffset: Int = 0,
-    oppositeDirectionScrollOffset: Int = 0,
-    scale: Float = 1f,
-) : ZoomableState {
-    val lazyListState: LazyListState =
-        LazyListState(firstVisibleItemIndex, firstVisibleItemScrollOffset)
-
-    val otherScrollState: ScrollState =
-        ScrollState(oppositeDirectionScrollOffset)
-
-    override var scaleState: MutableState<Float> =
-        mutableStateOf(scale)
-
-    override fun onScaleChanged(zoomChange: Float, centroid: Offset) {
-        val lazyAxisCentroid =
-            if (lazyOrientation == Orientation.Horizontal) centroid.x else centroid.y
-
-        val firstVisibleItemScrollOffset = lazyListState.firstVisibleItemScrollOffsetNonObservable
-        val scrollToBeConsumed = lazyListState.scrollToBeConsumed
-
-        //FIXME: there is still a bug between resources
-        val lazyAxisDelta =
-            firstVisibleItemScrollOffset * zoomChange - firstVisibleItemScrollOffset +
-                    scrollToBeConsumed * zoomChange - scrollToBeConsumed +
-                    lazyAxisCentroid * zoomChange - lazyAxisCentroid
-
-        Timber.d("lazyAxisDelta $lazyAxisDelta")
-        lazyListState.dispatchRawDelta(lazyAxisDelta)
-
-        val otherAxisCentroid =
-            if (lazyOrientation == Orientation.Horizontal) centroid.y else centroid.x
-
-        val otherAxisDelta = otherAxisCentroid * zoomChange - otherAxisCentroid
-
-        otherScrollState.dispatchRawDelta(otherAxisDelta)
-    }
-
-    companion object {
-        val Saver: Saver<LazyScrollerState, *> = listSaver(
-            save = {
-                listOf(
-                    it.lazyOrientation == Orientation.Vertical,
-                    it.lazyListState.firstVisibleItemIndex,
-                    it.lazyListState.firstVisibleItemScrollOffset,
-                    it.otherScrollState.value,
-                    it.scaleState.value
-                )
-            },
-            restore = {
-                LazyScrollerState(
-                    if (it[0] as Boolean) Orientation.Vertical else Orientation.Horizontal,
-                    firstVisibleItemIndex = it[1] as Int,
-                    firstVisibleItemScrollOffset = it[2] as Int,
-                    oppositeDirectionScrollOffset = it[3] as Int,
-                    scale = it[4] as Float
-                )
-            }
-        )
-    }
-}
-
-@Composable
-internal fun rememberLazyScrollerState(
-    isLazyVertical: Boolean,
-    initialFirstVisibleItemIndex: Int = 0,
-    initialFirstVisibleItemScrollOffset: Int = 0,
-    initialOppositeDirectionScrollOffset: Int = 0,
-    initialScale: Float = 1f,
-): LazyScrollerState {
-    return rememberSaveable(saver = LazyScrollerState.Saver) {
-        LazyScrollerState(
-            if (isLazyVertical) Orientation.Vertical else Orientation.Horizontal,
-            initialFirstVisibleItemIndex,
-            initialFirstVisibleItemScrollOffset,
-            initialOppositeDirectionScrollOffset,
-            initialScale
-        )
-    }
 }

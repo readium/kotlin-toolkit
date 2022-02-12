@@ -27,10 +27,10 @@ import kotlin.math.min
 
 @Composable
 fun ImageContent(
-    modifier: Modifier,
     publication: Publication,
     link: Link,
-    contentScale: ContentScale
+    contentScale: ContentScale,
+    modifier: Modifier = Modifier
 ) {
     val bitmap = runBlocking {
         val bytes = publication.get(link).read().getOrThrow()

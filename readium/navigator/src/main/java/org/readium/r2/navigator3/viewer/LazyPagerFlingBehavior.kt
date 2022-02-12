@@ -50,7 +50,7 @@ import kotlin.math.*
  */
 @ExperimentalSnapperApi
 @Composable
-fun rememberSnapperFlingBehavior(
+internal fun rememberSnapperFlingBehavior(
     lazyListState: LazyListState,
     snapOffsetForItem: (layoutInfo: SnapperLayoutInfo, item: SnapperLayoutItemInfo) -> Int = SnapOffsets.Center,
     endContentPadding: Dp = 0.dp,
@@ -79,7 +79,7 @@ fun rememberSnapperFlingBehavior(
  */
 @ExperimentalSnapperApi
 @Composable
-fun rememberLazyListSnapperLayoutInfo(
+internal fun rememberLazyListSnapperLayoutInfo(
     lazyListState: LazyListState,
     snapOffsetForItem: (layoutInfo: SnapperLayoutInfo, item: SnapperLayoutItemInfo) -> Int = SnapOffsets.Center,
     endContentPadding: Dp = 0.dp,
@@ -103,7 +103,7 @@ fun rememberLazyListSnapperLayoutInfo(
  * in pixels (end/bottom depending on the scrolling direction).
  */
 @ExperimentalSnapperApi
-class LazyListSnapperLayoutInfo(
+internal class LazyListSnapperLayoutInfo(
     private val lazyListState: LazyListState,
     private val snapOffsetForItem: (layoutInfo: SnapperLayoutInfo, item: SnapperLayoutItemInfo) -> Int,
     endContentPadding: Int = 0,

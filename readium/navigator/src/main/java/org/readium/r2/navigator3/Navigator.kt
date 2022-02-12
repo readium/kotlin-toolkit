@@ -3,7 +3,6 @@ package org.readium.r2.navigator3
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -13,8 +12,6 @@ import androidx.compose.ui.unit.dp
 import org.readium.r2.navigator.extensions.withBaseUrl
 import org.readium.r2.navigator3.adapters.ImageContent
 import org.readium.r2.navigator3.adapters.WebContent
-import org.readium.r2.navigator3.lazy.LazyListScope
-import org.readium.r2.navigator3.lazy.items
 import org.readium.r2.navigator3.viewer.LazyPager
 import org.readium.r2.navigator3.viewer.LazyScroller
 import org.readium.r2.navigator3.viewer.rememberLazyPagerState
@@ -52,8 +49,6 @@ fun Navigator(
 
         val lazyScrollerState = rememberLazyScrollerState(isVertical)
 
-        val content: (LazyListScope).() -> Unit = { resources(publication, links, baseUrl, state.overflow, isVertical, lazyScrollerState.scaleState) }
-
         LazyScroller(
             modifier = modifier,
             isVertical = isVertical,
@@ -64,15 +59,14 @@ fun Navigator(
             horizontalAlignment =  horizontalAlignment,
             verticalArrangement = verticalArrangement,
             verticalAlignment = verticalAlignment,
-            content = content
-        )
+            count = links.size
+        ) { index ->
+            Resource(publication, links[index], baseUrl, lazyScrollerState.scaleState.value)
+        }
+
     } else {
 
         val lazyPagerState = rememberLazyPagerState(isVertical)
-
-        val fixedScale = remember { mutableStateOf(1f) }
-
-        val content: (LazyListScope).() -> Unit = { resources(publication, links, baseUrl, state.overflow, isVertical, fixedScale) }
 
         LazyPager(
             modifier = modifier,
@@ -84,34 +78,25 @@ fun Navigator(
             horizontalAlignment =  horizontalAlignment,
             verticalArrangement = verticalArrangement,
             verticalAlignment = verticalAlignment,
-            content = content
-        )
+            count = links.size
+        ) { index, scale ->
+            Resource(publication, links[index], baseUrl, scale)
+        }
     }
 }
 
-private fun LazyListScope.resources(
+@Composable
+private fun Resource(
     publication: Publication,
-    links: List<Link>,
+    link: Link,
     baseUrl: String,
-    overflow: Overflow,
-    isVertical: Boolean,
-    scaleState: State<Float>
+    scale: Float
 ) {
-    items(links) { item ->
-
-        val itemModifier =
-            when  {
-                overflow == Overflow.SCROLLED && isVertical -> Modifier.fillParentMaxWidth()
-                overflow == Overflow.SCROLLED -> Modifier.fillParentMaxHeight()
-                else -> Modifier.fillParentMaxSize()
-        }
-
-        when {
-            item.mediaType.isBitmap ->
-                ImageContent(itemModifier, publication, item, FixedScale(scaleState.value))
-            item.mediaType.isHtml ->
-                WebContent(item.withBaseUrl(baseUrl).href)
-        }
+    when {
+        link.mediaType.isBitmap ->
+            ImageContent(publication, link, FixedScale(scale))
+        link.mediaType.isHtml ->
+            WebContent(link.withBaseUrl(baseUrl).href)
     }
 }
 
