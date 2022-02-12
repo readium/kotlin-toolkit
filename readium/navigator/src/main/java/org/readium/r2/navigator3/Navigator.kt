@@ -15,8 +15,6 @@ import org.readium.r2.navigator3.adapters.ImageContent
 import org.readium.r2.navigator3.adapters.WebContent
 import org.readium.r2.navigator3.lazy.LazyListScope
 import org.readium.r2.navigator3.lazy.items
-import org.readium.r2.navigator3.settings.Overflow
-import org.readium.r2.navigator3.settings.ReadingProgression
 import org.readium.r2.navigator3.viewer.LazyPager
 import org.readium.r2.navigator3.viewer.LazyScroller
 import org.readium.r2.navigator3.viewer.rememberLazyPagerState
@@ -28,42 +26,40 @@ import org.readium.r2.shared.publication.Publication
 fun Navigator(
     modifier: Modifier = Modifier,
     publication: Publication,
+    state: NavigatorState,
     baseUrl: String,
     links: List<Link> = publication.readingOrder,
 ) {
-    val readingProgression = ReadingProgression.LTR
-    val overflow = Overflow.PAGINATED
-
-    val isVertical = when (readingProgression) {
+    val isVertical = when (state.readingProgression) {
         ReadingProgression.TTB, ReadingProgression.BTT -> true
         ReadingProgression.LTR, ReadingProgression.RTL -> false
     }
 
-    val reverseLayout = when (readingProgression) {
+    val reverseDirection = when (state.readingProgression) {
         ReadingProgression.TTB, ReadingProgression.LTR -> false
         ReadingProgression.BTT, ReadingProgression.RTL -> true
     }
 
-    val horizontalArrangement = if (!reverseLayout) Arrangement.Start else Arrangement.End
+    val horizontalArrangement = if (!reverseDirection) Arrangement.Start else Arrangement.End
 
     val horizontalAlignment = Alignment.CenterHorizontally
 
-    val verticalArrangement = if (!reverseLayout) Arrangement.Top else Arrangement.Bottom
+    val verticalArrangement = if (!reverseDirection) Arrangement.Top else Arrangement.Bottom
 
     val verticalAlignment = Alignment.CenterVertically
 
-    if (overflow == Overflow.SCROLLED) {
+    if (state.overflow == Overflow.SCROLLED) {
 
-        val state = rememberLazyScrollerState(isVertical)
+        val lazyScrollerState = rememberLazyScrollerState(isVertical)
 
-        val content: (LazyListScope).() -> Unit = { resources(publication, links, baseUrl, overflow, isVertical, state.scaleState) }
+        val content: (LazyListScope).() -> Unit = { resources(publication, links, baseUrl, state.overflow, isVertical, lazyScrollerState.scaleState) }
 
         LazyScroller(
             modifier = modifier,
             isVertical = isVertical,
-            state = state,
+            state = lazyScrollerState,
             contentPadding = PaddingValues(0.dp),
-            reverseLayout = reverseLayout,
+            reverseDirection = reverseDirection,
             horizontalArrangement = horizontalArrangement,
             horizontalAlignment =  horizontalAlignment,
             verticalArrangement = verticalArrangement,
@@ -72,18 +68,18 @@ fun Navigator(
         )
     } else {
 
-        val state = rememberLazyPagerState(isVertical)
+        val lazyPagerState = rememberLazyPagerState(isVertical)
 
         val fixedScale = remember { mutableStateOf(1f) }
 
-        val content: (LazyListScope).() -> Unit = { resources(publication, links, baseUrl, overflow, isVertical, fixedScale) }
+        val content: (LazyListScope).() -> Unit = { resources(publication, links, baseUrl, state.overflow, isVertical, fixedScale) }
 
         LazyPager(
             modifier = modifier,
             isVertical = isVertical,
-            state = state,
+            state = lazyPagerState,
             contentPadding = PaddingValues(0.dp),
-            reverseLayout = reverseLayout,
+            reverseDirection = reverseDirection,
             horizontalArrangement = horizontalArrangement,
             horizontalAlignment =  horizontalAlignment,
             verticalArrangement = verticalArrangement,

@@ -30,18 +30,20 @@ internal fun LazyScroller(
     isVertical: Boolean,
     state: LazyScrollerState = rememberLazyScrollerState(isVertical),
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    reverseLayout: Boolean = false,
+    reverseDirection: Boolean = false,
     verticalArrangement: Arrangement.Vertical? = null,
     horizontalArrangement: Arrangement.Horizontal? = null,
     verticalAlignment: Alignment.Vertical? = null,
     horizontalAlignment: Alignment.Horizontal? = null,
-    flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
     content: LazyListScope.() -> Unit
 ) {
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val reverseLayout =  if (isVertical || !isRtl) reverseDirection else !reverseDirection
     // reverse scroll by default, to have "natural" gesture that goes reversed to layout
     // if rtl and horizontal, do not reverse to make it right-to-left
-    val reverseScrollDirection = if (!isVertical && isRtl) reverseLayout else !reverseLayout
+    val reverseScrollDirection = !reverseLayout
+
+    val flingBehavior = ScrollableDefaults.flingBehavior()
 
     @Suppress("NAME_SHADOWING")
     val modifier = modifier.scrollable(

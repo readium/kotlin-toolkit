@@ -33,7 +33,7 @@ internal fun LazyPager(
     isVertical: Boolean,
     state: LazyPagerState = rememberLazyPagerState(isVertical),
     contentPadding: PaddingValues = PaddingValues(0.dp),
-    reverseLayout: Boolean = false,
+    reverseDirection: Boolean = false,
     verticalArrangement: Arrangement.Vertical? = null,
     horizontalArrangement: Arrangement.Horizontal? = null,
     verticalAlignment: Alignment.Vertical? = null,
@@ -41,9 +41,10 @@ internal fun LazyPager(
     content: LazyListScope.() -> Unit
 ) {
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val reverseLayout =  if (isVertical || !isRtl) reverseDirection else !reverseDirection
     // reverse scroll by default, to have "natural" gesture that goes reversed to layout
     // if rtl and horizontal, do not reverse to make it right-to-left
-    val reverseScrollDirection = if (!isVertical && isRtl) reverseLayout else !reverseLayout
+    val reverseScrollDirection = !reverseLayout
 
     val flingBehavior = rememberSnapperFlingBehavior(
         lazyListState = state.lazyListState,
@@ -52,7 +53,7 @@ internal fun LazyPager(
     )
 
     @Suppress("NAME_SHADOWING")
-   val modifier = modifier.scrollable(
+    val modifier = modifier.scrollable(
         horizontalState = if (isVertical) state.otherScrollState else state.lazyListState,
         verticalState = if (isVertical) state.lazyListState else state.otherScrollState,
         reverseDirection = reverseScrollDirection,

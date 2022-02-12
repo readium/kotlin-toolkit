@@ -6,6 +6,7 @@ import android.view.*
 import android.widget.Toast
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.lifecycle.ViewModelProvider
@@ -16,6 +17,9 @@ import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.navigator2.view.NavigatorListener
 import org.readium.r2.navigator2.view.NavigatorView
 import org.readium.r2.navigator3.Navigator
+import org.readium.r2.navigator3.NavigatorState
+import org.readium.r2.navigator3.Overflow
+import org.readium.r2.navigator3.ReadingProgression
 import org.readium.r2.shared.publication.*
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.Reader3FragmentReaderBinding
@@ -99,7 +103,8 @@ class ReaderFragment : VisualReaderFragment(), NavigatorListener {
                     publication = publication,
                     links = publication.readingOrder,
                     baseUrl = baseUrl.toString(),
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    state = remember { NavigatorState(ReadingProgression.LTR, Overflow.PAGINATED) }
                 )
             }
         }
