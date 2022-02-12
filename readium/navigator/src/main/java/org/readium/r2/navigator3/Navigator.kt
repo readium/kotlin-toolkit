@@ -66,7 +66,7 @@ fun Navigator(
 
     } else {
 
-        val lazyPagerState = rememberLazyPagerState(isVertical)
+        val lazyPagerState = rememberLazyPagerState()
 
         LazyPager(
             modifier = modifier,

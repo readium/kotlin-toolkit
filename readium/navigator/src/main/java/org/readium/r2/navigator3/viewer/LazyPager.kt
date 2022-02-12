@@ -26,13 +26,14 @@ import org.readium.r2.navigator3.lazy.LazyItemScope
 import org.readium.r2.navigator3.lazy.LazyList
 import org.readium.r2.navigator3.lazy.LazyListScope
 import org.readium.r2.navigator3.lazy.rememberStateOfItemsProvider
+import timber.log.Timber
 
 @Composable
 @OptIn(ExperimentalSnapperApi::class)
 internal fun LazyPager(
     modifier: Modifier = Modifier,
     isVertical: Boolean,
-    state: LazyPagerState = rememberLazyPagerState(isVertical),
+    state: LazyPagerState = rememberLazyPagerState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     reverseDirection: Boolean = false,
     verticalArrangement: Arrangement.Vertical? = null,
@@ -81,7 +82,6 @@ internal fun LazyPager(
                Modifier
                    .nestedScroll(connection = consumeFlingNestedScrollConnection)
                    .fillParentMaxSize()
-                   .wrapContentSize()
                    .scrollable(
                        horizontalState = pageState.horizontalScrollState,
                        verticalState = pageState.verticalScrollState,
@@ -98,9 +98,18 @@ internal fun LazyPager(
                        reverseScrolling = reverseScrollDirection
                    )
                    .zoomable(pageState)
+                   .wrapContentSize()
            ) {
-               itemContent(index, pageState.scaleState.value)
-           }
+               val visibleItems = state.visibleItemInfo
+               Timber.d("layoutInfo $visibleItems")
+               visibleItems.forEach {
+                   Timber.d("${it.index} ${it.size} ${it.offset}")
+               }
+               if (visibleItems.size == 1 && visibleItems.first().index != index) {
+                   pageState.scaleState.value = 1f
+                }
+
+               itemContent(index, pageState.scaleState.value)}
        }
    }
 
@@ -118,6 +127,7 @@ internal fun LazyPager(
         reverseLayout = reverseLayout
     )
 }
+
 
 private class PageZoomState(
     initialScale: Float,
