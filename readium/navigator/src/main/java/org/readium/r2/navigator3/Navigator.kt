@@ -3,20 +3,17 @@ package org.readium.r2.navigator3
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.FixedScale
 import androidx.compose.ui.unit.dp
 import org.readium.r2.navigator.extensions.withBaseUrl
-import org.readium.r2.navigator3.adapters.ImageContent
-import org.readium.r2.navigator3.adapters.WebContent
-import org.readium.r2.navigator3.viewer.LazyPager
-import org.readium.r2.navigator3.viewer.LazyScroller
-import org.readium.r2.navigator3.viewer.rememberLazyPagerState
-import org.readium.r2.navigator3.viewer.rememberLazyScrollerState
+import org.readium.r2.navigator3.html.HtmlPage
+import org.readium.r2.navigator3.image.SingleImageResource
+import org.readium.r2.navigator3.core.pager.LazyPager
+import org.readium.r2.navigator3.core.pager.rememberLazyPagerState
+import org.readium.r2.navigator3.core.scroller.rememberLazyScrollerState
+import org.readium.r2.navigator3.core.scroller.LazyScroller
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 
@@ -62,7 +59,7 @@ fun Navigator(
             verticalAlignment = verticalAlignment,
             count = links.size
         ) { index ->
-            Resource(publication, links[index], baseUrl, lazyScrollerState.scaleState.value)
+            Resource(publication, links[index], baseUrl, Overflow.SCROLLED, lazyScrollerState.scaleState)
         }
 
     } else {
@@ -80,8 +77,8 @@ fun Navigator(
             verticalArrangement = verticalArrangement,
             verticalAlignment = verticalAlignment,
             count = links.size
-        ) { index, scale ->
-            Resource(publication, links[index], baseUrl, scale)
+        ) { index, scaleState ->
+            Resource(publication, links[index], baseUrl, Overflow.PAGINATED, scaleState)
         }
     }
 }
@@ -91,14 +88,14 @@ private fun Resource(
     publication: Publication,
     link: Link,
     baseUrl: String,
-    scale: Float
+    overflow: Overflow,
+    scaleState: MutableState<Float>,
 ) {
-    val actualScale = if (scale == 1f) ContentScale.Fit else FixedScale(scale)
     when {
         link.mediaType.isBitmap ->
-            ImageContent(publication, link, actualScale)
+            SingleImageResource(publication, link, scaleState, overflow)
         link.mediaType.isHtml ->
-            WebContent(link.withBaseUrl(baseUrl).href)
+            HtmlPage(link.withBaseUrl(baseUrl).href)
     }
 }
 
