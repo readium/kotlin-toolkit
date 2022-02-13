@@ -6,7 +6,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.DrawModifier
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.DefaultAlpha
 import androidx.compose.ui.graphics.ImageBitmap
@@ -31,9 +30,6 @@ internal fun Image(
     scale: Float
 ) {
     val painter = remember(bitmap) { BitmapPainter(bitmap) }
-    val alignment: Alignment = Alignment.Center
-    val alpha: Float = DefaultAlpha
-    val colorFilter: ColorFilter? = null
     val contentScale = if (scale == 1f) ContentScale.Fit else FixedScale(scale)
 
     Layout(
@@ -41,11 +37,11 @@ internal fun Image(
         Modifier
             .paint(
                 painter,
-                alignment = alignment,
+                alignment = Alignment.Center,
                 sizeToIntrinsics = true,
                 contentScale = contentScale,
-                alpha = alpha,
-                colorFilter = colorFilter
+                alpha = DefaultAlpha,
+                colorFilter = null
             )
     ) { _, constraints ->
         layout(constraints.minWidth, constraints.minHeight) {}
@@ -60,11 +56,9 @@ internal fun Image(
  * @param contentScale strategy for scaling [painter] if its size does not match the content size
  * @param alpha opacity of [painter]
  * @param colorFilter optional [ColorFilter] to apply to [painter]
- *
- * @sample androidx.compose.ui.samples.PainterModifierSample
  */
 private fun Modifier.paint(
-    painter: Painter,
+    painter: BitmapPainter,
     sizeToIntrinsics: Boolean = true,
     alignment: Alignment = Alignment.Center,
     contentScale: ContentScale = ContentScale.Inside,
@@ -91,11 +85,11 @@ private fun Modifier.paint(
 )
 
 /**
- * [DrawModifier] used to draw the provided [Painter] followed by the contents
+ * [DrawModifier] used to draw the provided [BitmapPainter] followed by the contents
  * of the component itself
  */
 private class PainterModifier(
-    val painter: Painter,
+    val painter: BitmapPainter,
     val sizeToIntrinsics: Boolean,
     val alignment: Alignment = Alignment.Center,
     val contentScale: ContentScale = ContentScale.Inside,
@@ -103,14 +97,6 @@ private class PainterModifier(
     val colorFilter: ColorFilter? = null,
     inspectorInfo: InspectorInfo.() -> Unit
 ) : LayoutModifier, DrawModifier, InspectorValueInfo(inspectorInfo) {
-
-    /**
-     * Helper property to determine if we should size content to the intrinsic
-     * size of the Painter or not. This is only done if [sizeToIntrinsics] is true
-     * and the Painter has an intrinsic size
-     */
-    private val useIntrinsicSize: Boolean
-        get() = sizeToIntrinsics && painter.intrinsicSize.isSpecified
 
     private val Constraints.minSize
         get() = Size(minWidth.toFloat(), minHeight.toFloat())
@@ -129,11 +115,13 @@ private class PainterModifier(
         measurable: IntrinsicMeasurable,
         height: Int
     ): Int {
-        return if (useIntrinsicSize) {
+        return if (sizeToIntrinsics) {
             val constraints = Constraints(maxHeight = height)
             val size = modifyConstraints(constraints).minSize
             val scaledSize = calculateScaledSize(size)
-            max(scaledSize.width.roundToInt(), size.width.roundToInt())
+            val imageWidth = max(scaledSize.width.roundToInt(), size.width.roundToInt())
+            val layoutWidth = measurable.minIntrinsicWidth(height)
+            max(imageWidth, layoutWidth)
         } else {
             measurable.minIntrinsicWidth(height)
         }
@@ -143,22 +131,20 @@ private class PainterModifier(
         measurable: IntrinsicMeasurable,
         height: Int
     ): Int {
-        return if (useIntrinsicSize) {
-            Int.MAX_VALUE
-        } else {
-            measurable.maxIntrinsicWidth(height)
-        }
+        return measurable.maxIntrinsicWidth(height)
     }
 
     override fun IntrinsicMeasureScope.minIntrinsicHeight(
         measurable: IntrinsicMeasurable,
         width: Int
     ): Int {
-        return if (useIntrinsicSize) {
+        return if (sizeToIntrinsics) {
             val constraints = Constraints(maxWidth = width)
             val size = modifyConstraints(constraints).minSize
             val scaledSize = calculateScaledSize(size)
-            max(scaledSize.height.roundToInt(), size.height.roundToInt())
+            val imageHeight = max(scaledSize.height.roundToInt(), size.height.roundToInt())
+            val layoutHeight = measurable.minIntrinsicHeight(width)
+            max(imageHeight, layoutHeight)
         } else {
             measurable.minIntrinsicHeight(width)
         }
@@ -168,30 +154,14 @@ private class PainterModifier(
         measurable: IntrinsicMeasurable,
         width: Int
     ): Int {
-        return if (useIntrinsicSize) {
-            Int.MAX_VALUE
-        } else {
-            measurable.maxIntrinsicHeight(width)
-        }
+        return measurable.maxIntrinsicHeight(width)
     }
 
     private fun calculateScaledSize(dstSize: Size): Size {
-        return if (!useIntrinsicSize) {
+        return if (!this.sizeToIntrinsics) {
             dstSize
         } else {
-            val srcWidth = if (!painter.intrinsicSize.hasSpecifiedAndFiniteWidth()) {
-                dstSize.width
-            } else {
-                painter.intrinsicSize.width
-            }
-
-            val srcHeight = if (!painter.intrinsicSize.hasSpecifiedAndFiniteHeight()) {
-                dstSize.height
-            } else {
-                painter.intrinsicSize.height
-            }
-
-            val srcSize = Size(srcWidth, srcHeight)
+            val srcSize = painter.intrinsicSize
             if (dstSize.width != 0f && dstSize.height != 0f) {
                 srcSize * contentScale.computeScaleFactor(srcSize, dstSize)
             } else {
@@ -201,34 +171,27 @@ private class PainterModifier(
     }
 
     private fun modifyConstraints(constraints: Constraints): Constraints {
+        val hasFixedDimens =constraints.hasFixedWidth && constraints.hasFixedHeight
+        // If we have fixed constraints, do not attempt to modify them.
+        if (hasFixedDimens) {
+            return constraints
+        }
+
         val hasBoundedDimens = constraints.hasBoundedWidth && constraints.hasBoundedHeight
-        val hasFixedDimens = constraints.hasFixedWidth && constraints.hasFixedHeight
-        if ((!useIntrinsicSize && hasBoundedDimens) || hasFixedDimens) {
-            // If we have fixed constraints or we are not attempting to size the
-            // composable based on the size of the Painter, do not attempt to
-            // modify them. Otherwise rely on Alignment and ContentScale
-            // to determine how to position the drawing contents of the Painter within
-            // the provided bounds
+        // If we are not attempting to size the composable based on the size of the Painter, do not
+        // attempt to modify them. In case of unbounded constraints, we use the size of the Painter
+        // whatever the value of sizeToIntrinsics is.
+        if (!sizeToIntrinsics && hasBoundedDimens) {
             return constraints.copy(
                 minWidth = constraints.maxWidth,
                 minHeight = constraints.maxHeight
             )
         }
 
-        val intrinsicSize = painter.intrinsicSize
-        val intrinsicWidth =
-            if (intrinsicSize.hasSpecifiedAndFiniteWidth()) {
-                intrinsicSize.width.roundToInt()
-            } else {
-                constraints.minWidth
-            }
-
-        val intrinsicHeight =
-            if (intrinsicSize.hasSpecifiedAndFiniteHeight()) {
-                intrinsicSize.height.roundToInt()
-            } else {
-                constraints.minHeight
-            }
+        // Otherwise rely on Alignment and ContentScale to determine how to position
+        // the drawing contents of the Painter within the provided bounds
+        val intrinsicWidth = painter.intrinsicSize.width.roundToInt()
+        val intrinsicHeight = painter.intrinsicSize.height.roundToInt()
 
         // Scale the width and height appropriately based on the given constraints
         // and ContentScale
@@ -250,20 +213,7 @@ private class PainterModifier(
     }
 
     override fun ContentDrawScope.draw() {
-        val intrinsicSize = painter.intrinsicSize
-        val srcWidth = if (intrinsicSize.hasSpecifiedAndFiniteWidth()) {
-            intrinsicSize.width
-        } else {
-            size.width
-        }
-
-        val srcHeight = if (intrinsicSize.hasSpecifiedAndFiniteHeight()) {
-            intrinsicSize.height
-        } else {
-            size.height
-        }
-
-        val srcSize = Size(srcWidth, srcHeight)
+        val srcSize = painter.intrinsicSize
 
         // Compute the offset to translate the content based on the given alignment
         // and size to draw based on the ContentScale parameter
@@ -293,12 +243,9 @@ private class PainterModifier(
         }
     }
 
-    private fun Size.hasSpecifiedAndFiniteWidth() = this != Size.Unspecified && width.isFinite()
-    private fun Size.hasSpecifiedAndFiniteHeight() = this != Size.Unspecified && height.isFinite()
-
     override fun hashCode(): Int {
         var result = painter.hashCode()
-        result = 31 * result + sizeToIntrinsics.hashCode()
+        result = 31 * result + this.sizeToIntrinsics.hashCode()
         result = 31 * result + alignment.hashCode()
         result = 31 * result + contentScale.hashCode()
         result = 31 * result + alpha.hashCode()
@@ -309,7 +256,7 @@ private class PainterModifier(
     override fun equals(other: Any?): Boolean {
         val otherModifier = other as? PainterModifier ?: return false
         return painter == otherModifier.painter &&
-                sizeToIntrinsics == otherModifier.sizeToIntrinsics &&
+                this.sizeToIntrinsics == otherModifier.sizeToIntrinsics &&
                 alignment == otherModifier.alignment &&
                 contentScale == otherModifier.contentScale &&
                 alpha == otherModifier.alpha &&
@@ -319,7 +266,7 @@ private class PainterModifier(
     override fun toString(): String =
         "PainterModifier(" +
                 "painter=$painter, " +
-                "sizeToIntrinsics=$sizeToIntrinsics, " +
+                "sizeToIntrinsics=${this.sizeToIntrinsics}, " +
                 "alignment=$alignment, " +
                 "alpha=$alpha, " +
                 "colorFilter=$colorFilter)"
