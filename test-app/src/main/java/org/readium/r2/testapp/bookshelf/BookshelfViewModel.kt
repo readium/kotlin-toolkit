@@ -18,23 +18,19 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.LcpService
-import org.readium.r2.shared.Injectable
+import org.readium.r2.shared.UserException
 import org.readium.r2.shared.extensions.mediaType
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
 import org.readium.r2.shared.publication.services.cover
-import org.readium.r2.shared.publication.services.isRestricted
-import org.readium.r2.shared.publication.services.protectionError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.Streamer
-import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig
-import org.readium.r2.testapp.R2App
-import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.domain.model.Book
+import org.readium.r2.testapp.reader.ReaderActivityContract
 import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
 import org.readium.r2.testapp.utils.extensions.moveTo
@@ -45,15 +41,14 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
+import kotlin.time.ExperimentalTime
 
 class BookshelfViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val r2Application = application
-    private val booksDao = BookDatabase.getDatabase(application).booksDao()
-    private val repository = BookRepository(booksDao)
+    private val r2Application = application as org.readium.r2.testapp.Application
+    private val bookRepository = r2Application.bookRepository
     private val preferences =
         application.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
-    private var server: Server = R2App.server
     private var lcpService = LcpService(application)
         ?.let { Try.success(it) }
         ?: Try.failure(Exception("liblcp is missing on the classpath"))
@@ -63,19 +58,19 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             lcpService.getOrNull()?.contentProtection()
         )
     )
-    private var r2Directory: String = R2App.R2DIRECTORY
+    private var r2Directory: String = r2Application.r2Directory
     val channel = EventChannel(Channel<Event>(Channel.BUFFERED), viewModelScope)
 
-    val books = repository.books()
+    val books = bookRepository.books()
 
     init {
         copySamplesFromAssetsToStorage()
     }
 
     fun deleteBook(book: Book) = viewModelScope.launch {
-        book.id?.let { repository.deleteBook(it) }
+        book.id?.let { bookRepository.deleteBook(it) }
         tryOrNull { File(book.href).delete() }
-        tryOrNull { File("${R2App.R2DIRECTORY}covers/${book.id}.png").delete() }
+        tryOrNull { File("${r2Application.r2Directory}covers/${book.id}.png").delete() }
     }
 
     private suspend fun addPublicationToDatabase(
@@ -83,7 +78,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         mediaType: MediaType,
         publication: Publication
     ): Long {
-        val id = repository.insertBook(href, mediaType, publication)
+        val id = bookRepository.insertBook(href, mediaType, publication)
         storeCoverImage(publication, id.toString())
         return id
     }
@@ -110,18 +105,16 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun importPublicationFromUri(
-        uri: Uri,
-        sourceUrl: String? = null
+        uri: Uri
     ) = viewModelScope.launch {
         uri.copyToTempFile(r2Application, r2Directory)
             ?.let {
-                importPublication(it, sourceUrl)
+                importPublication(it)
             }
     }
 
     private suspend fun importPublication(
-        sourceFile: File,
-        sourceUrl: String? = null
+        sourceFile: File
     ) {
         val sourceMediaType = sourceFile.mediaType()
         val publicationAsset: FileAsset =
@@ -175,38 +168,28 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             }
     }
 
+    @OptIn(ExperimentalTime::class)
     fun openBook(
-        context: Context,
         bookId: Long,
-        callback: suspend (book: Book, file: FileAsset, publication: Publication, url: URL?) -> Unit
     ) = viewModelScope.launch {
-        val book = booksDao.get(bookId) ?: return@launch
-        val file = File(book.href)
-        require(file.exists())
-        val asset = FileAsset(file)
-
-        streamer.open(asset, allowUserInteraction = true, sender = context)
-            .onFailure {
-                Timber.d(it)
-                channel.send(Event.OpenBookError(it.getUserMessage(r2Application)))
+        val readerRepository = r2Application.readerRepository.await()
+        readerRepository.open(bookId)
+            .onFailure { exception ->
+                val message = when (exception)  {
+                    is UserException -> exception.getUserMessage(r2Application)
+                    else -> exception.message
+                }
+                channel.send(Event.OpenBookError(message))
             }
             .onSuccess {
-                if (it.isRestricted) {
-                    it.protectionError?.let { error ->
-                        Timber.d(error)
-                        channel.send(Event.OpenBookError(error.getUserMessage(r2Application)))
-                    }
-                } else {
-                    val url = prepareToServe(it)
-                    callback.invoke(book, asset, it, url)
-                }
+                val arguments = ReaderActivityContract.Arguments(bookId)
+                channel.send(Event.LaunchReader(arguments))
             }
     }
 
-    private fun prepareToServe(publication: Publication): URL? {
-        val userProperties =
-            r2Application.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json"
-        return server.addPublication(publication, userPropertiesFile = File(userProperties))
+    fun closeBook(bookId: Long) = viewModelScope.launch {
+        val readerRepository = r2Application.readerRepository.await()
+        readerRepository.close(bookId)
     }
 
     private fun storeCoverImage(publication: Publication, imageName: String) =
@@ -252,5 +235,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         object ImportDatabaseFailed : Event()
 
         class OpenBookError(val errorMessage: String?) : Event()
+
+        class LaunchReader(val arguments: ReaderActivityContract.Arguments) : Event()
     }
 }

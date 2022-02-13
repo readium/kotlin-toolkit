@@ -55,7 +55,7 @@ afterEvaluate {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    implementation("androidx.appcompat:appcompat:1.4.0")
+    implementation("androidx.appcompat:appcompat:1.4.1")
     implementation("androidx.browser:browser:1.4.0")
     implementation("com.github.kittinunf.fuel:fuel-android:2.3.1")
     implementation("com.github.kittinunf.fuel:fuel:2.3.1")
@@ -68,14 +68,14 @@ dependencies {
     implementation("nl.komponents.kovenant:kovenant-jvm:3.3.0")
     implementation("nl.komponents.kovenant:kovenant:3.3.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.10")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
     implementation("org.jsoup:jsoup:1.14.3")
 
     // Tests
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.assertj:assertj-core:3.21.0")
+    testImplementation("org.assertj:assertj-core:3.22.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.6.10")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0")
     testImplementation("org.robolectric:robolectric:4.7.3")
 
     androidTestImplementation("androidx.test.ext:junit:1.1.3")

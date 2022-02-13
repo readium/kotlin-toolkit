@@ -25,15 +25,14 @@ import com.google.android.material.snackbar.Snackbar
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentCatalogFeedListBinding
 import org.readium.r2.testapp.domain.model.Catalog
+import org.readium.r2.testapp.utils.viewLifecycle
 
 
 class CatalogFeedListFragment : Fragment() {
 
     private val catalogFeedListViewModel: CatalogFeedListViewModel by viewModels()
     private lateinit var catalogsAdapter: CatalogFeedListAdapter
-
-    private var _binding: FragmentCatalogFeedListBinding? = null
-    private val binding get() = _binding!!
+    private var binding: FragmentCatalogFeedListBinding by viewLifecycle()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,7 +40,7 @@ class CatalogFeedListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         catalogFeedListViewModel.eventChannel.receive(this) { handleEvent(it) }
-        _binding = FragmentCatalogFeedListBinding.inflate(inflater, container, false)
+        binding = FragmentCatalogFeedListBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -123,11 +122,6 @@ class CatalogFeedListFragment : Fragment() {
                 }
             }
         }
-    }
-
-    override fun onDestroyView() {
-        _binding = null
-        super.onDestroyView()
     }
 
     private fun handleEvent(event: CatalogFeedListViewModel.Event) {

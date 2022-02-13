@@ -6,7 +6,6 @@
 
 package org.readium.r2.testapp.reader
 
-import android.graphics.PointF
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -20,7 +19,6 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.utils.toggleSystemUi
 
 class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener {
 
@@ -29,18 +27,20 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
     private lateinit var publication: Publication
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
+        ViewModelProvider(requireActivity())[ReaderViewModel::class.java].let {
             model = it
             publication = it.publication
         }
 
+        val readerData = model.readerInitData as VisualReaderInitData
+
         childFragmentManager.fragmentFactory =
-            PdfNavigatorFragment.createFactory(publication, model.initialLocation, this)
+            PdfNavigatorFragment.createFactory(publication, readerData.initialLocation, this)
 
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
         if (savedInstanceState == null) {
             childFragmentManager.commitNow {

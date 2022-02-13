@@ -10,7 +10,6 @@
     android:id="@+id/tts_overlay"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="?attr/actionBarSize"
     android:background="@color/colorAccent">
 
     <androidx.constraintlayout.widget.ConstraintLayout

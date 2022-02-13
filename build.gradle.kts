@@ -6,36 +6,11 @@
 
 import org.jetbrains.dokka.gradle.DokkaTaskPartial
 
-buildscript {
-    val kotlinVersion by extra("1.6.10")
-    val dokkaVersion by extra("1.5.30")
-
-    repositories {
-        google()
-        jcenter()
-        mavenLocal()
-        mavenCentral()
-        maven(url = "https://jitpack.io")
-        maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
-    }
-    dependencies {
-        classpath("com.android.tools.build:gradle:7.0.4")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-        classpath("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion")
-    }
-}
-
-apply(plugin = "org.jetbrains.dokka")
-
-allprojects {
-    repositories {
-        google()
-        jcenter()
-        mavenLocal()
-        mavenCentral()
-        maven(url = "https://jitpack.io")
-        maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
-    }
+plugins {
+    id("com.android.application") version ("7.1.0") apply false
+    id("com.android.library") version ("7.1.0") apply false
+    id("org.jetbrains.kotlin.android") version ("1.6.10") apply false
+    id("org.jetbrains.dokka") version ("1.6.10") apply true
 }
 
 subprojects {

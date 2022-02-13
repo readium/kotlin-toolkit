@@ -22,6 +22,7 @@ import org.readium.r2.testapp.databinding.FragmentListviewBinding
 import org.readium.r2.testapp.databinding.ItemRecycleNavigationBinding
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.extensions.outlineTitle
+import org.readium.r2.testapp.utils.viewLifecycle
 
 /*
 * Fragment to show navigation links (Table of Contents, Page lists & Landmarks)
@@ -32,13 +33,12 @@ class NavigationFragment : Fragment() {
     private lateinit var links: List<Link>
     private lateinit var navAdapter: NavigationAdapter
 
-    private var _binding: FragmentListviewBinding? = null
-    private val binding get() = _binding!!
+    private var binding: FragmentListviewBinding by viewLifecycle()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
+        ViewModelProvider(requireActivity())[ReaderViewModel::class.java].let {
             publication = it.publication
         }
 
@@ -50,7 +50,7 @@ class NavigationFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentListviewBinding.inflate(inflater, container, false)
+        binding = FragmentListviewBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -82,19 +82,8 @@ class NavigationFragment : Fragment() {
         navAdapter.submitList(flatLinks)
     }
 
-    override fun onDestroyView() {
-        _binding = null
-        super.onDestroyView()
-    }
-
     private fun onLinkSelected(link: Link) {
-        val locator = link.toLocator().let {
-            // progression is mandatory in some contexts
-            if (it.locations.fragments.isEmpty())
-                it.copyWithLocations(progression = 0.0)
-            else
-                it
-        }
+        val locator = publication.locatorFromLink(link) ?: return
 
         setFragmentResult(
             OutlineContract.REQUEST_KEY,
