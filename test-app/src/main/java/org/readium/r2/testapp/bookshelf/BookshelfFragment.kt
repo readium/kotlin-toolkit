@@ -81,9 +81,9 @@ class BookshelfFragment : Fragment() {
             )
         }
 
-        bookshelfViewModel.books.observe(viewLifecycleOwner, {
+        bookshelfViewModel.books.observe(viewLifecycleOwner) {
             bookshelfAdapter.submitList(it)
-        })
+        }
 
         // FIXME embedded dialogs like this are ugly
         binding.bookshelfAddBookFab.setOnClickListener {
@@ -116,7 +116,7 @@ class BookshelfFragment : Fragment() {
                                 val url = urlEditText.text.toString()
                                 val uri = Uri.parse(url)
                                 binding.bookshelfProgressBar.visibility = View.VISIBLE
-                                bookshelfViewModel.importPublicationFromUri(uri, url)
+                                bookshelfViewModel.importPublicationFromUri(uri)
                                 urlDialog.dismiss()
                             }
                         }

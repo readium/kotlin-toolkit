@@ -61,7 +61,7 @@ typealias PublicationId = String
  * @param positionsFactory Factory used to build lazily the [positions].
  */
 class Publication(
-    private val manifest: Manifest,
+    manifest: Manifest,
     private val fetcher: Fetcher = EmptyFetcher(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
 
@@ -135,7 +135,7 @@ class Publication(
      * Returns whether this publication conforms to the given Readium Web Publication Profile.
      */
     fun conformsTo(profile: Profile): Boolean =
-        manifest.conformsTo(profile)
+        _manifest.conformsTo(profile)
 
     /**
      * Finds the first [Link] with the given HREF in the publication's links.
@@ -146,16 +146,7 @@ class Publication(
      * If there's no match, try again after removing any query parameter and anchor from the
      * given [href].
      */
-    fun linkWithHref(href: String): Link? {
-        fun find(href: String): Link? {
-            return readingOrder.deepLinkWithHref(href)
-                ?: resources.deepLinkWithHref(href)
-                ?: links.deepLinkWithHref(href)
-        }
-
-        return find(href)
-            ?: find(href.takeWhile { it !in "#?" })
-    }
+    fun linkWithHref(href: String): Link? = _manifest.linkWithHref(href)
 
     /**
      * Finds the first [Link] having the given [rel] in the publications's links.
@@ -166,6 +157,13 @@ class Publication(
      * Finds all [Link]s having the given [rel] in the publications's links.
      */
     fun linksWithRel(rel: String): List<Link> = _manifest.linksWithRel(rel)
+
+    /**
+     * Creates a new [Locator] object from a [Link] to a resource of this publication.
+     *
+     * Returns null if the resource is not found in this publication.
+     */
+    fun locatorFromLink(link: Link): Locator? = _manifest.locatorFromLink(link)
 
     /**
      * Returns the resource targeted by the given non-templated [link].
@@ -245,18 +243,6 @@ class Publication(
      */
     internal fun linksWithRole(role: String): List<Link> =
         subcollections[role]?.firstOrNull()?.links ?: emptyList()
-
-    private fun List<Link>.deepLinkWithHref(href: String): Link? {
-        for (l in this) {
-            if (l.href == href)
-                return l
-            else {
-                l.alternates.deepLinkWithHref(href)?.let { return it }
-                l.children.deepLinkWithHref(href)?.let { return it }
-            }
-        }
-        return null
-    }
 
     companion object {
 
@@ -541,10 +527,7 @@ class Publication(
      * Finds the first resource [Link] (asset or [readingOrder] item) at the given relative path.
      */
     @Deprecated("Use [linkWithHref] instead.", ReplaceWith("linkWithHref(href)"))
-    fun resourceWithHref(href: String): Link? {
-        return readingOrder.deepLinkWithHref(href)
-            ?: resources.deepLinkWithHref(href)
-    }
+    fun resourceWithHref(href: String): Link? = linkWithHref(href)
 
     /**
      * Creates a [Publication]'s [positions].
