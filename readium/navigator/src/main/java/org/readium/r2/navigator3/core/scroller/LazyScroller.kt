@@ -20,6 +20,7 @@ import org.readium.r2.navigator3.core.lazy.LazyItemScope
 import org.readium.r2.navigator3.core.lazy.LazyList
 import org.readium.r2.navigator3.core.lazy.LazyListScope
 import org.readium.r2.navigator3.core.lazy.rememberStateOfItemsProvider
+import org.readium.r2.navigator3.core.util.FitBox
 import kotlin.math.ceil
 
 @Composable
@@ -106,7 +107,7 @@ private fun LazyListScope.scrollerContent(
         if (isVertical) ContentScale.FillWidth else ContentScale.FillHeight
 
     items(count = count) { index ->
-        ItemBox(
+        FitBox(
             parentSize= parentSize,
             contentScale = contentScale,
             scaleSetting = scaleSetting,
@@ -116,30 +117,4 @@ private fun LazyListScope.scrollerContent(
     }
 }
 
-@Composable
-private fun ItemBox(
-    parentSize: Size,
-    contentScale: ContentScale,
-    scaleSetting: Float,
-    itemSize: Size,
-    content: @Composable BoxScope.() -> Unit
-) {
-    val initialItemScale = remember {
-      contentScale.computeScaleFactor(itemSize, parentSize).scaleX
-    }
 
-    val itemScale = initialItemScale * scaleSetting
-
-    val width =  with(LocalDensity.current) {
-        ceil(itemSize.width * itemScale).toDp()
-    }
-
-    val height =  with(LocalDensity.current) {
-        ceil(itemSize.height * itemScale).toDp()
-    }
-
-    Box(
-        modifier = Modifier.requiredSize(width, height),
-        content = content
-    )
-}

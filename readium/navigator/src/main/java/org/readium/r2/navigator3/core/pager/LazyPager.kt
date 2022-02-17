@@ -1,7 +1,9 @@
 package org.readium.r2.navigator3.core.pager
 
 import androidx.compose.foundation.gestures.ScrollableState
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -18,13 +20,10 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
 import dev.chrisbanes.snapper.SnapOffsets
-import org.readium.r2.navigator3.core.gestures.*
-import org.readium.r2.navigator3.core.lazy.LazyItemScope
-import org.readium.r2.navigator3.core.lazy.LazyList
-import org.readium.r2.navigator3.core.lazy.LazyListScope
-import org.readium.r2.navigator3.core.lazy.rememberStateOfItemsProvider
+import org.readium.r2.navigator3.core.gestures.scrollable
+import org.readium.r2.navigator3.core.lazy.*
+import org.readium.r2.navigator3.core.util.logConstraints
 import org.readium.r2.navigator3.core.viewer.rememberSnapperFlingBehavior
-import timber.log.Timber
 
 @Composable
 @OptIn(ExperimentalSnapperApi::class)
@@ -55,50 +54,23 @@ internal fun LazyPager(
 
     val dummyScrollableState = ScrollableState { 0f }
 
-    @Suppress("NAME_SHADOWING")
-    val modifier = modifier.scrollable(
-        horizontalState = if (isVertical) dummyScrollableState else state.lazyListState,
-        verticalState = if (isVertical) state.lazyListState else dummyScrollableState,
-        reverseDirection = reverseScrollDirection,
-        interactionSource = state.lazyListState.internalInteractionSource,
-        flingBehavior = flingBehavior
-    )
-
-    // We only consume nested flings in the main-axis, allowing cross-axis flings to propagate
-    // as normal
-    val consumeFlingNestedScrollConnection = ConsumeFlingNestedScrollConnection(
-        consumeHorizontal = !isVertical,
-        consumeVertical = isVertical,
-    )
-
-   val content: (LazyListScope).() -> Unit = {
-       items(count = count) { index ->
-
-           Box(
-               Modifier
-                   .nestedScroll(connection = consumeFlingNestedScrollConnection)
-                   .fillParentMaxSize(),
-               Alignment.Center
-           ) {
-               val scaleState = remember { mutableStateOf(1f)}
-
-               val visibleItems = state.visibleItemInfo
-               Timber.d("layoutInfo $visibleItems")
-               visibleItems.forEach {
-                   Timber.d("${it.index} ${it.size} ${it.offset}")
-               }
-               if (visibleItems.size == 1 && visibleItems.first().index != index) {
-                   scaleState.value = 1f
-               }
-
-               itemContent(index, scaleState)
-           }
-       }
-   }
-
     LazyList(
-        modifier = modifier,
-        stateOfItemsProvider = rememberStateOfItemsProvider(content),
+        modifier = modifier
+            .scrollable(
+                horizontalState = if (isVertical) dummyScrollableState else state.lazyListState,
+                verticalState = if (isVertical) state.lazyListState else dummyScrollableState,
+                reverseDirection = reverseScrollDirection,
+                interactionSource = state.lazyListState.internalInteractionSource,
+                flingBehavior = flingBehavior
+            ),
+        stateOfItemsProvider = rememberStateOfItemsProvider {
+            pagerContent(
+                isVertical,
+                count,
+                state.visibleItemInfo,
+                itemContent
+            )
+        },
         state = state.lazyListState,
         contentPadding = contentPadding,
         flingBehavior = flingBehavior,
@@ -109,6 +81,40 @@ internal fun LazyPager(
         isVertical = isVertical,
         reverseLayout = reverseLayout
     )
+}
+
+private fun (LazyListScope).pagerContent(
+    isVertical: Boolean,
+    count: Int,
+    visibleItems: List<LazyListItemInfo>,
+    itemContent: @Composable LazyItemScope.(index: Int, scaleState: MutableState<Float>) -> Unit
+) {
+
+    // We only consume nested flings in the main-axis, allowing cross-axis flings to propagate
+    // as normal
+    val consumeFlingNestedScrollConnection = ConsumeFlingNestedScrollConnection(
+        consumeHorizontal = !isVertical,
+        consumeVertical = isVertical,
+    )
+
+    items(count = count) { index ->
+        Box(
+            Modifier
+                .logConstraints("pagerContentBefore")
+                .nestedScroll(connection = consumeFlingNestedScrollConnection)
+                .fillParentMaxSize()
+                .logConstraints("pagerContentAfter"),
+            Alignment.Center
+        ) {
+            val scaleState = remember { mutableStateOf(1f)}
+
+            if (visibleItems.size == 1 && visibleItems.first().index != index) {
+                scaleState.value = 1f
+            }
+
+            itemContent(index, scaleState)
+        }
+    }
 }
 
 private class ConsumeFlingNestedScrollConnection(

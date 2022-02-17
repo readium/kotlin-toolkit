@@ -24,7 +24,6 @@ import kotlin.math.roundToInt
 @Composable
 internal fun Image(
     bitmap: ImageBitmap,
-    scale: Float
 ) {
     Layout(
         {},
