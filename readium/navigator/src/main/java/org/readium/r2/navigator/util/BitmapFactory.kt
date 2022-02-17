@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.util.Size
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.InputStream
 
 internal object BitmapFactory : android.graphics.BitmapFactory() {
 
@@ -27,6 +28,14 @@ internal object BitmapFactory : android.graphics.BitmapFactory() {
             inJustDecodeBounds = false
             decodeByteArray(data, this)
         }
+
+    suspend fun getBitmapSize(stream: InputStream): Size = withContext(Dispatchers.IO) {
+        BitmapFactory.Options().run {
+            inJustDecodeBounds = true
+            decodeStream(stream, null, this)
+            Size(outWidth, outHeight)
+        }
+    }
 
     private fun calculateInSampleSize(reqWidth: Int, reqHeight: Int, width: Int, height: Int): Int =
         when {

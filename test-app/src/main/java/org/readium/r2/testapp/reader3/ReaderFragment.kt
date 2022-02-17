@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.navigator2.view.NavigatorListener
 import org.readium.r2.navigator2.view.NavigatorView
@@ -34,6 +35,7 @@ class ReaderFragment : VisualReaderFragment(), NavigatorListener {
     private lateinit var model: ReaderViewModel
     private lateinit var publication: Publication
     private lateinit var navigator: NavigatorView
+    private lateinit var navigatorState: NavigatorState
     private var baseUrl: URL? = null
 
     private val currentResource: Int
@@ -53,6 +55,17 @@ class ReaderFragment : VisualReaderFragment(), NavigatorListener {
         }
 
         super.onCreate(savedInstanceState)
+
+        navigatorState =
+            runBlocking {
+                NavigatorState.create(
+                    publication = publication,
+                    links = publication.readingOrder,
+                    baseUrl = baseUrl.toString(),
+                    readingProgression = ReadingProgression.TTB,
+                    overflow = Overflow.SCROLLED
+                )
+            }
 
         model.fragmentChannel.receive(this) { event ->
             val message =
@@ -98,12 +111,10 @@ class ReaderFragment : VisualReaderFragment(), NavigatorListener {
         val binding = Reader3FragmentReaderBinding.inflate(inflater, container, false)
         binding.fragmentReader3Navigator.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnLifecycleDestroyed(viewLifecycleOwner))
-            setContent { 
+            setContent {
+                val state = remember { navigatorState }
                 Navigator(
-                    publication = publication,
-                    links = publication.readingOrder,
-                    baseUrl = baseUrl.toString(),
-                    state = remember { NavigatorState(ReadingProgression.LTR, Overflow.PAGINATED) }
+                    state = state
                 )
             }
         }

@@ -6,24 +6,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.dp
-import org.readium.r2.navigator.extensions.withBaseUrl
-import org.readium.r2.navigator3.html.HtmlPage
-import org.readium.r2.navigator3.image.SingleImageResource
 import org.readium.r2.navigator3.core.pager.LazyPager
 import org.readium.r2.navigator3.core.pager.rememberLazyPagerState
-import org.readium.r2.navigator3.core.scroller.rememberLazyScrollerState
 import org.readium.r2.navigator3.core.scroller.LazyScroller
+import org.readium.r2.navigator3.core.scroller.rememberLazyScrollerState
+import org.readium.r2.navigator3.html.HtmlPage
+import org.readium.r2.navigator3.image.SingleImageResource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 
 @Composable
 fun Navigator(
     modifier: Modifier = Modifier,
-    publication: Publication,
     state: NavigatorState,
-    baseUrl: String,
-    links: List<Link> = publication.readingOrder,
 ) {
     val isVertical = when (state.readingProgression) {
         ReadingProgression.TTB, ReadingProgression.BTT -> true
@@ -43,6 +40,12 @@ fun Navigator(
 
     val verticalAlignment = Alignment.CenterVertically
 
+    val itemSize: (Int) -> Size = { index ->
+        with(state.links[index]) {
+            Size(width!!.toFloat(), height!!.toFloat())
+        }
+    }
+
     if (state.overflow == Overflow.SCROLLED) {
 
         val lazyScrollerState = rememberLazyScrollerState(isVertical)
@@ -57,9 +60,10 @@ fun Navigator(
             horizontalAlignment =  horizontalAlignment,
             verticalArrangement = verticalArrangement,
             verticalAlignment = verticalAlignment,
-            count = links.size
+            count = state.links.size,
+            itemSize = itemSize
         ) { index ->
-            Resource(publication, links[index], baseUrl, Overflow.SCROLLED, lazyScrollerState.scaleState)
+            Resource(state.publication, state.links[index], Overflow.SCROLLED, lazyScrollerState.scaleState)
         }
 
     } else {
@@ -76,9 +80,9 @@ fun Navigator(
             horizontalAlignment =  horizontalAlignment,
             verticalArrangement = verticalArrangement,
             verticalAlignment = verticalAlignment,
-            count = links.size
+            count = state.links.size
         ) { index, scaleState ->
-            Resource(publication, links[index], baseUrl, Overflow.PAGINATED, scaleState)
+            Resource(state.publication, state.links[index], Overflow.PAGINATED, scaleState)
         }
     }
 }
@@ -87,7 +91,6 @@ fun Navigator(
 private fun Resource(
     publication: Publication,
     link: Link,
-    baseUrl: String,
     overflow: Overflow,
     scaleState: MutableState<Float>,
 ) {
@@ -95,7 +98,7 @@ private fun Resource(
         link.mediaType.isBitmap ->
             SingleImageResource(publication, link, scaleState, overflow)
         link.mediaType.isHtml ->
-            HtmlPage(link.withBaseUrl(baseUrl).href)
+            HtmlPage(link.href)
     }
 }
 
