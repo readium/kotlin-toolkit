@@ -99,7 +99,7 @@ class ReaderFragment : VisualReaderFragment(), NavigatorListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        //navigator = view.findViewById(R.id.fragment_reader2_navigator)
+        navigator = view.findViewById(R.id.fragment_reader2_navigator)
         navigator.listener = this
         navigator.settings = navigator.settings.copy(
             spread = Presentation.Spread.LANDSCAPE,

@@ -12,7 +12,7 @@ import org.readium.r2.navigator3.core.pager.LazyPager
 import org.readium.r2.navigator3.core.pager.rememberLazyPagerState
 import org.readium.r2.navigator3.core.scroller.LazyScroller
 import org.readium.r2.navigator3.core.scroller.rememberLazyScrollerState
-import org.readium.r2.navigator3.html.HtmlPage
+import org.readium.r2.navigator3.html.HtmlResource
 import org.readium.r2.navigator3.image.SingleImageResource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
@@ -40,15 +40,15 @@ fun Navigator(
 
     val verticalAlignment = Alignment.CenterVertically
 
-    val itemSize: (Int) -> Size = { index ->
-        with(state.links[index]) {
-            Size(width!!.toFloat(), height!!.toFloat())
-        }
-    }
-
     if (state.overflow == Overflow.SCROLLED) {
 
         val lazyScrollerState = rememberLazyScrollerState(isVertical)
+
+        val itemSize: (Int) -> Size = { index ->
+            with(state.links[index]) {
+                Size(width!!.toFloat(), height!!.toFloat())
+            }
+        }
 
         LazyScroller(
             modifier = modifier,
@@ -98,7 +98,7 @@ private fun Resource(
         link.mediaType.isBitmap ->
             SingleImageResource(publication, link, scaleState, overflow)
         link.mediaType.isHtml ->
-            HtmlPage(link.href)
+            HtmlResource(publication, link, overflow)
     }
 }
 

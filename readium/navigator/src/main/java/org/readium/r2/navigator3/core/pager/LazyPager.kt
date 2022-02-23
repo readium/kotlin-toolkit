@@ -67,7 +67,7 @@ internal fun LazyPager(
             pagerContent(
                 isVertical,
                 count,
-                state.visibleItemInfo,
+                //state.visibleItemInfo,
                 itemContent
             )
         },
@@ -86,7 +86,7 @@ internal fun LazyPager(
 private fun (LazyListScope).pagerContent(
     isVertical: Boolean,
     count: Int,
-    visibleItems: List<LazyListItemInfo>,
+    //visibleItems: List<LazyListItemInfo>,
     itemContent: @Composable LazyItemScope.(index: Int, scaleState: MutableState<Float>) -> Unit
 ) {
 
@@ -108,9 +108,10 @@ private fun (LazyListScope).pagerContent(
         ) {
             val scaleState = remember { mutableStateOf(1f)}
 
-            if (visibleItems.size == 1 && visibleItems.first().index != index) {
+            //FIXME: this causes a recomposition loop.
+            /*if (visibleItems.size == 1 && visibleItems.first().index != index) {
                 scaleState.value = 1f
-            }
+            }*/
 
             itemContent(index, scaleState)
         }

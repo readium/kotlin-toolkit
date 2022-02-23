@@ -35,7 +35,7 @@ class HtmlSpreadAdapterFactory(
             return null
         }
 
-        val spread = HtmlSpreadAdapter(listOf(first), baseUrl)
+        val spread = HtmlSpreadAdapter(listOf(first), baseUrl, publication)
         return Pair(spread, links.subList(1, links.size))
     }
 

@@ -44,7 +44,7 @@ internal class ServingFetcher(
         return if (publication.type == Publication.TYPE.EPUB)
             htmlInjector.transform(resource)
         else
-            resource
+            return resource
     }
 
     override fun get(href: String): Resource {

@@ -36,7 +36,6 @@ class ReaderFragment : VisualReaderFragment(), NavigatorListener {
     private lateinit var publication: Publication
     private lateinit var navigator: NavigatorView
     private lateinit var navigatorState: NavigatorState
-    private var baseUrl: URL? = null
 
     private val currentResource: Int
         get() {
@@ -51,7 +50,6 @@ class ReaderFragment : VisualReaderFragment(), NavigatorListener {
         ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
             model = it
             publication = it.publication
-            baseUrl = it.baseUrl
         }
 
         super.onCreate(savedInstanceState)
@@ -61,9 +59,8 @@ class ReaderFragment : VisualReaderFragment(), NavigatorListener {
                 NavigatorState.create(
                     publication = publication,
                     links = publication.readingOrder,
-                    baseUrl = baseUrl.toString(),
-                    readingProgression = ReadingProgression.TTB,
-                    overflow = Overflow.SCROLLED
+                    readingProgression = ReadingProgression.LTR,
+                    overflow = Overflow.PAGINATED
                 )
             }
 

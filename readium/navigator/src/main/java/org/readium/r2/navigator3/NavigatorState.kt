@@ -1,17 +1,17 @@
 package org.readium.r2.navigator3
 
 import androidx.compose.runtime.mutableStateOf
-import org.readium.r2.navigator.extensions.withBaseUrl
 import org.readium.r2.navigator.util.BitmapFactory
 import org.readium.r2.shared.fetcher.ResourceInputStream
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.allAreBitmap
+import org.readium.r2.shared.publication.allAreHtml
 
 class NavigatorState private constructor(
     val publication: Publication,
     readingProgression: ReadingProgression,
     overflow: Overflow,
-    val baseUrl: String,
     val links: List<Link> = publication.readingOrder,
 ) {
     private val overflowState = mutableStateOf(overflow)
@@ -30,6 +30,19 @@ class NavigatorState private constructor(
             readingProgressionState.value = value
         }
 
+    /*val currentLocator: StateFlow<Locator> =
+
+
+    fun go(locator: Locator): Try<Unit, Exception> {
+
+    }
+
+    fun go(link: Link): Try<Unit, Exception> =
+        go(link.toLocator())*/
+
+    sealed class Exception : kotlin.Exception() {
+        abstract override val message: String
+    }
 
     companion object {
 
@@ -37,33 +50,36 @@ class NavigatorState private constructor(
             publication: Publication,
             readingProgression: ReadingProgression,
             overflow: Overflow,
-            baseUrl: String,
             links: List<Link> = publication.readingOrder,
         ): NavigatorState {
             return NavigatorState(
                 publication,
                 readingProgression,
                 overflow,
-                baseUrl,
-                links.map { preprocessLink(it, baseUrl, publication) }            )
+                preprocessLinks(links, publication)
+            )
         }
 
-        private suspend fun preprocessLink(link: Link, baseUrl: String, publication: Publication): Link =
-            when  {
-                link.mediaType.isHtml -> link.withBaseUrl(baseUrl)
-                link.mediaType.isBitmap -> preprocessBitmapLink(link, publication)
-                else -> link
+        private suspend fun preprocessLinks(links: List<Link>, publication: Publication): List<Link> =
+            when {
+                links.allAreHtml -> preprocessWebpub(links, publication)
+                links.allAreBitmap -> preprocessComic(links, publication)
+                else -> throw IllegalArgumentException()
             }
 
-        private suspend fun preprocessBitmapLink(link: Link, publication: Publication): Link {
-            if (link.width != null && link.height != null) {
-                return link
-            }
+        private fun preprocessWebpub(links: List<Link>, publication: Publication): List<Link> =
+            links
 
-            val resourceStream = ResourceInputStream(publication.get(link))
-            val size = BitmapFactory.getBitmapSize(resourceStream)
-            return link.copy(width = size.width, height = size.height)
-        }
+        private suspend fun preprocessComic(links: List<Link>, publication: Publication): List<Link> =
+            links.map {
+                if (it.width != null && it.height != null) {
+                    it
+                } else {
+                    val resourceStream = ResourceInputStream(publication.get(it))
+                    val size = BitmapFactory.getBitmapSize(resourceStream)
+                    it.copy(width = size.width, height = size.height)
+                }
+            }
     }
 }
 
