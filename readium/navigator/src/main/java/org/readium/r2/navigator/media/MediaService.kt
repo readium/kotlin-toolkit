@@ -139,7 +139,9 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
             }
 
             val locator = (extras?.getParcelable(EXTRA_LOCATOR) as? Locator)
-                ?: href?.let { navigator.publication.linkWithHref(it)?.toLocator() }
+                ?: href
+                    ?.let { navigator.publication.linkWithHref(it) }
+                    ?.let { navigator.publication.locatorFromLink(it) }
 
             if (locator != null && href != null && locator.href != href) {
                 Timber.e("Ambiguous playback location provided. HREF `$href` doesn't match locator $locator.")
@@ -310,7 +312,12 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
             val navigator = MediaSessionNavigator(publication, publicationId, getMediaSession(context, serviceClass).controller)
             pendingNavigator.trySend(PendingNavigator(
                 navigator = navigator,
-                media = PendingMedia(publication, publicationId, locator = initialLocator ?: publication.readingOrder.first().toLocator())
+                media = PendingMedia(
+                    publication = publication,
+                    publicationId = publicationId,
+                    locator = initialLocator
+                        ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
+                )
             ))
 
             return navigator

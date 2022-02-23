@@ -7,7 +7,7 @@
 package org.readium.r2.shared.publication.services
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -19,7 +19,7 @@ class LocatorServiceTest {
 
     // locate(Locator) checks that the href exists.
     @Test
-    fun `locate from Locator`() = runBlockingTest {
+    fun `locate from Locator`() = runTest {
         val service = createService(readingOrder = listOf(
             Link(href = "chap1", type = "application/xml"),
             Link(href = "chap2", type = "application/xml"),
@@ -30,14 +30,14 @@ class LocatorServiceTest {
     }
 
     @Test
-    fun `locate from Locator with empty reading order`() = runBlockingTest {
+    fun `locate from Locator with empty reading order`() = runTest {
         val service = createService(readingOrder = emptyList())
         val locator = Locator(href = "chap2", type = "text/html", text = Locator.Text(highlight = "Highlight"))
         assertNull(service.locate(locator))
     }
 
     @Test
-    fun `locate from Locator not found`() = runBlockingTest {
+    fun `locate from Locator not found`() = runTest {
         val service = createService(readingOrder = listOf(
             Link(href = "chap1", type = "application/xml"),
             Link(href = "chap3", type = "application/xml")
@@ -47,7 +47,7 @@ class LocatorServiceTest {
     }
 
     @Test
-    fun `locate from progression`() = runBlockingTest {
+    fun `locate from progression`() = runTest {
         val service = createService(positions = positionsFixtures)
 
         assertEquals(Locator(
@@ -116,14 +116,14 @@ class LocatorServiceTest {
     }
 
     @Test
-    fun `locate from incorrect progression`() = runBlockingTest {
+    fun `locate from incorrect progression`() = runTest {
         val service = createService(positions = positionsFixtures)
         assertNull(service.locateProgression(-0.2))
         assertNull(service.locateProgression(1.2))
     }
 
     @Test
-    fun `locate from progression with empty positions`() = runBlockingTest {
+    fun `locate from progression with empty positions`() = runTest {
         val service = createService(positions = emptyList())
         assertNull(service.locateProgression(0.5))
     }

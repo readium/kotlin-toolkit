@@ -19,6 +19,7 @@ import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.fetcher.EmptyFetcher
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.StringResource
+import org.readium.r2.shared.publication.Publication.Profile
 import org.readium.r2.shared.publication.services.DefaultLocatorService
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
@@ -32,6 +33,7 @@ import kotlin.reflect.KClass
 class PublicationTest {
 
     private fun createPublication(
+        conformsTo: Set<Profile> = emptySet(),
         title: String = "Title",
         language: String = "en",
         readingProgression: ReadingProgression = ReadingProgression.AUTO,
@@ -42,6 +44,7 @@ class PublicationTest {
     ) = Publication(
         manifest = Manifest(
             metadata = Metadata(
+                conformsTo = conformsTo,
                 localizedTitle = LocalizedString(title),
                 languages = listOf(language),
                 readingProgression = readingProgression
@@ -53,6 +56,7 @@ class PublicationTest {
         servicesBuilder = servicesBuilder
     )
 
+    @Suppress("DEPRECATION")
     @Test fun `get the type computed from the manifest content`() {
         val fixtures = Fixtures("format")
         fun parseAt(path: String): Publication =
@@ -155,6 +159,102 @@ class PublicationTest {
         assertEquals(
             URL("http://domain.com/"),
             publication.baseUrl
+        )
+    }
+
+    @Test fun `conforms to the given profile`() {
+        // An empty reading order doesn't conform to anything.
+        assertFalse(
+            createPublication(readingOrder = emptyList(), conformsTo = setOf(Profile.EPUB))
+                .conformsTo(Profile.EPUB)
+        )
+
+        assertTrue(
+            createPublication(readingOrder = listOf(
+                Link(href = "c1.mp3", type = "audio/mpeg"),
+                Link(href = "c2.aac", type = "audio/aac"),
+            )).conformsTo(Profile.AUDIOBOOK)
+        )
+        assertTrue(
+            createPublication(readingOrder = listOf(
+                Link(href = "c1.jpg", type = "image/jpeg"),
+                Link(href = "c2.png", type = "image/png"),
+            )).conformsTo(Profile.DIVINA)
+        )
+        assertTrue(
+            createPublication(readingOrder = listOf(
+                Link(href = "c1.pdf", type = "application/pdf"),
+                Link(href = "c2.pdf", type = "application/pdf"),
+            )).conformsTo(Profile.PDF)
+        )
+
+        // Mixed media types disable implicit conformance.
+        assertFalse(
+            createPublication(readingOrder = listOf(
+                Link(href = "c1.mp3", type = "audio/mpeg"),
+                Link(href = "c2.jpg", type = "image/jpeg"),
+            )).conformsTo(Profile.AUDIOBOOK)
+        )
+        assertFalse(
+            createPublication(readingOrder = listOf(
+                Link(href = "c1.mp3", type = "audio/mpeg"),
+                Link(href = "c2.jpg", type = "image/jpeg"),
+            )).conformsTo(Profile.DIVINA)
+        )
+
+        // XHTML could be EPUB or a Web Publication, so we require an explicit EPUB profile.
+        assertTrue(
+            createPublication(readingOrder = listOf(
+                Link(href = "c1.xhtml", type = "application/xhtml+xml"),
+                Link(href = "c2.xhtml", type = "application/xhtml+xml"),
+            ), conformsTo = setOf(Profile.EPUB)).conformsTo(Profile.EPUB)
+        )
+        assertTrue(
+            createPublication(readingOrder = listOf(
+                Link(href = "c1.html", type = "text/html"),
+                Link(href = "c2.html", type = "text/html"),
+            ), conformsTo = setOf(Profile.EPUB)).conformsTo(Profile.EPUB)
+        )
+        assertFalse(
+            createPublication(readingOrder = listOf(
+                Link(href = "c1.xhtml", type = "application/xhtml+xml"),
+                Link(href = "c2.xhtml", type = "application/xhtml+xml"),
+            )).conformsTo(Profile.EPUB)
+        )
+        assertFalse(
+            createPublication(readingOrder = listOf(
+                Link(href = "c1.html", type = "text/html"),
+                Link(href = "c2.html", type = "text/html"),
+            )).conformsTo(Profile.EPUB)
+        )
+        assertFalse(
+            createPublication(readingOrder = listOf(
+                Link(href = "c1.pdf", type = "application/pdf"),
+                Link(href = "c2.pdf", type = "application/pdf"),
+            ), conformsTo = setOf(Profile.EPUB)).conformsTo(Profile.EPUB)
+        )
+
+        // Implicit conformance always take precedence over explicit profiles.
+        assertTrue(
+            createPublication(readingOrder = listOf(
+                Link(href = "c1.mp3", type = "audio/mpeg"),
+                Link(href = "c2.aac", type = "audio/aac"),
+            ), conformsTo = setOf(Profile.DIVINA)).conformsTo(Profile.AUDIOBOOK)
+        )
+        assertFalse(
+            createPublication(readingOrder = listOf(
+                Link(href = "c1.mp3", type = "audio/mpeg"),
+                Link(href = "c2.aac", type = "audio/aac"),
+            ), conformsTo = setOf(Profile.DIVINA)).conformsTo(Profile.DIVINA)
+        )
+
+        // Unknown profile
+        val profile = Profile("http://extension")
+        assertTrue(
+            createPublication(
+                readingOrder = listOf(Link(href = "file")),
+                conformsTo = setOf(profile)
+            ).conformsTo(profile)
         )
     }
 
@@ -295,7 +395,6 @@ class PublicationTest {
         assertEquals("test passed", runBlocking { publication.get(link).readAsString().getOrNull() })
     }
 
-    @Suppress("DEPRECATION")
     @Test fun `find the first resource {Link} with the given {href}`() {
         val link1 = Link(href = "href1")
         val link2 = Link(href = "href2")
@@ -306,14 +405,13 @@ class PublicationTest {
             resources = listOf(Link(href = "other"), link3)
         )
 
-        assertNull(publication.resourceWithHref("href1"))
-        assertEquals(link2, publication.resourceWithHref("href2"))
-        assertEquals(link3, publication.resourceWithHref("href3"))
+        assertEquals(link1, publication.linkWithHref("href1"))
+        assertEquals(link2, publication.linkWithHref("href2"))
+        assertEquals(link3, publication.linkWithHref("href3"))
     }
 
-    @Suppress("DEPRECATION")
     @Test fun `find the first resource {Link} with the given {href} when missing`() {
-        assertNull(createPublication().resourceWithHref("foobar"))
+        assertNull(createPublication().linkWithHref("foobar"))
     }
 
     @Suppress("DEPRECATION")

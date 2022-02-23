@@ -8,8 +8,6 @@ package org.readium.r2.navigator.media
 
 import android.media.session.PlaybackState
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaControllerCompat.TransportControls
@@ -43,8 +41,11 @@ private val skipBackwardInterval: Duration = Duration.seconds(30)
 class MediaSessionNavigator(
     override val publication: Publication,
     val publicationId: PublicationId,
-    val controller: MediaControllerCompat
+    val controller: MediaControllerCompat,
+    var listener: Listener? = null
 ) : MediaNavigator, CoroutineScope by MainScope() {
+
+    interface Listener: MediaNavigator.Listener
 
     /**
      * Indicates whether the media session is loaded with a resource from this [publication]. This
@@ -157,7 +158,7 @@ class MediaSessionNavigator(
     private suspend fun createLocator(position: Duration?, metadata: MediaMetadataCompat?): Locator? {
         val href = metadata?.resourceHref ?: return null
         val index = publication.readingOrder.indexOfFirstWithHref(href) ?: return null
-        var locator = publication.readingOrder[index].toLocator()
+        var locator = publication.locatorFromLink(publication.readingOrder[index]) ?: return null
 
         if (position != null) {
             val startPosition = durations.slice(0 until index).sum()
@@ -176,6 +177,8 @@ class MediaSessionNavigator(
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         if (!isActive) return false
 
+        listener?.onJumpToLocator(locator)
+
         transportControls.playFromMediaId("$publicationId#${locator.href}", Bundle().apply {
             putParcelable("locator", locator)
         })
@@ -183,8 +186,10 @@ class MediaSessionNavigator(
         return true
     }
 
-    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean =
-        go(link.toLocator(), animated, completion)
+    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
+        val locator = publication.locatorFromLink(link) ?: return false
+        return go(locator, animated, completion)
+    }
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
         if (!isActive) return false

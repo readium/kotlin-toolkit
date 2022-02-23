@@ -26,6 +26,15 @@ enum class ReadingProgression(val value: String) : Parcelable {
     BTT("btt"),
     AUTO("auto");
 
+    /**
+     * Indicates whether this reading progression is on the horizontal axis, or null if unknown.
+     */
+    val isHorizontal: Boolean? get() = when (this) {
+        RTL, LTR -> true
+        TTB, BTT -> false
+        AUTO -> null
+    }
+
     companion object : MapWithDefaultCompanion<String, ReadingProgression>(values(), ReadingProgression::value, AUTO) {
 
         override fun get(key: String?): ReadingProgression? =

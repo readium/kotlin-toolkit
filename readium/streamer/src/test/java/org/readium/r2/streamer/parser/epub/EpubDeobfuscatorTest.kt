@@ -9,8 +9,10 @@
 
 package org.readium.r2.streamer.parser.epub
 
+import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.FileFetcher
@@ -19,9 +21,11 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.streamer.readBlocking
+import org.robolectric.RobolectricTestRunner
 import java.io.File
-import kotlin.test.assertNotNull
+import org.junit.Assert.assertNotNull
 
+@RunWith(RobolectricTestRunner::class)
 class EpubDeobfuscatorTest {
 
     private val identifier = "urn:uuid:36d5078e-ff7d-468e-a5f3-f47c14b91f2f"
@@ -35,7 +39,7 @@ class EpubDeobfuscatorTest {
             ?.path
             ?.let { File(it).parentFile }
         assertNotNull(deobfuscationDir)
-        fetcher = FileFetcher("/deobfuscation", deobfuscationDir)
+        fetcher = FileFetcher("/deobfuscation", deobfuscationDir!!)
 
         val fontResult = fetcher.get(Link(href = "/deobfuscation/cut-cut.woff")).readBlocking()
         assert(fontResult.isSuccess)
@@ -68,6 +72,17 @@ class EpubDeobfuscatorTest {
             "http://www.idpf.org/2008/embedding"
         ).readBlocking().getOrNull()
         assertThat(deobfuscatedRes).isEqualTo(font)
+    }
+
+    @Test
+    fun testIdpfDeobfuscationWithRange() {
+        runBlocking {
+            val deobfuscatedRes = deobfuscate(
+                "/deobfuscation/cut-cut.obf.woff",
+                "http://www.idpf.org/2008/embedding"
+            ).read(20L until 40L).getOrThrow()
+            assertThat(deobfuscatedRes).isEqualTo(font.copyOfRange(20, 40))
+        }
     }
 
     @Test

@@ -33,6 +33,7 @@ import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.use
 import timber.log.Timber
+import java.util.*
 
 /**
  * Navigator for PDF publications.
@@ -65,6 +66,7 @@ class PdfNavigatorFragment internal constructor(
     lateinit var pdfView: PDFView
 
     private lateinit var positionsByReadingOrder: List<List<Locator>>
+    private var positionCount: Int = 1
 
     private var currentHref: String? = null
 
@@ -74,11 +76,13 @@ class PdfNavigatorFragment internal constructor(
         return positionsByReadingOrder[index]
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val context = requireContext()
         pdfView = PDFView(context, null)
 
         positionsByReadingOrder = runBlocking { publication.positionsByReadingOrder() }
+        positionCount = positionsByReadingOrder.fold(0) { c, locators -> c + locators.size }
+        require(positionCount > 0)
 
         val locator: Locator? = savedInstanceState?.getParcelable(KEY_LOCATOR) ?: initialLocator
         if (locator != null) {
@@ -113,11 +117,19 @@ class PdfNavigatorFragment internal constructor(
                                 else fromBytes(resource.read().getOrThrow())
                             }
                         }
+                        .apply {
+                            if (isPagesOrderReversed) {
+                                // AndroidPdfViewer doesn't support RTL. A workaround is to provide
+                                // the explicit page list in the right order.
+                                pages(*((positionCount - 1) downTo 0).toList().toIntArray())
+                            }
+                        }
+                        .swipeHorizontal(readingProgression.isHorizontal ?: false)
                         .spacing(10)
                         // Customization of [PDFView] is done before setting the listeners,
                         // to avoid overriding them in reading apps, which would break the
                         // navigator.
-                        .also { listener?.onConfigurePdfView(it) }
+                        .apply { listener?.onConfigurePdfView(this) }
                         .defaultPage(page)
                         .onRender { _, _, _ ->
                             pdfView.fitToWidth()
@@ -127,7 +139,7 @@ class PdfNavigatorFragment internal constructor(
 
                             completion()
                         }
-                        .onPageChange { page, _ -> onPageChanged(page) }
+                        .onPageChange { index, _ -> onPageChanged(pageIndexToNumber(index)) }
                         .onTap { event -> onTap(event) }
                         .load()
 
@@ -147,52 +159,80 @@ class PdfNavigatorFragment internal constructor(
 
         return true
     }
+    
+    private fun pageNumberToIndex(page: Int): Int {
+        var index = (page - 1).coerceAtLeast(0)
+        if (isPagesOrderReversed) {
+            index = (positionCount - 1) - index
+        }
+        return index
+    }
+
+    private fun pageIndexToNumber(index: Int): Int {
+        var page = index + 1
+        if (isPagesOrderReversed) {
+            page = (positionCount + 1) - page
+        }
+        return page
+    }
+
 
     // Navigator
 
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
-    private val _currentLocator = MutableStateFlow(initialLocator ?: publication.readingOrder.first().toLocator())
+    private val _currentLocator = MutableStateFlow(initialLocator
+        ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
+    )
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+        listener?.onJumpToLocator(locator)
         // FIXME: `position` is relative to the full publication, which would cause an issue for a publication containing several PDFs resources. Only publications with a single PDF resource are supported at the moment, so we're fine.
         val pageNumber = locator.locations.page ?: locator.locations.position ?: 1
-        val pageIndex = (pageNumber - 1).coerceAtLeast(0)
-        return goToHref(locator.href, pageIndex, animated, completion)
+        return goToHref(locator.href, pageNumberToIndex(pageNumber), animated, completion)
     }
 
-    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean =
-        goToHref(link.href, 0, animated, completion)
+    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
+        val locator = publication.locatorFromLink(link) ?: return false
+        return go(locator, animated, completion)
+    }
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
-        val page = pdfView.currentPage
-        val pageCount = pdfView.pageCount
-        if (page >= (pageCount - 1)) return false
+        val page = pageIndexToNumber(pdfView.currentPage)
+        if (page >= positionCount) return false
 
-        pdfView.jumpTo(page + 1, animated)
+        pdfView.jumpTo(pageNumberToIndex(page + 1), animated)
         completion()
         return true
     }
-
 
     override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
-        val page = pdfView.currentPage
-        if (page <= 0) return false
+        val page = pageIndexToNumber(pdfView.currentPage)
+        if (page <= 1) return false
 
-        pdfView.jumpTo(page - 1, animated)
+        pdfView.jumpTo(pageNumberToIndex(page - 1), animated)
         completion()
         return true
     }
+
 
     // VisualNavigator
 
-    override val readingProgression: ReadingProgression
-        get() = ReadingProgression.TTB  // Only TTB is supported at the moment.
+    override val readingProgression: ReadingProgression =
+        publication.metadata.readingProgression.takeIf { it != ReadingProgression.AUTO }
+            ?: ReadingProgression.TTB
+
+    /**
+     * Indicates whether the order of the [PDFView] pages is reversed to take into account
+     * right-to-left and bottom-to-top reading progressions.
+     */
+    private val isPagesOrderReversed: Boolean =
+        readingProgression == ReadingProgression.RTL || readingProgression == ReadingProgression.BTT
 
 
     // [PDFView] Listeners
 
     private fun onPageChanged(page: Int) {
-        currentResourcePositions.getOrNull(page)?.let {
+        currentResourcePositions.getOrNull(page - 1)?.let {
             _currentLocator.value = it
         }
     }

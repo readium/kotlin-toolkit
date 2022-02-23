@@ -200,6 +200,7 @@ data class Locator(
 /**
  * Creates a [Locator] from a reading order [Link].
  */
+@Deprecated("This may create an incorrect `Locator` if the link `type` is missing. Use `publication.locatorFromLink()` instead.")
 fun Link.toLocator(): Locator {
     val components = href.split("#", limit = 2)
     return Locator(

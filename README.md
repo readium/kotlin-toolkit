@@ -14,6 +14,8 @@ A [Test App](test-app) demonstrates how to integrate the Readium Kotlin toolkit 
 
 ## Using Readium
 
+:question: **Find documentation and API reference at [readium.org/kotlin-toolkit](https://readium.org/kotlin-toolkit)**.
+
 Readium modules are distributed through [JitPack](https://jitpack.io/#readium/kotlin-toolkit). It's also possible to clone the repository (or a fork) and depend on the modules locally.
 
 ### From the JitPack Maven repository

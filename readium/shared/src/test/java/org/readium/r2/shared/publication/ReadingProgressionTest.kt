@@ -26,4 +26,12 @@ class ReadingProgressionTest {
         assertEquals("auto", ReadingProgression.AUTO.value)
     }
 
+    @Test fun `is horizontal`() {
+        assertNull(ReadingProgression.AUTO.isHorizontal)
+        assertTrue(ReadingProgression.LTR.isHorizontal!!)
+        assertTrue(ReadingProgression.RTL.isHorizontal!!)
+        assertFalse(ReadingProgression.TTB.isHorizontal!!)
+        assertFalse(ReadingProgression.BTT.isHorizontal!!)
+    }
+
 }

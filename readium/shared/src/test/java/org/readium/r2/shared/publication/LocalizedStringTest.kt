@@ -13,9 +13,12 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
+import org.robolectric.RobolectricTestRunner
 import java.util.*
 
+@RunWith(RobolectricTestRunner::class)
 class LocalizedStringTest {
 
     @Test fun `parse JSON string`() {

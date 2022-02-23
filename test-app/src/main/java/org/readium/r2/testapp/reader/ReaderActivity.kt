@@ -18,11 +18,10 @@ import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
+import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.allAreAudio
-import org.readium.r2.shared.publication.allAreBitmap
-import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.ActivityReaderBinding
 import org.readium.r2.testapp.drm.DrmManagementContract
@@ -37,50 +36,46 @@ import org.readium.r2.testapp.outline.OutlineFragment
  */
 open class ReaderActivity : AppCompatActivity() {
 
-    protected lateinit var readerFragment: BaseReaderFragment
     private lateinit var modelFactory: ReaderViewModel.Factory
-    private lateinit var publication: Publication
-
-    lateinit var binding: ActivityReaderBinding
+    private lateinit var model: ReaderViewModel
+    private lateinit var binding: ActivityReaderBinding
+    private lateinit var readerFragment: BaseReaderFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val inputData = ReaderContract.parseIntent(this)
-        modelFactory = ReaderViewModel.Factory(applicationContext, inputData)
+        val arguments = ReaderActivityContract.parseIntent(this)
+        val app = applicationContext as Application
+        modelFactory = ReaderViewModel.Factory(app, arguments)
+        model = ViewModelProvider(this)[ReaderViewModel::class.java]
+
+        /*
+         * [ReaderViewModel.Factory] provides dummy publications if the [ReaderActivity] is restored
+         * after the app process was killed because the [ReaderRepository] is empty.
+         * In that case, finish the activity as soon as possible and go back to the previous one.
+         */
+        if (model.publication.readingOrder.isEmpty()) {
+            finish()
+        }
+
         super.onCreate(savedInstanceState)
 
-        binding = ActivityReaderBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
+        val binding = ActivityReaderBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        
+        this.binding = binding
 
-        ViewModelProvider(this).get(ReaderViewModel::class.java).let { model ->
-            publication = model.publication
-            model.channel.receive(this) { handleReaderFragmentEvent(it) }
+        val readerFragment = supportFragmentManager.findFragmentByTag(READER_FRAGMENT_TAG)
+            ?.let { it as BaseReaderFragment }
+            ?: run { createReaderFragment(model.readerInitData) }
+
+        if (readerFragment is VisualReaderFragment) {
+            val fullscreenDelegate = FullscreenReaderActivityDelegate(this, readerFragment, binding)
+            lifecycle.addObserver(fullscreenDelegate)
         }
 
-        if (savedInstanceState == null) {
+        readerFragment?.let { this.readerFragment = it }
 
-            if (publication.type == Publication.TYPE.EPUB) {
-                val baseUrl = requireNotNull(inputData.baseUrl)
-                readerFragment = EpubReaderFragment.newInstance(baseUrl)
-
-                supportFragmentManager.commitNow {
-                    replace(R.id.activity_container, readerFragment, READER_FRAGMENT_TAG)
-                }
-            } else {
-                val readerClass: Class<out Fragment> = when {
-                    publication.readingOrder.all { it.mediaType == MediaType.PDF } -> PdfReaderFragment::class.java
-                    publication.readingOrder.allAreBitmap -> ImageReaderFragment::class.java
-                    publication.readingOrder.allAreAudio -> AudioReaderFragment::class.java
-                    else -> throw IllegalArgumentException("Cannot render publication")
-                }
-
-                supportFragmentManager.commitNow {
-                    replace(R.id.activity_container, readerClass, Bundle(), READER_FRAGMENT_TAG)
-                }
-            }
-        }
-
-        readerFragment = supportFragmentManager.findFragmentByTag(READER_FRAGMENT_TAG) as BaseReaderFragment
+        model.activityChannel.receive(this) { handleReaderFragmentEvent(it) }
+        reconfigureActionBar()
 
         supportFragmentManager.setFragmentResultListener(
             OutlineContract.REQUEST_KEY,
@@ -101,7 +96,7 @@ open class ReaderActivity : AppCompatActivity() {
         )
 
         supportFragmentManager.addOnBackStackChangedListener {
-            updateActivityTitle()
+            reconfigureActionBar()
         }
 
         // Add support for display cutout.
@@ -110,20 +105,54 @@ open class ReaderActivity : AppCompatActivity() {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        updateActivityTitle()
+    @OptIn(ExperimentalMedia2::class)
+    private fun createReaderFragment(readerData: ReaderInitData): BaseReaderFragment? {
+        val readerClass: Class<out Fragment>? = when {
+            readerData is MediaReaderInitData ->
+                AudioReaderFragment::class.java
+            readerData is ComposeVisualReaderInitData ->
+                ComposeReaderFragment::class.java
+            readerData.publication.conformsTo(Publication.Profile.EPUB) ->
+                EpubReaderFragment::class.java
+            readerData.publication.conformsTo(Publication.Profile.PDF) ->
+                PdfReaderFragment::class.java
+            readerData.publication.conformsTo(Publication.Profile.DIVINA) ->
+                ImageReaderFragment::class.java
+            else ->
+                // The Activity should stop as soon as possible because readerData are fake.
+                null
+        }
+
+        readerClass?.let { it ->
+            supportFragmentManager.commitNow {
+                replace(R.id.activity_container, it, Bundle(), READER_FRAGMENT_TAG)
+            }
+        }
+
+        return supportFragmentManager.findFragmentByTag(READER_FRAGMENT_TAG) as BaseReaderFragment?
     }
 
-    private fun updateActivityTitle() {
-        title = when (supportFragmentManager.fragments.last()) {
-            is OutlineFragment -> publication.metadata.title
+    override fun onStart() {
+        super.onStart()
+        reconfigureActionBar()
+    }
+
+    private fun reconfigureActionBar() {
+        val currentFragment = supportFragmentManager.fragments.lastOrNull()
+
+        title = when (currentFragment) {
+            is OutlineFragment -> model.publication.metadata.title
             is DrmManagementFragment -> getString(R.string.title_fragment_drm_management)
             else -> null
         }
-        if (supportFragmentManager.fragments.last() !is OutlineFragment) {
-            supportActionBar?.setDisplayHomeAsUpEnabled(false)
-        }
+
+        supportActionBar!!.setDisplayHomeAsUpEnabled(
+            when (currentFragment) {
+                is OutlineFragment, is DrmManagementFragment -> true
+                else -> false
+
+            }
+        )
     }
 
     override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
@@ -142,6 +171,7 @@ open class ReaderActivity : AppCompatActivity() {
             is ReaderViewModel.Event.Failure -> {
                 Toast.makeText(this, event.error.getUserMessage(this), Toast.LENGTH_LONG).show()
             }
+            else -> {}
         }
     }
 

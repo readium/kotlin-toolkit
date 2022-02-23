@@ -29,21 +29,19 @@ import org.readium.r2.testapp.databinding.FragmentListviewBinding
 import org.readium.r2.testapp.databinding.ItemRecycleHighlightBinding
 import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.reader.ReaderViewModel
-import org.readium.r2.testapp.utils.extensions.outlineTitle
+import org.readium.r2.testapp.utils.viewLifecycle
 
 class HighlightsFragment : Fragment() {
 
     lateinit var publication: Publication
     lateinit var viewModel: ReaderViewModel
     private lateinit var highlightAdapter: HighlightAdapter
-
-    private var _binding: FragmentListviewBinding? = null
-    private val binding get() = _binding!!
+    private var binding: FragmentListviewBinding by viewLifecycle()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
+        ViewModelProvider(requireActivity())[ReaderViewModel::class.java].let {
             publication = it.publication
             viewModel = it
         }
@@ -54,7 +52,7 @@ class HighlightsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentListviewBinding.inflate(inflater, container, false)
+        binding = FragmentListviewBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -71,11 +69,6 @@ class HighlightsFragment : Fragment() {
         viewModel.highlights
             .onEach { highlightAdapter.submitList(it) }
             .launchIn(viewLifecycleOwner.lifecycleScope)
-    }
-
-    override fun onDestroyView() {
-        _binding = null
-        super.onDestroyView()
     }
 
     private fun onHighlightSelected(highlight: Highlight) {

@@ -142,7 +142,7 @@ class ScreenReaderEngine(val context: Context, val publication: Publication) {
     }
 
     val currentLocator: Locator
-        get() = publication.readingOrder[resourceIndex].toLocator()
+        get() = requireNotNull(publication.locatorFromLink(publication.readingOrder[resourceIndex]))
 
     /**
      * - Update the resource index.

@@ -9,9 +9,12 @@
 
 package org.readium.r2.lcp.service
 
+import android.Manifest
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.components.Link
 import timber.log.Timber
@@ -36,7 +39,15 @@ internal class DeviceService(private val repository: DeviceRepository, private v
                 context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
             val bluetoothName =
                 try {
-                    bluetoothManager.adapter.name
+                    if (ActivityCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.BLUETOOTH_CONNECT
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        null
+                    } else {
+                        bluetoothManager.adapter.name
+                    }
                 } catch (e: Exception) {
                     Timber.e(e)
                     null

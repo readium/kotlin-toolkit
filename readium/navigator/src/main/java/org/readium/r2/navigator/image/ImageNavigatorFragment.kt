@@ -60,7 +60,9 @@ class ImageNavigatorFragment private constructor(
     private lateinit var currentActivity: FragmentActivity
 
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
-    private val _currentLocator = MutableStateFlow(initialLocator ?: publication.readingOrder.first().toLocator())
+    private val _currentLocator = MutableStateFlow(initialLocator
+        ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
+    )
 
     internal var currentPagerPosition: Int = 0
     internal var resources: List<String> = emptyList()
@@ -157,14 +159,17 @@ class ImageNavigatorFragment private constructor(
         val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
                 ?: return false
 
+        listener?.onJumpToLocator(locator)
         currentPagerPosition = resourceIndex
         resourcePager.currentItem = currentPagerPosition
 
         return true
     }
 
-    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean =
-        go(link.toLocator(), animated, completion)
+    override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
+        val locator = publication.locatorFromLink(link) ?: return false
+        return go(locator, animated, completion)
+    }
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
         val current = resourcePager.currentItem

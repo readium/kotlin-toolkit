@@ -6,7 +6,6 @@
 
 package org.readium.r2.testapp.reader
 
-import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import androidx.annotation.ColorInt
@@ -14,53 +13,52 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.Decoration
+import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.LocatorCollection
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.PublicationId
+import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.search.SearchIterator
 import org.readium.r2.shared.publication.services.search.SearchTry
 import org.readium.r2.shared.publication.services.search.search
 import org.readium.r2.shared.util.Try
 import org.readium.r2.testapp.bookshelf.BookRepository
-import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
 
-@OptIn(Search::class, ExperimentalDecorator::class)
-class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewModel() {
+@OptIn(Search::class, ExperimentalDecorator::class, ExperimentalCoroutinesApi::class, ExperimentalAudiobook::class)
+class ReaderViewModel(
+    val readerInitData: ReaderInitData,
+    private val bookRepository: BookRepository,
+) : ViewModel() {
 
-    val publication: Publication = arguments.publication
-    var location: Locator? = arguments.initialLocator
-    val channel = EventChannel(Channel<Event>(Channel.BUFFERED), viewModelScope)
-    val fragmentChannel = EventChannel(Channel<FeedbackEvent>(Channel.BUFFERED), viewModelScope)
-    val bookId = arguments.bookId
-    val baseUrl = arguments.baseUrl
-    private val repository: BookRepository
+    val publication: Publication =
+        readerInitData.publication
 
-    val publicationId: PublicationId get() = bookId.toString()
+    val bookId: Long =
+        readerInitData.bookId
 
-    init {
-        val booksDao = BookDatabase.getDatabase(context).booksDao()
-        repository = BookRepository(booksDao)
-    }
+    val activityChannel: EventChannel<Event> =
+        EventChannel(Channel(Channel.BUFFERED), viewModelScope)
+
+    val fragmentChannel: EventChannel<FeedbackEvent> =
+        EventChannel(Channel(Channel.BUFFERED), viewModelScope)
+
 
     fun saveProgression(locator: Locator) = viewModelScope.launch {
-        repository.saveProgression(locator, bookId)
+        bookRepository.saveProgression(locator, bookId)
     }
 
-    fun getBookmarks() = repository.bookmarksForBook(bookId)
+    fun getBookmarks() = bookRepository.bookmarksForBook(bookId)
 
     fun insertBookmark(locator: Locator) = viewModelScope.launch {
-        val id = repository.insertBookmark(bookId, publication, locator)
+        val id = bookRepository.insertBookmark(bookId, publication, locator)
         if (id != -1L) {
             fragmentChannel.send(FeedbackEvent.BookmarkSuccessfullyAdded)
         } else {
@@ -69,13 +67,13 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
     }
 
     fun deleteBookmark(id: Long) = viewModelScope.launch {
-        repository.deleteBookmark(id)
+        bookRepository.deleteBookmark(id)
     }
 
     // Highlights
 
     val highlights: Flow<List<Highlight>> by lazy {
-        repository.highlightsForBook(bookId)
+        bookRepository.highlightsForBook(bookId)
     }
 
     /**
@@ -133,22 +131,22 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
     }
 
     suspend fun highlightById(id: Long): Highlight? =
-        repository.highlightById(id)
+        bookRepository.highlightById(id)
 
     fun addHighlight(locator: Locator, style: Highlight.Style, @ColorInt tint: Int, annotation: String = "") = viewModelScope.launch {
-        repository.addHighlight(bookId, style, tint, locator, annotation)
+        bookRepository.addHighlight(bookId, style, tint, locator, annotation)
     }
 
     fun updateHighlightAnnotation(id: Long, annotation: String) = viewModelScope.launch {
-        repository.updateHighlightAnnotation(id, annotation)
+        bookRepository.updateHighlightAnnotation(id, annotation)
     }
 
     fun updateHighlightStyle(id: Long, style: Highlight.Style, @ColorInt tint: Int) = viewModelScope.launch {
-        repository.updateHighlightStyle(id, style, tint)
+        bookRepository.updateHighlightStyle(id, style, tint)
     }
 
     fun deleteHighlight(id: Long) = viewModelScope.launch {
-        repository.deleteHighlight(id)
+        bookRepository.deleteHighlight(id)
     }
 
     fun search(query: String) = viewModelScope.launch {
@@ -156,10 +154,10 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
         lastSearchQuery = query
         _searchLocators.value = emptyList()
         searchIterator = publication.search(query)
-            .onFailure { channel.send(Event.Failure(it)) }
+            .onFailure { activityChannel.send(Event.Failure(it)) }
             .getOrNull()
         pagingSourceFactory.invalidate()
-        channel.send(Event.StartNewSearch)
+        activityChannel.send(Event.StartNewSearch)
     }
 
     fun cancelSearch() = viewModelScope.launch {
@@ -211,23 +209,46 @@ class ReaderViewModel(context: Context, arguments: ReaderContract.Input) : ViewM
         Pager(PagingConfig(pageSize = 20), pagingSourceFactory = pagingSourceFactory)
             .flow.cachedIn(viewModelScope)
 
-    class Factory(private val context: Context, private val arguments: ReaderContract.Input)
-        : ViewModelProvider.NewInstanceFactory() {
-
-        override fun <T : ViewModel?> create(modelClass: Class<T>): T =
-            modelClass.getDeclaredConstructor(Context::class.java, ReaderContract.Input::class.java)
-                .newInstance(context.applicationContext, arguments)
-    }
-
     sealed class Event {
         object OpenOutlineRequested : Event()
         object OpenDrmManagementRequested : Event()
         object StartNewSearch : Event()
+        class OpeningError(val exception: Exception) : Event()
         class Failure(val error: UserException) : Event()
     }
 
     sealed class FeedbackEvent {
         object BookmarkSuccessfullyAdded : FeedbackEvent()
         object BookmarkFailed : FeedbackEvent()
+    }
+
+    class Factory(
+        private val application: org.readium.r2.testapp.Application,
+        private val arguments: ReaderActivityContract.Arguments,
+    ) : ViewModelProvider.NewInstanceFactory() {
+
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
+            when {
+                modelClass.isAssignableFrom(ReaderViewModel::class.java) -> {
+                    val readerInitData =
+                        try {
+                            val readerRepository = application.readerRepository.getCompleted()
+                            readerRepository[arguments.bookId]!!
+                        } catch (e: Exception) {
+                            // Fallbacks on a dummy Publication to avoid crashing the app until the Activity finishes.
+                            dummyReaderInitData(arguments.bookId)
+                        }
+                    ReaderViewModel(readerInitData, application.bookRepository) as T
+                }
+                else ->
+                    throw IllegalStateException("Cannot create ViewModel for class ${modelClass.simpleName}.")
+            }
+
+        private fun dummyReaderInitData(bookId: Long): ReaderInitData {
+            val metadata = Metadata(identifier = "dummy", localizedTitle = LocalizedString(""))
+            val publication = Publication(Manifest(metadata = metadata))
+            return VisualReaderInitData(bookId, publication)
+        }
     }
 }

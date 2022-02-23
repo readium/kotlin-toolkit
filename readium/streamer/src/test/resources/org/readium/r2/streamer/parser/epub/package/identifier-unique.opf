@@ -3,8 +3,9 @@
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
     <dc:title>Alice's Adventures in Wonderland</dc:title> 
     <dc:identifier> </dc:identifier>
-    <dc:identifier id="isbn">978-3-16-148410-0</dc:identifier>
+    <dc:identifier>BEQ</dc:identifier>
     <dc:identifier id="pub-id">urn:uuid:2</dc:identifier>
+    <dc:identifier id="isbn">978-3-16-148410-0</dc:identifier>
   </metadata>
   <manifest>
     <item id="titlepage" href="titlepage.xhtml" media-type="application/xhtml+xml" />

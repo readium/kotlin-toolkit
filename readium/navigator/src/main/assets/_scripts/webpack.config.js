@@ -11,4 +11,18 @@ module.exports = {
     filename: "readium-[name].js",
     path: path.resolve(__dirname, "../readium/scripts"),
   },
+  module: {
+    rules: [
+      {
+        test: /\.m?js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: ["@babel/preset-env"],
+          },
+        },
+      },
+    ],
+  },
 };

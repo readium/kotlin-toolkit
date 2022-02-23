@@ -6,7 +6,6 @@
 
 package org.readium.r2.testapp.reader
 
-import android.graphics.PointF
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,7 +16,6 @@ import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.image.ImageNavigatorFragment
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.utils.toggleSystemUi
 
 class ImageReaderFragment : VisualReaderFragment(), ImageNavigatorFragment.Listener {
 
@@ -26,18 +24,20 @@ class ImageReaderFragment : VisualReaderFragment(), ImageNavigatorFragment.Liste
     private lateinit var publication: Publication
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        ViewModelProvider(requireActivity()).get(ReaderViewModel::class.java).let {
+        ViewModelProvider(requireActivity())[ReaderViewModel::class.java].let {
             model = it
             publication = it.publication
         }
 
+        val readerData = model.readerInitData as VisualReaderInitData
+
         childFragmentManager.fragmentFactory =
-            ImageNavigatorFragment.createFactory(publication, model.location, this)
+            ImageNavigatorFragment.createFactory(publication, readerData.initialLocation, this)
 
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view =  super.onCreateView(inflater, container, savedInstanceState)
         if (savedInstanceState == null) {
             childFragmentManager.commitNow {
@@ -46,19 +46,6 @@ class ImageReaderFragment : VisualReaderFragment(), ImageNavigatorFragment.Liste
         }
         navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!! as Navigator
         return view
-    }
-
-    override fun onTap(point: PointF): Boolean {
-        val viewWidth = requireView().width
-        val leftRange = 0.0..(0.2 * viewWidth)
-
-        when {
-            leftRange.contains(point.x) -> navigator.goBackward(animated = true)
-            leftRange.contains(viewWidth - point.x) -> navigator.goForward(animated = true)
-            else -> requireActivity().toggleSystemUi()
-        }
-
-        return true
     }
 
     companion object {

@@ -129,9 +129,8 @@ class StringSearchService(
                 return emptyList()
 
             val resourceTitle = publication.tableOfContents.titleMatching(link.href)
-            val resourceLocator = link.toLocator().copy(
-                title = resourceTitle ?: link.title
-            )
+            var resourceLocator = publication.locatorFromLink(link) ?: return emptyList()
+            resourceLocator = resourceLocator.copy(title = resourceTitle ?: resourceLocator.title)
             val locators = mutableListOf<Locator>()
 
             withContext(Dispatchers.IO) {

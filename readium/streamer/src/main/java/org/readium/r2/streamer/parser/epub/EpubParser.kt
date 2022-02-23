@@ -148,6 +148,7 @@ class EpubParser(
 
         val publication = builder.build()
             .apply {
+                @Suppress("DEPRECATION")
                 type = Publication.TYPE.EPUB
 
                 // This might need to be moved as it's not really about parsing the EPUB but it

@@ -2,9 +2,67 @@
 
 All notable changes to this project will be documented in this file. Take a look at [the migration guide](docs/migration-guide.md) to upgrade between two major versions.
 
-**Warning:** Features marked as *alpha* may change or be removed in a future release without notice. Use with caution.
+**Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+
+### Added
+
+#### Shared
+
+* A new `Publication.conformsTo()` API to identify the profile of a publication.
+* Support for the [`conformsTo` RWPM metadata](https://github.com/readium/webpub-manifest/issues/65), to identify the profile of a `Publication`.
+
+#### Navigator
+
+* The PDF navigator now honors the publication reading progression with support for right-to-left and horizontal scrolling.
+    * The default (auto) reading progression for PDF is top-to-bottom, which is vertical scrolling.
+* A new convenience utility `EdgeTapNavigation` to trigger page turns while tapping the screen edges.
+    * It takes into account the navigator reading progression to move into the right direction.
+    * Call it from the `VisualNavigator.Listener.onTap()` callback as demonstrated below:
+    ```kotlin
+    override fun onTap(point: PointF): Boolean {
+        val navigated = edgeTapNavigation.onTap(point, requireView())
+        if (!navigated) {
+            // Fallback action, for example toggling the app bar.
+        }
+        return true
+    }
+    ```
+* The new `Navigator.Listener.onJumpToLocator()` API is called every time the navigator jumps to an explicit location, which might break the linear reading progression.
+    * For example, it is called when clicking on internal links or programmatically calling `Navigator.go()`, but not when turning pages.
+    * You can use this callback to implement a navigation history by differentiating between continuous and discontinuous moves.
+* (*experimental*) A new audiobook navigator based on Jetpack `media2`.
+    * See the [pull request #80](https://github.com/readium/kotlin-toolkit/pull/80) for the differences with the previous audiobook navigator.
+    * This navigator is located in its own module `readium-navigator-media2`. You will need to add it to your dependencies to use it.
+    * The Test App demonstrates how to use the new audiobook navigator, see `MediaService` and `AudioReaderFragment`.
+
+### Deprecated
+
+#### Shared
+
+* `Publication.type` is now deprecated in favor of the new `Publication.conformsTo()` API which is more accurate.
+    * For example, replace `publication.type == Publication.TYPE.EPUB` with `publication.conformsTo(Publication.Profile.EPUB)` before opening a publication with the `EpubNavigatorFragment`.
+* `Link.toLocator()` is deprecated as it may create an incorrect `Locator` if the link `type` is missing.
+    * Use `publication.locatorFromLink()` instead.
+
+### Fixed
+
+* Fix building with Kotlin 1.6.
+
+#### Streamer
+
+* Fixed the rendering of PDF covers in some edge cases.
+* Fixed reading ranges of obfuscated EPUB resources.
+
+#### Navigator
+
+* Fixed turning pages of an EPUB reflowable resource with an odd number of columns. A virtual blank trailing column is appended to the resource when displayed as two columns.
+* EPUB: Fallback on `reflowable` if the `presentation.layout` hint is missing from a manifest.
+* EPUB: Offset of the current selection's `rect` to take into account the vertical padding.
+* Improve backward compatibility of JavaScript files using Babel.
+* [#193](https://github.com/readium/r2-navigator-kotlin/issues/193) Fixed invisible `<audio>` elements.
+
 
 ## [2.1.1]
 
@@ -34,7 +92,7 @@ All notable changes to this project will be documented in this file. Take a look
 
 #### Shared
 
-* (*alpha*) A new Publication `SearchService` to search through the resources' content, with a default implementation `StringSearchService`.
+* (*experimental*) A new Publication `SearchService` to search through the resources' content, with a default implementation `StringSearchService`.
 * `ContentProtection.Scheme` can be used to identify protection technologies using unique URI identifiers.
 * `Link` objects from archive-based publication assets (e.g. an EPUB/ZIP) have additional properties for entry metadata.
     ```json
@@ -56,12 +114,12 @@ All notable changes to this project will be documented in this file. Take a look
 
 * The EPUB navigator is now able to navigate to a `Locator` using its `text` context. This is useful for search results or highlights missing precise locations.
 * Get or clear the current user selection of the navigators implementing `SelectableNavigator`.
-* (*alpha*) Support for the [Decorator API](https://github.com/readium/architecture/pull/160) to draw user interface elements over a publication's content.
+* (*experimental*) Support for the [Decorator API](https://github.com/readium/architecture/pull/160) to draw user interface elements over a publication's content.
     * This can be used to render highlights over a text selection, for example.
     * For now, only the EPUB navigator implements `DecorableNavigator`, for reflowable publications. You can implement custom decoration styles with `HtmlDecorationTemplate`.
 * Customize the EPUB selection context menu by providing a custom `ActionMode.Callback` implementation with `EpubNavigatorFragment.Configuration.selectionActionModeCallback`.
     * This is an alternative to overriding `Activity.onActionModeStarted()` which does not seem to work anymore with Android 12.
-* (*alpha*) A new audiobook navigator based on Android's [`MediaSession`](https://developer.android.com/guide/topics/media-apps/working-with-a-media-session).
+* (*experimental*) A new audiobook navigator based on Android's [`MediaSession`](https://developer.android.com/guide/topics/media-apps/working-with-a-media-session).
     * It supports out-of-the-box media style notifications and background playback.
     * ExoPlayer is used by default for the actual playback, but you can use a custom player by implementing `MediaPlayer`.
 
@@ -275,7 +333,7 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 #### Navigator
 
 * Support for the new `Publication` model using the [Content Protection](https://readium.org/architecture/proposals/006-content-protection) for DRM rights and the [Fetcher](https://readium.org/architecture/proposals/002-composite-fetcher-api) for resource access.
-* (*alpha*) New `Fragment` implementations as an alternative to the legacy `Activity` ones (contributed by [@johanpoirier](https://github.com/readium/r2-navigator-kotlin/pull/148)).
+* (*experimental*) New `Fragment` implementations as an alternative to the legacy `Activity` ones (contributed by [@johanpoirier](https://github.com/readium/r2-navigator-kotlin/pull/148)).
   * The fragments are chromeless, to let you customize the reading UX.
   * To create the fragments use the matching factory such as `EpubNavigatorFragment.createFactory()`, as showcased in `R2EpubActivity`.
   * At the moment, highlights and TTS are not yet supported in the new EPUB navigator `Fragment`.
@@ -372,13 +430,13 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
   * Get the visible position from the current `Locator` with `locations.position`.
   * The total number of positions can be retrieved with `publication.positions().size`. It is a suspending function because computing positions the first time can be expensive. 
 * `ReadiumWebPubParser` to parse all Readium Web Publication profiles, including [Audiobooks](https://readium.org/webpub-manifest/extensions/audiobook.html), [LCP for Audiobooks](https://readium.org/lcp-specs/notes/lcp-for-audiobooks.html) and [LCP for PDF](https://readium.org/lcp-specs/notes/lcp-for-pdf.html). It parses both manifests and packages.
-* (*alpha*) `PDFParser` to parse single PDF documents.
+* (*experimental*) `PDFParser` to parse single PDF documents.
   * The PDF parser is based on [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid/), which may increase the size of your apps. Please open an issue if this is a problem for you, as we are considering different solutions to fix this in a future release.
 
 #### Navigator
 
 * The [position](https://github.com/readium/architecture/tree/master/models/locators/positions) is now reported in the locators for EPUB, CBZ and PDF.
-* (*alpha*) [PDF navigator](https://github.com/readium/r2-navigator-kotlin/pull/130).
+* (*experimental*) [PDF navigator](https://github.com/readium/r2-navigator-kotlin/pull/130).
   * Supports both single PDF and LCP protected PDF.
   * As a proof of concept, [it is implemented using `Fragment` instead of `Activity`](https://github.com/readium/r2-navigator-kotlin/issues/115). `R2PdfActivity` showcases how to use the `PdfNavigatorFragment` with the new `NavigatorFragmentFactory`.
   * The navigator is based on [AndroidPdfViewer](https://github.com/barteksc/AndroidPdfViewer), which may increase the size of your apps. Please open an issue if this is a problem for you, as we are considering different solutions to fix this in a future release.

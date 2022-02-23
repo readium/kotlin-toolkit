@@ -165,6 +165,7 @@ internal class PubMetadataAdapter(
 
     fun metadata() = Metadata(
         identifier = identifier,
+        conformsTo = setOf(Publication.Profile.EPUB),
         modified = modified,
         published = published,
         languages = languages,
@@ -195,10 +196,11 @@ internal class PubMetadataAdapter(
     val identifier: String?
 
     init {
-        val identifiers = items[Vocabularies.DCTERMS + "identifier"]
-            ?.associate { Pair(it.property, it.value) }.orEmpty()
+        val identifiers = items[Vocabularies.DCTERMS + "identifier"].orEmpty()
 
-        identifier = uniqueIdentifierId?.let { identifiers[it] } ?: identifiers.values.firstOrNull()
+        identifier = uniqueIdentifierId
+            ?.let { uniqueId -> identifiers.firstOrNull { it.id == uniqueId }?.value }
+            ?: identifiers.firstOrNull()?.value
     }
 
     val published = firstValue(Vocabularies.DCTERMS + "date")?.iso8601ToDate()

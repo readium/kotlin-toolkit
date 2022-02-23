@@ -12,8 +12,11 @@ package org.readium.r2.shared.publication
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class LocatorTest {
 
     @Test fun `parse {Locator} minimal JSON`() {
@@ -55,29 +58,6 @@ class LocatorTest {
 
     @Test fun `parse {Locator} invalid JSON`() {
         assertNull(Locator.fromJSON(JSONObject("{ 'invalid': 'object' }")))
-    }
-
-    @Test fun `create {Locator} from minimal {Link}`() {
-        assertEquals(
-            Locator(href = "http://locator", type = ""),
-            Link(href = "http://locator").toLocator()
-        )
-    }
-
-    @Test fun `create {Locator} from full {Link} with fragment`() {
-        assertEquals(
-            Locator(
-                href = "http://locator",
-                type = "text/html",
-                title = "My Link",
-                locations = Locator.Locations(fragments = listOf("page=42"))
-            ),
-            Link(
-                href = "http://locator#page=42",
-                type = "text/html",
-                title = "My Link"
-            ).toLocator()
-        )
     }
 
     @Test fun `get {Locator} minimal JSON`() {
@@ -296,6 +276,7 @@ class LocatorTest {
 
 }
 
+@RunWith(RobolectricTestRunner::class)
 class LocatorCollectionTest {
 
     @Test fun `parse {LocatorCollection} minimal JSON`() {

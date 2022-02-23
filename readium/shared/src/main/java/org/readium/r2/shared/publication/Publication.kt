@@ -7,10 +7,12 @@
 package org.readium.r2.shared.publication
 
 import android.net.Uri
+import android.os.Parcelable
 import androidx.annotation.StringRes
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.BuildConfig.DEBUG
 import org.readium.r2.shared.R
@@ -59,7 +61,7 @@ typealias PublicationId = String
  * @param positionsFactory Factory used to build lazily the [positions].
  */
 class Publication(
-    private val manifest: Manifest,
+    manifest: Manifest,
     private val fetcher: Fetcher = EmptyFetcher(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
 
@@ -105,7 +107,7 @@ class Publication(
 
     val subcollections: Map<String, List<PublicationCollection>> get() = _manifest.subcollections
 
-    // FIXME: To be refactored, with the TYPE and EXTENSION enums as well
+    @Deprecated("Use conformsTo() to check the kind of a publication.", level = DeprecationLevel.WARNING)
     var type: TYPE = when {
         metadata.type == "http://schema.org/Audiobook" || readingOrder.allAreAudio -> TYPE.AUDIO
         readingOrder.allAreBitmap -> TYPE.DiViNa
@@ -130,6 +132,12 @@ class Publication(
             ?.let { it.href.toUrlOrNull()?.removeLastComponent() }
 
     /**
+     * Returns whether this publication conforms to the given Readium Web Publication Profile.
+     */
+    fun conformsTo(profile: Profile): Boolean =
+        _manifest.conformsTo(profile)
+
+    /**
      * Finds the first [Link] with the given HREF in the publication's links.
      *
      * Searches through (in order) [readingOrder], [resources] and [links] recursively following
@@ -138,16 +146,7 @@ class Publication(
      * If there's no match, try again after removing any query parameter and anchor from the
      * given [href].
      */
-    fun linkWithHref(href: String): Link? {
-        fun find(href: String): Link? {
-            return readingOrder.deepLinkWithHref(href)
-                ?: resources.deepLinkWithHref(href)
-                ?: links.deepLinkWithHref(href)
-        }
-
-        return find(href)
-            ?: find(href.takeWhile { it !in "#?" })
-    }
+    fun linkWithHref(href: String): Link? = _manifest.linkWithHref(href)
 
     /**
      * Finds the first [Link] having the given [rel] in the publications's links.
@@ -158,6 +157,13 @@ class Publication(
      * Finds all [Link]s having the given [rel] in the publications's links.
      */
     fun linksWithRel(rel: String): List<Link> = _manifest.linksWithRel(rel)
+
+    /**
+     * Creates a new [Locator] object from a [Link] to a resource of this publication.
+     *
+     * Returns null if the resource is not found in this publication.
+     */
+    fun locatorFromLink(link: Link): Locator? = _manifest.locatorFromLink(link)
 
     /**
      * Returns the resource targeted by the given non-templated [link].
@@ -238,18 +244,6 @@ class Publication(
     internal fun linksWithRole(role: String): List<Link> =
         subcollections[role]?.firstOrNull()?.links ?: emptyList()
 
-    private fun List<Link>.deepLinkWithHref(href: String): Link? {
-        for (l in this) {
-            if (l.href == href)
-                return l
-            else {
-                l.alternates.deepLinkWithHref(href)?.let { return it }
-                l.children.deepLinkWithHref(href)?.let { return it }
-            }
-        }
-        return null
-    }
-
     companion object {
 
         /**
@@ -284,6 +278,26 @@ class Publication(
             throw NotImplementedError()
         }
 
+    }
+
+    /**
+     * Represents a Readium Web Publication Profile a [Publication] can conform to.
+     *
+     * For a list of supported profiles, see the registry:
+     * https://readium.org/webpub-manifest/profiles/
+     */
+    @Parcelize
+    data class Profile(val uri: String) : Parcelable {
+        companion object {
+            /** Profile for EPUB publications. */
+            val EPUB = Profile("https://readium.org/webpub-manifest/profiles/epub")
+            /** Profile for audiobooks. */
+            val AUDIOBOOK = Profile("https://readium.org/webpub-manifest/profiles/audiobook")
+            /** Profile for visual narratives (comics, manga and bandes dessinées). */
+            val DIVINA = Profile("https://readium.org/webpub-manifest/profiles/divina")
+            /** Profile for PDF documents. */
+            val PDF = Profile("https://readium.org/webpub-manifest/profiles/pdf")
+        }
     }
 
     /**
@@ -513,10 +527,7 @@ class Publication(
      * Finds the first resource [Link] (asset or [readingOrder] item) at the given relative path.
      */
     @Deprecated("Use [linkWithHref] instead.", ReplaceWith("linkWithHref(href)"))
-    fun resourceWithHref(href: String): Link? {
-        return readingOrder.deepLinkWithHref(href)
-            ?: resources.deepLinkWithHref(href)
-    }
+    fun resourceWithHref(href: String): Link? = linkWithHref(href)
 
     /**
      * Creates a [Publication]'s [positions].

@@ -11,10 +11,13 @@ package org.readium.r2.shared.publication.html
 
 import org.json.JSONObject
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
+import org.robolectric.RobolectricTestRunner
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
+@RunWith(RobolectricTestRunner::class)
 class DomRangeTest {
 
     @Test fun `parse {DomRange} minimal JSON`() {
