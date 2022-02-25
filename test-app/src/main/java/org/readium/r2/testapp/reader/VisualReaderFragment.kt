@@ -40,6 +40,8 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
     private var binding: FragmentReaderBinding by viewLifecycle()
 
+    abstract override val navigator: VisualNavigator
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -334,7 +336,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
     private val edgeTapNavigation by lazy {
         EdgeTapNavigation(
-            navigator = navigator as VisualNavigator
+            navigator = navigator
         )
     }
 

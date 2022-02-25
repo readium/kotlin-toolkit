@@ -1,14 +1,12 @@
-package org.readium.r2.navigator3.core.scroller
+package org.readium.r2.navigator3.core.viewer
 
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.LayoutDirection
@@ -21,13 +19,12 @@ import org.readium.r2.navigator3.core.lazy.LazyList
 import org.readium.r2.navigator3.core.lazy.LazyListScope
 import org.readium.r2.navigator3.core.lazy.rememberStateOfItemsProvider
 import org.readium.r2.navigator3.core.util.FitBox
-import kotlin.math.ceil
 
 @Composable
 internal fun LazyScroller(
     modifier: Modifier = Modifier,
     isVertical: Boolean,
-    state: LazyScrollerState = rememberLazyScrollerState(isVertical),
+    state: LazyViewerState = rememberLazyViewerState(isVertical, isPaginated = false),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     reverseDirection: Boolean = false,
     verticalArrangement: Arrangement.Vertical? = null,
@@ -57,23 +54,23 @@ internal fun LazyScroller(
         LazyList(
             modifier = Modifier
                 .scrollable(
-                    horizontalState = if (isVertical) state.otherScrollState else state.lazyListState,
-                    verticalState = if (isVertical) state.lazyListState else state.otherScrollState,
+                    horizontalState = if (isVertical) state.crossAxisScrollState else state.lazyListState,
+                    verticalState = if (isVertical) state.lazyListState else state.crossAxisScrollState,
                     reverseDirection = reverseScrollDirection,
                     interactionSource = state.lazyListState.internalInteractionSource,
                     flingBehavior = flingBehavior
                 )
                 .scrolling(
-                    state = state.otherScrollState,
+                    state = state.crossAxisScrollState,
                     isVertical = !isVertical,
                     reverseScrolling = reverseScrollDirection
                 )
-                .zoomable(state),
+                .zoomable(state.zoomState),
             stateOfItemsProvider = rememberStateOfItemsProvider {
                 scrollerContent(
                     isVertical = isVertical,
                     parentConstraints = constraints,
-                    scaleSetting = state.scaleState.value,
+                    scaleSetting = state.zoomState.scaleState.value,
                     count = count,
                     itemSize = itemSize,
                     itemContent = itemContent

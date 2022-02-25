@@ -26,6 +26,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.Navigator
+import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
 import org.readium.r2.navigator.html.toCss
@@ -45,7 +46,7 @@ import org.readium.r2.testapp.utils.extensions.toDataUrl
 class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listener {
 
     override lateinit var model: ReaderViewModel
-    override lateinit var navigator: Navigator
+    override lateinit var navigator: VisualNavigator
     private lateinit var publication: Publication
     private lateinit var navigatorFragment: EpubNavigatorFragment
 
@@ -125,7 +126,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                 add(R.id.fragment_reader_container, EpubNavigatorFragment::class.java, Bundle(), navigatorFragmentTag)
             }
         }
-        navigator = childFragmentManager.findFragmentByTag(navigatorFragmentTag) as Navigator
+        navigator = childFragmentManager.findFragmentByTag(navigatorFragmentTag) as VisualNavigator
         navigatorFragment = navigator as EpubNavigatorFragment
 
         return view

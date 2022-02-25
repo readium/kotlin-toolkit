@@ -6,12 +6,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.dp
-import org.readium.r2.navigator3.core.pager.LazyPager
-import org.readium.r2.navigator3.core.pager.rememberLazyPagerState
-import org.readium.r2.navigator3.core.scroller.LazyScroller
-import org.readium.r2.navigator3.core.scroller.rememberLazyScrollerState
+import org.readium.r2.navigator3.core.viewer.LazyPager
+import org.readium.r2.navigator3.core.viewer.LazyScroller
 import org.readium.r2.navigator3.html.HtmlResource
 import org.readium.r2.navigator3.image.SingleImageResource
 import org.readium.r2.shared.publication.Link
@@ -21,6 +20,7 @@ import org.readium.r2.shared.publication.Publication
 fun Navigator(
     modifier: Modifier = Modifier,
     state: NavigatorState,
+    onTap: ((Offset) -> Unit)? = null
 ) {
     val isVertical = when (state.readingProgression) {
         ReadingProgression.TTB, ReadingProgression.BTT -> true
@@ -42,8 +42,6 @@ fun Navigator(
 
     if (state.overflow == Overflow.SCROLLED) {
 
-        val lazyScrollerState = rememberLazyScrollerState(isVertical)
-
         val itemSize: (Int) -> Size = { index ->
             with(state.links[index]) {
                 Size(width!!.toFloat(), height!!.toFloat())
@@ -53,7 +51,7 @@ fun Navigator(
         LazyScroller(
             modifier = modifier,
             isVertical = isVertical,
-            state = lazyScrollerState,
+            state = state.viewerState,
             contentPadding = PaddingValues(0.dp),
             reverseDirection = reverseDirection,
             horizontalArrangement = horizontalArrangement,
@@ -63,23 +61,21 @@ fun Navigator(
             count = state.links.size,
             itemSize = itemSize
         ) { index ->
-            Resource(state.publication, state.links[index], Overflow.SCROLLED, lazyScrollerState.scaleState)
+            Resource(state.publication, state.links[index], Overflow.SCROLLED, state.viewerState.zoomState.scaleState)
         }
 
     } else {
-
-        val lazyPagerState = rememberLazyPagerState()
-
         LazyPager(
             modifier = modifier,
             isVertical = isVertical,
-            state = lazyPagerState,
+            state = state.viewerState,
             contentPadding = PaddingValues(0.dp),
             reverseDirection = reverseDirection,
             horizontalArrangement = horizontalArrangement,
             horizontalAlignment =  horizontalAlignment,
             verticalArrangement = verticalArrangement,
             verticalAlignment = verticalAlignment,
+            onTap = onTap,
             count = state.links.size
         ) { index, scaleState ->
             Resource(state.publication, state.links[index], Overflow.PAGINATED, scaleState)

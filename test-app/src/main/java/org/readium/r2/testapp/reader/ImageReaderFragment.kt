@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
 import org.readium.r2.navigator.Navigator
+import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.image.ImageNavigatorFragment
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
@@ -20,7 +21,7 @@ import org.readium.r2.testapp.R
 class ImageReaderFragment : VisualReaderFragment(), ImageNavigatorFragment.Listener {
 
     override lateinit var model: ReaderViewModel
-    override lateinit var navigator: Navigator
+    override lateinit var navigator: VisualNavigator
     private lateinit var publication: Publication
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,7 +45,7 @@ class ImageReaderFragment : VisualReaderFragment(), ImageNavigatorFragment.Liste
                 add(R.id.fragment_reader_container, ImageNavigatorFragment::class.java, Bundle(), NAVIGATOR_FRAGMENT_TAG)
             }
         }
-        navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!! as Navigator
+        navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!! as VisualNavigator
         return view
     }
 

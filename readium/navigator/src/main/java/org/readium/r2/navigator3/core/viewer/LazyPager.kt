@@ -1,4 +1,4 @@
-package org.readium.r2.navigator3.core.pager
+package org.readium.r2.navigator3.core.viewer
 
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.layout.Arrangement
@@ -21,16 +21,20 @@ import androidx.compose.ui.unit.dp
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
 import dev.chrisbanes.snapper.SnapOffsets
 import org.readium.r2.navigator3.core.gestures.scrollable
-import org.readium.r2.navigator3.core.lazy.*
+import org.readium.r2.navigator3.core.gestures.tappable
+import org.readium.r2.navigator3.core.lazy.LazyItemScope
+import org.readium.r2.navigator3.core.lazy.LazyList
+import org.readium.r2.navigator3.core.lazy.LazyListScope
+import org.readium.r2.navigator3.core.lazy.rememberStateOfItemsProvider
 import org.readium.r2.navigator3.core.util.logConstraints
-import org.readium.r2.navigator3.core.viewer.rememberSnapperFlingBehavior
+import timber.log.Timber
 
 @Composable
 @OptIn(ExperimentalSnapperApi::class)
 internal fun LazyPager(
     modifier: Modifier = Modifier,
     isVertical: Boolean,
-    state: LazyPagerState = rememberLazyPagerState(),
+    state: LazyViewerState = rememberLazyViewerState(isVertical, isPaginated = true),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     reverseDirection: Boolean = false,
     verticalArrangement: Arrangement.Vertical? = null,
@@ -38,6 +42,7 @@ internal fun LazyPager(
     verticalAlignment: Alignment.Vertical? = null,
     horizontalAlignment: Alignment.Horizontal? = null,
     count: Int,
+    onTap: ((Offset) -> Unit)?,
     itemContent: @Composable LazyItemScope.(index: Int, scaleState: MutableState<Float>) -> Unit,
 ) {
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
@@ -62,6 +67,10 @@ internal fun LazyPager(
                 reverseDirection = reverseScrollDirection,
                 interactionSource = state.lazyListState.internalInteractionSource,
                 flingBehavior = flingBehavior
+            )
+            .tappable(
+                enabled = onTap != null,
+                onTap = { Timber.d("tap detected"); onTap?.invoke(it)}
             ),
         stateOfItemsProvider = rememberStateOfItemsProvider {
             pagerContent(
