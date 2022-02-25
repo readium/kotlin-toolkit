@@ -6,13 +6,13 @@
 
 import org.jetbrains.dokka.gradle.DokkaTaskPartial
 
-val composeVersion: String by extra { "1.0.5" }
+val composeVersion: String by extra { "1.1.1" }
 
 plugins {
     id("com.android.application") version ("7.0.4") apply false
     id("com.android.library") version ("7.0.4") apply false
-    id("org.jetbrains.kotlin.android") version ("1.5.31") apply false
-    id("org.jetbrains.dokka") version ("1.5.31") apply true
+    id("org.jetbrains.kotlin.android") version ("1.6.10") apply false
+    id("org.jetbrains.dokka") version ("1.6.10") apply true
 }
 
 subprojects {

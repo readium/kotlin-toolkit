@@ -175,6 +175,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         val readerRepository = r2Application.readerRepository.await()
         readerRepository.open(bookId)
             .onFailure { exception ->
+                Timber.e(exception)
                 val message = when (exception)  {
                     is UserException -> exception.getUserMessage(r2Application)
                     else -> exception.message

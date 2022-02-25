@@ -104,12 +104,7 @@ class ReaderRepository(
         initialLocator: Locator?
     ): ComposeVisualReaderInitData {
         val navigatorState =
-            NavigatorState.create(
-                publication = publication,
-                links = publication.readingOrder,
-                readingProgression = ReadingProgression.LTR,
-                overflow = Overflow.PAGINATED
-            )
+            NavigatorState.create(publication)
         return ComposeVisualReaderInitData(bookId, publication, navigatorState)
     }
 

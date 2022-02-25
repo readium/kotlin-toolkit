@@ -10,13 +10,11 @@ import org.readium.r2.shared.publication.allAreHtml
 
 class NavigatorState private constructor(
     val publication: Publication,
-    readingProgression: ReadingProgression,
-    overflow: Overflow,
     val links: List<Link> = publication.readingOrder,
 ) {
-    private val overflowState = mutableStateOf(overflow)
+    private val overflowState = mutableStateOf(Overflow.SCROLLED)
 
-    private val readingProgressionState = mutableStateOf(readingProgression)
+    private val readingProgressionState = mutableStateOf(ReadingProgression.TTB)
 
     var overflow: Overflow
         get() = overflowState.value
@@ -48,14 +46,10 @@ class NavigatorState private constructor(
 
         suspend fun create(
             publication: Publication,
-            readingProgression: ReadingProgression,
-            overflow: Overflow,
             links: List<Link> = publication.readingOrder,
         ): NavigatorState {
             return NavigatorState(
                 publication,
-                readingProgression,
-                overflow,
                 preprocessLinks(links, publication)
             )
         }
