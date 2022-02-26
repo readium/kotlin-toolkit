@@ -43,6 +43,7 @@ internal fun LazyPager(
     horizontalAlignment: Alignment.Horizontal? = null,
     count: Int,
     onTap: ((Offset) -> Unit)?,
+    onDoubleTap: ((Offset) -> Unit)?,
     itemContent: @Composable LazyItemScope.(index: Int, scaleState: MutableState<Float>) -> Unit,
 ) {
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
@@ -70,7 +71,8 @@ internal fun LazyPager(
             )
             .tappable(
                 enabled = onTap != null,
-                onTap = { Timber.d("tap detected"); onTap?.invoke(it)}
+                onTap = { Timber.d("tap detected"); onTap?.invoke(it)},
+                onDoubleTap = onDoubleTap
             ),
         stateOfItemsProvider = rememberStateOfItemsProvider {
             pagerContent(

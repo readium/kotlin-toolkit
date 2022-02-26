@@ -46,6 +46,9 @@ internal class LazyViewerState(
                     this
             }
 
+    val firstVisibleItemIndex: Int
+        get() = visibleItemInfo.firstOrNull()?.index ?: 0
+
     suspend fun scrollToItem(
         /*@IntRange(from = 0)*/
         index: Int,

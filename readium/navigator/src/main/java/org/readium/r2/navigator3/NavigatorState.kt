@@ -1,53 +1,56 @@
 package org.readium.r2.navigator3
 
-import androidx.compose.runtime.mutableStateOf
 import org.readium.r2.navigator.util.BitmapFactory
 import org.readium.r2.navigator3.core.viewer.LazyViewerState
+import org.readium.r2.navigator3.html.HtmlSpreadStateFactory
+import org.readium.r2.navigator3.image.ImageSpreadStateFactory
 import org.readium.r2.shared.fetcher.ResourceInputStream
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.util.Try
 
 class NavigatorState private constructor(
     val publication: Publication,
-    val links: List<Link> = publication.readingOrder,
+    val links: List<Link>,
 ) {
-    private val overflowState = mutableStateOf(Overflow.PAGINATED)
 
-    private val readingProgressionState = mutableStateOf(ReadingProgression.LTR)
-
-    var overflow: Overflow
-        get() = overflowState.value
-        set(value) {
-            overflowState.value = value
+    private val defaultSpreadStateFactories: List<SpreadState.Factory> =
+        run {
+            val htmlSpreadFactory = HtmlSpreadStateFactory(publication)
+            val imageSpreadFactory = ImageSpreadStateFactory(publication)
+            listOf(htmlSpreadFactory, imageSpreadFactory)
         }
 
-    var readingProgression: ReadingProgression
-        get() = readingProgressionState.value
-        set(value) {
-            readingProgressionState.value = value
-        }
+    private val layoutFactory: LayoutFactory =
+        LayoutFactory(
+            publication,
+            links,
+            defaultSpreadStateFactories
+        )
 
-    private val isVertical get() = when (readingProgression) {
-        ReadingProgression.TTB, ReadingProgression.BTT -> true
-        ReadingProgression.LTR, ReadingProgression.RTL -> false
-    }
+    internal var layout: LayoutFactory.Layout =
+        layoutFactory.createLayout()
 
     internal var viewerState: LazyViewerState =
         LazyViewerState(
-            isVertical = isVertical,
-            isPaginated = overflow == Overflow.PAGINATED,
+            isVertical = layout.isVertical,
+            isPaginated = layout.isPaginated,
             initialFirstVisibleItemIndex = 0,
             initialFirstVisibleItemScrollOffset = 0,
             initialScale = 1f
         )
 
-    /*val currentLocator: StateFlow<Locator> =*/
+    internal val spreadStates: List<SpreadState>
+        get() = layout.spreadStates
+
+
+    val readingProgression: ReadingProgression =
+        layout.readingProgression
 
 
     suspend fun go(locator: Locator): Try<Unit, Exception> {
         val itemIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
             ?: return Try.failure(Exception.InvalidArgument("Invalid href ${locator.href}."))
-        viewerState.lazyListState.scrollToItem(itemIndex)
+        viewerState.scrollToItem(itemIndex)
         return Try.success(Unit)
     }
 
@@ -58,20 +61,30 @@ class NavigatorState private constructor(
     }
 
     suspend fun goForward(): Try<Unit, Exception> {
-        val currentItem = viewerState.lazyListState.firstVisibleItemIndex
-        if (currentItem + 1 == links.size) {
+        val currentItemIndex = viewerState.firstVisibleItemIndex
+        val currentSpread = layout.spreadStates[currentItemIndex]
+        if (currentSpread.goForward()) {
+            return Try.success(Unit)
+        }
+
+        if (currentItemIndex + 1 == links.size) {
             return Try.failure(Exception.InvalidState("Reached end."))
         }
-        viewerState.lazyListState.scrollToItem(currentItem + 1)
+        viewerState.scrollToItem(currentItemIndex + 1)
         return Try.success(Unit)
     }
 
     suspend fun goBackward(): Try<Unit, Exception> {
-        val currentItem = viewerState.lazyListState.firstVisibleItemIndex
-        if (currentItem == 0) {
+        val currentItemIndex = viewerState.firstVisibleItemIndex
+        val currentSpread = layout.spreadStates[currentItemIndex]
+        if (currentSpread.goBackward()) {
+            return Try.success(Unit)
+        }
+
+        if (currentItemIndex == 0) {
             return Try.failure(Exception.InvalidState("Reached beginning."))
         }
-        viewerState.lazyListState.scrollToItem(currentItem - 1)
+        viewerState.scrollToItem(currentItemIndex - 1)
         return Try.success(Unit)
     }
 

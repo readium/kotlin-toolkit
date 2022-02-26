@@ -9,9 +9,9 @@ import com.google.common.util.concurrent.MoreExecutors
 import com.google.common.util.concurrent.SettableFuture
 import timber.log.Timber
 
-internal class JavaScriptExecutor(
-    private val webView: WebView,
-) {
+internal class JavaScriptExecutor {
+    lateinit var webView: WebView
+
     @UiThread
     private fun executeJavascript(
         script: String
@@ -57,6 +57,11 @@ internal class JavaScriptExecutor(
             },
             MoreExecutors.directExecutor()
         )
+    }
+
+    @UiThread
+    fun scrollToStart(): ListenableFuture<String> {
+        return this.executeJavascript("readium.scrollToStart();")
     }
 
     @UiThread

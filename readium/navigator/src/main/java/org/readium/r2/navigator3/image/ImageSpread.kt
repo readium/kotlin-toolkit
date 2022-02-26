@@ -13,7 +13,6 @@ import androidx.compose.ui.layout.ContentScale
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import org.readium.r2.navigator.util.BitmapFactory
-import org.readium.r2.navigator3.Overflow
 import org.readium.r2.navigator3.core.util.FitBox
 import org.readium.r2.navigator3.core.util.ZoomableBox
 import org.readium.r2.navigator3.core.util.rememberZoomableBoxState
@@ -26,13 +25,13 @@ fun SingleImageResource(
     publication: Publication,
     link: Link,
     scaleState: MutableState<Float>,
-    overflow: Overflow
+    isPaginated: Boolean
 ) {
     val resource = publication.get(link)
 
     val itemSize = Size(link.width!!.toFloat(), link.height!!.toFloat())
 
-    if (overflow == Overflow.PAGINATED) {
+    if (isPaginated) {
         ScrollableImage(resource, scaleState, itemSize)
     } else {
         ImageOrPlaceholder(resource)

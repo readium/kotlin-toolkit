@@ -120,6 +120,7 @@ internal class WebViewConnection private constructor(
         fun create(
             webView: WebView,
             publication: Publication,
+            jsExecutor: JavaScriptExecutor,
             jsReceiver: JavaScriptReceiver
         ): WebViewConnection {
 
@@ -153,7 +154,7 @@ internal class WebViewConnection private constructor(
             )
 
             return WebViewConnection(
-                jsExecutor = JavaScriptExecutor(webView),
+                jsExecutor = jsExecutor,
                 webView = webView,
                 requestQueue = requestQueue,
                 uiExecutor = UIExecutor(),
