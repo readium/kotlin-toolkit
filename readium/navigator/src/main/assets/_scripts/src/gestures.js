@@ -31,6 +31,8 @@ function onClick(event) {
 
   // Send the tap data over the JS bridge even if it's been handled within the web view, so that
   // it can be preserved and used by the toolkit if needed.
+  var s = document.scrollingElement.scrollWidth;
+  console.log("Size ontap ${s}", s);
   var shouldPreventDefault = Android.onTap(JSON.stringify(clickEvent));
 
   if (shouldPreventDefault) {

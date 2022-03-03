@@ -46,6 +46,9 @@ internal class LazyViewerState(
                     this
             }
 
+    val totalItemsCount: Int
+        get() = lazyListState.layoutInfo.totalItemsCount
+
     val firstVisibleItemIndex: Int
         get() = visibleItemInfo.firstOrNull()?.index ?: 0
 

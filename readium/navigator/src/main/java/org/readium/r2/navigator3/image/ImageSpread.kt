@@ -21,7 +21,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 
 @Composable
-fun SingleImageResource(
+fun ImageSpread(
     publication: Publication,
     link: Link,
     scaleState: MutableState<Float>,

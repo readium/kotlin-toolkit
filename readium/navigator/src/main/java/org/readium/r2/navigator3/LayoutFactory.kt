@@ -1,29 +1,49 @@
 package org.readium.r2.navigator3
 
+import androidx.compose.ui.unit.IntSize
+import org.readium.r2.navigator3.html.HtmlSpreadStateFactory
+import org.readium.r2.navigator3.image.ImageSpreadStateFactory
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import timber.log.Timber
 
-class LayoutFactory(
+internal class LayoutFactory(
     private val publication: Publication,
     private val links: List<Link>,
-    private val spreadStateFactories: List<SpreadState.Factory>
 ) {
     data class Layout(
         val isVertical: Boolean,
         val reverseDirection: Boolean,
         val isPaginated: Boolean,
+        val viewerScrollable: Boolean,
         val readingProgression: ReadingProgression,
+        val viewport: IntSize,
         val spreadStates: List<SpreadState>
     )
 
-    fun createLayout(): Layout {
-        val spreads = computeSpreads(links, spreadStateFactories)
+    fun layout(viewport: IntSize): Layout {
+        val factories = defaultSpreadStateFactories(viewport)
+        val spreads = computeSpreads(links, factories)
         val isVertical = false
         val reverseDirection = false
         val isPaginated = true
+        val viewerScrollable = true
         val readingProgression = ReadingProgression.LTR
-        return Layout(isVertical, reverseDirection, isPaginated, readingProgression, spreads)
+        return Layout(
+            isVertical,
+            reverseDirection,
+            isPaginated,
+            viewerScrollable,
+            readingProgression,
+            viewport,
+            spreads
+        )
+    }
+
+    private fun defaultSpreadStateFactories(viewport: IntSize): List<SpreadState.Factory> {
+        val htmlSpreadFactory = HtmlSpreadStateFactory(publication, viewport)
+        val imageSpreadFactory = ImageSpreadStateFactory(publication)
+        return listOf(htmlSpreadFactory, imageSpreadFactory)
     }
 
     private fun computeSpreads(links: List<Link>, factories: List<SpreadState.Factory>): List<SpreadState> {

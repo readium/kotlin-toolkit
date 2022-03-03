@@ -1,56 +1,118 @@
 package org.readium.r2.navigator3
 
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.unit.IntSize
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import org.readium.r2.navigator.util.BitmapFactory
 import org.readium.r2.navigator3.core.viewer.LazyViewerState
-import org.readium.r2.navigator3.html.HtmlSpreadStateFactory
-import org.readium.r2.navigator3.image.ImageSpreadStateFactory
 import org.readium.r2.shared.fetcher.ResourceInputStream
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.util.Try
+import timber.log.Timber
 
 class NavigatorState private constructor(
     val publication: Publication,
     val links: List<Link>,
+    private val layoutFactory: LayoutFactory,
+    initialLocator: Locator?
 ) {
+    internal lateinit var currentLayout: LayoutFactory.Layout
+        private set
 
-    private val defaultSpreadStateFactories: List<SpreadState.Factory> =
-        run {
-            val htmlSpreadFactory = HtmlSpreadStateFactory(publication)
-            val imageSpreadFactory = ImageSpreadStateFactory(publication)
-            listOf(htmlSpreadFactory, imageSpreadFactory)
+    internal lateinit var viewerState: LazyViewerState
+        private set
+
+    internal lateinit var navigatorScope: NavigatorScope
+        private set
+
+    internal lateinit var layoutCoroutineScope: CoroutineScope
+        private set
+
+    private var layoutCompleted: Boolean = false
+
+
+    internal fun layout(width: Int, height: Int) {
+        val viewport = IntSize(width, height)
+
+        val isFirstLayout = !::currentLayout.isInitialized
+
+        if (!isFirstLayout && currentLayout.viewport == viewport) {
+            return
         }
 
-    private val layoutFactory: LayoutFactory =
-        LayoutFactory(
-            publication,
-            links,
-            defaultSpreadStateFactories
+        layoutCompleted = false
+
+        Timber.v("New layout ${viewport.width} ${viewport.height}.")
+
+        if (::layoutCoroutineScope.isInitialized) {
+            layoutCoroutineScope.cancel()
+        }
+
+        currentLayout =
+            layoutFactory.layout(viewport)
+
+        viewerState =
+            LazyViewerState(
+                isVertical = currentLayout.isVertical,
+                isPaginated = currentLayout.isPaginated,
+                initialFirstVisibleItemIndex = 0,
+                initialFirstVisibleItemScrollOffset = 0,
+                initialScale = 1f
+            )
+
+        navigatorScope =
+            NavigatorScope(viewerState, currentLayout)
+
+        layoutCoroutineScope =
+            MainScope()
+
+        layoutCoroutineScope.launch {
+            go(_currentLocator.value)
+                .onSuccess {
+                    Timber.v("Locator ${currentLocator.value} successfully restored.")
+                }
+                .onFailure { exception ->
+                    Timber.e(exception)
+                }
+            layoutCompleted = true
+        }
+
+        layoutCoroutineScope.launch {
+            snapshotFlow {
+                val currentIndex = viewerState.firstVisibleItemIndex
+                val link = links[currentIndex]
+                val spread = currentLayout.spreadStates[currentIndex]
+                val basicLocator = requireNotNull(publication.locatorFromLink(link))
+                basicLocator.copy(locations = spread.locations.value)
+            }.collect { locator ->
+                if (layoutCompleted) {
+                    _currentLocator.value = locator
+                }
+            }
+        }
+    }
+
+    private val _currentLocator: MutableStateFlow<Locator> =
+        MutableStateFlow(
+            initialLocator
+                ?: publication.locatorFromLink(publication.readingOrder.first())!!
         )
 
-    internal var layout: LayoutFactory.Layout =
-        layoutFactory.createLayout()
+    val readingProgression: ReadingProgression
+        get() = currentLayout.readingProgression
 
-    internal var viewerState: LazyViewerState =
-        LazyViewerState(
-            isVertical = layout.isVertical,
-            isPaginated = layout.isPaginated,
-            initialFirstVisibleItemIndex = 0,
-            initialFirstVisibleItemScrollOffset = 0,
-            initialScale = 1f
-        )
-
-    internal val spreadStates: List<SpreadState>
-        get() = layout.spreadStates
-
-
-    val readingProgression: ReadingProgression =
-        layout.readingProgression
-
+    val currentLocator: StateFlow<Locator>
+        get() = _currentLocator
 
     suspend fun go(locator: Locator): Try<Unit, Exception> {
         val itemIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
             ?: return Try.failure(Exception.InvalidArgument("Invalid href ${locator.href}."))
         viewerState.scrollToItem(itemIndex)
+        currentLayout.spreadStates[itemIndex].go(locator)
         return Try.success(Unit)
     }
 
@@ -59,35 +121,6 @@ class NavigatorState private constructor(
             ?: return Try.failure(Exception.InvalidArgument("Resource not found at ${link.href}."))
         return go(locator)
     }
-
-    suspend fun goForward(): Try<Unit, Exception> {
-        val currentItemIndex = viewerState.firstVisibleItemIndex
-        val currentSpread = layout.spreadStates[currentItemIndex]
-        if (currentSpread.goForward()) {
-            return Try.success(Unit)
-        }
-
-        if (currentItemIndex + 1 == links.size) {
-            return Try.failure(Exception.InvalidState("Reached end."))
-        }
-        viewerState.scrollToItem(currentItemIndex + 1)
-        return Try.success(Unit)
-    }
-
-    suspend fun goBackward(): Try<Unit, Exception> {
-        val currentItemIndex = viewerState.firstVisibleItemIndex
-        val currentSpread = layout.spreadStates[currentItemIndex]
-        if (currentSpread.goBackward()) {
-            return Try.success(Unit)
-        }
-
-        if (currentItemIndex == 0) {
-            return Try.failure(Exception.InvalidState("Reached beginning."))
-        }
-        viewerState.scrollToItem(currentItemIndex - 1)
-        return Try.success(Unit)
-    }
-
 
     sealed class Exception(override val message: String) : kotlin.Exception(message) {
 
@@ -100,12 +133,12 @@ class NavigatorState private constructor(
 
         suspend fun create(
             publication: Publication,
+            initialLocator: Locator? = null,
             links: List<Link> = publication.readingOrder,
         ): NavigatorState {
-            return NavigatorState(
-                publication,
-                preprocessLinks(links, publication)
-            )
+            val preprocessedLinks = preprocessLinks(links, publication)
+            val layoutFactory = LayoutFactory(publication, preprocessedLinks)
+            return NavigatorState(publication, preprocessedLinks, layoutFactory, initialLocator)
         }
 
         private suspend fun preprocessLinks(links: List<Link>, publication: Publication): List<Link> =

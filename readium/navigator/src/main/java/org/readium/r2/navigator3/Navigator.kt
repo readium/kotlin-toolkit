@@ -16,80 +16,98 @@ import org.readium.r2.navigator3.core.viewer.LazyPager
 import org.readium.r2.navigator3.core.viewer.LazyScroller
 import org.readium.r2.navigator3.html.HtmlSpread
 import org.readium.r2.navigator3.html.HtmlSpreadState
+import org.readium.r2.navigator3.image.ImageSpread
 import org.readium.r2.navigator3.image.ImageSpreadState
-import org.readium.r2.navigator3.image.SingleImageResource
 import org.readium.r2.shared.publication.Publication
+import timber.log.Timber
 
 @Composable
 fun Navigator(
-    modifier: Modifier = Modifier,
     state: NavigatorState,
-    onTap: ((Offset) -> Unit)? = null,
-    onDoubleTap: ((Offset) -> Unit)? = null
+    onTap: ((NavigatorScope).(Offset) -> Unit)? = null,
+    onDoubleTap: ((NavigatorScope).(Offset) -> Unit)? = null
 ) {
-    val isVertical = state.layout.isVertical
+    BoxWithConstraints(
+        propagateMinConstraints = true
+    ) {
+        state.layout(constraints.maxWidth, constraints.maxHeight)
 
-    val reverseDirection = state.layout.reverseDirection
+        val isVertical = state.currentLayout.isVertical
 
-    val horizontalArrangement = if (!reverseDirection) Arrangement.Start else Arrangement.End
+        val reverseDirection = state.currentLayout.reverseDirection
 
-    val horizontalAlignment = Alignment.CenterHorizontally
+        val horizontalArrangement = if (!reverseDirection) Arrangement.Start else Arrangement.End
 
-    val verticalArrangement = if (!reverseDirection) Arrangement.Top else Arrangement.Bottom
+        val horizontalAlignment = Alignment.CenterHorizontally
 
-    val verticalAlignment = Alignment.CenterVertically
+        val verticalArrangement = if (!reverseDirection) Arrangement.Top else Arrangement.Bottom
 
-    if (state.layout.isPaginated) {
-        LazyPager(
-            modifier = modifier,
-            isVertical = isVertical,
-            state = state.viewerState,
-            contentPadding = PaddingValues(0.dp),
-            reverseDirection = reverseDirection,
-            horizontalArrangement = horizontalArrangement,
-            horizontalAlignment =  horizontalAlignment,
-            verticalArrangement = verticalArrangement,
-            verticalAlignment = verticalAlignment,
-            onTap = onTap,
-            onDoubleTap = onDoubleTap,
-            count = state.links.size
-        ) { index, scaleState ->
-            Spread(
-                state.publication,
-                state.layout, index,
-                scaleState,
-                onTap,
-                onDoubleTap
-            )
-        }
-    } else {
-        val itemSize: (Int) -> Size = { index ->
-            with(state.links[index]) {
-                Size(width!!.toFloat(), height!!.toFloat())
+        val verticalAlignment = Alignment.CenterVertically
+
+        val onTapWithScope: (Offset) -> Unit =
+            { offset: Offset ->
+                Timber.v("layoutInfo ${state.viewerState.lazyListState.layoutInfo.viewportStartOffset} ${state.viewerState.lazyListState.layoutInfo.viewportEndOffset} ")
+                state.viewerState.lazyListState.layoutInfo.visibleItemsInfo.forEach {
+                    Timber.v("itemLayoutInfo ${it.index} ${it.key} ${it.offset} ${it.size}")
+                }
+                onTap?.invoke(state.navigatorScope, offset) }
+
+        val onDoubleTapWithScope: (Offset) -> Unit =
+            { offset: Offset -> onDoubleTap?.invoke(state.navigatorScope, offset) }
+
+        if (state.currentLayout.isPaginated) {
+            LazyPager(
+                modifier = Modifier,
+                isVertical = isVertical,
+                state = state.viewerState,
+                contentPadding = PaddingValues(0.dp),
+                reverseDirection = reverseDirection,
+                horizontalArrangement = horizontalArrangement,
+                horizontalAlignment =  horizontalAlignment,
+                verticalArrangement = verticalArrangement,
+                verticalAlignment = verticalAlignment,
+                userScrollable = state.currentLayout.viewerScrollable,
+                onTap = onTapWithScope,
+                onDoubleTap = onDoubleTapWithScope,
+                count = state.links.size
+            ) { index, scaleState ->
+                Spread(
+                    state.publication,
+                    state.currentLayout, index,
+                    scaleState,
+                    onTapWithScope,
+                    onDoubleTapWithScope
+                )
             }
-        }
+        } else {
+            val itemSize: (Int) -> Size = { index ->
+                with(state.links[index]) {
+                    Size(width!!.toFloat(), height!!.toFloat())
+                }
+            }
 
-        LazyScroller(
-            modifier = modifier,
-            isVertical = isVertical,
-            state = state.viewerState,
-            contentPadding = PaddingValues(0.dp),
-            reverseDirection = reverseDirection,
-            horizontalArrangement = horizontalArrangement,
-            horizontalAlignment =  horizontalAlignment,
-            verticalArrangement = verticalArrangement,
-            verticalAlignment = verticalAlignment,
-            count = state.links.size,
-            itemSize = itemSize
-        ) { index ->
-            Spread(
-                state.publication,
-                state.layout,
-                index,
-                state.viewerState.zoomState.scaleState,
-                onTap,
-                onDoubleTap
-            )
+            LazyScroller(
+                modifier = Modifier,
+                isVertical = isVertical,
+                state = state.viewerState,
+                contentPadding = PaddingValues(0.dp),
+                reverseDirection = reverseDirection,
+                horizontalArrangement = horizontalArrangement,
+                horizontalAlignment =  horizontalAlignment,
+                verticalArrangement = verticalArrangement,
+                verticalAlignment = verticalAlignment,
+                count = state.links.size,
+                itemSize = itemSize
+            ) { index ->
+                Spread(
+                    state.publication,
+                    state.currentLayout,
+                    index,
+                    state.viewerState.zoomState.scaleState,
+                    onTapWithScope,
+                    onDoubleTapWithScope
+                )
+            }
         }
     }
 }
@@ -105,7 +123,7 @@ private fun Spread(
 ) {
     when (val spread = layout.spreadStates[index]) {
         is ImageSpreadState ->
-            SingleImageResource(publication, spread.link, scaleState, layout.isPaginated)
+            ImageSpread(publication, spread.link, scaleState, layout.isPaginated)
         is HtmlSpreadState ->
             HtmlSpread(publication, spread.link, layout.isPaginated, spread, onTap, onDoubleTap)
     }
@@ -130,4 +148,3 @@ fun TestContent() {
         )
     }
 }
-

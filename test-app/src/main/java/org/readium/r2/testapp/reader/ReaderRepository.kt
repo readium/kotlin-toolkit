@@ -12,8 +12,6 @@ import org.json.JSONObject
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.navigator3.NavigatorState
-import org.readium.r2.navigator3.Overflow
-import org.readium.r2.navigator3.ReadingProgression
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -104,7 +102,7 @@ class ReaderRepository(
         initialLocator: Locator?
     ): ComposeVisualReaderInitData {
         val navigatorState =
-            NavigatorState.create(publication)
+            NavigatorState.create(publication, initialLocator)
         return ComposeVisualReaderInitData(bookId, publication, navigatorState)
     }
 

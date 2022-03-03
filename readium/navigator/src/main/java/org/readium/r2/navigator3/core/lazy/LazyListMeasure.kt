@@ -99,6 +99,8 @@ internal fun measureLazyList(
 
         // define min and max offsets (min offset currently includes startPadding)
         val minOffset = -startContentPadding
+
+        //FIXED: Jetpack Compose bug fix: https://issuetracker.google.com/issues/221713737
         val maxOffset = mainAxisMaxSize
 
         // max of cross axis sizes of all visible items

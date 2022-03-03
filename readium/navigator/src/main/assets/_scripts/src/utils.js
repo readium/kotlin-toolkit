@@ -6,6 +6,15 @@
 
 import { TextQuoteAnchor } from "./vendor/hypothesis/anchoring/types";
 
+const resizeObserver = new ResizeObserver((entries) => {
+  Android.onSizeChanged(
+    document.scrollingElement.scrollWidth,
+    document.scrollingElement.scrollHeight
+  );
+});
+
+resizeObserver.observe(document.scrollingElement);
+
 // Catch JS errors to log them in the app.
 window.addEventListener(
   "error",

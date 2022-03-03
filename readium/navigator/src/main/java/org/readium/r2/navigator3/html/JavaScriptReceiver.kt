@@ -1,6 +1,5 @@
 package org.readium.r2.navigator3.html
 
-import android.webkit.WebView
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntSize
 import org.json.JSONObject
@@ -11,7 +10,8 @@ import timber.log.Timber
 internal class JavaScriptReceiver(
     private val viewportSize: IntSize,
     private val onTap: ((Offset) -> Unit)?,
-    private val onDoubleTap: ((Offset) -> Unit)?
+    private val onDoubleTap: ((Offset) -> Unit)?,
+    private val onSizeChangedCallback: (Int, Int) -> Unit
 ){
     @android.webkit.JavascriptInterface
     fun getViewportWidth(): Int {
@@ -56,5 +56,10 @@ internal class JavaScriptReceiver(
         val event = TapEvent.fromJSON(eventJson) ?: return false
         onTap?.invoke(event.point)
         return true
+    }
+
+    @android.webkit.JavascriptInterface
+    fun onSizeChanged(width: Int, height: Int) {
+      onSizeChangedCallback.invoke(width, height)
     }
 }

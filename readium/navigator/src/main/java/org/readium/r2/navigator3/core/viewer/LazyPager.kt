@@ -41,6 +41,7 @@ internal fun LazyPager(
     horizontalArrangement: Arrangement.Horizontal? = null,
     verticalAlignment: Alignment.Vertical? = null,
     horizontalAlignment: Alignment.Horizontal? = null,
+    userScrollable: Boolean = true,
     count: Int,
     onTap: ((Offset) -> Unit)?,
     onDoubleTap: ((Offset) -> Unit)?,
@@ -63,6 +64,7 @@ internal fun LazyPager(
     LazyList(
         modifier = modifier
             .scrollable(
+                enabled = userScrollable,
                 horizontalState = if (isVertical) dummyScrollableState else state.lazyListState,
                 verticalState = if (isVertical) state.lazyListState else dummyScrollableState,
                 reverseDirection = reverseScrollDirection,
@@ -70,8 +72,8 @@ internal fun LazyPager(
                 flingBehavior = flingBehavior
             )
             .tappable(
-                enabled = onTap != null,
-                onTap = { Timber.d("tap detected"); onTap?.invoke(it)},
+                enabled = onTap != null  || onDoubleTap != null,
+                onTap = onTap,
                 onDoubleTap = onDoubleTap
             ),
         stateOfItemsProvider = rememberStateOfItemsProvider {

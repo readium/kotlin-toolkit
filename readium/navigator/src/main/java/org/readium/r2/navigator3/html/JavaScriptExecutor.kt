@@ -29,7 +29,17 @@ internal class JavaScriptExecutor {
         return future
     }
 
-    @UiThread
+   @UiThread
+   fun doNothing(): ListenableFuture<Unit> {
+       val future = this.executeJavascript("true;")
+       return Futures.transform(
+           future,
+           { },
+           MoreExecutors.directExecutor()
+       )
+   }
+
+   @UiThread
    fun scrollRight(): ListenableFuture<Boolean> {
         val future = this.executeJavascript("readium.scrollRight();")
         return Futures.transform(
@@ -57,6 +67,11 @@ internal class JavaScriptExecutor {
             },
             MoreExecutors.directExecutor()
         )
+    }
+
+    @UiThread
+    fun scrollToProgression(progression: Float): ListenableFuture<String> {
+        return this.executeJavascript("readium.scrollToPosition($progression);")
     }
 
     @UiThread
@@ -143,6 +158,13 @@ internal class JavaScriptExecutor {
         value: String
     ): ListenableFuture<String> {
         return this.executeJavascript("readium.setProperty(\"--USER__${name}\", \"${value}\");")
+    }
+
+    @UiThread
+    fun setViewportWidth(
+        value: Int
+    ): ListenableFuture<String> {
+        return this.executeJavascript("readium.setProperty(\"--RS__viewportWidth\", \"${value}px\");")
     }
 }
 

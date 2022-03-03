@@ -31,6 +31,7 @@ import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
+import timber.log.Timber
 
 @OptIn(Search::class, ExperimentalDecorator::class, ExperimentalCoroutinesApi::class, ExperimentalAudiobook::class)
 class ReaderViewModel(
@@ -52,6 +53,7 @@ class ReaderViewModel(
 
 
     fun saveProgression(locator: Locator) = viewModelScope.launch {
+        Timber.v("Saving locator $locator.")
         bookRepository.saveProgression(locator, bookId)
     }
 

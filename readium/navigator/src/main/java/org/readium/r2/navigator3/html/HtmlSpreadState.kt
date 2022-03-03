@@ -1,32 +1,42 @@
 package org.readium.r2.navigator3.html
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.unit.IntSize
 import org.readium.r2.navigator3.SpreadState
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-
-internal typealias JavaScriptCommand = (JavaScriptExecutor).() -> Unit
 
 internal class HtmlSpreadState(
     val publication: Publication,
     val link: Link,
-    val pendingCommands: MutableState<List<JavaScriptCommand>>
+    val viewportSize: IntSize,
+    val offset: MutableState<Int>,
 ): SpreadState {
 
     var canScrollRight: Boolean = false
     var canScrollLeft: Boolean = false
+    var horizontalRange: MutableState<Int?> = mutableStateOf(null)
+    var verticalRange: Int? = null
+    val pendingProgression: MutableState<Double?> = mutableStateOf(null)
+
+    override val locations: State<Locator.Locations> = derivedStateOf {
+        val progression = horizontalRange.value?.let { range ->
+            (offset.value / range.toDouble()).coerceIn(0.0, 1.0)
+        } ?: 0.0
+        Locator.Locations(progression = progression)
+    }
 
     override suspend fun goForward(): Boolean {
         if (!canScrollRight) {
             return false
         }
 
-        val scrollRight: (JavaScriptExecutor).() -> Unit = {
-            scrollRight()
-        }
-
-        pendingCommands.value = pendingCommands.value + scrollRight
+        pendingProgression.value = null
+        offset.value += viewportSize.width
 
         return true
     }
@@ -36,18 +46,29 @@ internal class HtmlSpreadState(
             return false
         }
 
-        val scrollLeft: (JavaScriptExecutor).() -> Unit = {
-            scrollLeft()
-        }
-
-        pendingCommands.value = pendingCommands.value + scrollLeft
-
+        pendingProgression.value = null
+        offset.value -= viewportSize.width
         return true
+    }
+
+    override suspend fun goBeginning() {
+        pendingProgression.value = null
+        offset.value = 0
+    }
+
+    override suspend fun goEnd() {
+        pendingProgression.value = 1.0
+    }
+
+    override suspend fun go(locator: Locator) {
+        val progression = locator.locations.progression ?: return
+        pendingProgression.value = progression
     }
 }
 
 internal class HtmlSpreadStateFactory(
-    private val publication: Publication
+    private val publication: Publication,
+    private val viewportSize: IntSize
 ): SpreadState.Factory {
 
     override fun createSpread(links: List<Link>): Pair<SpreadState, List<Link>>? {
@@ -58,10 +79,7 @@ internal class HtmlSpreadStateFactory(
             return null
         }
 
-        val stateOfPendingCommands: MutableState<List<JavaScriptCommand>> =
-            mutableStateOf(emptyList())
-
-        val spread = HtmlSpreadState(publication, first, stateOfPendingCommands)
+        val spread = HtmlSpreadState(publication, first, viewportSize, mutableStateOf(0))
         return Pair(spread, links.subList(1, links.size))
     }
 }

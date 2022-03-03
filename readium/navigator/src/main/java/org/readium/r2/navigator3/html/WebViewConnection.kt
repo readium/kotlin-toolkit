@@ -142,9 +142,9 @@ internal class WebViewConnection private constructor(
              * Disable manual scrolling on the web view. Scrolling is controlled via the javascript API.
              */
 
-            /*webView.setOnTouchListener { v, event ->
+            webView.setOnTouchListener { v, event ->
                 event.action == MotionEvent.ACTION_MOVE
-            }*/
+            }
 
             webView.addJavascriptInterface(jsReceiver, "Android")
 
