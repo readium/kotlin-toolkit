@@ -9,61 +9,119 @@ import org.readium.r2.navigator3.SpreadState
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
+import kotlin.math.roundToInt
 
 internal class HtmlSpreadState(
     val publication: Publication,
     val link: Link,
     val viewportSize: IntSize,
-    val offset: MutableState<Int>,
 ): SpreadState {
 
-    var canScrollRight: Boolean = false
-    var canScrollLeft: Boolean = false
-    var horizontalRange: MutableState<Int?> = mutableStateOf(null)
-    var verticalRange: Int? = null
-    val pendingProgression: MutableState<Double?> = mutableStateOf(null)
+    data class ScrollData(
+        val offset: Int,
+        val range: Int,
+        val extent: Int
+    ) {
+        val maxOffset: Int
+            get() = range - extent - 1
+
+        val progression: Double
+            get() = (offset.toDouble() / range.toDouble())
+                .coerceIn(0.0, 1.0)
+
+        fun canScrollForward(): Boolean =
+            offset < maxOffset
+
+        fun canScrollBackward(): Boolean =
+            offset > 0
+    }
+
+    val horizontalScrollData: MutableState<ScrollData?> =
+        mutableStateOf(null)
+
+    val verticalScrollData: MutableState<ScrollData?> =
+        mutableStateOf(null)
 
     override val locations: State<Locator.Locations> = derivedStateOf {
-        val progression = horizontalRange.value?.let { range ->
-            (offset.value / range.toDouble()).coerceIn(0.0, 1.0)
-        } ?: 0.0
-        Locator.Locations(progression = progression)
+        horizontalScrollData.value
+            ?.let { Locator.Locations(progression = it.progression) }
+            ?: Locator.Locations()
     }
 
-    override suspend fun goForward(): Boolean {
-        if (!canScrollRight) {
-            return false
+    override suspend fun goForward(): Boolean =
+        submitScrollCommand { scrollData ->
+            if (!scrollData.canScrollForward()) {
+                false
+            } else {
+                val newOffset = (scrollData.offset + viewportSize.width)
+                    .coerceAtMost(scrollData.maxOffset)
+                horizontalScrollData.value = scrollData.copy(offset = newOffset)
+                true
+            }
         }
 
-        pendingProgression.value = null
-        offset.value += viewportSize.width
-
-        return true
-    }
-
-    override suspend fun goBackward(): Boolean {
-        if (!canScrollLeft) {
-            return false
+    override suspend fun goBackward(): Boolean =
+        submitScrollCommand { scrollData ->
+            if (!scrollData.canScrollBackward()) {
+                false
+            } else {
+                val newOffset = (scrollData.offset - viewportSize.width)
+                    .coerceAtLeast(0)
+                horizontalScrollData.value = scrollData.copy(offset = newOffset)
+                true
+            }
         }
 
-        pendingProgression.value = null
-        offset.value -= viewportSize.width
-        return true
+    override suspend fun goBeginning(): Boolean =
+        submitScrollCommand { scrollData ->
+            horizontalScrollData.value = scrollData.copy(offset = 0)
+            true
+        }
+
+    override suspend fun goEnd(): Boolean =
+        submitScrollCommand { scrollData ->
+            horizontalScrollData.value = scrollData.copy(offset = scrollData.maxOffset)
+            true
+        }
+
+    override suspend fun go(locator: Locator): Boolean =
+        submitScrollCommand { scrollData ->
+            val progression = locator.locations.progression ?: 0.0
+            val offset = (scrollData.range * progression).roundToInt()
+            val value = offset + 1
+            val newOffset = (value + - (value % scrollData.extent))
+            horizontalScrollData.value = scrollData.copy(offset = newOffset)
+            true
+        }
+
+    private val queueExecutor: ExecutorService =
+        Executors.newSingleThreadExecutor()
+
+    private fun waitForScrollData(): ScrollData? {
+        var i = 0
+        while (horizontalScrollData.value == null && i < 300) {
+            Thread.sleep(100)
+            i++
+        }
+        return horizontalScrollData.value
     }
 
-    override suspend fun goBeginning() {
-        pendingProgression.value = null
-        offset.value = 0
-    }
-
-    override suspend fun goEnd() {
-        pendingProgression.value = 1.0
-    }
-
-    override suspend fun go(locator: Locator) {
-        val progression = locator.locations.progression ?: return
-        pendingProgression.value = progression
-    }
+    private suspend fun submitScrollCommand(command: (ScrollData) -> Boolean): Boolean =
+        suspendCoroutine { continuation ->
+            queueExecutor.submit {
+                val scrollData = waitForScrollData()
+                if (scrollData == null) {
+                    continuation.resume(false)
+                } else {
+                    val result = command(scrollData)
+                    continuation.resume(result)
+                }
+            }
+        }
 }
 
 internal class HtmlSpreadStateFactory(
@@ -79,7 +137,7 @@ internal class HtmlSpreadStateFactory(
             return null
         }
 
-        val spread = HtmlSpreadState(publication, first, viewportSize, mutableStateOf(0))
+        val spread = HtmlSpreadState(publication, first, viewportSize)
         return Pair(spread, links.subList(1, links.size))
     }
 }

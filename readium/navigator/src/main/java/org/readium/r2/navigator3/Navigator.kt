@@ -24,8 +24,8 @@ import timber.log.Timber
 @Composable
 fun Navigator(
     state: NavigatorState,
-    onTap: ((NavigatorScope).(Offset) -> Unit)? = null,
-    onDoubleTap: ((NavigatorScope).(Offset) -> Unit)? = null
+    onTap: ((Offset) -> Unit)? = null,
+    onDoubleTap: ((Offset) -> Unit)? = null
 ) {
     BoxWithConstraints(
         propagateMinConstraints = true
@@ -44,16 +44,13 @@ fun Navigator(
 
         val verticalAlignment = Alignment.CenterVertically
 
-        val onTapWithScope: (Offset) -> Unit =
+        val onTapWithLog: (Offset) -> Unit =
             { offset: Offset ->
                 Timber.v("layoutInfo ${state.viewerState.lazyListState.layoutInfo.viewportStartOffset} ${state.viewerState.lazyListState.layoutInfo.viewportEndOffset} ")
                 state.viewerState.lazyListState.layoutInfo.visibleItemsInfo.forEach {
                     Timber.v("itemLayoutInfo ${it.index} ${it.key} ${it.offset} ${it.size}")
                 }
-                onTap?.invoke(state.navigatorScope, offset) }
-
-        val onDoubleTapWithScope: (Offset) -> Unit =
-            { offset: Offset -> onDoubleTap?.invoke(state.navigatorScope, offset) }
+                onTap?.invoke(offset) }
 
         if (state.currentLayout.isPaginated) {
             LazyPager(
@@ -67,16 +64,16 @@ fun Navigator(
                 verticalArrangement = verticalArrangement,
                 verticalAlignment = verticalAlignment,
                 userScrollable = state.currentLayout.viewerScrollable,
-                onTap = onTapWithScope,
-                onDoubleTap = onDoubleTapWithScope,
+                onTap = onTapWithLog,
+                onDoubleTap = onDoubleTap,
                 count = state.links.size
             ) { index, scaleState ->
                 Spread(
                     state.publication,
                     state.currentLayout, index,
                     scaleState,
-                    onTapWithScope,
-                    onDoubleTapWithScope
+                    onTapWithLog,
+                    onDoubleTap
                 )
             }
         } else {
@@ -104,8 +101,8 @@ fun Navigator(
                     state.currentLayout,
                     index,
                     state.viewerState.zoomState.scaleState,
-                    onTapWithScope,
-                    onDoubleTapWithScope
+                    onTapWithLog,
+                    onDoubleTap
                 )
             }
         }

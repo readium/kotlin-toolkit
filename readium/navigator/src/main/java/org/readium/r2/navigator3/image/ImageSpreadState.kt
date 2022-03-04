@@ -18,11 +18,14 @@ class ImageSpreadState(
     override suspend fun goBackward(): Boolean =
         false
 
-    override suspend fun goBeginning() {}
+    override suspend fun goBeginning(): Boolean =
+        false
 
-    override suspend fun goEnd() {}
+    override suspend fun goEnd(): Boolean =
+        false
 
-    override suspend fun go(locator: Locator) {}
+    override suspend fun go(locator: Locator): Boolean =
+        false
 
     override val locations: State<Locator.Locations> =
         mutableStateOf(Locator.Locations())

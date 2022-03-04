@@ -27,10 +27,7 @@ class ComposeReaderFragment : VisualReaderFragment(), VisualNavigator.Listener {
             setContent {
                 Navigator(
                     state = remember { readerData.navigatorState },
-                    onTap = { offset ->
-                        navigator.navigatorScope = this
-                        onTap(PointF(offset.x, offset.y))
-                    }
+                    onTap = { offset -> onTap(PointF(offset.x, offset.y)) }
                 )
             }
         }
