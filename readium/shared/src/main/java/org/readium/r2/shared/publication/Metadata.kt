@@ -154,6 +154,14 @@ data class Metadata(
         belongsTo["series"] ?: emptyList()
 
     /**
+     * Returns the [Locale] resolved from the declared BCP 47 language.
+     */
+    @IgnoredOnParcel
+    val locale: Locale? by lazy {
+        languages.firstOrNull()?.let { Locale.forLanguageTag(it) }
+    }
+
+    /**
      * Computes a [ReadingProgression] when the value of [readingProgression] is set to
      * auto, using the publication language.
      *

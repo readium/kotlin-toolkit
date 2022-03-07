@@ -9,17 +9,17 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 @RunWith(RobolectricTestRunner::class)
-class NaiveUnitTextContentTokenizerTest {
+class NaiveTokenizerTest {
 
     @Test
     fun tokenizeEmptyContent() = runBlocking {
-        val tokenizer = NaiveUnitTextContentTokenizer(unit = TextContentUnit.Sentence, contextLength = 5)
+        val tokenizer = NaiveTokenizer(unit = TextUnit.Sentence, contextLength = 5)
         assertEquals(emptyList(), tokenizer.tokenize("").getOrThrow())
     }
 
     @Test
     fun tokenizeByCharacters() = runBlocking {
-        val tokenizer = NaiveUnitTextContentTokenizer(unit = TextContentUnit.Character, contextLength = 2)
+        val tokenizer = NaiveTokenizer(unit = TextUnit.Character, contextLength = 2)
         val result = tokenizer.tokenize("He said: \n\"What?\"").getOrThrow()
         assertContentEquals(
             listOf(
@@ -47,7 +47,7 @@ class NaiveUnitTextContentTokenizerTest {
 
     @Test
     fun tokenizeByWords() = runBlocking {
-        val tokenizer = NaiveUnitTextContentTokenizer(unit = TextContentUnit.Word, contextLength = 2)
+        val tokenizer = NaiveTokenizer(unit = TextUnit.Word, contextLength = 2)
         val result = tokenizer.tokenize("He said: \n\"What?\"").getOrThrow()
         assertContentEquals(
             listOf(
@@ -61,7 +61,7 @@ class NaiveUnitTextContentTokenizerTest {
 
     @Test
     fun tokenizeBySentences() = runBlocking {
-        val tokenizer = NaiveUnitTextContentTokenizer(unit = TextContentUnit.Sentence, contextLength = 5)
+        val tokenizer = NaiveTokenizer(unit = TextUnit.Sentence, contextLength = 5)
         val result = tokenizer.tokenize("""
             Alice said, looking above: "and what is the use of a book?". So she was considering (as well as she could), whether making a daisy-chain would be worth the trouble
             In the end, she went ahead.
@@ -85,7 +85,7 @@ class NaiveUnitTextContentTokenizerTest {
 
     @Test
     fun tokenizeByParagraphIsNotSupported() = runBlocking {
-        val tokenizer = NaiveUnitTextContentTokenizer(unit = TextContentUnit.Paragraph, contextLength = 5)
+        val tokenizer = NaiveTokenizer(unit = TextUnit.Paragraph, contextLength = 5)
         val result = tokenizer.tokenize("""
             Alice said, looking above: "and what is the use of a book?". So she was considering (as well as she could), whether making a daisy-chain would be worth the trouble
             In the end, she went ahead.
