@@ -295,6 +295,13 @@ class R2EpubPageFragment : Fragment() {
         }
     }
 
+    fun loadLocator(locator: Locator) =
+        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+            val webView = requireNotNull(webView)
+            val epubNavigator = requireNotNull(webView.navigator as? EpubNavigatorFragment)
+            loadLocator(webView, epubNavigator.readingProgression, locator)
+        }
+
     private suspend fun loadLocator(webView: R2WebView, readingProgression: ReadingProgression, locator: Locator) {
         val text = locator.text
         if (text.highlight != null) {
