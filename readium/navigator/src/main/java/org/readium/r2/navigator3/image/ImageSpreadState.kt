@@ -2,6 +2,7 @@ package org.readium.r2.navigator3.image
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import org.readium.r2.navigator3.ResourceState
 import org.readium.r2.navigator3.SpreadState
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -9,8 +10,8 @@ import org.readium.r2.shared.publication.Publication
 
 class ImageSpreadState(
     val publication: Publication,
-    val link: Link
-) : SpreadState {
+    override val link: Link
+) : SpreadState, ResourceState {
 
     override suspend fun goForward(): Boolean =
         false
@@ -29,6 +30,9 @@ class ImageSpreadState(
 
     override val locations: State<Locator.Locations> =
         mutableStateOf(Locator.Locations())
+
+    override val resources: List<ResourceState>
+        get() = listOf(this)
 }
 
 class ImageSpreadStateFactory(

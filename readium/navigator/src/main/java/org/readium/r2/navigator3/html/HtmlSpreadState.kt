@@ -5,6 +5,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.unit.IntSize
+import org.readium.r2.navigator3.ResourceState
 import org.readium.r2.navigator3.SpreadState
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -17,9 +18,9 @@ import kotlin.math.roundToInt
 
 internal class HtmlSpreadState(
     val publication: Publication,
-    val link: Link,
+    override val link: Link,
     val viewportSize: IntSize,
-): SpreadState {
+): SpreadState, ResourceState {
 
     data class ScrollData(
         val offset: Int,
@@ -51,6 +52,9 @@ internal class HtmlSpreadState(
             ?.let { Locator.Locations(progression = it.progression) }
             ?: Locator.Locations()
     }
+
+    override val resources: List<ResourceState>
+        get() = listOf(this)
 
     override suspend fun goForward(): Boolean =
         submitScrollCommand { scrollData ->

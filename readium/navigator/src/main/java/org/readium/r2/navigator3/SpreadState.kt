@@ -18,6 +18,8 @@ interface SpreadState {
 
     val locations: State<Locator.Locations>
 
+    val resources: List<ResourceState>
+
     interface Factory {
 
         fun createSpread(links: List<Link>): Pair<SpreadState, List<Link>>?

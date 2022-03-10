@@ -87,7 +87,7 @@ class NavigatorState private constructor(
     private val currentLocatorMutable: MutableStateFlow<Locator> =
         MutableStateFlow(Locator(href="#", type=""))
 
-    private  var nextLocator: Locator? =
+    private var nextLocator: Locator? =
         initialLocator ?: publication.locatorFromLink(publication.readingOrder.first())!!
 
     val readingProgression: ReadingProgression
@@ -95,23 +95,6 @@ class NavigatorState private constructor(
 
     val currentLocator: StateFlow<Locator>
         get() = currentLocatorMutable
-
-    suspend fun go(locator: Locator): Try<Unit, Exception> {
-        val itemIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
-            ?: return Try.failure(Exception.InvalidArgument("Invalid href ${locator.href}."))
-        nextLocator = locator
-        viewerState.scrollToItem(itemIndex)
-        currentLayout.spreadStates[itemIndex].go(locator)
-        updateLocator()
-        nextLocator = null
-        return Try.success(Unit)
-    }
-
-    suspend fun go(link: Link): Try<Unit, Exception>  {
-        val locator = publication.locatorFromLink(link)
-            ?: return Try.failure(Exception.InvalidArgument("Resource not found at ${link.href}."))
-        return go(locator)
-    }
 
     suspend fun goForward(): Try<Unit, Exception> {
         val currentItemIndex = viewerState.firstVisibleItemIndex
@@ -147,10 +130,33 @@ class NavigatorState private constructor(
         return Try.success(Unit)
     }
 
+    suspend fun go(link: Link): Try<Unit, Exception>  {
+        val locator = publication.locatorFromLink(link)
+            ?: return Try.failure(Exception.InvalidArgument("Resource not found at ${link.href}."))
+        return go(locator)
+    }
+
+    suspend fun go(locator: Locator): Try<Unit, Exception> {
+        val itemIndex = currentLayout.spreadStates.indexOfHref(locator.href)
+            ?: return Try.failure(Exception.InvalidArgument("Invalid href ${locator.href}."))
+        nextLocator = locator
+        viewerState.scrollToItem(itemIndex)
+        currentLayout.spreadStates[itemIndex].go(locator)
+        updateLocator()
+        nextLocator = null
+        return Try.success(Unit)
+    }
+
+    private fun List<SpreadState>.indexOfHref(href: String): Int? =
+        indexOfFirst { spread -> spread.containsHref(href) }
+
+    private fun SpreadState.containsHref(href: String): Boolean =
+        href in resources.map { resource -> resource.link.href }
+
     private fun updateLocator() {
         val currentIndex = viewerState.firstVisibleItemIndex
-        val link = links[currentIndex]
         val spread = currentLayout.spreadStates[currentIndex]
+        val link = spread.resources.first().link
         val basicLocator = requireNotNull(publication.locatorFromLink(link))
         val locator = basicLocator.copy(locations = spread.locations.value)
         currentLocatorMutable.value = locator
