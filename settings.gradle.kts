@@ -36,6 +36,7 @@ include(":readium:shared")
 include(":readium:streamer")
 include(":readium:navigator")
 include(":readium:navigator-media2")
+include(":readium:navigator-tts")
 include(":readium:opds")
 include(":readium:lcp")
 

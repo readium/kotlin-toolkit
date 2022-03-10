@@ -1,3 +1,9 @@
+/*
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.shared.publication.services.iterator
 
 import org.readium.r2.shared.Search
@@ -21,7 +27,7 @@ sealed class TextIteratorException private constructor(
     class PublicationUnavailable(message: String) : TextIteratorException(message)
     class UnsupportedOption(message: String) : TextIteratorException(message)
     class UnsupportedResource(message: String, val link: Link) : TextIteratorException(message)
-    class ResourceError(message: String, val link: Link, cause: Resource.Exception) : TextIteratorException(message, cause)
+    class ResourceError(message: String, val link: Link, override val cause: Resource.Exception) : TextIteratorException(message, cause)
 }
 
 data class Text(

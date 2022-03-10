@@ -129,6 +129,15 @@ data class Locator(
             put("after", after)
         }
 
+        fun substring(start: Int, end: Int): Text {
+            highlight ?: return this
+            return copy(
+                before = (before ?: "") + highlight.substring(0, start),
+                highlight = highlight.substring(start, end),
+                after = highlight.substring(end) + (after ?: "")
+            )
+        }
+
         companion object {
 
             fun fromJSON(json: JSONObject?) = Text(
@@ -136,9 +145,7 @@ data class Locator(
                 highlight = json?.optNullableString("highlight"),
                 after = json?.optNullableString("after")
             )
-
         }
-
     }
 
     /**
