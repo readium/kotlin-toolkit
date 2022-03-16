@@ -62,7 +62,7 @@ function appendVirtualColumnIfNeeded() {
   }
 }
 
-var pageWidth = 1;
+export var pageWidth = 1;
 
 function onViewportWidthChanged() {
   // We can't rely on window.innerWidth for the pageWidth on Android, because if the
