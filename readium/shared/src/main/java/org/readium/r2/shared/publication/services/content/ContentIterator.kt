@@ -181,7 +181,7 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
     ) : NodeVisitor {
         val content = mutableListOf<Content>()
 
-        private var spansAcc = mutableListOf<Content.Text.Span>()
+        private val spansAcc = mutableListOf<Content.Text.Span>()
         private var textAcc = StringBuilder()
         private var wholeRawTextAcc: String = ""
         private var rawTextAcc: String = ""
@@ -197,17 +197,7 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
                 return
             }
 
-            if (node is TextNode) {
-                val language = node.language
-                if (currentLanguage != language) {
-                    flushSpan()
-                    currentLanguage = language
-                }
-
-                rawTextAcc += Parser.unescapeEntities(node.wholeText, false)
-                appendNormalisedText(node)
-
-            } else if (node is Element) {
+            if (node is Element) {
                 val tag = node.normalName()
                 when {
                     tag == "br" -> {
@@ -236,7 +226,9 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
                         }
                     }
                     node.isBlock -> {
-                        flushText()
+                        spansAcc.clear()
+                        textAcc.clear()
+                        rawTextAcc = ""
                         currentCssSelector = node.cssSelector()
                     }
                 }
@@ -246,6 +238,22 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
         override fun tail(node: Node, depth: Int) {
             if (ignoredNode == node) {
                 ignoredNode = null
+            }
+
+            if (node is TextNode) {
+                val language = node.language
+                if (currentLanguage != language) {
+                    flushSpan()
+                    currentLanguage = language
+                }
+
+                rawTextAcc += Parser.unescapeEntities(node.wholeText, false)
+                appendNormalisedText(node)
+
+            } else if (node is Element) {
+                if (node.isBlock) {
+                    flushText()
+                }
             }
         }
 
@@ -264,7 +272,7 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
             content.add(Content.Text(
                 spans = spansAcc.toList(),
             ))
-            spansAcc = mutableListOf()
+            spansAcc.clear()
         }
 
         private fun flushSpan() {
