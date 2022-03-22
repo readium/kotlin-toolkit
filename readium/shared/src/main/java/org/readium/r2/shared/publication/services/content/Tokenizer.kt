@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.publication.services.iterator
+package org.readium.r2.shared.publication.services.content
 
 import android.icu.text.BreakIterator
 import android.os.Build

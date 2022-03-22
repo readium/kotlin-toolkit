@@ -29,7 +29,7 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.*
-import org.readium.r2.shared.publication.services.iterator.TextIteratorService
+import org.readium.r2.shared.publication.services.content.TextIteratorService
 import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Ref
 import org.readium.r2.shared.util.mediatype.MediaType

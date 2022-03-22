@@ -158,7 +158,7 @@ data class Metadata(
      */
     @IgnoredOnParcel
     val locale: Locale? by lazy {
-        languages.firstOrNull()?.let { Locale.forLanguageTag(it) }
+        languages.firstOrNull()?.let { Locale.forLanguageTag(it.replace("_", "-")) }
     }
 
     /**

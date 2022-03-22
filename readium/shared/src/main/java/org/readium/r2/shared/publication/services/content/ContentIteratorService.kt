@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.publication.services.iterator
+package org.readium.r2.shared.publication.services.content
 
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.fetcher.DefaultResourceContentExtractorFactory
@@ -30,10 +30,17 @@ sealed class TextIteratorException private constructor(
     class ResourceError(message: String, val link: Link, override val cause: Resource.Exception) : TextIteratorException(message, cause)
 }
 
+/**
+ * @param text Sanitized text.
+ * @param language BCP 47 language tag.
+ * @param extras Additional context data specific to an implementation of a text iterator.
+ *        Readium does not use it.
+ */
 data class Text(
     val text: String,
-    val locator: Locator
-)
+    val locator: Locator,
+) {
+}
 
 enum class TextUnit {
     Character, Word, Sentence, Paragraph
