@@ -13,11 +13,11 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Try
 import java.util.*
 
-internal interface Tokenizer {
+interface Tokenizer {
     suspend fun tokenize(content: String): TextIteratorTry<List<Locator.Text>>
 }
 
-internal fun unitTextContentTokenizer(unit: TextUnit, locale: Locale?, contextLength: Int = 200): Tokenizer =
+fun unitTextContentTokenizer(unit: TextUnit, locale: Locale?, contextLength: Int = 200): Tokenizer =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
         IcuTokenizer(locale = locale, unit = unit, contextLength = contextLength)
     else

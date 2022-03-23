@@ -24,6 +24,7 @@ import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
+import java.util.*
 
 sealed class Content {
     data class Audio(
@@ -48,7 +49,10 @@ sealed class Content {
             val locator: Locator,
             val language: String?,
             val text: String,
-        )
+        ) {
+            val locale: Locale? get() =
+                language?.let { Locale.forLanguageTag(it.replace("_", "-")) }
+        }
 
         sealed class Style {
             class Heading(val level: Int) : Style()
