@@ -327,7 +327,8 @@ class EpubNavigatorFragment private constructor(
     }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
-        return go(link.toLocator(), animated, completion)
+        val locator = publication.locatorFromLink(link) ?: return false
+        return go(locator, animated, completion)
     }
 
     private fun run(commands: List<RunScriptCommand>) {
@@ -638,7 +639,9 @@ class EpubNavigatorFragment private constructor(
         get() = publication.metadata.effectiveReadingProgression
 
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
-    private val _currentLocator = MutableStateFlow(initialLocator ?: publication.readingOrder.first().toLocator())
+    private val _currentLocator = MutableStateFlow(initialLocator
+        ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
+    )
 
     /**
      * While scrolling we receive a lot of new current locations, so we use a coroutine job to

@@ -25,15 +25,14 @@ import org.readium.r2.shared.UserException
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentDrmManagementBinding
 import org.readium.r2.testapp.reader.ReaderViewModel
+import org.readium.r2.testapp.utils.viewLifecycle
 import timber.log.Timber
 import java.util.*
 
 class DrmManagementFragment : Fragment() {
 
     private lateinit var model: DrmManagementViewModel
-
-    private var _binding: FragmentDrmManagementBinding? = null
-    private val binding get() = _binding!!
+    private var binding: FragmentDrmManagementBinding by viewLifecycle()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +46,7 @@ class DrmManagementFragment : Fragment() {
         )
 
         val modelFactory = LcpManagementViewModel.Factory(license, renewListener)
-        model = ViewModelProvider(this, modelFactory).get(LcpManagementViewModel::class.java)
+        model = ViewModelProvider(this, modelFactory)[LcpManagementViewModel::class.java]
     }
 
     override fun onCreateView(
@@ -55,7 +54,7 @@ class DrmManagementFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentDrmManagementBinding.inflate(inflater, container, false)
+        binding = FragmentDrmManagementBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -128,11 +127,6 @@ class DrmManagementFragment : Fragment() {
                     }
                 }
                 .show()
-    }
-
-    override fun onDestroyView() {
-        _binding = null
-        super.onDestroyView()
     }
 }
 

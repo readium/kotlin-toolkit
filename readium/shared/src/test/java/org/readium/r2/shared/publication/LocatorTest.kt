@@ -60,29 +60,6 @@ class LocatorTest {
         assertNull(Locator.fromJSON(JSONObject("{ 'invalid': 'object' }")))
     }
 
-    @Test fun `create {Locator} from minimal {Link}`() {
-        assertEquals(
-            Locator(href = "http://locator", type = ""),
-            Link(href = "http://locator").toLocator()
-        )
-    }
-
-    @Test fun `create {Locator} from full {Link} with fragment`() {
-        assertEquals(
-            Locator(
-                href = "http://locator",
-                type = "text/html",
-                title = "My Link",
-                locations = Locator.Locations(fragments = listOf("page=42"))
-            ),
-            Link(
-                href = "http://locator#page=42",
-                type = "text/html",
-                title = "My Link"
-            ).toLocator()
-        )
-    }
-
     @Test fun `get {Locator} minimal JSON`() {
         assertJSONEquals(
             JSONObject("""{

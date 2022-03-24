@@ -11,10 +11,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.commitNow
-import androidx.lifecycle.ViewModelProvider
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.image.ImageNavigatorFragment
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
 
 class ImageReaderFragment : VisualReaderFragment(), ImageNavigatorFragment.Listener {
@@ -22,13 +20,15 @@ class ImageReaderFragment : VisualReaderFragment(), ImageNavigatorFragment.Liste
     override lateinit var navigator: Navigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val readerData = model.readerInitData as VisualReaderInitData
+
         childFragmentManager.fragmentFactory =
-            ImageNavigatorFragment.createFactory(publication, model.initialLocation, this)
+            ImageNavigatorFragment.createFactory(publication, readerData.initialLocation, this)
 
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view =  super.onCreateView(inflater, container, savedInstanceState)
         if (savedInstanceState == null) {
             childFragmentManager.commitNow {

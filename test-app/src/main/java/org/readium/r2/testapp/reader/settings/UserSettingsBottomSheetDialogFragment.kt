@@ -8,6 +8,7 @@ package org.readium.r2.testapp.reader.settings
 
 import androidx.compose.runtime.Composable
 import androidx.fragment.app.activityViewModels
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.ComposeBottomSheetDialogFragment
@@ -19,6 +20,6 @@ class UserSettingsBottomSheetDialogFragment : ComposeBottomSheetDialogFragment()
 
     @Composable
     override fun Content() {
-        UserSettingsView(presentation = requireNotNull(model.presentation))
+        UserSettingsView(presentation = runBlocking { model.presentation.await() })
     }
 }

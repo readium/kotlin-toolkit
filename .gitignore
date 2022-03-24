@@ -80,3 +80,5 @@ lint/reports/
 
 # Docs
 docs/readium
+docs/index.md
+docs/package-list

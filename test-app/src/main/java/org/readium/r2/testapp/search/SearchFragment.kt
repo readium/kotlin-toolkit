@@ -54,7 +54,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
             .onEach { binding.noResultLabel.isVisible = it.isEmpty() }
             .launchIn(viewScope)
 
-        viewModel.channel
+        viewModel.activityChannel
             .receive(viewLifecycleOwner) { event ->
                 when (event) {
                     ReaderViewModel.Event.StartNewSearch ->

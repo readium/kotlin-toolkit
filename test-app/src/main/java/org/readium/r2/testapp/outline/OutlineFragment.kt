@@ -24,13 +24,12 @@ import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentOutlineBinding
 import org.readium.r2.testapp.reader.ReaderActivity
 import org.readium.r2.testapp.reader.ReaderViewModel
+import org.readium.r2.testapp.utils.viewLifecycle
 
 class OutlineFragment : Fragment() {
 
-    lateinit var publication: Publication
-
-    private var _binding: FragmentOutlineBinding? = null
-    private val binding get() = _binding!!
+    private lateinit var publication: Publication
+    private var binding: FragmentOutlineBinding by viewLifecycle()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +52,7 @@ class OutlineFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentOutlineBinding.inflate(inflater, container, false)
+        binding = FragmentOutlineBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -67,11 +66,6 @@ class OutlineFragment : Fragment() {
 
         binding.outlinePager.adapter = OutlineFragmentStateAdapter(this, publication, outlines)
         TabLayoutMediator(binding.outlineTabLayout, binding.outlinePager) { tab, idx -> tab.setText(outlines[idx].label) }.attach()
-    }
-
-    override fun onDestroyView() {
-        _binding = null
-        super.onDestroyView()
     }
 }
 

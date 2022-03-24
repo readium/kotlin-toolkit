@@ -8,7 +8,6 @@ package org.readium.r2.testapp.reader
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.PointF
 import android.os.Bundle
 import android.view.*
 import android.view.accessibility.AccessibilityManager
@@ -22,35 +21,29 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
-import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.html.toCss
 import org.readium.r2.shared.APPEARANCE_REF
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.R2App
 import org.readium.r2.testapp.epub.UserSettings
 import org.readium.r2.testapp.search.SearchFragment
 import org.readium.r2.testapp.tts.ScreenReaderContract
 import org.readium.r2.testapp.tts.ScreenReaderFragment
 import org.readium.r2.testapp.utils.extensions.toDataUrl
-import org.readium.r2.testapp.utils.toggleSystemUi
-import java.net.URL
 
 @OptIn(ExperimentalDecorator::class)
 class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listener {
 
     override lateinit var navigator: Navigator
-    lateinit var navigatorFragment: EpubNavigatorFragment
+    private lateinit var navigatorFragment: EpubNavigatorFragment
 
     private lateinit var menuScreenReader: MenuItem
     private lateinit var menuSearch: MenuItem
@@ -64,8 +57,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     private var isExploreByTouchEnabled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        check(R2App.isServerStarted)
-
         val activity = requireActivity()
 
         if (savedInstanceState != null) {
@@ -73,13 +64,14 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             isSearchViewIconified = savedInstanceState.getBoolean(IS_SEARCH_VIEW_ICONIFIED)
         }
 
-        val baseUrl = checkNotNull(requireArguments().getString(BASE_URL_ARG))
+        val readerData = model.readerInitData as VisualReaderInitData
+        val baseUrl = checkNotNull(readerData.baseUrl).toString()
 
         childFragmentManager.fragmentFactory =
             EpubNavigatorFragment.createFactory(
                 publication = publication,
                 baseUrl = baseUrl,
-                initialLocator = model.initialLocation,
+                initialLocator = readerData.initialLocation,
                 listener = this,
                 config = EpubNavigatorFragment.Configuration().apply {
                     // Register the HTML template for our custom [DecorationStyleAnnotationMark].
@@ -115,7 +107,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
         val navigatorFragmentTag = getString(R.string.epub_navigator_tag)
 
@@ -245,6 +237,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
            R.id.search -> {
                super.onOptionsItemSelected(item)
            }
+
            R.id.screen_reader -> {
                if (isScreenReaderVisible) {
                    closeScreenReaderFragment()
@@ -289,21 +282,11 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 
     companion object {
 
-        private const val BASE_URL_ARG = "baseUrl"
-
         private const val SEARCH_FRAGMENT_TAG = "search"
 
         private const val IS_SCREEN_READER_VISIBLE_KEY = "isScreenReaderVisible"
 
         private const val IS_SEARCH_VIEW_ICONIFIED = "isSearchViewIconified"
-
-        fun newInstance(baseUrl: URL): EpubReaderFragment {
-            return EpubReaderFragment().apply {
-                arguments = Bundle().apply {
-                    putString(BASE_URL_ARG, baseUrl.toString())
-                }
-            }
-        }
     }
 }
 

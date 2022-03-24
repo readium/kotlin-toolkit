@@ -25,16 +25,18 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
     override lateinit var navigator: Navigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val readerData = model.readerInitData as VisualReaderInitData
+
         childFragmentManager.fragmentFactory = PdfNavigatorFragment.createFactory(
             publication = publication,
-            initialLocator = model.initialLocation,
+            initialLocator = readerData.initialLocation,
             listener = this,
         )
 
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
         if (savedInstanceState == null) {
             childFragmentManager.commitNow {

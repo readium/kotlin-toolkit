@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.epub
 
+import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -71,6 +72,17 @@ class EpubDeobfuscatorTest {
             "http://www.idpf.org/2008/embedding"
         ).readBlocking().getOrNull()
         assertThat(deobfuscatedRes).isEqualTo(font)
+    }
+
+    @Test
+    fun testIdpfDeobfuscationWithRange() {
+        runBlocking {
+            val deobfuscatedRes = deobfuscate(
+                "/deobfuscation/cut-cut.obf.woff",
+                "http://www.idpf.org/2008/embedding"
+            ).read(20L until 40L).getOrThrow()
+            assertThat(deobfuscatedRes).isEqualTo(font.copyOfRange(20, 40))
+        }
     }
 
     @Test
