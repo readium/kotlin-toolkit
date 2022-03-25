@@ -6,7 +6,7 @@
 
 package org.readium.navigator.tts
 
-import android.app.Activity
+import android.content.Context
 import android.graphics.Color
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeech.*
@@ -14,10 +14,6 @@ import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
 import androidx.annotation.ColorInt
 import kotlinx.coroutines.*
-import org.readium.r2.navigator.DecorableNavigator
-import org.readium.r2.navigator.Decoration
-import org.readium.r2.navigator.ExperimentalDecorator
-import org.readium.r2.navigator.Navigator
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.content.*
@@ -37,11 +33,9 @@ sealed class TextToSpeechException private constructor(
     class LanguageMissingData(val locale: Locale) : TextToSpeechException("The language ${locale.toLanguageTag()} requires additional files by the TTS engine")
 }
 
-@OptIn(ExperimentalDecorator::class)
 class TextToSpeechController(
-    val activity: Activity,
+    val context: Context,
     val publication: Publication,
-    val navigator: Navigator,
     val listener: Listener,
     config: Configuration = Configuration(
         defaultLocale = publication.metadata.locale ?: Locale.getDefault()
@@ -54,6 +48,8 @@ class TextToSpeechController(
     )
 
     interface Listener {
+        fun onSpeakUtterrance(text: String, locale: Locale, locator: Locator)
+        fun onSpeakUtteranceRange(locator: Locator)
         fun onError(exception: TextToSpeechException)
     }
 
@@ -62,7 +58,7 @@ class TextToSpeechController(
     private var textIterator: ContentIterator? = null
 
     private val ttsListener = TtsListener()
-    private val tts: TextToSpeech = TextToSpeech(activity, ttsListener).apply {
+    private val tts: TextToSpeech = TextToSpeech(context.applicationContext, ttsListener).apply {
         setOnUtteranceProgressListener(ttsListener)
     }
 
@@ -109,10 +105,6 @@ class TextToSpeechController(
                 playNextUtterance()
                 return
             }
-            navigator.go(span.locator)
-            (navigator as? DecorableNavigator)?.applyDecorations(listOf(
-                Decoration(id = "tts", locator = span.locator, style = Decoration.Style.Highlight(tint = config.highlightTint))
-            ), group = "tts")
 
             val locale = span.language?.let { Locale.forLanguageTag(it.replace("_", "-")) }
                 ?: config.defaultLocale
@@ -120,6 +112,7 @@ class TextToSpeechController(
             val localeResult = tts.setLanguage(locale)
             if (localeResult >= LANG_AVAILABLE) {
                 tts.speak(span.text, QUEUE_FLUSH, null, count++.toString())
+                listener.onSpeakUtterrance(span.text, locale, span.locator)
             } else {
                 if (localeResult == LANG_MISSING_DATA) {
                     listener.onError(TextToSpeechException.LanguageMissingData(locale))
@@ -193,25 +186,10 @@ class TextToSpeechController(
             scope.launch { playNextUtterance() }
         }
 
-        private var wordJob: Job? = null
-
         override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
             var locator = currentSpan?.locator ?: return
             locator = locator.copy(text = locator.text.substring(start, end))
-            navigator.go(locator)
-
-//            wordJob?.cancel()
-//            wordJob = scope.launch {
-//                (navigator as? DecorableNavigator)?.applyDecorations(
-//                    listOf(
-//                        Decoration(
-//                            id = "tts",
-//                            locator = locator,
-//                            style = Decoration.Style.Underline(tint = Color.RED)
-//                        )
-//                    ), group = "tts2"
-//                )
-//            }
+            listener.onSpeakUtteranceRange(locator)
         }
     }
 }
