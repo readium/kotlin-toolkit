@@ -7,12 +7,10 @@
 package org.readium.navigator.tts
 
 import android.content.Context
-import android.graphics.Color
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeech.*
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
-import androidx.annotation.ColorInt
 import kotlinx.coroutines.*
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -21,8 +19,6 @@ import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import java.util.*
-
-typealias TextToSpeechTry<SuccessT> = Try<SuccessT, TextToSpeechException>
 
 sealed class TextToSpeechException private constructor(
     override val message: String,
@@ -37,13 +33,10 @@ class TextToSpeechController(
     val context: Context,
     val publication: Publication,
     val listener: Listener,
-    config: Configuration = Configuration(
-        defaultLocale = publication.metadata.locale ?: Locale.getDefault()
-    )
+    config: Configuration = Configuration(),
 ) : SuspendingCloseable {
     data class Configuration(
-        val defaultLocale: Locale,
-        @ColorInt val highlightTint: Int = Color.RED,
+        val defaultLocale: Locale? = null,
         val rate: Double = 1.0
     )
 
@@ -108,6 +101,8 @@ class TextToSpeechController(
 
             val locale = span.language?.let { Locale.forLanguageTag(it.replace("_", "-")) }
                 ?: config.defaultLocale
+                ?: publication.metadata.locale
+                ?: Locale.getDefault()
 
             val localeResult = tts.setLanguage(locale)
             if (localeResult >= LANG_AVAILABLE) {
