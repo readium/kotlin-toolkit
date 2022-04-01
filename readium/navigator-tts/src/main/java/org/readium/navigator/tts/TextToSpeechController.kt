@@ -12,6 +12,11 @@ import android.speech.tts.TextToSpeech.*
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.content.*
@@ -41,8 +46,9 @@ class TextToSpeechController(
     )
 
     interface Listener {
-        fun onSpeakUtterrance(text: String, locale: Locale, locator: Locator)
-        fun onSpeakUtteranceRange(locator: Locator)
+        fun onSpeakUtterrance(text: String, locale: Locale, locator: Locator) {}
+        fun onSpeakUtteranceRange(locator: Locator) {}
+        fun onSpeakingChange(isSpeaking: Boolean) {}
         fun onError(exception: TextToSpeechException)
     }
 
@@ -53,6 +59,7 @@ class TextToSpeechController(
     private val ttsListener = TtsListener()
     private val tts: TextToSpeech = TextToSpeech(context.applicationContext, ttsListener).apply {
         setOnUtteranceProgressListener(ttsListener)
+        setSpeechRate(config.rate.toFloat())
     }
 
     var config: Configuration = config
@@ -61,6 +68,11 @@ class TextToSpeechController(
             tts.setSpeechRate(value.rate.toFloat())
         }
 
+    val defaultLocale: Locale get() =
+        config.defaultLocale
+            ?: publication.metadata.locale
+            ?: tts.defaultVoice.locale
+
     var voice: Voice
         get() = tts.voice
         set(value) { tts.voice = value }
@@ -68,12 +80,37 @@ class TextToSpeechController(
     val voices: Map<Locale, List<Voice>> get() =
         tts.voices.groupBy(Voice::getLocale)
 
+    val defaultVoice: Voice
+        get() = tts.defaultVoice
+
+    val _isSpeaking = MutableStateFlow(false)
+    val isSpeaking: StateFlow<Boolean> = _isSpeaking.asStateFlow()
+
     fun play(start: Locator? = null) = scope.launch {
-        initializeIterator(start)
-        playNextUtterance()
+        val span = currentSpan
+        _isSpeaking.value = true
+        if (span != null) {
+            if (playSpan(span)) {
+                return@launch
+            }
+        } else {
+            initializeIterator(start)
+        }
+        next()
+    }
+
+    fun pause() {
+        _isSpeaking.value = false
+        tts.stop()
+    }
+
+    fun playPause() {
+        if (isSpeaking.value) pause()
+        else play()
     }
 
     override suspend fun close() {
+        pause()
         textIterator?.close()
         scope.cancel()
         tts.shutdown()
@@ -87,38 +124,29 @@ class TextToSpeechController(
     private var currentSpan: Content.Text.Span? = null
     private var spans = mutableListOf<Content.Text.Span>()
 
-    private suspend fun playNextUtterance() {
+    private fun next() {
+        scope.launch {
+            if (!playNextUtterance()) {
+                _isSpeaking.value = false
+            }
+        }
+    }
+
+    private suspend fun playNextUtterance(): Boolean {
         while (!initialized) {
             delay(100)
         }
         val span = spans.removeFirstOrNull()
         currentSpan = span
         if (span != null) {
-            if (!span.text.any { it.isLetterOrDigit() }) {
-                playNextUtterance()
-                return
-            }
-
-            val locale = span.language?.let { Locale.forLanguageTag(it.replace("_", "-")) }
-                ?: config.defaultLocale
-                ?: publication.metadata.locale
-                ?: Locale.getDefault()
-
-            val localeResult = tts.setLanguage(locale)
-            if (localeResult >= LANG_AVAILABLE) {
-                tts.speak(span.text, QUEUE_FLUSH, null, count++.toString())
-                listener.onSpeakUtterrance(span.text, locale, span.locator)
+            if (playSpan(span)) {
+                return true
             } else {
-                if (localeResult == LANG_MISSING_DATA) {
-                    listener.onError(TextToSpeechException.LanguageMissingData(locale))
-                } else {
-                    listener.onError(TextToSpeechException.LanguageNotSupported(locale))
-                }
-                playNextUtterance()
+                return playNextUtterance()
             }
 
         } else {
-            val iter = textIterator ?: return
+            val iter = textIterator ?: return false
 
             val text = iter.next().getOrElse {
                 listener.onError(
@@ -127,17 +155,41 @@ class TextToSpeechController(
                         it
                     )
                 )
-                return
-            } ?: return
+                null
+            } ?: return false
 
             if (text is Content.Text) {
                 spans = text.spans
                     .flatMap { tokenize(it).getOrThrow() }
                     .toMutableList()
             }
-            playNextUtterance()
+            return playNextUtterance()
+        }
+    }
+
+    private fun playSpan(span: Content.Text.Span?): Boolean {
+        span ?: return false
+        if (!span.text.any { it.isLetterOrDigit() }) {
+            return false
         }
 
+        val locale = span.language?.let { Locale.forLanguageTag(it.replace("_", "-")) }
+            ?: defaultLocale
+
+        val localeResult = tts.setLanguage(locale)
+
+        if (localeResult < LANG_AVAILABLE) {
+            if (localeResult == LANG_MISSING_DATA) {
+                listener.onError(TextToSpeechException.LanguageMissingData(locale))
+            } else {
+                listener.onError(TextToSpeechException.LanguageNotSupported(locale))
+            }
+            return false
+        }
+
+        tts.speak(span.text, QUEUE_FLUSH, null, count++.toString())
+        listener.onSpeakUtterrance(span.text, locale, span.locator)
+        return true
     }
 
     private suspend fun tokenize(span: Content.Text.Span): Try<List<Content.Text.Span>, Exception> =
@@ -152,20 +204,22 @@ class TextToSpeechController(
                 }
             }
 
-    fun pause() {
-        tts.stop()
-    }
-
-    fun skipForward() = scope.launch {
-        playNextUtterance()
+    fun skipForward() {
+        next()
     }
 
     fun skipBackward() {
-
     }
+
     private var initialized = false
 
-    private inner class TtsListener : TextToSpeech.OnInitListener, UtteranceProgressListener() {
+    init {
+        isSpeaking
+            .onEach { listener.onSpeakingChange(it) }
+            .launchIn(scope)
+    }
+
+    private inner class TtsListener : OnInitListener, UtteranceProgressListener() {
         override fun onInit(status: Int) {
             initialized = true
         }
@@ -174,11 +228,16 @@ class TextToSpeechController(
         }
 
         override fun onDone(utteranceId: String?) {
-            scope.launch { playNextUtterance() }
+            next()
         }
 
         override fun onError(utteranceId: String?) {
-            scope.launch { playNextUtterance() }
+            next()
+        }
+
+        override fun onError(utteranceId: String?, errorCode: Int) {
+            // FIXME: Report error
+            next()
         }
 
         override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
