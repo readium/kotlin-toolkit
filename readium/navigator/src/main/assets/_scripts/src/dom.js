@@ -5,40 +5,62 @@
 //
 
 import { log as logNative, isScrollModeEnabled, pageWidth } from "./utils";
+import { getCssSelector } from "css-selector-generator";
 
-export function findFirstVisibleElement(rootElement) {
-  for (var i = 0; i < rootElement.children.length; i++) {
+export function findFirstVisibleLocator() {
+  const element = findFirstVisibleBlockElement();
+  if (!element) {
+    return undefined;
+  }
+
+  return {
+    locations: {
+      cssSelector: getCssSelector(element),
+    },
+    text: {
+      highlight: element.textContent,
+    },
+  };
+}
+
+function findFirstVisibleBlockElement() {
+  return findElement(
+    document.body,
+    (element) => window.getComputedStyle(element).display != "block"
+  );
+}
+
+function findElement(rootElement, shouldIgnore) {
+  var foundElement = undefined;
+  for (var i = rootElement.children.length - 1; i >= 0; i--) {
     const child = rootElement.children[i];
-    if (child.nodeType !== Node.ELEMENT_NODE) {
-      continue;
-    }
-    const visibleElement = findFirstVisibleElement(child);
-    if (visibleElement) {
-      return visibleElement;
+    const element = findElement(child, shouldIgnore);
+    if (element) {
+      return element;
     }
   }
 
-  if (
-    rootElement !== document.body &&
-    rootElement !== document.documentElement
-  ) {
-    const visible = isElementVisible(rootElement, undefined);
-    if (visible) {
-      return rootElement;
-    }
+  if (isElementVisible(rootElement, undefined, shouldIgnore)) {
+    return rootElement;
   }
-  return undefined;
 }
 
 // See computeVisibility_() in r2-navigator-js
-function isElementVisible(element, domRect /* nullable */) {
-  if (readium.isFixedLayout) {
+function isElementVisible(element, domRect /* nullable */, shouldIgnore) {
+  if (
+    readium.isFixedLayout ||
+    element === document.body ||
+    element === document.documentElement
+  ) {
     return true;
-  } else if (!document || !document.documentElement || !document.body) {
-    return false;
   }
-  if (element === document.body || element === document.documentElement) {
-    return true;
+  if (
+    !document ||
+    !document.documentElement ||
+    !document.body ||
+    (shouldIgnore && shouldIgnore(element))
+  ) {
+    return false;
   }
 
   const elStyle = getComputedStyle(element);
@@ -63,11 +85,8 @@ function isElementVisible(element, domRect /* nullable */) {
 
   const scrollElement = document.scrollingElement;
   if (isScrollModeEnabled()) {
-    // TODO: vertical writing mode
     return rect.top >= 0 && rect.top <= document.documentElement.clientHeight;
+  } else {
+    return rect.left < pageWidth;
   }
-
-  const scrollLeft = rect.left;
-  let currentOffset = scrollElement.scrollLeft;
-  return rect.left > 0 && rect.left < pageWidth;
 }

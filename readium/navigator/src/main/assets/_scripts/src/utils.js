@@ -95,7 +95,7 @@ export function isScrollModeEnabled() {
   );
 }
 
-function isRTL() {
+export function isRTL() {
   return document.body.dir.toLowerCase() == "rtl";
 }
 
