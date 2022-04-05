@@ -8,7 +8,7 @@ import { log as logNative, isScrollModeEnabled, pageWidth } from "./utils";
 import { getCssSelector } from "css-selector-generator";
 
 export function findFirstVisibleLocator() {
-  const element = findFirstVisibleBlockElement();
+  const element = findElement(document.body);
   if (!element) {
     return undefined;
   }
@@ -25,51 +25,62 @@ export function findFirstVisibleLocator() {
   };
 }
 
-function findFirstVisibleBlockElement() {
-  return findElement(
-    document.body,
-    (element) => window.getComputedStyle(element).display != "block"
-  );
-}
-
-function findElement(rootElement, shouldIgnore) {
+function findElement(rootElement) {
   var foundElement = undefined;
   for (var i = rootElement.children.length - 1; i >= 0; i--) {
     const child = rootElement.children[i];
-    const element = findElement(child, shouldIgnore);
-    if (element) {
-      return element;
+    const position = elementRelativePosition(child, undefined);
+    if (position == 0) {
+      if (!shouldIgnoreElement(child)) {
+        foundElement = child;
+      }
+    } else if (position < 0) {
+      if (!foundElement) {
+        foundElement = child;
+      }
+      break;
     }
   }
 
-  if (isElementVisible(rootElement, undefined, shouldIgnore)) {
-    return rootElement;
+  if (foundElement) {
+    return findElement(foundElement);
   }
+  return rootElement;
 }
 
 // See computeVisibility_() in r2-navigator-js
-function isElementVisible(element, domRect /* nullable */, shouldIgnore) {
-  if (
-    readium.isFixedLayout ||
-    element === document.body ||
-    element === document.documentElement
-  ) {
-    return true;
+function elementRelativePosition(element, domRect /* nullable */) {
+  if (readium.isFixedLayout) return true;
+
+  if (element === document.body || element === document.documentElement) {
+    return -1;
   }
-  if (
-    !document ||
-    !document.documentElement ||
-    !document.body ||
-    (shouldIgnore && shouldIgnore(element))
-  ) {
-    return false;
+  if (!document || !document.documentElement || !document.body) {
+    return 1;
   }
 
+  const rect = domRect || element.getBoundingClientRect();
+
+  const scrollElement = document.scrollingElement;
+  if (isScrollModeEnabled()) {
+    return rect.top >= 0 && rect.top <= document.documentElement.clientHeight;
+  } else {
+    if (rect.left >= pageWidth) {
+      return 1;
+    } else if (rect.left >= 0) {
+      return 0;
+    } else {
+      return -1;
+    }
+  }
+}
+
+function shouldIgnoreElement(element) {
   const elStyle = getComputedStyle(element);
   if (elStyle) {
     const display = elStyle.getPropertyValue("display");
     if (display === "none") {
-      return false;
+      return true;
     }
     // Cannot be relied upon, because web browser engine reports invisible when out of view in
     // scrolled columns!
@@ -79,16 +90,9 @@ function isElementVisible(element, domRect /* nullable */, shouldIgnore) {
     // }
     const opacity = elStyle.getPropertyValue("opacity");
     if (opacity === "0") {
-      return false;
+      return true;
     }
   }
 
-  const rect = domRect || element.getBoundingClientRect();
-
-  const scrollElement = document.scrollingElement;
-  if (isScrollModeEnabled()) {
-    return rect.top >= 0 && rect.top <= document.documentElement.clientHeight;
-  } else {
-    return rect.left < pageWidth;
-  }
+  return false;
 }
