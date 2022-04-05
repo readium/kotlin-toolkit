@@ -54,6 +54,7 @@ import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.launchWebBrowser
+import org.readium.r2.shared.util.mediatype.MediaType
 import kotlin.math.ceil
 import kotlin.reflect.KClass
 
@@ -638,6 +639,18 @@ class EpubNavigatorFragment private constructor(
     private val _currentLocator = MutableStateFlow(initialLocator
         ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
     )
+
+    @InternalReadiumApi
+    suspend fun firstVisibleElementLocator(): Locator? {
+        if (!::resourcePager.isInitialized) return null
+
+        val resource = publication.readingOrder[resourcePager.currentItem]
+        return currentFragment?.webView?.findFirstVisibleLocator()
+            ?.copy(
+                href = resource.href,
+                type = resource.type ?: MediaType.XHTML.toString()
+            )
+    }
 
     /**
      * While scrolling we receive a lot of new current locations, so we use a coroutine job to

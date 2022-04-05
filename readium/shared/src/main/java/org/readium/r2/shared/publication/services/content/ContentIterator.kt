@@ -18,6 +18,7 @@ import org.readium.r2.shared.fetcher.mapCatching
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.SuspendingCloseable
@@ -89,13 +90,14 @@ interface ContentIterator : SuspendingCloseable {
 
 class PublicationContentIterator(
     private val publication: Publication,
-    start: Locator?,
+    private val start: Locator?,
     private val resourceContentIteratorFactories: List<ResourceContentIteratorFactory>
 ) : ContentIterator {
-
-    private var nextIndex =
+    private val startIndex =
         start?.let { publication.readingOrder.indexOfFirstWithHref(it.href) }
             ?: 0
+
+    private var nextIndex = startIndex
 
     private var currentIterator: ContentIterator? = null
 
@@ -108,7 +110,13 @@ class PublicationContentIterator(
         }
 
         val link = publication.readingOrder[nextIndex]
-        val locator = publication.locatorFromLink(link) ?: return null
+        var locator = publication.locatorFromLink(link) ?: return null
+        if (start != null && nextIndex == startIndex) {
+            locator = locator.copy(
+                text = start.text,
+                locations = start.locations
+            )
+        }
         val resource = publication.get(link)
         currentIterator = resourceContentIteratorFactories
             .firstNotNullOfOrNull { factory -> factory(resource, locator) }
@@ -158,9 +166,19 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
         }
 
     private fun parseElement(element: Element): List<Content> {
-        val contentParser = ContentParser(locator)
+        val contentParser = ContentParser(
+            baseLocator = locator,
+            startElement = locator.locations.cssSelector
+                // The JS third-party library used to generate the CSS Selector sometimes adds
+                // :root >, which doesn't work with JSoup.
+                ?.let { element.selectFirst(it.removePrefix(":root > ")) },
+        )
         NodeTraversor.traverse(contentParser, element)
-        return contentParser.content.toList()
+        var content = contentParser.content
+        if (contentParser.startIndex > 0) {
+            content = content.subList(contentParser.startIndex, content.size)
+        }
+        return content.toList()
     }
 
     private var items: Try<MutableList<Content>, Exception>? = null
@@ -181,9 +199,12 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
         items().map { it.removeFirstOrNull() }
 
     private class ContentParser(
-        private var baseLocator: Locator
+        private var baseLocator: Locator,
+        private val startElement: Element?,
     ) : NodeVisitor {
         val content = mutableListOf<Content>()
+        var startIndex = 0
+        var currentElement: Element? = null
 
         private val spansAcc = mutableListOf<Content.Text.Span>()
         private var textAcc = StringBuilder()
@@ -202,6 +223,8 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
             }
 
             if (node is Element) {
+                currentElement = node
+
                 val tag = node.normalName()
                 when {
                     tag == "br" -> {
@@ -273,6 +296,9 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
             flushSpan()
             if (spansAcc.isEmpty()) return
 
+            if (startElement != null && currentElement == startElement) {
+                startIndex = content.size
+            }
             content.add(Content.Text(
                 spans = spansAcc.toList(),
             ))

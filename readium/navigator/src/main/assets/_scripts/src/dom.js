@@ -14,6 +14,8 @@ export function findFirstVisibleLocator() {
   }
 
   return {
+    href: "#",
+    type: "application/xhtml+xml",
     locations: {
       cssSelector: getCssSelector(element),
     },
