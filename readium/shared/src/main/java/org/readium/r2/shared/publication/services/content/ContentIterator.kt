@@ -13,6 +13,7 @@ import org.jsoup.nodes.*
 import org.jsoup.parser.Parser
 import org.jsoup.select.NodeTraversor
 import org.jsoup.select.NodeVisitor
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.mapCatching
 import org.readium.r2.shared.publication.Link
@@ -168,10 +169,11 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
     private fun parseElement(element: Element): List<Content> {
         val contentParser = ContentParser(
             baseLocator = locator,
-            startElement = locator.locations.cssSelector
+            startElement = locator.locations.cssSelector?.let {
                 // The JS third-party library used to generate the CSS Selector sometimes adds
                 // :root >, which doesn't work with JSoup.
-                ?.let { element.selectFirst(it.removePrefix(":root > ")) },
+                tryOrNull { element.selectFirst(it.removePrefix(":root > ")) }
+            }
         )
         NodeTraversor.traverse(contentParser, element)
         var content = contentParser.content
