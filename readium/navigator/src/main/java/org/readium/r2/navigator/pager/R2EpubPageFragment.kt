@@ -62,6 +62,9 @@ class R2EpubPageFragment : Fragment() {
 
     private var isLoading: Boolean = false
 
+    private val shouldApplyInsetsPadding: Boolean
+        get() = (webView?.navigator as? EpubNavigatorFragment)?.config?.shouldApplyInsetsPadding ?: true
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val navigatorFragment = parentFragment as EpubNavigatorFragment
@@ -225,11 +228,13 @@ class R2EpubPageFragment : Fragment() {
             }
         }
 
-        // Update padding when the window insets change, for example when the navigation and status
-        // bars are toggled.
-        ViewCompat.setOnApplyWindowInsetsListener(containerView) { _, insets ->
-            updatePadding()
-            insets
+        if (shouldApplyInsetsPadding) {
+            // Update padding when the window insets change, for example when the navigation and status
+            // bars are toggled.
+            ViewCompat.setOnApplyWindowInsetsListener(containerView) { _, insets ->
+                updatePadding()
+                insets
+            }
         }
     }
 
@@ -241,6 +246,7 @@ class R2EpubPageFragment : Fragment() {
 
             // Add additional padding to take into account the display cutout, if needed.
             if (
+                shouldApplyInsetsPadding &&
                 android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P &&
                 window.attributes.layoutInDisplayCutoutMode != WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
             ) {
