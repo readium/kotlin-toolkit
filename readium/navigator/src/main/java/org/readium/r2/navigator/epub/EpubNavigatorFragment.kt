@@ -294,6 +294,7 @@ class EpubNavigatorFragment private constructor(
             val (index, resource) = page
 
             if (resourcePager.currentItem != index) {
+                pendingLocator = locator
                 resourcePager.currentItem = index
             } else if (resource is PageResource.EpubReflowable) {
                 currentFragment?.loadLocator(locator)
@@ -301,7 +302,6 @@ class EpubNavigatorFragment private constructor(
         }
 
         if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
-            pendingLocator = locator
             setCurrent(resourcesSingle)
         } else {
 

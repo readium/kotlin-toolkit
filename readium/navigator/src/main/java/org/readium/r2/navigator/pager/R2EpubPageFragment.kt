@@ -300,6 +300,7 @@ class R2EpubPageFragment : Fragment() {
             val webView = requireNotNull(webView)
             val epubNavigator = requireNotNull(webView.navigator as? EpubNavigatorFragment)
             loadLocator(webView, epubNavigator.readingProgression, locator)
+            webView.listener.onProgressionChanged()
         }
 
     private suspend fun loadLocator(webView: R2WebView, readingProgression: ReadingProgression, locator: Locator) {
