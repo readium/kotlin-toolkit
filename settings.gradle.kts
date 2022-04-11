@@ -17,6 +17,13 @@ pluginManagement {
         maven(url = "https://jitpack.io")
         maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
     }
+
+    plugins {
+        id("com.android.application") version ("7.1.0")
+        id("com.android.library") version ("7.1.0")
+        id("org.jetbrains.kotlin.android") version ("1.6.10")
+        id("org.jetbrains.dokka") version ("1.6.10")
+    }
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
