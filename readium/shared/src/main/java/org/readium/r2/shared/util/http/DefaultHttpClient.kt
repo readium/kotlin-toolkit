@@ -120,6 +120,7 @@ class DefaultHttpClient constructor(
                     }
 
                     val response = HttpResponse(
+                        request = request,
                         url = connection.url.toString(),
                         statusCode = statusCode,
                         headers = connection.safeHeaders,
