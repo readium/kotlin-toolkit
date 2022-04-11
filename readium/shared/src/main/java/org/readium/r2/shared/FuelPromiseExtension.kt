@@ -16,6 +16,7 @@ import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.deferred
 import nl.komponents.kovenant.task
 
+@Deprecated("Dependency to Fuel and kovenant will eventually be removed from the Readium Toolkit")
 fun Request.promise(): Promise<Triple<Request, Response, ByteArray>, Exception> {
     val deferred = deferred<Triple<Request, Response, ByteArray>, Exception>()
     task { response() } success {
