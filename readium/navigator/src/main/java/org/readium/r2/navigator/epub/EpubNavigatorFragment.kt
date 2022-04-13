@@ -296,7 +296,9 @@ class EpubNavigatorFragment private constructor(
             if (resourcePager.currentItem != index) {
                 pendingLocator = locator
                 resourcePager.currentItem = index
-            } else if (resource is PageResource.EpubReflowable) {
+            }
+
+            if (resource is PageResource.EpubReflowable) {
                 currentFragment?.loadLocator(locator)
             }
         }

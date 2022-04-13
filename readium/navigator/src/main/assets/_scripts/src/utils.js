@@ -143,7 +143,7 @@ export function scrollToText(text) {
 }
 
 function scrollToRange(range) {
-  scrollToRect(range.getBoundingClientRect());
+  return scrollToRect(range.getBoundingClientRect());
 }
 
 function scrollToRect(rect) {
@@ -155,6 +155,8 @@ function scrollToRect(rect) {
       rect.left + window.scrollX
     );
   }
+
+  return true;
 }
 
 export function scrollToStart() {
