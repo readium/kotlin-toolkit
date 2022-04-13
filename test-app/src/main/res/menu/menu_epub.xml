@@ -29,13 +29,4 @@
         android:orderInCategory="30"
         app:showAsAction="always"
         tools:ignore="AlwaysShowAction"/>
-
-    <item
-        android:id="@+id/settings"
-        android:icon="@drawable/ic_outline_format_size_24"
-        android:title="@string/epubactivity_settings"
-        android:orderInCategory="80"
-        app:showAsAction="always"
-        tools:ignore="AlwaysShowAction"/>
-
 </menu>

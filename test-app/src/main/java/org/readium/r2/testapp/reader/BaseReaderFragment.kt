@@ -10,20 +10,25 @@ import android.os.Bundle
 import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.presentation.PresentableNavigator
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.reader.settings.UserSettingsBottomSheetDialogFragment
 
 /*
  * Base reader fragment class
  *
  * Provides common menu items and saves last location on stop.
  */
-@OptIn(ExperimentalDecorator::class)
+@OptIn(ExperimentalDecorator::class, ExperimentalPresentation::class)
 abstract class BaseReaderFragment : Fragment() {
 
-    protected abstract val model: ReaderViewModel
+    protected val model: ReaderViewModel by activityViewModels()
+    protected val publication: Publication get() = model.publication
     protected abstract val navigator: Navigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,6 +43,11 @@ abstract class BaseReaderFragment : Fragment() {
                 }
             Toast.makeText(requireContext(), getString(message), Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        model.onNavigatorCreated(navigator)
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
@@ -65,7 +75,17 @@ abstract class BaseReaderFragment : Fragment() {
                 model.activityChannel.send(ReaderViewModel.Event.OpenDrmManagementRequested)
                 true
             }
+            R.id.settings -> {
+                onOpenSettings()
+                true
+            }
             else -> false
+        }
+    }
+
+    protected open fun onOpenSettings() {
+        if (navigator is PresentableNavigator) {
+            UserSettingsBottomSheetDialogFragment().show(parentFragmentManager, "Settings")
         }
     }
 

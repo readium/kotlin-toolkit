@@ -21,7 +21,6 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
 import org.readium.r2.navigator.ExperimentalDecorator
@@ -33,7 +32,6 @@ import org.readium.r2.shared.APPEARANCE_REF
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.epub.UserSettings
 import org.readium.r2.testapp.search.SearchFragment
@@ -44,9 +42,7 @@ import org.readium.r2.testapp.utils.extensions.toDataUrl
 @OptIn(ExperimentalDecorator::class)
 class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listener {
 
-    override lateinit var model: ReaderViewModel
     override lateinit var navigator: Navigator
-    private lateinit var publication: Publication
     private lateinit var navigatorFragment: EpubNavigatorFragment
 
     private lateinit var menuScreenReader: MenuItem
@@ -66,11 +62,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         if (savedInstanceState != null) {
             isScreenReaderVisible = savedInstanceState.getBoolean(IS_SCREEN_READER_VISIBLE_KEY)
             isSearchViewIconified = savedInstanceState.getBoolean(IS_SEARCH_VIEW_ICONIFIED)
-        }
-
-        ViewModelProvider(requireActivity())[ReaderViewModel::class.java].let {
-            model = it
-            publication = it.publication
         }
 
         val readerData = model.readerInitData as VisualReaderInitData
@@ -243,17 +234,8 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         }
 
        return when (item.itemId) {
-           R.id.settings -> {
-               userSettings.userSettingsPopUp().showAsDropDown(requireActivity().findViewById(R.id.settings), 0, 0, Gravity.END)
-               true
-           }
            R.id.search -> {
                super.onOptionsItemSelected(item)
-           }
-
-           android.R.id.home -> {
-               menuSearch.collapseActionView()
-               true
            }
 
            R.id.screen_reader -> {
@@ -266,6 +248,10 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
            }
             else -> false
         }
+    }
+
+    override fun onOpenSettings() {
+        userSettings.userSettingsPopUp().showAsDropDown(requireActivity().findViewById(R.id.settings), 0, 0, Gravity.END)
     }
 
     private fun showSearchFragment() {

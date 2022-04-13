@@ -14,12 +14,15 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.Decoration
-import org.readium.r2.navigator.ExperimentalAudiobook
-import org.readium.r2.navigator.ExperimentalDecorator
+import kotlinx.coroutines.runBlocking
+import org.readium.r2.navigator.*
+import org.readium.r2.navigator.presentation.PresentableNavigator
+import org.readium.r2.navigator.presentation.PresentationController
+import org.readium.r2.navigator.presentation.PresentationValues
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.*
@@ -28,11 +31,12 @@ import org.readium.r2.shared.publication.services.search.SearchTry
 import org.readium.r2.shared.publication.services.search.search
 import org.readium.r2.shared.util.Try
 import org.readium.r2.testapp.bookshelf.BookRepository
+import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
 
-@OptIn(Search::class, ExperimentalDecorator::class, ExperimentalCoroutinesApi::class, ExperimentalAudiobook::class)
+@OptIn(Search::class, ExperimentalDecorator::class, ExperimentalPresentation::class, ExperimentalCoroutinesApi::class, ExperimentalAudiobook::class)
 class ReaderViewModel(
     val readerInitData: ReaderInitData,
     private val bookRepository: BookRepository,
@@ -50,6 +54,26 @@ class ReaderViewModel(
     val fragmentChannel: EventChannel<FeedbackEvent> =
         EventChannel(Channel(Channel.BUFFERED), viewModelScope)
 
+    val presentation = viewModelScope.async {
+        PresentationController(
+            scope = viewModelScope,
+            settings = bookRepository.get(bookId)?.userSettings ?: PresentationValues()
+        )
+    }
+
+    init {
+        viewModelScope.launch {
+            presentation.await().settings.collect {
+                bookRepository.saveUserSettings(bookId, it.values)
+            }
+        }
+    }
+
+    fun onNavigatorCreated(navigator: Navigator) = viewModelScope.launch {
+        if (navigator is PresentableNavigator) {
+            presentation.await().bind(navigator)
+        }
+    }
 
     fun saveProgression(locator: Locator) = viewModelScope.launch {
         bookRepository.saveProgression(locator, bookId)

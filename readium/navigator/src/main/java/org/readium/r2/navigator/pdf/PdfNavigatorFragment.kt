@@ -9,43 +9,55 @@
 
 package org.readium.r2.navigator.pdf
 
+import android.content.pm.ActivityInfo
 import android.graphics.PointF
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.lifecycleScope
 import com.github.barteksc.pdfviewer.PDFView
+import com.github.barteksc.pdfviewer.model.LinkTapEvent
+import com.github.barteksc.pdfviewer.util.FitPolicy
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.navigator.ExperimentalPresentation
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
+import org.readium.r2.navigator.presentation.*
 import org.readium.r2.navigator.util.createFragmentFactory
+import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.presentation.Presentation.*
+import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.use
 import timber.log.Timber
-import java.util.*
+import kotlin.math.roundToInt
 
 /**
  * Navigator for PDF publications.
  *
  * To use this [Fragment], create a factory with `PdfNavigatorFragment.createFactory()`.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalPresentation::class)
 class PdfNavigatorFragment internal constructor(
     override val publication: Publication,
-    private val initialLocator: Locator? = null,
-    private val listener: Listener? = null
-) : Fragment(), VisualNavigator {
+    private val initialLocator: Locator?,
+    private val listener: Listener?,
+    private val config: Configuration,
+) : Fragment(), VisualNavigator, PresentableNavigator {
 
     interface Listener : VisualNavigator.Listener {
 
@@ -59,11 +71,21 @@ class PdfNavigatorFragment internal constructor(
 
     }
 
+    @OptIn(ExperimentalPresentation::class)
+    data class Configuration(
+        val settings: PresentationValues = PresentationValues(),
+        val defaultSettings: PresentationValues = PresentationValues(),
+    )
+
     init {
         require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
     }
 
     lateinit var pdfView: PDFView
+
+    private val currentPage: Int get() =
+        if (!::pdfView.isInitialized) 0
+        else pdfView.currentPage
 
     private lateinit var positionsByReadingOrder: List<List<Locator>>
     private var positionCount: Int = 1
@@ -99,16 +121,33 @@ class PdfNavigatorFragment internal constructor(
         outState.putParcelable(KEY_LOCATOR, _currentLocator.value)
     }
 
-    private fun goToHref(href: String, page: Int, animated: Boolean = false, completion: () -> Unit = {}): Boolean {
+    private fun goToPageIndex(index: Int): Boolean {
+        val href = currentHref ?: return false
+        return goToHref(href, index, animated = false, forceReload = false)
+    }
+
+    @OptIn(ExperimentalPresentation::class)
+    private fun goToHref(href: String, page: Int, animated: Boolean, forceReload: Boolean, completion: () -> Unit = {}): Boolean {
         val link = publication.linkWithHref(href) ?: return false
 
-        if (currentHref == href) {
+        if (currentHref == href && !forceReload) {
             pdfView.jumpTo(page, animated)
             completion()
 
         } else {
             lifecycleScope.launch {
                 try {
+                    val values = presentationProperties.value.values
+                    activity?.requestedOrientation = when (requireNotNull(values.orientation)) {
+                        Orientation.AUTO -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                        Orientation.LANDSCAPE -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                        Orientation.PORTRAIT -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                    }
+
+                    val paginated = (requireNotNull(values.overflow) == Overflow.PAGINATED)
+                    val pageSpacing = requireNotNull(values.pageSpacing?.double)
+                    val fit = requireNotNull(values.fit)
+
                     pdfView
                         .run {
                             publication.get(link).use { resource ->
@@ -125,22 +164,23 @@ class PdfNavigatorFragment internal constructor(
                             }
                         }
                         .swipeHorizontal(readingProgression.isHorizontal ?: false)
-                        .spacing(10)
+                        .pageSnap(paginated)
+                        .autoSpacing(paginated)
+                        .pageFling(paginated)
+                        .spacing(pageSpacingForValue(pageSpacing))
                         // Customization of [PDFView] is done before setting the listeners,
                         // to avoid overriding them in reading apps, which would break the
                         // navigator.
                         .apply { listener?.onConfigurePdfView(this) }
                         .defaultPage(page)
-                        .onRender { _, _, _ ->
-                            pdfView.fitToWidth()
-                            // Using `fitToWidth` often breaks the use of `defaultPage`, so we
-                            // need to jump manually to the target page.
-                            pdfView.jumpTo(page, false)
-
-                            completion()
-                        }
+                        .pageFitPolicy(when (fit) {
+                            Fit.WIDTH -> FitPolicy.WIDTH
+                            Fit.HEIGHT -> FitPolicy.HEIGHT
+                            else -> FitPolicy.BOTH
+                        })
                         .onPageChange { index, _ -> onPageChanged(pageIndexToNumber(index)) }
                         .onTap { event -> onTap(event) }
+                        .linkHandler { event -> onTapLink(event) }
                         .load()
 
                     currentHref = href
@@ -159,7 +199,7 @@ class PdfNavigatorFragment internal constructor(
 
         return true
     }
-    
+
     private fun pageNumberToIndex(page: Int): Int {
         var index = (page - 1).coerceAtLeast(0)
         if (isPagesOrderReversed) {
@@ -176,6 +216,7 @@ class PdfNavigatorFragment internal constructor(
         return page
     }
 
+    private fun pageSpacingForValue(value: Double): Int = (50 * value).roundToInt()
 
     // Navigator
 
@@ -188,7 +229,14 @@ class PdfNavigatorFragment internal constructor(
         listener?.onJumpToLocator(locator)
         // FIXME: `position` is relative to the full publication, which would cause an issue for a publication containing several PDFs resources. Only publications with a single PDF resource are supported at the moment, so we're fine.
         val pageNumber = locator.locations.page ?: locator.locations.position ?: 1
-        return goToHref(locator.href, pageNumberToIndex(pageNumber), animated, completion)
+        return goToHref(locator.href, pageNumberToIndex(pageNumber), animated, forceReload = false, completion)
+    }
+
+    private fun go(locator: Locator, animated: Boolean, forceReload: Boolean, completion: () -> Unit): Boolean {
+        listener?.onJumpToLocator(locator)
+        // FIXME: `position` is relative to the full publication, which would cause an issue for a publication containing several PDFs resources. Only publications with a single PDF resource are supported at the moment, so we're fine.
+        val pageNumber = locator.locations.page ?: locator.locations.position ?: 1
+        return goToHref(locator.href, pageNumberToIndex(pageNumber), animated, forceReload = forceReload, completion)
     }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
@@ -197,7 +245,7 @@ class PdfNavigatorFragment internal constructor(
     }
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
-        val page = pageIndexToNumber(pdfView.currentPage)
+        val page = pageIndexToNumber(currentPage)
         if (page >= positionCount) return false
 
         pdfView.jumpTo(pageNumberToIndex(page + 1), animated)
@@ -206,7 +254,7 @@ class PdfNavigatorFragment internal constructor(
     }
 
     override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
-        val page = pageIndexToNumber(pdfView.currentPage)
+        val page = pageIndexToNumber(currentPage)
         if (page <= 1) return false
 
         pdfView.jumpTo(pageNumberToIndex(page - 1), animated)
@@ -214,19 +262,18 @@ class PdfNavigatorFragment internal constructor(
         return true
     }
 
-
     // VisualNavigator
 
-    override val readingProgression: ReadingProgression =
-        publication.metadata.readingProgression.takeIf { it != ReadingProgression.AUTO }
-            ?: ReadingProgression.TTB
+    @OptIn(ExperimentalPresentation::class)
+    override val readingProgression: ReadingProgression get() =
+        (presentationProperties.value.values.readingProgression ?: ReadingProgression.TTB)
 
     /**
      * Indicates whether the order of the [PDFView] pages is reversed to take into account
      * right-to-left and bottom-to-top reading progressions.
      */
-    private val isPagesOrderReversed: Boolean =
-        readingProgression == ReadingProgression.RTL || readingProgression == ReadingProgression.BTT
+    private val isPagesOrderReversed: Boolean get() =
+        (readingProgression == ReadingProgression.RTL || readingProgression == ReadingProgression.BTT)
 
 
     // [PDFView] Listeners
@@ -243,6 +290,135 @@ class PdfNavigatorFragment internal constructor(
         return listener.onTap(PointF(e.x, e.y))
     }
 
+    private fun onTapLink(event: LinkTapEvent) {
+        val page = event.link.destPageIdx
+        val uri = event.link.uri
+        if (page != null) {
+            goToPageIndex(page)
+
+        } else if (uri != null) {
+            openExternalUri(uri)
+        }
+    }
+
+    private fun openExternalUri(uri: String) {
+        val context = context ?: return
+
+        tryOrLog {
+            var url = Uri.parse(uri)
+            if (url.scheme == null) {
+                url = url.buildUpon().scheme("http").build()
+            }
+
+            CustomTabsIntent.Builder()
+                .build()
+                .launchUrl(context, url)
+        }
+    }
+
+    // PresentableNavigator
+
+    private val _presentationProperties = MutableStateFlow(
+        createPresentationProperties(
+            settings = config.settings,
+            fallback = PresentationValues()
+        )
+    )
+    override val presentationProperties = _presentationProperties.asStateFlow()
+
+    override suspend fun applyPresentationSettings(settings: PresentationValues) {
+        val page = pageIndexToNumber(currentPage)
+        _presentationProperties.value = createPresentationProperties(
+            settings = settings,
+            fallback = presentationProperties.value.values
+        )
+
+        currentHref?.let { href ->
+            goToHref(href, page = pageNumberToIndex(page), animated = false, forceReload = true)
+        }
+    }
+
+    private fun createPresentationProperties(
+        settings: PresentationValues,
+        fallback: PresentationValues,
+        defaults: PresentationValues = config.defaultSettings,
+        metadata: Metadata = publication.metadata
+    ): PresentationProperties {
+        fun <T> List<T>?.firstIn(vararg values: T?): T? = this?.let {
+            values.firstOrNull { it != null && contains(it) }
+        }
+
+        val fits = listOf(
+            Fit.CONTAIN, Fit.WIDTH, Fit.HEIGHT
+        )
+        val fit = fits.firstIn(settings.fit, fallback.fit?.takeIf { settings.fit != null })
+            ?: fits.firstIn(metadata.presentation.fit, defaults.fit)
+            ?: Fit.CONTAIN
+
+        val orientations = listOf(
+            Orientation.PORTRAIT, Orientation.LANDSCAPE
+        )
+        val orientation = orientations.firstIn(
+            settings.orientation,
+            fallback.orientation?.takeIf { settings.orientation != null })
+            ?: orientations.firstIn(metadata.presentation.orientation, defaults.orientation)
+            ?: Orientation.AUTO
+
+        val overflows = listOf(
+            Overflow.PAGINATED, Overflow.SCROLLED
+        )
+        val overflow = overflows.firstIn(
+            settings.overflow,
+            fallback.overflow?.takeIf { settings.overflow != null })
+            ?: overflows.firstIn(metadata.presentation.overflow, defaults.overflow)
+            ?: Overflow.SCROLLED
+
+        val pageSpacing = settings.pageSpacing?.double
+            ?: fallback.pageSpacing?.double?.takeIf { settings.pageSpacing != null }
+            ?: defaults.pageSpacing?.double
+            ?: 0.0
+
+        val readingProgressions = listOf(
+            ReadingProgression.LTR, ReadingProgression.RTL,
+            ReadingProgression.TTB, ReadingProgression.BTT,
+        )
+        val readingProgression = readingProgressions.firstIn(
+                settings.readingProgression,
+                fallback.readingProgression?.takeIf { settings.readingProgression != null }
+            )
+            ?: readingProgressions.firstIn(metadata.readingProgression, defaults.readingProgression)
+            ?: ReadingProgression.TTB
+
+        return PresentationProperties(
+            PresentationProperty(
+                key = PresentationKey.FIT,
+                value = fit,
+                constraints = PresentationEnumConstraints(supportedValues = fits)
+            ),
+            PresentationProperty(
+                key = PresentationKey.ORIENTATION,
+                value = orientation,
+                constraints = PresentationEnumConstraints(supportedValues = orientations)
+            ),
+            PresentationProperty(
+                key = PresentationKey.OVERFLOW,
+                value = overflow,
+                constraints = PresentationEnumConstraints(supportedValues = overflows)
+            ),
+            PresentationProperty(
+                key = PresentationKey.PAGE_SPACING,
+                value = PresentationRange(pageSpacing),
+                constraints = PresentationRangeConstraints(stepCount = 20)
+                    .require(PresentationValues(overflow = Overflow.SCROLLED))
+            ),
+            PresentationProperty(
+                key = PresentationKey.READING_PROGRESSION,
+                value = readingProgression,
+                constraints = PresentationEnumConstraints(supportedValues = readingProgressions)
+            ),
+        )
+    }
+
     companion object {
         private const val KEY_LOCATOR = "locator"
 
@@ -254,9 +430,14 @@ class PdfNavigatorFragment internal constructor(
          *        Can be used to restore the last reading location.
          * @param listener Optional listener to implement to observe events, such as user taps.
          */
-        fun createFactory(publication: Publication, initialLocator: Locator? = null, listener: Listener? = null): FragmentFactory =
-            createFragmentFactory { PdfNavigatorFragment(publication, initialLocator, listener) }
+        @OptIn(ExperimentalPresentation::class)
+        fun createFactory(
+            publication: Publication,
+            initialLocator: Locator? = null,
+            listener: Listener? = null,
+            config: Configuration = Configuration(),
+        ): FragmentFactory =
+            createFragmentFactory { PdfNavigatorFragment(publication, initialLocator, listener, config) }
 
     }
-
 }
