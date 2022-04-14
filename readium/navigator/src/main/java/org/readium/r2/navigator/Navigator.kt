@@ -120,6 +120,33 @@ interface VisualNavigator : Navigator {
          * The [point] is relative to the navigator's view.
          */
         fun onTap(point: PointF): Boolean = false
+
+        /**
+         * Called when the user starts dragging the content, but nothing handled the event
+         * internally.
+         *
+         * The points are relative to the navigator's view.
+         */
+        @ExperimentalDragGesture
+        fun onDragStart(startPoint: PointF, offset: PointF): Boolean = false
+
+        /**
+         * Called when the user continues dragging the content, but nothing handled the event
+         * internally.
+         *
+         * The points are relative to the navigator's view.
+         */
+        @ExperimentalDragGesture
+        fun onDragMove(startPoint: PointF, offset: PointF): Boolean = false
+
+        /**
+         * Called when the user stops dragging the content, but nothing handled the event
+         * internally.
+         *
+         * The points are relative to the navigator's view.
+         */
+        @ExperimentalDragGesture
+        fun onDragEnd(startPoint: PointF, offset: PointF): Boolean = false
     }
 }
 
