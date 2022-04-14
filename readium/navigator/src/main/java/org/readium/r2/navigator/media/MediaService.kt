@@ -11,6 +11,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.os.Build
 import android.os.Bundle
 import android.os.Process
 import android.os.ResultReceiver
@@ -303,7 +304,7 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
         val currentNavigator: StateFlow<MediaSessionNavigator?> get() = navigator
 
         fun getNavigator(context: Context, publication: Publication, publicationId: PublicationId, initialLocator: Locator?): MediaSessionNavigator {
-            context.startService(Intent(context, serviceClass))
+            context.startForegroundServiceCompat(Intent(context, serviceClass))
 
             currentNavigator.value
                 ?.takeIf { it.publicationId == publicationId }
@@ -327,6 +328,14 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
 
     private class PendingNavigator(val navigator: MediaSessionNavigator, val media: PendingMedia)
 
+}
+
+private fun Context.startForegroundServiceCompat(intent: Intent) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        startForegroundService(intent)
+    } else {
+        startService(intent)
+    }
 }
 
 // FIXME: Move to r2-shared

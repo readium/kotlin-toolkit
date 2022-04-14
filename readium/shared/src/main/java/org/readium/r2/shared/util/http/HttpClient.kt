@@ -95,6 +95,7 @@ class HttpFetchResponse(
 /**
  * Represents a successful HTTP response received from a server.
  *
+ * @param request Request associated with the response.
  * @param url Final URL of the response.
  * @param statusCode Response status code.
  * @param headers HTTP response headers, indexed by their name.
@@ -102,6 +103,7 @@ class HttpFetchResponse(
  *        on `application/octet-stream`.
  */
 data class HttpResponse(
+    val request: HttpRequest,
     val url: String,
     val statusCode: Int,
     val headers: Map<String, List<String>>,
