@@ -32,6 +32,8 @@ All notable changes to this project will be documented in this file. Take a look
 * The new `Navigator.Listener.onJumpToLocator()` API is called every time the navigator jumps to an explicit location, which might break the linear reading progression.
     * For example, it is called when clicking on internal links or programmatically calling `Navigator.go()`, but not when turning pages.
     * You can use this callback to implement a navigation history by differentiating between continuous and discontinuous moves.
+* You can now disable the display cutouts padding in the EPUB navigator (contributed by [@szymn](https://github.com/readium/kotlin-toolkit/pull/101)).
+    * This is useful when the navigator is not laid out full screen.
 * (*experimental*) A new audiobook navigator based on Jetpack `media2`.
     * See the [pull request #80](https://github.com/readium/kotlin-toolkit/pull/80) for the differences with the previous audiobook navigator.
     * This navigator is located in its own module `readium-navigator-media2`. You will need to add it to your dependencies to use it.
