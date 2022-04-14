@@ -86,7 +86,7 @@ class EpubNavigatorFragment private constructor(
         /**
          * Whether padding accounting for display cutouts should be applied.
          */
-        var shouldApplyInsetsPadding: Boolean? = true,
+        val shouldApplyInsetsPadding: Boolean? = true,
     )
 
     interface PaginationListener {

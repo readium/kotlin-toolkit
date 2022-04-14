@@ -62,12 +62,14 @@ class R2EpubPageFragment : Fragment() {
 
     private var isLoading: Boolean = false
 
+    private val navigator: EpubNavigatorFragment?
+        get() = parentFragment as? EpubNavigatorFragment
+
     private val shouldApplyInsetsPadding: Boolean
-        get() = (webView?.navigator as? EpubNavigatorFragment)?.config?.shouldApplyInsetsPadding ?: true
+        get() = navigator?.config?.shouldApplyInsetsPadding ?: true
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val navigatorFragment = parentFragment as EpubNavigatorFragment
         _binding = ViewpagerFragmentEpubBinding.inflate(inflater, container, false)
         containerView = binding.root
         preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
@@ -76,8 +78,9 @@ class R2EpubPageFragment : Fragment() {
         this.webView = webView
 
         webView.visibility = View.INVISIBLE
-        webView.navigator = navigatorFragment
-        webView.listener = navigatorFragment.webViewListener
+        navigator?.let {
+            webView.listener = it.webViewListener
+        }
         webView.preferences = preferences
 
         webView.setScrollMode(preferences.getBoolean(SCROLL_REF, false))
@@ -273,7 +276,7 @@ class R2EpubPageFragment : Fragment() {
     internal val paddingBottom: Int get() = containerView.paddingBottom
 
     private val isCurrentResource: Boolean get() {
-        val epubNavigator = webView?.navigator as? EpubNavigatorFragment ?: return false
+        val epubNavigator = navigator ?: return false
         val currentFragment = (epubNavigator.resourcePager.adapter as? R2PagerAdapter)?.getCurrentFragment() as? R2EpubPageFragment ?: return false
         return tag == currentFragment.tag
     }
@@ -289,7 +292,7 @@ class R2EpubPageFragment : Fragment() {
             webView.visibility = View.VISIBLE
 
             if (isCurrentResource) {
-                val epubNavigator = requireNotNull(webView.navigator as? EpubNavigatorFragment)
+                val epubNavigator = requireNotNull(navigator)
                 val locator = epubNavigator.pendingLocator
                 epubNavigator.pendingLocator = null
                 if (locator != null) {
