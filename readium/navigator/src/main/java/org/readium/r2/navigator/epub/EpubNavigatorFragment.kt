@@ -437,22 +437,8 @@ class EpubNavigatorFragment private constructor(
 
         override fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {
             r2Activity?.onPageChanged(pageIndex = pageIndex, totalPages = totalPages, url = url)
-            if(paginationListener != null) {
-                // Find current locator
-                val resource = publication.readingOrder[resourcePager.currentItem]
-                val progression = currentFragment?.webView?.progression?.coerceIn(0.0, 1.0) ?: 0.0
-                val positions = publication.positionsByResource[resource.href]?.takeIf { it.isNotEmpty() }
-                    ?: return
-
-                val positionIndex = ceil(progression * (positions.size - 1)).toInt()
-                if (!positions.indices.contains(positionIndex)) {
-                    return
-                }
-
-                val locator = positions[positionIndex].copyWithLocations(progression = progression)
-                // Pageindex is actually the page number so to get a zero based index we subtract one.
-                paginationListener.onPageChanged(pageIndex - 1, totalPages, locator)
-            }
+            // pageIndex is actually the page number so to get a zero based index we subtract one.
+            paginationListener?.onPageChanged(pageIndex - 1, totalPages, currentLocator.value)
         }
 
         override fun onPageEnded(end: Boolean) {
