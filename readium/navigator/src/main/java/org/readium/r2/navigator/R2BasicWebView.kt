@@ -75,7 +75,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     lateinit var listener: Listener
-    lateinit var navigator: Navigator
     internal var preferences: SharedPreferences? = null
 
     var resourceUrl: String? = null

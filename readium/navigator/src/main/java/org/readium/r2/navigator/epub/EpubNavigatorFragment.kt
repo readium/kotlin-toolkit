@@ -82,6 +82,11 @@ class EpubNavigatorFragment private constructor(
          * Provide one if you want to customize the selection context menu items.
          */
         var selectionActionModeCallback: ActionMode.Callback? = null,
+
+        /**
+         * Whether padding accounting for display cutouts should be applied.
+         */
+        val shouldApplyInsetsPadding: Boolean? = true,
     )
 
     interface PaginationListener {
