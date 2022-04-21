@@ -698,7 +698,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     val pointerIndex = ev.findPointerIndex(mActivePointerId)
                     val x = ev.getX(pointerIndex)
                     val xDiff = abs(x - mLastMotionX)
-                    if (DEBUG) Timber.v("Moved x to $x diff=$xDiff")
 
                     if (xDiff > mTouchSlop) {
                         if (DEBUG) Timber.v("Starting drag!")

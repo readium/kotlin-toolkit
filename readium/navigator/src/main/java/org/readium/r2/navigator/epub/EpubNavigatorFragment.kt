@@ -373,7 +373,7 @@ class EpubNavigatorFragment private constructor(
                 ?: return null
 
         val rect = json.optRectF("rect")
-            ?.apply { adjustToViewport() }
+            ?.run { adjustedToViewport() }
 
         return Selection(
             locator = currentLocator.value.copy(
@@ -387,17 +387,15 @@ class EpubNavigatorFragment private constructor(
         run(viewModel.clearSelection())
     }
 
-    private fun PointF.adjustToViewport() {
+    private fun PointF.adjustedToViewport(): PointF =
         currentFragment?.paddingTop?.let { top ->
-            y += top
-        }
-    }
+            PointF(x, y + top)
+        } ?: this
 
-    private fun RectF.adjustToViewport() {
-        currentFragment?.paddingTop?.let { top ->
-            this.top += top
-        }
-    }
+    private fun RectF.adjustedToViewport(): RectF =
+        currentFragment?.paddingTop?.let { topOffset ->
+            RectF(left, top + topOffset, right, bottom)
+        } ?: this
 
     // DecorableNavigator
 
@@ -420,6 +418,7 @@ class EpubNavigatorFragment private constructor(
 
     internal val webViewListener: R2BasicWebView.Listener = WebViewListener()
 
+    @OptIn(ExperimentalDragGesture::class)
     private inner class WebViewListener : R2BasicWebView.Listener {
 
         override val readingProgression: ReadingProgression
@@ -472,16 +471,34 @@ class EpubNavigatorFragment private constructor(
             }
         }
 
-        override fun onTap(point: PointF): Boolean {
-            point.adjustToViewport()
-            return listener?.onTap(point) ?: false
-        }
+        override fun onTap(point: PointF): Boolean =
+            listener?.onTap(point.adjustedToViewport()) ?: false
 
-        override fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean {
-            rect.adjustToViewport()
-            point.adjustToViewport()
-            return viewModel.onDecorationActivated(id, group, rect, point)
-        }
+        override fun onDragStart(event: R2BasicWebView.DragEvent): Boolean =
+            listener?.onDragStart(
+                startPoint = event.startPoint.adjustedToViewport(),
+                offset = event.offset
+            ) ?: false
+
+        override fun onDragMove(event: R2BasicWebView.DragEvent): Boolean =
+            listener?.onDragMove(
+                startPoint = event.startPoint.adjustedToViewport(),
+                offset = event.offset
+            ) ?: false
+
+        override fun onDragEnd(event: R2BasicWebView.DragEvent): Boolean =
+            listener?.onDragEnd(
+                startPoint = event.startPoint.adjustedToViewport(),
+                offset = event.offset
+            ) ?: false
+
+        override fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean =
+            viewModel.onDecorationActivated(
+                id = id,
+                group = group,
+                rect = rect.adjustedToViewport(),
+                point = point.adjustedToViewport()
+            )
 
         override fun onProgressionChanged() {
             notifyCurrentLocation()
