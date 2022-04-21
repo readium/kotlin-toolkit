@@ -300,7 +300,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     internal fun updateCurrentItem() {
         val clientWidth = getClientWidth()
         if (!scrollMode && !mIsBeingDragged && clientWidth != null) {
-            mCurItem = scrollX / clientWidth
+            // Sometimes scrollX is not exactly a multiple of clientWidth, so we need to round the result.
+            mCurItem = (scrollX.toDouble() / clientWidth.toDouble()).roundToInt()
         }
     }
 
