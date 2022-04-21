@@ -38,6 +38,7 @@ All notable changes to this project will be documented in this file. Take a look
     * See the [pull request #80](https://github.com/readium/kotlin-toolkit/pull/80) for the differences with the previous audiobook navigator.
     * This navigator is located in its own module `readium-navigator-media2`. You will need to add it to your dependencies to use it.
     * The Test App demonstrates how to use the new audiobook navigator, see `MediaService` and `AudioReaderFragment`.
+* (*experimental*) The EPUB navigator now supports overridable drag gestures. See `VisualNavigator.Listener`.
 
 ### Deprecated
 

@@ -53,12 +53,10 @@ class R2ViewPager : R2RTLViewPager {
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-        if (DEBUG) Timber.d("onInterceptTouchEvent ev.action ${ev.action}")
         if (type == Publication.TYPE.EPUB) {
             when (ev.action and MotionEvent.ACTION_MASK) {
                 MotionEvent.ACTION_DOWN -> {
                     // prevent swipe from view pager directly
-                    if (DEBUG) Timber.d("onInterceptTouchEvent ACTION_DOWN")
                     return false
                 }
             }
