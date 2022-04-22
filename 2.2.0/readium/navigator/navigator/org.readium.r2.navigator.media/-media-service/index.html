@@ -1,0 +1,1190 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Readium Mobile is a toolkit for ebooks, audiobooks and comics written in Swift & Kotlin.">
+      
+      
+        <meta name="author" content="Readium Foundation">
+      
+      
+        <link rel="canonical" href="https://github.com/readium/kotlin-toolkit/2.2.0/readium/navigator/navigator/org.readium.r2.navigator.media/-media-service/">
+      
+      <link rel="icon" href="../../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.9">
+    
+    
+      
+        <title>Index - Readium Kotlin</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.120efc48.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.9647289d.min.css">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../readium_colors.css">
+    
+    <script>__md_scope=new URL("../../../../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#mediaservice" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-component="outdated" hidden>
+        <aside class="md-banner md-banner--warning">
+          
+        </aside>
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../../.." title="Readium Kotlin" class="md-header__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Readium Kotlin
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Index
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/readium/kotlin-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../.." title="Readium Kotlin" class="md-nav__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Readium Kotlin
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/readium/kotlin-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../migration-guide/" class="md-nav__link">
+        Migration Guide
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          API Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="API Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          API Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../shared/" class="md-nav__link">
+        Shared
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../streamer/" class="md-nav__link">
+        Streamer
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../" class="md-nav__link">
+        Navigator
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../opds/" class="md-nav__link">
+        OPDS
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../lcp/" class="md-nav__link">
+        LCP
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#constructors" class="md-nav__link">
+    Constructors
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#types" class="md-nav__link">
+    Types
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    Functions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#properties" class="md-nav__link">
+    Properties
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+  <a href="https://github.com/readium/kotlin-toolkit/edit/master/docs/readium/navigator/navigator/org.readium.r2.navigator.media/-media-service/index.md" title="Edit this page" class="md-content__button md-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+
+<p>//<a href="../../../">navigator</a>/<a href="../">org.readium.r2.navigator.media</a>/<a href="./">MediaService</a></p>
+<h1 id="mediaservice">MediaService<a class="headerlink" href="#mediaservice" title="Permanent link">&para;</a></h1>
+<p>[androidJvm]\
+open class <a href="./">MediaService</a> : <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.html">MediaBrowserServiceCompat</a>, CoroutineScope</p>
+<p><a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.html">MediaBrowserServiceCompat</a> implementation holding the current <a href="../-media-session-navigator/">MediaSessionNavigator</a> for background playback.</p>
+<p>You should override this service in your app and declare it in your AndroidManifest.xml.</p>
+<p>See https://developer.android.com/guide/topics/media-apps/audio-app/building-a-mediabrowserservice</p>
+<h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="-media-service/">MediaService</a></td>
+<td>[androidJvm]<br>fun <a href="-media-service/">MediaService</a>()</td>
+</tr>
+</tbody>
+</table>
+<h2 id="types">Types<a class="headerlink" href="#types" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="-companion/">Companion</a></td>
+<td>[androidJvm]<br>object <a href="-companion/">Companion</a></td>
+</tr>
+<tr>
+<td><a href="-connection/">Connection</a></td>
+<td>[androidJvm]<br>class <a href="-connection/">Connection</a><br>Connection to any running <a href="./">MediaService</a> instance.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="./#-1428659318%2FFunctions%2F-535623568">addSubscription</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1428659318%2FFunctions%2F-535623568">addSubscription</a>(id: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, connection: <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.ConnectionRecord.html">MediaBrowserServiceCompat.ConnectionRecord</a>, token: <a href="https://developer.android.com/reference/kotlin/android/os/IBinder.html">IBinder</a>, options: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1503527768%2FFunctions%2F-535623568">applyOptions</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1503527768%2FFunctions%2F-535623568">applyOptions</a>(list: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/support/v4/media/MediaBrowserCompat.MediaItem.html">MediaBrowserCompat.MediaItem</a>&gt;, options: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/support/v4/media/MediaBrowserCompat.MediaItem.html">MediaBrowserCompat.MediaItem</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="./#1952482396%2FFunctions%2F-535623568">attachBaseContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1952482396%2FFunctions%2F-535623568">attachBaseContext</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1112904828%2FFunctions%2F-535623568">attachToBaseContext</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/RestrictTo.html">RestrictTo</a>(value = [<a href="https://developer.android.com/reference/kotlin/androidx/annotation/RestrictTo.Scope.LIBRARY_GROUP_PREFIX.html">RestrictTo.Scope.LIBRARY_GROUP_PREFIX</a>])<br>open fun <a href="./#1112904828%2FFunctions%2F-535623568">attachToBaseContext</a>(base: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-936523269%2FFunctions%2F-535623568">bindIsolatedService</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-936523269%2FFunctions%2F-535623568">bindIsolatedService</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p3: <a href="https://developer.android.com/reference/kotlin/java/util/concurrent/Executor.html">Executor</a>, p4: <a href="https://developer.android.com/reference/kotlin/android/content/ServiceConnection.html">ServiceConnection</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#2022335150%2FFunctions%2F-535623568">bindService</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#2022335150%2FFunctions%2F-535623568">bindService</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/content/ServiceConnection.html">ServiceConnection</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-764880913%2FFunctions%2F-535623568">bindService</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://developer.android.com/reference/kotlin/java/util/concurrent/Executor.html">Executor</a>, p3: <a href="https://developer.android.com/reference/kotlin/android/content/ServiceConnection.html">ServiceConnection</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-365950384%2FFunctions%2F-535623568">bindServiceAsUser</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-365950384%2FFunctions%2F-535623568">bindServiceAsUser</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/content/ServiceConnection.html">ServiceConnection</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p3: <a href="https://developer.android.com/reference/kotlin/android/os/UserHandle.html">UserHandle</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-315710025%2FFunctions%2F-535623568">checkCallingOrSelfPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-315710025%2FFunctions%2F-535623568">checkCallingOrSelfPermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#832829402%2FFunctions%2F-535623568">checkCallingOrSelfUriPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#832829402%2FFunctions%2F-535623568">checkCallingOrSelfUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1013919811%2FFunctions%2F-535623568">checkCallingOrSelfUriPermissions</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1013919811%2FFunctions%2F-535623568">checkCallingOrSelfUriPermissions</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>&gt;, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int-array/index.html">IntArray</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#893466952%2FFunctions%2F-535623568">checkCallingPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#893466952%2FFunctions%2F-535623568">checkCallingPermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1348946283%2FFunctions%2F-535623568">checkCallingUriPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1348946283%2FFunctions%2F-535623568">checkCallingUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1966715980%2FFunctions%2F-535623568">checkCallingUriPermissions</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1966715980%2FFunctions%2F-535623568">checkCallingUriPermissions</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>&gt;, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int-array/index.html">IntArray</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1698615512%2FFunctions%2F-535623568">checkPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1698615512%2FFunctions%2F-535623568">checkPermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1389999028%2FFunctions%2F-535623568">checkSelfPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1389999028%2FFunctions%2F-535623568">checkSelfPermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#2104701707%2FFunctions%2F-535623568">checkUriPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#2104701707%2FFunctions%2F-535623568">checkUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1290765996%2FFunctions%2F-535623568">checkUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>?, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p4: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p5: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1934262484%2FFunctions%2F-535623568">checkUriPermissions</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1934262484%2FFunctions%2F-535623568">checkUriPermissions</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>&gt;, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int-array/index.html">IntArray</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1564108334%2FFunctions%2F-535623568">clearWallpaper</a></td>
+<td>[androidJvm]<br>~~open~~ ~~override~~ ~~fun~~ <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1564108334%2FFunctions%2F-535623568">~~clearWallpaper~~</a>~~(~~~~)~~</td>
+</tr>
+<tr>
+<td><a href="cover-of-publication/">coverOfPublication</a></td>
+<td>[androidJvm]<br>open suspend fun <a href="cover-of-publication/">coverOfPublication</a>(publicationId: <a href="../../../../../readium/shared/org.readium.r2.shared.publication/-publication-id/index.md">PublicationId</a>, publication: <a href="../../../../shared/shared/org.readium.r2.shared.publication/-publication/">Publication</a>): <a href="https://developer.android.com/reference/kotlin/android/graphics/Bitmap.html">Bitmap</a>?<br>Returns the cover for the given <a href="cover-of-publication/">publication</a> which should be used in media notifications.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1250560058%2FFunctions%2F-535623568">createAttributionContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1250560058%2FFunctions%2F-535623568">createAttributionContext</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1154826084%2FFunctions%2F-535623568">createConfigurationContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1154826084%2FFunctions%2F-535623568">createConfigurationContext</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/res/Configuration.html">Configuration</a>): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1358229057%2FFunctions%2F-535623568">createContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1358229057%2FFunctions%2F-535623568">createContext</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/ContextParams.html">ContextParams</a>): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1654585621%2FFunctions%2F-535623568">createContextForSplit</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1654585621%2FFunctions%2F-535623568">createContextForSplit</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-2131343837%2FFunctions%2F-535623568">createDeviceProtectedStorageContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-2131343837%2FFunctions%2F-535623568">createDeviceProtectedStorageContext</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-296982170%2FFunctions%2F-535623568">createDisplayContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-296982170%2FFunctions%2F-535623568">createDisplayContext</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/Display.html">Display</a>): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#212314043%2FFunctions%2F-535623568">createPackageContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#212314043%2FFunctions%2F-535623568">createPackageContext</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1685281025%2FFunctions%2F-535623568">createWindowContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1685281025%2FFunctions%2F-535623568">createWindowContext</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#291506760%2FFunctions%2F-535623568">createWindowContext</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/view/Display.html">Display</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-2015717810%2FFunctions%2F-535623568">databaseList</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-2015717810%2FFunctions%2F-535623568">databaseList</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1521633731%2FFunctions%2F-535623568">deleteDatabase</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1521633731%2FFunctions%2F-535623568">deleteDatabase</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1794089596%2FFunctions%2F-535623568">deleteFile</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1794089596%2FFunctions%2F-535623568">deleteFile</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1249690503%2FFunctions%2F-535623568">deleteSharedPreferences</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1249690503%2FFunctions%2F-535623568">deleteSharedPreferences</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#679382826%2FFunctions%2F-535623568">dump</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#679382826%2FFunctions%2F-535623568">dump</a>(fd: <a href="https://developer.android.com/reference/kotlin/java/io/FileDescriptor.html">FileDescriptor</a>, writer: <a href="https://developer.android.com/reference/kotlin/java/io/PrintWriter.html">PrintWriter</a>, args: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-373876383%2FFunctions%2F-535623568">enforceCallingOrSelfPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-373876383%2FFunctions%2F-535623568">enforceCallingOrSelfPermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1996391077%2FFunctions%2F-535623568">enforceCallingOrSelfUriPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1996391077%2FFunctions%2F-535623568">enforceCallingOrSelfUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#577330480%2FFunctions%2F-535623568">enforceCallingPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#577330480%2FFunctions%2F-535623568">enforceCallingPermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#370165494%2FFunctions%2F-535623568">enforceCallingUriPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#370165494%2FFunctions%2F-535623568">enforceCallingUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1911070116%2FFunctions%2F-535623568">enforcePermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1911070116%2FFunctions%2F-535623568">enforcePermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-2129139702%2FFunctions%2F-535623568">enforceUriPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-2129139702%2FFunctions%2F-535623568">enforceUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p4: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>)<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#355973580%2FFunctions%2F-535623568">enforceUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>?, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p4: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p5: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p6: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1346241261%2FFunctions%2F-535623568">fileList</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1346241261%2FFunctions%2F-535623568">fileList</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="./#1881791868%2FFunctions%2F-535623568">getApplication</a></td>
+<td>[androidJvm]<br>fun <a href="./#1881791868%2FFunctions%2F-535623568">getApplication</a>(): <a href="https://developer.android.com/reference/kotlin/android/app/Application.html">Application</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#720574270%2FFunctions%2F-535623568">getApplicationContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#720574270%2FFunctions%2F-535623568">getApplicationContext</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#875309695%2FFunctions%2F-535623568">getApplicationInfo</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#875309695%2FFunctions%2F-535623568">getApplicationInfo</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/pm/ApplicationInfo.html">ApplicationInfo</a></td>
+</tr>
+<tr>
+<td><a href="./#929224314%2FFunctions%2F-535623568">getAssets</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#929224314%2FFunctions%2F-535623568">getAssets</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/res/AssetManager.html">AssetManager</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#745115299%2FFunctions%2F-535623568">getAttributionSource</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#745115299%2FFunctions%2F-535623568">getAttributionSource</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/AttributionSource.html">AttributionSource</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-2059689374%2FFunctions%2F-535623568">getAttributionTag</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-2059689374%2FFunctions%2F-535623568">getAttributionTag</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1836627711%2FFunctions%2F-535623568">getBaseContext</a></td>
+<td>[androidJvm]<br>open fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1836627711%2FFunctions%2F-535623568">getBaseContext</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a></td>
+</tr>
+<tr>
+<td><a href="./#1197439825%2FFunctions%2F-535623568">getBrowserRootHints</a></td>
+<td>[androidJvm]<br>fun <a href="./#1197439825%2FFunctions%2F-535623568">getBrowserRootHints</a>(): <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-803358382%2FFunctions%2F-535623568">getCacheDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-803358382%2FFunctions%2F-535623568">getCacheDir</a>(): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1242041746%2FFunctions%2F-535623568">getClassLoader</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1242041746%2FFunctions%2F-535623568">getClassLoader</a>(): <a href="https://developer.android.com/reference/kotlin/java/lang/ClassLoader.html">ClassLoader</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1138511077%2FFunctions%2F-535623568">getCodeCacheDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1138511077%2FFunctions%2F-535623568">getCodeCacheDir</a>(): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1612713529%2FFunctions%2F-535623568">getColor</a></td>
+<td>[androidJvm]<br>fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1612713529%2FFunctions%2F-535623568">getColor</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#49622702%2FFunctions%2F-535623568">getColorStateList</a></td>
+<td>[androidJvm]<br>fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#49622702%2FFunctions%2F-535623568">getColorStateList</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/content/res/ColorStateList.html">ColorStateList</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1924753378%2FFunctions%2F-535623568">getContentResolver</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1924753378%2FFunctions%2F-535623568">getContentResolver</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/ContentResolver.html">ContentResolver</a></td>
+</tr>
+<tr>
+<td><a href="./#2147273270%2FFunctions%2F-535623568">getCurrentBrowserInfo</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a><br>fun <a href="./#2147273270%2FFunctions%2F-535623568">getCurrentBrowserInfo</a>(): <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaSessionManager.RemoteUserInfo.html">MediaSessionManager.RemoteUserInfo</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1182335943%2FFunctions%2F-535623568">getDatabasePath</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1182335943%2FFunctions%2F-535623568">getDatabasePath</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#666732474%2FFunctions%2F-535623568">getDataDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#666732474%2FFunctions%2F-535623568">getDataDir</a>(): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#264472777%2FFunctions%2F-535623568">getDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#264472777%2FFunctions%2F-535623568">getDir</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#488073307%2FFunctions%2F-535623568">getDisplay</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#488073307%2FFunctions%2F-535623568">getDisplay</a>(): <a href="https://developer.android.com/reference/kotlin/android/view/Display.html">Display</a>?</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-953197380%2FFunctions%2F-535623568">getDrawable</a></td>
+<td>[androidJvm]<br>fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-953197380%2FFunctions%2F-535623568">getDrawable</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/graphics/drawable/Drawable.html">Drawable</a>?</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#544398023%2FFunctions%2F-535623568">getExternalCacheDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#544398023%2FFunctions%2F-535623568">getExternalCacheDir</a>(): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a>?</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1262724320%2FFunctions%2F-535623568">getExternalCacheDirs</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1262724320%2FFunctions%2F-535623568">getExternalCacheDirs</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1987272293%2FFunctions%2F-535623568">getExternalFilesDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1987272293%2FFunctions%2F-535623568">getExternalFilesDir</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a>?</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-2070683431%2FFunctions%2F-535623568">getExternalFilesDirs</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-2070683431%2FFunctions%2F-535623568">getExternalFilesDirs</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1078368190%2FFunctions%2F-535623568">getExternalMediaDirs</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1078368190%2FFunctions%2F-535623568">getExternalMediaDirs</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-2018610489%2FFunctions%2F-535623568">getFilesDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-2018610489%2FFunctions%2F-535623568">getFilesDir</a>(): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1523976920%2FFunctions%2F-535623568">getFileStreamPath</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1523976920%2FFunctions%2F-535623568">getFileStreamPath</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="./#857055552%2FFunctions%2F-535623568">getForegroundServiceType</a></td>
+<td>[androidJvm]<br>fun <a href="./#857055552%2FFunctions%2F-535623568">getForegroundServiceType</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1205639281%2FFunctions%2F-535623568">getMainExecutor</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1205639281%2FFunctions%2F-535623568">getMainExecutor</a>(): <a href="https://developer.android.com/reference/kotlin/java/util/concurrent/Executor.html">Executor</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#400244339%2FFunctions%2F-535623568">getMainLooper</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#400244339%2FFunctions%2F-535623568">getMainLooper</a>(): <a href="https://developer.android.com/reference/kotlin/android/os/Looper.html">Looper</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1811406884%2FFunctions%2F-535623568">getNoBackupFilesDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1811406884%2FFunctions%2F-535623568">getNoBackupFilesDir</a>(): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#252787007%2FFunctions%2F-535623568">getObbDir</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#252787007%2FFunctions%2F-535623568">getObbDir</a>(): <a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#812717416%2FFunctions%2F-535623568">getObbDirs</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#812717416%2FFunctions%2F-535623568">getObbDirs</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://developer.android.com/reference/kotlin/java/io/File.html">File</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-814243443%2FFunctions%2F-535623568">getOpPackageName</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-814243443%2FFunctions%2F-535623568">getOpPackageName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1681869883%2FFunctions%2F-535623568">getPackageCodePath</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1681869883%2FFunctions%2F-535623568">getPackageCodePath</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#224992758%2FFunctions%2F-535623568">getPackageManager</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#224992758%2FFunctions%2F-535623568">getPackageManager</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/pm/PackageManager.html">PackageManager</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1158183924%2FFunctions%2F-535623568">getPackageName</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1158183924%2FFunctions%2F-535623568">getPackageName</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#512700484%2FFunctions%2F-535623568">getPackageResourcePath</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#512700484%2FFunctions%2F-535623568">getPackageResourcePath</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-417920553%2FFunctions%2F-535623568">getParams</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-417920553%2FFunctions%2F-535623568">getParams</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/ContextParams.html">ContextParams</a>?</td>
+</tr>
+<tr>
+<td><a href="./#464732248%2FFunctions%2F-535623568">getResources</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#464732248%2FFunctions%2F-535623568">getResources</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/res/Resources.html">Resources</a></td>
+</tr>
+<tr>
+<td><a href="./#-1044914896%2FFunctions%2F-535623568">getSessionToken</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/Nullable.html">Nullable</a><br>open fun <a href="./#-1044914896%2FFunctions%2F-535623568">getSessionToken</a>(): <a href="https://developer.android.com/reference/kotlin/android/support/v4/media/session/MediaSessionCompat.Token.html">MediaSessionCompat.Token</a>?</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1470789827%2FFunctions%2F-535623568">getSharedPreferences</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1470789827%2FFunctions%2F-535623568">getSharedPreferences</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/content/SharedPreferences.html">SharedPreferences</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1083071447%2FFunctions%2F-535623568">getString</a></td>
+<td>[androidJvm]<br>fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1083071447%2FFunctions%2F-535623568">getString</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><br>fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1906424039%2FFunctions%2F-535623568">getString</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, vararg p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1033418729%2FFunctions%2F-535623568">getSystemService</a></td>
+<td>[androidJvm]<br>fun &lt;<a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1033418729%2FFunctions%2F-535623568">T</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a>&gt; <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1033418729%2FFunctions%2F-535623568">getSystemService</a>(p0: <a href="https://developer.android.com/reference/kotlin/java/lang/Class.html">Class</a>&lt;<a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1033418729%2FFunctions%2F-535623568">T</a>&gt;): <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1033418729%2FFunctions%2F-535623568">T</a><br>open override fun <a href="./#-1204794803%2FFunctions%2F-535623568">getSystemService</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1607307550%2FFunctions%2F-535623568">getSystemServiceName</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1607307550%2FFunctions%2F-535623568">getSystemServiceName</a>(p0: <a href="https://developer.android.com/reference/kotlin/java/lang/Class.html">Class</a>&lt;*&gt;): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1417941683%2FFunctions%2F-535623568">getText</a></td>
+<td>[androidJvm]<br>fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1417941683%2FFunctions%2F-535623568">getText</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-char-sequence/index.html">CharSequence</a></td>
+</tr>
+<tr>
+<td><a href="./#-1761986252%2FFunctions%2F-535623568">getTheme</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1761986252%2FFunctions%2F-535623568">getTheme</a>(): <a href="https://developer.android.com/reference/kotlin/android/content/res/Resources.Theme.html">Resources.Theme</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-721579237%2FFunctions%2F-535623568">getWallpaper</a></td>
+<td>[androidJvm]<br>~~open~~ ~~override~~ ~~fun~~ <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-721579237%2FFunctions%2F-535623568">~~getWallpaper~~</a>~~(~~~~)~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/graphics/drawable/Drawable.html">Drawable</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-662155776%2FFunctions%2F-535623568">getWallpaperDesiredMinimumHeight</a></td>
+<td>[androidJvm]<br>~~open~~ ~~override~~ ~~fun~~ <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-662155776%2FFunctions%2F-535623568">~~getWallpaperDesiredMinimumHeight~~</a>~~(~~~~)~~~~:~~ <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#295343597%2FFunctions%2F-535623568">getWallpaperDesiredMinimumWidth</a></td>
+<td>[androidJvm]<br>~~open~~ ~~override~~ ~~fun~~ <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#295343597%2FFunctions%2F-535623568">~~getWallpaperDesiredMinimumWidth~~</a>~~(~~~~)~~~~:~~ <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#715282874%2FFunctions%2F-535623568">grantUriPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#715282874%2FFunctions%2F-535623568">grantUriPermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="is-client-authorized/">isClientAuthorized</a></td>
+<td>[androidJvm]<br>open fun <a href="is-client-authorized/">isClientAuthorized</a>(packageName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, uid: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>Override to control which app can access the MediaSession through the MediaBrowserService. By default, only our own app can.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1565618010%2FFunctions%2F-535623568">isDeviceProtectedStorage</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1565618010%2FFunctions%2F-535623568">isDeviceProtectedStorage</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1776278686%2FFunctions%2F-535623568">isRestricted</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1776278686%2FFunctions%2F-535623568">isRestricted</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#2131014658%2FFunctions%2F-535623568">isUiContext</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#2131014658%2FFunctions%2F-535623568">isUiContext</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#896736726%2FFunctions%2F-535623568">isValidPackage</a></td>
+<td>[androidJvm]<br>open fun <a href="./#896736726%2FFunctions%2F-535623568">isValidPackage</a>(pkg: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, uid: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1531556325%2FFunctions%2F-535623568">moveDatabaseFrom</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1531556325%2FFunctions%2F-535623568">moveDatabaseFrom</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-336755131%2FFunctions%2F-535623568">moveSharedPreferencesFrom</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-336755131%2FFunctions%2F-535623568">moveSharedPreferencesFrom</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-419030457%2FFunctions%2F-535623568">notifyChildrenChanged</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-419030457%2FFunctions%2F-535623568">notifyChildrenChanged</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>parentId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>)<br>open fun <a href="./#1135984669%2FFunctions%2F-535623568">notifyChildrenChanged</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>parentId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>options: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>)<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/RestrictTo.html">RestrictTo</a>(value = [<a href="https://developer.android.com/reference/kotlin/androidx/annotation/RestrictTo.Scope.LIBRARY_GROUP_PREFIX.html">RestrictTo.Scope.LIBRARY_GROUP_PREFIX</a>])<br>open fun <a href="./#1577192543%2FFunctions%2F-535623568">notifyChildrenChanged</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>remoteUserInfo: <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaSessionManager.RemoteUserInfo.html">MediaSessionManager.RemoteUserInfo</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>parentId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>options: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1790084466%2FFunctions%2F-535623568">obtainStyledAttributes</a></td>
+<td>[androidJvm]<br>fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1790084466%2FFunctions%2F-535623568">obtainStyledAttributes</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int-array/index.html">IntArray</a>): <a href="https://developer.android.com/reference/kotlin/android/content/res/TypedArray.html">TypedArray</a><br>fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1642243463%2FFunctions%2F-535623568">obtainStyledAttributes</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/util/AttributeSet.html">AttributeSet</a>?, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int-array/index.html">IntArray</a>): <a href="https://developer.android.com/reference/kotlin/android/content/res/TypedArray.html">TypedArray</a><br>fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1436889597%2FFunctions%2F-535623568">obtainStyledAttributes</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int-array/index.html">IntArray</a>): <a href="https://developer.android.com/reference/kotlin/android/content/res/TypedArray.html">TypedArray</a><br>fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1344552345%2FFunctions%2F-535623568">obtainStyledAttributes</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/util/AttributeSet.html">AttributeSet</a>?, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int-array/index.html">IntArray</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/content/res/TypedArray.html">TypedArray</a></td>
+</tr>
+<tr>
+<td><a href="./#-149586939%2FFunctions%2F-535623568">onBind</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-149586939%2FFunctions%2F-535623568">onBind</a>(intent: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>): <a href="https://developer.android.com/reference/kotlin/android/os/IBinder.html">IBinder</a>?</td>
+</tr>
+<tr>
+<td><a href="on-command/">onCommand</a></td>
+<td>[androidJvm]<br>open fun <a href="on-command/">onCommand</a>(command: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, args: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?, cb: <a href="https://developer.android.com/reference/kotlin/android/os/ResultReceiver.html">ResultReceiver</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>Handles a custom command delivered by <a href="https://developer.android.com/reference/kotlin/android/support/v4/media/session/MediaSessionCompat.Callback.html#oncommand">MediaSessionCompat.Callback.onCommand</a>.</td>
+</tr>
+<tr>
+<td><a href="./#-26093835%2FFunctions%2F-535623568">onConfigurationChanged</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-26093835%2FFunctions%2F-535623568">onConfigurationChanged</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/res/Configuration.html">Configuration</a>)</td>
+</tr>
+<tr>
+<td><a href="on-create/">onCreate</a></td>
+<td>[androidJvm]<br>open override fun <a href="on-create/">onCreate</a>()</td>
+</tr>
+<tr>
+<td><a href="on-create-notification-intent/">onCreateNotificationIntent</a></td>
+<td>[androidJvm]<br>open suspend fun <a href="on-create-notification-intent/">onCreateNotificationIntent</a>(publicationId: <a href="../../../../../readium/shared/org.readium.r2.shared.publication/-publication-id/index.md">PublicationId</a>, publication: <a href="../../../../shared/shared/org.readium.r2.shared.publication/-publication/">Publication</a>): <a href="https://developer.android.com/reference/kotlin/android/app/PendingIntent.html">PendingIntent</a>?<br>Creates the <a href="https://developer.android.com/reference/kotlin/android/app/PendingIntent.html">PendingIntent</a> which will be used to start the media activity when the user activates the media notification.</td>
+</tr>
+<tr>
+<td><a href="on-create-notification-metadata/">onCreateNotificationMetadata</a></td>
+<td>[androidJvm]<br>open fun <a href="on-create-notification-metadata/">onCreateNotificationMetadata</a>(publicationId: <a href="../../../../../readium/shared/org.readium.r2.shared.publication/-publication-id/index.md">PublicationId</a>, publication: <a href="../../../../shared/shared/org.readium.r2.shared.publication/-publication/">Publication</a>, link: <a href="../../../../shared/shared/org.readium.r2.shared.publication/-link/">Link</a>): <a href="../-media-player/-notification-metadata/">MediaPlayer.NotificationMetadata</a><br>Creates the <a href="../-media-player/-notification-metadata/">MediaPlayer.NotificationMetadata</a> for the given resource <a href="on-create-notification-metadata/">link</a>.</td>
+</tr>
+<tr>
+<td><a href="on-create-player/">onCreatePlayer</a></td>
+<td>[androidJvm]<br>open fun <a href="on-create-player/">onCreatePlayer</a>(mediaSession: <a href="https://developer.android.com/reference/kotlin/android/support/v4/media/session/MediaSessionCompat.html">MediaSessionCompat</a>, media: <a href="../-pending-media/">PendingMedia</a>): <a href="../-media-player/">MediaPlayer</a><br>Creates the instance of <a href="../-media-player/">MediaPlayer</a> which will be used for playing the given <a href="on-create-player/">media</a>.</td>
+</tr>
+<tr>
+<td><a href="./#334058828%2FFunctions%2F-535623568">onCustomAction</a></td>
+<td>[androidJvm]<br>open fun <a href="./#334058828%2FFunctions%2F-535623568">onCustomAction</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>action: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, extras: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>result: <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.Result.html">MediaBrowserServiceCompat.Result</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>&gt;)</td>
+</tr>
+<tr>
+<td><a href="on-destroy/">onDestroy</a></td>
+<td>[androidJvm]<br>open override fun <a href="on-destroy/">onDestroy</a>()</td>
+</tr>
+<tr>
+<td><a href="on-get-root/">onGetRoot</a></td>
+<td>[androidJvm]<br>open override fun <a href="on-get-root/">onGetRoot</a>(clientPackageName: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, clientUid: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, rootHints: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?): <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.BrowserRoot.html">MediaBrowserServiceCompat.BrowserRoot</a>?</td>
+</tr>
+<tr>
+<td><a href="on-load-children/">onLoadChildren</a></td>
+<td>[androidJvm]<br>open override fun <a href="on-load-children/">onLoadChildren</a>(parentId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, result: <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.Result.html">MediaBrowserServiceCompat.Result</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/support/v4/media/MediaBrowserCompat.MediaItem.html">MediaBrowserCompat.MediaItem</a>&gt;&gt;)<br>open fun <a href="./#-1965674468%2FFunctions%2F-535623568">onLoadChildren</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>parentId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>result: <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.Result.html">MediaBrowserServiceCompat.Result</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/support/v4/media/MediaBrowserCompat.MediaItem.html">MediaBrowserCompat.MediaItem</a>&gt;&gt;, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>options: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1274094610%2FFunctions%2F-535623568">onLoadItem</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1274094610%2FFunctions%2F-535623568">onLoadItem</a>(itemId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>result: <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.Result.html">MediaBrowserServiceCompat.Result</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/support/v4/media/MediaBrowserCompat.MediaItem.html">MediaBrowserCompat.MediaItem</a>&gt;)</td>
+</tr>
+<tr>
+<td><a href="./#914780206%2FFunctions%2F-535623568">onLowMemory</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#914780206%2FFunctions%2F-535623568">onLowMemory</a>()</td>
+</tr>
+<tr>
+<td><a href="on-player-stopped/">onPlayerStopped</a></td>
+<td>[androidJvm]<br>open fun <a href="on-player-stopped/">onPlayerStopped</a>()<br>Called when the underlying <a href="../-media-player/">MediaPlayer</a> was stopped.</td>
+</tr>
+<tr>
+<td><a href="./#1824585879%2FFunctions%2F-535623568">onRebind</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1824585879%2FFunctions%2F-535623568">onRebind</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>)</td>
+</tr>
+<tr>
+<td><a href="on-resource-load-failed/">onResourceLoadFailed</a></td>
+<td>[androidJvm]<br>open fun <a href="on-resource-load-failed/">onResourceLoadFailed</a>(link: <a href="../../../../shared/shared/org.readium.r2.shared.publication/-link/">Link</a>, error: <a href="../../../../shared/shared/org.readium.r2.shared.fetcher/-resource/-exception/">Resource.Exception</a>)<br>Called when a resource failed to be loaded, for example because the Internet connection is offline and the resource is streamed.</td>
+</tr>
+<tr>
+<td><a href="./#-798942163%2FFunctions%2F-535623568">onSearch</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-798942163%2FFunctions%2F-535623568">onSearch</a>(@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>query: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, extras: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>, @<a href="https://developer.android.com/reference/kotlin/androidx/annotation/NonNull.html">NonNull</a>result: <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.Result.html">MediaBrowserServiceCompat.Result</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/support/v4/media/MediaBrowserCompat.MediaItem.html">MediaBrowserCompat.MediaItem</a>&gt;&gt;)</td>
+</tr>
+<tr>
+<td><a href="./#-886123252%2FFunctions%2F-535623568">onStart</a></td>
+<td>[androidJvm]<br>~~open~~ ~~fun~~ <a href="./#-886123252%2FFunctions%2F-535623568">~~onStart~~</a>~~(~~~~p0~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>~~,~~ ~~p1~~~~:~~ <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>~~)~~</td>
+</tr>
+<tr>
+<td><a href="./#-1759072834%2FFunctions%2F-535623568">onStartCommand</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1759072834%2FFunctions%2F-535623568">onStartCommand</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></td>
+</tr>
+<tr>
+<td><a href="./#622669084%2FFunctions%2F-535623568">onSubscribe</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/RestrictTo.html">RestrictTo</a>(value = [<a href="https://developer.android.com/reference/kotlin/androidx/annotation/RestrictTo.Scope.LIBRARY.html">RestrictTo.Scope.LIBRARY</a>])<br>open fun <a href="./#622669084%2FFunctions%2F-535623568">onSubscribe</a>(id: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, option: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1414326104%2FFunctions%2F-535623568">onTaskRemoved</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1414326104%2FFunctions%2F-535623568">onTaskRemoved</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-572197262%2FFunctions%2F-535623568">onTrimMemory</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-572197262%2FFunctions%2F-535623568">onTrimMemory</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1324451215%2FFunctions%2F-535623568">onUnbind</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1324451215%2FFunctions%2F-535623568">onUnbind</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#18589709%2FFunctions%2F-535623568">onUnsubscribe</a></td>
+<td>[androidJvm]<br>@<a href="https://developer.android.com/reference/kotlin/androidx/annotation/RestrictTo.html">RestrictTo</a>(value = [<a href="https://developer.android.com/reference/kotlin/androidx/annotation/RestrictTo.Scope.LIBRARY.html">RestrictTo.Scope.LIBRARY</a>])<br>open fun <a href="./#18589709%2FFunctions%2F-535623568">onUnsubscribe</a>(id: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-436133483%2FFunctions%2F-535623568">openFileInput</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-436133483%2FFunctions%2F-535623568">openFileInput</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://developer.android.com/reference/kotlin/java/io/FileInputStream.html">FileInputStream</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1288028519%2FFunctions%2F-535623568">openFileOutput</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1288028519%2FFunctions%2F-535623568">openFileOutput</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/java/io/FileOutputStream.html">FileOutputStream</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-352848248%2FFunctions%2F-535623568">openOrCreateDatabase</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-352848248%2FFunctions%2F-535623568">openOrCreateDatabase</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://developer.android.com/reference/kotlin/android/database/sqlite/SQLiteDatabase.CursorFactory.html">SQLiteDatabase.CursorFactory</a>): <a href="https://developer.android.com/reference/kotlin/android/database/sqlite/SQLiteDatabase.html">SQLiteDatabase</a><br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1846808329%2FFunctions%2F-535623568">openOrCreateDatabase</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://developer.android.com/reference/kotlin/android/database/sqlite/SQLiteDatabase.CursorFactory.html">SQLiteDatabase.CursorFactory</a>, p3: <a href="https://developer.android.com/reference/kotlin/android/database/DatabaseErrorHandler.html">DatabaseErrorHandler</a>?): <a href="https://developer.android.com/reference/kotlin/android/database/sqlite/SQLiteDatabase.html">SQLiteDatabase</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1166010676%2FFunctions%2F-535623568">peekWallpaper</a></td>
+<td>[androidJvm]<br>~~open~~ ~~override~~ ~~fun~~ <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1166010676%2FFunctions%2F-535623568">~~peekWallpaper~~</a>~~(~~~~)~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/graphics/drawable/Drawable.html">Drawable</a></td>
+</tr>
+<tr>
+<td><a href="./#1049741784%2FFunctions%2F-535623568">performCustomAction</a></td>
+<td>[androidJvm]<br>open fun <a href="./#1049741784%2FFunctions%2F-535623568">performCustomAction</a>(action: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, extras: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>, connection: <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.ConnectionRecord.html">MediaBrowserServiceCompat.ConnectionRecord</a>, receiver: ResultReceiver)</td>
+</tr>
+<tr>
+<td><a href="./#-1844224809%2FFunctions%2F-535623568">performLoadChildren</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1844224809%2FFunctions%2F-535623568">performLoadChildren</a>(parentId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, connection: <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.ConnectionRecord.html">MediaBrowserServiceCompat.ConnectionRecord</a>, subscribeOptions: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>, notifyChildrenChangedOptions: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-1501220836%2FFunctions%2F-535623568">performLoadItem</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-1501220836%2FFunctions%2F-535623568">performLoadItem</a>(itemId: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, connection: <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.ConnectionRecord.html">MediaBrowserServiceCompat.ConnectionRecord</a>, receiver: ResultReceiver)</td>
+</tr>
+<tr>
+<td><a href="./#-2135308201%2FFunctions%2F-535623568">performSearch</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-2135308201%2FFunctions%2F-535623568">performSearch</a>(query: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, extras: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>, connection: <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.ConnectionRecord.html">MediaBrowserServiceCompat.ConnectionRecord</a>, receiver: ResultReceiver)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1516453775%2FFunctions%2F-535623568">registerComponentCallbacks</a></td>
+<td>[androidJvm]<br>open fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1516453775%2FFunctions%2F-535623568">registerComponentCallbacks</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/ComponentCallbacks.html">ComponentCallbacks</a>)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#369060837%2FFunctions%2F-535623568">registerReceiver</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#369060837%2FFunctions%2F-535623568">registerReceiver</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?, p1: <a href="https://developer.android.com/reference/kotlin/android/content/IntentFilter.html">IntentFilter</a>): <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>?<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#180699224%2FFunctions%2F-535623568">registerReceiver</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?, p1: <a href="https://developer.android.com/reference/kotlin/android/content/IntentFilter.html">IntentFilter</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>?<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1896280668%2FFunctions%2F-535623568">registerReceiver</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?, p1: <a href="https://developer.android.com/reference/kotlin/android/content/IntentFilter.html">IntentFilter</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p3: <a href="https://developer.android.com/reference/kotlin/android/os/Handler.html">Handler</a>?): <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>?<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-444475007%2FFunctions%2F-535623568">registerReceiver</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?, p1: <a href="https://developer.android.com/reference/kotlin/android/content/IntentFilter.html">IntentFilter</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p3: <a href="https://developer.android.com/reference/kotlin/android/os/Handler.html">Handler</a>?, p4: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>?</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1734837009%2FFunctions%2F-535623568">removeStickyBroadcast</a></td>
+<td>[androidJvm]<br>~~open~~ ~~override~~ ~~fun~~ <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1734837009%2FFunctions%2F-535623568">~~removeStickyBroadcast~~</a>~~(~~~~p0~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>~~)~~</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#588277431%2FFunctions%2F-535623568">removeStickyBroadcastAsUser</a></td>
+<td>[androidJvm]<br>~~open~~ ~~override~~ ~~fun~~ <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#588277431%2FFunctions%2F-535623568">~~removeStickyBroadcastAsUser~~</a>~~(~~~~p0~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>~~,~~ ~~p1~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/os/UserHandle.html">UserHandle</a>~~)~~</td>
+</tr>
+<tr>
+<td><a href="./#-452881511%2FFunctions%2F-535623568">removeSubscription</a></td>
+<td>[androidJvm]<br>open fun <a href="./#-452881511%2FFunctions%2F-535623568">removeSubscription</a>(id: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, connection: <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.ConnectionRecord.html">MediaBrowserServiceCompat.ConnectionRecord</a>, token: <a href="https://developer.android.com/reference/kotlin/android/os/IBinder.html">IBinder</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1459364395%2FFunctions%2F-535623568">revokeUriPermission</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1459364395%2FFunctions%2F-535623568">revokeUriPermission</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-401097840%2FFunctions%2F-535623568">revokeUriPermission</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#689861098%2FFunctions%2F-535623568">sendBroadcast</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#689861098%2FFunctions%2F-535623568">sendBroadcast</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>)<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#281415540%2FFunctions%2F-535623568">sendBroadcast</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#288711986%2FFunctions%2F-535623568">sendBroadcastAsUser</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#288711986%2FFunctions%2F-535623568">sendBroadcastAsUser</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/os/UserHandle.html">UserHandle</a>)<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#546382636%2FFunctions%2F-535623568">sendBroadcastAsUser</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/os/UserHandle.html">UserHandle</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#298882104%2FFunctions%2F-535623568">sendBroadcastWithMultiplePermissions</a></td>
+<td>[androidJvm]<br>open fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#298882104%2FFunctions%2F-535623568">sendBroadcastWithMultiplePermissions</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-2119529981%2FFunctions%2F-535623568">sendOrderedBroadcast</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-2119529981%2FFunctions%2F-535623568">sendOrderedBroadcast</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?)<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#2070291024%2FFunctions%2F-535623568">sendOrderedBroadcast</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p2: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?, p3: <a href="https://developer.android.com/reference/kotlin/android/os/Handler.html">Handler</a>?, p4: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p5: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p6: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1131561336%2FFunctions%2F-535623568">sendOrderedBroadcast</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p3: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?, p4: <a href="https://developer.android.com/reference/kotlin/android/os/Handler.html">Handler</a>?, p5: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p6: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p7: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)<br>open fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1922483713%2FFunctions%2F-535623568">sendOrderedBroadcast</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p4: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?, p5: <a href="https://developer.android.com/reference/kotlin/android/os/Handler.html">Handler</a>?, p6: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p7: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?, p8: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1495784840%2FFunctions%2F-535623568">sendOrderedBroadcastAsUser</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1495784840%2FFunctions%2F-535623568">sendOrderedBroadcastAsUser</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/os/UserHandle.html">UserHandle</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p3: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?, p4: <a href="https://developer.android.com/reference/kotlin/android/os/Handler.html">Handler</a>?, p5: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p6: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p7: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#112235123%2FFunctions%2F-535623568">sendStickyBroadcast</a></td>
+<td>[androidJvm]<br>~~open~~ ~~override~~ ~~fun~~ <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#112235123%2FFunctions%2F-535623568">~~sendStickyBroadcast~~</a>~~(~~~~p0~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>~~)~~<br>~~open~~ ~~override~~ ~~fun~~ <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-118572358%2FFunctions%2F-535623568">~~sendStickyBroadcast~~</a>~~(~~~~p0~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>~~,~~ ~~p1~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?~~)~~</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-669462981%2FFunctions%2F-535623568">sendStickyBroadcastAsUser</a></td>
+<td>[androidJvm]<br>~~open~~ ~~override~~ ~~fun~~ <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-669462981%2FFunctions%2F-535623568">~~sendStickyBroadcastAsUser~~</a>~~(~~~~p0~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>~~,~~ ~~p1~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/os/UserHandle.html">UserHandle</a>~~)~~</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#758100831%2FFunctions%2F-535623568">sendStickyOrderedBroadcast</a></td>
+<td>[androidJvm]<br>~~open~~ ~~override~~ ~~fun~~ <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#758100831%2FFunctions%2F-535623568">~~sendStickyOrderedBroadcast~~</a>~~(~~~~p0~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>~~,~~ ~~p1~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?~~,~~ ~~p2~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/os/Handler.html">Handler</a>?~~,~~ ~~p3~~~~:~~ <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>~~,~~ ~~p4~~~~:~~ <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?~~,~~ ~~p5~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?~~)~~</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1135629991%2FFunctions%2F-535623568">sendStickyOrderedBroadcastAsUser</a></td>
+<td>[androidJvm]<br>~~open~~ ~~override~~ ~~fun~~ <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1135629991%2FFunctions%2F-535623568">~~sendStickyOrderedBroadcastAsUser~~</a>~~(~~~~p0~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>~~,~~ ~~p1~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/os/UserHandle.html">UserHandle</a>~~,~~ ~~p2~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>?~~,~~ ~~p3~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/os/Handler.html">Handler</a>?~~,~~ ~~p4~~~~:~~ <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>~~,~~ ~~p5~~~~:~~ <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?~~,~~ ~~p6~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?~~)~~</td>
+</tr>
+<tr>
+<td><a href="./#227224907%2FFunctions%2F-535623568">setSessionToken</a></td>
+<td>[androidJvm]<br>open fun <a href="./#227224907%2FFunctions%2F-535623568">setSessionToken</a>(token: <a href="https://developer.android.com/reference/kotlin/android/support/v4/media/session/MediaSessionCompat.Token.html">MediaSessionCompat.Token</a>)</td>
+</tr>
+<tr>
+<td><a href="./#1324511966%2FFunctions%2F-535623568">setTheme</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#1324511966%2FFunctions%2F-535623568">setTheme</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-2108598200%2FFunctions%2F-535623568">setWallpaper</a></td>
+<td>[androidJvm]<br>~~open~~ ~~override~~ ~~fun~~ <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-2108598200%2FFunctions%2F-535623568">~~setWallpaper~~</a>~~(~~~~p0~~~~:~~ <a href="https://developer.android.com/reference/kotlin/android/graphics/Bitmap.html">Bitmap</a>~~)~~<br>~~open~~ ~~override~~ ~~fun~~ <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-659870931%2FFunctions%2F-535623568">~~setWallpaper~~</a>~~(~~~~p0~~~~:~~ <a href="https://developer.android.com/reference/kotlin/java/io/InputStream.html">InputStream</a>~~)~~</td>
+</tr>
+<tr>
+<td><a href="./#-1771892602%2FFunctions%2F-535623568">startActivities</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1771892602%2FFunctions%2F-535623568">startActivities</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>&gt;)<br>open override fun <a href="./#-259889721%2FFunctions%2F-535623568">startActivities</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>&gt;, p1: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#901188466%2FFunctions%2F-535623568">startActivity</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#901188466%2FFunctions%2F-535623568">startActivity</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>)<br>open override fun <a href="./#114936667%2FFunctions%2F-535623568">startActivity</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)</td>
+</tr>
+<tr>
+<td><a href="./#-798229909%2FFunctions%2F-535623568">startForeground</a></td>
+<td>[androidJvm]<br>fun <a href="./#-798229909%2FFunctions%2F-535623568">startForeground</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/app/Notification.html">Notification</a>)<br>fun <a href="./#1703969298%2FFunctions%2F-535623568">startForeground</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/app/Notification.html">Notification</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-291854073%2FFunctions%2F-535623568">startForegroundService</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-291854073%2FFunctions%2F-535623568">startForegroundService</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>): <a href="https://developer.android.com/reference/kotlin/android/content/ComponentName.html">ComponentName</a>?</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1028122110%2FFunctions%2F-535623568">startInstrumentation</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#-1028122110%2FFunctions%2F-535623568">startInstrumentation</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/ComponentName.html">ComponentName</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?, p2: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="./#-1854061746%2FFunctions%2F-535623568">startIntentSender</a></td>
+<td>[androidJvm]<br>open override fun <a href="./#-1854061746%2FFunctions%2F-535623568">startIntentSender</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/IntentSender.html">IntentSender</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>?, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p4: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)<br>open override fun <a href="./#1836477951%2FFunctions%2F-535623568">startIntentSender</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/IntentSender.html">IntentSender</a>, p1: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>?, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p3: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p4: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p5: <a href="https://developer.android.com/reference/kotlin/android/os/Bundle.html">Bundle</a>?)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1648257764%2FFunctions%2F-535623568">startService</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1648257764%2FFunctions%2F-535623568">startService</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>): <a href="https://developer.android.com/reference/kotlin/android/content/ComponentName.html">ComponentName</a>?</td>
+</tr>
+<tr>
+<td><a href="./#1605916310%2FFunctions%2F-535623568">stopForeground</a></td>
+<td>[androidJvm]<br>fun <a href="./#1605916310%2FFunctions%2F-535623568">stopForeground</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>)<br>fun <a href="./#-1662469777%2FFunctions%2F-535623568">stopForeground</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-388277144%2FFunctions%2F-535623568">stopSelf</a></td>
+<td>[androidJvm]<br>fun <a href="./#-388277144%2FFunctions%2F-535623568">stopSelf</a>()<br>fun <a href="./#1063711750%2FFunctions%2F-535623568">stopSelf</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+<tr>
+<td><a href="./#-860745111%2FFunctions%2F-535623568">stopSelfResult</a></td>
+<td>[androidJvm]<br>fun <a href="./#-860745111%2FFunctions%2F-535623568">stopSelfResult</a>(p0: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#784453104%2FFunctions%2F-535623568">stopService</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#784453104%2FFunctions%2F-535623568">stopService</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/Intent.html">Intent</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#391044623%2FFunctions%2F-535623568">unbindService</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#391044623%2FFunctions%2F-535623568">unbindService</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/ServiceConnection.html">ServiceConnection</a>)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#441017302%2FFunctions%2F-535623568">unregisterComponentCallbacks</a></td>
+<td>[androidJvm]<br>open fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#441017302%2FFunctions%2F-535623568">unregisterComponentCallbacks</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/ComponentCallbacks.html">ComponentCallbacks</a>)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1949248458%2FFunctions%2F-535623568">unregisterReceiver</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#1949248458%2FFunctions%2F-535623568">unregisterReceiver</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/BroadcastReceiver.html">BroadcastReceiver</a>)</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#178246991%2FFunctions%2F-535623568">updateServiceGroup</a></td>
+<td>[androidJvm]<br>open override fun <a href="../../org.readium.r2.navigator.pdf/-r2-pdf-activity/#178246991%2FFunctions%2F-535623568">updateServiceGroup</a>(p0: <a href="https://developer.android.com/reference/kotlin/android/content/ServiceConnection.html">ServiceConnection</a>, p1: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>, p2: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a>)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../-media-session-navigator/#-1654120400%2FProperties%2F-535623568">coroutineContext</a></td>
+<td>[androidJvm]<br>open override val <a href="../-media-session-navigator/#-1654120400%2FProperties%2F-535623568">coroutineContext</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.coroutines/-coroutine-context/index.html">CoroutineContext</a></td>
+</tr>
+<tr>
+<td><a href="./#1738897676%2FProperties%2F-535623568">mConnectionFromFwk</a></td>
+<td>[androidJvm]<br>val <a href="./#1738897676%2FProperties%2F-535623568">mConnectionFromFwk</a>: <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.ConnectionRecord.html">MediaBrowserServiceCompat.ConnectionRecord</a></td>
+</tr>
+<tr>
+<td><a href="./#-1671577911%2FProperties%2F-535623568">mConnections</a></td>
+<td>[androidJvm]<br>val <a href="./#-1671577911%2FProperties%2F-535623568">mConnections</a>: <a href="https://developer.android.com/reference/kotlin/androidx/collection/ArrayMap.html">ArrayMap</a>&lt;<a href="https://developer.android.com/reference/kotlin/android/os/IBinder.html">IBinder</a>, <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.ConnectionRecord.html">MediaBrowserServiceCompat.ConnectionRecord</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="./#-2018907456%2FProperties%2F-535623568">mCurConnection</a></td>
+<td>[androidJvm]<br>val <a href="./#-2018907456%2FProperties%2F-535623568">mCurConnection</a>: <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.ConnectionRecord.html">MediaBrowserServiceCompat.ConnectionRecord</a></td>
+</tr>
+<tr>
+<td><a href="./#1815870196%2FProperties%2F-535623568">mHandler</a></td>
+<td>[androidJvm]<br>val <a href="./#1815870196%2FProperties%2F-535623568">mHandler</a>: <a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.ServiceHandler.html">MediaBrowserServiceCompat.ServiceHandler</a></td>
+</tr>
+<tr>
+<td><a href="./#-2086071202%2FProperties%2F-535623568">mPendingConnections</a></td>
+<td>[androidJvm]<br>val <a href="./#-2086071202%2FProperties%2F-535623568">mPendingConnections</a>: <a href="https://developer.android.com/reference/kotlin/java/util/ArrayList.html">ArrayList</a>&lt;<a href="https://developer.android.com/reference/kotlin/androidx/media/MediaBrowserServiceCompat.ConnectionRecord.html">MediaBrowserServiceCompat.ConnectionRecord</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="./#1817304360%2FProperties%2F-535623568">mSession</a></td>
+<td>[androidJvm]<br>val <a href="./#1817304360%2FProperties%2F-535623568">mSession</a>: <a href="https://developer.android.com/reference/kotlin/android/support/v4/media/session/MediaSessionCompat.Token.html">MediaSessionCompat.Token</a></td>
+</tr>
+</tbody>
+</table>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2021 Readium Foundation
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../../../../..", "features": [], "search": "../../../../../assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../../../../assets/javascripts/bundle.6e54b5cd.min.js"></script>
+      
+    
+  </body>
+</html>
