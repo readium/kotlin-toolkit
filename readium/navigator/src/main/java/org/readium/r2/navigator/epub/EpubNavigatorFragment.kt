@@ -436,22 +436,6 @@ class EpubNavigatorFragment private constructor(
 
         override fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {
             r2Activity?.onPageChanged(pageIndex = pageIndex, totalPages = totalPages, url = url)
-            if(paginationListener != null) {
-                // Find current locator
-                val resource = publication.readingOrder[resourcePager.currentItem]
-                val progression = currentFragment?.webView?.progression?.coerceIn(0.0, 1.0) ?: 0.0
-                val positions = publication.positionsByResource[resource.href]?.takeIf { it.isNotEmpty() }
-                    ?: return
-
-                val positionIndex = ceil(progression * (positions.size - 1)).toInt()
-                if (!positions.indices.contains(positionIndex)) {
-                    return
-                }
-
-                val locator = positions[positionIndex].copyWithLocations(progression = progression)
-                // Pageindex is actually the page number so to get a zero based index we subtract one.
-                paginationListener.onPageChanged(pageIndex - 1, totalPages, locator)
-            }
         }
 
         override fun onPageEnded(end: Boolean) {
@@ -702,16 +686,17 @@ class EpubNavigatorFragment private constructor(
         debounceLocationNotificationJob = launch {
             delay(100L)
 
-            if (pendingLocator != null) {
+            val webView = currentFragment?.webView
+            if (pendingLocator != null || webView == null) {
                 return@launch
             }
 
             // The transition has stabilized, so we can ask the web view to refresh its current
             // item to reflect the current scroll position.
-            currentFragment?.webView?.updateCurrentItem()
+            webView.updateCurrentItem()
 
             val resource = publication.readingOrder[resourcePager.currentItem]
-            val progression = currentFragment?.webView?.progression?.coerceIn(0.0, 1.0) ?: 0.0
+            val progression = webView.progression.coerceIn(0.0, 1.0)
             val positions = publication.positionsByResource[resource.href]?.takeIf { it.isNotEmpty() }
                     ?: return@launch
 
@@ -724,12 +709,16 @@ class EpubNavigatorFragment private constructor(
                     .copy(title = tableOfContentsTitleByHref[resource.href])
                     .copyWithLocations(progression = progression)
 
-            if (locator == _currentLocator.value) {
-                return@launch
-            }
-
             _currentLocator.value = locator
+
+            // Deprecated notifications
+
             navigatorDelegate?.locationDidChange(navigator = navigator, locator = locator)
+            paginationListener?.onPageChanged(
+                pageIndex = webView.mCurItem,
+                totalPages = webView.numPages,
+                locator = locator
+            )
         }
     }
 
