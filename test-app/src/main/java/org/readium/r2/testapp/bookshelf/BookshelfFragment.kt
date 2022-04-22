@@ -54,7 +54,7 @@ class BookshelfFragment : Fragment() {
         bookshelfViewModel.channel.receive(viewLifecycleOwner) { handleEvent(it) }
 
         bookshelfAdapter = BookshelfAdapter(
-            onBookClick = { book -> book.id?.let {  bookshelfViewModel.openBook(it) } },
+            onBookClick = { book -> book.id?.let {  bookshelfViewModel.openBook(it, requireActivity()) } },
             onBookLongClick = { book -> confirmDeleteBook(book) })
 
         documentPickerLauncher =

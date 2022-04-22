@@ -6,6 +6,7 @@
 
 package org.readium.r2.testapp.bookshelf
 
+import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.graphics.Bitmap
@@ -31,6 +32,7 @@ import org.readium.r2.streamer.Streamer
 import org.readium.r2.testapp.BuildConfig
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.reader.ReaderActivityContract
+import org.readium.r2.testapp.reader.ReaderRepository
 import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
 import org.readium.r2.testapp.utils.extensions.moveTo
@@ -151,7 +153,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             return
         }
 
-        streamer.open(libraryAsset, allowUserInteraction = false, sender = r2Application)
+        streamer.open(libraryAsset, allowUserInteraction = false)
             .onSuccess {
                 addPublicationToDatabase(libraryAsset.file.path, libraryAsset.mediaType(), it).let { id ->
 
@@ -171,11 +173,15 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     @OptIn(ExperimentalTime::class)
     fun openBook(
         bookId: Long,
+        activity: Activity
     ) = viewModelScope.launch {
         val readerRepository = r2Application.readerRepository.await()
-        readerRepository.open(bookId)
+        readerRepository.open(bookId, activity)
             .onFailure { exception ->
-                val message = when (exception)  {
+                if (exception is ReaderRepository.CancellationException)
+                    return@launch
+
+                val message = when (exception) {
                     is UserException -> exception.getUserMessage(r2Application)
                     else -> exception.message
                 }
