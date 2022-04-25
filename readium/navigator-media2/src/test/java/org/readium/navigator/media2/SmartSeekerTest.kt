@@ -3,6 +3,7 @@ package org.readium.navigator.media2
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
