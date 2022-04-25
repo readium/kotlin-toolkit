@@ -18,7 +18,12 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.C
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.PlaybackException
+import com.google.android.exoplayer2.PlaybackParameters
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
@@ -29,7 +34,9 @@ import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.ExperimentalAudiobook
@@ -38,10 +45,14 @@ import org.readium.r2.navigator.audio.PublicationDataSource
 import org.readium.r2.navigator.extensions.timeWithDuration
 import org.readium.r2.shared.extensions.asInstance
 import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.PublicationId
+import org.readium.r2.shared.publication.indexOfFirstWithHref
 import timber.log.Timber
 import java.net.UnknownHostException
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 /**
@@ -76,9 +87,9 @@ class ExoMediaPlayer(
         factory
     }
 
-    private val player: ExoPlayer = SimpleExoPlayer.Builder(context)
-        .setSeekBackIncrementMs(Duration.seconds(30).inWholeMilliseconds)
-        .setSeekForwardIncrementMs(Duration.seconds(30).inWholeMilliseconds)
+    private val player: ExoPlayer = ExoPlayer.Builder(context)
+        .setSeekBackIncrementMs(30.seconds.inWholeMilliseconds)
+        .setSeekForwardIncrementMs(30.seconds.inWholeMilliseconds)
         .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
         .setAudioAttributes(AudioAttributes.Builder()
             .setContentType(C.CONTENT_TYPE_MUSIC)
@@ -139,12 +150,19 @@ class ExoMediaPlayer(
     }
 
     override fun onDestroy() {
-        cancel()
+        // We destroy the player asynchronously, as [onDestroy] might be called synchronously from
+        // [MediaSessionConnector.onStop]. In which case, resetting the [MediaSessionConnector.player]
+        // property crashes the app.
+        destroy.start()
+    }
+
+    private var destroy = async(start = CoroutineStart.LAZY) {
         mediaSessionConnector.setPlayer(null)
         notificationManager.setPlayer(null)
         player.stop()
         player.clearMediaItems()
         player.release()
+        cancel()
     }
 
     private fun prepareTracklist() {
@@ -158,14 +176,14 @@ class ExoMediaPlayer(
         val readingOrder = publication.readingOrder
         val index = readingOrder.indexOfFirstWithHref(locator.href) ?: 0
 
-        val duration = readingOrder[index].duration?.let { Duration.seconds(it) }
+        val duration = readingOrder[index].duration?.seconds
         val time = locator.locations.timeWithDuration(duration)
         player.seekTo(index, time?.inWholeMilliseconds ?: 0)
     }
 
     private inner class PlayerListener : Player.Listener {
 
-        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+        override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == Player.STATE_IDLE) {
                 listener?.onPlayerStopped()
             }

@@ -12,15 +12,40 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaControllerCompat.TransportControls
 import android.support.v4.media.session.PlaybackStateCompat
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.MediaNavigator
 import org.readium.r2.navigator.extensions.sum
-import org.readium.r2.navigator.media.extensions.*
-import org.readium.r2.shared.publication.*
+import org.readium.r2.navigator.media.extensions.elapsedPosition
+import org.readium.r2.navigator.media.extensions.id
+import org.readium.r2.navigator.media.extensions.isPlaying
+import org.readium.r2.navigator.media.extensions.publicationId
+import org.readium.r2.navigator.media.extensions.resourceHref
+import org.readium.r2.navigator.media.extensions.toPlaybackState
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.PublicationId
+import org.readium.r2.shared.publication.indexOfFirstWithHref
 import timber.log.Timber
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 /**
@@ -29,9 +54,9 @@ import kotlin.time.ExperimentalTime
 private const val playbackPositionRefreshRate: Double = 2.0  // Hz
 
 @OptIn(ExperimentalTime::class)
-private val skipForwardInterval: Duration = Duration.seconds(30)
+private val skipForwardInterval: Duration = 30.seconds
 @OptIn(ExperimentalTime::class)
-private val skipBackwardInterval: Duration = Duration.seconds(30)
+private val skipBackwardInterval: Duration = 30.seconds
 
 /**
  * An implementation of [MediaNavigator] using an Android's MediaSession compatible media player.
@@ -70,19 +95,19 @@ class MediaSessionNavigator(
         publication.readingOrder.map { link ->
             link.duration
                 ?.takeIf { it > 0 }
-                ?.let { Duration.seconds(it) }
+                ?.seconds
         }
 
     /**
      * Total duration of the publication.
      */
     private val totalDuration: Duration? =
-        durations.sum().takeIf { it > Duration.seconds(0) }
+        durations.sum().takeIf { it > 0.seconds }
 
 
     private val mediaMetadata = MutableStateFlow<MediaMetadataCompat?>(null)
     private val playbackState = MutableStateFlow<PlaybackStateCompat?>(null)
-    private val playbackPosition = MutableStateFlow(Duration.seconds(0))
+    private val playbackPosition = MutableStateFlow(0.seconds)
 
     init {
         controller.registerCallback(MediaControllerCallback())
@@ -104,12 +129,12 @@ class MediaSessionNavigator(
         positionBroadcastJob = launch {
             var state = controller.playbackState
             while (isActive && state.state == PlaybackStateCompat.STATE_PLAYING) {
-                val newPosition = Duration.milliseconds(state.elapsedPosition)
+                val newPosition = state.elapsedPosition.milliseconds
                 if (playbackPosition.value != newPosition) {
                     playbackPosition.value = newPosition
                 }
 
-                delay(Duration.seconds((1.0 / playbackPositionRefreshRate)))
+                delay((1.0 / playbackPositionRefreshRate).seconds)
                 state = controller.playbackState
             }
         }
@@ -218,7 +243,7 @@ class MediaSessionNavigator(
         ) { metadata, state, positionMs ->
             // FIXME: Since upgrading to the latest flow version, there's a weird crash when combining a `Flow<Duration>`, like `playbackPosition`. Mapping it seems to do the trick.
             // See https://github.com/Kotlin/kotlinx.coroutines/issues/2353
-            val position = Duration.milliseconds(positionMs)
+            val position = positionMs.milliseconds
 
             val index = metadata.resourceHref?.let { publication.readingOrder.indexOfFirstWithHref(it) }
             if (index == null) {
@@ -288,7 +313,7 @@ class MediaSessionNavigator(
         if (!isActive) return
 
         @Suppress("NAME_SHADOWING")
-        val position = position.coerceAtLeast(Duration.seconds(0))
+        val position = position.coerceAtLeast(0.seconds)
 
         // We overwrite the current position to allow skipping successively several time without
         // having to wait for the playback position to actually update.
