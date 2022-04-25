@@ -19,10 +19,10 @@ pluginManagement {
     }
 
     plugins {
-        id("com.android.application") version ("7.1.0")
-        id("com.android.library") version ("7.1.0")
-        id("org.jetbrains.kotlin.android") version ("1.6.10")
-        id("org.jetbrains.dokka") version ("1.6.10")
+        id("com.android.application") version ("7.1.3")
+        id("com.android.library") version ("7.1.3")
+        id("org.jetbrains.kotlin.android") version ("1.6.21")
+        id("org.jetbrains.dokka") version ("1.6.20")
     }
 }
 dependencyResolutionManagement {
