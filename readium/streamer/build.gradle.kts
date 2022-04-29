@@ -13,10 +13,10 @@ plugins {
 }
 
 android {
-    compileSdk = 31
+    compileSdk = 32
     defaultConfig {
         minSdk = 21
-        targetSdk = 31
+        targetSdk = 32
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -27,7 +27,7 @@ android {
         unitTests.isIncludeAndroidResources = true
     }
     kotlinOptions {
-        freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
+        freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
         allWarningsAsErrors = true
     }
     buildTypes {
@@ -75,8 +75,8 @@ dependencies {
     implementation("com.mcxiaoke.koi:async:0.5.5") {
         exclude(module = "support-v4")
     }
-    implementation("joda-time:joda-time:2.10.13")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("joda-time:joda-time:2.10.14")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
 
     // Tests
     testImplementation("junit:junit:4.13.2")
