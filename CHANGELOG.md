@@ -4,7 +4,14 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!--## [Unreleased]-->
+## [Unreleased]
+
+### Streamer
+
+#### Fixed
+
+* Fixed parsing the table of contents of an EPUB 3 using NCX instead of a Navigation Document.
+
 
 ## [2.2.0]
 
