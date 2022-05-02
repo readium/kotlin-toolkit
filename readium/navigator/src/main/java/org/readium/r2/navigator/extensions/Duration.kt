@@ -8,9 +8,9 @@ package org.readium.r2.navigator.extensions
 
 import android.text.format.DateUtils
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
-import kotlin.time.seconds
 
 @ExperimentalTime
 internal fun List<Duration>.sum(): Duration =
