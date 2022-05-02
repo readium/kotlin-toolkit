@@ -13,10 +13,10 @@ plugins {
 }
 
 android {
-    compileSdk = 31
+    compileSdk = 32
     defaultConfig {
         minSdk = 21
-        targetSdk = 31
+        targetSdk = 32
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -55,9 +55,9 @@ dependencies {
 
     implementation("androidx.appcompat:appcompat:1.4.1")
     implementation("com.jakewharton.timber:timber:5.0.1")
-    implementation("joda-time:joda-time:2.10.13")
+    implementation("joda-time:joda-time:2.10.14")
     implementation("nl.komponents.kovenant:kovenant:3.3.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
 
     // Tests
     testImplementation("junit:junit:4.13.2")

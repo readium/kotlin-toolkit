@@ -7,6 +7,7 @@
 package org.readium.r2.testapp.reader
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
@@ -159,7 +160,7 @@ open class ReaderActivity : AppCompatActivity() {
     }
 
     override fun finish() {
-        setResult(Activity.RESULT_OK, intent)
+        setResult(Activity.RESULT_OK, Intent().putExtras(intent))
         super.finish()
     }
 
