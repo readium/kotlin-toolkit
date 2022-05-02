@@ -10,10 +10,10 @@
 package org.readium.r2.navigator.extensions
 
 import org.readium.r2.shared.publication.Locator
-import java.util.*
+import java.util.Locale
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
-import kotlin.time.seconds
 
 // FIXME: This should be in r2-shared once this public API is specified.
 
