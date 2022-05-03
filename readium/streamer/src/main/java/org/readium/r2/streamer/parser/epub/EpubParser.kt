@@ -183,24 +183,35 @@ class EpubParser(
             ?: emptyMap()
 
     private suspend fun parseNavigationData(packageDocument: PackageDocument, fetcher: Fetcher): Map<String, List<Link>> =
-        if (packageDocument.epubVersion < 3.0) {
-            val ncxItem =
-                if (packageDocument.spine.toc != null) {
-                    packageDocument.manifest.firstOrNull { it.id == packageDocument.spine.toc }
-                } else {
-                    packageDocument.manifest.firstOrNull { MediaType.NCX.contains(it.mediaType) }
-                }
-            ncxItem?.let {
+        parseNavigationDocument(packageDocument, fetcher)
+            ?: parseNcx(packageDocument, fetcher)
+            ?: emptyMap()
+
+    private suspend fun parseNavigationDocument(packageDocument: PackageDocument, fetcher: Fetcher): Map<String, List<Link>>? =
+        packageDocument.manifest
+            .firstOrNull { it.properties.contains(Vocabularies.ITEM + "nav") }
+            ?.let { navItem ->
+                val navPath = Href(navItem.href, baseHref = packageDocument.path).string
+                fetcher.readAsXmlOrNull(navPath)
+                    ?.let { NavigationDocumentParser.parse(it, navPath) }
+            }
+            ?.takeUnless { it.isEmpty() }
+
+    private suspend fun parseNcx(packageDocument: PackageDocument, fetcher: Fetcher): Map<String, List<Link>>? {
+        val ncxItem =
+            if (packageDocument.spine.toc != null) {
+                packageDocument.manifest.firstOrNull { it.id == packageDocument.spine.toc }
+            } else {
+                packageDocument.manifest.firstOrNull { MediaType.NCX.contains(it.mediaType) }
+            }
+
+        return ncxItem
+            ?.let {
                 val ncxPath = Href(ncxItem.href, baseHref = packageDocument.path).string
                 fetcher.readAsXmlOrNull(ncxPath)?.let { NcxParser.parse(it, ncxPath) }
             }
-        } else {
-            val navItem = packageDocument.manifest.firstOrNull { it.properties.contains(Vocabularies.ITEM + "nav") }
-            navItem?.let {
-                val navPath = Href(navItem.href, baseHref = packageDocument.path).string
-                fetcher.readAsXmlOrNull(navPath)?.let { NavigationDocumentParser.parse(it, navPath) }
-            }
-        }.orEmpty()
+            ?.takeUnless { it.isEmpty() }
+    }
 
     private suspend fun parseDisplayOptions(fetcher: Fetcher): Map<String, String> {
         val displayOptionsXml =

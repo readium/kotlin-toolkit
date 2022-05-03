@@ -15,10 +15,10 @@ plugins {
 
 android {
 
-    compileSdk = 31
+    compileSdk = 32
     defaultConfig {
         minSdk = 21
-        targetSdk = 31
+        targetSdk = 32
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -27,7 +27,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
-        freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
+        freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
         allWarningsAsErrors = true
     }
     buildTypes {
@@ -55,7 +55,7 @@ afterEvaluate {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
 
     api(project(":readium:shared"))
 
@@ -69,12 +69,12 @@ dependencies {
     implementation("com.mcxiaoke.koi:core:0.5.5") {
         exclude(module = "support-v4")
     }
-    implementation("joda-time:joda-time:2.10.13")
-    implementation("org.zeroturnaround:zt-zip:1.14")
+    implementation("joda-time:joda-time:2.10.14")
+    implementation("org.zeroturnaround:zt-zip:1.15")
     implementation("androidx.browser:browser:1.4.0")
 
     // Room database
-    val roomVersion = "2.4.1"
+    val roomVersion = "2.4.2"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     kapt("androidx.room:room-compiler:$roomVersion")

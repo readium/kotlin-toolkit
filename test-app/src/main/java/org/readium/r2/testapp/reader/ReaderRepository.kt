@@ -6,6 +6,7 @@
 
 package org.readium.r2.testapp.reader
 
+import android.app.Activity
 import android.app.Application
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.json.JSONObject
@@ -15,6 +16,8 @@ import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
+import org.readium.r2.shared.publication.services.isRestricted
+import org.readium.r2.shared.publication.services.protectionError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.streamer.Streamer
@@ -39,22 +42,24 @@ class ReaderRepository(
     private val mediaBinder: MediaService.Binder,
     private val bookRepository: BookRepository
 ) {
+    object CancellationException : Exception()
+
     private val repository: MutableMap<Long, ReaderInitData> =
         mutableMapOf()
 
     operator fun get(bookId: Long): ReaderInitData? =
         repository[bookId]
 
-    suspend fun open(bookId: Long): Try<Unit, Exception> {
+    suspend fun open(bookId: Long, activity: Activity): Try<Unit, Exception> {
         return try {
-            openThrowing(bookId)
+            openThrowing(bookId, activity)
             Try.success(Unit)
         } catch (e: Exception) {
             Try.failure(e)
         }
     }
 
-    private suspend fun openThrowing(bookId: Long) {
+    private suspend fun openThrowing(bookId: Long, activity: Activity) {
         if (bookId in repository.keys) {
             return
         }
@@ -66,8 +71,14 @@ class ReaderRepository(
         require(file.exists())
         val asset = FileAsset(file)
 
-        val publication = streamer.open(asset, allowUserInteraction = true, sender = application)
+        val publication = streamer.open(asset, allowUserInteraction = true, sender = activity)
             .getOrThrow()
+
+        // The publication is protected with a DRM and not unlocked.
+        if (publication.isRestricted) {
+            throw publication.protectionError
+                ?: CancellationException
+        }
 
         val initialLocator = book.progression?.let { Locator.fromJSON(JSONObject(it)) }
 

@@ -24,7 +24,7 @@ Make sure that you have the `$readium_version` property set in your root `build.
 
 ```gradle
 buildscript {
-    ext.readium_version = '2.1.1'
+    ext.readium_version = '2.2.0'
 }
 
 allprojects {
@@ -54,14 +54,6 @@ First, add the repository as a Git submodule of your app repository, then checko
 
 ```sh
 git submodule add https://github.com/readium/kotlin-toolkit.git
-```
-
-Next, declare the Kotlin version used in your root `build.gradle`.
-
-```gradle
-buildscript {
-    ext.kotlin_version = '1.5.31'
-}
 ```
 
 Then, add the following to your project's `settings.gradle` file, altering the paths if needed. Keep only the modules you want to use.

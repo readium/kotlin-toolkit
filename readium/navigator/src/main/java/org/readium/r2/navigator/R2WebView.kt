@@ -300,7 +300,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     internal fun updateCurrentItem() {
         val clientWidth = getClientWidth()
         if (!scrollMode && !mIsBeingDragged && clientWidth != null) {
-            mCurItem = scrollX / clientWidth
+            // Sometimes scrollX is not exactly a multiple of clientWidth, so we need to round the result.
+            mCurItem = (scrollX.toDouble() / clientWidth.toDouble()).roundToInt()
         }
     }
 
@@ -698,7 +699,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                     val pointerIndex = ev.findPointerIndex(mActivePointerId)
                     val x = ev.getX(pointerIndex)
                     val xDiff = abs(x - mLastMotionX)
-                    if (DEBUG) Timber.v("Moved x to $x diff=$xDiff")
 
                     if (xDiff > mTouchSlop) {
                         if (DEBUG) Timber.v("Starting drag!")
