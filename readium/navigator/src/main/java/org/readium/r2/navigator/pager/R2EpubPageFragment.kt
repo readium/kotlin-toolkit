@@ -24,6 +24,9 @@ import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewClientCompat
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
@@ -63,6 +66,14 @@ class R2EpubPageFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var isLoading: Boolean = false
+    private val _isLoaded = MutableStateFlow(false)
+
+    /**
+     * Indicates whether the resource is fully loaded in the web view.
+     */
+    @InternalReadiumApi
+    val isLoaded: StateFlow<Boolean>
+        get() = _isLoaded.asStateFlow()
 
     private val navigator: EpubNavigatorFragment?
         get() = parentFragment as? EpubNavigatorFragment
@@ -201,6 +212,7 @@ class R2EpubPageFragment : Fragment() {
 
         resourceUrl?.let {
             isLoading = true
+            _isLoaded.value = false
             webView.loadUrl(it)
         }
 
@@ -295,6 +307,7 @@ class R2EpubPageFragment : Fragment() {
     private fun onLoadPage() {
         if (!isLoading) return
         isLoading = false
+        _isLoaded.value = true
 
         if (view == null) return
 
