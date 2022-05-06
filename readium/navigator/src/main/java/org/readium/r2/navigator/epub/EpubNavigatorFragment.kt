@@ -16,6 +16,7 @@ import android.view.ActionMode
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import androidx.collection.forEach
@@ -56,19 +57,29 @@ import kotlin.math.ceil
 import kotlin.reflect.KClass
 
 /**
+ * Factory for a [JavascriptInterface] which will be injected in the web views.
+ *
+ * Return `null` if you don't want to inject the interface for the given [resource].
+ */
+typealias JavascriptInterfaceFactory = (resource: Link) -> Any?
+
+/**
  * Navigator for EPUB publications.
  *
  * To use this [Fragment], create a factory with `EpubNavigatorFragment.createFactory()`.
  */
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalDecorator::class)
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalDecorator::class, InternalReadiumApi::class)
 class EpubNavigatorFragment private constructor(
     override val publication: Publication,
     private val baseUrl: String,
     private val initialLocator: Locator?,
     internal val listener: Listener?,
     internal val paginationListener: PaginationListener?,
-    internal val config: Configuration,
+    config: Configuration,
 ): Fragment(), CoroutineScope by MainScope(), VisualNavigator, SelectableNavigator, DecorableNavigator {
+
+    // Make a copy to prevent the user from modifying the configuration after initialization.
+    internal val config: Configuration = config.copy()
 
     data class Configuration(
         /**
@@ -87,7 +98,19 @@ class EpubNavigatorFragment private constructor(
          * Whether padding accounting for display cutouts should be applied.
          */
         val shouldApplyInsetsPadding: Boolean? = true,
-    )
+
+        internal val javascriptInterfaces: MutableMap<String, JavascriptInterfaceFactory> = mutableMapOf()
+    ) {
+        /**
+         * Registers a new factory for the [JavascriptInterface] named [name].
+         *
+         * Return `null` in [factory] to prevent adding the Javascript interface for a given
+         * resource.
+         */
+        fun registerJavascriptInterface(name: String, factory: JavascriptInterfaceFactory) {
+            javascriptInterfaces[name] = factory
+        }
+    }
 
     interface PaginationListener {
         fun onPageChanged(pageIndex: Int, totalPages: Int, locator: Locator) {}
@@ -442,6 +465,9 @@ class EpubNavigatorFragment private constructor(
             r2Activity?.onPageEnded(end)
         }
 
+        override fun javascriptInterfacesForResource(link: Link): Map<String, Any?> =
+            config.javascriptInterfaces.mapValues { (_, factory) -> factory(link) }
+
         @Suppress("DEPRECATION")
         override fun onScroll() {
             val activity = r2Activity ?: return
@@ -526,7 +552,6 @@ class EpubNavigatorFragment private constructor(
             return true
         }
 
-        @OptIn(InternalReadiumApi::class)
         private fun openExternalLink(url: Uri) {
             val context = context ?: return
             launchWebBrowser(context, url)

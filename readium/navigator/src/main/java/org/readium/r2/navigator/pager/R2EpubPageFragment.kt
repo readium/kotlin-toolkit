@@ -32,6 +32,7 @@ import org.readium.r2.navigator.R2WebView
 import org.readium.r2.navigator.databinding.ViewpagerFragmentEpubBinding
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.extensions.htmlId
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -40,6 +41,7 @@ import java.io.IOException
 import java.io.InputStream
 import kotlin.math.roundToInt
 
+@OptIn(InternalReadiumApi::class)
 class R2EpubPageFragment : Fragment() {
 
     private val resourceUrl: String?
@@ -68,7 +70,7 @@ class R2EpubPageFragment : Fragment() {
     private val shouldApplyInsetsPadding: Boolean
         get() = navigator?.config?.shouldApplyInsetsPadding ?: true
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint("SetJavaScriptEnabled", "JavascriptInterface")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = ViewpagerFragmentEpubBinding.inflate(inflater, container, false)
         containerView = binding.root
@@ -78,8 +80,17 @@ class R2EpubPageFragment : Fragment() {
         this.webView = webView
 
         webView.visibility = View.INVISIBLE
-        navigator?.let {
-            webView.listener = it.webViewListener
+        navigator?.webViewListener?.let { listener ->
+            webView.listener = listener
+
+            link?.let { link ->
+                // Setup custom Javascript interfaces.
+                for ((name, obj) in listener.javascriptInterfacesForResource(link)) {
+                    if (obj != null) {
+                        webView.addJavascriptInterface(obj, name)
+                    }
+                }
+            }
         }
         webView.preferences = preferences
 
