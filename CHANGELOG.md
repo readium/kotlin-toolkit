@@ -6,9 +6,15 @@ All notable changes to this project will be documented in this file. Take a look
 
 ## [Unreleased]
 
-### Streamer
+### Added
 
-#### Fixed
+#### Shared
+
+* Add a new `Locator.Builder` object to progressively construct an immutable `Locator` object.
+
+### Fixed
+
+#### Streamer
 
 * Fixed parsing the table of contents of an EPUB 3 using NCX instead of a Navigation Document.
 
