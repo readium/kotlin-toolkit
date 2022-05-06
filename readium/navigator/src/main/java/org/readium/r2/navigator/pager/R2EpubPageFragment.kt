@@ -24,10 +24,7 @@ import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewClientCompat
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
@@ -74,6 +71,14 @@ class R2EpubPageFragment : Fragment() {
     @InternalReadiumApi
     val isLoaded: StateFlow<Boolean>
         get() = _isLoaded.asStateFlow()
+
+    /**
+     * Waits for the page to be loaded.
+     */
+    @InternalReadiumApi
+    suspend fun awaitLoaded() {
+        isLoaded.first { it }
+    }
 
     private val navigator: EpubNavigatorFragment?
         get() = parentFragment as? EpubNavigatorFragment

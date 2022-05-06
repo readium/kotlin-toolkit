@@ -28,6 +28,7 @@ import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import org.json.JSONObject
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
@@ -121,6 +122,16 @@ class EpubNavigatorFragment private constructor(
 
     init {
         require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection."}
+    }
+
+    /**
+     * Evaluates the given JavaScript on the currently visible HTML resource.
+     */
+    suspend fun evaluateJavascript(script: String): String? {
+        val page = currentFragment ?: return null
+        page.awaitLoaded()
+        val webView = page.webView ?: return null
+        return webView.runJavaScriptSuspend(script)
     }
 
     private val viewModel: EpubNavigatorViewModel by viewModels {

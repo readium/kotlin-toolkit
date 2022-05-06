@@ -12,23 +12,27 @@ All notable changes to this project will be documented in this file. Take a look
 
 * Improved Javascript support in the EPUB navigator:
     * Register custom [JavascriptInterface](https://developer.android.com/reference/android/webkit/JavascriptInterface) objects to inject native Kotlin code in the EPUB web views.
-        ```
+        ```kotlin
         EpubNavigatorFragment.createFactory(
             publication = publication,
             …,
             config = EpubNavigatorFragment.Configuration().apply {
-                registerJavascriptInterface("custom-api") { link ->
+                registerJavascriptInterface("customInterface") { link ->
                     MyCustomApi(link)
                 }
             }
         )
-
+        
         class MyCustomApi(val link: Link) {
             @JavascriptInterface
-            fun api() {
-                Log.d("API called from the resource ${link.href}")
+            fun api(arg: String): String {
+                return "API called from the resource ${link.href} with argument $arg")
             }
         }
+        ```
+    * Evaluate JavaScript on the currently visible HTML resource with `EpubNavigatorFragment.evaluateJavascript()`.
+        ```kotlin
+        val result = navigator.evaluateJavascript("customInterface.api('argument')")
         ```
 
 ### Fixed
