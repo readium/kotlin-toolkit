@@ -6,9 +6,15 @@ All notable changes to this project will be documented in this file. Take a look
 
 ## [Unreleased]
 
-### Streamer
+### Changed
 
-#### Fixed
+#### Shared
+
+* `TransformingResource` now caches its content by default, as it is the correct behavior in most cases. Set `cacheBytes = false` explicitly to revert to the previous behavior.
+
+### Fixed
+
+#### Streamer
 
 * Fixed parsing the table of contents of an EPUB 3 using NCX instead of a Navigation Document.
 

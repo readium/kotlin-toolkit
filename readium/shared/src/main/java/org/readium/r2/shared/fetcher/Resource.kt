@@ -220,69 +220,17 @@ abstract class ProxyResource(protected val resource: Resource) : Resource {
 }
 
 /**
- * Caches the members of [resource] on first access, to optimize subsequent accesses.
- *
- * This can be useful when reading [resource] is expensive.
- *
- * Warning: bytes are read and cached entirely the first time, even if only a [range] is requested.
- * So this is not appropriate for large resources.
- */
-@Deprecated("If you were caching a TransformingResource, build it with cacheBytes set to true." +
-        "Otherwise, please report your use case.",
-    level = DeprecationLevel.ERROR)
-class CachingResource(private val resource: Resource) : Resource {
-
-    private lateinit var _link: Link
-    private lateinit var _length: ResourceTry<Long>
-    private lateinit var _bytes: ResourceTry<ByteArray>
-
-    override suspend fun link(): Link {
-        if (!::_link.isInitialized) {
-            _link = resource.link()
-        }
-        return _link
-    }
-
-    override suspend fun length(): ResourceTry<Long> {
-        if (!::_length.isInitialized) {
-            _length = if (::_bytes.isInitialized) _bytes.map { it.size.toLong() } else resource.length()
-        }
-        return _length
-    }
-
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
-        if (!::_bytes.isInitialized) {
-            _bytes = resource.read()
-        }
-
-        if (range == null)
-            return _bytes
-
-        return _bytes.map {
-            @Suppress("NAME_SHADOWING")
-            val range = range
-                .coerceIn(0L.. it.size)
-                .requireLengthFitInt()
-
-            it.sliceArray(range.map(Long::toInt)) }
-    }
-
-    override suspend fun close() = resource.close()
-
-    override fun toString(): String =
-        "${javaClass.simpleName}($resource)"
-}
-
-/**
  * Transforms the bytes of [resource] on-the-fly.
  *
+ * If you set [cacheBytes] to false, consider providing your own implementation of [length] to avoid
+ * unnecessary transformations.
+ *
  * Warning: The transformation runs on the full content of [resource], so it's not appropriate for
- * large resources which can't be held in memory. Pass [cacheBytes] = true to cache the result of
- * the transformation. This may be useful if multiple ranges will be read.
+ * large resources which can't be held in memory.
  */
 abstract class TransformingResource(
     resource: Resource,
-    private val cacheBytes: Boolean = false
+    private val cacheBytes: Boolean = true
 ) : ProxyResource(resource) {
 
     private lateinit var _bytes: ResourceTry<ByteArray>
