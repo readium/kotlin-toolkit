@@ -6,6 +6,35 @@ All notable changes to this project will be documented in this file. Take a look
 
 ## [Unreleased]
 
+### Added
+
+#### Navigator
+
+* Improved Javascript support in the EPUB navigator:
+    * Register custom [JavascriptInterface](https://developer.android.com/reference/android/webkit/JavascriptInterface) objects to inject native Kotlin code in the EPUB web views.
+        ```kotlin
+        EpubNavigatorFragment.createFactory(
+            publication = publication,
+            …,
+            config = EpubNavigatorFragment.Configuration().apply {
+                registerJavascriptInterface("customInterface") { link ->
+                    MyCustomApi(link)
+                }
+            }
+        )
+        
+        class MyCustomApi(val link: Link) {
+            @JavascriptInterface
+            fun api(arg: String): String {
+                return "API called from the resource ${link.href} with argument $arg")
+            }
+        }
+        ```
+    * Evaluate JavaScript on the currently visible HTML resource with `EpubNavigatorFragment.evaluateJavascript()`.
+        ```kotlin
+        val result = navigator.evaluateJavascript("customInterface.api('argument')")
+        ```
+
 ### Changed
 
 #### Shared
@@ -477,10 +506,10 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
   * **This is a breaking change**, [to upgrade your app you need to](https://github.com/readium/r2-testapp-kotlin/pull/321/files#diff-9bb6ad21df8b48f171ba6266616662ac):
     * Provide the application's `Context` when creating a `Server`.
     * Remove the following injection statements, which are now handled directly by the Streamer:
-```kotlin
-server.loadCustomResource(assets.open("scripts/crypto-sha256.js"), "crypto-sha256.js", Injectable.Script)   
-server.loadCustomResource(assets.open("scripts/highlight.js"), "highlight.js", Injectable.Script)
-```
+        ```kotlin
+        server.loadCustomResource(assets.open("scripts/crypto-sha256.js"), "crypto-sha256.js", Injectable.Script)   
+        server.loadCustomResource(assets.open("scripts/highlight.js"), "highlight.js", Injectable.Script)
+        ```
 
 #### Navigator
 
