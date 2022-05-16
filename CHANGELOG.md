@@ -35,6 +35,12 @@ All notable changes to this project will be documented in this file. Take a look
         val result = navigator.evaluateJavascript("customInterface.api('argument')")
         ```
 
+### Changed
+
+#### Shared
+
+* `TransformingResource` now caches its content by default, as it is the correct behavior in most cases. Set `cacheBytes = false` explicitly to revert to the previous behavior.
+
 ### Fixed
 
 #### Streamer
