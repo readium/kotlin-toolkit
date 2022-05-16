@@ -32,6 +32,7 @@ import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.safety.Whitelist
 import org.readium.r2.navigator.extensions.optRectF
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
@@ -62,6 +63,9 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         fun onHighlightAnnotationMarkActivated(id: String)
         fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
         fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
+
+        @InternalReadiumApi
+        fun javascriptInterfacesForResource(link: Link): Map<String, Any?> = emptyMap()
 
         /**
          * Returns the custom [ActionMode.Callback] to be used with the text selection menu.

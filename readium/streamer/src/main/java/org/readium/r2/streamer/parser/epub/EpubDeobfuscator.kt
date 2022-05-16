@@ -16,7 +16,7 @@ internal class EpubDeobfuscator(private val pubId: String) {
 
     fun transform(resource: Resource): Resource = DeobfuscatingResource(resource)
 
-    inner class DeobfuscatingResource(resource: Resource): TransformingResource(resource, cacheBytes = true) {
+    inner class DeobfuscatingResource(resource: Resource): TransformingResource(resource) {
 
         override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
             data.map { bytes ->
