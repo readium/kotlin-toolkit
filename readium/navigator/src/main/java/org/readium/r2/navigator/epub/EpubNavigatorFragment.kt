@@ -343,7 +343,7 @@ class EpubNavigatorFragment private constructor(
 
         resourcePager.adapter = adapter
 
-        if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
+        if (publication.metadata.presentation.layout != EpubLayout.FIXED) {
             pendingLocator = locator
             setCurrent(resourcesSingle)
         } else {
