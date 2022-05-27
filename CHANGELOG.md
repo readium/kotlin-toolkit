@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Added
 
+#### Shared
+
+* Add a new `Locator.Builder` object to progressively construct an immutable `Locator` object.
+
 #### Navigator
 
 * Improved Javascript support in the EPUB navigator:

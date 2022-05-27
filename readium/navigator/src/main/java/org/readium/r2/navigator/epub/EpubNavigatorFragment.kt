@@ -54,6 +54,7 @@ import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.launchWebBrowser
+import org.readium.r2.shared.util.mediatype.MediaType
 import kotlin.math.ceil
 import kotlin.reflect.KClass
 
@@ -342,7 +343,7 @@ class EpubNavigatorFragment private constructor(
 
         resourcePager.adapter = adapter
 
-        if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
+        if (publication.metadata.presentation.layout != EpubLayout.FIXED) {
             pendingLocator = locator
             setCurrent(resourcesSingle)
         } else {
@@ -732,19 +733,26 @@ class EpubNavigatorFragment private constructor(
             webView.updateCurrentItem()
 
             val resource = publication.readingOrder[resourcePager.currentItem]
-            val progression = webView.progression.coerceIn(0.0, 1.0)
-            val positions = publication.positionsByResource[resource.href]?.takeIf { it.isNotEmpty() }
-                    ?: return@launch
+            val builder = Locator.Builder(
+                href = resource.href,
+                type = resource.type ?: MediaType.XHTML.toString(),
+            )
 
-            val positionIndex = ceil(progression * (positions.size - 1)).toInt()
-            if (!positions.indices.contains(positionIndex)) {
-                return@launch
+            val progression = webView.progression.coerceIn(0.0, 1.0)
+            builder.locations.progression = progression
+
+            val positions = publication.positionsByResource[resource.href]
+                ?.takeIf { it.isNotEmpty() }
+            if (positions != null) {
+                val index = ceil(progression * (positions.size - 1)).toInt()
+                positions.getOrNull(index)
+                    ?.let { builder.merge(it) }
             }
 
-            val locator = positions[positionIndex]
-                    .copy(title = tableOfContentsTitleByHref[resource.href])
-                    .copyWithLocations(progression = progression)
+            tableOfContentsTitleByHref[resource.href]
+                ?.let { builder.title = it }
 
+            val locator = builder.build()
             _currentLocator.value = locator
 
             // Deprecated notifications

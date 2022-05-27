@@ -61,7 +61,7 @@ class BookRepository(private val booksDao: BooksDao) {
         return booksDao.insertBookmark(bookmark)
     }
 
-    fun bookmarksForBook(bookId: Long): LiveData<MutableList<Bookmark>> =
+    fun bookmarksForBook(bookId: Long): LiveData<List<Bookmark>> =
         booksDao.getBookmarksForBook(bookId)
 
     suspend fun deleteBookmark(bookmarkId: Long) = booksDao.deleteBookmark(bookmarkId)
