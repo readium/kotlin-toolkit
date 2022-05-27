@@ -17,7 +17,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.*
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.toLocator
 import org.readium.r2.testapp.databinding.FragmentListviewBinding
 import org.readium.r2.testapp.databinding.ItemRecycleNavigationBinding
 import org.readium.r2.testapp.reader.ReaderViewModel
@@ -69,7 +68,6 @@ class NavigationFragment : Fragment() {
         }
 
         binding.listView.apply {
-            setHasFixedSize(true)
             layoutManager = LinearLayoutManager(requireContext())
             adapter = navAdapter
             addItemDecoration(
@@ -106,10 +104,6 @@ class NavigationFragment : Fragment() {
 
 class NavigationAdapter(private val onLinkSelected: (Link) -> Unit) :
         ListAdapter<Pair<Int, Link>, NavigationAdapter.ViewHolder>(NavigationDiff()) {
-
-    init {
-        setHasStableIds(true)
-    }
 
     override fun onCreateViewHolder(
             parent: ViewGroup,
