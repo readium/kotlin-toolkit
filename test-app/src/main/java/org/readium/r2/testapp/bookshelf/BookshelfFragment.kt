@@ -170,6 +170,8 @@ class BookshelfFragment : Fragment() {
                                 .build()
                             requireContext().startActivity(intent)
 
+//                            val book = requireNotNull(r2Application.bookRepository.get(event.arguments.bookId))
+//                            val uri = Uri.parse("file://${book.href}")
 //                            val config = PdfActivityConfiguration.Builder(requireContext()).build()
 //                            PdfActivity.showDocument(requireContext(), uri, config)
                         } else {

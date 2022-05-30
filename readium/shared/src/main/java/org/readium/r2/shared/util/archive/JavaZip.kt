@@ -10,6 +10,8 @@
 package org.readium.r2.shared.util.archive
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.readRange
@@ -34,11 +36,15 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
                 else
                     entry.compressedSize.takeUnless { it == -1L }
 
-        override suspend fun read(range: LongRange?): ByteArray =
+        /** [CountingInputStream] is not thread-safe. */
+        private val mutex = Mutex()
+
+        override suspend fun read(range: LongRange?): ByteArray = mutex.withLock {
             if (range == null)
                 readFully()
             else
                 readRange(range)
+        }
 
         private suspend fun readFully(): ByteArray = withContext(Dispatchers.IO) {
             archive.getInputStream(entry).use {
@@ -77,7 +83,9 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
 
         override suspend fun close() {
             withContext(Dispatchers.IO) {
-                stream?.close()
+                mutex.withLock {
+                    stream?.close()
+                }
             }
         }
 

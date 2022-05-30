@@ -6,7 +6,6 @@
 
 package org.readium.navigator.pspdfkit
 
-import android.content.Context
 import android.os.Parcelable
 import com.pspdfkit.document.providers.DataProvider
 import kotlinx.coroutines.runBlocking
@@ -15,7 +14,6 @@ import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.PublicationId
 import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
 
@@ -47,7 +45,8 @@ class ResourceDataProvider(
     override fun getUid(): String = identifier
 
     override fun read(size: Long, offset: Long): ByteArray = runBlocking {
-        resource.read(offset until size)
+        val range = offset until (offset + size)
+        resource.read(range)
             .getOrElse {
                 onResourceError(it)
                 DataProvider.NO_DATA_AVAILABLE
