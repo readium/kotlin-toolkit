@@ -190,6 +190,10 @@
             android:name=".reader.ReaderActivity"
             android:label="Reader" />
 
+        <activity
+            android:name="com.pspdfkit.ui.PdfActivity"
+            android:windowSoftInputMode="adjustNothing" />
+
         <service android:name=".MediaService"
             android:enabled="true"
             android:exported="true"

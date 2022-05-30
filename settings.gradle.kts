@@ -34,6 +34,7 @@ dependencyResolutionManagement {
         mavenCentral()
         maven(url = "https://jitpack.io")
         maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
+        maven(url = "https://customers.pspdfkit.com/maven")
     }
 }
 
@@ -43,6 +44,7 @@ include(":readium:shared")
 include(":readium:streamer")
 include(":readium:navigator")
 include(":readium:navigator-media2")
+include(":readium:navigator-pspdfkit")
 include(":readium:opds")
 include(":readium:lcp")
 

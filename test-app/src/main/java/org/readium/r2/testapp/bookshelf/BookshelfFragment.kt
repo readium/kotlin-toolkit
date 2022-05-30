@@ -23,13 +23,24 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.pspdfkit.configuration.activity.PdfActivityConfiguration
+import com.pspdfkit.ui.PdfActivity
+import com.pspdfkit.ui.PdfActivityIntentBuilder
+import kotlinx.coroutines.runBlocking
+import org.readium.navigator.pspdfkit.ResourceDataProvider
+import org.readium.navigator.pspdfkit.pdfPublication
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentBookshelfBinding
+import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.reader.ReaderActivityContract
 import org.readium.r2.testapp.utils.viewLifecycle
+import timber.log.Timber
+import java.util.*
 
 class BookshelfFragment : Fragment() {
 
@@ -146,7 +157,25 @@ class BookshelfFragment : Fragment() {
                     "Error: $detail"
                 }
                 is BookshelfViewModel.Event.LaunchReader -> {
-                    readerLauncher.launch(event.arguments)
+                    runBlocking {
+                        val r2Application = activity?.application as org.readium.r2.testapp.Application
+                        val book = requireNotNull(r2Application.readerRepository.await().get(event.arguments.bookId))
+                        val publication = book.publication
+                        if (publication.conformsTo(Publication.Profile.PDF)) {
+                            pdfPublication = publication
+                            val intent = PdfActivityIntentBuilder.fromDataProvider(requireContext(), ResourceDataProvider(
+                                publication.readingOrder.first(),
+                                publication.metadata.identifier ?: UUID.randomUUID().toString()
+                            ))
+                                .build()
+                            requireContext().startActivity(intent)
+
+//                            val config = PdfActivityConfiguration.Builder(requireContext()).build()
+//                            PdfActivity.showDocument(requireContext(), uri, config)
+                        } else {
+                            readerLauncher.launch(event.arguments)
+                        }
+                    }
                     null
                 }
             }
