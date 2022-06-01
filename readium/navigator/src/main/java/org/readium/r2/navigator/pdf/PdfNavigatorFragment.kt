@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.extensions.fragmentParameters
 import org.readium.r2.navigator.extensions.page
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.InternalReadiumApi

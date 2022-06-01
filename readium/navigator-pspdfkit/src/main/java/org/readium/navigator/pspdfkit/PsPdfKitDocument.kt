@@ -16,11 +16,26 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.publication.PublicationId
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import timber.log.Timber
 import java.io.File
 import org.readium.r2.shared.util.pdf.PdfDocument as ReadiumPdfDocument
+
+@PdfSupport
+class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory {
+    private val context = context.applicationContext
+
+    override suspend fun open(file: File, password: String?): ReadiumPdfDocument =
+        open(context, DocumentSource(file.toUri(), password))
+
+    override suspend fun open(resource: Resource, password: String?): ReadiumPdfDocument =
+        open(context, DocumentSource(ResourceDataProvider(resource), password))
+
+    private suspend fun open(context: Context, documentSource: DocumentSource): ReadiumPdfDocument =
+        withContext(Dispatchers.IO) {
+            PsPdfKitDocument(PdfDocumentLoader.openDocument(context, documentSource))
+        }
+}
 
 @PdfSupport
 internal class PsPdfKitDocument(
@@ -62,20 +77,4 @@ internal class PsPdfKitDocument(
     // FIXME
     override val outline: List<ReadiumPdfDocument.OutlineNode>
         get() = emptyList()
-}
-
-@PdfSupport
-internal class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory {
-    private val context = context.applicationContext
-
-    override suspend fun open(publicationId: PublicationId, file: File, password: String?): ReadiumPdfDocument =
-        open(context, DocumentSource(file.toUri(), password))
-
-    override suspend fun open(publicationId: PublicationId, resource: Resource, password: String?): ReadiumPdfDocument =
-        open(context, DocumentSource(ResourceDataProvider(publicationId, resource), password))
-
-    private suspend fun open(context: Context, documentSource: DocumentSource): ReadiumPdfDocument =
-        withContext(Dispatchers.IO) {
-            PsPdfKitDocument(PdfDocumentLoader.openDocument(context, documentSource))
-        }
 }

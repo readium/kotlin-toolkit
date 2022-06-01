@@ -13,16 +13,12 @@ import org.readium.r2.shared.publication.PublicationId
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.isLazyInitialized
 import timber.log.Timber
+import java.util.*
 
 class ResourceDataProvider(
-    publicationId: PublicationId,
     private val resource: Resource,
     private val onResourceError: (Resource.Exception) -> Unit = { Timber.e(it) }
 ) : DataProvider {
-
-    private val identifier: String = runBlocking {
-        "$publicationId#${resource.link().href}"
-    }
 
     private val length: Long = runBlocking {
         resource.length()
@@ -36,7 +32,12 @@ class ResourceDataProvider(
 
     override fun getTitle(): String? = null
 
-    override fun getUid(): String = identifier
+    /**
+     * Unique document identifier used in all caching processes in PSPDFKit. Must be equal or
+     * shorter than 50 chars. This method must be implemented for caching to work properly.
+     */
+    // FIXME: Check whether we need to use a persistent ID.
+    override fun getUid(): String = UUID.randomUUID().toString().take(50)
 
     override fun read(size: Long, offset: Long): ByteArray = runBlocking {
         val range = offset until (offset + size)

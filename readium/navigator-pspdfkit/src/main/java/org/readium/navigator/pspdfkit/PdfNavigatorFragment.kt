@@ -26,13 +26,14 @@ import com.pspdfkit.configuration.page.PageScrollMode
 import com.pspdfkit.configuration.theming.ThemeMode
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.listeners.DocumentListener
+import com.pspdfkit.listeners.OnPreparePopupToolbarListener
 import com.pspdfkit.ui.PdfFragment
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.pspdfkit.ui.toolbar.popup.PdfTextSelectionPopupToolbar
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
 import org.readium.navigator.pspdfkit.databinding.ReadiumPspdfkitFragmentBinding
 import org.readium.r2.navigator.VisualNavigator
-import org.readium.r2.navigator.databinding.ReadiumFragmentContainerBinding
+import org.readium.r2.navigator.extensions.fragmentParameters
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.PdfSupport
@@ -49,7 +50,7 @@ import timber.log.Timber
 @OptIn(InternalReadiumApi::class)
 class PdfNavigatorFragment private constructor(
     override val publication: Publication,
-    private val initialLocator: Locator? = null,
+    initialLocator: Locator? = null,
     private val listener: Listener?
 ) : Fragment(), VisualNavigator {
 
@@ -88,11 +89,12 @@ class PdfNavigatorFragment private constructor(
     }
 
     private lateinit var pdfFragment: PdfFragment
+    private val psPdfKitListener = PsPdfKitListener()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val binding = ReadiumPspdfkitFragmentBinding.inflate(inflater, container, false)
 
-        val document = runBlocking { PsPdfKitDocumentFactory(requireContext()).open("1", publication.get(publication.readingOrder.first()), null) }
+        val document = runBlocking { PsPdfKitDocumentFactory(requireContext()).open(publication.get(publication.readingOrder.first()), null) }
             as PsPdfKitDocument
 
         val config = PdfConfiguration.Builder()
@@ -105,7 +107,7 @@ class PdfNavigatorFragment private constructor(
             .disableAnnotationRotation()
             .disableAutoSelectNextFormElement()
             .disableFormEditing()
-            .enableMagnifier(false)
+            .enableMagnifier(true)
             .excludedAnnotationTypes(emptyList())
             .firstPageAlwaysSingle(false)
             .fitMode(PageFitMode.FIT_TO_SCREEN)
@@ -141,30 +143,10 @@ class PdfNavigatorFragment private constructor(
                         .commit()
                 }
 
-        pdfFragment.addDocumentListener(object : DocumentListener {
+        pdfFragment.addDocumentListener(psPdfKitListener)
+        pdfFragment.setOnPreparePopupToolbarListener(psPdfKitListener)
 
-            override fun onDocumentClick(): Boolean {
-                val center = view?.run { PointF(width.toFloat() / 2, height.toFloat() / 2) }
-                if (center != null && listener != null) {
-                    return listener.onTap(center)
-                }
-                return false
-            }
-
-            override fun onPageClick(document: PdfDocument, pageIndex: Int, event: MotionEvent?, pagePosition: PointF?, clickedAnnotation: Annotation?): Boolean {
-                if (
-                    pagePosition == null ||
-                    clickedAnnotation is LinkAnnotation ||
-                    clickedAnnotation is MediaAnnotation ||
-                    clickedAnnotation is ScreenAnnotation ||
-                    clickedAnnotation is SoundAnnotation ||
-                    clickedAnnotation is WidgetAnnotation
-                ) return false
-
-                pdfFragment.viewProjection.toViewPoint(pagePosition, pageIndex)
-                return listener?.onTap(pagePosition) ?: false
-            }
-        })
+        go(currentLocator.value, animated = false)
 
         return binding.root
     }
@@ -173,23 +155,80 @@ class PdfNavigatorFragment private constructor(
         get() = ReadingProgression.AUTO
 
     override val currentLocator: StateFlow<Locator>
-        get() = MutableStateFlow(initialLocator ?: publication.locatorFromLink(publication.readingOrder.first())!!)
+        get() = viewModel.currentLocator
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        return true
+        listener?.onJumpToLocator(locator)
+        val pageNumber = locator.locations.page ?: locator.locations.position ?: 1
+        return goToPageIndex(pageNumber - 1, animated, completion)
     }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
+        val locator = publication.locatorFromLink(link) ?: return false
+        return go(locator, animated, completion)
+    }
+
+    override fun goForward(animated: Boolean, completion: () -> Unit): Boolean =
+        goToPageIndex(pdfFragment.pageIndex + 1, animated, completion)
+
+    override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean =
+        goToPageIndex(pdfFragment.pageIndex - 1, animated, completion)
+
+    private fun goToPageIndex(pageIndex: Int, animated: Boolean, completion: () -> Unit): Boolean {
+        if (!isValidPageIndex(pageIndex)) {
+            return false
+        }
+        pdfFragment.setPageIndex(pageIndex, animated)
+        completion()
         return true
     }
 
-    override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
-        Timber.e("GO FORWARD")
-        return true
+    private fun isValidPageIndex(pageIndex: Int): Boolean {
+        val validRange = 0 until pdfFragment.pageCount
+        return validRange.contains(pageIndex)
     }
 
-    override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
-        Timber.e("GO BACKWARD")
-        return true
+    private inner class PsPdfKitListener : DocumentListener, OnPreparePopupToolbarListener {
+        override fun onPageChanged(document: PdfDocument, pageIndex: Int) {
+            viewModel.onPageChanged(pageIndex)
+        }
+
+        override fun onDocumentClick(): Boolean {
+            val center = view?.run { PointF(width.toFloat() / 2, height.toFloat() / 2) }
+            if (center != null && listener != null) {
+                return listener.onTap(center)
+            }
+            return false
+        }
+
+        override fun onPageClick(document: PdfDocument, pageIndex: Int, event: MotionEvent?, pagePosition: PointF?, clickedAnnotation: Annotation?): Boolean {
+            if (
+                pagePosition == null ||
+                clickedAnnotation is LinkAnnotation ||
+                clickedAnnotation is MediaAnnotation ||
+                clickedAnnotation is ScreenAnnotation ||
+                clickedAnnotation is SoundAnnotation ||
+                clickedAnnotation is WidgetAnnotation
+            ) return false
+
+            pdfFragment.viewProjection.toViewPoint(pagePosition, pageIndex)
+            return listener?.onTap(pagePosition) ?: false
+        }
+
+        private val allowedTextSelectionItems = listOf(
+            R.id.pspdf__text_selection_toolbar_item_share,
+            R.id.pspdf__text_selection_toolbar_item_copy,
+            R.id.pspdf__text_selection_toolbar_item_speak
+        )
+
+        override fun onPrepareTextSelectionPopupToolbar(toolbar: PdfTextSelectionPopupToolbar) {
+            // Makes sure only the menu items in `allowedTextSelectionItems` will be visible.
+            toolbar.menuItems = toolbar.menuItems
+                .filter { allowedTextSelectionItems.contains(it.id) }
+        }
     }
 }
+
+@OptIn(InternalReadiumApi::class)
+private val Locator.Locations.page: Int? get() =
+    fragmentParameters["page"]?.toIntOrNull()

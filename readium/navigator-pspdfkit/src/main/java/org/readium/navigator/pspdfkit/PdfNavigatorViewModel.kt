@@ -8,29 +8,36 @@ package org.readium.navigator.pspdfkit
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.services.positions
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 
 @PdfSupport
 internal class PdfNavigatorViewModel(
     application: Application,
     private val publication: Publication,
-    initialLocator: Locator?,
+    initialLocator: Locator,
     private val documentFactory: PdfDocumentFactory
 ) : AndroidViewModel(application) {
 
-//    sealed class State {
-//        data class Loading(val locator: Locator) : State()
-//    }
-//
-//    val state: StateFlow<State> get() = _currentState
-//    private val _currentState = MutableStateFlow(State.Loading(initialLocator))
+    private val _currentLocator = MutableStateFlow(initialLocator)
+    val currentLocator: StateFlow<Locator> = _currentLocator.asStateFlow()
+
+    fun onPageChanged(pageIndex: Int) = viewModelScope.launch {
+        publication.positions().getOrNull(pageIndex)
+            ?.let { _currentLocator.value = it }
+    }
 
     companion object {
         @OptIn(InternalReadiumApi::class)
@@ -40,7 +47,11 @@ internal class PdfNavigatorViewModel(
             initialLocator: Locator?,
             documentFactory: PdfDocumentFactory
         ) = createViewModelFactory {
-            PdfNavigatorViewModel(application, publication, initialLocator, documentFactory)
+            val locator = initialLocator
+                ?: publication.readingOrder.firstOrNull()?.let { publication.locatorFromLink(it) }
+                ?: Locator(href = "#", type = MediaType.PDF.toString())
+
+            PdfNavigatorViewModel(application, publication, locator, documentFactory)
         }
     }
 }
