@@ -37,6 +37,8 @@ class PdfParser(
     private val pdfFactory: PdfDocumentFactory = DefaultPdfDocumentFactory(context)
 ) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
 
+    private val context = context.applicationContext
+
     override suspend fun parse(asset: PublicationAsset, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? =
         _parse(asset, fetcher, asset.name)
 
@@ -63,7 +65,7 @@ class PdfParser(
 
         val servicesBuilder = Publication.ServicesBuilder(
             positions = PdfPositionsService.Companion::create,
-            cover = document.cover?.let { InMemoryCoverService.createFactory(it) }
+            cover = document.cover(context)?.let { InMemoryCoverService.createFactory(it) }
         )
 
         return Publication.Builder(manifest, fetcher, servicesBuilder)

@@ -33,6 +33,7 @@ import org.readium.r2.navigator.image.ImageNavigatorFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.util.CompositeFragmentFactory
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -40,6 +41,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import kotlin.coroutines.CoroutineContext
 
+@OptIn(InternalReadiumApi::class)
 open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator, ImageNavigatorFragment.Listener {
 
     private val navigatorFragment: ImageNavigatorFragment

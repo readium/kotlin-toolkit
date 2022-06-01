@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.util.pdf
 
+import android.content.Context
 import android.graphics.Bitmap
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
@@ -49,7 +50,7 @@ interface PdfDocument {
     /**
      * The first page rendered as a cover.
      */
-    val cover: Bitmap?
+    suspend fun cover(context: Context): Bitmap?
 
     // Values extracted from the document information dictionary, defined in PDF specification.
 
@@ -86,7 +87,6 @@ interface PdfDocument {
 
     // To allow extensions on the Companion object.
     companion object { }
-
 }
 
 /**

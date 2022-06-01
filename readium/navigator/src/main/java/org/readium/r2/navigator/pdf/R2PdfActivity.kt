@@ -19,11 +19,13 @@ import androidx.lifecycle.asLiveData
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.util.CompositeFragmentFactory
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 
+@OptIn(InternalReadiumApi::class)
 @PdfSupport
 abstract class R2PdfActivity : AppCompatActivity(), PdfNavigatorFragment.Listener {
 

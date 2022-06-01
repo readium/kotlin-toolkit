@@ -31,6 +31,7 @@ import org.readium.r2.navigator.pager.R2CbzPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.util.createFragmentFactory
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positions
@@ -38,7 +39,7 @@ import org.readium.r2.shared.publication.services.positions
 /**
  * Navigator for bitmap-based publications, such as CBZ.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(InternalReadiumApi::class)
 class ImageNavigatorFragment private constructor(
     override val publication: Publication,
     private val initialLocator: Locator? = null,
@@ -209,6 +210,7 @@ class ImageNavigatorFragment private constructor(
          *        publication. Can be used to restore the last reading location.
          * @param listener Optional listener to implement to observe events, such as user taps.
          */
+        @OptIn(InternalReadiumApi::class)
         fun createFactory(publication: Publication, initialLocator: Locator? = null, listener: Listener? = null): FragmentFactory =
             createFragmentFactory { ImageNavigatorFragment(publication, initialLocator, listener) }
     }

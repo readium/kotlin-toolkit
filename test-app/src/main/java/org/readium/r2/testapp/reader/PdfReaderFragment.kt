@@ -13,13 +13,15 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
+import org.readium.navigator.pspdfkit.PdfNavigatorFragment
 import org.readium.r2.navigator.Navigator
-import org.readium.r2.navigator.pdf.PdfNavigatorFragment
+import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
 
+@OptIn(PdfSupport::class)
 class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener {
 
     override lateinit var model: ReaderViewModel
@@ -51,16 +53,16 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
         return view
     }
 
-    override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
-        val message = when (error) {
-            is Resource.Exception.OutOfMemory -> "The PDF is too large to be rendered on this device"
-            else -> "Failed to render this PDF"
-        }
-        Toast.makeText(requireActivity(), message, Toast.LENGTH_LONG).show()
-
-        // There's nothing we can do to recover, so we quit the Activity.
-        requireActivity().finish()
-    }
+//    override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
+//        val message = when (error) {
+//            is Resource.Exception.OutOfMemory -> "The PDF is too large to be rendered on this device"
+//            else -> "Failed to render this PDF"
+//        }
+//        Toast.makeText(requireActivity(), message, Toast.LENGTH_LONG).show()
+//
+//        // There's nothing we can do to recover, so we quit the Activity.
+//        requireActivity().finish()
+//    }
 
     companion object {
 

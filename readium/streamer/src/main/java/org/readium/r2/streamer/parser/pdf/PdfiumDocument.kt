@@ -13,6 +13,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.os.ParcelFileDescriptor
 import com.shockwave.pdfium.PdfiumCore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.fetcher.Resource
@@ -33,7 +35,22 @@ internal class PdfiumDocument(
 
     private val metadata: _PdfiumDocument.Meta by lazy { core.getDocumentMeta(document) }
 
-    override val cover: Bitmap? by lazy { core.renderCover(document) }
+    override suspend fun cover(context: Context): Bitmap? = withContext(Dispatchers.IO) {
+        try {
+            core.openPage(document, 0)
+            val width = core.getPageWidth(document, 0)
+            val height = core.getPageHeight(document, 0)
+            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            core.renderPageBitmap(document, bitmap, 0, 0, 0, width, height, false)
+            bitmap
+        } catch (e: Exception) {
+            Timber.e(e)
+            null
+        } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
+            Timber.e(e)
+            null
+        }
+    }
 
     override val title: String? get() = metadata.title
 
@@ -53,24 +70,6 @@ internal class PdfiumDocument(
     companion object
 }
 
-private fun PdfiumCore.renderCover(document: _PdfiumDocument): Bitmap? {
-    return try {
-        openPage(document, 0)
-        val width = getPageWidth(document, 0)
-        val height = getPageHeight(document, 0)
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        renderPageBitmap(document, bitmap, 0, 0, 0, width, height, false)
-        bitmap
-
-    } catch (e: Exception) {
-        Timber.e(e)
-        null
-    } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
-        Timber.e(e)
-        null
-    }
-}
-
 @OptIn(PdfSupport::class)
 private fun _PdfiumDocument.Bookmark.toOutlineNode(): PdfDocument.OutlineNode =
     PdfDocument.OutlineNode(
@@ -80,7 +79,7 @@ private fun _PdfiumDocument.Bookmark.toOutlineNode(): PdfDocument.OutlineNode =
     )
 
 @OptIn(PdfSupport::class)
-internal class PdfiumPdfDocumentFactory(private val context: Context) : PdfDocumentFactory {
+internal class PdfiumPdfDocumentFactory(context: Context) : PdfDocumentFactory {
 
     private val core by lazy { PdfiumCore(context.applicationContext ) }
 

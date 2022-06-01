@@ -27,6 +27,7 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
 import org.readium.r2.navigator.util.createFragmentFactory
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.isRestricted
@@ -254,6 +255,7 @@ class PdfNavigatorFragment internal constructor(
          *        Can be used to restore the last reading location.
          * @param listener Optional listener to implement to observe events, such as user taps.
          */
+        @OptIn(InternalReadiumApi::class)
         fun createFactory(publication: Publication, initialLocator: Locator? = null, listener: Listener? = null): FragmentFactory =
             createFragmentFactory { PdfNavigatorFragment(publication, initialLocator, listener) }
 
