@@ -81,7 +81,7 @@ interface PdfDocument {
 
     data class OutlineNode(
         val title: String?,
-        val pageNumber: Int,  // Starts from 1.
+        val pageNumber: Int?,  // Starts from 1.
         val children: List<OutlineNode>
     )
 

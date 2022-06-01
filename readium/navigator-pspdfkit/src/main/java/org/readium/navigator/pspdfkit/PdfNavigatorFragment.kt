@@ -44,7 +44,6 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.mediatype.MediaType
-import timber.log.Timber
 
 @PdfSupport
 @OptIn(InternalReadiumApi::class)

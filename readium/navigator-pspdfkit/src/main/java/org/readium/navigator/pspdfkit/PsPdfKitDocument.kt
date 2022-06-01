@@ -9,7 +9,9 @@ package org.readium.navigator.pspdfkit
 import android.content.Context
 import android.graphics.Bitmap
 import androidx.core.net.toUri
+import com.pspdfkit.annotations.actions.GoToAction
 import com.pspdfkit.document.DocumentSource
+import com.pspdfkit.document.OutlineElement
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.document.PdfDocumentLoader
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +44,7 @@ internal class PsPdfKitDocument(
     internal val document: PdfDocument
 ) : ReadiumPdfDocument {
 
-    // FIXME:
+    // FIXME: Doesn't seem to be exposed by PSPDFKit.
     override val identifier: String?
         get() = null
 
@@ -74,7 +76,19 @@ internal class PsPdfKitDocument(
     override val keywords: List<String>
         get() = document.pdfMetadata.keywords ?: emptyList()
 
-    // FIXME
-    override val outline: List<ReadiumPdfDocument.OutlineNode>
-        get() = emptyList()
+    override val outline: List<ReadiumPdfDocument.OutlineNode> by lazy {
+        document.outline.toOutlineNodes()
+    }
 }
+
+@PdfSupport
+private fun List<OutlineElement>.toOutlineNodes(): List<ReadiumPdfDocument.OutlineNode> =
+    map { it.toOutlineNode() }
+
+@PdfSupport
+private fun OutlineElement.toOutlineNode(): ReadiumPdfDocument.OutlineNode =
+    ReadiumPdfDocument.OutlineNode(
+        title = title,
+        pageNumber = (action as? GoToAction)?.run { pageIndex + 1 },
+        children = children.toOutlineNodes()
+    )
