@@ -24,7 +24,7 @@ import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewClientCompat
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
@@ -32,6 +32,7 @@ import org.readium.r2.navigator.R2WebView
 import org.readium.r2.navigator.databinding.ViewpagerFragmentEpubBinding
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.extensions.htmlId
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -40,6 +41,7 @@ import java.io.IOException
 import java.io.InputStream
 import kotlin.math.roundToInt
 
+@OptIn(InternalReadiumApi::class)
 class R2EpubPageFragment : Fragment() {
 
     private val resourceUrl: String?
@@ -61,6 +63,22 @@ class R2EpubPageFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var isLoading: Boolean = false
+    private val _isLoaded = MutableStateFlow(false)
+
+    /**
+     * Indicates whether the resource is fully loaded in the web view.
+     */
+    @InternalReadiumApi
+    val isLoaded: StateFlow<Boolean>
+        get() = _isLoaded.asStateFlow()
+
+    /**
+     * Waits for the page to be loaded.
+     */
+    @InternalReadiumApi
+    suspend fun awaitLoaded() {
+        isLoaded.first { it }
+    }
 
     private val navigator: EpubNavigatorFragment?
         get() = parentFragment as? EpubNavigatorFragment
@@ -68,7 +86,7 @@ class R2EpubPageFragment : Fragment() {
     private val shouldApplyInsetsPadding: Boolean
         get() = navigator?.config?.shouldApplyInsetsPadding ?: true
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint("SetJavaScriptEnabled", "JavascriptInterface")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = ViewpagerFragmentEpubBinding.inflate(inflater, container, false)
         containerView = binding.root
@@ -78,8 +96,17 @@ class R2EpubPageFragment : Fragment() {
         this.webView = webView
 
         webView.visibility = View.INVISIBLE
-        navigator?.let {
-            webView.listener = it.webViewListener
+        navigator?.webViewListener?.let { listener ->
+            webView.listener = listener
+
+            link?.let { link ->
+                // Setup custom Javascript interfaces.
+                for ((name, obj) in listener.javascriptInterfacesForResource(link)) {
+                    if (obj != null) {
+                        webView.addJavascriptInterface(obj, name)
+                    }
+                }
+            }
         }
         webView.preferences = preferences
 
@@ -190,6 +217,7 @@ class R2EpubPageFragment : Fragment() {
 
         resourceUrl?.let {
             isLoading = true
+            _isLoaded.value = false
             webView.loadUrl(it)
         }
 
@@ -284,6 +312,7 @@ class R2EpubPageFragment : Fragment() {
     private fun onLoadPage() {
         if (!isLoading) return
         isLoading = false
+        _isLoaded.value = true
 
         if (view == null) return
 
