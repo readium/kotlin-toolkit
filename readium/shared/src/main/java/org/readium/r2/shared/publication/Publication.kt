@@ -19,10 +19,7 @@ import org.readium.r2.shared.R
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
-import org.readium.r2.shared.extensions.HashAlgorithm
-import org.readium.r2.shared.extensions.hash
-import org.readium.r2.shared.extensions.removeLastComponent
-import org.readium.r2.shared.extensions.toUrlOrNull
+import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.fetcher.EmptyFetcher
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.Resource
@@ -58,25 +55,25 @@ typealias PublicationId = String
  * The default implementation returns Resource.Exception.NotFound for all HREFs.
  * @param servicesBuilder Holds the list of service factories used to create the instances of
  * Publication.Service attached to this Publication.
- * @param positionsFactory Factory used to build lazily the [positions].
  */
-class Publication(
+class Publication private constructor(
     manifest: Manifest,
-    private val fetcher: Fetcher = EmptyFetcher(),
-    private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
-
-    @Deprecated("Provide a [ServiceFactory] for a [PositionsService] instead.", level = DeprecationLevel.ERROR)
-    @Suppress("DEPRECATION")
-    val positionsFactory: PositionListFactory? = null,
-
+    private val fetcher: Fetcher,
+    private val servicesBuilder: ServicesBuilder,
+    private val services: ListPublicationServicesHolder,
     // FIXME: To refactor after specifying the User and Rendition Settings API
-    var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(),
-    var cssStyle: String? = null,
+    var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean>,
+    var cssStyle: String?,
+) : PublicationServicesHolder by services {
 
-    @Deprecated("This will be removed in a future version. Use [Format.of] to check the format of a publication.", level = DeprecationLevel.ERROR)
-    var internalData: MutableMap<String, String> = mutableMapOf()
-) {
-    private val _services: List<Service>
+    constructor(
+        manifest: Manifest,
+        fetcher: Fetcher = EmptyFetcher(),
+        servicesBuilder: ServicesBuilder = ServicesBuilder(),
+        userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(),
+        cssStyle: String? = null,
+    ) : this(manifest, fetcher, servicesBuilder, ListPublicationServicesHolder(), userSettingsUIPreset, cssStyle)
+
     private val _manifest: Manifest
 
     init {
@@ -84,8 +81,8 @@ class Publication(
         // them from using the Publication before it is fully initialized.
         val pubRef = Ref<Publication>()
 
-        _services = servicesBuilder.build(Service.Context(pubRef, manifest, fetcher))
-        _manifest = manifest.copy(links = manifest.links + _services.map(Service::links).flatten())
+        services.services = servicesBuilder.build(Service.Context(pubRef, manifest, fetcher, services))
+        _manifest = manifest.copy(links = manifest.links + services.services.map(Service::links).flatten())
 
         pubRef.ref = this
     }
@@ -171,7 +168,7 @@ class Publication(
     fun get(link: Link): Resource {
         if (DEBUG) { require(!link.templated) { "You must expand templated links before calling [Publication.get]" } }
 
-        _services.forEach { service -> service.get(link)?.let { return it } }
+        services.services.forEach { service -> service.get(link)?.let { return it } }
         return fetcher.get(link)
     }
 
@@ -180,33 +177,17 @@ class Publication(
      */
     @OptIn(DelicateCoroutinesApi::class)
     //TODO Change this to be a suspend function
-    fun close() = GlobalScope.launch {
-        try {
-            fetcher.close()
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
-
-        _services.forEach {
+    override fun close() {
+        GlobalScope.launch {
             try {
-                it.close()
+                fetcher.close()
             } catch (e: Exception) {
                 Timber.e(e)
             }
+
+            services.close()
         }
     }
-
-    /**
-     * Returns the first publication service that is an instance of [klass].
-     */
-    fun <T: Service> findService(serviceType: KClass<T>): T? =
-        findServices(serviceType).firstOrNull()
-
-    /**
-     * Returns all the publication services that are instances of [klass].
-     */
-    fun <T: Service> findServices(serviceType: KClass<T>): List<T> =
-        _services.filterIsInstance(serviceType.java)
 
     enum class TYPE {
         EPUB, CBZ, FXL, WEBPUB, AUDIO, DiViNa
@@ -318,7 +299,8 @@ class Publication(
         class Context(
             val publication: Ref<Publication>,
             val manifest: Manifest,
-            val fetcher: Fetcher
+            val fetcher: Fetcher,
+            val services: PublicationServicesHolder
         )
 
         /**
@@ -369,7 +351,7 @@ class Publication(
      *
      * Provides helpers to manipulate the list of services of a [Publication].
      */
-    class ServicesBuilder private constructor(private var serviceFactories: MutableMap<String, ServiceFactory>) {
+    class ServicesBuilder private constructor(private val serviceFactories: MutableMap<String, ServiceFactory>) {
 
         @OptIn(Search::class)
         @Suppress("UNCHECKED_CAST")
@@ -563,4 +545,40 @@ class Publication(
     @Suppress("UNUSED_PARAMETER")
     fun contentLayoutForLanguage(language: String?) = metadata.effectiveReadingProgression
 
+}
+
+/**
+ * Holds [Publication.Service] instances for a [Publication].
+ */
+interface PublicationServicesHolder {
+    /**
+     * Returns the first publication service that is an instance of [serviceType].
+     */
+    fun <T: Publication.Service> findService(serviceType: KClass<T>): T?
+
+    /**
+     * Returns all the publication services that are instances of [serviceType].
+     */
+    fun <T: Publication.Service> findServices(serviceType: KClass<T>): List<T>
+
+    /**
+     * Closes the publication services.
+     */
+    fun close()
+}
+
+private class ListPublicationServicesHolder(
+    var services: List<Publication.Service> = emptyList()
+) : PublicationServicesHolder {
+    override fun <T: Publication.Service> findService(serviceType: KClass<T>): T? =
+        findServices(serviceType).firstOrNull()
+
+    override fun <T: Publication.Service> findServices(serviceType: KClass<T>): List<T> =
+        services.filterIsInstance(serviceType.java)
+
+    override fun close() {
+        for (service in services) {
+            tryOrLog { service.close() }
+        }
+    }
 }

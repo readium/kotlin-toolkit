@@ -14,11 +14,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.readFully
-import org.readium.r2.shared.extensions.readRange
 import org.readium.r2.shared.util.io.CountingInputStream
 import java.io.File
-import java.io.InputStream
-import java.lang.Exception
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
