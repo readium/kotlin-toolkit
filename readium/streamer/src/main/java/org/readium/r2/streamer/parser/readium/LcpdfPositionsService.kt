@@ -15,9 +15,11 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.PdfDocument
+import org.readium.r2.shared.util.pdf.cachedIn
 import timber.log.Timber
 
 /**
@@ -26,10 +28,11 @@ import timber.log.Timber
  */
 @OptIn(PdfSupport::class)
 internal class LcpdfPositionsService(
-    private val readingOrder: List<Link>,
-    private val fetcher: Fetcher
     pdfFactory: PdfDocumentFactory<*>,
+    private val context: Publication.Service.Context,
 ) : PositionsService {
+
+    private val pdfFactory by lazy { pdfFactory.cachedIn(context.services) }
 
     override suspend fun positionsByReadingOrder(): List<List<Locator>> {
         if (!::_positions.isInitialized)
@@ -42,7 +45,7 @@ internal class LcpdfPositionsService(
 
     private suspend fun computePositions(): List<List<Locator>> {
         // Calculates the page count of each resource from the reading order.
-        val resources: List<Pair<Int, Link>> = readingOrder.map { link ->
+        val resources: List<Pair<Int, Link>> = context.manifest.readingOrder.map { link ->
             val pageCount = openPdfAt(link)?.pageCount ?: 0
             Pair(pageCount, link)
         }
@@ -84,7 +87,7 @@ internal class LcpdfPositionsService(
 
     private suspend fun openPdfAt(link: Link): PdfDocument? =
         try {
-            pdfFactory.open(fetcher.get(link), password = null)
+            pdfFactory.open(context.fetcher.get(link), password = null)
         } catch (e: Exception) {
             Timber.e(e)
             null
@@ -95,11 +98,9 @@ internal class LcpdfPositionsService(
         fun create(pdfFactory: PdfDocumentFactory<*>): (Publication.Service.Context) -> LcpdfPositionsService = { serviceContext ->
             LcpdfPositionsService(
                 pdfFactory = pdfFactory,
-                readingOrder = serviceContext.manifest.readingOrder,
-                fetcher = serviceContext.fetcher
+                context = serviceContext
             )
         }
-
     }
 
 }
