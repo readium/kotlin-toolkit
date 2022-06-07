@@ -7,6 +7,17 @@
 package org.readium.r2.shared.util
 
 /**
+ * A [Closeable] is an object holding closeable resources, such as open files or streams.
+ */
+interface Closeable {
+    /**
+     * Closes this object and releases any resources associated with it.
+     * If the object is already closed then invoking this method has no effect.
+     */
+    fun close()
+}
+
+/**
  * A [SuspendingCloseable] is an object holding closeable resources, such as open files or streams.
  */
 interface SuspendingCloseable {

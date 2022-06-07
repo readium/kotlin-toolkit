@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.publication
 
 import android.net.Uri
@@ -14,12 +16,10 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
+import org.readium.r2.shared.*
 import org.readium.r2.shared.BuildConfig.DEBUG
-import org.readium.r2.shared.R
-import org.readium.r2.shared.ReadiumCSSName
-import org.readium.r2.shared.Search
-import org.readium.r2.shared.UserException
 import org.readium.r2.shared.extensions.*
+import org.readium.r2.shared.extensions.removeLastComponent
 import org.readium.r2.shared.fetcher.EmptyFetcher
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.Resource
@@ -27,6 +27,8 @@ import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.*
 import org.readium.r2.shared.publication.services.search.SearchService
+import org.readium.r2.shared.util.Closeable
+import org.readium.r2.shared.util.MemoryObserver
 import org.readium.r2.shared.util.Ref
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
@@ -64,7 +66,7 @@ class Publication private constructor(
     // FIXME: To refactor after specifying the User and Rendition Settings API
     var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean>,
     var cssStyle: String?,
-) : PublicationServicesHolder by services {
+) : PublicationServicesHolder by services, MemoryObserver {
 
     constructor(
         manifest: Manifest,
@@ -189,6 +191,10 @@ class Publication private constructor(
         }
     }
 
+    override fun onTrimMemory(level: MemoryObserver.Level) {
+        services.onTrimMemory(level)
+    }
+
     enum class TYPE {
         EPUB, CBZ, FXL, WEBPUB, AUDIO, DiViNa
     }
@@ -284,7 +290,7 @@ class Publication private constructor(
     /**
      * Base interface to be implemented by all publication services.
      */
-    interface Service {
+    interface Service : Closeable, MemoryObserver {
 
         /**
          * Container for the context from which a service is created.
@@ -342,8 +348,9 @@ class Publication private constructor(
         /**
          * Closes any opened file handles, removes temporary files, etc.
          */
-        fun close() {}
+        override fun close() {}
 
+        override fun onTrimMemory(level: MemoryObserver.Level) {}
     }
 
     /**
@@ -356,12 +363,14 @@ class Publication private constructor(
         @OptIn(Search::class)
         @Suppress("UNCHECKED_CAST")
         constructor(
+            cache: ServiceFactory? = { DefaultCacheService() },
             contentProtection: ServiceFactory? = null,
             cover: ServiceFactory? = null,
-            locator: ServiceFactory? = { DefaultLocatorService(it.manifest.readingOrder, it.publication) },
+            locator: ServiceFactory? = { DefaultLocatorService(it.manifest.readingOrder, it.services) },
             positions: ServiceFactory? = null,
             search: ServiceFactory? = null,
         ) : this(mapOf(
+            CacheService::class.java.simpleName to cache,
             ContentProtectionService::class.java.simpleName to contentProtection,
             CoverService::class.java.simpleName to cover,
             LocatorService::class.java.simpleName to locator,
@@ -550,7 +559,7 @@ class Publication private constructor(
 /**
  * Holds [Publication.Service] instances for a [Publication].
  */
-interface PublicationServicesHolder {
+interface PublicationServicesHolder: MemoryObserver {
     /**
      * Returns the first publication service that is an instance of [serviceType].
      */
@@ -580,5 +589,9 @@ private class ListPublicationServicesHolder(
         for (service in services) {
             tryOrLog { service.close() }
         }
+    }
+
+    override fun onTrimMemory(level: MemoryObserver.Level) {
+        services.forEach { it.onTrimMemory(level) }
     }
 }

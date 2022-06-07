@@ -9,12 +9,14 @@
 
 package org.readium.r2.streamer
 
+import android.content.ComponentCallbacks2
 import android.content.Context
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.shared.util.MemoryObserver
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
@@ -61,6 +63,7 @@ class Streamer constructor(
     private val httpClient: DefaultHttpClient = DefaultHttpClient(),
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
+    private val context = context.applicationContext
 
     private val contentProtections: List<ContentProtection> =
         contentProtections + listOf(FallbackContentProtection())
@@ -140,6 +143,8 @@ class Streamer constructor(
             .apply(onCreatePublication)
             .build()
             .apply { addLegacyProperties(asset.mediaType()) }
+
+        context.registerComponentCallbacks(MemoryObserver.asComponentCallbacks2(publication))
 
         Try.success(publication)
 

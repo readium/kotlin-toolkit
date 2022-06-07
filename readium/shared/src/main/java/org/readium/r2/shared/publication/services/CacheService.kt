@@ -6,6 +6,7 @@
 
 package org.readium.r2.shared.publication.services
 
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.readium.r2.shared.InternalReadiumApi
@@ -13,12 +14,12 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.util.Closeable
+import org.readium.r2.shared.util.MemoryObserver
 import kotlin.reflect.KClass
 
 /**
  * Provides publication-related in-memory caches.
  */
-// FIXME: onTrimMemory
 @InternalReadiumApi
 interface CacheService : Publication.Service {
     /**
@@ -53,15 +54,20 @@ class DefaultCacheService : CacheService {
     override fun close() {
         caches.values.forEach { it.close() }
     }
+
+    override fun onTrimMemory(level: MemoryObserver.Level) {
+        caches.forEach { (_, cache) -> cache.onTrimMemory(level) }
+    }
 }
 
 @InternalReadiumApi
-interface Cache<T>: Closeable {
+interface Cache<T>: Closeable, MemoryObserver {
     suspend fun get(key: String): T?
     suspend fun put(key: String, value: T?)
     suspend fun remove(key: String): T?
     suspend fun clear()
     override fun close() {}
+    override fun onTrimMemory(level: MemoryObserver.Level) {}
 }
 
 @InternalReadiumApi
@@ -100,6 +106,12 @@ class InMemoryCache<T> : Cache<T> {
     override fun close() {
         for (value in values) {
             (value as? Closeable)?.close()
+        }
+    }
+
+    override fun onTrimMemory(level: MemoryObserver.Level) {
+        if (level == MemoryObserver.Level.Critical) {
+            runBlocking { clear() }
         }
     }
 }
