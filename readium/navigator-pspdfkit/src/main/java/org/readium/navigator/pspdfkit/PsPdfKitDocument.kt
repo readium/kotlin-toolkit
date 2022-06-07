@@ -12,37 +12,42 @@ import androidx.core.net.toUri
 import com.pspdfkit.annotations.actions.GoToAction
 import com.pspdfkit.document.DocumentSource
 import com.pspdfkit.document.OutlineElement
-import com.pspdfkit.document.PdfDocument
+import com.pspdfkit.document.PageBinding
+import com.pspdfkit.document.PdfDocument as _PsPdfKitDocument
 import com.pspdfkit.document.PdfDocumentLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import timber.log.Timber
 import java.io.File
-import org.readium.r2.shared.util.pdf.PdfDocument as ReadiumPdfDocument
+import org.readium.r2.shared.util.pdf.PdfDocument
+import kotlin.reflect.KClass
 
 @PdfSupport
-class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory {
+class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPdfKitDocument> {
     private val context = context.applicationContext
 
-    override suspend fun open(file: File, password: String?): ReadiumPdfDocument =
+    override val documentType: KClass<PsPdfKitDocument> = PsPdfKitDocument::class
+
+    override suspend fun open(file: File, password: String?): PsPdfKitDocument =
         open(context, DocumentSource(file.toUri(), password))
 
-    override suspend fun open(resource: Resource, password: String?): ReadiumPdfDocument =
+    override suspend fun open(resource: Resource, password: String?): PsPdfKitDocument =
         open(context, DocumentSource(ResourceDataProvider(resource), password))
 
-    private suspend fun open(context: Context, documentSource: DocumentSource): ReadiumPdfDocument =
+    private suspend fun open(context: Context, documentSource: DocumentSource): PsPdfKitDocument =
         withContext(Dispatchers.IO) {
             PsPdfKitDocument(PdfDocumentLoader.openDocument(context, documentSource))
         }
 }
 
 @PdfSupport
-internal class PsPdfKitDocument(
-    internal val document: PdfDocument
-) : ReadiumPdfDocument {
+class PsPdfKitDocument(
+    internal val document: _PsPdfKitDocument
+) : PdfDocument {
 
     // FIXME: Doesn't seem to be exposed by PSPDFKit.
     override val identifier: String?
@@ -82,18 +87,18 @@ internal class PsPdfKitDocument(
     override val keywords: List<String>
         get() = document.pdfMetadata.keywords ?: emptyList()
 
-    override val outline: List<ReadiumPdfDocument.OutlineNode> by lazy {
+    override val outline: List<PdfDocument.OutlineNode> by lazy {
         document.outline.toOutlineNodes()
     }
 }
 
 @PdfSupport
-private fun List<OutlineElement>.toOutlineNodes(): List<ReadiumPdfDocument.OutlineNode> =
+private fun List<OutlineElement>.toOutlineNodes(): List<PdfDocument.OutlineNode> =
     map { it.toOutlineNode() }
 
 @PdfSupport
-private fun OutlineElement.toOutlineNode(): ReadiumPdfDocument.OutlineNode =
-    ReadiumPdfDocument.OutlineNode(
+private fun OutlineElement.toOutlineNode(): PdfDocument.OutlineNode =
+    PdfDocument.OutlineNode(
         title = title,
         pageNumber = (action as? GoToAction)?.run { pageIndex + 1 },
         children = children.toOutlineNodes()

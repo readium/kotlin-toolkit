@@ -41,7 +41,7 @@ import java.io.FileNotFoundException
  */
 @OptIn(PdfSupport::class)
 class ReadiumWebPubParser(
-    private val pdfFactory: PdfDocumentFactory?,
+    private val pdfFactory: PdfDocumentFactory<*>?,
     private val httpClient: HttpClient,
 ) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
 

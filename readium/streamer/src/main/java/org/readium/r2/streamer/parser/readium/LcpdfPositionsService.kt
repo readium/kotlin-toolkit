@@ -26,9 +26,9 @@ import timber.log.Timber
  */
 @OptIn(PdfSupport::class)
 internal class LcpdfPositionsService(
-    private val pdfFactory: PdfDocumentFactory,
     private val readingOrder: List<Link>,
     private val fetcher: Fetcher
+    pdfFactory: PdfDocumentFactory<*>,
 ) : PositionsService {
 
     override suspend fun positionsByReadingOrder(): List<List<Locator>> {
@@ -92,7 +92,7 @@ internal class LcpdfPositionsService(
 
     companion object {
 
-        fun create(pdfFactory: PdfDocumentFactory): (Publication.Service.Context) -> LcpdfPositionsService = { serviceContext ->
+        fun create(pdfFactory: PdfDocumentFactory<*>): (Publication.Service.Context) -> LcpdfPositionsService = { serviceContext ->
             LcpdfPositionsService(
                 pdfFactory = pdfFactory,
                 readingOrder = serviceContext.manifest.readingOrder,

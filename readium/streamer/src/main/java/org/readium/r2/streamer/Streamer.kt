@@ -59,7 +59,7 @@ class Streamer constructor(
     ignoreDefaultParsers: Boolean = false,
     contentProtections: List<ContentProtection> = emptyList(),
     private val archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
-    private val pdfFactory: PdfDocumentFactory = DefaultPdfDocumentFactory(context),
+    private val pdfFactory: PdfDocumentFactory<*>? = null,
     private val httpClient: DefaultHttpClient = DefaultHttpClient(),
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
@@ -153,9 +153,9 @@ class Streamer constructor(
     }
 
     private val defaultParsers: List<PublicationParser> by lazy {
-        listOf(
+        listOfNotNull(
             EpubParser(),
-            PdfParser(context, pdfFactory),
+            pdfFactory?.let { PdfParser(context, it) },
             ReadiumWebPubParser(pdfFactory, httpClient),
             ImageParser(),
             AudioParser()
@@ -190,14 +190,3 @@ internal fun MediaType?.toPublicationType(): Publication.TYPE =
         MediaType.EPUB -> Publication.TYPE.EPUB
         else -> Publication.TYPE.WEBPUB
     }
-
-@PdfSupport
-class DefaultPdfDocumentFactory private constructor (
-    private val factory: PdfDocumentFactory
-) : PdfDocumentFactory by factory {
-
-    /** Pdfium is the default implementation. */
-    constructor(context: Context)
-        : this(PdfiumPdfDocumentFactory(context.applicationContext))
-
-}

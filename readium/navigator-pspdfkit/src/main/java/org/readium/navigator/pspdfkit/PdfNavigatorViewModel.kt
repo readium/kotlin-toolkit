@@ -21,14 +21,15 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 
 @PdfSupport
-internal class PdfNavigatorViewModel(
+internal class PdfNavigatorViewModel<T : PdfDocument>(
     application: Application,
     private val publication: Publication,
     initialLocator: Locator,
-    private val documentFactory: PdfDocumentFactory
+    private val documentFactory: PdfDocumentFactory<T>
 ) : AndroidViewModel(application) {
 
     private val _currentLocator = MutableStateFlow(initialLocator)
@@ -41,11 +42,11 @@ internal class PdfNavigatorViewModel(
 
     companion object {
         @OptIn(InternalReadiumApi::class)
-        fun createFactory(
+        fun <T : PdfDocument> createFactory(
             application: Application,
             publication: Publication,
             initialLocator: Locator?,
-            documentFactory: PdfDocumentFactory
+            documentFactory: PdfDocumentFactory<T>
         ) = createViewModelFactory {
             val locator = initialLocator
                 ?: publication.readingOrder.firstOrNull()?.let { publication.locatorFromLink(it) }

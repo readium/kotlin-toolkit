@@ -22,7 +22,6 @@ import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.toLinks
-import org.readium.r2.streamer.DefaultPdfDocumentFactory
 import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.parser.PubBox
@@ -34,7 +33,7 @@ import java.io.File
 @PdfSupport
 class PdfParser(
     context: Context,
-    private val pdfFactory: PdfDocumentFactory = DefaultPdfDocumentFactory(context)
+    private val pdfFactory: PdfDocumentFactory<*>
 ) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
 
     private val context = context.applicationContext

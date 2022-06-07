@@ -23,6 +23,7 @@ import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 import java.io.File
+import kotlin.reflect.KClass
 import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 
 @OptIn(PdfSupport::class)
@@ -79,14 +80,16 @@ private fun _PdfiumDocument.Bookmark.toOutlineNode(): PdfDocument.OutlineNode =
     )
 
 @OptIn(PdfSupport::class)
-internal class PdfiumPdfDocumentFactory(context: Context) : PdfDocumentFactory {
+internal class PdfiumPdfDocumentFactory(context: Context) : PdfDocumentFactory<PdfiumDocument> {
+
+    override val documentType: KClass<PdfiumDocument> = PdfiumDocument::class
 
     private val core by lazy { PdfiumCore(context.applicationContext ) }
 
-    override suspend fun open(file: File, password: String?): PdfDocument =
+    override suspend fun open(file: File, password: String?): PdfiumDocument =
         core.fromFile(file, password)
 
-    override suspend fun open(resource: Resource, password: String?): PdfDocument =
+    override suspend fun open(resource: Resource, password: String?): PdfiumDocument =
         resource.use { res ->
             val file = res.file
             if (file != null) core.fromFile(file, password)
