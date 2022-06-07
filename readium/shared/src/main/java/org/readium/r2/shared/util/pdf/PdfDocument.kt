@@ -48,6 +48,11 @@ interface PdfDocument {
     val pageCount: Int
 
     /**
+     * Default reading progression of the document.
+     */
+    val readingProgression: ReadingProgression get() = ReadingProgression.AUTO
+
+    /**
      * The first page rendered as a cover.
      */
     suspend fun cover(context: Context): Bitmap?

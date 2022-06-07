@@ -51,6 +51,12 @@ internal class PsPdfKitDocument(
     override val pageCount: Int
         get() = document.pageCount
 
+    override val readingProgression: ReadingProgression =
+        when (document.pageBinding) {
+            PageBinding.UNKNOWN, PageBinding.LEFT_EDGE -> ReadingProgression.LTR
+            PageBinding.RIGHT_EDGE -> ReadingProgression.RTL
+        }
+
     override suspend fun cover(context: Context): Bitmap? = withContext(Dispatchers.IO) {
         try {
             val size = document.getPageSize(0)
