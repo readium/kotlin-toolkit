@@ -33,7 +33,6 @@ import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation
-import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.util.pdf.cachedIn
 
@@ -41,15 +40,20 @@ import org.readium.r2.shared.util.pdf.cachedIn
 class PsPdfKitDocumentFragment private constructor(
     private val publication: Publication,
     private val document: PsPdfKitDocument,
+    private val initialPageIndex: Int,
     private val settings: Settings,
     private val listener: Listener?
 ) : PdfDocumentFragment() {
 
     companion object {
         fun createFactory(documentFactory: PsPdfKitDocumentFactory): PdfDocumentFragmentFactory =
-            { publication, link, settings, listener ->
+            { publication, link, initialPageIndex, settings, listener ->
                 val document = documentFactory.cachedIn(publication).open(publication.get(link), null)
-                PsPdfKitDocumentFragment(publication, document, settings, listener)
+                PsPdfKitDocumentFragment(
+                    publication, document,
+                    initialPageIndex = initialPageIndex,
+                    settings, listener
+                )
             }
     }
 
@@ -63,6 +67,7 @@ class PsPdfKitDocumentFragment private constructor(
         childFragmentManager.commit {
             replace(R.id.readium_pspdfkit_container, pdfFragment, "com.pspdfkit.ui.PdfFragment")
         }
+        pdfFragment.setPageIndex(initialPageIndex, false)
         return view
     }
 
@@ -108,8 +113,9 @@ class PsPdfKitDocumentFragment private constructor(
 
         return PdfFragment.newInstance(document.document, config.build())
             .apply {
-                addDocumentListener(psPdfKitListener)
+                setPageIndex(initialPageIndex, false)
                 setOnPreparePopupToolbarListener(psPdfKitListener)
+                addDocumentListener(psPdfKitListener)
             }
     }
 

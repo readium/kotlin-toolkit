@@ -10,6 +10,7 @@ import android.graphics.PointF
 import androidx.fragment.app.Fragment
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation
@@ -18,6 +19,7 @@ import org.readium.r2.shared.publication.presentation.Presentation
 typealias PdfDocumentFragmentFactory = suspend (
     publication: Publication,
     link: Link,
+    initialPageIndex: Int,
     settings: PdfDocumentFragment.Settings,
     listener: PdfDocumentFragment.Listener?
 ) -> PdfDocumentFragment

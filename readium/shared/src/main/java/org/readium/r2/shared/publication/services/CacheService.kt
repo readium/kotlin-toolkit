@@ -104,7 +104,7 @@ class InMemoryCache<T> : Cache<T> {
     }
 
     override fun close() {
-        for (value in values) {
+        for ((_, value) in values) {
             (value as? Closeable)?.close()
         }
     }

@@ -15,7 +15,6 @@ import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.VisualNavigator
@@ -23,21 +22,21 @@ import org.readium.r2.navigator.extensions.fragmentParameters
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.PdfSupport
+import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation
-import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.mediatype.MediaType
+import timber.log.Timber
 
 @PdfSupport
-@OptIn(InternalReadiumApi::class, ExperimentalCoroutinesApi::class)
+@OptIn(InternalReadiumApi::class)
 class PdfNavigatorFragment private constructor(
     override val publication: Publication,
     initialLocator: Locator?,
-    settings: PdfDocumentFragment.Settings,
+    private val initialSettings: PdfDocumentFragment.Settings,
     private val defaultSettings: PdfDocumentFragment.Settings,
     private val listener: Listener?,
     private val documentFragmentFactory: PdfDocumentFragmentFactory
@@ -63,7 +62,7 @@ class PdfNavigatorFragment private constructor(
         ): FragmentFactory = createFragmentFactory {
             PdfNavigatorFragment(
                 publication, initialLocator,
-                settings = settings, defaultSettings = defaultSettings,
+                initialSettings = settings, defaultSettings = defaultSettings,
                 listener, documentFragmentFactory
             )
         }
@@ -71,7 +70,8 @@ class PdfNavigatorFragment private constructor(
 
     interface Listener : VisualNavigator.Listener
 
-    private val appliedSettings = MutableStateFlow(combineSettings(settings))
+    private lateinit var documentFragment: StateFlow<PdfDocumentFragment?>
+    private val documentFragmentListener = DocumentFragmentListener()
 
     init {
         require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
@@ -82,38 +82,13 @@ class PdfNavigatorFragment private constructor(
         ) { "[PdfNavigatorFragment] supports only publications with PDFs in the reading order" }
     }
 
-    var settings: PdfDocumentFragment.Settings = settings
-        set(value) {
-            field = value
-            appliedSettings.value = combineSettings(value)
-        }
-
-    private fun combineSettings(settings: PdfDocumentFragment.Settings) =
-        PdfDocumentFragment.Settings(
-            fit = settings.fit
-                ?: publication.metadata.presentation.fit
-                ?: defaultSettings.fit,
-            overflow = settings.overflow.takeUnless { it == Presentation.Overflow.AUTO }
-                ?: publication.metadata.presentation.overflow.takeUnless { it == Presentation.Overflow.AUTO }
-                ?: defaultSettings.overflow,
-            readingProgression = settings.readingProgression.takeUnless { it == ReadingProgression.AUTO }
-                ?: publication.metadata.readingProgression.takeUnless { it == ReadingProgression.AUTO }
-                ?: defaultSettings.readingProgression
-        )
-
     private val viewModel: PdfNavigatorViewModel by viewModels {
-        PdfNavigatorViewModel.createFactory(requireActivity().application, publication, initialLocator)
+        PdfNavigatorViewModel.createFactory(requireActivity().application, publication, initialLocator, settings = initialSettings, defaultSettings = defaultSettings)
     }
 
-    private val documentFragment: StateFlow<PdfDocumentFragment?> by lazy {
-        viewModel.currentDocument
-            .combine(appliedSettings) { link, settings ->
-                documentFragmentFactory(publication, link, settings, documentFragmentListener)
-            }
-            .stateIn(viewLifecycleOwner.lifecycleScope, started = SharingStarted.Eagerly, null)
-    }
-
-    private val documentFragmentListener = DocumentFragmentListener()
+    var settings: PdfDocumentFragment.Settings
+        get() = viewModel.state.value.userSettings
+        set(value) { viewModel.setUserSettings(value) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Clears the savedInstanceState to prevent the child fragment manager from restoring the
@@ -123,8 +98,25 @@ class PdfNavigatorFragment private constructor(
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = FragmentContainerView(inflater.context)
-        savedInstanceState?.clear()
         view.id = R.id.readium_pspdfkit_container
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        documentFragment = viewModel.state
+            .distinctUntilChanged { old, new ->
+                old.locator.href == new.locator.href && old.appliedSettings == new.appliedSettings
+            }
+            .map { state ->
+                val link = publication.linkWithHref(state.locator.href) ?: return@map null
+                val pageIndex = (state.locator.locations.page ?: 1) - 1
+                val settings = state.appliedSettings
+
+                documentFragmentFactory(publication, link, pageIndex, settings, documentFragmentListener)
+            }
+            .stateIn(viewLifecycleOwner.lifecycleScope, started = SharingStarted.Eagerly, null)
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -138,16 +130,14 @@ class PdfNavigatorFragment private constructor(
                     .launchIn(this)
             }
         }
-//           go(currentLocator.value, animated = false)
-
-        return view
     }
 
     override val readingProgression: ReadingProgression
-        get() = ReadingProgression.AUTO
+        get() = viewModel.state.value.appliedSettings.readingProgression
 
     override val currentLocator: StateFlow<Locator>
-        get() = viewModel.currentLocator
+        get() = viewModel.state
+            .mapStateIn(lifecycleScope) { it.locator }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         listener?.onJumpToLocator(locator)
