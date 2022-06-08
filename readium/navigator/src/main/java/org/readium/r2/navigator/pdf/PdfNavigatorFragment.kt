@@ -42,7 +42,6 @@ import java.util.*
  *
  * To use this [Fragment], create a factory with `PdfNavigatorFragment.createFactory()`.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class PdfNavigatorFragment internal constructor(
     override val publication: Publication,
     private val initialLocator: Locator? = null,
@@ -112,6 +111,7 @@ class PdfNavigatorFragment internal constructor(
             lifecycleScope.launch {
                 try {
                     pdfView
+                        // FIXME: Use the pdf document factory
                         .run {
                             publication.get(link).use { resource ->
                                 val file = resource.file
