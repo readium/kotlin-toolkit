@@ -56,7 +56,8 @@ class PdfParser(
                 conformsTo = setOf(Publication.Profile.PDF),
                 localizedTitle = LocalizedString(document.title?.ifBlank { null } ?: fallbackTitle),
                 authors = listOfNotNull(document.author).map { Contributor(name = it) },
-                numberOfPages = document.pageCount
+                readingProgression = document.readingProgression,
+                numberOfPages = document.pageCount,
             ),
             readingOrder = listOf(Link(href = fileHref, type = MediaType.PDF.toString())),
             tableOfContents = tableOfContents

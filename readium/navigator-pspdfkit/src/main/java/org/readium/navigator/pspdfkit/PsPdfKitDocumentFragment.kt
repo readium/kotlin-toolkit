@@ -23,6 +23,7 @@ import com.pspdfkit.configuration.page.PageLayoutMode
 import com.pspdfkit.configuration.page.PageScrollDirection
 import com.pspdfkit.configuration.page.PageScrollMode
 import com.pspdfkit.configuration.theming.ThemeMode
+import com.pspdfkit.document.PageBinding
 import com.pspdfkit.document.PdfDocument
 import com.pspdfkit.listeners.DocumentListener
 import com.pspdfkit.listeners.OnPreparePopupToolbarListener
@@ -30,21 +31,25 @@ import com.pspdfkit.ui.PdfFragment
 import com.pspdfkit.ui.toolbar.popup.PdfTextSelectionPopupToolbar
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.presentation.Presentation
+import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.util.pdf.cachedIn
 
 @PdfSupport
-class PsPdfKitDocumentFragment(
+class PsPdfKitDocumentFragment private constructor(
     private val publication: Publication,
     private val document: PsPdfKitDocument,
+    private val settings: Settings,
     private val listener: Listener?
 ) : PdfDocumentFragment() {
 
     companion object {
         fun createFactory(documentFactory: PsPdfKitDocumentFactory): PdfDocumentFragmentFactory =
-            { publication, link, listener ->
+            { publication, link, settings, listener ->
                 val document = documentFactory.cachedIn(publication).open(publication.get(link), null)
-                PsPdfKitDocumentFragment(publication, document, listener)
+                PsPdfKitDocumentFragment(publication, document, settings, listener)
             }
     }
 
@@ -54,6 +59,15 @@ class PsPdfKitDocumentFragment(
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = FragmentContainerView(inflater.context)
         view.id = R.id.readium_pspdfkit_container
+        pdfFragment = createPdfFragment()
+        childFragmentManager.commit {
+            replace(R.id.readium_pspdfkit_container, pdfFragment, "com.pspdfkit.ui.PdfFragment")
+        }
+        return view
+    }
+
+    private fun createPdfFragment(): PdfFragment {
+        document.document.pageBinding = settings.readingProgression.pageBinding ?: PageBinding.LEFT_EDGE
 
         val config = PdfConfiguration.Builder()
             .animateScrollOnEdgeTaps(false)
@@ -68,14 +82,14 @@ class PsPdfKitDocumentFragment(
             .enableMagnifier(true)
             .excludedAnnotationTypes(emptyList())
             .firstPageAlwaysSingle(false)
-            .fitMode(PageFitMode.FIT_TO_SCREEN)
+            .fitMode(settings.fit?.fitMode ?: PageFitMode.FIT_TO_SCREEN)
             .layoutMode(PageLayoutMode.SINGLE)
 //            .loadingProgressDrawable(null)
 //            .maxZoomScale()
             .pagePadding(0)
             .restoreLastViewedPage(false)
-            .scrollDirection(PageScrollDirection.HORIZONTAL)
-            .scrollMode(PageScrollMode.CONTINUOUS)
+            .scrollDirection(settings.readingProgression.scrollDirection ?: PageScrollDirection.HORIZONTAL)
+            .scrollMode(settings.overflow.scrollMode ?: PageScrollMode.CONTINUOUS)
             .scrollOnEdgeTapEnabled(false)
             .scrollOnEdgeTapMargin(50)
             .scrollbarsEnabled(true)
@@ -92,15 +106,11 @@ class PsPdfKitDocumentFragment(
             config.disableCopyPaste()
         }
 
-        pdfFragment = PdfFragment.newInstance(document.document, config.build())
-        childFragmentManager.commit {
-            replace(R.id.readium_pspdfkit_container, pdfFragment, "com.pspdfkit.ui.PdfFragment")
-        }
-
-        pdfFragment.addDocumentListener(psPdfKitListener)
-        pdfFragment.setOnPreparePopupToolbarListener(psPdfKitListener)
-
-        return view
+        return PdfFragment.newInstance(document.document, config.build())
+            .apply {
+                addDocumentListener(psPdfKitListener)
+                setOnPreparePopupToolbarListener(psPdfKitListener)
+            }
     }
 
     override val pageIndex: Int get() = pdfFragment.pageIndex
@@ -157,3 +167,30 @@ class PsPdfKitDocumentFragment(
         }
     }
 }
+
+private val Presentation.Overflow.scrollMode: PageScrollMode?
+    get() = when (this) {
+        Presentation.Overflow.AUTO -> null
+        Presentation.Overflow.PAGINATED -> PageScrollMode.PER_PAGE
+        Presentation.Overflow.SCROLLED -> PageScrollMode.CONTINUOUS
+    }
+
+private val Presentation.Fit.fitMode: PageFitMode
+    get() = when (this) {
+        Presentation.Fit.WIDTH -> PageFitMode.FIT_TO_WIDTH
+        else -> PageFitMode.FIT_TO_SCREEN
+    }
+
+private val ReadingProgression.scrollDirection: PageScrollDirection?
+    get() = when (this) {
+        ReadingProgression.AUTO -> null
+        ReadingProgression.RTL, ReadingProgression.LTR -> PageScrollDirection.HORIZONTAL
+        ReadingProgression.TTB, ReadingProgression.BTT -> PageScrollDirection.VERTICAL
+    }
+
+private val ReadingProgression.pageBinding: PageBinding?
+    get() = when (this) {
+        ReadingProgression.AUTO -> null
+        ReadingProgression.LTR, ReadingProgression.TTB -> PageBinding.LEFT_EDGE
+        ReadingProgression.RTL, ReadingProgression.BTT -> PageBinding.RIGHT_EDGE
+    }

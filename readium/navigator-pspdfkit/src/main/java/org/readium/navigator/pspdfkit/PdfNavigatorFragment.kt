@@ -27,6 +27,8 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.presentation.Presentation
+import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -34,7 +36,9 @@ import org.readium.r2.shared.util.mediatype.MediaType
 @OptIn(InternalReadiumApi::class, ExperimentalCoroutinesApi::class)
 class PdfNavigatorFragment private constructor(
     override val publication: Publication,
-    initialLocator: Locator? = null,
+    initialLocator: Locator?,
+    settings: PdfDocumentFragment.Settings,
+    private val defaultSettings: PdfDocumentFragment.Settings,
     private val listener: Listener?,
     private val documentFragmentFactory: PdfDocumentFragmentFactory
 ) : Fragment(), VisualNavigator {
@@ -52,14 +56,22 @@ class PdfNavigatorFragment private constructor(
         fun createFactory(
             publication: Publication,
             initialLocator: Locator? = null,
+            settings: PdfDocumentFragment.Settings = PdfDocumentFragment.Settings(),
+            defaultSettings: PdfDocumentFragment.Settings = PdfDocumentFragment.Settings(),
             listener: Listener? = null,
             documentFragmentFactory: PdfDocumentFragmentFactory,
         ): FragmentFactory = createFragmentFactory {
-            PdfNavigatorFragment(publication, initialLocator, listener, documentFragmentFactory)
+            PdfNavigatorFragment(
+                publication, initialLocator,
+                settings = settings, defaultSettings = defaultSettings,
+                listener, documentFragmentFactory
+            )
         }
     }
 
     interface Listener : VisualNavigator.Listener
+
+    private val appliedSettings = MutableStateFlow(combineSettings(settings))
 
     init {
         require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
@@ -70,13 +82,34 @@ class PdfNavigatorFragment private constructor(
         ) { "[PdfNavigatorFragment] supports only publications with PDFs in the reading order" }
     }
 
+    var settings: PdfDocumentFragment.Settings = settings
+        set(value) {
+            field = value
+            appliedSettings.value = combineSettings(value)
+        }
+
+    private fun combineSettings(settings: PdfDocumentFragment.Settings) =
+        PdfDocumentFragment.Settings(
+            fit = settings.fit
+                ?: publication.metadata.presentation.fit
+                ?: defaultSettings.fit,
+            overflow = settings.overflow.takeUnless { it == Presentation.Overflow.AUTO }
+                ?: publication.metadata.presentation.overflow.takeUnless { it == Presentation.Overflow.AUTO }
+                ?: defaultSettings.overflow,
+            readingProgression = settings.readingProgression.takeUnless { it == ReadingProgression.AUTO }
+                ?: publication.metadata.readingProgression.takeUnless { it == ReadingProgression.AUTO }
+                ?: defaultSettings.readingProgression
+        )
+
     private val viewModel: PdfNavigatorViewModel by viewModels {
         PdfNavigatorViewModel.createFactory(requireActivity().application, publication, initialLocator)
     }
 
     private val documentFragment: StateFlow<PdfDocumentFragment?> by lazy {
         viewModel.currentDocument
-            .mapLatest { link -> documentFragmentFactory(publication, link, documentFragmentListener) }
+            .combine(appliedSettings) { link, settings ->
+                documentFragmentFactory(publication, link, settings, documentFragmentListener)
+            }
             .stateIn(viewLifecycleOwner.lifecycleScope, started = SharingStarted.Eagerly, null)
     }
 

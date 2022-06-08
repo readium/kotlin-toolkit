@@ -15,10 +15,21 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation
 
 @PdfSupport
-typealias PdfDocumentFragmentFactory = suspend (publication: Publication, link: Link, listener: PdfDocumentFragment.Listener?) -> PdfDocumentFragment
+typealias PdfDocumentFragmentFactory = suspend (
+    publication: Publication,
+    link: Link,
+    settings: PdfDocumentFragment.Settings,
+    listener: PdfDocumentFragment.Listener?
+) -> PdfDocumentFragment
 
 @PdfSupport
 abstract class PdfDocumentFragment : Fragment() {
+
+    data class Settings(
+        val fit: Presentation.Fit? = null,
+        val overflow: Presentation.Overflow = Presentation.Overflow.DEFAULT,
+        val readingProgression: ReadingProgression = ReadingProgression.AUTO
+    )
 
     interface Listener {
         fun onPageChanged(pageIndex: Int)
