@@ -28,7 +28,6 @@ import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import org.json.JSONObject
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
@@ -744,35 +743,31 @@ class EpubNavigatorFragment private constructor(
             webView.updateCurrentItem()
 
             val resource = publication.readingOrder[resourcePager.currentItem]
-            val builder = Locator.Builder(
-                href = resource.href,
-                type = resource.type ?: MediaType.XHTML.toString(),
-            )
-
             val progression = webView.progression.coerceIn(0.0, 1.0)
-            builder.locations.progression = progression
 
-            val positions = publication.positionsByResource[resource.href]
-                ?.takeIf { it.isNotEmpty() }
-            if (positions != null) {
+            val positionLocator = publication.positionsByResource[resource.href]?.let { positions ->
                 val index = ceil(progression * (positions.size - 1)).toInt()
                 positions.getOrNull(index)
-                    ?.let { builder.merge(it) }
             }
 
-            tableOfContentsTitleByHref[resource.href]
-                ?.let { builder.title = it }
+            val currentLocator = Locator(
+                href = resource.href,
+                type = resource.type ?: MediaType.XHTML.toString(),
+                title = tableOfContentsTitleByHref[resource.href] ?: positionLocator?.title ?: resource.title,
+                locations = (positionLocator?.locations ?: Locator.Locations()).copy(
+                    progression = progression
+                ),
+                text = positionLocator?.text ?: Locator.Text()
+            )
 
-            val locator = builder.build()
-            _currentLocator.value = locator
+            _currentLocator.value = currentLocator
 
             // Deprecated notifications
-
-            navigatorDelegate?.locationDidChange(navigator = navigator, locator = locator)
+            navigatorDelegate?.locationDidChange(navigator = navigator, locator = currentLocator)
             paginationListener?.onPageChanged(
                 pageIndex = webView.mCurItem,
                 totalPages = webView.numPages,
-                locator = locator
+                locator = currentLocator
             )
         }
     }

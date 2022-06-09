@@ -42,45 +42,6 @@ data class Locator(
 ) : JSONable, Parcelable {
 
     /**
-     * Builder for a [Locator] object.
-     */
-    data class Builder(
-        var href: String,
-        var type: String,
-        var title: String? = null,
-        var locations: Locations.Builder = Locations.Builder(),
-        var text: Text.Builder = Text.Builder()
-    ) {
-        constructor(locator: Locator): this(
-            href = locator.href,
-            type = locator.type,
-            title = locator.title,
-            locations = Locations.Builder(locator.locations),
-            text = Text.Builder(locator.text),
-        )
-
-        /**
-         * Merges the given [locator], replacing any non null properties.
-         */
-        fun merge(locator: Locator): Builder {
-            href = locator.href
-            type = locator.type
-            locator.title?.let { title = it }
-            locations.merge(locator.locations)
-            text.merge(locator.text)
-            return this
-        }
-
-        fun build(): Locator = Locator(
-            href = href,
-            type = type,
-            title = title,
-            locations = locations.build(),
-            text = text.build()
-        )
-    }
-
-    /**
      * One or more alternative expressions of the location.
      * https://github.com/readium/architecture/tree/master/models/locators#the-location-object
      *
@@ -99,51 +60,6 @@ data class Locator(
         val totalProgression: Double? = null,
         val otherLocations: @WriteWith<JSONParceler> Map<String, Any> = emptyMap()
     ) : JSONable, Parcelable {
-
-        /**
-         * Builder for a [Locations] object.
-         */
-        data class Builder(
-            var fragments: MutableList<String> = mutableListOf(),
-            var progression: Double? = null,
-            var position: Int? = null,
-            var totalProgression: Double? = null,
-            var otherLocations: MutableMap<String, Any> = mutableMapOf()
-        ) {
-            constructor(locations: Locations) : this(
-                fragments = locations.fragments.toMutableList(),
-                progression = locations.progression,
-                position = locations.position,
-                totalProgression = locations.totalProgression,
-                otherLocations = locations.otherLocations.toMutableMap()
-            )
-
-            fun merge(locations: Locations): Builder {
-                locations.progression?.let { progression = it }
-                locations.position?.let { position = it }
-                locations.totalProgression?.let { totalProgression = it }
-
-                if (locations.fragments.isNotEmpty()) {
-                    fragments = (locations.fragments + fragments)
-                        .distinct()
-                        .toMutableList()
-                }
-
-                for ((k, v) in locations.otherLocations) {
-                    otherLocations[k] = v
-                }
-
-                return this
-            }
-
-            fun build(): Locations = Locations(
-                fragments = fragments.toList(),
-                progression = progression,
-                position = position,
-                totalProgression = totalProgression,
-                otherLocations = otherLocations.toMap()
-            )
-        }
 
         override fun toJSON() = JSONObject(otherLocations).apply {
             putIfNotEmpty("fragments", fragments)
@@ -207,38 +123,6 @@ data class Locator(
         val after: String? = null
     ) : JSONable, Parcelable {
 
-        /**
-         * Builder for a [Text] object.
-         */
-        data class Builder(
-            var before: String? = null,
-            var highlight: String? = null,
-            var after: String? = null
-        ) {
-            constructor(text: Text) : this(
-                before = text.before,
-                highlight = text.highlight,
-                after = text.after,
-            )
-
-            fun merge(text: Text): Builder {
-                // It doesn't make sense to merge partially a [Text] object, as the [before],
-                // [highlight] and [after] properties are related to each other.
-                if (text.before != null || text.highlight != null || text.after != null) {
-                    before = text.before
-                    highlight = text.highlight
-                    after = text.after
-                }
-                return this
-            }
-
-            fun build(): Text = Text(
-                before = before,
-                highlight = highlight,
-                after = after
-            )
-        }
-
         override fun toJSON() = JSONObject().apply {
             put("before", before)
             put("highlight", highlight)
@@ -263,18 +147,6 @@ data class Locator(
             )
         }
     }
-
-    /**
-     * Makes a copy of the `Locator` after modifying its properties using a `Builder`.
-     *
-     * ```
-     * locator.copy {
-     *     locations.progression = 0.5
-     * }
-     * ```
-     */
-    fun copy(build: Builder.() -> Unit): Locator =
-        Builder(this).apply(build).build()
 
     /**
      * Shortcut to get a copy of the [Locator] with different [Locations] sub-properties.
