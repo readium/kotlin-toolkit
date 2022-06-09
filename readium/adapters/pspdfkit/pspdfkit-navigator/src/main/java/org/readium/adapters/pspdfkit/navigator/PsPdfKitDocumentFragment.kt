@@ -31,6 +31,8 @@ import com.pspdfkit.ui.PdfFragment
 import com.pspdfkit.ui.toolbar.popup.PdfTextSelectionPopupToolbar
 import org.readium.adapters.pspdfkit.document.PsPdfKitDocument
 import org.readium.adapters.pspdfkit.document.PsPdfKitDocumentFactory
+import org.readium.r2.navigator.pdf.PdfDocumentFragment
+import org.readium.r2.navigator.pdf.PdfDocumentFragmentFactory
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
@@ -64,10 +66,10 @@ class PsPdfKitDocumentFragment private constructor(
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = FragmentContainerView(inflater.context)
-        view.id = R.id.readium_pspdfkit_container
+        view.id = R.id.readium_pspdfkit_fragment
         pdfFragment = createPdfFragment()
         childFragmentManager.commit {
-            replace(R.id.readium_pspdfkit_container, pdfFragment, "com.pspdfkit.ui.PdfFragment")
+            replace(R.id.readium_pspdfkit_fragment, pdfFragment, "com.pspdfkit.ui.PdfFragment")
         }
         pdfFragment.setPageIndex(initialPageIndex, false)
         return view

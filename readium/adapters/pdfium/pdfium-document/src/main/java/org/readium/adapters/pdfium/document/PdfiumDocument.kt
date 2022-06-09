@@ -1,13 +1,10 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Mickaël Menu
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.streamer.parser.pdf
+package org.readium.adapters.pdfium.document
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -27,7 +24,7 @@ import kotlin.reflect.KClass
 import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 
 @OptIn(PdfSupport::class)
-internal class PdfiumDocument(
+class PdfiumDocument(
     val core: PdfiumCore,
     val document: _PdfiumDocument,
     override val identifier: String?,
@@ -73,7 +70,7 @@ internal class PdfiumDocument(
 
 @OptIn(PdfSupport::class)
 private fun _PdfiumDocument.Bookmark.toOutlineNode(): PdfDocument.OutlineNode =
-    PdfDocument.OutlineNode(
+    org.readium.r2.shared.util.pdf.PdfDocument.OutlineNode(
         title = title,
         pageNumber = pageIdx.toInt() + 1,
         children = children.map { it.toOutlineNode() }
@@ -120,5 +117,4 @@ internal class PdfiumPdfDocumentFactory(context: Context) : PdfDocumentFactory<P
             pageCount = getPageCount(document)
         )
     }
-
 }

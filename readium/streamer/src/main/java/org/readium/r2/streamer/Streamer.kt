@@ -30,7 +30,6 @@ import org.readium.r2.streamer.parser.epub.EpubParser
 import org.readium.r2.streamer.parser.epub.setLayoutStyle
 import org.readium.r2.streamer.parser.image.ImageParser
 import org.readium.r2.streamer.parser.pdf.PdfParser
-import org.readium.r2.streamer.parser.pdf.PdfiumPdfDocumentFactory
 import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
 
 internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningException>

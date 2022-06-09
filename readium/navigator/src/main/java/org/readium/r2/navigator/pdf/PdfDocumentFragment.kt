@@ -1,10 +1,10 @@
 /*
- * Copyright 2022 Readium Foundation. All rights reserved.
+ * Copyright 2021 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.adapters.pspdfkit.navigator
+package org.readium.r2.navigator.pdf
 
 import android.graphics.PointF
 import androidx.fragment.app.Fragment

@@ -40,6 +40,8 @@ dependencyResolutionManagement {
 
 rootProject.name = "Readium"
 
+include(":readium:adapters:pdfium:pdfium-document")
+include(":readium:adapters:pdfium:pdfium-navigator")
 include(":readium:adapters:pspdfkit:pspdfkit-document")
 include(":readium:adapters:pspdfkit:pspdfkit-navigator")
 include(":readium:lcp")
