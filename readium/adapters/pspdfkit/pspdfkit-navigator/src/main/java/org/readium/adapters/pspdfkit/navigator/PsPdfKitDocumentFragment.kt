@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.navigator.pspdfkit
+package org.readium.adapters.pspdfkit.navigator
 
 import android.graphics.PointF
 import android.os.Bundle
@@ -29,6 +29,8 @@ import com.pspdfkit.listeners.DocumentListener
 import com.pspdfkit.listeners.OnPreparePopupToolbarListener
 import com.pspdfkit.ui.PdfFragment
 import com.pspdfkit.ui.toolbar.popup.PdfTextSelectionPopupToolbar
+import org.readium.adapters.pspdfkit.document.PsPdfKitDocument
+import org.readium.adapters.pspdfkit.document.PsPdfKitDocumentFactory
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression

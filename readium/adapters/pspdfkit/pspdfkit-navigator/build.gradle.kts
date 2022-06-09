@@ -47,7 +47,7 @@ afterEvaluate {
             create<MavenPublication>("release") {
                 from(components.getByName("release"))
                 groupId = "com.github.readium"
-                artifactId = "readium-navigator-pspdfkit"
+                artifactId = "readium-adapter-pspdfkit-navigator"
                 artifact(tasks.findByName("sourcesJar"))
                 artifact(tasks.findByName("javadocsJar"))
             }
@@ -60,6 +60,7 @@ dependencies {
 
     api(project(":readium:shared"))
     api(project(":readium:navigator"))
+    api(project(":readium:adapters:pspdfkit:pspdfkit-document"))
 
     implementation("androidx.fragment:fragment-ktx:1.4.1")
     implementation("com.jakewharton.timber:timber:5.0.1")

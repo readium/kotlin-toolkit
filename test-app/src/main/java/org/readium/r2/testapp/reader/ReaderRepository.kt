@@ -34,7 +34,7 @@ import java.net.URL
  * Pass the method result to the activity to enable it to know which current publication it must
  * retrieve from this repository - media or visual.
  */
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalMedia2::class)
+@OptIn(ExperimentalMedia2::class)
 class ReaderRepository(
     private val application: Application,
     private val streamer: Streamer,

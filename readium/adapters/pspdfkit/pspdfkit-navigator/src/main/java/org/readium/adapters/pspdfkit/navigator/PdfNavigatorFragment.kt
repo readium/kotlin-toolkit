@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.navigator.pspdfkit
+package org.readium.adapters.pspdfkit.navigator
 
 import android.graphics.PointF
 import android.os.Bundle
@@ -29,7 +29,6 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.mediatype.MediaType
-import timber.log.Timber
 
 @PdfSupport
 @OptIn(InternalReadiumApi::class)
@@ -83,7 +82,13 @@ class PdfNavigatorFragment private constructor(
     }
 
     private val viewModel: PdfNavigatorViewModel by viewModels {
-        PdfNavigatorViewModel.createFactory(requireActivity().application, publication, initialLocator, settings = initialSettings, defaultSettings = defaultSettings)
+        PdfNavigatorViewModel.createFactory(
+            requireActivity().application,
+            publication,
+            initialLocator,
+            settings = initialSettings,
+            defaultSettings = defaultSettings
+        )
     }
 
     var settings: PdfDocumentFragment.Settings

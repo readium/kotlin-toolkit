@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.navigator.pspdfkit
+package org.readium.adapters.pspdfkit.document
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -46,7 +46,7 @@ class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPdfKitDoc
 
 @PdfSupport
 class PsPdfKitDocument(
-    internal val document: _PsPdfKitDocument
+    val document: _PsPdfKitDocument
 ) : PdfDocument {
 
     // FIXME: Doesn't seem to be exposed by PSPDFKit.

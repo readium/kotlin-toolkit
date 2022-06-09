@@ -4,12 +4,11 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.navigator.pspdfkit
+package org.readium.adapters.pspdfkit.document
 
 import com.pspdfkit.document.providers.DataProvider
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.publication.PublicationId
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.isLazyInitialized
 import timber.log.Timber

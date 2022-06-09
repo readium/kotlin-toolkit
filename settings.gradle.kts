@@ -40,13 +40,14 @@ dependencyResolutionManagement {
 
 rootProject.name = "Readium"
 
-include(":readium:shared")
-include(":readium:streamer")
+include(":readium:adapters:pspdfkit:pspdfkit-document")
+include(":readium:adapters:pspdfkit:pspdfkit-navigator")
+include(":readium:lcp")
 include(":readium:navigator")
 include(":readium:navigator-media2")
-include(":readium:navigator-pspdfkit")
 include(":readium:opds")
-include(":readium:lcp")
+include(":readium:shared")
+include(":readium:streamer")
 
 if (System.getenv("JITPACK") == null) {
     include("test-app")

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.readium.navigator.pspdfkit">
+    package="org.readium.adapters.pspdfkit.navigator">
 
     <!--
     > Make sure you have the android:largeHeap="true" property in your <application> tag in

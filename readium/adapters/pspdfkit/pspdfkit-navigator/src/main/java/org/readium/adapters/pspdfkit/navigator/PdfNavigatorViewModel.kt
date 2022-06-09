@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.navigator.pspdfkit
+package org.readium.adapters.pspdfkit.navigator
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -39,11 +39,13 @@ internal class PdfNavigatorViewModel(
         val appliedSettings: PdfDocumentFragment.Settings
     )
 
-    private val _state = MutableStateFlow(State(
-        locator = initialLocator,
-        userSettings = settings,
-        appliedSettings = combineSettings(settings)
-    ))
+    private val _state = MutableStateFlow(
+        State(
+            locator = initialLocator,
+            userSettings = settings,
+            appliedSettings = combineSettings(settings)
+        )
+    )
 
     val state: StateFlow<State> = _state.asStateFlow()
 

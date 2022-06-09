@@ -4,13 +4,12 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.navigator.pspdfkit
+package org.readium.adapters.pspdfkit.navigator
 
 import android.graphics.PointF
 import androidx.fragment.app.Fragment
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation
