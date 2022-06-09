@@ -93,28 +93,6 @@ class LocatorTest {
         )
     }
 
-    @Test fun `copy a {Locator} using a builder`() {
-        assertEquals(
-            Locator(
-                href = "modified-file.html",
-                type = "text/html",
-                title = "Title",
-                locations = Locator.Locations(
-                    progression = 0.5,
-                ),
-                text = Locator.Text(
-                    highlight = "highlight",
-                )
-            ),
-            Locator(href = "href.html", type = "text/html").copy {
-                href = "modified-file.html"
-                title = "Title"
-                locations.progression = 0.5
-                text.highlight = "highlight"
-            }
-        )
-    }
-
     @Test fun `copy a {Locator} with different {Locations} sub-properties`() {
         assertEquals(
             Locator(
@@ -135,7 +113,6 @@ class LocatorTest {
             ).copyWithLocations(
                 fragments = listOf("p=4", "frag34"),
                 progression = 0.74,
-                position = 42,
                 totalProgression = 0.32,
                 otherLocations = mapOf("other" to "other-location")
             )
@@ -504,150 +481,6 @@ class LocatorCollectionTest {
                     )
                 )
             ).toJSON()
-        )
-    }
-
-    @Test fun `build a minimal Locator`() {
-        assertEquals(
-            Locator(href = "file.html", type = "text/html"),
-            Locator.Builder(href = "file.html", type = "text/html").build()
-        )
-    }
-
-    @Test fun `build a full Locator`() {
-        assertEquals(
-            Locator(
-                href = "file.html",
-                type = "text/html",
-                title = "Title",
-                locations = Locator.Locations(
-                    fragments = listOf("fragment"),
-                    progression = 0.5,
-                    position = 42,
-                    totalProgression = 0.2,
-                    otherLocations = mapOf("other" to "location")
-                ),
-                text = Locator.Text(
-                    before = "before",
-                    highlight = "highlight",
-                    after = "after"
-                )
-            ),
-            Locator.Builder(
-                href = "file.html",
-                type = "text/html",
-                title = "Title",
-                locations = Locator.Locations.Builder(
-                    fragments = mutableListOf("fragment"),
-                    progression = 0.5,
-                    position = 42,
-                    totalProgression = 0.2,
-                    otherLocations = mutableMapOf("other" to "location")
-                ),
-                text = Locator.Text.Builder(
-                    before = "before",
-                    highlight = "highlight",
-                    after = "after"
-                )
-            ).build()
-        )
-    }
-
-    @Test fun `merge a minimal Locator into a builder`() {
-        assertEquals(
-            Locator(
-                href = "merged-file.html",
-                type = "merged-text/html",
-                title = "Title",
-                locations = Locator.Locations(
-                    fragments = listOf("fragment"),
-                    progression = 0.5,
-                    position = 42,
-                    totalProgression = 0.2,
-                    otherLocations = mapOf("other" to "location")
-                ),
-                text = Locator.Text(
-                    before = "before",
-                    highlight = "highlight",
-                    after = "after"
-                )
-            ),
-            Locator.Builder(
-                href = "file.html",
-                type = "text/html",
-                title = "Title",
-                locations = Locator.Locations.Builder(
-                    fragments = mutableListOf("fragment"),
-                    progression = 0.5,
-                    position = 42,
-                    totalProgression = 0.2,
-                    otherLocations = mutableMapOf("other" to "location")
-                ),
-                text = Locator.Text.Builder(
-                    before = "before",
-                    highlight = "highlight",
-                    after = "after"
-                )
-            )
-            .merge(Locator(href = "merged-file.html", type = "merged-text/html"))
-            .build()
-        )
-    }
-
-    @Test fun `merge a full Locator into a builder`() {
-        assertEquals(
-            Locator(
-                href = "merged-file.html",
-                type = "merged-text/html",
-                title = "Merged Title",
-                locations = Locator.Locations(
-                    fragments = listOf("merged-fragment", "fragment"),
-                    progression = 0.9,
-                    position = 23,
-                    totalProgression = 0.1,
-                    otherLocations = mapOf("fixed" to "location", "other" to "merged-location", "add" to "location")
-                ),
-                text = Locator.Text(
-                    before = "merged-before",
-                    highlight = "merged-highlight",
-                    after = null
-                )
-            ),
-            Locator.Builder(
-                href = "file.html",
-                type = "text/html",
-                title = "Title",
-                locations = Locator.Locations.Builder(
-                    fragments = mutableListOf("fragment"),
-                    progression = 0.5,
-                    position = 42,
-                    totalProgression = 0.2,
-                    otherLocations = mutableMapOf("fixed" to "location", "other" to "location")
-                ),
-                text = Locator.Text.Builder(
-                    before = "before",
-                    highlight = "highlight",
-                    after = "after"
-                )
-            )
-            .merge(Locator(
-                href = "merged-file.html",
-                type = "merged-text/html",
-                title = "Merged Title",
-                locations = Locator.Locations(
-                    fragments = listOf("merged-fragment"),
-                    progression = 0.9,
-                    position = 23,
-                    totalProgression = 0.1,
-                    otherLocations = mapOf("other" to "merged-location", "add" to "location")
-                ),
-                text = Locator.Text(
-                    before = "merged-before",
-                    highlight = "merged-highlight",
-                    after = null
-                )
-            ))
-            .build()
         )
     }
 }
