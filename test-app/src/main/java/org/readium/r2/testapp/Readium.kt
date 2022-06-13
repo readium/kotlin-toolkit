@@ -7,7 +7,7 @@
 package org.readium.r2.testapp
 
 import android.content.Context
-import org.readium.adapters.pspdfkit.document.PsPdfKitDocumentFactory
+import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.shared.util.Try
 import org.readium.r2.streamer.Streamer
@@ -44,7 +44,8 @@ class Readium(context: Context) {
         contentProtections = listOfNotNull(
             lcpService.getOrNull()?.contentProtection()
         ),
-        pdfFactory = PsPdfKitDocumentFactory(context)
+        // Only required if you want to support PDF files using the PDFium adapter.
+        pdfFactory = PdfiumDocumentFactory(context)
     )
 
     /**
