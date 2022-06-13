@@ -59,7 +59,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     fun deleteBook(book: Book) = viewModelScope.launch {
         book.id?.let { app.bookRepository.deleteBook(it) }
         tryOrNull { File(book.href).delete() }
-        tryOrNull { File("${app.r2Directory}covers/${book.id}.png").delete() }
+        tryOrNull { File(app.storageDir, "covers/${book.id}.png").delete() }
     }
 
     private suspend fun addPublicationToDatabase(
@@ -75,14 +75,14 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     fun copySamplesFromAssetsToStorage() = viewModelScope.launch(Dispatchers.IO) {
         withContext(Dispatchers.IO) {
             if (!preferences.contains("samples")) {
-                val dir = File(app.r2Directory)
+                val dir = app.storageDir
                 if (!dir.exists()) {
                     dir.mkdirs()
                 }
                 val samples = app.assets.list("Samples")?.filterNotNull().orEmpty()
                 for (element in samples) {
                     val file =
-                        app.assets.open("Samples/$element").copyToTempFile(app.r2Directory)
+                        app.assets.open("Samples/$element").copyToTempFile(app.storageDir)
                     if (file != null)
                         importPublication(file)
                     else if (BuildConfig.DEBUG)
@@ -96,7 +96,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     fun importPublicationFromUri(
         uri: Uri
     ) = viewModelScope.launch {
-        uri.copyToTempFile(app, app.r2Directory)
+        uri.copyToTempFile(app, app.storageDir)
             ?.let {
                 importPublication(it)
             }
@@ -129,7 +129,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
 
         val mediaType = publicationAsset.mediaType()
         val fileName = "${UUID.randomUUID()}.${mediaType.fileExtension}"
-        val libraryAsset = FileAsset(File(app.r2Directory + fileName), mediaType)
+        val libraryAsset = FileAsset(File(app.storageDir, fileName), mediaType)
 
         try {
             publicationAsset.file.moveTo(libraryAsset.file)
@@ -188,11 +188,11 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     private fun storeCoverImage(publication: Publication, imageName: String) =
         viewModelScope.launch(Dispatchers.IO) {
             // TODO Figure out where to store these cover images
-            val coverImageDir = File("${app.r2Directory}covers/")
+            val coverImageDir = File(app.storageDir, "covers/")
             if (!coverImageDir.exists()) {
                 coverImageDir.mkdirs()
             }
-            val coverImageFile = File("${app.r2Directory}covers/${imageName}.png")
+            val coverImageFile = File(app.storageDir, "covers/${imageName}.png")
 
             val bitmap: Bitmap? = publication.cover()
 

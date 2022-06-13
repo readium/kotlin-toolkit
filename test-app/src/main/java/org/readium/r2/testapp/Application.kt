@@ -14,6 +14,7 @@ import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.reader.ReaderRepository
 import timber.log.Timber
+import java.io.File
 import java.util.*
 
 class Application : android.app.Application() {
@@ -21,7 +22,7 @@ class Application : android.app.Application() {
     lateinit var readium: Readium
         private set
 
-    lateinit var r2Directory: String
+    lateinit var storageDir: File
 
     lateinit var bookRepository: BookRepository
         private set
@@ -62,7 +63,7 @@ class Application : android.app.Application() {
 
         readium.onAppStart()
 
-        r2Directory = computeAppDirectory()
+        storageDir = computeStorageDir()
 
         /*
          * Starting media service.
@@ -99,17 +100,17 @@ class Application : android.app.Application() {
         readium.onAppTerminate()
     }
 
-    private fun computeAppDirectory(): String {
+    private fun computeStorageDir(): File {
         val properties = Properties()
         val inputStream = assets.open("configs/config.properties")
         properties.load(inputStream)
         val useExternalFileDir =
             properties.getProperty("useExternalFileDir", "false")!!.toBoolean()
-        return if (useExternalFileDir) {
-            getExternalFilesDir(null)?.path + "/"
-        } else {
-            filesDir?.path + "/"
-        }
+
+        return File(
+            if (useExternalFileDir) getExternalFilesDir(null)?.path + "/"
+            else filesDir?.path + "/"
+        )
     }
 }
 
