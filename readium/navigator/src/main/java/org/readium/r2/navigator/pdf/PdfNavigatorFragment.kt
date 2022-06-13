@@ -30,12 +30,14 @@ import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.extensions.mapStateIn
+import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.mediatype.MediaType
+import timber.log.Timber
 
 /**
  * Navigator for PDF publications.
@@ -51,6 +53,14 @@ class PdfNavigatorFragment private constructor(
     private val listener: Listener?,
     private val documentFragmentFactory: PdfDocumentFragmentFactory
 ) : Fragment(), VisualNavigator {
+
+    interface Listener : VisualNavigator.Listener {
+
+        /**
+         * Called when a PDF resource failed to be loaded, for example because of an [OutOfMemoryError].
+         */
+        fun onResourceLoadFailed(link: Link, error: Resource.Exception) {}
+    }
 
     companion object {
 
@@ -77,8 +87,6 @@ class PdfNavigatorFragment private constructor(
             )
         }
     }
-
-    interface Listener : VisualNavigator.Listener
 
     private lateinit var documentFragment: StateFlow<PdfDocumentFragment?>
     private val documentFragmentListener = DocumentFragmentListener()
@@ -123,14 +131,20 @@ class PdfNavigatorFragment private constructor(
 
         documentFragment = viewModel.state
             .distinctUntilChanged { old, new ->
-                old.locator.href == new.locator.href && old.appliedSettings == new.appliedSettings
+                old.locator.href == new.locator.href
             }
             .map { state ->
                 val link = publication.linkWithHref(state.locator.href) ?: return@map null
-                val pageIndex = (state.locator.locations.page ?: 1) - 1
-                val settings = state.appliedSettings
 
-                documentFragmentFactory(publication, link, pageIndex, settings, documentFragmentListener)
+                try {
+                    val pageIndex = (state.locator.locations.page ?: 1) - 1
+                    val settings = state.appliedSettings
+                    documentFragmentFactory(publication, link, pageIndex, settings, documentFragmentListener)
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to load PDF resource ${link.href}")
+                    listener?.onResourceLoadFailed(link, Resource.Exception.wrap(e))
+                    null
+                }
             }
             .stateIn(viewLifecycleOwner.lifecycleScope, started = SharingStarted.Eagerly, null)
 
@@ -142,6 +156,14 @@ class PdfNavigatorFragment private constructor(
                         childFragmentManager.commit {
                             replace(R.id.readium_pdf_container, fragment, "readium_pdf_fragment")
                         }
+                    }
+                    .launchIn(this)
+
+                viewModel.state
+                    .map { it.appliedSettings }
+                    .distinctUntilChanged()
+                    .onEach { settings ->
+                        documentFragment.value?.settings = settings
                     }
                     .launchIn(this)
             }
@@ -191,9 +213,9 @@ class PdfNavigatorFragment private constructor(
         override fun onTap(point: PointF): Boolean {
             return listener?.onTap(point) ?: false
         }
+
+        override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
+            listener?.onResourceLoadFailed(link, error)
+        }
     }
 }
-
-@OptIn(InternalReadiumApi::class)
-private val Locator.Locations.page: Int? get() =
-    fragmentParameters["page"]?.toIntOrNull()

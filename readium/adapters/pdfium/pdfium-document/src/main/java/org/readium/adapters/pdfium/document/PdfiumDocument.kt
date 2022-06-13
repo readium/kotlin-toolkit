@@ -14,6 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.extensions.md5
+import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
@@ -70,14 +72,14 @@ class PdfiumDocument(
 
 @OptIn(PdfSupport::class)
 private fun _PdfiumDocument.Bookmark.toOutlineNode(): PdfDocument.OutlineNode =
-    org.readium.r2.shared.util.pdf.PdfDocument.OutlineNode(
+    PdfDocument.OutlineNode(
         title = title,
         pageNumber = pageIdx.toInt() + 1,
         children = children.map { it.toOutlineNode() }
     )
 
 @OptIn(PdfSupport::class)
-internal class PdfiumPdfDocumentFactory(context: Context) : PdfDocumentFactory<PdfiumDocument> {
+class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<PdfiumDocument> {
 
     override val documentType: KClass<PdfiumDocument> = PdfiumDocument::class
 
@@ -86,11 +88,21 @@ internal class PdfiumPdfDocumentFactory(context: Context) : PdfDocumentFactory<P
     override suspend fun open(file: File, password: String?): PdfiumDocument =
         core.fromFile(file, password)
 
-    override suspend fun open(resource: Resource, password: String?): PdfiumDocument =
-        resource.use { res ->
-            val file = res.file
-            if (file != null) core.fromFile(file, password)
-            else core.fromBytes(res.read().getOrThrow(), password)
+    override suspend fun open(resource: Resource, password: String?): PdfiumDocument {
+        // First try to open the resource as a file on the FS for performance improvement, as
+        // PDFium requires the whole PDF document to be loaded in memory when using raw bytes.
+        return resource.openAsFile(password)
+            ?: resource.openBytes(password)
+    }
+
+    private suspend fun Resource.openAsFile(password: String?): PdfiumDocument? =
+        file?.let {
+            tryOrNull { open(it, password) }
+        }
+
+    private suspend fun Resource.openBytes(password: String?): PdfiumDocument =
+        use {
+            core.fromBytes(read().getOrThrow(), password)
         }
 
     private fun PdfiumCore.fromFile(file: File, password: String?): PdfiumDocument =

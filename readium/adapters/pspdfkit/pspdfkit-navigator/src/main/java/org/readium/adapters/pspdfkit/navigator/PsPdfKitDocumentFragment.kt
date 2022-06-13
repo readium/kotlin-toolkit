@@ -6,6 +6,7 @@
 
 package org.readium.adapters.pspdfkit.navigator
 
+import android.content.Context
 import android.graphics.PointF
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -45,14 +46,17 @@ class PsPdfKitDocumentFragment private constructor(
     private val publication: Publication,
     private val document: PsPdfKitDocument,
     private val initialPageIndex: Int,
-    private val settings: Settings,
+    settings: Settings,
     private val listener: Listener?
 ) : PdfDocumentFragment() {
 
     companion object {
-        fun createFactory(documentFactory: PsPdfKitDocumentFactory): PdfDocumentFragmentFactory =
+        fun createFactory(context: Context): PdfDocumentFragmentFactory =
             { publication, link, initialPageIndex, settings, listener ->
-                val document = documentFactory.cachedIn(publication).open(publication.get(link), null)
+                val document = PsPdfKitDocumentFactory(context)
+                    .cachedIn(publication)
+                    .open(publication.get(link), null)
+
                 PsPdfKitDocumentFragment(
                     publication, document,
                     initialPageIndex = initialPageIndex,
@@ -60,6 +64,11 @@ class PsPdfKitDocumentFragment private constructor(
                 )
             }
     }
+
+    override var settings: Settings = settings
+        set(value) {
+            field = value
+        }
 
     private lateinit var pdfFragment: PdfFragment
     private val psPdfKitListener = PsPdfKitListener()
