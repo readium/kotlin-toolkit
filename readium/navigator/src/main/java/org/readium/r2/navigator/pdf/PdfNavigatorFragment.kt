@@ -24,9 +24,9 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
-import org.readium.r2.navigator.extensions.fragmentParameters
 import org.readium.r2.navigator.extensions.page
 import org.readium.r2.navigator.util.createFragmentFactory
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.extensions.mapStateIn
@@ -42,8 +42,13 @@ import timber.log.Timber
 /**
  * Navigator for PDF publications.
  *
- * To use this [Fragment], create a factory with `PdfNavigatorFragment.createFactory()`.
+ * The PDF navigator delegates the actual PDF rendering to third-party engines like PDFium or
+ * PSPDFKit. You must use an implementation of [PdfDocumentFragmentFactory] provided by the PDF
+ * engine of your choice.
+ *
+ * To use this [Fragment], create a factory with [PdfNavigatorFragment.createFactory].
  */
+@OptIn(ExperimentalReadiumApi::class)
 @PdfSupport
 class PdfNavigatorFragment private constructor(
     override val publication: Publication,
@@ -70,8 +75,14 @@ class PdfNavigatorFragment private constructor(
          * @param publication PDF publication to render in the navigator.
          * @param initialLocator The first location which should be visible when rendering the
          * publication. Can be used to restore the last reading location.
+         * @param settings User presentation settings.
+         * @param defaultSettings Presentation settings used as fallbacks when a user settings is
+         * missing or set to "auto".
          * @param listener Optional listener to implement to observe events, such as user taps.
+         * @param documentFragmentFactory Factory for a [PdfDocumentFragment], provided by third-
+         * party PDF engine adapters.
          */
+        @OptIn(ExperimentalReadiumApi::class)
         fun createFactory(
             publication: Publication,
             initialLocator: Locator? = null,
@@ -88,9 +99,6 @@ class PdfNavigatorFragment private constructor(
         }
     }
 
-    private lateinit var documentFragment: StateFlow<PdfDocumentFragment?>
-    private val documentFragmentListener = DocumentFragmentListener()
-
     init {
         require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
 
@@ -99,6 +107,13 @@ class PdfNavigatorFragment private constructor(
                 publication.readingOrder.first().mediaType.matches(MediaType.PDF)
         ) { "[PdfNavigatorFragment] currently supports only publications with a single PDF for reading order" }
     }
+
+    /**
+     * Current user presentation settings.
+     */
+    var settings: PdfDocumentFragment.Settings
+        get() = viewModel.state.value.userSettings
+        set(value) { viewModel.setUserSettings(value) }
 
     private val viewModel: PdfNavigatorViewModel by viewModels {
         PdfNavigatorViewModel.createFactory(
@@ -110,9 +125,7 @@ class PdfNavigatorFragment private constructor(
         )
     }
 
-    var settings: PdfDocumentFragment.Settings
-        get() = viewModel.state.value.userSettings
-        set(value) { viewModel.setUserSettings(value) }
+    private lateinit var documentFragment: StateFlow<PdfDocumentFragment?>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Clears the savedInstanceState to prevent the child fragment manager from restoring the
@@ -134,17 +147,7 @@ class PdfNavigatorFragment private constructor(
                 old.locator.href == new.locator.href
             }
             .map { state ->
-                val link = publication.linkWithHref(state.locator.href) ?: return@map null
-
-                try {
-                    val pageIndex = (state.locator.locations.page ?: 1) - 1
-                    val settings = state.appliedSettings
-                    documentFragmentFactory(publication, link, pageIndex, settings, documentFragmentListener)
-                } catch (e: Exception) {
-                    Timber.e(e, "Failed to load PDF resource ${link.href}")
-                    listener?.onResourceLoadFailed(link, Resource.Exception.wrap(e))
-                    null
-                }
+                createPdfDocumentFragment(state.locator, state.appliedSettings)
             }
             .stateIn(viewLifecycleOwner.lifecycleScope, started = SharingStarted.Eagerly, null)
 
@@ -167,6 +170,39 @@ class PdfNavigatorFragment private constructor(
                     }
                     .launchIn(this)
             }
+        }
+    }
+
+    private suspend fun createPdfDocumentFragment(locator: Locator, settings: PdfDocumentFragment.Settings): PdfDocumentFragment? {
+        val link = publication.linkWithHref(locator.href) ?: return null
+
+        return try {
+            val pageIndex = (locator.locations.page ?: 1) - 1
+            documentFragmentFactory(PdfDocumentFragmentInput(
+                publication = publication,
+                link = link,
+                initialPageIndex = pageIndex,
+                settings = settings,
+                listener = DocumentFragmentListener()
+            ))
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to load PDF resource ${link.href}")
+            listener?.onResourceLoadFailed(link, Resource.Exception.wrap(e))
+            null
+        }
+    }
+
+    private inner class DocumentFragmentListener : PdfDocumentFragment.Listener {
+        override fun onPageChanged(pageIndex: Int) {
+            viewModel.onPageChanged(pageIndex)
+        }
+
+        override fun onTap(point: PointF): Boolean {
+            return listener?.onTap(point) ?: false
+        }
+
+        override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
+            listener?.onResourceLoadFailed(link, error)
         }
     }
 
@@ -203,19 +239,5 @@ class PdfNavigatorFragment private constructor(
         val success = fragment.goToPageIndex(pageIndex, animated = animated)
         if (success) { completion() }
         return success
-    }
-
-    private inner class DocumentFragmentListener : PdfDocumentFragment.Listener {
-        override fun onPageChanged(pageIndex: Int) {
-            viewModel.onPageChanged(pageIndex)
-        }
-
-        override fun onTap(point: PointF): Boolean {
-            return listener?.onTap(point) ?: false
-        }
-
-        override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
-            listener?.onResourceLoadFailed(link, error)
-        }
     }
 }

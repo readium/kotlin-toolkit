@@ -363,7 +363,7 @@ class Publication private constructor(
         @OptIn(Search::class)
         @Suppress("UNCHECKED_CAST")
         constructor(
-            cache: ServiceFactory? = { DefaultCacheService() },
+            cache: ServiceFactory? = { InMemoryCacheService() },
             contentProtection: ServiceFactory? = null,
             cover: ServiceFactory? = null,
             locator: ServiceFactory? = { DefaultLocatorService(it.manifest.readingOrder, it.services) },

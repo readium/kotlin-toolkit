@@ -34,6 +34,7 @@ import org.readium.adapters.pspdfkit.document.PsPdfKitDocument
 import org.readium.adapters.pspdfkit.document.PsPdfKitDocumentFactory
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
 import org.readium.r2.navigator.pdf.PdfDocumentFragmentFactory
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
@@ -41,6 +42,7 @@ import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.util.pdf.cachedIn
 
+@OptIn(ExperimentalReadiumApi::class)
 @PdfSupport
 class PsPdfKitDocumentFragment private constructor(
     private val publication: Publication,
@@ -52,15 +54,18 @@ class PsPdfKitDocumentFragment private constructor(
 
     companion object {
         fun createFactory(context: Context): PdfDocumentFragmentFactory =
-            { publication, link, initialPageIndex, settings, listener ->
+            { input ->
+                val publication = input.publication
                 val document = PsPdfKitDocumentFactory(context)
                     .cachedIn(publication)
-                    .open(publication.get(link), null)
+                    .open(publication.get(input.link), null)
 
                 PsPdfKitDocumentFragment(
-                    publication, document,
-                    initialPageIndex = initialPageIndex,
-                    settings, listener
+                    publication = publication,
+                    document = document,
+                    initialPageIndex = input.initialPageIndex,
+                    settings = input.settings,
+                    listener = input.listener
                 )
             }
     }

@@ -20,10 +20,10 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.services.Cache
 import org.readium.r2.shared.publication.services.cacheService
-import org.readium.r2.shared.publication.services.getOrPut
+import org.readium.r2.shared.util.cache.Cache
 import org.readium.r2.shared.util.Closeable
+import org.readium.r2.shared.util.cache.getOrPut
 import org.readium.r2.shared.util.mediatype.MediaType
 import java.io.File
 import kotlin.reflect.KClass
@@ -48,9 +48,11 @@ interface PdfDocumentFactory<T : PdfDocument> {
  * This will ensure that the PDF documents are only cached as long as  the [Publication] object is
  * around.
  */
+@InternalReadiumApi
 @PdfSupport
 fun <T : PdfDocument> PdfDocumentFactory<T>.cachedIn(holder: PublicationServicesHolder): PdfDocumentFactory<T> {
-    val cache = holder.cacheService?.cacheOf(documentType) ?: return this
+    val namespace = requireNotNull(documentType.qualifiedName)
+    val cache = holder.cacheService?.cacheOf(documentType, namespace) ?: return this
     return CachingPdfDocumentFactory(this, cache)
 }
 

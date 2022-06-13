@@ -56,3 +56,13 @@ dependencies {
     api(project(":readium:adapters:pspdfkit:pspdfkit-document"))
     api(project(":readium:adapters:pspdfkit:pspdfkit-navigator"))
 }
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions {
+        // Add the OptIn annotation we want to support project-wide here.
+        // See https://kotlinlang.org/docs/opt-in-requirements.html
+        freeCompilerArgs += listOf(
+            "-opt-in=org.readium.r2.shared.InternalReadiumApi"
+        )
+    }
+}

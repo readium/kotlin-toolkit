@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
 import org.readium.r2.navigator.pdf.PdfDocumentFragmentFactory
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
@@ -25,6 +26,7 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation
 import timber.log.Timber
 
+@OptIn(ExperimentalReadiumApi::class)
 @PdfSupport
 class PdfiumDocumentFragment private constructor(
     private val publication: Publication,
@@ -42,13 +44,14 @@ class PdfiumDocumentFragment private constructor(
 
     companion object {
         fun createFactory(listener: Listener? = null): PdfDocumentFragmentFactory =
-            { publication, link, initialPageIndex, settings, navigatorListener ->
+            { input ->
                 PdfiumDocumentFragment(
-                    publication, link,
-                    initialPageIndex = initialPageIndex,
-                    settings = settings,
+                    publication = input.publication,
+                    link = input.link,
+                    initialPageIndex = input.initialPageIndex,
+                    settings = input.settings,
                     appListener = listener,
-                    navigatorListener = navigatorListener
+                    navigatorListener = input.listener
                 )
             }
     }
