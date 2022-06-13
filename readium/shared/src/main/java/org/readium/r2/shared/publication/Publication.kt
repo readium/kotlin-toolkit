@@ -574,7 +574,7 @@ interface PublicationServicesHolder: MemoryObserver {
     fun close()
 }
 
-private class ListPublicationServicesHolder(
+internal class ListPublicationServicesHolder(
     var services: List<Publication.Service> = emptyList()
 ) : PublicationServicesHolder {
     override fun <T: Publication.Service> findService(serviceType: KClass<T>): T? =
