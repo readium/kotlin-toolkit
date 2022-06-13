@@ -41,7 +41,6 @@ import java.io.IOException
 import java.io.InputStream
 import kotlin.math.roundToInt
 
-@OptIn(InternalReadiumApi::class)
 class R2EpubPageFragment : Fragment() {
 
     private val resourceUrl: String?

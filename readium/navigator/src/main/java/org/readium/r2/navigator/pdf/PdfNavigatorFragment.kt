@@ -7,8 +7,6 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-@file:OptIn(InternalReadiumApi::class)
-
 package org.readium.r2.navigator.pdf
 
 import android.graphics.PointF
@@ -27,7 +25,6 @@ import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.fetcher.Resource

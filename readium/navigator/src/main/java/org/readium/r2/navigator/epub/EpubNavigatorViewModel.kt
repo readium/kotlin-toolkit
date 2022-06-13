@@ -13,7 +13,6 @@ import org.readium.r2.navigator.*
 import org.readium.r2.navigator.epub.extensions.javascriptForGroup
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.util.createViewModelFactory
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Link
 import kotlin.reflect.KClass
 
@@ -126,7 +125,6 @@ internal class EpubNavigatorViewModel(
     }
 
     companion object {
-        @OptIn(InternalReadiumApi::class)
         fun createFactory(decorationTemplates: HtmlDecorationTemplates) = createViewModelFactory {
             EpubNavigatorViewModel(decorationTemplates)
         }

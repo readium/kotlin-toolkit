@@ -9,9 +9,7 @@
 
 package org.readium.r2.streamer
 
-import android.content.ComponentCallbacks2
 import android.content.Context
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.ContentProtection
@@ -52,7 +50,7 @@ internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningE
  * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
  *   the [Manifest], the root [Fetcher] or the list of service factories of a [Publication].
  */
-@OptIn(PdfSupport::class, InternalReadiumApi::class)
+@OptIn(PdfSupport::class)
 class Streamer constructor(
     context: Context,
     parsers: List<PublicationParser> = emptyList(),

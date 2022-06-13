@@ -40,7 +40,6 @@ val Locator.Locations.fragmentParameters: Map<String, String> get() =
 /**
  * HTML ID fragment identifier.
  */
-@OptIn(InternalReadiumApi::class)
 internal val Locator.Locations.htmlId: String? get() {
     // The HTML 5 specification (used for WebPub) allows any character in an HTML ID, except
     // spaces. This is an issue to differentiate with named parameters, so we ignore any
@@ -55,7 +54,6 @@ internal val Locator.Locations.htmlId: String? get() {
 /**
  * Page fragment identifier, used for example in PDF.
  */
-@OptIn(InternalReadiumApi::class)
 internal val Locator.Locations.page: Int? get() =
     fragmentParameters["page"]?.toIntOrNull()
 
@@ -64,7 +62,6 @@ internal val Locator.Locations.page: Int? get() =
  *
  * https://www.w3.org/TR/media-frags/
  */
-@OptIn(InternalReadiumApi::class)
 internal val Locator.Locations.time: Duration? get() =
     fragmentParameters["t"]?.toIntOrNull()?.seconds
 

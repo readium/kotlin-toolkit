@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.util.createViewModelFactory
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -80,7 +79,6 @@ internal class PdfNavigatorViewModel(
     }
 
     companion object {
-        @OptIn(InternalReadiumApi::class)
         fun createFactory(
             application: Application,
             publication: Publication,
