@@ -67,21 +67,33 @@ class PsPdfKitDocumentFragment private constructor(
 
     override var settings: Settings = settings
         set(value) {
+            if (field == value) return
+
             field = value
+            reloadDocumentAtPage(pageIndex)
         }
 
     private lateinit var pdfFragment: PdfFragment
     private val psPdfKitListener = PsPdfKitListener()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = FragmentContainerView(inflater.context)
-        view.id = R.id.readium_pspdfkit_fragment
-        pdfFragment = createPdfFragment()
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        FragmentContainerView(inflater.context)
+            .apply {
+                id = R.id.readium_pspdfkit_fragment
+            }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        reloadDocumentAtPage(initialPageIndex)
+    }
+
+    private fun reloadDocumentAtPage(pageIndex: Int) {
+        pdfFragment = createPdfFragment().apply {
+            setPageIndex(pageIndex, false)
+        }
         childFragmentManager.commit {
             replace(R.id.readium_pspdfkit_fragment, pdfFragment, "com.pspdfkit.ui.PdfFragment")
         }
-        pdfFragment.setPageIndex(initialPageIndex, false)
-        return view
     }
 
     private fun createPdfFragment(): PdfFragment {
@@ -126,7 +138,6 @@ class PsPdfKitDocumentFragment private constructor(
 
         return PdfFragment.newInstance(document.document, config.build())
             .apply {
-                setPageIndex(initialPageIndex, false)
                 setOnPreparePopupToolbarListener(psPdfKitListener)
                 addDocumentListener(psPdfKitListener)
             }
