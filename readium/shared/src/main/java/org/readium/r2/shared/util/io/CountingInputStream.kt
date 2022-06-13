@@ -6,19 +6,18 @@
 
 package org.readium.r2.shared.util.io
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import java.io.FilterInputStream
 import java.io.IOException
 import java.io.InputStream
-import java.lang.Exception
 
 /**
  * An [InputStream] counting the number of bytes read from a wrapped [inputStream].
  */
+@InternalReadiumApi
 class CountingInputStream(inputStream: InputStream) : FilterInputStream(inputStream) {
 
     var count: Long = 0
@@ -63,7 +62,7 @@ class CountingInputStream(inputStream: InputStream) : FilterInputStream(inputStr
         count = mark.coerceAtLeast(0)
     }
 
-    suspend fun readRange(range: LongRange): ByteArray {
+    fun readRange(range: LongRange): ByteArray {
         @Suppress("NAME_SHADOWING")
         val range = range
             .coerceFirstNonNegative()
@@ -72,11 +71,8 @@ class CountingInputStream(inputStream: InputStream) : FilterInputStream(inputStr
         if (range.isEmpty())
             return ByteArray(0)
 
-        return withContext(Dispatchers.IO) {
-            skip(range.first - count)
-            val length = range.last - range.first + 1
-            read(length)
-        }
+        skip(range.first - count)
+        val length = range.last - range.first + 1
+        return read(length)
     }
-
 }

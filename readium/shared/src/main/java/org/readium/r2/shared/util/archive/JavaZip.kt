@@ -10,8 +10,7 @@
 package org.readium.r2.shared.util.archive
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.util.io.CountingInputStream
@@ -33,15 +32,11 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
                 else
                     entry.compressedSize.takeUnless { it == -1L }
 
-        /** [CountingInputStream] is not thread-safe. */
-        private val mutex = Mutex()
-
-        override suspend fun read(range: LongRange?): ByteArray = mutex.withLock {
+        override suspend fun read(range: LongRange?): ByteArray =
             if (range == null)
                 readFully()
             else
                 readRange(range)
-        }
 
         private suspend fun readFully(): ByteArray = withContext(Dispatchers.IO) {
             archive.getInputStream(entry).use {
@@ -49,8 +44,13 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
             }
         }
 
-        private suspend fun readRange(range: LongRange): ByteArray =
+        /** [CountingInputStream] is not thread-safe. */
+        @OptIn(ExperimentalCoroutinesApi::class)
+        private val dispatcher = Dispatchers.IO.limitedParallelism(1)
+
+        private suspend fun readRange(range: LongRange): ByteArray = withContext(dispatcher) {
             stream(range.first).readRange(range)
+        }
 
         /**
          * Reading an entry in chunks (e.g. from the HTTP server) can be really slow if the entry
@@ -62,27 +62,23 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
          *
          * See this issue for more info: https://github.com/readium/r2-shared-kotlin/issues/129
          */
-        private suspend fun stream(fromIndex: Long): CountingInputStream {
+        private fun stream(fromIndex: Long): CountingInputStream {
             // Reuse the current stream if it didn't exceed the requested index.
             stream
                 ?.takeIf { it.count <= fromIndex }
                 ?.let { return it }
 
-            return withContext(Dispatchers.IO) {
-                val newStream = CountingInputStream(archive.getInputStream(entry))
-                stream?.close()
-                stream = newStream
-                newStream
-            }
+            stream?.close()
+
+            return CountingInputStream(archive.getInputStream(entry))
+                .also { stream = it }
         }
 
         private var stream: CountingInputStream? = null
 
         override suspend fun close() {
             withContext(Dispatchers.IO) {
-                mutex.withLock {
-                    stream?.close()
-                }
+                stream?.close()
             }
         }
 
