@@ -90,7 +90,7 @@ class PsPdfKitDocument(
     override val outline: List<PdfDocument.OutlineNode> by lazy {
         document.outline.toOutlineNodes()
     }
-    
+
     override fun close() {}
 }
 

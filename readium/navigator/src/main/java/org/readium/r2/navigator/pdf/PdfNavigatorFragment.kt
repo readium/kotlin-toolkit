@@ -72,9 +72,6 @@ class PdfNavigatorFragment private constructor(
          * @param publication PDF publication to render in the navigator.
          * @param initialLocator The first location which should be visible when rendering the
          * publication. Can be used to restore the last reading location.
-         * @param settings User presentation settings.
-         * @param defaultSettings Presentation settings used as fallbacks when a user settings is
-         * missing or set to "auto".
          * @param listener Optional listener to implement to observe events, such as user taps.
          * @param documentFragmentFactory Factory for a [PdfDocumentFragment], provided by third-
          * party PDF engine adapters.
@@ -83,7 +80,34 @@ class PdfNavigatorFragment private constructor(
         fun createFactory(
             publication: Publication,
             initialLocator: Locator? = null,
-            settings: PdfDocumentFragment.Settings = PdfDocumentFragment.Settings(),
+            listener: Listener? = null,
+            documentFragmentFactory: PdfDocumentFragmentFactory,
+        ): FragmentFactory = createFragmentFactory {
+            PdfNavigatorFragment(
+                publication, initialLocator,
+                initialSettings = PdfDocumentFragment.Settings(), defaultSettings = PdfDocumentFragment.Settings(),
+                listener, documentFragmentFactory
+            )
+        }
+
+        /**
+         * Creates a factory for [PdfNavigatorFragment].
+         *
+         * @param publication PDF publication to render in the navigator.
+         * @param initialLocator The first location which should be visible when rendering the
+         * publication. Can be used to restore the last reading location.
+         * @param settings User presentation settings.
+         * @param defaultSettings Presentation settings used as fallbacks when a user settings is
+         * missing or set to "auto".
+         * @param listener Optional listener to implement to observe events, such as user taps.
+         * @param documentFragmentFactory Factory for a [PdfDocumentFragment], provided by third-
+         * party PDF engine adapters.
+         */
+        @ExperimentalReadiumApi
+        fun createFactory(
+            publication: Publication,
+            initialLocator: Locator? = null,
+            settings: PdfDocumentFragment.Settings,
             defaultSettings: PdfDocumentFragment.Settings = PdfDocumentFragment.Settings(),
             listener: Listener? = null,
             documentFragmentFactory: PdfDocumentFragmentFactory,

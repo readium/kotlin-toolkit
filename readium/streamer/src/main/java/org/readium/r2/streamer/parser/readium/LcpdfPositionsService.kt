@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.readium
 
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -26,7 +27,7 @@ import timber.log.Timber
  * Creates the [positions] for an LCP protected PDF [Publication] from its [readingOrder] and
  * [fetcher].
  */
-@OptIn(PdfSupport::class)
+@OptIn(PdfSupport::class, ExperimentalReadiumApi::class)
 internal class LcpdfPositionsService(
     pdfFactory: PdfDocumentFactory<*>,
     private val context: Publication.Service.Context,

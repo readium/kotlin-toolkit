@@ -24,8 +24,11 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
         allWarningsAsErrors = true
+        freeCompilerArgs = freeCompilerArgs + listOf(
+            "-opt-in=kotlin.RequiresOptIn",
+            "-opt-in=org.readium.r2.shared.InternalReadiumApi"
+        )
     }
     testOptions {
         unitTests.isIncludeAndroidResources = true
@@ -80,14 +83,4 @@ dependencies {
 
     androidTestImplementation("androidx.test.ext:junit:1.1.3")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions {
-        // Add the OptIn annotation we want to support project-wide here.
-        // See https://kotlinlang.org/docs/opt-in-requirements.html
-        freeCompilerArgs += listOf(
-            "-opt-in=org.readium.r2.shared.InternalReadiumApi"
-        )
-    }
 }
