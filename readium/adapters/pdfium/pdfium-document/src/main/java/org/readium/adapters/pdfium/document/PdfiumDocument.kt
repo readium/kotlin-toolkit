@@ -67,6 +67,8 @@ class PdfiumDocument(
         core.getTableOfContents(document).map { it.toOutlineNode() }
     }
 
+    override fun close() {}
+
     companion object
 }
 

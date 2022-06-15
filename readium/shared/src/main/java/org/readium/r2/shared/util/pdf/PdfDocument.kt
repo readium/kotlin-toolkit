@@ -11,6 +11,7 @@ package org.readium.r2.shared.util.pdf
 
 import android.content.Context
 import android.graphics.Bitmap
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
@@ -46,7 +47,7 @@ interface PdfDocumentFactory<T : PdfDocument> {
  * This will ensure that the PDF documents are only cached as long as  the [Publication] object is
  * around.
  */
-@InternalReadiumApi
+@ExperimentalReadiumApi
 @PdfSupport
 fun <T : PdfDocument> PdfDocumentFactory<T>.cachedIn(holder: PublicationServicesHolder): PdfDocumentFactory<T> {
     val namespace = requireNotNull(documentType.qualifiedName)
@@ -130,8 +131,6 @@ interface PdfDocument : Closeable {
         val pageNumber: Int?,  // Starts from 1.
         val children: List<OutlineNode>
     )
-
-    override fun close() {}
 
     // To allow extensions on the Companion object.
     companion object
