@@ -6,18 +6,43 @@
     tools:context='org.readium.r2.testapp.reader.BaseReaderFragment'>
 
     <item
+        android:id="@+id/search"
+        android:icon="@drawable/ic_baseline_search_24"
+        android:title="@string/epubactivity_search"
+        android:visible="false"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:iconifiedByDefault="false"
+        app:showAsAction="collapseActionView|always" />
+
+    <item
+        android:id="@+id/tts"
+        android:icon="@drawable/ic_baseline_headphones_24"
+        android:title="@string/epubactivity_read_aloud_start"
+        android:visible="false"
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction"/>
+
+
+    <item
         android:id="@+id/bookmark"
         android:icon="@drawable/ic_baseline_bookmark_24"
         android:title="@string/epubactivity_set_bookmark"
-        android:orderInCategory="70"
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction"/>
+
+    <item
+        android:id="@+id/settings"
+        android:icon="@drawable/ic_outline_format_size_24"
+        android:visible="false"
+        android:title="@string/epubactivity_settings"
         app:showAsAction="always"
         tools:ignore="AlwaysShowAction"/>
 
     <item
         android:id="@+id/drm"
         android:icon="@drawable/ic_baseline_enhanced_encryption_24"
+        android:visible="false"
         android:title="@string/epubactivity_drm_info"
-        android:orderInCategory="90"
         app:showAsAction="always"
         tools:ignore="AlwaysShowAction"/>
 
@@ -26,7 +51,6 @@
         android:id="@+id/toc"
         android:icon="@drawable/ic_outline_menu_24"
         android:title="@string/epubactivity_book_nav_options"
-        android:orderInCategory="100"
         app:showAsAction="always"
         tools:ignore="AlwaysShowAction"/>
 

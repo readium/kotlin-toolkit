@@ -20,7 +20,6 @@ import org.readium.r2.testapp.R
  *
  * Provides common menu items and saves last location on stop.
  */
-@OptIn(ExperimentalDecorator::class)
 abstract class BaseReaderFragment : Fragment() {
 
     protected abstract val model: ReaderViewModel

@@ -213,7 +213,6 @@ class ReaderViewModel(
         object OpenOutlineRequested : Event()
         object OpenDrmManagementRequested : Event()
         object StartNewSearch : Event()
-        class OpeningError(val exception: Exception) : Event()
         class Failure(val error: UserException) : Event()
     }
 
