@@ -29,11 +29,9 @@ import timber.log.Timber
  */
 @OptIn(PdfSupport::class, ExperimentalReadiumApi::class)
 internal class LcpdfPositionsService(
-    pdfFactory: PdfDocumentFactory<*>,
+    private val pdfFactory: PdfDocumentFactory<*>,
     private val context: Publication.Service.Context,
 ) : PositionsService {
-
-    private val pdfFactory by lazy { pdfFactory.cachedIn(context.services) }
 
     override suspend fun positionsByReadingOrder(): List<List<Locator>> {
         if (!::_positions.isInitialized)
@@ -88,7 +86,9 @@ internal class LcpdfPositionsService(
 
     private suspend fun openPdfAt(link: Link): PdfDocument? =
         try {
-            pdfFactory.open(context.fetcher.get(link), password = null)
+            pdfFactory
+                .cachedIn(context.services)
+                .open(context.fetcher.get(link), password = null)
         } catch (e: Exception) {
             Timber.e(e)
             null

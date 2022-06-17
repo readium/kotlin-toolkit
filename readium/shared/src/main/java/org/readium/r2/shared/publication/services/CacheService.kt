@@ -10,6 +10,8 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
@@ -27,7 +29,7 @@ interface CacheService : Publication.Service {
     /**
      * Gets the cache for objects of [valueType] in the given [namespace].
      */
-    fun <T : Any> cacheOf(valueType: KClass<T>, namespace: String): Cache<T>
+    suspend fun <T : Any> cacheOf(valueType: KClass<T>, namespace: String): Cache<T>
 }
 
 @InternalReadiumApi
@@ -46,15 +48,17 @@ var Publication.ServicesBuilder.cacheServiceFactory: ServiceFactory?
 @InternalReadiumApi
 class InMemoryCacheService : CacheService {
     private val caches = mutableMapOf<String, Cache<*>>()
+    private val mutex = Mutex()
 
-    override fun <T : Any> cacheOf(valueType: KClass<T>, namespace: String): Cache<T> = synchronized(this) {
-        val valueTypeName = requireNotNull(valueType.qualifiedName)
-        val cache = caches.getOrPut("$namespace.$valueTypeName") {
-            InMemoryCache<T>()
+    override suspend fun <T : Any> cacheOf(valueType: KClass<T>, namespace: String): Cache<T> =
+        mutex.withLock {
+            val valueTypeName = requireNotNull(valueType.qualifiedName)
+            val cache = caches.getOrPut("$namespace.$valueTypeName") {
+                InMemoryCache<T>()
+            }
+            @Suppress("UNCHECKED_CAST")
+            return cache as Cache<T>
         }
-        @Suppress("UNCHECKED_CAST")
-        cache as Cache<T>
-    }
 
     @OptIn(DelicateCoroutinesApi::class)
     override fun close() {
