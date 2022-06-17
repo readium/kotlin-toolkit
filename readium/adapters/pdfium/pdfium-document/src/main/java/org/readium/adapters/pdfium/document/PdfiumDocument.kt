@@ -67,7 +67,7 @@ class PdfiumDocument(
         core.getTableOfContents(document).map { it.toOutlineNode() }
     }
 
-    override fun close() {}
+    override suspend fun close() {}
 
     companion object
 }

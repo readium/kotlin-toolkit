@@ -6,6 +6,10 @@
 
 package org.readium.r2.shared.publication.services
 
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
@@ -52,8 +56,11 @@ class InMemoryCacheService : CacheService {
         cache as Cache<T>
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun close() {
-        caches.values.forEach { it.close() }
+        GlobalScope.launch {
+            caches.values.forEach { it.close() }
+        }
     }
 
     override fun onTrimMemory(level: MemoryObserver.Level) {

@@ -91,7 +91,7 @@ class PsPdfKitDocument(
         document.outline.toOutlineNodes()
     }
 
-    override fun close() {}
+    override suspend fun close() {}
 }
 
 @PdfSupport

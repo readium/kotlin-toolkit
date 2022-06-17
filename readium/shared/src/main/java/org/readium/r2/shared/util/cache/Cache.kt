@@ -6,13 +6,15 @@
 
 package org.readium.r2.shared.util.cache
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.MemoryObserver
+import org.readium.r2.shared.util.SuspendingCloseable
 
 /**
  * A generic cache for objects of type [V].
@@ -20,7 +22,18 @@ import org.readium.r2.shared.util.MemoryObserver
  * It implements [MemoryObserver] to flush unused in-memory objects when necessary.
  */
 @InternalReadiumApi
-interface Cache<V>: Closeable, MemoryObserver {
+interface Cache<V>: SuspendingCloseable, MemoryObserver {
+    /**
+     * Performs an atomic [block] transaction on this cache.
+     */
+    suspend fun <T> transaction(block: suspend CacheTransaction<V>.() -> T): T
+}
+
+/**
+ * An atomic transaction run on a cache for objects of type [V].
+ */
+@InternalReadiumApi
+interface CacheTransaction<V> {
     /**
      * Gets the current cached value for the given [key].
      */
@@ -30,6 +43,13 @@ interface Cache<V>: Closeable, MemoryObserver {
      * Writes the cached [value] for the given [key].
      */
     suspend fun put(key: String, value: V?)
+
+    /**
+     * Gets the current cached value for the given [key] or creates and caches a new one.
+     */
+    suspend fun <V> CacheTransaction<V>.getOrPut(key: String, defaultValue: suspend () -> V): V =
+        get(key)
+            ?: defaultValue().also { put(key, it) }
 
     /**
      * Clears the cached value for the given [key].
@@ -42,69 +62,54 @@ interface Cache<V>: Closeable, MemoryObserver {
      * Clears all cached values.
      */
     suspend fun clear()
-
-    /**
-     * Performs an atomic [action] on this cache.
-     */
-    suspend fun <T> synchronized(action: suspend () -> T): T
-}
-
-/**
- * Gets the current cached value for the given [key] or creates and caches a new one.
- */
-@InternalReadiumApi
-suspend inline fun <V> Cache<V>.getOrPut(key: String, crossinline defaultValue: suspend () -> V): V = synchronized {
-    get(key)
-        ?: defaultValue().also { put(key, it) }
 }
 
 /**
  * A basic in-memory cache.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 @InternalReadiumApi
 class InMemoryCache<V> : Cache<V> {
     private val values = mutableMapOf<String, V>()
+    private val mutex = Mutex()
 
-    override suspend fun get(key: String): V? = synchronized {
-        values[key]
-    }
+    override suspend fun <T> transaction(block: suspend CacheTransaction<V>.() -> T): T =
+        mutex.withLock {
+            block(Transaction())
+        }
 
-    override suspend fun put(key: String, value: V?) {
-        synchronized {
+    private inner class Transaction : CacheTransaction<V> {
+        override suspend fun get(key: String): V? =
+            values[key]
+
+        override suspend fun put(key: String, value: V?) {
             if (value != null) {
                 values[key] = value
             } else {
                 values.remove(key)
             }
         }
-    }
 
-    override suspend fun remove(key: String): V? = synchronized {
-        values.remove(key)
-    }
+        override suspend fun remove(key: String): V? =
+            values.remove(key)
 
-    override suspend fun clear() {
-        synchronized {
+        override suspend fun clear() {
             values.clear()
         }
     }
 
-    private val dispatcher = Dispatchers.IO.limitedParallelism(1)
-
-    override suspend fun <T> synchronized(action: suspend () -> T): T = withContext(dispatcher) {
-        action()
-    }
-
-    override fun close() {
-        for ((_, value) in values) {
-            (value as? Closeable)?.close()
+    override suspend fun close() {
+        transaction {
+            for ((_, value) in values) {
+                (value as? Closeable)?.close()
+                (value as? SuspendingCloseable)?.close()
+            }
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onTrimMemory(level: MemoryObserver.Level) {
         if (level == MemoryObserver.Level.Critical) {
-            runBlocking { clear() }
+            GlobalScope.launch { transaction { clear() } }
         }
     }
 }

@@ -12,7 +12,6 @@ package org.readium.r2.shared.util.pdf
 import android.content.Context
 import android.graphics.Bitmap
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
@@ -21,8 +20,7 @@ import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.services.cacheService
 import org.readium.r2.shared.util.cache.Cache
-import org.readium.r2.shared.util.Closeable
-import org.readium.r2.shared.util.cache.getOrPut
+import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.mediatype.MediaType
 import java.io.File
 import kotlin.reflect.KClass
@@ -62,13 +60,17 @@ private class CachingPdfDocumentFactory<T : PdfDocument>(
 ) : PdfDocumentFactory<T> by factory {
 
     override suspend fun open(file: File, password: String?): T =
-        cache.getOrPut(file.path) {
-            factory.open(file, password)
+        cache.transaction {
+            getOrPut(file.path) {
+                factory.open(file, password)
+            }
         }
 
     override suspend fun open(resource: Resource, password: String?): T =
-        cache.getOrPut(resource.link().href) {
-            factory.open(resource, password)
+        cache.transaction {
+            getOrPut(resource.link().href) {
+                factory.open(resource, password)
+            }
         }
 }
 
@@ -76,7 +78,7 @@ private class CachingPdfDocumentFactory<T : PdfDocument>(
  * Represents a PDF document.
  */
 @PdfSupport
-interface PdfDocument : Closeable {
+interface PdfDocument : SuspendingCloseable {
 
     /**
      * Permanent identifier based on the contents of the file at the time it was originally
