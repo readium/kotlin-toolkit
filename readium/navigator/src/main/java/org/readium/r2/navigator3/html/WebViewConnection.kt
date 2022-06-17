@@ -130,7 +130,7 @@ internal class WebViewConnection private constructor(
                 return@ThreadFactory thread
             }
 
-            val requestQueue = Executors.newFixedThreadPool(1, threadFactory)
+            val requestQueue = Executors.newSingleThreadExecutor(threadFactory)
             val webChromeClient = WebChromeClient()
             webView.webChromeClient = webChromeClient
             @SuppressLint("SetJavaScriptEnabled")

@@ -1,12 +1,9 @@
 package org.readium.r2.navigator3
 
 import androidx.compose.ui.unit.IntSize
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import org.readium.r2.navigator.util.BitmapFactory
 import org.readium.r2.navigator3.core.viewer.LazyViewerState
 import org.readium.r2.shared.fetcher.ResourceInputStream
@@ -18,8 +15,14 @@ class NavigatorState private constructor(
     val publication: Publication,
     val links: List<Link>,
     private val layoutFactory: LayoutFactory,
-    initialLocator: Locator?
+    private val initialLocator: Locator?
 ) {
+    val readingProgression: ReadingProgression
+        get() = currentLayout.readingProgression
+
+    val currentLocator: StateFlow<Locator>
+        get() = currentLocatorMutable
+
     internal lateinit var currentLayout: LayoutFactory.Layout
         private set
 
@@ -28,6 +31,12 @@ class NavigatorState private constructor(
 
     internal lateinit var layoutCoroutineScope: CoroutineScope
         private set
+
+    private val mutex: NavigatorMutex =
+        NavigatorMutex()
+
+    private val currentLocatorMutable: MutableStateFlow<Locator> =
+        MutableStateFlow(Locator(href = "#", type = ""))
 
     internal fun layout(width: Int, height: Int) {
         val viewport = IntSize(width, height)
@@ -44,6 +53,14 @@ class NavigatorState private constructor(
             layoutCoroutineScope.cancel()
         }
 
+        refreshLayout(viewport)
+    }
+
+    private fun refreshLayout(viewport: IntSize) {
+        Timber.d("Computing a new layout")
+        layoutCoroutineScope =
+            MainScope()
+
         currentLayout =
             layoutFactory.layout(viewport)
 
@@ -56,47 +73,53 @@ class NavigatorState private constructor(
                 initialScale = 1f
             )
 
-        layoutCoroutineScope =
-            MainScope()
-
         layoutCoroutineScope.launch {
-            go(nextLocator ?: currentLocator.value)
-                .onSuccess {
-                    Timber.v("Locator ${currentLocator.value} successfully restored.")
+            try {
+                Timber.v("restore coroutine")
+                // Make ongoing go command restart if any.
+                mutex.refreshLayout {
+                    Timber.d("layout block content")
                 }
-                .onFailure { exception ->
-                    Timber.e(exception)
-                }
-        }
 
-        /*layoutCoroutineScope.launch {
-            snapshotFlow {
-                val currentIndex = viewerState.firstVisibleItemIndex
-                val link = links[currentIndex]
-                val spread = currentLayout.spreadStates[currentIndex]
-                val basicLocator = requireNotNull(publication.locatorFromLink(link))
-                basicLocator.copy(locations = spread.locations.value)
-            }.collect { locator ->
-                if (layoutCompleted) {
-                    _currentLocator.value = locator
+                // As relative go commands, previous location restoration should not override ongoing go.
+                mutex.restoreLocation {
+                    restoreLocationAfterLayout()
                 }
+            } catch (e: CancellationException) {
+                Timber.e(e, "restore coroutine cancelled")
+                throw e
             }
-        }*/
+
+        }
     }
 
-    private val currentLocatorMutable: MutableStateFlow<Locator> =
-        MutableStateFlow(Locator(href="#", type=""))
+    private suspend fun restoreLocationAfterLayout() {
+        Timber.v("restoreLocationAfterLayout")
+        val locator = currentLocator.value
+            .takeUnless { it == Locator(href = "#", type = "") }
+            ?: initialLocator
+            ?: publication.locatorFromLink(links.first())!!
+        goWithoutLock(locator)
+            .onSuccess {
+                Timber.v("Locator ${currentLocator.value} successfully restored.")
+            }
+            .onFailure { exception ->
+                Timber.e(exception)
+            }
+    }
 
-    private var nextLocator: Locator? =
-        initialLocator ?: publication.locatorFromLink(publication.readingOrder.first())!!
+    /**
+     * Go forward through the publication.
+     *
+     * The command execution will be canceled on new layouts.
+     */
+    suspend fun goForward(): Try<Unit, Exception> =
+        mutex.relativeGo {
+            goForwardWithoutLock()
+        }
 
-    val readingProgression: ReadingProgression
-        get() = currentLayout.readingProgression
-
-    val currentLocator: StateFlow<Locator>
-        get() = currentLocatorMutable
-
-    suspend fun goForward(): Try<Unit, Exception> {
+    private suspend fun goForwardWithoutLock(): Try<Unit, Exception> {
+        Timber.v("goForwardWithoutLock")
         val currentItemIndex = viewerState.firstVisibleItemIndex
         val currentSpread = currentLayout.spreadStates[currentItemIndex]
         if (currentSpread.goForward()) {
@@ -113,7 +136,18 @@ class NavigatorState private constructor(
         return Try.success(Unit)
     }
 
-    suspend fun goBackward(): Try<Unit, Exception> {
+    /**
+     * Go forward through the publication.
+     *
+     * The command execution will be canceled on new layouts.
+     */
+    suspend fun goBackward(): Try<Unit, Exception> =
+        mutex.relativeGo {
+            goBackwardWithoutLock()
+        }
+
+    private suspend fun goBackwardWithoutLock(): Try<Unit, Exception> {
+        Timber.v("goBackwardWithoutLock")
         val currentItemIndex = viewerState.firstVisibleItemIndex
         val currentSpread = currentLayout.spreadStates[currentItemIndex]
         if (currentSpread.goBackward()) {
@@ -130,20 +164,30 @@ class NavigatorState private constructor(
         return Try.success(Unit)
     }
 
-    suspend fun go(link: Link): Try<Unit, Exception>  {
-        val locator = publication.locatorFromLink(link)
-            ?: return Try.failure(Exception.InvalidArgument("Resource not found at ${link.href}."))
-        return go(locator)
+    /**
+     * Go to the beginning of the given link. The command will survive new layouts.
+     */
+    suspend fun go(link: Link): Try<Unit, Exception>  =
+        mutex.absoluteGo {
+            publication.locatorFromLink(link)
+                ?.let { goWithoutLock(it) }
+                ?: Try.failure(Exception.InvalidArgument("Resource not found at ${link.href}."))
     }
 
-    suspend fun go(locator: Locator): Try<Unit, Exception> {
+    /**
+     * Go to the given locator. The command will survive new layouts.
+     */
+    suspend fun go(locator: Locator): Try<Unit, Exception> =
+        mutex.absoluteGo {
+            goWithoutLock(locator)
+        }
+
+    private suspend fun goWithoutLock(locator: Locator): Try<Unit, Exception> {
         val itemIndex = currentLayout.spreadStates.indexOfHref(locator.href)
             ?: return Try.failure(Exception.InvalidArgument("Invalid href ${locator.href}."))
-        nextLocator = locator
         viewerState.scrollToItem(itemIndex)
         currentLayout.spreadStates[itemIndex].go(locator)
         updateLocator()
-        nextLocator = null
         return Try.success(Unit)
     }
 

@@ -27,7 +27,7 @@ internal class LayoutFactory(
         val isVertical = false
         val reverseDirection = false
         val isPaginated = true
-        val viewerScrollable = true
+        val viewerScrollable = false
         val readingProgression = ReadingProgression.LTR
         return Layout(
             isVertical,
