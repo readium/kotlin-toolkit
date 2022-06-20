@@ -32,27 +32,37 @@ import java.util.*
 typealias TtsTokenizerFactory = (defaultLocale: Locale?) -> ContentTokenizer
 
 @ExperimentalReadiumApi
-class TtsController(
+class TtsController private constructor(
     private val publication: Publication,
     engineFactory: TtsEngineFactory,
     private val tokenizerFactory: TtsTokenizerFactory = defaultTokenizerFactory
 ) : SuspendingCloseable {
 
-    constructor(
-        publication: Publication,
-        context: Context,
-        config: TtsEngine.Configuration = TtsEngine.Configuration(
-            defaultLocale = publication.metadata.locale
-        ),
-        tokenizerFactory: TtsTokenizerFactory = defaultTokenizerFactory
-    ) : this(
-        publication,
-        engineFactory = { listener -> AndroidTtsEngine(context, config, listener) },
-        tokenizerFactory = tokenizerFactory
-    )
-
     companion object {
         val defaultTokenizerFactory: TtsTokenizerFactory = { locale -> TextContentTokenizer(unit = TextUnit.Sentence, defaultLocale = locale) }
+
+        operator fun invoke(
+            context: Context,
+            publication: Publication,
+            config: TtsEngine.Configuration = TtsEngine.Configuration(
+                defaultLocale = publication.metadata.locale
+            ),
+            tokenizerFactory: TtsTokenizerFactory = defaultTokenizerFactory
+        ): TtsController? = invoke(
+            publication,
+            engineFactory = { listener -> AndroidTtsEngine(context, config, listener) },
+            tokenizerFactory = tokenizerFactory
+        )
+
+        operator fun invoke(
+            publication: Publication,
+            engineFactory: TtsEngineFactory,
+            tokenizerFactory: TtsTokenizerFactory = defaultTokenizerFactory
+        ): TtsController? {
+            if (!canSpeak(publication)) return null
+
+            return TtsController(publication, engineFactory, tokenizerFactory)
+        }
 
         fun canSpeak(publication: Publication): Boolean =
             publication.isContentIterable
@@ -67,7 +77,7 @@ class TtsController(
     private val _state = MutableStateFlow<State>(State.Idle)
     val state: StateFlow<State> = _state.asStateFlow()
 
-    private val engine: TtsEngine = engineFactory(EngineListener())
+    private val engine: TtsEngine by lazy { engineFactory(EngineListener()) }
     private val scope = MainScope()
 
     init {

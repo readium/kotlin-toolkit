@@ -6,20 +6,24 @@
 
 package org.readium.r2.testapp.reader
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import androidx.annotation.ColorInt
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.paging.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.Decoration
-import org.readium.r2.navigator.ExperimentalAudiobook
-import org.readium.r2.navigator.ExperimentalDecorator
+import org.readium.r2.navigator.*
+import org.readium.r2.navigator.epub.EpubNavigatorFragment
+import org.readium.r2.navigator.tts.TtsController
+import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.*
@@ -31,9 +35,11 @@ import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
+import timber.log.Timber
 
-@OptIn(Search::class, ExperimentalDecorator::class, ExperimentalCoroutinesApi::class, ExperimentalAudiobook::class)
+@OptIn(Search::class, ExperimentalDecorator::class, ExperimentalReadiumApi::class, ExperimentalCoroutinesApi::class)
 class ReaderViewModel(
+    context: Context,
     val readerInitData: ReaderInitData,
     private val bookRepository: BookRepository,
 ) : ViewModel() {
@@ -149,6 +155,8 @@ class ReaderViewModel(
         bookRepository.deleteHighlight(id)
     }
 
+    // Search
+
     fun search(query: String) = viewModelScope.launch {
         if (query == lastSearchQuery) return@launch
         lastSearchQuery = query
@@ -209,6 +217,55 @@ class ReaderViewModel(
         Pager(PagingConfig(pageSize = 20), pagingSourceFactory = pagingSourceFactory)
             .flow.cachedIn(viewModelScope)
 
+    // TTS
+
+    private val tts = TtsController(context, publication)?.apply {
+        state
+            .onEach { state ->
+                when (state) {
+                    is TtsController.State.Failure -> {
+                        Timber.e(state.error)
+                    }
+
+                    is TtsController.State.Playing -> {
+                        val range = state.range
+                        if (range != null) {
+                            fragmentChannel.send(FeedbackEvent.GoTo(range))
+                        } else {
+                            _ttsDecorations.value = listOf(
+                                Decoration(
+                                    id = "tts",
+                                    locator = state.utterance.locator,
+                                    style = Decoration.Style.Highlight(tint = Color.RED)
+                                )
+                            )
+                        }
+                    }
+                    TtsController.State.Idle -> {}
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private val _ttsDecorations = MutableStateFlow<List<Decoration>>(emptyList())
+    val ttsDecorations: StateFlow<List<Decoration>> = _ttsDecorations.asStateFlow()
+
+    val canUseTts: Boolean = (tts != null)
+
+    @OptIn(InternalReadiumApi::class) // FIXME
+    fun ttsPlay(navigator: Navigator) = viewModelScope.launch {
+        tts?.play(
+            start = (navigator as? EpubNavigatorFragment)?.firstVisibleElementLocator()
+                ?: navigator.currentLocator.value
+        )
+    }
+
+    fun ttsPause() = viewModelScope.launch {
+        tts?.pause()
+    }
+
+    // Events
+
     sealed class Event {
         object OpenOutlineRequested : Event()
         object OpenDrmManagementRequested : Event()
@@ -219,6 +276,7 @@ class ReaderViewModel(
     sealed class FeedbackEvent {
         object BookmarkSuccessfullyAdded : FeedbackEvent()
         object BookmarkFailed : FeedbackEvent()
+        class GoTo(val locator: Locator, val animated: Boolean = false) : FeedbackEvent()
     }
 
     class Factory(
@@ -238,7 +296,7 @@ class ReaderViewModel(
                             // Fallbacks on a dummy Publication to avoid crashing the app until the Activity finishes.
                             dummyReaderInitData(arguments.bookId)
                         }
-                    ReaderViewModel(readerInitData, application.bookRepository) as T
+                    ReaderViewModel(application, readerInitData, application.bookRepository) as T
                 }
                 else ->
                     throw IllegalStateException("Cannot create ViewModel for class ${modelClass.simpleName}.")

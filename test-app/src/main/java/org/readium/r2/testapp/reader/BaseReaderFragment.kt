@@ -10,8 +10,11 @@ import android.os.Bundle
 import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.navigator.*
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.testapp.R
 
@@ -30,13 +33,21 @@ abstract class BaseReaderFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         model.fragmentChannel.receive(this) { event ->
-            val message =
-                when (event) {
-                    is ReaderViewModel.FeedbackEvent.BookmarkFailed -> R.string.bookmark_exists
-                    is ReaderViewModel.FeedbackEvent.BookmarkSuccessfullyAdded -> R.string.bookmark_added
-                }
-            Toast.makeText(requireContext(), getString(message), Toast.LENGTH_SHORT).show()
+            fun toast(id: Int) {
+                Toast.makeText(requireContext(), getString(id), Toast.LENGTH_SHORT).show()
+            }
+
+            when (event) {
+                is ReaderViewModel.FeedbackEvent.BookmarkFailed -> toast(R.string.bookmark_exists)
+                is ReaderViewModel.FeedbackEvent.BookmarkSuccessfullyAdded -> (R.string.bookmark_added)
+                is ReaderViewModel.FeedbackEvent.GoTo -> go(event.locator, animated = event.animated)
+            }
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        model.ttsPause()
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
@@ -48,24 +59,27 @@ abstract class BaseReaderFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.menu_reader, menu)
         menu.findItem(R.id.drm).isVisible = model.publication.lcpLicense != null
+        menu.findItem(R.id.tts).isVisible = model.canUseTts
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
+        when (item.itemId) {
             R.id.toc -> {
                 model.activityChannel.send(ReaderViewModel.Event.OpenOutlineRequested)
-                true
             }
             R.id.bookmark -> {
                 model.insertBookmark(navigator.currentLocator.value)
-                true
             }
             R.id.drm -> {
                 model.activityChannel.send(ReaderViewModel.Event.OpenDrmManagementRequested)
-                true
             }
-            else -> false
+            R.id.tts -> {
+                model.ttsPlay(navigator)
+            }
+            else -> return false
         }
+
+        return true
     }
 
     open fun go(locator: Locator, animated: Boolean) {

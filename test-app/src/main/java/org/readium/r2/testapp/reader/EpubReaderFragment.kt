@@ -29,9 +29,7 @@ import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
 import org.readium.r2.navigator.html.toCss
-import org.readium.r2.shared.APPEARANCE_REF
-import org.readium.r2.shared.ReadiumCSSName
-import org.readium.r2.shared.SCROLL_REF
+import org.readium.r2.shared.*
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
@@ -47,7 +45,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     private lateinit var publication: Publication
     private lateinit var navigatorFragment: EpubNavigatorFragment
 
-    private lateinit var menuTts: MenuItem
     private lateinit var menuSearch: MenuItem
     lateinit var menuSearchView: SearchView
 
@@ -161,9 +158,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, menuInflater)
 
-        menuTts = menu.findItem(R.id.tts).apply {
-            isVisible = true
-        }
         menuSearch = menu.findItem(R.id.search).apply {
             isVisible = true
             menuSearchView = actionView as SearchView
@@ -224,6 +218,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         }
     }
 
+    @OptIn(InternalReadiumApi::class)
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (super.onOptionsItemSelected(item)) {
             return true
@@ -237,7 +232,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
            R.id.search -> {
                super.onOptionsItemSelected(item)
            }
-
            android.R.id.home -> {
                menuSearch.collapseActionView()
                true

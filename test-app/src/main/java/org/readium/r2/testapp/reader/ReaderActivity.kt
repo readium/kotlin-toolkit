@@ -20,7 +20,7 @@ import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
 import org.readium.navigator.media2.ExperimentalMedia2
-import org.readium.r2.navigator.ExperimentalAudiobook
+import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.Application

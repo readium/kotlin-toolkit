@@ -73,6 +73,10 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                 .onEach { navigator.applyDecorations(it, "search") }
                 .launchIn(viewScope)
 
+            model.ttsDecorations
+                .onEach { navigator.applyDecorations(it, "tts") }
+                .launchIn(viewScope)
+
             childFragmentManager.addOnBackStackChangedListener {
                 updateSystemUiVisibility()
             }
