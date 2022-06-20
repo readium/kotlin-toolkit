@@ -67,7 +67,6 @@ dependencies {
     implementation(project(":readium:streamer"))
     implementation(project(":readium:navigator"))
     implementation(project(":readium:navigator-media2"))
-    implementation(project(":readium:navigator-tts"))
 
     implementation(project(":readium:opds"))
     implementation(project(":readium:lcp"))

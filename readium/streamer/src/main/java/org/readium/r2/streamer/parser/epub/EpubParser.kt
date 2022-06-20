@@ -21,7 +21,8 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
 import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.encryption.Encryption
-import org.readium.r2.shared.publication.services.content.DefaultTextIteratorService
+import org.readium.r2.shared.publication.services.content.DefaultContentIterationService
+import org.readium.r2.shared.publication.services.content.HtmlResourceContentIterator
 import org.readium.r2.shared.publication.services.search.StringSearchService
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -121,7 +122,9 @@ class EpubParser(
             servicesBuilder = Publication.ServicesBuilder(
                 positions = EpubPositionsService.createFactory(reflowablePositionsStrategy),
                 search = StringSearchService.createDefaultFactory(),
-                textIterator = DefaultTextIteratorService.createFactory(),
+                contentIteration = DefaultContentIterationService.createFactory(listOf(
+                    HtmlResourceContentIterator.createFactory()
+                )),
             )
         )
     }

@@ -29,7 +29,7 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.*
-import org.readium.r2.shared.publication.services.content.TextIteratorService
+import org.readium.r2.shared.publication.services.content.ContentIterationService
 import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Ref
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -375,19 +375,19 @@ class Publication(
         @OptIn(Search::class)
         @Suppress("UNCHECKED_CAST")
         constructor(
+            contentIteration: ServiceFactory? = null,
             contentProtection: ServiceFactory? = null,
             cover: ServiceFactory? = null,
             locator: ServiceFactory? = { DefaultLocatorService(it.manifest.readingOrder, it.publication) },
             positions: ServiceFactory? = null,
             search: ServiceFactory? = null,
-            textIterator: ServiceFactory? = null,
         ) : this(mapOf(
+            ContentIterationService::class.java.simpleName to contentIteration,
             ContentProtectionService::class.java.simpleName to contentProtection,
             CoverService::class.java.simpleName to cover,
             LocatorService::class.java.simpleName to locator,
             PositionsService::class.java.simpleName to positions,
             SearchService::class.java.simpleName to search,
-            TextIteratorService::class.java.simpleName to textIterator,
         ).filterValues { it != null }.toMutableMap() as MutableMap<String, ServiceFactory>)
 
         /** Builds the actual list of publication services to use in a Publication. */
