@@ -40,15 +40,22 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 internal class SessionPlayerFacade(
     private val sessionPlayer: SessionPlayer,
-    private val seekCompleted: Flow<Long>
+    playerStateFlow: Flow<SessionPlayerState>,
+    seekCompleted: Flow<Long>,
 ) {
     private val coroutineScope = MainScope()
 
     private var pendingSeek: Long? = null
 
+    private var pendingState: SessionPlayerState? = null
+
     init {
         seekCompleted
             .onEach { pendingSeek = it }
+            .launchIn(coroutineScope)
+
+        playerStateFlow
+            .onEach { pendingState = it }
             .launchIn(coroutineScope)
     }
 
@@ -185,6 +192,12 @@ internal class SessionPlayerFacade(
     private fun playSync(): SessionPlayerResult {
         Timber.v("executing play")
         val result = sessionPlayer.play().get()
+
+        if (result.resultCode == 0) {
+            // Required for no paused state being published while seeking
+            waitForState(SessionPlayerState.Playing)
+        }
+
         Timber.v("play finished with result ${result.resultCode}")
         return result.toTry()
     }
@@ -192,25 +205,47 @@ internal class SessionPlayerFacade(
     private fun pauseSync(): SessionPlayerResult {
         Timber.v("executing pause")
         val result = sessionPlayer.pause().get()
+
+        if (result.resultCode == 0) {
+            val stateReceived = waitForState(SessionPlayerState.Paused)
+            if (!stateReceived) {
+                Timber.v("expected ${SessionPlayerState.Paused} state not received")
+            }
+        }
+
         Timber.v("pause finished with result ${result.resultCode}")
         return result.toTry()
+    }
+
+    // This is useful because the play/pause commands complete before the new state is published.
+    private fun waitForState(state: SessionPlayerState): Boolean {
+        var i = 0
+        while (pendingState != state && i < 10) {
+            Thread.sleep(100)
+            i++
+        }
+        pendingState = null
+        return i < 10
     }
 
     private fun seekToSync(position: Duration): SessionPlayerResult {
         Timber.v("executing seekTo $position")
         val result = sessionPlayer.seekTo(position.inWholeMilliseconds).get()
-        Timber.v("seekTo finished with result ${result.resultCode}")
 
         if (result.resultCode == 0) {
             val callbackCalled = waitForSeekCompleted(position.inWholeMilliseconds)
-            if (callbackCalled) {
+            if (!callbackCalled) {
                 val exception = SessionPlayerException(SessionPlayerError.INFO_SKIPPED)
+                Timber.v("seek callback was not called")
                 return SessionPlayerResult.failure(exception)
             }
         }
+
+        Timber.v("seekTo finished with result ${result.resultCode}")
         return result.toTry()
     }
 
+    // This is useful because the seek command can return before the seeking has actually completed
     private fun waitForSeekCompleted(position: Long): Boolean {
         var i = 0
         while (pendingSeek != position && i < 10) {
