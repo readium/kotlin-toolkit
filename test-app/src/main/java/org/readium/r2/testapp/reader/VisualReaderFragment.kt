@@ -14,9 +14,21 @@ import android.graphics.RectF
 import android.os.Bundle
 import android.view.*
 import android.view.inputmethod.InputMethodManager
-import android.widget.*
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.PopupWindow
+import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.launchIn
@@ -28,6 +40,7 @@ import org.readium.r2.navigator.util.EdgeTapNavigation
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentReaderBinding
 import org.readium.r2.testapp.domain.model.Highlight
+import org.readium.r2.testapp.reader.views.TtsControls
 import org.readium.r2.testapp.utils.*
 
 /*
@@ -83,6 +96,24 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
             binding.fragmentReaderContainer.setOnApplyWindowInsetsListener { container, insets ->
                 updateSystemUiPadding(container, insets)
                 insets
+            }
+        }
+
+        binding.overlay.setContent {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .systemBarsPadding()
+            ) {
+                val showTtsControls by model.showTtsControls.collectAsState()
+                if (showTtsControls) {
+                    TtsControls(
+                        model,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(8.dp)
+                    )
+                }
             }
         }
     }

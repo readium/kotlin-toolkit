@@ -182,6 +182,11 @@
     <string name="brightness_higher">Brightness higher</string>
     <string name="tts_slower">TTS slower</string>
     <string name="tts_faster">TTS faster</string>
+    <string name="tts_play">Play</string>
+    <string name="tts_pause">Pause</string>
+    <string name="tts_stop">Stop</string>
+    <string name="tts_previous">Go backward</string>
+    <string name="tts_next">Go forward</string>
     <string name="no_result">No result</string>
     <string name="note">Note</string>
     <string name="add_a_note">Add a note</string>

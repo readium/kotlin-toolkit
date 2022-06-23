@@ -219,9 +219,15 @@ class ReaderViewModel(
 
     // TTS
 
+    val showTtsControls = MutableStateFlow(false)
+    val isTtsPlaying = MutableStateFlow(false)
+    val ttsDecorations = MutableStateFlow<List<Decoration>>(emptyList())
+
     private val tts = TtsController(context, publication)?.apply {
         state
             .onEach { state ->
+                isTtsPlaying.value = (state is TtsController.State.Playing)
+
                 when (state) {
                     is TtsController.State.Failure -> {
                         Timber.e(state.error)
@@ -232,7 +238,7 @@ class ReaderViewModel(
                         if (range != null) {
                             fragmentChannel.send(FeedbackEvent.GoTo(range))
                         } else {
-                            _ttsDecorations.value = listOf(
+                            ttsDecorations.value = listOf(
                                 Decoration(
                                     id = "tts",
                                     locator = state.utterance.locator,
@@ -247,21 +253,40 @@ class ReaderViewModel(
             .launchIn(viewModelScope)
     }
 
-    private val _ttsDecorations = MutableStateFlow<List<Decoration>>(emptyList())
-    val ttsDecorations: StateFlow<List<Decoration>> = _ttsDecorations.asStateFlow()
-
     val canUseTts: Boolean = (tts != null)
 
     @OptIn(InternalReadiumApi::class) // FIXME
     fun ttsPlay(navigator: Navigator) = viewModelScope.launch {
-        tts?.play(
-            start = (navigator as? EpubNavigatorFragment)?.firstVisibleElementLocator()
-                ?: navigator.currentLocator.value
-        )
+        tts?.run {
+            showTtsControls.value = true
+
+            play(
+                start = (navigator as? EpubNavigatorFragment)?.firstVisibleElementLocator()
+                    ?: navigator.currentLocator.value
+            )
+        }
+    }
+
+    fun ttsPlayPause() = viewModelScope.launch {
+        tts?.playPause()
     }
 
     fun ttsPause() = viewModelScope.launch {
         tts?.pause()
+    }
+
+    fun ttsPrevious() = viewModelScope.launch {
+        tts?.previous()
+    }
+
+    fun ttsNext() = viewModelScope.launch {
+        tts?.next()
+    }
+
+    fun ttsStop() = viewModelScope.launch {
+        tts?.pause()
+        showTtsControls.value = false
+        ttsDecorations.value = emptyList()
     }
 
     // Events

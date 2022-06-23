@@ -61,7 +61,7 @@ class AndroidTtsEngine(
         }
 
     override suspend fun speak(utterance: TtsEngine.Utterance) {
-        initialization.await()
+        init.await()
 
         val locale = utterance.language
             ?: config.defaultLocale
@@ -85,7 +85,7 @@ class AndroidTtsEngine(
     }
 
     override suspend fun stop() {
-        initialization.await()
+        init.await()
         engine.stop()
     }
 
@@ -103,7 +103,7 @@ class AndroidTtsEngine(
 
     // Engine
 
-    private val initialization = CompletableDeferred(Unit)
+    private val init = CompletableDeferred<Unit>()
     private val engineListener = EngineListener()
 
     private val engine = TextToSpeech(context, engineListener).apply {
@@ -118,7 +118,7 @@ class AndroidTtsEngine(
     private inner class EngineListener : TextToSpeech.OnInitListener, UtteranceProgressListener() {
         override fun onInit(status: Int) {
             if (status == TextToSpeech.SUCCESS) {
-                initialization.complete(Unit)
+                init.complete(Unit)
             } else {
                 listener.onError(Exception.InitializationFailed)
             }

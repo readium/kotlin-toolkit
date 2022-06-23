@@ -93,10 +93,10 @@ class TtsController private constructor(
         get() = engine.config
         set(value) { engine.config = value }
 
-    suspend fun playPause(start: Locator? = null) {
+    suspend fun playPause() {
         when (state.value) {
             is State.Failure -> return
-            State.Idle -> play(start)
+            State.Idle -> play()
             is State.Playing -> pause()
         }
     }
@@ -137,7 +137,6 @@ class TtsController private constructor(
         Forward, Backward;
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     private var contentIterator: ContentIterator? = null
         set(value) {
             contentIterator?.let { previous ->
