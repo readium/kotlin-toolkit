@@ -2,10 +2,12 @@ package org.readium.r2.shared.util
 
 import android.content.ComponentCallbacks2
 import android.content.res.Configuration
+import org.readium.r2.shared.InternalReadiumApi
 
 /**
  * A memory observer reacts to a device reclaiming memory by releasing unused resources.
  */
+@InternalReadiumApi
 interface MemoryObserver {
 
     /**

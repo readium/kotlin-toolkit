@@ -17,6 +17,7 @@ import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.asset.FileAsset
 import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.shared.publication.services.InMemoryCacheService
 import org.readium.r2.shared.publication.services.InMemoryCoverService
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -64,6 +65,7 @@ class PdfParser(
         )
 
         val servicesBuilder = Publication.ServicesBuilder(
+            cache = InMemoryCacheService.createFactory(context),
             positions = PdfPositionsService.Companion::create,
             cover = document.cover(context)?.let { InMemoryCoverService.createFactory(it) }
         )

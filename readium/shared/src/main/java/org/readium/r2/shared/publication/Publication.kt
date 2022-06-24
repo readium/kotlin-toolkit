@@ -63,7 +63,7 @@ class Publication(
     // FIXME: To refactor after specifying the User and Rendition Settings API
     var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(),
     var cssStyle: String? = null,
-) : PublicationServicesHolder, MemoryObserver {
+) : PublicationServicesHolder {
 
     private val _manifest: Manifest
     private val services = ListPublicationServicesHolder()
@@ -189,12 +189,6 @@ class Publication(
     override fun <T : Service> findServices(serviceType: KClass<T>): List<T> =
         services.findServices(serviceType)
 
-    // MemoryObserver
-
-    override fun onTrimMemory(level: MemoryObserver.Level) {
-        services.onTrimMemory(level)
-    }
-
     enum class TYPE {
         EPUB, CBZ, FXL, WEBPUB, AUDIO, DiViNa
     }
@@ -290,7 +284,7 @@ class Publication(
     /**
      * Base interface to be implemented by all publication services.
      */
-    interface Service : Closeable, MemoryObserver {
+    interface Service : Closeable {
 
         /**
          * Container for the context from which a service is created.
@@ -349,8 +343,6 @@ class Publication(
          * Closes any opened file handles, removes temporary files, etc.
          */
         override fun close() {}
-
-        override fun onTrimMemory(level: MemoryObserver.Level) {}
     }
 
     /**
@@ -363,7 +355,7 @@ class Publication(
         @OptIn(Search::class)
         @Suppress("UNCHECKED_CAST")
         constructor(
-            cache: ServiceFactory? = { InMemoryCacheService() },
+            cache: ServiceFactory? = null,
             contentProtection: ServiceFactory? = null,
             cover: ServiceFactory? = null,
             locator: ServiceFactory? = { DefaultLocatorService(it.manifest.readingOrder, it.services) },
@@ -559,7 +551,7 @@ class Publication(
 /**
  * Holds [Publication.Service] instances for a [Publication].
  */
-interface PublicationServicesHolder: MemoryObserver {
+interface PublicationServicesHolder {
     /**
      * Returns the first publication service that is an instance of [serviceType].
      */
@@ -589,9 +581,5 @@ internal class ListPublicationServicesHolder(
         for (service in services) {
             tryOrLog { service.close() }
         }
-    }
-
-    override fun onTrimMemory(level: MemoryObserver.Level) {
-        services.forEach { it.onTrimMemory(level) }
     }
 }

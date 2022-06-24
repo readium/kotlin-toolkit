@@ -15,7 +15,6 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.PublicationAsset
-import org.readium.r2.shared.util.MemoryObserver
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
@@ -142,8 +141,6 @@ class Streamer constructor(
             .build()
             .apply { addLegacyProperties(asset.mediaType()) }
 
-        context.registerComponentCallbacks(MemoryObserver.asComponentCallbacks2(publication))
-
         Try.success(publication)
 
     } catch (e: Publication.OpeningException) {
@@ -154,7 +151,7 @@ class Streamer constructor(
         listOfNotNull(
             EpubParser(),
             pdfFactory?.let { PdfParser(context, it) },
-            ReadiumWebPubParser(pdfFactory, httpClient),
+            ReadiumWebPubParser(context, pdfFactory, httpClient),
             ImageParser(),
             AudioParser()
         )

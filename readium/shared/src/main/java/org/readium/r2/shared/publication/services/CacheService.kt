@@ -6,19 +6,20 @@
 
 package org.readium.r2.shared.publication.services
 
+import android.content.ComponentCallbacks2
+import android.content.Context
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ServiceFactory
+import org.readium.r2.shared.util.MemoryObserver
 import org.readium.r2.shared.util.cache.Cache
 import org.readium.r2.shared.util.cache.InMemoryCache
-import org.readium.r2.shared.util.MemoryObserver
 import kotlin.reflect.KClass
 
 /**
@@ -46,9 +47,22 @@ var Publication.ServicesBuilder.cacheServiceFactory: ServiceFactory?
  * A basic [CacheService] implementation keeping the cached objects in memory.
  */
 @InternalReadiumApi
-class InMemoryCacheService : CacheService {
+class InMemoryCacheService(context: Context?) : CacheService, MemoryObserver {
+
+    companion object {
+        fun createFactory(context: Context?): (Publication.Service.Context) -> InMemoryCacheService = { _ ->
+            InMemoryCacheService(context)
+        }
+    }
+
+    private val context = context?.applicationContext
     private val caches = mutableMapOf<String, Cache<*>>()
     private val mutex = Mutex()
+    private val componentCallbacks: ComponentCallbacks2 = MemoryObserver.asComponentCallbacks2(this)
+
+    init {
+        context?.registerComponentCallbacks(componentCallbacks)
+    }
 
     override suspend fun <T : Any> cacheOf(valueType: KClass<T>, namespace: String): Cache<T> =
         mutex.withLock {
@@ -62,6 +76,8 @@ class InMemoryCacheService : CacheService {
 
     @OptIn(DelicateCoroutinesApi::class)
     override fun close() {
+        context?.unregisterComponentCallbacks(componentCallbacks)
+
         GlobalScope.launch {
             caches.values.forEach { it.close() }
         }
