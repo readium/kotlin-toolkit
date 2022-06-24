@@ -10,8 +10,6 @@
 package org.readium.r2.shared.fetcher
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.publication.Link
@@ -86,22 +84,15 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
             }
         }
 
-        /**
-         * [RandomAccessFile] is not thread-safe.
-         */
-        private val mutex = Mutex()
-
         override suspend fun link(): Link = link
 
-        override suspend fun close() = withContext<Unit>(Dispatchers.IO) {
-            mutex.withLock {
-                if (::randomAccessFile.isLazyInitialized) {
-                    randomAccessFile.onSuccess {
-                        try {
-                            it.close()
-                        } catch (e: java.lang.Exception) {
-                            Timber.e(e)
-                        }
+        override suspend fun close() = withContext(Dispatchers.IO) {
+            if (::randomAccessFile.isLazyInitialized) {
+                randomAccessFile.onSuccess {
+                    try {
+                        it.close()
+                    } catch (e: java.lang.Exception) {
+                        Timber.e(e)
                     }
                 }
             }
@@ -109,10 +100,8 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
             withContext(Dispatchers.IO) {
-                mutex.withLock {
-                    ResourceTry.catching {
-                        readSync(range)
-                    }
+                ResourceTry.catching {
+                    readSync(range)
                 }
             }
 
