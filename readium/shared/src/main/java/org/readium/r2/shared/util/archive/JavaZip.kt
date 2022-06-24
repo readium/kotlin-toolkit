@@ -7,17 +7,22 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.util.archive
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.util.io.CountingInputStream
 import java.io.File
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
+@OptIn(InternalReadiumApi::class)
 internal class JavaZip(private val archive: ZipFile) : Archive {
 
     private inner class Entry(private val entry: ZipEntry) : Archive.Entry {
@@ -32,25 +37,26 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
                 else
                     entry.compressedSize.takeUnless { it == -1L }
 
-        override suspend fun read(range: LongRange?): ByteArray =
-            if (range == null)
-                readFully()
-            else
-                readRange(range)
+        /** [CountingInputStream] is not thread-safe. */
+        private val mutex = Mutex()
 
-        private suspend fun readFully(): ByteArray = withContext(Dispatchers.IO) {
+        override suspend fun read(range: LongRange?): ByteArray =
+            mutex.withLock {
+                withContext(Dispatchers.IO) {
+                    if (range == null)
+                        readFully()
+                    else
+                        readRange(range)
+                }
+            }
+
+        private suspend fun readFully(): ByteArray =
             archive.getInputStream(entry).use {
                 it.readFully()
             }
-        }
 
-        /** [CountingInputStream] is not thread-safe. */
-        @OptIn(ExperimentalCoroutinesApi::class)
-        private val dispatcher = Dispatchers.IO.limitedParallelism(1)
-
-        private suspend fun readRange(range: LongRange): ByteArray = withContext(dispatcher) {
+        private fun readRange(range: LongRange): ByteArray =
             stream(range.first).readRange(range)
-        }
 
         /**
          * Reading an entry in chunks (e.g. from the HTTP server) can be really slow if the entry
@@ -77,8 +83,10 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
         private var stream: CountingInputStream? = null
 
         override suspend fun close() {
-            withContext(Dispatchers.IO) {
-                stream?.close()
+            mutex.withLock {
+                withContext(Dispatchers.IO) {
+                    stream?.close()
+                }
             }
         }
 
@@ -97,7 +105,6 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
     override suspend fun close() = withContext(Dispatchers.IO) {
         archive.close()
     }
-
 }
 
 internal class JavaZipArchiveFactory : ArchiveFactory {
@@ -105,5 +112,4 @@ internal class JavaZipArchiveFactory : ArchiveFactory {
     override suspend fun open(file: File, password: String?): Archive = withContext(Dispatchers.IO) {
         JavaZip(ZipFile(file))
     }
-
 }
