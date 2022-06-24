@@ -472,7 +472,7 @@ class ServicesBuilderTest {
     fun testBuildEmpty() {
         val builder = Publication.ServicesBuilder(cover = null)
         val services = builder.build(context)
-        assertEquals(2, services.size)
+        assertEquals(1, services.size)
         assertNotNull(services.find<DefaultLocatorService>())
     }
 
