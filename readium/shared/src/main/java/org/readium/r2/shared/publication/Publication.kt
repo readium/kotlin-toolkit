@@ -56,25 +56,17 @@ typealias PublicationId = String
  * @param servicesBuilder Holds the list of service factories used to create the instances of
  * Publication.Service attached to this Publication.
  */
-class Publication private constructor(
+class Publication(
     manifest: Manifest,
-    private val fetcher: Fetcher,
-    private val servicesBuilder: ServicesBuilder,
-    private val services: ListPublicationServicesHolder,
+    private val fetcher: Fetcher = EmptyFetcher(),
+    private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
     // FIXME: To refactor after specifying the User and Rendition Settings API
-    var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean>,
-    var cssStyle: String?,
-) : PublicationServicesHolder by services, MemoryObserver {
-
-    constructor(
-        manifest: Manifest,
-        fetcher: Fetcher = EmptyFetcher(),
-        servicesBuilder: ServicesBuilder = ServicesBuilder(),
-        userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(),
-        cssStyle: String? = null,
-    ) : this(manifest, fetcher, servicesBuilder, ListPublicationServicesHolder(), userSettingsUIPreset, cssStyle)
+    var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(),
+    var cssStyle: String? = null,
+) : PublicationServicesHolder, MemoryObserver {
 
     private val _manifest: Manifest
+    private val services = ListPublicationServicesHolder()
 
     init {
         // We use a Ref<Publication> instead of passing directly `this` to the services to prevent
@@ -188,6 +180,16 @@ class Publication private constructor(
             services.close()
         }
     }
+
+    // PublicationServicesHolder
+
+    override fun <T : Service> findService(serviceType: KClass<T>): T? =
+        services.findService(serviceType)
+
+    override fun <T : Service> findServices(serviceType: KClass<T>): List<T> =
+        services.findServices(serviceType)
+
+    // MemoryObserver
 
     override fun onTrimMemory(level: MemoryObserver.Level) {
         services.onTrimMemory(level)

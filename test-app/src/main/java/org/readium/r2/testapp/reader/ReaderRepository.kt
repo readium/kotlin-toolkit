@@ -103,7 +103,7 @@ class ReaderRepository(
         val userProperties =
             application.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json"
         val url =
-            requireNotNull(readium.server)
+            checkNotNull(readium.server)
                 .addPublication(publication, userPropertiesFile = File(userProperties))
 
         return url ?: throw Exception("Cannot add the publication to the HTTP server.")

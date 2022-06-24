@@ -59,7 +59,6 @@ class Application : android.app.Application() {
         if (DEBUG) Timber.plant(Timber.DebugTree())
 
         readium = Readium(this)
-        readium = Readium(this)
 
         readium.onAppStart()
 
