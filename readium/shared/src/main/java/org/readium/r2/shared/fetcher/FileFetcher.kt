@@ -86,7 +86,7 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
 
         override suspend fun link(): Link = link
 
-        override suspend fun close() = withContext<Unit>(Dispatchers.IO) {
+        override suspend fun close() = withContext(Dispatchers.IO) {
             if (::randomAccessFile.isLazyInitialized) {
                 randomAccessFile.onSuccess {
                     try {

@@ -8,12 +8,14 @@ package org.readium.r2.navigator.util
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import org.readium.r2.shared.InternalReadiumApi
 
 /**
  * Creates a [ViewModelProvider.Factory] for a single type of [ViewModel] using the result of the
  * given [factory] closure.
  */
-internal inline fun <reified T : ViewModel> createViewModelFactory(crossinline factory: () -> T): ViewModelProvider.Factory =
+@InternalReadiumApi
+inline fun <reified T : ViewModel> createViewModelFactory(crossinline factory: () -> T): ViewModelProvider.Factory =
 
     object : ViewModelProvider.Factory {
         override fun <V : ViewModel> create(modelClass: Class<V>): V {

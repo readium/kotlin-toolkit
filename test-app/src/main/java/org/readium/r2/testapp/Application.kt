@@ -9,26 +9,20 @@ package org.readium.r2.testapp
 import android.content.*
 import android.os.IBinder
 import kotlinx.coroutines.*
-import org.readium.r2.lcp.LcpService
-import org.readium.r2.shared.util.Try
-import org.readium.r2.streamer.Streamer
-import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.reader.ReaderRepository
 import timber.log.Timber
-import java.io.IOException
-import java.net.ServerSocket
+import java.io.File
 import java.util.*
 
 class Application : android.app.Application() {
 
-    lateinit var r2Directory: String
+    lateinit var readium: Readium
         private set
 
-    lateinit var server: Server
-        private set
+    lateinit var storageDir: File
 
     lateinit var bookRepository: BookRepository
         private set
@@ -64,16 +58,11 @@ class Application : android.app.Application() {
         super.onCreate()
         if (DEBUG) Timber.plant(Timber.DebugTree())
 
-        r2Directory = computeAppDirectory()
+        readium = Readium(this)
 
-        /*
-         * Starting HTTP server.
-         */
+        readium.onAppStart()
 
-        val s = ServerSocket(if (DEBUG) 8080 else 0)
-        s.close()
-        server = Server(s.localPort, applicationContext)
-        startServer()
+        storageDir = computeStorageDir()
 
         /*
          * Starting media service.
@@ -89,18 +78,6 @@ class Application : android.app.Application() {
         /*
          * Initializing repositories
          */
-
-        val lcpService = LcpService(this)
-            ?.let { Try.success(it) }
-            ?: Try.failure(Exception("liblcp is missing on the classpath"))
-
-        val streamer = Streamer(
-            this,
-            contentProtections = listOfNotNull(
-                lcpService.getOrNull()?.contentProtection()
-            )
-        )
-
         bookRepository =
             BookDatabase.getDatabase(this).booksDao()
                 .let {  BookRepository(it) }
@@ -109,8 +86,7 @@ class Application : android.app.Application() {
             coroutineScope.async {
                 ReaderRepository(
                     this@Application,
-                    streamer,
-                    server,
+                    readium,
                     mediaServiceBinder.await(),
                     bookRepository
                 )
@@ -120,43 +96,20 @@ class Application : android.app.Application() {
 
     override fun onTerminate() {
         super.onTerminate()
-        stopServer()
+        readium.onAppTerminate()
     }
 
-    private fun startServer() {
-        if (!server.isAlive) {
-            try {
-                server.start()
-            } catch (e: IOException) {
-                // do nothing
-                if (DEBUG) Timber.e(e)
-            }
-            if (server.isAlive) {
-//                // Add your own resources here
-//                server.loadCustomResource(assets.open("scripts/test.js"), "test.js")
-//                server.loadCustomResource(assets.open("styles/test.css"), "test.css")
-//                server.loadCustomFont(assets.open("fonts/test.otf"), applicationContext, "test.otf")
-            }
-        }
-    }
-
-    private fun stopServer() {
-        if (server.isAlive) {
-            server.stop()
-        }
-    }
-
-    private fun computeAppDirectory(): String {
+    private fun computeStorageDir(): File {
         val properties = Properties()
         val inputStream = assets.open("configs/config.properties")
         properties.load(inputStream)
         val useExternalFileDir =
             properties.getProperty("useExternalFileDir", "false")!!.toBoolean()
-        return if (useExternalFileDir) {
-            getExternalFilesDir(null)?.path + "/"
-        } else {
-            filesDir?.path + "/"
-        }
+
+        return File(
+            if (useExternalFileDir) getExternalFilesDir(null)?.path + "/"
+            else filesDir?.path + "/"
+        )
     }
 }
 

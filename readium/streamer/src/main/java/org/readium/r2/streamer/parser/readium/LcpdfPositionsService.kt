@@ -9,26 +9,28 @@
 
 package org.readium.r2.streamer.parser.readium
 
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.PdfDocument
+import org.readium.r2.shared.util.pdf.cachedIn
 import timber.log.Timber
 
 /**
  * Creates the [positions] for an LCP protected PDF [Publication] from its [readingOrder] and
  * [fetcher].
  */
-@OptIn(PdfSupport::class)
+@OptIn(PdfSupport::class, ExperimentalReadiumApi::class)
 internal class LcpdfPositionsService(
-    private val pdfFactory: PdfDocumentFactory,
-    private val readingOrder: List<Link>,
-    private val fetcher: Fetcher
+    private val pdfFactory: PdfDocumentFactory<*>,
+    private val context: Publication.Service.Context,
 ) : PositionsService {
 
     override suspend fun positionsByReadingOrder(): List<List<Locator>> {
@@ -42,7 +44,7 @@ internal class LcpdfPositionsService(
 
     private suspend fun computePositions(): List<List<Locator>> {
         // Calculates the page count of each resource from the reading order.
-        val resources: List<Pair<Int, Link>> = readingOrder.map { link ->
+        val resources: List<Pair<Int, Link>> = context.manifest.readingOrder.map { link ->
             val pageCount = openPdfAt(link)?.pageCount ?: 0
             Pair(pageCount, link)
         }
@@ -84,7 +86,9 @@ internal class LcpdfPositionsService(
 
     private suspend fun openPdfAt(link: Link): PdfDocument? =
         try {
-            pdfFactory.open(fetcher.get(link), password = null)
+            pdfFactory
+                .cachedIn(context.services)
+                .open(context.fetcher.get(link), password = null)
         } catch (e: Exception) {
             Timber.e(e)
             null
@@ -92,14 +96,12 @@ internal class LcpdfPositionsService(
 
     companion object {
 
-        fun create(pdfFactory: PdfDocumentFactory): (Publication.Service.Context) -> LcpdfPositionsService = { serviceContext ->
+        fun create(pdfFactory: PdfDocumentFactory<*>): (Publication.Service.Context) -> LcpdfPositionsService = { serviceContext ->
             LcpdfPositionsService(
                 pdfFactory = pdfFactory,
-                readingOrder = serviceContext.manifest.readingOrder,
-                fetcher = serviceContext.fetcher
+                context = serviceContext
             )
         }
-
     }
 
 }
