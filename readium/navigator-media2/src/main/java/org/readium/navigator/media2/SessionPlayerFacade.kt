@@ -13,9 +13,11 @@ import androidx.media2.common.MediaMetadata
 import androidx.media2.common.SessionPlayer
 import androidx.media2.session.MediaSession
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import timber.log.Timber
@@ -40,8 +42,8 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 internal class SessionPlayerFacade(
     private val sessionPlayer: SessionPlayer,
+    private val seekCompletedReceiver: ReceiveChannel<Long>,
     playerStateFlow: Flow<SessionPlayerState>,
-    seekCompleted: Flow<Long>,
 ) {
     private val coroutineScope = MainScope()
 
@@ -50,7 +52,7 @@ internal class SessionPlayerFacade(
     private var pendingState: SessionPlayerState? = null
 
     init {
-        seekCompleted
+        seekCompletedReceiver.receiveAsFlow()
             .onEach { pendingSeek = it }
             .launchIn(coroutineScope)
 
@@ -85,6 +87,7 @@ internal class SessionPlayerFacade(
     }
 
     fun close() {
+        seekCompletedReceiver.cancel()
         sessionPlayer.close()
     }
 

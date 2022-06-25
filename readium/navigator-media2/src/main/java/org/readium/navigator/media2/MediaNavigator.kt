@@ -9,7 +9,6 @@ package org.readium.navigator.media2
 import android.app.PendingIntent
 import android.content.Context
 import androidx.media2.common.MediaItem
-import androidx.media2.common.MediaMetadata
 import androidx.media2.common.SessionPlayer
 import androidx.media2.session.MediaSession
 import com.google.android.exoplayer2.C
@@ -19,6 +18,7 @@ import com.google.android.exoplayer2.ext.media2.SessionPlayerConnector
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.upstream.DataSource
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -65,17 +65,26 @@ class MediaNavigator private constructor(
             playerCallback.playbackSpeed,
             playerCallback.currentItem,
             playerCallback.bufferingState,
-            this::playback
-        ).stateInFirst(coroutineScope)
+            this::computePlayback
+        ).stateIn(
+            coroutineScope,
+            SharingStarted.Lazily,
+            computePlayback(
+                playerCallback.playerState.value,
+                playerCallback.playbackSpeed.value,
+                playerCallback.currentItem.value,
+                playerCallback.bufferingState.value
+            )
+        )
 
     private val allLocators: StateFlow<Locator> =
         playerCallback.currentItem
-            .map(this::locator)
-            .stateInFirst(coroutineScope)
-
-    // This is used only when the Flow's first element is already available, so it doesn't block any thread.
-    private fun <T> Flow<T>.stateInFirst(coroutineScope: CoroutineScope): StateFlow<T> =
-        stateIn(coroutineScope, SharingStarted.Lazily, runBlocking { first() })
+            .map(this::computeLocator)
+            .stateIn(
+                coroutineScope,
+                SharingStarted.Lazily,
+                computeLocator(playerCallback.currentItem.value)
+            )
 
     // Mutable version of the exposed currentLocator. Locators published while a command is being executed are skipped.
     private val currentLocatorMutable: MutableStateFlow<Locator> =
@@ -107,8 +116,8 @@ class MediaNavigator private constructor(
     private val totalDuration: Duration? =
         this.playerFacade.playlist!!.metadata.durations?.sum()
 
-    private fun locator(
-        item: SessionPlayerCallback.Item,
+    private fun computeLocator(
+        item: ItemState,
     ): Locator {
         val playlist = this.playerFacade.playlist!!.map { it.metadata!! }
         val position = item.position
@@ -126,10 +135,10 @@ class MediaNavigator private constructor(
         )
     }
 
-    private fun playback(
+    private fun computePlayback(
         currentState: SessionPlayerState,
         playbackSpeed: Float,
-        currentItem: SessionPlayerCallback.Item,
+        currentItem: ItemState,
         bufferingState: SessionPlayerBufferingState
     ): Playback {
         val state = when (currentState) {
@@ -160,10 +169,13 @@ class MediaNavigator private constructor(
         )
     }
 
-    private suspend fun<T> executeCommand(block: suspend () -> T): T = commandMutex.withLock {
-        preventStateUpdate = true
-        val result = block()
-        preventStateUpdate = false
+    private suspend fun<T> executeCommand(block: suspend () -> T): T {
+        val result = commandMutex.withLock {
+            preventStateUpdate = true
+            val result = block()
+            preventStateUpdate = false
+            result
+        }
 
         if (playbackMutable.value != allPlaybacks.value) {
             playbackMutable.value = allPlaybacks.value
@@ -327,12 +339,6 @@ class MediaNavigator private constructor(
         )
     }
 
-    enum class Buffering {
-        Starved,
-        Completed,
-        Ongoing
-    }
-
     sealed class Exception(override val message: String) : kotlin.Exception(message) {
 
         class SessionPlayer internal constructor(
@@ -381,11 +387,12 @@ class MediaNavigator private constructor(
         ): Try<MediaNavigator, Exception> {
 
             val positionRefreshDelay = (1.0 / configuration.positionRefreshRate).seconds
-            val callback = SessionPlayerCallback(positionRefreshDelay)
+            val seekCompletedChannel = Channel<Long>(Channel.UNLIMITED)
+            val callback = SessionPlayerCallback(positionRefreshDelay, seekCompletedChannel)
             val callbackExecutor = Executors.newSingleThreadExecutor()
             player.registerPlayerCallback(callbackExecutor, callback)
 
-            val facade = SessionPlayerFacade(player,  callback.playerState, callback.seekCompleted)
+            val facade = SessionPlayerFacade(player,  seekCompletedChannel, callback.playerState)
             return preparePlayer(publication, facade, metadataFactory)
                 // Ignoring failure to set initial locator
                 .onSuccess { goInitialLocator(publication, initialLocator, facade) }
