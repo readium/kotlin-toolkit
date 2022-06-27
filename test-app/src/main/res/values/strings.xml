@@ -205,4 +205,9 @@
     <string name="tts_next">Go forward</string>
     <string name="tts_settings">Speech settings</string>
     <string name="tts_rate">Rate</string>
+    <string name="tts_error_initialization">Failed to initialize the TTS engine</string>
+    <string name="tts_error_language_not_supported">The language %s is not supported</string>
+    <string name="tts_error_language_support_incomplete">The language %s requires additional downloadable data</string>
+    <string name="tts_error_network">A networking error occurred</string>
+    <string name="tts_error_other">A TTS error occurred</string>
 </resources>

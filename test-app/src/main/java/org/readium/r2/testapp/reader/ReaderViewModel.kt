@@ -19,7 +19,10 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.*
+import kotlinx.coroutines.runBlocking
+import org.readium.r2.navigator.Decoration
+import org.readium.r2.navigator.ExperimentalDecorator
+import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.tts.TtsController
 import org.readium.r2.navigator.tts.TtsEngine
@@ -32,11 +35,11 @@ import org.readium.r2.shared.publication.services.search.SearchIterator
 import org.readium.r2.shared.publication.services.search.SearchTry
 import org.readium.r2.shared.publication.services.search.search
 import org.readium.r2.shared.util.Try
+import org.readium.r2.testapp.R
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
-import timber.log.Timber
 
 @OptIn(Search::class, ExperimentalDecorator::class, ExperimentalReadiumApi::class, ExperimentalCoroutinesApi::class)
 class ReaderViewModel(
@@ -57,6 +60,13 @@ class ReaderViewModel(
     val fragmentChannel: EventChannel<FeedbackEvent> =
         EventChannel(Channel(Channel.BUFFERED), viewModelScope)
 
+    override fun onCleared() {
+        super.onCleared()
+
+        runBlocking {
+            tts?.close()
+        }
+    }
 
     fun saveProgression(locator: Locator) = viewModelScope.launch {
         bookRepository.saveProgression(locator, bookId)
@@ -225,13 +235,20 @@ class ReaderViewModel(
     val ttsDecorations = MutableStateFlow<List<Decoration>>(emptyList())
 
     private val tts = TtsController(context, publication)?.apply {
+        listener = object : TtsController.Listener {
+            override fun onUtteranceError(utterance: TtsEngine.Utterance, error: TtsEngine.Exception): Boolean {
+                activityChannel.send(Event.Failure(error.toUserException()))
+                return true  // Continue playback with the next utterance.
+            }
+        }
+
         state
             .onEach { state ->
                 isTtsPlaying.value = (state is TtsController.State.Playing)
 
                 when (state) {
                     is TtsController.State.Failure -> {
-                        fragmentChannel.send(FeedbackEvent.TtsFailure(state.error))
+                        activityChannel.send(Event.Failure(state.error.toUserException()))
                     }
 
                     is TtsController.State.Playing -> {
@@ -253,6 +270,20 @@ class ReaderViewModel(
             }
             .launchIn(viewModelScope)
     }
+
+    private fun TtsEngine.Exception.toUserException(): UserException =
+        when (this) {
+            is TtsEngine.Exception.InitializationFailed ->
+                UserException(R.string.tts_error_initialization)
+            is TtsEngine.Exception.LanguageNotSupported ->
+                UserException(R.string.tts_error_language_not_supported, locale.displayLanguage)
+            is TtsEngine.Exception.LanguageSupportIncomplete ->
+                UserException(R.string.tts_error_language_support_incomplete, locale.displayLanguage)
+            is TtsEngine.Exception.Network ->
+                UserException(R.string.tts_error_network)
+            is TtsEngine.Exception.Other ->
+                UserException(R.string.tts_error_other)
+        }
 
     val canUseTts: Boolean = (tts != null)
     val ttsConfig: StateFlow<TtsEngine.Configuration>? get() = tts?.config
@@ -308,7 +339,6 @@ class ReaderViewModel(
         object BookmarkSuccessfullyAdded : FeedbackEvent()
         object BookmarkFailed : FeedbackEvent()
         class GoTo(val locator: Locator, val animated: Boolean = false) : FeedbackEvent()
-        class TtsFailure(val error: Exception) : FeedbackEvent()
     }
 
     class Factory(

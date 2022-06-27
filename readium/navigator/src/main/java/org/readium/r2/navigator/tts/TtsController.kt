@@ -7,12 +7,10 @@
 package org.readium.r2.navigator.tts
 
 import android.content.Context
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import org.readium.r2.navigator.tts.TtsEngine.Configuration
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
@@ -29,6 +27,7 @@ import org.readium.r2.shared.util.tokenizer.TextContentTokenizer
 import org.readium.r2.shared.util.tokenizer.TextUnit
 import timber.log.Timber
 import java.util.*
+import kotlin.time.Duration.Companion.seconds
 
 @ExperimentalReadiumApi
 typealias TtsTokenizerFactory = (defaultLocale: Locale?) -> ContentTokenizer
@@ -37,8 +36,18 @@ typealias TtsTokenizerFactory = (defaultLocale: Locale?) -> ContentTokenizer
 class TtsController private constructor(
     private val publication: Publication,
     engineFactory: TtsEngineFactory,
-    private val tokenizerFactory: TtsTokenizerFactory = defaultTokenizerFactory
+    private val tokenizerFactory: TtsTokenizerFactory = defaultTokenizerFactory,
+    var listener: Listener? = null
 ) : SuspendingCloseable {
+
+    interface Listener {
+        /**
+         * Notifies an [error] occurred while speaking [utterance].
+         *
+         * Return true to continue the playback with the next utterance, or false to interrupt it.
+         */
+        fun onUtteranceError(utterance: TtsEngine.Utterance, error: TtsEngine.Exception): Boolean
+    }
 
     companion object {
         val defaultTokenizerFactory: TtsTokenizerFactory = { locale -> TextContentTokenizer(unit = TextUnit.Sentence, defaultLocale = locale) }
@@ -73,7 +82,7 @@ class TtsController private constructor(
     sealed class State {
         object Idle : State()
         class Playing(val utterance: TtsEngine.Utterance, val range: Locator? = null) : State()
-        class Failure(val error: Exception) : State()
+        class Failure(val error: TtsEngine.Exception) : State()
     }
 
     private val _state = MutableStateFlow<State>(State.Idle)
@@ -95,11 +104,10 @@ class TtsController private constructor(
 
     val config: StateFlow<Configuration> get() = engine.config
 
-    suspend fun setConfig(config: Configuration): Configuration = tryOrFail {
+    fun setConfig(config: Configuration): Configuration =
         engine.setConfig(config)
-    } ?: config
 
-    suspend fun playPause() {
+    fun playPause() {
         when (state.value) {
             is State.Failure -> return
             State.Idle -> play()
@@ -107,38 +115,44 @@ class TtsController private constructor(
         }
     }
 
-    suspend fun play(start: Locator? = null) {
-        if (start != null) {
-            speakingUtteranceIndex = null
-            utterances = emptyList()
-            contentIterator = publication.contentIterator(start)
-        }
+    fun play(start: Locator? = null) {
+        replacePlaybackJob {
+            if (start != null) {
+                speakingUtteranceIndex = null
+                utterances = emptyList()
+                contentIterator = publication.contentIterator(start)
+            }
 
-        if (contentIterator == null) {
-            contentIterator = publication.contentIterator(null)
-        }
+            if (contentIterator == null) {
+                contentIterator = publication.contentIterator(null)
+            }
 
-        val utterance = currentUtterance
-        if (utterance != null) {
-            play(utterance)
-        } else {
-            next()
+            val utterance = currentUtterance
+            if (utterance != null) {
+                play(utterance)
+            } else {
+                playNextUtterance(Direction.Forward)
+            }
         }
     }
 
-    suspend fun pause() {
-        tryOrFail {
+    fun pause() {
+        replacePlaybackJob {
             _state.value = State.Idle
             engine.stop()
         }
     }
 
-    suspend fun previous() {
-        playNextUtterance(Direction.Backward)
+    fun previous() {
+        replacePlaybackJob {
+            playNextUtterance(Direction.Backward)
+        }
     }
 
-    suspend fun next() {
-        playNextUtterance(Direction.Forward)
+    fun next() {
+        replacePlaybackJob {
+            playNextUtterance(Direction.Forward)
+        }
     }
 
     private enum class Direction {
@@ -161,23 +175,17 @@ class TtsController private constructor(
         speakingUtteranceIndex?.let { utterances[it] }
 
     private suspend fun playNextUtterance(direction: Direction) {
-        try {
-            val utterance = nextUtterance(direction)
-            if (utterance != null) {
-                play(utterance)
-            } else {
-                _state.value = State.Idle
-            }
-        } catch (e: Exception) {
-            _state.value = State.Failure(e)
+        val utterance = nextUtterance(direction)
+        if (utterance != null) {
+            play(utterance)
+        } else {
+            _state.value = State.Idle
         }
     }
 
-    private suspend fun play(utterance: TtsEngine.Utterance) {
-        tryOrFail {
-            _state.value = State.Playing(utterance)
-            engine.speak(utterance)
-        }
+    private fun play(utterance: TtsEngine.Utterance) {
+        _state.value = State.Playing(utterance)
+        engine.speak(utterance)
     }
 
     private suspend fun nextUtterance(direction: Direction): TtsEngine.Utterance? {
@@ -259,13 +267,16 @@ class TtsController private constructor(
         }
     }
 
-    suspend fun <T> tryOrFail(closure: suspend () -> T): T? =
-        try { closure() }
-        catch (e: Exception) {
-            Timber.e(e)
-            _state.value = State.Failure(e)
-            null
-        }
+    private var playbackJob: Job? = null
+
+    /**
+     * Cancels the previous playback-related job and starts a new one witht he given suspending
+     * [block].
+     */
+    private fun replacePlaybackJob(block: suspend CoroutineScope.() -> Unit) {
+        playbackJob?.cancel()
+        playbackJob = scope.launch(block = block)
+    }
 
     private inner class EngineListener : TtsEngine.Listener {
 
@@ -283,9 +294,24 @@ class TtsController private constructor(
             }
         }
 
-        override fun onError(error: Exception) {
+        override fun onEngineError(error: TtsEngine.Exception) {
             scope.launch {
                 _state.value = State.Idle
+            }
+        }
+
+        override fun onUtteranceError(utterance: TtsEngine.Utterance, error: TtsEngine.Exception) {
+            scope.launch {
+                val shouldContinue = listener?.onUtteranceError(utterance, error) ?: true
+
+                if (state.value is State.Playing) {
+                    if (shouldContinue) {
+                        delay(1.seconds)
+                        next()
+                    } else {
+                        _state.value = State.Idle
+                    }
+                }
             }
         }
     }

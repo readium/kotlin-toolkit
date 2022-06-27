@@ -15,10 +15,23 @@ typealias TtsEngineFactory = (listener: TtsEngine.Listener) -> TtsEngine
 
 interface TtsEngine : SuspendingCloseable {
 
+    sealed class Exception private constructor(
+        override val message: String,
+        cause: Throwable? = null
+    ) : kotlin.Exception(message, cause) {
+        /** Failed to initialize the TTS engine. */
+        class InitializationFailed(cause: Throwable? = null) : Exception("The TTS engine failed to initialize", cause)
+        class LanguageNotSupported(val locale: Locale, cause: Throwable? = null) : Exception("The language ${locale.toLanguageTag()} is not supported by the TTS engine", cause)
+        class LanguageSupportIncomplete(val locale: Locale, cause: Throwable? = null) : Exception("The language ${locale.toLanguageTag()} requires additional files by the TTS engine", cause)
+        class Network(cause: Throwable? = null) : Exception("A network error occurred", cause)
+        class Other(override val cause: Throwable) : Exception(cause.message ?: "An unknown error occurred", cause)
+    }
+
     interface Listener {
         fun onSpeakRangeAt(locator: Locator, utterance: Utterance)
         fun onStop()
-        fun onError(error: Exception)
+        fun onEngineError(error: Exception)
+        fun onUtteranceError(utterance: Utterance, error: Exception)
     }
 
     data class Configuration(
@@ -33,12 +46,8 @@ interface TtsEngine : SuspendingCloseable {
     )
 
     val config: StateFlow<Configuration>
+    fun setConfig(config: Configuration): Configuration
 
-    suspend fun setConfig(config: Configuration): Configuration
-
-    // Can throw.
-    suspend fun speak(utterance: Utterance)
-
-    // Can throw.
-    suspend fun stop()
+    fun speak(utterance: Utterance)
+    fun stop()
 }
