@@ -24,11 +24,11 @@ import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.tts.TtsController
 import org.readium.r2.navigator.tts.TtsEngine
-import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.Search
-import org.readium.r2.shared.UserException
+import org.readium.r2.shared.*
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.search.SearchIterator
 import org.readium.r2.shared.publication.services.search.SearchTry
 import org.readium.r2.shared.publication.services.search.search
@@ -302,6 +302,8 @@ class ReaderViewModel(
     val canUseTts: Boolean = (tts != null)
     val ttsConfig: StateFlow<TtsEngine.Configuration>? get() = tts?.config
 
+    val ttsAvailableLocales: StateFlow<Set<Locale>>? get() = tts?.availableLocales
+
     fun ttsSetConfig(config: TtsEngine.Configuration) = viewModelScope.launch {
         tts?.setConfig(config)
     }
@@ -340,6 +342,7 @@ class ReaderViewModel(
         ttsDecorations.value = emptyList()
     }
 
+    @OptIn(DelicateReadiumApi::class)
     fun ttsRequestInstallVoice(context: Context) {
         tts?.engine?.requestInstallMissingVoice(context)
     }

@@ -34,17 +34,36 @@ interface TtsEngine : SuspendingCloseable {
 
     data class Configuration(
         val defaultLocale: Locale? = null,
+        val voice: Voice? = null,
         val rate: Double = 1.0,
     )
+
+    data class Voice(
+        val identifier: String,
+        val name: String,
+        val locale: Locale,
+        val quality: Quality = Quality.Normal,
+        val requiresNetwork: Boolean = false,
+    ) {
+        enum class Quality {
+            Lowest, Low, Normal, High, Highest
+        }
+    }
+
+    val config: StateFlow<Configuration>
+    fun setConfig(config: Configuration): Configuration
+
+    val availableLocales: StateFlow<Set<Locale>>
+
+    val availableVoices: StateFlow<Set<Voice>>
+
+    fun voiceWithIdentifier(identifier: String): Voice?
 
     data class Utterance(
         val text: String,
         val locator: Locator,
         val language: Locale?
     )
-
-    val config: StateFlow<Configuration>
-    fun setConfig(config: Configuration): Configuration
 
     fun speak(utterance: Utterance)
     fun stop()

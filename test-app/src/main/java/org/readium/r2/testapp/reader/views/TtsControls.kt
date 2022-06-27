@@ -29,6 +29,8 @@ import java.util.*
 fun TtsControls(viewModel: ReaderViewModel, modifier: Modifier = Modifier) {
     TtsControls(
         playing = viewModel.isTtsPlaying.collectAsState().value,
+        availableLocales = viewModel.ttsAvailableLocales?.collectAsState()?.value ?: emptySet(),
+        availableVoices = viewModel.ttsAvailableVoices?.collectAsState()?.value ?: emptySet(),
         config = viewModel.ttsConfig?.collectAsState()?.value,
         onConfigChange = { viewModel.ttsSetConfig(it) },
         onPlayPause = { viewModel.ttsPlayPause() },
@@ -42,6 +44,8 @@ fun TtsControls(viewModel: ReaderViewModel, modifier: Modifier = Modifier) {
 @Composable
 fun TtsControls(
     playing: Boolean,
+    availableLocales: Set<Locale>,
+    availableVoices: Set<TtsEngine.Voice>,
     config: Configuration?,
     onConfigChange: (Configuration) -> Unit,
     onPlayPause: () -> Unit,
@@ -54,6 +58,7 @@ fun TtsControls(
 
     if (config != null && showSettings) {
         TtsSettingsDialog(
+            availableLocales = availableLocales,
             config = config,
             onConfigChange = onConfigChange,
             onDismiss = { showSettings = false }
@@ -121,6 +126,7 @@ private val availableRates = listOf(0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0)
 
 @Composable
 private fun TtsSettingsDialog(
+    availableLocales: Set<Locale>,
     config: Configuration,
     onConfigChange: (Configuration) -> Unit,
     onDismiss: () -> Unit
@@ -147,6 +153,7 @@ private fun TtsSettingsDialog(
 
                 LocaleSelectorListItem(
                     selection = config.defaultLocale ?: Locale.getDefault(),
+                    locales = availableLocales,
                     onSelected = {
                         onConfigChange(config.copy(defaultLocale = it))
                     }
@@ -159,32 +166,16 @@ private fun TtsSettingsDialog(
 @Composable
 fun LocaleSelectorListItem(
     selection: Locale,
-    locales: List<Locale> = Locale.getAvailableLocales()
-        .toList()
-        .sortedBy(Locale::getDisplayName),
+    locales: Set<Locale>,
     onSelected: (Locale) -> Unit,
     enabled: Boolean = true,
 ) {
     SelectorListItem(
         label = stringResource(R.string.language),
-        values = locales,
+        values = locales.sortedBy(Locale::getDisplayName),
         selection = selection,
         titleOfSelection = { it.displayName },
         onSelected = onSelected,
         enabled = enabled
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewTtsControls() {
-    TtsControls(
-        playing = true,
-        config = Configuration(),
-        onConfigChange = {},
-        onPlayPause = {},
-        onStop = {},
-        onPrevious = {},
-        onNext = {}
     )
 }

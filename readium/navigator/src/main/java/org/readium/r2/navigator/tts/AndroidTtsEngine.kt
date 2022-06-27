@@ -10,6 +10,7 @@ import android.content.Context
 import android.content.Intent
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.speech.tts.Voice
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -57,6 +58,13 @@ class AndroidTtsEngine(
 
     private val scope = MainScope()
 
+    private val engineListener = EngineListener()
+
+    private val engine = TextToSpeech(context, engineListener).apply {
+        setOnUtteranceProgressListener(engineListener)
+        setConfig(config)
+    }
+
     /**
      * Start the activity to install additional language data.
      * To be called if you receive a [TtsEngine.Exception.LanguageSupportIncomplete] error.
@@ -86,6 +94,15 @@ class AndroidTtsEngine(
         _config.value = config
         return config
     }
+
+    private var _availableLocales = MutableStateFlow(emptySet<Locale>())
+    override val availableLocales: StateFlow<Set<Locale>> = _availableLocales.asStateFlow()
+
+    private var _availableVoices = MutableStateFlow(emptySet<TtsEngine.Voice>())
+    override val availableVoices: StateFlow<Set<TtsEngine.Voice>> = _availableVoices.asStateFlow()
+
+    override fun voiceWithIdentifier(identifier: String): TtsEngine.Voice? =
+        availableVoices.value.firstOrNull { it.identifier == identifier }
 
     private var speakJob: Job? = null
 
@@ -146,12 +163,6 @@ class AndroidTtsEngine(
     // Engine
 
     private val init = CompletableDeferred<Unit>()
-    private val engineListener = EngineListener()
-
-    private val engine = TextToSpeech(context, engineListener).apply {
-        setOnUtteranceProgressListener(engineListener)
-        setConfig(config)
-    }
 
     private fun TextToSpeech.setConfig(config: Configuration) {
         setSpeechRate(config.rate.toFloat())
@@ -160,7 +171,31 @@ class AndroidTtsEngine(
     private inner class EngineListener : TextToSpeech.OnInitListener, UtteranceProgressListener() {
         override fun onInit(status: Int) {
             if (status == TextToSpeech.SUCCESS) {
-                init.complete(Unit)
+                scope.launch {
+                    withContext(Dispatchers.Default) {
+                        _availableLocales.value = engine.availableLanguages
+
+                        _availableVoices.value = engine.voices
+                            .map {
+                                TtsEngine.Voice(
+                                    identifier = it.name,
+                                    name = it.name,
+                                    locale = it.locale,
+                                    quality = when (it.quality) {
+                                        Voice.QUALITY_VERY_HIGH -> TtsEngine.Voice.Quality.Highest
+                                        Voice.QUALITY_HIGH -> TtsEngine.Voice.Quality.High
+                                        Voice.QUALITY_LOW -> TtsEngine.Voice.Quality.Low
+                                        Voice.QUALITY_VERY_LOW -> TtsEngine.Voice.Quality.Lowest
+                                        else -> TtsEngine.Voice.Quality.Normal
+                                    },
+                                    requiresNetwork = it.isNetworkConnectionRequired
+                                )
+                            }
+                            .toSet()
+                    }
+
+                    init.complete(Unit)
+                }
             } else {
                 listener.onEngineError(TtsEngine.Exception.InitializationFailed())
             }

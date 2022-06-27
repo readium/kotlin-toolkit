@@ -7,9 +7,11 @@
 package org.readium.r2.navigator.tts
 
 import android.content.Context
+import android.speech.tts.Voice
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.tts.TtsEngine.Configuration
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Locator
@@ -37,6 +39,7 @@ fun interface TtsTokenizerFactory {
     fun create(defaultLocale: Locale?): ContentTokenizer
 }
 
+@OptIn(DelicateReadiumApi::class)
 @ExperimentalReadiumApi
 class TtsController<E : TtsEngine> private constructor(
     private val publication: Publication,
@@ -98,6 +101,7 @@ class TtsController<E : TtsEngine> private constructor(
      * [TtsController] APIs instead. This property is used to access engine-specific APIs such as
      * [AndroidTtsEngine.requestInstallMissingVoice],
      */
+    @DelicateReadiumApi
     val engine: E by lazy { engineFactory.create(EngineListener()) }
     private val scope = MainScope()
 
@@ -112,10 +116,20 @@ class TtsController<E : TtsEngine> private constructor(
         scope.cancel()
     }
 
-    val config: StateFlow<Configuration> get() = engine.config
+    val config: StateFlow<Configuration>
+        get() = engine.config
 
     fun setConfig(config: Configuration): Configuration =
         engine.setConfig(config)
+
+    val availableLocales: StateFlow<Set<Locale>>
+        get() = engine.availableLocales
+
+    val availableVoices: StateFlow<Set<TtsEngine.Voice>>
+        get() = engine.availableVoices
+
+    fun voiceWithIdentifier(identifier: String): TtsEngine.Voice? =
+        engine.voiceWithIdentifier(identifier)
 
     fun playPause() {
         when (state.value) {
