@@ -8,9 +8,7 @@ package org.readium.r2.navigator.tts
 
 import android.content.Context
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.tts.TtsEngine.Configuration
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
@@ -30,12 +28,19 @@ import java.util.*
 import kotlin.time.Duration.Companion.seconds
 
 @ExperimentalReadiumApi
-typealias TtsTokenizerFactory = (defaultLocale: Locale?) -> ContentTokenizer
+fun interface TtsEngineFactory<E : TtsEngine> {
+    fun create(listener: TtsEngine.Listener): E
+}
 
 @ExperimentalReadiumApi
-class TtsController private constructor(
+fun interface TtsTokenizerFactory {
+    fun create(defaultLocale: Locale?): ContentTokenizer
+}
+
+@ExperimentalReadiumApi
+class TtsController<E : TtsEngine> private constructor(
     private val publication: Publication,
-    engineFactory: TtsEngineFactory,
+    engineFactory: TtsEngineFactory<E>,
     private val tokenizerFactory: TtsTokenizerFactory = defaultTokenizerFactory,
     var listener: Listener? = null
 ) : SuspendingCloseable {
@@ -43,14 +48,12 @@ class TtsController private constructor(
     interface Listener {
         /**
          * Notifies an [error] occurred while speaking [utterance].
-         *
-         * Return true to continue the playback with the next utterance, or false to interrupt it.
          */
-        fun onUtteranceError(utterance: TtsEngine.Utterance, error: TtsEngine.Exception): Boolean
+        fun onUtteranceError(utterance: TtsEngine.Utterance, error: TtsEngine.Exception)
     }
 
     companion object {
-        val defaultTokenizerFactory: TtsTokenizerFactory = { locale -> TextContentTokenizer(unit = TextUnit.Sentence, defaultLocale = locale) }
+        val defaultTokenizerFactory: TtsTokenizerFactory = TtsTokenizerFactory { locale -> TextContentTokenizer(unit = TextUnit.Sentence, defaultLocale = locale) }
 
         operator fun invoke(
             context: Context,
@@ -59,17 +62,17 @@ class TtsController private constructor(
                 defaultLocale = publication.metadata.locale
             ),
             tokenizerFactory: TtsTokenizerFactory = defaultTokenizerFactory
-        ): TtsController? = invoke(
+        ): TtsController<AndroidTtsEngine>? = invoke(
             publication,
             engineFactory = { listener -> AndroidTtsEngine(context, config, listener) },
             tokenizerFactory = tokenizerFactory
         )
 
-        operator fun invoke(
+        operator fun <E : TtsEngine> invoke(
             publication: Publication,
-            engineFactory: TtsEngineFactory,
+            engineFactory: TtsEngineFactory<E>,
             tokenizerFactory: TtsTokenizerFactory = defaultTokenizerFactory
-        ): TtsController? {
+        ): TtsController<E>? {
             if (!canSpeak(publication)) return null
 
             return TtsController(publication, engineFactory, tokenizerFactory)
@@ -88,7 +91,14 @@ class TtsController private constructor(
     private val _state = MutableStateFlow<State>(State.Idle)
     val state: StateFlow<State> = _state.asStateFlow()
 
-    private val engine: TtsEngine by lazy { engineFactory(EngineListener()) }
+    /**
+     * Underlying [TtsEngine] instance.
+     *
+     * WARNING: Don't control the playback or set the config directly with the engine. Use the
+     * [TtsController] APIs instead. This property is used to access engine-specific APIs such as
+     * [AndroidTtsEngine.requestInstallMissingVoice],
+     */
+    val engine: E by lazy { engineFactory.create(EngineListener()) }
     private val scope = MainScope()
 
     init {
@@ -229,7 +239,7 @@ class TtsController private constructor(
     }
 
     private fun Content.tokenize(): List<Content> =
-        tokenizerFactory(config.value.defaultLocale)
+        tokenizerFactory.create(config.value.defaultLocale)
             .tokenize(this)
 
     private fun Content.utterances(): List<TtsEngine.Utterance> {
@@ -302,15 +312,11 @@ class TtsController private constructor(
 
         override fun onUtteranceError(utterance: TtsEngine.Utterance, error: TtsEngine.Exception) {
             scope.launch {
-                val shouldContinue = listener?.onUtteranceError(utterance, error) ?: true
+                listener?.onUtteranceError(utterance, error)
 
-                if (state.value is State.Playing) {
-                    if (shouldContinue) {
-                        delay(1.seconds)
-                        next()
-                    } else {
-                        _state.value = State.Idle
-                    }
+                _state.update { state ->
+                    if (state is State.Playing) State.Idle
+                    else state
                 }
             }
         }

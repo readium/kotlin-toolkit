@@ -10,13 +10,11 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import androidx.annotation.ColorInt
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import androidx.paging.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -35,18 +33,21 @@ import org.readium.r2.shared.publication.services.search.SearchIterator
 import org.readium.r2.shared.publication.services.search.SearchTry
 import org.readium.r2.shared.publication.services.search.search
 import org.readium.r2.shared.util.Try
+import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
+import java.util.*
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(Search::class, ExperimentalDecorator::class, ExperimentalReadiumApi::class, ExperimentalCoroutinesApi::class)
 class ReaderViewModel(
-    context: Context,
+    application: Application,
     val readerInitData: ReaderInitData,
     private val bookRepository: BookRepository,
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     val publication: Publication =
         readerInitData.publication
@@ -234,11 +235,16 @@ class ReaderViewModel(
     val isTtsPlaying = MutableStateFlow(false)
     val ttsDecorations = MutableStateFlow<List<Decoration>>(emptyList())
 
-    private val tts = TtsController(context, publication)?.apply {
+    private val tts = TtsController(application, publication)?.apply {
         listener = object : TtsController.Listener {
-            override fun onUtteranceError(utterance: TtsEngine.Utterance, error: TtsEngine.Exception): Boolean {
-                activityChannel.send(Event.Failure(error.toUserException()))
-                return true  // Continue playback with the next utterance.
+            override fun onUtteranceError(utterance: TtsEngine.Utterance, error: TtsEngine.Exception) {
+                handleTtsException(error)
+
+                // When the voice data is incomplete, the user will be requested to install it.
+                // For other errors, we jump to the next utterance.
+                if (error !is TtsEngine.Exception.LanguageSupportIncomplete) {
+                    next()
+                }
             }
         }
 
@@ -248,7 +254,7 @@ class ReaderViewModel(
 
                 when (state) {
                     is TtsController.State.Failure -> {
-                        activityChannel.send(Event.Failure(state.error.toUserException()))
+                        handleTtsException(state.error)
                     }
 
                     is TtsController.State.Playing -> {
@@ -269,6 +275,14 @@ class ReaderViewModel(
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    private fun handleTtsException(error: TtsEngine.Exception) {
+        if (error is TtsEngine.Exception.LanguageSupportIncomplete) {
+            fragmentChannel.send(FeedbackEvent.RequestInstallTtsVoice(error.locale))
+        } else {
+            activityChannel.send(Event.Failure(error.toUserException()))
+        }
     }
 
     private fun TtsEngine.Exception.toUserException(): UserException =
@@ -326,6 +340,10 @@ class ReaderViewModel(
         ttsDecorations.value = emptyList()
     }
 
+    fun ttsRequestInstallVoice(context: Context) {
+        tts?.engine?.requestInstallMissingVoice(context)
+    }
+
     // Events
 
     sealed class Event {
@@ -339,10 +357,11 @@ class ReaderViewModel(
         object BookmarkSuccessfullyAdded : FeedbackEvent()
         object BookmarkFailed : FeedbackEvent()
         class GoTo(val locator: Locator, val animated: Boolean = false) : FeedbackEvent()
+        class RequestInstallTtsVoice(val locale: Locale) : FeedbackEvent()
     }
 
     class Factory(
-        private val application: org.readium.r2.testapp.Application,
+        private val application: Application,
         private val arguments: ReaderActivityContract.Arguments,
     ) : ViewModelProvider.NewInstanceFactory() {
 

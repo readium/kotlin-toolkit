@@ -17,6 +17,8 @@ import org.readium.r2.navigator.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.utils.extensions.confirmDialog
+import java.util.*
 
 /*
  * Base reader fragment class
@@ -41,7 +43,20 @@ abstract class BaseReaderFragment : Fragment() {
                 is ReaderViewModel.FeedbackEvent.BookmarkFailed -> toast(R.string.bookmark_exists)
                 is ReaderViewModel.FeedbackEvent.BookmarkSuccessfullyAdded -> (R.string.bookmark_added)
                 is ReaderViewModel.FeedbackEvent.GoTo -> go(event.locator, animated = event.animated)
+                is ReaderViewModel.FeedbackEvent.RequestInstallTtsVoice ->
+                    confirmAndInstallTtsVoice(event.locale)
             }
+        }
+    }
+
+    private suspend fun confirmAndInstallTtsVoice(locale: Locale) {
+        val activity = activity ?: return
+        if (
+            activity.confirmDialog(
+                getString(R.string.tts_error_language_support_incomplete, locale.displayLanguage)
+            )
+        ) {
+            model.ttsRequestInstallVoice(activity)
         }
     }
 

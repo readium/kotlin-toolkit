@@ -7,6 +7,7 @@
 package org.readium.r2.navigator.tts
 
 import android.content.Context
+import android.content.Intent
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import kotlinx.coroutines.*
@@ -56,6 +57,27 @@ class AndroidTtsEngine(
 
     private val scope = MainScope()
 
+    /**
+     * Start the activity to install additional language data.
+     * To be called if you receive a [TtsEngine.Exception.LanguageSupportIncomplete] error.
+     *
+     * Returns whether the request was successful.
+     *
+     * See https://android-developers.googleblog.com/2009/09/introduction-to-text-to-speech-in.html
+     */
+    fun requestInstallMissingVoice(context: Context, intentFlags: Int = Intent.FLAG_ACTIVITY_NEW_TASK): Boolean {
+        val intent = Intent()
+            .setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA)
+            .setFlags(intentFlags)
+
+        if (context.packageManager.queryIntentActivities(intent, 0).isEmpty()) {
+            return false
+        }
+
+        context.startActivity(intent)
+        return true
+    }
+
     private val _config = MutableStateFlow(config)
     override val config: StateFlow<Configuration> = _config.asStateFlow()
 
@@ -92,11 +114,6 @@ class AndroidTtsEngine(
         }
     }
 
-    private val TtsEngine.Utterance.localeOrDefault: Locale get() =
-        language
-            ?: config.value.defaultLocale
-            ?: engine.voice.locale
-
     override fun stop() {
         speakJob?.cancel()
         speakJob = null
@@ -120,6 +137,11 @@ class AndroidTtsEngine(
 
     private fun nextId(): String =
         idCount++.toString()
+
+    private val TtsEngine.Utterance.localeOrDefault: Locale get() =
+        language
+            ?: config.value.defaultLocale
+            ?: engine.voice.locale
 
     // Engine
 

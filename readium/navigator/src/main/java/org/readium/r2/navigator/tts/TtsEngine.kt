@@ -11,8 +11,6 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.SuspendingCloseable
 import java.util.Locale
 
-typealias TtsEngineFactory = (listener: TtsEngine.Listener) -> TtsEngine
-
 interface TtsEngine : SuspendingCloseable {
 
     sealed class Exception private constructor(
