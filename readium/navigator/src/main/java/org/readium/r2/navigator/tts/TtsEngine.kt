@@ -6,6 +6,7 @@
 
 package org.readium.r2.navigator.tts
 
+import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.SuspendingCloseable
 import java.util.Locale
@@ -31,7 +32,9 @@ interface TtsEngine : SuspendingCloseable {
         val language: Locale?
     )
 
-    var config: Configuration
+    val config: StateFlow<Configuration>
+
+    suspend fun setConfig(config: Configuration): Configuration
 
     // Can throw.
     suspend fun speak(utterance: Utterance)

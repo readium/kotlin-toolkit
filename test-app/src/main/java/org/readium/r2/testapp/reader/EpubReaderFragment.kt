@@ -158,6 +158,8 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, menuInflater)
 
+        menu.findItem(R.id.settings).isVisible = true
+
         menuSearch = menu.findItem(R.id.search).apply {
             isVisible = true
             menuSearchView = actionView as SearchView

@@ -10,12 +10,16 @@ import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import org.readium.r2.navigator.tts.TtsEngine.Configuration
 import org.readium.r2.shared.util.MapWithDefaultCompanion
 import java.util.*
 
 class AndroidTtsEngine(
     context: Context,
-    config: TtsEngine.Configuration = TtsEngine.Configuration(),
+    config: Configuration = Configuration(),
     private val listener: TtsEngine.Listener
 ) : TtsEngine {
 
@@ -54,17 +58,20 @@ class AndroidTtsEngine(
         companion object : MapWithDefaultCompanion<Int, EngineError>(values(), EngineError::code, Unknown)
     }
 
-    override var config: TtsEngine.Configuration = config
-        set(value) {
-            field = value
-            engine.setConfig(value)
-        }
+    private val _config = MutableStateFlow(config)
+    override val config: StateFlow<Configuration> = _config.asStateFlow()
+
+    override suspend fun setConfig(config: Configuration): Configuration {
+        engine.setConfig(config)
+        _config.value = config
+        return config
+    }
 
     override suspend fun speak(utterance: TtsEngine.Utterance) {
         init.await()
 
         val locale = utterance.language
-            ?: config.defaultLocale
+            ?: config.value.defaultLocale
             ?: engine.voice.locale
 
         val localeResult = engine.setLanguage(locale)
@@ -111,7 +118,7 @@ class AndroidTtsEngine(
         setConfig(config)
     }
 
-    private fun TextToSpeech.setConfig(config: TtsEngine.Configuration) {
+    private fun TextToSpeech.setConfig(config: Configuration) {
         setSpeechRate(config.rate.toFloat())
     }
 
@@ -126,15 +133,19 @@ class AndroidTtsEngine(
 
         override fun onStart(utteranceId: String?) {}
 
+        override fun onStop(utteranceId: String?, interrupted: Boolean) {
+            utterances.remove(utteranceId)
+        }
+
         override fun onDone(utteranceId: String?) {
             utterances.remove(utteranceId)
-            if (utterances.isEmpty()) {
-                listener.onStop()
-            }
+            listener.onStop()
         }
 
         @Deprecated("Deprecated in the interface")
-        override fun onError(utteranceId: String?) {}
+        override fun onError(utteranceId: String?) {
+            onError(utteranceId, -1)
+        }
 
         override fun onError(utteranceId: String?, errorCode: Int) {
             val utterance = utterances.remove(utteranceId) ?: return

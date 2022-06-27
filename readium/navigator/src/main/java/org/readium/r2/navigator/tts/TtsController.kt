@@ -7,14 +7,15 @@
 package org.readium.r2.navigator.tts
 
 import android.content.Context
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.readium.r2.navigator.tts.TtsEngine.Configuration
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.content.Content
@@ -26,6 +27,7 @@ import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.tokenizer.ContentTokenizer
 import org.readium.r2.shared.util.tokenizer.TextContentTokenizer
 import org.readium.r2.shared.util.tokenizer.TextUnit
+import timber.log.Timber
 import java.util.*
 
 @ExperimentalReadiumApi
@@ -44,7 +46,7 @@ class TtsController private constructor(
         operator fun invoke(
             context: Context,
             publication: Publication,
-            config: TtsEngine.Configuration = TtsEngine.Configuration(
+            config: Configuration = Configuration(
                 defaultLocale = publication.metadata.locale
             ),
             tokenizerFactory: TtsTokenizerFactory = defaultTokenizerFactory
@@ -85,13 +87,17 @@ class TtsController private constructor(
     }
 
     override suspend fun close() {
-        engine.close()
+        tryOrLog {
+            engine.close()
+        }
         scope.cancel()
     }
 
-    var config: TtsEngine.Configuration
-        get() = engine.config
-        set(value) { engine.config = value }
+    val config: StateFlow<Configuration> get() = engine.config
+
+    suspend fun setConfig(config: Configuration): Configuration = tryOrFail {
+        engine.setConfig(config)
+    } ?: config
 
     suspend fun playPause() {
         when (state.value) {
@@ -121,8 +127,10 @@ class TtsController private constructor(
     }
 
     suspend fun pause() {
-        _state.value = State.Idle
-        engine.stop()
+        tryOrFail {
+            _state.value = State.Idle
+            engine.stop()
+        }
     }
 
     suspend fun previous() {
@@ -166,8 +174,10 @@ class TtsController private constructor(
     }
 
     private suspend fun play(utterance: TtsEngine.Utterance) {
-        _state.value = State.Playing(utterance)
-        engine.speak(utterance)
+        tryOrFail {
+            _state.value = State.Playing(utterance)
+            engine.speak(utterance)
+        }
     }
 
     private suspend fun nextUtterance(direction: Direction): TtsEngine.Utterance? {
@@ -211,7 +221,7 @@ class TtsController private constructor(
     }
 
     private fun Content.tokenize(): List<Content> =
-        tokenizerFactory(config.defaultLocale)
+        tokenizerFactory(config.value.defaultLocale)
             .tokenize(this)
 
     private fun Content.utterances(): List<TtsEngine.Utterance> {
@@ -248,6 +258,14 @@ class TtsController private constructor(
             else -> emptyList()
         }
     }
+
+    suspend fun <T> tryOrFail(closure: suspend () -> T): T? =
+        try { closure() }
+        catch (e: Exception) {
+            Timber.e(e)
+            _state.value = State.Failure(e)
+            null
+        }
 
     private inner class EngineListener : TtsEngine.Listener {
 

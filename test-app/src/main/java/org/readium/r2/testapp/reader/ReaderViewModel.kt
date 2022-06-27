@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.tts.TtsController
+import org.readium.r2.navigator.tts.TtsEngine
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.Search
@@ -230,7 +231,7 @@ class ReaderViewModel(
 
                 when (state) {
                     is TtsController.State.Failure -> {
-                        Timber.e(state.error)
+                        fragmentChannel.send(FeedbackEvent.TtsFailure(state.error))
                     }
 
                     is TtsController.State.Playing -> {
@@ -254,6 +255,11 @@ class ReaderViewModel(
     }
 
     val canUseTts: Boolean = (tts != null)
+    val ttsConfig: StateFlow<TtsEngine.Configuration>? get() = tts?.config
+
+    fun ttsSetConfig(config: TtsEngine.Configuration) = viewModelScope.launch {
+        tts?.setConfig(config)
+    }
 
     @OptIn(InternalReadiumApi::class) // FIXME
     fun ttsPlay(navigator: Navigator) = viewModelScope.launch {
@@ -302,6 +308,7 @@ class ReaderViewModel(
         object BookmarkSuccessfullyAdded : FeedbackEvent()
         object BookmarkFailed : FeedbackEvent()
         class GoTo(val locator: Locator, val animated: Boolean = false) : FeedbackEvent()
+        class TtsFailure(val error: Exception) : FeedbackEvent()
     }
 
     class Factory(
