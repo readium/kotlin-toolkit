@@ -13,13 +13,16 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.readium.navigator.media2.ExperimentalMedia2
+import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -30,28 +33,46 @@ import org.readium.r2.testapp.drm.DrmManagementContract
 import org.readium.r2.testapp.drm.DrmManagementFragment
 import org.readium.r2.testapp.outline.OutlineContract
 import org.readium.r2.testapp.outline.OutlineFragment
+import org.readium.r2.testapp.reader.tts.TtsViewModel
+import org.readium.r2.testapp.utils.CompositeViewModelFactory
 
 /*
  * An activity to read a publication
  *
  * This class can be used as it is or be inherited from.
  */
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalDecorator::class)
 open class ReaderActivity : AppCompatActivity() {
 
-    private lateinit var modelFactory: ReaderViewModel.Factory
-    private lateinit var model: ReaderViewModel
+    private val model: ReaderViewModel by viewModels()
+    private val ttsModel: TtsViewModel by viewModels()
+
+    override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
+        val app = application as Application
+        val arguments = ReaderActivityContract.parseIntent(this)
+        val readerInitData =
+            try {
+                val readerRepository = app.readerRepository.getCompleted()
+                checkNotNull(readerRepository[arguments.bookId])
+            } catch (e: Exception) {
+                // Fallbacks on a dummy Publication to avoid crashing the app until the Activity finishes.
+                DummyReaderInitData(arguments.bookId)
+            }
+
+        return CompositeViewModelFactory(
+            ReaderViewModel.createFactory(app, readerInitData),
+            TtsViewModel.createFactory(app, readerInitData.publication),
+            ViewModelProvider.AndroidViewModelFactory(app)
+        )
+    }
+
     private lateinit var binding: ActivityReaderBinding
     private lateinit var readerFragment: BaseReaderFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val arguments = ReaderActivityContract.parseIntent(this)
-        val app = applicationContext as Application
-        modelFactory = ReaderViewModel.Factory(app, arguments)
-        model = ViewModelProvider(this)[ReaderViewModel::class.java]
-
         /*
-         * [ReaderViewModel.Factory] provides dummy publications if the [ReaderActivity] is restored
-         * after the app process was killed because the [ReaderRepository] is empty.
+         * We provide dummy publications if the [ReaderActivity] is restored after the app process
+         * was killed because the [ReaderRepository] is empty.
          * In that case, finish the activity as soon as possible and go back to the previous one.
          */
         if (model.publication.readingOrder.isEmpty()) {
@@ -77,6 +98,7 @@ open class ReaderActivity : AppCompatActivity() {
         readerFragment?.let { this.readerFragment = it }
 
         model.activityChannel.receive(this) { handleReaderFragmentEvent(it) }
+
         reconfigureActionBar()
 
         supportFragmentManager.setFragmentResultListener(
@@ -155,10 +177,6 @@ open class ReaderActivity : AppCompatActivity() {
         )
     }
 
-    override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
-        return modelFactory
-    }
-
     override fun finish() {
         setResult(Activity.RESULT_OK, Intent().putExtras(intent))
         super.finish()
@@ -168,11 +186,13 @@ open class ReaderActivity : AppCompatActivity() {
         when(event) {
             is ReaderViewModel.Event.OpenOutlineRequested -> showOutlineFragment()
             is ReaderViewModel.Event.OpenDrmManagementRequested -> showDrmManagementFragment()
-            is ReaderViewModel.Event.Failure -> {
-                Toast.makeText(this, event.error.getUserMessage(this), Toast.LENGTH_LONG).show()
-            }
+            is ReaderViewModel.Event.Failure -> showError(event.error)
             else -> {}
         }
+    }
+
+    private fun showError(error: UserException) {
+        Toast.makeText(this, error.getUserMessage(this), Toast.LENGTH_LONG).show()
     }
 
     private fun showOutlineFragment() {

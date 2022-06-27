@@ -21,7 +21,6 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
 import org.readium.r2.navigator.ExperimentalDecorator
@@ -29,9 +28,11 @@ import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
 import org.readium.r2.navigator.html.toCss
-import org.readium.r2.shared.*
+import org.readium.r2.shared.APPEARANCE_REF
+import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.ReadiumCSSName
+import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.epub.UserSettings
 import org.readium.r2.testapp.search.SearchFragment
@@ -40,9 +41,7 @@ import org.readium.r2.testapp.utils.extensions.toDataUrl
 @OptIn(ExperimentalDecorator::class)
 class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listener {
 
-    override lateinit var model: ReaderViewModel
     override lateinit var navigator: Navigator
-    private lateinit var publication: Publication
     private lateinit var navigatorFragment: EpubNavigatorFragment
 
     private lateinit var menuSearch: MenuItem
@@ -59,11 +58,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 
         if (savedInstanceState != null) {
             isSearchViewIconified = savedInstanceState.getBoolean(IS_SEARCH_VIEW_ICONIFIED)
-        }
-
-        ViewModelProvider(requireActivity())[ReaderViewModel::class.java].let {
-            model = it
-            publication = it.publication
         }
 
         val readerData = model.readerInitData as VisualReaderInitData

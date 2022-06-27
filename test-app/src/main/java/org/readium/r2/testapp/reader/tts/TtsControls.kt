@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.testapp.reader.views
+package org.readium.r2.testapp.reader.tts
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -14,31 +14,38 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.flow.map
 import org.readium.r2.navigator.tts.TtsEngine
 import org.readium.r2.navigator.tts.TtsEngine.Configuration
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.shared.views.SelectorListItem
+import org.readium.r2.testapp.utils.extensions.flowWithLocalLifecycle
 import java.text.DecimalFormat
 import java.util.*
 
 @Composable
-fun TtsControls(viewModel: ReaderViewModel, modifier: Modifier = Modifier) {
-    TtsControls(
-        playing = viewModel.isTtsPlaying.collectAsState().value,
-        availableLocales = viewModel.ttsAvailableLocales?.collectAsState()?.value ?: emptySet(),
-        availableVoices = viewModel.ttsAvailableVoices?.collectAsState()?.value ?: emptySet(),
-        config = viewModel.ttsConfig?.collectAsState()?.value,
-        onConfigChange = { viewModel.ttsSetConfig(it) },
-        onPlayPause = { viewModel.ttsPlayPause() },
-        onStop = { viewModel.ttsStop() },
-        onPrevious = { viewModel.ttsPrevious() },
-        onNext = { viewModel.ttsNext() },
-        modifier = modifier
-    )
+fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
+    val state by model.state
+        .flowWithLocalLifecycle()
+        .collectAsState()
+
+    if (state.showControls) {
+        TtsControls(
+            playing = state.isPlaying,
+            availableLocales = emptySet(),
+            availableVoices = emptySet(),
+            config = state.config,
+            onConfigChange = model::setConfig,
+            onPlayPause = model::playPause,
+            onStop = model::stop,
+            onPrevious = model::previous,
+            onNext = model::next,
+            modifier = modifier
+        )
+    }
 }
 
 @Composable

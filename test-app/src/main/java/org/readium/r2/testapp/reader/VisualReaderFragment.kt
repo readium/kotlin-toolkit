@@ -13,35 +13,42 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Bundle
 import android.view.*
+import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.PopupWindow
-import android.widget.TextView
+import android.widget.*
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.navigator.util.EdgeTapNavigation
+import org.readium.r2.shared.UserException
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentReaderBinding
 import org.readium.r2.testapp.domain.model.Highlight
-import org.readium.r2.testapp.reader.views.TtsControls
+import org.readium.r2.testapp.reader.tts.TtsViewModel
+import org.readium.r2.testapp.reader.tts.TtsControls
 import org.readium.r2.testapp.utils.*
+import org.readium.r2.testapp.utils.extensions.confirmDialog
+import org.readium.r2.testapp.utils.extensions.flowWithLocalLifecycle
+import org.readium.r2.testapp.utils.extensions.throttleLatest
+import java.util.*
+import kotlin.time.Duration.Companion.seconds
 
 /*
  * Base reader fragment class
@@ -50,6 +57,8 @@ import org.readium.r2.testapp.utils.*
  */
 @OptIn(ExperimentalDecorator::class)
 abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.Listener {
+
+    protected val ttsModel: TtsViewModel by activityViewModels()
 
     protected var binding: FragmentReaderBinding by viewLifecycle()
 
@@ -69,52 +78,98 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
         navigatorFragment = navigator as Fragment
 
-        val viewScope = viewLifecycleOwner.lifecycleScope
-
-        navigator.currentLocator
-            .onEach { model.saveProgression(it) }
-            .launchIn(viewScope)
-
-        (navigator as? DecorableNavigator)?.let { navigator ->
-            navigator.addDecorationListener("highlights", decorationListener)
-
-            model.highlightDecorations
-                .onEach { navigator.applyDecorations(it, "highlights") }
-                .launchIn(viewScope)
-
-            model.searchDecorations
-                .onEach { navigator.applyDecorations(it, "search") }
-                .launchIn(viewScope)
-
-            model.ttsDecorations
-                .onEach { navigator.applyDecorations(it, "tts") }
-                .launchIn(viewScope)
-
-            childFragmentManager.addOnBackStackChangedListener {
-                updateSystemUiVisibility()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                setupObservers()
             }
-            binding.fragmentReaderContainer.setOnApplyWindowInsetsListener { container, insets ->
-                updateSystemUiPadding(container, insets)
-                insets
-            }
+        }
+
+        childFragmentManager.addOnBackStackChangedListener {
+            updateSystemUiVisibility()
+        }
+        binding.fragmentReaderContainer.setOnApplyWindowInsetsListener { container, insets ->
+            updateSystemUiPadding(container, insets)
+            insets
         }
 
         binding.overlay.setContent {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .systemBarsPadding()
-            ) {
-                val showTtsControls by model.showTtsControls.collectAsState()
-                if (showTtsControls) {
-                    TtsControls(
-                        model,
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(8.dp)
-                    )
+                    .systemBarsPadding(),
+                content = { Overlay() }
+            )
+        }
+    }
+
+    @Composable
+    private fun BoxScope.Overlay() {
+        TtsControls(
+            model = ttsModel,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(8.dp)
+        )
+    }
+
+    private suspend fun CoroutineScope.setupObservers() {
+        navigator.currentLocator
+            .onEach { model.saveProgression(it) }
+            .launchIn(this)
+
+        (navigator as? DecorableNavigator)?.let { navigator ->
+            navigator.addDecorationListener("highlights", decorationListener)
+
+            model.highlightDecorations
+                .onEach { navigator.applyDecorations(it, "highlights") }
+                .launchIn(this)
+
+            model.searchDecorations
+                .onEach { navigator.applyDecorations(it, "search") }
+                .launchIn(this)
+
+            ttsModel.state
+                .map { it.decorations }
+                .distinctUntilChanged()
+                .onEach { navigator.applyDecorations(it, "tts") }
+                .launchIn(this)
+        }
+
+        ttsModel.events
+            .onEach { event ->
+                when (event) {
+                    is TtsViewModel.Event.OnError ->
+                        showError(event.error)
+
+                    is TtsViewModel.Event.OnMissingVoiceData ->
+                        confirmAndInstallTtsVoice(event.locale)
                 }
             }
+            .launchIn(this)
+
+        ttsModel.state
+            .map { it.playingRange }
+            .filterNotNull()
+            .throttleLatest(1.seconds)
+            .onEach { locator ->
+                navigator.go(locator, animated = false)
+            }
+            .launchIn(this)
+    }
+
+    private fun showError(error: UserException) {
+        val context = context ?: return
+        Toast.makeText(context, error.getUserMessage(context), Toast.LENGTH_LONG).show()
+    }
+
+    private suspend fun confirmAndInstallTtsVoice(locale: Locale) {
+        val activity = activity ?: return
+        if (
+            activity.confirmDialog(
+                getString(R.string.tts_error_language_support_incomplete, locale.displayLanguage)
+            )
+        ) {
+            ttsModel.requestInstallVoice(activity)
         }
     }
 
@@ -123,10 +178,33 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         super.onDestroyView()
     }
 
+    override fun onStop() {
+        super.onStop()
+
+        if (ttsModel.isAvailable) {
+            ttsModel.pause()
+        }
+    }
+
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
         setMenuVisibility(!hidden)
         requireActivity().invalidateOptionsMenu()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, menuInflater)
+        menu.findItem(R.id.tts).isVisible = ttsModel.isAvailable
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.tts -> {
+                ttsModel.play(navigator)
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
+        return true
     }
 
     // DecorableNavigator.Listener

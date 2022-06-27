@@ -7,18 +7,17 @@
 package org.readium.r2.testapp.reader
 
 import android.os.Bundle
-import android.view.*
-import android.widget.*
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
+import androidx.fragment.app.activityViewModels
 import org.readium.r2.lcp.lcpLicense
-import org.readium.r2.navigator.*
-import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.navigator.Navigator
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.utils.extensions.confirmDialog
-import java.util.*
 
 /*
  * Base reader fragment class
@@ -27,7 +26,9 @@ import java.util.*
  */
 abstract class BaseReaderFragment : Fragment() {
 
-    protected abstract val model: ReaderViewModel
+    val model: ReaderViewModel by activityViewModels()
+    protected val publication: Publication get() = model.publication
+
     protected abstract val navigator: Navigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,27 +43,8 @@ abstract class BaseReaderFragment : Fragment() {
             when (event) {
                 is ReaderViewModel.FeedbackEvent.BookmarkFailed -> toast(R.string.bookmark_exists)
                 is ReaderViewModel.FeedbackEvent.BookmarkSuccessfullyAdded -> (R.string.bookmark_added)
-                is ReaderViewModel.FeedbackEvent.GoTo -> go(event.locator, animated = event.animated)
-                is ReaderViewModel.FeedbackEvent.RequestInstallTtsVoice ->
-                    confirmAndInstallTtsVoice(event.locale)
             }
         }
-    }
-
-    private suspend fun confirmAndInstallTtsVoice(locale: Locale) {
-        val activity = activity ?: return
-        if (
-            activity.confirmDialog(
-                getString(R.string.tts_error_language_support_incomplete, locale.displayLanguage)
-            )
-        ) {
-            model.ttsRequestInstallVoice(activity)
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        model.ttsPause()
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
@@ -74,7 +56,6 @@ abstract class BaseReaderFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.menu_reader, menu)
         menu.findItem(R.id.drm).isVisible = model.publication.lcpLicense != null
-        menu.findItem(R.id.tts).isVisible = model.canUseTts
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -88,10 +69,7 @@ abstract class BaseReaderFragment : Fragment() {
             R.id.drm -> {
                 model.activityChannel.send(ReaderViewModel.Event.OpenDrmManagementRequested)
             }
-            R.id.tts -> {
-                model.ttsPlay(navigator)
-            }
-            else -> return false
+            else -> return super.onOptionsItemSelected(item)
         }
 
         return true
