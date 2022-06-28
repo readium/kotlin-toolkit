@@ -7,6 +7,7 @@
 package org.readium.r2.testapp.shared.views
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -21,7 +22,7 @@ fun <T> SelectorListItem(
     label: String,
     values: List<T>,
     selection: T,
-    titleOfSelection: @Composable (T) -> String,
+    titleForValue: @Composable (T) -> String,
     onSelected: (T) -> Unit,
     enabled: Boolean = values.isNotEmpty(),
 ) {
@@ -40,7 +41,7 @@ fun <T> SelectorListItem(
         },
         trailing = {
             Group(enabled = enabled) {
-                Text(titleOfSelection(selection))
+                Text(titleForValue(selection))
             }
 
             DropdownMenu(
@@ -54,7 +55,7 @@ fun <T> SelectorListItem(
                             dismiss()
                         }
                     ) {
-                        Text(titleOfSelection(value))
+                        Text(titleForValue(value))
                     }
                 }
             }

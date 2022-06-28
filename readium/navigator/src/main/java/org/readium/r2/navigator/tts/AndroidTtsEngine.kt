@@ -18,11 +18,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import org.readium.r2.navigator.tts.TtsEngine.Configuration
 import org.readium.r2.navigator.tts.TtsEngine.ConfigurationConstraints
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.MapWithDefaultCompanion
-import java.util.*
 
+@OptIn(InternalReadiumApi::class)
 class AndroidTtsEngine(
     context: Context,
     config: Configuration = Configuration(),
@@ -118,17 +119,7 @@ class AndroidTtsEngine(
         speakJob = scope.launch {
             init.await()
 
-            val language = utterance.languageOrDefault
-
-            val localeResult = engine.setLanguage(language.locale)
-            if (localeResult < TextToSpeech.LANG_AVAILABLE) {
-                val error =
-                    if (localeResult == TextToSpeech.LANG_MISSING_DATA)
-                        TtsEngine.Exception.LanguageSupportIncomplete(language)
-                    else
-                        TtsEngine.Exception.LanguageNotSupported(language)
-
-                listener.onUtteranceError(utterance, error)
+            if (!setupVoiceForUtterance(utterance)) {
                 return@launch
             }
 
@@ -136,6 +127,35 @@ class AndroidTtsEngine(
             utterances[id] = utterance
             engine.speak(utterance.text, TextToSpeech.QUEUE_FLUSH, null, id)
         }
+    }
+
+    private fun setupVoiceForUtterance(utterance: TtsEngine.Utterance): Boolean {
+        // Setup the user selected voice.
+        val voice = config.value.voice
+        val language = utterance.languageOrDefault
+        if (voice != null && voice.language.removeRegion() == language.removeRegion()) {
+            engine.voices
+                .firstOrNull { it.name == voice.identifier }
+                ?.let {
+                    engine.voice = it
+                    return true
+                }
+        }
+
+        // Or fallback on the language.
+        val localeResult = engine.setLanguage(language.locale)
+        if (localeResult < TextToSpeech.LANG_AVAILABLE) {
+            val error =
+                if (localeResult == TextToSpeech.LANG_MISSING_DATA)
+                    TtsEngine.Exception.LanguageSupportIncomplete(language)
+                else
+                    TtsEngine.Exception.LanguageNotSupported(language)
+
+            listener.onUtteranceError(utterance, error)
+            return false
+        }
+
+        return true
     }
 
     override fun stop() {
@@ -173,10 +193,6 @@ class AndroidTtsEngine(
 
     private fun TextToSpeech.setConfig(config: Configuration) {
         setSpeechRate(config.rate.toFloat())
-
-        voice =
-            config.voice?.run { voices.firstOrNull { it.name == identifier } }
-                ?: defaultVoice
     }
 
     private inner class EngineListener : TextToSpeech.OnInitListener, UtteranceProgressListener() {
@@ -233,7 +249,7 @@ class AndroidTtsEngine(
 private fun Voice.toVoice(): TtsEngine.Voice =
     TtsEngine.Voice(
         identifier = name,
-        name = name,
+        name = null,
         language = Language(locale),
         quality = when (quality) {
             Voice.QUALITY_VERY_HIGH -> TtsEngine.Voice.Quality.Highest

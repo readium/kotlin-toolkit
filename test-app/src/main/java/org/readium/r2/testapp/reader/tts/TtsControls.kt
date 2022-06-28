@@ -6,6 +6,8 @@
 
 package org.readium.r2.testapp.reader.tts
 
+import android.content.Context
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -13,9 +15,9 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import org.readium.r2.navigator.tts.TtsEngine
 import org.readium.r2.navigator.tts.TtsEngine.Configuration
 import org.readium.r2.navigator.tts.TtsEngine.Voice
 import org.readium.r2.shared.util.Language
@@ -23,26 +25,32 @@ import org.readium.r2.testapp.R
 import org.readium.r2.testapp.shared.views.SelectorListItem
 import org.readium.r2.testapp.utils.extensions.flowWithLocalLifecycle
 import java.text.DecimalFormat
-import java.util.*
 
 @Composable
 fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
     val state by model.state
-        .flowWithLocalLifecycle()
-        .collectAsState()
+        .flowWithLocalLifecycle().collectAsState()
 
     val settings by model.settings
-        .flowWithLocalLifecycle()
-        .collectAsState()
+        .flowWithLocalLifecycle().collectAsState()
+
+    val allowNetwork by model.allowVoicesRequiringNetwork
+        .flowWithLocalLifecycle().collectAsState()
 
     if (state.showControls) {
         TtsControls(
             playing = state.isPlaying,
-            rateRange = settings.rateRange,
+            availableRates = listOf(0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0)
+                .filter { it in settings.rateRange },
             availableLanguages = settings.availableLanguages,
             availableVoices = settings.availableVoices,
             config = settings.config,
             onConfigChange = model::setConfig,
+            allowNetwork = allowNetwork,
+            onAllowNetworkChange = {
+                model.setConfig(settings.config.copy(voice = null))
+                model.allowVoicesRequiringNetwork.value = it
+            },
             onPlayPause = model::playPause,
             onStop = model::stop,
             onPrevious = model::previous,
@@ -55,11 +63,13 @@ fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
 @Composable
 fun TtsControls(
     playing: Boolean,
-    rateRange: ClosedRange<Double>,
+    availableRates: List<Double>,
     availableLanguages: List<Language>,
     availableVoices: List<Voice>,
     config: Configuration?,
     onConfigChange: (Configuration) -> Unit,
+    allowNetwork: Boolean,
+    onAllowNetworkChange: (Boolean) -> Unit,
     onPlayPause: () -> Unit,
     onStop: () -> Unit,
     onPrevious: () -> Unit,
@@ -70,11 +80,13 @@ fun TtsControls(
 
     if (config != null && showSettings) {
         TtsSettingsDialog(
-            rateRange = rateRange,
+            availableRates = availableRates,
             availableLanguages = availableLanguages,
             availableVoices = availableVoices,
             config = config,
             onConfigChange = onConfigChange,
+            allowNetwork = allowNetwork,
+            onAllowNetworkChange = onAllowNetworkChange,
             onDismiss = { showSettings = false }
         )
     }
@@ -86,6 +98,8 @@ fun TtsControls(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            val largeButtonModifier = Modifier.size(40.dp)
+
             IconButton(onClick = onPrevious) {
                 Icon(
                     imageVector = Icons.Default.SkipPrevious,
@@ -103,7 +117,7 @@ fun TtsControls(
                         if (playing) R.string.tts_pause
                         else R.string.tts_play
                     ),
-                    modifier = Modifier.then(IconButtonLargeSizeModifier)
+                    modifier = Modifier.then(largeButtonModifier)
                 )
             }
             IconButton(
@@ -112,7 +126,7 @@ fun TtsControls(
                 Icon(
                     imageVector = Icons.Default.Stop,
                     contentDescription = stringResource(R.string.tts_stop),
-                    modifier = Modifier.then(IconButtonLargeSizeModifier)
+                    modifier = Modifier.then(largeButtonModifier)
                 )
             }
             IconButton(onClick = onNext) {
@@ -134,19 +148,24 @@ fun TtsControls(
     }
 }
 
-private val IconButtonLargeSizeModifier = Modifier.size(40.dp)
-
-private val availableRates = listOf(0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0)
-
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun TtsSettingsDialog(
-    rateRange: ClosedRange<Double>,
+    availableRates: List<Double>,
     availableLanguages: List<Language>,
     availableVoices: List<Voice>,
     config: Configuration,
     onConfigChange: (Configuration) -> Unit,
+    allowNetwork: Boolean,
+    onAllowNetworkChange: (Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
+
+    val voiceNames = remember(availableVoices) {
+        availableVoices.namesByIdentifier(context)
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -157,13 +176,14 @@ private fun TtsSettingsDialog(
         title = { Text(stringResource(R.string.tts_settings)) },
         text = {
             Column {
-                if (rateRange.start < rateRange.endInclusive) {
+                if (availableRates.size > 1) {
                     SelectorListItem(
                         label = stringResource(R.string.tts_rate),
-                        values = availableRates
-                            .filter { it in rateRange },
+                        values = availableRates,
                         selection = config.rate,
-                        titleOfSelection = { DecimalFormat("x#.##").format(it) },
+                        titleForValue = { rate ->
+                            DecimalFormat("x#.##").format(rate)
+                        },
                         onSelected = {
                             onConfigChange(config.copy(rate = it))
                         }
@@ -174,7 +194,10 @@ private fun TtsSettingsDialog(
                     label = stringResource(R.string.language),
                     values = availableLanguages,
                     selection = config.defaultLanguage,
-                    titleOfSelection = { it?.locale?.displayName ?: stringResource(R.string.auto) },
+                    titleForValue = { language ->
+                        language?.locale?.displayName
+                            ?: stringResource(R.string.auto)
+                    },
                     onSelected = { onConfigChange(config.copy(defaultLanguage = it, voice = null)) }
                 )
 
@@ -182,10 +205,42 @@ private fun TtsSettingsDialog(
                     label = stringResource(R.string.voice),
                     values = availableVoices,
                     selection = config.voice,
-                    titleOfSelection = { it?.name ?: stringResource(R.string.auto) },
+                    titleForValue = { voice -> voice?.let { voiceNames[it.identifier] } ?: stringResource(R.string.auto) },
                     onSelected = { onConfigChange(config.copy(voice = it)) }
+                )
+
+                ListItem(
+                    modifier = Modifier
+                        .clickable { onAllowNetworkChange(!allowNetwork) },
+                    text = {
+                        Text(stringResource(R.string.tts_higher_quality_voices))
+                    },
+                    trailing = {
+                        Switch(checked = allowNetwork, onCheckedChange = onAllowNetworkChange)
+                    }
                 )
             }
         }
     )
+}
+
+
+fun List<Voice>.namesByIdentifier(context: Context): Map<String, String> {
+    val byCountryCount = mutableMapOf<String, Int>()
+
+    return associate { voice ->
+        voice.identifier to
+            if (voice.name != null) {
+                voice.name as String
+            } else {
+                val country = voice.language.locale.country
+                val number = ((byCountryCount[country] ?: 0) + 1)
+                    .also { byCountryCount[country] = it }
+
+                listOfNotNull(
+                    voice.language.locale.displayCountry.takeIf { it.isNotEmpty() },
+                    context.getString(R.string.voice_number, number)
+                ).joinToString(" - ")
+            }
+    }
 }

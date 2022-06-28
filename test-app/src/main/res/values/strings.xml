@@ -212,4 +212,6 @@
     <string name="tts_error_other">A TTS error occurred</string>
     <string name="auto">Auto</string>
     <string name="voice">Voice</string>
+    <string name="voice_number">Voice %d</string>
+    <string name="tts_higher_quality_voices">Higher quality voices (requires network)</string>
 </resources>

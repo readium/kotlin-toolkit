@@ -46,7 +46,7 @@ interface TtsEngine : SuspendingCloseable {
 
     data class Voice(
         val identifier: String,
-        val name: String,
+        val name: String? = null,
         val language: Language,
         val quality: Quality = Quality.Normal,
         val requiresNetwork: Boolean = false,

@@ -68,6 +68,7 @@ class TtsViewModel(
     private val _events: Channel<Event> = Channel(Channel.BUFFERED)
     val events: Flow<Event> = _events.receiveAsFlow()
 
+    val allowVoicesRequiringNetwork = MutableStateFlow(true)
     private val isEnabled = MutableStateFlow(false)
     private lateinit var controller: TtsController<AndroidTtsEngine>
 
@@ -135,10 +136,12 @@ class TtsViewModel(
             val voicesForSelectedLanguage: Flow<List<Voice>> =
                 combine(
                     controller.config.map { it.defaultLanguage },
-                    voicesByLanguage
-                ) { language, voices ->
+                    voicesByLanguage,
+                    allowVoicesRequiringNetwork
+                ) { language, voices, allowNetwork ->
                     language
                         ?.let { voices[it.removeRegion()] }
+                        ?.filter { allowNetwork || !it.requiresNetwork }
                         ?.sortedBy { it.language.locale.displayCountry }
                         ?: emptyList()
                 }
