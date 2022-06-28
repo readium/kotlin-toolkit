@@ -15,8 +15,11 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import org.readium.r2.navigator.tts.TtsEngine.Configuration
+import org.readium.r2.navigator.tts.TtsEngine.ConfigurationConstraints
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.MapWithDefaultCompanion
 import java.util.*
 
@@ -89,20 +92,24 @@ class AndroidTtsEngine(
     private val _config = MutableStateFlow(config)
     override val config: StateFlow<Configuration> = _config.asStateFlow()
 
+    private var _configConstraints = MutableStateFlow(ConfigurationConstraints(
+        rateRange = 0.1..3.0
+    ))
+    override val configConstraints: StateFlow<ConfigurationConstraints> = _configConstraints.asStateFlow()
+
     override fun setConfig(config: Configuration): Configuration {
         engine.setConfig(config)
         _config.value = config
         return config
     }
 
-    private var _availableLocales = MutableStateFlow(emptySet<Locale>())
-    override val availableLocales: StateFlow<Set<Locale>> = _availableLocales.asStateFlow()
-
-    private var _availableVoices = MutableStateFlow(emptySet<TtsEngine.Voice>())
-    override val availableVoices: StateFlow<Set<TtsEngine.Voice>> = _availableVoices.asStateFlow()
-
-    override fun voiceWithIdentifier(identifier: String): TtsEngine.Voice? =
-        availableVoices.value.firstOrNull { it.identifier == identifier }
+    private suspend fun updateConfigConstraints() = withContext(Dispatchers.Default) {
+        _configConstraints.update { constraints ->
+            constraints.copy(
+                availableVoices = engine.voices.map { it.toVoice() }
+            )
+        }
+    }
 
     private var speakJob: Job? = null
 
@@ -111,15 +118,15 @@ class AndroidTtsEngine(
         speakJob = scope.launch {
             init.await()
 
-            val locale = utterance.localeOrDefault
+            val language = utterance.languageOrDefault
 
-            val localeResult = engine.setLanguage(locale)
+            val localeResult = engine.setLanguage(language.locale)
             if (localeResult < TextToSpeech.LANG_AVAILABLE) {
                 val error =
                     if (localeResult == TextToSpeech.LANG_MISSING_DATA)
-                        TtsEngine.Exception.LanguageSupportIncomplete(locale)
+                        TtsEngine.Exception.LanguageSupportIncomplete(language)
                     else
-                        TtsEngine.Exception.LanguageNotSupported(locale)
+                        TtsEngine.Exception.LanguageNotSupported(language)
 
                 listener.onUtteranceError(utterance, error)
                 return@launch
@@ -155,10 +162,10 @@ class AndroidTtsEngine(
     private fun nextId(): String =
         idCount++.toString()
 
-    private val TtsEngine.Utterance.localeOrDefault: Locale get() =
+    private val TtsEngine.Utterance.languageOrDefault: Language get() =
         language
-            ?: config.value.defaultLocale
-            ?: engine.voice.locale
+            ?: config.value.defaultLanguage
+            ?: Language(engine.voice.locale)
 
     // Engine
 
@@ -166,34 +173,17 @@ class AndroidTtsEngine(
 
     private fun TextToSpeech.setConfig(config: Configuration) {
         setSpeechRate(config.rate.toFloat())
+
+        voice =
+            config.voice?.run { voices.firstOrNull { it.name == identifier } }
+                ?: defaultVoice
     }
 
     private inner class EngineListener : TextToSpeech.OnInitListener, UtteranceProgressListener() {
         override fun onInit(status: Int) {
             if (status == TextToSpeech.SUCCESS) {
                 scope.launch {
-                    withContext(Dispatchers.Default) {
-                        _availableLocales.value = engine.availableLanguages
-
-                        _availableVoices.value = engine.voices
-                            .map {
-                                TtsEngine.Voice(
-                                    identifier = it.name,
-                                    name = it.name,
-                                    locale = it.locale,
-                                    quality = when (it.quality) {
-                                        Voice.QUALITY_VERY_HIGH -> TtsEngine.Voice.Quality.Highest
-                                        Voice.QUALITY_HIGH -> TtsEngine.Voice.Quality.High
-                                        Voice.QUALITY_LOW -> TtsEngine.Voice.Quality.Low
-                                        Voice.QUALITY_VERY_LOW -> TtsEngine.Voice.Quality.Lowest
-                                        else -> TtsEngine.Voice.Quality.Normal
-                                    },
-                                    requiresNetwork = it.isNetworkConnectionRequired
-                                )
-                            }
-                            .toSet()
-                    }
-
+                    updateConfigConstraints()
                     init.complete(Unit)
                 }
             } else {
@@ -222,7 +212,7 @@ class AndroidTtsEngine(
             val error = EngineException(errorCode)
             listener.onUtteranceError(utterance, when (error.error) {
                 EngineError.Network, EngineError.NetworkTimeout -> TtsEngine.Exception.Network(error)
-                EngineError.NotInstalledYet -> TtsEngine.Exception.LanguageSupportIncomplete(utterance.localeOrDefault)
+                EngineError.NotInstalledYet -> TtsEngine.Exception.LanguageSupportIncomplete(utterance.languageOrDefault)
                 else -> TtsEngine.Exception.Other(error)
             })
         }
@@ -240,15 +230,17 @@ class AndroidTtsEngine(
     }
 }
 
-//    var voice: Voice
-//        get() = tts.voice
-//        set(value) { tts.voice = value }
-//
-//    val voices: Map<Locale, List<Voice>> get() =
-//        tts.voices.groupBy(Voice::getLocale)
-//
-//    val defaultVoice: Voice
-//        get() = tts.defaultVoice
-//
-//        val locale = span.language?.let { Locale.forLanguageTag(it.replace("_", "-")) }
-//            ?: defaultLocale
+private fun Voice.toVoice(): TtsEngine.Voice =
+    TtsEngine.Voice(
+        identifier = name,
+        name = name,
+        language = Language(locale),
+        quality = when (quality) {
+            Voice.QUALITY_VERY_HIGH -> TtsEngine.Voice.Quality.Highest
+            Voice.QUALITY_HIGH -> TtsEngine.Voice.Quality.High
+            Voice.QUALITY_LOW -> TtsEngine.Voice.Quality.Low
+            Voice.QUALITY_VERY_LOW -> TtsEngine.Voice.Quality.Lowest
+            else -> TtsEngine.Voice.Quality.Normal
+        },
+        requiresNetwork = isNetworkConnectionRequired
+    )

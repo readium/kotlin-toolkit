@@ -38,6 +38,7 @@ import org.readium.r2.navigator.*
 import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.navigator.util.EdgeTapNavigation
 import org.readium.r2.shared.UserException
+import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentReaderBinding
 import org.readium.r2.testapp.domain.model.Highlight
@@ -142,7 +143,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                         showError(event.error)
 
                     is TtsViewModel.Event.OnMissingVoiceData ->
-                        confirmAndInstallTtsVoice(event.locale)
+                        confirmAndInstallTtsVoice(event.language)
                 }
             }
             .launchIn(this)
@@ -162,11 +163,11 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         Toast.makeText(context, error.getUserMessage(context), Toast.LENGTH_LONG).show()
     }
 
-    private suspend fun confirmAndInstallTtsVoice(locale: Locale) {
+    private suspend fun confirmAndInstallTtsVoice(language: Language) {
         val activity = activity ?: return
         if (
             activity.confirmDialog(
-                getString(R.string.tts_error_language_support_incomplete, locale.displayLanguage)
+                getString(R.string.tts_error_language_support_incomplete, language.locale.displayLanguage)
             )
         ) {
             ttsModel.requestInstallVoice(activity)

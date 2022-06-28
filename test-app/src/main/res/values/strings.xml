@@ -210,4 +210,6 @@
     <string name="tts_error_language_support_incomplete">The language %s requires additional data. Do you want to download it?</string>
     <string name="tts_error_network">A networking error occurred</string>
     <string name="tts_error_other">A TTS error occurred</string>
+    <string name="auto">Auto</string>
+    <string name="voice">Voice</string>
 </resources>

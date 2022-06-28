@@ -10,6 +10,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.publication.services.content.Content.Data
+import org.readium.r2.shared.util.Language
 import java.util.*
 
 /** A tokenizer splitting a [Content] into smaller pieces. */
@@ -21,16 +22,16 @@ fun interface ContentTokenizer : Tokenizer<Content, Content>
  */
 @ExperimentalReadiumApi
 class TextContentTokenizer(
-    private val defaultLocale: Locale?,
-    private val textTokenizerFactory: (Locale?) -> TextTokenizer
+    private val defaultLanguage: Language?,
+    private val textTokenizerFactory: (Language?) -> TextTokenizer
 ) : ContentTokenizer {
 
     /**
      * A [ContentTokenizer] using the default [TextTokenizer] to split the text of the [Content].
      */
-    constructor(defaultLocale: Locale?, unit: TextUnit) : this(
-        defaultLocale = defaultLocale,
-        textTokenizerFactory = { locale -> DefaultTextContentTokenizer(unit, locale) }
+    constructor(defaultLanguage: Language?, unit: TextUnit) : this(
+        defaultLanguage = defaultLanguage,
+        textTokenizerFactory = { language -> DefaultTextContentTokenizer(unit, language) }
     )
 
     override fun tokenize(data: Content): List<Content> = listOf(
@@ -46,7 +47,7 @@ class TextContentTokenizer(
     )
 
     private fun tokenize(span: Data.Text.Span): List<Data.Text.Span> =
-        textTokenizerFactory(span.locale ?: defaultLocale).tokenize(span.text)
+        textTokenizerFactory(span.language ?: defaultLanguage).tokenize(span.text)
             .map { range ->
                 span.copy(
                     locator = span.locator.copy(text = extractTextContextIn(span.text, range)),

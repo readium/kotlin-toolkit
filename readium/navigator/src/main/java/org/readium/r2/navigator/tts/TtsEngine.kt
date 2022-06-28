@@ -8,8 +8,9 @@ package org.readium.r2.navigator.tts
 
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.SuspendingCloseable
-import java.util.Locale
+import java.util.*
 
 interface TtsEngine : SuspendingCloseable {
 
@@ -19,8 +20,8 @@ interface TtsEngine : SuspendingCloseable {
     ) : kotlin.Exception(message, cause) {
         /** Failed to initialize the TTS engine. */
         class InitializationFailed(cause: Throwable? = null) : Exception("The TTS engine failed to initialize", cause)
-        class LanguageNotSupported(val locale: Locale, cause: Throwable? = null) : Exception("The language ${locale.toLanguageTag()} is not supported by the TTS engine", cause)
-        class LanguageSupportIncomplete(val locale: Locale, cause: Throwable? = null) : Exception("The language ${locale.toLanguageTag()} requires additional files by the TTS engine", cause)
+        class LanguageNotSupported(val language: Language, cause: Throwable? = null) : Exception("The language ${language.code} is not supported by the TTS engine", cause)
+        class LanguageSupportIncomplete(val language: Language, cause: Throwable? = null) : Exception("The language ${language.code} requires additional files by the TTS engine", cause)
         class Network(cause: Throwable? = null) : Exception("A network error occurred", cause)
         class Other(override val cause: Throwable) : Exception(cause.message ?: "An unknown error occurred", cause)
     }
@@ -33,15 +34,20 @@ interface TtsEngine : SuspendingCloseable {
     }
 
     data class Configuration(
-        val defaultLocale: Locale? = null,
+        val defaultLanguage: Language? = null,
         val voice: Voice? = null,
         val rate: Double = 1.0,
+    )
+
+    data class ConfigurationConstraints(
+        val rateRange: ClosedRange<Double> = 1.0..1.0,
+        val availableVoices: List<Voice> = emptyList()
     )
 
     data class Voice(
         val identifier: String,
         val name: String,
-        val locale: Locale,
+        val language: Language,
         val quality: Quality = Quality.Normal,
         val requiresNetwork: Boolean = false,
     ) {
@@ -51,18 +57,13 @@ interface TtsEngine : SuspendingCloseable {
     }
 
     val config: StateFlow<Configuration>
+    val configConstraints: StateFlow<ConfigurationConstraints>
     fun setConfig(config: Configuration): Configuration
-
-    val availableLocales: StateFlow<Set<Locale>>
-
-    val availableVoices: StateFlow<Set<Voice>>
-
-    fun voiceWithIdentifier(identifier: String): Voice?
 
     data class Utterance(
         val text: String,
         val locator: Locator,
-        val language: Locale?
+        val language: Language?
     )
 
     fun speak(utterance: Utterance)

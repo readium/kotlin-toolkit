@@ -15,12 +15,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.flow.map
 import org.readium.r2.navigator.tts.TtsEngine
 import org.readium.r2.navigator.tts.TtsEngine.Configuration
+import org.readium.r2.navigator.tts.TtsEngine.Voice
+import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.shared.views.SelectorListItem
 import org.readium.r2.testapp.utils.extensions.flowWithLocalLifecycle
 import java.text.DecimalFormat
@@ -32,12 +31,17 @@ fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
         .flowWithLocalLifecycle()
         .collectAsState()
 
+    val settings by model.settings
+        .flowWithLocalLifecycle()
+        .collectAsState()
+
     if (state.showControls) {
         TtsControls(
             playing = state.isPlaying,
-            availableLocales = emptySet(),
-            availableVoices = emptySet(),
-            config = state.config,
+            rateRange = settings.rateRange,
+            availableLanguages = settings.availableLanguages,
+            availableVoices = settings.availableVoices,
+            config = settings.config,
             onConfigChange = model::setConfig,
             onPlayPause = model::playPause,
             onStop = model::stop,
@@ -51,8 +55,9 @@ fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
 @Composable
 fun TtsControls(
     playing: Boolean,
-    availableLocales: Set<Locale>,
-    availableVoices: Set<TtsEngine.Voice>,
+    rateRange: ClosedRange<Double>,
+    availableLanguages: List<Language>,
+    availableVoices: List<Voice>,
     config: Configuration?,
     onConfigChange: (Configuration) -> Unit,
     onPlayPause: () -> Unit,
@@ -65,7 +70,9 @@ fun TtsControls(
 
     if (config != null && showSettings) {
         TtsSettingsDialog(
-            availableLocales = availableLocales,
+            rateRange = rateRange,
+            availableLanguages = availableLanguages,
+            availableVoices = availableVoices,
             config = config,
             onConfigChange = onConfigChange,
             onDismiss = { showSettings = false }
@@ -133,7 +140,9 @@ private val availableRates = listOf(0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0)
 
 @Composable
 private fun TtsSettingsDialog(
-    availableLocales: Set<Locale>,
+    rateRange: ClosedRange<Double>,
+    availableLanguages: List<Language>,
+    availableVoices: List<Voice>,
     config: Configuration,
     onConfigChange: (Configuration) -> Unit,
     onDismiss: () -> Unit
@@ -148,41 +157,35 @@ private fun TtsSettingsDialog(
         title = { Text(stringResource(R.string.tts_settings)) },
         text = {
             Column {
+                if (rateRange.start < rateRange.endInclusive) {
+                    SelectorListItem(
+                        label = stringResource(R.string.tts_rate),
+                        values = availableRates
+                            .filter { it in rateRange },
+                        selection = config.rate,
+                        titleOfSelection = { DecimalFormat("x#.##").format(it) },
+                        onSelected = {
+                            onConfigChange(config.copy(rate = it))
+                        }
+                    )
+                }
+
                 SelectorListItem(
-                    label = stringResource(R.string.tts_rate),
-                    values = availableRates,
-                    selection = config.rate,
-                    titleOfSelection = { DecimalFormat("x#.##").format(it) },
-                    onSelected = {
-                        onConfigChange(config.copy(rate = it))
-                    }
+                    label = stringResource(R.string.language),
+                    values = availableLanguages,
+                    selection = config.defaultLanguage,
+                    titleOfSelection = { it?.locale?.displayName ?: stringResource(R.string.auto) },
+                    onSelected = { onConfigChange(config.copy(defaultLanguage = it, voice = null)) }
                 )
 
-                LocaleSelectorListItem(
-                    selection = config.defaultLocale ?: Locale.getDefault(),
-                    locales = availableLocales,
-                    onSelected = {
-                        onConfigChange(config.copy(defaultLocale = it))
-                    }
+                SelectorListItem(
+                    label = stringResource(R.string.voice),
+                    values = availableVoices,
+                    selection = config.voice,
+                    titleOfSelection = { it?.name ?: stringResource(R.string.auto) },
+                    onSelected = { onConfigChange(config.copy(voice = it)) }
                 )
             }
         }
-    )
-}
-
-@Composable
-fun LocaleSelectorListItem(
-    selection: Locale,
-    locales: Set<Locale>,
-    onSelected: (Locale) -> Unit,
-    enabled: Boolean = true,
-) {
-    SelectorListItem(
-        label = stringResource(R.string.language),
-        values = locales.sortedBy(Locale::getDisplayName),
-        selection = selection,
-        titleOfSelection = { it.displayName },
-        onSelected = onSelected,
-        enabled = enabled
     )
 }

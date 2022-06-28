@@ -7,10 +7,13 @@
 package org.readium.r2.navigator.tts
 
 import android.content.Context
-import android.speech.tts.Voice
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import org.readium.r2.navigator.tts.TtsEngine.Configuration
+import org.readium.r2.navigator.tts.TtsEngine.ConfigurationConstraints
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
@@ -21,13 +24,12 @@ import org.readium.r2.shared.publication.services.content.Content.Data
 import org.readium.r2.shared.publication.services.content.ContentIterator
 import org.readium.r2.shared.publication.services.content.contentIterator
 import org.readium.r2.shared.publication.services.content.isContentIterable
+import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.tokenizer.ContentTokenizer
 import org.readium.r2.shared.util.tokenizer.TextContentTokenizer
 import org.readium.r2.shared.util.tokenizer.TextUnit
-import timber.log.Timber
 import java.util.*
-import kotlin.time.Duration.Companion.seconds
 
 @ExperimentalReadiumApi
 fun interface TtsEngineFactory<E : TtsEngine> {
@@ -36,7 +38,7 @@ fun interface TtsEngineFactory<E : TtsEngine> {
 
 @ExperimentalReadiumApi
 fun interface TtsTokenizerFactory {
-    fun create(defaultLocale: Locale?): ContentTokenizer
+    fun create(defaultLanguage: Language?): ContentTokenizer
 }
 
 @OptIn(DelicateReadiumApi::class)
@@ -56,13 +58,13 @@ class TtsController<E : TtsEngine> private constructor(
     }
 
     companion object {
-        val defaultTokenizerFactory: TtsTokenizerFactory = TtsTokenizerFactory { locale -> TextContentTokenizer(unit = TextUnit.Sentence, defaultLocale = locale) }
+        val defaultTokenizerFactory: TtsTokenizerFactory = TtsTokenizerFactory { language -> TextContentTokenizer(unit = TextUnit.Sentence, defaultLanguage = language) }
 
         operator fun invoke(
             context: Context,
             publication: Publication,
             config: Configuration = Configuration(
-                defaultLocale = publication.metadata.locale
+                defaultLanguage = publication.metadata.language
             ),
             tokenizerFactory: TtsTokenizerFactory = defaultTokenizerFactory
         ): TtsController<AndroidTtsEngine>? = invoke(
@@ -119,17 +121,14 @@ class TtsController<E : TtsEngine> private constructor(
     val config: StateFlow<Configuration>
         get() = engine.config
 
+    val configConstraints: StateFlow<ConfigurationConstraints>
+        get() = engine.configConstraints
+
     fun setConfig(config: Configuration): Configuration =
         engine.setConfig(config)
 
-    val availableLocales: StateFlow<Set<Locale>>
-        get() = engine.availableLocales
-
-    val availableVoices: StateFlow<Set<TtsEngine.Voice>>
-        get() = engine.availableVoices
-
     fun voiceWithIdentifier(identifier: String): TtsEngine.Voice? =
-        engine.voiceWithIdentifier(identifier)
+        configConstraints.value.availableVoices.firstOrNull { it.identifier == identifier }
 
     fun playPause() {
         when (state.value) {
@@ -253,18 +252,18 @@ class TtsController<E : TtsEngine> private constructor(
     }
 
     private fun Content.tokenize(): List<Content> =
-        tokenizerFactory.create(config.value.defaultLocale)
+        tokenizerFactory.create(config.value.defaultLanguage)
             .tokenize(this)
 
     private fun Content.utterances(): List<TtsEngine.Utterance> {
-        fun utterance(text: String, locator: Locator, language: Locale? = null): TtsEngine.Utterance? {
+        fun utterance(text: String, locator: Locator, language: Language? = null): TtsEngine.Utterance? {
             if (!text.any { it.isLetterOrDigit() })
                 return null
 
             return TtsEngine.Utterance(
                 text = text,
                 locator = locator,
-                language = language
+                language = language?.takeIf { it != publication.metadata.language }
             )
         }
 
@@ -282,7 +281,7 @@ class TtsController<E : TtsEngine> private constructor(
                     utterance(
                         text = span.text,
                         locator = span.locator,
-                        language = span.locale
+                        language = span.language
                     )
                 }
             }

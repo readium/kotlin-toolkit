@@ -21,6 +21,7 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.services.content.Content.Data
 import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
 
@@ -238,7 +239,7 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
                             before = wholeRawTextAcc.takeLast(50) // FIXME: custom length
                         )
                     ),
-                    language = currentLanguage,
+                    language = currentLanguage?.let { Language(it) },
                     text = text
                 ))
             }

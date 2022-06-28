@@ -10,6 +10,7 @@ import android.icu.text.BreakIterator
 import android.os.Build
 import androidx.annotation.RequiresApi
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.Language
 import java.util.*
 
 /** A tokenizer splitting a String into range tokens (e.g. words, sentences, etc.). */
@@ -30,9 +31,9 @@ enum class TextUnit {
 class DefaultTextContentTokenizer private constructor(
     private val tokenizer: TextTokenizer
 ) : TextTokenizer by tokenizer {
-    constructor(unit: TextUnit, locale: Locale?) : this(
+    constructor(unit: TextUnit, language: Language?) : this(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-            IcuTokenizer(locale = locale, unit = unit)
+            IcuTokenizer(language = language, unit = unit)
         else
             NaiveTokenizer(unit = unit)
     )
@@ -44,12 +45,12 @@ class DefaultTextContentTokenizer private constructor(
  */
 @ExperimentalReadiumApi
 @RequiresApi(Build.VERSION_CODES.N)
-class IcuTokenizer(locale: Locale?, unit: TextUnit) : TextTokenizer {
+class IcuTokenizer(language: Language?, unit: TextUnit) : TextTokenizer {
 
     private val iterator: BreakIterator
 
     init {
-        val loc = locale ?: Locale.ROOT
+        val loc = language?.locale ?: Locale.ROOT
         iterator = when (unit) {
             TextUnit.Word -> BreakIterator.getWordInstance(loc)
             TextUnit.Sentence -> BreakIterator.getSentenceInstance(loc)

@@ -8,6 +8,7 @@ package org.readium.r2.shared.publication.services.content
 
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.SuspendingCloseable
 import java.util.*
 
@@ -40,15 +41,10 @@ data class Content(
 
             data class Span(
                 val locator: Locator,
-                // FIXME: Language type
-                val language: String?,
+                val language: Language?,
                 val text: String,
                 val extras: Map<String, Any> = emptyMap()
-            ) {
-                val locale: Locale?
-                    get() = language
-                        ?.let { Locale.forLanguageTag(it.replace("_", "-")) }
-            }
+            )
         }
     }
 }

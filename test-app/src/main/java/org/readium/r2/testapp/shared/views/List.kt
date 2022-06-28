@@ -23,7 +23,7 @@ fun <T> SelectorListItem(
     selection: T,
     titleOfSelection: @Composable (T) -> String,
     onSelected: (T) -> Unit,
-    enabled: Boolean = true,
+    enabled: Boolean = values.isNotEmpty(),
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     fun dismiss() { isExpanded = false }
