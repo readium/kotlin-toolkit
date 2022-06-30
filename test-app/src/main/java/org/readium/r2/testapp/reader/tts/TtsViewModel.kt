@@ -6,11 +6,9 @@
 
 package org.readium.r2.testapp.reader.tts
 
-import android.app.Application
 import android.content.Context
 import android.graphics.Color
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -31,14 +29,30 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.utils.createViewModelFactory
 import org.readium.r2.navigator.tts.TtsController.State as TtsState
 
+/**
+ * View model driving the text to speech controller.
+ */
 @OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
-class TtsViewModel(
-    application: Application,
-    publication: Publication
-) : AndroidViewModel(application) {
+class TtsViewModel private constructor(
+    private val controller: TtsController<AndroidTtsEngine>,
+    private val scope: CoroutineScope
+) {
+
+    companion object {
+        /**
+         * Returns an instance of [TtsViewModel] if the given [publication] can be played with the
+         * TTS engine.
+         */
+        operator fun invoke(
+            context: Context,
+            publication: Publication,
+            scope: CoroutineScope
+        ): TtsViewModel? =
+            TtsController(context, publication)
+                ?.let { TtsViewModel(it, scope) }
+    }
 
     /**
      * @param showControls Whether the TTS was enabled by the user.
@@ -55,6 +69,12 @@ class TtsViewModel(
         val settings: Settings = Settings()
     )
 
+    /**
+     * @param config Currently selected user settings.
+     * @param rateRange Supported range for the rate setting.
+     * @param availableLanguages Languages supported by the TTS engine.
+     * @param availableVoices Voices supported by the TTS engine, for the selected language.
+     */
     data class Settings(
         val config: TtsEngine.Configuration = TtsEngine.Configuration(),
         val rateRange: ClosedRange<Double> = 1.0..1.0,
@@ -63,114 +83,119 @@ class TtsViewModel(
     )
 
     sealed class Event {
+        /**
+         * Emitted when the [TtsController] fails with an error.
+         */
         class OnError(val error: UserException) : Event()
+
+        /**
+         * Emitted when the selected language cannot be played because it is missing voice data.
+         */
         class OnMissingVoiceData(val language: Language) : Event()
     }
 
-    val isAvailable: Boolean
-        get() = ::controller.isInitialized
-
+    /**
+     * Current state of the view model.
+     */
     val state: StateFlow<State>
 
     private val _events: Channel<Event> = Channel(Channel.BUFFERED)
     val events: Flow<Event> = _events.receiveAsFlow()
 
+    /**
+     * Indicates whether the user enabled the TTS playback.
+     * It doesn't mean the TTS is actually speaking utterances at the moment.
+     */
     private val isEnabled = MutableStateFlow(false)
-    private lateinit var controller: TtsController<AndroidTtsEngine>
 
     init {
-        val tts = TtsController(application, publication)
-        if (tts == null) {
-            state = MutableStateFlow(State())
+        controller.listener = object : TtsController.Listener {
+            override fun onUtteranceError(
+                utterance: TtsEngine.Utterance,
+                error: TtsEngine.Exception
+            ) {
+                handleTtsException(error)
 
-        } else {
-            controller = tts
-
-            tts.listener = object : TtsController.Listener {
-                override fun onUtteranceError(utterance: TtsEngine.Utterance, error: TtsEngine.Exception) {
-                    handleTtsException(error)
-
-                    // When the voice data is incomplete, the user will be requested to install it.
-                    // For other errors, we jump to the next utterance.
-                    if (error !is TtsEngine.Exception.LanguageSupportIncomplete) {
-                        next()
-                    }
+                // When the voice data is incomplete, the user will be requested to install it.
+                // For other errors, we jump to the next utterance.
+                if (error !is TtsEngine.Exception.LanguageSupportIncomplete) {
+                    next()
                 }
             }
-
-            tts.state
-                .filterIsInstance<TtsState.Failure>()
-                .map(::error)
-                .onEach(::handleTtsException)
-                .launchIn(viewModelScope)
-
-            val rateRange: Flow<ClosedRange<Double>> =
-                controller.configConstraints
-                    .map { it.rateRange }
-
-            val voicesByLanguage: Flow<Map<Language, List<Voice>>> =
-                controller.configConstraints
-                    .map {
-                        it.availableVoices
-                            .groupBy { v -> v.language.removeRegion() }
-                    }
-
-            val languages: Flow<List<Language>> = voicesByLanguage
-                .map {
-                    it.keys
-                        .sortedBy { l -> l.locale.displayName }
-                }
-
-            val voicesForSelectedLanguage: Flow<List<Voice>> =
-                combine(
-                    controller.config.map { it.defaultLanguage },
-                    voicesByLanguage,
-                ) { language, voices ->
-                    language
-                        ?.let { voices[it.removeRegion()] }
-                        ?.sortedBy { it.name ?: it.identifier }
-                        ?: emptyList()
-                }
-
-            val settings: Flow<Settings> = combine(
-                controller.config,
-                rateRange,
-                languages,
-                voicesForSelectedLanguage,
-            ) { config, rates, langs, voices ->
-                Settings(
-                    config = config,
-                    rateRange = rates,
-                    availableLanguages = langs,
-                    availableVoices = voices
-                )
-            }
-
-            state = combine(
-                isEnabled,
-                controller.state,
-                settings
-            ) { isEnabled, state, currentSettings ->
-                val playing = (state as? TtsState.Playing)
-
-                State(
-                    showControls = isEnabled,
-                    isPlaying = (playing != null),
-                    playingRange = playing?.range,
-                    playingHighlight = playing?.run {
-                        Decoration(
-                            id = "tts",
-                            locator = utterance.locator,
-                            style = Decoration.Style.Highlight(tint = Color.RED)
-                        )
-                    },
-                    settings = currentSettings
-                )
-            }.stateIn(viewModelScope, SharingStarted.Eagerly, initialValue = State())
         }
+
+        controller.state
+            .filterIsInstance<TtsState.Failure>()
+            .map(::error)
+            .onEach(::handleTtsException)
+            .launchIn(scope)
+
+        val rateRange: Flow<ClosedRange<Double>> =
+            controller.configConstraints
+                .map { it.rateRange }
+
+        val voicesByLanguage: Flow<Map<Language, List<Voice>>> =
+            controller.configConstraints
+                .map {
+                    it.availableVoices
+                        .groupBy { v -> v.language.removeRegion() }
+                }
+
+        val languages: Flow<List<Language>> = voicesByLanguage
+            .map {
+                it.keys
+                    .sortedBy { l -> l.locale.displayName }
+            }
+
+        val voicesForSelectedLanguage: Flow<List<Voice>> =
+            combine(
+                controller.config.map { it.defaultLanguage },
+                voicesByLanguage,
+            ) { language, voices ->
+                language
+                    ?.let { voices[it.removeRegion()] }
+                    ?.sortedBy { it.name ?: it.identifier }
+                    ?: emptyList()
+            }
+
+        val settings: Flow<Settings> = combine(
+            controller.config,
+            rateRange,
+            languages,
+            voicesForSelectedLanguage,
+        ) { config, rates, langs, voices ->
+            Settings(
+                config = config,
+                rateRange = rates,
+                availableLanguages = langs,
+                availableVoices = voices
+            )
+        }
+
+        state = combine(
+            isEnabled,
+            controller.state,
+            settings
+        ) { isEnabled, state, currentSettings ->
+            val playing = (state as? TtsState.Playing)
+
+            State(
+                showControls = isEnabled,
+                isPlaying = (playing != null),
+                playingRange = playing?.range,
+                playingHighlight = playing?.run {
+                    Decoration(
+                        id = "tts",
+                        locator = utterance.locator,
+                        style = Decoration.Style.Highlight(tint = Color.RED)
+                    )
+                },
+                settings = currentSettings
+            )
+        }.stateIn(scope, SharingStarted.Eagerly, initialValue = State())
     }
 
-    private fun handleTtsException(error: TtsEngine.Exception) = viewModelScope.launch {
+    private fun handleTtsException(error: TtsEngine.Exception) = scope.launch {
         if (error is TtsEngine.Exception.LanguageSupportIncomplete) {
             _events.send(Event.OnMissingVoiceData(error.language))
         } else {
@@ -192,13 +217,9 @@ class TtsViewModel(
                 UserException(R.string.tts_error_other)
         }
 
-    override fun onCleared() {
-        super.onCleared()
-
-        if (isAvailable) {
-            runBlocking {
-                controller.close()
-            }
+    fun onCleared() {
+        runBlocking {
+            controller.close()
         }
     }
 
@@ -207,7 +228,7 @@ class TtsViewModel(
     }
 
     @OptIn(InternalReadiumApi::class) // FIXME
-    fun play(navigator: Navigator) = viewModelScope.launch {
+    fun play(navigator: Navigator) = scope.launch {
         controller.play(
             start = (navigator as? EpubNavigatorFragment)?.firstVisibleElementLocator()
                 ?: navigator.currentLocator.value
@@ -240,12 +261,5 @@ class TtsViewModel(
     @OptIn(DelicateReadiumApi::class)
     fun requestInstallVoice(context: Context) {
         controller.engine.requestInstallMissingVoice(context)
-    }
-
-    companion object {
-        fun createFactory(application: Application, publication: Publication) =
-            createViewModelFactory {
-                TtsViewModel(application, publication)
-            }
     }
 }

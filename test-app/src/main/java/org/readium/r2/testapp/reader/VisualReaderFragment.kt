@@ -55,8 +55,6 @@ import kotlin.time.Duration.Companion.seconds
 @OptIn(ExperimentalDecorator::class)
 abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.Listener {
 
-    protected val ttsModel: TtsViewModel by activityViewModels()
-
     protected var binding: FragmentReaderBinding by viewLifecycle()
 
     private lateinit var navigatorFragment: Fragment
@@ -77,7 +75,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                setupObservers()
+                setupObserversIn(this)
             }
         }
 
@@ -101,57 +99,61 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
     @Composable
     private fun BoxScope.Overlay() {
-        TtsControls(
-            model = ttsModel,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(8.dp)
-        )
+        model.tts?.let { tts ->
+            TtsControls(
+                model = tts,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(8.dp)
+            )
+        }
     }
 
-    private suspend fun CoroutineScope.setupObservers() {
+    private suspend fun setupObserversIn(scope: CoroutineScope) {
         navigator.currentLocator
             .onEach { model.saveProgression(it) }
-            .launchIn(this)
+            .launchIn(scope)
 
         (navigator as? DecorableNavigator)?.let { navigator ->
             navigator.addDecorationListener("highlights", decorationListener)
 
             model.highlightDecorations
                 .onEach { navigator.applyDecorations(it, "highlights") }
-                .launchIn(this)
+                .launchIn(scope)
 
             model.searchDecorations
                 .onEach { navigator.applyDecorations(it, "search") }
-                .launchIn(this)
+                .launchIn(scope)
 
-            ttsModel.state
-                .map { it.playingHighlight }
-                .distinctUntilChanged()
-                .onEach { navigator.applyDecorations(listOfNotNull(it), "tts") }
-                .launchIn(this)
+            model.tts?.state
+                ?.map { it.playingHighlight }
+                ?.distinctUntilChanged()
+                ?.onEach { navigator.applyDecorations(listOfNotNull(it), "tts") }
+                ?.launchIn(scope)
         }
 
-        ttsModel.events
-            .onEach { event ->
-                when (event) {
-                    is TtsViewModel.Event.OnError ->
-                        showError(event.error)
+        model.tts?.apply {
+            events
+                .onEach { event ->
+                    when (event) {
+                        is TtsViewModel.Event.OnError ->
+                            showError(event.error)
 
-                    is TtsViewModel.Event.OnMissingVoiceData ->
-                        confirmAndInstallTtsVoice(event.language)
+                        is TtsViewModel.Event.OnMissingVoiceData ->
+                            confirmAndInstallTtsVoice(event.language)
+                    }
                 }
-            }
-            .launchIn(this)
+                .launchIn(scope)
 
-        ttsModel.state
-            .map { it.playingRange }
-            .filterNotNull()
-            .throttleLatest(1.seconds)
-            .onEach { locator ->
-                navigator.go(locator, animated = false)
-            }
-            .launchIn(this)
+            state
+                .map { it.playingRange }
+                .filterNotNull()
+                .throttleLatest(1.seconds)
+                .onEach { locator ->
+                    navigator.go(locator, animated = false)
+                }
+                .launchIn(scope)
+        }
     }
 
     private fun showError(error: UserException) {
@@ -161,12 +163,14 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
     private suspend fun confirmAndInstallTtsVoice(language: Language) {
         val activity = activity ?: return
+        val tts = model.tts ?: return
+
         if (
             activity.confirmDialog(
                 getString(R.string.tts_error_language_support_incomplete, language.locale.displayLanguage)
             )
         ) {
-            ttsModel.requestInstallVoice(activity)
+            tts.requestInstallVoice(activity)
         }
     }
 
@@ -178,9 +182,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
     override fun onStop() {
         super.onStop()
 
-        if (ttsModel.isAvailable) {
-            ttsModel.pause()
-        }
+        model.tts?.pause()
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
@@ -191,13 +193,13 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, menuInflater)
-        menu.findItem(R.id.tts).isVisible = ttsModel.isAvailable
+        menu.findItem(R.id.tts).isVisible = (model.tts != null)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.tts -> {
-                ttsModel.play(navigator)
+                checkNotNull(model.tts).play(navigator)
             }
             else -> return super.onOptionsItemSelected(item)
         }

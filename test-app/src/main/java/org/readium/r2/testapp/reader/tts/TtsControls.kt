@@ -6,8 +6,6 @@
 
 package org.readium.r2.testapp.reader.tts
 
-import android.content.Context
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons

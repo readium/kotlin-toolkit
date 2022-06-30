@@ -25,24 +25,3 @@ inline fun <reified T : ViewModel> createViewModelFactory(crossinline factory: (
             return factory() as V
         }
     }
-
-/**
- * A [ViewModelProvider.Factory] which will iterate over a provided list of [factories] until
- * finding one instantiating successfully the requested [ViewModel].
- */
-class CompositeViewModelFactory(private vararg val factories: ViewModelProvider.Factory) : ViewModelProvider.Factory {
-
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        for (factory in factories) {
-            try {
-                return factory.create(modelClass)
-            } catch (e: IllegalAccessException) {
-                // Ignored, because the factory didn't handle this model class.
-            } catch (e: Exception) {
-                Timber.e(e)
-            }
-        }
-
-        throw IllegalAccessException("Unknown ViewModel class")
-    }
-}

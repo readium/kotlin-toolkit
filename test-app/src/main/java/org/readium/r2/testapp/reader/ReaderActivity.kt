@@ -20,9 +20,7 @@ import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.readium.navigator.media2.ExperimentalMedia2
-import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -33,37 +31,19 @@ import org.readium.r2.testapp.drm.DrmManagementContract
 import org.readium.r2.testapp.drm.DrmManagementFragment
 import org.readium.r2.testapp.outline.OutlineContract
 import org.readium.r2.testapp.outline.OutlineFragment
-import org.readium.r2.testapp.reader.tts.TtsViewModel
-import org.readium.r2.testapp.utils.CompositeViewModelFactory
 
 /*
  * An activity to read a publication
  *
  * This class can be used as it is or be inherited from.
  */
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalDecorator::class)
 open class ReaderActivity : AppCompatActivity() {
 
     private val model: ReaderViewModel by viewModels()
-    private val ttsModel: TtsViewModel by viewModels()
 
     override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
-        val app = application as Application
         val arguments = ReaderActivityContract.parseIntent(this)
-        val readerInitData =
-            try {
-                val readerRepository = app.readerRepository.getCompleted()
-                checkNotNull(readerRepository[arguments.bookId])
-            } catch (e: Exception) {
-                // Fallbacks on a dummy Publication to avoid crashing the app until the Activity finishes.
-                DummyReaderInitData(arguments.bookId)
-            }
-
-        return CompositeViewModelFactory(
-            ReaderViewModel.createFactory(app, readerInitData),
-            TtsViewModel.createFactory(app, readerInitData.publication),
-            ViewModelProvider.AndroidViewModelFactory(app)
-        )
+        return ReaderViewModel.createFactory(application as Application, arguments)
     }
 
     private lateinit var binding: ActivityReaderBinding

@@ -30,12 +30,14 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.domain.model.Highlight
+import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.createViewModelFactory
 
 @OptIn(Search::class, ExperimentalDecorator::class, ExperimentalCoroutinesApi::class)
 class ReaderViewModel(
+    application: Application,
     val readerInitData: ReaderInitData,
     private val bookRepository: BookRepository,
 ) : ViewModel() {
@@ -51,6 +53,14 @@ class ReaderViewModel(
 
     val fragmentChannel: EventChannel<FeedbackEvent> =
         EventChannel(Channel(Channel.BUFFERED), viewModelScope)
+
+    val tts: TtsViewModel? =
+        TtsViewModel(application, readerInitData.publication, viewModelScope)
+
+    override fun onCleared() {
+        super.onCleared()
+        tts?.onCleared()
+    }
 
     fun saveProgression(locator: Locator) = viewModelScope.launch {
         bookRepository.saveProgression(locator, bookId)
@@ -227,9 +237,18 @@ class ReaderViewModel(
     }
 
     companion object {
-        fun createFactory(application: Application, readerInitData: ReaderInitData) =
+        fun createFactory(application: Application, arguments: ReaderActivityContract.Arguments) =
             createViewModelFactory {
-                ReaderViewModel(readerInitData, application.bookRepository)
+                val readerInitData =
+                    try {
+                        val readerRepository = application.readerRepository.getCompleted()
+                        checkNotNull(readerRepository[arguments.bookId])
+                    } catch (e: Exception) {
+                        // Fallbacks on a dummy Publication to avoid crashing the app until the Activity finishes.
+                        DummyReaderInitData(arguments.bookId)
+                    }
+
+                ReaderViewModel(application, readerInitData, application.bookRepository)
             }
     }
 }
