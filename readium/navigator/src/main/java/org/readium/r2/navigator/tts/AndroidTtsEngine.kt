@@ -18,12 +18,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import org.readium.r2.navigator.tts.TtsEngine.Configuration
 import org.readium.r2.navigator.tts.TtsEngine.ConfigurationConstraints
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.MapWithDefaultCompanion
 
-@OptIn(InternalReadiumApi::class)
+/**
+ * Default [TtsEngine] implementation using Android's native text to speech engine.
+ */
+@ExperimentalReadiumApi
 class AndroidTtsEngine(
     context: Context,
     config: Configuration = Configuration(),

@@ -16,14 +16,12 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.Navigator
-import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.tts.AndroidTtsEngine
 import org.readium.r2.navigator.tts.TtsController
 import org.readium.r2.navigator.tts.TtsEngine
 import org.readium.r2.navigator.tts.TtsEngine.Voice
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -106,24 +104,12 @@ class TtsViewModel private constructor(
      * Indicates whether the user enabled the TTS playback.
      * It doesn't mean the TTS is actually speaking utterances at the moment.
      */
-    private val isEnabled = MutableStateFlow(false)
+    private val isStarted = MutableStateFlow(false)
 
     init {
-        controller.listener = object : TtsController.Listener {
-            override fun onUtteranceError(
-                utterance: TtsEngine.Utterance,
-                error: TtsEngine.Exception
-            ) {
-                handleTtsException(error)
+        controller.listener = ControllerListener()
 
-                // When the voice data is incomplete, the user will be requested to install it.
-                // For other errors, we jump to the next utterance.
-                if (error !is TtsEngine.Exception.LanguageSupportIncomplete) {
-                    next()
-                }
-            }
-        }
-
+        // Handle global [TtsController] failures.
         controller.state
             .filterIsInstance<TtsState.Failure>()
             .map(::error)
@@ -173,14 +159,14 @@ class TtsViewModel private constructor(
         }
 
         state = combine(
-            isEnabled,
+            isStarted,
             controller.state,
             settings
-        ) { isEnabled, state, currentSettings ->
+        ) { isStarted, state, currentSettings ->
             val playing = (state as? TtsState.Playing)
 
             State(
-                showControls = isEnabled,
+                showControls = isStarted,
                 isPlaying = (playing != null),
                 playingRange = playing?.range,
                 playingHighlight = playing?.run {
@@ -195,13 +181,39 @@ class TtsViewModel private constructor(
         }.stateIn(scope, SharingStarted.Eagerly, initialValue = State())
     }
 
-    private fun handleTtsException(error: TtsEngine.Exception) = scope.launch {
-        if (error is TtsEngine.Exception.LanguageSupportIncomplete) {
-            _events.send(Event.OnMissingVoiceData(error.language))
-        } else {
-            _events.send(Event.OnError(error.toUserException()))
+    private inner class ControllerListener : TtsController.Listener {
+        override fun onUtteranceError(
+            utterance: TtsEngine.Utterance,
+            error: TtsEngine.Exception
+        ) {
+            scope.launch {
+                val shouldContinuePlayback = handleTtsException(error)
+
+                if (shouldContinuePlayback) {
+                    next()
+                }
+            }
+
         }
     }
+
+    /**
+     * Handles the given error and returns whether the playback should continue.
+     */
+    private suspend fun handleTtsException(error: TtsEngine.Exception): Boolean =
+        when (error) {
+            // The `LanguageSupportIncomplete` exception is a special case. We can recover from
+            // it by asking the user to download the missing voice data.
+            is TtsEngine.Exception.LanguageSupportIncomplete -> {
+                _events.send(Event.OnMissingVoiceData(error.language))
+                false
+            }
+
+            else -> {
+                _events.send(Event.OnError(error.toUserException()))
+                true
+            }
+        }
 
     private fun TtsEngine.Exception.toUserException(): UserException =
         when (this) {
@@ -223,18 +235,19 @@ class TtsViewModel private constructor(
         }
     }
 
-    fun setConfig(config: TtsEngine.Configuration) {
-        controller.setConfig(config)
+    /**
+     * Begins the TTS playback in the given [navigator].
+     */
+    fun start(navigator: Navigator) = scope.launch {
+        controller.play(
+            start = navigator.firstVisibleElementLocator()
+        )
+        isStarted.value = true
     }
 
-    @OptIn(InternalReadiumApi::class) // FIXME
-    fun play(navigator: Navigator) = scope.launch {
-        controller.play(
-            start = (navigator as? EpubNavigatorFragment)?.firstVisibleElementLocator()
-                ?: navigator.currentLocator.value
-        )
-
-        isEnabled.value = true
+    fun stop() {
+        controller.pause()
+        isStarted.value = false
     }
 
     fun playPause() {
@@ -253,9 +266,8 @@ class TtsViewModel private constructor(
         controller.next()
     }
 
-    fun stop() {
-        controller.pause()
-        isEnabled.value = false
+    fun setConfig(config: TtsEngine.Configuration) {
+        controller.setConfig(config)
     }
 
     @OptIn(DelicateReadiumApi::class)

@@ -11,6 +11,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.media.MediaPlayback
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -51,6 +52,13 @@ interface Navigator {
      * Can be used to save a bookmark to the current position.
      */
     val currentLocator: StateFlow<Locator>
+
+    /**
+     * Returns the [Locator] to the first content element that begins on the current screen.
+     */
+    @ExperimentalReadiumApi
+    suspend fun firstVisibleElementLocator(): Locator? =
+        currentLocator.value
 
     /**
      * Moves to the position in the publication corresponding to the given [Locator].

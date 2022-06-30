@@ -42,6 +42,7 @@ import org.readium.r2.navigator.pager.R2PagerAdapter.PageResource
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.COLUMN_COUNT_REF
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.addPrefix
@@ -684,8 +685,11 @@ class EpubNavigatorFragment private constructor(
         ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
     )
 
-    @InternalReadiumApi
-    suspend fun firstVisibleElementLocator(): Locator? {
+    /**
+     * Returns the [Locator] to the first HTML element that begins on the current screen.
+     */
+    @ExperimentalReadiumApi
+    override suspend fun firstVisibleElementLocator(): Locator? {
         if (!::resourcePager.isInitialized) return null
 
         val resource = publication.readingOrder[resourcePager.currentItem]
