@@ -60,7 +60,7 @@ class AndroidTtsEngine(
             EngineError.getOrDefault(code)
     }
 
-    private val scope = MainScope()
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private val engineListener = EngineListener()
 

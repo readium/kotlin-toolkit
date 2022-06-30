@@ -20,8 +20,6 @@ import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -42,13 +40,11 @@ import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentReaderBinding
 import org.readium.r2.testapp.domain.model.Highlight
-import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.reader.tts.TtsControls
+import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.utils.*
 import org.readium.r2.testapp.utils.extensions.confirmDialog
-import org.readium.r2.testapp.utils.extensions.flowWithLocalLifecycle
 import org.readium.r2.testapp.utils.extensions.throttleLatest
-import java.util.*
 import kotlin.time.Duration.Companion.seconds
 
 /*

@@ -23,23 +23,19 @@ import org.readium.r2.navigator.tts.TtsEngine.Voice
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.shared.views.SelectorListItem
-import org.readium.r2.testapp.utils.extensions.flowWithLocalLifecycle
+import org.readium.r2.testapp.utils.extensions.asStateWhenStarted
 import java.text.DecimalFormat
 
 @Composable
 fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
-    val state by model.state
-        .flowWithLocalLifecycle().collectAsState()
+    val showControls by model.state.asStateWhenStarted { it.showControls }
+    val isPlaying by model.state.asStateWhenStarted { it.isPlaying }
+    val allowNetwork by model.allowVoicesRequiringNetwork.asStateWhenStarted()
+    val settings by model.settings.asStateWhenStarted()
 
-    val settings by model.settings
-        .flowWithLocalLifecycle().collectAsState()
-
-    val allowNetwork by model.allowVoicesRequiringNetwork
-        .flowWithLocalLifecycle().collectAsState()
-
-    if (state.showControls) {
+    if (showControls) {
         TtsControls(
-            playing = state.isPlaying,
+            playing = isPlaying,
             availableRates = listOf(0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0)
                 .filter { it in settings.rateRange },
             availableLanguages = settings.availableLanguages,
