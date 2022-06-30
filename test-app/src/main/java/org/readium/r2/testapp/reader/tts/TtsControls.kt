@@ -30,8 +30,7 @@ import java.text.DecimalFormat
 fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
     val showControls by model.state.asStateWhenStarted { it.showControls }
     val isPlaying by model.state.asStateWhenStarted { it.isPlaying }
-    val allowNetwork by model.allowVoicesRequiringNetwork.asStateWhenStarted()
-    val settings by model.settings.asStateWhenStarted()
+    val settings by model.state.asStateWhenStarted { it.settings }
 
     if (showControls) {
         TtsControls(
@@ -42,11 +41,6 @@ fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
             availableVoices = settings.availableVoices,
             config = settings.config,
             onConfigChange = model::setConfig,
-            allowNetwork = allowNetwork,
-            onAllowNetworkChange = {
-                model.setConfig(settings.config.copy(voice = null))
-                model.allowVoicesRequiringNetwork.value = it
-            },
             onPlayPause = model::playPause,
             onStop = model::stop,
             onPrevious = model::previous,
@@ -64,8 +58,6 @@ fun TtsControls(
     availableVoices: List<Voice>,
     config: Configuration?,
     onConfigChange: (Configuration) -> Unit,
-    allowNetwork: Boolean,
-    onAllowNetworkChange: (Boolean) -> Unit,
     onPlayPause: () -> Unit,
     onStop: () -> Unit,
     onPrevious: () -> Unit,
@@ -81,8 +73,6 @@ fun TtsControls(
             availableVoices = availableVoices,
             config = config,
             onConfigChange = onConfigChange,
-            allowNetwork = allowNetwork,
-            onAllowNetworkChange = onAllowNetworkChange,
             onDismiss = { showSettings = false }
         )
     }
@@ -144,7 +134,6 @@ fun TtsControls(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun TtsSettingsDialog(
     availableRates: List<Double>,
@@ -152,15 +141,9 @@ private fun TtsSettingsDialog(
     availableVoices: List<Voice>,
     config: Configuration,
     onConfigChange: (Configuration) -> Unit,
-    allowNetwork: Boolean,
-    onAllowNetworkChange: (Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
-
-    val voiceNames = remember(availableVoices) {
-        availableVoices.namesByIdentifier(context)
-    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -201,42 +184,10 @@ private fun TtsSettingsDialog(
                     label = stringResource(R.string.voice),
                     values = availableVoices,
                     selection = config.voice,
-                    titleForValue = { voice -> voice?.let { voiceNames[it.identifier] } ?: stringResource(R.string.auto) },
+                    titleForValue = { it?.name ?: it?.identifier ?: stringResource(R.string.auto) },
                     onSelected = { onConfigChange(config.copy(voice = it)) }
-                )
-
-                ListItem(
-                    modifier = Modifier
-                        .clickable { onAllowNetworkChange(!allowNetwork) },
-                    text = {
-                        Text(stringResource(R.string.tts_higher_quality_voices))
-                    },
-                    trailing = {
-                        Switch(checked = allowNetwork, onCheckedChange = onAllowNetworkChange)
-                    }
                 )
             }
         }
     )
-}
-
-
-fun List<Voice>.namesByIdentifier(context: Context): Map<String, String> {
-    val byCountryCount = mutableMapOf<String, Int>()
-
-    return associate { voice ->
-        voice.identifier to
-            if (voice.name != null) {
-                voice.name as String
-            } else {
-                val country = voice.language.locale.country
-                val number = ((byCountryCount[country] ?: 0) + 1)
-                    .also { byCountryCount[country] = it }
-
-                listOfNotNull(
-                    voice.language.locale.displayCountry.takeIf { it.isNotEmpty() },
-                    context.getString(R.string.voice_number, number)
-                ).joinToString(" - ")
-            }
-    }
 }

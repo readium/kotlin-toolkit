@@ -126,9 +126,9 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                 .launchIn(this)
 
             ttsModel.state
-                .map { it.decorations }
+                .map { it.playingHighlight }
                 .distinctUntilChanged()
-                .onEach { navigator.applyDecorations(it, "tts") }
+                .onEach { navigator.applyDecorations(listOfNotNull(it), "tts") }
                 .launchIn(this)
         }
 

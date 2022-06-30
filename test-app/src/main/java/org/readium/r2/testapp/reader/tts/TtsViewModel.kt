@@ -40,11 +40,19 @@ class TtsViewModel(
     publication: Publication
 ) : AndroidViewModel(application) {
 
+    /**
+     * @param showControls Whether the TTS was enabled by the user.
+     * @param isPlaying Whether the TTS is currently speaking.
+     * @param playingRange Locator to the currently spoken word.
+     * @param playingHighlight Decoration for the currently spoken utterance.
+     * @param settings Current user settings and their constraints.
+     */
     data class State(
         val showControls: Boolean = false,
         val isPlaying: Boolean = false,
         val playingRange: Locator? = null,
-        val decorations: List<Decoration> = emptyList(),
+        val playingHighlight: Decoration? = null,
+        val settings: Settings = Settings()
     )
 
     data class Settings(
@@ -63,12 +71,10 @@ class TtsViewModel(
         get() = ::controller.isInitialized
 
     val state: StateFlow<State>
-    val settings: StateFlow<Settings>
 
     private val _events: Channel<Event> = Channel(Channel.BUFFERED)
     val events: Flow<Event> = _events.receiveAsFlow()
 
-    val allowVoicesRequiringNetwork = MutableStateFlow(true)
     private val isEnabled = MutableStateFlow(false)
     private lateinit var controller: TtsController<AndroidTtsEngine>
 
@@ -76,7 +82,6 @@ class TtsViewModel(
         val tts = TtsController(application, publication)
         if (tts == null) {
             state = MutableStateFlow(State())
-            settings = MutableStateFlow(Settings())
 
         } else {
             controller = tts
@@ -99,23 +104,6 @@ class TtsViewModel(
                 .onEach(::handleTtsException)
                 .launchIn(viewModelScope)
 
-            state = combine(isEnabled, controller.state) { isEnabled, state ->
-                val playing = (state as? TtsState.Playing)
-
-                State(
-                    showControls = isEnabled,
-                    isPlaying = (playing != null),
-                    playingRange = playing?.range,
-                    decorations = listOfNotNull(playing?.run {
-                        Decoration(
-                            id = "tts",
-                            locator = utterance.locator,
-                            style = Decoration.Style.Highlight(tint = Color.RED)
-                        )
-                    })
-                )
-            }.stateIn(viewModelScope, SharingStarted.Eagerly, initialValue = State())
-
             val rateRange: Flow<ClosedRange<Double>> =
                 controller.configConstraints
                     .map { it.rateRange }
@@ -137,16 +125,14 @@ class TtsViewModel(
                 combine(
                     controller.config.map { it.defaultLanguage },
                     voicesByLanguage,
-                    allowVoicesRequiringNetwork
-                ) { language, voices, allowNetwork ->
+                ) { language, voices ->
                     language
                         ?.let { voices[it.removeRegion()] }
-                        ?.filter { allowNetwork || !it.requiresNetwork }
-                        ?.sortedBy { it.language.locale.displayCountry }
+                        ?.sortedBy { it.name ?: it.identifier }
                         ?: emptyList()
                 }
 
-            settings = combine(
+            val settings: Flow<Settings> = combine(
                 controller.config,
                 rateRange,
                 languages,
@@ -158,7 +144,29 @@ class TtsViewModel(
                     availableLanguages = langs,
                     availableVoices = voices
                 )
-            }.stateIn(viewModelScope, SharingStarted.Eagerly, initialValue = Settings())
+            }
+
+            state = combine(
+                isEnabled,
+                controller.state,
+                settings
+            ) { isEnabled, state, currentSettings ->
+                val playing = (state as? TtsState.Playing)
+
+                State(
+                    showControls = isEnabled,
+                    isPlaying = (playing != null),
+                    playingRange = playing?.range,
+                    playingHighlight = playing?.run {
+                        Decoration(
+                            id = "tts",
+                            locator = utterance.locator,
+                            style = Decoration.Style.Highlight(tint = Color.RED)
+                        )
+                    },
+                    settings = currentSettings
+                )
+            }.stateIn(viewModelScope, SharingStarted.Eagerly, initialValue = State())
         }
     }
 
