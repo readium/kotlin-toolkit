@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.tryOr
+import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
@@ -57,14 +58,23 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
         suspend fun entry(): ResourceTry<Archive.Entry> {
             if (!::_entry.isInitialized) {
                 _entry = try {
-                    val entry = archive.entry(originalLink.href.removePrefix("/"))
-                    Try.success(entry)
+                    Try.success(findEntry(originalLink))
                 } catch (e: Exception) {
                     Try.failure(Resource.Exception.NotFound(e))
                 }
             }
 
             return _entry
+        }
+
+        suspend fun findEntry(link: Link): Archive.Entry {
+            val href = link.href.removePrefix("/")
+            return try {
+                archive.entry(href)
+            } catch (e: Exception) {
+                // Try again after removing query parameters and anchors from the href.
+                archive.entry(href.takeWhile { it !in "#?" })
+            }
         }
 
         override suspend fun link(): Link {

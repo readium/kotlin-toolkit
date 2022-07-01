@@ -49,6 +49,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 * Fixed parsing the table of contents of an EPUB 3 using NCX instead of a Navigation Document.
 
+#### Navigator
+
+* [swift-toolkit#61](https://github.com/readium/swift-toolkit/issues/61) Fixed serving EPUB resources when the HREF contains an anchor or query parameters.
+
 
 ## [2.2.0]
 
