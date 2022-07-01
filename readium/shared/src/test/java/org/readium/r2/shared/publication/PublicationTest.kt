@@ -449,9 +449,10 @@ class ServicesBuilderTest {
     class BarServiceA: BarService()
 
     private val context = Publication.Service.Context(
-        Ref(),
-        Manifest(metadata = Metadata(localizedTitle = LocalizedString())),
-        EmptyFetcher()
+        publication = Ref(),
+        manifest = Manifest(metadata = Metadata(localizedTitle = LocalizedString())),
+        fetcher = EmptyFetcher(),
+        services = ListPublicationServicesHolder()
     )
 
     @Test

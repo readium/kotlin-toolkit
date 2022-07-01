@@ -11,6 +11,8 @@ package org.readium.r2.shared.fetcher
 
 import androidx.annotation.StringRes
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.json.JSONObject
 import org.readium.r2.shared.R
 import org.readium.r2.shared.UserException
@@ -216,7 +218,6 @@ abstract class ProxyResource(protected val resource: Resource) : Resource {
 
     override fun toString(): String =
         "${javaClass.simpleName}($resource)"
-
 }
 
 /**
@@ -298,6 +299,42 @@ class LazyResource(private val factory: suspend () -> Resource) : Resource {
         }
     
 }
+
+/**
+ * Protects the access to a wrapped resource with a mutex to make it thread-safe.
+ *
+ * This doesn't implement [ProxyResource] to avoid forgetting the synchronization for a future API.
+ */
+class SynchronizedResource(
+    private val resource: Resource
+) : Resource {
+
+    private val mutex = Mutex()
+
+    override suspend fun link(): Link =
+        mutex.withLock { resource.link() }
+
+    override suspend fun length(): ResourceTry<Long> =
+        mutex.withLock { resource.length() }
+
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+        mutex.withLock { resource.read(range) }
+
+    override suspend fun close() =
+        mutex.withLock { resource.close() }
+
+    override val file: File? get() =
+        resource.file
+
+    override fun toString(): String =
+        "${javaClass.simpleName}($resource)"
+}
+
+/**
+ * Wraps this resource in a [SynchronizedResource] to protect the access from multiple threads.
+ */
+fun Resource.synchronized(): SynchronizedResource =
+    SynchronizedResource(this)
 
 /**
  * Wraps a [Resource] and buffers its content.

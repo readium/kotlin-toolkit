@@ -27,8 +27,11 @@ android {
         unitTests.isIncludeAndroidResources = true
     }
     kotlinOptions {
-        freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
         allWarningsAsErrors = true
+        freeCompilerArgs = freeCompilerArgs + listOf(
+            "-opt-in=kotlin.RequiresOptIn",
+            "-opt-in=org.readium.r2.shared.InternalReadiumApi"
+        )
     }
     buildTypes {
         getByName("release") {
@@ -59,7 +62,6 @@ dependencies {
 
     implementation("androidx.appcompat:appcompat:1.4.1")
     @Suppress("GradleDependency")
-    implementation("com.github.barteksc:pdfium-android:1.8.2")
     implementation("com.jakewharton.timber:timber:5.0.1")
     implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
         exclude(group = "org.parboiled")

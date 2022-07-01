@@ -19,6 +19,14 @@ annotation class InternalReadiumApi
 
 @RequiresOptIn(
     level = RequiresOptIn.Level.WARNING,
+    message = "This API is still experimental. It might change in the future without notice."
+)
+@Retention(AnnotationRetention.BINARY)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
+annotation class ExperimentalReadiumApi
+
+@RequiresOptIn(
+    level = RequiresOptIn.Level.WARNING,
     message = "Support for PDF is still experimental. The API may be changed in the future without notice."
 )
 @Retention(AnnotationRetention.BINARY)

@@ -29,7 +29,10 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
-        freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
+        freeCompilerArgs = freeCompilerArgs + listOf(
+            "-opt-in=kotlin.RequiresOptIn",
+            "-opt-in=org.readium.r2.shared.InternalReadiumApi"
+        )
     }
     buildTypes {
         getByName("release") {
@@ -80,7 +83,6 @@ dependencies {
     // Needed to avoid a crash with API 31, see https://stackoverflow.com/a/69152986/1474476
     implementation("androidx.work:work-runtime-ktx:2.7.1")
     implementation("com.duolingo.open:rtl-viewpager:1.0.3")
-    api("com.github.barteksc:android-pdf-viewer:2.8.2")
     // ChrisBane/PhotoView ( for the Zoom handling )
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
 

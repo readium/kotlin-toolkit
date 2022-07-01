@@ -8,13 +8,15 @@ package org.readium.r2.navigator.util
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
 
 /**
  * Creates a [FragmentFactory] for a single type of [Fragment] using the result of the given
  * [factory] closure.
  */
-internal inline fun <reified T : Fragment> createFragmentFactory(crossinline factory: () -> T): FragmentFactory = object : FragmentFactory() {
+@InternalReadiumApi
+inline fun <reified T : Fragment> createFragmentFactory(crossinline factory: () -> T): FragmentFactory = object : FragmentFactory() {
 
     override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
         return when (className) {
@@ -36,6 +38,7 @@ internal inline fun <reified T : Fragment> createFragmentFactory(crossinline fac
  * )
  * ```
  */
+@InternalReadiumApi
 class CompositeFragmentFactory(private val factories: List<FragmentFactory>) : FragmentFactory() {
 
     constructor(vararg factories: FragmentFactory) : this(factories.toList())

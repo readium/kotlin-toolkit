@@ -67,9 +67,10 @@ dependencies {
     implementation(project(":readium:streamer"))
     implementation(project(":readium:navigator"))
     implementation(project(":readium:navigator-media2"))
-
     implementation(project(":readium:opds"))
     implementation(project(":readium:lcp"))
+    // Only required if you want to support PDF files using PDFium.
+    implementation(project(":readium:adapters:pdfium"))
 
     implementation("androidx.core:core-ktx:1.7.0")
     implementation("androidx.activity:activity-ktx:1.4.0")

@@ -9,8 +9,9 @@
 
 package org.readium.r2.navigator.extensions
 
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Locator
-import java.util.Locale
+import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
@@ -22,7 +23,8 @@ import kotlin.time.ExperimentalTime
 /**
  * All named parameters found in the fragments, such as `p=5`.
  */
-internal val Locator.Locations.fragmentParameters: Map<String, String> get() =
+@InternalReadiumApi
+val Locator.Locations.fragmentParameters: Map<String, String> get() =
     fragments
         // Concatenates fragments together, after dropping any #
         .map { it.removePrefix("#") }
@@ -60,7 +62,6 @@ internal val Locator.Locations.page: Int? get() =
  *
  * https://www.w3.org/TR/media-frags/
  */
-@OptIn(ExperimentalTime::class)
 internal val Locator.Locations.time: Duration? get() =
     fragmentParameters["t"]?.toIntOrNull()?.seconds
 
