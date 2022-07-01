@@ -43,11 +43,28 @@ All notable changes to this project will be documented in this file. Take a look
 * `TransformingResource` now caches its content by default, as it is the correct behavior in most cases. Set `cacheBytes = false` explicitly to revert to the previous behavior.
 * The previous PDF navigator was extracted in its own package to support third-party PDF engines. **This is a breaking change** if your app supported PDF, take a look at [the migration guide](docs/migration-guide.md).
 
+#### Navigator
+
+* `Decoration.extras` is now a `JsonObject` instead of `Bundle`. You will need to update your app if you were storing custom data in `extras`, for example:
+    ```kotlin
+    val decoration = Decoration(...,
+        extras = buildJsonObject {
+            put("id", id)
+        }
+    )
+
+    val id = decoration.extras["id"]?.jsonPrimitive?.long
+    ```
+
 ### Fixed
 
 #### Streamer
 
 * Fixed parsing the table of contents of an EPUB 3 using NCX instead of a Navigation Document.
+
+#### Navigator
+
+* `Decoration` objects are now properly comparable with `equals()`.
 
 
 ## [2.2.0]

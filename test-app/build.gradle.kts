@@ -9,6 +9,7 @@ plugins {
     id("kotlin-android")
     id("kotlin-kapt")
     id("kotlin-parcelize")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -100,6 +101,7 @@ dependencies {
     implementation("com.squareup.picasso:picasso:2.71828")
     implementation("joda-time:joda-time:2.10.14")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
     // AM NOTE: needs to stay this version for now (June 24,2020)
     implementation("org.jsoup:jsoup:1.15.1")
 
