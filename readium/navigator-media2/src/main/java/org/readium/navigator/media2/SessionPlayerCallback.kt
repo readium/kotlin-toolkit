@@ -10,10 +10,8 @@ import androidx.media2.common.MediaItem
 import androidx.media2.common.MediaMetadata
 import androidx.media2.common.SessionPlayer
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.flow.*
 import timber.log.Timber
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -21,75 +19,51 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 internal class SessionPlayerCallback(
     private val positionRefreshDelay: Duration,
+    private val seekCompletedSender: SendChannel<Long>
 ) : SessionPlayer.PlayerCallback() {
-
-    data class Item(
-        val index: Int,
-        val position: Duration,
-        val buffered: Duration,
-        val duration: Duration?,
-    )
-
-    var playbackCompleted: Boolean =
-        false
-
-    val playerState: Flow<SessionPlayerState>
-        get() = _playerState.distinctUntilChanged()
-
-    val bufferingState: Flow<SessionPlayerBufferingState>
-        get() = _bufferingState.distinctUntilChanged()
-
-    val currentItem: Flow<Item>
-        get() = _currentItem.distinctUntilChanged()
-
-    val playbackSpeed: Flow<Float>
-        get() = _playbackSpeed.distinctUntilChanged()
-
-    val seekCompleted: Flow<Long>
-        get() = _seekCompleted
-
-    private val _playerState = MutableSharedFlow<SessionPlayerState>(
-        replay = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-
-    private val _bufferingState = MutableSharedFlow<SessionPlayerBufferingState>(
-        replay = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-
-    private val _currentItem = MutableSharedFlow<Item>(
-        replay = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-
-    private val _playbackSpeed = MutableSharedFlow<Float>(
-        replay = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-
-    private val _seekCompleted = MutableSharedFlow<Long>(
-       extraBufferCapacity = Int.MAX_VALUE
-    )
-
-    init {
-        _playbackSpeed.tryEmit(1f)
-        _bufferingState.tryEmit(SessionPlayerBufferingState.BUFFERING_STATE_UNKNOWN)
-    }
 
     private val coroutineScope: CoroutineScope =
         MainScope()
 
+    var playbackCompleted: Boolean =
+        false
+
+    val playerState: StateFlow<SessionPlayerState>
+        get() = _playerState
+
+    val bufferingState: StateFlow<SessionPlayerBufferingState>
+        get() = _bufferingState
+
+    val currentItem: StateFlow<ItemState>
+        get() = _currentItem
+
+    val playbackSpeed: StateFlow<Float>
+        get() = _playbackSpeed
+
+    private val _playerState = MutableStateFlow(
+        SessionPlayerState.Idle
+    )
+
+    private val _bufferingState = MutableStateFlow(
+        SessionPlayerBufferingState.BUFFERING_STATE_UNKNOWN
+    )
+
+    private val _currentItem = MutableStateFlow(
+        ItemState(0, Duration.ZERO, Duration.ZERO, null)
+    )
+
+    private val _playbackSpeed = MutableStateFlow(1f)
+
     override fun onPlaylistChanged(player: SessionPlayer, list: MutableList<MediaItem>?, metadata: MediaMetadata?) {
         Timber.d("onPlaylistChanged")
 
-        val item = getCurrentItem(player)
-            ?: Item(0, Duration.ZERO, Duration.ZERO, null)
-        _currentItem.tryEmit(item)
+        _currentItem.tryEmit(player.currentItem)
+        _playerState.tryEmit(player.stateEnum)
+        _playbackSpeed.tryEmit(player.playbackSpeed)
 
         coroutineScope.launch {
             while (isActive) {
-                getCurrentItem(player)?.let { _currentItem.tryEmit(it) }
+                _currentItem.tryEmit(player.currentItem)
                 delay(positionRefreshDelay)
             }
         }
@@ -97,9 +71,9 @@ internal class SessionPlayerCallback(
 
     override fun onSeekCompleted(player: SessionPlayer, position: Long) {
         Timber.d("onSeekCompleted $position")
-        getCurrentItem(player)?.let { _currentItem.tryEmit(it) }
+        _currentItem.tryEmit(player.currentItem)
         playbackCompleted = false
-        _seekCompleted.tryEmit(position)
+        seekCompletedSender.trySend(position)
     }
 
     override fun onPlayerStateChanged(player: SessionPlayer, state: Int) {
@@ -124,7 +98,7 @@ internal class SessionPlayerCallback(
 
     override fun onCurrentMediaItemChanged(player: SessionPlayer, item: MediaItem?) {
         Timber.d("onCurrentMediaItemChanged $item")
-        getCurrentItem(player)?.let { _currentItem.tryEmit(it)  }
+        _currentItem.tryEmit(player.currentItem)
     }
 
     override fun onPlaybackSpeedChanged(player: SessionPlayer, playbackSpeed: Float) {
@@ -134,20 +108,5 @@ internal class SessionPlayerCallback(
 
     fun close() {
         coroutineScope.cancel()
-    }
-
-    private fun getCurrentItem(player: SessionPlayer): Item? {
-        val index = player.currentIndexNullable ?: return null
-        val position = player.currentPositionDuration ?: return null
-        val buffered = player.bufferedPositionDuration ?: return null
-        val duration = player.currentDuration ?: player.currentMediaItem?.metadata?.duration
-
-        return if (index != player.currentMediaItemIndex) {
-            // Current item has changed and data is stale.
-            Timber.d("Ignoring stale state.")
-            null
-        } else {
-            Item(index, position, buffered, duration)
-        }
     }
 }
