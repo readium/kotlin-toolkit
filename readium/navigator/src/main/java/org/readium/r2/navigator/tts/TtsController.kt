@@ -7,28 +7,28 @@
 package org.readium.r2.navigator.tts
 
 import android.content.Context
+import android.database.Cursor
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import org.readium.r2.navigator.tts.TtsEngine.Configuration
-import org.readium.r2.navigator.tts.TtsEngine.ConfigurationConstraints
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.content.Content
-import org.readium.r2.shared.publication.services.content.Content.Data
 import org.readium.r2.shared.publication.services.content.ContentIterator
 import org.readium.r2.shared.publication.services.content.contentIterator
 import org.readium.r2.shared.publication.services.content.isContentIterable
+import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.tokenizer.ContentTokenizer
 import org.readium.r2.shared.util.tokenizer.TextContentTokenizer
 import org.readium.r2.shared.util.tokenizer.TextUnit
+import timber.log.Timber
 import java.util.*
 
 @ExperimentalReadiumApi
@@ -41,20 +41,78 @@ fun interface TtsTokenizerFactory {
     fun create(defaultLanguage: Language?): ContentTokenizer
 }
 
+class CursorList<E>(
+    private val list: List<E> = emptyList(),
+    private val startIndex: Int = 0
+) : List<E> by list {
+    private var index: Int? = null
+
+    fun current(): E? =
+        moveAndGet(index ?: startIndex)
+
+    fun previous(): E? =
+        moveAndGet(index
+            ?.let { it - 1}
+            ?: startIndex
+        )
+
+    fun next(): E? =
+        moveAndGet(index?.let { it + 1}
+            ?: startIndex
+        )
+
+    private fun moveAndGet(index: Int): E? {
+        if (!list.indices.contains(index)) {
+            return null
+        }
+        this.index = index
+        return get(index)
+    }
+}
+
 @OptIn(DelicateReadiumApi::class)
 @ExperimentalReadiumApi
 class TtsController<E : TtsEngine> private constructor(
     private val publication: Publication,
+    config: Configuration,
     engineFactory: TtsEngineFactory<E>,
-    private val tokenizerFactory: TtsTokenizerFactory = defaultTokenizerFactory,
-    var listener: Listener? = null
+    private val tokenizerFactory: TtsTokenizerFactory,
+    var listener: Listener? = null,
 ) : SuspendingCloseable {
+
+    @ExperimentalReadiumApi
+    sealed class Exception private constructor(
+        override val message: String,
+        cause: Throwable? = null
+    ) : kotlin.Exception(message, cause) {
+        class Engine(val error: TtsEngine.Exception)
+            : Exception(error.message, error)
+    }
+
+    data class Configuration(
+        val defaultLanguage: Language? = null,
+        val voice: TtsEngine.Voice? = null,
+        val rate: Double = 1.0,
+    )
+
+    data class Utterance(
+        val text: String,
+        val locator: Locator,
+
+        internal val language: Language?,
+        internal val id: String,
+    )
 
     interface Listener {
         /**
          * Notifies an [error] occurred while speaking [utterance].
          */
-        fun onUtteranceError(utterance: TtsEngine.Utterance, error: TtsEngine.Exception)
+        fun onUtteranceError(utterance: Utterance, error: Exception)
+
+        /**
+         * Notifies a global [error] occurred.
+         */
+        fun onError(error: Exception)
     }
 
     companion object {
@@ -63,24 +121,24 @@ class TtsController<E : TtsEngine> private constructor(
         operator fun invoke(
             context: Context,
             publication: Publication,
-            config: Configuration = Configuration(
-                defaultLanguage = publication.metadata.language
-            ),
+            config: Configuration = Configuration(),
             tokenizerFactory: TtsTokenizerFactory = defaultTokenizerFactory
         ): TtsController<AndroidTtsEngine>? = invoke(
             publication,
-            engineFactory = { listener -> AndroidTtsEngine(context, config, listener) },
+            config = config,
+            engineFactory = { listener -> AndroidTtsEngine(context, listener) },
             tokenizerFactory = tokenizerFactory
         )
 
         operator fun <E : TtsEngine> invoke(
             publication: Publication,
+            config: Configuration = Configuration(),
             engineFactory: TtsEngineFactory<E>,
             tokenizerFactory: TtsTokenizerFactory = defaultTokenizerFactory
         ): TtsController<E>? {
             if (!canSpeak(publication)) return null
 
-            return TtsController(publication, engineFactory, tokenizerFactory)
+            return TtsController(publication, config, engineFactory, tokenizerFactory)
         }
 
         fun canSpeak(publication: Publication): Boolean =
@@ -88,13 +146,25 @@ class TtsController<E : TtsEngine> private constructor(
     }
 
     sealed class State {
-        object Idle : State()
-        class Playing(val utterance: TtsEngine.Utterance, val range: Locator? = null) : State()
-        class Failure(val error: TtsEngine.Exception) : State()
+        object Stopped : State()
+        object Paused : State()
+        class Playing(val utterance: Utterance, val range: Locator? = null) : State()
+        class Failure(val error: Exception) : State()
     }
 
-    private val _state = MutableStateFlow<State>(State.Idle)
+    private val _state = MutableStateFlow<State>(State.Stopped)
     val state: StateFlow<State> = _state.asStateFlow()
+
+    var publicationIterator: ContentIterator? = null
+        set(value) {
+            field?.let {
+                scope.launch { it.close() }
+            }
+            field = value
+            utterances = CursorList()
+        }
+
+    var utterances: CursorList<Utterance> = CursorList()
 
     /**
      * Underlying [TtsEngine] instance.
@@ -105,7 +175,9 @@ class TtsController<E : TtsEngine> private constructor(
      */
     @DelicateReadiumApi
     val engine: E by lazy { engineFactory.create(EngineListener()) }
+
     private val scope = MainScope()
+    private val mutex = Mutex()
 
     init {
         require(canSpeak(publication)) { "The publication cannot be spoken with TtsController, as its content is not iterable" }
@@ -114,55 +186,67 @@ class TtsController<E : TtsEngine> private constructor(
     override suspend fun close() {
         tryOrLog {
             engine.close()
+            scope.cancel()
         }
-        scope.cancel()
     }
 
-    val config: StateFlow<Configuration>
-        get() = engine.config
-
-    val configConstraints: StateFlow<ConfigurationConstraints>
-        get() = engine.configConstraints
+    private val _config = MutableStateFlow(config)
+    val config: StateFlow<Configuration> = _config.asStateFlow()
 
     fun setConfig(config: Configuration): Configuration =
-        engine.setConfig(config)
+        _config.updateAndGet {
+            config.copy(
+                rate = config.rate.coerceIn(engine.rateRange),
+            )
+        }
 
-    fun voiceWithIdentifier(identifier: String): TtsEngine.Voice? =
-        configConstraints.value.availableVoices.firstOrNull { it.identifier == identifier }
+    val rateRange: ClosedRange<Double>
+        get() = engine.rateRange
 
-    fun playPause() {
-        when (state.value) {
-            is State.Failure -> return
-            State.Idle -> play()
-            is State.Playing -> pause()
+    private val _availableVoices = MutableStateFlow<List<TtsEngine.Voice>>(emptyList())
+    val availableVoices: StateFlow<List<TtsEngine.Voice>> = _availableVoices.asStateFlow()
+
+    fun voiceWithId(id: String): TtsEngine.Voice? =
+        engine.voiceWithId(id)
+
+    fun start(fromLocator: Locator? = null) {
+        replacePlaybackJob {
+            publicationIterator = publication.contentIterator(fromLocator)
+            playNextUtterance(Direction.Forward)
         }
     }
 
-    fun play(start: Locator? = null) {
+    fun stop() {
         replacePlaybackJob {
-            if (start != null) {
-                speakingUtteranceIndex = null
-                utterances = emptyList()
-                contentIterator = publication.contentIterator(start)
-            }
-
-            if (contentIterator == null) {
-                contentIterator = publication.contentIterator(null)
-            }
-
-            val utterance = currentUtterance
-            if (utterance != null) {
-                play(utterance)
-            } else {
-                playNextUtterance(Direction.Forward)
-            }
+            _state.value = State.Stopped
+            publicationIterator = null
+            engine.cancel()
         }
     }
 
     fun pause() {
         replacePlaybackJob {
-            _state.value = State.Idle
-            engine.stop()
+            if (state.value is State.Playing) {
+                _state.value = State.Paused
+                engine.cancel()
+            }
+        }
+    }
+
+    fun resume() {
+        replacePlaybackJob {
+            if (state.value is State.Paused) {
+                utterances.current()
+                    ?.let(::play)
+            }
+        }
+    }
+
+    fun resumeOrPause() {
+        when (state.value) {
+            is State.Failure, State.Stopped -> return
+            is State.Playing -> pause()
+            is State.Paused -> resume()
         }
     }
 
@@ -182,93 +266,90 @@ class TtsController<E : TtsEngine> private constructor(
         Forward, Backward;
     }
 
-    private var contentIterator: ContentIterator? = null
-        set(value) {
-            contentIterator?.let { previous ->
-                scope.launch { previous.close() }
-            }
-            field = value
-        }
-
-    private var speakingUtteranceIndex: Int? = null
-
-    private var utterances = emptyList<TtsEngine.Utterance>()
-
-    private val currentUtterance: TtsEngine.Utterance? get() =
-        speakingUtteranceIndex?.let { utterances[it] }
-
     private suspend fun playNextUtterance(direction: Direction) {
         val utterance = nextUtterance(direction)
         if (utterance != null) {
             play(utterance)
         } else {
-            _state.value = State.Idle
+            _state.value = State.Stopped
         }
     }
 
-    private fun play(utterance: TtsEngine.Utterance) {
+    private fun play(utterance: Utterance) {
         _state.value = State.Playing(utterance)
-        engine.speak(utterance)
+
+        engine.speak(TtsEngine.Utterance(
+            id = utterance.id,
+            text = utterance.text,
+            rate = config.value.rate,
+            voiceOrLanguage = utterance.voiceOrLanguage()
+        ))
     }
 
-    private suspend fun nextUtterance(direction: Direction): TtsEngine.Utterance? {
-        val nextIndex = nextUtteranceIndex(direction)
-        if (nextIndex == null) {
-            return if (loadNextUtterances(direction)) {
-                nextUtterance(direction)
-            } else {
-                null
-            }
-        }
+    private fun Utterance.voiceOrLanguage(): Either<TtsEngine.Voice, Language> {
+        // User selected voice, if it's compatible with the given language.
+        config.value.voice
+            ?.takeIf { language == null || it.language.removeRegion() == language.removeRegion() }
+            ?.let { return Either.Left(it) }
 
-        speakingUtteranceIndex = nextIndex
-        return utterances[nextIndex]
+        // Or fallback on the languages.
+        return Either.Right(
+            language
+                ?.takeIf { it != publication.metadata.language }
+                ?: config.value.defaultLanguage
+                ?: publication.metadata.language
+                ?: Language(Locale.getDefault())
+        )
     }
 
-    private fun nextUtteranceIndex(direction: Direction): Int? {
-        val index = when (direction) {
-            Direction.Forward -> (speakingUtteranceIndex ?: -1) + 1
-            Direction.Backward -> (speakingUtteranceIndex ?: utterances.size) - 1
-        }
+    private suspend fun nextUtterance(direction: Direction): Utterance? =
+        utterances.nextIn(direction)
+            ?: (
+                if (loadUtterances(direction)) nextUtterance(direction)
+                else null
+            )
 
-        return index
-            .takeIf { utterances.indices.contains(it) }
-    }
 
-    private suspend fun loadNextUtterances(direction: Direction): Boolean {
-        val content = when (direction) {
-            Direction.Forward -> contentIterator?.next()
-            Direction.Backward -> contentIterator?.previous()
-        }
-
-        utterances = content
+    private suspend fun loadUtterances(direction: Direction): Boolean {
+        val utterancesList = publicationIterator
+            ?.nextIn(direction)
             ?.tokenize()
             ?.flatMap { it.utterances() }
-            ?: emptyList()
+            ?.let { CursorList(it) }
+            ?: CursorList()
 
-        speakingUtteranceIndex = null
-
+        utterances = cursorList(utterancesList, direction)
         return utterances.isNotEmpty()
     }
+
+    private fun cursorList(list: List<Utterance>, direction: Direction): CursorList<Utterance> =
+        CursorList(
+            list = list,
+            startIndex = when (direction) {
+                Direction.Forward -> 0
+                Direction.Backward -> list.size - 1
+            }
+        )
 
     private fun Content.tokenize(): List<Content> =
         tokenizerFactory.create(config.value.defaultLanguage)
             .tokenize(this)
 
-    private fun Content.utterances(): List<TtsEngine.Utterance> {
-        fun utterance(text: String, locator: Locator, language: Language? = null): TtsEngine.Utterance? {
+    private fun Content.utterances(): List<Utterance> {
+        fun utterance(text: String, locator: Locator, language: Language? = null): Utterance? {
             if (!text.any { it.isLetterOrDigit() })
                 return null
 
-            return TtsEngine.Utterance(
+            return Utterance(
+                id = UUID.randomUUID().toString(),
                 text = text,
                 locator = locator,
-                language = language?.takeIf { it != publication.metadata.language }
+                language = language
             )
         }
 
         return when (val data = data) {
-            is Data.Image -> {
+            is Content.Data.Image -> {
                 listOfNotNull(
                     data.description
                         ?.takeIf { it.isNotBlank() }
@@ -276,7 +357,7 @@ class TtsController<E : TtsEngine> private constructor(
                 )
             }
 
-            is Data.Text -> {
+            is Content.Data.Text -> {
                 data.spans.mapNotNull { span ->
                     utterance(
                         text = span.text,
@@ -293,45 +374,65 @@ class TtsController<E : TtsEngine> private constructor(
     private var playbackJob: Job? = null
 
     /**
-     * Cancels the previous playback-related job and starts a new one witht he given suspending
+     * Cancels the previous playback-related job and starts a new one with the given suspending
      * [block].
      */
     private fun replacePlaybackJob(block: suspend CoroutineScope.() -> Unit) {
-        playbackJob?.cancel()
-        playbackJob = scope.launch(block = block)
+        scope.launch {
+            playbackJob?.cancelAndJoin()
+            playbackJob = launch {
+                mutex.withLock {
+                    block()
+                }
+            }
+        }
     }
 
     private inner class EngineListener : TtsEngine.Listener {
 
-        override fun onSpeakRangeAt(locator: Locator, utterance: TtsEngine.Utterance) {
-            scope.launch {
-                _state.value = State.Playing(utterance, range = locator)
-            }
+        override fun onSpeakRange(utteranceId: String, range: IntRange) {
+            val utterance = utterances.current()?.takeIf { it.id == utteranceId } ?: return
+            Timber.e("FIND RANGE")
+            _state.value = State.Playing(
+                utterance = utterance,
+                range = utterance.locator.copy(
+                    text = utterance.locator.text.substring(range)
+                )
+            )
         }
 
-        override fun onStop() {
-            scope.launch {
-                if (state.value is State.Playing) {
-                    next()
-                }
+        override fun onDone(utteranceId: String) {
+            if (state.value is State.Playing) {
+                next()
             }
         }
 
         override fun onEngineError(error: TtsEngine.Exception) {
-            scope.launch {
-                _state.value = State.Idle
-            }
+            listener?.onError(Exception.Engine(error))
+            _state.value = State.Failure(Exception.Engine(error))
         }
 
-        override fun onUtteranceError(utterance: TtsEngine.Utterance, error: TtsEngine.Exception) {
-            scope.launch {
-                listener?.onUtteranceError(utterance, error)
+        override fun onUtteranceError(utteranceId: String, error: TtsEngine.Exception) {
+            val utterance = utterances.current()?.takeIf { it.id == utteranceId } ?: return
 
-                _state.update { state ->
-                    if (state is State.Playing) State.Idle
-                    else state
-                }
-            }
+            listener?.onUtteranceError(utterance, Exception.Engine(error))
+            _state.value = State.Paused
+        }
+
+        override fun onAvailableVoicesChange(voices: List<TtsEngine.Voice>) {
+            _availableVoices.value = voices
         }
     }
+
+    private fun <E> CursorList<E>.nextIn(direction: Direction): E? =
+        when (direction) {
+            Direction.Forward -> next()
+            Direction.Backward -> previous()
+        }
+
+    private suspend fun ContentIterator.nextIn(direction: Direction): Content? =
+        when (direction) {
+            Direction.Forward -> next()
+            Direction.Backward -> previous()
+        }
 }

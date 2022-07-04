@@ -10,19 +10,16 @@ import android.content.Context
 import android.content.Intent
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
-import android.speech.tts.Voice
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import org.readium.r2.navigator.tts.TtsEngine.Configuration
-import org.readium.r2.navigator.tts.TtsEngine.ConfigurationConstraints
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import org.readium.r2.navigator.tts.TtsEngine.*
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.MapWithDefaultCompanion
+import kotlin.Exception
+import android.speech.tts.Voice as AndroidVoice
 
 /**
  * Default [TtsEngine] implementation using Android's native text to speech engine.
@@ -30,8 +27,7 @@ import org.readium.r2.shared.util.MapWithDefaultCompanion
 @ExperimentalReadiumApi
 class AndroidTtsEngine(
     context: Context,
-    config: Configuration = Configuration(),
-    private val listener: TtsEngine.Listener
+    private val listener: Listener
 ) : TtsEngine {
 
     /**
@@ -70,7 +66,6 @@ class AndroidTtsEngine(
 
     private val engine = TextToSpeech(context, engineListener).apply {
         setOnUtteranceProgressListener(engineListener)
-        setConfig(config)
     }
 
     /**
@@ -94,75 +89,57 @@ class AndroidTtsEngine(
         return true
     }
 
-    private val _config = MutableStateFlow(config)
-    override val config: StateFlow<Configuration> = _config.asStateFlow()
-
-    private var _configConstraints = MutableStateFlow(ConfigurationConstraints(
-        rateRange = 0.1..3.0
-    ))
-    override val configConstraints: StateFlow<ConfigurationConstraints> = _configConstraints.asStateFlow()
-
-    override fun setConfig(config: Configuration): Configuration {
-        engine.setConfig(config)
-        _config.value = config
-        return config
-    }
-
-    private suspend fun updateConfigConstraints() = withContext(Dispatchers.Default) {
-        _configConstraints.update { constraints ->
-            constraints.copy(
-                availableVoices = engine.voices.map { it.toVoice() }
-            )
-        }
-    }
+    override val rateRange: ClosedRange<Double> = 0.1..3.0
+    override var availableVoices: List<Voice> = emptyList()
+        private set
 
     private var speakJob: Job? = null
+    private val mutex = Mutex()
 
-    override fun speak(utterance: TtsEngine.Utterance) {
-        speakJob?.cancel()
+    override fun speak(utterance: Utterance) {
+        cancel()
         speakJob = scope.launch {
             init.await()
 
-            if (!setupVoiceForUtterance(utterance)) {
-                return@launch
+            mutex.withLock {
+                speakSync(utterance)
             }
-
-            val id = nextId()
-            utterances[id] = utterance
-            engine.speak(utterance.text, TextToSpeech.QUEUE_FLUSH, null, id)
         }
     }
 
-    private fun setupVoiceForUtterance(utterance: TtsEngine.Utterance): Boolean {
-        // Setup the user selected voice.
-        val voice = config.value.voice
-        val language = utterance.languageOrDefault
-        if (voice != null && voice.language.removeRegion() == language.removeRegion()) {
-            engine.voices
-                .firstOrNull { it.name == voice.identifier }
-                ?.let {
-                    engine.voice = it
-                    return true
+    private fun speakSync(utterance: Utterance) {
+        try {
+            engine.setupFor(utterance)
+            engine.speak(utterance.text, TextToSpeech.QUEUE_FLUSH, null, utterance.id)
+
+        } catch (e: kotlin.Exception) {
+            listener.onUtteranceError(utterance.id, TtsEngine.Exception.wrap(e))
+        }
+    }
+
+    private fun TextToSpeech.setupFor(utterance: Utterance) {
+        setSpeechRate(utterance.rate.toFloat())
+
+        utterance.voiceOrLanguage
+            .onLeft { voice ->
+                // Setup the user selected voice.
+                engine.voice = engine.voices
+                    .firstOrNull { it.name == voice.id }
+                    ?: throw IllegalStateException("Unknown Android voice ${voice.id}")
+            }
+            .onRight { language ->
+                // Or fallback on the language.
+                val localeResult = engine.setLanguage(language.locale)
+                if (localeResult < TextToSpeech.LANG_AVAILABLE) {
+                    if (localeResult == TextToSpeech.LANG_MISSING_DATA)
+                        throw TtsEngine.Exception.LanguageSupportIncomplete(language)
+                    else
+                        throw TtsEngine.Exception.LanguageNotSupported(language)
                 }
-        }
-
-        // Or fallback on the language.
-        val localeResult = engine.setLanguage(language.locale)
-        if (localeResult < TextToSpeech.LANG_AVAILABLE) {
-            val error =
-                if (localeResult == TextToSpeech.LANG_MISSING_DATA)
-                    TtsEngine.Exception.LanguageSupportIncomplete(language)
-                else
-                    TtsEngine.Exception.LanguageNotSupported(language)
-
-            listener.onUtteranceError(utterance, error)
-            return false
-        }
-
-        return true
+            }
     }
 
-    override fun stop() {
+    override fun cancel() {
         speakJob?.cancel()
         speakJob = null
 
@@ -174,36 +151,20 @@ class AndroidTtsEngine(
     }
 
     override suspend fun close() {
-        stop()
+        cancel()
         engine.shutdown()
         scope.cancel()
     }
-
-    private val utterances = mutableMapOf<String, TtsEngine.Utterance>()
-
-    private var idCount: Int = 0
-
-    private fun nextId(): String =
-        idCount++.toString()
-
-    private val TtsEngine.Utterance.languageOrDefault: Language get() =
-        language
-            ?: config.value.defaultLanguage
-            ?: Language(engine.voice.locale)
 
     // Engine
 
     private val init = CompletableDeferred<Unit>()
 
-    private fun TextToSpeech.setConfig(config: Configuration) {
-        setSpeechRate(config.rate.toFloat())
-    }
-
     private inner class EngineListener : TextToSpeech.OnInitListener, UtteranceProgressListener() {
         override fun onInit(status: Int) {
             if (status == TextToSpeech.SUCCESS) {
                 scope.launch {
-                    updateConfigConstraints()
+                    updateVoices()
                     init.complete(Unit)
                 }
             } else {
@@ -213,13 +174,11 @@ class AndroidTtsEngine(
 
         override fun onStart(utteranceId: String?) {}
 
-        override fun onStop(utteranceId: String?, interrupted: Boolean) {
-            utterances.remove(utteranceId)
-        }
+        override fun onStop(utteranceId: String?, interrupted: Boolean) {}
 
         override fun onDone(utteranceId: String?) {
-            utterances.remove(utteranceId)
-            listener.onStop()
+            utteranceId ?: return
+            listener.onDone(utteranceId)
         }
 
         @Deprecated("Deprecated in the interface", ReplaceWith("onError(utteranceId, -1)"))
@@ -228,39 +187,38 @@ class AndroidTtsEngine(
         }
 
         override fun onError(utteranceId: String?, errorCode: Int) {
-            val utterance = utterances.remove(utteranceId) ?: return
+            utteranceId ?: return
             val error = EngineException(errorCode)
-            listener.onUtteranceError(utterance, when (error.error) {
+            listener.onUtteranceError(utteranceId, when (error.error) {
                 EngineError.Network, EngineError.NetworkTimeout -> TtsEngine.Exception.Network(error)
-                EngineError.NotInstalledYet -> TtsEngine.Exception.LanguageSupportIncomplete(utterance.languageOrDefault)
                 else -> TtsEngine.Exception.Other(error)
             })
         }
 
         override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
-            val utterance = utterances[utteranceId] ?: return
-
-            listener.onSpeakRangeAt(
-                locator = utterance.locator.copy(
-                    text = utterance.locator.text.substring(start, end)
-                ),
-                utterance = utterance
-            )
+            utteranceId ?: return
+            listener.onSpeakRange(utteranceId, start until end)
         }
+    }
+
+    private fun updateVoices() {
+        availableVoices = engine.voices.map { it.toVoice() }
+        listener.onAvailableVoicesChange(availableVoices)
     }
 }
 
-private fun Voice.toVoice(): TtsEngine.Voice =
-    TtsEngine.Voice(
-        identifier = name,
+@OptIn(ExperimentalReadiumApi::class)
+private fun AndroidVoice.toVoice(): Voice =
+    Voice(
+        id = name,
         name = null,
         language = Language(locale),
         quality = when (quality) {
-            Voice.QUALITY_VERY_HIGH -> TtsEngine.Voice.Quality.Highest
-            Voice.QUALITY_HIGH -> TtsEngine.Voice.Quality.High
-            Voice.QUALITY_LOW -> TtsEngine.Voice.Quality.Low
-            Voice.QUALITY_VERY_LOW -> TtsEngine.Voice.Quality.Lowest
-            else -> TtsEngine.Voice.Quality.Normal
+            AndroidVoice.QUALITY_VERY_HIGH -> Voice.Quality.Highest
+            AndroidVoice.QUALITY_HIGH -> Voice.Quality.High
+            AndroidVoice.QUALITY_LOW -> Voice.Quality.Low
+            AndroidVoice.QUALITY_VERY_LOW -> Voice.Quality.Lowest
+            else -> Voice.Quality.Normal
         },
         requiresNetwork = isNetworkConnectionRequired
     )

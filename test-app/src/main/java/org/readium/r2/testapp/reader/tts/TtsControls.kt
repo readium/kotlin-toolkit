@@ -16,14 +16,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import org.readium.r2.navigator.tts.TtsEngine.Configuration
+import org.readium.r2.navigator.tts.TtsController.Configuration
 import org.readium.r2.navigator.tts.TtsEngine.Voice
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.shared.views.SelectorListItem
 import org.readium.r2.testapp.utils.extensions.asStateWhenStarted
 import java.text.DecimalFormat
 
+@OptIn(ExperimentalReadiumApi::class)
 @Composable
 fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
     val showControls by model.state.asStateWhenStarted { it.showControls }
@@ -39,7 +41,7 @@ fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
             availableVoices = settings.availableVoices,
             config = settings.config,
             onConfigChange = model::setConfig,
-            onPlayPause = model::playPause,
+            onPlayPause = model::resumeOrPause,
             onStop = model::stop,
             onPrevious = model::previous,
             onNext = model::next,
@@ -48,6 +50,7 @@ fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalReadiumApi::class)
 @Composable
 fun TtsControls(
     playing: Boolean,
@@ -132,6 +135,7 @@ fun TtsControls(
     }
 }
 
+@OptIn(ExperimentalReadiumApi::class)
 @Composable
 private fun TtsSettingsDialog(
     availableRates: List<Double>,
@@ -182,7 +186,7 @@ private fun TtsSettingsDialog(
                     label = stringResource(R.string.voice),
                     values = availableVoices,
                     selection = config.voice,
-                    titleForValue = { it?.name ?: it?.identifier ?: stringResource(R.string.auto) },
+                    titleForValue = { it?.name ?: it?.id ?: stringResource(R.string.auto) },
                     onSelected = { onConfigChange(config.copy(voice = it)) }
                 )
             }

@@ -24,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -199,7 +198,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.tts -> {
-                checkNotNull(model.tts).play(navigator)
+                checkNotNull(model.tts).start(navigator)
             }
             else -> return super.onOptionsItemSelected(item)
         }

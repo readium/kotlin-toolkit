@@ -18,6 +18,7 @@ import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.tts.AndroidTtsEngine
 import org.readium.r2.navigator.tts.TtsController
+import org.readium.r2.navigator.tts.TtsController.Configuration
 import org.readium.r2.navigator.tts.TtsEngine
 import org.readium.r2.navigator.tts.TtsEngine.Voice
 import org.readium.r2.shared.DelicateReadiumApi
@@ -74,7 +75,7 @@ class TtsViewModel private constructor(
      * @param availableVoices Voices supported by the TTS engine, for the selected language.
      */
     data class Settings(
-        val config: TtsEngine.Configuration = TtsEngine.Configuration(),
+        val config: Configuration = Configuration(),
         val rateRange: ClosedRange<Double> = 1.0..1.0,
         val availableLanguages: List<Language> = emptyList(),
         val availableVoices: List<Voice> = emptyList(),
@@ -109,28 +110,13 @@ class TtsViewModel private constructor(
     init {
         controller.listener = ControllerListener()
 
-        // Handle global [TtsController] failures.
-        controller.state
-            .filterIsInstance<TtsState.Failure>()
-            .map(::error)
-            .onEach(::handleTtsException)
-            .launchIn(scope)
-
-        val rateRange: Flow<ClosedRange<Double>> =
-            controller.configConstraints
-                .map { it.rateRange }
-
         val voicesByLanguage: Flow<Map<Language, List<Voice>>> =
-            controller.configConstraints
-                .map {
-                    it.availableVoices
-                        .groupBy { v -> v.language.removeRegion() }
-                }
+            controller.availableVoices
+                .map { voices -> voices.groupBy { it.language } }
 
         val languages: Flow<List<Language>> = voicesByLanguage
-            .map {
-                it.keys
-                    .sortedBy { l -> l.locale.displayName }
+            .map { voices ->
+                voices.keys.sortedBy { it.locale.displayName }
             }
 
         val voicesForSelectedLanguage: Flow<List<Voice>> =
@@ -139,20 +125,19 @@ class TtsViewModel private constructor(
                 voicesByLanguage,
             ) { language, voices ->
                 language
-                    ?.let { voices[it.removeRegion()] }
-                    ?.sortedBy { it.name ?: it.identifier }
+                    ?.let { voices[it] }
+                    ?.sortedBy { it.name ?: it.id }
                     ?: emptyList()
             }
 
         val settings: Flow<Settings> = combine(
             controller.config,
-            rateRange,
             languages,
             voicesForSelectedLanguage,
-        ) { config, rates, langs, voices ->
+        ) { config, langs, voices ->
             Settings(
                 config = config,
-                rateRange = rates,
+                rateRange = controller.rateRange,
                 availableLanguages = langs,
                 availableVoices = voices
             )
@@ -181,54 +166,6 @@ class TtsViewModel private constructor(
         }.stateIn(scope, SharingStarted.Eagerly, initialValue = State())
     }
 
-    private inner class ControllerListener : TtsController.Listener {
-        override fun onUtteranceError(
-            utterance: TtsEngine.Utterance,
-            error: TtsEngine.Exception
-        ) {
-            scope.launch {
-                val shouldContinuePlayback = handleTtsException(error)
-
-                if (shouldContinuePlayback) {
-                    next()
-                }
-            }
-
-        }
-    }
-
-    /**
-     * Handles the given error and returns whether the playback should continue.
-     */
-    private suspend fun handleTtsException(error: TtsEngine.Exception): Boolean =
-        when (error) {
-            // The `LanguageSupportIncomplete` exception is a special case. We can recover from
-            // it by asking the user to download the missing voice data.
-            is TtsEngine.Exception.LanguageSupportIncomplete -> {
-                _events.send(Event.OnMissingVoiceData(error.language))
-                false
-            }
-
-            else -> {
-                _events.send(Event.OnError(error.toUserException()))
-                true
-            }
-        }
-
-    private fun TtsEngine.Exception.toUserException(): UserException =
-        when (this) {
-            is TtsEngine.Exception.InitializationFailed ->
-                UserException(R.string.tts_error_initialization)
-            is TtsEngine.Exception.LanguageNotSupported ->
-                UserException(R.string.tts_error_language_not_supported, language.locale.displayName)
-            is TtsEngine.Exception.LanguageSupportIncomplete ->
-                UserException(R.string.tts_error_language_support_incomplete, language.locale.displayName)
-            is TtsEngine.Exception.Network ->
-                UserException(R.string.tts_error_network)
-            is TtsEngine.Exception.Other ->
-                UserException(R.string.tts_error_other)
-        }
-
     fun onCleared() {
         runBlocking {
             controller.close()
@@ -239,19 +176,17 @@ class TtsViewModel private constructor(
      * Begins the TTS playback in the given [navigator].
      */
     fun start(navigator: Navigator) = scope.launch {
-        controller.play(
-            start = navigator.firstVisibleElementLocator()
-        )
+        controller.start(fromLocator = navigator.firstVisibleElementLocator())
         isStarted.value = true
     }
 
     fun stop() {
-        controller.pause()
+        controller.stop()
         isStarted.value = false
     }
 
-    fun playPause() {
-        controller.playPause()
+    fun resumeOrPause() {
+        controller.resumeOrPause()
     }
 
     fun pause() {
@@ -266,12 +201,74 @@ class TtsViewModel private constructor(
         controller.next()
     }
 
-    fun setConfig(config: TtsEngine.Configuration) {
+    fun setConfig(config: Configuration) {
         controller.setConfig(config)
     }
 
     @OptIn(DelicateReadiumApi::class)
     fun requestInstallVoice(context: Context) {
         controller.engine.requestInstallMissingVoice(context)
+    }
+
+    private inner class ControllerListener : TtsController.Listener {
+        override fun onUtteranceError(
+            utterance: TtsController.Utterance,
+            error: TtsController.Exception
+        ) {
+            scope.launch {
+                val shouldContinuePlayback = handleTtsException(error)
+
+                if (shouldContinuePlayback) {
+                    next()
+                }
+            }
+
+        }
+
+        override fun onError(error: TtsController.Exception) {
+            scope.launch {
+                handleTtsException(error)
+            }
+        }
+
+        /**
+         * Handles the given error and returns whether the playback should continue.
+         */
+        private suspend fun handleTtsException(error: TtsController.Exception): Boolean =
+            when (error) {
+                is TtsController.Exception.Engine -> when (val err = error.error) {
+                    // The `LanguageSupportIncomplete` exception is a special case. We can recover from
+                    // it by asking the user to download the missing voice data.
+                    is TtsEngine.Exception.LanguageSupportIncomplete -> {
+                        _events.send(Event.OnMissingVoiceData(err.language))
+                        false
+                    }
+
+                    else -> {
+                        _events.send(Event.OnError(err.toUserException()))
+                        true
+                    }
+                }
+            }
+
+        private fun TtsEngine.Exception.toUserException(): UserException =
+            when (this) {
+                is TtsEngine.Exception.InitializationFailed ->
+                    UserException(R.string.tts_error_initialization)
+                is TtsEngine.Exception.LanguageNotSupported ->
+                    UserException(
+                        R.string.tts_error_language_not_supported,
+                        language.locale.displayName
+                    )
+                is TtsEngine.Exception.LanguageSupportIncomplete ->
+                    UserException(
+                        R.string.tts_error_language_support_incomplete,
+                        language.locale.displayName
+                    )
+                is TtsEngine.Exception.Network ->
+                    UserException(R.string.tts_error_network)
+                is TtsEngine.Exception.Other ->
+                    UserException(R.string.tts_error_other)
+            }
     }
 }
