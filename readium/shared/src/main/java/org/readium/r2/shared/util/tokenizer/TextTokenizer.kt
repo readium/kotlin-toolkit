@@ -33,9 +33,9 @@ class DefaultTextContentTokenizer private constructor(
 ) : TextTokenizer by tokenizer {
     constructor(unit: TextUnit, language: Language?) : this(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-            IcuTokenizer(language = language, unit = unit)
+            IcuTextTokenizer(language = language, unit = unit)
         else
-            NaiveTokenizer(unit = unit)
+            NaiveTextTokenizer(unit = unit)
     )
 }
 
@@ -45,7 +45,7 @@ class DefaultTextContentTokenizer private constructor(
  */
 @ExperimentalReadiumApi
 @RequiresApi(Build.VERSION_CODES.N)
-class IcuTokenizer(language: Language?, unit: TextUnit) : TextTokenizer {
+class IcuTextTokenizer(language: Language?, unit: TextUnit) : TextTokenizer {
 
     private val iterator: BreakIterator
 
@@ -54,7 +54,7 @@ class IcuTokenizer(language: Language?, unit: TextUnit) : TextTokenizer {
         iterator = when (unit) {
             TextUnit.Word -> BreakIterator.getWordInstance(loc)
             TextUnit.Sentence -> BreakIterator.getSentenceInstance(loc)
-            TextUnit.Paragraph -> throw IllegalArgumentException("IcuUnitTextContentTokenizer does not handle TextContentUnit.Paragraph")
+            TextUnit.Paragraph -> throw IllegalArgumentException("IcuTextTokenizer does not handle TextContentUnit.Paragraph")
         }
     }
 
@@ -64,7 +64,9 @@ class IcuTokenizer(language: Language?, unit: TextUnit) : TextTokenizer {
         var end: Int = iterator.next()
         return buildList {
             while (end != BreakIterator.DONE) {
-                add(start until end)
+                data.sanitizeRange(start, end)
+                    ?.let { add(it) }
+
                 start = end
                 end = iterator.next()
             }
@@ -74,14 +76,15 @@ class IcuTokenizer(language: Language?, unit: TextUnit) : TextTokenizer {
 
 /**
  * A naive [Tokenizer] relying on java.text.BreakIterator to split the content.
- * Use [IcuTokenizer] for better results.
+ *
+ * Use [IcuTextTokenizer] for better results.
  */
 @ExperimentalReadiumApi
-class NaiveTokenizer(unit: TextUnit) : TextTokenizer {
+class NaiveTextTokenizer(unit: TextUnit) : TextTokenizer {
     private val iterator: java.text.BreakIterator = when (unit) {
         TextUnit.Word -> java.text.BreakIterator.getWordInstance()
         TextUnit.Sentence -> java.text.BreakIterator.getSentenceInstance()
-        TextUnit.Paragraph -> throw IllegalArgumentException("NaiveUnitTextContentTokenizer does not handle TextContentUnit.Paragraph")
+        TextUnit.Paragraph -> throw IllegalArgumentException("NaiveTextTokenizer does not handle TextContentUnit.Paragraph")
     }
 
     override fun tokenize(data: String): List<IntRange> {
@@ -90,10 +93,25 @@ class NaiveTokenizer(unit: TextUnit) : TextTokenizer {
         var end: Int = iterator.next()
         return buildList {
             while (end != java.text.BreakIterator.DONE) {
-                add(start until end)
+                data.sanitizeRange(start, end)
+                    ?.let { add(it) }
+
                 start = end
                 end = iterator.next()
             }
         }
     }
+}
+
+/**
+ * Returns a substring range from the given [start] and [end] indices, after checking that
+ * the token is not blank and trimming trailing whitespaces.
+ */
+private fun String.sanitizeRange(start: Int, end: Int): IntRange? {
+    val token = substring(start, end)
+    val trimmedToken = token.trimEnd()
+    if (!trimmedToken.any { it.isLetterOrDigit() }) {
+        return null
+    }
+    return start until (start + trimmedToken.length)
 }
