@@ -4,7 +4,7 @@
 //  available in the top-level LICENSE file of the project.
 //
 
-import { log as logNative, isScrollModeEnabled, pageWidth } from "./utils";
+import { isScrollModeEnabled, pageWidth } from "./utils";
 import { getCssSelector } from "css-selector-generator";
 
 export function findFirstVisibleLocator() {
@@ -61,7 +61,6 @@ function elementRelativePosition(element, domRect /* nullable */) {
 
   const rect = domRect || element.getBoundingClientRect();
 
-  const scrollElement = document.scrollingElement;
   if (isScrollModeEnabled()) {
     return rect.top >= 0 && rect.top <= document.documentElement.clientHeight;
   } else {

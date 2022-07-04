@@ -20,11 +20,16 @@ import kotlin.time.Duration
 
 /**
  * Collects safely the [Flow] as a [State] when the local lifecycle is started.
+ *
+ * See https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda
  */
 @Composable
-fun <T> Flow<T>.asStateWhenStarted(initialValue: T): State<T> =
-    flowWithLocalLifecycle()
-        .collectAsState(initial = initialValue)
+fun <T> Flow<T>.asStateWhenStarted(initialValue: T): State<T> {
+    val owner = LocalLifecycleOwner.current
+    return remember(this, owner) {
+        flowWithLifecycle(owner.lifecycle)
+    }.collectAsState(initial = initialValue)
+}
 
 /**
  * Collects safely the [StateFlow] as a [State] when the local lifecycle is started.
@@ -36,33 +41,19 @@ fun <T> StateFlow<T>.asStateWhenStarted(): State<T> =
 /**
  * Collects safely the [StateFlow] as a [State] when the local lifecycle is started, transforming the
  * value first.
- */
-@Composable
-fun <T, R> StateFlow<T>.asStateWhenStarted(transform: (T) -> R): State<R> =
-    map(transform)
-        .flowWithLocalLifecycle()
-        .collectAsState(initial = transform(value))
-
-/**
- * Creates a [Flow] emitting values only when the local lifecycle is started.
  *
  * See https://medium.com/androiddevelopers/a-safer-way-to-collect-flows-from-android-uis-23080b1f8bda
  */
 @Composable
-fun <T> Flow<T>.flowWithLocalLifecycle(minActiveState: Lifecycle.State = Lifecycle.State.STARTED): Flow<T> {
-    val lifecycleOwner = LocalLifecycleOwner.current
-    return remember(this, lifecycleOwner) {
-        this.flowWithLifecycle(lifecycleOwner.lifecycle, minActiveState)
-    }
-}
-
-@Composable
-fun <T> StateFlow<T>.flowWithLocalLifecycle(minActiveState: Lifecycle.State = Lifecycle.State.STARTED): StateFlow<T> {
-    val lifecycleOwner = LocalLifecycleOwner.current
-    return remember(this, lifecycleOwner) {
-        this.flowWithLifecycle(lifecycleOwner.lifecycle, minActiveState)
-            .stateIn(lifecycleOwner.lifecycleScope, SharingStarted.WhileSubscribed(), initialValue = value)
-    }
+// This warning is to prevent people from accessing the `value` directly which will not observe
+// changes. In this case we're using it for the `initial` value, so it's fine.
+@Suppress("StateFlowValueCalledInComposition")
+fun <T, R> StateFlow<T>.asStateWhenStarted(transform: (T) -> R): State<R> {
+    val owner = LocalLifecycleOwner.current
+    return remember(this, owner) {
+        map(transform)
+            .flowWithLifecycle(owner.lifecycle)
+    }.collectAsState(initial = transform(value))
 }
 
 /**
