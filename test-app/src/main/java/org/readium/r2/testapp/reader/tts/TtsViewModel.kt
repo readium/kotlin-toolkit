@@ -166,6 +166,14 @@ class TtsViewModel private constructor(
         }
     }
 
+    fun toggleStart(navigator: Navigator) {
+        if (state.value.showControls) {
+            stop()
+        } else {
+            start(navigator)
+        }
+    }
+
     /**
      * Begins the TTS playback in the given [navigator].
      */
