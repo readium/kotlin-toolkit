@@ -7,14 +7,15 @@
 package org.readium.r2.navigator.tts
 
 import android.content.Context
-import android.database.Cursor
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -28,7 +29,6 @@ import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.tokenizer.ContentTokenizer
 import org.readium.r2.shared.util.tokenizer.TextContentTokenizer
 import org.readium.r2.shared.util.tokenizer.TextUnit
-import timber.log.Timber
 import java.util.*
 
 @ExperimentalReadiumApi
@@ -392,7 +392,6 @@ class TtsController<E : TtsEngine> private constructor(
 
         override fun onSpeakRange(utteranceId: String, range: IntRange) {
             val utterance = utterances.current()?.takeIf { it.id == utteranceId } ?: return
-            Timber.e("FIND RANGE")
             _state.value = State.Playing(
                 utterance = utterance,
                 range = utterance.locator.copy(

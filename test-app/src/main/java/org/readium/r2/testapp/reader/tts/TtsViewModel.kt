@@ -56,15 +56,15 @@ class TtsViewModel private constructor(
     /**
      * @param showControls Whether the TTS was enabled by the user.
      * @param isPlaying Whether the TTS is currently speaking.
-     * @param playingRange Locator to the currently spoken word.
-     * @param playingHighlight Decoration for the currently spoken utterance.
+     * @param playingWordRange Locator to the currently spoken word.
+     * @param playingUtterance Locator for the currently spoken utterance (e.g. sentence).
      * @param settings Current user settings and their constraints.
      */
     data class State(
         val showControls: Boolean = false,
         val isPlaying: Boolean = false,
-        val playingRange: Locator? = null,
-        val playingHighlight: Decoration? = null,
+        val playingWordRange: Locator? = null,
+        val playingUtterance: Locator? = null,
         val settings: Settings = Settings()
     )
 
@@ -153,14 +153,8 @@ class TtsViewModel private constructor(
             State(
                 showControls = isStarted,
                 isPlaying = (playing != null),
-                playingRange = playing?.range,
-                playingHighlight = playing?.run {
-                    Decoration(
-                        id = "tts",
-                        locator = utterance.locator,
-                        style = Decoration.Style.Highlight(tint = Color.RED)
-                    )
-                },
+                playingWordRange = playing?.range,
+                playingUtterance = playing?.utterance?.locator,
                 settings = currentSettings
             )
         }.stateIn(scope, SharingStarted.Eagerly, initialValue = State())

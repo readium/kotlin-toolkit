@@ -342,7 +342,6 @@ class EpubNavigatorFragment private constructor(
         }
 
         if (publication.metadata.presentation.layout != EpubLayout.FIXED) {
-            pendingLocator = locator
             setCurrent(resourcesSingle)
         } else {
 

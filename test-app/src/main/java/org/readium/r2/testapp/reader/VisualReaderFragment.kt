@@ -15,13 +15,21 @@ import android.os.Bundle
 import android.view.*
 import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
-import android.widget.*
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.PopupWindow
+import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -34,7 +42,6 @@ import kotlinx.parcelize.Parcelize
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.navigator.util.EdgeTapNavigation
-import org.readium.r2.shared.UserException
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentReaderBinding
@@ -67,16 +74,17 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         return binding.root
     }
 
+    /**
+     * When true, the user won't be able to interact with the navigator.
+     */
+    private var disableTouches by mutableStateOf(false)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         navigatorFragment = navigator as Fragment
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                setupObserversIn(this)
-            }
-        }
+        setupObservers()
 
         childFragmentManager.addOnBackStackChangedListener {
             updateSystemUiVisibility()
@@ -87,6 +95,19 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         }
 
         binding.overlay.setContent {
+            if (disableTouches) {
+                // Add an invisible box on top of the navigator to intercept touch gestures.
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            detectTapGestures {
+                                requireActivity().toggleSystemUi()
+                            }
+                        }
+                )
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -108,29 +129,42 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         }
     }
 
-    private suspend fun setupObserversIn(scope: CoroutineScope) {
-        navigator.currentLocator
-            .onEach { model.saveProgression(it) }
-            .launchIn(scope)
+    private fun setupObservers() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                navigator.currentLocator
+                    .onEach { model.saveProgression(it) }
+                    .launchIn(this)
 
+                setupHighlights(this)
+                setupSearch(this)
+                setupTts(this)
+            }
+        }
+    }
+
+    private suspend fun setupHighlights(scope: CoroutineScope) {
         (navigator as? DecorableNavigator)?.let { navigator ->
             navigator.addDecorationListener("highlights", decorationListener)
 
             model.highlightDecorations
                 .onEach { navigator.applyDecorations(it, "highlights") }
                 .launchIn(scope)
+        }
+    }
 
+    private suspend fun setupSearch(scope: CoroutineScope) {
+        (navigator as? DecorableNavigator)?.let { navigator ->
             model.searchDecorations
                 .onEach { navigator.applyDecorations(it, "search") }
                 .launchIn(scope)
-
-            model.tts?.state
-                ?.map { it.playingHighlight }
-                ?.distinctUntilChanged()
-                ?.onEach { navigator.applyDecorations(listOfNotNull(it), "tts") }
-                ?.launchIn(scope)
         }
+    }
 
+    /**
+     * Setup text-to-speech observers, if available.
+     */
+    private suspend fun setupTts(scope: CoroutineScope) {
         model.tts?.apply {
             events
                 .onEach { event ->
@@ -144,22 +178,48 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                 }
                 .launchIn(scope)
 
-            state
-                .map { it.playingRange }
+            // Navigate to the currently spoken word.
+            // This will automatically turn pages when needed.
+            state.map { it.playingWordRange }
                 .filterNotNull()
+                // Improve performances by throttling the moves to maximum one per second.
                 .throttleLatest(1.seconds)
                 .onEach { locator ->
                     navigator.go(locator, animated = false)
                 }
                 .launchIn(scope)
+
+            // Prevent interacting with the publication (including page turns) while the TTS is
+            // playing.
+            state.map { it.isPlaying }
+                .distinctUntilChanged()
+                .onEach { isPlaying ->
+                    disableTouches = isPlaying
+                }
+                .launchIn(scope)
+
+            // Highlight the currently spoken utterance.
+            (navigator as? DecorableNavigator)?.let { navigator ->
+                state.map { it.playingUtterance }
+                    .distinctUntilChanged()
+                    .onEach { locator ->
+                        val decoration = locator?.let {
+                            Decoration(
+                                id = "tts",
+                                locator = it,
+                                style = Decoration.Style.Highlight(tint = Color.RED)
+                            )
+                        }
+                        navigator.applyDecorations(listOfNotNull(decoration), "tts")
+                    }
+                    .launchIn(scope)
+            }
         }
     }
 
-    private fun showError(error: UserException) {
-        val context = context ?: return
-        Toast.makeText(context, error.getUserMessage(context), Toast.LENGTH_LONG).show()
-    }
-
+    /**
+     * Confirms with the user if they want to download the TTS voice data for the given language.
+     */
     private suspend fun confirmAndInstallTtsVoice(language: Language) {
         val activity = activity ?: return
         val tts = model.tts ?: return

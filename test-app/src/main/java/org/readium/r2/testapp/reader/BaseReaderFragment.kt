@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.navigator.Navigator
+import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
@@ -77,5 +78,10 @@ abstract class BaseReaderFragment : Fragment() {
 
     open fun go(locator: Locator, animated: Boolean) {
         navigator.go(locator, animated)
+    }
+
+    protected fun showError(error: UserException) {
+        val context = context ?: return
+        Toast.makeText(context, error.getUserMessage(context), Toast.LENGTH_LONG).show()
     }
 }
