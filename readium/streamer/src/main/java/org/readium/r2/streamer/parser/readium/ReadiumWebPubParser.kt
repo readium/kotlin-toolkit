@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.readium
 
+import android.content.Context
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.drm.DRM
@@ -17,9 +18,7 @@ import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
 import org.readium.r2.shared.publication.asset.PublicationAsset
-import org.readium.r2.shared.publication.services.PerResourcePositionsService
-import org.readium.r2.shared.publication.services.locatorServiceFactory
-import org.readium.r2.shared.publication.services.positionsServiceFactory
+import org.readium.r2.shared.publication.services.*
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -41,7 +40,8 @@ import java.io.FileNotFoundException
  */
 @OptIn(PdfSupport::class)
 class ReadiumWebPubParser(
-    private val pdfFactory: PdfDocumentFactory?,
+    private val context: Context? = null,
+    private val pdfFactory: PdfDocumentFactory<*>?,
     private val httpClient: HttpClient,
 ) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
 
@@ -89,6 +89,8 @@ class ReadiumWebPubParser(
         }
 
         val servicesBuilder = Publication.ServicesBuilder().apply {
+            cacheServiceFactory = InMemoryCacheService.createFactory(context)
+
             when (asset.mediaType()) {
                 MediaType.LCP_PROTECTED_PDF ->
                     positionsServiceFactory = pdfFactory?.let { LcpdfPositionsService.create(it) }

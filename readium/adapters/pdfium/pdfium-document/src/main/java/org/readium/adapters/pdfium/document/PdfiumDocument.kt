@@ -1,30 +1,32 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Mickaël Menu
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.streamer.parser.pdf
+package org.readium.adapters.pdfium.document
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.ParcelFileDescriptor
 import com.shockwave.pdfium.PdfiumCore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.extensions.md5
+import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 import java.io.File
+import kotlin.reflect.KClass
 import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 
 @OptIn(PdfSupport::class)
-internal class PdfiumDocument(
+class PdfiumDocument(
     val core: PdfiumCore,
     val document: _PdfiumDocument,
     override val identifier: String?,
@@ -33,7 +35,22 @@ internal class PdfiumDocument(
 
     private val metadata: _PdfiumDocument.Meta by lazy { core.getDocumentMeta(document) }
 
-    override val cover: Bitmap? by lazy { core.renderCover(document) }
+    override suspend fun cover(context: Context): Bitmap? = withContext(Dispatchers.IO) {
+        try {
+            core.openPage(document, 0)
+            val width = core.getPageWidth(document, 0)
+            val height = core.getPageHeight(document, 0)
+            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            core.renderPageBitmap(document, bitmap, 0, 0, 0, width, height, false)
+            bitmap
+        } catch (e: Exception) {
+            Timber.e(e)
+            null
+        } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
+            Timber.e(e)
+            null
+        }
+    }
 
     override val title: String? get() = metadata.title
 
@@ -50,25 +67,9 @@ internal class PdfiumDocument(
         core.getTableOfContents(document).map { it.toOutlineNode() }
     }
 
+    override suspend fun close() {}
+
     companion object
-}
-
-private fun PdfiumCore.renderCover(document: _PdfiumDocument): Bitmap? {
-    return try {
-        openPage(document, 0)
-        val width = getPageWidth(document, 0)
-        val height = getPageHeight(document, 0)
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        renderPageBitmap(document, bitmap, 0, 0, 0, width, height, false)
-        bitmap
-
-    } catch (e: Exception) {
-        Timber.e(e)
-        null
-    } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
-        Timber.e(e)
-        null
-    }
 }
 
 @OptIn(PdfSupport::class)
@@ -80,18 +81,30 @@ private fun _PdfiumDocument.Bookmark.toOutlineNode(): PdfDocument.OutlineNode =
     )
 
 @OptIn(PdfSupport::class)
-internal class PdfiumPdfDocumentFactory(private val context: Context) : PdfDocumentFactory {
+class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<PdfiumDocument> {
+
+    override val documentType: KClass<PdfiumDocument> = PdfiumDocument::class
 
     private val core by lazy { PdfiumCore(context.applicationContext ) }
 
-    override suspend fun open(file: File, password: String?): PdfDocument =
+    override suspend fun open(file: File, password: String?): PdfiumDocument =
         core.fromFile(file, password)
 
-    override suspend fun open(resource: Resource, password: String?): PdfDocument =
-        resource.use { res ->
-            val file = res.file
-            if (file != null) core.fromFile(file, password)
-            else core.fromBytes(res.read().getOrThrow(), password)
+    override suspend fun open(resource: Resource, password: String?): PdfiumDocument {
+        // First try to open the resource as a file on the FS for performance improvement, as
+        // PDFium requires the whole PDF document to be loaded in memory when using raw bytes.
+        return resource.openAsFile(password)
+            ?: resource.openBytes(password)
+    }
+
+    private suspend fun Resource.openAsFile(password: String?): PdfiumDocument? =
+        file?.let {
+            tryOrNull { open(it, password) }
+        }
+
+    private suspend fun Resource.openBytes(password: String?): PdfiumDocument =
+        use {
+            core.fromBytes(read().getOrThrow(), password)
         }
 
     private fun PdfiumCore.fromFile(file: File, password: String?): PdfiumDocument =
@@ -118,5 +131,4 @@ internal class PdfiumPdfDocumentFactory(private val context: Context) : PdfDocum
             pageCount = getPageCount(document)
         )
     }
-
 }

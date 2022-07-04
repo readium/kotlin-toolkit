@@ -7,19 +7,20 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.util.archive
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.readFully
-import org.readium.r2.shared.extensions.readRange
 import org.readium.r2.shared.util.io.CountingInputStream
 import java.io.File
-import java.io.InputStream
-import java.lang.Exception
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
+@OptIn(InternalReadiumApi::class)
 internal class JavaZip(private val archive: ZipFile) : Archive {
 
     private inner class Entry(private val entry: ZipEntry) : Archive.Entry {
@@ -35,18 +36,19 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
                     entry.compressedSize.takeUnless { it == -1L }
 
         override suspend fun read(range: LongRange?): ByteArray =
-            if (range == null)
-                readFully()
-            else
-                readRange(range)
+            withContext(Dispatchers.IO) {
+                if (range == null)
+                    readFully()
+                else
+                    readRange(range)
+            }
 
-        private suspend fun readFully(): ByteArray = withContext(Dispatchers.IO) {
+        private suspend fun readFully(): ByteArray =
             archive.getInputStream(entry).use {
                 it.readFully()
             }
-        }
 
-        private suspend fun readRange(range: LongRange): ByteArray =
+        private fun readRange(range: LongRange): ByteArray =
             stream(range.first).readRange(range)
 
         /**
@@ -59,18 +61,16 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
          *
          * See this issue for more info: https://github.com/readium/r2-shared-kotlin/issues/129
          */
-        private suspend fun stream(fromIndex: Long): CountingInputStream {
+        private fun stream(fromIndex: Long): CountingInputStream {
             // Reuse the current stream if it didn't exceed the requested index.
             stream
                 ?.takeIf { it.count <= fromIndex }
                 ?.let { return it }
 
-            return withContext(Dispatchers.IO) {
-                val newStream = CountingInputStream(archive.getInputStream(entry))
-                stream?.close()
-                stream = newStream
-                newStream
-            }
+            stream?.close()
+
+            return CountingInputStream(archive.getInputStream(entry))
+                .also { stream = it }
         }
 
         private var stream: CountingInputStream? = null
@@ -96,7 +96,6 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
     override suspend fun close() = withContext(Dispatchers.IO) {
         archive.close()
     }
-
 }
 
 internal class JavaZipArchiveFactory : ArchiveFactory {
@@ -104,5 +103,4 @@ internal class JavaZipArchiveFactory : ArchiveFactory {
     override suspend fun open(file: File, password: String?): Archive = withContext(Dispatchers.IO) {
         JavaZip(ZipFile(file))
     }
-
 }

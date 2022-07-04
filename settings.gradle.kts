@@ -37,17 +37,22 @@ dependencyResolutionManagement {
         mavenCentral()
         maven(url = "https://jitpack.io")
         maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
+        maven(url = "https://customers.pspdfkit.com/maven")
     }
 }
 
 rootProject.name = "Readium"
 
-include(":readium:shared")
-include(":readium:streamer")
+include(":readium:adapters:pdfium:pdfium-document")
+include(":readium:adapters:pdfium:pdfium-navigator")
+include(":readium:adapters:pspdfkit:pspdfkit-document")
+include(":readium:adapters:pspdfkit:pspdfkit-navigator")
+include(":readium:lcp")
 include(":readium:navigator")
 include(":readium:navigator-media2")
 include(":readium:opds")
-include(":readium:lcp")
+include(":readium:shared")
+include(":readium:streamer")
 
 if (System.getenv("JITPACK") == null) {
     include("test-app")

@@ -20,9 +20,8 @@ import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.protectionError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.streamer.Streamer
-import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.MediaService
+import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.bookshelf.BookRepository
 import java.io.File
 import java.net.URL
@@ -34,11 +33,10 @@ import java.net.URL
  * Pass the method result to the activity to enable it to know which current publication it must
  * retrieve from this repository - media or visual.
  */
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalMedia2::class)
+@OptIn(ExperimentalMedia2::class)
 class ReaderRepository(
     private val application: Application,
-    private val streamer: Streamer,
-    private val server: Server,
+    private val readium: Readium,
     private val mediaBinder: MediaService.Binder,
     private val bookRepository: BookRepository
 ) {
@@ -71,7 +69,7 @@ class ReaderRepository(
         require(file.exists())
         val asset = FileAsset(file)
 
-        val publication = streamer.open(asset, allowUserInteraction = true, sender = activity)
+        val publication = readium.streamer.open(asset, allowUserInteraction = true, sender = activity)
             .getOrThrow()
 
         // The publication is protected with a DRM and not unlocked.
@@ -105,7 +103,8 @@ class ReaderRepository(
         val userProperties =
             application.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json"
         val url =
-            server.addPublication(publication, userPropertiesFile = File(userProperties))
+            checkNotNull(readium.server)
+                .addPublication(publication, userPropertiesFile = File(userProperties))
 
         return url ?: throw Exception("Cannot add the publication to the HTTP server.")
     }

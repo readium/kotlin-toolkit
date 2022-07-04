@@ -43,6 +43,8 @@ markdown_extensions:
 
 nav:
   - Migration Guide: migration-guide.md
+  - User Guides:
+    - PDF Support: guides/pdf.md
   - API Reference:
       - Shared: readium/shared/index.md
       - Streamer: readium/streamer/index.md

@@ -2,6 +2,50 @@
 
 All migration steps necessary in reading apps to upgrade to major versions of the Kotlin Readium toolkit will be documented in this file.
 
+## 2.3.0
+
+### PDF support
+
+The PDF navigator got refactored to support arbitrary third-party PDF engines. As a consequence, [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) (the open source PDF renderer we previously used) was extracted into its own adapter package. **This is a breaking change** if you were supporting PDF in your application.
+
+This new version ships with an adapter for the commercial PDF engine [PSPDFKit](https://pspdfkit.com/), see the instructions under `readium/adapter/pspdfkit` to set it up.
+
+If you wish to keep using the open source library [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid), you need to migrate your app.
+
+#### Migrating to the PdfiumAndroid adapter
+
+First, add the new dependency in your app's `build.gradle`.
+
+```gradle
+dependencies {
+    implementation "com.github.readium.kotlin-toolkit:readium-adapter-pdfium:$readium_version"
+    // Or, if you need only the parser but not the navigator:
+    implementation "com.github.readium.kotlin-toolkit:readium-adapter-pdfium-document:$readium_version"
+}
+```
+
+Then, setup the `Streamer` with the adapter factory: 
+
+```kotlin
+Streamer(...,
+    pdfFactory = PdfiumDocumentFactory(context)
+)
+```
+
+Finally, provide the new `PdfDocumentFragmentFactory` to `PdfNavigatorFragment`:
+
+```kotlin
+override fun onCreate(savedInstanceState: Bundle?) {
+    childFragmentManager.fragmentFactory =
+        PdfNavigatorFragment.createFactory(...,
+            documentFragmentFactory = PdfiumDocumentFragment.createFactory()
+        )
+
+    super.onCreate(savedInstanceState)
+}
+```
+
+
 ## 2.1.0
 
 With this new release, we migrated all the [`r2-*-kotlin`](https://github.com/readium/?q=r2-kotlin) repositories to [a single `kotlin-toolkit` repository](https://github.com/readium/r2-testapp-kotlin/issues/461).

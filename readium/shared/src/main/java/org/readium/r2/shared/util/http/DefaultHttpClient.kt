@@ -20,7 +20,6 @@ import java.io.FileInputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 /**
  * An implementation of [HttpClient] using the native [HttpURLConnection].
@@ -32,7 +31,6 @@ import kotlin.time.ExperimentalTime
  * @param readTimeout Timeout used when reading the input stream. A null timeout is interpreted
  *        as the default value, while a timeout of zero as an infinite timeout.
  */
-@OptIn(ExperimentalTime::class)
 class DefaultHttpClient constructor(
     private val userAgent: String? = null,
     private val additionalHeaders: Map<String, String> = mapOf(),
@@ -161,7 +159,6 @@ class DefaultHttpClient constructor(
     private suspend fun onRecoverRequest(request: HttpRequest, error: HttpException): HttpTry<HttpRequest> =
         callback?.onRecoverRequest(request, error) ?: Try.failure(error)
 
-    @OptIn(ExperimentalTime::class)
     private fun HttpRequest.toHttpURLConnection(): HttpURLConnection {
         val url = URL(url)
         val connection = (url.openConnection() as HttpURLConnection)

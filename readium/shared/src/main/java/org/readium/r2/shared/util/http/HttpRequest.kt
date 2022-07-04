@@ -5,7 +5,6 @@ import android.os.Bundle
 import java.io.Serializable
 import java.net.URLEncoder
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 /**
  * Holds the information about an HTTP request performed by an [HttpClient].
@@ -23,7 +22,6 @@ import kotlin.time.ExperimentalTime
  * @param allowUserInteraction If true, the user might be presented with interactive dialogs, such
  *        as popping up an authentication dialog.
  */
-@OptIn(ExperimentalTime::class)
 class HttpRequest(
     val url: String,
     val method: Method = Method.GET,

@@ -204,6 +204,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
     override fun go(locator: Locator, animated: Boolean){
         model.viewModelScope.launch {
             navigator.go(locator)
-            navigator.play() }
+            navigator.play()
+        }
     }
 }

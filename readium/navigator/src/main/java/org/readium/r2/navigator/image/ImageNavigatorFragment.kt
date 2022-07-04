@@ -38,7 +38,6 @@ import org.readium.r2.shared.publication.services.positions
 /**
  * Navigator for bitmap-based publications, such as CBZ.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 class ImageNavigatorFragment private constructor(
     override val publication: Publication,
     private val initialLocator: Locator? = null,

@@ -42,7 +42,7 @@ class CatalogViewModel(application: android.app.Application) : AndroidViewModel(
     private val bookDao = BookDatabase.getDatabase(application).booksDao()
     private val bookRepository = BookRepository(bookDao)
     private var opdsDownloader = OPDSDownloader(application.applicationContext)
-    private var r2Directory = (application as Application).r2Directory
+    private var storageDir = (application as Application).storageDir
     val detailChannel = EventChannel(Channel<Event.DetailEvent>(Channel.BUFFERED), viewModelScope)
     val eventChannel = EventChannel(Channel<Event.FeedEvent>(Channel.BUFFERED), viewModelScope)
     val parseData = MutableLiveData<ParseData>()
@@ -104,11 +104,11 @@ class CatalogViewModel(application: android.app.Application) : AndroidViewModel(
     private fun storeCoverImage(publication: Publication, imageName: String) =
         viewModelScope.launch(Dispatchers.IO) {
             // TODO Figure out where to store these cover images
-            val coverImageDir = File("${r2Directory}covers/")
+            val coverImageDir = File(storageDir, "covers/")
             if (!coverImageDir.exists()) {
                 coverImageDir.mkdirs()
             }
-            val coverImageFile = File("${r2Directory}covers/${imageName}.png")
+            val coverImageFile = File(storageDir, "covers/${imageName}.png")
 
             val bitmap: Bitmap? =
                 publication.cover() ?: getBitmapFromURL(publication.images.first().href)
