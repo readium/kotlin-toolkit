@@ -11,11 +11,16 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.publication.services.content.Content.Data
 import org.readium.r2.shared.util.Language
-import java.util.*
 
 /** A tokenizer splitting a [Content] into smaller pieces. */
 @ExperimentalReadiumApi
 fun interface ContentTokenizer : Tokenizer<Content, Content>
+
+/** A passthrough tokenizer which does not modify its input. */
+@ExperimentalReadiumApi
+object IdentityContentTokenizer : ContentTokenizer {
+    override fun tokenize(data: Content): List<Content> = listOf(data)
+}
 
 /**
  * A [ContentTokenizer] using a [TextTokenizer] to split the text of the [Content].

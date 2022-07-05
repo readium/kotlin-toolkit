@@ -28,7 +28,7 @@ import org.readium.r2.testapp.R
 import org.readium.r2.navigator.tts.TtsDirector.State as TtsState
 
 /**
- * View model holding the text to speech director.
+ * View model controlling the text-to-speech director.
  */
 @OptIn(ExperimentalReadiumApi::class)
 class TtsViewModel private constructor(
@@ -105,17 +105,20 @@ class TtsViewModel private constructor(
     private val isStarted = MutableStateFlow(false)
 
     init {
-        director.listener = ControllerListener()
+        director.listener = DirectorListener()
 
+        // Supported voices grouped by their language.
         val voicesByLanguage: Flow<Map<Language, List<Voice>>> =
             director.availableVoices
                 .map { voices -> voices.groupBy { it.language } }
 
+        // All supported languages.
         val languages: Flow<List<Language>> = voicesByLanguage
             .map { voices ->
                 voices.keys.sortedBy { it.locale.displayName }
             }
 
+        // Supported voices for the language selected in the [TtsDirector.Configuration].
         val voicesForSelectedLanguage: Flow<List<Voice>> =
             combine(
                 director.config.map { it.defaultLanguage },
@@ -127,6 +130,7 @@ class TtsViewModel private constructor(
                     ?: emptyList()
             }
 
+        // Settings model for the current configuration.
         val settings: Flow<Settings> = combine(
             director.config,
             languages,
@@ -140,18 +144,20 @@ class TtsViewModel private constructor(
             )
         }
 
+        // Current view model state.
         state = combine(
             isStarted,
             director.state,
             settings
         ) { isStarted, state, currentSettings ->
             val playing = (state as? TtsState.Playing)
+            val paused = (state as? TtsState.Paused)
 
             State(
                 showControls = isStarted,
                 isPlaying = (playing != null),
                 playingWordRange = playing?.range,
-                playingUtterance = playing?.utterance?.locator,
+                playingUtterance = (playing?.utterance ?: paused?.utterance)?.locator,
                 settings = currentSettings
             )
         }.stateIn(scope, SharingStarted.Eagerly, initialValue = State())
@@ -163,29 +169,26 @@ class TtsViewModel private constructor(
         }
     }
 
-    fun toggleStart(navigator: Navigator) {
-        if (state.value.showControls) {
-            stop()
-        } else {
-            start(navigator)
+    /**
+     * Starts the TTS using the first visible locator in the given [navigator].
+     */
+    fun start(navigator: Navigator) {
+        if (isStarted.value) return
+        isStarted.value = true
+
+        scope.launch {
+            director.start(fromLocator = navigator.firstVisibleElementLocator())
         }
     }
 
-    /**
-     * Begins the TTS playback in the given [navigator].
-     */
-    fun start(navigator: Navigator) = scope.launch {
-        director.start(fromLocator = navigator.firstVisibleElementLocator())
-        isStarted.value = true
-    }
-
     fun stop() {
-        director.stop()
+        if (!isStarted.value) return
         isStarted.value = false
+        director.stop()
     }
 
-    fun resumeOrPause() {
-        director.resumeOrPause()
+    fun pauseOrResume() {
+        director.pauseOrResume()
     }
 
     fun pause() {
@@ -204,24 +207,28 @@ class TtsViewModel private constructor(
         director.setConfig(config)
     }
 
+    /**
+     * Starts the activity to install additional voice data.
+     */
     @OptIn(DelicateReadiumApi::class)
     fun requestInstallVoice(context: Context) {
         director.engine.requestInstallMissingVoice(context)
     }
 
-    private inner class ControllerListener : TtsDirector.Listener {
+    private inner class DirectorListener : TtsDirector.Listener {
         override fun onUtteranceError(
             utterance: TtsDirector.Utterance,
             error: TtsDirector.Exception
         ) {
             scope.launch {
-                val shouldContinuePlayback = handleTtsException(error)
-
+                // The [TtsDirector] is paused when encountering an error while playing an
+                // utterance. Here we will skip to the next utterance unless the exception is
+                // recoverable.
+                val shouldContinuePlayback = !handleTtsException(error)
                 if (shouldContinuePlayback) {
                     next()
                 }
             }
-
         }
 
         override fun onError(error: TtsDirector.Exception) {
@@ -231,7 +238,7 @@ class TtsViewModel private constructor(
         }
 
         /**
-         * Handles the given error and returns whether the playback should continue.
+         * Handles the given error and returns whether it was recovered from.
          */
         private suspend fun handleTtsException(error: TtsDirector.Exception): Boolean =
             when (error) {
@@ -240,12 +247,12 @@ class TtsViewModel private constructor(
                     // it by asking the user to download the missing voice data.
                     is TtsEngine.Exception.LanguageSupportIncomplete -> {
                         _events.send(Event.OnMissingVoiceData(err.language))
-                        false
+                        true
                     }
 
                     else -> {
                         _events.send(Event.OnError(err.toUserException()))
-                        true
+                        false
                     }
                 }
             }

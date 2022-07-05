@@ -10,6 +10,10 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.Try
+
+@ExperimentalReadiumApi
+typealias TtsTry<SuccessT> = Try<SuccessT, TtsEngine.Exception>
 
 /**
  * A text-to-speech engine synthesizes text utterances (e.g. sentence).
@@ -58,26 +62,9 @@ interface TtsEngine : SuspendingCloseable {
     @ExperimentalReadiumApi
     interface Listener {
         /**
-         * Called when the engine speaks a portion of an utterance (e.g. a word).
-         */
-        fun onSpeakRange(utteranceId: String, range: IntRange)
-
-        /**
-         * Called when an utterance was successfully synthesized.
-         *
-         * This won't be called if the utterance was cancelled or an error occured.
-         */
-        fun onDone(utteranceId: String)
-
-        /**
          * Called when a general engine error occurred.
          */
         fun onEngineError(error: Exception)
-
-        /**
-         * Called when an error occurred while synthesizing an utterance.
-         */
-        fun onUtteranceError(utteranceId: String, error: Exception)
 
         /**
          * Called when the list of available voices is updated.
@@ -88,7 +75,6 @@ interface TtsEngine : SuspendingCloseable {
     /**
      * An utterance is an arbitrary text (e.g. sentence) that can be synthesized by the TTS engine.
      *
-     * @param id Unique identifier for this utterance, in the context of the caller.
      * @param text Text to be spoken.
      * @param rate Speed of the voice.
      * @param voiceOrLanguage Either an explicit voice or the language of the text. If a language
@@ -96,11 +82,16 @@ interface TtsEngine : SuspendingCloseable {
      */
     @ExperimentalReadiumApi
     data class Utterance(
-        val id: String,
         val text: String,
         val rate: Double,
         val voiceOrLanguage: Either<Voice, Language>
-    )
+    ) {
+        val language: Language =
+            when (val vl = voiceOrLanguage) {
+                is Either.Left -> vl.left.language
+                is Either.Right -> vl.right
+            }
+    }
 
     /**
      * Represents a voice provided by the TTS engine which can speak an utterance.
@@ -126,16 +117,28 @@ interface TtsEngine : SuspendingCloseable {
     }
 
     /**
-     * Requests to speak the given utterance.
+     * Synthesizes the given [utterance] and returns its status.
+     *
+     * [onSpeakRange] is called repeatedly while the engine plays portions (e.g. words) of the
+     * utterance.
+     *
+     * To interrupt the utterance, cancel the parent coroutine job.
      */
-    fun speak(utterance: Utterance)
+    suspend fun speak(
+        utterance: Utterance,
+        onSpeakRange: (IntRange) -> Unit = { _ -> }
+    ): TtsTry<Unit>
 
     /**
-     * Cancels the currently spoken utterance.
+     * Supported range for the speech rate.
      */
-    fun cancel()
-
     val rateRange: ClosedRange<Double>
+
+    /**
+     * List of available synthesizer voices.
+     *
+     * Implement [Listener.onAvailableVoicesChange] to be aware of changes in the available voices.
+     */
     val availableVoices: List<Voice>
 
     /**

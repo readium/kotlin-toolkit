@@ -257,9 +257,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.tts -> {
-                checkNotNull(model.tts).toggleStart(navigator)
-            }
+            R.id.tts -> checkNotNull(model.tts).start(navigator)
             else -> return super.onOptionsItemSelected(item)
         }
         return true
