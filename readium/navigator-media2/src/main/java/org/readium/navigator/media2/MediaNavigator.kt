@@ -9,7 +9,6 @@ package org.readium.navigator.media2
 import android.app.PendingIntent
 import android.content.Context
 import androidx.media2.common.MediaItem
-import androidx.media2.common.MediaMetadata
 import androidx.media2.common.SessionPlayer
 import androidx.media2.session.MediaSession
 import com.google.android.exoplayer2.C
@@ -19,7 +18,10 @@ import com.google.android.exoplayer2.ext.media2.SessionPlayerConnector
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.upstream.DataSource
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.util.Try
@@ -52,9 +54,61 @@ class MediaNavigator private constructor(
 
     private val coroutineScope: CoroutineScope = MainScope()
 
-    // This is used only when the Flow's first element is already available, so it doesn't block any thread.
-    private fun <T> Flow<T>.stateInFirst(coroutineScope: CoroutineScope): StateFlow<T> =
-        stateIn(coroutineScope, SharingStarted.Lazily, runBlocking { first() })
+    // Is true while a command is being executed.
+    private var preventStateUpdate: Boolean = false
+
+    private val commandMutex = Mutex()
+
+    private val allPlaybacks: StateFlow<Playback> =
+        combine(
+            playerCallback.playerState,
+            playerCallback.playbackSpeed,
+            playerCallback.currentItem,
+            playerCallback.bufferingState,
+            this::computePlayback
+        ).stateIn(
+            coroutineScope,
+            SharingStarted.Lazily,
+            computePlayback(
+                playerCallback.playerState.value,
+                playerCallback.playbackSpeed.value,
+                playerCallback.currentItem.value,
+                playerCallback.bufferingState.value
+            )
+        )
+
+    private val allLocators: StateFlow<Locator> =
+        playerCallback.currentItem
+            .map(this::computeLocator)
+            .stateIn(
+                coroutineScope,
+                SharingStarted.Lazily,
+                computeLocator(playerCallback.currentItem.value)
+            )
+
+    // Mutable version of the exposed currentLocator. Locators published while a command is being executed are skipped.
+    private val currentLocatorMutable: MutableStateFlow<Locator> =
+        MutableStateFlow(allLocators.value)
+
+    // Mutable version of the exposed playback. Playbacks published while a command is being executed are skipped.
+    private val playbackMutable: MutableStateFlow<Playback> =
+        MutableStateFlow(allPlaybacks.value)
+
+    init {
+        allPlaybacks
+            .onEach {
+                if (!preventStateUpdate) {
+                    playbackMutable.value = it
+                }
+            }.launchIn(coroutineScope)
+
+        allLocators
+            .onEach {
+                if (!preventStateUpdate) {
+                    currentLocatorMutable.value = it
+                }
+            }.launchIn(coroutineScope)
+    }
 
     @ExperimentalTime
     internal fun List<Duration>.sum(): Duration = fold(0.seconds) { a, b -> a + b }
@@ -62,19 +116,10 @@ class MediaNavigator private constructor(
     private val totalDuration: Duration? =
         this.playerFacade.playlist!!.metadata.durations?.sum()
 
-    private val currentLocatorFlow: Flow<Locator> =
-        playerCallback.currentItem.map { currentItem ->
-            val playlistMetadata = this.playerFacade.playlist!!.map { it.metadata!! }
-            locator(
-                currentItem,
-                playlistMetadata
-            )
-        }
-
-    private fun locator(
-        item: SessionPlayerCallback.Item,
-        playlist: List<MediaMetadata>
+    private fun computeLocator(
+        item: ItemState,
     ): Locator {
+        val playlist = this.playerFacade.playlist!!.map { it.metadata!! }
         val position = item.position
         val link = publication.readingOrder[item.index]
         val itemStartPosition = playlist.slice(0 until item.index).durations?.sum()
@@ -90,75 +135,96 @@ class MediaNavigator private constructor(
         )
     }
 
-    override val currentLocator: StateFlow<Locator> =
-        currentLocatorFlow.stateInFirst(coroutineScope)
-
-    private val playbackStateFlow: Flow<Playback> =
-        combine(
-            playerCallback.playerState,
-            playerCallback.playbackSpeed,
-            playerCallback.currentItem,
-            playerCallback.bufferingState
-        ) { currentState, playbackSpeed, currentItem, bufferingState ->
-            val state = when (currentState) {
-                SessionPlayerState.Playing ->
-                    Playback.State.Playing
-                SessionPlayerState.Idle, SessionPlayerState.Error ->
-                    Playback.State.Error
-                SessionPlayerState.Paused ->
-                    if (playerCallback.playbackCompleted) {
-                        Playback.State.Finished
-                    } else {
-                        Playback.State.Paused
-                    }
-            }
-            Playback(
-                state = state,
-                rate = playbackSpeed.toDouble(),
-                resource = Playback.Resource(
-                    index = currentItem.index,
-                    link = publication.readingOrder[currentItem.index],
-                    position = currentItem.position,
-                    duration = currentItem.duration
-                ),
-                buffer = Playback.Buffer(
-                    isPlayable = bufferingState != SessionPlayerBufferingState.BUFFERING_STATE_BUFFERING_AND_STARVED,
-                    position = currentItem.buffered
-                )
-            )
+    private fun computePlayback(
+        currentState: SessionPlayerState,
+        playbackSpeed: Float,
+        currentItem: ItemState,
+        bufferingState: SessionPlayerBufferingState
+    ): Playback {
+        val state = when (currentState) {
+            SessionPlayerState.Playing ->
+                Playback.State.Playing
+            SessionPlayerState.Idle, SessionPlayerState.Error ->
+                Playback.State.Error
+            SessionPlayerState.Paused ->
+                if (playerCallback.playbackCompleted) {
+                    Playback.State.Finished
+                } else {
+                    Playback.State.Paused
+                }
         }
+        return Playback(
+            state = state,
+            rate = playbackSpeed.toDouble(),
+            resource = Playback.Resource(
+                index = currentItem.index,
+                link = publication.readingOrder[currentItem.index],
+                position = currentItem.position,
+                duration = currentItem.duration
+            ),
+            buffer = Playback.Buffer(
+                isPlayable = bufferingState != SessionPlayerBufferingState.BUFFERING_STATE_BUFFERING_AND_STARVED,
+                position = currentItem.buffered
+            )
+        )
+    }
+
+    private suspend fun<T> executeCommand(block: suspend () -> T): T {
+        val result = commandMutex.withLock {
+            preventStateUpdate = true
+            val result = block()
+            preventStateUpdate = false
+            result
+        }
+
+        if (playbackMutable.value != allPlaybacks.value) {
+            playbackMutable.value = allPlaybacks.value
+        }
+        if (currentLocatorMutable.value != allLocators.value) {
+            currentLocatorMutable.value = allLocators.value
+        }
+
+        return result
+    }
+
+    override val currentLocator: StateFlow<Locator> =
+        currentLocatorMutable
 
     /**
      * Indicates the navigator current state.
      */
     val playback: StateFlow<Playback> =
-        playbackStateFlow.stateInFirst(coroutineScope)
+        playbackMutable
 
     /**
      * Sets the speed of the media playback.
      *
      * Normal speed is 1.0 and 0.0 is incorrect.
      */
-    suspend fun setPlaybackRate(rate: Double): Try<Unit, Exception> =
+    suspend fun setPlaybackRate(rate: Double): Try<Unit, Exception> = executeCommand {
         playerFacade.setPlaybackSpeed(rate).toNavigatorResult()
+    }
 
     /**
      * Resumes or start the playback at the current location.
      */
-    suspend fun play(): Try<Unit, Exception> =
+    suspend fun play(): Try<Unit, Exception> = executeCommand {
         playerFacade.play().toNavigatorResult()
+    }
 
     /**
      * Pauses the playback.
      */
-    suspend fun pause(): Try<Unit, Exception> =
+    suspend fun pause(): Try<Unit, Exception> = executeCommand {
         playerFacade.pause().toNavigatorResult()
+    }
 
     /**
      * Seeks to the given time at the given resource.
      */
-    suspend fun seek(index: Int, position: Duration): Try<Unit, Exception> =
+    suspend fun seek(index: Int, position: Duration): Try<Unit, Exception> = executeCommand {
         playerFacade.seekTo(index, position).toNavigatorResult()
+    }
 
     /**
      * Seeks to the given locator.
@@ -192,10 +258,11 @@ class MediaNavigator private constructor(
     suspend fun goBackward(): Try<Unit, Exception> =
         seekBy(-configuration.skipBackwardInterval)
 
-    private suspend fun seekBy(offset: Duration): Try<Unit, Exception> =
+    private suspend fun seekBy(offset: Duration): Try<Unit, Exception> = executeCommand {
         this.playerFacade.playlist!!.metadata.durations
             ?.let { smartSeekBy(offset, it) }
             ?: dummySeekBy(offset)
+    }
 
     private suspend fun smartSeekBy(
         offset: Duration,
@@ -272,12 +339,6 @@ class MediaNavigator private constructor(
         )
     }
 
-    enum class Buffering {
-        Starved,
-        Completed,
-        Ongoing
-    }
-
     sealed class Exception(override val message: String) : kotlin.Exception(message) {
 
         class SessionPlayer internal constructor(
@@ -326,11 +387,12 @@ class MediaNavigator private constructor(
         ): Try<MediaNavigator, Exception> {
 
             val positionRefreshDelay = (1.0 / configuration.positionRefreshRate).seconds
-            val callback = SessionPlayerCallback(positionRefreshDelay)
+            val seekCompletedChannel = Channel<Long>(Channel.UNLIMITED)
+            val callback = SessionPlayerCallback(positionRefreshDelay, seekCompletedChannel)
             val callbackExecutor = Executors.newSingleThreadExecutor()
             player.registerPlayerCallback(callbackExecutor, callback)
 
-            val facade = SessionPlayerFacade(player, callback.seekCompleted)
+            val facade = SessionPlayerFacade(player,  seekCompletedChannel, callback.playerState)
             return preparePlayer(publication, facade, metadataFactory)
                 // Ignoring failure to set initial locator
                 .onSuccess { goInitialLocator(publication, initialLocator, facade) }

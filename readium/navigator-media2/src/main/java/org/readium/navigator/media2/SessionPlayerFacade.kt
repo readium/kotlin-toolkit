@@ -12,15 +12,19 @@ import androidx.media2.common.MediaItem
 import androidx.media2.common.MediaMetadata
 import androidx.media2.common.SessionPlayer
 import androidx.media2.session.MediaSession
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.SettableFuture
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import timber.log.Timber
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import java.util.concurrent.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.time.Duration
@@ -40,15 +44,26 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 internal class SessionPlayerFacade(
     private val sessionPlayer: SessionPlayer,
-    private val seekCompleted: Flow<Long>
+    private val seekCompletedReceiver: ReceiveChannel<Long>,
+    playerStateFlow: Flow<SessionPlayerState>,
 ) {
     private val coroutineScope = MainScope()
 
-    private var pendingSeek: Long? = null
+    private var pendingSeek: SettableFuture<Long>? = null
+
+    private var waitedSeek: Long? = null
+
+    private var pendingState: SettableFuture<SessionPlayerState>? = null
+
+    private var waitedState: SessionPlayerState? = null
 
     init {
-        seekCompleted
-            .onEach { pendingSeek = it }
+        seekCompletedReceiver.receiveAsFlow()
+            .onEach { if (it == waitedSeek) pendingSeek?.set(it) }
+            .launchIn(coroutineScope)
+
+        playerStateFlow
+            .onEach { if (it == waitedState) pendingState?.set(it) }
             .launchIn(coroutineScope)
     }
 
@@ -78,6 +93,7 @@ internal class SessionPlayerFacade(
     }
 
     fun close() {
+        seekCompletedReceiver.cancel()
         sessionPlayer.close()
     }
 
@@ -185,6 +201,15 @@ internal class SessionPlayerFacade(
     private fun playSync(): SessionPlayerResult {
         Timber.v("executing play")
         val result = sessionPlayer.play().get()
+
+        if (result.resultCode == 0) {
+            try {
+                waitForState(SessionPlayerState.Playing).get(1, TimeUnit.SECONDS)
+            } catch (e: TimeoutException) {
+                Timber.v("expected ${SessionPlayerState.Playing} state not received")
+            }
+        }
+
         Timber.v("play finished with result ${result.resultCode}")
         return result.toTry()
     }
@@ -192,33 +217,52 @@ internal class SessionPlayerFacade(
     private fun pauseSync(): SessionPlayerResult {
         Timber.v("executing pause")
         val result = sessionPlayer.pause().get()
+
+        if (result.resultCode == 0) {
+            try {
+                waitForState(SessionPlayerState.Paused).get(1, TimeUnit.SECONDS)
+                pendingState = null
+            } catch (e: TimeoutException) {
+                Timber.v("expected ${SessionPlayerState.Paused} state not received")
+            }
+        }
+
         Timber.v("pause finished with result ${result.resultCode}")
         return result.toTry()
+    }
+
+    // This is useful because the play/pause commands complete before the new state is published.
+    private fun waitForState(state: SessionPlayerState): Future<SessionPlayerState> {
+        val future = SettableFuture.create<SessionPlayerState>()
+        waitedState = state
+        pendingState = future
+        return future
     }
 
     private fun seekToSync(position: Duration): SessionPlayerResult {
         Timber.v("executing seekTo $position")
         val result = sessionPlayer.seekTo(position.inWholeMilliseconds).get()
-        Timber.v("seekTo finished with result ${result.resultCode}")
 
         if (result.resultCode == 0) {
-            val callbackCalled = waitForSeekCompleted(position.inWholeMilliseconds)
-            if (callbackCalled) {
+            try {
+                waitForSeekCompleted(position.inWholeMilliseconds).get(1, TimeUnit.SECONDS)
+            } catch (e: TimeoutCancellationException) {
                 val exception = SessionPlayerException(SessionPlayerError.INFO_SKIPPED)
+                Timber.v("seek callback was not called")
                 return SessionPlayerResult.failure(exception)
             }
         }
+
+        Timber.v("seekTo finished with result ${result.resultCode}")
         return result.toTry()
     }
 
-    private fun waitForSeekCompleted(position: Long): Boolean {
-        var i = 0
-        while (pendingSeek != position && i < 10) {
-            Thread.sleep(100)
-            i++
-        }
-        pendingSeek = null
-        return i < 10
+    // This is useful because the seek command can return before the seeking has actually completed
+    private fun waitForSeekCompleted(position: Long): Future<Long> {
+        val future = SettableFuture.create<Long>()
+        waitedSeek = position
+        pendingSeek = future
+        return future
     }
 
     private fun skipToPlaylistItemSync(index: Int): SessionPlayerResult {
