@@ -23,9 +23,7 @@ import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.publication.services.content.ContentIterator
 import org.readium.r2.shared.publication.services.content.contentIterator
 import org.readium.r2.shared.publication.services.content.isContentIterable
-import org.readium.r2.shared.util.Either
-import org.readium.r2.shared.util.Language
-import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.*
 import org.readium.r2.shared.util.tokenizer.ContentTokenizer
 import org.readium.r2.shared.util.tokenizer.TextContentTokenizer
 import org.readium.r2.shared.util.tokenizer.TextUnit
@@ -41,38 +39,9 @@ fun interface TtsTokenizerFactory {
     fun create(defaultLanguage: Language?): ContentTokenizer
 }
 
-class CursorList<E>(
-    private val list: List<E> = emptyList(),
-    private val startIndex: Int = 0
-) : List<E> by list {
-    private var index: Int? = null
-
-    fun current(): E? =
-        moveAndGet(index ?: startIndex)
-
-    fun previous(): E? =
-        moveAndGet(index
-            ?.let { it - 1}
-            ?: startIndex
-        )
-
-    fun next(): E? =
-        moveAndGet(index?.let { it + 1}
-            ?: startIndex
-        )
-
-    private fun moveAndGet(index: Int): E? {
-        if (!list.indices.contains(index)) {
-            return null
-        }
-        this.index = index
-        return get(index)
-    }
-}
-
 @OptIn(DelicateReadiumApi::class)
 @ExperimentalReadiumApi
-class TtsController<E : TtsEngine> private constructor(
+class TtsDirector<E : TtsEngine> private constructor(
     private val publication: Publication,
     config: Configuration,
     engineFactory: TtsEngineFactory<E>,
@@ -89,12 +58,14 @@ class TtsController<E : TtsEngine> private constructor(
             : Exception(error.message, error)
     }
 
+    @ExperimentalReadiumApi
     data class Configuration(
         val defaultLanguage: Language? = null,
         val voice: TtsEngine.Voice? = null,
         val rate: Double = 1.0,
     )
 
+    @ExperimentalReadiumApi
     data class Utterance(
         val text: String,
         val locator: Locator,
@@ -103,6 +74,7 @@ class TtsController<E : TtsEngine> private constructor(
         internal val id: String,
     )
 
+    @ExperimentalReadiumApi
     interface Listener {
         /**
          * Notifies an [error] occurred while speaking [utterance].
@@ -123,7 +95,7 @@ class TtsController<E : TtsEngine> private constructor(
             publication: Publication,
             config: Configuration = Configuration(),
             tokenizerFactory: TtsTokenizerFactory = defaultTokenizerFactory
-        ): TtsController<AndroidTtsEngine>? = invoke(
+        ): TtsDirector<AndroidTtsEngine>? = invoke(
             publication,
             config = config,
             engineFactory = { listener -> AndroidTtsEngine(context, listener) },
@@ -135,10 +107,10 @@ class TtsController<E : TtsEngine> private constructor(
             config: Configuration = Configuration(),
             engineFactory: TtsEngineFactory<E>,
             tokenizerFactory: TtsTokenizerFactory = defaultTokenizerFactory
-        ): TtsController<E>? {
+        ): TtsDirector<E>? {
             if (!canSpeak(publication)) return null
 
-            return TtsController(publication, config, engineFactory, tokenizerFactory)
+            return TtsDirector(publication, config, engineFactory, tokenizerFactory)
         }
 
         fun canSpeak(publication: Publication): Boolean =
@@ -170,7 +142,7 @@ class TtsController<E : TtsEngine> private constructor(
      * Underlying [TtsEngine] instance.
      *
      * WARNING: Don't control the playback or set the config directly with the engine. Use the
-     * [TtsController] APIs instead. This property is used to access engine-specific APIs such as
+     * [TtsDirector] APIs instead. This property is used to access engine-specific APIs such as
      * [AndroidTtsEngine.requestInstallMissingVoice],
      */
     @DelicateReadiumApi
@@ -185,8 +157,10 @@ class TtsController<E : TtsEngine> private constructor(
 
     override suspend fun close() {
         tryOrLog {
-            engine.close()
             scope.cancel()
+            if (::engine.isLazyInitialized) {
+                engine.close()
+            }
         }
     }
 
@@ -287,7 +261,7 @@ class TtsController<E : TtsEngine> private constructor(
     }
 
     private fun Utterance.voiceOrLanguage(): Either<TtsEngine.Voice, Language> {
-        // User selected voice, if it's compatible with the given language.
+        // User selected voice, if it's compatible with the utterance language.
         config.value.voice
             ?.takeIf { language == null || it.language.removeRegion() == language.removeRegion() }
             ?.let { return Either.Left(it) }

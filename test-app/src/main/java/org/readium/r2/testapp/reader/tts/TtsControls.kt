@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import org.readium.r2.navigator.tts.TtsController.Configuration
+import org.readium.r2.navigator.tts.TtsDirector.Configuration
 import org.readium.r2.navigator.tts.TtsEngine.Voice
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language

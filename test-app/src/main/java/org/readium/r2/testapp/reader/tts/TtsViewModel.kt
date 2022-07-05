@@ -7,18 +7,15 @@
 package org.readium.r2.testapp.reader.tts
 
 import android.content.Context
-import android.graphics.Color
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.navigator.Decoration
-import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.tts.AndroidTtsEngine
-import org.readium.r2.navigator.tts.TtsController
-import org.readium.r2.navigator.tts.TtsController.Configuration
+import org.readium.r2.navigator.tts.TtsDirector
+import org.readium.r2.navigator.tts.TtsDirector.Configuration
 import org.readium.r2.navigator.tts.TtsEngine
 import org.readium.r2.navigator.tts.TtsEngine.Voice
 import org.readium.r2.shared.DelicateReadiumApi
@@ -28,14 +25,14 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
-import org.readium.r2.navigator.tts.TtsController.State as TtsState
+import org.readium.r2.navigator.tts.TtsDirector.State as TtsState
 
 /**
- * View model driving the text to speech controller.
+ * View model holding the text to speech director.
  */
-@OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
+@OptIn(ExperimentalReadiumApi::class)
 class TtsViewModel private constructor(
-    private val controller: TtsController<AndroidTtsEngine>,
+    private val director: TtsDirector<AndroidTtsEngine>,
     private val scope: CoroutineScope
 ) {
 
@@ -49,7 +46,7 @@ class TtsViewModel private constructor(
             publication: Publication,
             scope: CoroutineScope
         ): TtsViewModel? =
-            TtsController(context, publication)
+            TtsDirector(context, publication)
                 ?.let { TtsViewModel(it, scope) }
     }
 
@@ -83,7 +80,7 @@ class TtsViewModel private constructor(
 
     sealed class Event {
         /**
-         * Emitted when the [TtsController] fails with an error.
+         * Emitted when the [TtsDirector] fails with an error.
          */
         class OnError(val error: UserException) : Event()
 
@@ -108,10 +105,10 @@ class TtsViewModel private constructor(
     private val isStarted = MutableStateFlow(false)
 
     init {
-        controller.listener = ControllerListener()
+        director.listener = ControllerListener()
 
         val voicesByLanguage: Flow<Map<Language, List<Voice>>> =
-            controller.availableVoices
+            director.availableVoices
                 .map { voices -> voices.groupBy { it.language } }
 
         val languages: Flow<List<Language>> = voicesByLanguage
@@ -121,7 +118,7 @@ class TtsViewModel private constructor(
 
         val voicesForSelectedLanguage: Flow<List<Voice>> =
             combine(
-                controller.config.map { it.defaultLanguage },
+                director.config.map { it.defaultLanguage },
                 voicesByLanguage,
             ) { language, voices ->
                 language
@@ -131,13 +128,13 @@ class TtsViewModel private constructor(
             }
 
         val settings: Flow<Settings> = combine(
-            controller.config,
+            director.config,
             languages,
             voicesForSelectedLanguage,
         ) { config, langs, voices ->
             Settings(
                 config = config,
-                rateRange = controller.rateRange,
+                rateRange = director.rateRange,
                 availableLanguages = langs,
                 availableVoices = voices
             )
@@ -145,7 +142,7 @@ class TtsViewModel private constructor(
 
         state = combine(
             isStarted,
-            controller.state,
+            director.state,
             settings
         ) { isStarted, state, currentSettings ->
             val playing = (state as? TtsState.Playing)
@@ -162,7 +159,7 @@ class TtsViewModel private constructor(
 
     fun onCleared() {
         runBlocking {
-            controller.close()
+            director.close()
         }
     }
 
@@ -178,44 +175,44 @@ class TtsViewModel private constructor(
      * Begins the TTS playback in the given [navigator].
      */
     fun start(navigator: Navigator) = scope.launch {
-        controller.start(fromLocator = navigator.firstVisibleElementLocator())
+        director.start(fromLocator = navigator.firstVisibleElementLocator())
         isStarted.value = true
     }
 
     fun stop() {
-        controller.stop()
+        director.stop()
         isStarted.value = false
     }
 
     fun resumeOrPause() {
-        controller.resumeOrPause()
+        director.resumeOrPause()
     }
 
     fun pause() {
-        controller.pause()
+        director.pause()
     }
 
     fun previous() {
-        controller.previous()
+        director.previous()
     }
 
     fun next() {
-        controller.next()
+        director.next()
     }
 
     fun setConfig(config: Configuration) {
-        controller.setConfig(config)
+        director.setConfig(config)
     }
 
     @OptIn(DelicateReadiumApi::class)
     fun requestInstallVoice(context: Context) {
-        controller.engine.requestInstallMissingVoice(context)
+        director.engine.requestInstallMissingVoice(context)
     }
 
-    private inner class ControllerListener : TtsController.Listener {
+    private inner class ControllerListener : TtsDirector.Listener {
         override fun onUtteranceError(
-            utterance: TtsController.Utterance,
-            error: TtsController.Exception
+            utterance: TtsDirector.Utterance,
+            error: TtsDirector.Exception
         ) {
             scope.launch {
                 val shouldContinuePlayback = handleTtsException(error)
@@ -227,7 +224,7 @@ class TtsViewModel private constructor(
 
         }
 
-        override fun onError(error: TtsController.Exception) {
+        override fun onError(error: TtsDirector.Exception) {
             scope.launch {
                 handleTtsException(error)
             }
@@ -236,9 +233,9 @@ class TtsViewModel private constructor(
         /**
          * Handles the given error and returns whether the playback should continue.
          */
-        private suspend fun handleTtsException(error: TtsController.Exception): Boolean =
+        private suspend fun handleTtsException(error: TtsDirector.Exception): Boolean =
             when (error) {
-                is TtsController.Exception.Engine -> when (val err = error.error) {
+                is TtsDirector.Exception.Engine -> when (val err = error.error) {
                     // The `LanguageSupportIncomplete` exception is a special case. We can recover from
                     // it by asking the user to download the missing voice data.
                     is TtsEngine.Exception.LanguageSupportIncomplete -> {
