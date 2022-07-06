@@ -354,7 +354,7 @@ class Publication(
      */
     class ServicesBuilder private constructor(private val serviceFactories: MutableMap<String, ServiceFactory>) {
 
-        @OptIn(Search::class)
+        @OptIn(Search::class, ExperimentalReadiumApi::class)
         @Suppress("UNCHECKED_CAST")
         constructor(
             cache: ServiceFactory? = null,

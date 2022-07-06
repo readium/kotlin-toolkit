@@ -15,12 +15,12 @@ import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.content.Content
-import org.readium.r2.shared.publication.services.content.ContentIterator
 import org.readium.r2.shared.publication.services.content.contentIterator
 import org.readium.r2.shared.publication.services.content.isContentIterable
 import org.readium.r2.shared.util.*
-import org.readium.r2.shared.util.tokenizer.ContentTokenizer
-import org.readium.r2.shared.util.tokenizer.TextContentTokenizer
+import org.readium.r2.shared.publication.services.content.ContentTokenizer
+import org.readium.r2.shared.publication.services.content.TextContentTokenizer
+import org.readium.r2.shared.publication.services.content.iterators.ContentIterator
 import org.readium.r2.shared.util.tokenizer.TextUnit
 import java.util.*
 
@@ -220,13 +220,14 @@ class TtsDirector<E : TtsEngine> private constructor(
      * @param voice Voice used to speak the utterances.
      * @param rate Speech rate (speed) of the voice. Normal is 1.0. See [rateRange] for the
      * range of values supported by the [TtsEngine].
+     * @param extras Extensibility for custom TTS engines.
      */
     @ExperimentalReadiumApi
     data class Configuration(
         val defaultLanguage: Language? = null,
         val voice: TtsEngine.Voice? = null,
         val rate: Double = 1.0,
-        // FIXME: val extras: JsonObject
+        val extras: Any? = null
     )
 
     private val _config = MutableStateFlow(config)
@@ -494,22 +495,22 @@ class TtsDirector<E : TtsEngine> private constructor(
         }
 
         return when (val data = data) {
-            is Content.Data.Image -> {
+            is Content.Text -> {
+                data.segments.mapNotNull { segment ->
+                    utterance(
+                        text = segment.text,
+                        locator = segment.locator,
+                        language = segment.language
+                    )
+                }
+            }
+
+            is Content.TextualData -> {
                 listOfNotNull(
-                    data.description
+                    data.text
                         ?.takeIf { it.isNotBlank() }
                         ?.let { utterance(text = it, locator = locator) }
                 )
-            }
-
-            is Content.Data.Text -> {
-                data.spans.mapNotNull { span ->
-                    utterance(
-                        text = span.text,
-                        locator = span.locator,
-                        language = span.language
-                    )
-                }
             }
 
             else -> emptyList()

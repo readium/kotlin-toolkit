@@ -4,13 +4,15 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.tokenizer
+package org.readium.r2.shared.publication.services.content
 
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.services.content.Content
-import org.readium.r2.shared.publication.services.content.Content.Data
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.tokenizer.DefaultTextContentTokenizer
+import org.readium.r2.shared.util.tokenizer.TextTokenizer
+import org.readium.r2.shared.util.tokenizer.TextUnit
+import org.readium.r2.shared.util.tokenizer.Tokenizer
 
 /** A tokenizer splitting a [Content] into smaller pieces. */
 @ExperimentalReadiumApi
@@ -23,11 +25,15 @@ object IdentityContentTokenizer : ContentTokenizer {
 }
 
 /**
- * A [ContentTokenizer] using a [TextTokenizer] to split the text of the [Content].
+ * A [ContentTokenizer] using a [TextTokenizer] to split the text of the [Content] into smaller
+ * portions.
+ *
+ * @param contextSnippetLength Length of `before` and `after` snippets in the produced [Locator]s.
  */
 @ExperimentalReadiumApi
 class TextContentTokenizer(
     private val defaultLanguage: Language?,
+    private val contextSnippetLength: Int = 50,
     private val textTokenizerFactory: (Language?) -> TextTokenizer
 ) : ContentTokenizer {
 
@@ -40,10 +46,10 @@ class TextContentTokenizer(
     )
 
     override fun tokenize(data: Content): List<Content> = listOf(
-        if (data.data is Data.Text) {
+        if (data.data is Content.Text) {
             data.copy(
                 data = data.data.copy(
-                    spans = data.data.spans.flatMap { tokenize(it) }
+                    segments = data.data.segments.flatMap { tokenize(it) }
                 )
             )
         } else {
@@ -51,18 +57,18 @@ class TextContentTokenizer(
         }
     )
 
-    private fun tokenize(span: Data.Text.Span): List<Data.Text.Span> =
-        textTokenizerFactory(span.language ?: defaultLanguage).tokenize(span.text)
+    private fun tokenize(segment: Content.Text.Segment): List<Content.Text.Segment> =
+        textTokenizerFactory(segment.language ?: defaultLanguage).tokenize(segment.text)
             .map { range ->
-                span.copy(
-                    locator = span.locator.copy(text = extractTextContextIn(span.text, range)),
-                    text = span.text.substring(range)
+                segment.copy(
+                    locator = segment.locator.copy(text = extractTextContextIn(segment.text, range)),
+                    text = segment.text.substring(range)
                 )
             }
 
     private fun extractTextContextIn(string: String, range: IntRange): Locator.Text {
-        val after = string.substring(range.last, (range.last + 50).coerceAtMost(string.length))
-        val before = string.substring((range.first - 50).coerceAtLeast(0), range.first)
+        val after = string.substring(range.last, (range.last + contextSnippetLength).coerceAtMost(string.length))
+        val before = string.substring((range.first - contextSnippetLength).coerceAtLeast(0), range.first)
         return Locator.Text(
             after = after.takeIf { it.isNotEmpty() },
             before = before.takeIf { it.isNotEmpty() },

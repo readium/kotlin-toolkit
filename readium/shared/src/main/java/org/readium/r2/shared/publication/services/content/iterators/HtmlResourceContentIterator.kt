@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.publication.services.content
+package org.readium.r2.shared.publication.services.content.iterators
 
 import org.jsoup.Jsoup
 import org.jsoup.internal.StringUtil
@@ -14,20 +14,39 @@ import org.jsoup.nodes.TextNode
 import org.jsoup.parser.Parser
 import org.jsoup.select.NodeTraversor
 import org.jsoup.select.NodeVisitor
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.html.cssSelector
-import org.readium.r2.shared.publication.services.content.Content.Data
+import org.readium.r2.shared.publication.services.content.Content
+import org.readium.r2.shared.publication.services.content.Content.Text
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
 
-class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) : ContentIterator {
+// FIXME: Support custom skipped elements
+
+/**
+ * Iterates an HTML [resource], starting from the given [locator].
+ *
+ * If you want to start mid-resource, the [locator] must contain a `cssSelector` key in its
+ * [Locator.Locations] object.
+ *
+ * If you want to start from the end of the resource, the [locator] must have a `progression` of 1.0.
+ */
+@ExperimentalReadiumApi
+class HtmlResourceContentIterator(
+    private val resource: Resource,
+    private val locator: Locator
+) : ContentIterator {
+
     companion object {
-        // FIXME: Custom skipped elements
+        /**
+         * Creates a new factory for [HtmlResourceContentIterator].
+         */
         fun createFactory(): ResourceContentIteratorFactory = { res, locator ->
             if (res.link().mediaType.matchesAny(MediaType.HTML, MediaType.XHTML))
                 HtmlResourceContentIterator(res, locator)
@@ -75,7 +94,16 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
         return contentParser.result()
     }
 
-    data class ParsedElements(val elements: List<Content>, val startIndex: Int)
+    /**
+     * Holds the result of parsing the HTML resource into a list of [Content].
+     *
+     * The [startIndex] will be calculated from the element matched by the base [locator], if
+     * possible. Defaults to 0.
+     */
+    data class ParsedElements(
+        val elements: List<Content>,
+        val startIndex: Int,
+    )
 
     private class ContentParser(
         private val baseLocator: Locator,
@@ -92,7 +120,7 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
         private var startIndex = 0
         private var currentElement: Element? = null
 
-        private val spansAcc = mutableListOf<Data.Text.Span>()
+        private val segmentsAcc = mutableListOf<Text.Segment>()
         private var textAcc = StringBuilder()
         private var wholeRawTextAcc: String = ""
         private var elementRawTextAcc: String = ""
@@ -135,8 +163,9 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
                                             }
                                         )
                                     ),
-                                    data = Data.Image(
+                                    data = Content.Image(
                                         link = Link(href = href),
+                                        caption = null, // FIXME: Get the caption from figcaption
                                         description = node.attr("alt").takeIf { it.isNotBlank() },
                                     )
                                 )
@@ -144,7 +173,7 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
                         }
                     }
                     node.isBlock -> {
-                        spansAcc.clear()
+                        segmentsAcc.clear()
                         textAcc.clear()
                         rawTextAcc = ""
                         currentCssSelector = node.cssSelector()
@@ -161,7 +190,7 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
             if (node is TextNode) {
                 val language = node.language
                 if (currentLanguage != language) {
-                    flushSpan()
+                    flushSegment()
                     currentLanguage = language
                 }
 
@@ -184,8 +213,8 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
             textAcc.lastOrNull() == ' '
 
         private fun flushText() {
-            flushSpan()
-            if (spansAcc.isEmpty()) return
+            flushSegment()
+            if (segmentsAcc.isEmpty()) return
 
             if (startElement != null && currentElement == startElement) {
                 startIndex = elements.size
@@ -201,21 +230,21 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
                     ),
                     text = Locator.Text(highlight = elementRawTextAcc)
                 ),
-                data = Data.Text(
-                    role = Data.Text.Role.Body,
-                    spans = spansAcc.toList()
+                data = Text(
+                    role = Text.Role.Body,
+                    segments = segmentsAcc.toList()
                 )
             ))
             elementRawTextAcc = ""
-            spansAcc.clear()
+            segmentsAcc.clear()
         }
 
-        private fun flushSpan() {
+        private fun flushSegment() {
             var text = textAcc.toString()
             val trimmedText = text.trim()
 
             if (text.isNotBlank()) {
-                if (spansAcc.isEmpty()) {
+                if (segmentsAcc.isEmpty()) {
                     text = text.trimStart()
 
                     val whitespaceSuffix = text.lastOrNull()
@@ -225,23 +254,29 @@ class HtmlResourceContentIterator(val resource: Resource, val locator: Locator) 
                     text = trimmedText + whitespaceSuffix
                 }
 
-                spansAcc.add(Data.Text.Span(
-                    locator = baseLocator.copy(
-                        locations = Locator.Locations(
-                            otherLocations = buildMap {
-                                currentCssSelector?.let {
-                                    put("cssSelector", it as Any)
+                segmentsAcc.add(
+                    Text.Segment(
+                        locator = baseLocator.copy(
+                            locations = Locator.Locations(
+                                otherLocations = buildMap {
+                                    currentCssSelector?.let {
+                                        put("cssSelector", it as Any)
+                                    }
                                 }
-                            }
+                            ),
+                            text = Locator.Text(
+                                highlight = rawTextAcc,
+                                before = wholeRawTextAcc.takeLast(50) // FIXME: custom length
+                            )
                         ),
-                        text = Locator.Text(
-                            highlight = rawTextAcc,
-                            before = wholeRawTextAcc.takeLast(50) // FIXME: custom length
-                        )
-                    ),
-                    language = currentLanguage?.let { Language(it) },
-                    text = text
-                ))
+                        text = text,
+                        attributes = buildList {
+                            currentLanguage?.let {
+                                add(Text.Segment.Attribute(Text.Segment.AttributeKey.LANGUAGE, Language(it)))
+                            }
+                        },
+                    )
+                )
             }
 
             wholeRawTextAcc += rawTextAcc
@@ -259,9 +294,3 @@ private val Node.language: String? get() =
     attr("xml:lang").takeUnless { it.isBlank() }
         ?: attr("lang").takeUnless { it.isBlank() }
         ?: parent()?.language
-
-private fun Node.parentElement(): Element? =
-    parent()?.let { parent ->
-        (parent as? Element)
-            ?: parent.parentElement()
-    }
