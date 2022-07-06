@@ -178,6 +178,14 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                 }
                 .launchIn(scope)
 
+            // Navigate to the currently spoken utterance.
+            state.map { it.playingUtterance }
+                .filterNotNull()
+                .onEach { locator ->
+                    navigator.go(locator, animated = false)
+                }
+                .launchIn(scope)
+
             // Navigate to the currently spoken word.
             // This will automatically turn pages when needed.
             state.map { it.playingWordRange }

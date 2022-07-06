@@ -88,8 +88,8 @@ interface TtsEngine : SuspendingCloseable {
     ) {
         val language: Language =
             when (val vl = voiceOrLanguage) {
-                is Either.Left -> vl.left.language
-                is Either.Right -> vl.right
+                is Either.Left -> vl.value.language
+                is Either.Right -> vl.value
             }
     }
 

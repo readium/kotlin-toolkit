@@ -99,13 +99,17 @@ class TtsViewModel private constructor(
     val events: Flow<Event> = _events.receiveAsFlow()
 
     /**
-     * Indicates whether the user enabled the TTS playback.
-     * It doesn't mean the TTS is actually speaking utterances at the moment.
+     * Indicates whether the TTS is in the Stopped state.
      */
-    private val isStarted = MutableStateFlow(false)
+    private val isStopped: StateFlow<Boolean>
 
     init {
         director.listener = DirectorListener()
+
+        // Automatically close the TTS when reaching the Stopped state.
+        isStopped = director.state
+            .map { it == TtsDirector.State.Stopped }
+            .stateIn(scope, SharingStarted.Lazily, initialValue = true)
 
         // Supported voices grouped by their language.
         val voicesByLanguage: Flow<Map<Language, List<Voice>>> =
@@ -146,15 +150,15 @@ class TtsViewModel private constructor(
 
         // Current view model state.
         state = combine(
-            isStarted,
+            isStopped,
             director.state,
             settings
-        ) { isStarted, state, currentSettings ->
+        ) { isStopped, state, currentSettings ->
             val playing = (state as? TtsState.Playing)
             val paused = (state as? TtsState.Paused)
 
             State(
-                showControls = isStarted,
+                showControls = !isStopped,
                 isPlaying = (playing != null),
                 playingWordRange = playing?.range,
                 playingUtterance = (playing?.utterance ?: paused?.utterance)?.locator,
@@ -173,8 +177,7 @@ class TtsViewModel private constructor(
      * Starts the TTS using the first visible locator in the given [navigator].
      */
     fun start(navigator: Navigator) {
-        if (isStarted.value) return
-        isStarted.value = true
+        if (!isStopped.value) return
 
         scope.launch {
             director.start(fromLocator = navigator.firstVisibleElementLocator())
@@ -182,8 +185,7 @@ class TtsViewModel private constructor(
     }
 
     fun stop() {
-        if (!isStarted.value) return
-        isStarted.value = false
+        if (isStopped.value) return
         director.stop()
     }
 
