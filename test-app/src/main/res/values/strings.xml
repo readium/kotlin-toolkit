@@ -197,21 +197,19 @@
     <string name="select_a_font">Select a font</string>
     <string name="close">Close</string>
     <string name="language">Language</string>
+    <string name="auto">Auto</string>
 
-    <string name="tts_play">Play</string>
-    <string name="tts_pause">Pause</string>
-    <string name="tts_stop">Stop</string>
-    <string name="tts_previous">Go backward</string>
-    <string name="tts_next">Go forward</string>
-    <string name="tts_settings">Speech settings</string>
-    <string name="tts_rate">Rate</string>
     <string name="tts_error_initialization">Failed to initialize the TTS engine</string>
     <string name="tts_error_language_not_supported">The language %s is not supported</string>
     <string name="tts_error_language_support_incomplete">The language %s requires additional data. Do you want to download it?</string>
     <string name="tts_error_network">A networking error occurred</string>
     <string name="tts_error_other">A TTS error occurred</string>
-    <string name="auto">Auto</string>
-    <string name="voice">Voice</string>
-    <string name="voice_number">Voice %d</string>
-    <string name="tts_higher_quality_voices">Higher quality voices (requires network)</string>
+    <string name="tts_next">Go forward</string>
+    <string name="tts_pause">Pause</string>
+    <string name="tts_play">Play</string>
+    <string name="tts_previous">Go backward</string>
+    <string name="tts_rate">Rate</string>
+    <string name="tts_settings">Speech settings</string>
+    <string name="tts_stop">Stop</string>
+    <string name="tts_voice">Voice</string>
 </resources>

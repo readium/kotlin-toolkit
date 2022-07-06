@@ -183,7 +183,7 @@ private fun TtsSettingsDialog(
                 )
 
                 SelectorListItem(
-                    label = stringResource(R.string.voice),
+                    label = stringResource(R.string.tts_voice),
                     values = availableVoices,
                     selection = config.voice,
                     titleForValue = { it?.name ?: it?.id ?: stringResource(R.string.auto) },

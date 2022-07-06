@@ -39,7 +39,6 @@ import kotlin.time.ExperimentalTime
  *   interactions such as tapping/clicking the edge of the page to skip to the next one should be
  *   implemented by the reading app, and not the navigator.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 interface Navigator {
 
     /**
@@ -52,13 +51,6 @@ interface Navigator {
      * Can be used to save a bookmark to the current position.
      */
     val currentLocator: StateFlow<Locator>
-
-    /**
-     * Returns the [Locator] to the first content element that begins on the current screen.
-     */
-    @ExperimentalReadiumApi
-    suspend fun firstVisibleElementLocator(): Locator? =
-        currentLocator.value
 
     /**
      * Moves to the position in the publication corresponding to the given [Locator].
@@ -112,10 +104,18 @@ interface NavigatorDelegate {
  * A navigator rendering the publication visually on-screen.
  */
 interface VisualNavigator : Navigator {
+
     /**
      * Current reading progression direction.
      */
     val readingProgression: ReadingProgression
+
+    /**
+     * Returns the [Locator] to the first content element that begins on the current screen.
+     */
+    @ExperimentalReadiumApi
+    suspend fun firstVisibleElementLocator(): Locator? =
+        currentLocator.value
 
     interface Listener : Navigator.Listener {
         /**
