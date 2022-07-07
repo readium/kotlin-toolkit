@@ -22,17 +22,21 @@ interface Content {
      * Represents a single semantic content element part of a publication.
      */
     @ExperimentalReadiumApi
-    interface Element {
+    interface Element : AttributesHolder {
         /**
          * Locator targeting this element in the Publication.
          */
         val locator: Locator
     }
 
-    /** An element which can be represented as human-readable text. */
+    /**
+     * An element which can be represented as human-readable text.
+     *
+     * The default implementation returns the first accessibility label associated to the element.
+     */
     interface TextualElement : Element {
         /** Human-readable text representation for this element. */
-        val text: String?
+        val text: String? get() = accessibilityLabel
     }
 
     /** An element referencing an embedded external resource. */
@@ -41,45 +45,39 @@ interface Content {
         val embeddedLink: Link
     }
 
-    /**
-     * An audio clip.
-     *
-     * @param extras Additional metadata for extensions.
-     */
+    /** An audio clip. */
     data class AudioElement(
         override val locator: Locator,
         override val embeddedLink: Link,
-        val extras: Map<String, Any> = emptyMap(),
-    ) : EmbeddedElement
+        override val attributes: List<Attribute<*>> = emptyList(),
+    ) : EmbeddedElement, TextualElement
 
-    /**
-     * A video clip.
-     *
-     * @param extras Additional metadata for extensions.
-     */
+    /** A video clip. */
     data class VideoElement(
         override val locator: Locator,
         override val embeddedLink: Link,
-        val extras: Map<String, Any> = emptyMap(),
-    ) : EmbeddedElement
+        override val attributes: List<Attribute<*>> = emptyList(),
+    ) : EmbeddedElement, TextualElement
 
     /**
      * A bitmap image.
      *
      * @param caption Short piece of text associated with the image.
      * @param description Accessibility label.
-     * @param extras Additional metadata for extensions.
      */
     data class ImageElement(
         override val locator: Locator,
         override val embeddedLink: Link,
         val caption: String?,
         val description: String?,
-        val extras: Map<String, Any> = emptyMap(),
+        override val attributes: List<Attribute<*>> = emptyList(),
     ) : EmbeddedElement, TextualElement {
-        override val text: String?
-            get() = caption?.takeIf { it.isNotBlank() }
-                ?: description
+
+        override val text: String? get() =
+            // The caption might be a better text description than the accessibility label, when
+            // available.
+            caption?.takeIf { it.isNotBlank() }
+                ?: super.text
     }
 
     /**
@@ -87,17 +85,16 @@ interface Content {
      *
      * @param role Purpose of this element in the broader context of the document.
      * @param segments Ranged portions of text with associated attributes.
-     * @param extras Additional metadata for extensions.
      */
     data class TextElement(
         override val locator: Locator,
         val role: Role,
         val segments: List<Segment>,
-        val extras: Map<String, Any> = emptyMap(),
+        override val attributes: List<Attribute<*>> = emptyList(),
     ) : TextualElement {
 
         override val text: String
-            get() = segments.joinToString { it.text }
+            get() = segments.joinToString(separator = "") { it.text }
 
         /**
          * Represents a purpose of an element in the broader context of the document.
@@ -142,48 +139,61 @@ interface Content {
         data class Segment(
             val locator: Locator,
             val text: String,
-            val attributes: List<Attribute<*>>,
-        ) {
-            /**
-             * Language of the text, if any.
-             */
-            val language: Language?
-                get() = attribute(AttributeKey.LANGUAGE)
+            override val attributes: List<Attribute<*>>,
+        ) : AttributesHolder
+    }
 
-            /**
-             * An attribute is an arbitrary key-value pair.
-             */
-            data class Attribute<V>(
-                val key: AttributeKey<V>,
-                val value: V
-            )
+    /**
+     * An attribute is an arbitrary key-value metadata pair.
+     */
+    data class Attribute<V>(
+        val key: AttributeKey<V>,
+        val value: V
+    )
 
-            /**
-             * An attribute key identifies uniquely an attribute.
-             *
-             * The [V] phantom type is there to perform static type checking when requesting an
-             * attribute.
-             */
-            data class AttributeKey<V>(val id: String) {
-                companion object {
-                    val LANGUAGE = AttributeKey<Language>("language")
-                    val LINK = AttributeKey<URL>("link")
-                }
-            }
-
-            /**
-             * Gets the first attribute with the given [key].
-             */
-            @Suppress("UNCHECKED_CAST")
-            fun <V> attribute(key: AttributeKey<V>): V? =
-                attributes.firstOrNull { it.key == key }?.value as V
-
-            @Suppress("UNCHECKED_CAST")
-            fun <V> attributes(key: AttributeKey<V>): List<V> =
-                attributes
-                    .filter { it.key == key }
-                    .map { it.value as V }
+    /**
+     * An attribute key  uniquely an attribute.
+     *
+     * The [V] phantom type is there to perform static type checking when requesting an attribute.
+     */
+    data class AttributeKey<V>(val id: String) {
+        companion object {
+            val ACCESSIBILITY_LABEL = AttributeKey<String>("accessibilityLabel")
+            val LANGUAGE = AttributeKey<Language>("language")
         }
+    }
+
+    /**
+     * An object associated with a list of attributes.
+     */
+    interface AttributesHolder {
+
+        /**
+         * Associated list of attributes.
+         */
+        val attributes: List<Attribute<*>>
+
+        val language: Language?
+            get() = attribute(AttributeKey.LANGUAGE)
+
+        val accessibilityLabel: String?
+            get() = attribute(AttributeKey.ACCESSIBILITY_LABEL)
+
+        /**
+         * Gets the first attribute with the given [key].
+         */
+        @Suppress("UNCHECKED_CAST")
+        fun <V> attribute(key: AttributeKey<V>): V? =
+            attributes.firstOrNull { it.key == key }?.value as V
+
+        /**
+         * Gets all the attributes with the given [key].
+         */
+        @Suppress("UNCHECKED_CAST")
+        fun <V> attributes(key: AttributeKey<V>): List<V> =
+            attributes
+                .filter { it.key == key }
+                .map { it.value as V }
     }
 
     /**
