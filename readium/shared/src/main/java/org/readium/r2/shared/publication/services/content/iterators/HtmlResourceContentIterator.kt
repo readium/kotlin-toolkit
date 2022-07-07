@@ -21,7 +21,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.services.content.Content
-import org.readium.r2.shared.publication.services.content.Content.Text
+import org.readium.r2.shared.publication.services.content.Content.Element.Text
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -41,7 +41,7 @@ import org.readium.r2.shared.util.use
 class HtmlResourceContentIterator(
     private val resource: Resource,
     private val locator: Locator
-) : ContentIterator {
+) : Content.Iterator {
 
     companion object {
         /**
@@ -54,18 +54,46 @@ class HtmlResourceContentIterator(
         }
     }
 
-    override suspend fun close() {}
+    /**
+     * [Content.Element] loaded with [hasPrevious] or [hasNext], associated with the move delta.
+     */
+    private data class ContentWithDelta(
+        val element: Content.Element,
+        val delta: Int
+    )
 
-    override suspend fun previous(): Content? = nextBy(-1)
-    override suspend fun next(): Content? = nextBy(1)
+    private var currentElement: ContentWithDelta? = null
 
-    private suspend fun nextBy(delta: Int): Content? {
+    override suspend fun hasPrevious(): Boolean {
+        currentElement = nextBy(-1)
+        return currentElement != null
+    }
+
+    override fun previous(): Content.Element =
+        currentElement
+            ?.takeIf { it.delta == -1 }?.element
+            ?: throw IllegalStateException("Called previous() without a successful call to hasPrevious() first")
+
+    override suspend fun hasNext(): Boolean {
+        currentElement = nextBy(+1)
+        return currentElement != null
+    }
+
+    override fun next(): Content.Element =
+        currentElement
+            ?.takeIf { it.delta == +1 }?.element
+            ?: throw IllegalStateException("Called next() without a successful call to hasNext() first")
+
+    private suspend fun nextBy(delta: Int): ContentWithDelta? {
         val elements = elements()
         val index = currentIndex?.let { it + delta }
             ?: elements.startIndex
 
-        return elements.elements.getOrNull(index)
-            ?.also { currentIndex = index }
+        val content = elements.elements.getOrNull(index)
+            ?: return null
+
+        currentIndex = index
+        return ContentWithDelta(content, delta)
     }
 
     private var currentIndex: Int? = null
@@ -95,13 +123,13 @@ class HtmlResourceContentIterator(
     }
 
     /**
-     * Holds the result of parsing the HTML resource into a list of [Content].
+     * Holds the result of parsing the HTML resource into a list of [ContentElement].
      *
      * The [startIndex] will be calculated from the element matched by the base [locator], if
      * possible. Defaults to 0.
      */
     data class ParsedElements(
-        val elements: List<Content>,
+        val elements: List<Content.Element>,
         val startIndex: Int,
     )
 
@@ -116,7 +144,7 @@ class HtmlResourceContentIterator(
                 else startIndex
         )
 
-        private val elements = mutableListOf<Content>()
+        private val elements = mutableListOf<Content.Element>()
         private var startIndex = 0
         private var currentElement: Element? = null
 
@@ -155,7 +183,7 @@ class HtmlResourceContentIterator(
 
                         if (href != null) {
                             elements.add(
-                                Content(
+                                Content.Element(
                                     locator = baseLocator.copy(
                                         locations = Locator.Locations(
                                             otherLocations = buildMap {
@@ -163,7 +191,7 @@ class HtmlResourceContentIterator(
                                             }
                                         )
                                     ),
-                                    data = Content.Image(
+                                    data = Content.Element.Image(
                                         link = Link(href = href),
                                         caption = null, // FIXME: Get the caption from figcaption
                                         description = node.attr("alt").takeIf { it.isNotBlank() },
@@ -219,7 +247,7 @@ class HtmlResourceContentIterator(
             if (startElement != null && currentElement == startElement) {
                 startIndex = elements.size
             }
-            elements.add(Content(
+            elements.add(Content.Element(
                 locator = baseLocator.copy(
                     locations = Locator.Locations(
                         otherLocations = buildMap {

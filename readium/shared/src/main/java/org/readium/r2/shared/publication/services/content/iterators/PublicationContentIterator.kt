@@ -16,16 +16,16 @@ import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.util.Either
 
 /**
- * Creates a [ContentIterator] instance for the [Resource], starting from the given [Locator].
+ * Creates a [Content.Iterator] instance for the [Resource], starting from the given [Locator].
  *
  * Returns null if the resource media type is not supported.
  */
 @ExperimentalReadiumApi
 typealias ResourceContentIteratorFactory =
-    suspend (resource: Resource, locator: Locator) -> ContentIterator?
+    suspend (resource: Resource, locator: Locator) -> Content.Iterator?
 
 /**
- * A composite [ContentIterator] which iterates through a whole [publication] and delegates the
+ * A composite [Content.Iterator] which iterates through a whole [publication] and delegates the
  * iteration inside a given resource to media type-specific iterators.
  *
  * @param publication The [Publication] which will be iterated through.
@@ -39,45 +39,48 @@ class PublicationContentIterator(
     private val publication: Publication,
     private val startLocator: Locator?,
     private val resourceContentIteratorFactories: List<ResourceContentIteratorFactory>
-) : ContentIterator {
+) : Content.Iterator {
 
     /**
-     * [ContentIterator] for a resource, associated with its [index] in the reading order.
+     * [Content.Iterator] for a resource, associated with its [index] in the reading order.
      */
     private data class IndexedIterator(
         val index: Int,
-        val iterator: ContentIterator
+        val iterator: Content.Iterator
+    )
+
+    /**
+     * [Content.Element] loaded with [hasPrevious] or [hasNext], associated with the move direction.
+     */
+    private data class ElementInDirection(
+        val element: Content.Element,
+        val direction: Direction
     )
 
     private var _currentIterator: IndexedIterator? = null
+    private var currentElement: ElementInDirection? = null
 
-    /**
-     * Returns the [ContentIterator] for the current [Resource] in the reading order.
-     */
-    private suspend fun currentIterator(): IndexedIterator? {
-        if (_currentIterator == null) {
-            _currentIterator = initialIterator()
-        }
-        return _currentIterator
+    override suspend fun hasPrevious(): Boolean {
+        currentElement = nextIn(Direction.Backward)
+        return currentElement != null
     }
 
-    private var isClosed = false
+    override fun previous(): Content.Element =
+        currentElement
+            ?.takeIf { it.direction == Direction.Backward }?.element
+            ?: throw IllegalStateException("Called previous() without a successful call to hasPrevious() first")
 
-    override suspend fun close() {
-        isClosed = true
-        _currentIterator?.iterator?.close()
-        _currentIterator = null
+    override suspend fun hasNext(): Boolean {
+        currentElement = nextIn(Direction.Forward)
+        return currentElement != null
     }
 
-    override suspend fun previous(): Content? =
-        nextIn(Direction.Backward)
+    override fun next(): Content.Element =
+        currentElement
+            ?.takeIf { it.direction == Direction.Forward }?.element
+            ?: throw IllegalStateException("Called next() without a successful call to hasNext() first")
 
-    override suspend fun next(): Content? =
-        nextIn(Direction.Forward)
-
-    private suspend fun nextIn(direction: Direction): Content? {
-        check(!isClosed) { "The iterator is closed and cannot be used" }
-
+    private suspend fun nextIn(direction: Direction): ElementInDirection? {
         val iterator = currentIterator() ?: return null
 
         val content = iterator.nextContentIn(direction)
@@ -86,7 +89,17 @@ class PublicationContentIterator(
                 ?: return null
             return nextIn(direction)
         }
-        return content
+        return ElementInDirection(content, direction)
+    }
+
+    /**
+     * Returns the [Content.Iterator] for the current [Resource] in the reading order.
+     */
+    private suspend fun currentIterator(): IndexedIterator? {
+        if (_currentIterator == null) {
+            _currentIterator = initialIterator()
+        }
+        return _currentIterator
     }
 
     /**
@@ -142,10 +155,10 @@ class PublicationContentIterator(
         Forward(+1), Backward(-1)
     }
 
-    private suspend fun IndexedIterator.nextContentIn(direction: Direction): Content? =
+    private suspend fun IndexedIterator.nextContentIn(direction: Direction): Content.Element? =
         when (direction) {
-            Direction.Forward -> iterator.next()
-            Direction.Backward -> iterator.previous()
+            Direction.Forward -> iterator.nextOrNull()
+            Direction.Backward -> iterator.previousOrNull()
         }
 
     private fun LocatorOrProgression.toLocator(link: Link): Locator? =

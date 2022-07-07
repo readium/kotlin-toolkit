@@ -14,13 +14,8 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.services.content.Content
-import org.readium.r2.shared.publication.services.content.contentIterator
-import org.readium.r2.shared.publication.services.content.isContentIterable
+import org.readium.r2.shared.publication.services.content.*
 import org.readium.r2.shared.util.*
-import org.readium.r2.shared.publication.services.content.ContentTokenizer
-import org.readium.r2.shared.publication.services.content.TextContentTokenizer
-import org.readium.r2.shared.publication.services.content.iterators.ContentIterator
 import org.readium.r2.shared.util.tokenizer.TextUnit
 import java.util.*
 
@@ -48,7 +43,7 @@ class TtsDirector<E : TtsEngine> private constructor(
          * @param publication Publication which will be iterated through and synthesized.
          * @param config Initial TTS configuration.
          * @param tokenizerFactory Factory to create a [ContentTokenizer] which will be used to
-         * split each [Content] item into smaller chunks. Splits by sentences by default.
+         * split each [Content.Element] item into smaller chunks. Splits by sentences by default.
          * @param listener Optional callbacks listener.
          */
         operator fun invoke(
@@ -72,7 +67,7 @@ class TtsDirector<E : TtsEngine> private constructor(
          * @param config Initial TTS configuration.
          * @param engineFactory Factory to create an instance of [TtsEngine].
          * @param tokenizerFactory Factory to create a [ContentTokenizer] which will be used to
-         * split each [Content] item into smaller chunks. Splits by sentences by default.
+         * split each [Content.Element] item into smaller chunks. Splits by sentences by default.
          * @param listener Optional callbacks listener.
          */
         operator fun <E : TtsEngine> invoke(
@@ -88,7 +83,7 @@ class TtsDirector<E : TtsEngine> private constructor(
         }
 
         /**
-         * The default content tokenizer will split the [Content] items into individual sentences.
+         * The default content tokenizer will split the [Content.Element] items into individual sentences.
          */
         val defaultTokenizerFactory: (Language?) -> ContentTokenizer = { language ->
             TextContentTokenizer(
@@ -101,7 +96,7 @@ class TtsDirector<E : TtsEngine> private constructor(
          * Returns whether the [publication] can be played with a [TtsDirector].
          */
         fun canSpeak(publication: Publication): Boolean =
-            publication.isContentIterable
+            publication.hasContent
     }
 
     @ExperimentalReadiumApi
@@ -275,7 +270,7 @@ class TtsDirector<E : TtsEngine> private constructor(
      */
     fun start(fromLocator: Locator? = null) {
         replacePlaybackJob {
-            publicationIterator = publication.contentIterator(fromLocator)
+            publicationIterator = publication.content(fromLocator).iterator()
             playNextUtterance(Direction.Forward)
         }
     }
@@ -349,19 +344,16 @@ class TtsDirector<E : TtsEngine> private constructor(
     }
 
     /**
-     * [ContentIterator] used to iterate through the [publication].
+     * [Content.Iterator] used to iterate through the [publication].
      */
-    private var publicationIterator: ContentIterator? = null
+    private var publicationIterator: Content.Iterator? = null
         set(value) {
-            field?.let {
-                scope.launch { it.close() }
-            }
             field = value
             utterances = CursorList()
         }
 
     /**
-     * Utterances for the current publication [Content] item.
+     * Utterances for the current publication [Content.Element] item.
      */
     private var utterances: CursorList<Utterance> = CursorList()
 
@@ -441,7 +433,7 @@ class TtsDirector<E : TtsEngine> private constructor(
     }
 
     /**
-     * Loads the utterances for the next publication [Content] item in the given [direction].
+     * Loads the utterances for the next publication [Content.Element] item in the given [direction].
      */
     private suspend fun loadNextUtterances(direction: Direction): Boolean {
         val content = publicationIterator?.nextIn(direction)
@@ -467,18 +459,18 @@ class TtsDirector<E : TtsEngine> private constructor(
     }
 
     /**
-     * Splits a publication [Content] item into smaller chunks using the provided tokenizer.
+     * Splits a publication [Content.Element] item into smaller chunks using the provided tokenizer.
      *
      * This is used to split a paragraph into sentences, for example.
      */
-    private fun Content.tokenize(): List<Content> =
+    private fun Content.Element.tokenize(): List<Content.Element> =
         tokenizerFactory(config.value.defaultLanguage ?: publication.metadata.language)
             .tokenize(this)
 
     /**
-     * Splits a publication [Content] item into the utterances to be spoken.
+     * Splits a publication [Content.Element] item into the utterances to be spoken.
      */
-    private fun Content.utterances(): List<Utterance> {
+    private fun Content.Element.utterances(): List<Utterance> {
         fun utterance(text: String, locator: Locator, language: Language? = null): Utterance? {
             if (!text.any { it.isLetterOrDigit() })
                 return null
@@ -495,7 +487,7 @@ class TtsDirector<E : TtsEngine> private constructor(
         }
 
         return when (val data = data) {
-            is Content.Text -> {
+            is Content.Element.Text -> {
                 data.segments.mapNotNull { segment ->
                     utterance(
                         text = segment.text,
@@ -505,7 +497,7 @@ class TtsDirector<E : TtsEngine> private constructor(
                 }
             }
 
-            is Content.TextualData -> {
+            is Content.Element.TextualData -> {
                 listOfNotNull(
                     data.text
                         ?.takeIf { it.isNotBlank() }
@@ -544,9 +536,9 @@ class TtsDirector<E : TtsEngine> private constructor(
             Direction.Backward -> previous()
         }
 
-    private suspend fun ContentIterator.nextIn(direction: Direction): Content? =
+    private suspend fun Content.Iterator.nextIn(direction: Direction): Content.Element? =
         when (direction) {
-            Direction.Forward -> next()
-            Direction.Backward -> previous()
+            Direction.Forward -> nextOrNull()
+            Direction.Backward -> previousOrNull()
         }
 }

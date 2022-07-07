@@ -26,7 +26,7 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.*
-import org.readium.r2.shared.publication.services.content.ContentIterationService
+import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Ref
@@ -358,7 +358,7 @@ class Publication(
         @Suppress("UNCHECKED_CAST")
         constructor(
             cache: ServiceFactory? = null,
-            contentIteration: ServiceFactory? = null,
+            content: ServiceFactory? = null,
             contentProtection: ServiceFactory? = null,
             cover: ServiceFactory? = null,
             locator: ServiceFactory? = { DefaultLocatorService(it.manifest.readingOrder, it.services) },
@@ -366,7 +366,7 @@ class Publication(
             search: ServiceFactory? = null,
         ) : this(mapOf(
             CacheService::class.java.simpleName to cache,
-            ContentIterationService::class.java.simpleName to contentIteration,
+            ContentService::class.java.simpleName to content,
             ContentProtectionService::class.java.simpleName to contentProtection,
             CoverService::class.java.simpleName to cover,
             LocatorService::class.java.simpleName to locator,

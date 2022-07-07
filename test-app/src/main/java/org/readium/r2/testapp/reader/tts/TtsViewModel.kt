@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.Navigator
+import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.tts.AndroidTtsEngine
 import org.readium.r2.navigator.tts.TtsDirector
 import org.readium.r2.navigator.tts.TtsDirector.Configuration
@@ -180,7 +181,8 @@ class TtsViewModel private constructor(
         if (!isStopped.value) return
 
         scope.launch {
-            director.start(fromLocator = navigator.firstVisibleElementLocator())
+            val start = (navigator as? VisualNavigator)?.firstVisibleElementLocator()
+            director.start(fromLocator = start)
         }
     }
 

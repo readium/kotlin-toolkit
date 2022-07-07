@@ -14,18 +14,18 @@ import org.readium.r2.shared.util.tokenizer.TextTokenizer
 import org.readium.r2.shared.util.tokenizer.TextUnit
 import org.readium.r2.shared.util.tokenizer.Tokenizer
 
-/** A tokenizer splitting a [Content] into smaller pieces. */
+/** A tokenizer splitting a [Content.Element] into smaller pieces. */
 @ExperimentalReadiumApi
-fun interface ContentTokenizer : Tokenizer<Content, Content>
+fun interface ContentTokenizer : Tokenizer<Content.Element, Content.Element>
 
 /** A passthrough tokenizer which does not modify its input. */
 @ExperimentalReadiumApi
 object IdentityContentTokenizer : ContentTokenizer {
-    override fun tokenize(data: Content): List<Content> = listOf(data)
+    override fun tokenize(data: Content.Element): List<Content.Element> = listOf(data)
 }
 
 /**
- * A [ContentTokenizer] using a [TextTokenizer] to split the text of the [Content] into smaller
+ * A [ContentTokenizer] using a [TextTokenizer] to split the text of the [Content.Element] into smaller
  * portions.
  *
  * @param contextSnippetLength Length of `before` and `after` snippets in the produced [Locator]s.
@@ -38,15 +38,15 @@ class TextContentTokenizer(
 ) : ContentTokenizer {
 
     /**
-     * A [ContentTokenizer] using the default [TextTokenizer] to split the text of the [Content].
+     * A [ContentTokenizer] using the default [TextTokenizer] to split the text of the [Content.Element].
      */
     constructor(defaultLanguage: Language?, unit: TextUnit) : this(
         defaultLanguage = defaultLanguage,
         textTokenizerFactory = { language -> DefaultTextContentTokenizer(unit, language) }
     )
 
-    override fun tokenize(data: Content): List<Content> = listOf(
-        if (data.data is Content.Text) {
+    override fun tokenize(data: Content.Element): List<Content.Element> = listOf(
+        if (data.data is Content.Element.Text) {
             data.copy(
                 data = data.data.copy(
                     segments = data.data.segments.flatMap { tokenize(it) }
@@ -57,7 +57,7 @@ class TextContentTokenizer(
         }
     )
 
-    private fun tokenize(segment: Content.Text.Segment): List<Content.Text.Segment> =
+    private fun tokenize(segment: Content.Element.Text.Segment): List<Content.Element.Text.Segment> =
         textTokenizerFactory(segment.language ?: defaultLanguage).tokenize(segment.text)
             .map { range ->
                 segment.copy(
