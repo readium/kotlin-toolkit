@@ -208,16 +208,16 @@ class TtsDirector<E : TtsEngine> private constructor(
      * User configuration for the text-to-speech engine.
      *
      * @param defaultLanguage Language overriding the publication one.
-     * @param voice Voice used to speak the utterances.
-     * @param rate Speech rate (speed) of the voice. Normal is 1.0. See [rateRange] for the
-     * range of values supported by the [TtsEngine].
+     * @param voiceId Identifier for the voice used to speak the utterances.
+     * @param rateMultiplier Multiplier for the voice speech rate. Normal is 1.0. See [rateMultiplierRange]
+     * for the range of values supported by the [TtsEngine].
      * @param extras Extensibility for custom TTS engines.
      */
     @ExperimentalReadiumApi
     data class Configuration(
         val defaultLanguage: Language? = null,
-        val voice: TtsEngine.Voice? = null,
-        val rate: Double = 1.0,
+        val voiceId: String? = null,
+        val rateMultiplier: Double = 1.0,
         val extras: Any? = null
     )
 
@@ -235,15 +235,15 @@ class TtsDirector<E : TtsEngine> private constructor(
      */
     fun setConfig(config: Configuration) {
         _config.value = config.copy(
-            rate = config.rate.coerceIn(engine.rateRange),
+            rateMultiplier = config.rateMultiplier.coerceIn(engine.rateMultiplierRange),
         )
     }
 
     /**
-     * Range for the speech rate. Normal is 1.0.
+     * Range for the speech rate multiplier. Normal is 1.0.
      */
-    val rateRange: ClosedRange<Double>
-        get() = engine.rateRange
+    val rateMultiplierRange: ClosedRange<Double>
+        get() = engine.rateMultiplierRange
 
     private val _availableVoices = MutableStateFlow<List<TtsEngine.Voice>>(emptyList())
 
@@ -258,8 +258,19 @@ class TtsDirector<E : TtsEngine> private constructor(
      * This can be used to restore the user selected voice after storing it in the shared
      * preferences.
      */
-    fun voiceWithId(id: String): TtsEngine.Voice? =
-        engine.voiceWithId(id)
+    fun voiceWithId(id: String): TtsEngine.Voice? {
+        val voice = lastUsedVoice?.takeIf { it.id == id }
+            ?: engine.voiceWithId(id)
+            ?: return null
+
+        lastUsedVoice = voice
+        return voice
+    }
+
+    /**
+     * Cache for the last requested voice, for performance.
+     */
+    private var lastUsedVoice: TtsEngine.Voice? = null
 
     /**
      * (Re)starts the TTS from the given locator or the beginning of the publication.
@@ -375,7 +386,7 @@ class TtsDirector<E : TtsEngine> private constructor(
             .speak(
                 utterance = TtsEngine.Utterance(
                     text = utterance.text,
-                    rate = config.value.rate,
+                    rateMultiplier = config.value.rateMultiplier,
                     voiceOrLanguage = utterance.voiceOrLanguage()
                 ),
                 onSpeakRange = { range ->
@@ -403,7 +414,8 @@ class TtsDirector<E : TtsEngine> private constructor(
     private fun Utterance.voiceOrLanguage(): Either<TtsEngine.Voice, Language> {
         // User selected voice, if it's compatible with the utterance language.
         // Or fallback on the languages.
-        val voice = config.value.voice
+        val voice = config.value.voiceId
+            ?.let { voiceWithId(it) }
             ?.takeIf { language == null || it.language.removeRegion() == language.removeRegion() }
 
         return (

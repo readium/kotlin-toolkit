@@ -76,14 +76,14 @@ interface TtsEngine : SuspendingCloseable {
      * An utterance is an arbitrary text (e.g. sentence) that can be synthesized by the TTS engine.
      *
      * @param text Text to be spoken.
-     * @param rate Speed of the voice.
+     * @param rateMultiplier Multiplier for the speech rate.
      * @param voiceOrLanguage Either an explicit voice or the language of the text. If a language
      * is provided, the default voice for this language will be used.
      */
     @ExperimentalReadiumApi
     data class Utterance(
         val text: String,
-        val rate: Double,
+        val rateMultiplier: Double,
         val voiceOrLanguage: Either<Voice, Language>
     ) {
         val language: Language =
@@ -130,9 +130,9 @@ interface TtsEngine : SuspendingCloseable {
     ): TtsTry<Unit>
 
     /**
-     * Supported range for the speech rate.
+     * Supported range for the speech rate multiplier.
      */
-    val rateRange: ClosedRange<Double>
+    val rateMultiplierRange: ClosedRange<Double>
 
     /**
      * List of available synthesizer voices.

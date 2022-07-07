@@ -161,12 +161,12 @@ private fun TtsSettingsDialog(
                     SelectorListItem(
                         label = stringResource(R.string.tts_rate),
                         values = availableRates,
-                        selection = config.rate,
+                        selection = config.rateMultiplier,
                         titleForValue = { rate ->
                             DecimalFormat("x#.##").format(rate)
                         },
                         onSelected = {
-                            onConfigChange(config.copy(rate = it))
+                            onConfigChange(config.copy(rateMultiplier = it))
                         }
                     )
                 }
@@ -179,15 +179,15 @@ private fun TtsSettingsDialog(
                         language?.locale?.displayName
                             ?: stringResource(R.string.auto)
                     },
-                    onSelected = { onConfigChange(config.copy(defaultLanguage = it, voice = null)) }
+                    onSelected = { onConfigChange(config.copy(defaultLanguage = it, voiceId = null)) }
                 )
 
                 SelectorListItem(
                     label = stringResource(R.string.tts_voice),
                     values = availableVoices,
-                    selection = config.voice,
+                    selection = availableVoices.firstOrNull { it.id == config.voiceId },
                     titleForValue = { it?.name ?: it?.id ?: stringResource(R.string.auto) },
-                    onSelected = { onConfigChange(config.copy(voice = it)) }
+                    onSelected = { onConfigChange(config.copy(voiceId = it?.id)) }
                 )
             }
         }

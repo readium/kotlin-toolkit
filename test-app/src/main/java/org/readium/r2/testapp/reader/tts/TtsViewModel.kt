@@ -145,7 +145,7 @@ class TtsViewModel private constructor(
         ) { config, langs, voices ->
             Settings(
                 config = config,
-                rateRange = director.rateRange,
+                rateRange = director.rateMultiplierRange,
                 availableLanguages = langs,
                 availableVoices = voices
             )

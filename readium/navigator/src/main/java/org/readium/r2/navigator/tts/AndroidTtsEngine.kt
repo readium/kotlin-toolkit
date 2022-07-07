@@ -81,7 +81,7 @@ class AndroidTtsEngine(
         }
     }
 
-    override val rateRange: ClosedRange<Double> = 0.1..4.0
+    override val rateMultiplierRange: ClosedRange<Double> = 0.1..4.0
 
     override var availableVoices: List<Voice> = emptyList()
         private set(value) {
@@ -197,7 +197,7 @@ class AndroidTtsEngine(
          * Setups the [engine] using the [utterance]'s configuration.
          */
         private fun TextToSpeech.setup() {
-            setSpeechRate(utterance.rate.toFloat())
+            setSpeechRate(utterance.rateMultiplier.toFloat())
 
             utterance.voiceOrLanguage
                 .onLeft { voice ->
