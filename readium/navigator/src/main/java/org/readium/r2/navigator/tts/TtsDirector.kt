@@ -8,7 +8,10 @@ package org.readium.r2.navigator.tts
 
 import android.content.Context
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
@@ -486,9 +489,9 @@ class TtsDirector<E : TtsEngine> private constructor(
             )
         }
 
-        return when (val data = data) {
-            is Content.Element.Text -> {
-                data.segments.mapNotNull { segment ->
+        return when (this) {
+            is Content.TextElement -> {
+                segments.mapNotNull { segment ->
                     utterance(
                         text = segment.text,
                         locator = segment.locator,
@@ -497,9 +500,9 @@ class TtsDirector<E : TtsEngine> private constructor(
                 }
             }
 
-            is Content.Element.TextualData -> {
+            is Content.TextualElement -> {
                 listOfNotNull(
-                    data.text
+                    text
                         ?.takeIf { it.isNotBlank() }
                         ?.let { utterance(text = it, locator = locator) }
                 )

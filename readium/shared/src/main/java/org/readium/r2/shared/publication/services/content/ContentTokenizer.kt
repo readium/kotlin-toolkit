@@ -46,18 +46,16 @@ class TextContentTokenizer(
     )
 
     override fun tokenize(data: Content.Element): List<Content.Element> = listOf(
-        if (data.data is Content.Element.Text) {
+        if (data is Content.TextElement) {
             data.copy(
-                data = data.data.copy(
-                    segments = data.data.segments.flatMap { tokenize(it) }
-                )
+                segments = data.segments.flatMap { tokenize(it) }
             )
         } else {
             data
         }
     )
 
-    private fun tokenize(segment: Content.Element.Text.Segment): List<Content.Element.Text.Segment> =
+    private fun tokenize(segment: Content.TextElement.Segment): List<Content.TextElement.Segment> =
         textTokenizerFactory(segment.language ?: defaultLanguage).tokenize(segment.text)
             .map { range ->
                 segment.copy(

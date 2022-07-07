@@ -21,7 +21,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.services.content.Content
-import org.readium.r2.shared.publication.services.content.Content.Element.Text
+import org.readium.r2.shared.publication.services.content.Content.TextElement
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -148,7 +148,7 @@ class HtmlResourceContentIterator(
         private var startIndex = 0
         private var currentElement: Element? = null
 
-        private val segmentsAcc = mutableListOf<Text.Segment>()
+        private val segmentsAcc = mutableListOf<TextElement.Segment>()
         private var textAcc = StringBuilder()
         private var wholeRawTextAcc: String = ""
         private var elementRawTextAcc: String = ""
@@ -183,7 +183,7 @@ class HtmlResourceContentIterator(
 
                         if (href != null) {
                             elements.add(
-                                Content.Element(
+                                Content.ImageElement(
                                     locator = baseLocator.copy(
                                         locations = Locator.Locations(
                                             otherLocations = buildMap {
@@ -191,11 +191,9 @@ class HtmlResourceContentIterator(
                                             }
                                         )
                                     ),
-                                    data = Content.Element.Image(
-                                        link = Link(href = href),
-                                        caption = null, // FIXME: Get the caption from figcaption
-                                        description = node.attr("alt").takeIf { it.isNotBlank() },
-                                    )
+                                    embeddedLink = Link(href = href),
+                                    caption = null, // FIXME: Get the caption from figcaption
+                                    description = node.attr("alt").takeIf { it.isNotBlank() },
                                 )
                             )
                         }
@@ -247,7 +245,7 @@ class HtmlResourceContentIterator(
             if (startElement != null && currentElement == startElement) {
                 startIndex = elements.size
             }
-            elements.add(Content.Element(
+            elements.add(Content.TextElement(
                 locator = baseLocator.copy(
                     locations = Locator.Locations(
                         otherLocations = buildMap {
@@ -258,10 +256,8 @@ class HtmlResourceContentIterator(
                     ),
                     text = Locator.Text(highlight = elementRawTextAcc)
                 ),
-                data = Text(
-                    role = Text.Role.Body,
-                    segments = segmentsAcc.toList()
-                )
+                role = TextElement.Role.Body,
+                segments = segmentsAcc.toList()
             ))
             elementRawTextAcc = ""
             segmentsAcc.clear()
@@ -283,7 +279,7 @@ class HtmlResourceContentIterator(
                 }
 
                 segmentsAcc.add(
-                    Text.Segment(
+                    TextElement.Segment(
                         locator = baseLocator.copy(
                             locations = Locator.Locations(
                                 otherLocations = buildMap {
@@ -300,7 +296,7 @@ class HtmlResourceContentIterator(
                         text = text,
                         attributes = buildList {
                             currentLanguage?.let {
-                                add(Text.Segment.Attribute(Text.Segment.AttributeKey.LANGUAGE, Language(it)))
+                                add(TextElement.Segment.Attribute(TextElement.Segment.AttributeKey.LANGUAGE, Language(it)))
                             }
                         },
                     )

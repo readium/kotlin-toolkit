@@ -181,6 +181,8 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
             // Navigate to the currently spoken utterance.
             state.map { it.playingUtterance }
                 .filterNotNull()
+                // Prevent jumping to many locations when the user skips repeatedly forward/backward.
+                .throttleLatest(500.milliseconds)
                 .onEach { locator ->
                     navigator.go(locator, animated = false)
                 }

@@ -20,151 +20,169 @@ interface Content {
 
     /**
      * Represents a single semantic content element part of a publication.
-     *
-     * @param locator Locator targeting this element in the Publication.
-     * @param data Data associated with this element.
-     * @param extras Additional metadata for extensions.
      */
     @ExperimentalReadiumApi
-    data class Element(
-        val locator: Locator,
-        val data: Data,
-        val extras: Map<String, Any> = emptyMap()
-    ) {
-        /** A marker interface for a [Element] associated data. */
-        interface Data
+    interface Element {
+        /**
+         * Locator targeting this element in the Publication.
+         */
+        val locator: Locator
+    }
 
-        /** A piece of data which can be represented as human-readable text. */
-        interface TextualData : Data {
-            /** Human-readable text representation for this data. */
-            val text: String?
-        }
+    /** An element which can be represented as human-readable text. */
+    interface TextualElement : Element {
+        /** Human-readable text representation for this element. */
+        val text: String?
+    }
 
-        /** A piece of data referencing an embedded external resource. */
-        interface EmbeddedData : Data {
-            val link: Link
-        }
+    /** An element referencing an embedded external resource. */
+    interface EmbeddedElement : Element {
+        /** Referenced resource in the publication. */
+        val embeddedLink: Link
+    }
 
-        /** An audio clip. */
-        data class Audio(
-            override val link: Link
-        ) : EmbeddedData
+    /**
+     * An audio clip.
+     *
+     * @param extras Additional metadata for extensions.
+     */
+    data class AudioElement(
+        override val locator: Locator,
+        override val embeddedLink: Link,
+        val extras: Map<String, Any> = emptyMap(),
+    ) : EmbeddedElement
+
+    /**
+     * A video clip.
+     *
+     * @param extras Additional metadata for extensions.
+     */
+    data class VideoElement(
+        override val locator: Locator,
+        override val embeddedLink: Link,
+        val extras: Map<String, Any> = emptyMap(),
+    ) : EmbeddedElement
+
+    /**
+     * A bitmap image.
+     *
+     * @param caption Short piece of text associated with the image.
+     * @param description Accessibility label.
+     * @param extras Additional metadata for extensions.
+     */
+    data class ImageElement(
+        override val locator: Locator,
+        override val embeddedLink: Link,
+        val caption: String?,
+        val description: String?,
+        val extras: Map<String, Any> = emptyMap(),
+    ) : EmbeddedElement, TextualElement {
+        override val text: String?
+            get() = caption?.takeIf { it.isNotBlank() }
+                ?: description
+    }
+
+    /**
+     * A text element.
+     *
+     * @param role Purpose of this element in the broader context of the document.
+     * @param segments Ranged portions of text with associated attributes.
+     * @param extras Additional metadata for extensions.
+     */
+    data class TextElement(
+        override val locator: Locator,
+        val role: Role,
+        val segments: List<Segment>,
+        val extras: Map<String, Any> = emptyMap(),
+    ) : TextualElement {
+
+        override val text: String
+            get() = segments.joinToString { it.text }
 
         /**
-         * A bitmap image.
-         *
-         * @param caption Short piece of text associated with the image.
-         * @param description Accessibility label.
+         * Represents a purpose of an element in the broader context of the document.
          */
-        data class Image(
-            override val link: Link,
-            val caption: String?,
-            val description: String?
-        ) : EmbeddedData, TextualData {
-            override val text: String?
-                get() = caption?.takeIf { it.isNotBlank() }
-                    ?: description
-        }
-
-        /**
-         * A text element.
-         *
-         * @param role Purpose of this element in the broader context of the document.
-         * @param segments Ranged portions of text with associated attributes.
-         */
-        data class Text(
-            val role: Role,
-            val segments: List<Segment>
-        ) : TextualData {
-
-            override val text: String
-                get() = segments.joinToString { it.text }
-
+        interface Role {
             /**
-             * Represents a purpose of an element in the broader context of the document.
-             */
-            interface Role {
-                /**
-                 * Title of a section.
-                 *
-                 * @param level Heading importance, 1 being the highest.
-                 */
-                data class Heading(val level: Int) : Role
-
-                /**
-                 * Normal body of content.
-                 */
-                object Body : Role
-
-                /**
-                 * A footnote at the bottom of a document.
-                 */
-                object Footnote : Role
-
-                /**
-                 * A quotation.
-                 *
-                 * @param referenceUrl URL to the source for this quote.
-                 * @param referenceTitle Name of the source for this quote.
-                 */
-                data class Quote(
-                    val referenceUrl: URL?,
-                    val referenceTitle: String?
-                ) : Role
-            }
-
-            /**
-             * Ranged portion of text with associated attributes.
+             * Title of a section.
              *
-             * @param locator Locator to the segment of text.
-             * @param text Text in the segment.
-             * @param attributes Attributes associated with this segment, e.g. language.
+             * @param level Heading importance, 1 being the highest.
              */
-            data class Segment(
-                val locator: Locator,
-                val text: String,
-                val attributes: List<Attribute<*>>,
-            ) {
-                /**
-                 * Language of the text, if any.
-                 */
-                val language: Language?
-                    get() = attribute(AttributeKey.LANGUAGE)
+            data class Heading(val level: Int) : Role
 
-                /**
-                 * An attribute is an arbitrary key-value pair.
-                 */
-                data class Attribute<V>(
-                    val key: AttributeKey<V>,
-                    val value: V
-                )
+            /**
+             * Normal body of content.
+             */
+            object Body : Role
 
-                /**
-                 * An attribute key identifies uniquely an attribute.
-                 *
-                 * The [V] phantom type is there to perform static type checking when requesting an
-                 * attribute.
-                 */
-                data class AttributeKey<V>(val id: String) {
-                    companion object {
-                        val LANGUAGE = AttributeKey<Language>("language")
-                        val LINK = AttributeKey<URL>("link")
-                    }
+            /**
+             * A footnote at the bottom of a document.
+             */
+            object Footnote : Role
+
+            /**
+             * A quotation.
+             *
+             * @param referenceUrl URL to the source for this quote.
+             * @param referenceTitle Name of the source for this quote.
+             */
+            data class Quote(
+                val referenceUrl: URL?,
+                val referenceTitle: String?
+            ) : Role
+        }
+
+        /**
+         * Ranged portion of text with associated attributes.
+         *
+         * @param locator Locator to the segment of text.
+         * @param text Text in the segment.
+         * @param attributes Attributes associated with this segment, e.g. language.
+         */
+        data class Segment(
+            val locator: Locator,
+            val text: String,
+            val attributes: List<Attribute<*>>,
+        ) {
+            /**
+             * Language of the text, if any.
+             */
+            val language: Language?
+                get() = attribute(AttributeKey.LANGUAGE)
+
+            /**
+             * An attribute is an arbitrary key-value pair.
+             */
+            data class Attribute<V>(
+                val key: AttributeKey<V>,
+                val value: V
+            )
+
+            /**
+             * An attribute key identifies uniquely an attribute.
+             *
+             * The [V] phantom type is there to perform static type checking when requesting an
+             * attribute.
+             */
+            data class AttributeKey<V>(val id: String) {
+                companion object {
+                    val LANGUAGE = AttributeKey<Language>("language")
+                    val LINK = AttributeKey<URL>("link")
                 }
-
-                /**
-                 * Gets the first attribute with the given [key].
-                 */
-                @Suppress("UNCHECKED_CAST")
-                fun <V> attribute(key: AttributeKey<V>): V? =
-                    attributes.firstOrNull { it.key == key }?.value as V
-
-                @Suppress("UNCHECKED_CAST")
-                fun <V> attributes(key: AttributeKey<V>): List<V> =
-                    attributes
-                        .filter { it.key == key }
-                        .map { it.value as V }
             }
+
+            /**
+             * Gets the first attribute with the given [key].
+             */
+            @Suppress("UNCHECKED_CAST")
+            fun <V> attribute(key: AttributeKey<V>): V? =
+                attributes.firstOrNull { it.key == key }?.value as V
+
+            @Suppress("UNCHECKED_CAST")
+            fun <V> attributes(key: AttributeKey<V>): List<V> =
+                attributes
+                    .filter { it.key == key }
+                    .map { it.value as V }
         }
     }
 
