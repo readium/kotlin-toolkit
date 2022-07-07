@@ -21,24 +21,20 @@ import org.readium.r2.shared.util.Ref
 interface ContentService : Publication.Service {
     /**
      * Creates a [Content] starting from the given [start] location.
+     *
+     * The implementation must be fast and non-blocking. Do the actual extraction inside the
+     * [Content] implementation.
      */
-    suspend fun content(start: Locator?): Content
+    fun content(start: Locator?): Content?
 }
-
-/**
- * Returns whether this [Publication] supports extracting its content.
- */
-@ExperimentalReadiumApi
-val Publication.hasContent: Boolean
-    get() = contentService != null
 
 /**
  * Creates a [Content] starting from the given [start] location, or the beginning of the
  * publication when missing.
  */
 @ExperimentalReadiumApi
-suspend fun Publication.content(start: Locator? = null): Content =
-    contentService?.content(start) ?: EmptyContent()
+fun Publication.content(start: Locator? = null): Content? =
+    contentService?.content(start)
 
 @ExperimentalReadiumApi
 private val Publication.contentService: ContentService?
@@ -68,8 +64,8 @@ class DefaultContentService(
         }
     }
 
-    override suspend fun content(start: Locator?): Content {
-        val publication = publication() ?: return EmptyContent()
+    override fun content(start: Locator?): Content? {
+        val publication = publication() ?: return null
         return ContentImpl(publication, start)
     }
 

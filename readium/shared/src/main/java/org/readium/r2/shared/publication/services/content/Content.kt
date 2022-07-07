@@ -242,6 +242,17 @@ interface Content {
     }
 
     /**
+     * Extracts the full raw text, or returns null if no text content can be found.
+     *
+     * @param separator Separator to use between individual elements. Defaults to newline.
+     */
+    suspend fun text(separator: String = "\n"): String? =
+        elements()
+            .mapNotNull { (it as? TextualElement)?.text }
+            .joinToString(separator = separator)
+            .takeIf { it.isNotBlank() }
+
+    /**
      * Creates a new iterator for this content.
      */
     operator fun iterator(): Iterator
@@ -255,30 +266,4 @@ interface Content {
                 add(element)
             }
         }
-}
-
-/**
- * An empty [Content].
- */
-@ExperimentalReadiumApi
-class EmptyContent : Content {
-    override fun iterator(): Content.Iterator = EmptyContentIterator()
-}
-
-/**
- * An empty [Content.Iterator].
- */
-@ExperimentalReadiumApi
-class EmptyContentIterator : Content.Iterator {
-    override suspend fun hasNext(): Boolean = false
-
-    override fun next(): Content.Element {
-        throw IllegalStateException("Called next() without a successful call to hasPrevious() first")
-    }
-
-    override suspend fun hasPrevious(): Boolean = false
-
-    override fun previous(): Content.Element {
-        throw IllegalStateException("Called previous() without a successful call to hasPrevious() first")
-    }
 }

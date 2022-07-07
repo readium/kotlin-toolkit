@@ -99,7 +99,7 @@ class TtsDirector<E : TtsEngine> private constructor(
          * Returns whether the [publication] can be played with a [TtsDirector].
          */
         fun canSpeak(publication: Publication): Boolean =
-            publication.hasContent
+            publication.content() != null
     }
 
     @ExperimentalReadiumApi
@@ -273,7 +273,7 @@ class TtsDirector<E : TtsEngine> private constructor(
      */
     fun start(fromLocator: Locator? = null) {
         replacePlaybackJob {
-            publicationIterator = publication.content(fromLocator).iterator()
+            publicationIterator = publication.content(fromLocator)?.iterator()
             playNextUtterance(Direction.Forward)
         }
     }

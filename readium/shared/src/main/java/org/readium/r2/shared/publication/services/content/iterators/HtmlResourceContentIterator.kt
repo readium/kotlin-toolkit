@@ -296,7 +296,7 @@ class HtmlResourceContentIterator(
                         text = text,
                         attributes = buildList {
                             currentLanguage?.let {
-                                add(TextElement.Segment.Attribute(TextElement.Segment.AttributeKey.LANGUAGE, Language(it)))
+                                add(Content.Attribute(Content.AttributeKey.LANGUAGE, Language(it)))
                             }
                         },
                     )
