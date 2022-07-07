@@ -30,6 +30,8 @@ import org.readium.r2.navigator.tts.TtsDirector.State as TtsState
 
 /**
  * View model controlling the text-to-speech director.
+ *
+ * Note: This is not an Android [ViewModel], but it is a component of [ReaderViewModel].
  */
 @OptIn(ExperimentalReadiumApi::class)
 class TtsViewModel private constructor(

@@ -154,11 +154,6 @@ class TtsDirector<E : TtsEngine> private constructor(
          * [range] will be regularly updated while the [utterance] is being played.
          */
         data class Playing(val utterance: Utterance, val range: Locator? = null) : State()
-
-        /**
-         * The [TtsDirector] was stopped by a critical [error].
-         */
-        data class Failure(val error: Exception) : State()
     }
 
     private val _state = MutableStateFlow<State>(State.Stopped)
@@ -187,10 +182,8 @@ class TtsDirector<E : TtsEngine> private constructor(
     val engine: E by lazy {
         engineFactory(object : TtsEngine.Listener {
             override fun onEngineError(error: TtsEngine.Exception) {
-                replacePlaybackJob {
-                    listener?.onError(Exception.Engine(error))
-                    _state.value = State.Failure(Exception.Engine(error))
-                }
+                listener?.onError(Exception.Engine(error))
+                stop()
             }
 
             override fun onAvailableVoicesChange(voices: List<TtsEngine.Voice>) {
@@ -322,7 +315,7 @@ class TtsDirector<E : TtsEngine> private constructor(
      */
     fun pauseOrResume() {
         when (state.value) {
-            is State.Failure, State.Stopped -> return
+            is State.Stopped -> return
             is State.Playing -> pause()
             is State.Paused -> resume()
         }
