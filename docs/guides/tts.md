@@ -7,7 +7,7 @@ Text-to-speech can be used to read aloud a publication using a synthetic voice. 
 ## Glossary
 
 * **engine** – a TTS engine takes an utterance and transforms it into audio using a synthetic voice
-* **rate** - speech speed when synthesizing utterances
+* **rate** - speech speed of a synthetic voice
 * **tokenizer** - algorithm splitting the publication text content into individual utterances, usually by sentences
 * **utterance** - a single piece of text played by a TTS engine, such as a sentence
 * **voice** – a synthetic voice is used by a TTS engine to speak a text using rules pertaining to the voice's language and region
@@ -32,7 +32,7 @@ Then, begin the playback from a given starting `Locator`. When missing, the play
 director.start()
 ```
 
-You should now hear the TTS engine play the utterances visible on the screen. `TtsDirector` provides the APIs necessary to control the playback from the app:
+You should now hear the TTS engine speak the utterances from the beginning. `TtsDirector` provides the APIs necessary to control the playback from the app:
 
 * `stop()` - stops the playback ; requires start to be called again
 * `pause()` - interrupts the playback temporarily
@@ -57,7 +57,7 @@ When pairing the `TtsDirector` with a `Navigator`, you can use the `utterance.lo
 
 ## Configuring the TTS
 
-The `TtsDirector` offers some options to configure the TTS engine. Note that the support of each configuration option depends on the used TTS engine.
+The `TtsDirector` offers some options to configure the TTS engine. Note that the support of each configuration option depends on the TTS engine used.
 
 Update the configuration by setting it directly. The configuration is not applied right away but for the next utterance.
 
@@ -67,13 +67,13 @@ director.setConfig(director.config.copy(
 ))
 ```
 
-To keep your settings user interface updated when the configuration changes, observe the `TtsDirector.config` property. Look at `TtsControls` in the Test App for an example of a TTS settings screen.
+To keep your settings user interface up to date when the configuration changes, observe the `TtsDirector.config` property. Look at `TtsControls` in the Test App for an example of a TTS settings screen.
 
 ### Default language
 
 The language used by the director is important, as it determines which TTS voices are used and the rules to tokenize the publication text content.
 
-By default, `TtsDirector` will use any language explicitly set on a text element (e.g. with `lang="fr"` in HTML) and falls back on the global language declared in the publication manifest. However, you can override the fallback language with `Configuration.defaultLanguage` which is useful when the publication language is incorrect or missing.
+By default, `TtsDirector` will use any language explicitly set on a text element (e.g. with `lang="fr"` in HTML) and fall back on the global language declared in the publication manifest. You can override the fallback language with `Configuration.defaultLanguage` which is useful when the publication language is incorrect or missing.
 
 ### Speech rate
 

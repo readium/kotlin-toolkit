@@ -152,18 +152,19 @@ var images by remember {
     mutableStateOf<List<Item>>(emptyList())
 }
 
-LaunchedEffect(Unit) {
-    images = checkNotNull(publication.content())
-        .elements()
-        .filterIsInstance<Content.ImageElement>()
-        .map { element ->
-            Item(
-                locator = element.locator,
-                text = element.text,
-                bitmap = publication.get(element.embeddedLink)
-                    .readAsBitmap().getOrNull()?.asImageBitmap()
-            )
-        }
+LaunchedEffect(publication) {
+    publication.content()?.let { content ->
+        images = content.elements()
+            .filterIsInstance<Content.ImageElement>()
+            .map { element ->
+                Item(
+                    locator = element.locator,
+                    text = element.caption,
+                    bitmap = publication.get(element.embeddedLink)
+                        .readAsBitmap().getOrNull()?.asImageBitmap()
+                )
+            }
+    }
 }
 
 LazyColumn {
