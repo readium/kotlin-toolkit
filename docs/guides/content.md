@@ -29,7 +29,7 @@ Getting the whole raw text of a publication is such a common use case that a hel
 val wholeText = content.text()
 ```
 
-This is an expensive operation, proceed with care and cache the result if you need to reuse it.
+This is an expensive operation, proceed with caution and cache the result if you need to reuse it.
 
 ## Iterating through the content
 
@@ -88,9 +88,8 @@ Here are the default available implementations:
 
 * `Content.AudioElement` - audio clips
 * `Content.VideoElement` - video clips
-* `Content.ImageElement` - bitmap images, with the additional properties:
-    * `caption: String?` - figure caption
-    * `description: String?` - any associated accessibility label
+* `Content.ImageElement` - bitmap images, with the additional property:
+    * `caption: String?` - figure caption, when available
 
 #### Text
 

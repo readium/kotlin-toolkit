@@ -63,13 +63,11 @@ interface Content {
      * A bitmap image.
      *
      * @param caption Short piece of text associated with the image.
-     * @param description Accessibility label.
      */
     data class ImageElement(
         override val locator: Locator,
         override val embeddedLink: Link,
         val caption: String?,
-        val description: String?,
         override val attributes: List<Attribute<*>> = emptyList(),
     ) : EmbeddedElement, TextualElement {
 

@@ -21,6 +21,8 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.services.content.Content
+import org.readium.r2.shared.publication.services.content.Content.Attribute
+import org.readium.r2.shared.publication.services.content.Content.AttributeKey
 import org.readium.r2.shared.publication.services.content.Content.TextElement
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Language
@@ -193,7 +195,12 @@ class HtmlResourceContentIterator(
                                     ),
                                     embeddedLink = Link(href = href),
                                     caption = null, // FIXME: Get the caption from figcaption
-                                    description = node.attr("alt").takeIf { it.isNotBlank() },
+                                    attributes = buildList {
+                                        val alt = node.attr("alt").takeIf { it.isNotBlank() }
+                                        if (alt != null) {
+                                            add(Attribute(AttributeKey.ACCESSIBILITY_LABEL, alt))
+                                        }
+                                    }
                                 )
                             )
                         }
@@ -296,7 +303,7 @@ class HtmlResourceContentIterator(
                         text = text,
                         attributes = buildList {
                             currentLanguage?.let {
-                                add(Content.Attribute(Content.AttributeKey.LANGUAGE, Language(it)))
+                                add(Attribute(Content.AttributeKey.LANGUAGE, Language(it)))
                             }
                         },
                     )
