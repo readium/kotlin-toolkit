@@ -1,11 +1,7 @@
 /*
- * Module: r2-testapp-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann
- *
- * Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
- * Licensed to the Readium Foundation under one or more contributor license agreements.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.testapp.utils.extensions
@@ -21,16 +17,14 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import org.readium.r2.testapp.R
 import kotlin.coroutines.resume
 
-
-/**
- * Extensions
- */
-
 @ColorInt
 fun Context.color(@ColorRes id: Int): Int {
     return ContextCompat.getColor(this, id)
 }
 
+/**
+ * Displays a confirmation [AlertDialog] and returns the user choice.
+ */
 suspend fun Context.confirmDialog(
     message: String,
     @StringRes positiveButton: Int = R.string.ok,

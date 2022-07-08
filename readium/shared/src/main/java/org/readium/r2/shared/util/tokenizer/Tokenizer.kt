@@ -8,7 +8,7 @@ package org.readium.r2.shared.util.tokenizer
 
 import org.readium.r2.shared.ExperimentalReadiumApi
 
-/** A tokenizer splits a content into a list of tokens. */
+/** A tokenizer splits a piece of data [D] into a list of [T] tokens. */
 @ExperimentalReadiumApi
 fun interface Tokenizer<D, T> {
     fun tokenize(data: D): List<T>

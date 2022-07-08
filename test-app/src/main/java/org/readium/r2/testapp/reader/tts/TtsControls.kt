@@ -25,6 +25,9 @@ import org.readium.r2.testapp.shared.views.SelectorListItem
 import org.readium.r2.testapp.utils.extensions.asStateWhenStarted
 import java.text.DecimalFormat
 
+/**
+ * TTS controls bar displayed at the bottom of the screen when speaking a publication.
+ */
 @OptIn(ExperimentalReadiumApi::class)
 @Composable
 fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {

@@ -43,7 +43,7 @@ abstract class BaseReaderFragment : Fragment() {
 
             when (event) {
                 is ReaderViewModel.FeedbackEvent.BookmarkFailed -> toast(R.string.bookmark_exists)
-                is ReaderViewModel.FeedbackEvent.BookmarkSuccessfullyAdded -> (R.string.bookmark_added)
+                is ReaderViewModel.FeedbackEvent.BookmarkSuccessfullyAdded -> toast(R.string.bookmark_added)
             }
         }
     }
