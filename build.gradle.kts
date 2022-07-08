@@ -29,7 +29,7 @@ tasks.register("clean", Delete::class).configure {
 }
 
 tasks.register("cleanDocs", Delete::class).configure {
-    delete("${project.rootDir}/docs/readium", "${project.rootDir}/docs/index.md")
+    delete("${project.rootDir}/docs/readium", "${project.rootDir}/docs/index.md", "${project.rootDir}/site")
 }
 
 tasks.withType<DokkaTaskPartial>().configureEach {

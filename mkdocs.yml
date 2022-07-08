@@ -10,7 +10,7 @@ repo_name: kotlin-toolkit
 repo_url: https://github.com/readium/kotlin-toolkit
 
 # Copyright (shown at the footer)
-copyright: 'Copyright &copy; 2021 Readium Foundation'
+copyright: 'Copyright &copy; 2022 Readium Foundation'
 
 # Material theme
 theme:
@@ -30,13 +30,13 @@ markdown_extensions:
   - def_list
   - toc:
       permalink: true
-#  - pymdownx.betterem:
-#      smart_enable: all
-#  - pymdownx.caret
-#  - pymdownx.inlinehilite
-#  - pymdownx.magiclink
-#  - pymdownx.smartsymbols
-#  - pymdownx.superfences
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
 
 # Dev server binding
 #dev_addr: 127.0.0.1:3001
