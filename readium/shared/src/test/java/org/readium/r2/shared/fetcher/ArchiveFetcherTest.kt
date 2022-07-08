@@ -1,10 +1,7 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Quentin Gliosca
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.shared.fetcher
@@ -172,4 +169,25 @@ class ArchiveFetcherTest {
         )
     }
 
+    /**
+     * When the HREF contains query parameters, the fetcher should first be able to remove them as
+     * a fallback.
+     */
+    @Test
+    fun `Get resource from HREF with query parameters`() = runBlocking {
+        val resource = fetcher.get(Link(href = "/mimetype?query=param"))
+        val result = resource.readAsString().getOrNull()
+        assertEquals("application/epub+zip", result)
+    }
+
+    /**
+     * When the HREF contains an anchor, the fetcher should first be able to remove them as
+     * a fallback.
+     */
+    @Test
+    fun `Get resource from HREF with anchors`() = runBlocking {
+        val resource = fetcher.get(Link(href = "/mimetype#anchor"))
+        val result = resource.readAsString().getOrNull()
+        assertEquals("application/epub+zip", result)
+    }
 }
