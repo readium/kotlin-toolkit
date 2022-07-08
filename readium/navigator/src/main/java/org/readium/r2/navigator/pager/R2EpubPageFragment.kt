@@ -332,6 +332,14 @@ class R2EpubPageFragment : Fragment() {
         }
     }
 
+    fun loadLocator(locator: Locator) =
+        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+            val webView = requireNotNull(webView)
+            val epubNavigator = requireNotNull(navigator)
+            loadLocator(webView, epubNavigator.readingProgression, locator)
+            webView.listener.onProgressionChanged()
+        }
+
     private suspend fun loadLocator(webView: R2WebView, readingProgression: ReadingProgression, locator: Locator) {
         val text = locator.text
         if (text.highlight != null) {
@@ -345,26 +353,25 @@ class R2EpubPageFragment : Fragment() {
             return
         }
 
-        var progression = locator.locations.progression
-        if (progression != null) {
-            // We need to reverse the progression with RTL because the Web View
-            // always scrolls from left to right, no matter the reading direction.
-            progression =
-                if (webView.scrollMode || readingProgression == ReadingProgression.LTR) progression
-                else 1 - progression
+        var progression = locator.locations.progression ?: 0.0
 
-            if (webView.scrollMode) {
-                webView.scrollToPosition(progression)
+        // We need to reverse the progression with RTL because the Web View
+        // always scrolls from left to right, no matter the reading direction.
+        progression =
+            if (webView.scrollMode || readingProgression == ReadingProgression.LTR) progression
+            else 1 - progression
 
-            } else {
-                // Figure out the target web view "page" from the requested
-                // progression.
-                var item = (progression * webView.numPages).roundToInt()
-                if (readingProgression == ReadingProgression.RTL && item > 0) {
-                    item -= 1
-                }
-                webView.setCurrentItem(item, false)
+        if (webView.scrollMode) {
+            webView.scrollToPosition(progression)
+
+        } else {
+            // Figure out the target web view "page" from the requested
+            // progression.
+            var item = (progression * webView.numPages).roundToInt()
+            if (readingProgression == ReadingProgression.RTL && item > 0) {
+                item -= 1
             }
+            webView.setCurrentItem(item, false)
         }
     }
 
