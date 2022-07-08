@@ -23,14 +23,15 @@ import org.readium.r2.shared.util.tokenizer.TextUnit
 import java.util.*
 
 /**
- * A text-to-speech director will iterate through the content of a [publication] and synthesize it
- * using a [TtsEngine].
+ * [PublicationSpeechSynthesizer] orchestrates the rendition of a [publication] by iterating through
+ * its content, splitting it into individual utterances using a [ContentTokenizer], then using a
+ * [TtsEngine] to read them aloud.
  *
- * Don't forget to call [close] when you are done with this [TtsDirector].
+ * Don't forget to call [close] when you are done using the [PublicationSpeechSynthesizer].
  */
 @OptIn(DelicateReadiumApi::class)
 @ExperimentalReadiumApi
-class TtsDirector<E : TtsEngine> private constructor(
+class PublicationSpeechSynthesizer<E : TtsEngine> private constructor(
     private val publication: Publication,
     config: Configuration,
     engineFactory: (listener: TtsEngine.Listener) -> E,
@@ -41,7 +42,7 @@ class TtsDirector<E : TtsEngine> private constructor(
     companion object {
 
         /**
-         * Creates a [TtsDirector] using the default native [AndroidTtsEngine].
+         * Creates a [PublicationSpeechSynthesizer] using the default native [AndroidTtsEngine].
          *
          * @param publication Publication which will be iterated through and synthesized.
          * @param config Initial TTS configuration.
@@ -55,7 +56,7 @@ class TtsDirector<E : TtsEngine> private constructor(
             config: Configuration = Configuration(),
             tokenizerFactory: (defaultLanguage: Language?) -> ContentTokenizer = defaultTokenizerFactory,
             listener: Listener? = null,
-        ): TtsDirector<AndroidTtsEngine>? = invoke(
+        ): PublicationSpeechSynthesizer<AndroidTtsEngine>? = invoke(
             publication,
             config = config,
             engineFactory = { AndroidTtsEngine(context, listener = it) },
@@ -64,7 +65,7 @@ class TtsDirector<E : TtsEngine> private constructor(
         )
 
         /**
-         * Creates a [TtsDirector] using a custom [TtsEngine].
+         * Creates a [PublicationSpeechSynthesizer] using a custom [TtsEngine].
          *
          * @param publication Publication which will be iterated through and synthesized.
          * @param config Initial TTS configuration.
@@ -79,10 +80,10 @@ class TtsDirector<E : TtsEngine> private constructor(
             engineFactory: (TtsEngine.Listener) -> E,
             tokenizerFactory: (defaultLanguage: Language?) -> ContentTokenizer = defaultTokenizerFactory,
             listener: Listener? = null,
-        ): TtsDirector<E>? {
+        ): PublicationSpeechSynthesizer<E>? {
             if (!canSpeak(publication)) return null
 
-            return TtsDirector(publication, config, engineFactory, tokenizerFactory, listener)
+            return PublicationSpeechSynthesizer(publication, config, engineFactory, tokenizerFactory, listener)
         }
 
         /**
@@ -96,7 +97,7 @@ class TtsDirector<E : TtsEngine> private constructor(
         }
 
         /**
-         * Returns whether the [publication] can be played with a [TtsDirector].
+         * Returns whether the [publication] can be played with a [PublicationSpeechSynthesizer].
          */
         fun canSpeak(publication: Publication): Boolean =
             publication.content() != null
@@ -139,13 +140,13 @@ class TtsDirector<E : TtsEngine> private constructor(
     )
 
     /**
-     * Represents a state of the [TtsDirector].
+     * Represents a state of the [PublicationSpeechSynthesizer].
      */
     sealed class State {
-        /** The [TtsDirector] is completely stopped and must be (re)started from a given locator. */
+        /** The [PublicationSpeechSynthesizer] is completely stopped and must be (re)started from a given locator. */
         object Stopped : State()
 
-        /** The [TtsDirector] is paused at the given utterance. */
+        /** The [PublicationSpeechSynthesizer] is paused at the given utterance. */
         data class Paused(val utterance: Utterance) : State()
 
         /**
@@ -159,7 +160,7 @@ class TtsDirector<E : TtsEngine> private constructor(
     private val _state = MutableStateFlow<State>(State.Stopped)
 
     /**
-     * Current state of the [TtsDirector].
+     * Current state of the [PublicationSpeechSynthesizer].
      */
     val state: StateFlow<State> = _state.asStateFlow()
 
@@ -175,7 +176,7 @@ class TtsDirector<E : TtsEngine> private constructor(
      * Underlying [TtsEngine] instance.
      *
      * WARNING: Don't control the playback or set the config directly with the engine. Use the
-     * [TtsDirector] APIs instead. This property is used to access engine-specific APIs such as
+     * [PublicationSpeechSynthesizer] APIs instead. This property is used to access engine-specific APIs such as
      * [AndroidTtsEngine.requestInstallMissingVoice].
      */
     @DelicateReadiumApi
@@ -193,7 +194,7 @@ class TtsDirector<E : TtsEngine> private constructor(
     }
 
     /**
-     * Interrupts the [TtsEngine] and closes this [TtsDirector].
+     * Interrupts the [TtsEngine] and closes this [PublicationSpeechSynthesizer].
      */
     override suspend fun close() {
         tryOrLog {

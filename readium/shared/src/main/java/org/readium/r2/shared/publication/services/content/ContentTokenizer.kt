@@ -18,12 +18,6 @@ import org.readium.r2.shared.util.tokenizer.Tokenizer
 @ExperimentalReadiumApi
 fun interface ContentTokenizer : Tokenizer<Content.Element, Content.Element>
 
-/** A passthrough tokenizer which does not modify its input. */
-@ExperimentalReadiumApi
-object IdentityContentTokenizer : ContentTokenizer {
-    override fun tokenize(data: Content.Element): List<Content.Element> = listOf(data)
-}
-
 /**
  * A [ContentTokenizer] using a [TextTokenizer] to split the text of the [Content.Element] into smaller
  * portions.

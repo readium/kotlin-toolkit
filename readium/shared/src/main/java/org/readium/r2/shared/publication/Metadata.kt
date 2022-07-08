@@ -163,12 +163,6 @@ data class Metadata(
     }
 
     /**
-     * Returns the [Locale] resolved from the declared BCP 47 language.
-     */
-    @IgnoredOnParcel
-    val locale: Locale? get() = language?.locale
-
-    /**
      * Computes a [ReadingProgression] when the value of [readingProgression] is set to
      * auto, using the publication language.
      *

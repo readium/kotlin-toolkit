@@ -18,7 +18,7 @@ typealias TtsTry<SuccessT> = Try<SuccessT, TtsEngine.Exception>
 /**
  * A text-to-speech engine synthesizes text utterances (e.g. sentence).
  *
- * Implement this interface to support third-party engines with [TtsDirector].
+ * Implement this interface to support third-party engines with [PublicationSpeechSynthesizer].
  */
 @ExperimentalReadiumApi
 interface TtsEngine : SuspendingCloseable {

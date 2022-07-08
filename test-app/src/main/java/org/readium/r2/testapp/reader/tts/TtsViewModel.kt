@@ -15,8 +15,8 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.tts.AndroidTtsEngine
-import org.readium.r2.navigator.tts.TtsDirector
-import org.readium.r2.navigator.tts.TtsDirector.Configuration
+import org.readium.r2.navigator.tts.PublicationSpeechSynthesizer
+import org.readium.r2.navigator.tts.PublicationSpeechSynthesizer.Configuration
 import org.readium.r2.navigator.tts.TtsEngine
 import org.readium.r2.navigator.tts.TtsEngine.Voice
 import org.readium.r2.shared.DelicateReadiumApi
@@ -26,16 +26,16 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
-import org.readium.r2.navigator.tts.TtsDirector.State as TtsState
+import org.readium.r2.navigator.tts.PublicationSpeechSynthesizer.State as TtsState
 
 /**
- * View model controlling the text-to-speech director.
+ * View model controlling a [PublicationSpeechSynthesizer] to read a publication aloud.
  *
  * Note: This is not an Android [ViewModel], but it is a component of [ReaderViewModel].
  */
 @OptIn(ExperimentalReadiumApi::class)
 class TtsViewModel private constructor(
-    private val director: TtsDirector<AndroidTtsEngine>,
+    private val synthesizer: PublicationSpeechSynthesizer<AndroidTtsEngine>,
     private val scope: CoroutineScope
 ) {
 
@@ -49,7 +49,7 @@ class TtsViewModel private constructor(
             publication: Publication,
             scope: CoroutineScope
         ): TtsViewModel? =
-            TtsDirector(context, publication)
+            PublicationSpeechSynthesizer(context, publication)
                 ?.let { TtsViewModel(it, scope) }
     }
 
@@ -83,7 +83,7 @@ class TtsViewModel private constructor(
 
     sealed class Event {
         /**
-         * Emitted when the [TtsDirector] fails with an error.
+         * Emitted when the [PublicationSpeechSynthesizer] fails with an error.
          */
         class OnError(val error: UserException) : Event()
 
@@ -107,16 +107,16 @@ class TtsViewModel private constructor(
     private val isStopped: StateFlow<Boolean>
 
     init {
-        director.listener = DirectorListener()
+        synthesizer.listener = SynthesizerListener()
 
         // Automatically close the TTS when reaching the Stopped state.
-        isStopped = director.state
-            .map { it == TtsDirector.State.Stopped }
+        isStopped = synthesizer.state
+            .map { it == PublicationSpeechSynthesizer.State.Stopped }
             .stateIn(scope, SharingStarted.Lazily, initialValue = true)
 
         // Supported voices grouped by their language.
         val voicesByLanguage: Flow<Map<Language, List<Voice>>> =
-            director.availableVoices
+            synthesizer.availableVoices
                 .map { voices -> voices.groupBy { it.language } }
 
         // All supported languages.
@@ -125,10 +125,10 @@ class TtsViewModel private constructor(
                 voices.keys.sortedBy { it.locale.displayName }
             }
 
-        // Supported voices for the language selected in the [TtsDirector.Configuration].
+        // Supported voices for the language selected in the synthesizer configuration.
         val voicesForSelectedLanguage: Flow<List<Voice>> =
             combine(
-                director.config.map { it.defaultLanguage },
+                synthesizer.config.map { it.defaultLanguage },
                 voicesByLanguage,
             ) { language, voices ->
                 language
@@ -139,13 +139,13 @@ class TtsViewModel private constructor(
 
         // Settings model for the current configuration.
         val settings: Flow<Settings> = combine(
-            director.config,
+            synthesizer.config,
             languages,
             voicesForSelectedLanguage,
         ) { config, langs, voices ->
             Settings(
                 config = config,
-                rateRange = director.rateMultiplierRange,
+                rateRange = synthesizer.rateMultiplierRange,
                 availableLanguages = langs,
                 availableVoices = voices
             )
@@ -154,7 +154,7 @@ class TtsViewModel private constructor(
         // Current view model state.
         state = combine(
             isStopped,
-            director.state,
+            synthesizer.state,
             settings
         ) { isStopped, state, currentSettings ->
             val playing = (state as? TtsState.Playing)
@@ -172,7 +172,7 @@ class TtsViewModel private constructor(
 
     fun onCleared() {
         runBlocking {
-            director.close()
+            synthesizer.close()
         }
     }
 
@@ -184,33 +184,33 @@ class TtsViewModel private constructor(
 
         scope.launch {
             val start = (navigator as? VisualNavigator)?.firstVisibleElementLocator()
-            director.start(fromLocator = start)
+            synthesizer.start(fromLocator = start)
         }
     }
 
     fun stop() {
         if (isStopped.value) return
-        director.stop()
+        synthesizer.stop()
     }
 
     fun pauseOrResume() {
-        director.pauseOrResume()
+        synthesizer.pauseOrResume()
     }
 
     fun pause() {
-        director.pause()
+        synthesizer.pause()
     }
 
     fun previous() {
-        director.previous()
+        synthesizer.previous()
     }
 
     fun next() {
-        director.next()
+        synthesizer.next()
     }
 
     fun setConfig(config: Configuration) {
-        director.setConfig(config)
+        synthesizer.setConfig(config)
     }
 
     /**
@@ -218,16 +218,16 @@ class TtsViewModel private constructor(
      */
     @OptIn(DelicateReadiumApi::class)
     fun requestInstallVoice(context: Context) {
-        director.engine.requestInstallMissingVoice(context)
+        synthesizer.engine.requestInstallMissingVoice(context)
     }
 
-    private inner class DirectorListener : TtsDirector.Listener {
+    private inner class SynthesizerListener : PublicationSpeechSynthesizer.Listener {
         override fun onUtteranceError(
-            utterance: TtsDirector.Utterance,
-            error: TtsDirector.Exception
+            utterance: PublicationSpeechSynthesizer.Utterance,
+            error: PublicationSpeechSynthesizer.Exception
         ) {
             scope.launch {
-                // The [TtsDirector] is paused when encountering an error while playing an
+                // The synthesizer is paused when encountering an error while playing an
                 // utterance. Here we will skip to the next utterance unless the exception is
                 // recoverable.
                 val shouldContinuePlayback = !handleTtsException(error)
@@ -237,7 +237,7 @@ class TtsViewModel private constructor(
             }
         }
 
-        override fun onError(error: TtsDirector.Exception) {
+        override fun onError(error: PublicationSpeechSynthesizer.Exception) {
             scope.launch {
                 handleTtsException(error)
             }
@@ -246,9 +246,9 @@ class TtsViewModel private constructor(
         /**
          * Handles the given error and returns whether it was recovered from.
          */
-        private suspend fun handleTtsException(error: TtsDirector.Exception): Boolean =
+        private suspend fun handleTtsException(error: PublicationSpeechSynthesizer.Exception): Boolean =
             when (error) {
-                is TtsDirector.Exception.Engine -> when (val err = error.error) {
+                is PublicationSpeechSynthesizer.Exception.Engine -> when (val err = error.error) {
                     // The `LanguageSupportIncomplete` exception is a special case. We can recover from
                     // it by asking the user to download the missing voice data.
                     is TtsEngine.Exception.LanguageSupportIncomplete -> {
