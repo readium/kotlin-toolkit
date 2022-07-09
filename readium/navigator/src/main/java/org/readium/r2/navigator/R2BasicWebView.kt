@@ -30,7 +30,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.json.JSONObject
 import org.jsoup.Jsoup
-import org.jsoup.safety.Whitelist
+import org.jsoup.safety.Safelist
 import org.readium.r2.navigator.extensions.optRectF
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.tryOrLog
@@ -319,7 +319,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             ?.first()?.html()
             ?: return false
 
-        val safe = Jsoup.clean(aside, Whitelist.relaxed())
+        val safe = Jsoup.clean(aside, Safelist.relaxed())
 
         // Initialize a new instance of LayoutInflater service
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater

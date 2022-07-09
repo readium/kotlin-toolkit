@@ -13,28 +13,28 @@ interface LcpDao {
      * @return Passphrase
      */
     @Query("SELECT ${Passphrase.PASSPHRASE} FROM ${Passphrase.TABLE_NAME} WHERE ${Passphrase.PROVIDER} = :licenseId")
-    suspend fun passphrase(licenseId: String): String?
+    fun passphrase(licenseId: String): String?
 
     @Query("SELECT ${Passphrase.PASSPHRASE} FROM ${Passphrase.TABLE_NAME} WHERE ${Passphrase.USERID} = :userId")
-    suspend fun passphrases(userId: String): List<String>
+    fun passphrases(userId: String): List<String>
 
     @Query("SELECT ${Passphrase.PASSPHRASE} FROM ${Passphrase.TABLE_NAME}")
-    suspend fun allPassphrases(): List<String>
+    fun allPassphrases(): List<String>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun addPassphrase(passphrase: Passphrase)
+    fun addPassphrase(passphrase: Passphrase)
 
     @Query("SELECT ${License.LICENSE_ID} FROM ${License.TABLE_NAME} WHERE ${License.LICENSE_ID} = :licenseId")
-    suspend fun exists(licenseId: String): String?
+    fun exists(licenseId: String): String?
 
     @Query("SELECT ${License.REGISTERED} FROM ${License.TABLE_NAME} WHERE ${License.LICENSE_ID} = :licenseId")
-    suspend fun isDeviceRegistered(licenseId: String): Boolean
+    fun isDeviceRegistered(licenseId: String): Boolean
 
     @Query("UPDATE ${License.TABLE_NAME} SET ${License.REGISTERED} = 1 WHERE ${License.LICENSE_ID} = :licenseId")
-    suspend fun registerDevice(licenseId: String)
+    fun registerDevice(licenseId: String)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun addLicense(license: License)
+    fun addLicense(license: License)
 
     @Query("SELECT ${License.RIGHTCOPY} FROM ${License.TABLE_NAME} WHERE ${License.LICENSE_ID} = :licenseId")
     fun getCopiesLeft(licenseId: String): Int?

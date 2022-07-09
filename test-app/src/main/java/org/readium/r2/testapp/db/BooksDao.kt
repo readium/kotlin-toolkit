@@ -27,20 +27,20 @@ interface BooksDao {
      * @return ID of the book that was added (primary key)
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertBook(book: Book): Long
+    fun insertBook(book: Book): Long
 
     /**
      * Deletes a book
      * @param bookId The ID of the book
      */
     @Query("DELETE FROM " + Book.TABLE_NAME + " WHERE " + Book.ID + " = :bookId")
-    suspend fun deleteBook(bookId: Long)
+    fun deleteBook(bookId: Long)
 
     /**
      * Retrieve a book from its ID.
      */
     @Query("SELECT * FROM " + Book.TABLE_NAME + " WHERE " + Book.ID + " = :id")
-    suspend fun get(id: Long): Book?
+    fun get(id: Long): Book?
 
     /**
      * Retrieve all books
@@ -67,7 +67,7 @@ interface BooksDao {
      * Retrieves the highlight with the given ID.
      */
     @Query("SELECT * FROM ${Highlight.TABLE_NAME} WHERE ${Highlight.ID} = :highlightId")
-    suspend fun getHighlightById(highlightId: Long): Highlight?
+    fun getHighlightById(highlightId: Long): Highlight?
 
     /**
      * Inserts a bookmark
@@ -75,7 +75,7 @@ interface BooksDao {
      * @return The ID of the bookmark that was added (primary key)
      */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertBookmark(bookmark: Bookmark): Long
+    fun insertBookmark(bookmark: Bookmark): Long
 
     /**
      * Inserts a highlight
@@ -83,31 +83,31 @@ interface BooksDao {
      * @return The ID of the highlight that was added (primary key)
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertHighlight(highlight: Highlight): Long
+    fun insertHighlight(highlight: Highlight): Long
 
     /**
      * Updates a highlight's annotation.
      */
     @Query("UPDATE ${Highlight.TABLE_NAME} SET ${Highlight.ANNOTATION} = :annotation WHERE ${Highlight.ID} = :id")
-    suspend fun updateHighlightAnnotation(id: Long, annotation: String)
+    fun updateHighlightAnnotation(id: Long, annotation: String)
 
     /**
      * Updates a highlight's tint and style.
      */
     @Query("UPDATE ${Highlight.TABLE_NAME} SET ${Highlight.TINT} = :tint, ${Highlight.STYLE} = :style WHERE ${Highlight.ID} = :id")
-    suspend fun updateHighlightStyle(id: Long, style: Highlight.Style, @ColorInt tint: Int)
+    fun updateHighlightStyle(id: Long, style: Highlight.Style, @ColorInt tint: Int)
 
     /**
      * Deletes a bookmark
      */
     @Query("DELETE FROM " + Bookmark.TABLE_NAME + " WHERE " + Bookmark.ID + " = :id")
-    suspend fun deleteBookmark(id: Long)
+    fun deleteBookmark(id: Long)
 
     /**
      * Deletes the highlight with given id.
      */
     @Query("DELETE FROM ${Highlight.TABLE_NAME} WHERE ${Highlight.ID} = :id")
-    suspend fun deleteHighlight(id: Long)
+    fun deleteHighlight(id: Long)
 
     /**
      * Saves book progression
@@ -115,5 +115,5 @@ interface BooksDao {
      * @param id The book to update
      */
     @Query("UPDATE " + Book.TABLE_NAME + " SET " + Book.PROGRESSION + " = :locator WHERE " + Book.ID + "= :id")
-    suspend fun saveProgression(locator: String, id: Long)
+    fun saveProgression(locator: String, id: Long)
 }

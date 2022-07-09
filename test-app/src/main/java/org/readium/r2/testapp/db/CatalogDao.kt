@@ -22,7 +22,7 @@ interface CatalogDao {
      * @return ID of the Catalog model that was added (primary key)
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertCatalog(catalog: Catalog): Long
+    fun insertCatalog(catalog: Catalog): Long
 
     /**
      * Retrieve list of Catalog models based on Catalog model
@@ -43,5 +43,5 @@ interface CatalogDao {
      * @param id The id of the Catalog model to delete
      */
     @Query("DELETE FROM " + Catalog.TABLE_NAME + " WHERE " + Catalog.ID + " = :id")
-    suspend fun deleteCatalog(id: Long)
+    fun deleteCatalog(id: Long)
 }
