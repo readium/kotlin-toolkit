@@ -58,13 +58,13 @@ afterEvaluate {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
 
     api(project(":readium:shared"))
 
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.core:core-ktx:1.7.0")
-    implementation("com.google.android.material:material:1.6.0")
+    implementation("androidx.core:core-ktx:1.8.0")
+    implementation("com.google.android.material:material:1.6.1")
     implementation("com.jakewharton.timber:timber:5.0.1")
     implementation("com.mcxiaoke.koi:async:0.5.5") {
         exclude(module = "support-v4")
@@ -81,6 +81,7 @@ dependencies {
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     kapt("androidx.room:room-compiler:$roomVersion")
+    kapt("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.5.0")
 
     // Tests
     testImplementation("junit:junit:4.13.2")
