@@ -45,14 +45,16 @@ android {
 }
 
 afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
-                from(components.getByName("release"))
-                groupId = "com.github.readium"
-                artifactId = "readium-adapter-pspdfkit-navigator"
-                artifact(tasks.findByName("sourcesJar"))
-                artifact(tasks.findByName("javadocsJar"))
+    if(rootProject.name == "Readium"){
+        publishing {
+            publications {
+                create<MavenPublication>("release") {
+                    from(components.getByName("release"))
+                    groupId = "com.github.readium"
+                    artifactId = "readium-adapter-pspdfkit-navigator"
+                    artifact(tasks.findByName("sourcesJar"))
+                    artifact(tasks.findByName("javadocsJar"))
+                }
             }
         }
     }
