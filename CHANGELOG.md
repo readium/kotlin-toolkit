@@ -57,6 +57,8 @@ All notable changes to this project will be documented in this file. Take a look
 #### Navigator
 
 * [swift-toolkit#61](https://github.com/readium/swift-toolkit/issues/61) Fixed serving EPUB resources when the HREF contains an anchor or query parameters.
+* Fixed emitting `currentLocator` with fixed layout EPUBs.
+* Prevent refreshing an already loaded EPUB resource when jumping to a `Locator` in it.
 
 
 ## [2.2.0]

@@ -37,6 +37,7 @@ import org.readium.r2.navigator.extensions.positionsByResource
 import org.readium.r2.navigator.extensions.withBaseUrl
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.pager.R2EpubPageFragment
+import org.readium.r2.navigator.pager.R2FXLPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2PagerAdapter.PageResource
 import org.readium.r2.navigator.pager.R2ViewPager
@@ -71,7 +72,7 @@ typealias JavascriptInterfaceFactory = (resource: Link) -> Any?
  *
  * To use this [Fragment], create a factory with `EpubNavigatorFragment.createFactory()`.
  */
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalDecorator::class)
+@OptIn(ExperimentalDecorator::class)
 class EpubNavigatorFragment private constructor(
     override val publication: Publication,
     private val baseUrl: String,
@@ -128,9 +129,11 @@ class EpubNavigatorFragment private constructor(
 
     /**
      * Evaluates the given JavaScript on the currently visible HTML resource.
+     *
+     * Note that this only work with reflowable resources.
      */
     suspend fun evaluateJavascript(script: String): String? {
-        val page = currentFragment ?: return null
+        val page = currentReflowablePageFragment ?: return null
         page.awaitLoaded()
         val webView = page.webView ?: return null
         return webView.runJavaScriptSuspend(script)
@@ -263,22 +266,22 @@ class EpubNavigatorFragment private constructor(
 //                if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
 //                    resourcePager.disableTouchEvents = true
 //                }
-                if (preferences.getBoolean(SCROLL_REF, false)) {
-                    if (currentPagerPosition < position) {
-                        // handle swipe LEFT
-                        currentFragment?.webView?.scrollToStart()
-                    } else if (currentPagerPosition > position) {
-                        // handle swipe RIGHT
-                        currentFragment?.webView?.scrollToEnd()
-                    }
-                } else {
-                    if (currentPagerPosition < position) {
-                        // handle swipe LEFT
-                        currentFragment?.webView?.setCurrentItem(0, false)
-                    } else if (currentPagerPosition > position) {
-                        // handle swipe RIGHT
-                        currentFragment?.webView?.apply {
-                            setCurrentItem(numPages - 1, false)
+                currentReflowablePageFragment?.webView?.let { webView ->
+                    if (preferences.getBoolean(SCROLL_REF, false)) {
+                        if (currentPagerPosition < position) {
+                            // handle swipe LEFT
+                            webView.scrollToStart()
+                        } else if (currentPagerPosition > position) {
+                            // handle swipe RIGHT
+                            webView.scrollToEnd()
+                        }
+                    } else {
+                        if (currentPagerPosition < position) {
+                            // handle swipe LEFT
+                            webView.setCurrentItem(0, false)
+                        } else if (currentPagerPosition > position) {
+                            // handle swipe RIGHT
+                            webView.setCurrentItem(webView.numPages - 1, false)
                         }
                     }
                 }
@@ -332,13 +335,13 @@ class EpubNavigatorFragment private constructor(
             val (index, resource) = page
 
             if (resourcePager.currentItem != index) {
-                pendingLocator = locator
+                if (resource is PageResource.EpubReflowable) {
+                    pendingLocator = locator
+                }
                 resourcePager.currentItem = index
             }
 
-            if (resource is PageResource.EpubReflowable) {
-                currentFragment?.loadLocator(locator)
-            }
+            currentReflowablePageFragment?.loadLocator(locator)
         }
 
         if (publication.metadata.presentation.layout != EpubLayout.FIXED) {
@@ -375,7 +378,7 @@ class EpubNavigatorFragment private constructor(
     private fun run(command: RunScriptCommand) {
         when (command.scope) {
             RunScriptCommand.Scope.CurrentResource -> {
-                currentFragment?.webView
+                currentReflowablePageFragment?.webView
                     ?.runJavaScript(command.script)
             }
             RunScriptCommand.Scope.LoadedResources -> {
@@ -397,7 +400,7 @@ class EpubNavigatorFragment private constructor(
     // SelectableNavigator
 
     override suspend fun currentSelection(): Selection? {
-        val webView = currentFragment?.webView ?: return null
+        val webView = currentReflowablePageFragment?.webView ?: return null
         val json =
             webView.runJavaScriptSuspend("readium.getCurrentSelection();")
                 .takeIf { it != "null"}
@@ -420,12 +423,12 @@ class EpubNavigatorFragment private constructor(
     }
 
     private fun PointF.adjustedToViewport(): PointF =
-        currentFragment?.paddingTop?.let { top ->
+        currentReflowablePageFragment?.paddingTop?.let { top ->
             PointF(x, y + top)
         } ?: this
 
     private fun RectF.adjustedToViewport(): RectF =
-        currentFragment?.paddingTop?.let { topOffset ->
+        currentReflowablePageFragment?.paddingTop?.let { topOffset ->
             RectF(left, top + topOffset, right, bottom)
         } ?: this
 
@@ -572,7 +575,7 @@ class EpubNavigatorFragment private constructor(
             return goToNextResource(animated, completion)
         }
 
-        val webView = currentFragment?.webView ?: return false
+        val webView = currentReflowablePageFragment?.webView ?: return false
 
         when (readingProgression) {
             ReadingProgression.LTR, ReadingProgression.TTB, ReadingProgression.AUTO ->
@@ -590,7 +593,7 @@ class EpubNavigatorFragment private constructor(
             return goToPreviousResource(animated, completion)
         }
 
-        val webView = currentFragment?.webView ?: return false
+        val webView = currentReflowablePageFragment?.webView ?: return false
 
         when (readingProgression) {
             ReadingProgression.LTR, ReadingProgression.TTB, ReadingProgression.AUTO ->
@@ -611,15 +614,11 @@ class EpubNavigatorFragment private constructor(
 
         resourcePager.setCurrentItem(resourcePager.currentItem + 1, animated)
 
-        if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
-            // The view has RTL layout
-            currentFragment?.webView?.apply {
-                setCurrentItem(numPages - 1, false)
-            }
-        } else {
-            // The view has LTR layout
-            currentFragment?.webView?.apply {
-                setCurrentItem(0, false)
+        currentReflowablePageFragment?.webView?.let { webView ->
+            if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
+                webView.setCurrentItem(webView.numPages - 1, false)
+            } else {
+                webView.setCurrentItem(0, false)
             }
         }
 
@@ -634,15 +633,11 @@ class EpubNavigatorFragment private constructor(
 
         resourcePager.setCurrentItem(resourcePager.currentItem - 1, animated)
 
-        if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
-            // The view has RTL layout
-            currentFragment?.webView?.apply {
-                setCurrentItem(0, false)
-            }
-        } else {
-            // The view has LTR layout
-            currentFragment?.webView?.apply {
-                setCurrentItem(numPages - 1, false)
+        currentReflowablePageFragment?.webView?.let { webView ->
+            if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
+                webView.setCurrentItem(0, false)
+            } else {
+                webView.setCurrentItem(webView.numPages - 1, false)
             }
         }
 
@@ -654,10 +649,13 @@ class EpubNavigatorFragment private constructor(
         get() = if (::resourcePager.isInitialized) resourcePager.adapter as? R2PagerAdapter
             else null
 
-    private val currentFragment: R2EpubPageFragment? get() =
+    private val currentFragment: Fragment? get() =
         r2PagerAdapter?.let { adapter ->
-            adapter.mFragments.get(adapter.getItemId(resourcePager.currentItem)) as? R2EpubPageFragment
+            adapter.mFragments.get(adapter.getItemId(resourcePager.currentItem))
         }
+
+    private val currentReflowablePageFragment: R2EpubPageFragment? get() =
+        currentFragment as? R2EpubPageFragment
 
     /**
      * Returns the reflowable page fragment matching the given href, if it is already loaded in the
@@ -691,7 +689,7 @@ class EpubNavigatorFragment private constructor(
         if (!::resourcePager.isInitialized) return null
 
         val resource = publication.readingOrder[resourcePager.currentItem]
-        return currentFragment?.webView?.findFirstVisibleLocator()
+        return currentReflowablePageFragment?.webView?.findFirstVisibleLocator()
             ?.copy(
                 href = resource.href,
                 type = resource.type ?: MediaType.XHTML.toString()
@@ -735,17 +733,17 @@ class EpubNavigatorFragment private constructor(
         debounceLocationNotificationJob = launch {
             delay(100L)
 
-            val webView = currentFragment?.webView
-            if (pendingLocator != null || webView == null) {
+            val reflowableWebView = currentReflowablePageFragment?.webView
+            if (pendingLocator != null) {
                 return@launch
             }
 
             // The transition has stabilized, so we can ask the web view to refresh its current
             // item to reflect the current scroll position.
-            webView.updateCurrentItem()
+            reflowableWebView?.updateCurrentItem()
 
             val resource = publication.readingOrder[resourcePager.currentItem]
-            val progression = webView.progression.coerceIn(0.0, 1.0)
+            val progression = reflowableWebView?.progression?.coerceIn(0.0, 1.0) ?: 0.0
 
             val positionLocator = publication.positionsByResource[resource.href]?.let { positions ->
                 val index = ceil(progression * (positions.size - 1)).toInt()
@@ -766,11 +764,13 @@ class EpubNavigatorFragment private constructor(
 
             // Deprecated notifications
             navigatorDelegate?.locationDidChange(navigator = navigator, locator = currentLocator)
-            paginationListener?.onPageChanged(
-                pageIndex = webView.mCurItem,
-                totalPages = webView.numPages,
-                locator = currentLocator
-            )
+            reflowableWebView?.let {
+                paginationListener?.onPageChanged(
+                    pageIndex = it.mCurItem,
+                    totalPages = it.numPages,
+                    locator = currentLocator
+                )
+            }
         }
     }
 
