@@ -70,6 +70,9 @@ class AndroidTtsEngine(
      */
     private val tasks = Channel<UtteranceTask>(Channel.BUFFERED)
 
+    /** Future completed when the [engine] is fully initialized. */
+    private val init = CompletableDeferred<Unit>()
+
     init {
         scope.launch {
             init.await()
@@ -134,9 +137,6 @@ class AndroidTtsEngine(
     }
 
     // Engine
-
-    /** Future completed when the [engine] is fully initialized. */
-    private val init = CompletableDeferred<Unit>()
 
     /** Underlying Android [TextToSpeech] engine. */
     private val engine = TextToSpeech(context, EngineInitListener())
