@@ -45,14 +45,16 @@ android {
 }
 
 afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
-                from(components.getByName("release"))
-                groupId = "com.github.readium"
-                artifactId = "readium-navigator-media2"
-                artifact(tasks.findByName("sourcesJar"))
-                artifact(tasks.findByName("javadocsJar"))
+    if(rootProject.name == "Readium"){
+        publishing {
+            publications {
+                create<MavenPublication>("release") {
+                    from(components.getByName("release"))
+                    groupId = "com.github.readium"
+                    artifactId = "readium-navigator-media2"
+                    artifact(tasks.findByName("sourcesJar"))
+                    artifact(tasks.findByName("javadocsJar"))
+                }
             }
         }
     }
@@ -64,19 +66,18 @@ dependencies {
     api(project(":readium:shared"))
     api(project(":readium:navigator"))
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
 
     implementation("com.jakewharton.timber:timber:5.0.1")
 
     implementation("androidx.media2:media2-session:1.2.1")
     implementation("androidx.media2:media2-player:1.2.1")
 
-    implementation("com.google.android.exoplayer:exoplayer-core:2.17.1")
-    implementation("com.google.android.exoplayer:extension-media2:2.17.1")
+    implementation("com.google.android.exoplayer:exoplayer-core:2.18.0")
+    implementation("com.google.android.exoplayer:extension-media2:2.18.0")
 
     testImplementation("junit:junit:4.13.2")
-
     androidTestImplementation("androidx.test.ext:junit:1.1.3")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
 }

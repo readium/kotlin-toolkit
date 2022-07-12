@@ -42,14 +42,16 @@ android {
 }
 
 afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
-                from(components.getByName("release"))
-                groupId = "com.github.readium"
-                artifactId = "readium-streamer"
-                artifact(tasks.findByName("sourcesJar"))
-                artifact(tasks.findByName("javadocsJar"))
+    if(rootProject.name == "Readium"){
+        publishing {
+            publications {
+                create<MavenPublication>("release") {
+                    from(components.getByName("release"))
+                    groupId = "com.github.readium"
+                    artifactId = "readium-streamer"
+                    artifact(tasks.findByName("sourcesJar"))
+                    artifact(tasks.findByName("javadocsJar"))
+                }
             }
         }
     }
@@ -60,7 +62,7 @@ dependencies {
 
     api(project(":readium:shared"))
 
-    implementation("androidx.appcompat:appcompat:1.4.1")
+    implementation("androidx.appcompat:appcompat:1.4.2")
     @Suppress("GradleDependency")
     implementation("com.jakewharton.timber:timber:5.0.1")
     implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
@@ -78,7 +80,7 @@ dependencies {
         exclude(module = "support-v4")
     }
     implementation("joda-time:joda-time:2.10.14")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
 
     // Tests
     testImplementation("junit:junit:4.13.2")

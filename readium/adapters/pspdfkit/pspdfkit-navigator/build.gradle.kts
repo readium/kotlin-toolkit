@@ -45,14 +45,16 @@ android {
 }
 
 afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
-                from(components.getByName("release"))
-                groupId = "com.github.readium"
-                artifactId = "readium-adapter-pspdfkit-navigator"
-                artifact(tasks.findByName("sourcesJar"))
-                artifact(tasks.findByName("javadocsJar"))
+    if(rootProject.name == "Readium"){
+        publishing {
+            publications {
+                create<MavenPublication>("release") {
+                    from(components.getByName("release"))
+                    groupId = "com.github.readium"
+                    artifactId = "readium-adapter-pspdfkit-navigator"
+                    artifact(tasks.findByName("sourcesJar"))
+                    artifact(tasks.findByName("javadocsJar"))
+                }
             }
         }
     }
@@ -65,11 +67,11 @@ dependencies {
     api(project(":readium:navigator"))
     api(project(":readium:adapters:pspdfkit:pspdfkit-document"))
 
-    implementation("androidx.fragment:fragment-ktx:1.4.1")
+    implementation("androidx.fragment:fragment-ktx:1.5.0")
     implementation("com.jakewharton.timber:timber:5.0.1")
     implementation("com.pspdfkit:pspdfkit:8.2.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
 
     testImplementation("junit:junit:4.13.2")
 
