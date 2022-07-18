@@ -1,10 +1,7 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Mickaël Menu, Quentin Gliosca
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.shared.util
@@ -18,16 +15,19 @@ package org.readium.r2.shared.util
  *     PAGINATED("paginated"),
  *     REFLOWABLE("reflowable");
  *
- *     companion object : KeyMapper<String, Layout>(values(), Layout::value)
+ *     companion object : MapCompanion<String, Layout>(values(), Layout::value)
  * }
  *
  * val layout: Layout? = Layout("reflowable")
  * ```
  */
-open class MapCompanion<K, E>(protected val map: Map<K, E>) {
+open class MapCompanion<K, E>(
+    protected val map: Map<K, E>,
+    private val keySelector: (E) -> K
+) : ValueCoder<E?, K?> {
 
     constructor(elements: Array<E>, keySelector: (E) -> K):
-        this(elements.associateBy(keySelector))
+        this(elements.associateBy(keySelector), keySelector)
 
     /**
      * Returns the available [keys].
@@ -36,13 +36,18 @@ open class MapCompanion<K, E>(protected val map: Map<K, E>) {
         get() = map.keys
 
     /**
-     * Returns the element matching the [key], or [null] if not found.
+     * Returns the element matching the [key], or null if not found.
      *
-     * To be overriden in subclasses if custom retrieval is needed – for example, testing lowercase
+     * To be overridden in subclasses if custom retrieval is needed – for example, testing lowercase
      * keys.
      */
     open fun get(key: K?): E? =
         key?.let { map[key] }
+
+    /**
+     * Returns the key matching the given [element].
+     */
+    open fun getKey(element: E): K = keySelector(element)
 
     /**
      * Alias to [get], to be used like `keyMapper("a_key")`.
@@ -52,15 +57,20 @@ open class MapCompanion<K, E>(protected val map: Map<K, E>) {
     @Deprecated("Use `Enum(\"value\")` instead", ReplaceWith("get(key)"))
     open fun from(key: K?): E? = get(key)
 
+    override fun decode(rawValue: K?): E? =
+        get(rawValue)
+
+    override fun encode(value: E?): K? =
+        value?.let { getKey(it) }
 }
 
 /**
  * Extends a [MapCompanion] by adding a [default] value as a fallback.
  */
-open class MapWithDefaultCompanion<K, E>(map: Map<K, E>, val default: E) : MapCompanion<K, E>(map) {
+open class MapWithDefaultCompanion<K, E>(map: Map<K, E>, keySelector: (E) -> K, val default: E) : MapCompanion<K, E>(map, keySelector) {
 
     constructor(elements: Array<E>, keySelector: (E) -> K, default: E):
-        this(elements.associateBy(keySelector), default)
+        this(elements.associateBy(keySelector), keySelector, default)
 
     /**
      * Returns the element matching the [key], or the [default] value as a fallback.
