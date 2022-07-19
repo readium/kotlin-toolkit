@@ -6,6 +6,8 @@
 
 package org.readium.r2.shared.util
 
+import org.readium.r2.shared.InternalReadiumApi
+
 /**
  * Encapsulates a [Map] into a more limited query API.
  *
@@ -21,6 +23,7 @@ package org.readium.r2.shared.util
  * val layout: Layout? = Layout("reflowable")
  * ```
  */
+@InternalReadiumApi
 open class MapCompanion<K, E>(
     protected val map: Map<K, E>,
     private val keySelector: (E) -> K
@@ -67,6 +70,7 @@ open class MapCompanion<K, E>(
 /**
  * Extends a [MapCompanion] by adding a [default] value as a fallback.
  */
+@InternalReadiumApi
 open class MapWithDefaultCompanion<K, E>(map: Map<K, E>, keySelector: (E) -> K, val default: E) : MapCompanion<K, E>(map, keySelector) {
 
     constructor(elements: Array<E>, keySelector: (E) -> K, default: E):
