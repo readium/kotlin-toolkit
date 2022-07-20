@@ -8,8 +8,7 @@ package org.readium.r2.testapp.reader
 
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.*
 import java.net.URL
 
 sealed class ReaderInitData {
@@ -30,3 +29,11 @@ data class MediaReaderInitData(
     override val publication: Publication,
     val mediaNavigator: MediaNavigator,
 ) : ReaderInitData()
+
+data class DummyReaderInitData(
+    override val bookId: Long,
+) : ReaderInitData() {
+    override val publication: Publication = Publication(Manifest(
+        metadata = Metadata(identifier = "dummy", localizedTitle = LocalizedString(""))
+    ))
+}

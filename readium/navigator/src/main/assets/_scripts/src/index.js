@@ -27,6 +27,7 @@ import {
   rectangleForHighlightWithID,
   setScrollMode,
 } from "./highlight";
+import { findFirstVisibleLocator } from "./dom";
 import { getCurrentSelection } from "./selection";
 import { getDecorations, registerTemplates } from "./decorator";
 
@@ -49,6 +50,9 @@ window.readium = {
   // decoration
   registerDecorationTemplates: registerTemplates,
   getDecorations: getDecorations,
+
+  // DOM
+  findFirstVisibleLocator: findFirstVisibleLocator,
 };
 
 // Legacy highlights API.

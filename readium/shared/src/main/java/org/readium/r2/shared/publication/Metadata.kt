@@ -18,6 +18,7 @@ import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import java.util.*
@@ -152,6 +153,14 @@ data class Metadata(
 
     val belongsToSeries: List<Collection> get() =
         belongsTo["series"] ?: emptyList()
+
+    /**
+     * Returns the [Language] resolved from the first declared BCP 47 language.
+     */
+    @IgnoredOnParcel
+    val language: Language? by lazy {
+        languages.firstOrNull()?.let { Language(it) }
+    }
 
     /**
      * Computes a [ReadingProgression] when the value of [readingProgression] is set to

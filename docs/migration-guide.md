@@ -16,7 +16,7 @@ If you wish to keep using the open source library [PdfiumAndroid](https://github
 
 First, add the new dependency in your app's `build.gradle`.
 
-```gradle
+```groovy
 dependencies {
     implementation "com.github.readium.kotlin-toolkit:readium-adapter-pdfium:$readium_version"
     // Or, if you need only the parser but not the navigator:

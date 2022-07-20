@@ -62,7 +62,7 @@ function appendVirtualColumnIfNeeded() {
   }
 }
 
-var pageWidth = 1;
+export var pageWidth = 1;
 
 function onViewportWidthChanged() {
   // We can't rely on window.innerWidth for the pageWidth on Android, because if the
@@ -95,7 +95,7 @@ export function isScrollModeEnabled() {
   );
 }
 
-function isRTL() {
+export function isRTL() {
   return document.body.dir.toLowerCase() == "rtl";
 }
 
@@ -143,7 +143,7 @@ export function scrollToText(text) {
 }
 
 function scrollToRange(range) {
-  scrollToRect(range.getBoundingClientRect());
+  return scrollToRect(range.getBoundingClientRect());
 }
 
 function scrollToRect(rect) {
@@ -155,6 +155,8 @@ function scrollToRect(rect) {
       rect.left + window.scrollX
     );
   }
+
+  return true;
 }
 
 export function scrollToStart() {
@@ -236,7 +238,16 @@ export function rangeFromLocator(locator) {
     return null;
   }
   try {
-    let anchor = new TextQuoteAnchor(document.body, text.highlight, {
+    var root;
+    let locations = locator.locations;
+    if (locations && locations.cssSelector) {
+      root = document.querySelector(locations.cssSelector);
+    }
+    if (!root) {
+      root = document.body;
+    }
+
+    let anchor = new TextQuoteAnchor(root, text.highlight, {
       prefix: text.before,
       suffix: text.after,
     });
