@@ -104,6 +104,7 @@ dependencies {
     implementation("com.github.edrlab.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
         exclude(group = "org.parboiled")
     }
+    implementation("com.google.android.material:compose-theme-adapter:1.1.14")
     implementation("com.google.android.material:material:1.6.1")
     implementation("com.jakewharton.timber:timber:5.0.1")
     // AM NOTE: needs to stay this version for now (June 24,2020)

@@ -88,8 +88,7 @@ class EpubNavigatorFragment private constructor(
     internal val listener: Listener?,
     internal val paginationListener: PaginationListener?,
     config: Configuration,
-) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator,
-    Configurable<EpubNavigatorFragment.Settings> {
+) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable {
 
     @ExperimentalReadiumApi
     data class Settings(
@@ -99,7 +98,7 @@ class EpubNavigatorFragment private constructor(
         val overflow: EnumSetting<Overflow>,
         val publisherStyles: ToggleSetting,
         val theme: EnumSetting<Theme>,
-    ) {
+    ) : Configurable.Settings {
         constructor(preferences: Preferences, fallback: Preferences, fonts: List<Font>) : this(
             columnCount = RangeSetting(
                 key = SettingKey.COLUMN_COUNT,
@@ -200,7 +199,7 @@ class EpubNavigatorFragment private constructor(
         require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection."}
     }
 
-    // Configurable<Settings>
+    // Configurable
 
     private val _settings = MutableStateFlow(Settings(
         preferences = config.preferences,

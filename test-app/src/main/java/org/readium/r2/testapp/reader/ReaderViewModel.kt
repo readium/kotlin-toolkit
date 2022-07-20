@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.r2.testapp.reader
 
 import android.graphics.Color
@@ -18,6 +20,11 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
+import org.readium.r2.navigator.epub.EpubNavigatorFragment
+import org.readium.r2.navigator.settings.Configurable
+import org.readium.r2.navigator.settings.MutablePreferences
+import org.readium.r2.navigator.settings.Preferences
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
@@ -79,6 +86,20 @@ class ReaderViewModel(
 
     fun deleteBookmark(id: Long) = viewModelScope.launch {
         bookRepository.deleteBookmark(id)
+    }
+
+    private val _preferences = MutableStateFlow(Preferences()) // FIXME
+    val preferences: StateFlow<Preferences> = _preferences.asStateFlow()
+
+    private val _settings = MutableStateFlow<Configurable.Settings?>(null)
+    val settings: StateFlow<Configurable.Settings?> = _settings.asStateFlow()
+
+    fun onSettingsChange(settings: Configurable.Settings) {
+        _settings.value = settings
+    }
+
+    fun updatePreferences(changes: MutablePreferences.() -> Unit) {
+        _preferences.update { it.copy(changes) }
     }
 
     // Highlights

@@ -10,21 +10,31 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.navigator.Navigator
+import org.readium.r2.navigator.settings.Configurable
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.reader.settings.UserSettingsBottomSheetDialogFragment
 
 /*
  * Base reader fragment class
  *
  * Provides common menu items and saves last location on stop.
  */
+@OptIn(ExperimentalReadiumApi::class)
 abstract class BaseReaderFragment : Fragment() {
 
     val model: ReaderViewModel by activityViewModels()
@@ -48,6 +58,28 @@ abstract class BaseReaderFragment : Fragment() {
         }
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            (navigator as? Configurable)?.let { configurable ->
+                configurable.settings
+                    .flowWithLifecycle(lifecycle)
+                    .onEach {
+                        model.onSettingsChange(it)
+                    }
+                    .launchIn(this)
+
+                model.preferences
+                    .flowWithLifecycle(lifecycle)
+                    .onEach { prefs ->
+                        configurable.applyPreferences(prefs)
+                    }
+                    .launchIn(this)
+            }
+        }
+    }
+
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
         setMenuVisibility(!hidden)
@@ -56,7 +88,12 @@ abstract class BaseReaderFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.menu_reader, menu)
-        menu.findItem(R.id.drm).isVisible = model.publication.lcpLicense != null
+
+        menu.findItem(R.id.settings).isVisible =
+            navigator is Configurable
+
+        menu.findItem(R.id.drm).isVisible =
+            model.publication.lcpLicense != null
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -66,6 +103,9 @@ abstract class BaseReaderFragment : Fragment() {
             }
             R.id.bookmark -> {
                 model.insertBookmark(navigator.currentLocator.value)
+            }
+            R.id.settings -> {
+                UserSettingsBottomSheetDialogFragment().show(childFragmentManager, "Settings")
             }
             R.id.drm -> {
                 model.activityChannel.send(ReaderViewModel.Event.OpenDrmManagementRequested)

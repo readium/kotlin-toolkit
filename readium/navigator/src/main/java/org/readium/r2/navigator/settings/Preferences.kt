@@ -45,6 +45,9 @@ open class Preferences(
     constructor(mutablePreferences: MutablePreferences)
         : this(mutablePreferences.values.toMap())
 
+    inline operator fun <reified V, reified R> get(setting: Setting<V, R>): V? =
+        get(setting.key)
+
     inline operator fun <reified V, reified R> get(key: SettingKey<V, R>): V? =
         key.decode(values[key.key] as? R)
 
@@ -109,12 +112,18 @@ class MutablePreferences(
         set(setting.key, !(get(setting.key) ?: false))
     }
 
+    inline fun <reified T : Comparable<T>> increment(setting: RangeSetting<T>) {
+    }
+
+    inline fun <reified T : Comparable<T>> decrement(setting: RangeSetting<T>) {
+    }
+
     fun <T, R> activate(setting: Setting<T, R>) {
         setting.activateInPreferences(this)
     }
 
     inline fun <reified E> toggle(setting: EnumSetting<E>, value: E) {
-        if (get(setting.key) == null) {
+        if (get(setting.key) != value) {
             set(setting.key, value)
         } else {
             remove(setting.key)

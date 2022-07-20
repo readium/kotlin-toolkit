@@ -29,7 +29,7 @@ import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
 import org.readium.r2.navigator.html.toCss
 import org.readium.r2.shared.APPEARANCE_REF
-import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Locator
@@ -107,6 +107,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         return view
     }
 
+    @OptIn(ExperimentalReadiumApi::class)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -151,8 +152,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, menuInflater)
-
-        menu.findItem(R.id.settings).isVisible = true
 
         menuSearch = menu.findItem(R.id.search).apply {
             isVisible = true
@@ -214,25 +213,19 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         }
     }
 
-    @OptIn(InternalReadiumApi::class)
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (super.onOptionsItemSelected(item)) {
             return true
         }
 
-       return when (item.itemId) {
-           R.id.settings -> {
-               userSettings.userSettingsPopUp().showAsDropDown(requireActivity().findViewById(R.id.settings), 0, 0, Gravity.END)
-               true
-           }
-           R.id.search -> {
-               super.onOptionsItemSelected(item)
-           }
-           android.R.id.home -> {
-               menuSearch.collapseActionView()
-               true
-           }
-
+        return when (item.itemId) {
+            R.id.search -> {
+                super.onOptionsItemSelected(item)
+            }
+            android.R.id.home -> {
+                menuSearch.collapseActionView()
+                true
+            }
             else -> false
         }
     }

@@ -10,9 +10,14 @@ import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
-interface Configurable<S> {
+interface Configurable {
 
-    val settings: StateFlow<S>
+    /**
+     * Marker interface for the [Setting] properties holder.
+     */
+    interface Settings
+
+    val settings: StateFlow<Settings>
 
     /**
      * Submits a new set of Presentation preferences used by the Navigator to recompute its
