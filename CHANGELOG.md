@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Added
 
+#### Shared
+
+* Extract the raw content (text, images, etc.) of a publication. [Take a look at the user guide](docs/guides/content.md).
+
 #### Navigator
 
 * Improved Javascript support in the EPUB navigator:
@@ -34,7 +38,8 @@ All notable changes to this project will be documented in this file. Take a look
         ```kotlin
         val result = navigator.evaluateJavascript("customInterface.api('argument')")
         ```
-* New [PSPDFKit](readium/adapters/pspdfkit) adapter for rendering PDF documents.
+* New [PSPDFKit](readium/adapters/pspdfkit) adapter for rendering PDF documents. [Take a look at the user guide](docs/guides/pdf.md).
+* A brand new text-to-speech implementation. [Take a look at the user guide](docs/guides/tts.md).
 
 ### Changed
 

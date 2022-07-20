@@ -10,7 +10,6 @@ import android.graphics.Color
 import android.os.Bundle
 import androidx.annotation.ColorInt
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.paging.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,22 +17,27 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.Decoration
-import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.LocatorCollection
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.search.SearchIterator
 import org.readium.r2.shared.publication.services.search.SearchTry
 import org.readium.r2.shared.publication.services.search.search
 import org.readium.r2.shared.util.Try
+import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.domain.model.Highlight
+import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
+import org.readium.r2.testapp.utils.createViewModelFactory
 
-@OptIn(Search::class, ExperimentalDecorator::class, ExperimentalCoroutinesApi::class, ExperimentalAudiobook::class)
+@OptIn(Search::class, ExperimentalDecorator::class, ExperimentalCoroutinesApi::class)
 class ReaderViewModel(
+    application: Application,
     val readerInitData: ReaderInitData,
     private val bookRepository: BookRepository,
 ) : ViewModel() {
@@ -50,6 +54,13 @@ class ReaderViewModel(
     val fragmentChannel: EventChannel<FeedbackEvent> =
         EventChannel(Channel(Channel.BUFFERED), viewModelScope)
 
+    val tts: TtsViewModel? =
+        TtsViewModel(application, readerInitData.publication, viewModelScope)
+
+    override fun onCleared() {
+        super.onCleared()
+        tts?.onCleared()
+    }
 
     fun saveProgression(locator: Locator) = viewModelScope.launch {
         bookRepository.saveProgression(locator, bookId)
@@ -149,6 +160,8 @@ class ReaderViewModel(
         bookRepository.deleteHighlight(id)
     }
 
+    // Search
+
     fun search(query: String) = viewModelScope.launch {
         if (query == lastSearchQuery) return@launch
         lastSearchQuery = query
@@ -209,11 +222,12 @@ class ReaderViewModel(
         Pager(PagingConfig(pageSize = 20), pagingSourceFactory = pagingSourceFactory)
             .flow.cachedIn(viewModelScope)
 
+    // Events
+
     sealed class Event {
         object OpenOutlineRequested : Event()
         object OpenDrmManagementRequested : Event()
         object StartNewSearch : Event()
-        class OpeningError(val exception: Exception) : Event()
         class Failure(val error: UserException) : Event()
     }
 
@@ -222,33 +236,19 @@ class ReaderViewModel(
         object BookmarkFailed : FeedbackEvent()
     }
 
-    class Factory(
-        private val application: org.readium.r2.testapp.Application,
-        private val arguments: ReaderActivityContract.Arguments,
-    ) : ViewModelProvider.NewInstanceFactory() {
+    companion object {
+        fun createFactory(application: Application, arguments: ReaderActivityContract.Arguments) =
+            createViewModelFactory {
+                val readerInitData =
+                    try {
+                        val readerRepository = application.readerRepository.getCompleted()
+                        checkNotNull(readerRepository[arguments.bookId])
+                    } catch (e: Exception) {
+                        // Fallbacks on a dummy Publication to avoid crashing the app until the Activity finishes.
+                        DummyReaderInitData(arguments.bookId)
+                    }
 
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            when {
-                modelClass.isAssignableFrom(ReaderViewModel::class.java) -> {
-                    val readerInitData =
-                        try {
-                            val readerRepository = application.readerRepository.getCompleted()
-                            readerRepository[arguments.bookId]!!
-                        } catch (e: Exception) {
-                            // Fallbacks on a dummy Publication to avoid crashing the app until the Activity finishes.
-                            dummyReaderInitData(arguments.bookId)
-                        }
-                    ReaderViewModel(readerInitData, application.bookRepository) as T
-                }
-                else ->
-                    throw IllegalStateException("Cannot create ViewModel for class ${modelClass.simpleName}.")
+                ReaderViewModel(application, readerInitData, application.bookRepository)
             }
-
-        private fun dummyReaderInitData(bookId: Long): ReaderInitData {
-            val metadata = Metadata(identifier = "dummy", localizedTitle = LocalizedString(""))
-            val publication = Publication(Manifest(metadata = metadata))
-            return VisualReaderInitData(bookId, publication)
-        }
     }
 }

@@ -25,7 +25,7 @@ Readium modules are distributed through [JitPack](https://jitpack.io/#readium/ko
 
 Make sure that you have the `$readium_version` property set in your root `build.gradle` and add the JitPack repository.
 
-```gradle
+```groovy
 buildscript {
     ext.readium_version = '2.2.0'
 }
@@ -39,7 +39,7 @@ allprojects {
 
 Then, add the dependencies to the Readium modules you need in your app's `build.gradle`.
 
-```gradle
+```groovy
 dependencies {
     implementation "com.github.readium.kotlin-toolkit:readium-shared:$readium_version"
     implementation "com.github.readium.kotlin-toolkit:readium-streamer:$readium_version"
@@ -61,7 +61,7 @@ git submodule add https://github.com/readium/kotlin-toolkit.git
 
 Then, add the following to your project's `settings.gradle` file, altering the paths if needed. Keep only the modules you want to use.
 
-```gradle
+```groovy
 include ':readium:shared'
 project(':readium:shared').projectDir = file('kotlin-toolkit/readium/shared')
 

@@ -11,7 +11,9 @@
     "checkformat": "prettier --check '**/*.js'",
     "format": "prettier --list-different --write '**/*.js'"
   },
-  "browserslist": [ "Android >= 4" ],
+  "browserslist": [
+    "Android >= 4"
+  ],
   "devDependencies": {
     "@babel/core": "^7.16.0",
     "@babel/preset-env": "^7.16.0",
@@ -23,6 +25,7 @@
   },
   "dependencies": {
     "approx-string-match": "^1.1.0",
+    "css-selector-generator": "^3.6.0",
     "hash.js": "^1.1.7",
     "string.prototype.matchall": "^4.0.5"
   }

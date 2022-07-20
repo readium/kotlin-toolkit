@@ -8,7 +8,7 @@ If you are looking for a free, open source PDF adapter, take a look at [PdfiumAn
 
 Follow the same setup instructions as the core Readium toolkit, then add this new dependency in your app's `build.gradle`.
 
-```gradle
+```groovy
 dependencies {
     implementation "com.github.readium.kotlin-toolkit:readium-adapter-pspdfkit:$readium_version"
     // Or, if you need only the parser but not the navigator:
@@ -18,7 +18,7 @@ dependencies {
 
 This adapter requires PSPDFKit's maven repository in your root `build.gradle`:
 
-```gradle
+```groovy
 allprojects {
     repositories {
         maven { url "https://customers.pspdfkit.com/maven" }

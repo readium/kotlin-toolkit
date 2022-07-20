@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+
 package org.readium.r2.shared.publication
 
 import android.net.Uri
@@ -24,9 +26,9 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.*
+import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Closeable
-import org.readium.r2.shared.util.MemoryObserver
 import org.readium.r2.shared.util.Ref
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
@@ -352,10 +354,11 @@ class Publication(
      */
     class ServicesBuilder private constructor(private val serviceFactories: MutableMap<String, ServiceFactory>) {
 
-        @OptIn(Search::class)
+        @OptIn(Search::class, ExperimentalReadiumApi::class)
         @Suppress("UNCHECKED_CAST")
         constructor(
             cache: ServiceFactory? = null,
+            content: ServiceFactory? = null,
             contentProtection: ServiceFactory? = null,
             cover: ServiceFactory? = null,
             locator: ServiceFactory? = { DefaultLocatorService(it.manifest.readingOrder, it.services) },
@@ -363,6 +366,7 @@ class Publication(
             search: ServiceFactory? = null,
         ) : this(mapOf(
             CacheService::class.java.simpleName to cache,
+            ContentService::class.java.simpleName to content,
             ContentProtectionService::class.java.simpleName to contentProtection,
             CoverService::class.java.simpleName to cover,
             LocatorService::class.java.simpleName to locator,

@@ -572,29 +572,6 @@ class UserSettings(var preferences: SharedPreferences, val context: Context, pri
                     }
                 })
 
-        // Speech speed
-        val speechSeekBar = layout.TTSSpeechSpeed
-
-        //Get the user settings value or set the progress bar to a neutral position (1 time speech speed).
-        val speed = preferences.getInt("reader_TTS_speed", (2.75 * 3.toDouble() / 11.toDouble() * 100).toInt())
-
-        speechSeekBar.progress = speed
-        speechSeekBar.setOnSeekBarChangeListener(
-                object : SeekBar.OnSeekBarChangeListener {
-
-                    override fun onProgressChanged(bar: SeekBar, progress: Int, from_user: Boolean) {
-                        // Nothing
-                    }
-
-                    override fun onStartTrackingTouch(bar: SeekBar) {
-                        // Nothing
-                    }
-
-                    override fun onStopTrackingTouch(bar: SeekBar) {
-                        preferences.edit().putInt("reader_TTS_speed", bar.progress).apply()
-                    }
-                })
-
         return userSettingsPopup
     }
 }

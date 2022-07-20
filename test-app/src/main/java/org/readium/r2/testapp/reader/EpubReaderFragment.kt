@@ -21,7 +21,6 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
 import org.readium.r2.navigator.ExperimentalDecorator
@@ -30,31 +29,25 @@ import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
 import org.readium.r2.navigator.html.toCss
 import org.readium.r2.shared.APPEARANCE_REF
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.epub.UserSettings
 import org.readium.r2.testapp.search.SearchFragment
-import org.readium.r2.testapp.tts.ScreenReaderContract
-import org.readium.r2.testapp.tts.ScreenReaderFragment
 import org.readium.r2.testapp.utils.extensions.toDataUrl
 
 @OptIn(ExperimentalDecorator::class)
 class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listener {
 
-    override lateinit var model: ReaderViewModel
     override lateinit var navigator: Navigator
-    private lateinit var publication: Publication
     private lateinit var navigatorFragment: EpubNavigatorFragment
 
-    private lateinit var menuScreenReader: MenuItem
     private lateinit var menuSearch: MenuItem
     lateinit var menuSearchView: SearchView
 
     private lateinit var userSettings: UserSettings
-    private var isScreenReaderVisible = false
     private var isSearchViewIconified = true
 
     // Accessibility
@@ -64,13 +57,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         val activity = requireActivity()
 
         if (savedInstanceState != null) {
-            isScreenReaderVisible = savedInstanceState.getBoolean(IS_SCREEN_READER_VISIBLE_KEY)
             isSearchViewIconified = savedInstanceState.getBoolean(IS_SEARCH_VIEW_ICONIFIED)
-        }
-
-        ViewModelProvider(requireActivity())[ReaderViewModel::class.java].let {
-            model = it
-            publication = it.publication
         }
 
         val readerData = model.readerInitData as VisualReaderInitData
@@ -96,17 +83,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                 menuSearch.collapseActionView()
                 result.getParcelable<Locator>(SearchFragment::class.java.name)?.let {
                     navigatorFragment.go(it)
-                }
-            }
-        )
-
-        childFragmentManager.setFragmentResultListener(
-            ScreenReaderContract.REQUEST_KEY,
-            this,
-            FragmentResultListener { _, result ->
-                val locator = ScreenReaderContract.parseResult(result).locator
-                if (locator.href != navigator.currentLocator.value.href) {
-                    navigator.go(locator)
                 }
             }
         )
@@ -175,11 +151,13 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, menuInflater)
-        menuInflater.inflate(R.menu.menu_epub, menu)
 
-        menuScreenReader = menu.findItem(R.id.screen_reader)
-        menuSearch = menu.findItem(R.id.search)
-        menuSearchView = menuSearch.actionView as SearchView
+        menu.findItem(R.id.settings).isVisible = true
+
+        menuSearch = menu.findItem(R.id.search).apply {
+            isVisible = true
+            menuSearchView = actionView as SearchView
+        }
 
         connectSearch()
         if (!isSearchViewIconified) menuSearch.expandActionView()
@@ -187,7 +165,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putBoolean(IS_SCREEN_READER_VISIBLE_KEY, isScreenReaderVisible)
         outState.putBoolean(IS_SEARCH_VIEW_ICONIFIED, isSearchViewIconified)
     }
 
@@ -237,6 +214,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         }
     }
 
+    @OptIn(InternalReadiumApi::class)
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (super.onOptionsItemSelected(item)) {
             return true
@@ -250,20 +228,11 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
            R.id.search -> {
                super.onOptionsItemSelected(item)
            }
-
            android.R.id.home -> {
                menuSearch.collapseActionView()
                true
            }
 
-           R.id.screen_reader -> {
-               if (isScreenReaderVisible) {
-                   closeScreenReaderFragment()
-               } else {
-                   showScreenReaderFragment()
-               }
-               true
-           }
             else -> false
         }
     }
@@ -277,29 +246,8 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         }
     }
 
-    private fun showScreenReaderFragment() {
-        menuScreenReader.title = resources.getString(R.string.epubactivity_read_aloud_stop)
-        isScreenReaderVisible = true
-        val arguments = ScreenReaderContract.createArguments(navigator.currentLocator.value)
-        childFragmentManager.commit {
-            add(R.id.fragment_reader_container, ScreenReaderFragment::class.java, arguments)
-            hide(navigatorFragment)
-            addToBackStack(null)
-        }
-    }
-
-    private fun closeScreenReaderFragment() {
-        menuScreenReader.title = resources.getString(R.string.epubactivity_read_aloud_start)
-        isScreenReaderVisible = false
-        childFragmentManager.popBackStack()
-    }
-
     companion object {
-
         private const val SEARCH_FRAGMENT_TAG = "search"
-
-        private const val IS_SCREEN_READER_VISIBLE_KEY = "isScreenReaderVisible"
-
         private const val IS_SEARCH_VIEW_ICONIFIED = "isSearchViewIconified"
     }
 }
