@@ -12,6 +12,7 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.net.Uri
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.ActionMode
 import android.view.LayoutInflater
 import android.view.View
@@ -24,10 +25,14 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
@@ -41,8 +46,10 @@ import org.readium.r2.navigator.pager.R2FXLPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2PagerAdapter.PageResource
 import org.readium.r2.navigator.pager.R2ViewPager
+import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.COLUMN_COUNT_REF
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.tryOrLog
@@ -51,9 +58,12 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
+import org.readium.r2.shared.publication.presentation.Presentation
+import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
+import org.readium.r2.shared.util.ValueCoder
 import org.readium.r2.shared.util.launchWebBrowser
 import org.readium.r2.shared.util.mediatype.MediaType
 import kotlin.math.ceil
@@ -71,7 +81,7 @@ typealias JavascriptInterfaceFactory = (resource: Link) -> Any?
  *
  * To use this [Fragment], create a factory with `EpubNavigatorFragment.createFactory()`.
  */
-@OptIn(ExperimentalDecorator::class)
+@OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class)
 class EpubNavigatorFragment private constructor(
     override val publication: Publication,
     private val baseUrl: String,
@@ -79,12 +89,70 @@ class EpubNavigatorFragment private constructor(
     internal val listener: Listener?,
     internal val paginationListener: PaginationListener?,
     config: Configuration,
-): Fragment(), CoroutineScope by MainScope(), VisualNavigator, SelectableNavigator, DecorableNavigator {
+) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator,
+    Configurable<EpubNavigatorFragment.Settings> {
+
+    @ExperimentalReadiumApi
+    data class Settings(
+        val columnCount: RangeSetting<Int>,
+        val font: EnumSetting<Font>,
+        val fontSize: PercentSetting,
+        val overflow: EnumSetting<Overflow>,
+        val publisherStyles: ToggleSetting,
+        val theme: EnumSetting<Theme>,
+    ) {
+        constructor(preferences: Preferences, fallback: Preferences, fonts: List<Font>) : this(
+            columnCount = RangeSetting(
+                key = SettingKey.COLUMN_COUNT,
+                valueCandidates = listOf(preferences.columnCount, fallback.columnCount, 1),
+                range = 1..2
+            ),
+            font = EnumSetting(
+                key = SettingKey.FONT,
+                valueCandidates = listOf(preferences.font, fallback.font, Font.ORIGINAL),
+                values = listOf(Font.ORIGINAL) + fonts
+            ),
+            fontSize = PercentSetting(
+                key = SettingKey.FONT_SIZE,
+                valueCandidates = listOf(preferences.fontSize, fallback.fontSize, 1.0),
+                range = 0.4..5.0
+            ),
+            overflow = EnumSetting(
+                key = SettingKey.OVERFLOW,
+                valueCandidates = listOf(preferences.overflow, fallback.overflow, Overflow.PAGINATED),
+                values = listOf(Overflow.PAGINATED, Overflow.SCROLLED),
+            ),
+            publisherStyles = ToggleSetting(
+                key = SettingKey.PUBLISHER_STYLES,
+                valueCandidates = listOf(preferences.publisherStyles, fallback.publisherStyles, true)
+            ),
+            theme = EnumSetting(
+                key = SettingKey.THEME,
+                valueCandidates = listOf(preferences.theme, fallback.theme, Theme.LIGHT),
+                values = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
+            ),
+        )
+    }
 
     // Make a copy to prevent the user from modifying the configuration after initialization.
     internal val config: Configuration = config.copy()
 
     data class Configuration(
+        /**
+         * Initial set of setting preferences.
+         */
+        val preferences: Preferences = Preferences(),
+
+        /**
+         * Fallback preferences when missing.
+         */
+        val defaultPreferences: Preferences = Preferences(),
+
+        /**
+         * Available font families for reflowable resources.
+         */
+        val fonts: List<Font> = DEFAULT_FONTS,
+
         /**
          * Supported HTML decoration templates.
          */
@@ -113,6 +181,13 @@ class EpubNavigatorFragment private constructor(
         fun registerJavascriptInterface(name: String, factory: JavascriptInterfaceFactory) {
             javascriptInterfaces[name] = factory
         }
+
+        companion object {
+            val DEFAULT_FONTS: List<Font> = listOf(
+                Font.PT_SERIF, Font.ROBOTO, Font.SOURCE_SANS_PRO, Font.VOLLKORN,
+                Font.OPEN_DYSLEXIC, Font.ACCESSIBLE_DFA, Font.IA_WRITER_DUOSPACE,
+            )
+        }
     }
 
     interface PaginationListener {
@@ -124,6 +199,19 @@ class EpubNavigatorFragment private constructor(
 
     init {
         require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection."}
+    }
+
+    // Configurable<Settings>
+
+    private val _settings = MutableStateFlow(Settings(
+        preferences = config.preferences,
+        fallback = config.defaultPreferences,
+        fonts = config.fonts,
+    ))
+    override val settings: StateFlow<Settings> = _settings.asStateFlow()
+
+    override suspend fun applyPreferences(preferences: Preferences) {
+        _settings.value = Settings(preferences, fallback = config.defaultPreferences, fonts = config.fonts)
     }
 
     /**
@@ -583,7 +671,7 @@ class EpubNavigatorFragment private constructor(
             ReadingProgression.RTL, ReadingProgression.BTT ->
                 webView.scrollLeft(animated)
         }
-        launch { completion() }
+        viewLifecycleOwner.lifecycleScope.launch { completion() }
         return true
     }
 
@@ -601,7 +689,7 @@ class EpubNavigatorFragment private constructor(
             ReadingProgression.RTL, ReadingProgression.BTT ->
                 webView.scrollRight(animated)
         }
-        launch { completion() }
+        viewLifecycleOwner.lifecycleScope.launch { completion() }
         return true
     }
 
@@ -621,7 +709,7 @@ class EpubNavigatorFragment private constructor(
             }
         }
 
-        launch { completion() }
+        viewLifecycleOwner.lifecycleScope.launch { completion() }
         return true
     }
 
@@ -640,7 +728,7 @@ class EpubNavigatorFragment private constructor(
             }
         }
 
-        launch { completion() }
+        viewLifecycleOwner.lifecycleScope.launch { completion() }
         return true
     }
 
@@ -714,7 +802,7 @@ class EpubNavigatorFragment private constructor(
     private fun notifyCurrentLocation() {
         val navigator = this
         debounceLocationNotificationJob?.cancel()
-        debounceLocationNotificationJob = launch {
+        debounceLocationNotificationJob = viewLifecycleOwner.lifecycleScope.launch {
             delay(100L)
 
             val reflowableWebView = currentReflowablePageFragment?.webView

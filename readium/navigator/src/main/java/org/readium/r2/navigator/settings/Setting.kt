@@ -6,30 +6,14 @@
 
 package org.readium.r2.navigator.settings
 
-import kotlinx.coroutines.flow.StateFlow
+import org.readium.r2.navigator.Font
+import org.readium.r2.navigator.Theme
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.*
 import org.readium.r2.shared.util.IdentityValueCoder
 import org.readium.r2.shared.util.ValueCoder
 import java.text.NumberFormat
-
-@ExperimentalReadiumApi
-interface Configurable<S : Configurable.Settings> {
-    interface Settings
-
-    val settings: StateFlow<S>
-
-    /**
-     * Submits a new set of Presentation preferences used by the Navigator to recompute its
-     * Presentation Settings.
-     *
-     * Note that the Navigator might not update its presentation right away, or might even ignore
-     * some of the provided settings. They are only used as guidelines to compute the Presentation
-     * Properties.
-     */
-    suspend fun applyPreferences(preferences: Preferences)
-}
 
 @ExperimentalReadiumApi
 data class SettingKey<V, R>(
@@ -40,12 +24,15 @@ data class SettingKey<V, R>(
     override fun toString(): String = key
 
     companion object {
-        // FIXME: font size, font, theme, columnCount
-        val CONTINUOUS = SettingKey<Boolean>("continuous")
+        val COLUMN_COUNT = SettingKey<Int>("columnCount")
         val FIT = SettingKey("fit", Fit)
+        val FONT = SettingKey("font", Font)
+        val FONT_SIZE = SettingKey<Double>("fontSize")
         val ORIENTATION = SettingKey("orientation", Orientation)
         val OVERFLOW = SettingKey("overflow", Overflow)
+        val PUBLISHER_STYLES = SettingKey<Boolean>("publisherStyles")
         val READING_PROGRESSION = SettingKey("readingProgression", ReadingProgression)
+        val THEME = SettingKey("theme", Theme)
 
         operator fun <V> invoke(key: String): SettingKey<V, V> =
             SettingKey(key, IdentityValueCoder())
@@ -55,12 +42,18 @@ data class SettingKey<V, R>(
 @ExperimentalReadiumApi
 open class Setting<T, R>(
     val key: SettingKey<T, R>,
-    val value: T,
+    valueCandidates: List<T?>,
     validator: SettingValidator<T> = IdentitySettingValidator(),
     activator: SettingActivator = PassthroughSettingActivator
 ) : SettingValidator<T> by validator, SettingActivator by activator {
 
-    val encodedValue: R? get() = key.encode(value)
+    val value: T = requireNotNull(
+        valueCandidates.firstNotNullOfOrNull { v ->
+            v?.let { validator.validate(it) }
+        }
+    ) { "No valid value was provided among: $valueCandidates"}
+
+    val encodedValue: R? = key.encode(this.value)
 
     override fun equals(other: Any?): Boolean {
         val otherSetting = (other as? Setting<*, *>) ?: return false
@@ -75,16 +68,27 @@ open class Setting<T, R>(
 }
 
 @OptIn(ExperimentalReadiumApi::class)
-open class RangeSetting<T : Comparable<T>, R>(
-    key: SettingKey<T, R>,
-    value: T,
+open class ToggleSetting(
+    key: SettingKey<Boolean, Boolean>,
+    valueCandidates: List<Boolean?>,
+    validator: SettingValidator<Boolean> = IdentitySettingValidator(),
+    activator: SettingActivator = PassthroughSettingActivator,
+) : Setting<Boolean, Boolean>(
+    key = key, valueCandidates = valueCandidates,
+    validator = validator, activator = activator
+)
+
+@OptIn(ExperimentalReadiumApi::class)
+open class RangeSetting<T : Comparable<T>>(
+    key: SettingKey<T, T>,
+    valueCandidates: List<T?>,
     val range: ClosedRange<T>,
     val suggestedSteps: List<T>? = null,
-    val label: (Double) -> String = { it.toString() },
+    val label: (T) -> String = { it.toString() },
     validator: SettingValidator<T> = IdentitySettingValidator(),
     activator: SettingActivator = PassthroughSettingActivator,
-) : Setting<T, R>(
-    key = key, value = value,
+) : Setting<T, T>(
+    key = key, valueCandidates = valueCandidates,
     validator = RangeSettingValidator(range) then validator,
     activator = activator
 )
@@ -92,14 +96,14 @@ open class RangeSetting<T : Comparable<T>, R>(
 @ExperimentalReadiumApi
 open class PercentSetting(
     key: SettingKey<Double, Double>,
-    value: Double,
+    valueCandidates: List<Double?>,
+    range: ClosedRange<Double> = 0.0..1.0,
     suggestedSteps: List<Double>? = null,
     validator: SettingValidator<Double> = IdentitySettingValidator(),
     activator: SettingActivator = PassthroughSettingActivator
-) : RangeSetting<Double, Double>(
-    key = key, value = value,
-    range = 0.0..1.0,
-    suggestedSteps = suggestedSteps,
+) : RangeSetting<Double>(
+    key = key, valueCandidates = valueCandidates,
+    range = range, suggestedSteps = suggestedSteps,
     label = { v ->
         NumberFormat.getPercentInstance().run {
             maximumFractionDigits = 0
@@ -109,15 +113,15 @@ open class PercentSetting(
 )
 
 @OptIn(ExperimentalReadiumApi::class)
-open class EnumSetting<E : Enum<E>, R>(
-    key: SettingKey<E, R>,
-    value: E,
-    val allowedValues: List<E>?,
+open class EnumSetting<E>(
+    key: SettingKey<E, String>,
+    valueCandidates: List<E?>,
+    val values: List<E>,
     validator: SettingValidator<E> = IdentitySettingValidator(),
     activator: SettingActivator = PassthroughSettingActivator,
-) : Setting<E, R>(
-    key = key, value = value,
-    validator = AllowedValuesSettingValidator(allowedValues) then validator,
+) : Setting<E, String>(
+    key = key, valueCandidates = valueCandidates,
+    validator = AllowedValuesSettingValidator(values) then validator,
     activator = activator
 )
 
@@ -125,13 +129,13 @@ open class EnumSetting<E : Enum<E>, R>(
 @ExperimentalReadiumApi
 interface SettingActivator {
     fun isActiveWithPreferences(preferences: Preferences): Boolean
-    fun activateForPreferences(preferences: Preferences): Preferences
+    fun activateInPreferences(preferences: MutablePreferences)
 }
 
 @ExperimentalReadiumApi
 object PassthroughSettingActivator : SettingActivator {
     override fun isActiveWithPreferences(preferences: Preferences): Boolean = true
-    override fun activateForPreferences(preferences: Preferences): Preferences = preferences
+    override fun activateInPreferences(preferences: MutablePreferences) {}
 }
 
 @ExperimentalReadiumApi
@@ -139,8 +143,7 @@ class DependencySettingActivator(
     val requiredValues: Preferences
 ) : SettingActivator {
     override fun isActiveWithPreferences(preferences: Preferences): Boolean {
-        val requiredVals = requiredValues.values.filterValues { it != null }
-        for ((key, value) in requiredVals) {
+        for ((key, value) in requiredValues.values) {
             if (value != preferences.values[key]) {
                 return false
             }
@@ -148,8 +151,8 @@ class DependencySettingActivator(
         return true
     }
 
-    override fun activateForPreferences(preferences: Preferences): Preferences {
-        return preferences.merge(requiredValues)
+    override fun activateInPreferences(preferences: MutablePreferences) {
+        preferences.merge(requiredValues)
     }
 }
 
@@ -180,14 +183,14 @@ infix fun <T> SettingValidator<T>.then(other: SettingValidator<T>): SettingValid
 
 @ExperimentalReadiumApi
 class RangeSettingValidator<T : Comparable<T>>(val range: ClosedRange<T>) : SettingValidator<T> {
-    override fun validate(value: T): T? =
+    override fun validate(value: T): T?  =
         value.coerceIn(range)
 }
 
 @ExperimentalReadiumApi
-class AllowedValuesSettingValidator<T : Comparable<T>>(val allowedValues: List<T>?) : SettingValidator<T> {
+class AllowedValuesSettingValidator<T>(val allowedValues: List<T>) : SettingValidator<T> {
     override fun validate(value: T): T? {
-        if (allowedValues != null && !allowedValues.contains(value))
+        if (!allowedValues.contains(value))
             return null
 
         return value
