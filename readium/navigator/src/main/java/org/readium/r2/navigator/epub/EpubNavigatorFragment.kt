@@ -90,48 +90,6 @@ class EpubNavigatorFragment private constructor(
     config: Configuration,
 ) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable {
 
-    @ExperimentalReadiumApi
-    data class Settings(
-        val columnCount: RangeSetting<Int>,
-        val font: EnumSetting<Font>,
-        val fontSize: PercentSetting,
-        val overflow: EnumSetting<Overflow>,
-        val publisherStyles: ToggleSetting,
-        val theme: EnumSetting<Theme>,
-    ) : Configurable.Settings {
-        constructor(preferences: Preferences, fallback: Preferences, fonts: List<Font>) : this(
-            columnCount = RangeSetting(
-                key = SettingKey.COLUMN_COUNT,
-                valueCandidates = listOf(preferences.columnCount, fallback.columnCount, 1),
-                range = 1..2
-            ),
-            font = EnumSetting(
-                key = SettingKey.FONT,
-                valueCandidates = listOf(preferences.font, fallback.font, Font.ORIGINAL),
-                values = listOf(Font.ORIGINAL) + fonts
-            ),
-            fontSize = PercentSetting(
-                key = SettingKey.FONT_SIZE,
-                valueCandidates = listOf(preferences.fontSize, fallback.fontSize, 1.0),
-                range = 0.4..5.0
-            ),
-            overflow = EnumSetting(
-                key = SettingKey.OVERFLOW,
-                valueCandidates = listOf(preferences.overflow, fallback.overflow, Overflow.PAGINATED),
-                values = listOf(Overflow.PAGINATED, Overflow.SCROLLED),
-            ),
-            publisherStyles = ToggleSetting(
-                key = SettingKey.PUBLISHER_STYLES,
-                valueCandidates = listOf(preferences.publisherStyles, fallback.publisherStyles, true)
-            ),
-            theme = EnumSetting(
-                key = SettingKey.THEME,
-                valueCandidates = listOf(preferences.theme, fallback.theme, Theme.LIGHT),
-                values = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
-            ),
-        )
-    }
-
     // Make a copy to prevent the user from modifying the configuration after initialization.
     internal val config: Configuration = config.copy()
 
@@ -201,15 +159,15 @@ class EpubNavigatorFragment private constructor(
 
     // Configurable
 
-    private val _settings = MutableStateFlow(Settings(
+    private val _settings = MutableStateFlow(EpubSettings(
         preferences = config.preferences,
         fallback = config.defaultPreferences,
         fonts = config.fonts,
     ))
-    override val settings: StateFlow<Settings> = _settings.asStateFlow()
+    override val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
 
     override suspend fun applyPreferences(preferences: Preferences) {
-        _settings.value = Settings(preferences, fallback = config.defaultPreferences, fonts = config.fonts)
+        _settings.value = EpubSettings(preferences, fallback = config.defaultPreferences, fonts = config.fonts)
     }
 
     /**

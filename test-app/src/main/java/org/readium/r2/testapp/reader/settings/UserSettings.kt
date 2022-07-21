@@ -23,7 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.readium.r2.navigator.Font
 import org.readium.r2.navigator.Theme
-import org.readium.r2.navigator.epub.EpubNavigatorFragment
+import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
@@ -38,7 +38,7 @@ fun UserSettings(model: ReaderViewModel) {
     val preferences = model.preferences.collectAsState().value
 
     when (settings) {
-        is EpubNavigatorFragment.Settings ->
+        is EpubSettings ->
             UserSettings(preferences, update = model::updatePreferences, settings)
         null -> {}
     }
@@ -48,7 +48,7 @@ fun UserSettings(model: ReaderViewModel) {
 fun UserSettings(
     preferences: Preferences,
     update: UpdatePreferences,
-    settings: EpubNavigatorFragment.Settings,
+    settings: EpubSettings,
 ) {
     UserSettings(
         preferences = preferences,
