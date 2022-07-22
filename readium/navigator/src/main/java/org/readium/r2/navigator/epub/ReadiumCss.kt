@@ -7,29 +7,79 @@
 package org.readium.r2.navigator.epub
 
 import androidx.annotation.ColorInt
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.ValueEncoder
 
+@ExperimentalReadiumApi
 class ReadiumCss {
 
     /**
      * https://readium.org/readium-css/docs/CSS19-api.html
      */
-    data class Property<V>(
+    sealed class Property<V>(
         val name: String,
-        private val encoder: ValueEncoder<V, String>
-    ) : ValueEncoder<V, String> by encoder {
+        private val encoder: ValueEncoder<V, String?>
+    ) : ValueEncoder<V, String?> by encoder
 
-        /**
-         * Properties for user settings.
-         */
-        object User {
+    /**
+     * Properties for user settings.
+     */
+    class UserProperty<V>(name: String, encoder: ValueEncoder<V, String?>)
+        : Property<V>("--USER__$name", encoder) {
+        companion object {
+            // Flags
+
+            /**
+             * User view: paged or scrolled.
+             */
+            val VIEW = UserProperty("view", View)
+
+            /**
+             * This flag is required to change the font-family user setting.
+             */
+            val FONT_OVERRIDE = UserProperty("fontOverride", Flag("font"))
+
+            /**
+             * This flag is required to apply the font-size and/or advanced user settings.
+             */
+            val ADVANCED_SETTINGS = UserProperty("advancedSettings", Flag("advanced"))
+
+            /**
+             * This flag applies a reading mode (sepia or night).
+             */
+            val APPEARANCE = UserProperty("appearance", Appearance)
+
+            /**
+             * This will only apply in night mode to darken images and impact img.
+             *
+             * Required: APPEARANCE = Appearance.Night
+             */
+            val DARKEN_IMAGES = UserProperty("darkenImages", Flag("darken"))
+
+            /**
+             * This will only apply in night mode to invert images and impact img.
+             *
+             * Required: APPEARANCE = Appearance.Night
+             */
+            val INVERT_FILTER = UserProperty("invertImages", Flag("invert"))
+
+            /**
+             * It impacts font style, weight and variant, text decoration, super and subscripts.
+             *
+             * Required: FONT_OVERRIDE = true
+             */
+            val A11Y_NORMALIZE = UserProperty("a11yNormalize", Flag("a11y"))
+
+
+            // User settings
+
             /**
              * The number of columns (column-count) the user wants displayed (one-page view or
              * two-page spread).
              *
              * To reset, change the value to auto.
              */
-            val COL_COUNT = Property("--USER__colCount", ColCount)
+            val COL_COUNT = UserProperty("colCount", ColCount)
 
             /**
              * A factor applied to horizontal margins (padding-left and padding-right) the user
@@ -38,14 +88,14 @@ class ReadiumCss {
              * Recommended values: a range from 0.5 to 2. Increments are left to implementers’
              * judgment. To reset, change the value to 1.
              */
-            val PAGE_MARGINS = Property("--USER__pageMargins", Length)
+            val PAGE_MARGINS = UserProperty("pageMargins", Length)
 
             /**
              * The background-color for the whole screen.
              *
              * To reset, remove the CSS variable.
              */
-            val BACKGROUND_COLOR = Property("--USER__backgroundColor", Color)
+            val BACKGROUND_COLOR = UserProperty("backgroundColor", Color)
 
             /**
              * The color for textual contents.
@@ -53,25 +103,25 @@ class ReadiumCss {
              * It impacts all elements but headings and pre in the DOM.
              * To reset, remove the CSS variable.
              */
-            val TEXT_COLOR = Property("--USER__textColor", Color)
+            val TEXT_COLOR = UserProperty("textColor", Color)
 
             /**
              * The alignment (text-align) the user prefers.
              *
              * It impacts body, li, and p which are not children of blockquote and figcaption.
              *
-             * Required flag: :--advancedSettings
+             * Required: ADVANCED_SETTINGS = true
              */
-            val TEXT_ALIGN = Property("--USER__textAlign", TextAlign)
+            val TEXT_ALIGN = UserProperty("textAlign", TextAlign)
 
             /**
              * Enabling and disabling hyphenation.
              *
              * It impacts body, p, li, div and dd.
              *
-             * Required flag: :--advancedSettings
+             * Required: ADVANCED_SETTINGS = true
              */
-            val BODY_HYPHENS = Property("--USER__bodyHyphens", Hyphens)
+            val BODY_HYPHENS = UserProperty("bodyHyphens", Hyphens)
 
             /**
              * The typeface (font-family) the user wants to read with.
@@ -81,9 +131,9 @@ class ReadiumCss {
              *
              * To reset, remove the required flag.
              *
-             * Required flag: :--fontOverride
+             * Required: FONT_OVERRIDE = true
              */
-            val FONT_FAMILY = Property("--USER__fontFamily", Literal.StringList)
+            val FONT_FAMILY = UserProperty("fontFamily", Literal.StringList)
 
             /**
              * Increasing and decreasing the root font-size. It will serve as a reference for the
@@ -91,7 +141,7 @@ class ReadiumCss {
              *
              * To reset, remove the required flag.
              */
-            val FONT_SIZE = Property("--USER__fontSize", Length)
+            val FONT_SIZE = UserProperty("fontSize", Length)
 
             /**
              * The type scale the user wants to use for the publication.
@@ -100,9 +150,9 @@ class ReadiumCss {
              * Recommended values: a range from 75% to 250%. Increments are left to implementers’
              * judgment.
              *
-             * Required flag: :--advancedSettings
+             * Required: ADVANCED_SETTINGS = true
              */
-            val TYPE_SCALE = Property("--USER__typeScale", Length)
+            val TYPE_SCALE = UserProperty("typeScale", Length)
 
             /**
              * Increasing and decreasing leading (line-height).
@@ -110,9 +160,9 @@ class ReadiumCss {
              * It impacts body, p, li and div
              * Recommended values: a range from 1 to 2. Increments are left to implementers’ judgment.
              *
-             * Required flag: :--advancedSettings
+             * Required: ADVANCED_SETTINGS = true
              */
-            val LINE_HEIGHT = Property("--USER__lineHeight", Length)
+            val LINE_HEIGHT = UserProperty("lineHeight", Length)
 
             /**
              * The vertical margins (margin-top and margin-bottom) for paragraphs.
@@ -120,9 +170,9 @@ class ReadiumCss {
              * Recommended values: a range from 0 to 2rem. Increments are left to implementers’
              * judgment.
              *
-             * Required flag: :--advancedSettings
+             * Required: ADVANCED_SETTINGS = true
              */
-            val PARA_SPACING = Property("--USER__paraSpacing", Length)
+            val PARA_SPACING = UserProperty("paraSpacing", Length)
 
             /**
              * The text-indent for paragraphs.
@@ -130,9 +180,9 @@ class ReadiumCss {
              * Recommended values: a range from 0 to 3rem. Increments are left to implementers’
              * judgment.
              *
-             * Required flag: :--advancedSettings
+             * Required: ADVANCED_SETTINGS = true
              */
-            val PARA_INDENT = Property("--USER__paraIndent", Length.Relative.Rem)
+            val PARA_INDENT = UserProperty("paraIndent", Length.Relative.Rem)
 
             /**
              * Increasing space between words (word-spacing, related to a11y).
@@ -140,9 +190,9 @@ class ReadiumCss {
              * Recommended values: a range from 0 to 1rem. Increments are left to implementers’
              * judgment.
              *
-             * Required flag: :--advancedSettings
+             * Required: ADVANCED_SETTINGS = true
              */
-            val WORD_SPACING = Property("--USER__wordSpacing", Length.Relative.Rem)
+            val WORD_SPACING = UserProperty("wordSpacing", Length.Relative.Rem)
 
             /**
              * Increasing space between letters (letter-spacing, related to a11y).
@@ -150,71 +200,75 @@ class ReadiumCss {
              * Recommended values: a range from 0 to 0.5rem. Increments are left to implementers’
              * judgment.
              *
-             * Required flag: :--advancedSettings
+             * Required: ADVANCED_SETTINGS = true
              */
-            val LETTER_SPACING = Property("--USER__letterSpacing", Length.Relative.Rem)
+            val LETTER_SPACING = UserProperty("letterSpacing", Length.Relative.Rem)
 
             /**
              * Enabling and disabling ligatures in Arabic (related to a11y).
              *
-             * Required flag: :--advancedSettings
+             * Required: ADVANCED_SETTINGS = true
              */
-            val LIGATURES = Property("--USER__ligatures", Ligatures)
+            val LIGATURES = UserProperty("ligatures", Ligatures)
         }
+    }
 
-        /**
-         * Properties for the Reading System.
-         */
-        object RS {
+    /**
+     * Properties for the Reading System.
+     */
+    class RsProperty<V>(name: String, encoder: ValueEncoder<V, String?>)
+        : Property<V>("--RS__$name", encoder)
+    {
+        companion object {
 
             // Pagination
 
             /** The optimal column’s width. It serves as a floor in our design. */
-            val COL_WIDTH = Property("--RS__colWidth", Length)
+            val COL_WIDTH = RsProperty("colWidth", Length)
 
             /** The optimal number of columns (depending on the columns’ width). */
-            val COL_COUNT = Property("--RS__colCount", ColCount)
+            val COL_COUNT = RsProperty("colCount", ColCount)
 
             /** The gap between columns. You must account for this gap when scrolling. */
-            val COL_GAP = Property("--RS__colGap", Length.Absolute)
+            val COL_GAP = RsProperty("colGap", Length.Absolute)
 
             /** The horizontal page margins. */
-            val PAGE_GUTTER = Property("--RS__pageGutter", Length.Absolute)
+            val PAGE_GUTTER = RsProperty("pageGutter", Length.Absolute)
 
             /**
              * The optimal line-length. It must be set in rem in order to take :root’s font-size as
              * a reference, whichever the body’s font-size might be.
              */
-            val MAX_LINE_LENGTH = Property("--RS__maxLineLength", Length.Relative.Rem)
+            val MAX_LINE_LENGTH = RsProperty("maxLineLength", Length.Relative.Rem)
 
 
             // Safeguards
 
             /** The max-width for media elements i.e. img, svg, audio and video. */
-            val MAX_MEDIA_WIDTH = Property("--RS__maxMediaWidth", Length)
+            val MAX_MEDIA_WIDTH = RsProperty("maxMediaWidth", Length)
 
             /** The max-height for media elements i.e. img, svg, audio and video. */
-            val MAX_MEDIA_HEIGHT = Property("--RS__maxMediaHeight", Length)
+            val MAX_MEDIA_HEIGHT = RsProperty("maxMediaHeight", Length)
 
             /** The box model (box-sizing) you want to use for media elements. */
-            val BOX_SIZING_MEDIA = Property("--RS__boxSizingMedia", BoxSizing)
+            val BOX_SIZING_MEDIA = RsProperty("boxSizingMedia", BoxSizing)
 
             /** The box model (box-sizing) you want to use for tables. */
-            val BOX_SIZING_TABLE = Property("--RS__boxSizingTable", BoxSizing)
+            val BOX_SIZING_TABLE = RsProperty("boxSizingTable", BoxSizing)
 
 
             // Default font-stacks
 
             /** An old style serif font-stack relying on pre-installed fonts. */
-            val OLD_STYLE_TF = Property("--RS__oldStyleTf", Literal.StringList)
+            val OLD_STYLE_TF = RsProperty("oldStyleTf", Literal.StringList)
             /** A modern serif font-stack relying on pre-installed fonts. */
-            val MODERN_TF = Property("--RS__modernTf", Literal.StringList)
+            val MODERN_TF = RsProperty("modernTf", Literal.StringList)
             /** A neutral sans-serif font-stack relying on pre-installed fonts. */
-            val SANS_TF = Property("--RS__sansTf", Literal.StringList)
+            val SANS_TF = RsProperty("sansTf", Literal.StringList)
             /** A humanist sans-serif font-stack relying on pre-installed fonts. */
-            val HUMANIST_TF = Property("--RS__humanistTf", Literal.StringList)
+            val HUMANIST_TF = RsProperty("humanistTf", Literal.StringList)
             /** A monospace font-stack relying on pre-installed fonts. */
-            val MONOSPACE_TF = Property("--RS__monospaceTf", Literal.StringList)
+            val MONOSPACE_TF = RsProperty("monospaceTf", Literal.StringList)
 
 
             // Default font-stacks for Japanese publications
@@ -223,40 +277,40 @@ class ReadiumCss {
              * A Mincho font-stack whose fonts with proportional latin characters are prioritized
              * for horizontal writing.
              */
-            val SERIF_JA = Property("--RS__serif-ja", Literal.StringList)
+            val SERIF_JA = RsProperty("serif-ja", Literal.StringList)
 
             /**
              * A Gothic font-stack whose fonts with proportional latin characters are prioritized
              * for horizontal writing.
              */
-            val SANS_SERIF_JA = Property("--RS__sans-serif-ja", Literal.StringList)
+            val SANS_SERIF_JA = RsProperty("sans-serif-ja", Literal.StringList)
 
             /**
              * A Mincho font-stack whose fonts with fixed-width latin characters are prioritized for
              * vertical writing.
              */
-            val SERIF_JA_V = Property("--RS__serif-ja-v", Literal.StringList)
+            val SERIF_JA_V = RsProperty("serif-ja-v", Literal.StringList)
 
             /**
              * A Gothic font-stack whose fonts with fixed-width latin characters are prioritized for
              * vertical writing.
              */
-            val SANS_SERIF_JA_V = Property("--RS__sans-serif-ja-v", Literal.StringList)
+            val SANS_SERIF_JA_V = RsProperty("sans-serif-ja-v", Literal.StringList)
 
 
             // Default colors for all ebooks
 
             /** The default color for body copy’s text. */
-            val TEXT_COLOR = Property("--RS__textColor", Color)
+            val TEXT_COLOR = RsProperty("textColor", Color)
 
             /** The default background-color for pages. */
-            val BACKGROUND_COLOR = Property("--RS__backgroundColor", Color)
+            val BACKGROUND_COLOR = RsProperty("backgroundColor", Color)
 
             /** The background-color for selected text. */
-            val SELECTION_BACKGROUND_COLOR = Property("--RS__selectionBackgroundColor", Color)
+            val SELECTION_BACKGROUND_COLOR = RsProperty("selectionBackgroundColor", Color)
 
             /** The color for selected text. */
-            val SELECTION_TEXT_COLOR = Property("--RS__selectionTextColor", Color)
+            val SELECTION_TEXT_COLOR = RsProperty("selectionTextColor", Color)
 
 
             // Default styles for unstyled publications
@@ -265,13 +319,13 @@ class ReadiumCss {
              * The typeface for headings.
              * The value can be another variable e.g. var(-RS__humanistTf).
              */
-            val COMP_FONT_FAMILY = Property("--RS__compFontFamily", Literal.StringList)
+            val COMP_FONT_FAMILY = RsProperty("compFontFamily", Literal.StringList)
 
             /**
              * The typeface for code snippets.
              * The value can be another variable e.g. var(-RS__monospaceTf).
              */
-            val CODE_FONT_FAMILY = Property("--RS__codeFontFamily", Literal.StringList)
+            val CODE_FONT_FAMILY = RsProperty("codeFontFamily", Literal.StringList)
 
 
             // Typography
@@ -281,18 +335,18 @@ class ReadiumCss {
              * are computed dynamically, you can set a smaller type scale when the user sets one
              * of the largest font sizes.
              */
-            val TYPE_SCALE = Property("--RS__typeScale", Literal.Number)
+            val TYPE_SCALE = RsProperty("typeScale", Literal.Number)
 
             /**
              * The default typeface for body copy in case the ebook doesn’t have one declared.
              * Please note some languages have a specific font-stack (japanese, chinese, hindi, etc.)
              */
-            val BASE_FONT_FAMILY = Property("--RS__baseFontFamily", Literal.StringList)
+            val BASE_FONT_FAMILY = RsProperty("baseFontFamily", Literal.StringList)
 
             /**
              * The default line-height for body copy in case the ebook doesn’t have one declared.
              */
-            val BASE_LINE_HEIGHT = Property("--RS__baseLineHeight", Length)
+            val BASE_LINE_HEIGHT = RsProperty("baseLineHeight", Length)
 
 
             // Vertical rhythm
@@ -300,26 +354,26 @@ class ReadiumCss {
             /**
              * The default vertical margins for HTML5 flow content e.g. pre, figure, blockquote, etc.
              */
-            val FLOW_SPACING = Property("--RS__flowSpacing", Length)
+            val FLOW_SPACING = RsProperty("flowSpacing", Length)
 
             /**
              * The default vertical margins for paragraphs.
              */
-            val PARA_SPACING = Property("--RS__paraSpacing", Length)
+            val PARA_SPACING = RsProperty("paraSpacing", Length)
 
             /**
              * The default text-indent for paragraphs.
              */
-            val PARA_INDENT = Property("--RS__paraIndent", Length)
+            val PARA_INDENT = RsProperty("paraIndent", Length)
 
 
             // Hyperlinks
 
             /** The default color for hyperlinks. */
-            val LINK_COLOR = Property("--RS__linkColor", Color)
+            val LINK_COLOR = RsProperty("linkColor", Color)
 
             /** The default color for visited hyperlinks. */
-            val VISITED_COLOR = Property("--RS__visitedColor", Color)
+            val VISITED_COLOR = RsProperty("visitedColor", Color)
 
 
             // Accentuation colors
@@ -328,19 +382,46 @@ class ReadiumCss {
              * An optional primary accentuation color you could use for headings or any other
              * element of your choice.
              */
-            val PRIMARY_COLOR = Property("--RS__primaryColor", Color)
+            val PRIMARY_COLOR = RsProperty("primaryColor", Color)
 
             /**
              * An optional secondary accentuation color you could use for any element of your
              * choice.
              */
-            val SECONDARY_COLOR = Property("--RS__secondaryColor", Color)
+            val SECONDARY_COLOR = RsProperty("secondaryColor", Color)
         }
+    }
+
+    /** User view. */
+    enum class View(val css: String) {
+        PAGED("readium-paged-on"),
+        SCROLL("readium-scroll-on");
+
+        companion object : ValueEncoder<View, String?> {
+            override fun encode(value: View): String = value.css
+        }
+    }
+
+    /** Reading mode. */
+    enum class Appearance(val css: String?) {
+        SEPIA("readium-sepia-on"),
+        NIGHT("readium-night-on");
+
+        companion object : ValueEncoder<Appearance, String?> {
+            override fun encode(value: Appearance): String? = value.css
+        }
+    }
+
+    /** Readium CSS boolean flag. */
+    class Flag(val name: String): ValueEncoder<Boolean, String?> {
+        override fun encode(value: Boolean): String? =
+            if (value) "readium-$name-on"
+            else null
     }
 
     /** CSS color. */
     data class Color(val css: String) {
-        companion object : ValueEncoder<Color, String> {
+        companion object : ValueEncoder<Color, String?> {
             fun rgb(red: Int, green: Int, blue: Int): Color {
                 require(red in 0..255)
                 require(green in 0..255)
@@ -363,25 +444,25 @@ class ReadiumCss {
     /** CSS literal. */
     object Literal {
         /** CSS integer number. */
-        object Integer : ValueEncoder<Int, kotlin.String> {
+        object Integer : ValueEncoder<Int, kotlin.String?> {
             override fun encode(value: Int): kotlin.String =
                 value.toString()
         }
 
         /** CSS floating point number. */
-        object Number : ValueEncoder<Double, kotlin.String> {
+        object Number : ValueEncoder<Double, kotlin.String?> {
             override fun encode(value: Double): kotlin.String =
                 value.toString()
         }
 
-        /** CSS string literal. */
-        object String : ValueEncoder<kotlin.String, kotlin.String> {
-            override fun encode(value: kotlin.String): kotlin.String =
-                value.toCss()
-        }
+//        /** CSS string literal. */
+//        object String : ValueEncoder<kotlin.String, kotlin.String?> {
+//            override fun encode(value: kotlin.String): kotlin.String =
+//                value.toCss()
+//        }
 
         /** CSS list of string literals. */
-        object StringList : ValueEncoder<List<kotlin.String>, kotlin.String> {
+        object StringList : ValueEncoder<List<kotlin.String>, kotlin.String?> {
             override fun encode(value: List<kotlin.String>): kotlin.String =
                 value.joinToString(", ") { it.toCss() }
         }
@@ -392,7 +473,7 @@ class ReadiumCss {
         val value: Double
         val unit: String
 
-        open class Encoder<T : Length> : ValueEncoder<T, String> {
+        open class Encoder<T : Length> : ValueEncoder<T, String?> {
             override fun encode(value: T): String =
                 "${value.value}.${value.unit}"
         }
@@ -450,52 +531,52 @@ class ReadiumCss {
 
     /** Number of CSS columns. */
     enum class ColCount(val css: String) {
-        AUTO("auto"),
-        ONE("1"),
-        TWO("2");
+        Auto("auto"),
+        One("1"),
+        Two("2");
 
-        companion object : ValueEncoder<ColCount, String> {
+        companion object : ValueEncoder<ColCount, String?> {
             override fun encode(value: ColCount): String = value.css
         }
     }
 
     /** CSS text alignment. */
     enum class TextAlign(val css: String) {
-        LEFT("left"),
-        RIGHT("right"),
-        JUSTIFY("justify");
+        Left("left"),
+        Right("right"),
+        Justify("justify");
 
-        companion object : ValueEncoder<TextAlign, String> {
+        companion object : ValueEncoder<TextAlign, String?> {
             override fun encode(value: TextAlign): String = value.css
         }
     }
 
     /** CSS hyphenation. */
     enum class Hyphens(val css: String) {
-        NONE("none"),
-        AUTO("auto");
+        None("none"),
+        Auto("auto");
 
-        companion object : ValueEncoder<Hyphens, String> {
+        companion object : ValueEncoder<Hyphens, String?> {
             override fun encode(value: Hyphens): String = value.css
         }
     }
 
     /** CSS ligatures. */
     enum class Ligatures(val css: String) {
-        NONE("none"),
-        COMMON("common-ligatures");
+        None("none"),
+        Common("common-ligatures");
 
-        companion object : ValueEncoder<Ligatures, String> {
+        companion object : ValueEncoder<Ligatures, String?> {
             override fun encode(value: Ligatures): String = value.css
         }
     }
 
     /** CSS box sizing. */
     enum class BoxSizing(val css: String) {
-        CONTENT_BOX("content-box"),
-        BORDER_BOX("border-box");
+        ContentBox("content-box"),
+        BorderBox("border-box");
 
-        companion object : ValueEncoder<BoxSizing, String> {
+        companion object : ValueEncoder<BoxSizing, String?> {
             override fun encode(value: BoxSizing): String = value.css
         }
     }
