@@ -7,19 +7,20 @@
 package org.readium.r2.navigator.epub
 
 import androidx.annotation.ColorInt
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
+import org.json.JSONObject
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.util.ValueEncoder
 
+// FIXME: Extension point to customize the generated CSS properties list before applying it. Allows to set a --var()
 @ExperimentalReadiumApi
-class ReadiumCss {
-
-    /**
-     * https://readium.org/readium-css/docs/CSS19-api.html
-     */
-    sealed class Property<V>(
-        val name: String,
-        private val encoder: ValueEncoder<V, String?>
-    ) : ValueEncoder<V, String?> by encoder
+class ReadiumCss(
+    val rsProperties: RsProperties = RsProperties(),
+    userProperties: UserProperties = UserProperties(),
+) {
+    val userProperties = MutableStateFlow(userProperties)
 
     /**
      * User settings properties.
@@ -45,8 +46,8 @@ class ReadiumCss {
      * @param fontFamily The typeface (font-family) the user wants to read with. It impacts body, p,
      * li, div, dt, dd and phrasing elements which don’t have a lang or xml:lang attribute. To reset,
      * remove the required flag. Requires: fontOverride
-     * @param fontSize Increasing and decreasing the root font-size. It will serve as a reference for
-     * the cascade. To reset, remove the required flag.
+     * @param fontSize Increasing and decreasing the root font-size. It will serve as a reference
+     * for the cascade. To reset, remove the required flag.
      * @param advancedSettings This flag is required to apply the font-size and/or advanced user
      * settings.
      * @param typeScale The type scale the user wants to use for the publication. It impacts
@@ -112,9 +113,12 @@ class ReadiumCss {
 
         // Accessibility
         val a11yNormalize: Boolean? = null,
-    ) {
+    ) : JSONable {
 
-        private fun toCssProperties(): Map<String, String> = buildMap {
+        override fun toJSON(): JSONObject =
+            JSONObject(toCssProperties())
+
+        fun toCssProperties(): Map<String, String> = buildMap {
             // View mode
             putCss("view", view)
 
@@ -207,7 +211,7 @@ class ReadiumCss {
      * @param codeFontFamily The typeface for code snippets.
      * The value can be another variable e.g. var(-RS__monospaceTf).
      */
-    class RsProperty(
+    class RsProperties(
         // Pagination
         val colWidth: Length? = null,
         val colCount: ColCount? = null,
@@ -257,7 +261,10 @@ class ReadiumCss {
         // Default styles for unstyled publications
         val compFontFamily: List<String>? = null,
         val codeFontFamily: List<String>? = null,
-    ) {
+    ) : JSONable {
+
+        override fun toJSON(): JSONObject =
+            JSONObject(toCssProperties())
 
         private fun toCssProperties(): Map<String, String> = buildMap {
             // Pagination
@@ -314,16 +321,16 @@ class ReadiumCss {
 
     /** User view. */
     enum class View(private val css: String) : Cssable {
-        PAGED("readium-paged-on"),
-        SCROLL("readium-scroll-on");
+        Paged("readium-paged-on"),
+        Scroll("readium-scroll-on");
 
         override fun toCss(): String = css
     }
 
     /** Reading mode. */
     enum class Appearance(private val css: String?) : Cssable {
-        SEPIA("readium-sepia-on"),
-        NIGHT("readium-night-on");
+        Sepia("readium-sepia-on"),
+        Night("readium-night-on");
 
         override fun toCss(): String? = css
 
@@ -482,4 +489,4 @@ private fun flag(name: String, value: Boolean?) = Cssable {
  * Converts a [String] to a CSS literal.
  */
 private fun String.toCss(): String =
-    s?.let { '"' + replace("\"", "\\\"") + '"' }
+    '"' + replace("\"", "\\\"") + '"'

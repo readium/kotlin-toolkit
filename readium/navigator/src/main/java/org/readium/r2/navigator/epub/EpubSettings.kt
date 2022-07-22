@@ -6,6 +6,7 @@
 
 package org.readium.r2.navigator.epub
 
+import kotlinx.coroutines.flow.update
 import org.readium.r2.navigator.Font
 import org.readium.r2.navigator.Theme
 import org.readium.r2.navigator.settings.*
@@ -52,4 +53,34 @@ data class EpubSettings(
             values = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
         ),
     )
+}
+
+@ExperimentalReadiumApi
+fun ReadiumCss.update(settings: EpubSettings) {
+    with(settings) {
+        userProperties.update { props ->
+            props.copy(
+                view = when (overflow.value) {
+                    Overflow.AUTO -> null
+                    Overflow.PAGINATED -> ReadiumCss.View.Paged
+                    Overflow.SCROLLED -> ReadiumCss.View.Scroll
+                },
+                colCount = when (columnCount.value) {
+                    1 -> ReadiumCss.ColCount.One
+                    else -> null
+                },
+                appearance = when (theme.value) {
+                    Theme.LIGHT -> null
+                    Theme.DARK -> ReadiumCss.Appearance.Night
+                    Theme.SEPIA -> ReadiumCss.Appearance.Sepia
+                },
+                fontOverride = (font.value != Font.ORIGINAL),
+                fontFamily = font.value.name?.let { listOf(it) },
+                fontSize = fontSize.value
+                    .takeIf { it != 1.0 }
+                    ?.let { ReadiumCss.Length.Relative.Percent(it) },
+                advancedSettings = !publisherStyles.value
+            )
+        }
+    }
 }
