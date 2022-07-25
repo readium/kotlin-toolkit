@@ -7,6 +7,7 @@
 package org.readium.r2.navigator.epub
 
 import kotlinx.coroutines.flow.update
+import org.readium.r2.navigator.ColumnCount
 import org.readium.r2.navigator.Font
 import org.readium.r2.navigator.Theme
 import org.readium.r2.navigator.epub.css.ReadiumCss
@@ -16,7 +17,7 @@ import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 
 @ExperimentalReadiumApi
 data class EpubSettings(
-    val columnCount: RangeSetting<Int>,
+    val columnCount: EnumSetting<ColumnCount>,
     val font: EnumSetting<Font>,
     val fontSize: PercentSetting,
     val overflow: EnumSetting<Overflow>,
@@ -24,10 +25,20 @@ data class EpubSettings(
     val theme: EnumSetting<Theme>,
 ) : Configurable.Settings {
     constructor(preferences: Preferences, fallback: Preferences, fonts: List<Font>) : this(
-        columnCount = RangeSetting(
+        columnCount = EnumSetting(
             key = SettingKey.COLUMN_COUNT,
-            valueCandidates = listOf(preferences.columnCount, fallback.columnCount, 1),
-            range = 1..2
+            valueCandidates =
+                if (preferences.overflow == Overflow.SCROLLED) listOf(ColumnCount.One)
+                else listOf(preferences.columnCount, fallback.columnCount, ColumnCount.Auto),
+            values = listOf(ColumnCount.Auto, ColumnCount.One, ColumnCount.Two),
+            activator = object : SettingActivator {
+                override fun isActiveWithPreferences(preferences: Preferences): Boolean =
+                    preferences.overflow != Overflow.SCROLLED
+
+                override fun activateInPreferences(preferences: MutablePreferences) {
+                    preferences.overflow = Overflow.PAGINATED
+                }
+            }
         ),
         font = EnumSetting(
             key = SettingKey.FONT,
@@ -50,8 +61,8 @@ data class EpubSettings(
         ),
         theme = EnumSetting(
             key = SettingKey.THEME,
-            valueCandidates = listOf(preferences.theme, fallback.theme, Theme.LIGHT),
-            values = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
+            valueCandidates = listOf(preferences.theme, fallback.theme, Theme.Light),
+            values = listOf(Theme.Light, Theme.Dark, Theme.Sepia)
         ),
     )
 }
@@ -67,13 +78,14 @@ fun ReadiumCss.update(settings: EpubSettings) {
                     Overflow.SCROLLED -> ReadiumCss.View.Scroll
                 },
                 colCount = when (columnCount.value) {
-                    1 -> ReadiumCss.ColCount.One
-                    else -> null
+                    ColumnCount.Auto -> ReadiumCss.ColCount.Auto
+                    ColumnCount.One -> ReadiumCss.ColCount.One
+                    ColumnCount.Two -> ReadiumCss.ColCount.Two
                 },
                 appearance = when (theme.value) {
-                    Theme.LIGHT -> null
-                    Theme.DARK -> ReadiumCss.Appearance.Night
-                    Theme.SEPIA -> ReadiumCss.Appearance.Sepia
+                    Theme.Light -> null
+                    Theme.Dark -> ReadiumCss.Appearance.Night
+                    Theme.Sepia -> ReadiumCss.Appearance.Sepia
                 },
                 fontOverride = (font.value != Font.ORIGINAL),
                 fontFamily = font.value.name?.let { listOf(it) },

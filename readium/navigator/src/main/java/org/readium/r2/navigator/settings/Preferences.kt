@@ -10,6 +10,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
 import org.json.JSONObject
+import org.readium.r2.navigator.ColumnCount
 import org.readium.r2.navigator.Font
 import org.readium.r2.navigator.Theme
 import org.readium.r2.navigator.settings.SettingKey.Companion.COLUMN_COUNT
@@ -134,11 +135,11 @@ class MutablePreferences(
 }
 
 @ExperimentalReadiumApi
-val Preferences.columnCount: Int?
+val Preferences.columnCount: ColumnCount?
     get() = get(COLUMN_COUNT)
 
 @ExperimentalReadiumApi
-var MutablePreferences.columnCount: Int?
+var MutablePreferences.columnCount: ColumnCount?
     get() = get(COLUMN_COUNT)
     set(value) { set(COLUMN_COUNT, value) }
 

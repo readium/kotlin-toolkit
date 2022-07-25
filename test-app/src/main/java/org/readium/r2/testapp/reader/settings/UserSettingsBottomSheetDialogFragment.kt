@@ -10,12 +10,14 @@ package org.readium.r2.testapp.reader.settings
 
 import androidx.compose.runtime.Composable
 import androidx.fragment.app.activityViewModels
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.ComposeBottomSheetDialogFragment
 
-class UserSettingsBottomSheetDialogFragment : ComposeBottomSheetDialogFragment() {
-
+class UserSettingsBottomSheetDialogFragment : ComposeBottomSheetDialogFragment(
+    initialState = BottomSheetBehavior.STATE_EXPANDED
+) {
     private val model: ReaderViewModel by activityViewModels()
 
     @Composable

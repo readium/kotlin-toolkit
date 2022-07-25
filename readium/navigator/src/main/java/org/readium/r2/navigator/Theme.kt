@@ -14,18 +14,24 @@ import org.readium.r2.shared.util.ValueCoder
 /**
  * Navigator appearance.
  */
-@Parcelize
-enum class Theme(val value: String) : Parcelable {
-    LIGHT("light"),
-    DARK("dark"),
-    SEPIA("sepia");
+enum class Theme(val value: String) {
+    Light("light"),
+    Dark("dark"),
+    Sepia("sepia");
 
-    companion object : MapWithDefaultCompanion<String, Theme>(values(), Theme::value, LIGHT)
+    companion object : MapWithDefaultCompanion<String, Theme>(values(), Theme::value, Light)
 }
 
-@Parcelize
+enum class ColumnCount(val value: String) {
+    Auto("auto"),
+    One("1"),
+    Two("2");
+
+    companion object : MapWithDefaultCompanion<String, ColumnCount>(values(), ColumnCount::value, Auto)
+}
+
 @JvmInline
-value class Font(val name: String?) : Parcelable {
+value class Font(val name: String?) {
     companion object : ValueCoder<Font?, String?> {
         val ORIGINAL = Font(null)
         val PT_SERIF = Font("PT Serif")

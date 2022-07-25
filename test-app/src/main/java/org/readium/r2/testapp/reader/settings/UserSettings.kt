@@ -8,6 +8,7 @@
 
 package org.readium.r2.testapp.reader.settings
 
+import android.widget.Space
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -20,7 +21,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.readium.r2.navigator.ColumnCount
 import org.readium.r2.navigator.Font
 import org.readium.r2.navigator.Theme
 import org.readium.r2.navigator.epub.EpubSettings
@@ -66,7 +69,7 @@ fun UserSettings(
 fun UserSettings(
     preferences: Preferences,
     update: UpdatePreferences,
-    columnCount: RangeSetting<Int>? = null,
+    columnCount: EnumSetting<ColumnCount>? = null,
     font: EnumSetting<Font>? = null,
     fontSize: PercentSetting? = null,
     overflow: EnumSetting<Overflow>? = null,
@@ -81,19 +84,17 @@ fun UserSettings(
     ) {
         Text(
             text = "User settings",
-            style = MaterialTheme.typography.subtitle1,
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.h6,
+            modifier = Modifier
+                .fillMaxWidth()
         )
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-//            PresetsMenuButton(onCommit = onCommit)
-            Button(
-                onClick = {
-                    update { clear() }
-                },
-            ) {
-                Text("Reset")
+        EnumSettingView("Theme", theme, preferences, update) { value ->
+            when (value) {
+                Theme.Light -> "Light"
+                Theme.Dark -> "Dark"
+                Theme.Sepia -> "Sepia"
             }
         }
 
@@ -105,13 +106,27 @@ fun UserSettings(
             }
         }
 
-        RangeSection("Font size", fontSize, preferences, update)
-
-        EnumSettingView("Theme", theme, preferences, update) { value ->
+        EnumSettingView("Columns", columnCount, preferences, update) { value ->
             when (value) {
-                Theme.LIGHT -> "Light"
-                Theme.DARK -> "Dark"
-                Theme.SEPIA -> "Sepia"
+                ColumnCount.Auto -> "Auto"
+                ColumnCount.One -> "1"
+                ColumnCount.Two -> "2"
+            }
+        }
+
+        RangeItem("Font size", fontSize, preferences, update)
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Spacer(modifier = Modifier.weight(1f))
+//            PresetsMenuButton(onCommit = onCommit)
+            Button(
+                onClick = {
+                    update { clear() }
+                },
+            ) {
+                Text("Reset")
             }
         }
     }
@@ -127,13 +142,14 @@ inline fun <reified T> EnumSettingView(
 ) {
     setting ?: return
 
-    Section(title, isActive = preferences.isActive(setting)) {
+    Item(title, isActive = preferences.isActive(setting)) {
         ToggleButtonGroup(
             options = setting.values,
             activeOption = setting.value,
             selectedOption = preferences[setting],
             onSelectOption = { option ->
                 update {
+                    activate(setting)
                     toggle(setting, option)
                 }
             }) { option ->
@@ -143,7 +159,7 @@ inline fun <reified T> EnumSettingView(
 }
 
 @Composable
-inline fun RangeSection(
+inline fun RangeItem(
     title: String,
     setting: RangeSetting<Double>?,
     preferences: Preferences,
@@ -151,7 +167,7 @@ inline fun RangeSection(
 ) {
     setting ?: return
 
-    Section(title, isActive = preferences.isActive(setting)) {
+    Item(title, isActive = preferences.isActive(setting)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -159,6 +175,7 @@ inline fun RangeSection(
             IconButton(
                 onClick = {
                     update {
+                        activate(setting)
                         decrement(setting)
                     }
                 },
@@ -172,6 +189,7 @@ inline fun RangeSection(
             IconButton(
                 onClick = {
                     update {
+                        activate(setting)
                         increment(setting)
                     }
                 },
@@ -183,18 +201,16 @@ inline fun RangeSection(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun Section(title: String, isActive: Boolean = true, content: @Composable ColumnScope.() -> Unit) {
-    val alpha = if (isActive) 1.0f else ContentAlpha.disabled
-    CompositionLocalProvider(LocalContentAlpha provides alpha) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.subtitle2,
-            )
-            content()
-        }
-    }
+fun Item(title: String, isActive: Boolean = true, content: @Composable () -> Unit) {
+    ListItem(
+        text = {
+            val alpha = if (isActive) 1.0f else ContentAlpha.disabled
+            CompositionLocalProvider(LocalContentAlpha provides alpha) {
+                Text(title)
+            }
+        },
+        trailing = content
+    )
 }

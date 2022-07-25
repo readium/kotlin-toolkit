@@ -6,6 +6,7 @@
 
 package org.readium.r2.navigator.settings
 
+import org.readium.r2.navigator.ColumnCount
 import org.readium.r2.navigator.Font
 import org.readium.r2.navigator.Theme
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -24,7 +25,7 @@ data class SettingKey<V, R>(
     override fun toString(): String = key
 
     companion object {
-        val COLUMN_COUNT = SettingKey<Int>("columnCount")
+        val COLUMN_COUNT = SettingKey("columnCount", ColumnCount)
         val FIT = SettingKey("fit", Fit)
         val FONT = SettingKey("font", Font)
         val FONT_SIZE = SettingKey<Double>("fontSize")
