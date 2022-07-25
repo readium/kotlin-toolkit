@@ -368,7 +368,7 @@ class ReadiumCss(
         val unit: String
 
         override fun toCss(): String? =
-            "${value}.${unit}"
+            "${value}${unit}"
 
         /** Absolute CSS length. */
         sealed class Absolute(
@@ -409,7 +409,7 @@ class ReadiumCss(
             /** Relative to 1% of viewport's larger dimension. */
             class VMax(value: Double) : Relative(value, "vmax")
             /** Relative to the parent element. */
-            class Percent(value: Double) : Relative(value, "%")
+            class Percent(value: Double) : Relative(value * 100, "%")
         }
     }
 

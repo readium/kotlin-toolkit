@@ -23,6 +23,7 @@ data class EpubSettings(
     val overflow: EnumSetting<Overflow>,
     val publisherStyles: ToggleSetting,
     val theme: EnumSetting<Theme>,
+    val wordSpacing: PercentSetting,
 ) : Configurable.Settings {
     constructor(preferences: Preferences, fallback: Preferences, fonts: List<Font>) : this(
         columnCount =
@@ -57,6 +58,18 @@ data class EpubSettings(
             valueCandidates = listOf(preferences.theme, fallback.theme, Theme.Light),
             values = listOf(Theme.Light, Theme.Dark, Theme.Sepia)
         ),
+        wordSpacing = PercentSetting(
+            key = SettingKey.WORD_SPACING,
+            valueCandidates = listOf(preferences.wordSpacing, fallback.wordSpacing, 0.0),
+            activator = object : SettingActivator {
+                override fun isActiveWithPreferences(preferences: Preferences): Boolean =
+                    preferences.publisherStyles == false
+
+                override fun activateInPreferences(preferences: MutablePreferences) {
+                    preferences.publisherStyles = false
+                }
+            }
+        )
     )
 }
 
@@ -82,10 +95,12 @@ fun ReadiumCss.update(settings: EpubSettings) {
                 },
                 fontOverride = (font.value != Font.ORIGINAL),
                 fontFamily = font.value.name?.let { listOf(it) },
-                fontSize = fontSize.value
-                    .takeIf { it != 1.0 }
-                    ?.let { ReadiumCss.Length.Relative.Percent(it) },
-                advancedSettings = !publisherStyles.value
+                // Font size is handled natively with WebSettings.textZoom.
+                // See https://github.com/readium/mobile/issues/1#issuecomment-652431984
+//                fontSize = fontSize.value
+//                    ?.let { ReadiumCss.Length.Relative.Percent(it) },
+                advancedSettings = !publisherStyles.value,
+                wordSpacing = ReadiumCss.Length.Relative.Rem(wordSpacing.value),
             )
         }
     }

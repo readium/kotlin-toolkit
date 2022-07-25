@@ -10,22 +10,22 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ComposeView
-import com.google.android.material.bottomsheet.BottomSheetDialog
+import androidx.core.widget.NestedScrollView
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 /**
  * A bottom sheet whose content is built using Jetpack Compose.
- *
- * @param initialState BottomSheetBehavior state to use by default.
  */
 abstract class ComposeBottomSheetDialogFragment(
-    val initialState: Int? = null
+    private val isScrollable: Boolean = false
 ) : BottomSheetDialogFragment() {
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
-        ComposeView(requireContext()).apply {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        val context = requireContext()
+        val composeView = ComposeView(context).apply {
             setContent {
                 AppTheme {
                     this@ComposeBottomSheetDialogFragment.Content()
@@ -33,12 +33,17 @@ abstract class ComposeBottomSheetDialogFragment(
             }
         }
 
-    override fun onStart() {
-        super.onStart()
-
-        if (initialState != null) {
-            (dialog as? BottomSheetDialog)?.behavior?.state = initialState
-        }
+        return if (isScrollable) {
+            NestedScrollView(context).apply {
+                addView(
+                    composeView,
+                    FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                    )
+                )
+            }
+        } else composeView
     }
 
     @Composable

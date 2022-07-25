@@ -8,17 +8,32 @@
 
 package org.readium.r2.testapp.reader.settings
 
+import android.app.Dialog
 import androidx.compose.runtime.Composable
 import androidx.fragment.app.activityViewModels
-import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.ComposeBottomSheetDialogFragment
 
 class UserSettingsBottomSheetDialogFragment : ComposeBottomSheetDialogFragment(
-    initialState = BottomSheetBehavior.STATE_EXPANDED
+    isScrollable = true
 ) {
     private val model: ReaderViewModel by activityViewModels()
+
+    override fun setupDialog(dialog: Dialog, style: Int) {
+        super.setupDialog(dialog, style)
+
+        checkNotNull(dialog as BottomSheetDialog).apply {
+            // Reduce the dim to see the impact of the settings on the page.
+            window?.setDimAmount(0.1f)
+
+            behavior.apply {
+                peekHeight = 1000
+                maxHeight = 1000
+            }
+        }
+    }
 
     @Composable
     override fun Content() {

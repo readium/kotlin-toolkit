@@ -34,6 +34,7 @@ data class SettingKey<V, R>(
         val PUBLISHER_STYLES = SettingKey<Boolean>("publisherStyles")
         val READING_PROGRESSION = SettingKey("readingProgression", ReadingProgression)
         val THEME = SettingKey("theme", Theme)
+        val WORD_SPACING = SettingKey<Double>("wordSpacing")
 
         operator fun <V> invoke(key: String): SettingKey<V, V> =
             SettingKey(key, IdentityValueCoder())

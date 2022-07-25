@@ -22,6 +22,7 @@ import org.readium.r2.navigator.settings.SettingKey.Companion.OVERFLOW
 import org.readium.r2.navigator.settings.SettingKey.Companion.PUBLISHER_STYLES
 import org.readium.r2.navigator.settings.SettingKey.Companion.READING_PROGRESSION
 import org.readium.r2.navigator.settings.SettingKey.Companion.THEME
+import org.readium.r2.navigator.settings.SettingKey.Companion.WORD_SPACING
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
@@ -219,7 +220,11 @@ var MutablePreferences.theme: Theme?
     get() = get(THEME)
     set(value) { set(THEME, value) }
 
-@OptIn(ExperimentalReadiumApi::class)
-private fun <V, R> MutableMap<String, Any?>.put(key: SettingKey<V, R>, value: V?) {
-    put(key.key, key.encode(value))
-}
+@ExperimentalReadiumApi
+val Preferences.wordSpacing: Double?
+    get() = get(WORD_SPACING)
+
+@ExperimentalReadiumApi
+var MutablePreferences.wordSpacing: Double?
+    get() = get(WORD_SPACING)
+    set(value) { set(WORD_SPACING, value) }

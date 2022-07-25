@@ -61,6 +61,7 @@ fun UserSettings(
         fontSize = settings.fontSize,
         overflow = settings.overflow,
         publisherStyles = settings.publisherStyles,
+        wordSpacing = settings.wordSpacing,
         theme = settings.theme,
     )
 }
@@ -74,12 +75,12 @@ fun UserSettings(
     fontSize: PercentSetting? = null,
     overflow: EnumSetting<Overflow>? = null,
     publisherStyles: ToggleSetting? = null,
+    wordSpacing: PercentSetting? = null,
     theme: EnumSetting<Theme>? = null,
 ) {
     Column(
         modifier = Modifier
-            .padding(24.dp)
-            .verticalScroll(rememberScrollState()),
+            .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
@@ -98,6 +99,8 @@ fun UserSettings(
             }
         }
 
+        Divider()
+
         ButtonGroupItem("Overflow", overflow, preferences, update) { value ->
             when (value) {
                 Overflow.AUTO -> "Auto"
@@ -114,6 +117,8 @@ fun UserSettings(
             }
         }
 
+        Divider()
+
         if (font != null) {
             DropdownMenuItem("Font", font, preferences, update) { value ->
                 checkNotNull(
@@ -126,6 +131,11 @@ fun UserSettings(
         }
 
         RangeItem("Font size", fontSize, preferences, update)
+
+        Divider()
+
+        SwitchItem("Publisher styles", publisherStyles, preferences, update)
+        RangeItem("Word spacing", wordSpacing, preferences, update)
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -236,6 +246,25 @@ inline fun RangeItem(
                 }
             )
         }
+    }
+}
+
+@Composable
+inline fun SwitchItem(
+    title: String,
+    setting: ToggleSetting?,
+    preferences: Preferences,
+    crossinline update: UpdatePreferences
+) {
+    setting ?: return
+
+    Item(title, isActive = preferences.isActive(setting)) {
+        Switch(
+            checked = setting.value,
+            onCheckedChange = { value ->
+                update { set(setting, value) }
+            }
+        )
     }
 }
 
