@@ -106,6 +106,14 @@ fun UserSettings(
         }
 
         RangeSection("Font size", fontSize, preferences, update)
+
+        EnumSettingView("Theme", theme, preferences, update) { value ->
+            when (value) {
+                Theme.LIGHT -> "Light"
+                Theme.DARK -> "Dark"
+                Theme.SEPIA -> "Sepia"
+            }
+        }
     }
 }
 
@@ -135,9 +143,9 @@ inline fun <reified T> EnumSettingView(
 }
 
 @Composable
-inline fun <reified T : Comparable<T>> RangeSection(
+inline fun RangeSection(
     title: String,
-    setting: RangeSetting<T>?,
+    setting: RangeSetting<Double>?,
     preferences: Preferences,
     crossinline update: UpdatePreferences,
 ) {

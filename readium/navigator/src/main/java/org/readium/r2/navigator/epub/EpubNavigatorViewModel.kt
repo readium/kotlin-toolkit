@@ -9,17 +9,30 @@ package org.readium.r2.navigator.epub
 import android.graphics.PointF
 import android.graphics.RectF
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.navigator.epub.extensions.javascriptForGroup
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
+import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createViewModelFactory
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import kotlin.reflect.KClass
 
-@OptIn(ExperimentalDecorator::class)
+@OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
 internal class EpubNavigatorViewModel(
-    val decorationTemplates: HtmlDecorationTemplates
+    val config: EpubNavigatorFragment.Configuration,
 ) : ViewModel() {
+
+    private val css: ReadiumCss = ReadiumCss()
+
+    // Make a copy to prevent new decoration templates from being registered after initializing
+    // the navigator.
+    private val decorationTemplates: HtmlDecorationTemplates = config.decorationTemplates.copy()
 
     data class RunScriptCommand(val script: String, val scope: Scope) {
         sealed class Scope {
@@ -29,6 +42,31 @@ internal class EpubNavigatorViewModel(
             data class WebView(val webView: R2BasicWebView) : Scope()
         }
     }
+
+    sealed class Event {
+        data class RunScript(val command: RunScriptCommand) : Event()
+    }
+
+    private val _events = Channel<Event>(Channel.BUFFERED)
+    val events: Flow<Event> get() = _events.receiveAsFlow()
+
+    init {
+        css.rsProperties.updateCssOnEach()
+        css.userProperties.updateCssOnEach()
+    }
+
+    /**
+     * Requests the web views to be updated when the Readium CSS properties change.
+     */
+    private fun Flow<ReadiumCss.Properties>.updateCssOnEach() =
+        map { props ->
+            RunScriptCommand(
+                script = "readium.setCSSProperties(${props.toJSON()});",
+                scope = RunScriptCommand.Scope.LoadedResources
+            )
+        }
+        .onEach { _events.send(Event.RunScript(it)) }
+        .launchIn(viewModelScope)
 
     fun onResourceLoaded(link: Link?, webView: R2BasicWebView): RunScriptCommand {
         val templates = decorationTemplates.toJSON().toString()
@@ -47,6 +85,22 @@ internal class EpubNavigatorViewModel(
         }
 
         return RunScriptCommand(script, scope = RunScriptCommand.Scope.WebView(webView))
+    }
+
+    // Settings
+
+    private val _settings = MutableStateFlow(EpubSettings(
+        preferences = config.preferences,
+        fallback = config.defaultPreferences,
+        fonts = config.fonts,
+    ))
+    val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
+
+    fun applyPreferences(preferences: Preferences) {
+        val settings = _settings.updateAndGet {
+            EpubSettings(preferences, fallback = config.defaultPreferences, fonts = config.fonts)
+        }
+        css.update(settings)
     }
 
     // Selection
@@ -125,8 +179,8 @@ internal class EpubNavigatorViewModel(
     }
 
     companion object {
-        fun createFactory(decorationTemplates: HtmlDecorationTemplates) = createViewModelFactory {
-            EpubNavigatorViewModel(decorationTemplates)
+        fun createFactory(config: EpubNavigatorFragment.Configuration) = createViewModelFactory {
+            EpubNavigatorViewModel(config)
         }
     }
 }

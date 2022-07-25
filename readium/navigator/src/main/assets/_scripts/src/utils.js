@@ -260,11 +260,20 @@ export function rangeFromLocator(locator) {
 
 /// User Settings.
 
+export function setCSSProperties(properties) {
+  for (const name in properties) {
+    setProperty(name, properties[name]);
+  }
+}
+
 // For setting user setting.
 export function setProperty(key, value) {
-  var root = document.documentElement;
-
-  root.style.setProperty(key, value);
+  if (value === null) {
+    removeProperty(key);
+  } else {
+    var root = document.documentElement;
+    root.style.setProperty(key, value);
+  }
 }
 
 // For removing user setting.

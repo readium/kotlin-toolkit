@@ -112,10 +112,12 @@ class MutablePreferences(
         set(setting.key, !(get(setting.key) ?: false))
     }
 
-    inline fun <reified T : Comparable<T>> increment(setting: RangeSetting<T>) {
+    fun increment(setting: RangeSetting<Double>) {
+        set(setting.key, (setting.value + 0.1))
     }
 
-    inline fun <reified T : Comparable<T>> decrement(setting: RangeSetting<T>) {
+    fun decrement(setting: RangeSetting<Double>) {
+        set(setting.key, (setting.value - 0.1))
     }
 
     fun <T, R> activate(setting: Setting<T, R>) {

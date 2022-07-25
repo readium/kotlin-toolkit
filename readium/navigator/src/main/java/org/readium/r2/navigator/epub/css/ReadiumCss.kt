@@ -4,23 +4,31 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.epub
+package org.readium.r2.navigator.epub.css
 
 import androidx.annotation.ColorInt
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
 import org.json.JSONObject
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.util.ValueEncoder
 
 // FIXME: Extension point to customize the generated CSS properties list before applying it. Allows to set a --var()
+// FIXME: Custom Fonts
 @ExperimentalReadiumApi
 class ReadiumCss(
-    val rsProperties: RsProperties = RsProperties(),
+    rsProperties: RsProperties = RsProperties(),
     userProperties: UserProperties = UserProperties(),
 ) {
-    val userProperties = MutableStateFlow(userProperties)
+    val rsProperties: MutableStateFlow<RsProperties> = MutableStateFlow(rsProperties)
+    val userProperties: MutableStateFlow<UserProperties> = MutableStateFlow(userProperties)
+
+    interface Properties : JSONable {
+        fun toCssProperties(): Map<String, String?>
+
+        override fun toJSON(): JSONObject =
+            JSONObject(toCssProperties())
+    }
 
     /**
      * User settings properties.
@@ -74,8 +82,7 @@ class ReadiumCss(
      * @param ligatures Enabling and disabling ligatures in Arabic (related to a11y).
      * Requires: advancedSettings
      * @param a11yNormalize It impacts font style, weight and variant, text decoration, super and
-     * subscripts.
-     * Requires: fontOverride
+     * subscripts. Requires: fontOverride
      */
     data class UserProperties(
         // View mode
@@ -113,47 +120,44 @@ class ReadiumCss(
 
         // Accessibility
         val a11yNormalize: Boolean? = null,
-    ) : JSONable {
+    ) : Properties {
 
-        override fun toJSON(): JSONObject =
-            JSONObject(toCssProperties())
-
-        fun toCssProperties(): Map<String, String> = buildMap {
+        override fun toCssProperties(): Map<String, String?> = buildMap {
             // View mode
-            putCss("view", view)
+            putCss("--USER__view", view)
 
             // Pagination
-            putCss("colCount", colCount)
-            putCss("pageMargins", pageMargins)
+            putCss("--USER__colCount", colCount)
+            putCss("--USER__pageMargins", pageMargins)
 
             // Appearance
-            putCss("appearance", appearance)
-            putCss("darkenImages", flag("darken", darkenImages))
-            putCss("invertImages", flag("invert", invertImages))
+            putCss("--USER__appearance", appearance)
+            putCss("--USER__darkenImages", flag("darken", darkenImages))
+            putCss("--USER__invertImages", flag("invert", invertImages))
 
             // Colors
-            putCss("textColor", textColor)
-            putCss("backgroundColor", backgroundColor)
+            putCss("--USER__textColor", textColor)
+            putCss("--USER__backgroundColor", backgroundColor)
 
             // Typography
-            putCss("fontOverride", flag("font", fontOverride))
-            putCss("fontFamily", fontFamily)
-            putCss("fontSize", fontSize)
+            putCss("--USER__fontOverride", flag("font", fontOverride))
+            putCss("--USER__fontFamily", fontFamily)
+            putCss("--USER__fontSize", fontSize)
 
             // Advanced settings
-            putCss("advancedSettings", flag("advanced", advancedSettings))
-            putCss("typeScale", typeScale)
-            putCss("textAlign", textAlign)
-            putCss("lineHeight", lineHeight)
-            putCss("paraSpacing", paraSpacing)
-            putCss("paraIndent", paraIndent)
-            putCss("wordSpacing", wordSpacing)
-            putCss("letterSpacing", letterSpacing)
-            putCss("bodyHyphens", bodyHyphens)
-            putCss("ligatures", ligatures)
+            putCss("--USER__advancedSettings", flag("advanced", advancedSettings))
+            putCss("--USER__typeScale", typeScale)
+            putCss("--USER__textAlign", textAlign)
+            putCss("--USER__lineHeight", lineHeight)
+            putCss("--USER__paraSpacing", paraSpacing)
+            putCss("--USER__paraIndent", paraIndent)
+            putCss("--USER__wordSpacing", wordSpacing)
+            putCss("--USER__letterSpacing", letterSpacing)
+            putCss("--USER__bodyHyphens", bodyHyphens)
+            putCss("--USER__ligatures", ligatures)
 
             // Accessibility
-            putCss("a11yNormalize", flag("a11y", a11yNormalize))
+            putCss("--USER__a11yNormalize", flag("a11y", a11yNormalize))
         }
     }
 
@@ -261,61 +265,58 @@ class ReadiumCss(
         // Default styles for unstyled publications
         val compFontFamily: List<String>? = null,
         val codeFontFamily: List<String>? = null,
-    ) : JSONable {
+    ) : Properties {
 
-        override fun toJSON(): JSONObject =
-            JSONObject(toCssProperties())
-
-        private fun toCssProperties(): Map<String, String> = buildMap {
+        override fun toCssProperties(): Map<String, String?> = buildMap {
             // Pagination
-            putCss("colWidth", colWidth)
-            putCss("colCount", colCount)
-            putCss("colGap", colGap)
-            putCss("pageGutter", pageGutter)
+            putCss("--RS__colWidth", colWidth)
+            putCss("--RS__colCount", colCount)
+            putCss("--RS__colGap", colGap)
+            putCss("--RS__pageGutter", pageGutter)
 
             // Vertical rhythm
-            putCss("flowSpacing", flowSpacing)
-            putCss("paraSpacing", paraSpacing)
-            putCss("paraIndent", paraIndent)
+            putCss("--RS__flowSpacing", flowSpacing)
+            putCss("--RS__paraSpacing", paraSpacing)
+            putCss("--RS__paraIndent", paraIndent)
 
             // Safeguards
-            putCss("maxLineLength", maxLineLength)
-            putCss("maxMediaWidth", maxMediaWidth)
-            putCss("maxMediaHeight", maxMediaHeight)
-            putCss("boxSizingMedia", boxSizingMedia)
-            putCss("boxSizingTable", boxSizingTable)
+            putCss("--RS__maxLineLength", maxLineLength)
+            putCss("--RS__maxMediaWidth", maxMediaWidth)
+            putCss("--RS__maxMediaHeight", maxMediaHeight)
+            putCss("--RS__boxSizingMedia", boxSizingMedia)
+            putCss("--RS__boxSizingTable", boxSizingTable)
 
             // Colors
-            putCss("textColor", textColor)
-            putCss("backgroundColor", backgroundColor)
-            putCss("selectionTextColor", selectionTextColor)
-            putCss("selectionBackgroundColor", selectionBackgroundColor)
-            putCss("linkColor", linkColor)
-            putCss("visitedColor", visitedColor)
-            putCss("primaryColor", primaryColor)
-            putCss("secondaryColor", secondaryColor)
+            putCss("--RS__textColor", textColor)
+            putCss("--RS__backgroundColor", backgroundColor)
+            putCss("--RS__selectionTextColor", selectionTextColor)
+            putCss("--RS__selectionBackgroundColor", selectionBackgroundColor)
+            putCss("--RS__linkColor", linkColor)
+            putCss("--RS__visitedColor", visitedColor)
+            putCss("--RS__primaryColor", primaryColor)
+            putCss("--RS__secondaryColor", secondaryColor)
 
             // Typography
-            putCss("typeScale", typeScale)
-            putCss("baseFontFamily", baseFontFamily)
-            putCss("baseLineHeight", baseLineHeight)
+            putCss("--RS__typeScale", typeScale)
+            putCss("--RS__baseFontFamily", baseFontFamily)
+            putCss("--RS__baseLineHeight", baseLineHeight)
 
             // Default font-stacks
-            putCss("oldStyleTf", oldStyleTf)
-            putCss("modernTf", modernTf)
-            putCss("sansTf", sansTf)
-            putCss("humanistTf", humanistTf)
-            putCss("monospaceTf", monospaceTf)
+            putCss("--RS__oldStyleTf", oldStyleTf)
+            putCss("--RS__modernTf", modernTf)
+            putCss("--RS__sansTf", sansTf)
+            putCss("--RS__humanistTf", humanistTf)
+            putCss("--RS__monospaceTf", monospaceTf)
 
             // Default font-stacks for Japanese publications
-            putCss("serif-ja", serifJa)
-            putCss("sans-serif-ja", sansSerifJa)
-            putCss("serif-ja-v", serifJaV)
-            putCss("sans-serif-ja-v", sansSerifJaV)
+            putCss("--RS__serif-ja", serifJa)
+            putCss("--RS__sans-serif-ja", sansSerifJa)
+            putCss("--RS__serif-ja-v", serifJaV)
+            putCss("--RS__sans-serif-ja-v", sansSerifJaV)
 
             // Default styles for unstyled publications
-            putCss("compFontFamily", compFontFamily)
-            putCss("codeFontFamily", codeFontFamily)
+            putCss("--RS__compFontFamily", compFontFamily)
+            putCss("--RS__codeFontFamily", codeFontFamily)
         }
     }
 
@@ -459,23 +460,20 @@ fun interface Cssable {
     fun toCss(): String?
 }
 
-private fun MutableMap<String, String>.putCss(name: String, cssable: Cssable?) {
-    val value = cssable?.toCss() ?: return
-    put(name, value)
+private fun MutableMap<String, String?>.putCss(name: String, cssable: Cssable?) {
+    put(name, cssable?.toCss())
 }
 
-private fun MutableMap<String, String>.putCss(name: String, double: Double?) {
-    val value = double?.toString() ?: return
-    put(name, value)
+private fun MutableMap<String, String?>.putCss(name: String, double: Double?) {
+    put(name, double?.toString())
 }
 
-private fun MutableMap<String, String>.putCss(name: String, string: String?) {
-    val value = string?.toCss() ?: return
-    put(name, value)
+private fun MutableMap<String, String?>.putCss(name: String, string: String?) {
+    put(name, string?.toCss())
 }
 
-private fun MutableMap<String, String>.putCss(name: String, strings: List<String>?) {
-    val value = strings?.joinToString(", ") { it.toCss() } ?: return
+private fun MutableMap<String, String?>.putCss(name: String, strings: List<String>?) {
+    val value = strings?.joinToString(", ") { it.toCss() }
     put(name, value)
 }
 

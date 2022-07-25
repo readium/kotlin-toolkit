@@ -17,15 +17,17 @@ interface Configurable {
      */
     interface Settings
 
+    /**
+     * Current [Settings].
+     */
     val settings: StateFlow<Settings>
 
     /**
-     * Submits a new set of Presentation preferences used by the Navigator to recompute its
-     * Presentation Settings.
+     * Submits a new set of preferences used by the [Configurable] to recompute its [Settings].
      *
-     * Note that the Navigator might not update its presentation right away, or might even ignore
-     * some of the provided settings. They are only used as guidelines to compute the Presentation
-     * Properties.
+     * Note that the [Configurable] might not update its settings right away, or might even ignore
+     * some of the provided preferences. They are only used as guidelines to compute the new
+     * [Settings].
      */
-    suspend fun applyPreferences(preferences: Preferences)
+    fun applyPreferences(preferences: Preferences)
 }

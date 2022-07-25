@@ -66,6 +66,16 @@ class R2EpubPageFragment : Fragment() {
     private var isLoading: Boolean = false
     private val _isLoaded = MutableStateFlow(false)
 
+    internal fun setFontSize(fontSize: Double) {
+        textZoom = (fontSize * 100).roundToInt()
+    }
+
+    private var textZoom: Int = 100
+        set(value) {
+            field = value
+            webView?.settings?.textZoom = value
+        }
+
     /**
      * Indicates whether the resource is fully loaded in the web view.
      */
@@ -125,6 +135,7 @@ class R2EpubPageFragment : Fragment() {
         webView.settings.setSupportZoom(true)
         webView.settings.builtInZoomControls = true
         webView.settings.displayZoomControls = false
+        webView.settings.textZoom = textZoom
         webView.resourceUrl = resourceUrl
         webView.setPadding(0, 0, 0, 0)
 

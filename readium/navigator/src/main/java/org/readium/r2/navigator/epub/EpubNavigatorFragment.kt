@@ -12,7 +12,6 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.net.Uri
 import android.os.Bundle
-import android.os.Parcelable
 import android.view.ActionMode
 import android.view.LayoutInflater
 import android.view.View
@@ -25,14 +24,11 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.parcelize.Parcelize
+import kotlinx.coroutines.flow.*
 import org.json.JSONObject
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
@@ -57,15 +53,13 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.presentation.Presentation
-import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
-import org.readium.r2.shared.util.ValueCoder
 import org.readium.r2.shared.util.launchWebBrowser
 import org.readium.r2.shared.util.mediatype.MediaType
 import kotlin.math.ceil
+import kotlin.math.roundToInt
 import kotlin.reflect.KClass
 
 /**
@@ -159,15 +153,10 @@ class EpubNavigatorFragment private constructor(
 
     // Configurable
 
-    private val _settings = MutableStateFlow(EpubSettings(
-        preferences = config.preferences,
-        fallback = config.defaultPreferences,
-        fonts = config.fonts,
-    ))
-    override val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
+    override val settings: StateFlow<EpubSettings> get() = viewModel.settings
 
-    override suspend fun applyPreferences(preferences: Preferences) {
-        _settings.value = EpubSettings(preferences, fallback = config.defaultPreferences, fonts = config.fonts)
+    override fun applyPreferences(preferences: Preferences) {
+        viewModel.applyPreferences(preferences)
     }
 
     /**
@@ -183,9 +172,7 @@ class EpubNavigatorFragment private constructor(
     }
 
     private val viewModel: EpubNavigatorViewModel by viewModels {
-        // Make a copy to prevent new decoration templates from being registered after initializing
-        // the navigator.
-        EpubNavigatorViewModel.createFactory(config.decorationTemplates.copy())
+        EpubNavigatorViewModel.createFactory(config)
     }
 
     internal lateinit var positionsByReadingOrder: List<List<Locator>>
@@ -295,6 +282,7 @@ class EpubNavigatorFragment private constructor(
                 }
             }
         }
+        adapter.listener = PagerAdapterListener()
 
         resourcePager.adapter = adapter
         resourcePager.direction = publication.metadata.effectiveReadingProgression
@@ -341,11 +329,50 @@ class EpubNavigatorFragment private constructor(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        lifecycleScope.launch {
+            viewModel.events
+                .flowWithLifecycle(lifecycle)
+                .onEach(::handleEvent)
+                .launchIn(this)
+
+            var previousSettings = viewModel.settings.value
+            viewModel.settings
+                .onEach {
+                    onSettingsChange(previousSettings, it)
+                    previousSettings = it
+                }
+                .launchIn(this)
+        }
+
         // Restore the last locator before a configuration change (e.g. screen rotation), or the
         // initial locator when given.
         val locator = savedInstanceState?.getParcelable("locator") ?: initialLocator
         if (locator != null) {
             go(locator)
+        }
+    }
+
+    private fun handleEvent(event: EpubNavigatorViewModel.Event) {
+        when (event) {
+            is EpubNavigatorViewModel.Event.RunScript -> run(event.command)
+        }
+    }
+
+    private fun onSettingsChange(previous: EpubSettings, new: EpubSettings) {
+        if (previous.fontSize.value != new.fontSize.value) {
+            r2PagerAdapter?.setFontSize(new.fontSize.value)
+        }
+    }
+
+    private fun R2PagerAdapter.setFontSize(fontSize: Double) {
+        r2PagerAdapter?.mFragments?.forEach { _, fragment ->
+            (fragment as? R2EpubPageFragment)?.setFontSize(fontSize)
+        }
+    }
+
+    private inner class PagerAdapterListener : R2PagerAdapter.Listener {
+        override fun onCreatePageFragment(fragment: Fragment) {
+            (fragment as? R2EpubPageFragment)?.setFontSize(settings.value.fontSize.value)
         }
     }
 

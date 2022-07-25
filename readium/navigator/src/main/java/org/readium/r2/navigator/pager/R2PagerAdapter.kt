@@ -22,6 +22,12 @@ import org.readium.r2.shared.publication.Locator
 
 class R2PagerAdapter internal constructor(val fm: FragmentManager, private val resources: List<PageResource>) : R2FragmentPagerAdapter(fm) {
 
+    internal interface Listener {
+        fun onCreatePageFragment(fragment: Fragment) {}
+    }
+
+    internal var listener: Listener? = null
+
     internal sealed class PageResource {
         data class EpubReflowable(val link: Link, val url: String, val positionCount: Int) : PageResource()
         data class EpubFxl(val url1: String, val url2: String? = null) : PageResource()
@@ -56,7 +62,7 @@ class R2PagerAdapter internal constructor(val fm: FragmentManager, private val r
 
     override fun getItem(position: Int): Fragment {
         val locator = popPendingLocatorAt(getItemId(position))
-        return when (val resource = resources[position]) {
+        val fragment = when (val resource = resources[position]) {
             is PageResource.EpubReflowable -> {
                 R2EpubPageFragment.newInstance(
                     resource.url,
@@ -81,6 +87,8 @@ class R2PagerAdapter internal constructor(val fm: FragmentManager, private val r
                     }
             }
         }
+        listener?.onCreatePageFragment(fragment)
+        return fragment
     }
 
     override fun getCount(): Int {
