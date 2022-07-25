@@ -118,6 +118,7 @@ open class EnumSetting<E>(
     key: SettingKey<E, String>,
     valueCandidates: List<E?>,
     val values: List<E>,
+    val label: (E) -> String? = { null },
     validator: SettingValidator<E> = IdentitySettingValidator(),
     activator: SettingActivator = PassthroughSettingActivator,
 ) : Setting<E, String>(

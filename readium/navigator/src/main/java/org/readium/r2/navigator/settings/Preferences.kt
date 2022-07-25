@@ -86,6 +86,10 @@ class MutablePreferences(
     @InternalReadiumApi override var values: @WriteWith<JSONParceler> MutableMap<String, Any> = mutableMapOf()
 ) : Preferences(values = values) {
 
+    inline operator fun <reified V, reified R> set(key: Setting<V, R>, value: V?) {
+        set(key.key, value)
+    }
+
     inline operator fun <reified V, reified R> set(key: SettingKey<V, R>, value: V?) {
         val encodedValue = key.encode(value)
         if (encodedValue != null) {

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.Button
 import androidx.compose.material.DropdownMenu
+import androidx.compose.material.OutlinedButton
 import androidx.compose.runtime.*
 
 @Composable
@@ -20,7 +21,7 @@ fun DropdownMenuButton(
     var isExpanded by remember { mutableStateOf(false) }
     fun dismiss() { isExpanded = false }
 
-    Button(
+    OutlinedButton(
         onClick = { isExpanded = true },
     ) {
         text()

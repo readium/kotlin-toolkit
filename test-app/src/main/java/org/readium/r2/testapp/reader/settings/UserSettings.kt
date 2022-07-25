@@ -8,7 +8,6 @@
 
 package org.readium.r2.testapp.reader.settings
 
-import android.widget.Space
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -31,6 +30,7 @@ import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.testapp.reader.ReaderViewModel
+import org.readium.r2.testapp.utils.compose.DropdownMenuButton
 import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
 
 typealias UpdatePreferences = (MutablePreferences.() -> Unit) -> Unit
@@ -90,7 +90,7 @@ fun UserSettings(
                 .fillMaxWidth()
         )
 
-        EnumSettingView("Theme", theme, preferences, update) { value ->
+        ButtonGroupItem("Theme", theme, preferences, update) { value ->
             when (value) {
                 Theme.Light -> "Light"
                 Theme.Dark -> "Dark"
@@ -98,7 +98,7 @@ fun UserSettings(
             }
         }
 
-        EnumSettingView("Overflow", overflow, preferences, update) { value ->
+        ButtonGroupItem("Overflow", overflow, preferences, update) { value ->
             when (value) {
                 Overflow.AUTO -> "Auto"
                 Overflow.PAGINATED -> "Paginated"
@@ -106,11 +106,22 @@ fun UserSettings(
             }
         }
 
-        EnumSettingView("Columns", columnCount, preferences, update) { value ->
+        ButtonGroupItem("Columns", columnCount, preferences, update) { value ->
             when (value) {
                 ColumnCount.Auto -> "Auto"
                 ColumnCount.One -> "1"
                 ColumnCount.Two -> "2"
+            }
+        }
+
+        if (font != null) {
+            DropdownMenuItem("Font", font, preferences, update) { value ->
+                checkNotNull(
+                    when (value) {
+                        Font.ORIGINAL -> "Original"
+                        else -> font.label(value)
+                    }
+                )
             }
         }
 
@@ -120,7 +131,7 @@ fun UserSettings(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Spacer(modifier = Modifier.weight(1f))
-//            PresetsMenuButton(onCommit = onCommit)
+
             Button(
                 onClick = {
                     update { clear() }
@@ -133,7 +144,7 @@ fun UserSettings(
 }
 
 @Composable
-inline fun <reified T> EnumSettingView(
+inline fun <reified T> ButtonGroupItem(
     title: String,
     setting: EnumSetting<T>?,
     preferences: Preferences,
@@ -154,6 +165,33 @@ inline fun <reified T> EnumSettingView(
                 }
             }) { option ->
             Text(label(option))
+        }
+    }
+}
+
+@Composable
+inline fun <reified T> DropdownMenuItem(
+    title: String,
+    setting: EnumSetting<T>?,
+    preferences: Preferences,
+    crossinline update: UpdatePreferences,
+    crossinline label: (T) -> String
+) {
+    setting ?: return
+
+    Item(title, isActive = preferences.isActive(setting)) {
+        DropdownMenuButton(
+            text = { Text(label(setting.value)) }
+        ) {
+            for (value in setting.values) {
+                DropdownMenuItem(
+                    onClick = {
+                        update { set(setting, value) }
+                    }
+                ) {
+                    Text(label(value))
+                }
+            }
         }
     }
 }
