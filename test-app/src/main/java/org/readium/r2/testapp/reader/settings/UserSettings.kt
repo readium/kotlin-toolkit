@@ -19,10 +19,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.room.Update
 import org.readium.r2.navigator.ColumnCount
 import org.readium.r2.navigator.Font
 import org.readium.r2.navigator.Theme
@@ -37,7 +35,7 @@ import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
 /**
  * Closure which updates and applies a set of [Preferences].
  */
-typealias UpdatePreferences = (MutablePreferences.() -> Unit) -> Unit
+typealias EditPreferences = (MutablePreferences.() -> Unit) -> Unit
 
 /**
  * Stateful user settings component paired with a [ReaderViewModel].
@@ -47,19 +45,19 @@ fun UserSettings(model: UserSettingsViewModel) {
     UserSettings(
         settings = model.settings.collectAsState().value ?: return,
         preferences = model.preferences.collectAsState().value,
-        update = model::updatePreferences
+        edit = model::edit
     )
 }
 
 /**
  * Stateless user settings component displaying the given [settings] and setting user [preferences],
- * using the [update] closure.
+ * using the [edit] closure.
  */
 @Composable
 fun UserSettings(
     settings: Configurable.Settings,
     preferences: Preferences,
-    update: UpdatePreferences
+    edit: EditPreferences
 ) {
     Column(
         modifier = Modifier.padding(vertical = 24.dp)
@@ -78,10 +76,10 @@ fun UserSettings(
                 .align(Alignment.End),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            PresetsMenuButton(update = update, presets = settings.presets())
+            PresetsMenuButton(edit = edit, presets = settings.presets())
 
             Button(
-                onClick = { update { clear() } },
+                onClick = { edit { clear() } },
             ) {
                 Text("Reset")
             }
@@ -93,7 +91,7 @@ fun UserSettings(
             is EpubSettings ->
                 ReflowableUserSettings(
                     preferences = preferences,
-                    update = update,
+                    edit = edit,
                     columnCount = settings.columnCount,
                     font = settings.font,
                     fontSize = settings.fontSize,
@@ -113,7 +111,7 @@ fun UserSettings(
 @Composable
 private fun ReflowableUserSettings(
     preferences: Preferences,
-    update: UpdatePreferences,
+    edit: EditPreferences,
     columnCount: EnumSetting<ColumnCount>? = null,
     font: EnumSetting<Font>? = null,
     fontSize: PercentSetting? = null,
@@ -123,7 +121,7 @@ private fun ReflowableUserSettings(
     theme: EnumSetting<Theme>? = null,
 ) {
     if (theme != null) {
-        ButtonGroupItem("Theme", theme, preferences, update) { value ->
+        ButtonGroupItem("Theme", theme, preferences, edit) { value ->
             when (value) {
                 Theme.Light -> "Light"
                 Theme.Dark -> "Dark"
@@ -136,7 +134,7 @@ private fun ReflowableUserSettings(
 
     if (overflow != null || columnCount != null) {
         if (overflow != null) {
-            ButtonGroupItem("Overflow", overflow, preferences, update) { value ->
+            ButtonGroupItem("Overflow", overflow, preferences, edit) { value ->
                 when (value) {
                     Overflow.AUTO -> "Auto"
                     Overflow.PAGINATED -> "Paginated"
@@ -146,7 +144,7 @@ private fun ReflowableUserSettings(
         }
 
         if (columnCount != null) {
-            ButtonGroupItem("Columns", columnCount, preferences, update) { value ->
+            ButtonGroupItem("Columns", columnCount, preferences, edit) { value ->
                 when (value) {
                     ColumnCount.Auto -> "Auto"
                     ColumnCount.One -> "1"
@@ -160,7 +158,7 @@ private fun ReflowableUserSettings(
 
     if (font != null || fontSize != null) {
         if (font != null) {
-            DropdownMenuItem("Font", font, preferences, update) { value ->
+            DropdownMenuItem("Font", font, preferences, edit) { value ->
                 checkNotNull(
                     when (value) {
                         Font.ORIGINAL -> "Original"
@@ -171,18 +169,18 @@ private fun ReflowableUserSettings(
         }
 
         if (fontSize != null) {
-            RangeItem("Font size", fontSize, preferences, update)
+            RangeItem("Font size", fontSize, preferences, edit)
         }
 
         Divider()
     }
 
     if (publisherStyles != null) {
-        SwitchItem("Publisher styles", publisherStyles, preferences, update)
+        SwitchItem("Publisher styles", publisherStyles, preferences, edit)
     }
 
     if (wordSpacing != null) {
-        RangeItem("Word spacing", wordSpacing, preferences, update)
+        RangeItem("Word spacing", wordSpacing, preferences, edit)
     }
 }
 
@@ -195,7 +193,7 @@ private inline fun <reified T> ButtonGroupItem(
     title: String,
     setting: EnumSetting<T>,
     preferences: Preferences,
-    crossinline update: UpdatePreferences,
+    crossinline edit: EditPreferences,
     crossinline label: (T) -> String
 ) {
     Item(title, isActive = preferences.isActive(setting)) {
@@ -204,7 +202,7 @@ private inline fun <reified T> ButtonGroupItem(
             activeOption = setting.value,
             selectedOption = preferences[setting],
             onSelectOption = { option ->
-                update {
+                edit {
                     toggle(setting, option)
                 }
             }) { option ->
@@ -221,7 +219,7 @@ private inline fun <reified T> DropdownMenuItem(
     title: String,
     setting: EnumSetting<T>,
     preferences: Preferences,
-    crossinline update: UpdatePreferences,
+    crossinline edit: EditPreferences,
     crossinline label: (T) -> String
 ) {
     Item(title, isActive = preferences.isActive(setting)) {
@@ -231,7 +229,7 @@ private inline fun <reified T> DropdownMenuItem(
             for (value in setting.values) {
                 DropdownMenuItem(
                     onClick = {
-                        update { set(setting, value) }
+                        edit { set(setting, value) }
                     }
                 ) {
                     Text(label(value))
@@ -249,7 +247,7 @@ private inline fun RangeItem(
     title: String,
     setting: RangeSetting<Double>,
     preferences: Preferences,
-    crossinline update: UpdatePreferences,
+    crossinline edit: EditPreferences,
 ) {
     Item(title, isActive = preferences.isActive(setting)) {
         Row(
@@ -258,7 +256,7 @@ private inline fun RangeItem(
         ) {
             IconButton(
                 onClick = {
-                    update {
+                    edit {
                         decrement(setting)
                     }
                 },
@@ -271,7 +269,7 @@ private inline fun RangeItem(
 
             IconButton(
                 onClick = {
-                    update {
+                    edit {
                         increment(setting)
                     }
                 },
@@ -291,17 +289,17 @@ private inline fun SwitchItem(
     title: String,
     setting: ToggleSetting,
     preferences: Preferences,
-    crossinline update: UpdatePreferences
+    crossinline edit: EditPreferences
 ) {
     Item(
         title = title,
         isActive = preferences.isActive(setting),
-        onClick = { update { toggle(setting)} }
+        onClick = { edit { toggle(setting)} }
     ) {
         Switch(
             checked = setting.value,
             onCheckedChange = { value ->
-                update { set(setting, value) }
+                edit { set(setting, value) }
             }
         )
     }
@@ -363,7 +361,7 @@ private fun Configurable.Settings.presets(): List<Preset> =
     }
 
 @Composable
-private fun PresetsMenuButton(update: UpdatePreferences, presets: List<Preset>) {
+private fun PresetsMenuButton(edit: EditPreferences, presets: List<Preset>) {
     if (presets.isEmpty()) return
 
     DropdownMenuButton(
@@ -373,7 +371,7 @@ private fun PresetsMenuButton(update: UpdatePreferences, presets: List<Preset>) 
         for (preset in presets) {
             DropdownMenuItem(
                 onClick = {
-                    update(preset.changes)
+                    edit(preset.changes)
                     dismiss()
                 }
             ) {

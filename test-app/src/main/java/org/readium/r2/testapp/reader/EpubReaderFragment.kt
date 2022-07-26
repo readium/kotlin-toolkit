@@ -38,7 +38,7 @@ import org.readium.r2.testapp.epub.UserSettings
 import org.readium.r2.testapp.search.SearchFragment
 import org.readium.r2.testapp.utils.extensions.toDataUrl
 
-@OptIn(ExperimentalDecorator::class)
+@OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
 class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listener {
 
     override lateinit var navigator: Navigator
@@ -69,7 +69,9 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                 baseUrl = baseUrl,
                 initialLocator = readerData.initialLocation,
                 listener = this,
-                config = EpubNavigatorFragment.Configuration().apply {
+                config = EpubNavigatorFragment.Configuration(
+                    preferences = model.settings.preferences.value
+                ).apply {
                     // Register the HTML template for our custom [DecorationStyleAnnotationMark].
                     decorationTemplates[DecorationStyleAnnotationMark::class] = annotationMarkTemplate(activity)
                     selectionActionModeCallback = customSelectionActionModeCallback
@@ -213,12 +215,12 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (super.onOptionsItemSelected(item)) {
-            return true
-        }
-
-        return when (item.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        when (item.itemId) {
+//            R.id.settings -> {
+//                userSettings.userSettingsPopUp().showAsDropDown(requireActivity().findViewById(R.id.settings), 0, 0, Gravity.END)
+//                true
+//            }
             R.id.search -> {
                 super.onOptionsItemSelected(item)
             }
@@ -226,9 +228,8 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                 menuSearch.collapseActionView()
                 true
             }
-            else -> false
+            else -> super.onOptionsItemSelected(item)
         }
-    }
 
     private fun showSearchFragment() {
         childFragmentManager.commit {

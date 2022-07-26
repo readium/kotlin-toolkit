@@ -41,6 +41,12 @@ open class Preferences(
     @InternalReadiumApi open val values: @WriteWith<JSONParceler> Map<String, Any> = emptyMap()
 ) : JSONable, Parcelable {
 
+    constructor(jsonString: String?)
+        : this(jsonString?.let { JSONObject(it) })
+
+    constructor(json: JSONObject?)
+        : this(json?.toMap() ?: emptyMap())
+
     constructor(builder: MutablePreferences.() -> Unit)
         : this(MutablePreferences().apply(builder))
 
@@ -73,12 +79,6 @@ open class Preferences(
 
     override fun toString(): String =
         toJSON().toString()
-
-    companion object {
-
-        fun fromJSON(json: JSONObject?): Preferences =
-            Preferences(json?.toMap() ?: emptyMap())
-    }
 }
 
 @ExperimentalReadiumApi

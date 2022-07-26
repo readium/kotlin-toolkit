@@ -65,11 +65,17 @@ class ReaderViewModel(
     val fragmentChannel: EventChannel<FeedbackEvent> =
         EventChannel(Channel(Channel.BUFFERED), viewModelScope)
 
-    val tts: TtsViewModel? =
-        TtsViewModel(application, readerInitData.publication, viewModelScope)
+    val tts: TtsViewModel? = TtsViewModel(
+        context = application,
+        publication = readerInitData.publication,
+        scope = viewModelScope
+    )
 
-    val settings: UserSettingsViewModel =
-        UserSettingsViewModel()
+    val settings: UserSettingsViewModel = UserSettingsViewModel(
+        application = application,
+        profile = readerInitData.publication.profile,
+        scope = viewModelScope
+    )
 
     override fun onCleared() {
         super.onCleared()

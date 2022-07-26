@@ -83,6 +83,7 @@ class Publication(
 
     // Shortcuts to manifest properties
 
+    val profile: Publication.Profile? get() = _manifest.profile
     val context: List<String> get() = _manifest.context
     val metadata: Metadata get() = _manifest.metadata
     val links: List<Link> get() = _manifest.links

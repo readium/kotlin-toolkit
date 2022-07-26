@@ -6,23 +6,46 @@
 
 package org.readium.r2.testapp.reader.settings
 
+import android.app.Application
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.settings.Configurable
 import org.readium.r2.navigator.settings.MutablePreferences
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Manages user settings.
  *
  * Note: This is not an Android [ViewModel], but it is a component of [ReaderViewModel].
+ *
+ * @param profile Publication profile (e.g. EPUB, PDF, audiobook).
  */
 @OptIn(ExperimentalReadiumApi::class)
-class UserSettingsViewModel {
+class UserSettingsViewModel(
+    application: Application,
+    private val profile: Publication.Profile?,
+    scope: CoroutineScope
+) {
+    private val store = PreferencesStore(application, scope)
+
+    /**
+     * Current user preferences saved in the store.
+     */
+    val preferences: StateFlow<Preferences> = store[profile]
+        .stateIn(scope, SharingStarted.Eagerly, initialValue = Preferences())
+
+    /**
+     * Current [Navigator] settings.
+     */
+    private val _settings = MutableStateFlow<Configurable.Settings?>(null)
+    val settings: StateFlow<Configurable.Settings?> = _settings.asStateFlow()
 
     fun bind(navigator: Navigator, lifecycleOwner: LifecycleOwner) {
         val configurable = (navigator as? Configurable) ?: return
@@ -38,22 +61,17 @@ class UserSettingsViewModel {
                 }
                 .launchIn(lifecycleScope)
 
-            _preferences
+            preferences
                 .flowWithLifecycle(lifecycle)
-                .onEach { prefs ->
-                    configurable.applyPreferences(prefs)
-                }
+                .onEach { configurable.applyPreferences(it) }
                 .launchIn(lifecycleScope)
         }
     }
 
-    private val _preferences = MutableStateFlow(Preferences()) // FIXME
-    val preferences: StateFlow<Preferences> = _preferences.asStateFlow()
-
-    private val _settings = MutableStateFlow<Configurable.Settings?>(null)
-    val settings: StateFlow<Configurable.Settings?> = _settings.asStateFlow()
-
-    fun updatePreferences(changes: MutablePreferences.() -> Unit) {
-        _preferences.update { it.copy(changes) }
+    /**
+     * Edits and saves the user preferences.
+     */
+    fun edit(changes: MutablePreferences.() -> Unit) {
+        store[profile] = preferences.value.copy(changes)
     }
 }
