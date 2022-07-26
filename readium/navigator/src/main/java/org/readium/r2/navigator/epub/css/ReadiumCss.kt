@@ -120,6 +120,8 @@ class ReadiumCss(
 
         // Accessibility
         val a11yNormalize: Boolean? = null,
+
+        val overrides: Map<String, String?> = emptyMap(),
     ) : Properties {
 
         override fun toCssProperties(): Map<String, String?> = buildMap {
@@ -158,6 +160,10 @@ class ReadiumCss(
 
             // Accessibility
             putCss("--USER__a11yNormalize", flag("a11y", a11yNormalize))
+
+            for ((key, value) in overrides) {
+                put(key, value)
+            }
         }
     }
 
@@ -265,6 +271,8 @@ class ReadiumCss(
         // Default styles for unstyled publications
         val compFontFamily: List<String>? = null,
         val codeFontFamily: List<String>? = null,
+
+        val overrides: Map<String, String?> = emptyMap(),
     ) : Properties {
 
         override fun toCssProperties(): Map<String, String?> = buildMap {
@@ -317,6 +325,10 @@ class ReadiumCss(
             // Default styles for unstyled publications
             putCss("--RS__compFontFamily", compFontFamily)
             putCss("--RS__codeFontFamily", codeFontFamily)
+
+            for ((key, value) in overrides) {
+                put(key, value)
+            }
         }
     }
 
