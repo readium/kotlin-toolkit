@@ -4,8 +4,6 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
-
 package org.readium.r2.testapp.reader.settings
 
 import android.app.Dialog
@@ -37,6 +35,6 @@ class UserSettingsBottomSheetDialogFragment : ComposeBottomSheetDialogFragment(
 
     @Composable
     override fun Content() {
-        UserSettings(model)
+        UserSettings(model.settings)
     }
 }

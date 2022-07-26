@@ -14,11 +14,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.flowWithLifecycle
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.settings.Configurable
@@ -61,23 +56,7 @@ abstract class BaseReaderFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            (navigator as? Configurable)?.let { configurable ->
-                configurable.settings
-                    .flowWithLifecycle(lifecycle)
-                    .onEach {
-                        model.onSettingsChange(it)
-                    }
-                    .launchIn(this)
-
-                model.preferences
-                    .flowWithLifecycle(lifecycle)
-                    .onEach { prefs ->
-                        configurable.applyPreferences(prefs)
-                    }
-                    .launchIn(this)
-            }
-        }
+        model.settings.bind(navigator, viewLifecycleOwner)
     }
 
     override fun onHiddenChanged(hidden: Boolean) {

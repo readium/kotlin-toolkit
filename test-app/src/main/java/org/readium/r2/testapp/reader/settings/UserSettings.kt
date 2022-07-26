@@ -43,7 +43,7 @@ typealias UpdatePreferences = (MutablePreferences.() -> Unit) -> Unit
  * Stateful user settings component paired with a [ReaderViewModel].
  */
 @Composable
-fun UserSettings(model: ReaderViewModel) {
+fun UserSettings(model: UserSettingsViewModel) {
     UserSettings(
         settings = model.settings.collectAsState().value ?: return,
         preferences = model.preferences.collectAsState().value,

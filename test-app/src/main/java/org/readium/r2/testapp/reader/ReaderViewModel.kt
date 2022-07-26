@@ -12,14 +12,17 @@ import android.graphics.Color
 import android.os.Bundle
 import androidx.annotation.ColorInt
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.paging.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
+import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.settings.Configurable
 import org.readium.r2.navigator.settings.MutablePreferences
@@ -37,6 +40,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.domain.model.Highlight
+import org.readium.r2.testapp.reader.settings.UserSettingsViewModel
 import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
@@ -64,6 +68,9 @@ class ReaderViewModel(
     val tts: TtsViewModel? =
         TtsViewModel(application, readerInitData.publication, viewModelScope)
 
+    val settings: UserSettingsViewModel =
+        UserSettingsViewModel()
+
     override fun onCleared() {
         super.onCleared()
         tts?.onCleared()
@@ -86,20 +93,6 @@ class ReaderViewModel(
 
     fun deleteBookmark(id: Long) = viewModelScope.launch {
         bookRepository.deleteBookmark(id)
-    }
-
-    private val _preferences = MutableStateFlow(Preferences()) // FIXME
-    val preferences: StateFlow<Preferences> = _preferences.asStateFlow()
-
-    private val _settings = MutableStateFlow<Configurable.Settings?>(null)
-    val settings: StateFlow<Configurable.Settings?> = _settings.asStateFlow()
-
-    fun onSettingsChange(settings: Configurable.Settings) {
-        _settings.value = settings
-    }
-
-    fun updatePreferences(changes: MutablePreferences.() -> Unit) {
-        _preferences.update { it.copy(changes) }
     }
 
     // Highlights
