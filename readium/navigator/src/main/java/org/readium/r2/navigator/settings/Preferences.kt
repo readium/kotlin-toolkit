@@ -88,7 +88,14 @@ class MutablePreferences(
 ) : Preferences(values = values) {
 
     inline operator fun <reified V, reified R> set(setting: Setting<V, R>, value: V?) {
+        set(setting, value, activate = true)
+    }
+
+    inline fun <reified V, reified R> set(setting: Setting<V, R>, value: V?, activate: Boolean = true) {
         set(setting.key, value?.let { setting.validate(it) })
+        if (activate) {
+            activate(setting)
+        }
     }
 
     inline operator fun <reified V, reified R> set(key: SettingKey<V, R>, value: V?) {

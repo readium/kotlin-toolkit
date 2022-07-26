@@ -61,15 +61,33 @@ fun UserSettings(
     preferences: Preferences,
     update: UpdatePreferences
 ) {
-    Column {
+    Column(
+        modifier = Modifier.padding(vertical = 24.dp)
+    ) {
         Text(
             text = "User settings",
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.h6,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp)
         )
+
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.End),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            PresetsMenuButton(update = update, presets = settings.presets())
+
+            Button(
+                onClick = { update { clear() } },
+            ) {
+                Text("Reset")
+            }
+        }
+
+        Divider()
 
         when (settings) {
             is EpubSettings ->
@@ -84,15 +102,6 @@ fun UserSettings(
                     wordSpacing = settings.wordSpacing,
                     theme = settings.theme,
                 )
-        }
-
-        Button(
-            onClick = { update { clear() } },
-            modifier = Modifier
-                .padding(16.dp)
-                .align(Alignment.End)
-        ) {
-            Text("Reset")
         }
     }
 }
@@ -196,7 +205,6 @@ private inline fun <reified T> ButtonGroupItem(
             selectedOption = preferences[setting],
             onSelectOption = { option ->
                 update {
-                    activate(setting)
                     toggle(setting, option)
                 }
             }) { option ->
@@ -251,7 +259,6 @@ private inline fun RangeItem(
             IconButton(
                 onClick = {
                     update {
-                        activate(setting)
                         decrement(setting)
                     }
                 },
@@ -265,7 +272,6 @@ private inline fun RangeItem(
             IconButton(
                 onClick = {
                     update {
-                        activate(setting)
                         increment(setting)
                     }
                 },
@@ -321,4 +327,58 @@ private fun Item(title: String, isActive: Boolean = true, onClick: (() -> Unit)?
 @Composable
 private fun Divider() {
     Divider(modifier = Modifier.padding(vertical = 16.dp))
+}
+
+/**
+ * A preset is a named group of settings applied together.
+ */
+private class Preset(
+    val title: String,
+    val changes: MutablePreferences.() -> Unit
+)
+
+/**
+ * Returns the presets associated with the [Configurable.Settings] receiver.
+ */
+private fun Configurable.Settings.presets(): List<Preset> =
+    when (val settings = this) {
+        is EpubSettings -> listOf(
+            Preset("Increase legibility") {
+                set(settings.wordSpacing, 0.6)
+                set(settings.fontSize, 1.4)
+            },
+            Preset("Document") {
+                set(settings.overflow, Overflow.SCROLLED)
+            },
+            Preset("Ebook") {
+                set(settings.overflow, Overflow.PAGINATED)
+            },
+            Preset("Manga") {
+                // TODO
+//            set(settings.readingProgression, ReadingProgression.RTL)
+                set(settings.overflow, Overflow.PAGINATED)
+            }
+        )
+        else -> emptyList()
+    }
+
+@Composable
+private fun PresetsMenuButton(update: UpdatePreferences, presets: List<Preset>) {
+    if (presets.isEmpty()) return
+
+    DropdownMenuButton(
+        text = { Text("Presets") }
+    ) { dismiss ->
+
+        for (preset in presets) {
+            DropdownMenuItem(
+                onClick = {
+                    update(preset.changes)
+                    dismiss()
+                }
+            ) {
+                Text(preset.title)
+            }
+        }
+    }
 }
