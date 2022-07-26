@@ -87,8 +87,8 @@ class MutablePreferences(
     @InternalReadiumApi override var values: @WriteWith<JSONParceler> MutableMap<String, Any> = mutableMapOf()
 ) : Preferences(values = values) {
 
-    inline operator fun <reified V, reified R> set(key: Setting<V, R>, value: V?) {
-        set(key.key, value)
+    inline operator fun <reified V, reified R> set(setting: Setting<V, R>, value: V?) {
+        set(setting.key, value?.let { setting.validate(it) })
     }
 
     inline operator fun <reified V, reified R> set(key: SettingKey<V, R>, value: V?) {
@@ -115,15 +115,15 @@ class MutablePreferences(
     }
 
     fun toggle(setting: ToggleSetting) {
-        set(setting.key, !(get(setting.key) ?: false))
+        set(setting, !(get(setting.key) ?: setting.value))
     }
 
-    fun increment(setting: RangeSetting<Double>) {
-        set(setting.key, (setting.value + 0.1))
+    fun increment(setting: RangeSetting<Double>, step: Double = 0.1) {
+        set(setting, (setting.value + step))
     }
 
-    fun decrement(setting: RangeSetting<Double>) {
-        set(setting.key, (setting.value - 0.1))
+    fun decrement(setting: RangeSetting<Double>, step: Double = 0.1) {
+        set(setting, (setting.value - step))
     }
 
     fun <T, R> activate(setting: Setting<T, R>) {
@@ -132,7 +132,7 @@ class MutablePreferences(
 
     inline fun <reified E> toggle(setting: EnumSetting<E>, value: E) {
         if (get(setting.key) != value) {
-            set(setting.key, value)
+            set(setting, value)
         } else {
             remove(setting.key)
         }

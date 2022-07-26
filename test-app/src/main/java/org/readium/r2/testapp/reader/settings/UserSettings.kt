@@ -8,9 +8,8 @@
 
 package org.readium.r2.testapp.reader.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -20,8 +19,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.room.Update
 import org.readium.r2.navigator.ColumnCount
 import org.readium.r2.navigator.Font
 import org.readium.r2.navigator.Theme
@@ -33,41 +34,75 @@ import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.DropdownMenuButton
 import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
 
+/**
+ * Closure which updates and applies a set of [Preferences].
+ */
 typealias UpdatePreferences = (MutablePreferences.() -> Unit) -> Unit
 
+/**
+ * Stateful user settings component paired with a [ReaderViewModel].
+ */
 @Composable
 fun UserSettings(model: ReaderViewModel) {
-    val settings = model.settings.collectAsState().value
-    val preferences = model.preferences.collectAsState().value
-
-    when (settings) {
-        is EpubSettings ->
-            UserSettings(preferences, update = model::updatePreferences, settings)
-        null -> {}
-    }
-}
-
-@Composable
-fun UserSettings(
-    preferences: Preferences,
-    update: UpdatePreferences,
-    settings: EpubSettings,
-) {
     UserSettings(
-        preferences = preferences,
-        update = update,
-        columnCount = settings.columnCount,
-        font = settings.font,
-        fontSize = settings.fontSize,
-        overflow = settings.overflow,
-        publisherStyles = settings.publisherStyles,
-        wordSpacing = settings.wordSpacing,
-        theme = settings.theme,
+        settings = model.settings.collectAsState().value ?: return,
+        preferences = model.preferences.collectAsState().value,
+        update = model::updatePreferences
     )
 }
 
+/**
+ * Stateless user settings component displaying the given [settings] and setting user [preferences],
+ * using the [update] closure.
+ */
 @Composable
 fun UserSettings(
+    settings: Configurable.Settings,
+    preferences: Preferences,
+    update: UpdatePreferences
+) {
+    Column {
+        Text(
+            text = "User settings",
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.h6,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp)
+        )
+
+        when (settings) {
+            is EpubSettings ->
+                ReflowableUserSettings(
+                    preferences = preferences,
+                    update = update,
+                    columnCount = settings.columnCount,
+                    font = settings.font,
+                    fontSize = settings.fontSize,
+                    overflow = settings.overflow,
+                    publisherStyles = settings.publisherStyles,
+                    wordSpacing = settings.wordSpacing,
+                    theme = settings.theme,
+                )
+        }
+
+        Button(
+            onClick = { update { clear() } },
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.End)
+        ) {
+            Text("Reset")
+        }
+    }
+}
+
+/**
+ * User settings for a publication with adjustable fonts and dimensions, such as
+ * a reflowable EPUB, HTML document or PDF with reflow mode enabled.
+ */
+@Composable
+private fun ReflowableUserSettings(
     preferences: Preferences,
     update: UpdatePreferences,
     columnCount: EnumSetting<ColumnCount>? = null,
@@ -78,19 +113,7 @@ fun UserSettings(
     wordSpacing: PercentSetting? = null,
     theme: EnumSetting<Theme>? = null,
 ) {
-    Column(
-        modifier = Modifier
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text(
-            text = "User settings",
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.h6,
-            modifier = Modifier
-                .fillMaxWidth()
-        )
-
+    if (theme != null) {
         ButtonGroupItem("Theme", theme, preferences, update) { value ->
             when (value) {
                 Theme.Light -> "Light"
@@ -100,25 +123,33 @@ fun UserSettings(
         }
 
         Divider()
+    }
 
-        ButtonGroupItem("Overflow", overflow, preferences, update) { value ->
-            when (value) {
-                Overflow.AUTO -> "Auto"
-                Overflow.PAGINATED -> "Paginated"
-                Overflow.SCROLLED -> "Scrolled"
+    if (overflow != null || columnCount != null) {
+        if (overflow != null) {
+            ButtonGroupItem("Overflow", overflow, preferences, update) { value ->
+                when (value) {
+                    Overflow.AUTO -> "Auto"
+                    Overflow.PAGINATED -> "Paginated"
+                    Overflow.SCROLLED -> "Scrolled"
+                }
             }
         }
 
-        ButtonGroupItem("Columns", columnCount, preferences, update) { value ->
-            when (value) {
-                ColumnCount.Auto -> "Auto"
-                ColumnCount.One -> "1"
-                ColumnCount.Two -> "2"
+        if (columnCount != null) {
+            ButtonGroupItem("Columns", columnCount, preferences, update) { value ->
+                when (value) {
+                    ColumnCount.Auto -> "Auto"
+                    ColumnCount.One -> "1"
+                    ColumnCount.Two -> "2"
+                }
             }
         }
 
         Divider()
+    }
 
+    if (font != null || fontSize != null) {
         if (font != null) {
             DropdownMenuItem("Font", font, preferences, update) { value ->
                 checkNotNull(
@@ -130,39 +161,34 @@ fun UserSettings(
             }
         }
 
-        RangeItem("Font size", fontSize, preferences, update)
+        if (fontSize != null) {
+            RangeItem("Font size", fontSize, preferences, update)
+        }
 
         Divider()
+    }
 
+    if (publisherStyles != null) {
         SwitchItem("Publisher styles", publisherStyles, preferences, update)
+    }
+
+    if (wordSpacing != null) {
         RangeItem("Word spacing", wordSpacing, preferences, update)
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            Spacer(modifier = Modifier.weight(1f))
-
-            Button(
-                onClick = {
-                    update { clear() }
-                },
-            ) {
-                Text("Reset")
-            }
-        }
     }
 }
 
+/**
+ * Component for an [EnumSetting] displayed as a group of mutually exclusive buttons.
+ * This works best with a small number of enum values.
+ */
 @Composable
-inline fun <reified T> ButtonGroupItem(
+private inline fun <reified T> ButtonGroupItem(
     title: String,
-    setting: EnumSetting<T>?,
+    setting: EnumSetting<T>,
     preferences: Preferences,
     crossinline update: UpdatePreferences,
     crossinline label: (T) -> String
 ) {
-    setting ?: return
-
     Item(title, isActive = preferences.isActive(setting)) {
         ToggleButtonGroup(
             options = setting.values,
@@ -179,16 +205,17 @@ inline fun <reified T> ButtonGroupItem(
     }
 }
 
+/**
+ * Component for an [EnumSetting] displayed as a dropdown menu.
+ */
 @Composable
-inline fun <reified T> DropdownMenuItem(
+private inline fun <reified T> DropdownMenuItem(
     title: String,
-    setting: EnumSetting<T>?,
+    setting: EnumSetting<T>,
     preferences: Preferences,
     crossinline update: UpdatePreferences,
     crossinline label: (T) -> String
 ) {
-    setting ?: return
-
     Item(title, isActive = preferences.isActive(setting)) {
         DropdownMenuButton(
             text = { Text(label(setting.value)) }
@@ -206,15 +233,16 @@ inline fun <reified T> DropdownMenuItem(
     }
 }
 
+/**
+ * Component for a [RangeSetting] with decrement and increment buttons.
+ */
 @Composable
-inline fun RangeItem(
+private inline fun RangeItem(
     title: String,
-    setting: RangeSetting<Double>?,
+    setting: RangeSetting<Double>,
     preferences: Preferences,
     crossinline update: UpdatePreferences,
 ) {
-    setting ?: return
-
     Item(title, isActive = preferences.isActive(setting)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -249,16 +277,21 @@ inline fun RangeItem(
     }
 }
 
+/**
+ * Component for a switchable [ToggleSetting].
+ */
 @Composable
-inline fun SwitchItem(
+private inline fun SwitchItem(
     title: String,
-    setting: ToggleSetting?,
+    setting: ToggleSetting,
     preferences: Preferences,
     crossinline update: UpdatePreferences
 ) {
-    setting ?: return
-
-    Item(title, isActive = preferences.isActive(setting)) {
+    Item(
+        title = title,
+        isActive = preferences.isActive(setting),
+        onClick = { update { toggle(setting)} }
+    ) {
         Switch(
             checked = setting.value,
             onCheckedChange = { value ->
@@ -270,8 +303,11 @@ inline fun SwitchItem(
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun Item(title: String, isActive: Boolean = true, content: @Composable () -> Unit) {
+private fun Item(title: String, isActive: Boolean = true, onClick: (() -> Unit)? = null, content: @Composable () -> Unit) {
     ListItem(
+        modifier =
+            if (onClick != null) Modifier.clickable(onClick = onClick)
+            else Modifier,
         text = {
             val alpha = if (isActive) 1.0f else ContentAlpha.disabled
             CompositionLocalProvider(LocalContentAlpha provides alpha) {
@@ -280,4 +316,9 @@ fun Item(title: String, isActive: Boolean = true, content: @Composable () -> Uni
         },
         trailing = content
     )
+}
+
+@Composable
+private fun Divider() {
+    Divider(modifier = Modifier.padding(vertical = 16.dp))
 }
