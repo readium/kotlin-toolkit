@@ -105,7 +105,7 @@ data class Presentation(
         CONTAIN("contain"),
         COVER("cover");
 
-        companion object : MapCompanion<String, Fit>(values(), Fit::value) {
+        companion object : MapCompanion<Fit>(values(), Fit::value) {
 
             /**
              * Default value for [Fit], if not specified.
@@ -123,7 +123,7 @@ data class Presentation(
         LANDSCAPE("landscape"),
         PORTRAIT("portrait");
 
-        companion object : MapCompanion<String, Orientation>(values(), Orientation::value) {
+        companion object : MapCompanion<Orientation>(values(), Orientation::value) {
 
             /**
              * Default value for [Orientation], if not specified.
@@ -148,7 +148,7 @@ data class Presentation(
         PAGINATED("paginated"),
         SCROLLED("scrolled");
 
-        companion object : MapCompanion<String, Overflow>(values(), Overflow::value) {
+        companion object : MapCompanion<Overflow>(values(), Overflow::value) {
 
             /**
              * Default value for [Overflow], if not specified.
@@ -174,7 +174,7 @@ data class Presentation(
         RIGHT("right"),
         CENTER("center");
 
-        companion object : MapCompanion<String, Page>(values(), Page::value)
+        companion object : MapCompanion<Page>(values(), Page::value)
     }
 
     /**
@@ -188,7 +188,7 @@ data class Presentation(
         NONE("none"),
         LANDSCAPE("landscape");
 
-        companion object : MapCompanion<String, Spread>(values(), Spread::value) {
+        companion object : MapCompanion<Spread>(values(), Spread::value) {
 
             /**
              * Default value for [Spread], if not specified.

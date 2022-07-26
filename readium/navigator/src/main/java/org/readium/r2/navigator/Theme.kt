@@ -19,7 +19,7 @@ enum class Theme(val value: String) {
     Dark("dark"),
     Sepia("sepia");
 
-    companion object : MapWithDefaultCompanion<String, Theme>(values(), Theme::value, Light)
+    companion object : MapWithDefaultCompanion<Theme>(values(), Theme::value, Light)
 }
 
 enum class ColumnCount(val value: String) {
@@ -27,7 +27,7 @@ enum class ColumnCount(val value: String) {
     One("1"),
     Two("2");
 
-    companion object : MapWithDefaultCompanion<String, ColumnCount>(values(), ColumnCount::value, Auto)
+    companion object : MapWithDefaultCompanion<ColumnCount>(values(), ColumnCount::value, Auto)
 }
 
 @JvmInline
@@ -45,7 +45,7 @@ value class Font(val name: String?) {
         override fun encode(value: Font?): String? =
             value?.name
 
-        override fun decode(rawValue: String?): Font? =
-            rawValue?.let { Font(it) }
+        override fun decode(rawValue: Any): Font? =
+            (rawValue as? String)?.let { Font(it) }
     }
 }

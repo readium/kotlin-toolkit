@@ -36,7 +36,7 @@ enum class ContentLayout(val cssId: String) : Parcelable {
     // Asian language, horizontally laid out
     CJK_HORIZONTAL("cjk-horizontal");
 
-    companion object : MapWithDefaultCompanion<String, ContentLayout>(values(), ContentLayout::cssId, LTR) {
+    companion object : MapWithDefaultCompanion<ContentLayout>(values(), ContentLayout::cssId, LTR) {
 
         @Deprecated("Renamed to [RTL]", ReplaceWith("ContentLayout.RTL"))
         val rtl: ContentLayout = RTL

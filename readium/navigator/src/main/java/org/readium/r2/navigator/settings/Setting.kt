@@ -4,61 +4,66 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:Suppress("FunctionName")
+
 package org.readium.r2.navigator.settings
 
-import org.readium.r2.navigator.ColumnCount
-import org.readium.r2.navigator.Font
-import org.readium.r2.navigator.Theme
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation.*
+import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.IdentityValueCoder
 import org.readium.r2.shared.util.ValueCoder
 import java.text.NumberFormat
 
 @ExperimentalReadiumApi
-data class SettingKey<V, R>(
+data class Setting<T, R, E>(
     val key: String,
-    private val coder: ValueCoder<V?, R?>
-) : ValueCoder<V?, R?> by coder {
-
-    override fun toString(): String = key
+    val coder: ValueCoder<T?, R?>,
+    val value: T,
+    val extras: E,
+    private val validator: SettingValidator<T> = IdentitySettingValidator(),
+    private val activator: SettingActivator = PassthroughSettingActivator
+) : SettingValidator<T> by validator, SettingActivator by activator, ValueCoder<T?, R?> by coder {
 
     companion object {
-        val COLUMN_COUNT = SettingKey("columnCount", ColumnCount)
-        val FIT = SettingKey("fit", Fit)
-        val FONT = SettingKey("font", Font)
-        val FONT_SIZE = SettingKey<Double>("fontSize")
-        val ORIENTATION = SettingKey("orientation", Orientation)
-        val OVERFLOW = SettingKey("overflow", Overflow)
-        val PUBLISHER_STYLES = SettingKey<Boolean>("publisherStyles")
-        val READING_PROGRESSION = SettingKey("readingProgression", ReadingProgression)
-        val THEME = SettingKey("theme", Theme)
-        val WORD_SPACING = SettingKey<Double>("wordSpacing")
-
-        operator fun <V> invoke(key: String): SettingKey<V, V> =
-            SettingKey(key, IdentityValueCoder())
+        // Well-known setting keys
+        const val COLUMN_COUNT = "columnCount"
+        const val FIT = "fit"
+        const val FONT = "font"
+        const val FONT_SIZE = "fontSize"
+        const val ORIENTATION = "orientation"
+        const val OVERFLOW = "overflow"
+        const val PUBLISHER_STYLES = "publisherStyles"
+        const val READING_PROGRESSION = "readingProgression"
+        const val THEME = "theme"
+        const val WORD_SPACING = "wordSpacing"
     }
-}
 
-@ExperimentalReadiumApi
-open class Setting<T, R>(
-    val key: SettingKey<T, R>,
-    valueCandidates: List<T?>,
-    validator: SettingValidator<T> = IdentitySettingValidator(),
-    activator: SettingActivator = PassthroughSettingActivator
-) : SettingValidator<T> by validator, SettingActivator by activator {
+    val encodedValue: R? = coder.encode(this.value)
 
-    val value: T = requireNotNull(
-        valueCandidates.firstNotNullOfOrNull { v ->
-            v?.let { validator.validate(it) }
-        }
-    ) { "No valid value was provided among: $valueCandidates"}
+    fun copyFirstValidValueFrom(vararg candidates: Preferences?): Setting<T, R, E> =
+        copyFirstValidValueFrom(*candidates
+            .filterNotNull()
+            .map { Either.Left<Preferences, T>(it) }
+            .toTypedArray()
+        )
 
-    val encodedValue: R? = key.encode(this.value)
+    // TODO: Useful?
+    private fun copyFirstValidValueFrom(vararg candidates: Either<Preferences, T>?): Setting<T, R, E> =
+        copy(
+            value = candidates
+                .filterNotNull()
+                .mapNotNull { candidate ->
+                    when (candidate) {
+                        is Either.Left -> candidate.value[this]
+                        is Either.Right -> candidate.value
+                    }
+                }
+                .firstNotNullOfOrNull(::validate)
+                ?: value
+        )
 
     override fun equals(other: Any?): Boolean {
-        val otherSetting = (other as? Setting<*, *>) ?: return false
+        val otherSetting = (other as? Setting<*, *, *>) ?: return false
         return otherSetting.key == key && otherSetting.encodedValue == encodedValue
     }
 
@@ -69,65 +74,115 @@ open class Setting<T, R>(
     }
 }
 
-@OptIn(ExperimentalReadiumApi::class)
-open class ToggleSetting(
-    key: SettingKey<Boolean, Boolean>,
-    valueCandidates: List<Boolean?>,
+@ExperimentalReadiumApi
+typealias ToggleSetting = Setting<Boolean, Boolean, Unit>
+
+@ExperimentalReadiumApi
+fun ToggleSetting(
+    key: String,
+    value: Boolean,
     validator: SettingValidator<Boolean> = IdentitySettingValidator(),
     activator: SettingActivator = PassthroughSettingActivator,
-) : Setting<Boolean, Boolean>(
-    key = key, valueCandidates = valueCandidates,
-    validator = validator, activator = activator
-)
+) : ToggleSetting =
+    Setting(
+        key = key, coder = IdentityValueCoder(Boolean::class), value = value, extras = Unit,
+        validator = validator, activator = activator
+    )
 
-@OptIn(ExperimentalReadiumApi::class)
-open class RangeSetting<T : Comparable<T>>(
-    key: SettingKey<T, T>,
-    valueCandidates: List<T?>,
+@ExperimentalReadiumApi
+typealias RangeSetting<T> = Setting<T, T, RangeExtras<T>>
+
+@ExperimentalReadiumApi
+data class RangeExtras<T : Comparable<T>>(
     val range: ClosedRange<T>,
-    val suggestedSteps: List<T>? = null,
-    val label: (T) -> String = { it.toString() },
-    validator: SettingValidator<T> = IdentitySettingValidator(),
-    activator: SettingActivator = PassthroughSettingActivator,
-) : Setting<T, T>(
-    key = key, valueCandidates = valueCandidates,
-    validator = RangeSettingValidator(range) then validator,
-    activator = activator
+    val suggestedSteps: List<T>?,
+    val label: (T) -> String,
 )
 
 @ExperimentalReadiumApi
-open class PercentSetting(
-    key: SettingKey<Double, Double>,
-    valueCandidates: List<Double?>,
+inline fun <reified T : Comparable<T>> RangeSetting(
+    key: String,
+    value: T,
+    range: ClosedRange<T>,
+    suggestedSteps: List<T>? = null,
+    noinline label: (T) -> String = { it.toString() },
+    validator: SettingValidator<T> = IdentitySettingValidator(),
+    activator: SettingActivator = PassthroughSettingActivator,
+) : RangeSetting<T> =
+    Setting(
+        key = key, coder = IdentityValueCoder(T::class), value = value,
+        extras = RangeExtras(
+            range = range,
+            suggestedSteps = suggestedSteps,
+            label = label
+        ),
+        validator = RangeSettingValidator(range) then validator,
+        activator = activator
+    )
+
+@ExperimentalReadiumApi
+fun <T : Comparable<T>> RangeSetting<T>.label(value: T): String =
+    extras.label(value)
+
+@ExperimentalReadiumApi
+typealias PercentSetting = Setting<Double, Double, RangeExtras<Double>>
+
+@ExperimentalReadiumApi
+fun PercentSetting(
+    key: String,
+    value: Double,
     range: ClosedRange<Double> = 0.0..1.0,
     suggestedSteps: List<Double>? = null,
     validator: SettingValidator<Double> = IdentitySettingValidator(),
     activator: SettingActivator = PassthroughSettingActivator
-) : RangeSetting<Double>(
-    key = key, valueCandidates = valueCandidates,
-    range = range, suggestedSteps = suggestedSteps,
-    label = { v ->
-        NumberFormat.getPercentInstance().run {
-            maximumFractionDigits = 0
-            format(v)
-        }
-    }, validator, activator
+) : PercentSetting =
+    RangeSetting(
+        key = key, value = value, range = range, suggestedSteps = suggestedSteps,
+        label = { v ->
+            NumberFormat.getPercentInstance().run {
+                maximumFractionDigits = 0
+                format(v)
+            }
+        },
+        validator = validator, activator = activator
+    )
+
+@ExperimentalReadiumApi
+typealias EnumSetting<E> = Setting<E, String, EnumExtras<E>>
+
+@ExperimentalReadiumApi
+data class EnumExtras<E>(
+    val values: List<E>,
+    val label: (E) -> String?,
 )
 
-@OptIn(ExperimentalReadiumApi::class)
-open class EnumSetting<E>(
-    key: SettingKey<E, String>,
-    valueCandidates: List<E?>,
-    val values: List<E>,
-    val label: (E) -> String? = { null },
+@ExperimentalReadiumApi
+fun <E> EnumSetting(
+    key: String,
+    coder: ValueCoder<E?, String?>,
+    value: E,
+    values: List<E>,
+    label: (E) -> String? = { null },
     validator: SettingValidator<E> = IdentitySettingValidator(),
     activator: SettingActivator = PassthroughSettingActivator,
-) : Setting<E, String>(
-    key = key, valueCandidates = valueCandidates,
-    validator = AllowedValuesSettingValidator(values) then validator,
-    activator = activator
-)
+) : EnumSetting<E> =
+    Setting(
+        key = key, value = value, coder = coder,
+        extras = EnumExtras(
+            values = values,
+            label = label
+        ),
+        validator = AllowedValuesSettingValidator(values) then validator,
+        activator = activator
+    )
 
+@ExperimentalReadiumApi
+val <E> EnumSetting<E>.values: List<E>
+    get() = extras.values
+
+@ExperimentalReadiumApi
+fun <E> EnumSetting<E>.label(value: E): String? =
+    extras.label(value)
 
 @ExperimentalReadiumApi
 interface SettingActivator {
@@ -140,25 +195,6 @@ object PassthroughSettingActivator : SettingActivator {
     override fun isActiveWithPreferences(preferences: Preferences): Boolean = true
     override fun activateInPreferences(preferences: MutablePreferences) {}
 }
-
-@ExperimentalReadiumApi
-class DependencySettingActivator(
-    val requiredValues: Preferences
-) : SettingActivator {
-    override fun isActiveWithPreferences(preferences: Preferences): Boolean {
-        for ((key, value) in requiredValues.values) {
-            if (value != preferences.values[key]) {
-                return false
-            }
-        }
-        return true
-    }
-
-    override fun activateInPreferences(preferences: MutablePreferences) {
-        preferences.merge(requiredValues)
-    }
-}
-
 
 @ExperimentalReadiumApi
 interface SettingValidator<T> {
@@ -186,7 +222,7 @@ infix fun <T> SettingValidator<T>.then(other: SettingValidator<T>): SettingValid
 
 @ExperimentalReadiumApi
 class RangeSettingValidator<T : Comparable<T>>(val range: ClosedRange<T>) : SettingValidator<T> {
-    override fun validate(value: T): T?  =
+    override fun validate(value: T): T  =
         value.coerceIn(range)
 }
 

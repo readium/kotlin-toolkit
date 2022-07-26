@@ -19,6 +19,7 @@ import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.MapWithDefaultCompanion
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.getOrDefault
 import java.util.*
 import kotlin.Exception
 import kotlin.coroutines.resume
@@ -55,7 +56,12 @@ class AndroidTtsEngine(
         /** Denotes a failure of a TTS engine to synthesize the given input. */
         Synthesis(-3);
 
-        companion object : MapWithDefaultCompanion<Int, EngineError>(values(), EngineError::code, Unknown)
+        companion object {
+            fun getOrDefault(key: Int): EngineError =
+                values()
+                    .firstOrNull { it.code == key }
+                    ?: Unknown
+        }
     }
 
     class EngineException(code: Int) : Exception("Android TTS engine error: $code") {

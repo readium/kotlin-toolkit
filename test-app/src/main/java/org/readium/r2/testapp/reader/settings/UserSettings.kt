@@ -189,12 +189,12 @@ private fun ReflowableUserSettings(
  * This works best with a small number of enum values.
  */
 @Composable
-private inline fun <reified T> ButtonGroupItem(
+private fun <T> ButtonGroupItem(
     title: String,
     setting: EnumSetting<T>,
     preferences: Preferences,
-    crossinline edit: EditPreferences,
-    crossinline label: (T) -> String
+    edit: EditPreferences,
+    label: (T) -> String
 ) {
     Item(title, isActive = preferences.isActive(setting)) {
         ToggleButtonGroup(
@@ -215,12 +215,12 @@ private inline fun <reified T> ButtonGroupItem(
  * Component for an [EnumSetting] displayed as a dropdown menu.
  */
 @Composable
-private inline fun <reified T> DropdownMenuItem(
+private fun <T> DropdownMenuItem(
     title: String,
     setting: EnumSetting<T>,
     preferences: Preferences,
-    crossinline edit: EditPreferences,
-    crossinline label: (T) -> String
+    edit: EditPreferences,
+    label: (T) -> String
 ) {
     Item(title, isActive = preferences.isActive(setting)) {
         DropdownMenuButton(
@@ -243,11 +243,11 @@ private inline fun <reified T> DropdownMenuItem(
  * Component for a [RangeSetting] with decrement and increment buttons.
  */
 @Composable
-private inline fun RangeItem(
+private fun RangeItem(
     title: String,
     setting: RangeSetting<Double>,
     preferences: Preferences,
-    crossinline edit: EditPreferences,
+    edit: EditPreferences,
 ) {
     Item(title, isActive = preferences.isActive(setting)) {
         Row(
@@ -285,11 +285,11 @@ private inline fun RangeItem(
  * Component for a switchable [ToggleSetting].
  */
 @Composable
-private inline fun SwitchItem(
+private fun SwitchItem(
     title: String,
     setting: ToggleSetting,
     preferences: Preferences,
-    crossinline edit: EditPreferences
+    edit: EditPreferences
 ) {
     Item(
         title = title,
