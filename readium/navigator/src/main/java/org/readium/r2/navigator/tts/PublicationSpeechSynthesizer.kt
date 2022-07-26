@@ -419,13 +419,11 @@ class PublicationSpeechSynthesizer<E : TtsEngine> private constructor(
             ?.let { voiceWithId(it) }
             ?.takeIf { language == null || it.language.removeRegion() == language.removeRegion() }
 
-        return (
-            if (voice != null) Either.Left(voice)
-            else Either.Right(language
-                ?: config.value.defaultLanguage
-                ?: publication.metadata.language
-                ?: Language(Locale.getDefault())
-            )
+        return Either(voice
+            ?: language
+            ?: config.value.defaultLanguage
+            ?: publication.metadata.language
+            ?: Language(Locale.getDefault())
         )
     }
 

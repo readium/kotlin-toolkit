@@ -13,6 +13,15 @@ sealed class Either<A, B> {
     class Left<A, B>(val value: A) : Either<A, B>()
     class Right<A, B>(val value: B) : Either<A, B>()
 
+    companion object {
+        inline operator fun <reified A, reified B> invoke(value: Any) : Either<A, B> =
+            when (value) {
+                is A -> Left(value)
+                is B -> Right(value)
+                else -> throw IllegalArgumentException("Provided value must be an instance of ${A::class.simpleName} or ${B::class.simpleName}")
+            }
+    }
+
     val left: A?
         get() = (this as? Left)?.value
 
