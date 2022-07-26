@@ -9,6 +9,9 @@ package org.readium.r2.navigator.settings
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.shared.ExperimentalReadiumApi
 
+/**
+ * A [Configurable] is a component with a set of configurable [Settings].
+ */
 @ExperimentalReadiumApi
 interface Configurable {
 
@@ -18,16 +21,17 @@ interface Configurable {
     interface Settings
 
     /**
-     * Current [Settings].
+     * Current [Settings] values.
+     *
+     * Implementers: Override to set the actual [Settings] sub-type.
      */
     val settings: StateFlow<Settings>
 
     /**
-     * Submits a new set of preferences used by the [Configurable] to recompute its [Settings].
+     * Submits a new set of [Preferences] to update the current [Settings].
      *
-     * Note that the [Configurable] might not update its settings right away, or might even ignore
-     * some of the provided preferences. They are only used as guidelines to compute the new
-     * [Settings].
+     * Note that the [Configurable] might not update its [settings] right away, or might even ignore
+     * some of the provided preferences. They are only used as hints to compute the new settings.
      */
     fun applyPreferences(preferences: Preferences)
 }
