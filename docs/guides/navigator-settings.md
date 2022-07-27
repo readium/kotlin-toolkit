@@ -32,13 +32,13 @@ The `Settings` (*plural*) object is unique for each Navigator implementation and
 Here are some of the available setting types:
 
 * `ToggleSetting` - a simple boolean setting, e.g. whether or not the publisher styles are enabled.
-* `RangeSetting<V : Comparable<V>>` - a setting for comparable values constrained in a range, e.g. the page margins as a `RangeSetting<Int>` could range from 0px to 200px.
+* `RangeSetting<V>` - a setting for comparable values constrained in a range, e.g. the page margins as a `RangeSetting<Int>` could range from 0px to 200px.
 * `PercentSetting` - a specialization of `RangeSetting<Double>` which represents a percentage from, by default, 0.0 to 1.0.
 * `EnumSetting<V>` - a setting whose value is a member of the enum `V`, e.g. the theme (`light`, `dark`, `sepia`) or the font family.
 
 ### Preferences
 
-The `Preferences` object holds the `Setting` values which should be preferred by the Navigator when computing its `Settings`. Preferences can be produced from different sources:
+The `Preferences` object holds the values which should be preferred by the Navigator when computing its `Settings`. Preferences can be combined from different sources:
 
 * Static app defaults.
 * User preferences restored from JSON.
@@ -76,4 +76,319 @@ preferences.copy {
 
 ## Build a user settings interface
 
+:point_up: The following examples are using [Jetpack Compose](https://developer.android.com/jetpack/compose), but could be implemented with regular Android views.
+
+You can use the `Configurable` API to build a user settings interface dynamically. As this API is agnostic to the type of publication, you can reuse parts of the user settings screen across Navigator implementations or media types.
+
+For example, you could group the user settings per nature of publications:
+
+* `ReflowableUserSettings` for a visual publication with adjustable fonts and dimensions, such as a reflowable EPUB, HTML document or PDF with reflow mode enabled.
+* `FixedUserSettings` for a visual publication with a fixed layout, such as FXL EPUB, PDF or comic books.
+* `PlaybackUserSettings` for an audiobook, text-to-speech or EPUB media overlays settings.
+
+### Binding to the `Configurable` navigator
+
+This first [stateful composable](https://developer.android.com/jetpack/compose/state#stateful-vs-stateless) binds directly to a `Configurable` object to recompose when its settings are refreshed and to apply the preferences when the user interacts with the interface. It delegates the actual interface to a stateless `UserSettings` composable.
+
+```kotlin
+if (navigator is Configurable) {
+    UserSettings(navigator)
+}
+
+@Composable
+fun UserSettings(configurable: Configurable) {
+    val settings by configurable.settings.collectAsState()
+    var preferences by remember { mutableStateOf(Preferences()) }
+
+    UserSettings(
+        settings = settings,
+        preferences = preferences,
+        edit = { changes ->
+            preferences = preferences.copy(changes)
+            configurable.applyPreferences(preferences)
+        }
+    )
+}
+```
+
+The `edit` parameter is a closure with the declared type:
+
+```kotlin
+typealias EditPreferences = (MutablePreferences.() -> Unit) -> Unit
+```
+
+It is used to conveniently modify the current preferences and apply them to the `Configurable` in the stateless composables. For example:
+
+```kotlin
+edit {
+    increment(settings.fontSize)
+}
+```
+
+:point_up: A real application would hoist the state in a separate object (such as an Android `ViewModel`) to save and restore the user preferences and update itself when the Navigator is recreated (e.g. configuration change). Take a look at `UserSettingsViewModel.kt` and `UserSettings.kt` in the Test App for a complete example.
+
+### Stateless `UserSettings` composable
+
+The `Configurable.Settings` is just an empty [marker interface](https://en.wikipedia.org/wiki/Marker_interface_pattern). To access the actual `Setting` properties, you need to cast it to a concrete implementation (e.g. `EpubSettings`) and decide on the best kind of user settings screen for it.
+
+```kotlin
+@Composable
+fun UserSettings(
+    settings: Configurable.Settings,
+    preferences: Preferences,
+    edit: EditPreferences
+) {
+    Column {
+        Text("User settings")
+
+        // Button to reset the preferences.
+        Button(
+            onClick = {
+                edit { clear() }
+            },
+        ) {
+            Text("Reset")
+        }
+
+        Divider()
+
+        when (settings) {
+            is EpubSettings ->
+                ReflowableUserSettings(
+                    preferences = preferences,
+                    edit = edit,
+                    publisherStyles = settings.publisherStyles,
+                    fontSize = settings.fontSize,
+                    font = settings.font,
+                )
+        }
+    }
+}
+```
+
+:point_up: The individual `EpubSettings`' `Setting` properties are forwarded to `ReflowableUserSettings` to make it reusable with other similar implementations of `Configurable.Settings`.
+
+### User settings composable for reflowable publications
+
+This stateless composable displays the actual settings for a reflowable publication. The `Setting` parameters are nullable as they might not be available at all times or for all media types. It delegates the rendering of individual settings to specific composables.
+
+```kotlin
+@Composable
+private fun ReflowableUserSettings(
+    preferences: Preferences,
+    edit: EditPreferences,
+    publisherStyles: ToggleSetting? = null,
+    fontSize: PercentSetting? = null,
+    font: EnumSetting<Font>? = null,
+) {
+    if (publisherStyles != null) {
+        SwitchItem("Publisher styles", publisherStyles, preferences, edit)
+    }
+
+    if (fontSize != null) {
+        StepperItem("Font size", fontSize, preferences, edit)
+    }
+
+    if (font != null) {
+        DropdownMenuItem("Font", font, preferences, edit) { value ->
+            when (value) {
+                Font.ORIGINAL -> "Original"
+                else -> font.label(value)
+            } ?: "Unknown"
+        }
+    }
+}
+```
+
+### Composable for a `ToggleSetting`
+
+A `ToggleSetting` can be represented as a simple switch button.
+
+```kotlin
+@Composable
+private fun SwitchItem(
+    title: String,
+    setting: ToggleSetting,
+    preferences: Preferences,
+    edit: EditPreferences
+) {
+    ListItem(
+        modifier = Modifier
+            .clickable {
+                edit { toggle(setting) }
+            },
+        text = { Text(title) },
+        trailing = {
+            Switch(
+                checked = preferences[setting] ?: setting.value,
+                onCheckedChange = { checked ->
+                    edit { set(setting, checked) }
+                }
+            )
+        }
+    )
+}
+```
+
+This composable takes advantage of the helpers in `MutablePreferences` to set the preference in two different ways:
+
+* `toggle(setting)` will invert the current preference when tapping on the whole list item.
+* `set(setting, checked)` sets an explicit value provided by the `Switch`'s `onCheckedChange` callback.
+
+:point_up: Note that the current state for `Switch` is derived from the selected preference first, and then on the actual setting value as a fallback (`checked = preferences[setting] ?: setting.value`). We deemed that it was too important to display the user selected value first, even if it is not applied yet in the Navigator. Your opinion may differ, in which case you can use `checked = setting.value`.
+
+### Composable for a `PercentSetting`
+
+A `PercentSetting` (or any `RangeSetting<V>`) can be represented as a stepper component with decrement and increment buttons.
+
+```kotlin
+@Composable
+private fun StepperItem(
+    title: String,
+    setting: RangeSetting<Double>,
+    preferences: Preferences,
+    edit: EditPreferences,
+) {
+    ListItem(
+        text = { Text(title) },
+        trailing = {
+            Row {
+                IconButton(
+                    onClick = {
+                        edit { decrement(setting) }
+                    }
+                ) {
+                    Icon(Icons.Default.Remove, contentDescription = "Less")
+                }
+
+                val currentValue = preferences[setting] ?: setting.value
+                Text(setting.label(currentValue))
+
+                IconButton(
+                    onClick = {
+                        edit { increment(setting) }
+                    }
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "More")
+                }
+            }
+        },
+    )
+}
+```
+
+This composable use the `increment()` and `decrement()` range helpers of `MutablePreferences`, but you could also set a value manually.
+
+Between the two buttons, we display the current value using the `RangeSetting<V>.label()` helper. This will automatically format the value to a human-readable string, such as a percentage or a value with units (e.g. 30px).
+
+### Composable for an `EnumSetting<V>`
+
+An enum can be displayed with various components, such as:
+
+* a dropdown menu for a large enum
+* a group of exclusive buttons for a small one
+
+In this example, we chose a dropdown menu built using the `setting.values` which return the allowed enum members.
+
+```kotlin
+@Composable
+private fun <T> DropdownMenuItem(
+    title: String,
+    setting: EnumSetting<T>,
+    preferences: Preferences,
+    edit: EditPreferences,
+    label: (T) -> String
+) {
+    val currentValue = preferences[setting] ?: setting.value
+
+    ListItem(
+        text = { Text(title) },
+        trailing = {
+            DropdownMenuButton(
+                text = { Text(label(currentValue)) }
+            ) {
+                for (value in setting.values) {
+                    DropdownMenuItem(
+                        onClick = {
+                            edit { set(setting, value) }
+                        }
+                    ) {
+                        Text(label(value))
+                    }
+                }
+            }
+        },
+    )
+}
+
+@Composable
+fun DropdownMenuButton(
+    text: @Composable RowScope.() -> Unit,
+    content: @Composable ColumnScope.(dismiss: () -> Unit) -> Unit
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+    fun dismiss() { isExpanded = false }
+
+    OutlinedButton(
+        onClick = { isExpanded = true },
+    ) {
+        text()
+        DropdownMenu(
+            expanded = isExpanded,
+            onDismissRequest = { isExpanded = false }
+        ) {
+            content(::dismiss)
+        }
+    }
+}
+```
+
+`EnumSetting<V>` also offers a `label()` helper to generate a user-facing string for each value. However, you will need a fallback mechanism as the returned string is nullable, since some enums need localized values (e.g. text alignment).
+
 ## Save and restore the user preferences
+
+Having a user settings screen is moot if you cannot save and restore the selected preferences for future session. Thankfully you can serialize `Preferences` to a JSON object.
+
+```kotlin
+val json = preferences.toJSON().toString()
+```
+
+When you are ready to restore the user preferences, construct a new `Preferences` object from the JSON string.
+
+```kotlin
+val preferences = Preferences(json)
+```
+
+We recommend storing a different set of preferences per publication profile (`publication.profile`), but you could also store the preferences for each publication.
+
+In the Test App, `UserSettingsViewModel` delegates the preferences state hoisting and persistence to `PreferencesStore` which acts as a single source of truth.
+
+## Setting the initial Navigator preferences and app defaults
+
+When opening a publication, you want to apply the user preferences right away. You can do that by providing them to the Navigator constructor. The API depends on each Navigator implementation, but looks like this:
+
+```kotlin
+EpubNavigatorFragment.createFactory(
+    publication = publication,
+    ...,
+    config = EpubNavigatorFragment.Configuration(
+        preferences = preferencesStore.get(publication.profile),
+        defaultPreferences = Preferences {
+            set(EpubSettings.OVERFLOW, Overflow.SCROLLED)
+        }
+    )
+)
+```
+
+The `defaultPreferences` are used as fallback values when the default Navigator settings are not suitable for your application.
+
+:point_up: The `EpubSettings.OVERFLOW` "prototype" setting is helpful to modify a `Preferences` object when you don't have access to a `EpubSettings` instance.
+
+## `Setting` objects are low-level
+
+The `Setting` objects are technical low-level properties. While some of them can be directly exposed to the user, such as the font size, other settings should not be displayed as-is. For example in EPUB, we simulate two pages side by side with `columnCount` (`auto`, `1`, `2`) for reflowable resources and `spread` (`auto`, `landscape`, `both`, `none`) for a fixed layout publication. Instead of showing both settings with all their possible values in the user interface, an app might prefer to show a single switch button to enable a dual-page mode which will set both settings appropriately.
+
+Similarly, an app might want to cluster several settings together. For example, given a scrolled mode switch in the user interface:
+
+* when on, `overflow` is set to `scrolled` and `readingProgression` to `ttb`
+* when off, `overflow` is set to `paginated` and the user can freely select the `readingProgression` between the two values `ltr` and `rtl`
