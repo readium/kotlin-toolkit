@@ -13,6 +13,7 @@ import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.IdentityValueCoder
 import org.readium.r2.shared.util.ValueCoder
 import java.text.NumberFormat
+import java.util.*
 
 /**
  * Represents a single configurable property of a [Configurable] component and holds its current
@@ -216,6 +217,7 @@ typealias EnumSetting<E> = Setting<E, String, EnumExtras<E>>
 data class EnumExtras<E>(
     val values: List<E>,
     val label: (E) -> String?,
+    val originalValidator: SettingValidator<E>,
 )
 
 /**
@@ -239,10 +241,25 @@ fun <E> EnumSetting(
         key = key, value = value, coder = coder,
         extras = EnumExtras(
             values = values,
-            label = label
+            label = label,
+            originalValidator = validator
         ),
         validator = AllowlistSettingValidator(values) then validator,
         activator = activator
+    )
+
+/**
+ * Creates a copy of this [EnumSetting] after replacing its [values] and [coder].
+ */
+@ExperimentalReadiumApi
+fun <E> EnumSetting<E>.copy(
+    coder: ValueCoder<E?, String?> = this.coder,
+    values: List<E> = this.values
+): EnumSetting<E> =
+    copy(
+        coder = coder,
+        extras = extras.copy(values = values),
+        validator = AllowlistSettingValidator(values) then extras.originalValidator
     )
 
 /**

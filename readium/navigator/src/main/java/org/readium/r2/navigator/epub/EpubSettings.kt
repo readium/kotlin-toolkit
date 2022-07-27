@@ -17,81 +17,87 @@ import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 
 @ExperimentalReadiumApi
 data class EpubSettings(
-    val columnCount: EnumSetting<ColumnCount>?,
-    val font: EnumSetting<Font>,
-    val fontSize: PercentSetting,
-    val overflow: EnumSetting<Overflow>,
-    val publisherStyles: ToggleSetting,
-    val theme: EnumSetting<Theme>,
-    val wordSpacing: PercentSetting,
+    val columnCount: EnumSetting<ColumnCount>? = COLUMN_COUNT,
+    val font: EnumSetting<Font> = FONT,
+    val fontSize: PercentSetting = FONT_SIZE,
+    val overflow: EnumSetting<Overflow> = OVERFLOW,
+    val publisherStyles: ToggleSetting = PUBLISHER_STYLES,
+    val theme: EnumSetting<Theme> = THEME,
+    val wordSpacing: PercentSetting = WORD_SPACING,
 ) : Configurable.Settings {
-    companion object {
-        operator fun invoke(preferences: Preferences, fallback: Preferences, fonts: List<Font>): EpubSettings {
-            return EpubSettings(
-                columnCount = if (preferences[overflow] == Overflow.SCROLLED) null
-                    else columnCount.copyFirstValidValueFrom(preferences, fallback),
-                font = font.copyFirstValidValueFrom(preferences, fallback),
-                fontSize = fontSize.copyFirstValidValueFrom(preferences, fallback),
-                overflow = overflow.copyFirstValidValueFrom(preferences, fallback),
-                publisherStyles = publisherStyles.copyFirstValidValueFrom(preferences, fallback),
-                theme = theme.copyFirstValidValueFrom(preferences, fallback),
-                wordSpacing = wordSpacing.copyFirstValidValueFrom(preferences, fallback),
-            )
-        }
+    constructor(fonts: List<Font>) : this(
+        font = FONT.copy(
+            coder = Font.Coder(listOf(Font.ORIGINAL) + fonts),
+            values = listOf(Font.ORIGINAL) + fonts
+        )
+    )
 
-        private val columnCount: EnumSetting<ColumnCount> = EnumSetting(
+    companion object {
+        val COLUMN_COUNT: EnumSetting<ColumnCount> = EnumSetting(
             key = Setting.COLUMN_COUNT,
             coder = ColumnCount,
             value = ColumnCount.Auto,
             values = listOf(ColumnCount.Auto, ColumnCount.One, ColumnCount.Two),
         )
 
-        private val font: EnumSetting<Font> = EnumSetting(
+        val FONT: EnumSetting<Font> = EnumSetting(
             key = Setting.FONT,
-            coder = Font,
+            coder = Font.Coder(listOf(Font.ORIGINAL)),
             value = Font.ORIGINAL,
             values = listOf(Font.ORIGINAL),
             label = { it.name }
         )
 
-        private val fontSize: PercentSetting = PercentSetting(
+        val FONT_SIZE: PercentSetting = PercentSetting(
             key = Setting.FONT_SIZE,
             value = 1.0,
             range = 0.4..5.0
         )
 
-        private val overflow: EnumSetting<Overflow> = EnumSetting(
+        val OVERFLOW: EnumSetting<Overflow> = EnumSetting(
             key = Setting.OVERFLOW,
             coder = Overflow,
             value = Overflow.PAGINATED,
             values = listOf(Overflow.PAGINATED, Overflow.SCROLLED),
         )
 
-        private val publisherStyles: ToggleSetting = ToggleSetting(
+        val PUBLISHER_STYLES: ToggleSetting = ToggleSetting(
             key = Setting.PUBLISHER_STYLES,
             value = true,
         )
 
-        private val theme: EnumSetting<Theme> = EnumSetting(
+        val THEME: EnumSetting<Theme> = EnumSetting(
             key = Setting.THEME,
             coder = Theme,
             value = Theme.Light,
             values = listOf(Theme.Light, Theme.Dark, Theme.Sepia)
         )
 
-        private val wordSpacing: PercentSetting = PercentSetting(
+        val WORD_SPACING: PercentSetting = PercentSetting(
             key = Setting.WORD_SPACING,
             value = 0.0,
             activator = object : SettingActivator {
                 override fun isActiveWithPreferences(preferences: Preferences): Boolean =
-                    preferences[publisherStyles] == false
+                    preferences[PUBLISHER_STYLES] == false
 
                 override fun activateInPreferences(preferences: MutablePreferences) {
-                    preferences[publisherStyles] = false
+                    preferences[PUBLISHER_STYLES] = false
                 }
             }
         )
     }
+
+    internal fun update(preferences: Preferences, fallback: Preferences): EpubSettings =
+        copy(
+            columnCount = if (preferences[overflow] == Overflow.SCROLLED) null
+                else (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(preferences, fallback),
+            font = font.copyFirstValidValueFrom(preferences, fallback),
+            fontSize = fontSize.copyFirstValidValueFrom(preferences, fallback),
+            overflow = overflow.copyFirstValidValueFrom(preferences, fallback),
+            publisherStyles = publisherStyles.copyFirstValidValueFrom(preferences, fallback),
+            theme = theme.copyFirstValidValueFrom(preferences, fallback),
+            wordSpacing = wordSpacing.copyFirstValidValueFrom(preferences, fallback),
+        )
 }
 
 @ExperimentalReadiumApi

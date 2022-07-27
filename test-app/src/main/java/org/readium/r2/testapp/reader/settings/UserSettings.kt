@@ -14,9 +14,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -169,7 +167,7 @@ private fun ReflowableUserSettings(
         }
 
         if (fontSize != null) {
-            RangeItem("Font size", fontSize, preferences, edit)
+            StepperItem("Font size", fontSize, preferences, edit)
         }
 
         Divider()
@@ -180,7 +178,7 @@ private fun ReflowableUserSettings(
     }
 
     if (wordSpacing != null) {
-        RangeItem("Word spacing", wordSpacing, preferences, edit)
+        StepperItem("Word spacing", wordSpacing, preferences, edit)
     }
 }
 
@@ -224,7 +222,7 @@ private fun <T> DropdownMenuItem(
 ) {
     Item(title, isActive = preferences.isActive(setting)) {
         DropdownMenuButton(
-            text = { Text(label(setting.value)) }
+            text = { Text(label(preferences[setting] ?: setting.value)) }
         ) {
             for (value in setting.values) {
                 DropdownMenuItem(
@@ -243,7 +241,7 @@ private fun <T> DropdownMenuItem(
  * Component for a [RangeSetting] with decrement and increment buttons.
  */
 @Composable
-private fun RangeItem(
+private fun StepperItem(
     title: String,
     setting: RangeSetting<Double>,
     preferences: Preferences,
@@ -297,7 +295,7 @@ private fun SwitchItem(
         onClick = { edit { toggle(setting)} }
     ) {
         Switch(
-            checked = setting.value,
+            checked = preferences[setting] ?: setting.value,
             onCheckedChange = { value ->
                 edit { set(setting, value) }
             }

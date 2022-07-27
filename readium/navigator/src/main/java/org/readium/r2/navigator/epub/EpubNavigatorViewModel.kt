@@ -89,16 +89,18 @@ internal class EpubNavigatorViewModel(
 
     // Settings
 
-    private val _settings = MutableStateFlow(EpubSettings(
-        preferences = config.preferences,
-        fallback = config.defaultPreferences,
-        fonts = config.fonts,
-    ))
+    private val _settings = MutableStateFlow(
+        EpubSettings(fonts = config.fonts)
+            .update(
+                preferences = config.preferences,
+                fallback = config.defaultPreferences
+            )
+    )
     val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
 
     fun applyPreferences(preferences: Preferences) {
         val settings = _settings.updateAndGet {
-            EpubSettings(preferences, fallback = config.defaultPreferences, fonts = config.fonts)
+            it.update(preferences, fallback = config.defaultPreferences)
         }
         css.update(settings)
     }

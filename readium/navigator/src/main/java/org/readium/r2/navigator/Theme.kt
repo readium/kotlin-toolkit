@@ -30,22 +30,25 @@ enum class ColumnCount(val value: String) {
     companion object : MapWithDefaultCompanion<ColumnCount>(values(), ColumnCount::value, Auto)
 }
 
-@JvmInline
-value class Font(val name: String?) {
-    companion object : ValueCoder<Font?, String?> {
-        val ORIGINAL = Font(null)
-        val PT_SERIF = Font("PT Serif")
-        val ROBOTO = Font("Roboto")
-        val SOURCE_SANS_PRO = Font("Source Sans Pro")
-        val VOLLKORN = Font("Vollkorn")
-        val OPEN_DYSLEXIC = Font("OpenDyslexic")
-        val ACCESSIBLE_DFA = Font("AccessibleDfA")
-        val IA_WRITER_DUOSPACE = Font("IA Writer Duospace")
+data class Font(val id: String, val name: String? = null) {
+    companion object {
+        val ORIGINAL = Font(id = "original")
+        val PT_SERIF = Font(id = "pt-serif", name = "PT Serif")
+        val ROBOTO = Font(id = "roboto", name = "Roboto")
+        val SOURCE_SANS_PRO = Font(id = "source-sans-pro", name = "Source Sans Pro")
+        val VOLLKORN = Font(id = "vollkorn", name = "Vollkorn")
+        val OPEN_DYSLEXIC = Font(id = "opendyslexic", name = "OpenDyslexic")
+        val ACCESSIBLE_DFA = Font(id = "accessible-dfa", name = "AccessibleDfA")
+        val IA_WRITER_DUOSPACE = Font(id = "ia-writer-duospace", name = "IA Writer Duospace")
+    }
 
+    class Coder(private val fonts: List<Font>) : ValueCoder<Font?, String?> {
         override fun encode(value: Font?): String? =
-            value?.name
+            value?.id
 
-        override fun decode(rawValue: Any): Font? =
-            (rawValue as? String)?.let { Font(it) }
+        override fun decode(rawValue: Any): Font? {
+            val id = rawValue as? String ?: return null
+            return fonts.firstOrNull { it.id == id }
+        }
     }
 }
