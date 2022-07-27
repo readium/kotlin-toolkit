@@ -18,7 +18,6 @@ import org.readium.r2.navigator.settings.MutablePreferences
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Manages user settings.
@@ -63,7 +62,7 @@ class UserSettingsViewModel(
 
             preferences
                 .flowWithLifecycle(lifecycle)
-                .onEach { configurable.applyPreferences(it) }
+                .onEach { configurable.submitPreferences(it) }
                 .launchIn(lifecycleScope)
         }
     }

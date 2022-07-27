@@ -155,7 +155,7 @@ class EpubNavigatorFragment private constructor(
 
     override val settings: StateFlow<EpubSettings> get() = viewModel.settings
 
-    override fun applyPreferences(preferences: Preferences) {
+    override fun submitPreferences(preferences: Preferences) {
         viewModel.applyPreferences(preferences)
     }
 

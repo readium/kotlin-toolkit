@@ -33,5 +33,5 @@ interface Configurable {
      * Note that the [Configurable] might not update its [settings] right away, or might even ignore
      * some of the provided preferences. They are only used as hints to compute the new settings.
      */
-    fun applyPreferences(preferences: Preferences)
+    fun submitPreferences(preferences: Preferences)
 }

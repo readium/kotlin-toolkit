@@ -10,7 +10,6 @@ import android.app.Dialog
 import androidx.compose.runtime.Composable
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.ComposeBottomSheetDialogFragment
 
