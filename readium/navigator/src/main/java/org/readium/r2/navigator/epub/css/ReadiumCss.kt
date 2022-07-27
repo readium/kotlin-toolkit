@@ -13,7 +13,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.util.ValueEncoder
 
-// FIXME: Extension point to customize the generated CSS properties list before applying it. Allows to set a --var()
 // FIXME: Custom Fonts
 @ExperimentalReadiumApi
 class ReadiumCss(
@@ -391,7 +390,7 @@ class ReadiumCss(
         val unit: String
 
         override fun toCss(): String? =
-            "${value}${unit}"
+            "${String.format("%.2f", value)}${unit}"
 
         /** Absolute CSS length. */
         sealed class Absolute(

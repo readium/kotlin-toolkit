@@ -96,6 +96,7 @@ fun UserSettings(
                     overflow = settings.overflow,
                     publisherStyles = settings.publisherStyles,
                     wordSpacing = settings.wordSpacing,
+                    letterSpacing = settings.letterSpacing,
                     theme = settings.theme,
                 )
         }
@@ -116,6 +117,7 @@ private fun ReflowableUserSettings(
     overflow: EnumSetting<Overflow>? = null,
     publisherStyles: ToggleSetting? = null,
     wordSpacing: PercentSetting? = null,
+    letterSpacing: PercentSetting? = null,
     theme: EnumSetting<Theme>? = null,
 ) {
     if (theme != null) {
@@ -179,6 +181,10 @@ private fun ReflowableUserSettings(
 
     if (wordSpacing != null) {
         StepperItem("Word spacing", wordSpacing, preferences, edit)
+    }
+
+    if (letterSpacing != null) {
+        StepperItem("Letter spacing", letterSpacing, preferences, edit)
     }
 }
 

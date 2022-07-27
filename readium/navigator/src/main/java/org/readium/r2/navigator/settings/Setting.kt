@@ -43,6 +43,7 @@ data class Setting<V, R, E>(
         const val FIT = "fit"
         const val FONT = "font"
         const val FONT_SIZE = "fontSize"
+        const val LETTER_SPACING = "letterSpacing"
         const val ORIENTATION = "orientation"
         const val OVERFLOW = "overflow"
         const val PUBLISHER_STYLES = "publisherStyles"

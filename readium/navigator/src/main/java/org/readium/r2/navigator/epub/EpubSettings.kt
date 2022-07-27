@@ -24,6 +24,7 @@ data class EpubSettings(
     val publisherStyles: ToggleSetting = PUBLISHER_STYLES,
     val theme: EnumSetting<Theme> = THEME,
     val wordSpacing: PercentSetting = WORD_SPACING,
+    val letterSpacing: PercentSetting = LETTER_SPACING,
 ) : Configurable.Settings {
     constructor(fonts: List<Font>) : this(
         font = FONT.copy(
@@ -76,15 +77,23 @@ data class EpubSettings(
         val WORD_SPACING: PercentSetting = PercentSetting(
             key = Setting.WORD_SPACING,
             value = 0.0,
-            activator = object : SettingActivator {
-                override fun isActiveWithPreferences(preferences: Preferences): Boolean =
-                    preferences[PUBLISHER_STYLES] == false
-
-                override fun activateInPreferences(preferences: MutablePreferences) {
-                    preferences[PUBLISHER_STYLES] = false
-                }
-            }
+            activator = RequiresPublisherStylesDisabled
         )
+
+        val LETTER_SPACING: PercentSetting = PercentSetting(
+            key = Setting.LETTER_SPACING,
+            value = 0.0,
+            activator = RequiresPublisherStylesDisabled
+        )
+
+        private object RequiresPublisherStylesDisabled : SettingActivator {
+            override fun isActiveWithPreferences(preferences: Preferences): Boolean =
+                preferences[PUBLISHER_STYLES] == false
+
+            override fun activateInPreferences(preferences: MutablePreferences) {
+                preferences[PUBLISHER_STYLES] = false
+            }
+        }
     }
 
     internal fun update(preferences: Preferences, defaults: Preferences): EpubSettings =
@@ -97,6 +106,7 @@ data class EpubSettings(
             publisherStyles = publisherStyles.copyFirstValidValueFrom(preferences, defaults),
             theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME.value),
             wordSpacing = wordSpacing.copyFirstValidValueFrom(preferences, defaults),
+            letterSpacing = letterSpacing.copyFirstValidValueFrom(preferences, defaults),
         )
 }
 
@@ -128,6 +138,7 @@ fun ReadiumCss.update(settings: EpubSettings) {
 //                    ?.let { ReadiumCss.Length.Relative.Percent(it) },
                 advancedSettings = !publisherStyles.value,
                 wordSpacing = ReadiumCss.Length.Relative.Rem(wordSpacing.value),
+                letterSpacing = ReadiumCss.Length.Relative.Rem(letterSpacing.value / 2),
             )
         }
     }
