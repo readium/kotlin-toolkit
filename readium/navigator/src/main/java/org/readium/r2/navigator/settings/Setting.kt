@@ -62,25 +62,12 @@ data class Setting<V, R, E>(
      *
      * Each preference is verified using the setting [validator].
      */
-    fun copyFirstValidValueFrom(vararg candidates: Preferences?): Setting<V, R, E> =
-        copyFirstValidValueFrom(*candidates
-            .filterNotNull()
-            .map { Either.Left<Preferences, V>(it) }
-            .toTypedArray()
-        )
-
-    // FIXME: Useful or not?
-    private fun copyFirstValidValueFrom(vararg candidates: Either<Preferences, V>?): Setting<V, R, E> =
+    fun copyFirstValidValueFrom(vararg candidates: Preferences?, fallback: V? = null): Setting<V, R, E> =
         copy(
             value = candidates
-                .filterNotNull()
-                .mapNotNull { candidate ->
-                    when (candidate) {
-                        is Either.Left -> candidate.value[this]
-                        is Either.Right -> candidate.value
-                    }
-                }
+                .mapNotNull { candidate -> candidate?.get(this) }
                 .firstNotNullOfOrNull(::validate)
+                ?: fallback
                 ?: value
         )
 

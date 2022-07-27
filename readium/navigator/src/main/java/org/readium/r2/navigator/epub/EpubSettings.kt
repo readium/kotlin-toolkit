@@ -87,16 +87,16 @@ data class EpubSettings(
         )
     }
 
-    internal fun update(preferences: Preferences, fallback: Preferences): EpubSettings =
+    internal fun update(preferences: Preferences, defaults: Preferences): EpubSettings =
         copy(
             columnCount = if (preferences[overflow] == Overflow.SCROLLED) null
-                else (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(preferences, fallback),
-            font = font.copyFirstValidValueFrom(preferences, fallback),
-            fontSize = fontSize.copyFirstValidValueFrom(preferences, fallback),
-            overflow = overflow.copyFirstValidValueFrom(preferences, fallback),
-            publisherStyles = publisherStyles.copyFirstValidValueFrom(preferences, fallback),
-            theme = theme.copyFirstValidValueFrom(preferences, fallback),
-            wordSpacing = wordSpacing.copyFirstValidValueFrom(preferences, fallback),
+                else (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(preferences, defaults),
+            font = font.copyFirstValidValueFrom(preferences, defaults, fallback = FONT.value),
+            fontSize = fontSize.copyFirstValidValueFrom(preferences, defaults),
+            overflow = overflow.copyFirstValidValueFrom(preferences, defaults, fallback = OVERFLOW.value),
+            publisherStyles = publisherStyles.copyFirstValidValueFrom(preferences, defaults),
+            theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME.value),
+            wordSpacing = wordSpacing.copyFirstValidValueFrom(preferences, defaults),
         )
 }
 

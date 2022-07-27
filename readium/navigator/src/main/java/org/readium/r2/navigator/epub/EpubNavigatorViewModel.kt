@@ -10,7 +10,6 @@ import android.graphics.PointF
 import android.graphics.RectF
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.*
@@ -93,14 +92,14 @@ internal class EpubNavigatorViewModel(
         EpubSettings(fonts = config.fonts)
             .update(
                 preferences = config.preferences,
-                fallback = config.defaultPreferences
+                defaults = config.defaultPreferences
             )
     )
     val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
 
     fun applyPreferences(preferences: Preferences) {
         val settings = _settings.updateAndGet {
-            it.update(preferences, fallback = config.defaultPreferences)
+            it.update(preferences, defaults = config.defaultPreferences)
         }
         css.update(settings)
     }
