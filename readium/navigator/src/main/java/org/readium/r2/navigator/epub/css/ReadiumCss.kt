@@ -24,10 +24,21 @@ class ReadiumCss(
     val userProperties: MutableStateFlow<UserProperties> = MutableStateFlow(userProperties)
 
     interface Properties : JSONable {
-        fun toCssProperties(): Map<String, String?>
-
         override fun toJSON(): JSONObject =
             JSONObject(toCssProperties())
+
+        fun toCssProperties(): Map<String, String?>
+
+        fun toInlineCssProperties(): String {
+            var css = toCssProperties()
+                .filterValues { it != null }
+                .map { (key, value) -> "$key: $value" }
+                .joinToString(";\n")
+            if (css.isNotBlank()) {
+                css += ";"
+            }
+            return css
+        }
     }
 
     /**
@@ -472,8 +483,8 @@ fun interface Cssable {
     fun toCss(): String?
 }
 
-private fun MutableMap<String, String?>.putCss(name: String, cssable: Cssable?) {
-    put(name, cssable?.toCss())
+private fun MutableMap<String, String?>.putCss(name: String, value: Cssable?) {
+    put(name, value?.toCss())
 }
 
 private fun MutableMap<String, String?>.putCss(name: String, double: Double?) {
