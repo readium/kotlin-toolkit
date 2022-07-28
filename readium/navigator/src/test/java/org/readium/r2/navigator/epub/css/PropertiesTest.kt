@@ -77,7 +77,7 @@ class PropertiesTest {
                 "--RS__paraSpacing" to "5.6px",
                 "--RS__paraIndent" to "6.7em",
                 "--RS__maxLineLength" to "7.8rem",
-                "--RS__maxMediaWidth" to "50.0%",
+                "--RS__maxMediaWidth" to "50%",
                 "--RS__maxMediaHeight" to "9.1vw",
                 "--RS__boxSizingMedia" to "border-box",
                 "--RS__boxSizingTable" to "content-box",
@@ -243,7 +243,30 @@ class PropertiesTest {
     }
 
     @Test
-    fun `Generate inline CSS properties`() {
+    fun `Generate empty inline CSS properties`() {
+        assertEquals(
+            "",
+            UserProperties().toCss()
+        )
+    }
+
+    @Test
+    fun `Generate minimal inline CSS properties`() {
+        assertEquals(
+            """
+                --USER__view: readium-scroll-on;
+                --USER__colCount: auto;
+                
+            """.trimIndent(),
+            UserProperties(
+                view = View.Scroll,
+                colCount = ColCount.Auto,
+            ).toCss()
+        )
+    }
+
+    @Test
+    fun `Generate full inline CSS properties`() {
         assertEquals(
             """
                 --USER__view: readium-scroll-on;
@@ -268,6 +291,7 @@ class PropertiesTest {
                 --USER__bodyHyphens: auto;
                 --USER__ligatures: common-ligatures;
                 --USER__a11yNormalize: readium-a11y-on;
+                
             """.trimIndent(),
             UserProperties(
                 view = View.Scroll,
@@ -292,7 +316,7 @@ class PropertiesTest {
                 bodyHyphens = Hyphens.Auto,
                 ligatures = Ligatures.Common,
                 a11yNormalize = true,
-            ).toInlineCssProperties()
+            ).toCss()
         )
     }
 }

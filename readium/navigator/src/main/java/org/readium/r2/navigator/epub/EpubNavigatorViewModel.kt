@@ -32,7 +32,7 @@ internal class EpubNavigatorViewModel(
 
     private val css = MutableStateFlow(ReadiumCss(
         // FIXME
-        layout = Layout(stylesheets = Layout.Stylesheets.Default, readingProgression = ReadingProgression.AUTO)
+        layout = Layout.from(language = null, hasMultipleLanguages = false, readingProgression = ReadingProgression.AUTO)
     ))
 
     // Make a copy to prevent new decoration templates from being registered after initializing

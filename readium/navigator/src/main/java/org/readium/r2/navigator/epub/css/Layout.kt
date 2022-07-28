@@ -15,11 +15,12 @@ import org.readium.r2.shared.util.Language
  * See https://github.com/readium/readium-css/tree/master/css/dist
  */
 data class Layout(
+    val language: Language?,
     val stylesheets: Stylesheets,
     val readingProgression: ReadingProgression,
 ) {
     companion object {
-        operator fun invoke(language: Language?, hasMultipleLanguages: Boolean, readingProgression: ReadingProgression): Layout {
+        fun from(language: Language?, hasMultipleLanguages: Boolean, readingProgression: ReadingProgression): Layout {
             // https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#missing-page-progression-direction
             var rp = when {
                 readingProgression != ReadingProgression.AUTO ->
@@ -48,7 +49,7 @@ data class Layout(
                 rp = ReadingProgression.TTB
             }
 
-            return Layout(stylesheets, rp)
+            return Layout(language, stylesheets, rp)
         }
     }
 

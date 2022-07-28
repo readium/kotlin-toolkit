@@ -7,6 +7,7 @@
 package org.readium.r2.testapp.reader.settings
 
 import android.app.Dialog
+import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -18,10 +19,8 @@ class UserSettingsBottomSheetDialogFragment : ComposeBottomSheetDialogFragment(
 ) {
     private val model: ReaderViewModel by activityViewModels()
 
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
-
-        checkNotNull(dialog as BottomSheetDialog).apply {
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
             // Reduce the dim to see the impact of the settings on the page.
             window?.setDimAmount(0.1f)
 
@@ -30,7 +29,6 @@ class UserSettingsBottomSheetDialogFragment : ComposeBottomSheetDialogFragment(
                 maxHeight = 1000
             }
         }
-    }
 
     @Composable
     override fun Content() {

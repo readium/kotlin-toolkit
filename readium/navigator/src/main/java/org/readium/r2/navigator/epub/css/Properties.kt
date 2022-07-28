@@ -9,23 +9,26 @@ package org.readium.r2.navigator.epub.css
 import androidx.annotation.ColorInt
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.ValueEncoder
+import java.text.NumberFormat
 
 /**
  * Holds a set of Readium CSS properties applied together.
  */
 @ExperimentalReadiumApi
-interface Properties {
+interface Properties: Cssable {
     fun toCssProperties(): Map<String, String?>
 
-    fun toInlineCssProperties(): String {
-        var css = toCssProperties()
+    override fun toCss(): String? {
+        val props = toCssProperties()
             .filterValues { it != null }
-            .map { (key, value) -> "$key: $value" }
-            .joinToString(";\n")
-        if (css.isNotBlank()) {
-            css += ";"
+
+        if (props.isEmpty()) {
+            return ""
         }
-        return css
+
+        return props
+            .map { (key, value) -> "$key: $value" }
+            .joinToString(";\n") + ";\n"
     }
 }
 
@@ -385,7 +388,10 @@ interface Length : Cssable {
     val unit: String
 
     override fun toCss(): String? =
-        "${String.format("%.2f", value)}${unit}"
+        NumberFormat.getNumberInstance().run {
+            maximumFractionDigits = 2
+            format(value)
+        } + unit
 
     /** Absolute CSS length. */
     sealed class Absolute(
