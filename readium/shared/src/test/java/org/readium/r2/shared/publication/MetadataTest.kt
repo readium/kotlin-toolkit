@@ -15,6 +15,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.extensions.iso8601ToDate
+import org.readium.r2.shared.util.Language
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -309,7 +310,92 @@ class MetadataTest {
         assertEquals(ReadingProgression.LTR, createMetadata(languages = listOf("zh-foo"), readingProgression = ReadingProgression.AUTO).effectiveReadingProgression)
     }
 
+    @Test fun `get primary language with no language`() {
+        assertNull(createMetadata(languages = listOf(), readingProgression = ReadingProgression.AUTO).language)
+        assertNull(createMetadata(languages = listOf(), readingProgression = ReadingProgression.LTR).language)
+        assertNull(createMetadata(languages = listOf(), readingProgression = ReadingProgression.RTL).language)
+    }
+
+    @Test fun `get primary language with a single language`() {
+        assertEquals(
+            Language("en"),
+            createMetadata(languages = listOf("en"), readingProgression = ReadingProgression.AUTO).language
+        )
+        assertEquals(
+            Language("en"),
+            createMetadata(languages = listOf("en"), readingProgression = ReadingProgression.LTR).language
+        )
+        assertEquals(
+            Language("en"),
+            createMetadata(languages = listOf("en"), readingProgression = ReadingProgression.RTL).language
+        )
+    }
+
+    // https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#multiple-language-items
+    @Test fun `get primary language with multiple ambiguous languages`() {
+        assertEquals(
+            Language("en"),
+            createMetadata(languages = listOf("en", "ja"), readingProgression = ReadingProgression.AUTO).language
+        )
+        assertEquals(
+            Language("en"),
+            createMetadata(languages = listOf("en", "ja"), readingProgression = ReadingProgression.LTR).language
+        )
+        assertEquals(
+            Language("ja"),
+            createMetadata(languages = listOf("en", "ja"), readingProgression = ReadingProgression.RTL).language
+        )
+        assertEquals(
+            Language("ja"),
+            createMetadata(languages = listOf("ja", "en"), readingProgression = ReadingProgression.AUTO).language
+        )
+        assertEquals(
+            Language("ja"),
+            createMetadata(languages = listOf("ja", "en"), readingProgression = ReadingProgression.LTR).language
+        )
+        assertEquals(
+            Language("ja"),
+            createMetadata(languages = listOf("ja", "en"), readingProgression = ReadingProgression.RTL).language
+        )
+        assertEquals(
+            Language("ja"),
+            createMetadata(languages = listOf("ja", "ar"), readingProgression = ReadingProgression.RTL).language
+        )
+
+        assertEquals(
+            Language("ar"),
+            createMetadata(languages = listOf("en", "ar"), readingProgression = ReadingProgression.RTL).language
+        )
+        assertEquals(
+            Language("fa"),
+            createMetadata(languages = listOf("en", "fa"), readingProgression = ReadingProgression.RTL).language
+        )
+        assertEquals(
+            Language("he"),
+            createMetadata(languages = listOf("en", "he"), readingProgression = ReadingProgression.RTL).language
+        )
+        assertEquals(
+            Language("zh"),
+            createMetadata(languages = listOf("en", "zh"), readingProgression = ReadingProgression.RTL).language
+        )
+        assertEquals(
+            Language("zh-Hant"),
+            createMetadata(languages = listOf("en", "zh-Hant"), readingProgression = ReadingProgression.RTL).language
+        )
+        assertEquals(
+            Language("zh-TW"),
+            createMetadata(languages = listOf("en", "zh-TW"), readingProgression = ReadingProgression.RTL).language
+        )
+        assertEquals(
+            Language("zh-HK"),
+            createMetadata(languages = listOf("en", "zh-HK"), readingProgression = ReadingProgression.RTL).language
+        )
+        assertEquals(
+            Language("ko"),
+            createMetadata(languages = listOf("en", "ko"), readingProgression = ReadingProgression.RTL).language
+        )
+    }
+
     private fun createMetadata(languages: List<String>, readingProgression: ReadingProgression): Metadata =
         Metadata(localizedTitle = LocalizedString("Title"), languages = languages, readingProgression = readingProgression)
-
 }

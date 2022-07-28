@@ -39,6 +39,8 @@ class Language private constructor(val code: String, val locale: Locale) {
     fun removeRegion(): Language =
         Language(code.split("-", limit = 2).first())
 
+    override fun toString(): String = code
+
     override fun equals(other: Any?): Boolean =
         code == (other as? Language)?.code
 

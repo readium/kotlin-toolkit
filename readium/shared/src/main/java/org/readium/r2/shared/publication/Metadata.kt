@@ -155,11 +155,25 @@ data class Metadata(
         belongsTo["series"] ?: emptyList()
 
     /**
-     * Returns the [Language] resolved from the first declared BCP 47 language.
+     * Returns the [Language] resolved from the declared BCP 47 primary language.
      */
     @IgnoredOnParcel
     val language: Language? by lazy {
-        languages.firstOrNull()?.let { Language(it) }
+        var language: String? = null
+
+        // https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#multiple-language-items
+        if (languages.size > 1 && readingProgression == ReadingProgression.RTL) {
+            val rtlLanguages = listOf("ar", "fa", "he", "zh", "zh-hant", "zh-tw", "zh-hk", "ko", "ja")
+            language = languages.firstOrNull {
+                rtlLanguages.contains(it.lowercase())
+            }
+        }
+
+        if (language == null) {
+            language = languages.firstOrNull()
+        }
+
+        language?.let { Language(it) }
     }
 
     /**
