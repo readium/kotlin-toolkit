@@ -383,6 +383,10 @@ class MetadataTest {
             createMetadata(languages = listOf("en", "zh-Hant"), readingProgression = ReadingProgression.RTL).language
         )
         assertEquals(
+            Language("en"),
+            createMetadata(languages = listOf("en", "zh-Hans"), readingProgression = ReadingProgression.RTL).language
+        )
+        assertEquals(
             Language("zh-TW"),
             createMetadata(languages = listOf("en", "zh-TW"), readingProgression = ReadingProgression.RTL).language
         )

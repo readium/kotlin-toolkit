@@ -22,11 +22,12 @@ fun ReadiumCss.injectHtml(html: String, metadata: Metadata): String {
     var endHeadIndex = htmlBuilder.indexOf("</head>", 0, true).takeIf { it != -1 }
         ?: throw IllegalArgumentException("No </head> closing tag found in this resource")
 
-    val layout = CssLayout(metadata)
+    val layout = Layout(metadata.language, hasMultipleLanguages = true, metadata.readingProgression)
+    val stylesheetsFolder = layout.stylesheets.folder?.plus("/") ?: ""
 
     val endIncludes = mutableListOf<String>()
     val beginIncludes = mutableListOf<String>()
-    beginIncludes.add(htmlLink("/assets/readium-css/${layout.readiumCSSPath}ReadiumCSS-before.css"))
+    beginIncludes.add(htmlLink("/assets/readium-css/${stylesheetsFolder}ReadiumCSS-before.css"))
 
     // Fix Readium CSS issue with the positioning of <audio> elements.
     // https://github.com/readium/readium-css/issues/94
@@ -40,7 +41,7 @@ fun ReadiumCss.injectHtml(html: String, metadata: Metadata): String {
         </style>
     """.trimIndent())
 
-    endIncludes.add(htmlLink("/assets/readium-css/${layout.readiumCSSPath}ReadiumCSS-after.css"))
+    endIncludes.add(htmlLink("/assets/readium-css/${stylesheetsFolder}ReadiumCSS-after.css"))
 
     for (element in beginIncludes) {
         htmlBuilder.insert(beginHeadIndex, element)
@@ -92,19 +93,19 @@ private fun htmlFont(fontFamily: String, href: String): String = """
     </style>
 """.trimIndent()
 
-private fun StringBuilder.applyDirectionAttribute(layout: CssLayout) {
-    if (layout == CssLayout.Rtl) {
-        fun addRTLDir(tagName: String) {
-            val match = regexForOpeningHtmlTag(tagName).find(this, 0) ?: return
-            if (match.value.contains("dir=")) return
-
-            val beginHtmlIndex = indexOf("<$tagName", 0, true) + 5
-            insert(beginHtmlIndex, " dir=\"rtl\"")
-        }
-
-        addRTLDir("html")
-        addRTLDir("body")
-    }
+private fun StringBuilder.applyDirectionAttribute(layout: Layout) {
+//    if (layout == .Rtl) {
+//        fun addRTLDir(tagName: String) {
+//            val match = regexForOpeningHtmlTag(tagName).find(this, 0) ?: return
+//            if (match.value.contains("dir=")) return
+//
+//            val beginHtmlIndex = indexOf("<$tagName", 0, true) + 5
+//            insert(beginHtmlIndex, " dir=\"rtl\"")
+//        }
+//
+//        addRTLDir("html")
+//        addRTLDir("body")
+//    }
 }
 
 private fun regexForOpeningHtmlTag(name: String): Regex =
