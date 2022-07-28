@@ -9,12 +9,18 @@ package org.readium.r2.navigator.epub.css
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Language
 
-internal data class Layout(
+/**
+ * Readium CSS layout variant to use.
+ *
+ * See https://github.com/readium/readium-css/tree/master/css/dist
+ */
+data class Layout(
     val stylesheets: Stylesheets,
     val readingProgression: ReadingProgression,
 ) {
     companion object {
         operator fun invoke(language: Language?, hasMultipleLanguages: Boolean, readingProgression: ReadingProgression): Layout {
+            // https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#missing-page-progression-direction
             var rp = when {
                 readingProgression != ReadingProgression.AUTO ->
                     readingProgression
@@ -48,15 +54,18 @@ internal data class Layout(
 
     /**
      * Readium CSS stylesheet variants.
-     *
-     * https://github.com/readium/readium-css/tree/master/css/dist
      */
     enum class Stylesheets(val folder: String?, val htmlDir: HtmlDir) {
         /** Left to right */
         Default(null, HtmlDir.Ltr),
         /** Right to left */
         Rtl("rtl", HtmlDir.Rtl),
-        /** Asian language, laid out vertically */
+        /**
+         * Asian language, laid out vertically.
+         *
+         * The HTML `dir` attribute must not be modified with vertical CJK:
+         * https://github.com/readium/readium-css/tree/master/css/dist#vertical
+         */
         CjkVertical("cjk-vertical", HtmlDir.Unspecified),
         /** Asian language, laid out horizontally */
         CjkHorizontal("cjk-horizontal", HtmlDir.Ltr);

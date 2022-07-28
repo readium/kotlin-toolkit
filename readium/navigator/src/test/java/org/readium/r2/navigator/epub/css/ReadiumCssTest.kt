@@ -1,298 +1,161 @@
 package org.readium.r2.navigator.epub.css
 
-import android.graphics.Color
+import org.junit.Assert
 import org.junit.Test
-import kotlin.test.assertEquals
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.ReadingProgression
 
 @OptIn(ExperimentalReadiumApi::class)
-class ReadiumCssTest {
+class HtmlInjectionTest {
 
     @Test
-    fun `Convert empty RS properties to a dictionary of CSS properties`() {
-        assertEquals(
-            mapOf<String, String?>(
-                "--RS__colWidth" to null,
-                "--RS__colCount" to null,
-                "--RS__colGap" to null,
-                "--RS__pageGutter" to null,
-                "--RS__flowSpacing" to null,
-                "--RS__paraSpacing" to null,
-                "--RS__paraIndent" to null,
-                "--RS__maxLineLength" to null,
-                "--RS__maxMediaWidth" to null,
-                "--RS__maxMediaHeight" to null,
-                "--RS__boxSizingMedia" to null,
-                "--RS__boxSizingTable" to null,
-                "--RS__textColor" to null,
-                "--RS__backgroundColor" to null,
-                "--RS__selectionTextColor" to null,
-                "--RS__selectionBackgroundColor" to null,
-                "--RS__linkColor" to null,
-                "--RS__visitedColor" to null,
-                "--RS__primaryColor" to null,
-                "--RS__secondaryColor" to null,
-                "--RS__typeScale" to null,
-                "--RS__baseFontFamily" to null,
-                "--RS__baseLineHeight" to null,
-                "--RS__oldStyleTf" to null,
-                "--RS__modernTf" to null,
-                "--RS__sansTf" to null,
-                "--RS__humanistTf" to null,
-                "--RS__monospaceTf" to null,
-                "--RS__serif-ja" to null,
-                "--RS__sans-serif-ja" to null,
-                "--RS__serif-ja-v" to null,
-                "--RS__sans-serif-ja-v" to null,
-                "--RS__compFontFamily" to null,
-                "--RS__codeFontFamily" to null,
-            ),
-            ReadiumCss.RsProperties().toCssProperties()
+    fun `Inject a reflowable with a simple HEAD`() {
+        val sut = ReadiumCss(
+            layout = Layout(stylesheets = Layout.Stylesheets.Default, readingProgression = ReadingProgression.LTR)
         )
-    }
-
-    @Test
-    fun `Override RS properties`() {
-        val props = ReadiumCss.RsProperties(
-            colCount = ReadiumCss.ColCount.One,
-            overrides = mapOf(
-                "--RS__colCount" to "2",
-                "--RS__custom" to "value"
-            )
-        ).toCssProperties()
-
-        assertEquals("2", props["--RS__colCount"])
-        assertEquals("value", props["--RS__custom"])
-    }
-
-    @Test
-    fun `Convert full RS properties to inline CSS`() {
-        assertEquals(
-            mapOf<String, String?>(
-                "--RS__colWidth" to "1.2cm",
-                "--RS__colCount" to "2",
-                "--RS__colGap" to "2.3pt",
-                "--RS__pageGutter" to "3.4pc",
-                "--RS__flowSpacing" to "4.5mm",
-                "--RS__paraSpacing" to "5.6px",
-                "--RS__paraIndent" to "6.7em",
-                "--RS__maxLineLength" to "7.8rem",
-                "--RS__maxMediaWidth" to "50.0%",
-                "--RS__maxMediaHeight" to "9.1vw",
-                "--RS__boxSizingMedia" to "border-box",
-                "--RS__boxSizingTable" to "content-box",
-                "--RS__textColor" to "#432FCA",
-                "--RS__backgroundColor" to "#FF0000",
-                "--RS__selectionTextColor" to "rgb(100, 150, 200)",
-                "--RS__selectionBackgroundColor" to "rgb(120, 230, 30)",
-                "--RS__linkColor" to "#00FF00",
-                "--RS__visitedColor" to "#0000FF",
-                "--RS__primaryColor" to "#FA4358",
-                "--RS__secondaryColor" to "#CBC322",
-                "--RS__typeScale" to "10.11",
-                "--RS__baseFontFamily" to """"Palatino", "Comic Sans MS"""",
-                "--RS__baseLineHeight" to "11.12vh",
-                "--RS__oldStyleTf" to """"Old", "Style"""",
-                "--RS__modernTf" to """"Modern", "Tf"""",
-                "--RS__sansTf" to """"Sans"""",
-                "--RS__humanistTf" to """"Humanist"""",
-                "--RS__monospaceTf" to """"Monospace"""",
-                "--RS__serif-ja" to """"Serif", "Ja"""",
-                "--RS__sans-serif-ja" to """"Sans serif", "Ja"""",
-                "--RS__serif-ja-v" to """"Serif", "JaV"""",
-                "--RS__sans-serif-ja-v" to """"Sans serif", "JaV"""",
-                "--RS__compFontFamily" to """"Arial"""",
-                "--RS__codeFontFamily" to """"Monaco", "Console Sans"""",
-            ),
-            ReadiumCss.RsProperties(
-                colWidth = ReadiumCss.Length.Absolute.Cm(1.2),
-                colCount = ReadiumCss.ColCount.Two,
-                colGap = ReadiumCss.Length.Absolute.Pt(2.3),
-                pageGutter = ReadiumCss.Length.Absolute.Pc(3.4),
-                flowSpacing = ReadiumCss.Length.Absolute.Mm(4.5),
-                paraSpacing = ReadiumCss.Length.Absolute.Px(5.6),
-                paraIndent = ReadiumCss.Length.Relative.Em(6.7),
-                maxLineLength = ReadiumCss.Length.Relative.Rem(7.8),
-                maxMediaWidth = ReadiumCss.Length.Relative.Percent(0.5),
-                maxMediaHeight = ReadiumCss.Length.Relative.Vw(9.10),
-                boxSizingMedia = ReadiumCss.BoxSizing.BorderBox,
-                boxSizingTable = ReadiumCss.BoxSizing.ContentBox,
-                textColor = ReadiumCss.Color.hex("#432FCA"),
-                backgroundColor = ReadiumCss.Color.int(Color.RED),
-                selectionTextColor = ReadiumCss.Color.rgb(100, 150, 200),
-                selectionBackgroundColor = ReadiumCss.Color.rgb(120, 230, 30),
-                linkColor = ReadiumCss.Color.int(Color.GREEN),
-                visitedColor = ReadiumCss.Color.int(Color.BLUE),
-                primaryColor = ReadiumCss.Color.hex("#FA4358"),
-                secondaryColor = ReadiumCss.Color.hex("#CBC322"),
-                typeScale = 10.11,
-                baseFontFamily = listOf("Palatino", "Comic Sans MS"),
-                baseLineHeight = ReadiumCss.Length.Relative.Vh(11.12),
-                oldStyleTf = listOf("Old", "Style"),
-                modernTf = listOf("Modern", "Tf"),
-                sansTf = listOf("Sans"),
-                humanistTf = listOf("Humanist"),
-                monospaceTf = listOf("Monospace"),
-                serifJa = listOf("Serif", "Ja"),
-                sansSerifJa = listOf("Sans serif", "Ja"),
-                serifJaV = listOf("Serif", "JaV"),
-                sansSerifJaV = listOf("Sans serif", "JaV"),
-                compFontFamily = listOf("Arial"),
-                codeFontFamily = listOf("Monaco", "Console Sans")
-            ).toCssProperties()
-        )
-    }
-
-    @Test
-    fun `Convert empty user properties to a dictionary of CSS properties`() {
-        assertEquals(
-            mapOf<String, String?>(
-                "--USER__view" to null,
-                "--USER__colCount" to null,
-                "--USER__pageMargins" to null,
-                "--USER__appearance" to null,
-                "--USER__darkenImages" to null,
-                "--USER__invertImages" to null,
-                "--USER__textColor" to null,
-                "--USER__backgroundColor" to null,
-                "--USER__fontOverride" to null,
-                "--USER__fontFamily" to null,
-                "--USER__fontSize" to null,
-                "--USER__advancedSettings" to null,
-                "--USER__typeScale" to null,
-                "--USER__textAlign" to null,
-                "--USER__lineHeight" to null,
-                "--USER__paraSpacing" to null,
-                "--USER__paraIndent" to null,
-                "--USER__wordSpacing" to null,
-                "--USER__letterSpacing" to null,
-                "--USER__bodyHyphens" to null,
-                "--USER__ligatures" to null,
-                "--USER__a11yNormalize" to null,
-            ),
-            ReadiumCss.UserProperties().toCssProperties()
-        )
-    }
-
-    @Test
-    fun `Convert full user properties to a dictionary of CSS properties`() {
-        assertEquals(
-            mapOf<String, String?>(
-                "--USER__view" to "readium-scroll-on",
-                "--USER__colCount" to "auto",
-                "--USER__pageMargins" to "1.2vmin",
-                "--USER__appearance" to "readium-night-on",
-                "--USER__darkenImages" to "readium-darken-on",
-                "--USER__invertImages" to "readium-invert-on",
-                "--USER__textColor" to "#FF0000",
-                "--USER__backgroundColor" to "#00FF00",
-                "--USER__fontOverride" to "readium-font-on",
-                "--USER__fontFamily" to """"Times New"""",
-                "--USER__fontSize" to "2.3vmax",
-                "--USER__advancedSettings" to "readium-advanced-on",
-                "--USER__typeScale" to "3.4pt",
-                "--USER__textAlign" to "justify",
-                "--USER__lineHeight" to "4.5pt",
-                "--USER__paraSpacing" to "5.6pt",
-                "--USER__paraIndent" to "6.7rem",
-                "--USER__wordSpacing" to "7.8rem",
-                "--USER__letterSpacing" to "8.9rem",
-                "--USER__bodyHyphens" to "auto",
-                "--USER__ligatures" to "common-ligatures",
-                "--USER__a11yNormalize" to "readium-a11y-on",
-            ),
-            ReadiumCss.UserProperties(
-                view = ReadiumCss.View.Scroll,
-                colCount = ReadiumCss.ColCount.Auto,
-                pageMargins = ReadiumCss.Length.Relative.VMin(1.2),
-                appearance = ReadiumCss.Appearance.Night,
-                darkenImages = true,
-                invertImages = true,
-                textColor = ReadiumCss.Color.int(Color.RED),
-                backgroundColor = ReadiumCss.Color.int(Color.GREEN),
-                fontOverride = true,
-                fontFamily = listOf("Times New"),
-                fontSize = ReadiumCss.Length.Relative.VMax(2.3),
-                advancedSettings = true,
-                typeScale = ReadiumCss.Length.Absolute.Pt(3.4),
-                textAlign = ReadiumCss.TextAlign.Justify,
-                lineHeight = ReadiumCss.Length.Absolute.Pt(4.5),
-                paraSpacing = ReadiumCss.Length.Absolute.Pt(5.6),
-                paraIndent = ReadiumCss.Length.Relative.Rem(6.7),
-                wordSpacing = ReadiumCss.Length.Relative.Rem(7.8),
-                letterSpacing = ReadiumCss.Length.Relative.Rem(8.9),
-                bodyHyphens = ReadiumCss.Hyphens.Auto,
-                ligatures = ReadiumCss.Ligatures.Common,
-                a11yNormalize = true,
-            ).toCssProperties()
-        )
-    }
-
-    @Test
-    fun `Override user properties`() {
-        val props = ReadiumCss.UserProperties(
-            colCount = ReadiumCss.ColCount.One,
-            overrides = mapOf(
-                "--USER__colCount" to "2",
-                "--USER__custom" to "value"
-            )
-        ).toCssProperties()
-
-        assertEquals("2", props["--USER__colCount"])
-        assertEquals("value", props["--USER__custom"])
-    }
-
-    @Test
-    fun `Generate inline CSS properties`() {
-        assertEquals(
+        Assert.assertEquals(
             """
-                --USER__view: readium-scroll-on;
-                --USER__colCount: auto;
-                --USER__pageMargins: 1.2vmin;
-                --USER__appearance: readium-night-on;
-                --USER__darkenImages: readium-darken-on;
-                --USER__invertImages: readium-invert-on;
-                --USER__textColor: #FF0000;
-                --USER__backgroundColor: #00FF00;
-                --USER__fontOverride: readium-font-on;
-                --USER__fontFamily: "Times New", "Comic Sans";
-                --USER__fontSize: 2.3vmax;
-                --USER__advancedSettings: readium-advanced-on;
-                --USER__typeScale: 3.4pt;
-                --USER__textAlign: justify;
-                --USER__lineHeight: 4.5pt;
-                --USER__paraSpacing: 5.6pt;
-                --USER__paraIndent: 6.7rem;
-                --USER__wordSpacing: 7.8rem;
-                --USER__letterSpacing: 8.9rem;
-                --USER__bodyHyphens: auto;
-                --USER__ligatures: common-ligatures;
-                --USER__a11yNormalize: readium-a11y-on;
+                <?xml version="1.0" encoding="utf-8"?>
+                <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+                <html xmlns="http://www.w3.org/1999/xhtml">
+                    <head><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-before.css"/>
+                <style>
+                audio[controls] {
+                    width: revert;
+                    height: revert;
+                }
+                </style>
+                        <title>Publication</title>
+                        <link rel="stylesheet" href="style.css" type="text/css"/>
+                    <link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-after.css"/>
+                <script type="text/javascript" src="/assets/scripts/readium-reflowable.js"></script>
+                <style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style>
+                <style type="text/css"> @font-face{font-family: "OpenDyslexic"; src:url("/assets/fonts/OpenDyslexic-Regular.otf") format('truetype');}</style>
+                </head>
+                    <body></body>
+                </html>
             """.trimIndent(),
-            ReadiumCss.UserProperties(
-                view = ReadiumCss.View.Scroll,
-                colCount = ReadiumCss.ColCount.Auto,
-                pageMargins = ReadiumCss.Length.Relative.VMin(1.2),
-                appearance = ReadiumCss.Appearance.Night,
-                darkenImages = true,
-                invertImages = true,
-                textColor = ReadiumCss.Color.int(Color.RED),
-                backgroundColor = ReadiumCss.Color.int(Color.GREEN),
-                fontOverride = true,
-                fontFamily = listOf("Times New", "Comic Sans"),
-                fontSize = ReadiumCss.Length.Relative.VMax(2.3),
-                advancedSettings = true,
-                typeScale = ReadiumCss.Length.Absolute.Pt(3.4),
-                textAlign = ReadiumCss.TextAlign.Justify,
-                lineHeight = ReadiumCss.Length.Absolute.Pt(4.5),
-                paraSpacing = ReadiumCss.Length.Absolute.Pt(5.6),
-                paraIndent = ReadiumCss.Length.Relative.Rem(6.7),
-                wordSpacing = ReadiumCss.Length.Relative.Rem(7.8),
-                letterSpacing = ReadiumCss.Length.Relative.Rem(8.9),
-                bodyHyphens = ReadiumCss.Hyphens.Auto,
-                ligatures = ReadiumCss.Ligatures.Common,
-                a11yNormalize = true,
-            ).toInlineCssProperties()
+            sut.injectHtml(
+                """
+                    <?xml version="1.0" encoding="utf-8"?>
+                    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+                    <html xmlns="http://www.w3.org/1999/xhtml">
+                        <head>
+                            <title>Publication</title>
+                            <link rel="stylesheet" href="style.css" type="text/css"/>
+                        </head>
+                        <body></body>
+                    </html>
+                """.trimIndent()
+            )
+        )
+    }
+
+    @Test
+    fun `Inject a reflowable with a HEAD with attributes`() {
+        val sut = ReadiumCss(
+            layout = Layout(stylesheets = Layout.Stylesheets.Default, readingProgression = ReadingProgression.LTR)
+        )
+        Assert.assertEquals(
+            """
+                <?xml version="1.0" encoding="utf-8"?>
+                <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+                <html xmlns="http://www.w3.org/1999/xhtml">
+                    <head xmlns:xlink="http://www.w3.org/1999/xlink"><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-before.css"/>
+                <style>
+                audio[controls] {
+                    width: revert;
+                    height: revert;
+                }
+                </style>
+                        <title>Publication</title>
+                        <link rel="stylesheet" href="style.css" type="text/css"/>
+                    <link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-after.css"/>
+                <script type="text/javascript" src="/assets/scripts/readium-reflowable.js"></script>
+                <style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style>
+                <style type="text/css"> @font-face{font-family: "OpenDyslexic"; src:url("/assets/fonts/OpenDyslexic-Regular.otf") format('truetype');}</style>
+                </head>
+                    <body></body>
+                </html>
+            """.trimIndent(),
+            sut.injectHtml(
+                """
+                    <?xml version="1.0" encoding="utf-8"?>
+                    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+                    <html xmlns="http://www.w3.org/1999/xhtml">
+                        <head xmlns:xlink="http://www.w3.org/1999/xlink">
+                            <title>Publication</title>
+                            <link rel="stylesheet" href="style.css" type="text/css"/>
+                        </head>
+                        <body></body>
+                    </html>
+                """.trimIndent()
+            )
+        )
+    }
+
+    @Test
+    fun `Inject a reflowable with HEAD with attributes on a single line`() {
+        val sut = ReadiumCss(
+            layout = Layout(stylesheets = Layout.Stylesheets.Default, readingProgression = ReadingProgression.LTR)
+        )
+        Assert.assertEquals(
+            """
+                <?xml version="1.0" encoding="utf-8"?>
+                <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head xmlns:xlink="http://www.w3.org/1999/xlink"><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-before.css"/>
+                <style>
+                audio[controls] {
+                    width: revert;
+                    height: revert;
+                }
+                </style><title>Publication</title><link rel="stylesheet" href="style.css" type="text/css"/><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-after.css"/>
+                <script type="text/javascript" src="/assets/scripts/readium-reflowable.js"></script>
+                <style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style>
+                <style type="text/css"> @font-face{font-family: "OpenDyslexic"; src:url("/assets/fonts/OpenDyslexic-Regular.otf") format('truetype');}</style>
+                </head><body></body></html>
+            """.trimIndent(),
+            sut.injectHtml(
+                """
+                    <?xml version="1.0" encoding="utf-8"?>
+                    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head xmlns:xlink="http://www.w3.org/1999/xlink"><title>Publication</title><link rel="stylesheet" href="style.css" type="text/css"/></head><body></body></html>
+                """.trimIndent()
+            )
+        )
+    }
+
+    @Test
+    fun `Inject a reflowable with uppercase HEAD with attributes on several lines`() {
+        val sut = ReadiumCss(
+            layout = Layout(stylesheets = Layout.Stylesheets.Default, readingProgression = ReadingProgression.LTR)
+        )
+
+        Assert.assertEquals(
+            """
+                <?xml version="1.0" encoding="utf-8"?>
+                <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><HEAD
+                 xmlns:xlink="http://www.w3.org/1999/xlink"
+                 ><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-before.css"/>
+                <style>
+                audio[controls] {
+                    width: revert;
+                    height: revert;
+                }
+                </style><title>Publication</title><link rel="stylesheet" href="style.css" type="text/css"/><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-after.css"/>
+                <script type="text/javascript" src="/assets/scripts/readium-reflowable.js"></script>
+                <style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style>
+                <style type="text/css"> @font-face{font-family: "OpenDyslexic"; src:url("/assets/fonts/OpenDyslexic-Regular.otf") format('truetype');}</style>
+                </HEAD><body></body></html>
+            """.trimIndent(),
+            sut.injectHtml(
+                """
+                    <?xml version="1.0" encoding="utf-8"?>
+                    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><HEAD
+                     xmlns:xlink="http://www.w3.org/1999/xlink"
+                     ><title>Publication</title><link rel="stylesheet" href="style.css" type="text/css"/></HEAD><body></body></html>
+                """.trimIndent()
+            )
         )
     }
 }

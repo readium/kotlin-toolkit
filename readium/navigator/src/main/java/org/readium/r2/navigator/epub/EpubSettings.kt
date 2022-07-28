@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.update
 import org.readium.r2.navigator.ColumnCount
 import org.readium.r2.navigator.Font
 import org.readium.r2.navigator.Theme
-import org.readium.r2.navigator.epub.css.ReadiumCss
+import org.readium.r2.navigator.epub.css.*
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
@@ -111,35 +111,34 @@ data class EpubSettings(
 }
 
 @ExperimentalReadiumApi
-fun ReadiumCss.update(settings: EpubSettings) {
+fun ReadiumCss.update(settings: EpubSettings): ReadiumCss =
     with(settings) {
-        userProperties.update { props ->
-            props.copy(
+        copy(
+            userProperties = userProperties.copy(
                 view = when (overflow.value) {
                     Overflow.AUTO -> null
-                    Overflow.PAGINATED -> ReadiumCss.View.Paged
-                    Overflow.SCROLLED -> ReadiumCss.View.Scroll
+                    Overflow.PAGINATED -> View.Paged
+                    Overflow.SCROLLED -> View.Scroll
                 },
                 colCount = when (columnCount?.value) {
-                    ColumnCount.One -> ReadiumCss.ColCount.One
-                    ColumnCount.Two -> ReadiumCss.ColCount.Two
-                    else -> ReadiumCss.ColCount.Auto
+                    ColumnCount.One -> ColCount.One
+                    ColumnCount.Two -> ColCount.Two
+                    else -> ColCount.Auto
                 },
                 appearance = when (theme.value) {
                     Theme.Light -> null
-                    Theme.Dark -> ReadiumCss.Appearance.Night
-                    Theme.Sepia -> ReadiumCss.Appearance.Sepia
+                    Theme.Dark -> Appearance.Night
+                    Theme.Sepia -> Appearance.Sepia
                 },
                 fontOverride = (font.value != Font.ORIGINAL),
                 fontFamily = font.value.name?.let { listOf(it) },
                 // Font size is handled natively with WebSettings.textZoom.
                 // See https://github.com/readium/mobile/issues/1#issuecomment-652431984
 //                fontSize = fontSize.value
-//                    ?.let { ReadiumCss.Length.Relative.Percent(it) },
+//                    ?.let { Length.Relative.Percent(it) },
                 advancedSettings = !publisherStyles.value,
-                wordSpacing = ReadiumCss.Length.Relative.Rem(wordSpacing.value),
-                letterSpacing = ReadiumCss.Length.Relative.Rem(letterSpacing.value / 2),
+                wordSpacing = Length.Relative.Rem(wordSpacing.value),
+                letterSpacing = Length.Relative.Rem(letterSpacing.value / 2),
             )
-        }
+        )
     }
-}

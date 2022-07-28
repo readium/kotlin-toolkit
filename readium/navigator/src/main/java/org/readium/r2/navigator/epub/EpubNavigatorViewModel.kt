@@ -12,7 +12,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
+import org.json.JSONObject
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.epub.css.Layout
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.navigator.epub.extensions.javascriptForGroup
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
@@ -20,6 +22,7 @@ import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.ReadingProgression
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
@@ -27,7 +30,10 @@ internal class EpubNavigatorViewModel(
     val config: EpubNavigatorFragment.Configuration,
 ) : ViewModel() {
 
-    private val css: ReadiumCss = ReadiumCss()
+    private val css = MutableStateFlow(ReadiumCss(
+        // FIXME
+        layout = Layout(stylesheets = Layout.Stylesheets.Default, readingProgression = ReadingProgression.AUTO)
+    ))
 
     // Make a copy to prevent new decoration templates from being registered after initializing
     // the navigator.
@@ -50,22 +56,34 @@ internal class EpubNavigatorViewModel(
     val events: Flow<Event> get() = _events.receiveAsFlow()
 
     init {
-        css.rsProperties.updateCssOnEach()
-        css.userProperties.updateCssOnEach()
+        initReadiumCss()
     }
 
     /**
      * Requests the web views to be updated when the Readium CSS properties change.
      */
-    private fun Flow<ReadiumCss.Properties>.updateCssOnEach() =
-        map { props ->
-            RunScriptCommand(
-                script = "readium.setCSSProperties(${props.toJSON()});",
-                scope = RunScriptCommand.Scope.LoadedResources
-            )
-        }
-        .onEach { _events.send(Event.RunScript(it)) }
-        .launchIn(viewModelScope)
+    private fun initReadiumCss() {
+        val previousCss = css.value
+        css
+            .onEach { css ->
+                val properties = mutableMapOf<String, String?>()
+                if (previousCss.rsProperties != css.rsProperties) {
+                    properties += css.rsProperties.toCssProperties()
+                }
+                if (previousCss.userProperties != css.userProperties) {
+                    properties += css.userProperties.toCssProperties()
+                }
+                if (properties.isNotEmpty()) {
+                    _events.send(Event.RunScript(
+                        RunScriptCommand(
+                            script = "readium.setCSSProperties(${JSONObject(properties.toMap())});",
+                            scope = RunScriptCommand.Scope.LoadedResources
+                        )
+                    ))
+                }
+            }
+            .launchIn(viewModelScope)
+    }
 
     fun onResourceLoaded(link: Link?, webView: R2BasicWebView): RunScriptCommand {
         val templates = decorationTemplates.toJSON().toString()
@@ -101,7 +119,7 @@ internal class EpubNavigatorViewModel(
         val settings = _settings.updateAndGet {
             it.update(preferences, defaults = config.defaultPreferences)
         }
-        css.update(settings)
+        css.update { it.update(settings) }
     }
 
     // Selection
