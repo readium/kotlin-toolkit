@@ -7,12 +7,17 @@
 package org.readium.r2.testapp.reader
 
 import android.os.Bundle
-import android.view.*
-import android.widget.*
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import org.readium.r2.lcp.lcpLicense
-import org.readium.r2.navigator.*
+import org.readium.r2.navigator.Navigator
+import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
 
 /*
@@ -20,10 +25,11 @@ import org.readium.r2.testapp.R
  *
  * Provides common menu items and saves last location on stop.
  */
-@OptIn(ExperimentalDecorator::class)
 abstract class BaseReaderFragment : Fragment() {
 
-    protected abstract val model: ReaderViewModel
+    val model: ReaderViewModel by activityViewModels()
+    protected val publication: Publication get() = model.publication
+
     protected abstract val navigator: Navigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,12 +37,14 @@ abstract class BaseReaderFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         model.fragmentChannel.receive(this) { event ->
-            val message =
-                when (event) {
-                    is ReaderViewModel.FeedbackEvent.BookmarkFailed -> R.string.bookmark_exists
-                    is ReaderViewModel.FeedbackEvent.BookmarkSuccessfullyAdded -> R.string.bookmark_added
-                }
-            Toast.makeText(requireContext(), getString(message), Toast.LENGTH_SHORT).show()
+            fun toast(id: Int) {
+                Toast.makeText(requireContext(), getString(id), Toast.LENGTH_SHORT).show()
+            }
+
+            when (event) {
+                is ReaderViewModel.FeedbackEvent.BookmarkFailed -> toast(R.string.bookmark_exists)
+                is ReaderViewModel.FeedbackEvent.BookmarkSuccessfullyAdded -> toast(R.string.bookmark_added)
+            }
         }
     }
 
@@ -52,24 +60,28 @@ abstract class BaseReaderFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
+        when (item.itemId) {
             R.id.toc -> {
                 model.activityChannel.send(ReaderViewModel.Event.OpenOutlineRequested)
-                true
             }
             R.id.bookmark -> {
                 model.insertBookmark(navigator.currentLocator.value)
-                true
             }
             R.id.drm -> {
                 model.activityChannel.send(ReaderViewModel.Event.OpenDrmManagementRequested)
-                true
             }
-            else -> false
+            else -> return super.onOptionsItemSelected(item)
         }
+
+        return true
     }
 
     open fun go(locator: Locator, animated: Boolean) {
         navigator.go(locator, animated)
+    }
+
+    protected fun showError(error: UserException) {
+        val context = context ?: return
+        Toast.makeText(context, error.getUserMessage(context), Toast.LENGTH_LONG).show()
     }
 }

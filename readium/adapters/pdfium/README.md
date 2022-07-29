@@ -13,7 +13,7 @@ A better alternative when possible is to use the commercial library [PSPDFKit](.
 
 Follow the same setup instructions as the core Readium toolkit, then add this new dependency in your app's `build.gradle`.
 
-```gradle
+```groovy
 dependencies {
     implementation "com.github.readium.kotlin-toolkit:readium-adapter-pdfium:$readium_version"
     // Or, if you need only the parser but not the navigator:

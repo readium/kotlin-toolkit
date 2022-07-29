@@ -9,6 +9,8 @@
 
 package org.readium.r2.shared.fetcher
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.annotation.StringRes
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
@@ -101,6 +103,15 @@ interface Resource : SuspendingCloseable {
      */
     suspend fun readAsXml(): ResourceTry<ElementNode> =
         read().mapCatching { XmlParser().parse(ByteArrayInputStream(it)) }
+
+    /**
+     * Reads the full content as a [Bitmap].
+     */
+    suspend fun readAsBitmap(): ResourceTry<Bitmap> =
+        read().mapCatching {
+            BitmapFactory.decodeByteArray(it, 0, it.size)
+                ?: throw kotlin.Exception("Could not decode resource ${link().href} as a bitmap")
+        }
 
     companion object {
         /**

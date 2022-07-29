@@ -37,12 +37,12 @@ import org.readium.r2.navigator.extensions.positionsByResource
 import org.readium.r2.navigator.extensions.withBaseUrl
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.pager.R2EpubPageFragment
-import org.readium.r2.navigator.pager.R2FXLPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2PagerAdapter.PageResource
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.COLUMN_COUNT_REF
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.tryOrLog
@@ -291,14 +291,18 @@ class EpubNavigatorFragment private constructor(
 
         })
 
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         // Restore the last locator before a configuration change (e.g. screen rotation), or the
         // initial locator when given.
         val locator = savedInstanceState?.getParcelable("locator") ?: initialLocator
         if (locator != null) {
             go(locator)
         }
-
-        return view
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -310,11 +314,6 @@ class EpubNavigatorFragment private constructor(
         super.onResume()
         notifyCurrentLocation()
     }
-
-    /**
-     * Locator waiting to be loaded in the navigator.
-     */
-    internal var pendingLocator: Locator? = null
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         listener?.onJumpToLocator(locator)
@@ -331,16 +330,12 @@ class EpubNavigatorFragment private constructor(
                     else -> false
                 }
             } ?: return
-            val (index, resource) = page
+            val (index, _) = page
 
             if (resourcePager.currentItem != index) {
-                if (resource is PageResource.EpubReflowable) {
-                    pendingLocator = locator
-                }
                 resourcePager.currentItem = index
             }
-
-            currentReflowablePageFragment?.loadLocator(locator)
+            r2PagerAdapter?.loadLocatorAt(index, locator)
         }
 
         if (publication.metadata.presentation.layout != EpubLayout.FIXED) {
@@ -648,13 +643,14 @@ class EpubNavigatorFragment private constructor(
         get() = if (::resourcePager.isInitialized) resourcePager.adapter as? R2PagerAdapter
             else null
 
-    private val currentFragment: Fragment? get() =
-        r2PagerAdapter?.let { adapter ->
-            adapter.mFragments.get(adapter.getItemId(resourcePager.currentItem))
-        }
-
     private val currentReflowablePageFragment: R2EpubPageFragment? get() =
         currentFragment as? R2EpubPageFragment
+
+    private val currentFragment: Fragment? get() =
+        fragmentAt(resourcePager.currentItem)
+
+    private fun fragmentAt(index: Int): Fragment? =
+        r2PagerAdapter?.mFragments?.get(adapter.getItemId(index))
 
     /**
      * Returns the reflowable page fragment matching the given href, if it is already loaded in the
@@ -679,6 +675,21 @@ class EpubNavigatorFragment private constructor(
     private val _currentLocator = MutableStateFlow(initialLocator
         ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
     )
+
+    /**
+     * Returns the [Locator] to the first HTML element that begins on the current screen.
+     */
+    @ExperimentalReadiumApi
+    override suspend fun firstVisibleElementLocator(): Locator? {
+        if (!::resourcePager.isInitialized) return null
+
+        val resource = publication.readingOrder[resourcePager.currentItem]
+        return currentReflowablePageFragment?.webView?.findFirstVisibleLocator()
+            ?.copy(
+                href = resource.href,
+                type = resource.type ?: MediaType.XHTML.toString()
+            )
+    }
 
     /**
      * While scrolling we receive a lot of new current locations, so we use a coroutine job to
@@ -717,18 +728,19 @@ class EpubNavigatorFragment private constructor(
         debounceLocationNotificationJob = launch {
             delay(100L)
 
-            val reflowableWebView = currentReflowablePageFragment?.webView
-            if (pendingLocator != null) {
+            if (currentReflowablePageFragment?.isLoaded?.value == false) {
                 return@launch
             }
 
-            // The transition has stabilized, so we can ask the web view to refresh its current
-            // item to reflect the current scroll position.
-            reflowableWebView?.updateCurrentItem()
+            val reflowableWebView = currentReflowablePageFragment?.webView
+            val progression = reflowableWebView?.run {
+                // The transition has stabilized, so we can ask the web view to refresh its current
+                // item to reflect the current scroll position.
+                updateCurrentItem()
+                progression.coerceIn(0.0, 1.0)
+            } ?: 0.0
 
             val resource = publication.readingOrder[resourcePager.currentItem]
-            val progression = reflowableWebView?.progression?.coerceIn(0.0, 1.0) ?: 0.0
-
             val positionLocator = publication.positionsByResource[resource.href]?.let { positions ->
                 val index = ceil(progression * (positions.size - 1)).toInt()
                 positions.getOrNull(index)

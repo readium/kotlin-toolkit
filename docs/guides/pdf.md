@@ -1,4 +1,4 @@
-# PDF support in Readium
+# Supporting PDF documents
 
 The Readium toolkit relies on third-party PDF engines to parse and render PDF documents.
 
