@@ -6,11 +6,10 @@
 
 package org.readium.r2.navigator.settings
 
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.*
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.extensions.tryOrLog
 import timber.log.Timber
 
 /**
@@ -61,13 +60,18 @@ open class Preferences(
      * Creates a [Preferences] object from its JSON representation.
      */
     constructor(jsonString: String?)
-        : this(jsonString?.also { Timber.e(it) }?.let { Json.parseToJsonElement(it) as? JsonObject })
+        : this(jsonString
+            ?.let {
+                tryOrLog { Json.parseToJsonElement(it) } as? JsonObject
+            }
+            ?: buildJsonObject {}
+        )
 
     /**
      * Creates a [Preferences] object from its JSON representation.
      */
-    constructor(json: JsonObject?)
-        : this(json?.toMap() ?: emptyMap())
+    constructor(json: JsonObject)
+        : this(json.toMap())
 
     /**
      * Creates a copy of this [Preferences] receiver after modifying it with the given
@@ -229,7 +233,7 @@ fun MutablePreferences.toggle(setting: ToggleSetting, activate: Boolean = true) 
  */
 @ExperimentalReadiumApi
 fun <E> MutablePreferences.toggle(setting: EnumSetting<E>, preference: E, activate: Boolean = true) {
-    if (setting.prefOrValue != preference) {
+    if (get(setting) != preference) {
         set(setting, preference, activate = activate)
     } else {
         remove(setting)
