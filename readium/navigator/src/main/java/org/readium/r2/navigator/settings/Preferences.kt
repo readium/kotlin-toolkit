@@ -6,21 +6,11 @@
 
 package org.readium.r2.navigator.settings
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-import kotlinx.parcelize.WriteWith
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
-import org.json.JSONObject
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.extensions.JSONParceler
-import org.readium.r2.shared.extensions.toMap
-import org.readium.r2.shared.extensions.tryOrLog
 import timber.log.Timber
 
 /**
@@ -95,19 +85,8 @@ open class Preferences(
     /**
      * Gets the preference for the given [setting], if set.
      */
-    operator fun <V, R> get(setting: Setting<V, R, *>): V? =
+    operator fun <V> get(setting: Setting<V, *>): V? =
         values[setting.key]?.let { setting.decode(it) }
-
-    /**
-     * Returns whether the given [setting] is active in these preferences.
-     *
-     * An inactive setting is ignored by the [Configurable] until its activation conditions are met
-     * (e.g. another setting has a certain preference).
-     *
-     * Use [MutablePreferences.activate] to activate it.
-     */
-    fun <T, R> isActive(setting: Setting<T, R, *>): Boolean =
-        setting.isActiveWithPreferences(this)
 
     /**
      * Serializes this [Preferences] to a JSON object.
@@ -146,7 +125,7 @@ class MutablePreferences(
     /**
      * Sets the preference for the given [setting].
      */
-    operator fun <V, R> set(setting: Setting<V, R, *>, preference: V?) {
+    operator fun <V> set(setting: Setting<V, *>, preference: V?) {
         set(setting, preference, activate = true)
     }
 
@@ -155,7 +134,7 @@ class MutablePreferences(
      *
      * @param activate Indicates whether the setting will be force activated if needed.
      */
-    fun <V, R> set(setting: Setting<V, R, *>, preference: V?, activate: Boolean = true) {
+    fun <V> set(setting: Setting<V, *>, preference: V?, activate: Boolean = true) {
         val encodedValue = preference
             ?.let { setting.validate(it) }
             ?.let { setting.encode(it) }
@@ -172,7 +151,7 @@ class MutablePreferences(
     /**
      * Removes the preference for the given [setting].
      */
-    fun <V, R> remove(setting: Setting<V, R, *>) {
+    fun <V> remove(setting: Setting<V, *>) {
         values.remove(setting.key)
     }
 
@@ -193,61 +172,172 @@ class MutablePreferences(
     }
 
     /**
-     * Activates the given [setting] in the preferences, if needed.
-     */
-    fun <T, R> activate(setting: Setting<T, R, *>) {
-        if (!isActive(setting)) {
-            setting.activateInPreferences(this)
-        }
-    }
-
-    /**
-     * Toggles the preference for the given [setting].
-     *
-     * @param activate Indicates whether the setting will be force activated if needed.
-     */
-    fun toggle(setting: ToggleSetting, activate: Boolean = true) {
-        set(setting, !setting.prefOrValue, activate = activate)
-    }
-
-    /**
-     * Toggles the preference for the enum [setting] to the given [preference].
-     *
-     * If the preference was already set to the same value, it is removed.
-     *
-     * @param activate Indicates whether the setting will be force activated if needed.
-     */
-    fun <E> toggle(setting: EnumSetting<E>, preference: E, activate: Boolean = true) {
-        if (setting.prefOrValue != preference) {
-            set(setting, preference, activate = activate)
-        } else {
-            remove(setting)
-        }
-    }
-
-    /**
-     * Increments the preference for the given [setting] to the next step.
-     *
-     * @param step Amount to increment, when the [setting] doesn't have any suggested steps.
-     * @param activate Indicates whether the setting will be force activated if needed.
-     */
-    fun increment(setting: RangeSetting<Double>, step: Double = 0.1, activate: Boolean = true) {
-        set(setting, setting.prefOrValue + step, activate = activate)
-    }
-
-    /**
-     * Decrements the preference for the given [setting] to the previous step.
-     *
-     * @param step Amount to decrement, when the [setting] doesn't have any suggested steps.
-     * @param activate Indicates whether the setting will be force activated if needed.
-     */
-    fun decrement(setting: RangeSetting<Double>, step: Double = 0.1, activate: Boolean = true) {
-        set(setting, setting.prefOrValue - step, activate = activate)
-    }
-
-    /**
      * Returns the preference for the [Setting] receiver, or its current value when missing.
      */
-    private val <V, R> Setting<V, R, *>.prefOrValue: V get() =
+    internal val <V> Setting<V, *>.prefOrValue: V get() =
         get(this) ?: value
+}
+
+/**
+ * Returns whether the given [setting] is active in these preferences.
+ *
+ * An inactive setting is ignored by the [Configurable] until its activation conditions are met
+ * (e.g. another setting has a certain preference).
+ *
+ * Use [MutablePreferences.activate] to activate it.
+ */
+@ExperimentalReadiumApi
+fun <T> Preferences.isActive(setting: Setting<T, *>): Boolean =
+    setting.isActiveWithPreferences(this)
+
+/**
+ * Activates the given [setting] in the preferences, if needed.
+ */
+@ExperimentalReadiumApi
+fun <T> MutablePreferences.activate(setting: Setting<T, *>) {
+    if (!isActive(setting)) {
+        setting.activateInPreferences(this)
+    }
+}
+
+/**
+ * Sets the preference for the given [setting] after transforming the current value.
+ *
+ * @param activate Indicates whether the setting will be force activated if needed.
+ */
+@ExperimentalReadiumApi
+fun <T> MutablePreferences.update(setting: Setting<T, *>, activate: Boolean = true, transform: (T) -> T) {
+    set(setting, transform(setting.prefOrValue), activate = activate)
+}
+
+/**
+ * Toggles the preference for the given [setting].
+ *
+ * @param activate Indicates whether the setting will be force activated if needed.
+ */
+@ExperimentalReadiumApi
+fun MutablePreferences.toggle(setting: ToggleSetting, activate: Boolean = true) {
+    set(setting, !setting.prefOrValue, activate = activate)
+}
+
+/**
+ * Toggles the preference for the enum [setting] to the given [preference].
+ *
+ * If the preference was already set to the same value, it is removed.
+ *
+ * @param activate Indicates whether the setting will be force activated if needed.
+ */
+@ExperimentalReadiumApi
+fun <E> MutablePreferences.toggle(setting: EnumSetting<E>, preference: E, activate: Boolean = true) {
+    if (setting.prefOrValue != preference) {
+        set(setting, preference, activate = activate)
+    } else {
+        remove(setting)
+    }
+}
+
+/**
+ * Increments the preference for the given [setting] to the next step.
+ *
+ * If the [setting] doesn't have any suggested steps, the [next] function will be used instead
+ * to determine the next step.
+ *
+ * @param activate Indicates whether the setting will be force activated if needed.
+ */
+@ExperimentalReadiumApi
+fun <V : Comparable<V>> MutablePreferences.increment(setting: RangeSetting<V>, activate: Boolean = true, next: (V) -> V) {
+    val steps = setting.extras.suggestedSteps
+    if (steps == null) {
+        update(setting, activate, next)
+    } else {
+        val index = steps.indexOfLast { it <= setting.prefOrValue }.takeIf { it != -1 } ?: return
+        val nextValue = steps.getOrNull(index + 1) ?: return
+        set(setting, nextValue, activate)
+    }
+}
+
+/**
+ * Decrements the preference for the given [setting] to the previous step.
+ *
+ * If the [setting] doesn't have any suggested steps, the [previous] function will be used instead
+ * to determine the previous step.
+ *
+ * @param activate Indicates whether the setting will be force activated if needed.
+ */
+@ExperimentalReadiumApi
+fun <V : Comparable<V>> MutablePreferences.decrement(setting: RangeSetting<V>, activate: Boolean = true, previous: (V) -> V) {
+    val steps = setting.extras.suggestedSteps
+    if (steps == null) {
+        update(setting, activate, previous)
+    } else {
+        val index = steps.indexOfFirst { it >= setting.prefOrValue }.takeIf { it != -1 } ?: return
+        val previousValue = steps.getOrNull(index - 1) ?: return
+        set(setting, previousValue, activate)
+    }
+}
+
+/**
+ * Increments the preference for the given [setting] to the next step.
+ *
+ * @param amount Amount to increment, when the [setting] doesn't have any suggested steps.
+ * @param activate Indicates whether the setting will be force activated if needed.
+ */
+@ExperimentalReadiumApi
+fun MutablePreferences.increment(setting: RangeSetting<Int>, amount: Int = 1, activate: Boolean = true) {
+    increment(setting, activate) { it + amount }
+}
+
+/**
+ * Decrements the preference for the given [setting] to the previous step.
+ *
+ * @param amount Amount to decrement, when the [setting] doesn't have any suggested steps.
+ * @param activate Indicates whether the setting will be force activated if needed.
+ */
+@ExperimentalReadiumApi
+fun MutablePreferences.decrement(setting: RangeSetting<Int>, amount: Int = 1, activate: Boolean = true) {
+    decrement(setting, activate) { it - amount }
+}
+
+/**
+ * Adjusts the preference for the given [setting] by the [amount].
+ *
+ * @param amount Amount to add to the current preference value.
+ * @param activate Indicates whether the setting will be force activated if needed.
+ */
+@ExperimentalReadiumApi
+fun MutablePreferences.adjustBy(setting: RangeSetting<Int>, amount: Int, activate: Boolean = true) {
+    update(setting, activate) { it + amount }
+}
+
+/**
+ * Increments the preference for the given [setting] to the next step.
+ *
+ * @param amount Amount to increment, when the [setting] doesn't have any suggested steps.
+ * @param activate Indicates whether the setting will be force activated if needed.
+ */
+@ExperimentalReadiumApi
+fun MutablePreferences.increment(setting: RangeSetting<Double>, amount: Double = 0.1, activate: Boolean = true) {
+    increment(setting, activate) { it + amount }
+}
+
+/**
+ * Decrements the preference for the given [setting] to the previous step.
+ *
+ * @param amount Amount to decrement, when the [setting] doesn't have any suggested steps.
+ * @param activate Indicates whether the setting will be force activated if needed.
+ */
+@ExperimentalReadiumApi
+fun MutablePreferences.decrement(setting: RangeSetting<Double>, amount: Double = 0.1, activate: Boolean = true) {
+    decrement(setting, activate) { it - amount }
+}
+
+/**
+ * Adjusts the preference for the given [setting] by the [amount].
+ *
+ * @param amount Amount to add to the current preference value.
+ * @param activate Indicates whether the setting will be force activated if needed.
+ */
+@ExperimentalReadiumApi
+fun MutablePreferences.adjustBy(setting: RangeSetting<Double>, amount: Double, activate: Boolean = true) {
+    update(setting, activate) { it + amount }
 }
