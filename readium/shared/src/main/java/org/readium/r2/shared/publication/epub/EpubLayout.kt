@@ -22,7 +22,7 @@ enum class EpubLayout(val value: String) : Parcelable {
     FIXED("fixed"),
     REFLOWABLE("reflowable");
 
-    companion object : MapCompanion<EpubLayout>(values(), EpubLayout::value) {
+    companion object : MapCompanion<String, EpubLayout>(values(), EpubLayout::value) {
 
         @Deprecated("Renamed to [FIXED]", ReplaceWith("EpubLayout.FIXED"))
         val Fixed: EpubLayout get() = FIXED

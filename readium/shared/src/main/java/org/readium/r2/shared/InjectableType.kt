@@ -17,7 +17,7 @@ enum class Injectable(val rawValue: String): Serializable {
     Font("fonts"),
     Style("styles");
 
-    companion object : MapCompanion<Injectable>(values(), Injectable::rawValue)
+    companion object : MapCompanion<String, Injectable>(values(), Injectable::rawValue)
 
     override fun toString(): String = rawValue
 

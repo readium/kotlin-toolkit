@@ -42,7 +42,7 @@ data class Availability(
         RESERVED("reserved"),
         READY("ready");
 
-        companion object : MapCompanion<State>(values(), State::value)
+        companion object : MapCompanion<String, State>(values(), State::value)
 
     }
 

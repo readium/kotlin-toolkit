@@ -8,7 +8,6 @@ package org.readium.r2.navigator.epub.css
 
 import androidx.annotation.ColorInt
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.util.ValueEncoder
 import java.text.NumberFormat
 
 /**
@@ -352,10 +351,6 @@ enum class Appearance(private val css: String?) : Cssable {
     Night("readium-night-on");
 
     override fun toCss(): String? = css
-
-    companion object : ValueEncoder<Appearance, String?> {
-        override fun encode(value: Appearance): String? = value.css
-    }
 }
 
 /** CSS color. */

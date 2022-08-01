@@ -13,7 +13,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import org.readium.r2.navigator.settings.SettingCoder
-import org.readium.r2.shared.util.ValueCoder
 
 /**
  * Navigator appearance.

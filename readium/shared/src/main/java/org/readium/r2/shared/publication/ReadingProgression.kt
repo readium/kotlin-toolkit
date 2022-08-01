@@ -35,7 +35,7 @@ enum class ReadingProgression(val value: String) : Parcelable {
         AUTO -> null
     }
 
-    companion object : MapWithDefaultCompanion<ReadingProgression>(values(), ReadingProgression::value, AUTO) {
+    companion object : MapWithDefaultCompanion<String, ReadingProgression>(values(), ReadingProgression::value, AUTO) {
 
         override fun get(key: String?): ReadingProgression? =
             // For backward compatibility, we allow uppercase keys.
