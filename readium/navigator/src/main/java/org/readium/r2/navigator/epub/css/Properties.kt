@@ -7,6 +7,7 @@
 package org.readium.r2.navigator.epub.css
 
 import androidx.annotation.ColorInt
+import org.readium.r2.navigator.settings.Setting
 import org.readium.r2.shared.ExperimentalReadiumApi
 import java.text.NumberFormat
 
@@ -224,7 +225,7 @@ data class UserProperties(
  * The value can be another variable e.g. var(-RS__monospaceTf).
  */
 @ExperimentalReadiumApi
-class RsProperties(
+data class RsProperties(
     // Pagination
     val colWidth: Length? = null,
     val colCount: ColCount? = null,
@@ -405,6 +406,17 @@ interface Length : Cssable {
         class Pt(value: Double) : Absolute(value, "pt")
         /** Picas */
         class Pc(value: Double) : Absolute(value, "pc")
+
+        override fun equals(other: Any?): Boolean {
+            val otherSetting = (other as? Absolute) ?: return false
+            return otherSetting.value == value && otherSetting.unit == unit
+        }
+
+        override fun hashCode(): Int {
+            var result = value.hashCode()
+            result = 31 * result + unit.hashCode()
+            return result
+        }
     }
 
     /** Relative CSS length. */
@@ -428,6 +440,17 @@ interface Length : Cssable {
         class VMax(value: Double) : Relative(value, "vmax")
         /** Relative to the parent element. */
         class Percent(value: Double) : Relative(value * 100, "%")
+
+        override fun equals(other: Any?): Boolean {
+            val otherSetting = (other as? Relative) ?: return false
+            return otherSetting.value == value && otherSetting.unit == unit
+        }
+
+        override fun hashCode(): Int {
+            var result = value.hashCode()
+            result = 31 * result + unit.hashCode()
+            return result
+        }
     }
 }
 

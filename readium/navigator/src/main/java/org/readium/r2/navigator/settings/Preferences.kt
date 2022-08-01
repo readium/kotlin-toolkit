@@ -6,11 +6,13 @@
 
 package org.readium.r2.navigator.settings
 
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
-import timber.log.Timber
 
 /**
  * Set of preferences used to update a [Configurable]'s settings.

@@ -6,7 +6,6 @@
 
 package org.readium.r2.navigator.epub
 
-import kotlinx.coroutines.flow.update
 import org.readium.r2.navigator.ColumnCount
 import org.readium.r2.navigator.Font
 import org.readium.r2.navigator.Theme
@@ -93,7 +92,7 @@ data class EpubSettings(
         }
     }
 
-    internal fun update(preferences: Preferences, defaults: Preferences): EpubSettings =
+    internal fun update(preferences: Preferences, defaults: Preferences = Preferences()): EpubSettings =
         copy(
             columnCount = if (preferences[overflow] == Overflow.SCROLLED) null
                 else (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(preferences, defaults),

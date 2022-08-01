@@ -10,11 +10,12 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.ReadingProgression
 
 // FIXME: Custom Fonts
 @ExperimentalReadiumApi
 data class ReadiumCss(
-    val layout: Layout,
+    val layout: Layout = Layout(language = null, Layout.Stylesheets.Default, ReadingProgression.LTR),
     val rsProperties: RsProperties = RsProperties(),
     val userProperties: UserProperties = UserProperties(),
 ) {
