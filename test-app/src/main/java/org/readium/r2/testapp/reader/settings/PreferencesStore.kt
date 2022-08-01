@@ -44,7 +44,7 @@ class PreferencesStore(
     operator fun set(profile: Publication.Profile?, preferences: Preferences) {
         scope.launch {
             store.edit { data ->
-                data[profile.preferencesKey] = preferences.toJSON().toString()
+                data[profile.preferencesKey] = preferences.toJsonString()
             }
         }
     }

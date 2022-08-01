@@ -6,49 +6,52 @@
 
 package org.readium.r2.navigator
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-import org.readium.r2.shared.util.MapWithDefaultCompanion
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
+import org.readium.r2.navigator.settings.SettingCoder
 import org.readium.r2.shared.util.ValueCoder
 
 /**
  * Navigator appearance.
  */
-enum class Theme(val value: String) {
-    Light("light"),
-    Dark("dark"),
-    Sepia("sepia");
-
-    companion object : MapWithDefaultCompanion<Theme>(values(), Theme::value, Light)
+@Serializable
+enum class Theme {
+    @SerialName("light") Light,
+    @SerialName("dark") Dark,
+    @SerialName("sepia") Sepia;
 }
 
-enum class ColumnCount(val value: String) {
-    Auto("auto"),
-    One("1"),
-    Two("2");
-
-    companion object : MapWithDefaultCompanion<ColumnCount>(values(), ColumnCount::value, Auto)
+@Serializable
+enum class ColumnCount {
+    @SerialName("auto") Auto,
+    @SerialName("1") One,
+    @SerialName("2") Two;
 }
 
-data class Font(val id: String, val name: String? = null) {
+@JvmInline
+value class Font(val name: String? = null) {
     companion object {
-        val ORIGINAL = Font(id = "original")
-        val PT_SERIF = Font(id = "pt-serif", name = "PT Serif")
-        val ROBOTO = Font(id = "roboto", name = "Roboto")
-        val SOURCE_SANS_PRO = Font(id = "source-sans-pro", name = "Source Sans Pro")
-        val VOLLKORN = Font(id = "vollkorn", name = "Vollkorn")
-        val OPEN_DYSLEXIC = Font(id = "opendyslexic", name = "OpenDyslexic")
-        val ACCESSIBLE_DFA = Font(id = "accessible-dfa", name = "AccessibleDfA")
-        val IA_WRITER_DUOSPACE = Font(id = "ia-writer-duospace", name = "IA Writer Duospace")
+        val ORIGINAL = Font(null)
+        val PT_SERIF = Font("PT Serif")
+        val ROBOTO = Font("Roboto")
+        val SOURCE_SANS_PRO = Font("Source Sans Pro")
+        val VOLLKORN = Font("Vollkorn")
+        val OPEN_DYSLEXIC = Font("OpenDyslexic")
+        val ACCESSIBLE_DFA = Font("AccessibleDfA")
+        val IA_WRITER_DUOSPACE = Font("IA Writer Duospace")
     }
 
-    class Coder(private val fonts: List<Font>) : ValueCoder<Font?, String?> {
-        override fun encode(value: Font?): String? =
-            value?.id
-
-        override fun decode(rawValue: Any): Font? {
-            val id = rawValue as? String ?: return null
-            return fonts.firstOrNull { it.id == id }
+    class Coder(private val fonts: List<Font>) : SettingCoder<Font> {
+        override fun decode(json: JsonElement): Font? {
+            val name = json.jsonPrimitive.contentOrNull ?: return ORIGINAL
+            return fonts.firstOrNull { it.name == name }
         }
+
+        override fun encode(value: Font): JsonElement =
+            JsonPrimitive(value.name)
     }
 }

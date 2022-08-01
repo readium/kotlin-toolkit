@@ -9,12 +9,19 @@ package org.readium.r2.navigator.settings
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 import org.json.JSONObject
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.JSONParceler
 import org.readium.r2.shared.extensions.toMap
+import org.readium.r2.shared.extensions.tryOrLog
+import timber.log.Timber
 
 /**
  * Set of preferences used to update a [Configurable]'s settings.
@@ -44,10 +51,9 @@ import org.readium.r2.shared.extensions.toMap
  */
 @ExperimentalReadiumApi
 @OptIn(DelicateReadiumApi::class)
-@Parcelize
 open class Preferences(
-    @DelicateReadiumApi open val values: @WriteWith<JSONParceler> Map<String, Any> = emptyMap()
-) : JSONable, Parcelable {
+    @DelicateReadiumApi open val values: Map<String, JsonElement> = emptyMap()
+)  {
 
     /**
      * Creates a [Preferences] object using a mutable builder.
@@ -65,12 +71,12 @@ open class Preferences(
      * Creates a [Preferences] object from its JSON representation.
      */
     constructor(jsonString: String?)
-        : this(jsonString?.let { JSONObject(it) })
+        : this(jsonString?.also { Timber.e(it) }?.let { Json.parseToJsonElement(it) as? JsonObject })
 
     /**
      * Creates a [Preferences] object from its JSON representation.
      */
-    constructor(json: JSONObject?)
+    constructor(json: JsonObject?)
         : this(json?.toMap() ?: emptyMap())
 
     /**
@@ -103,8 +109,17 @@ open class Preferences(
     fun <T, R> isActive(setting: Setting<T, R, *>): Boolean =
         setting.isActiveWithPreferences(this)
 
-    override fun toJSON(): JSONObject =
-        JSONObject(values)
+    /**
+     * Serializes this [Preferences] to a JSON object.
+     */
+    fun toJson(): JsonObject =
+        JsonObject(values)
+
+    /**
+     * Serializes this [Preferences] to a JSON object.
+     */
+    fun toJsonString(): String =
+        toJson().toString()
 
     override fun equals(other: Any?): Boolean =
         values == (other as? Preferences)?.values
@@ -113,7 +128,7 @@ open class Preferences(
         values.hashCode()
 
     override fun toString(): String =
-        toJSON().toString(2)
+        toJsonString()
 }
 
 /**
@@ -124,9 +139,8 @@ open class Preferences(
  */
 @ExperimentalReadiumApi
 @OptIn(DelicateReadiumApi::class)
-@Parcelize
 class MutablePreferences(
-    @DelicateReadiumApi override var values: @WriteWith<JSONParceler> MutableMap<String, Any> = mutableMapOf()
+    @DelicateReadiumApi override var values: MutableMap<String, JsonElement> = mutableMapOf()
 ) : Preferences(values) {
 
     /**
@@ -142,7 +156,9 @@ class MutablePreferences(
      * @param activate Indicates whether the setting will be force activated if needed.
      */
     fun <V, R> set(setting: Setting<V, R, *>, preference: V?, activate: Boolean = true) {
-        val encodedValue = preference?.let { setting.encode(setting.validate(it)) }
+        val encodedValue = preference
+            ?.let { setting.validate(it) }
+            ?.let { setting.encode(it) }
         if (encodedValue == null) {
             values.remove(setting.key)
         } else {

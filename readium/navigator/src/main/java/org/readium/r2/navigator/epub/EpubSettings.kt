@@ -36,7 +36,6 @@ data class EpubSettings(
     companion object {
         val COLUMN_COUNT: EnumSetting<ColumnCount> = EnumSetting(
             key = Setting.COLUMN_COUNT,
-            coder = ColumnCount,
             value = ColumnCount.Auto,
             values = listOf(ColumnCount.Auto, ColumnCount.One, ColumnCount.Two),
         )
@@ -57,7 +56,6 @@ data class EpubSettings(
 
         val OVERFLOW: EnumSetting<Overflow> = EnumSetting(
             key = Setting.OVERFLOW,
-            coder = Overflow,
             value = Overflow.PAGINATED,
             values = listOf(Overflow.PAGINATED, Overflow.SCROLLED),
         )
@@ -69,7 +67,6 @@ data class EpubSettings(
 
         val THEME: EnumSetting<Theme> = EnumSetting(
             key = Setting.THEME,
-            coder = Theme,
             value = Theme.Light,
             values = listOf(Theme.Light, Theme.Dark, Theme.Sepia)
         )

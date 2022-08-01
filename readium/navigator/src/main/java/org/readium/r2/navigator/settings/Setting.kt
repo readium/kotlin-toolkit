@@ -8,10 +8,8 @@
 
 package org.readium.r2.navigator.settings
 
+import kotlinx.serialization.json.JsonElement
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.util.Either
-import org.readium.r2.shared.util.IdentityValueCoder
-import org.readium.r2.shared.util.ValueCoder
 import java.text.NumberFormat
 import java.util.*
 
@@ -20,9 +18,9 @@ import java.util.*
  * [value].
  *
  * @param key Unique identifier used to serialize [Preferences] to JSON.
- * @param coder [ValueCoder] used to convert the [value] from and to its JSON representation [R].
  * @param value Current value for this setting.
  * @param extras Holds additional metadata specific to this setting type.
+ * @param coder JSON serializer for the [value]
  * @param validator Ensures the validity of a [V] value.
  * @param activator Ensures that the condition required for this setting to be active are met in the
  * given [Preferences] – e.g. another setting having a certain preference.
@@ -30,12 +28,12 @@ import java.util.*
 @ExperimentalReadiumApi
 data class Setting<V, R, E>(
     val key: String,
-    val coder: ValueCoder<V?, R?>,
     val value: V,
     val extras: E,
+    internal val coder: SettingCoder<V>,
     private val validator: SettingValidator<V> = IdentitySettingValidator(),
     private val activator: SettingActivator = NullSettingActivator
-) : SettingValidator<V> by validator, SettingActivator by activator, ValueCoder<V?, R?> by coder {
+) : SettingValidator<V> by validator, SettingActivator by activator, SettingCoder<V> by coder {
 
     companion object {
         // Official setting keys.
@@ -55,7 +53,7 @@ data class Setting<V, R, E>(
     /**
      * JSON raw representation for the current value.
      */
-    val encodedValue: R? = coder.encode(this.value)
+    private val jsonValue: JsonElement = coder.encode(value)
 
     /**
      * Creates a copy of the [Setting] receiver, after replacing its value with the first valid
@@ -77,12 +75,12 @@ data class Setting<V, R, E>(
 
     override fun equals(other: Any?): Boolean {
         val otherSetting = (other as? Setting<*, *, *>) ?: return false
-        return otherSetting.key == key && otherSetting.encodedValue == encodedValue
+        return otherSetting.key == key && otherSetting.jsonValue == jsonValue
     }
 
     override fun hashCode(): Int {
         var result = key.hashCode()
-        result = 31 * result + (encodedValue?.hashCode() ?: 0)
+        result = 31 * result + jsonValue.hashCode()
         return result
     }
 }
@@ -104,7 +102,8 @@ fun ToggleSetting(
     activator: SettingActivator = NullSettingActivator,
 ) : ToggleSetting =
     Setting(
-        key = key, coder = IdentityValueCoder(Boolean::class), value = value, extras = Unit,
+        key = key, value = value, extras = Unit,
+        coder = SerializerSettingCoder(),
         validator = validator, activator = activator
     )
 
@@ -143,12 +142,13 @@ inline fun <reified V : Comparable<V>> RangeSetting(
     activator: SettingActivator = NullSettingActivator,
 ) : RangeSetting<V> =
     Setting(
-        key = key, coder = IdentityValueCoder(V::class), value = value,
+        key = key, value = value,
         extras = RangeExtras(
             range = range,
             suggestedSteps = suggestedSteps,
             label = label
         ),
+        coder = SerializerSettingCoder(),
         validator = RangeSettingValidator(range) then validator,
         activator = activator
     )
@@ -216,22 +216,23 @@ data class EnumExtras<E>(
  * @param label Returns a user-facing label for the given value, when one is available.
  */
 @ExperimentalReadiumApi
-fun <E> EnumSetting(
+inline fun <reified E> EnumSetting(
     key: String,
-    coder: ValueCoder<E?, String?>,
     value: E,
     values: List<E>,
-    label: (E) -> String? = { null },
+    noinline label: (E) -> String? = { null },
+    coder: SettingCoder<E> = SerializerSettingCoder(),
     validator: SettingValidator<E> = IdentitySettingValidator(),
     activator: SettingActivator = NullSettingActivator,
 ) : EnumSetting<E> =
     Setting(
-        key = key, value = value, coder = coder,
+        key = key, value = value,
         extras = EnumExtras(
             values = values,
             label = label,
             originalValidator = validator
         ),
+        coder = coder,
         validator = AllowlistSettingValidator(values) then validator,
         activator = activator
     )
@@ -241,8 +242,8 @@ fun <E> EnumSetting(
  */
 @ExperimentalReadiumApi
 fun <E> EnumSetting<E>.copy(
-    coder: ValueCoder<E?, String?> = this.coder,
-    values: List<E> = this.values
+    values: List<E> = this.values,
+    coder: SettingCoder<E> = this.coder,
 ): EnumSetting<E> =
     copy(
         coder = coder,

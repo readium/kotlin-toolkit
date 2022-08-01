@@ -10,6 +10,7 @@ plugins {
     id("kotlin-parcelize")
     id("maven-publish")
     id("org.jetbrains.dokka")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -100,6 +101,7 @@ dependencies {
     implementation("joda-time:joda-time:2.10.14")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0-RC")
     // AM NOTE: needs to stay this version for now (June 24,2020)
     //noinspection GradleDependency
     implementation("org.jsoup:jsoup:1.15.1")
