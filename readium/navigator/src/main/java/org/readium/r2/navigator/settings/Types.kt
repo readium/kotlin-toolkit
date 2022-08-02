@@ -6,12 +6,10 @@
 
 package org.readium.r2.navigator.settings
 
+import androidx.annotation.ColorInt
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
@@ -62,12 +60,49 @@ value class Font(val name: String? = null) {
     }
 
     class Coder(private val fonts: List<Font>) : SettingCoder<Font> {
-        override fun decode(json: JsonElement): Font? {
-            val name = json.jsonPrimitive.contentOrNull ?: return ORIGINAL
-            return fonts.firstOrNull { it.name == name }
+        override fun decode(json: JsonElement): Font {
+            val name = (json as? JsonPrimitive)?.contentOrNull ?: return ORIGINAL
+            return fonts.firstOrNull { it.name == name } ?: return ORIGINAL
         }
 
         override fun encode(value: Font): JsonElement =
             JsonPrimitive(value.name)
+    }
+}
+
+@JvmInline
+@ExperimentalReadiumApi
+value class Color(@ColorInt val int: Int) {
+    companion object {
+        val AUTO = Color(0)
+    }
+
+    class Coder(private val namedColors: Map<String, Int> = emptyMap()) : SettingCoder<Color> {
+        override fun decode(json: JsonElement): Color {
+            if (json !is JsonPrimitive) {
+                return AUTO
+            }
+
+            json.intOrNull
+                ?.let { return Color(it) }
+
+            json.contentOrNull
+                ?.let { namedColors[it] }
+                ?.let { return Color(it) }
+
+            return AUTO
+        }
+
+        override fun encode(value: Color): JsonElement {
+            if (value == AUTO) {
+                return JsonNull
+            }
+
+            return namedColors
+                .filter { it.value == value.int }
+                .keys.firstOrNull()
+                ?.let { JsonPrimitive(it) }
+                ?: JsonPrimitive(value.int)
+        }
     }
 }

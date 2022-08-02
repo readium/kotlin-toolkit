@@ -8,6 +8,7 @@
 
 package org.readium.r2.navigator.settings
 
+import androidx.annotation.ColorInt
 import kotlinx.serialization.json.JsonElement
 import org.readium.r2.shared.ExperimentalReadiumApi
 import java.text.NumberFormat
@@ -37,6 +38,7 @@ data class Setting<V, E>(
 
     companion object {
         // Official setting keys.
+        const val BACKGROUND_COLOR = "backgroundColor"
         const val COLUMN_COUNT = "columnCount"
         const val FIT = "fit"
         const val FONT = "font"
@@ -54,6 +56,7 @@ data class Setting<V, E>(
         const val PUBLISHER_STYLES = "publisherStyles"
         const val READING_PROGRESSION = "readingProgression"
         const val TEXT_ALIGN = "textAlign"
+        const val TEXT_COLOR = "textColor"
         const val THEME = "theme"
         const val TYPE_SCALE = "typeScale"
         const val WORD_SPACING = "wordSpacing"
@@ -231,7 +234,7 @@ typealias EnumSetting<E> = Setting<E, EnumExtras<E>>
  */
 @ExperimentalReadiumApi
 data class EnumExtras<E>(
-    val values: List<E>,
+    val values: List<E>?,
     val label: (E) -> String?,
     val originalValidator: SettingValidator<E>,
 )
@@ -247,7 +250,7 @@ data class EnumExtras<E>(
 inline fun <reified E> EnumSetting(
     key: String,
     value: E,
-    values: List<E>,
+    values: List<E>?,
     noinline label: (E) -> String? = { null },
     coder: SettingCoder<E> = SerializerSettingCoder(),
     validator: SettingValidator<E> = IdentitySettingValidator(),
@@ -270,7 +273,7 @@ inline fun <reified E> EnumSetting(
  */
 @ExperimentalReadiumApi
 fun <E> EnumSetting<E>.copy(
-    values: List<E> = this.values,
+    values: List<E>? = this.values,
     coder: SettingCoder<E> = this.coder,
 ): EnumSetting<E> =
     copy(
@@ -283,7 +286,7 @@ fun <E> EnumSetting<E>.copy(
  * List of valid [E] values for this setting. Not all members of the enum are necessary supported.
  */
 @ExperimentalReadiumApi
-val <E> EnumSetting<E>.values: List<E>
+val <E> EnumSetting<E>.values: List<E>?
     get() = extras.values
 
 /**
@@ -292,3 +295,27 @@ val <E> EnumSetting<E>.values: List<E>
 @ExperimentalReadiumApi
 fun <E> EnumSetting<E>.label(value: E): String? =
     extras.label(value)
+
+/**
+ * A color [Setting].
+ */
+@ExperimentalReadiumApi
+typealias ColorSetting = EnumSetting<Color>
+
+/**
+ * Creates a new [ColorSetting] with the given [value].
+ */
+@ExperimentalReadiumApi
+fun ColorSetting(
+    key: String,
+    value: Color,
+    values: List<Color>? = null,
+    label: (Color) -> String? = { null },
+    coder: Color.Coder = Color.Coder(),
+    validator: SettingValidator<Color> = IdentitySettingValidator(),
+    activator: SettingActivator = NullSettingActivator,
+) : ColorSetting =
+    EnumSetting(
+        key = key, value = value, values = values, label = label,
+        coder = coder, validator = validator, activator = activator
+    )

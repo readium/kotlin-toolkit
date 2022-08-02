@@ -8,14 +8,17 @@ package org.readium.r2.navigator.epub
 
 import org.readium.r2.navigator.epub.css.*
 import org.readium.r2.navigator.settings.*
+import org.readium.r2.navigator.settings.Color
 import org.readium.r2.navigator.settings.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.util.Either
+import org.readium.r2.navigator.epub.css.Color as CssColor
 import org.readium.r2.navigator.epub.css.TextAlign as CssTextAlign
 
 @ExperimentalReadiumApi
 data class EpubSettings(
+    val backgroundColor: ColorSetting = BACKGROUND_COLOR,
     val columnCount: EnumSetting<ColumnCount>? = COLUMN_COUNT,
     val font: EnumSetting<Font> = FONT,
     val fontSize: PercentSetting = FONT_SIZE,
@@ -30,18 +33,31 @@ data class EpubSettings(
     val paragraphSpacing: PercentSetting = PARAGRAPH_SPACING,
     val publisherStyles: ToggleSetting = PUBLISHER_STYLES,
     val textAlign: EnumSetting<TextAlign> = TEXT_ALIGN,
+    val textColor: ColorSetting = TEXT_COLOR,
     val theme: EnumSetting<Theme> = THEME,
     val typeScale: RangeSetting<Double> = TYPE_SCALE,
     val wordSpacing: PercentSetting = WORD_SPACING,
 ) : Configurable.Settings {
-    constructor(fonts: List<Font>) : this(
+    constructor(fonts: List<Font> = emptyList(), namedColors: Map<String, Int> = emptyMap()) : this(
+        backgroundColor = BACKGROUND_COLOR.copy(
+            coder = Color.Coder(namedColors)
+        ),
         font = FONT.copy(
             coder = Font.Coder(listOf(Font.ORIGINAL) + fonts),
             values = listOf(Font.ORIGINAL) + fonts
-        )
+        ),
+        textColor = TEXT_COLOR.copy(
+            coder = Color.Coder(namedColors)
+        ),
     )
 
     companion object {
+
+        val BACKGROUND_COLOR: ColorSetting = ColorSetting(
+            key = Setting.BACKGROUND_COLOR,
+            value = Color.AUTO
+        )
+
         val COLUMN_COUNT: EnumSetting<ColumnCount> = EnumSetting(
             key = Setting.COLUMN_COUNT,
             value = ColumnCount.AUTO,
@@ -131,6 +147,11 @@ data class EpubSettings(
             activator = RequiresPublisherStylesDisabled
         )
 
+        val TEXT_COLOR: ColorSetting = ColorSetting(
+            key = Setting.TEXT_COLOR,
+            value = Color.AUTO
+        )
+
         val THEME: EnumSetting<Theme> = EnumSetting(
             key = Setting.THEME,
             value = Theme.LIGHT,
@@ -164,6 +185,7 @@ data class EpubSettings(
 
     internal fun update(preferences: Preferences, defaults: Preferences = Preferences()): EpubSettings =
         copy(
+            backgroundColor = backgroundColor.copyFirstValidValueFrom(preferences, defaults, fallback = Color.AUTO),
             columnCount = if (preferences[overflow] == Overflow.SCROLLED) null
                 else (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(preferences, defaults),
             font = font.copyFirstValidValueFrom(preferences, defaults, fallback = FONT.value),
@@ -179,6 +201,7 @@ data class EpubSettings(
             paragraphSpacing = paragraphSpacing.copyFirstValidValueFrom(preferences, defaults),
             publisherStyles = publisherStyles.copyFirstValidValueFrom(preferences, defaults),
             textAlign = textAlign.copyFirstValidValueFrom(preferences, defaults, fallback = TextAlign.START),
+            textColor = textColor.copyFirstValidValueFrom(preferences, defaults, fallback = Color.AUTO),
             theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME.value),
             typeScale = typeScale.copyFirstValidValueFrom(preferences, defaults),
             wordSpacing = wordSpacing.copyFirstValidValueFrom(preferences, defaults),
@@ -206,6 +229,12 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss =
                     Theme.DARK -> Appearance.NIGHT
                     Theme.SEPIA -> Appearance.SEPIA
                 },
+                textColor = textColor.value
+                    .takeIf { it != Color.AUTO }
+                    ?.let { CssColor.int(it.int) },
+                backgroundColor = backgroundColor.value
+                    .takeIf { it != Color.AUTO }
+                    ?.let { CssColor.int(it.int) },
                 fontOverride = (font.value != Font.ORIGINAL || normalizedText.value),
                 fontFamily = font.value.name?.let { listOf(it) },
                 // Font size is handled natively with WebSettings.textZoom.

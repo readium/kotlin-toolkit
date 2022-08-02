@@ -12,11 +12,14 @@ import kotlinx.serialization.json.JsonPrimitive
 import org.junit.Test
 import org.readium.r2.navigator.epub.css.*
 import org.readium.r2.navigator.settings.*
+import org.readium.r2.navigator.settings.Color
 import org.readium.r2.navigator.settings.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.util.Either
 import kotlin.test.*
+import android.graphics.Color as AndroidColor
+import org.readium.r2.navigator.epub.css.Color.Companion as CssColor
 import org.readium.r2.navigator.epub.css.TextAlign as CssTextAlign
 
 class EpubSettingsTest {
@@ -24,6 +27,7 @@ class EpubSettingsTest {
     @Test
     fun `Default values`() {
         val settings = EpubSettings(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
+        assertEquals(Color.AUTO, settings.backgroundColor?.value)
         assertEquals(ColumnCount.AUTO, settings.columnCount?.value)
         assertEquals(Font.ORIGINAL, settings.font.value)
         assertEquals(listOf(Font.ORIGINAL, Font.ACCESSIBLE_DFA, Font.ROBOTO), settings.font.values)
@@ -39,6 +43,7 @@ class EpubSettingsTest {
         assertEquals(0.0, settings.paragraphSpacing.value)
         assertTrue(settings.publisherStyles.value)
         assertEquals(TextAlign.START, settings.textAlign.value)
+        assertEquals(Color.AUTO, settings.textColor?.value)
         assertEquals(listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY), settings.textAlign.values)
         assertEquals(Theme.LIGHT, settings.theme.value)
         assertEquals(1.2, settings.typeScale.value)
@@ -58,6 +63,7 @@ class EpubSettingsTest {
         var sut = EpubSettings(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
 
         val preferences = Preferences {
+            set(sut.backgroundColor, Color(3))
             set(sut.columnCount!!, ColumnCount.ONE)
             set(sut.font, Font.ROBOTO)
             set(sut.fontSize, 0.5)
@@ -72,12 +78,14 @@ class EpubSettingsTest {
             set(sut.paragraphSpacing, 0.4)
             set(sut.publisherStyles, false)
             set(sut.textAlign, TextAlign.LEFT)
+            set(sut.textColor, Color(5))
             set(sut.theme, Theme.DARK)
             set(sut.typeScale, 1.5)
             set(sut.wordSpacing, 0.2)
         }
 
         val defaults = Preferences {
+            set(sut.backgroundColor, Color(4))
             set(sut.columnCount!!, ColumnCount.TWO)
             set(sut.font, Font.ACCESSIBLE_DFA)
             set(sut.fontSize, 0.8)
@@ -92,12 +100,14 @@ class EpubSettingsTest {
             set(sut.paragraphIndent, 0.5)
             set(sut.publisherStyles, true)
             set(sut.textAlign, TextAlign.RIGHT)
+            set(sut.textColor, Color(6))
             set(sut.theme, Theme.SEPIA)
             set(sut.typeScale, 1.6)
             set(sut.wordSpacing, 0.4)
         }
 
         sut = sut.update(preferences = preferences, defaults = defaults)
+        assertEquals(Color(3), sut.backgroundColor.value)
         assertEquals(ColumnCount.ONE, sut.columnCount?.value)
         assertEquals(Font.ROBOTO, sut.font.value)
         assertEquals(0.5, sut.fontSize.value)
@@ -113,6 +123,7 @@ class EpubSettingsTest {
         assertEquals(0.4, sut.paragraphSpacing.value)
         assertFalse(sut.publisherStyles.value)
         assertEquals(TextAlign.LEFT, sut.textAlign.value)
+        assertEquals(Color(5), sut.textColor.value)
         assertEquals(1.5, sut.typeScale.value)
         assertEquals(Theme.DARK, sut.theme.value)
         assertEquals(0.2, sut.wordSpacing.value)
@@ -123,6 +134,7 @@ class EpubSettingsTest {
         var sut = EpubSettings(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
 
         val defaults = Preferences {
+            set(sut.backgroundColor, Color(3))
             set(sut.columnCount!!, ColumnCount.ONE)
             set(sut.font, Font.ROBOTO)
             set(sut.fontSize, 0.5)
@@ -137,12 +149,14 @@ class EpubSettingsTest {
             set(sut.paragraphSpacing, 0.4)
             set(sut.publisherStyles, false)
             set(sut.textAlign, TextAlign.LEFT)
+            set(sut.textColor, Color(6))
             set(sut.theme, Theme.DARK)
             set(sut.typeScale, 1.4)
             set(sut.wordSpacing, 0.2)
         }
 
         sut = sut.update(preferences = Preferences(), defaults = defaults)
+        assertEquals(Color(3), sut.backgroundColor.value)
         assertEquals(ColumnCount.ONE, sut.columnCount?.value)
         assertEquals(Font.ROBOTO, sut.font.value)
         assertEquals(0.5, sut.fontSize.value)
@@ -157,9 +171,31 @@ class EpubSettingsTest {
         assertEquals(0.4, sut.paragraphSpacing.value)
         assertFalse(sut.publisherStyles.value)
         assertEquals(TextAlign.LEFT, sut.textAlign.value)
+        assertEquals(Color(6), sut.textColor.value)
         assertEquals(Theme.DARK, sut.theme.value)
         assertEquals(1.4, sut.typeScale.value)
         assertEquals(0.2, sut.wordSpacing.value)
+    }
+
+    @Test
+    fun `Encode and decode named colors`() {
+        val sut = EpubSettings(namedColors = mapOf(
+            "red" to AndroidColor.RED,
+            "green" to AndroidColor.GREEN,
+        ))
+
+        assertEquals(
+            """{"textColor":"red","backgroundColor":"green"}""",
+            Preferences {
+                set(sut.textColor, Color(AndroidColor.RED))
+                set(sut.backgroundColor, Color(AndroidColor.GREEN))
+            }.toJsonString()
+        )
+
+        val prefs = Preferences("""{"textColor":"red","backgroundColor":"green"}""")
+        assertEquals(Color(AndroidColor.RED), prefs[sut.textColor])
+        assertEquals(Color(AndroidColor.GREEN), prefs[sut.backgroundColor])
+        assertNotEquals(Color(AndroidColor.GREEN), prefs[sut.textColor])
     }
 
     @Test
@@ -617,6 +653,8 @@ class EpubSettingsTest {
                     view = View.SCROLL,
                     colCount = ColCount.AUTO,
                     pageMargins = 1.9,
+                    textColor = CssColor.int(3),
+                    backgroundColor = CssColor.int(4),
                     fontOverride = true,
                     fontFamily = listOf("Roboto"),
                     advancedSettings = true,
@@ -633,6 +671,7 @@ class EpubSettingsTest {
                 )
             ),
             ReadiumCss().update(settings {
+                it[backgroundColor] = Color(4)
                 it[font] = Font.ROBOTO
                 it[hyphens] = false
                 it[letterSpacing] = 0.6
@@ -646,6 +685,7 @@ class EpubSettingsTest {
                 it[publisherStyles] = false
                 it[textAlign] = TextAlign.LEFT
                 it[theme] = Theme.LIGHT
+                it[textColor] = Color(3)
                 it[typeScale] = 1.4
                 it[wordSpacing] = 0.4
             })

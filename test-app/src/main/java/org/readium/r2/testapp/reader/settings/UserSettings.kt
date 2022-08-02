@@ -8,27 +8,32 @@
 
 package org.readium.r2.testapp.reader.settings
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Remove
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
+import androidx.compose.material.icons.filled.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.testapp.reader.ReaderViewModel
+import org.readium.r2.testapp.utils.compose.ColorPicker
 import org.readium.r2.testapp.utils.compose.DropdownMenuButton
 import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
-import org.readium.r2.navigator.settings.TextAlign as NavigatorTextAlign
+import org.readium.r2.navigator.settings.Color as ReadiumColor
+import org.readium.r2.navigator.settings.TextAlign as ReadiumTextAlign
 
 /**
  * Closure which updates and applies a set of [Preferences].
@@ -90,6 +95,7 @@ fun UserSettings(
                 ReflowableUserSettings(
                     preferences = preferences,
                     edit = edit,
+                    backgroundColor = settings.backgroundColor,
                     columnCount = settings.columnCount,
                     font = settings.font,
                     fontSize = settings.fontSize,
@@ -104,6 +110,7 @@ fun UserSettings(
                     paragraphSpacing = settings.paragraphSpacing,
                     publisherStyles = settings.publisherStyles,
                     textAlign = settings.textAlign,
+                    textColor = settings.textColor,
                     theme = settings.theme,
                     typeScale = settings.typeScale,
                     wordSpacing = settings.wordSpacing,
@@ -120,6 +127,7 @@ fun UserSettings(
 private fun ReflowableUserSettings(
     preferences: Preferences,
     edit: EditPreferences,
+    backgroundColor: ColorSetting? = null,
     columnCount: EnumSetting<ColumnCount>? = null,
     font: EnumSetting<Font>? = null,
     fontSize: PercentSetting? = null,
@@ -133,18 +141,29 @@ private fun ReflowableUserSettings(
     paragraphIndent: PercentSetting? = null,
     paragraphSpacing: PercentSetting? = null,
     publisherStyles: ToggleSetting? = null,
-    textAlign: EnumSetting<NavigatorTextAlign>? = null,
+    textAlign: EnumSetting<ReadiumTextAlign>? = null,
+    textColor: ColorSetting? = null,
     theme: EnumSetting<Theme>? = null,
     typeScale: RangeSetting<Double>? = null,
     wordSpacing: PercentSetting? = null,
 ) {
-    if (theme != null) {
-        ButtonGroupItem("Theme", theme, preferences, edit) { value ->
-            when (value) {
-                Theme.LIGHT -> "Light"
-                Theme.DARK -> "Dark"
-                Theme.SEPIA -> "Sepia"
+    if (theme != null || textColor != null) {
+        if (theme != null) {
+            ButtonGroupItem("Theme", theme, preferences, edit) { value ->
+                when (value) {
+                    Theme.LIGHT -> "Light"
+                    Theme.DARK -> "Dark"
+                    Theme.SEPIA -> "Sepia"
+                }
             }
+        }
+
+        if (textColor != null) {
+            ColorItem("Text color", textColor, preferences, edit)
+        }
+
+        if (backgroundColor != null) {
+            ColorItem("Background color", backgroundColor, preferences, edit)
         }
 
         Divider()
@@ -208,12 +227,12 @@ private fun ReflowableUserSettings(
     if (textAlign != null) {
         ButtonGroupItem("Alignment", textAlign, preferences, edit) { value ->
             when (value) {
-                NavigatorTextAlign.CENTER -> "Center"
-                NavigatorTextAlign.JUSTIFY -> "Justify"
-                NavigatorTextAlign.START -> "Start"
-                NavigatorTextAlign.END -> "End"
-                NavigatorTextAlign.LEFT -> "Left"
-                NavigatorTextAlign.RIGHT -> "Right"
+                ReadiumTextAlign.CENTER -> "Center"
+                ReadiumTextAlign.JUSTIFY -> "Justify"
+                ReadiumTextAlign.START -> "Start"
+                ReadiumTextAlign.END -> "End"
+                ReadiumTextAlign.LEFT -> "Left"
+                ReadiumTextAlign.RIGHT -> "Right"
             }
         }
     }
@@ -265,7 +284,7 @@ private fun <T> ButtonGroupItem(
 ) {
     Item(title, isActive = preferences.isActive(setting)) {
         ToggleButtonGroup(
-            options = setting.values,
+            options = setting.values ?: emptyList(),
             activeOption = setting.value,
             selectedOption = preferences[setting],
             onSelectOption = { option ->
@@ -297,7 +316,7 @@ private fun <T> DropdownMenuItem(
         DropdownMenuButton(
             text = { Text(label(preferences[setting] ?: setting.value)) }
         ) {
-            for (value in setting.values) {
+            for (value in setting.values ?: emptyList()) {
                 DropdownMenuItem(
                     onClick = {
                         edit { set(setting, value) }
@@ -377,6 +396,62 @@ private fun SwitchItem(
                 edit { set(setting, value) }
             }
         )
+    }
+}
+
+/**
+ * Component for a [ColorSetting].
+ */
+@Composable
+private fun ColorItem(
+    title: String,
+    setting: ColorSetting,
+    preferences: Preferences,
+    edit: EditPreferences
+) {
+    var isPicking by remember { mutableStateOf(false) }
+    val color = remember(setting.value) { Color(setting.value.int) }
+
+    Item(
+        title = title,
+        isActive = preferences.isActive(setting),
+        onClick = { isPicking = true }
+    ) {
+        OutlinedButton(
+            onClick = { isPicking = true },
+            colors = ButtonDefaults.buttonColors(backgroundColor = color)
+        ) {
+            if (setting.value == ReadiumColor.AUTO) {
+                Icon(imageVector = Icons.Default.Palette, contentDescription = "Change color")
+            }
+        }
+
+        if (isPicking) {
+            Dialog(
+                onDismissRequest = { isPicking = false }
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    ColorPicker { color ->
+                        isPicking = false
+                        edit {
+                            set(setting, ReadiumColor(color))
+                        }
+                    }
+                    Button(
+                        onClick = {
+                            isPicking = false
+                            edit {
+                                remove(setting)
+                            }
+                        }
+                    ) {
+                        Text("Clear")
+                    }
+                }
+            }
+        }
     }
 }
 

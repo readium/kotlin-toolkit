@@ -46,11 +46,11 @@ class RangeSettingValidator<V : Comparable<V>>(val range: ClosedRange<V>) : Sett
  */
 @ExperimentalReadiumApi
 class AllowlistSettingValidator<V>(
-    val allowedValues: List<V>,
+    val allowedValues: List<V>?,
     val defaultValue: V? = null
 ) : SettingValidator<V> {
     override fun validate(value: V): V? =
-        if (allowedValues.contains(value)) value
+        if (allowedValues == null || allowedValues.contains(value)) value
         else defaultValue
 }
 
