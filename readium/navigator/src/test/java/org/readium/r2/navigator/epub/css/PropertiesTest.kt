@@ -54,7 +54,7 @@ class PropertiesTest {
     @Test
     fun `Override RS properties`() {
         val props = RsProperties(
-            colCount = ColCount.One,
+            colCount = ColCount.ONE,
             overrides = mapOf(
                 "--RS__colCount" to "2",
                 "--RS__custom" to "value"
@@ -106,7 +106,7 @@ class PropertiesTest {
             ),
             RsProperties(
                 colWidth = Length.Absolute.Cm(1.2),
-                colCount = ColCount.Two,
+                colCount = ColCount.TWO,
                 colGap = Length.Absolute.Pt(2.3),
                 pageGutter = Length.Absolute.Pc(3.4),
                 flowSpacing = Length.Absolute.Mm(4.5),
@@ -115,8 +115,8 @@ class PropertiesTest {
                 maxLineLength = Length.Relative.Rem(7.8),
                 maxMediaWidth = Length.Relative.Percent(0.5),
                 maxMediaHeight = Length.Relative.Vw(9.10),
-                boxSizingMedia = BoxSizing.BorderBox,
-                boxSizingTable = BoxSizing.ContentBox,
+                boxSizingMedia = BoxSizing.BORDER_BOX,
+                boxSizingTable = BoxSizing.CONTENT_BOX,
                 textColor = Color.hex("#432FCA"),
                 backgroundColor = Color.int(AndroidColor.RED),
                 selectionTextColor = Color.rgb(100, 150, 200),
@@ -202,10 +202,10 @@ class PropertiesTest {
                 "--USER__a11yNormalize" to "readium-a11y-on",
             ),
             UserProperties(
-                view = View.Scroll,
-                colCount = ColCount.Auto,
+                view = View.SCROLL,
+                colCount = ColCount.AUTO,
                 pageMargins = Length.Relative.VMin(1.2),
-                appearance = Appearance.Night,
+                appearance = Appearance.NIGHT,
                 darkenImages = true,
                 invertImages = true,
                 textColor = Color.int(AndroidColor.RED),
@@ -215,14 +215,14 @@ class PropertiesTest {
                 fontSize = Length.Relative.VMax(2.3),
                 advancedSettings = true,
                 typeScale = Length.Absolute.Pt(3.4),
-                textAlign = TextAlign.Justify,
+                textAlign = TextAlign.JUSTIFY,
                 lineHeight = Length.Absolute.Pt(4.5),
                 paraSpacing = Length.Absolute.Pt(5.6),
                 paraIndent = Length.Relative.Rem(6.7),
                 wordSpacing = Length.Relative.Rem(7.8),
                 letterSpacing = Length.Relative.Rem(8.9),
-                bodyHyphens = Hyphens.Auto,
-                ligatures = Ligatures.Common,
+                bodyHyphens = Hyphens.AUTO,
+                ligatures = Ligatures.COMMON,
                 a11yNormalize = true,
             ).toCssProperties()
         )
@@ -231,7 +231,7 @@ class PropertiesTest {
     @Test
     fun `Override user properties`() {
         val props = UserProperties(
-            colCount = ColCount.One,
+            colCount = ColCount.ONE,
             overrides = mapOf(
                 "--USER__colCount" to "2",
                 "--USER__custom" to "value"
@@ -259,8 +259,8 @@ class PropertiesTest {
                 
             """.trimIndent(),
             UserProperties(
-                view = View.Scroll,
-                colCount = ColCount.Auto,
+                view = View.SCROLL,
+                colCount = ColCount.AUTO,
             ).toCss()
         )
     }
@@ -294,10 +294,10 @@ class PropertiesTest {
                 
             """.trimIndent(),
             UserProperties(
-                view = View.Scroll,
-                colCount = ColCount.Auto,
+                view = View.SCROLL,
+                colCount = ColCount.AUTO,
                 pageMargins = Length.Relative.VMin(1.2),
-                appearance = Appearance.Night,
+                appearance = Appearance.NIGHT,
                 darkenImages = true,
                 invertImages = true,
                 textColor = Color.int(AndroidColor.RED),
@@ -307,14 +307,14 @@ class PropertiesTest {
                 fontSize = Length.Relative.VMax(2.3),
                 advancedSettings = true,
                 typeScale = Length.Absolute.Pt(3.4),
-                textAlign = TextAlign.Justify,
+                textAlign = TextAlign.JUSTIFY,
                 lineHeight = Length.Absolute.Pt(4.5),
                 paraSpacing = Length.Absolute.Pt(5.6),
                 paraIndent = Length.Relative.Rem(6.7),
                 wordSpacing = Length.Relative.Rem(7.8),
                 letterSpacing = Length.Relative.Rem(8.9),
-                bodyHyphens = Hyphens.Auto,
-                ligatures = Ligatures.Common,
+                bodyHyphens = Hyphens.AUTO,
+                ligatures = Ligatures.COMMON,
                 a11yNormalize = true,
             ).toCss()
         )

@@ -339,8 +339,8 @@ data class RsProperties(
 /** User view. */
 @ExperimentalReadiumApi
 enum class View(private val css: String) : Cssable {
-    Paged("readium-paged-on"),
-    Scroll("readium-scroll-on");
+    PAGED("readium-paged-on"),
+    SCROLL("readium-scroll-on");
 
     override fun toCss(): String = css
 }
@@ -348,8 +348,8 @@ enum class View(private val css: String) : Cssable {
 /** Reading mode. */
 @ExperimentalReadiumApi
 enum class Appearance(private val css: String?) : Cssable {
-    Sepia("readium-sepia-on"),
-    Night("readium-night-on");
+    NIGHT("readium-night-on"),
+    SEPIA("readium-sepia-on");
 
     override fun toCss(): String? = css
 }
@@ -457,9 +457,9 @@ interface Length : Cssable {
 /** Number of CSS columns. */
 @ExperimentalReadiumApi
 enum class ColCount(private val css: String) : Cssable {
-    Auto("auto"),
-    One("1"),
-    Two("2");
+    AUTO("auto"),
+    ONE("1"),
+    TWO("2");
 
     override fun toCss(): String? = css
 }
@@ -467,9 +467,10 @@ enum class ColCount(private val css: String) : Cssable {
 /** CSS text alignment. */
 @ExperimentalReadiumApi
 enum class TextAlign(private val css: String) : Cssable {
-    Left("left"),
-    Right("right"),
-    Justify("justify");
+    START("start"),
+    LEFT("left"),
+    RIGHT("right"),
+    JUSTIFY("justify");
 
     override fun toCss(): String? = css
 }
@@ -477,8 +478,8 @@ enum class TextAlign(private val css: String) : Cssable {
 /** CSS hyphenation. */
 @ExperimentalReadiumApi
 enum class Hyphens(private val css: String) : Cssable {
-    None("none"),
-    Auto("auto");
+    NONE("none"),
+    AUTO("auto");
 
     override fun toCss(): String? = css
 }
@@ -486,8 +487,8 @@ enum class Hyphens(private val css: String) : Cssable {
 /** CSS ligatures. */
 @ExperimentalReadiumApi
 enum class Ligatures(private val css: String) : Cssable {
-    None("none"),
-    Common("common-ligatures");
+    NONE("none"),
+    COMMON("common-ligatures");
 
     override fun toCss(): String? = css
 }
@@ -495,8 +496,8 @@ enum class Ligatures(private val css: String) : Cssable {
 /** CSS box sizing. */
 @ExperimentalReadiumApi
 enum class BoxSizing(private val css: String) : Cssable {
-    ContentBox("content-box"),
-    BorderBox("border-box");
+    CONTENT_BOX("content-box"),
+    BORDER_BOX("border-box");
 
     override fun toCss(): String? = css
 }

@@ -10,7 +10,6 @@ package org.readium.r2.navigator.settings
 
 import kotlinx.serialization.json.JsonPrimitive
 import org.junit.Test
-import org.readium.r2.navigator.Theme
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
 import kotlin.test.assertEquals
@@ -57,8 +56,8 @@ private val wordSpacing: PercentSetting = PercentSetting(
 
 private val theme: EnumSetting<Theme> = EnumSetting(
     key = Setting.THEME,
-    value = Theme.Light,
-    values = listOf(Theme.Light, Theme.Dark, Theme.Sepia)
+    value = Theme.LIGHT,
+    values = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
 )
 
 class PreferencesTest {
@@ -154,7 +153,7 @@ class PreferencesTest {
             )).copy {
                 set(readingProgression, ReadingProgression.RTL)
                 set(fontSize, null)
-                set(theme, Theme.Light)
+                set(theme, Theme.LIGHT)
             }
         )
     }
@@ -360,20 +359,20 @@ class PreferencesTest {
         assertEquals(
             Preferences(mapOf("theme" to JsonPrimitive("light"))),
             Preferences().copy {
-                toggle(theme, Theme.Light)
+                toggle(theme, Theme.LIGHT)
             }
         )
         assertEquals(
             Preferences(mapOf("theme" to JsonPrimitive("light"))),
             Preferences(mapOf("theme" to JsonPrimitive("dark"))).copy {
-                toggle(theme, Theme.Light)
+                toggle(theme, Theme.LIGHT)
             }
         )
         // toggles off
         assertEquals(
             Preferences(),
             Preferences(mapOf("theme" to JsonPrimitive("light"))).copy {
-                toggle(theme, Theme.Light)
+                toggle(theme, Theme.LIGHT)
             }
         )
     }

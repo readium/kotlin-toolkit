@@ -14,14 +14,13 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import org.readium.r2.navigator.ColumnCount
-import org.readium.r2.navigator.Font
-import org.readium.r2.navigator.Theme
 import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -29,6 +28,7 @@ import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.DropdownMenuButton
 import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
+import org.readium.r2.navigator.settings.TextAlign as NavigatorTextAlign
 
 /**
  * Closure which updates and applies a set of [Preferences].
@@ -93,11 +93,12 @@ fun UserSettings(
                     columnCount = settings.columnCount,
                     font = settings.font,
                     fontSize = settings.fontSize,
+                    letterSpacing = settings.letterSpacing,
                     overflow = settings.overflow,
                     publisherStyles = settings.publisherStyles,
-                    wordSpacing = settings.wordSpacing,
-                    letterSpacing = settings.letterSpacing,
+                    textAlign = settings.textAlign,
                     theme = settings.theme,
+                    wordSpacing = settings.wordSpacing,
                 )
         }
     }
@@ -114,18 +115,19 @@ private fun ReflowableUserSettings(
     columnCount: EnumSetting<ColumnCount>? = null,
     font: EnumSetting<Font>? = null,
     fontSize: PercentSetting? = null,
+    letterSpacing: PercentSetting? = null,
     overflow: EnumSetting<Overflow>? = null,
     publisherStyles: ToggleSetting? = null,
-    wordSpacing: PercentSetting? = null,
-    letterSpacing: PercentSetting? = null,
+    textAlign: EnumSetting<NavigatorTextAlign>? = null,
     theme: EnumSetting<Theme>? = null,
+    wordSpacing: PercentSetting? = null,
 ) {
     if (theme != null) {
         ButtonGroupItem("Theme", theme, preferences, edit) { value ->
             when (value) {
-                Theme.Light -> "Light"
-                Theme.Dark -> "Dark"
-                Theme.Sepia -> "Sepia"
+                Theme.LIGHT -> "Light"
+                Theme.DARK -> "Dark"
+                Theme.SEPIA -> "Sepia"
             }
         }
 
@@ -146,9 +148,9 @@ private fun ReflowableUserSettings(
         if (columnCount != null) {
             ButtonGroupItem("Columns", columnCount, preferences, edit) { value ->
                 when (value) {
-                    ColumnCount.Auto -> "Auto"
-                    ColumnCount.One -> "1"
-                    ColumnCount.Two -> "2"
+                    ColumnCount.AUTO -> "Auto"
+                    ColumnCount.ONE -> "1"
+                    ColumnCount.TWO -> "2"
                 }
             }
         }
@@ -177,6 +179,19 @@ private fun ReflowableUserSettings(
 
     if (publisherStyles != null) {
         SwitchItem("Publisher styles", publisherStyles, preferences, edit)
+    }
+
+    if (textAlign != null) {
+        ButtonGroupItem("Alignment", textAlign, preferences, edit) { value ->
+            when (value) {
+                NavigatorTextAlign.CENTER -> "Center"
+                NavigatorTextAlign.JUSTIFY -> "Justify"
+                NavigatorTextAlign.START -> "Start"
+                NavigatorTextAlign.END -> "End"
+                NavigatorTextAlign.LEFT -> "Left"
+                NavigatorTextAlign.RIGHT -> "Right"
+            }
+        }
     }
 
     if (wordSpacing != null) {
@@ -209,8 +224,12 @@ private fun <T> ButtonGroupItem(
                 edit {
                     toggle(setting, option)
                 }
-            }) { option ->
-            Text(label(option))
+            }
+        ) { option ->
+            Text(
+                text = label(option),
+                style = MaterialTheme.typography.caption
+            )
         }
     }
 }

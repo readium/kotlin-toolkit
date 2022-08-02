@@ -46,6 +46,7 @@ data class Setting<V, E>(
         const val OVERFLOW = "overflow"
         const val PUBLISHER_STYLES = "publisherStyles"
         const val READING_PROGRESSION = "readingProgression"
+        const val TEXT_ALIGN = "textAlign"
         const val THEME = "theme"
         const val WORD_SPACING = "wordSpacing"
     }

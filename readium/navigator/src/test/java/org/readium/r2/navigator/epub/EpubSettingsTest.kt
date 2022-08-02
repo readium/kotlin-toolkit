@@ -10,27 +10,28 @@ package org.readium.r2.navigator.epub
 
 import kotlinx.serialization.json.JsonPrimitive
 import org.junit.Test
-import org.readium.r2.navigator.ColumnCount
-import org.readium.r2.navigator.Font
-import org.readium.r2.navigator.Theme
 import org.readium.r2.navigator.epub.css.*
 import org.readium.r2.navigator.settings.*
+import org.readium.r2.navigator.settings.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import kotlin.test.*
+import org.readium.r2.navigator.epub.css.TextAlign as CssTextAlign
 
 class EpubSettingsTest {
 
     @Test
     fun `Default values`() {
         val settings = EpubSettings(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
-        assertEquals(ColumnCount.Auto, settings.columnCount?.value)
+        assertEquals(ColumnCount.AUTO, settings.columnCount?.value)
         assertEquals(Font.ORIGINAL, settings.font.value)
         assertEquals(listOf(Font.ORIGINAL, Font.ACCESSIBLE_DFA, Font.ROBOTO), settings.font.values)
         assertEquals(1.0, settings.fontSize.value)
         assertEquals(Overflow.PAGINATED, settings.overflow.value)
         assertTrue(settings.publisherStyles.value)
-        assertEquals(Theme.Light, settings.theme.value)
+        assertEquals(TextAlign.START, settings.textAlign.value)
+        assertEquals(listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY), settings.textAlign.values)
+        assertEquals(Theme.LIGHT, settings.theme.value)
         assertEquals(0.0, settings.wordSpacing.value)
         assertEquals(0.0, settings.letterSpacing.value)
     }
@@ -48,34 +49,37 @@ class EpubSettingsTest {
         var sut = EpubSettings(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
 
         val preferences = Preferences {
-            set(sut.columnCount!!, ColumnCount.One)
+            set(sut.columnCount!!, ColumnCount.ONE)
             set(sut.font, Font.ROBOTO)
             set(sut.fontSize, 0.5)
             set(sut.overflow, Overflow.PAGINATED)
             set(sut.publisherStyles, false)
-            set(sut.theme, Theme.Dark)
+            set(sut.textAlign, TextAlign.LEFT)
+            set(sut.theme, Theme.DARK)
             set(sut.wordSpacing, 0.2)
             set(sut.letterSpacing, 0.2)
         }
 
         val defaults = Preferences {
-            set(sut.columnCount!!, ColumnCount.Two)
+            set(sut.columnCount!!, ColumnCount.TWO)
             set(sut.font, Font.ACCESSIBLE_DFA)
             set(sut.fontSize, 0.8)
             set(sut.overflow, Overflow.SCROLLED)
             set(sut.publisherStyles, true)
-            set(sut.theme, Theme.Sepia)
+            set(sut.textAlign, TextAlign.RIGHT)
+            set(sut.theme, Theme.SEPIA)
             set(sut.wordSpacing, 0.4)
             set(sut.letterSpacing, 0.4)
         }
 
         sut = sut.update(preferences = preferences, defaults = defaults)
-        assertEquals(ColumnCount.One, sut.columnCount?.value)
+        assertEquals(ColumnCount.ONE, sut.columnCount?.value)
         assertEquals(Font.ROBOTO, sut.font.value)
         assertEquals(0.5, sut.fontSize.value)
         assertEquals(Overflow.PAGINATED, sut.overflow.value)
         assertFalse(sut.publisherStyles.value)
-        assertEquals(Theme.Dark, sut.theme.value)
+        assertEquals(TextAlign.LEFT, sut.textAlign.value)
+        assertEquals(Theme.DARK, sut.theme.value)
         assertEquals(0.2, sut.wordSpacing.value)
         assertEquals(0.2, sut.letterSpacing.value)
     }
@@ -85,23 +89,25 @@ class EpubSettingsTest {
         var sut = EpubSettings(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
 
         val defaults = Preferences {
-            set(sut.columnCount!!, ColumnCount.One)
+            set(sut.columnCount!!, ColumnCount.ONE)
             set(sut.font, Font.ROBOTO)
             set(sut.fontSize, 0.5)
             set(sut.overflow, Overflow.PAGINATED)
             set(sut.publisherStyles, false)
-            set(sut.theme, Theme.Dark)
+            set(sut.textAlign, TextAlign.LEFT)
+            set(sut.theme, Theme.DARK)
             set(sut.wordSpacing, 0.2)
             set(sut.letterSpacing, 0.2)
         }
 
         sut = sut.update(preferences = Preferences(), defaults = defaults)
-        assertEquals(ColumnCount.One, sut.columnCount?.value)
+        assertEquals(ColumnCount.ONE, sut.columnCount?.value)
         assertEquals(Font.ROBOTO, sut.font.value)
         assertEquals(0.5, sut.fontSize.value)
         assertEquals(Overflow.PAGINATED, sut.overflow.value)
         assertFalse(sut.publisherStyles.value)
-        assertEquals(Theme.Dark, sut.theme.value)
+        assertEquals(TextAlign.LEFT, sut.textAlign.value)
+        assertEquals(Theme.DARK, sut.theme.value)
         assertEquals(0.2, sut.wordSpacing.value)
         assertEquals(0.2, sut.letterSpacing.value)
     }
@@ -138,12 +144,26 @@ class EpubSettingsTest {
         var sut = EpubSettings()
 
         sut = sut.update(Preferences {
-            set(sut.theme, Theme.Sepia)
+            set(sut.theme, Theme.SEPIA)
         })
-        assertEquals(Theme.Sepia, sut.theme.value)
+        assertEquals(Theme.SEPIA, sut.theme.value)
 
         sut = sut.update(Preferences {})
-        assertEquals(Theme.Light, sut.theme.value)
+        assertEquals(Theme.LIGHT, sut.theme.value)
+    }
+
+    @Test
+    fun `Unsupported text align revert to the default one`() {
+        var sut = EpubSettings()
+
+        sut = sut.update(Preferences {
+            set(sut.textAlign, TextAlign.JUSTIFY)
+        })
+        assertEquals(TextAlign.JUSTIFY, sut.textAlign.value)
+        sut = sut.update(Preferences {
+            set(sut.textAlign, TextAlign.CENTER)
+        })
+        assertEquals(TextAlign.START, sut.textAlign.value)
     }
 
     @Test
@@ -229,15 +249,57 @@ class EpubSettingsTest {
     }
 
     @Test
+    fun `Text align requires publisher styles disabled`() {
+        val sut = EpubSettings()
+        assertFalse(
+            Preferences { set(sut.publisherStyles, true) }
+                .isActive(sut.textAlign)
+        )
+        assertTrue(
+            Preferences { set(sut.publisherStyles, false) }
+                .isActive(sut.textAlign)
+        )
+    }
+
+    @Test
+    fun `Activate text align`() {
+        val sut = EpubSettings()
+        assertEquals(
+            Preferences(mapOf(
+                "textAlign" to JsonPrimitive("left"),
+                "publisherStyles" to JsonPrimitive(false)
+            )),
+            Preferences(mapOf(
+                "textAlign" to JsonPrimitive("left")
+            )).copy {
+                activate(sut.textAlign)
+            }
+        )
+        assertEquals(
+            Preferences(mapOf(
+                "textAlign" to JsonPrimitive("left"),
+                "publisherStyles" to JsonPrimitive(false)
+            )),
+            Preferences(mapOf(
+                "textAlign" to JsonPrimitive("left"),
+                "publisherStyles" to JsonPrimitive(true)
+            )).copy {
+                activate(sut.textAlign)
+            }
+        )
+    }
+
+    @Test
     fun `Update Readium CSS using EPUB settings`() {
         assertEquals(
             ReadiumCss(
                 userProperties = UserProperties(
-                    view = View.Paged,
-                    colCount = ColCount.Auto,
+                    view = View.PAGED,
+                    colCount = ColCount.AUTO,
                     fontOverride = false,
                     fontFamily = null,
                     advancedSettings = false,
+                    textAlign = CssTextAlign.START,
                     wordSpacing = Length.Relative.Rem(0.0),
                     letterSpacing = Length.Relative.Rem(0.0),
                 )
@@ -248,61 +310,67 @@ class EpubSettingsTest {
         assertEquals(
             ReadiumCss(
                 userProperties = UserProperties(
-                    view = View.Scroll,
-                    colCount = ColCount.Auto,
+                    view = View.SCROLL,
+                    colCount = ColCount.AUTO,
                     fontOverride = true,
                     fontFamily = listOf("Roboto"),
                     advancedSettings = true,
+                    textAlign = CssTextAlign.LEFT,
                     wordSpacing = Length.Relative.Rem(0.4),
                     letterSpacing = Length.Relative.Rem(0.3),
                 )
             ),
             ReadiumCss().update(settings {
-                it[overflow] = Overflow.SCROLLED
-                it[theme] = Theme.Light
                 it[font] = Font.ROBOTO
-                it[publisherStyles] = false
-                it[wordSpacing] = 0.4
                 it[letterSpacing] = 0.6
+                it[overflow] = Overflow.SCROLLED
+                it[publisherStyles] = false
+                it[textAlign] = TextAlign.LEFT
+                it[theme] = Theme.LIGHT
+                it[wordSpacing] = 0.4
             })
         )
 
         assertEquals(
             ReadiumCss(
                 userProperties = UserProperties(
-                    view = View.Paged,
-                    colCount = ColCount.One,
-                    appearance = Appearance.Night,
+                    view = View.PAGED,
+                    colCount = ColCount.ONE,
+                    appearance = Appearance.NIGHT,
                     fontOverride = false,
                     advancedSettings = true,
+                    textAlign = CssTextAlign.RIGHT,
                     wordSpacing = Length.Relative.Rem(1.0),
                     letterSpacing = Length.Relative.Rem(0.5),
                 )
             ),
             ReadiumCss().update(settings {
-                it[columnCount!!] = ColumnCount.One
-                it[theme] = Theme.Dark
-                it[publisherStyles] = false
-                it[wordSpacing] = 1.0
+                it[columnCount!!] = ColumnCount.ONE
                 it[letterSpacing] = 1.0
+                it[publisherStyles] = false
+                it[textAlign] = TextAlign.RIGHT
+                it[theme] = Theme.DARK
+                it[wordSpacing] = 1.0
             })
         )
 
         assertEquals(
             ReadiumCss(
                 userProperties = UserProperties(
-                    view = View.Paged,
-                    colCount = ColCount.Two,
-                    appearance = Appearance.Sepia,
+                    view = View.PAGED,
+                    colCount = ColCount.TWO,
+                    appearance = Appearance.SEPIA,
                     fontOverride = false,
-                    advancedSettings = false,
+                    advancedSettings = true,
+                    textAlign = CssTextAlign.JUSTIFY,
                     wordSpacing = Length.Relative.Rem(0.0),
                     letterSpacing = Length.Relative.Rem(0.0),
                 )
             ),
             ReadiumCss().update(settings {
-                it[columnCount!!] = ColumnCount.Two
-                it[theme] = Theme.Sepia
+                it[columnCount!!] = ColumnCount.TWO
+                it[textAlign] = TextAlign.JUSTIFY
+                it[theme] = Theme.SEPIA
             })
         )
     }

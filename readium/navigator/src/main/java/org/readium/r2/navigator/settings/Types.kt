@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator
+package org.readium.r2.navigator.settings
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -12,25 +12,42 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
-import org.readium.r2.navigator.settings.SettingCoder
+import org.readium.r2.shared.ExperimentalReadiumApi
 
-/**
- * Navigator appearance.
- */
+@ExperimentalReadiumApi
 @Serializable
 enum class Theme {
-    @SerialName("light") Light,
-    @SerialName("dark") Dark,
-    @SerialName("sepia") Sepia;
+    @SerialName("light") LIGHT,
+    @SerialName("dark") DARK,
+    @SerialName("sepia") SEPIA;
 }
 
+@ExperimentalReadiumApi
+@Serializable
+enum class TextAlign {
+    /** Align the text in the center of the page. */
+    @SerialName("center") CENTER,
+    /** Stretch lines of text that end with a soft line break to fill the width of the page. */
+    @SerialName("justify") JUSTIFY,
+    /** Align the text on the leading edge of the page. */
+    @SerialName("start") START,
+    /** Align the text on the trailing edge of the page. */
+    @SerialName("end") END,
+    /** Align the text on the left edge of the page. */
+    @SerialName("left") LEFT,
+    /** Align the text on the right edge of the page. */
+    @SerialName("right") RIGHT;
+}
+
+@ExperimentalReadiumApi
 @Serializable
 enum class ColumnCount {
-    @SerialName("auto") Auto,
-    @SerialName("1") One,
-    @SerialName("2") Two;
+    @SerialName("auto") AUTO,
+    @SerialName("1") ONE,
+    @SerialName("2") TWO;
 }
 
+@ExperimentalReadiumApi
 @JvmInline
 value class Font(val name: String? = null) {
     companion object {
