@@ -94,7 +94,9 @@ fun UserSettings(
                     font = settings.font,
                     fontSize = settings.fontSize,
                     letterSpacing = settings.letterSpacing,
+                    lineHeight = settings.lineHeight,
                     overflow = settings.overflow,
+                    pageMargins = settings.pageMargins,
                     publisherStyles = settings.publisherStyles,
                     textAlign = settings.textAlign,
                     theme = settings.theme,
@@ -116,7 +118,9 @@ private fun ReflowableUserSettings(
     font: EnumSetting<Font>? = null,
     fontSize: PercentSetting? = null,
     letterSpacing: PercentSetting? = null,
+    lineHeight: RangeSetting<Double>? = null,
     overflow: EnumSetting<Overflow>? = null,
+    pageMargins: RangeSetting<Double>? = null,
     publisherStyles: ToggleSetting? = null,
     textAlign: EnumSetting<NavigatorTextAlign>? = null,
     theme: EnumSetting<Theme>? = null,
@@ -134,7 +138,7 @@ private fun ReflowableUserSettings(
         Divider()
     }
 
-    if (overflow != null || columnCount != null) {
+    if (overflow != null || columnCount != null || pageMargins != null) {
         if (overflow != null) {
             ButtonGroupItem("Overflow", overflow, preferences, edit) { value ->
                 when (value) {
@@ -153,6 +157,10 @@ private fun ReflowableUserSettings(
                     ColumnCount.TWO -> "2"
                 }
             }
+        }
+
+        if (pageMargins != null) {
+            StepperItem("Page margins", pageMargins, preferences, edit)
         }
 
         Divider()
@@ -192,6 +200,10 @@ private fun ReflowableUserSettings(
                 NavigatorTextAlign.RIGHT -> "Right"
             }
         }
+    }
+
+    if (lineHeight != null) {
+        StepperItem("Line height", lineHeight, preferences, edit)
     }
 
     if (wordSpacing != null) {
@@ -288,7 +300,11 @@ private fun StepperItem(
                 }
             )
 
-            Text(setting.label((preferences[setting] ?: setting.value)))
+            Text(
+                text = setting.label((preferences[setting] ?: setting.value)),
+                modifier = Modifier.widthIn(min = 30.dp),
+                textAlign = TextAlign.Center
+            )
 
             IconButton(
                 onClick = {

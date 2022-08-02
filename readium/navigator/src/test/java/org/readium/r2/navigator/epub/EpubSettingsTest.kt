@@ -15,6 +15,7 @@ import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.settings.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
+import org.readium.r2.shared.util.Either
 import kotlin.test.*
 import org.readium.r2.navigator.epub.css.TextAlign as CssTextAlign
 
@@ -27,7 +28,9 @@ class EpubSettingsTest {
         assertEquals(Font.ORIGINAL, settings.font.value)
         assertEquals(listOf(Font.ORIGINAL, Font.ACCESSIBLE_DFA, Font.ROBOTO), settings.font.values)
         assertEquals(1.0, settings.fontSize.value)
+        assertEquals(1.2, settings.lineHeight.value)
         assertEquals(Overflow.PAGINATED, settings.overflow.value)
+        assertEquals(1.0, settings.pageMargins.value)
         assertTrue(settings.publisherStyles.value)
         assertEquals(TextAlign.START, settings.textAlign.value)
         assertEquals(listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY), settings.textAlign.values)
@@ -52,7 +55,9 @@ class EpubSettingsTest {
             set(sut.columnCount!!, ColumnCount.ONE)
             set(sut.font, Font.ROBOTO)
             set(sut.fontSize, 0.5)
+            set(sut.lineHeight, 1.8)
             set(sut.overflow, Overflow.PAGINATED)
+            set(sut.pageMargins, 1.4)
             set(sut.publisherStyles, false)
             set(sut.textAlign, TextAlign.LEFT)
             set(sut.theme, Theme.DARK)
@@ -64,7 +69,9 @@ class EpubSettingsTest {
             set(sut.columnCount!!, ColumnCount.TWO)
             set(sut.font, Font.ACCESSIBLE_DFA)
             set(sut.fontSize, 0.8)
+            set(sut.lineHeight, 1.9)
             set(sut.overflow, Overflow.SCROLLED)
+            set(sut.pageMargins, 1.5)
             set(sut.publisherStyles, true)
             set(sut.textAlign, TextAlign.RIGHT)
             set(sut.theme, Theme.SEPIA)
@@ -76,7 +83,9 @@ class EpubSettingsTest {
         assertEquals(ColumnCount.ONE, sut.columnCount?.value)
         assertEquals(Font.ROBOTO, sut.font.value)
         assertEquals(0.5, sut.fontSize.value)
+        assertEquals(1.8, sut.lineHeight.value)
         assertEquals(Overflow.PAGINATED, sut.overflow.value)
+        assertEquals(1.4, sut.pageMargins.value)
         assertFalse(sut.publisherStyles.value)
         assertEquals(TextAlign.LEFT, sut.textAlign.value)
         assertEquals(Theme.DARK, sut.theme.value)
@@ -92,7 +101,9 @@ class EpubSettingsTest {
             set(sut.columnCount!!, ColumnCount.ONE)
             set(sut.font, Font.ROBOTO)
             set(sut.fontSize, 0.5)
+            set(sut.lineHeight, 1.8)
             set(sut.overflow, Overflow.PAGINATED)
+            set(sut.pageMargins, 1.4)
             set(sut.publisherStyles, false)
             set(sut.textAlign, TextAlign.LEFT)
             set(sut.theme, Theme.DARK)
@@ -104,6 +115,8 @@ class EpubSettingsTest {
         assertEquals(ColumnCount.ONE, sut.columnCount?.value)
         assertEquals(Font.ROBOTO, sut.font.value)
         assertEquals(0.5, sut.fontSize.value)
+        assertEquals(1.8, sut.lineHeight.value)
+        assertEquals(1.4, sut.pageMargins.value)
         assertEquals(Overflow.PAGINATED, sut.overflow.value)
         assertFalse(sut.publisherStyles.value)
         assertEquals(TextAlign.LEFT, sut.textAlign.value)
@@ -164,6 +177,47 @@ class EpubSettingsTest {
             set(sut.textAlign, TextAlign.CENTER)
         })
         assertEquals(TextAlign.START, sut.textAlign.value)
+    }
+
+    @Test
+    fun `Line height requires publisher styles disabled`() {
+        val sut = EpubSettings()
+        assertFalse(
+            Preferences { set(sut.publisherStyles, true) }
+                .isActive(sut.lineHeight)
+        )
+        assertTrue(
+            Preferences { set(sut.publisherStyles, false) }
+                .isActive(sut.lineHeight)
+        )
+    }
+
+    @Test
+    fun `Activate line height`() {
+        val sut = EpubSettings()
+        assertEquals(
+            Preferences(mapOf(
+                "lineHeight" to JsonPrimitive(1.4),
+                "publisherStyles" to JsonPrimitive(false)
+            )),
+            Preferences(mapOf(
+                "lineHeight" to JsonPrimitive(1.4)
+            )).copy {
+                activate(sut.lineHeight)
+            }
+        )
+        assertEquals(
+            Preferences(mapOf(
+                "lineHeight" to JsonPrimitive(1.4),
+                "publisherStyles" to JsonPrimitive(false)
+            )),
+            Preferences(mapOf(
+                "lineHeight" to JsonPrimitive(1.4),
+                "publisherStyles" to JsonPrimitive(true)
+            )).copy {
+                activate(sut.lineHeight)
+            }
+        )
     }
 
     @Test
@@ -296,10 +350,12 @@ class EpubSettingsTest {
                 userProperties = UserProperties(
                     view = View.PAGED,
                     colCount = ColCount.AUTO,
+                    pageMargins = 1.0,
                     fontOverride = false,
                     fontFamily = null,
                     advancedSettings = false,
                     textAlign = CssTextAlign.START,
+                    lineHeight = Either(1.2),
                     wordSpacing = Length.Relative.Rem(0.0),
                     letterSpacing = Length.Relative.Rem(0.0),
                 )
@@ -312,10 +368,12 @@ class EpubSettingsTest {
                 userProperties = UserProperties(
                     view = View.SCROLL,
                     colCount = ColCount.AUTO,
+                    pageMargins = 1.9,
                     fontOverride = true,
                     fontFamily = listOf("Roboto"),
                     advancedSettings = true,
                     textAlign = CssTextAlign.LEFT,
+                    lineHeight = Either(1.8),
                     wordSpacing = Length.Relative.Rem(0.4),
                     letterSpacing = Length.Relative.Rem(0.3),
                 )
@@ -323,7 +381,9 @@ class EpubSettingsTest {
             ReadiumCss().update(settings {
                 it[font] = Font.ROBOTO
                 it[letterSpacing] = 0.6
+                it[lineHeight] = 1.8
                 it[overflow] = Overflow.SCROLLED
+                it[pageMargins] = 1.9
                 it[publisherStyles] = false
                 it[textAlign] = TextAlign.LEFT
                 it[theme] = Theme.LIGHT
@@ -336,10 +396,12 @@ class EpubSettingsTest {
                 userProperties = UserProperties(
                     view = View.PAGED,
                     colCount = ColCount.ONE,
+                    pageMargins = 1.0,
                     appearance = Appearance.NIGHT,
                     fontOverride = false,
                     advancedSettings = true,
                     textAlign = CssTextAlign.RIGHT,
+                    lineHeight = Either(1.2),
                     wordSpacing = Length.Relative.Rem(1.0),
                     letterSpacing = Length.Relative.Rem(0.5),
                 )
@@ -359,10 +421,12 @@ class EpubSettingsTest {
                 userProperties = UserProperties(
                     view = View.PAGED,
                     colCount = ColCount.TWO,
+                    pageMargins = 1.0,
                     appearance = Appearance.SEPIA,
                     fontOverride = false,
                     advancedSettings = true,
                     textAlign = CssTextAlign.JUSTIFY,
+                    lineHeight = Either(1.2),
                     wordSpacing = Length.Relative.Rem(0.0),
                     letterSpacing = Length.Relative.Rem(0.0),
                 )

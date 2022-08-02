@@ -41,9 +41,11 @@ data class Setting<V, E>(
         const val FIT = "fit"
         const val FONT = "font"
         const val FONT_SIZE = "fontSize"
+        const val LINE_HEIGHT = "lineHeight"
         const val LETTER_SPACING = "letterSpacing"
         const val ORIENTATION = "orientation"
         const val OVERFLOW = "overflow"
+        const val PAGE_MARGINS = "pageMargins"
         const val PUBLISHER_STYLES = "publisherStyles"
         const val READING_PROGRESSION = "readingProgression"
         const val TEXT_ALIGN = "textAlign"
@@ -139,7 +141,15 @@ inline fun <reified V : Comparable<V>> RangeSetting(
     value: V,
     range: ClosedRange<V>,
     suggestedSteps: List<V>? = null,
-    noinline label: (V) -> String = { it.toString() },
+    noinline label: (V) -> String = { v ->
+        when (v) {
+            is Number -> NumberFormat.getNumberInstance().run {
+                maximumFractionDigits = 2
+                format(v)
+            }
+            else -> v.toString()
+        }
+    },
     validator: SettingValidator<V> = IdentitySettingValidator(),
     activator: SettingActivator = NullSettingActivator,
 ) : RangeSetting<V> =

@@ -9,6 +9,7 @@ package org.readium.r2.navigator.epub.css
 import androidx.annotation.ColorInt
 import org.readium.r2.navigator.settings.Setting
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.Either
 import java.text.NumberFormat
 
 /**
@@ -93,7 +94,7 @@ data class UserProperties(
 
     // Pagination
     val colCount: ColCount? = null,
-    val pageMargins: Length? = null,
+    val pageMargins: Double? = null,
 
     // Appearance
     val appearance: Appearance? = null,
@@ -113,7 +114,7 @@ data class UserProperties(
     val advancedSettings: Boolean? = null,
     val typeScale: Length? = null,
     val textAlign: TextAlign? = null,
-    val lineHeight: Length? = null,
+    val lineHeight: Either<Length, Double>? = null, // line-height supports unitless numbers
     val paraSpacing: Length? = null,
     val paraIndent: Length.Relative.Rem? = null,
     val wordSpacing: Length.Relative.Rem? = null,
@@ -153,7 +154,10 @@ data class UserProperties(
         putCss("--USER__advancedSettings", flag("advanced", advancedSettings))
         putCss("--USER__typeScale", typeScale)
         putCss("--USER__textAlign", textAlign)
-        putCss("--USER__lineHeight", lineHeight)
+        lineHeight
+            ?.onLeft { putCss("--USER__lineHeight", it) }
+            ?.onRight { putCss("--USER__lineHeight", it) }
+            ?: run { put("--USER__lineHeight", null) }
         putCss("--USER__paraSpacing", paraSpacing)
         putCss("--USER__paraIndent", paraIndent)
         putCss("--USER__wordSpacing", wordSpacing)
@@ -257,7 +261,7 @@ data class RsProperties(
     // Typography
     val typeScale: Double? = null,
     val baseFontFamily: List<String>? = null,
-    val baseLineHeight: Length? = null,
+    val baseLineHeight: Either<Length, Double>? = null, // line-height supports unitless numbers
 
     // Default font-stacks
     val oldStyleTf: List<String>? = null,
@@ -311,7 +315,10 @@ data class RsProperties(
         // Typography
         putCss("--RS__typeScale", typeScale)
         putCss("--RS__baseFontFamily", baseFontFamily)
-        putCss("--RS__baseLineHeight", baseLineHeight)
+        baseLineHeight
+            ?.onLeft { putCss("--RS__baseLineHeight", it) }
+            ?.onRight { putCss("--RS__baseLineHeight", it) }
+            ?: run { put("--RS__baseLineHeight", null) }
 
         // Default font-stacks
         putCss("--RS__oldStyleTf", oldStyleTf)

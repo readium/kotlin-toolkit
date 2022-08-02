@@ -11,6 +11,7 @@ import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.settings.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
+import org.readium.r2.shared.util.Either
 import org.readium.r2.navigator.epub.css.TextAlign as CssTextAlign
 
 @ExperimentalReadiumApi
@@ -18,7 +19,9 @@ data class EpubSettings(
     val columnCount: EnumSetting<ColumnCount>? = COLUMN_COUNT,
     val font: EnumSetting<Font> = FONT,
     val fontSize: PercentSetting = FONT_SIZE,
+    val lineHeight: RangeSetting<Double> = LINE_HEIGHT,
     val overflow: EnumSetting<Overflow> = OVERFLOW,
+    val pageMargins: RangeSetting<Double> = PAGE_MARGINS,
     val publisherStyles: ToggleSetting = PUBLISHER_STYLES,
     val textAlign: EnumSetting<TextAlign> = TEXT_ALIGN,
     val theme: EnumSetting<Theme> = THEME,
@@ -53,6 +56,13 @@ data class EpubSettings(
             range = 0.4..5.0
         )
 
+        val LINE_HEIGHT: RangeSetting<Double> = RangeSetting(
+            key = Setting.LINE_HEIGHT,
+            value = 1.2,
+            range = 1.0..2.0,
+            activator = RequiresPublisherStylesDisabled
+        )
+
         val LETTER_SPACING: PercentSetting = PercentSetting(
             key = Setting.LETTER_SPACING,
             value = 0.0,
@@ -62,7 +72,13 @@ data class EpubSettings(
         val OVERFLOW: EnumSetting<Overflow> = EnumSetting(
             key = Setting.OVERFLOW,
             value = Overflow.PAGINATED,
-            values = listOf(Overflow.PAGINATED, Overflow.SCROLLED),
+            values = listOf(Overflow.PAGINATED, Overflow.SCROLLED)
+        )
+
+        val PAGE_MARGINS: RangeSetting<Double> = RangeSetting(
+            key = Setting.PAGE_MARGINS,
+            value = 1.0,
+            range = 0.5..2.0
         )
 
         val PUBLISHER_STYLES: ToggleSetting = ToggleSetting(
@@ -105,7 +121,9 @@ data class EpubSettings(
                 else (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(preferences, defaults),
             font = font.copyFirstValidValueFrom(preferences, defaults, fallback = FONT.value),
             fontSize = fontSize.copyFirstValidValueFrom(preferences, defaults),
+            lineHeight = lineHeight.copyFirstValidValueFrom(preferences, defaults),
             overflow = overflow.copyFirstValidValueFrom(preferences, defaults, fallback = OVERFLOW.value),
+            pageMargins = pageMargins.copyFirstValidValueFrom(preferences, defaults),
             publisherStyles = publisherStyles.copyFirstValidValueFrom(preferences, defaults),
             textAlign = textAlign.copyFirstValidValueFrom(preferences, defaults, fallback = TextAlign.START),
             theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME.value),
@@ -129,6 +147,7 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss =
                     ColumnCount.TWO -> ColCount.TWO
                     else -> ColCount.AUTO
                 },
+                pageMargins = pageMargins.value,
                 appearance = when (theme.value) {
                     Theme.LIGHT -> null
                     Theme.DARK -> Appearance.NIGHT
@@ -147,6 +166,7 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss =
                     TextAlign.RIGHT -> CssTextAlign.RIGHT
                     TextAlign.START, TextAlign.CENTER, TextAlign.END -> CssTextAlign.START
                 },
+                lineHeight = Either(lineHeight.value),
                 wordSpacing = Length.Relative.Rem(wordSpacing.value),
                 letterSpacing = Length.Relative.Rem(letterSpacing.value / 2),
             )

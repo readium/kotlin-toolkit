@@ -4,6 +4,7 @@ import android.graphics.Color as AndroidColor
 import org.junit.Test
 import kotlin.test.assertEquals
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.Either
 
 @OptIn(ExperimentalReadiumApi::class)
 class PropertiesTest {
@@ -127,7 +128,7 @@ class PropertiesTest {
                 secondaryColor = Color.hex("#CBC322"),
                 typeScale = 10.11,
                 baseFontFamily = listOf("Palatino", "Comic Sans MS"),
-                baseLineHeight = Length.Relative.Vh(11.12),
+                baseLineHeight = Either(Length.Relative.Vh(11.12)),
                 oldStyleTf = listOf("Old", "Style"),
                 modernTf = listOf("Modern", "Tf"),
                 sansTf = listOf("Sans"),
@@ -180,7 +181,7 @@ class PropertiesTest {
             mapOf<String, String?>(
                 "--USER__view" to "readium-scroll-on",
                 "--USER__colCount" to "auto",
-                "--USER__pageMargins" to "1.2vmin",
+                "--USER__pageMargins" to "1.2",
                 "--USER__appearance" to "readium-night-on",
                 "--USER__darkenImages" to "readium-darken-on",
                 "--USER__invertImages" to "readium-invert-on",
@@ -204,7 +205,7 @@ class PropertiesTest {
             UserProperties(
                 view = View.SCROLL,
                 colCount = ColCount.AUTO,
-                pageMargins = Length.Relative.VMin(1.2),
+                pageMargins = 1.2,
                 appearance = Appearance.NIGHT,
                 darkenImages = true,
                 invertImages = true,
@@ -216,7 +217,7 @@ class PropertiesTest {
                 advancedSettings = true,
                 typeScale = Length.Absolute.Pt(3.4),
                 textAlign = TextAlign.JUSTIFY,
-                lineHeight = Length.Absolute.Pt(4.5),
+                lineHeight = Either(Length.Absolute.Pt(4.5)),
                 paraSpacing = Length.Absolute.Pt(5.6),
                 paraIndent = Length.Relative.Rem(6.7),
                 wordSpacing = Length.Relative.Rem(7.8),
@@ -271,7 +272,7 @@ class PropertiesTest {
             """
                 --USER__view: readium-scroll-on;
                 --USER__colCount: auto;
-                --USER__pageMargins: 1.2vmin;
+                --USER__pageMargins: 1.2;
                 --USER__appearance: readium-night-on;
                 --USER__darkenImages: readium-darken-on;
                 --USER__invertImages: readium-invert-on;
@@ -296,7 +297,7 @@ class PropertiesTest {
             UserProperties(
                 view = View.SCROLL,
                 colCount = ColCount.AUTO,
-                pageMargins = Length.Relative.VMin(1.2),
+                pageMargins = 1.2,
                 appearance = Appearance.NIGHT,
                 darkenImages = true,
                 invertImages = true,
@@ -308,7 +309,7 @@ class PropertiesTest {
                 advancedSettings = true,
                 typeScale = Length.Absolute.Pt(3.4),
                 textAlign = TextAlign.JUSTIFY,
-                lineHeight = Length.Absolute.Pt(4.5),
+                lineHeight = Either(Length.Absolute.Pt(4.5)),
                 paraSpacing = Length.Absolute.Pt(5.6),
                 paraIndent = Length.Relative.Rem(6.7),
                 wordSpacing = Length.Relative.Rem(7.8),
