@@ -29,16 +29,19 @@ class EpubSettingsTest {
         assertEquals(listOf(Font.ORIGINAL, Font.ACCESSIBLE_DFA, Font.ROBOTO), settings.font.values)
         assertEquals(1.0, settings.fontSize.value)
         assertTrue(settings.hyphens.value)
+        assertEquals(0.0, settings.letterSpacing.value)
+        assertTrue(settings.ligatures.value)
         assertEquals(1.2, settings.lineHeight.value)
         assertEquals(Overflow.PAGINATED, settings.overflow.value)
         assertEquals(1.0, settings.pageMargins.value)
+        assertEquals(0.0, settings.paragraphIndent.value)
+        assertEquals(0.0, settings.paragraphSpacing.value)
         assertTrue(settings.publisherStyles.value)
         assertEquals(TextAlign.START, settings.textAlign.value)
         assertEquals(listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY), settings.textAlign.values)
         assertEquals(Theme.LIGHT, settings.theme.value)
         assertEquals(1.2, settings.typeScale.value)
         assertEquals(0.0, settings.wordSpacing.value)
-        assertEquals(0.0, settings.letterSpacing.value)
     }
 
     @Test
@@ -58,15 +61,18 @@ class EpubSettingsTest {
             set(sut.font, Font.ROBOTO)
             set(sut.fontSize, 0.5)
             set(sut.hyphens, false)
+            set(sut.letterSpacing, 0.2)
+            set(sut.ligatures, true)
             set(sut.lineHeight, 1.8)
             set(sut.overflow, Overflow.PAGINATED)
             set(sut.pageMargins, 1.4)
+            set(sut.paragraphIndent, 0.2)
+            set(sut.paragraphSpacing, 0.4)
             set(sut.publisherStyles, false)
             set(sut.textAlign, TextAlign.LEFT)
             set(sut.theme, Theme.DARK)
             set(sut.typeScale, 1.5)
             set(sut.wordSpacing, 0.2)
-            set(sut.letterSpacing, 0.2)
         }
 
         val defaults = Preferences {
@@ -74,15 +80,18 @@ class EpubSettingsTest {
             set(sut.font, Font.ACCESSIBLE_DFA)
             set(sut.fontSize, 0.8)
             set(sut.hyphens, true)
+            set(sut.letterSpacing, 0.4)
+            set(sut.ligatures, false)
             set(sut.lineHeight, 1.9)
             set(sut.overflow, Overflow.SCROLLED)
             set(sut.pageMargins, 1.5)
+            set(sut.paragraphIndent, 0.3)
+            set(sut.paragraphIndent, 0.5)
             set(sut.publisherStyles, true)
             set(sut.textAlign, TextAlign.RIGHT)
             set(sut.theme, Theme.SEPIA)
             set(sut.typeScale, 1.6)
             set(sut.wordSpacing, 0.4)
-            set(sut.letterSpacing, 0.4)
         }
 
         sut = sut.update(preferences = preferences, defaults = defaults)
@@ -90,15 +99,19 @@ class EpubSettingsTest {
         assertEquals(Font.ROBOTO, sut.font.value)
         assertEquals(0.5, sut.fontSize.value)
         assertFalse(sut.hyphens.value)
+        assertEquals(0.2, sut.letterSpacing.value)
+        assertTrue(sut.ligatures.value)
+        assertEquals(0.2, sut.letterSpacing.value)
         assertEquals(1.8, sut.lineHeight.value)
         assertEquals(Overflow.PAGINATED, sut.overflow.value)
         assertEquals(1.4, sut.pageMargins.value)
+        assertEquals(0.2, sut.paragraphIndent.value)
+        assertEquals(0.4, sut.paragraphSpacing.value)
         assertFalse(sut.publisherStyles.value)
         assertEquals(TextAlign.LEFT, sut.textAlign.value)
         assertEquals(1.5, sut.typeScale.value)
         assertEquals(Theme.DARK, sut.theme.value)
         assertEquals(0.2, sut.wordSpacing.value)
-        assertEquals(0.2, sut.letterSpacing.value)
     }
 
     @Test
@@ -110,15 +123,18 @@ class EpubSettingsTest {
             set(sut.font, Font.ROBOTO)
             set(sut.fontSize, 0.5)
             set(sut.hyphens, false)
+            set(sut.letterSpacing, 0.2)
+            set(sut.ligatures, true)
             set(sut.lineHeight, 1.8)
             set(sut.overflow, Overflow.PAGINATED)
             set(sut.pageMargins, 1.4)
+            set(sut.paragraphIndent, 0.2)
+            set(sut.paragraphSpacing, 0.4)
             set(sut.publisherStyles, false)
             set(sut.textAlign, TextAlign.LEFT)
             set(sut.theme, Theme.DARK)
             set(sut.typeScale, 1.4)
             set(sut.wordSpacing, 0.2)
-            set(sut.letterSpacing, 0.2)
         }
 
         sut = sut.update(preferences = Preferences(), defaults = defaults)
@@ -126,15 +142,18 @@ class EpubSettingsTest {
         assertEquals(Font.ROBOTO, sut.font.value)
         assertEquals(0.5, sut.fontSize.value)
         assertFalse(sut.hyphens.value)
+        assertEquals(0.2, sut.letterSpacing.value)
         assertEquals(1.8, sut.lineHeight.value)
-        assertEquals(1.4, sut.pageMargins.value)
+        assertTrue(sut.ligatures.value)
         assertEquals(Overflow.PAGINATED, sut.overflow.value)
+        assertEquals(1.4, sut.pageMargins.value)
+        assertEquals(0.2, sut.paragraphIndent.value)
+        assertEquals(0.4, sut.paragraphSpacing.value)
         assertFalse(sut.publisherStyles.value)
         assertEquals(TextAlign.LEFT, sut.textAlign.value)
         assertEquals(Theme.DARK, sut.theme.value)
         assertEquals(1.4, sut.typeScale.value)
         assertEquals(0.2, sut.wordSpacing.value)
-        assertEquals(0.2, sut.letterSpacing.value)
     }
 
     @Test
@@ -438,6 +457,129 @@ class EpubSettingsTest {
     }
 
     @Test
+    fun `Ligatures requires publisher styles disabled`() {
+        val sut = EpubSettings()
+        assertFalse(
+            Preferences { set(sut.publisherStyles, true) }
+                .isActive(sut.ligatures)
+        )
+        assertTrue(
+            Preferences { set(sut.publisherStyles, false) }
+                .isActive(sut.ligatures)
+        )
+    }
+
+    @Test
+    fun `Activate ligatures`() {
+        val sut = EpubSettings()
+        assertEquals(
+            Preferences(mapOf(
+                "ligatures" to JsonPrimitive(false),
+                "publisherStyles" to JsonPrimitive(false)
+            )),
+            Preferences(mapOf(
+                "ligatures" to JsonPrimitive(false)
+            )).copy {
+                activate(sut.ligatures)
+            }
+        )
+        assertEquals(
+            Preferences(mapOf(
+                "ligatures" to JsonPrimitive(false),
+                "publisherStyles" to JsonPrimitive(false)
+            )),
+            Preferences(mapOf(
+                "ligatures" to JsonPrimitive(false),
+                "publisherStyles" to JsonPrimitive(true)
+            )).copy {
+                activate(sut.ligatures)
+            }
+        )
+    }
+
+    @Test
+    fun `Paragraph indent requires publisher styles disabled`() {
+        val sut = EpubSettings()
+        assertFalse(
+            Preferences { set(sut.publisherStyles, true) }
+                .isActive(sut.paragraphIndent)
+        )
+        assertTrue(
+            Preferences { set(sut.publisherStyles, false) }
+                .isActive(sut.paragraphIndent)
+        )
+    }
+
+    @Test
+    fun `Activate paragraph indent`() {
+        val sut = EpubSettings()
+        assertEquals(
+            Preferences(mapOf(
+                "paragraphIndent" to JsonPrimitive(1.2),
+                "publisherStyles" to JsonPrimitive(false)
+            )),
+            Preferences(mapOf(
+                "paragraphIndent" to JsonPrimitive(1.2)
+            )).copy {
+                activate(sut.paragraphIndent)
+            }
+        )
+        assertEquals(
+            Preferences(mapOf(
+                "paragraphIndent" to JsonPrimitive(1.2),
+                "publisherStyles" to JsonPrimitive(false)
+            )),
+            Preferences(mapOf(
+                "paragraphIndent" to JsonPrimitive(1.2),
+                "publisherStyles" to JsonPrimitive(true)
+            )).copy {
+                activate(sut.paragraphIndent)
+            }
+        )
+    }
+
+    @Test
+    fun `Paragraph spacing requires publisher styles disabled`() {
+        val sut = EpubSettings()
+        assertFalse(
+            Preferences { set(sut.publisherStyles, true) }
+                .isActive(sut.paragraphSpacing)
+        )
+        assertTrue(
+            Preferences { set(sut.publisherStyles, false) }
+                .isActive(sut.paragraphSpacing)
+        )
+    }
+
+    @Test
+    fun `Activate paragraph spacing`() {
+        val sut = EpubSettings()
+        assertEquals(
+            Preferences(mapOf(
+                "paragraphSpacing" to JsonPrimitive(1.2),
+                "publisherStyles" to JsonPrimitive(false)
+            )),
+            Preferences(mapOf(
+                "paragraphSpacing" to JsonPrimitive(1.2)
+            )).copy {
+                activate(sut.paragraphSpacing)
+            }
+        )
+        assertEquals(
+            Preferences(mapOf(
+                "paragraphSpacing" to JsonPrimitive(1.2),
+                "publisherStyles" to JsonPrimitive(false)
+            )),
+            Preferences(mapOf(
+                "paragraphSpacing" to JsonPrimitive(1.2),
+                "publisherStyles" to JsonPrimitive(true)
+            )).copy {
+                activate(sut.paragraphSpacing)
+            }
+        )
+    }
+
+    @Test
     fun `Update Readium CSS using EPUB settings`() {
         assertEquals(
             ReadiumCss(
@@ -451,9 +593,12 @@ class EpubSettingsTest {
                     typeScale = 1.2,
                     textAlign = CssTextAlign.START,
                     lineHeight = Either(1.2),
+                    paraSpacing = Length.Relative.Rem(0.0),
+                    paraIndent = Length.Relative.Rem(0.0),
                     wordSpacing = Length.Relative.Rem(0.0),
                     letterSpacing = Length.Relative.Rem(0.0),
                     bodyHyphens = Hyphens.AUTO,
+                    ligatures = Ligatures.COMMON,
                 )
             ),
             ReadiumCss().update(settings())
@@ -471,18 +616,24 @@ class EpubSettingsTest {
                     typeScale = 1.4,
                     textAlign = CssTextAlign.LEFT,
                     lineHeight = Either(1.8),
+                    paraSpacing = Length.Relative.Rem(0.4),
+                    paraIndent = Length.Relative.Rem(0.2),
                     wordSpacing = Length.Relative.Rem(0.4),
                     letterSpacing = Length.Relative.Rem(0.3),
                     bodyHyphens = Hyphens.NONE,
+                    ligatures = Ligatures.NONE,
                 )
             ),
             ReadiumCss().update(settings {
                 it[font] = Font.ROBOTO
                 it[hyphens] = false
                 it[letterSpacing] = 0.6
+                it[ligatures] = false
                 it[lineHeight] = 1.8
                 it[overflow] = Overflow.SCROLLED
                 it[pageMargins] = 1.9
+                it[paragraphIndent] = 0.2
+                it[paragraphSpacing] = 0.4
                 it[publisherStyles] = false
                 it[textAlign] = TextAlign.LEFT
                 it[theme] = Theme.LIGHT
@@ -503,9 +654,12 @@ class EpubSettingsTest {
                     typeScale = 1.2,
                     textAlign = CssTextAlign.RIGHT,
                     lineHeight = Either(1.2),
+                    paraSpacing = Length.Relative.Rem(0.0),
+                    paraIndent = Length.Relative.Rem(0.0),
                     wordSpacing = Length.Relative.Rem(1.0),
                     letterSpacing = Length.Relative.Rem(0.5),
                     bodyHyphens = Hyphens.AUTO,
+                    ligatures = Ligatures.COMMON,
                 )
             ),
             ReadiumCss().update(settings {
@@ -530,9 +684,12 @@ class EpubSettingsTest {
                     typeScale = 1.2,
                     textAlign = CssTextAlign.JUSTIFY,
                     lineHeight = Either(1.2),
+                    paraSpacing = Length.Relative.Rem(0.0),
+                    paraIndent = Length.Relative.Rem(0.0),
                     wordSpacing = Length.Relative.Rem(0.0),
                     letterSpacing = Length.Relative.Rem(0.0),
                     bodyHyphens = Hyphens.AUTO,
+                    ligatures = Ligatures.COMMON,
                 )
             ),
             ReadiumCss().update(settings {

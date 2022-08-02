@@ -95,9 +95,12 @@ fun UserSettings(
                     fontSize = settings.fontSize,
                     hyphens = settings.hyphens,
                     letterSpacing = settings.letterSpacing,
+                    ligatures = settings.ligatures,
                     lineHeight = settings.lineHeight,
                     overflow = settings.overflow,
                     pageMargins = settings.pageMargins,
+                    paragraphIndent = settings.paragraphIndent,
+                    paragraphSpacing = settings.paragraphSpacing,
                     publisherStyles = settings.publisherStyles,
                     textAlign = settings.textAlign,
                     theme = settings.theme,
@@ -121,9 +124,12 @@ private fun ReflowableUserSettings(
     fontSize: PercentSetting? = null,
     hyphens: ToggleSetting? = null,
     letterSpacing: PercentSetting? = null,
+    ligatures: ToggleSetting? = null,
     lineHeight: RangeSetting<Double>? = null,
     overflow: EnumSetting<Overflow>? = null,
     pageMargins: RangeSetting<Double>? = null,
+    paragraphIndent: PercentSetting? = null,
+    paragraphSpacing: PercentSetting? = null,
     publisherStyles: ToggleSetting? = null,
     textAlign: EnumSetting<NavigatorTextAlign>? = null,
     theme: EnumSetting<Theme>? = null,
@@ -214,6 +220,14 @@ private fun ReflowableUserSettings(
         StepperItem("Line height", lineHeight, preferences, edit)
     }
 
+    if (paragraphIndent != null) {
+        StepperItem("Paragraph indent", paragraphIndent, preferences, edit)
+    }
+
+    if (paragraphSpacing != null) {
+        StepperItem("Paragraph spacing", paragraphSpacing, preferences, edit)
+    }
+
     if (wordSpacing != null) {
         StepperItem("Word spacing", wordSpacing, preferences, edit)
     }
@@ -224,6 +238,10 @@ private fun ReflowableUserSettings(
 
     if (hyphens != null) {
         SwitchItem("Hyphens", hyphens, preferences, edit)
+    }
+
+    if (ligatures != null) {
+        SwitchItem("Ligatures", ligatures, preferences, edit)
     }
 }
 

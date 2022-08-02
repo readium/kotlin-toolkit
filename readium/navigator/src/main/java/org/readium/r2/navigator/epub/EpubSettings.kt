@@ -21,9 +21,12 @@ data class EpubSettings(
     val fontSize: PercentSetting = FONT_SIZE,
     val hyphens: ToggleSetting = HYPHENS,
     val letterSpacing: PercentSetting = LETTER_SPACING,
+    val ligatures: ToggleSetting = LIGATURES,
     val lineHeight: RangeSetting<Double> = LINE_HEIGHT,
     val overflow: EnumSetting<Overflow> = OVERFLOW,
     val pageMargins: RangeSetting<Double> = PAGE_MARGINS,
+    val paragraphIndent: PercentSetting = PARAGRAPH_INDENT,
+    val paragraphSpacing: PercentSetting = PARAGRAPH_SPACING,
     val publisherStyles: ToggleSetting = PUBLISHER_STYLES,
     val textAlign: EnumSetting<TextAlign> = TEXT_ALIGN,
     val theme: EnumSetting<Theme> = THEME,
@@ -64,16 +67,22 @@ data class EpubSettings(
             activator = RequiresPublisherStylesDisabled
         )
 
+        val LETTER_SPACING: PercentSetting = PercentSetting(
+            key = Setting.LETTER_SPACING,
+            value = 0.0,
+            activator = RequiresPublisherStylesDisabled
+        )
+
+        val LIGATURES: ToggleSetting = ToggleSetting(
+            key = Setting.LIGATURES,
+            value = true,
+            activator = RequiresPublisherStylesDisabled
+        )
+
         val LINE_HEIGHT: RangeSetting<Double> = RangeSetting(
             key = Setting.LINE_HEIGHT,
             value = 1.2,
             range = 1.0..2.0,
-            activator = RequiresPublisherStylesDisabled
-        )
-
-        val LETTER_SPACING: PercentSetting = PercentSetting(
-            key = Setting.LETTER_SPACING,
-            value = 0.0,
             activator = RequiresPublisherStylesDisabled
         )
 
@@ -87,6 +96,20 @@ data class EpubSettings(
             key = Setting.PAGE_MARGINS,
             value = 1.0,
             range = 0.5..2.0
+        )
+
+        val PARAGRAPH_INDENT: PercentSetting = PercentSetting(
+            key = Setting.PARAGRAPH_INDENT,
+            value = 0.0,
+            range = 0.0..3.0,
+            activator = RequiresPublisherStylesDisabled
+        )
+
+        val PARAGRAPH_SPACING: PercentSetting = PercentSetting(
+            key = Setting.PARAGRAPH_SPACING,
+            value = 0.0,
+            range = 0.0..2.0,
+            activator = RequiresPublisherStylesDisabled
         )
 
         val PUBLISHER_STYLES: ToggleSetting = ToggleSetting(
@@ -140,9 +163,12 @@ data class EpubSettings(
             fontSize = fontSize.copyFirstValidValueFrom(preferences, defaults),
             hyphens = hyphens.copyFirstValidValueFrom(preferences, defaults),
             letterSpacing = letterSpacing.copyFirstValidValueFrom(preferences, defaults),
+            ligatures = ligatures.copyFirstValidValueFrom(preferences, defaults),
             lineHeight = lineHeight.copyFirstValidValueFrom(preferences, defaults),
             overflow = overflow.copyFirstValidValueFrom(preferences, defaults, fallback = OVERFLOW.value),
             pageMargins = pageMargins.copyFirstValidValueFrom(preferences, defaults),
+            paragraphIndent = paragraphIndent.copyFirstValidValueFrom(preferences, defaults),
+            paragraphSpacing = paragraphSpacing.copyFirstValidValueFrom(preferences, defaults),
             publisherStyles = publisherStyles.copyFirstValidValueFrom(preferences, defaults),
             textAlign = textAlign.copyFirstValidValueFrom(preferences, defaults, fallback = TextAlign.START),
             theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME.value),
@@ -187,9 +213,12 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss =
                     TextAlign.START, TextAlign.CENTER, TextAlign.END -> CssTextAlign.START
                 },
                 lineHeight = Either(lineHeight.value),
+                paraSpacing = Length.Relative.Rem(paragraphSpacing.value),
+                paraIndent = Length.Relative.Rem(paragraphIndent.value),
                 wordSpacing = Length.Relative.Rem(wordSpacing.value),
                 letterSpacing = Length.Relative.Rem(letterSpacing.value / 2),
-                bodyHyphens = if (hyphens.value) Hyphens.AUTO else Hyphens.NONE
+                bodyHyphens = if (hyphens.value) Hyphens.AUTO else Hyphens.NONE,
+                ligatures = if (ligatures.value) Ligatures.COMMON else Ligatures.NONE
             )
         )
     }
