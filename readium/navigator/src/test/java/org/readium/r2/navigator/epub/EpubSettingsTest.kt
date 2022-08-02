@@ -32,6 +32,7 @@ class EpubSettingsTest {
         assertEquals(0.0, settings.letterSpacing.value)
         assertTrue(settings.ligatures.value)
         assertEquals(1.2, settings.lineHeight.value)
+        assertFalse(settings.normalizedText.value)
         assertEquals(Overflow.PAGINATED, settings.overflow.value)
         assertEquals(1.0, settings.pageMargins.value)
         assertEquals(0.0, settings.paragraphIndent.value)
@@ -64,6 +65,7 @@ class EpubSettingsTest {
             set(sut.letterSpacing, 0.2)
             set(sut.ligatures, true)
             set(sut.lineHeight, 1.8)
+            set(sut.normalizedText, true)
             set(sut.overflow, Overflow.PAGINATED)
             set(sut.pageMargins, 1.4)
             set(sut.paragraphIndent, 0.2)
@@ -83,6 +85,7 @@ class EpubSettingsTest {
             set(sut.letterSpacing, 0.4)
             set(sut.ligatures, false)
             set(sut.lineHeight, 1.9)
+            set(sut.normalizedText, false)
             set(sut.overflow, Overflow.SCROLLED)
             set(sut.pageMargins, 1.5)
             set(sut.paragraphIndent, 0.3)
@@ -103,6 +106,7 @@ class EpubSettingsTest {
         assertTrue(sut.ligatures.value)
         assertEquals(0.2, sut.letterSpacing.value)
         assertEquals(1.8, sut.lineHeight.value)
+        assertTrue(sut.normalizedText.value)
         assertEquals(Overflow.PAGINATED, sut.overflow.value)
         assertEquals(1.4, sut.pageMargins.value)
         assertEquals(0.2, sut.paragraphIndent.value)
@@ -126,6 +130,7 @@ class EpubSettingsTest {
             set(sut.letterSpacing, 0.2)
             set(sut.ligatures, true)
             set(sut.lineHeight, 1.8)
+            set(sut.normalizedText, true)
             set(sut.overflow, Overflow.PAGINATED)
             set(sut.pageMargins, 1.4)
             set(sut.paragraphIndent, 0.2)
@@ -145,6 +150,7 @@ class EpubSettingsTest {
         assertEquals(0.2, sut.letterSpacing.value)
         assertEquals(1.8, sut.lineHeight.value)
         assertTrue(sut.ligatures.value)
+        assertTrue(sut.normalizedText.value)
         assertEquals(Overflow.PAGINATED, sut.overflow.value)
         assertEquals(1.4, sut.pageMargins.value)
         assertEquals(0.2, sut.paragraphIndent.value)
@@ -599,6 +605,7 @@ class EpubSettingsTest {
                     letterSpacing = Length.Relative.Rem(0.0),
                     bodyHyphens = Hyphens.AUTO,
                     ligatures = Ligatures.COMMON,
+                    a11yNormalize = false,
                 )
             ),
             ReadiumCss().update(settings())
@@ -622,6 +629,7 @@ class EpubSettingsTest {
                     letterSpacing = Length.Relative.Rem(0.3),
                     bodyHyphens = Hyphens.NONE,
                     ligatures = Ligatures.NONE,
+                    a11yNormalize = true,
                 )
             ),
             ReadiumCss().update(settings {
@@ -630,6 +638,7 @@ class EpubSettingsTest {
                 it[letterSpacing] = 0.6
                 it[ligatures] = false
                 it[lineHeight] = 1.8
+                it[normalizedText] = true
                 it[overflow] = Overflow.SCROLLED
                 it[pageMargins] = 1.9
                 it[paragraphIndent] = 0.2
@@ -660,6 +669,7 @@ class EpubSettingsTest {
                     letterSpacing = Length.Relative.Rem(0.5),
                     bodyHyphens = Hyphens.AUTO,
                     ligatures = Ligatures.COMMON,
+                    a11yNormalize = false,
                 )
             ),
             ReadiumCss().update(settings {
@@ -690,6 +700,7 @@ class EpubSettingsTest {
                     letterSpacing = Length.Relative.Rem(0.0),
                     bodyHyphens = Hyphens.AUTO,
                     ligatures = Ligatures.COMMON,
+                    a11yNormalize = false,
                 )
             ),
             ReadiumCss().update(settings {
@@ -698,6 +709,19 @@ class EpubSettingsTest {
                 it[theme] = Theme.SEPIA
             })
         )
+    }
+
+    @Test
+    fun `Changing the font or normalizing the text activate the fontOverride flag`() {
+        assertEquals(false, ReadiumCss().update(settings()).userProperties.fontOverride)
+
+        assertEquals(true, ReadiumCss().update(settings {
+            it[font] = Font.ROBOTO
+        }).userProperties.fontOverride)
+
+        assertEquals(true, ReadiumCss().update(settings {
+            it[normalizedText] = true
+        }).userProperties.fontOverride)
     }
 
     private fun settings(init: EpubSettings.(MutablePreferences) -> Unit = {}): EpubSettings {

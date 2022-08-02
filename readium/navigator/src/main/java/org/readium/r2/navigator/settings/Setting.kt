@@ -45,6 +45,7 @@ data class Setting<V, E>(
         const val LIGATURES = "ligatures"
         const val LINE_HEIGHT = "lineHeight"
         const val LETTER_SPACING = "letterSpacing"
+        const val NORMALIZED_TEXT = "normalizedText"
         const val ORIENTATION = "orientation"
         const val OVERFLOW = "overflow"
         const val PAGE_MARGINS = "pageMargins"

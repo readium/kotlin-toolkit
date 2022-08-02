@@ -97,6 +97,7 @@ fun UserSettings(
                     letterSpacing = settings.letterSpacing,
                     ligatures = settings.ligatures,
                     lineHeight = settings.lineHeight,
+                    normalizedText = settings.normalizedText,
                     overflow = settings.overflow,
                     pageMargins = settings.pageMargins,
                     paragraphIndent = settings.paragraphIndent,
@@ -126,6 +127,7 @@ private fun ReflowableUserSettings(
     letterSpacing: PercentSetting? = null,
     ligatures: ToggleSetting? = null,
     lineHeight: RangeSetting<Double>? = null,
+    normalizedText: ToggleSetting? = null,
     overflow: EnumSetting<Overflow>? = null,
     pageMargins: RangeSetting<Double>? = null,
     paragraphIndent: PercentSetting? = null,
@@ -176,7 +178,7 @@ private fun ReflowableUserSettings(
         Divider()
     }
 
-    if (font != null || fontSize != null) {
+    if (font != null || fontSize != null || normalizedText != null) {
         if (font != null) {
             DropdownMenuItem("Font", font, preferences, edit) { value ->
                 checkNotNull(
@@ -190,6 +192,10 @@ private fun ReflowableUserSettings(
 
         if (fontSize != null) {
             StepperItem("Font size", fontSize, preferences, edit)
+        }
+
+        if (normalizedText != null) {
+            SwitchItem("Normalized text", normalizedText, preferences, edit)
         }
 
         Divider()

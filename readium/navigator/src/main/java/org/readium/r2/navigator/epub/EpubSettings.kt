@@ -23,6 +23,7 @@ data class EpubSettings(
     val letterSpacing: PercentSetting = LETTER_SPACING,
     val ligatures: ToggleSetting = LIGATURES,
     val lineHeight: RangeSetting<Double> = LINE_HEIGHT,
+    val normalizedText: ToggleSetting = NORMALIZED_TEXT,
     val overflow: EnumSetting<Overflow> = OVERFLOW,
     val pageMargins: RangeSetting<Double> = PAGE_MARGINS,
     val paragraphIndent: PercentSetting = PARAGRAPH_INDENT,
@@ -84,6 +85,11 @@ data class EpubSettings(
             value = 1.2,
             range = 1.0..2.0,
             activator = RequiresPublisherStylesDisabled
+        )
+
+        val NORMALIZED_TEXT: ToggleSetting = ToggleSetting(
+            key = Setting.NORMALIZED_TEXT,
+            value = false,
         )
 
         val OVERFLOW: EnumSetting<Overflow> = EnumSetting(
@@ -165,6 +171,7 @@ data class EpubSettings(
             letterSpacing = letterSpacing.copyFirstValidValueFrom(preferences, defaults),
             ligatures = ligatures.copyFirstValidValueFrom(preferences, defaults),
             lineHeight = lineHeight.copyFirstValidValueFrom(preferences, defaults),
+            normalizedText = normalizedText.copyFirstValidValueFrom(preferences, defaults),
             overflow = overflow.copyFirstValidValueFrom(preferences, defaults, fallback = OVERFLOW.value),
             pageMargins = pageMargins.copyFirstValidValueFrom(preferences, defaults),
             paragraphIndent = paragraphIndent.copyFirstValidValueFrom(preferences, defaults),
@@ -198,7 +205,7 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss =
                     Theme.DARK -> Appearance.NIGHT
                     Theme.SEPIA -> Appearance.SEPIA
                 },
-                fontOverride = (font.value != Font.ORIGINAL),
+                fontOverride = (font.value != Font.ORIGINAL || normalizedText.value),
                 fontFamily = font.value.name?.let { listOf(it) },
                 // Font size is handled natively with WebSettings.textZoom.
                 // See https://github.com/readium/mobile/issues/1#issuecomment-652431984
@@ -218,7 +225,8 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss =
                 wordSpacing = Length.Relative.Rem(wordSpacing.value),
                 letterSpacing = Length.Relative.Rem(letterSpacing.value / 2),
                 bodyHyphens = if (hyphens.value) Hyphens.AUTO else Hyphens.NONE,
-                ligatures = if (ligatures.value) Ligatures.COMMON else Ligatures.NONE
+                ligatures = if (ligatures.value) Ligatures.COMMON else Ligatures.NONE,
+                a11yNormalize = normalizedText.value,
             )
         )
     }
