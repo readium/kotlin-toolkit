@@ -30,6 +30,13 @@ private val fontSize: PercentSetting = PercentSetting(
     suggestedSteps = listOf(0.5, 0.8, 1.0, 2.0, 3.0, 5.0)
 )
 
+private val pageMargins: RangeSetting<Double> = RangeSetting(
+    key = Setting.PAGE_MARGINS,
+    value = 1.0,
+    range = 1.0..2.0,
+    suggestedIncrement = 0.5,
+)
+
 private val columnCount: RangeSetting<Int> = RangeSetting(
     key = Setting.COLUMN_COUNT,
     value = 1,
@@ -414,6 +421,39 @@ class PreferencesTest {
             set(fontSize, 0.9)
             decrement(fontSize)
             assertEquals(0.8, get(fontSize))
+        }
+    }
+
+    @Test
+    fun `Increment and decrement by suggested increments`() {
+        Preferences {
+            set(pageMargins, 1.0)
+            assertEquals(1.0, get(pageMargins))
+            increment(pageMargins)
+            assertEquals(1.5, get(pageMargins))
+            increment(pageMargins)
+            assertEquals(2.0, get(pageMargins))
+            increment(pageMargins)
+            assertEquals(2.0, get(pageMargins))
+            decrement(pageMargins)
+            assertEquals(1.5, get(pageMargins))
+            decrement(pageMargins)
+            assertEquals(1.0, get(pageMargins))
+            decrement(pageMargins)
+            assertEquals(1.0, get(pageMargins))
+
+            // from arbitrary starting value
+            set(pageMargins, 1.1)
+            increment(pageMargins)
+            assertEquals(1.6, get(pageMargins))
+            increment(pageMargins)
+            assertEquals(2.0, get(pageMargins))
+
+            set(pageMargins, 1.9)
+            decrement(pageMargins)
+            assertEquals(1.4, get(pageMargins))
+            decrement(pageMargins)
+            assertEquals(1.0, get(pageMargins))
         }
     }
 

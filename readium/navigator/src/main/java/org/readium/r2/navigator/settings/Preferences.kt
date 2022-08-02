@@ -285,22 +285,24 @@ fun <V : Comparable<V>> MutablePreferences.decrement(setting: RangeSetting<V>, a
 /**
  * Increments the preference for the given [setting] to the next step.
  *
- * @param amount Amount to increment, when the [setting] doesn't have any suggested steps.
+ * @param amount Amount to increment, when the [setting] doesn't have any suggested steps or
+ * increment.
  * @param activate Indicates whether the setting will be force activated if needed.
  */
 @ExperimentalReadiumApi
-fun MutablePreferences.increment(setting: RangeSetting<Int>, amount: Int = 1, activate: Boolean = true) {
+fun MutablePreferences.increment(setting: RangeSetting<Int>, amount: Int = setting.extras.suggestedIncrement ?: 1, activate: Boolean = true) {
     increment(setting, activate) { it + amount }
 }
 
 /**
  * Decrements the preference for the given [setting] to the previous step.
  *
- * @param amount Amount to decrement, when the [setting] doesn't have any suggested steps.
+ * @param amount Amount to decrement, when the [setting] doesn't have any suggested steps or
+ * increment.
  * @param activate Indicates whether the setting will be force activated if needed.
  */
 @ExperimentalReadiumApi
-fun MutablePreferences.decrement(setting: RangeSetting<Int>, amount: Int = 1, activate: Boolean = true) {
+fun MutablePreferences.decrement(setting: RangeSetting<Int>, amount: Int = setting.extras.suggestedIncrement ?: 1, activate: Boolean = true) {
     decrement(setting, activate) { it - amount }
 }
 
@@ -318,22 +320,24 @@ fun MutablePreferences.adjustBy(setting: RangeSetting<Int>, amount: Int, activat
 /**
  * Increments the preference for the given [setting] to the next step.
  *
- * @param amount Amount to increment, when the [setting] doesn't have any suggested steps.
+ * @param amount Amount to increment, when the [setting] doesn't have any suggested steps or
+ * increment.
  * @param activate Indicates whether the setting will be force activated if needed.
  */
 @ExperimentalReadiumApi
-fun MutablePreferences.increment(setting: RangeSetting<Double>, amount: Double = 0.1, activate: Boolean = true) {
+fun MutablePreferences.increment(setting: RangeSetting<Double>, amount: Double = setting.extras.suggestedIncrement ?: 0.1, activate: Boolean = true) {
     increment(setting, activate) { it + amount }
 }
 
 /**
  * Decrements the preference for the given [setting] to the previous step.
  *
- * @param amount Amount to decrement, when the [setting] doesn't have any suggested steps.
+ * @param amount Amount to decrement, when the [setting] doesn't have any suggested steps or
+ * increment.
  * @param activate Indicates whether the setting will be force activated if needed.
  */
 @ExperimentalReadiumApi
-fun MutablePreferences.decrement(setting: RangeSetting<Double>, amount: Double = 0.1, activate: Boolean = true) {
+fun MutablePreferences.decrement(setting: RangeSetting<Double>, amount: Double = setting.extras.suggestedIncrement ?: 0.1, activate: Boolean = true) {
     decrement(setting, activate) { it - amount }
 }
 

@@ -129,6 +129,7 @@ typealias RangeSetting<V> = Setting<V, RangeExtras<V>>
 data class RangeExtras<V : Comparable<V>>(
     val range: ClosedRange<V>,
     val suggestedSteps: List<V>?,
+    val suggestedIncrement: V?,
     val label: (V) -> String,
 )
 
@@ -138,6 +139,8 @@ data class RangeExtras<V : Comparable<V>>(
  * @param range The valid range for the setting value.
  * @param suggestedSteps Value steps which can be used to decrement or increment the setting. It
  * MUST be sorted in increasing order.
+ * @param suggestedIncrement Suggested value increment which can be used to decrement or increment
+ * the setting.
  * @param label Returns a user-facing label for the given value. This can be used to format the
  * value unit.
  */
@@ -147,6 +150,7 @@ inline fun <reified V : Comparable<V>> RangeSetting(
     value: V,
     range: ClosedRange<V>,
     suggestedSteps: List<V>? = null,
+    suggestedIncrement: V? = null,
     noinline label: (V) -> String = { v ->
         when (v) {
             is Number -> NumberFormat.getNumberInstance().run {
@@ -164,6 +168,7 @@ inline fun <reified V : Comparable<V>> RangeSetting(
         extras = RangeExtras(
             range = range,
             suggestedSteps = suggestedSteps,
+            suggestedIncrement = suggestedIncrement,
             label = label
         ),
         coder = SerializerSettingCoder(),
@@ -189,6 +194,8 @@ typealias PercentSetting = Setting<Double, RangeExtras<Double>>
  *
  * @param range The valid range for the setting value.
  * @param suggestedSteps Value steps which can be used to decrement or increment the setting. It
+ * @param suggestedIncrement Suggested value increment which can be used to decrement or increment
+ * the setting.
  * MUST be sorted in increasing order.
  */
 @ExperimentalReadiumApi
@@ -197,11 +204,13 @@ fun PercentSetting(
     value: Double,
     range: ClosedRange<Double> = 0.0..1.0,
     suggestedSteps: List<Double>? = null,
+    suggestedIncrement: Double? = 0.1,
     validator: SettingValidator<Double> = IdentitySettingValidator(),
     activator: SettingActivator = NullSettingActivator
 ) : PercentSetting =
     RangeSetting(
-        key = key, value = value, range = range, suggestedSteps = suggestedSteps,
+        key = key, value = value, range = range,
+        suggestedSteps = suggestedSteps, suggestedIncrement = suggestedIncrement,
         label = { v ->
             NumberFormat.getPercentInstance().run {
                 maximumFractionDigits = 0

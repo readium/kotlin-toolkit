@@ -108,6 +108,7 @@ data class EpubSettings(
             key = Setting.PARAGRAPH_INDENT,
             value = 0.0,
             range = 0.0..3.0,
+            suggestedIncrement = 0.2,
             activator = RequiresPublisherStylesDisabled
         )
 
