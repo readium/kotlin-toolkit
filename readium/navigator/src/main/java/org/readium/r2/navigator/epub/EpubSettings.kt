@@ -19,14 +19,16 @@ data class EpubSettings(
     val columnCount: EnumSetting<ColumnCount>? = COLUMN_COUNT,
     val font: EnumSetting<Font> = FONT,
     val fontSize: PercentSetting = FONT_SIZE,
+    val hyphens: ToggleSetting = HYPHENS,
+    val letterSpacing: PercentSetting = LETTER_SPACING,
     val lineHeight: RangeSetting<Double> = LINE_HEIGHT,
     val overflow: EnumSetting<Overflow> = OVERFLOW,
     val pageMargins: RangeSetting<Double> = PAGE_MARGINS,
     val publisherStyles: ToggleSetting = PUBLISHER_STYLES,
     val textAlign: EnumSetting<TextAlign> = TEXT_ALIGN,
     val theme: EnumSetting<Theme> = THEME,
+    val typeScale: RangeSetting<Double> = TYPE_SCALE,
     val wordSpacing: PercentSetting = WORD_SPACING,
-    val letterSpacing: PercentSetting = LETTER_SPACING,
 ) : Configurable.Settings {
     constructor(fonts: List<Font>) : this(
         font = FONT.copy(
@@ -54,6 +56,12 @@ data class EpubSettings(
             key = Setting.FONT_SIZE,
             value = 1.0,
             range = 0.4..5.0
+        )
+
+        val HYPHENS: ToggleSetting = ToggleSetting(
+            key = Setting.HYPHENS,
+            value = true,
+            activator = RequiresPublisherStylesDisabled
         )
 
         val LINE_HEIGHT: RangeSetting<Double> = RangeSetting(
@@ -99,6 +107,15 @@ data class EpubSettings(
             values = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
         )
 
+        // https://readium.org/readium-css/docs/CSS19-api.html#typography
+        val TYPE_SCALE: RangeSetting<Double> = RangeSetting(
+            key = Setting.TYPE_SCALE,
+            value = 1.2,
+            range = 1.0..2.0,
+            suggestedSteps = listOf(1.0, 1.067, 1.125, 1.2, 1.25, 1.333, 1.414, 1.5, 1.618),
+            activator = RequiresPublisherStylesDisabled
+        )
+
         val WORD_SPACING: PercentSetting = PercentSetting(
             key = Setting.WORD_SPACING,
             value = 0.0,
@@ -121,14 +138,16 @@ data class EpubSettings(
                 else (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(preferences, defaults),
             font = font.copyFirstValidValueFrom(preferences, defaults, fallback = FONT.value),
             fontSize = fontSize.copyFirstValidValueFrom(preferences, defaults),
+            hyphens = hyphens.copyFirstValidValueFrom(preferences, defaults),
+            letterSpacing = letterSpacing.copyFirstValidValueFrom(preferences, defaults),
             lineHeight = lineHeight.copyFirstValidValueFrom(preferences, defaults),
             overflow = overflow.copyFirstValidValueFrom(preferences, defaults, fallback = OVERFLOW.value),
             pageMargins = pageMargins.copyFirstValidValueFrom(preferences, defaults),
             publisherStyles = publisherStyles.copyFirstValidValueFrom(preferences, defaults),
             textAlign = textAlign.copyFirstValidValueFrom(preferences, defaults, fallback = TextAlign.START),
             theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME.value),
+            typeScale = typeScale.copyFirstValidValueFrom(preferences, defaults),
             wordSpacing = wordSpacing.copyFirstValidValueFrom(preferences, defaults),
-            letterSpacing = letterSpacing.copyFirstValidValueFrom(preferences, defaults),
         )
 }
 
@@ -160,6 +179,7 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss =
 //                fontSize = fontSize.value
 //                    ?.let { Length.Relative.Percent(it) },
                 advancedSettings = !publisherStyles.value,
+                typeScale = typeScale.value,
                 textAlign = when (textAlign.value) {
                     TextAlign.JUSTIFY -> CssTextAlign.JUSTIFY
                     TextAlign.LEFT -> CssTextAlign.LEFT
@@ -169,6 +189,7 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss =
                 lineHeight = Either(lineHeight.value),
                 wordSpacing = Length.Relative.Rem(wordSpacing.value),
                 letterSpacing = Length.Relative.Rem(letterSpacing.value / 2),
+                bodyHyphens = if (hyphens.value) Hyphens.AUTO else Hyphens.NONE
             )
         )
     }

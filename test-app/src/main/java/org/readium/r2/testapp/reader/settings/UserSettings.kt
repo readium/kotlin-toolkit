@@ -93,6 +93,7 @@ fun UserSettings(
                     columnCount = settings.columnCount,
                     font = settings.font,
                     fontSize = settings.fontSize,
+                    hyphens = settings.hyphens,
                     letterSpacing = settings.letterSpacing,
                     lineHeight = settings.lineHeight,
                     overflow = settings.overflow,
@@ -100,6 +101,7 @@ fun UserSettings(
                     publisherStyles = settings.publisherStyles,
                     textAlign = settings.textAlign,
                     theme = settings.theme,
+                    typeScale = settings.typeScale,
                     wordSpacing = settings.wordSpacing,
                 )
         }
@@ -117,6 +119,7 @@ private fun ReflowableUserSettings(
     columnCount: EnumSetting<ColumnCount>? = null,
     font: EnumSetting<Font>? = null,
     fontSize: PercentSetting? = null,
+    hyphens: ToggleSetting? = null,
     letterSpacing: PercentSetting? = null,
     lineHeight: RangeSetting<Double>? = null,
     overflow: EnumSetting<Overflow>? = null,
@@ -124,6 +127,7 @@ private fun ReflowableUserSettings(
     publisherStyles: ToggleSetting? = null,
     textAlign: EnumSetting<NavigatorTextAlign>? = null,
     theme: EnumSetting<Theme>? = null,
+    typeScale: RangeSetting<Double>? = null,
     wordSpacing: PercentSetting? = null,
 ) {
     if (theme != null) {
@@ -202,6 +206,10 @@ private fun ReflowableUserSettings(
         }
     }
 
+    if (typeScale != null) {
+        StepperItem("Type scale", typeScale, preferences, edit)
+    }
+
     if (lineHeight != null) {
         StepperItem("Line height", lineHeight, preferences, edit)
     }
@@ -212,6 +220,10 @@ private fun ReflowableUserSettings(
 
     if (letterSpacing != null) {
         StepperItem("Letter spacing", letterSpacing, preferences, edit)
+    }
+
+    if (hyphens != null) {
+        SwitchItem("Hyphens", hyphens, preferences, edit)
     }
 }
 

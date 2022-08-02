@@ -191,7 +191,7 @@ class PropertiesTest {
                 "--USER__fontFamily" to """"Times New"""",
                 "--USER__fontSize" to "2.3vmax",
                 "--USER__advancedSettings" to "readium-advanced-on",
-                "--USER__typeScale" to "3.4pt",
+                "--USER__typeScale" to "3.4",
                 "--USER__textAlign" to "justify",
                 "--USER__lineHeight" to "4.5pt",
                 "--USER__paraSpacing" to "5.6pt",
@@ -215,7 +215,7 @@ class PropertiesTest {
                 fontFamily = listOf("Times New"),
                 fontSize = Length.Relative.VMax(2.3),
                 advancedSettings = true,
-                typeScale = Length.Absolute.Pt(3.4),
+                typeScale = 3.4,
                 textAlign = TextAlign.JUSTIFY,
                 lineHeight = Either(Length.Absolute.Pt(4.5)),
                 paraSpacing = Length.Absolute.Pt(5.6),
@@ -282,7 +282,7 @@ class PropertiesTest {
                 --USER__fontFamily: "Times New", "Comic Sans";
                 --USER__fontSize: 2.3vmax;
                 --USER__advancedSettings: readium-advanced-on;
-                --USER__typeScale: 3.4pt;
+                --USER__typeScale: 3.4;
                 --USER__textAlign: justify;
                 --USER__lineHeight: 4.5pt;
                 --USER__paraSpacing: 5.6pt;
@@ -307,7 +307,7 @@ class PropertiesTest {
                 fontFamily = listOf("Times New", "Comic Sans"),
                 fontSize = Length.Relative.VMax(2.3),
                 advancedSettings = true,
-                typeScale = Length.Absolute.Pt(3.4),
+                typeScale = 3.4,
                 textAlign = TextAlign.JUSTIFY,
                 lineHeight = Either(Length.Absolute.Pt(4.5)),
                 paraSpacing = Length.Absolute.Pt(5.6),

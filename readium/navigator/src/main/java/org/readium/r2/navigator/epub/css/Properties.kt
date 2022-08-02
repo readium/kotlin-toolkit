@@ -112,7 +112,7 @@ data class UserProperties(
 
     // Advanced settings
     val advancedSettings: Boolean? = null,
-    val typeScale: Length? = null,
+    val typeScale: Double? = null,
     val textAlign: TextAlign? = null,
     val lineHeight: Either<Length, Double>? = null, // line-height supports unitless numbers
     val paraSpacing: Length? = null,

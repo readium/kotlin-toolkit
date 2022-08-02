@@ -41,6 +41,7 @@ data class Setting<V, E>(
         const val FIT = "fit"
         const val FONT = "font"
         const val FONT_SIZE = "fontSize"
+        const val HYPHENS = "hyphens"
         const val LINE_HEIGHT = "lineHeight"
         const val LETTER_SPACING = "letterSpacing"
         const val ORIENTATION = "orientation"
@@ -50,6 +51,7 @@ data class Setting<V, E>(
         const val READING_PROGRESSION = "readingProgression"
         const val TEXT_ALIGN = "textAlign"
         const val THEME = "theme"
+        const val TYPE_SCALE = "typeScale"
         const val WORD_SPACING = "wordSpacing"
     }
 
@@ -144,7 +146,7 @@ inline fun <reified V : Comparable<V>> RangeSetting(
     noinline label: (V) -> String = { v ->
         when (v) {
             is Number -> NumberFormat.getNumberInstance().run {
-                maximumFractionDigits = 2
+                maximumFractionDigits = 5
                 format(v)
             }
             else -> v.toString()

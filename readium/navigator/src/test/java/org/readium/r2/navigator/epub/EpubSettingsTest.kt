@@ -28,6 +28,7 @@ class EpubSettingsTest {
         assertEquals(Font.ORIGINAL, settings.font.value)
         assertEquals(listOf(Font.ORIGINAL, Font.ACCESSIBLE_DFA, Font.ROBOTO), settings.font.values)
         assertEquals(1.0, settings.fontSize.value)
+        assertTrue(settings.hyphens.value)
         assertEquals(1.2, settings.lineHeight.value)
         assertEquals(Overflow.PAGINATED, settings.overflow.value)
         assertEquals(1.0, settings.pageMargins.value)
@@ -35,6 +36,7 @@ class EpubSettingsTest {
         assertEquals(TextAlign.START, settings.textAlign.value)
         assertEquals(listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY), settings.textAlign.values)
         assertEquals(Theme.LIGHT, settings.theme.value)
+        assertEquals(1.2, settings.typeScale.value)
         assertEquals(0.0, settings.wordSpacing.value)
         assertEquals(0.0, settings.letterSpacing.value)
     }
@@ -55,12 +57,14 @@ class EpubSettingsTest {
             set(sut.columnCount!!, ColumnCount.ONE)
             set(sut.font, Font.ROBOTO)
             set(sut.fontSize, 0.5)
+            set(sut.hyphens, false)
             set(sut.lineHeight, 1.8)
             set(sut.overflow, Overflow.PAGINATED)
             set(sut.pageMargins, 1.4)
             set(sut.publisherStyles, false)
             set(sut.textAlign, TextAlign.LEFT)
             set(sut.theme, Theme.DARK)
+            set(sut.typeScale, 1.5)
             set(sut.wordSpacing, 0.2)
             set(sut.letterSpacing, 0.2)
         }
@@ -69,12 +73,14 @@ class EpubSettingsTest {
             set(sut.columnCount!!, ColumnCount.TWO)
             set(sut.font, Font.ACCESSIBLE_DFA)
             set(sut.fontSize, 0.8)
+            set(sut.hyphens, true)
             set(sut.lineHeight, 1.9)
             set(sut.overflow, Overflow.SCROLLED)
             set(sut.pageMargins, 1.5)
             set(sut.publisherStyles, true)
             set(sut.textAlign, TextAlign.RIGHT)
             set(sut.theme, Theme.SEPIA)
+            set(sut.typeScale, 1.6)
             set(sut.wordSpacing, 0.4)
             set(sut.letterSpacing, 0.4)
         }
@@ -83,11 +89,13 @@ class EpubSettingsTest {
         assertEquals(ColumnCount.ONE, sut.columnCount?.value)
         assertEquals(Font.ROBOTO, sut.font.value)
         assertEquals(0.5, sut.fontSize.value)
+        assertFalse(sut.hyphens.value)
         assertEquals(1.8, sut.lineHeight.value)
         assertEquals(Overflow.PAGINATED, sut.overflow.value)
         assertEquals(1.4, sut.pageMargins.value)
         assertFalse(sut.publisherStyles.value)
         assertEquals(TextAlign.LEFT, sut.textAlign.value)
+        assertEquals(1.5, sut.typeScale.value)
         assertEquals(Theme.DARK, sut.theme.value)
         assertEquals(0.2, sut.wordSpacing.value)
         assertEquals(0.2, sut.letterSpacing.value)
@@ -101,12 +109,14 @@ class EpubSettingsTest {
             set(sut.columnCount!!, ColumnCount.ONE)
             set(sut.font, Font.ROBOTO)
             set(sut.fontSize, 0.5)
+            set(sut.hyphens, false)
             set(sut.lineHeight, 1.8)
             set(sut.overflow, Overflow.PAGINATED)
             set(sut.pageMargins, 1.4)
             set(sut.publisherStyles, false)
             set(sut.textAlign, TextAlign.LEFT)
             set(sut.theme, Theme.DARK)
+            set(sut.typeScale, 1.4)
             set(sut.wordSpacing, 0.2)
             set(sut.letterSpacing, 0.2)
         }
@@ -115,12 +125,14 @@ class EpubSettingsTest {
         assertEquals(ColumnCount.ONE, sut.columnCount?.value)
         assertEquals(Font.ROBOTO, sut.font.value)
         assertEquals(0.5, sut.fontSize.value)
+        assertFalse(sut.hyphens.value)
         assertEquals(1.8, sut.lineHeight.value)
         assertEquals(1.4, sut.pageMargins.value)
         assertEquals(Overflow.PAGINATED, sut.overflow.value)
         assertFalse(sut.publisherStyles.value)
         assertEquals(TextAlign.LEFT, sut.textAlign.value)
         assertEquals(Theme.DARK, sut.theme.value)
+        assertEquals(1.4, sut.typeScale.value)
         assertEquals(0.2, sut.wordSpacing.value)
         assertEquals(0.2, sut.letterSpacing.value)
     }
@@ -344,6 +356,88 @@ class EpubSettingsTest {
     }
 
     @Test
+    fun `Type scale requires publisher styles disabled`() {
+        val sut = EpubSettings()
+        assertFalse(
+            Preferences { set(sut.publisherStyles, true) }
+                .isActive(sut.typeScale)
+        )
+        assertTrue(
+            Preferences { set(sut.publisherStyles, false) }
+                .isActive(sut.typeScale)
+        )
+    }
+
+    @Test
+    fun `Activate type scale`() {
+        val sut = EpubSettings()
+        assertEquals(
+            Preferences(mapOf(
+                "typeScale" to JsonPrimitive(1.4),
+                "publisherStyles" to JsonPrimitive(false)
+            )),
+            Preferences(mapOf(
+                "typeScale" to JsonPrimitive(1.4)
+            )).copy {
+                activate(sut.typeScale)
+            }
+        )
+        assertEquals(
+            Preferences(mapOf(
+                "typeScale" to JsonPrimitive(1.4),
+                "publisherStyles" to JsonPrimitive(false)
+            )),
+            Preferences(mapOf(
+                "typeScale" to JsonPrimitive(1.4),
+                "publisherStyles" to JsonPrimitive(true)
+            )).copy {
+                activate(sut.typeScale)
+            }
+        )
+    }
+
+    @Test
+    fun `Hyphens requires publisher styles disabled`() {
+        val sut = EpubSettings()
+        assertFalse(
+            Preferences { set(sut.publisherStyles, true) }
+                .isActive(sut.hyphens)
+        )
+        assertTrue(
+            Preferences { set(sut.publisherStyles, false) }
+                .isActive(sut.hyphens)
+        )
+    }
+
+    @Test
+    fun `Activate hyphens`() {
+        val sut = EpubSettings()
+        assertEquals(
+            Preferences(mapOf(
+                "hyphens" to JsonPrimitive(false),
+                "publisherStyles" to JsonPrimitive(false)
+            )),
+            Preferences(mapOf(
+                "hyphens" to JsonPrimitive(false)
+            )).copy {
+                activate(sut.hyphens)
+            }
+        )
+        assertEquals(
+            Preferences(mapOf(
+                "hyphens" to JsonPrimitive(false),
+                "publisherStyles" to JsonPrimitive(false)
+            )),
+            Preferences(mapOf(
+                "hyphens" to JsonPrimitive(false),
+                "publisherStyles" to JsonPrimitive(true)
+            )).copy {
+                activate(sut.hyphens)
+            }
+        )
+    }
+
+    @Test
     fun `Update Readium CSS using EPUB settings`() {
         assertEquals(
             ReadiumCss(
@@ -354,10 +448,12 @@ class EpubSettingsTest {
                     fontOverride = false,
                     fontFamily = null,
                     advancedSettings = false,
+                    typeScale = 1.2,
                     textAlign = CssTextAlign.START,
                     lineHeight = Either(1.2),
                     wordSpacing = Length.Relative.Rem(0.0),
                     letterSpacing = Length.Relative.Rem(0.0),
+                    bodyHyphens = Hyphens.AUTO,
                 )
             ),
             ReadiumCss().update(settings())
@@ -372,14 +468,17 @@ class EpubSettingsTest {
                     fontOverride = true,
                     fontFamily = listOf("Roboto"),
                     advancedSettings = true,
+                    typeScale = 1.4,
                     textAlign = CssTextAlign.LEFT,
                     lineHeight = Either(1.8),
                     wordSpacing = Length.Relative.Rem(0.4),
                     letterSpacing = Length.Relative.Rem(0.3),
+                    bodyHyphens = Hyphens.NONE,
                 )
             ),
             ReadiumCss().update(settings {
                 it[font] = Font.ROBOTO
+                it[hyphens] = false
                 it[letterSpacing] = 0.6
                 it[lineHeight] = 1.8
                 it[overflow] = Overflow.SCROLLED
@@ -387,6 +486,7 @@ class EpubSettingsTest {
                 it[publisherStyles] = false
                 it[textAlign] = TextAlign.LEFT
                 it[theme] = Theme.LIGHT
+                it[typeScale] = 1.4
                 it[wordSpacing] = 0.4
             })
         )
@@ -400,10 +500,12 @@ class EpubSettingsTest {
                     appearance = Appearance.NIGHT,
                     fontOverride = false,
                     advancedSettings = true,
+                    typeScale = 1.2,
                     textAlign = CssTextAlign.RIGHT,
                     lineHeight = Either(1.2),
                     wordSpacing = Length.Relative.Rem(1.0),
                     letterSpacing = Length.Relative.Rem(0.5),
+                    bodyHyphens = Hyphens.AUTO,
                 )
             ),
             ReadiumCss().update(settings {
@@ -425,10 +527,12 @@ class EpubSettingsTest {
                     appearance = Appearance.SEPIA,
                     fontOverride = false,
                     advancedSettings = true,
+                    typeScale = 1.2,
                     textAlign = CssTextAlign.JUSTIFY,
                     lineHeight = Either(1.2),
                     wordSpacing = Length.Relative.Rem(0.0),
                     letterSpacing = Length.Relative.Rem(0.0),
+                    bodyHyphens = Hyphens.AUTO,
                 )
             ),
             ReadiumCss().update(settings {
