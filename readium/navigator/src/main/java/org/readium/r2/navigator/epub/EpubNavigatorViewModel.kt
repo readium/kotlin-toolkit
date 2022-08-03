@@ -22,18 +22,15 @@ import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
 internal class EpubNavigatorViewModel(
+    val publication: Publication,
     val config: EpubNavigatorFragment.Configuration,
 ) : ViewModel() {
-
-    private val css = MutableStateFlow(ReadiumCss(
-        // FIXME
-        layout = Layout.from(language = null, hasMultipleLanguages = false, readingProgression = ReadingProgression.AUTO)
-    ))
 
     // Make a copy to prevent new decoration templates from being registered after initializing
     // the navigator.
@@ -55,6 +52,19 @@ internal class EpubNavigatorViewModel(
     private val _events = Channel<Event>(Channel.BUFFERED)
     val events: Flow<Event> get() = _events.receiveAsFlow()
 
+    private val _settings = MutableStateFlow<EpubSettings>(
+        EpubSettings.Reflowable(fonts = config.fonts)
+            .update(
+                preferences = config.preferences,
+                defaults = config.defaultPreferences
+            )
+    )
+    val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
+
+    private val css = MutableStateFlow(
+        ReadiumCss().update(settings.value)
+    )
+
     init {
         initReadiumCss()
     }
@@ -63,7 +73,7 @@ internal class EpubNavigatorViewModel(
      * Requests the web views to be updated when the Readium CSS properties change.
      */
     private fun initReadiumCss() {
-        val previousCss = css.value
+        var previousCss = css.value
         css
             .onEach { css ->
                 val properties = mutableMapOf<String, String?>()
@@ -81,6 +91,8 @@ internal class EpubNavigatorViewModel(
                         )
                     ))
                 }
+
+                previousCss = css
             }
             .launchIn(viewModelScope)
     }
@@ -106,22 +118,17 @@ internal class EpubNavigatorViewModel(
 
     // Settings
 
-    private val _settings = MutableStateFlow(
-        EpubSettings.Reflowable(fonts = config.fonts)
-            .update(
-                preferences = config.preferences,
-                defaults = config.defaultPreferences
-            )
-    )
-    val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
-
     fun applyPreferences(preferences: Preferences) {
         val settings = _settings.updateAndGet {
             it.update(preferences, defaults = config.defaultPreferences)
         }
-        if (settings is EpubSettings.Reflowable) {
-            css.update { it.update(settings) }
-        }
+
+        css.update { it.update(settings) }
+    }
+
+    private fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
+        if (settings !is EpubSettings.Reflowable) return this
+        return update(settings = settings, metadata = publication.metadata)
     }
 
     // Selection
@@ -200,8 +207,8 @@ internal class EpubNavigatorViewModel(
     }
 
     companion object {
-        fun createFactory(config: EpubNavigatorFragment.Configuration) = createViewModelFactory {
-            EpubNavigatorViewModel(config)
+        fun createFactory(publication: Publication, config: EpubNavigatorFragment.Configuration) = createViewModelFactory {
+            EpubNavigatorViewModel(publication, config)
         }
     }
 }

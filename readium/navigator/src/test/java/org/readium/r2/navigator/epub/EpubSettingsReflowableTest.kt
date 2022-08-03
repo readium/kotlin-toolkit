@@ -16,8 +16,12 @@ import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.settings.Color
 import org.readium.r2.navigator.settings.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.util.Either
+import org.readium.r2.shared.util.Language
 import kotlin.test.*
 import android.graphics.Color as AndroidColor
 import org.readium.r2.navigator.epub.css.Color.Companion as CssColor
@@ -657,7 +661,7 @@ class EpubSettingsReflowableTest {
                     a11yNormalize = false,
                 )
             ),
-            ReadiumCss().update(settings())
+            ReadiumCss().update(settings(), metadata())
         )
 
         assertEquals(
@@ -683,25 +687,28 @@ class EpubSettingsReflowableTest {
                     a11yNormalize = true,
                 )
             ),
-            ReadiumCss().update(settings {
-                it[backgroundColor] = Color(4)
-                it[font] = Font.ROBOTO
-                it[hyphens] = false
-                it[letterSpacing] = 0.6
-                it[ligatures] = false
-                it[lineHeight] = 1.8
-                it[normalizedText] = true
-                it[overflow] = Overflow.SCROLLED
-                it[pageMargins] = 1.9
-                it[paragraphIndent] = 0.2
-                it[paragraphSpacing] = 0.4
-                it[publisherStyles] = false
-                it[textAlign] = TextAlign.LEFT
-                it[theme] = Theme.LIGHT
-                it[textColor] = Color(3)
-                it[typeScale] = 1.4
-                it[wordSpacing] = 0.4
-            })
+            ReadiumCss().update(
+                settings {
+                    it[backgroundColor] = Color(4)
+                    it[font] = Font.ROBOTO
+                    it[hyphens] = false
+                    it[letterSpacing] = 0.6
+                    it[ligatures] = false
+                    it[lineHeight] = 1.8
+                    it[normalizedText] = true
+                    it[overflow] = Overflow.SCROLLED
+                    it[pageMargins] = 1.9
+                    it[paragraphIndent] = 0.2
+                    it[paragraphSpacing] = 0.4
+                    it[publisherStyles] = false
+                    it[textAlign] = TextAlign.LEFT
+                    it[theme] = Theme.LIGHT
+                    it[textColor] = Color(3)
+                    it[typeScale] = 1.4
+                    it[wordSpacing] = 0.4
+                },
+                metadata()
+            )
         )
 
         assertEquals(
@@ -727,14 +734,17 @@ class EpubSettingsReflowableTest {
                     a11yNormalize = false,
                 )
             ),
-            ReadiumCss().update(settings {
-                it[columnCount!!] = ColumnCount.ONE
-                it[letterSpacing] = 1.0
-                it[publisherStyles] = false
-                it[textAlign] = TextAlign.RIGHT
-                it[theme] = Theme.DARK
-                it[wordSpacing] = 1.0
-            })
+            ReadiumCss().update(
+                settings {
+                    it[columnCount!!] = ColumnCount.ONE
+                    it[letterSpacing] = 1.0
+                    it[publisherStyles] = false
+                    it[textAlign] = TextAlign.RIGHT
+                    it[theme] = Theme.DARK
+                    it[wordSpacing] = 1.0
+                },
+                metadata()
+            )
         )
 
         assertEquals(
@@ -758,11 +768,14 @@ class EpubSettingsReflowableTest {
                     a11yNormalize = false,
                 )
             ),
-            ReadiumCss().update(settings {
-                it[columnCount!!] = ColumnCount.TWO
-                it[textAlign] = TextAlign.JUSTIFY
-                it[theme] = Theme.SEPIA
-            })
+            ReadiumCss().update(
+                settings {
+                    it[columnCount!!] = ColumnCount.TWO
+                    it[textAlign] = TextAlign.JUSTIFY
+                    it[theme] = Theme.SEPIA
+                },
+                metadata()
+            )
         )
     }
 
@@ -772,45 +785,104 @@ class EpubSettingsReflowableTest {
         assertNull(sut.userProperties.darkenImages)
         assertNull(sut.userProperties.invertImages)
 
-        sut = sut.update(settings {
-            it[theme] = Theme.DARK
-        })
+        sut = sut.update(
+            settings {
+                it[theme] = Theme.DARK
+            },
+            metadata()
+        )
         assertEquals(false, sut.userProperties.darkenImages)
         assertEquals(false, sut.userProperties.invertImages)
 
-        sut = sut.update(settings {
-            it[theme] = Theme.DARK
-            it[Reflowable.IMAGE_FILTER] = ImageFilter.NONE
-        })
+        sut = sut.update(
+            settings {
+                it[theme] = Theme.DARK
+                it[Reflowable.IMAGE_FILTER] = ImageFilter.NONE
+            },
+            metadata()
+        )
         assertEquals(false, sut.userProperties.darkenImages)
         assertEquals(false, sut.userProperties.invertImages)
 
-        sut = sut.update(settings {
-            it[theme] = Theme.DARK
-            it[Reflowable.IMAGE_FILTER] = ImageFilter.DARKEN
-        })
+        sut = sut.update(
+            settings {
+                it[theme] = Theme.DARK
+                it[Reflowable.IMAGE_FILTER] = ImageFilter.DARKEN
+            },
+            metadata()
+        )
         assertEquals(true, sut.userProperties.darkenImages)
         assertEquals(false, sut.userProperties.invertImages)
 
-        sut = sut.update(settings {
-            it[theme] = Theme.DARK
-            it[Reflowable.IMAGE_FILTER] = ImageFilter.INVERT
-        })
+        sut = sut.update(
+            settings {
+                it[theme] = Theme.DARK
+                it[Reflowable.IMAGE_FILTER] = ImageFilter.INVERT
+            },
+            metadata()
+        )
         assertEquals(false, sut.userProperties.darkenImages)
         assertEquals(true, sut.userProperties.invertImages)
     }
 
     @Test
     fun `Changing the font or normalizing the text activate the fontOverride flag`() {
-        assertEquals(false, ReadiumCss().update(settings()).userProperties.fontOverride)
+        assertEquals(false, ReadiumCss().update(settings(), metadata()).userProperties.fontOverride)
 
-        assertEquals(true, ReadiumCss().update(settings {
-            it[font] = Font.ROBOTO
-        }).userProperties.fontOverride)
+        assertEquals(true, ReadiumCss().update(
+            settings {
+                it[font] = Font.ROBOTO
+            },
+            metadata()
+        ).userProperties.fontOverride)
 
-        assertEquals(true, ReadiumCss().update(settings {
-            it[normalizedText] = true
-        }).userProperties.fontOverride)
+        assertEquals(true, ReadiumCss().update(
+            settings {
+                it[normalizedText] = true
+            },
+            metadata()
+        ).userProperties.fontOverride)
+    }
+
+    @Test
+    fun `Changing the language or reading progression updates the layout`() {
+        val metadata = metadata(languages = listOf("ar"), ReadingProgression.RTL)
+
+        assertEquals(
+            Layout(language = Language("ar"), stylesheets = Layout.Stylesheets.Rtl, readingProgression = ReadingProgression.RTL),
+            ReadiumCss().update(settings(), metadata).layout
+        )
+
+        assertEquals(
+            Layout(language = Language("fr"), stylesheets = Layout.Stylesheets.Rtl, readingProgression = ReadingProgression.RTL),
+            ReadiumCss().update(
+                settings {
+                    it[language] = Language("fr")
+                },
+                metadata
+            ).layout
+        )
+
+        assertEquals(
+            Layout(language = Language("fr"), stylesheets = Layout.Stylesheets.Default, readingProgression = ReadingProgression.LTR),
+            ReadiumCss().update(
+                settings {
+                    it[language] = Language("fr")
+                    it[readingProgression] = ReadingProgression.LTR
+                },
+                metadata
+            ).layout
+        )
+
+        assertEquals(
+            Layout(language = Language("ar"), stylesheets = Layout.Stylesheets.Default, readingProgression = ReadingProgression.LTR),
+            ReadiumCss().update(
+                settings {
+                    it[readingProgression] = ReadingProgression.LTR
+                },
+                metadata
+            ).layout
+        )
     }
 
     private fun settings(init: Reflowable.(MutablePreferences) -> Unit = {}): Reflowable {
@@ -819,4 +891,11 @@ class EpubSettingsReflowableTest {
             init(settings, this)
         })
     }
+
+    private fun metadata(languages: List<String> = emptyList(), readingProgression: ReadingProgression = ReadingProgression.AUTO): Metadata =
+        Metadata(
+            localizedTitle = LocalizedString(""),
+            languages = languages,
+            readingProgression = readingProgression
+        )
 }

@@ -8,18 +8,14 @@
 
 package org.readium.r2.testapp.reader.settings
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -27,11 +23,14 @@ import androidx.compose.ui.window.Dialog
 import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
+import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.ColorPicker
 import org.readium.r2.testapp.utils.compose.DropdownMenuButton
 import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
+import java.util.*
 import org.readium.r2.navigator.settings.Color as ReadiumColor
 import org.readium.r2.navigator.settings.TextAlign as ReadiumTextAlign
 
@@ -101,6 +100,7 @@ fun UserSettings(
                     fontSize = settings.fontSize,
                     hyphens = settings.hyphens,
                     imageFilter = settings.imageFilter,
+                    language = settings.language,
                     letterSpacing = settings.letterSpacing,
                     ligatures = settings.ligatures,
                     lineHeight = settings.lineHeight,
@@ -110,6 +110,7 @@ fun UserSettings(
                     paragraphIndent = settings.paragraphIndent,
                     paragraphSpacing = settings.paragraphSpacing,
                     publisherStyles = settings.publisherStyles,
+                    readingProgression = settings.readingProgression,
                     textAlign = settings.textAlign,
                     textColor = settings.textColor,
                     theme = settings.theme,
@@ -134,6 +135,7 @@ private fun ReflowableUserSettings(
     fontSize: PercentSetting? = null,
     hyphens: ToggleSetting? = null,
     imageFilter: EnumSetting<ImageFilter>? = null,
+    language: ValueSetting<Language?>? = null,
     letterSpacing: PercentSetting? = null,
     ligatures: ToggleSetting? = null,
     lineHeight: RangeSetting<Double>? = null,
@@ -143,12 +145,30 @@ private fun ReflowableUserSettings(
     paragraphIndent: PercentSetting? = null,
     paragraphSpacing: PercentSetting? = null,
     publisherStyles: ToggleSetting? = null,
+    readingProgression: EnumSetting<ReadingProgression>? = null,
     textAlign: EnumSetting<ReadiumTextAlign>? = null,
     textColor: ColorSetting? = null,
     theme: EnumSetting<Theme>? = null,
     typeScale: RangeSetting<Double>? = null,
     wordSpacing: PercentSetting? = null,
 ) {
+    if (language != null || readingProgression != null) {
+        if (language != null) {
+            LanguageItem(language, preferences, edit)
+        }
+
+        if (readingProgression != null) {
+            ButtonGroupItem(title = "Reading progression", readingProgression, preferences , edit) { value ->
+                when (value) {
+                    ReadingProgression.AUTO -> "Auto"
+                    else -> value.name
+                }
+            }
+        }
+
+        Divider()
+    }
+
     if (theme != null || textColor != null || imageFilter != null) {
         if (theme != null) {
             ButtonGroupItem("Theme", theme, preferences, edit) { value ->
@@ -211,7 +231,7 @@ private fun ReflowableUserSettings(
 
     if (font != null || fontSize != null || normalizedText != null) {
         if (font != null) {
-            DropdownMenuItem("Font", font, preferences, edit) { value ->
+            MenuItem("Font", font, preferences, edit) { value ->
                 checkNotNull(
                     when (value) {
                         Font.ORIGINAL -> "Original"
@@ -317,20 +337,45 @@ private fun <T> ButtonGroupItem(
  * Component for an [EnumSetting] displayed as a dropdown menu.
  */
 @Composable
-private fun <T> DropdownMenuItem(
+private fun <T> MenuItem(
     title: String,
     setting: EnumSetting<T>,
     preferences: Preferences,
     edit: EditPreferences,
     label: (T) -> String
 ) {
+    MenuItem(
+        title = title, setting, preferences, edit,
+        values = setting.values ?: emptyList(),
+        label = label
+    )
+}
+
+/**
+ * Component displayed as a dropdown menu.
+ */
+@Composable
+private fun <T> MenuItem(
+    title: String,
+    setting: Setting<T, *>,
+    preferences: Preferences,
+    edit: EditPreferences,
+    values: List<T>,
+    label: (T) -> String
+) {
     Item(title, isActive = preferences.isActive(setting)) {
         DropdownMenuButton(
-            text = { Text(label(preferences[setting] ?: setting.value)) }
-        ) {
-            for (value in setting.values ?: emptyList()) {
+            text = {
+                Text(
+                    text = label(preferences[setting] ?: setting.value),
+                    style = MaterialTheme.typography.caption
+                )
+            }
+        ) { dismiss ->
+            for (value in values) {
                 DropdownMenuItem(
                     onClick = {
+                        dismiss()
                         edit { set(setting, value) }
                     }
                 ) {
@@ -467,6 +512,29 @@ private fun ColorItem(
     }
 }
 
+/**
+ * Component for a `ValueSetting<Language?>`.
+ */
+@Composable
+fun LanguageItem(
+     setting: ValueSetting<Language?>,
+     preferences: Preferences,
+     edit: EditPreferences
+) {
+    val languages = remember {
+        Locale.getAvailableLocales()
+            .map { Language(it).removeRegion() }
+            .distinct()
+            .sortedBy { it.locale.displayName }
+    }
+
+    MenuItem(
+        title = "Language", setting, preferences, edit,
+        values = listOf(null) + languages,
+        label = { it?.locale?.displayName ?: "Default" }
+    )
+}
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun Item(title: String, isActive: Boolean = true, onClick: (() -> Unit)? = null, content: @Composable () -> Unit) {
@@ -514,8 +582,7 @@ private fun Configurable.Settings.presets(): List<Preset> =
                 set(settings.overflow, Overflow.PAGINATED)
             },
             Preset("Manga") {
-                // TODO
-//            set(settings.readingProgression, ReadingProgression.RTL)
+                set(settings.readingProgression, ReadingProgression.RTL)
                 set(settings.overflow, Overflow.PAGINATED)
             }
         )
@@ -533,8 +600,8 @@ private fun PresetsMenuButton(edit: EditPreferences, presets: List<Preset>) {
         for (preset in presets) {
             DropdownMenuItem(
                 onClick = {
-                    edit(preset.changes)
                     dismiss()
+                    edit(preset.changes)
                 }
             ) {
                 Text(preset.title)

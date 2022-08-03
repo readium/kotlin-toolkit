@@ -8,7 +8,6 @@
 
 package org.readium.r2.navigator.settings
 
-import androidx.annotation.ColorInt
 import kotlinx.serialization.json.JsonElement
 import org.readium.r2.shared.ExperimentalReadiumApi
 import java.text.NumberFormat
@@ -75,7 +74,7 @@ data class Setting<V, E>(
      *
      * Each preference is verified using the setting [validator].
      */
-    fun copyFirstValidValueFrom(vararg candidates: Preferences?, fallback: Setting<V, E>): Setting<V, E> =
+    fun copyFirstValidValueFrom(vararg candidates: Preferences?, fallback: Setting<V, E> = this): Setting<V, E> =
         copy(
             value = candidates
                 .mapNotNull { candidate -> candidate?.get(this) }
@@ -99,10 +98,32 @@ data class Setting<V, E>(
 }
 
 /**
+ * An arbitrary [Setting] without constraint except its type.
+ */
+@ExperimentalReadiumApi
+typealias ValueSetting<V> = Setting<V, Unit>
+
+/**
+ * Creates a new [ValueSetting] with the given [value].
+ */
+@ExperimentalReadiumApi
+inline fun <reified V> ValueSetting(
+    key: String,
+    value: V,
+    coder: SettingCoder<V> = SerializerSettingCoder(),
+    validator: SettingValidator<V> = IdentitySettingValidator(),
+    activator: SettingActivator = NullSettingActivator,
+) : ValueSetting<V> =
+    Setting(
+        key = key, value = value, extras = Unit,
+        coder = coder, validator = validator, activator = activator
+    )
+
+/**
  * A boolean [Setting].
  */
 @ExperimentalReadiumApi
-typealias ToggleSetting = Setting<Boolean, Unit>
+typealias ToggleSetting = ValueSetting<Boolean>
 
 /**
  * Creates a new [ToggleSetting] with the given [value].

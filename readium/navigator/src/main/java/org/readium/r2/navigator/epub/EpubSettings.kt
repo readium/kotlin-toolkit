@@ -11,8 +11,11 @@ import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.settings.Color
 import org.readium.r2.navigator.settings.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.util.Either
+import org.readium.r2.shared.util.Language
 import org.readium.r2.navigator.epub.css.Color as CssColor
 import org.readium.r2.navigator.epub.css.TextAlign as CssTextAlign
 
@@ -29,6 +32,7 @@ sealed class EpubSettings : Configurable.Settings {
         val fontSize: PercentSetting = FONT_SIZE,
         val hyphens: ToggleSetting = HYPHENS,
         val imageFilter: EnumSetting<ImageFilter>? = null, // requires Dark theme
+        val language: ValueSetting<Language?> = LANGUAGE,
         val letterSpacing: PercentSetting = LETTER_SPACING,
         val ligatures: ToggleSetting = LIGATURES,
         val lineHeight: RangeSetting<Double> = LINE_HEIGHT,
@@ -38,6 +42,7 @@ sealed class EpubSettings : Configurable.Settings {
         val paragraphIndent: PercentSetting = PARAGRAPH_INDENT,
         val paragraphSpacing: PercentSetting = PARAGRAPH_SPACING,
         val publisherStyles: ToggleSetting = PUBLISHER_STYLES,
+        val readingProgression: EnumSetting<ReadingProgression> = READING_PROGRESSION,
         val textAlign: EnumSetting<TextAlign> = TEXT_ALIGN,
         val textColor: ColorSetting = TEXT_COLOR,
         val theme: EnumSetting<Theme> = THEME,
@@ -99,6 +104,11 @@ sealed class EpubSettings : Configurable.Settings {
                 values = listOf(ImageFilter.NONE, ImageFilter.DARKEN, ImageFilter.INVERT)
             )
 
+            val LANGUAGE: ValueSetting<Language?> = ValueSetting(
+                key = Setting.LANGUAGE,
+                value = null,
+            )
+
             val LETTER_SPACING: PercentSetting = PercentSetting(
                 key = Setting.LETTER_SPACING,
                 value = 0.0,
@@ -155,6 +165,12 @@ sealed class EpubSettings : Configurable.Settings {
                 value = true,
             )
 
+            val READING_PROGRESSION: EnumSetting<ReadingProgression> = EnumSetting(
+                key = Setting.READING_PROGRESSION,
+                value = ReadingProgression.AUTO,
+                values = listOf(ReadingProgression.AUTO, ReadingProgression.LTR, ReadingProgression.RTL)
+            )
+
             val TEXT_ALIGN: EnumSetting<TextAlign> = EnumSetting(
                 key = Setting.TEXT_ALIGN,
                 value = TextAlign.START,
@@ -205,108 +221,49 @@ sealed class EpubSettings : Configurable.Settings {
 
         override fun update(preferences: Preferences, defaults: Preferences): Reflowable =
             copy(
-                backgroundColor = backgroundColor.copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = BACKGROUND_COLOR
-                ),
+                backgroundColor = backgroundColor.copyFirstValidValueFrom(preferences, defaults, fallback = BACKGROUND_COLOR),
                 columnCount = if (preferences[overflow] == Overflow.SCROLLED) null
-                else (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = COLUMN_COUNT
-                ),
+                    else (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(preferences, defaults, fallback = COLUMN_COUNT),
                 font = font.copyFirstValidValueFrom(preferences, defaults, fallback = FONT),
-                fontSize = fontSize.copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = FONT_SIZE
-                ),
-                hyphens = hyphens.copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = HYPHENS
-                ),
+                fontSize = fontSize.copyFirstValidValueFrom(preferences, defaults, fallback = FONT_SIZE),
+                hyphens = hyphens.copyFirstValidValueFrom(preferences, defaults, fallback = HYPHENS),
                 imageFilter = if (preferences[theme] != Theme.DARK) null
-                else (imageFilter ?: IMAGE_FILTER).copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = IMAGE_FILTER
-                ),
-                letterSpacing = letterSpacing.copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = LETTER_SPACING
-                ),
-                ligatures = ligatures.copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = LIGATURES
-                ),
-                lineHeight = lineHeight.copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = LINE_HEIGHT
-                ),
-                normalizedText = normalizedText.copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = NORMALIZED_TEXT
-                ),
-                overflow = overflow.copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = OVERFLOW
-                ),
-                pageMargins = pageMargins.copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = PAGE_MARGINS
-                ),
-                paragraphIndent = paragraphIndent.copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = PARAGRAPH_INDENT
-                ),
-                paragraphSpacing = paragraphSpacing.copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = PARAGRAPH_SPACING
-                ),
-                publisherStyles = publisherStyles.copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = PUBLISHER_STYLES
-                ),
-                textAlign = textAlign.copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = TEXT_ALIGN
-                ),
-                textColor = textColor.copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = TEXT_COLOR
-                ),
+                    else (imageFilter ?: IMAGE_FILTER).copyFirstValidValueFrom(preferences, defaults, fallback = IMAGE_FILTER),
+                language = language.copyFirstValidValueFrom(preferences, defaults, fallback = LANGUAGE),
+                letterSpacing = letterSpacing.copyFirstValidValueFrom(preferences, defaults, fallback = LETTER_SPACING),
+                ligatures = ligatures.copyFirstValidValueFrom(preferences, defaults, fallback = LIGATURES),
+                lineHeight = lineHeight.copyFirstValidValueFrom(preferences, defaults, fallback = LINE_HEIGHT),
+                normalizedText = normalizedText.copyFirstValidValueFrom(preferences, defaults, fallback = NORMALIZED_TEXT),
+                overflow = overflow.copyFirstValidValueFrom(preferences, defaults, fallback = OVERFLOW),
+                pageMargins = pageMargins.copyFirstValidValueFrom(preferences, defaults, fallback = PAGE_MARGINS),
+                paragraphIndent = paragraphIndent.copyFirstValidValueFrom(preferences, defaults, fallback = PARAGRAPH_INDENT),
+                paragraphSpacing = paragraphSpacing.copyFirstValidValueFrom(preferences, defaults, fallback = PARAGRAPH_SPACING),
+                publisherStyles = publisherStyles.copyFirstValidValueFrom(preferences, defaults, fallback = PUBLISHER_STYLES),
+                readingProgression = readingProgression.copyFirstValidValueFrom(preferences, defaults, fallback = READING_PROGRESSION),
+                textAlign = textAlign.copyFirstValidValueFrom(preferences, defaults, fallback = TEXT_ALIGN),
+                textColor = textColor.copyFirstValidValueFrom( preferences, defaults, fallback = TEXT_COLOR),
                 theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME),
-                typeScale = typeScale.copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = TYPE_SCALE
-                ),
-                wordSpacing = wordSpacing.copyFirstValidValueFrom(
-                    preferences,
-                    defaults,
-                    fallback = WORD_SPACING
-                ),
+                typeScale = typeScale.copyFirstValidValueFrom( preferences, defaults, fallback = TYPE_SCALE),
+                wordSpacing = wordSpacing.copyFirstValidValueFrom( preferences, defaults, fallback = WORD_SPACING),
             )
     }
 }
 
 @ExperimentalReadiumApi
-fun ReadiumCss.update(settings: EpubSettings.Reflowable): ReadiumCss =
+fun ReadiumCss.update(
+    settings: EpubSettings.Reflowable,
+    metadata: Metadata,
+): ReadiumCss =
     with(settings) {
         copy(
+            layout = Layout.from(
+                language = settings.language.value ?: metadata.language,
+                hasMultipleLanguages =
+                    if (settings.language.value != null) false
+                    else metadata.languages.size > 1,
+                readingProgression = settings.readingProgression.value.takeIf { it != ReadingProgression.AUTO }
+                    ?: metadata.readingProgression
+            ),
             userProperties = userProperties.copy(
                 view = when (overflow.value) {
                     Overflow.AUTO -> null

@@ -172,7 +172,7 @@ class EpubNavigatorFragment private constructor(
     }
 
     private val viewModel: EpubNavigatorViewModel by viewModels {
-        EpubNavigatorViewModel.createFactory(config)
+        EpubNavigatorViewModel.createFactory(publication, config)
     }
 
     internal lateinit var positionsByReadingOrder: List<List<Locator>>
