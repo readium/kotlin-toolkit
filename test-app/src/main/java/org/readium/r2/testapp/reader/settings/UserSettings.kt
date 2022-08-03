@@ -91,7 +91,7 @@ fun UserSettings(
         Divider()
 
         when (settings) {
-            is EpubSettings ->
+            is EpubSettings.Reflowable ->
                 ReflowableUserSettings(
                     preferences = preferences,
                     edit = edit,
@@ -502,7 +502,7 @@ private class Preset(
  */
 private fun Configurable.Settings.presets(): List<Preset> =
     when (val settings = this) {
-        is EpubSettings -> listOf(
+        is EpubSettings.Reflowable -> listOf(
             Preset("Increase legibility") {
                 set(settings.wordSpacing, 0.6)
                 set(settings.fontSize, 1.4)

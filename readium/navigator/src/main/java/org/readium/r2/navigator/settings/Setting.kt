@@ -45,6 +45,7 @@ data class Setting<V, E>(
         const val FONT_SIZE = "fontSize"
         const val HYPHENS = "hyphens"
         const val IMAGE_FILTER = "imageFilter"
+        const val LANGUAGE = "language"
         const val LIGATURES = "ligatures"
         const val LINE_HEIGHT = "lineHeight"
         const val LETTER_SPACING = "letterSpacing"

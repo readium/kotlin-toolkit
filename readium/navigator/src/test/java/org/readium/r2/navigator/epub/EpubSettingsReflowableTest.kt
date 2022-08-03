@@ -10,6 +10,7 @@ package org.readium.r2.navigator.epub
 
 import kotlinx.serialization.json.JsonPrimitive
 import org.junit.Test
+import org.readium.r2.navigator.epub.EpubSettings.Reflowable
 import org.readium.r2.navigator.epub.css.*
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.settings.Color
@@ -22,11 +23,11 @@ import android.graphics.Color as AndroidColor
 import org.readium.r2.navigator.epub.css.Color.Companion as CssColor
 import org.readium.r2.navigator.epub.css.TextAlign as CssTextAlign
 
-class EpubSettingsTest {
+class EpubSettingsReflowableTest {
 
     @Test
     fun `Default values`() {
-        val settings = EpubSettings(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
+        val settings = Reflowable(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
         assertEquals(Color.AUTO, settings.backgroundColor.value)
         assertEquals(ColumnCount.AUTO, settings.columnCount?.value)
         assertEquals(Font.ORIGINAL, settings.font.value)
@@ -53,24 +54,24 @@ class EpubSettingsTest {
 
     @Test
     fun `Image filter is only available with the Dark theme`() {
-        val sut = EpubSettings()
-        assertNull(sut.update(Preferences { remove(EpubSettings.THEME) }).imageFilter)
-        assertNull(sut.update(Preferences { set(EpubSettings.THEME, Theme.LIGHT) }).imageFilter)
-        assertNull(sut.update(Preferences { set(EpubSettings.THEME, Theme.SEPIA) }).imageFilter)
-        assertNotNull(sut.update(Preferences { set(EpubSettings.THEME, Theme.DARK) }).imageFilter)
+        val sut = Reflowable()
+        assertNull(sut.update(Preferences { remove(Reflowable.THEME) }).imageFilter)
+        assertNull(sut.update(Preferences { set(Reflowable.THEME, Theme.LIGHT) }).imageFilter)
+        assertNull(sut.update(Preferences { set(Reflowable.THEME, Theme.SEPIA) }).imageFilter)
+        assertNotNull(sut.update(Preferences { set(Reflowable.THEME, Theme.DARK) }).imageFilter)
     }
 
     @Test
     fun `Column count is only available when not in scrolled overflow`() {
-        val sut = EpubSettings()
-        assertNotNull(sut.update(Preferences { remove(EpubSettings.OVERFLOW) }).columnCount)
-        assertNotNull(sut.update(Preferences { set(EpubSettings.OVERFLOW, Overflow.PAGINATED) }).columnCount)
-        assertNull(sut.update(Preferences { set(EpubSettings.OVERFLOW, Overflow.SCROLLED) }).columnCount)
+        val sut = Reflowable()
+        assertNotNull(sut.update(Preferences { remove(Reflowable.OVERFLOW) }).columnCount)
+        assertNotNull(sut.update(Preferences { set(Reflowable.OVERFLOW, Overflow.PAGINATED) }).columnCount)
+        assertNull(sut.update(Preferences { set(Reflowable.OVERFLOW, Overflow.SCROLLED) }).columnCount)
     }
 
     @Test
     fun `update() takes given preferences before defaults`() {
-        var sut = EpubSettings(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
+        var sut = Reflowable(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
 
         val preferences = Preferences {
             set(sut.backgroundColor, Color(3))
@@ -142,7 +143,7 @@ class EpubSettingsTest {
 
     @Test
     fun `update() falls back on defaults when preferences are missing`() {
-        var sut = EpubSettings(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
+        var sut = Reflowable(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
 
         val defaults = Preferences {
             set(sut.backgroundColor, Color(3))
@@ -191,7 +192,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Encode and decode named colors`() {
-        val sut = EpubSettings(namedColors = mapOf(
+        val sut = Reflowable(namedColors = mapOf(
             "red" to AndroidColor.RED,
             "green" to AndroidColor.GREEN,
         ))
@@ -212,7 +213,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Unknown fonts revert to the default Original one`() {
-        var sut = EpubSettings(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
+        var sut = Reflowable(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
 
         sut = sut.update(Preferences {
             set(sut.font, Font.ACCESSIBLE_DFA)
@@ -226,7 +227,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Null overflow reverts to the default one`() {
-        var sut = EpubSettings()
+        var sut = Reflowable()
 
         sut = sut.update(Preferences {
             set(sut.overflow, Overflow.SCROLLED)
@@ -239,7 +240,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Null theme reverts to the default one`() {
-        var sut = EpubSettings()
+        var sut = Reflowable()
 
         sut = sut.update(Preferences {
             set(sut.theme, Theme.SEPIA)
@@ -252,7 +253,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Unsupported text align revert to the default one`() {
-        var sut = EpubSettings()
+        var sut = Reflowable()
 
         sut = sut.update(Preferences {
             set(sut.textAlign, TextAlign.JUSTIFY)
@@ -266,7 +267,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Line height requires publisher styles disabled`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertFalse(
             Preferences { set(sut.publisherStyles, true) }
                 .isActive(sut.lineHeight)
@@ -279,7 +280,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Activate line height`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertEquals(
             Preferences(mapOf(
                 "lineHeight" to JsonPrimitive(1.4),
@@ -307,7 +308,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Word spacing requires publisher styles disabled`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertFalse(
             Preferences { set(sut.publisherStyles, true) }
                 .isActive(sut.wordSpacing)
@@ -320,7 +321,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Activate word spacing`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertEquals(
             Preferences(mapOf(
                 "wordSpacing" to JsonPrimitive(0.4),
@@ -348,7 +349,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Letter spacing requires publisher styles disabled`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertFalse(
             Preferences { set(sut.publisherStyles, true) }
                 .isActive(sut.letterSpacing)
@@ -361,7 +362,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Activate letter spacing`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertEquals(
             Preferences(mapOf(
                 "letterSpacing" to JsonPrimitive(0.4),
@@ -389,7 +390,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Text align requires publisher styles disabled`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertFalse(
             Preferences { set(sut.publisherStyles, true) }
                 .isActive(sut.textAlign)
@@ -402,7 +403,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Activate text align`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertEquals(
             Preferences(mapOf(
                 "textAlign" to JsonPrimitive("left"),
@@ -430,7 +431,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Type scale requires publisher styles disabled`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertFalse(
             Preferences { set(sut.publisherStyles, true) }
                 .isActive(sut.typeScale)
@@ -443,7 +444,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Activate type scale`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertEquals(
             Preferences(mapOf(
                 "typeScale" to JsonPrimitive(1.4),
@@ -471,7 +472,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Hyphens requires publisher styles disabled`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertFalse(
             Preferences { set(sut.publisherStyles, true) }
                 .isActive(sut.hyphens)
@@ -484,7 +485,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Activate hyphens`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertEquals(
             Preferences(mapOf(
                 "hyphens" to JsonPrimitive(false),
@@ -512,7 +513,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Ligatures requires publisher styles disabled`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertFalse(
             Preferences { set(sut.publisherStyles, true) }
                 .isActive(sut.ligatures)
@@ -525,7 +526,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Activate ligatures`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertEquals(
             Preferences(mapOf(
                 "ligatures" to JsonPrimitive(false),
@@ -553,7 +554,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Paragraph indent requires publisher styles disabled`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertFalse(
             Preferences { set(sut.publisherStyles, true) }
                 .isActive(sut.paragraphIndent)
@@ -566,7 +567,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Activate paragraph indent`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertEquals(
             Preferences(mapOf(
                 "paragraphIndent" to JsonPrimitive(1.2),
@@ -594,7 +595,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Paragraph spacing requires publisher styles disabled`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertFalse(
             Preferences { set(sut.publisherStyles, true) }
                 .isActive(sut.paragraphSpacing)
@@ -607,7 +608,7 @@ class EpubSettingsTest {
 
     @Test
     fun `Activate paragraph spacing`() {
-        val sut = EpubSettings()
+        val sut = Reflowable()
         assertEquals(
             Preferences(mapOf(
                 "paragraphSpacing" to JsonPrimitive(1.2),
@@ -779,21 +780,21 @@ class EpubSettingsTest {
 
         sut = sut.update(settings {
             it[theme] = Theme.DARK
-            it[EpubSettings.IMAGE_FILTER] = ImageFilter.NONE
+            it[Reflowable.IMAGE_FILTER] = ImageFilter.NONE
         })
         assertEquals(false, sut.userProperties.darkenImages)
         assertEquals(false, sut.userProperties.invertImages)
 
         sut = sut.update(settings {
             it[theme] = Theme.DARK
-            it[EpubSettings.IMAGE_FILTER] = ImageFilter.DARKEN
+            it[Reflowable.IMAGE_FILTER] = ImageFilter.DARKEN
         })
         assertEquals(true, sut.userProperties.darkenImages)
         assertEquals(false, sut.userProperties.invertImages)
 
         sut = sut.update(settings {
             it[theme] = Theme.DARK
-            it[EpubSettings.IMAGE_FILTER] = ImageFilter.INVERT
+            it[Reflowable.IMAGE_FILTER] = ImageFilter.INVERT
         })
         assertEquals(false, sut.userProperties.darkenImages)
         assertEquals(true, sut.userProperties.invertImages)
@@ -812,8 +813,8 @@ class EpubSettingsTest {
         }).userProperties.fontOverride)
     }
 
-    private fun settings(init: EpubSettings.(MutablePreferences) -> Unit = {}): EpubSettings {
-        val settings = EpubSettings(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
+    private fun settings(init: Reflowable.(MutablePreferences) -> Unit = {}): Reflowable {
+        val settings = Reflowable(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
         return settings.update(Preferences {
             init(settings, this)
         })

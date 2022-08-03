@@ -359,7 +359,9 @@ class EpubNavigatorFragment private constructor(
     }
 
     private fun onSettingsChange(previous: EpubSettings, new: EpubSettings) {
-        if (previous.fontSize.value != new.fontSize.value) {
+        if (new !is EpubSettings.Reflowable) return
+
+        if ((previous as? EpubSettings.Reflowable)?.fontSize?.value != new.fontSize.value) {
             r2PagerAdapter?.setFontSize(new.fontSize.value)
         }
     }
@@ -372,7 +374,8 @@ class EpubNavigatorFragment private constructor(
 
     private inner class PagerAdapterListener : R2PagerAdapter.Listener {
         override fun onCreatePageFragment(fragment: Fragment) {
-            (fragment as? R2EpubPageFragment)?.setFontSize(settings.value.fontSize.value)
+            val settings = settings.value as? EpubSettings.Reflowable ?: return
+            (fragment as? R2EpubPageFragment)?.setFontSize(settings.fontSize.value)
         }
     }
 

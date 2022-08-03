@@ -17,208 +17,294 @@ import org.readium.r2.navigator.epub.css.Color as CssColor
 import org.readium.r2.navigator.epub.css.TextAlign as CssTextAlign
 
 @ExperimentalReadiumApi
-data class EpubSettings(
-    val backgroundColor: ColorSetting = BACKGROUND_COLOR,
-    val columnCount: EnumSetting<ColumnCount>? = COLUMN_COUNT,
-    val font: EnumSetting<Font> = FONT,
-    val fontSize: PercentSetting = FONT_SIZE,
-    val hyphens: ToggleSetting = HYPHENS,
-    val imageFilter: EnumSetting<ImageFilter>? = null, // requires Dark theme
-    val letterSpacing: PercentSetting = LETTER_SPACING,
-    val ligatures: ToggleSetting = LIGATURES,
-    val lineHeight: RangeSetting<Double> = LINE_HEIGHT,
-    val normalizedText: ToggleSetting = NORMALIZED_TEXT,
-    val overflow: EnumSetting<Overflow> = OVERFLOW,
-    val pageMargins: RangeSetting<Double> = PAGE_MARGINS,
-    val paragraphIndent: PercentSetting = PARAGRAPH_INDENT,
-    val paragraphSpacing: PercentSetting = PARAGRAPH_SPACING,
-    val publisherStyles: ToggleSetting = PUBLISHER_STYLES,
-    val textAlign: EnumSetting<TextAlign> = TEXT_ALIGN,
-    val textColor: ColorSetting = TEXT_COLOR,
-    val theme: EnumSetting<Theme> = THEME,
-    val typeScale: RangeSetting<Double> = TYPE_SCALE,
-    val wordSpacing: PercentSetting = WORD_SPACING,
-) : Configurable.Settings {
-    constructor(fonts: List<Font> = emptyList(), namedColors: Map<String, Int> = emptyMap()) : this(
-        backgroundColor = BACKGROUND_COLOR.copy(
-            coder = Color.Coder(namedColors)
-        ),
-        font = FONT.copy(
-            coder = Font.Coder(listOf(Font.ORIGINAL) + fonts),
-            values = listOf(Font.ORIGINAL) + fonts
-        ),
-        textColor = TEXT_COLOR.copy(
-            coder = Color.Coder(namedColors)
-        ),
-    )
+sealed class EpubSettings : Configurable.Settings {
 
-    companion object {
+    internal abstract fun update(preferences: Preferences, defaults: Preferences = Preferences()): EpubSettings
 
-        val BACKGROUND_COLOR: ColorSetting = ColorSetting(
-            key = Setting.BACKGROUND_COLOR,
-            value = Color.AUTO
+    @ExperimentalReadiumApi
+    data class Reflowable(
+        val backgroundColor: ColorSetting = BACKGROUND_COLOR,
+        val columnCount: EnumSetting<ColumnCount>? = COLUMN_COUNT,
+        val font: EnumSetting<Font> = FONT,
+        val fontSize: PercentSetting = FONT_SIZE,
+        val hyphens: ToggleSetting = HYPHENS,
+        val imageFilter: EnumSetting<ImageFilter>? = null, // requires Dark theme
+        val letterSpacing: PercentSetting = LETTER_SPACING,
+        val ligatures: ToggleSetting = LIGATURES,
+        val lineHeight: RangeSetting<Double> = LINE_HEIGHT,
+        val normalizedText: ToggleSetting = NORMALIZED_TEXT,
+        val overflow: EnumSetting<Overflow> = OVERFLOW,
+        val pageMargins: RangeSetting<Double> = PAGE_MARGINS,
+        val paragraphIndent: PercentSetting = PARAGRAPH_INDENT,
+        val paragraphSpacing: PercentSetting = PARAGRAPH_SPACING,
+        val publisherStyles: ToggleSetting = PUBLISHER_STYLES,
+        val textAlign: EnumSetting<TextAlign> = TEXT_ALIGN,
+        val textColor: ColorSetting = TEXT_COLOR,
+        val theme: EnumSetting<Theme> = THEME,
+        val typeScale: RangeSetting<Double> = TYPE_SCALE,
+        val wordSpacing: PercentSetting = WORD_SPACING,
+    ) : EpubSettings() {
+        constructor(
+            fonts: List<Font> = emptyList(),
+            namedColors: Map<String, Int> = emptyMap()
+        ) : this(
+            backgroundColor = BACKGROUND_COLOR.copy(
+                coder = Color.Coder(namedColors)
+            ),
+            font = FONT.copy(
+                coder = Font.Coder(listOf(Font.ORIGINAL) + fonts),
+                values = listOf(Font.ORIGINAL) + fonts
+            ),
+            textColor = TEXT_COLOR.copy(
+                coder = Color.Coder(namedColors)
+            ),
         )
 
-        val COLUMN_COUNT: EnumSetting<ColumnCount> = EnumSetting(
-            key = Setting.COLUMN_COUNT,
-            value = ColumnCount.AUTO,
-            values = listOf(ColumnCount.AUTO, ColumnCount.ONE, ColumnCount.TWO),
-        )
+        companion object {
 
-        val FONT: EnumSetting<Font> = EnumSetting(
-            key = Setting.FONT,
-            coder = Font.Coder(listOf(Font.ORIGINAL)),
-            value = Font.ORIGINAL,
-            values = listOf(Font.ORIGINAL),
-            label = { it.name }
-        )
+            val BACKGROUND_COLOR: ColorSetting = ColorSetting(
+                key = Setting.BACKGROUND_COLOR,
+                value = Color.AUTO
+            )
 
-        val FONT_SIZE: PercentSetting = PercentSetting(
-            key = Setting.FONT_SIZE,
-            value = 1.0,
-            range = 0.4..5.0
-        )
+            val COLUMN_COUNT: EnumSetting<ColumnCount> = EnumSetting(
+                key = Setting.COLUMN_COUNT,
+                value = ColumnCount.AUTO,
+                values = listOf(ColumnCount.AUTO, ColumnCount.ONE, ColumnCount.TWO),
+            )
 
-        val HYPHENS: ToggleSetting = ToggleSetting(
-            key = Setting.HYPHENS,
-            value = true,
-            activator = RequiresPublisherStylesDisabled
-        )
+            val FONT: EnumSetting<Font> = EnumSetting(
+                key = Setting.FONT,
+                coder = Font.Coder(listOf(Font.ORIGINAL)),
+                value = Font.ORIGINAL,
+                values = listOf(Font.ORIGINAL),
+                label = { it.name }
+            )
 
-        val IMAGE_FILTER: EnumSetting<ImageFilter> = EnumSetting(
-            key = Setting.IMAGE_FILTER,
-            value = ImageFilter.NONE,
-            values = listOf(ImageFilter.NONE, ImageFilter.DARKEN, ImageFilter.INVERT)
-        )
+            val FONT_SIZE: PercentSetting = PercentSetting(
+                key = Setting.FONT_SIZE,
+                value = 1.0,
+                range = 0.4..5.0
+            )
 
-        val LETTER_SPACING: PercentSetting = PercentSetting(
-            key = Setting.LETTER_SPACING,
-            value = 0.0,
-            activator = RequiresPublisherStylesDisabled
-        )
+            val HYPHENS: ToggleSetting = ToggleSetting(
+                key = Setting.HYPHENS,
+                value = true,
+                activator = RequiresPublisherStylesDisabled
+            )
 
-        val LIGATURES: ToggleSetting = ToggleSetting(
-            key = Setting.LIGATURES,
-            value = true,
-            activator = RequiresPublisherStylesDisabled
-        )
+            val IMAGE_FILTER: EnumSetting<ImageFilter> = EnumSetting(
+                key = Setting.IMAGE_FILTER,
+                value = ImageFilter.NONE,
+                values = listOf(ImageFilter.NONE, ImageFilter.DARKEN, ImageFilter.INVERT)
+            )
 
-        val LINE_HEIGHT: RangeSetting<Double> = RangeSetting(
-            key = Setting.LINE_HEIGHT,
-            value = 1.2,
-            range = 1.0..2.0,
-            activator = RequiresPublisherStylesDisabled
-        )
+            val LETTER_SPACING: PercentSetting = PercentSetting(
+                key = Setting.LETTER_SPACING,
+                value = 0.0,
+                activator = RequiresPublisherStylesDisabled
+            )
 
-        val NORMALIZED_TEXT: ToggleSetting = ToggleSetting(
-            key = Setting.NORMALIZED_TEXT,
-            value = false,
-        )
+            val LIGATURES: ToggleSetting = ToggleSetting(
+                key = Setting.LIGATURES,
+                value = true,
+                activator = RequiresPublisherStylesDisabled
+            )
 
-        val OVERFLOW: EnumSetting<Overflow> = EnumSetting(
-            key = Setting.OVERFLOW,
-            value = Overflow.PAGINATED,
-            values = listOf(Overflow.PAGINATED, Overflow.SCROLLED)
-        )
+            val LINE_HEIGHT: RangeSetting<Double> = RangeSetting(
+                key = Setting.LINE_HEIGHT,
+                value = 1.2,
+                range = 1.0..2.0,
+                activator = RequiresPublisherStylesDisabled
+            )
 
-        val PAGE_MARGINS: RangeSetting<Double> = RangeSetting(
-            key = Setting.PAGE_MARGINS,
-            value = 1.0,
-            range = 0.5..2.0
-        )
+            val NORMALIZED_TEXT: ToggleSetting = ToggleSetting(
+                key = Setting.NORMALIZED_TEXT,
+                value = false,
+            )
 
-        val PARAGRAPH_INDENT: PercentSetting = PercentSetting(
-            key = Setting.PARAGRAPH_INDENT,
-            value = 0.0,
-            range = 0.0..3.0,
-            suggestedIncrement = 0.2,
-            activator = RequiresPublisherStylesDisabled
-        )
+            val OVERFLOW: EnumSetting<Overflow> = EnumSetting(
+                key = Setting.OVERFLOW,
+                value = Overflow.PAGINATED,
+                values = listOf(Overflow.PAGINATED, Overflow.SCROLLED)
+            )
 
-        val PARAGRAPH_SPACING: PercentSetting = PercentSetting(
-            key = Setting.PARAGRAPH_SPACING,
-            value = 0.0,
-            range = 0.0..2.0,
-            activator = RequiresPublisherStylesDisabled
-        )
+            val PAGE_MARGINS: RangeSetting<Double> = RangeSetting(
+                key = Setting.PAGE_MARGINS,
+                value = 1.0,
+                range = 0.5..2.0
+            )
 
-        val PUBLISHER_STYLES: ToggleSetting = ToggleSetting(
-            key = Setting.PUBLISHER_STYLES,
-            value = true,
-        )
+            val PARAGRAPH_INDENT: PercentSetting = PercentSetting(
+                key = Setting.PARAGRAPH_INDENT,
+                value = 0.0,
+                range = 0.0..3.0,
+                suggestedIncrement = 0.2,
+                activator = RequiresPublisherStylesDisabled
+            )
 
-        val TEXT_ALIGN: EnumSetting<TextAlign> = EnumSetting(
-            key = Setting.TEXT_ALIGN,
-            value = TextAlign.START,
-            values = listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY),
-            activator = RequiresPublisherStylesDisabled
-        )
+            val PARAGRAPH_SPACING: PercentSetting = PercentSetting(
+                key = Setting.PARAGRAPH_SPACING,
+                value = 0.0,
+                range = 0.0..2.0,
+                activator = RequiresPublisherStylesDisabled
+            )
 
-        val TEXT_COLOR: ColorSetting = ColorSetting(
-            key = Setting.TEXT_COLOR,
-            value = Color.AUTO
-        )
+            val PUBLISHER_STYLES: ToggleSetting = ToggleSetting(
+                key = Setting.PUBLISHER_STYLES,
+                value = true,
+            )
 
-        val THEME: EnumSetting<Theme> = EnumSetting(
-            key = Setting.THEME,
-            value = Theme.LIGHT,
-            values = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
-        )
+            val TEXT_ALIGN: EnumSetting<TextAlign> = EnumSetting(
+                key = Setting.TEXT_ALIGN,
+                value = TextAlign.START,
+                values = listOf(
+                    TextAlign.START,
+                    TextAlign.LEFT,
+                    TextAlign.RIGHT,
+                    TextAlign.JUSTIFY
+                ),
+                activator = RequiresPublisherStylesDisabled
+            )
 
-        // https://readium.org/readium-css/docs/CSS19-api.html#typography
-        val TYPE_SCALE: RangeSetting<Double> = RangeSetting(
-            key = Setting.TYPE_SCALE,
-            value = 1.2,
-            range = 1.0..2.0,
-            suggestedSteps = listOf(1.0, 1.067, 1.125, 1.2, 1.25, 1.333, 1.414, 1.5, 1.618),
-            activator = RequiresPublisherStylesDisabled
-        )
+            val TEXT_COLOR: ColorSetting = ColorSetting(
+                key = Setting.TEXT_COLOR,
+                value = Color.AUTO
+            )
 
-        val WORD_SPACING: PercentSetting = PercentSetting(
-            key = Setting.WORD_SPACING,
-            value = 0.0,
-            activator = RequiresPublisherStylesDisabled
-        )
+            val THEME: EnumSetting<Theme> = EnumSetting(
+                key = Setting.THEME,
+                value = Theme.LIGHT,
+                values = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
+            )
 
-        private object RequiresPublisherStylesDisabled : SettingActivator {
-            override fun isActiveWithPreferences(preferences: Preferences): Boolean =
-                preferences[PUBLISHER_STYLES] == false
+            // https://readium.org/readium-css/docs/CSS19-api.html#typography
+            val TYPE_SCALE: RangeSetting<Double> = RangeSetting(
+                key = Setting.TYPE_SCALE,
+                value = 1.2,
+                range = 1.0..2.0,
+                suggestedSteps = listOf(1.0, 1.067, 1.125, 1.2, 1.25, 1.333, 1.414, 1.5, 1.618),
+                activator = RequiresPublisherStylesDisabled
+            )
 
-            override fun activateInPreferences(preferences: MutablePreferences) {
-                preferences[PUBLISHER_STYLES] = false
+            val WORD_SPACING: PercentSetting = PercentSetting(
+                key = Setting.WORD_SPACING,
+                value = 0.0,
+                activator = RequiresPublisherStylesDisabled
+            )
+
+            private object RequiresPublisherStylesDisabled : SettingActivator {
+                override fun isActiveWithPreferences(preferences: Preferences): Boolean =
+                    preferences[PUBLISHER_STYLES] == false
+
+                override fun activateInPreferences(preferences: MutablePreferences) {
+                    preferences[PUBLISHER_STYLES] = false
+                }
             }
         }
-    }
 
-    internal fun update(preferences: Preferences, defaults: Preferences = Preferences()): EpubSettings =
-        copy(
-            backgroundColor = backgroundColor.copyFirstValidValueFrom(preferences, defaults, fallback = BACKGROUND_COLOR),
-            columnCount = if (preferences[overflow] == Overflow.SCROLLED) null
-                else (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(preferences, defaults, fallback = COLUMN_COUNT),
-            font = font.copyFirstValidValueFrom(preferences, defaults, fallback = FONT),
-            fontSize = fontSize.copyFirstValidValueFrom(preferences, defaults, fallback = FONT_SIZE),
-            hyphens = hyphens.copyFirstValidValueFrom(preferences, defaults, fallback = HYPHENS),
-            imageFilter = if (preferences[theme] != Theme.DARK) null
-                else (imageFilter ?: IMAGE_FILTER).copyFirstValidValueFrom(preferences, defaults, fallback = IMAGE_FILTER),
-            letterSpacing = letterSpacing.copyFirstValidValueFrom(preferences, defaults, fallback = LETTER_SPACING),
-            ligatures = ligatures.copyFirstValidValueFrom(preferences, defaults, fallback = LIGATURES),
-            lineHeight = lineHeight.copyFirstValidValueFrom(preferences, defaults, fallback = LINE_HEIGHT),
-            normalizedText = normalizedText.copyFirstValidValueFrom(preferences, defaults, fallback = NORMALIZED_TEXT),
-            overflow = overflow.copyFirstValidValueFrom(preferences, defaults, fallback = OVERFLOW),
-            pageMargins = pageMargins.copyFirstValidValueFrom(preferences, defaults, fallback = PAGE_MARGINS),
-            paragraphIndent = paragraphIndent.copyFirstValidValueFrom(preferences, defaults, fallback = PARAGRAPH_INDENT),
-            paragraphSpacing = paragraphSpacing.copyFirstValidValueFrom(preferences, defaults, fallback = PARAGRAPH_SPACING),
-            publisherStyles = publisherStyles.copyFirstValidValueFrom(preferences, defaults, fallback = PUBLISHER_STYLES),
-            textAlign = textAlign.copyFirstValidValueFrom(preferences, defaults, fallback = TEXT_ALIGN),
-            textColor = textColor.copyFirstValidValueFrom(preferences, defaults, fallback = TEXT_COLOR),
-            theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME),
-            typeScale = typeScale.copyFirstValidValueFrom(preferences, defaults, fallback = TYPE_SCALE),
-            wordSpacing = wordSpacing.copyFirstValidValueFrom(preferences, defaults, fallback = WORD_SPACING),
-        )
+        override fun update(preferences: Preferences, defaults: Preferences): Reflowable =
+            copy(
+                backgroundColor = backgroundColor.copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = BACKGROUND_COLOR
+                ),
+                columnCount = if (preferences[overflow] == Overflow.SCROLLED) null
+                else (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = COLUMN_COUNT
+                ),
+                font = font.copyFirstValidValueFrom(preferences, defaults, fallback = FONT),
+                fontSize = fontSize.copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = FONT_SIZE
+                ),
+                hyphens = hyphens.copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = HYPHENS
+                ),
+                imageFilter = if (preferences[theme] != Theme.DARK) null
+                else (imageFilter ?: IMAGE_FILTER).copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = IMAGE_FILTER
+                ),
+                letterSpacing = letterSpacing.copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = LETTER_SPACING
+                ),
+                ligatures = ligatures.copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = LIGATURES
+                ),
+                lineHeight = lineHeight.copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = LINE_HEIGHT
+                ),
+                normalizedText = normalizedText.copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = NORMALIZED_TEXT
+                ),
+                overflow = overflow.copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = OVERFLOW
+                ),
+                pageMargins = pageMargins.copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = PAGE_MARGINS
+                ),
+                paragraphIndent = paragraphIndent.copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = PARAGRAPH_INDENT
+                ),
+                paragraphSpacing = paragraphSpacing.copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = PARAGRAPH_SPACING
+                ),
+                publisherStyles = publisherStyles.copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = PUBLISHER_STYLES
+                ),
+                textAlign = textAlign.copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = TEXT_ALIGN
+                ),
+                textColor = textColor.copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = TEXT_COLOR
+                ),
+                theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME),
+                typeScale = typeScale.copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = TYPE_SCALE
+                ),
+                wordSpacing = wordSpacing.copyFirstValidValueFrom(
+                    preferences,
+                    defaults,
+                    fallback = WORD_SPACING
+                ),
+            )
+    }
 }
 
 @ExperimentalReadiumApi
-fun ReadiumCss.update(settings: EpubSettings): ReadiumCss =
+fun ReadiumCss.update(settings: EpubSettings.Reflowable): ReadiumCss =
     with(settings) {
         copy(
             userProperties = userProperties.copy(

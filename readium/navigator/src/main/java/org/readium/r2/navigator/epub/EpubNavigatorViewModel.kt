@@ -107,7 +107,7 @@ internal class EpubNavigatorViewModel(
     // Settings
 
     private val _settings = MutableStateFlow(
-        EpubSettings(fonts = config.fonts)
+        EpubSettings.Reflowable(fonts = config.fonts)
             .update(
                 preferences = config.preferences,
                 defaults = config.defaultPreferences
@@ -119,7 +119,9 @@ internal class EpubNavigatorViewModel(
         val settings = _settings.updateAndGet {
             it.update(preferences, defaults = config.defaultPreferences)
         }
-        css.update { it.update(settings) }
+        if (settings is EpubSettings.Reflowable) {
+            css.update { it.update(settings) }
+        }
     }
 
     // Selection
