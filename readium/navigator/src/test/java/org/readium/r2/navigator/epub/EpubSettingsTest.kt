@@ -27,12 +27,13 @@ class EpubSettingsTest {
     @Test
     fun `Default values`() {
         val settings = EpubSettings(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
-        assertEquals(Color.AUTO, settings.backgroundColor?.value)
+        assertEquals(Color.AUTO, settings.backgroundColor.value)
         assertEquals(ColumnCount.AUTO, settings.columnCount?.value)
         assertEquals(Font.ORIGINAL, settings.font.value)
         assertEquals(listOf(Font.ORIGINAL, Font.ACCESSIBLE_DFA, Font.ROBOTO), settings.font.values)
         assertEquals(1.0, settings.fontSize.value)
         assertTrue(settings.hyphens.value)
+        assertNull(settings.imageFilter)
         assertEquals(0.0, settings.letterSpacing.value)
         assertTrue(settings.ligatures.value)
         assertEquals(1.2, settings.lineHeight.value)
@@ -43,11 +44,20 @@ class EpubSettingsTest {
         assertEquals(0.0, settings.paragraphSpacing.value)
         assertTrue(settings.publisherStyles.value)
         assertEquals(TextAlign.START, settings.textAlign.value)
-        assertEquals(Color.AUTO, settings.textColor?.value)
+        assertEquals(Color.AUTO, settings.textColor.value)
         assertEquals(listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY), settings.textAlign.values)
         assertEquals(Theme.LIGHT, settings.theme.value)
         assertEquals(1.2, settings.typeScale.value)
         assertEquals(0.0, settings.wordSpacing.value)
+    }
+
+    @Test
+    fun `Image filter is only available with the Dark theme`() {
+        val sut = EpubSettings()
+        assertNull(sut.update(Preferences { remove(EpubSettings.THEME) }).imageFilter)
+        assertNull(sut.update(Preferences { set(EpubSettings.THEME, Theme.LIGHT) }).imageFilter)
+        assertNull(sut.update(Preferences { set(EpubSettings.THEME, Theme.SEPIA) }).imageFilter)
+        assertNotNull(sut.update(Preferences { set(EpubSettings.THEME, Theme.DARK) }).imageFilter)
     }
 
     @Test
@@ -112,6 +122,7 @@ class EpubSettingsTest {
         assertEquals(Font.ROBOTO, sut.font.value)
         assertEquals(0.5, sut.fontSize.value)
         assertFalse(sut.hyphens.value)
+        assertEquals(ImageFilter.NONE, sut.imageFilter?.value)
         assertEquals(0.2, sut.letterSpacing.value)
         assertTrue(sut.ligatures.value)
         assertEquals(0.2, sut.letterSpacing.value)
@@ -161,6 +172,7 @@ class EpubSettingsTest {
         assertEquals(Font.ROBOTO, sut.font.value)
         assertEquals(0.5, sut.fontSize.value)
         assertFalse(sut.hyphens.value)
+        assertNull(sut.imageFilter)
         assertEquals(0.2, sut.letterSpacing.value)
         assertEquals(1.8, sut.lineHeight.value)
         assertTrue(sut.ligatures.value)
@@ -698,6 +710,8 @@ class EpubSettingsTest {
                     colCount = ColCount.ONE,
                     pageMargins = 1.0,
                     appearance = Appearance.NIGHT,
+                    darkenImages = false,
+                    invertImages = false,
                     fontOverride = false,
                     advancedSettings = true,
                     typeScale = 1.2,
@@ -749,6 +763,40 @@ class EpubSettingsTest {
                 it[theme] = Theme.SEPIA
             })
         )
+    }
+
+    @Test
+    fun `Changing image filter flags`() {
+        var sut = ReadiumCss()
+        assertNull(sut.userProperties.darkenImages)
+        assertNull(sut.userProperties.invertImages)
+
+        sut = sut.update(settings {
+            it[theme] = Theme.DARK
+        })
+        assertEquals(false, sut.userProperties.darkenImages)
+        assertEquals(false, sut.userProperties.invertImages)
+
+        sut = sut.update(settings {
+            it[theme] = Theme.DARK
+            it[EpubSettings.IMAGE_FILTER] = ImageFilter.NONE
+        })
+        assertEquals(false, sut.userProperties.darkenImages)
+        assertEquals(false, sut.userProperties.invertImages)
+
+        sut = sut.update(settings {
+            it[theme] = Theme.DARK
+            it[EpubSettings.IMAGE_FILTER] = ImageFilter.DARKEN
+        })
+        assertEquals(true, sut.userProperties.darkenImages)
+        assertEquals(false, sut.userProperties.invertImages)
+
+        sut = sut.update(settings {
+            it[theme] = Theme.DARK
+            it[EpubSettings.IMAGE_FILTER] = ImageFilter.INVERT
+        })
+        assertEquals(false, sut.userProperties.darkenImages)
+        assertEquals(true, sut.userProperties.invertImages)
     }
 
     @Test

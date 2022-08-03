@@ -100,6 +100,7 @@ fun UserSettings(
                     font = settings.font,
                     fontSize = settings.fontSize,
                     hyphens = settings.hyphens,
+                    imageFilter = settings.imageFilter,
                     letterSpacing = settings.letterSpacing,
                     ligatures = settings.ligatures,
                     lineHeight = settings.lineHeight,
@@ -132,6 +133,7 @@ private fun ReflowableUserSettings(
     font: EnumSetting<Font>? = null,
     fontSize: PercentSetting? = null,
     hyphens: ToggleSetting? = null,
+    imageFilter: EnumSetting<ImageFilter>? = null,
     letterSpacing: PercentSetting? = null,
     ligatures: ToggleSetting? = null,
     lineHeight: RangeSetting<Double>? = null,
@@ -147,13 +149,23 @@ private fun ReflowableUserSettings(
     typeScale: RangeSetting<Double>? = null,
     wordSpacing: PercentSetting? = null,
 ) {
-    if (theme != null || textColor != null) {
+    if (theme != null || textColor != null || imageFilter != null) {
         if (theme != null) {
             ButtonGroupItem("Theme", theme, preferences, edit) { value ->
                 when (value) {
                     Theme.LIGHT -> "Light"
                     Theme.DARK -> "Dark"
                     Theme.SEPIA -> "Sepia"
+                }
+            }
+        }
+
+        if (imageFilter != null) {
+            ButtonGroupItem("Image filter", imageFilter, preferences, edit) { value ->
+                when (value) {
+                    ImageFilter.NONE -> "None"
+                    ImageFilter.DARKEN -> "Darken"
+                    ImageFilter.INVERT -> "Invert"
                 }
             }
         }

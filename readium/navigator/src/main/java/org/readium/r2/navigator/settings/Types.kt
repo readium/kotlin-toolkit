@@ -46,6 +46,14 @@ enum class ColumnCount {
 }
 
 @ExperimentalReadiumApi
+@Serializable
+enum class ImageFilter {
+    @SerialName("none") NONE,
+    @SerialName("darken") DARKEN,
+    @SerialName("invert") INVERT;
+}
+
+@ExperimentalReadiumApi
 @JvmInline
 value class Font(val name: String? = null) {
     companion object {

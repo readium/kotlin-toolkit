@@ -44,6 +44,7 @@ data class Setting<V, E>(
         const val FONT = "font"
         const val FONT_SIZE = "fontSize"
         const val HYPHENS = "hyphens"
+        const val IMAGE_FILTER = "imageFilter"
         const val LIGATURES = "ligatures"
         const val LINE_HEIGHT = "lineHeight"
         const val LETTER_SPACING = "letterSpacing"
@@ -73,13 +74,12 @@ data class Setting<V, E>(
      *
      * Each preference is verified using the setting [validator].
      */
-    fun copyFirstValidValueFrom(vararg candidates: Preferences?, fallback: V? = null): Setting<V, E> =
+    fun copyFirstValidValueFrom(vararg candidates: Preferences?, fallback: Setting<V, E>): Setting<V, E> =
         copy(
             value = candidates
                 .mapNotNull { candidate -> candidate?.get(this) }
                 .firstNotNullOfOrNull(::validate)
-                ?: fallback
-                ?: value
+                ?: fallback.value
         )
 
     // We only want to use the setting key and value to test the structural equality, so we

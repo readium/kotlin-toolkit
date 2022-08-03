@@ -23,6 +23,7 @@ data class EpubSettings(
     val font: EnumSetting<Font> = FONT,
     val fontSize: PercentSetting = FONT_SIZE,
     val hyphens: ToggleSetting = HYPHENS,
+    val imageFilter: EnumSetting<ImageFilter>? = null, // requires Dark theme
     val letterSpacing: PercentSetting = LETTER_SPACING,
     val ligatures: ToggleSetting = LIGATURES,
     val lineHeight: RangeSetting<Double> = LINE_HEIGHT,
@@ -82,6 +83,12 @@ data class EpubSettings(
             key = Setting.HYPHENS,
             value = true,
             activator = RequiresPublisherStylesDisabled
+        )
+
+        val IMAGE_FILTER: EnumSetting<ImageFilter> = EnumSetting(
+            key = Setting.IMAGE_FILTER,
+            value = ImageFilter.NONE,
+            values = listOf(ImageFilter.NONE, ImageFilter.DARKEN, ImageFilter.INVERT)
         )
 
         val LETTER_SPACING: PercentSetting = PercentSetting(
@@ -185,26 +192,28 @@ data class EpubSettings(
 
     internal fun update(preferences: Preferences, defaults: Preferences = Preferences()): EpubSettings =
         copy(
-            backgroundColor = backgroundColor.copyFirstValidValueFrom(preferences, defaults, fallback = Color.AUTO),
+            backgroundColor = backgroundColor.copyFirstValidValueFrom(preferences, defaults, fallback = BACKGROUND_COLOR),
             columnCount = if (preferences[overflow] == Overflow.SCROLLED) null
-                else (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(preferences, defaults),
-            font = font.copyFirstValidValueFrom(preferences, defaults, fallback = FONT.value),
-            fontSize = fontSize.copyFirstValidValueFrom(preferences, defaults),
-            hyphens = hyphens.copyFirstValidValueFrom(preferences, defaults),
-            letterSpacing = letterSpacing.copyFirstValidValueFrom(preferences, defaults),
-            ligatures = ligatures.copyFirstValidValueFrom(preferences, defaults),
-            lineHeight = lineHeight.copyFirstValidValueFrom(preferences, defaults),
-            normalizedText = normalizedText.copyFirstValidValueFrom(preferences, defaults),
-            overflow = overflow.copyFirstValidValueFrom(preferences, defaults, fallback = OVERFLOW.value),
-            pageMargins = pageMargins.copyFirstValidValueFrom(preferences, defaults),
-            paragraphIndent = paragraphIndent.copyFirstValidValueFrom(preferences, defaults),
-            paragraphSpacing = paragraphSpacing.copyFirstValidValueFrom(preferences, defaults),
-            publisherStyles = publisherStyles.copyFirstValidValueFrom(preferences, defaults),
-            textAlign = textAlign.copyFirstValidValueFrom(preferences, defaults, fallback = TextAlign.START),
-            textColor = textColor.copyFirstValidValueFrom(preferences, defaults, fallback = Color.AUTO),
-            theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME.value),
-            typeScale = typeScale.copyFirstValidValueFrom(preferences, defaults),
-            wordSpacing = wordSpacing.copyFirstValidValueFrom(preferences, defaults),
+                else (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(preferences, defaults, fallback = COLUMN_COUNT),
+            font = font.copyFirstValidValueFrom(preferences, defaults, fallback = FONT),
+            fontSize = fontSize.copyFirstValidValueFrom(preferences, defaults, fallback = FONT_SIZE),
+            hyphens = hyphens.copyFirstValidValueFrom(preferences, defaults, fallback = HYPHENS),
+            imageFilter = if (preferences[theme] != Theme.DARK) null
+                else (imageFilter ?: IMAGE_FILTER).copyFirstValidValueFrom(preferences, defaults, fallback = IMAGE_FILTER),
+            letterSpacing = letterSpacing.copyFirstValidValueFrom(preferences, defaults, fallback = LETTER_SPACING),
+            ligatures = ligatures.copyFirstValidValueFrom(preferences, defaults, fallback = LIGATURES),
+            lineHeight = lineHeight.copyFirstValidValueFrom(preferences, defaults, fallback = LINE_HEIGHT),
+            normalizedText = normalizedText.copyFirstValidValueFrom(preferences, defaults, fallback = NORMALIZED_TEXT),
+            overflow = overflow.copyFirstValidValueFrom(preferences, defaults, fallback = OVERFLOW),
+            pageMargins = pageMargins.copyFirstValidValueFrom(preferences, defaults, fallback = PAGE_MARGINS),
+            paragraphIndent = paragraphIndent.copyFirstValidValueFrom(preferences, defaults, fallback = PARAGRAPH_INDENT),
+            paragraphSpacing = paragraphSpacing.copyFirstValidValueFrom(preferences, defaults, fallback = PARAGRAPH_SPACING),
+            publisherStyles = publisherStyles.copyFirstValidValueFrom(preferences, defaults, fallback = PUBLISHER_STYLES),
+            textAlign = textAlign.copyFirstValidValueFrom(preferences, defaults, fallback = TEXT_ALIGN),
+            textColor = textColor.copyFirstValidValueFrom(preferences, defaults, fallback = TEXT_COLOR),
+            theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME),
+            typeScale = typeScale.copyFirstValidValueFrom(preferences, defaults, fallback = TYPE_SCALE),
+            wordSpacing = wordSpacing.copyFirstValidValueFrom(preferences, defaults, fallback = WORD_SPACING),
         )
 }
 
@@ -229,6 +238,8 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss =
                     Theme.DARK -> Appearance.NIGHT
                     Theme.SEPIA -> Appearance.SEPIA
                 },
+                darkenImages = imageFilter?.value?.let { it == ImageFilter.DARKEN },
+                invertImages = imageFilter?.value?.let { it == ImageFilter.INVERT },
                 textColor = textColor.value
                     .takeIf { it != Color.AUTO }
                     ?.let { CssColor.int(it.int) },
