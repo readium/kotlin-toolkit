@@ -7,6 +7,7 @@
 package org.readium.r2.navigator.epub
 
 import org.readium.r2.navigator.epub.css.*
+import org.readium.r2.navigator.epub.css.Layout.Stylesheets
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.settings.Color
 import org.readium.r2.navigator.settings.TextAlign
@@ -22,7 +23,7 @@ import org.readium.r2.navigator.epub.css.TextAlign as CssTextAlign
 @ExperimentalReadiumApi
 sealed class EpubSettings : Configurable.Settings {
 
-    internal abstract fun update(preferences: Preferences, defaults: Preferences = Preferences()): EpubSettings
+    internal abstract fun update(metadata: Metadata, preferences: Preferences, defaults: Preferences = Preferences()): EpubSettings
 
     @ExperimentalReadiumApi
     data class Reflowable(
@@ -30,25 +31,28 @@ sealed class EpubSettings : Configurable.Settings {
         val columnCount: EnumSetting<ColumnCount>? = COLUMN_COUNT,
         val font: EnumSetting<Font> = FONT,
         val fontSize: PercentSetting = FONT_SIZE,
-        val hyphens: ToggleSetting = HYPHENS,
-        val imageFilter: EnumSetting<ImageFilter>? = null, // requires Dark theme
+        val hyphens: ToggleSetting? = HYPHENS,
+        val imageFilter: EnumSetting<ImageFilter>? = IMAGE_FILTER,
         val language: ValueSetting<Language?> = LANGUAGE,
-        val letterSpacing: PercentSetting = LETTER_SPACING,
-        val ligatures: ToggleSetting = LIGATURES,
+        val letterSpacing: PercentSetting? = LETTER_SPACING,
+        val ligatures: ToggleSetting? = LIGATURES,
         val lineHeight: RangeSetting<Double> = LINE_HEIGHT,
         val normalizedText: ToggleSetting = NORMALIZED_TEXT,
         val overflow: EnumSetting<Overflow> = OVERFLOW,
         val pageMargins: RangeSetting<Double> = PAGE_MARGINS,
-        val paragraphIndent: PercentSetting = PARAGRAPH_INDENT,
+        val paragraphIndent: PercentSetting? = PARAGRAPH_INDENT,
         val paragraphSpacing: PercentSetting = PARAGRAPH_SPACING,
         val publisherStyles: ToggleSetting = PUBLISHER_STYLES,
         val readingProgression: EnumSetting<ReadingProgression> = READING_PROGRESSION,
-        val textAlign: EnumSetting<TextAlign> = TEXT_ALIGN,
+        val textAlign: EnumSetting<TextAlign>? = TEXT_ALIGN,
         val textColor: ColorSetting = TEXT_COLOR,
         val theme: EnumSetting<Theme> = THEME,
         val typeScale: RangeSetting<Double> = TYPE_SCALE,
-        val wordSpacing: PercentSetting = WORD_SPACING,
+        val wordSpacing: PercentSetting? = WORD_SPACING,
+
+        internal val layout: Layout = Layout()
     ) : EpubSettings() {
+
         constructor(
             fonts: List<Font> = emptyList(),
             namedColors: Map<String, Int> = emptyMap()
@@ -219,51 +223,63 @@ sealed class EpubSettings : Configurable.Settings {
             }
         }
 
-        override fun update(preferences: Preferences, defaults: Preferences): Reflowable =
-            copy(
+        override fun update(metadata: Metadata, preferences: Preferences, defaults: Preferences): Reflowable {
+            val language = language.copyFirstValidValueFrom(preferences, defaults, fallback = LANGUAGE)
+            val readingProgression = readingProgression.copyFirstValidValueFrom(preferences, defaults, fallback = READING_PROGRESSION)
+
+            val layout = Layout.from(
+                language = language.value ?: metadata.language,
+                hasMultipleLanguages =
+                    if (language.value != null) false
+                    else metadata.languages.size > 1,
+                readingProgression = readingProgression.value.takeIf { it != ReadingProgression.AUTO }
+                    ?: metadata.readingProgression
+            )
+
+            return copy(
                 backgroundColor = backgroundColor.copyFirstValidValueFrom(preferences, defaults, fallback = BACKGROUND_COLOR),
-                columnCount = if (preferences[overflow] == Overflow.SCROLLED) null
+                columnCount = if (preferences[overflow] == Overflow.SCROLLED || layout.stylesheets == Stylesheets.CjkVertical) null
                     else (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(preferences, defaults, fallback = COLUMN_COUNT),
                 font = font.copyFirstValidValueFrom(preferences, defaults, fallback = FONT),
                 fontSize = fontSize.copyFirstValidValueFrom(preferences, defaults, fallback = FONT_SIZE),
-                hyphens = hyphens.copyFirstValidValueFrom(preferences, defaults, fallback = HYPHENS),
+                hyphens = if (layout.stylesheets != Stylesheets.Default) null
+                    else (hyphens ?: HYPHENS).copyFirstValidValueFrom(preferences, defaults, fallback = HYPHENS),
                 imageFilter = if (preferences[theme] != Theme.DARK) null
                     else (imageFilter ?: IMAGE_FILTER).copyFirstValidValueFrom(preferences, defaults, fallback = IMAGE_FILTER),
-                language = language.copyFirstValidValueFrom(preferences, defaults, fallback = LANGUAGE),
-                letterSpacing = letterSpacing.copyFirstValidValueFrom(preferences, defaults, fallback = LETTER_SPACING),
-                ligatures = ligatures.copyFirstValidValueFrom(preferences, defaults, fallback = LIGATURES),
+                language = language,
+                letterSpacing = if (layout.stylesheets != Stylesheets.Default) null
+                    else (letterSpacing ?: LETTER_SPACING).copyFirstValidValueFrom(preferences, defaults, fallback = LETTER_SPACING),
+                ligatures = if (layout.stylesheets != Stylesheets.Rtl) null
+                    else (ligatures ?: LIGATURES).copyFirstValidValueFrom(preferences, defaults, fallback = LIGATURES),
                 lineHeight = lineHeight.copyFirstValidValueFrom(preferences, defaults, fallback = LINE_HEIGHT),
                 normalizedText = normalizedText.copyFirstValidValueFrom(preferences, defaults, fallback = NORMALIZED_TEXT),
                 overflow = overflow.copyFirstValidValueFrom(preferences, defaults, fallback = OVERFLOW),
                 pageMargins = pageMargins.copyFirstValidValueFrom(preferences, defaults, fallback = PAGE_MARGINS),
-                paragraphIndent = paragraphIndent.copyFirstValidValueFrom(preferences, defaults, fallback = PARAGRAPH_INDENT),
+                paragraphIndent = if (layout.stylesheets == Stylesheets.CjkVertical || layout.stylesheets == Stylesheets.CjkHorizontal) null
+                    else (paragraphIndent ?: PARAGRAPH_INDENT).copyFirstValidValueFrom(preferences, defaults, fallback = PARAGRAPH_INDENT),
                 paragraphSpacing = paragraphSpacing.copyFirstValidValueFrom(preferences, defaults, fallback = PARAGRAPH_SPACING),
                 publisherStyles = publisherStyles.copyFirstValidValueFrom(preferences, defaults, fallback = PUBLISHER_STYLES),
-                readingProgression = readingProgression.copyFirstValidValueFrom(preferences, defaults, fallback = READING_PROGRESSION),
-                textAlign = textAlign.copyFirstValidValueFrom(preferences, defaults, fallback = TEXT_ALIGN),
+                readingProgression = readingProgression,
+                textAlign = if (layout.stylesheets == Stylesheets.CjkVertical || layout.stylesheets == Stylesheets.CjkHorizontal) null
+                    else (textAlign ?: TEXT_ALIGN).copyFirstValidValueFrom(preferences, defaults, fallback = TEXT_ALIGN),
                 textColor = textColor.copyFirstValidValueFrom( preferences, defaults, fallback = TEXT_COLOR),
                 theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME),
                 typeScale = typeScale.copyFirstValidValueFrom( preferences, defaults, fallback = TYPE_SCALE),
-                wordSpacing = wordSpacing.copyFirstValidValueFrom( preferences, defaults, fallback = WORD_SPACING),
+                wordSpacing = if (layout.stylesheets != Stylesheets.Default) null
+                    else (wordSpacing ?: WORD_SPACING).copyFirstValidValueFrom( preferences, defaults, fallback = WORD_SPACING),
+                layout = layout
             )
+        }
     }
 }
 
 @ExperimentalReadiumApi
-fun ReadiumCss.update(
-    settings: EpubSettings.Reflowable,
-    metadata: Metadata,
-): ReadiumCss =
-    with(settings) {
+fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
+    if (settings !is EpubSettings.Reflowable) return this
+
+    return with(settings) {
         copy(
-            layout = Layout.from(
-                language = settings.language.value ?: metadata.language,
-                hasMultipleLanguages =
-                    if (settings.language.value != null) false
-                    else metadata.languages.size > 1,
-                readingProgression = settings.readingProgression.value.takeIf { it != ReadingProgression.AUTO }
-                    ?: metadata.readingProgression
-            ),
+            layout = settings.layout,
             userProperties = userProperties.copy(
                 view = when (overflow.value) {
                     Overflow.AUTO -> null
@@ -297,20 +313,22 @@ fun ReadiumCss.update(
 //                    ?.let { Length.Relative.Percent(it) },
                 advancedSettings = !publisherStyles.value,
                 typeScale = typeScale.value,
-                textAlign = when (textAlign.value) {
+                textAlign = when (textAlign?.value) {
                     TextAlign.JUSTIFY -> CssTextAlign.JUSTIFY
                     TextAlign.LEFT -> CssTextAlign.LEFT
                     TextAlign.RIGHT -> CssTextAlign.RIGHT
                     TextAlign.START, TextAlign.CENTER, TextAlign.END -> CssTextAlign.START
+                    else -> null
                 },
                 lineHeight = Either(lineHeight.value),
                 paraSpacing = Length.Relative.Rem(paragraphSpacing.value),
-                paraIndent = Length.Relative.Rem(paragraphIndent.value),
-                wordSpacing = Length.Relative.Rem(wordSpacing.value),
-                letterSpacing = Length.Relative.Rem(letterSpacing.value / 2),
-                bodyHyphens = if (hyphens.value) Hyphens.AUTO else Hyphens.NONE,
-                ligatures = if (ligatures.value) Ligatures.COMMON else Ligatures.NONE,
+                paraIndent = paragraphIndent?.run { Length.Relative.Rem(value) },
+                wordSpacing = wordSpacing?.run { Length.Relative.Rem(value) },
+                letterSpacing = letterSpacing?.run { Length.Relative.Rem(value / 2) },
+                bodyHyphens = hyphens?.run { if (value) Hyphens.AUTO else Hyphens.NONE },
+                ligatures = ligatures?.run { if (value) Ligatures.COMMON else Ligatures.NONE },
                 a11yNormalize = normalizedText.value,
             )
         )
     }
+}

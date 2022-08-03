@@ -37,40 +37,106 @@ class EpubSettingsReflowableTest {
         assertEquals(Font.ORIGINAL, settings.font.value)
         assertEquals(listOf(Font.ORIGINAL, Font.ACCESSIBLE_DFA, Font.ROBOTO), settings.font.values)
         assertEquals(1.0, settings.fontSize.value)
-        assertTrue(settings.hyphens.value)
-        assertNull(settings.imageFilter)
-        assertEquals(0.0, settings.letterSpacing.value)
-        assertTrue(settings.ligatures.value)
+        assertEquals(true, settings.hyphens?.value)
+        assertEquals(ImageFilter.NONE, settings.imageFilter?.value)
+        assertEquals(0.0, settings.letterSpacing?.value)
+        assertEquals(true,  settings.ligatures?.value)
         assertEquals(1.2, settings.lineHeight.value)
         assertFalse(settings.normalizedText.value)
         assertEquals(Overflow.PAGINATED, settings.overflow.value)
         assertEquals(1.0, settings.pageMargins.value)
-        assertEquals(0.0, settings.paragraphIndent.value)
+        assertEquals(0.0, settings.paragraphIndent?.value)
         assertEquals(0.0, settings.paragraphSpacing.value)
         assertTrue(settings.publisherStyles.value)
-        assertEquals(TextAlign.START, settings.textAlign.value)
+        assertEquals(TextAlign.START, settings.textAlign?.value)
         assertEquals(Color.AUTO, settings.textColor.value)
-        assertEquals(listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY), settings.textAlign.values)
+        assertEquals(listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY), settings.textAlign?.values)
         assertEquals(Theme.LIGHT, settings.theme.value)
         assertEquals(1.2, settings.typeScale.value)
-        assertEquals(0.0, settings.wordSpacing.value)
+        assertEquals(0.0, settings.wordSpacing?.value)
+    }
+
+    @Test
+    fun `Column count is only available when not in scrolled overflow and not with a CJK vertical layout`() {
+        val sut = Reflowable()
+
+        assertNotNull(sut.update(metadata(), Preferences { remove(Reflowable.OVERFLOW) }).columnCount)
+        assertNotNull(sut.update(metadata(), Preferences { set(Reflowable.OVERFLOW, Overflow.PAGINATED) }).columnCount)
+        assertNull(sut.update(metadata(), Preferences { set(Reflowable.OVERFLOW, Overflow.SCROLLED) }).columnCount)
+
+        assertNotNull(sut.update(metadata(), Preferences()).columnCount)
+        assertNotNull(sut.update(rtlMetadata, Preferences()).columnCount)
+        assertNotNull(sut.update(cjkHorizontalMetadata, Preferences()).columnCount)
+        assertNull(sut.update(cjkVerticalMetadata, Preferences()).columnCount)
+    }
+
+    @Test
+    fun `Hyphens is only available with the default LTR layout`() {
+        val sut = Reflowable()
+
+        assertNotNull(sut.update(metadata(), Preferences()).hyphens)
+        assertNull(sut.update(rtlMetadata, Preferences()).hyphens)
+        assertNull(sut.update(cjkHorizontalMetadata, Preferences()).hyphens)
+        assertNull(sut.update(cjkVerticalMetadata, Preferences()).hyphens)
     }
 
     @Test
     fun `Image filter is only available with the Dark theme`() {
         val sut = Reflowable()
-        assertNull(sut.update(Preferences { remove(Reflowable.THEME) }).imageFilter)
-        assertNull(sut.update(Preferences { set(Reflowable.THEME, Theme.LIGHT) }).imageFilter)
-        assertNull(sut.update(Preferences { set(Reflowable.THEME, Theme.SEPIA) }).imageFilter)
-        assertNotNull(sut.update(Preferences { set(Reflowable.THEME, Theme.DARK) }).imageFilter)
+        assertNull(sut.update(metadata(), Preferences { remove(Reflowable.THEME) }).imageFilter)
+        assertNull(sut.update(metadata(), Preferences { set(Reflowable.THEME, Theme.LIGHT) }).imageFilter)
+        assertNull(sut.update(metadata(), Preferences { set(Reflowable.THEME, Theme.SEPIA) }).imageFilter)
+        assertNotNull(sut.update(metadata(), Preferences { set(Reflowable.THEME, Theme.DARK) }).imageFilter)
     }
 
     @Test
-    fun `Column count is only available when not in scrolled overflow`() {
+    fun `Letter spacing is only available with the default LTR layout`() {
         val sut = Reflowable()
-        assertNotNull(sut.update(Preferences { remove(Reflowable.OVERFLOW) }).columnCount)
-        assertNotNull(sut.update(Preferences { set(Reflowable.OVERFLOW, Overflow.PAGINATED) }).columnCount)
-        assertNull(sut.update(Preferences { set(Reflowable.OVERFLOW, Overflow.SCROLLED) }).columnCount)
+
+        assertNotNull(sut.update(metadata(), Preferences()).letterSpacing)
+        assertNull(sut.update(rtlMetadata, Preferences()).letterSpacing)
+        assertNull(sut.update(cjkHorizontalMetadata, Preferences()).letterSpacing)
+        assertNull(sut.update(cjkVerticalMetadata, Preferences()).letterSpacing)
+    }
+
+    @Test
+    fun `Ligatures is only available with the RTL layout`() {
+        val sut = Reflowable()
+
+        assertNull(sut.update(metadata(), Preferences()).ligatures)
+        assertNotNull(sut.update(rtlMetadata, Preferences()).ligatures)
+        assertNull(sut.update(cjkHorizontalMetadata, Preferences()).ligatures)
+        assertNull(sut.update(cjkVerticalMetadata, Preferences()).ligatures)
+    }
+
+    @Test
+    fun `Paragraph indent is not available with CJK layouts`() {
+        val sut = Reflowable()
+
+        assertNotNull(sut.update(metadata(), Preferences()).paragraphIndent)
+        assertNotNull(sut.update(rtlMetadata, Preferences()).paragraphIndent)
+        assertNull(sut.update(cjkHorizontalMetadata, Preferences()).paragraphIndent)
+        assertNull(sut.update(cjkVerticalMetadata, Preferences()).paragraphIndent)
+    }
+
+    @Test
+    fun `Text align is not available with CJK layouts`() {
+        val sut = Reflowable()
+
+        assertNotNull(sut.update(metadata(), Preferences()).textAlign)
+        assertNotNull(sut.update(rtlMetadata, Preferences()).textAlign)
+        assertNull(sut.update(cjkHorizontalMetadata, Preferences()).textAlign)
+        assertNull(sut.update(cjkVerticalMetadata, Preferences()).textAlign)
+    }
+
+    @Test
+    fun `Word spacing is only available with the default LTR layout`() {
+        val sut = Reflowable()
+
+        assertNotNull(sut.update(metadata(), Preferences()).wordSpacing)
+        assertNull(sut.update(rtlMetadata, Preferences()).wordSpacing)
+        assertNull(sut.update(cjkHorizontalMetadata, Preferences()).wordSpacing)
+        assertNull(sut.update(cjkVerticalMetadata, Preferences()).wordSpacing)
     }
 
     @Test
@@ -82,21 +148,20 @@ class EpubSettingsReflowableTest {
             set(sut.columnCount!!, ColumnCount.ONE)
             set(sut.font, Font.ROBOTO)
             set(sut.fontSize, 0.5)
-            set(sut.hyphens, false)
-            set(sut.letterSpacing, 0.2)
-            set(sut.ligatures, true)
+            set(sut.hyphens!!, false)
+            set(sut.letterSpacing!!, 0.2)
             set(sut.lineHeight, 1.8)
             set(sut.normalizedText, true)
             set(sut.overflow, Overflow.PAGINATED)
             set(sut.pageMargins, 1.4)
-            set(sut.paragraphIndent, 0.2)
+            set(sut.paragraphIndent!!, 0.2)
             set(sut.paragraphSpacing, 0.4)
             set(sut.publisherStyles, false)
-            set(sut.textAlign, TextAlign.LEFT)
+            set(sut.textAlign!!, TextAlign.LEFT)
             set(sut.textColor, Color(5))
             set(sut.theme, Theme.DARK)
             set(sut.typeScale, 1.5)
-            set(sut.wordSpacing, 0.2)
+            set(sut.wordSpacing!!, 0.2)
         }
 
         val defaults = Preferences {
@@ -104,45 +169,44 @@ class EpubSettingsReflowableTest {
             set(sut.columnCount!!, ColumnCount.TWO)
             set(sut.font, Font.ACCESSIBLE_DFA)
             set(sut.fontSize, 0.8)
-            set(sut.hyphens, true)
-            set(sut.letterSpacing, 0.4)
-            set(sut.ligatures, false)
+            set(sut.hyphens!!, true)
+            set(sut.letterSpacing!!, 0.4)
             set(sut.lineHeight, 1.9)
             set(sut.normalizedText, false)
             set(sut.overflow, Overflow.SCROLLED)
             set(sut.pageMargins, 1.5)
-            set(sut.paragraphIndent, 0.3)
-            set(sut.paragraphIndent, 0.5)
+            set(sut.paragraphIndent!!, 0.3)
+            set(sut.paragraphIndent!!, 0.5)
             set(sut.publisherStyles, true)
-            set(sut.textAlign, TextAlign.RIGHT)
+            set(sut.textAlign!!, TextAlign.RIGHT)
             set(sut.textColor, Color(6))
             set(sut.theme, Theme.SEPIA)
             set(sut.typeScale, 1.6)
-            set(sut.wordSpacing, 0.4)
+            set(sut.wordSpacing!!, 0.4)
         }
 
-        sut = sut.update(preferences = preferences, defaults = defaults)
+        sut = sut.update(metadata(), preferences = preferences, defaults = defaults)
         assertEquals(Color(3), sut.backgroundColor.value)
         assertEquals(ColumnCount.ONE, sut.columnCount?.value)
         assertEquals(Font.ROBOTO, sut.font.value)
         assertEquals(0.5, sut.fontSize.value)
-        assertFalse(sut.hyphens.value)
+        assertEquals(false, sut.hyphens?.value)
         assertEquals(ImageFilter.NONE, sut.imageFilter?.value)
-        assertEquals(0.2, sut.letterSpacing.value)
-        assertTrue(sut.ligatures.value)
-        assertEquals(0.2, sut.letterSpacing.value)
+        assertEquals(0.2, sut.letterSpacing?.value)
+        assertNull(sut.ligatures)
+        assertEquals(0.2, sut.letterSpacing?.value)
         assertEquals(1.8, sut.lineHeight.value)
         assertTrue(sut.normalizedText.value)
         assertEquals(Overflow.PAGINATED, sut.overflow.value)
         assertEquals(1.4, sut.pageMargins.value)
-        assertEquals(0.2, sut.paragraphIndent.value)
+        assertEquals(0.2, sut.paragraphIndent?.value)
         assertEquals(0.4, sut.paragraphSpacing.value)
         assertFalse(sut.publisherStyles.value)
-        assertEquals(TextAlign.LEFT, sut.textAlign.value)
+        assertEquals(TextAlign.LEFT, sut.textAlign?.value)
         assertEquals(Color(5), sut.textColor.value)
         assertEquals(1.5, sut.typeScale.value)
         assertEquals(Theme.DARK, sut.theme.value)
-        assertEquals(0.2, sut.wordSpacing.value)
+        assertEquals(0.2, sut.wordSpacing?.value)
     }
 
     @Test
@@ -154,44 +218,43 @@ class EpubSettingsReflowableTest {
             set(sut.columnCount!!, ColumnCount.ONE)
             set(sut.font, Font.ROBOTO)
             set(sut.fontSize, 0.5)
-            set(sut.hyphens, false)
-            set(sut.letterSpacing, 0.2)
-            set(sut.ligatures, true)
+            set(sut.hyphens!!, false)
+            set(sut.letterSpacing!!, 0.2)
             set(sut.lineHeight, 1.8)
             set(sut.normalizedText, true)
             set(sut.overflow, Overflow.PAGINATED)
             set(sut.pageMargins, 1.4)
-            set(sut.paragraphIndent, 0.2)
+            set(sut.paragraphIndent!!, 0.2)
             set(sut.paragraphSpacing, 0.4)
             set(sut.publisherStyles, false)
-            set(sut.textAlign, TextAlign.LEFT)
+            set(sut.textAlign!!, TextAlign.LEFT)
             set(sut.textColor, Color(6))
             set(sut.theme, Theme.DARK)
             set(sut.typeScale, 1.4)
-            set(sut.wordSpacing, 0.2)
+            set(sut.wordSpacing!!, 0.2)
         }
 
-        sut = sut.update(preferences = Preferences(), defaults = defaults)
+        sut = sut.update(metadata(), preferences = Preferences(), defaults = defaults)
         assertEquals(Color(3), sut.backgroundColor.value)
         assertEquals(ColumnCount.ONE, sut.columnCount?.value)
         assertEquals(Font.ROBOTO, sut.font.value)
         assertEquals(0.5, sut.fontSize.value)
-        assertFalse(sut.hyphens.value)
+        assertEquals(false, sut.hyphens?.value)
         assertNull(sut.imageFilter)
-        assertEquals(0.2, sut.letterSpacing.value)
+        assertEquals(0.2, sut.letterSpacing?.value)
         assertEquals(1.8, sut.lineHeight.value)
-        assertTrue(sut.ligatures.value)
+        assertNull(sut.ligatures)
         assertTrue(sut.normalizedText.value)
         assertEquals(Overflow.PAGINATED, sut.overflow.value)
         assertEquals(1.4, sut.pageMargins.value)
-        assertEquals(0.2, sut.paragraphIndent.value)
+        assertEquals(0.2, sut.paragraphIndent?.value)
         assertEquals(0.4, sut.paragraphSpacing.value)
         assertFalse(sut.publisherStyles.value)
-        assertEquals(TextAlign.LEFT, sut.textAlign.value)
+        assertEquals(TextAlign.LEFT, sut.textAlign?.value)
         assertEquals(Color(6), sut.textColor.value)
         assertEquals(Theme.DARK, sut.theme.value)
         assertEquals(1.4, sut.typeScale.value)
-        assertEquals(0.2, sut.wordSpacing.value)
+        assertEquals(0.2, sut.wordSpacing?.value)
     }
 
     @Test
@@ -219,11 +282,11 @@ class EpubSettingsReflowableTest {
     fun `Unknown fonts revert to the default Original one`() {
         var sut = Reflowable(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
 
-        sut = sut.update(Preferences {
+        sut = sut.update(metadata(), Preferences {
             set(sut.font, Font.ACCESSIBLE_DFA)
         })
         assertEquals(Font.ACCESSIBLE_DFA, sut.font.value)
-        sut = sut.update(Preferences {
+        sut = sut.update(metadata(), Preferences {
             set(sut.font, Font.PT_SERIF)
         })
         assertEquals(Font.ORIGINAL, sut.font.value)
@@ -233,12 +296,12 @@ class EpubSettingsReflowableTest {
     fun `Null overflow reverts to the default one`() {
         var sut = Reflowable()
 
-        sut = sut.update(Preferences {
+        sut = sut.update(metadata(), Preferences {
             set(sut.overflow, Overflow.SCROLLED)
         })
         assertEquals(Overflow.SCROLLED, sut.overflow.value)
 
-        sut = sut.update(Preferences {})
+        sut = sut.update(metadata(), Preferences {})
         assertEquals(Overflow.PAGINATED, sut.overflow.value)
     }
 
@@ -246,12 +309,12 @@ class EpubSettingsReflowableTest {
     fun `Null theme reverts to the default one`() {
         var sut = Reflowable()
 
-        sut = sut.update(Preferences {
+        sut = sut.update(metadata(), Preferences {
             set(sut.theme, Theme.SEPIA)
         })
         assertEquals(Theme.SEPIA, sut.theme.value)
 
-        sut = sut.update(Preferences {})
+        sut = sut.update(metadata(), Preferences {})
         assertEquals(Theme.LIGHT, sut.theme.value)
     }
 
@@ -259,14 +322,14 @@ class EpubSettingsReflowableTest {
     fun `Unsupported text align revert to the default one`() {
         var sut = Reflowable()
 
-        sut = sut.update(Preferences {
-            set(sut.textAlign, TextAlign.JUSTIFY)
+        sut = sut.update(metadata(), Preferences {
+            set(sut.textAlign!!, TextAlign.JUSTIFY)
         })
-        assertEquals(TextAlign.JUSTIFY, sut.textAlign.value)
-        sut = sut.update(Preferences {
-            set(sut.textAlign, TextAlign.CENTER)
+        assertEquals(TextAlign.JUSTIFY, sut.textAlign?.value)
+        sut = sut.update(metadata(), Preferences {
+            set(sut.textAlign!!, TextAlign.CENTER)
         })
-        assertEquals(TextAlign.START, sut.textAlign.value)
+        assertEquals(TextAlign.START, sut.textAlign?.value)
     }
 
     @Test
@@ -315,11 +378,11 @@ class EpubSettingsReflowableTest {
         val sut = Reflowable()
         assertFalse(
             Preferences { set(sut.publisherStyles, true) }
-                .isActive(sut.wordSpacing)
+                .isActive(sut.wordSpacing!!)
         )
         assertTrue(
             Preferences { set(sut.publisherStyles, false) }
-                .isActive(sut.wordSpacing)
+                .isActive(sut.wordSpacing!!)
         )
     }
 
@@ -334,7 +397,7 @@ class EpubSettingsReflowableTest {
             Preferences(mapOf(
                 "wordSpacing" to JsonPrimitive(0.4)
             )).copy {
-                activate(sut.wordSpacing)
+                activate(sut.wordSpacing!!)
             }
         )
         assertEquals(
@@ -346,7 +409,7 @@ class EpubSettingsReflowableTest {
                 "wordSpacing" to JsonPrimitive(0.4),
                 "publisherStyles" to JsonPrimitive(true)
             )).copy {
-                activate(sut.wordSpacing)
+                activate(sut.wordSpacing!!)
             }
         )
     }
@@ -356,11 +419,11 @@ class EpubSettingsReflowableTest {
         val sut = Reflowable()
         assertFalse(
             Preferences { set(sut.publisherStyles, true) }
-                .isActive(sut.letterSpacing)
+                .isActive(sut.letterSpacing!!)
         )
         assertTrue(
             Preferences { set(sut.publisherStyles, false) }
-                .isActive(sut.letterSpacing)
+                .isActive(sut.letterSpacing!!)
         )
     }
 
@@ -375,7 +438,7 @@ class EpubSettingsReflowableTest {
             Preferences(mapOf(
                 "letterSpacing" to JsonPrimitive(0.4)
             )).copy {
-                activate(sut.letterSpacing)
+                activate(sut.letterSpacing!!)
             }
         )
         assertEquals(
@@ -387,7 +450,7 @@ class EpubSettingsReflowableTest {
                 "letterSpacing" to JsonPrimitive(0.4),
                 "publisherStyles" to JsonPrimitive(true)
             )).copy {
-                activate(sut.letterSpacing)
+                activate(sut.letterSpacing!!)
             }
         )
     }
@@ -397,11 +460,11 @@ class EpubSettingsReflowableTest {
         val sut = Reflowable()
         assertFalse(
             Preferences { set(sut.publisherStyles, true) }
-                .isActive(sut.textAlign)
+                .isActive(sut.textAlign!!)
         )
         assertTrue(
             Preferences { set(sut.publisherStyles, false) }
-                .isActive(sut.textAlign)
+                .isActive(sut.textAlign!!)
         )
     }
 
@@ -416,7 +479,7 @@ class EpubSettingsReflowableTest {
             Preferences(mapOf(
                 "textAlign" to JsonPrimitive("left")
             )).copy {
-                activate(sut.textAlign)
+                activate(sut.textAlign!!)
             }
         )
         assertEquals(
@@ -428,7 +491,7 @@ class EpubSettingsReflowableTest {
                 "textAlign" to JsonPrimitive("left"),
                 "publisherStyles" to JsonPrimitive(true)
             )).copy {
-                activate(sut.textAlign)
+                activate(sut.textAlign!!)
             }
         )
     }
@@ -479,11 +542,11 @@ class EpubSettingsReflowableTest {
         val sut = Reflowable()
         assertFalse(
             Preferences { set(sut.publisherStyles, true) }
-                .isActive(sut.hyphens)
+                .isActive(sut.hyphens!!)
         )
         assertTrue(
             Preferences { set(sut.publisherStyles, false) }
-                .isActive(sut.hyphens)
+                .isActive(sut.hyphens!!)
         )
     }
 
@@ -498,7 +561,7 @@ class EpubSettingsReflowableTest {
             Preferences(mapOf(
                 "hyphens" to JsonPrimitive(false)
             )).copy {
-                activate(sut.hyphens)
+                activate(sut.hyphens!!)
             }
         )
         assertEquals(
@@ -510,7 +573,7 @@ class EpubSettingsReflowableTest {
                 "hyphens" to JsonPrimitive(false),
                 "publisherStyles" to JsonPrimitive(true)
             )).copy {
-                activate(sut.hyphens)
+                activate(sut.hyphens!!)
             }
         )
     }
@@ -520,11 +583,11 @@ class EpubSettingsReflowableTest {
         val sut = Reflowable()
         assertFalse(
             Preferences { set(sut.publisherStyles, true) }
-                .isActive(sut.ligatures)
+                .isActive(sut.ligatures!!)
         )
         assertTrue(
             Preferences { set(sut.publisherStyles, false) }
-                .isActive(sut.ligatures)
+                .isActive(sut.ligatures!!)
         )
     }
 
@@ -539,7 +602,7 @@ class EpubSettingsReflowableTest {
             Preferences(mapOf(
                 "ligatures" to JsonPrimitive(false)
             )).copy {
-                activate(sut.ligatures)
+                activate(sut.ligatures!!)
             }
         )
         assertEquals(
@@ -551,7 +614,7 @@ class EpubSettingsReflowableTest {
                 "ligatures" to JsonPrimitive(false),
                 "publisherStyles" to JsonPrimitive(true)
             )).copy {
-                activate(sut.ligatures)
+                activate(sut.ligatures!!)
             }
         )
     }
@@ -561,11 +624,11 @@ class EpubSettingsReflowableTest {
         val sut = Reflowable()
         assertFalse(
             Preferences { set(sut.publisherStyles, true) }
-                .isActive(sut.paragraphIndent)
+                .isActive(sut.paragraphIndent!!)
         )
         assertTrue(
             Preferences { set(sut.publisherStyles, false) }
-                .isActive(sut.paragraphIndent)
+                .isActive(sut.paragraphIndent!!)
         )
     }
 
@@ -580,7 +643,7 @@ class EpubSettingsReflowableTest {
             Preferences(mapOf(
                 "paragraphIndent" to JsonPrimitive(1.2)
             )).copy {
-                activate(sut.paragraphIndent)
+                activate(sut.paragraphIndent!!)
             }
         )
         assertEquals(
@@ -592,7 +655,7 @@ class EpubSettingsReflowableTest {
                 "paragraphIndent" to JsonPrimitive(1.2),
                 "publisherStyles" to JsonPrimitive(true)
             )).copy {
-                activate(sut.paragraphIndent)
+                activate(sut.paragraphIndent!!)
             }
         )
     }
@@ -657,11 +720,11 @@ class EpubSettingsReflowableTest {
                     wordSpacing = Length.Relative.Rem(0.0),
                     letterSpacing = Length.Relative.Rem(0.0),
                     bodyHyphens = Hyphens.AUTO,
-                    ligatures = Ligatures.COMMON,
+                    ligatures = null,
                     a11yNormalize = false,
                 )
             ),
-            ReadiumCss().update(settings(), metadata())
+            ReadiumCss().update(settings())
         )
 
         assertEquals(
@@ -683,7 +746,7 @@ class EpubSettingsReflowableTest {
                     wordSpacing = Length.Relative.Rem(0.4),
                     letterSpacing = Length.Relative.Rem(0.3),
                     bodyHyphens = Hyphens.NONE,
-                    ligatures = Ligatures.NONE,
+                    ligatures = null,
                     a11yNormalize = true,
                 )
             ),
@@ -691,23 +754,21 @@ class EpubSettingsReflowableTest {
                 settings {
                     it[backgroundColor] = Color(4)
                     it[font] = Font.ROBOTO
-                    it[hyphens] = false
-                    it[letterSpacing] = 0.6
-                    it[ligatures] = false
+                    it[hyphens!!] = false
+                    it[letterSpacing!!] = 0.6
                     it[lineHeight] = 1.8
                     it[normalizedText] = true
                     it[overflow] = Overflow.SCROLLED
                     it[pageMargins] = 1.9
-                    it[paragraphIndent] = 0.2
+                    it[paragraphIndent!!] = 0.2
                     it[paragraphSpacing] = 0.4
                     it[publisherStyles] = false
-                    it[textAlign] = TextAlign.LEFT
+                    it[textAlign!!] = TextAlign.LEFT
                     it[theme] = Theme.LIGHT
                     it[textColor] = Color(3)
                     it[typeScale] = 1.4
-                    it[wordSpacing] = 0.4
-                },
-                metadata()
+                    it[wordSpacing!!] = 0.4
+                }
             )
         )
 
@@ -730,20 +791,19 @@ class EpubSettingsReflowableTest {
                     wordSpacing = Length.Relative.Rem(1.0),
                     letterSpacing = Length.Relative.Rem(0.5),
                     bodyHyphens = Hyphens.AUTO,
-                    ligatures = Ligatures.COMMON,
+                    ligatures = null,
                     a11yNormalize = false,
                 )
             ),
             ReadiumCss().update(
                 settings {
                     it[columnCount!!] = ColumnCount.ONE
-                    it[letterSpacing] = 1.0
+                    it[letterSpacing!!] = 1.0
                     it[publisherStyles] = false
-                    it[textAlign] = TextAlign.RIGHT
+                    it[textAlign!!] = TextAlign.RIGHT
                     it[theme] = Theme.DARK
-                    it[wordSpacing] = 1.0
-                },
-                metadata()
+                    it[wordSpacing!!] = 1.0
+                }
             )
         )
 
@@ -764,17 +824,16 @@ class EpubSettingsReflowableTest {
                     wordSpacing = Length.Relative.Rem(0.0),
                     letterSpacing = Length.Relative.Rem(0.0),
                     bodyHyphens = Hyphens.AUTO,
-                    ligatures = Ligatures.COMMON,
+                    ligatures = null,
                     a11yNormalize = false,
                 )
             ),
             ReadiumCss().update(
                 settings {
                     it[columnCount!!] = ColumnCount.TWO
-                    it[textAlign] = TextAlign.JUSTIFY
+                    it[textAlign!!] = TextAlign.JUSTIFY
                     it[theme] = Theme.SEPIA
-                },
-                metadata()
+                }
             )
         )
     }
@@ -788,8 +847,7 @@ class EpubSettingsReflowableTest {
         sut = sut.update(
             settings {
                 it[theme] = Theme.DARK
-            },
-            metadata()
+            }
         )
         assertEquals(false, sut.userProperties.darkenImages)
         assertEquals(false, sut.userProperties.invertImages)
@@ -798,8 +856,7 @@ class EpubSettingsReflowableTest {
             settings {
                 it[theme] = Theme.DARK
                 it[Reflowable.IMAGE_FILTER] = ImageFilter.NONE
-            },
-            metadata()
+            }
         )
         assertEquals(false, sut.userProperties.darkenImages)
         assertEquals(false, sut.userProperties.invertImages)
@@ -808,8 +865,7 @@ class EpubSettingsReflowableTest {
             settings {
                 it[theme] = Theme.DARK
                 it[Reflowable.IMAGE_FILTER] = ImageFilter.DARKEN
-            },
-            metadata()
+            }
         )
         assertEquals(true, sut.userProperties.darkenImages)
         assertEquals(false, sut.userProperties.invertImages)
@@ -818,8 +874,7 @@ class EpubSettingsReflowableTest {
             settings {
                 it[theme] = Theme.DARK
                 it[Reflowable.IMAGE_FILTER] = ImageFilter.INVERT
-            },
-            metadata()
+            }
         )
         assertEquals(false, sut.userProperties.darkenImages)
         assertEquals(true, sut.userProperties.invertImages)
@@ -827,75 +882,75 @@ class EpubSettingsReflowableTest {
 
     @Test
     fun `Changing the font or normalizing the text activate the fontOverride flag`() {
-        assertEquals(false, ReadiumCss().update(settings(), metadata()).userProperties.fontOverride)
+        assertEquals(false, ReadiumCss().update(settings()).userProperties.fontOverride)
 
         assertEquals(true, ReadiumCss().update(
             settings {
                 it[font] = Font.ROBOTO
-            },
-            metadata()
+            }
         ).userProperties.fontOverride)
 
         assertEquals(true, ReadiumCss().update(
             settings {
                 it[normalizedText] = true
-            },
-            metadata()
+            }
         ).userProperties.fontOverride)
     }
 
     @Test
     fun `Changing the language or reading progression updates the layout`() {
-        val metadata = metadata(languages = listOf("ar"), ReadingProgression.RTL)
+        val metadata = metadata(language = "ar", ReadingProgression.RTL)
 
         assertEquals(
             Layout(language = Language("ar"), stylesheets = Layout.Stylesheets.Rtl, readingProgression = ReadingProgression.RTL),
-            ReadiumCss().update(settings(), metadata).layout
+            ReadiumCss().update(settings(metadata)).layout
         )
 
         assertEquals(
             Layout(language = Language("fr"), stylesheets = Layout.Stylesheets.Rtl, readingProgression = ReadingProgression.RTL),
             ReadiumCss().update(
-                settings {
+                settings(metadata) {
                     it[language] = Language("fr")
-                },
-                metadata
+                }
             ).layout
         )
 
         assertEquals(
             Layout(language = Language("fr"), stylesheets = Layout.Stylesheets.Default, readingProgression = ReadingProgression.LTR),
             ReadiumCss().update(
-                settings {
+                settings(metadata) {
                     it[language] = Language("fr")
                     it[readingProgression] = ReadingProgression.LTR
-                },
-                metadata
+                }
             ).layout
         )
 
         assertEquals(
             Layout(language = Language("ar"), stylesheets = Layout.Stylesheets.Default, readingProgression = ReadingProgression.LTR),
             ReadiumCss().update(
-                settings {
+                settings(metadata) {
                     it[readingProgression] = ReadingProgression.LTR
-                },
-                metadata
+                }
             ).layout
         )
     }
 
-    private fun settings(init: Reflowable.(MutablePreferences) -> Unit = {}): Reflowable {
+    private fun settings(metadata: Metadata = metadata(), init: Reflowable.(MutablePreferences) -> Unit = {}): Reflowable {
         val settings = Reflowable(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
-        return settings.update(Preferences {
-            init(settings, this)
-        })
+        return settings.update(
+            metadata = metadata,
+            preferences = Preferences { init(settings, this) }
+        )
     }
 
-    private fun metadata(languages: List<String> = emptyList(), readingProgression: ReadingProgression = ReadingProgression.AUTO): Metadata =
+    private fun metadata(language: String? = null, readingProgression: ReadingProgression = ReadingProgression.AUTO): Metadata =
         Metadata(
             localizedTitle = LocalizedString(""),
-            languages = languages,
+            languages = listOfNotNull(language),
             readingProgression = readingProgression
         )
+
+    private val rtlMetadata = metadata(language = "ar", readingProgression = ReadingProgression.RTL)
+    private val cjkHorizontalMetadata = metadata(language = "ja", readingProgression = ReadingProgression.LTR)
+    private val cjkVerticalMetadata = metadata(language = "ja", readingProgression = ReadingProgression.RTL)
 }

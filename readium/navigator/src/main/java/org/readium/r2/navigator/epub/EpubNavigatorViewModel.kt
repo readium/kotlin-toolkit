@@ -55,6 +55,7 @@ internal class EpubNavigatorViewModel(
     private val _settings = MutableStateFlow<EpubSettings>(
         EpubSettings.Reflowable(fonts = config.fonts)
             .update(
+                metadata = publication.metadata,
                 preferences = config.preferences,
                 defaults = config.defaultPreferences
             )
@@ -120,15 +121,14 @@ internal class EpubNavigatorViewModel(
 
     fun applyPreferences(preferences: Preferences) {
         val settings = _settings.updateAndGet {
-            it.update(preferences, defaults = config.defaultPreferences)
+            it.update(
+                metadata = publication.metadata,
+                preferences = preferences,
+                defaults = config.defaultPreferences
+            )
         }
 
         css.update { it.update(settings) }
-    }
-
-    private fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
-        if (settings !is EpubSettings.Reflowable) return this
-        return update(settings = settings, metadata = publication.metadata)
     }
 
     // Selection

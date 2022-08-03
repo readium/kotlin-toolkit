@@ -572,7 +572,7 @@ private fun Configurable.Settings.presets(): List<Preset> =
     when (val settings = this) {
         is EpubSettings.Reflowable -> listOf(
             Preset("Increase legibility") {
-                set(settings.wordSpacing, 0.6)
+                settings.wordSpacing?.let { set(it, 0.6) }
                 set(settings.fontSize, 1.4)
             },
             Preset("Document") {

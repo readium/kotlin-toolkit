@@ -15,9 +15,9 @@ import org.readium.r2.shared.util.Language
  * See https://github.com/readium/readium-css/tree/master/css/dist
  */
 data class Layout(
-    val language: Language?,
-    val stylesheets: Stylesheets,
-    val readingProgression: ReadingProgression,
+    val language: Language? = null,
+    val stylesheets: Stylesheets = Stylesheets.Default,
+    val readingProgression: ReadingProgression = ReadingProgression.LTR,
 ) {
     companion object {
         fun from(language: Language?, hasMultipleLanguages: Boolean, readingProgression: ReadingProgression): Layout {
