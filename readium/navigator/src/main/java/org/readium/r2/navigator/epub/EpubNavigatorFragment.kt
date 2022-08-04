@@ -33,6 +33,10 @@ import org.json.JSONObject
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel.RunScriptCommand
+import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
+import org.readium.r2.navigator.epub.css.FontFamilySource.GoogleFonts
+import org.readium.r2.navigator.epub.css.FontFamilySource.ReadiumCss
+import org.readium.r2.navigator.epub.css.from
 import org.readium.r2.navigator.extensions.optRectF
 import org.readium.r2.navigator.extensions.positionsByResource
 import org.readium.r2.navigator.extensions.withBaseUrl
@@ -59,7 +63,6 @@ import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.launchWebBrowser
 import org.readium.r2.shared.util.mediatype.MediaType
 import kotlin.math.ceil
-import kotlin.math.roundToInt
 import kotlin.reflect.KClass
 
 /**
@@ -99,9 +102,9 @@ class EpubNavigatorFragment private constructor(
         val defaultPreferences: Preferences = Preferences(),
 
         /**
-         * Available font families for reflowable resources.
+         * Font families available in reflowable resources.
          */
-        val fonts: List<Font> = DEFAULT_FONTS,
+        val fontFamilies: List<FontFamilyDeclaration> = DEFAULT_FONT_FAMILIES,
 
         /**
          * Supported HTML decoration templates.
@@ -133,9 +136,13 @@ class EpubNavigatorFragment private constructor(
         }
 
         companion object {
-            val DEFAULT_FONTS: List<Font> = listOf(
-                Font.PT_SERIF, Font.ROBOTO, Font.SOURCE_SANS_PRO, Font.VOLLKORN,
-                Font.OPEN_DYSLEXIC, Font.ACCESSIBLE_DFA, Font.IA_WRITER_DUOSPACE,
+            val DEFAULT_FONT_FAMILIES: List<FontFamilyDeclaration> = listOf(
+                FontFamily.PT_SERIF.from(GoogleFonts),
+                FontFamily.ROBOTO.from(GoogleFonts),
+                FontFamily.SOURCE_SANS_PRO.from(GoogleFonts),
+                FontFamily.VOLLKORN.from(GoogleFonts),
+                FontFamily.ACCESSIBLE_DFA.from(ReadiumCss),
+                FontFamily.IA_WRITER_DUOSPACE.from(ReadiumCss),
             )
         }
     }

@@ -14,16 +14,15 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import org.json.JSONObject
 import org.readium.r2.navigator.*
-import org.readium.r2.navigator.epub.css.Layout
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.navigator.epub.extensions.javascriptForGroup
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
+import org.readium.r2.navigator.settings.FontFamily
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
@@ -53,7 +52,7 @@ internal class EpubNavigatorViewModel(
     val events: Flow<Event> get() = _events.receiveAsFlow()
 
     private val _settings = MutableStateFlow<EpubSettings>(
-        EpubSettings.Reflowable(fonts = config.fonts)
+        EpubSettings.Reflowable(fontFamilies = config.fontFamilies.map { it.fontFamily })
             .update(
                 metadata = publication.metadata,
                 preferences = config.preferences,
@@ -63,7 +62,9 @@ internal class EpubNavigatorViewModel(
     val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
 
     private val css = MutableStateFlow(
-        ReadiumCss().update(settings.value)
+        ReadiumCss(
+            fontFamilies = config.fontFamilies
+        ).update(settings.value)
     )
 
     init {

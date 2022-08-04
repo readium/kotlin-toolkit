@@ -53,28 +53,63 @@ enum class ImageFilter {
     @SerialName("invert") INVERT;
 }
 
+/**
+ * Typeface for a publication's text.
+ *
+ * When not available, the Navigator should use [alternate] as a fallback.
+ */
 @ExperimentalReadiumApi
-@JvmInline
-value class Font(val name: String? = null) {
+data class FontFamily(val name: String, val alternate: FontFamily? = null) {
     companion object {
-        val ORIGINAL = Font(null)
-        val PT_SERIF = Font("PT Serif")
-        val ROBOTO = Font("Roboto")
-        val SOURCE_SANS_PRO = Font("Source Sans Pro")
-        val VOLLKORN = Font("Vollkorn")
-        val OPEN_DYSLEXIC = Font("OpenDyslexic")
-        val ACCESSIBLE_DFA = Font("AccessibleDfA")
-        val IA_WRITER_DUOSPACE = Font("IA Writer Duospace")
+        // Generic font families
+        // See https://www.w3.org/TR/css-fonts-4/#generic-font-families
+        val SERIF = FontFamily("serif")
+        val SANS_SERIF = FontFamily("sans-serif")
+        val CURSIVE = FontFamily("cursive")
+        val FANTASY = FontFamily("fantasy")
+        val MONOSPACE = FontFamily("monospace")
+
+        // Vetted font families
+        // See https://readium.org/readium-css/docs/CSS10-libre_fonts
+
+        // Serif
+        val CHARIS_SIL = FontFamily("Charis SIL", alternate = SERIF)
+        val FAUSTINA = FontFamily("Faustina", alternate = SERIF)
+        val IBM_PLEX_SERIF = FontFamily("IBM Plex Serif", alternate = SERIF)
+        val LITERATA = FontFamily("Literata", alternate = SERIF)
+        val MERRIWEATHER = FontFamily("Merriweather", alternate = SERIF)
+        val PT_SERIF = FontFamily("PT Serif", alternate = SERIF)
+        val VOLLKORN = FontFamily("Vollkorn", alternate = SERIF)
+
+        // Sans-serif
+        val CLEAR_SANS = FontFamily("Clear Sans", alternate = SANS_SERIF)
+        val FIRA_SANS = FontFamily("Fira Sans", alternate = SANS_SERIF)
+        val LIBRE_FRANKLIN = FontFamily("Libre Franklin", alternate = SANS_SERIF)
+        val MERRIWEATHER_SANS = FontFamily("Merriweather Sans", alternate = SANS_SERIF)
+        val PT_SANS = FontFamily("PT Sans", alternate = SANS_SERIF)
+        val SOURCE_SANS_PRO = FontFamily("Source Sans Pro", alternate = SANS_SERIF)
+
+        // Accessibility
+        val ACCESSIBLE_DFA = FontFamily("AccessibleDfA")
+        val IA_WRITER_DUOSPACE = FontFamily("IA Writer Duospace", alternate = MONOSPACE)
+        val OPEN_DYSLEXIC = FontFamily("OpenDyslexic", alternate = ACCESSIBLE_DFA)
+
+        // System
+        val ROBOTO = FontFamily("Roboto", alternate = SANS_SERIF)
     }
 
-    class Coder(private val fonts: List<Font>) : SettingCoder<Font> {
-        override fun decode(json: JsonElement): Font {
-            val name = (json as? JsonPrimitive)?.contentOrNull ?: return ORIGINAL
-            return fonts.firstOrNull { it.name == name } ?: return ORIGINAL
-        }
+    class Coder(private val families: List<FontFamily> = emptyList()) : SettingCoder<FontFamily?> {
+        override fun decode(json: JsonElement): FontFamily? =
+            (json as? JsonPrimitive)
+                ?.contentOrNull
+                ?.let { name ->
+                    families.firstOrNull { it.name == name }
+                }
 
-        override fun encode(value: Font): JsonElement =
-            JsonPrimitive(value.name)
+        override fun encode(value: FontFamily?): JsonElement =
+            value
+                ?.let { JsonPrimitive(it.name) }
+                ?: JsonNull
     }
 }
 

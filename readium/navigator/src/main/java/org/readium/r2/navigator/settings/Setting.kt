@@ -40,7 +40,7 @@ data class Setting<V, E>(
         const val BACKGROUND_COLOR = "backgroundColor"
         const val COLUMN_COUNT = "columnCount"
         const val FIT = "fit"
-        const val FONT = "font"
+        const val FONT_FAMILY = "fontFamily"
         const val FONT_SIZE = "fontSize"
         const val HYPHENS = "hyphens"
         const val IMAGE_FILTER = "imageFilter"

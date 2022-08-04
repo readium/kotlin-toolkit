@@ -29,7 +29,7 @@ sealed class EpubSettings : Configurable.Settings {
     data class Reflowable(
         val backgroundColor: ColorSetting = BACKGROUND_COLOR,
         val columnCount: EnumSetting<ColumnCount>? = COLUMN_COUNT,
-        val font: EnumSetting<Font> = FONT,
+        val fontFamily: EnumSetting<FontFamily?> = FONT_FAMILY,
         val fontSize: PercentSetting = FONT_SIZE,
         val hyphens: ToggleSetting? = HYPHENS,
         val imageFilter: EnumSetting<ImageFilter>? = IMAGE_FILTER,
@@ -54,15 +54,15 @@ sealed class EpubSettings : Configurable.Settings {
     ) : EpubSettings() {
 
         constructor(
-            fonts: List<Font> = emptyList(),
+            fontFamilies: List<FontFamily> = emptyList(),
             namedColors: Map<String, Int> = emptyMap()
         ) : this(
             backgroundColor = BACKGROUND_COLOR.copy(
                 coder = Color.Coder(namedColors)
             ),
-            font = FONT.copy(
-                coder = Font.Coder(listOf(Font.ORIGINAL) + fonts),
-                values = listOf(Font.ORIGINAL) + fonts
+            fontFamily = FONT_FAMILY.copy(
+                coder = FontFamily.Coder(fontFamilies),
+                values = listOf(null) + fontFamilies
             ),
             textColor = TEXT_COLOR.copy(
                 coder = Color.Coder(namedColors)
@@ -82,12 +82,12 @@ sealed class EpubSettings : Configurable.Settings {
                 values = listOf(ColumnCount.AUTO, ColumnCount.ONE, ColumnCount.TWO),
             )
 
-            val FONT: EnumSetting<Font> = EnumSetting(
-                key = Setting.FONT,
-                coder = Font.Coder(listOf(Font.ORIGINAL)),
-                value = Font.ORIGINAL,
-                values = listOf(Font.ORIGINAL),
-                label = { it.name }
+            val FONT_FAMILY: EnumSetting<FontFamily?> = EnumSetting(
+                key = Setting.FONT_FAMILY,
+                coder = FontFamily.Coder(),
+                value = null,
+                values = listOf(null),
+                label = { it?.name }
             )
 
             val FONT_SIZE: PercentSetting = PercentSetting(
@@ -240,7 +240,7 @@ sealed class EpubSettings : Configurable.Settings {
                 backgroundColor = backgroundColor.copyFirstValidValueFrom(preferences, defaults, fallback = BACKGROUND_COLOR),
                 columnCount = if (preferences[overflow] == Overflow.SCROLLED || layout.stylesheets == Stylesheets.CjkVertical) null
                     else (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(preferences, defaults, fallback = COLUMN_COUNT),
-                font = font.copyFirstValidValueFrom(preferences, defaults, fallback = FONT),
+                fontFamily = fontFamily.copyFirstValidValueFrom(preferences, defaults, fallback = FONT_FAMILY),
                 fontSize = fontSize.copyFirstValidValueFrom(preferences, defaults, fallback = FONT_SIZE),
                 hyphens = if (layout.stylesheets != Stylesheets.Default) null
                     else (hyphens ?: HYPHENS).copyFirstValidValueFrom(preferences, defaults, fallback = HYPHENS),
@@ -305,8 +305,8 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
                 backgroundColor = backgroundColor.value
                     .takeIf { it != Color.AUTO }
                     ?.let { CssColor.int(it.int) },
-                fontOverride = (font.value != Font.ORIGINAL || normalizedText.value),
-                fontFamily = font.value.name?.let { listOf(it) },
+                fontOverride = (fontFamily.value != null || normalizedText.value),
+                fontFamily = fontFamily.value?.run { listOf(name) },
                 // Font size is handled natively with WebSettings.textZoom.
                 // See https://github.com/readium/mobile/issues/1#issuecomment-652431984
 //                fontSize = fontSize.value

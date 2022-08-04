@@ -12,7 +12,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -96,7 +98,7 @@ fun UserSettings(
                     edit = edit,
                     backgroundColor = settings.backgroundColor,
                     columnCount = settings.columnCount,
-                    font = settings.font,
+                    fontFamily = settings.fontFamily,
                     fontSize = settings.fontSize,
                     hyphens = settings.hyphens,
                     imageFilter = settings.imageFilter,
@@ -131,7 +133,7 @@ private fun ReflowableUserSettings(
     edit: EditPreferences,
     backgroundColor: ColorSetting? = null,
     columnCount: EnumSetting<ColumnCount>? = null,
-    font: EnumSetting<Font>? = null,
+    fontFamily: EnumSetting<FontFamily?>? = null,
     fontSize: PercentSetting? = null,
     hyphens: ToggleSetting? = null,
     imageFilter: EnumSetting<ImageFilter>? = null,
@@ -229,15 +231,10 @@ private fun ReflowableUserSettings(
         Divider()
     }
 
-    if (font != null || fontSize != null || normalizedText != null) {
-        if (font != null) {
-            MenuItem("Font", font, preferences, edit) { value ->
-                checkNotNull(
-                    when (value) {
-                        Font.ORIGINAL -> "Original"
-                        else -> font.label(value)
-                    }
-                )
+    if (fontFamily != null || fontSize != null || normalizedText != null) {
+        if (fontFamily != null) {
+            MenuItem("Typeface", fontFamily, preferences, edit) { value ->
+                value?.name ?: "Original"
             }
         }
 

@@ -31,11 +31,11 @@ class EpubSettingsReflowableTest {
 
     @Test
     fun `Default values`() {
-        val settings = Reflowable(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
+        val settings = Reflowable(fontFamilies = listOf(FontFamily.ACCESSIBLE_DFA, FontFamily.ROBOTO))
         assertEquals(Color.AUTO, settings.backgroundColor.value)
         assertEquals(ColumnCount.AUTO, settings.columnCount?.value)
-        assertEquals(Font.ORIGINAL, settings.font.value)
-        assertEquals(listOf(Font.ORIGINAL, Font.ACCESSIBLE_DFA, Font.ROBOTO), settings.font.values)
+        assertNull(settings.fontFamily.value)
+        assertEquals(listOf(null, FontFamily.ACCESSIBLE_DFA, FontFamily.ROBOTO), settings.fontFamily.values)
         assertEquals(1.0, settings.fontSize.value)
         assertEquals(true, settings.hyphens?.value)
         assertEquals(ImageFilter.NONE, settings.imageFilter?.value)
@@ -141,12 +141,12 @@ class EpubSettingsReflowableTest {
 
     @Test
     fun `update() takes given preferences before defaults`() {
-        var sut = Reflowable(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
+        var sut = Reflowable(fontFamilies = listOf(FontFamily.ACCESSIBLE_DFA, FontFamily.ROBOTO))
 
         val preferences = Preferences {
             set(sut.backgroundColor, Color(3))
             set(sut.columnCount!!, ColumnCount.ONE)
-            set(sut.font, Font.ROBOTO)
+            set(sut.fontFamily, FontFamily.ROBOTO)
             set(sut.fontSize, 0.5)
             set(sut.hyphens!!, false)
             set(sut.letterSpacing!!, 0.2)
@@ -167,7 +167,7 @@ class EpubSettingsReflowableTest {
         val defaults = Preferences {
             set(sut.backgroundColor, Color(4))
             set(sut.columnCount!!, ColumnCount.TWO)
-            set(sut.font, Font.ACCESSIBLE_DFA)
+            set(sut.fontFamily, FontFamily.ACCESSIBLE_DFA)
             set(sut.fontSize, 0.8)
             set(sut.hyphens!!, true)
             set(sut.letterSpacing!!, 0.4)
@@ -188,7 +188,7 @@ class EpubSettingsReflowableTest {
         sut = sut.update(metadata(), preferences = preferences, defaults = defaults)
         assertEquals(Color(3), sut.backgroundColor.value)
         assertEquals(ColumnCount.ONE, sut.columnCount?.value)
-        assertEquals(Font.ROBOTO, sut.font.value)
+        assertEquals(FontFamily.ROBOTO, sut.fontFamily.value)
         assertEquals(0.5, sut.fontSize.value)
         assertEquals(false, sut.hyphens?.value)
         assertEquals(ImageFilter.NONE, sut.imageFilter?.value)
@@ -211,12 +211,12 @@ class EpubSettingsReflowableTest {
 
     @Test
     fun `update() falls back on defaults when preferences are missing`() {
-        var sut = Reflowable(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
+        var sut = Reflowable(fontFamilies = listOf(FontFamily.ACCESSIBLE_DFA, FontFamily.ROBOTO))
 
         val defaults = Preferences {
             set(sut.backgroundColor, Color(3))
             set(sut.columnCount!!, ColumnCount.ONE)
-            set(sut.font, Font.ROBOTO)
+            set(sut.fontFamily, FontFamily.ROBOTO)
             set(sut.fontSize, 0.5)
             set(sut.hyphens!!, false)
             set(sut.letterSpacing!!, 0.2)
@@ -237,7 +237,7 @@ class EpubSettingsReflowableTest {
         sut = sut.update(metadata(), preferences = Preferences(), defaults = defaults)
         assertEquals(Color(3), sut.backgroundColor.value)
         assertEquals(ColumnCount.ONE, sut.columnCount?.value)
-        assertEquals(Font.ROBOTO, sut.font.value)
+        assertEquals(FontFamily.ROBOTO, sut.fontFamily.value)
         assertEquals(0.5, sut.fontSize.value)
         assertEquals(false, sut.hyphens?.value)
         assertNull(sut.imageFilter)
@@ -280,16 +280,16 @@ class EpubSettingsReflowableTest {
 
     @Test
     fun `Unknown fonts revert to the default Original one`() {
-        var sut = Reflowable(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
+        var sut = Reflowable(fontFamilies = listOf(FontFamily.ACCESSIBLE_DFA, FontFamily.ROBOTO))
 
         sut = sut.update(metadata(), Preferences {
-            set(sut.font, Font.ACCESSIBLE_DFA)
+            set(sut.fontFamily, FontFamily.ACCESSIBLE_DFA)
         })
-        assertEquals(Font.ACCESSIBLE_DFA, sut.font.value)
+        assertEquals(FontFamily.ACCESSIBLE_DFA, sut.fontFamily.value)
         sut = sut.update(metadata(), Preferences {
-            set(sut.font, Font.PT_SERIF)
+            set(sut.fontFamily, FontFamily.PT_SERIF)
         })
-        assertEquals(Font.ORIGINAL, sut.font.value)
+        assertNull(sut.fontFamily.value)
     }
 
     @Test
@@ -753,7 +753,7 @@ class EpubSettingsReflowableTest {
             ReadiumCss().update(
                 settings {
                     it[backgroundColor] = Color(4)
-                    it[font] = Font.ROBOTO
+                    it[fontFamily] = FontFamily.ROBOTO
                     it[hyphens!!] = false
                     it[letterSpacing!!] = 0.6
                     it[lineHeight] = 1.8
@@ -886,7 +886,7 @@ class EpubSettingsReflowableTest {
 
         assertEquals(true, ReadiumCss().update(
             settings {
-                it[font] = Font.ROBOTO
+                it[fontFamily] = FontFamily.ROBOTO
             }
         ).userProperties.fontOverride)
 
@@ -936,7 +936,7 @@ class EpubSettingsReflowableTest {
     }
 
     private fun settings(metadata: Metadata = metadata(), init: Reflowable.(MutablePreferences) -> Unit = {}): Reflowable {
-        val settings = Reflowable(fonts = listOf(Font.ACCESSIBLE_DFA, Font.ROBOTO))
+        val settings = Reflowable(fontFamilies = listOf(FontFamily.ACCESSIBLE_DFA, FontFamily.ROBOTO))
         return settings.update(
             metadata = metadata,
             preferences = Preferences { init(settings, this) }

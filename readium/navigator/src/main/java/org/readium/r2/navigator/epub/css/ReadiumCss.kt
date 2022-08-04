@@ -18,6 +18,7 @@ data class ReadiumCss(
     val layout: Layout = Layout(language = null, Layout.Stylesheets.Default, ReadingProgression.LTR),
     val rsProperties: RsProperties = RsProperties(),
     val userProperties: UserProperties = UserProperties(),
+    val fontFamilies: List<FontFamilyDeclaration> = emptyList(),
 ) {
     /**
      * Injects Readium CSS in the given [html] resource.
