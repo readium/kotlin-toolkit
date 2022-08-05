@@ -25,11 +25,12 @@ internal fun Resource.injectHtml(publication: Publication, css: ReadiumCss, base
         var content = bytes.toString(link.mediaType.charset ?: Charsets.UTF_8).trim()
         val injectables = mutableListOf<String>()
 
+        val baseUri = baseHref.removeSuffix("/")
         if (publication.metadata.presentation.layoutOf(link) == EpubLayout.REFLOWABLE) {
-            content = css.injectHtml(content, baseHref = baseHref)
-            injectables.add(script("$baseHref/scripts/readium-reflowable.js"))
+            content = css.injectHtml(content)
+            injectables.add(script("$baseUri/readium/scripts/readium-reflowable.js"))
         } else {
-            injectables.add(script("$baseHref/scripts/readium-fixed.js"))
+            injectables.add(script("$baseUri/readium/scripts/readium-fixed.js"))
         }
 
         // Disable the text selection if the publication is protected.

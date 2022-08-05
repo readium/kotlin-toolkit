@@ -660,7 +660,7 @@ class EpubNavigatorFragment private constructor(
             val path = request.url.path ?: return null
 
             if (path.startsWith("/publication/")) {
-                val (link, resource) = viewModel.serve(path.removePrefix("/publication"), assetsBaseHref = assetsBaseHref)
+                val (link, resource) = viewModel.serve(path.removePrefix("/publication"))
                 val stream = ResourceInputStream(resource)
 
                 val range = HttpHeaders(request.requestHeaders).range
@@ -692,9 +692,6 @@ class EpubNavigatorFragment private constructor(
                 .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(requireContext()))
                 .build()
         }
-
-        private val assetsBaseHref =
-            "https://readium/assets/readium"
     }
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {

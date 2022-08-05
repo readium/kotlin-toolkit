@@ -106,10 +106,8 @@ internal class EpubNavigatorViewModel(
      * Returns a new [Resource] to serve the given [href].
      *
      * If the [Resource] is an HTML document, injects the required JavaScript and CSS files.
-     *
-     * @param assetsBaseHref Base URL where the Readium CSS and JavaScripts are served.
      */
-    fun serve(href: String, assetsBaseHref: String): Pair<Link, Resource> {
+    fun serve(href: String): Pair<Link, Resource> {
         val link = publication.linkWithHref(href)
             // Query parameters must be kept as they might be relevant for the fetcher.
             ?.copy(href = href)
