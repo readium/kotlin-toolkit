@@ -6,9 +6,11 @@
 
 package org.readium.r2.navigator.epub.css
 
+import android.net.Uri
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import org.readium.r2.navigator.settings.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
 
@@ -19,6 +21,7 @@ data class ReadiumCss(
     val rsProperties: RsProperties = RsProperties(),
     val userProperties: UserProperties = UserProperties(),
     val fontFamilies: List<FontFamilyDeclaration> = emptyList(),
+    val assetsBaseHref: String
 ) {
 
     /**
@@ -28,11 +31,10 @@ data class ReadiumCss(
      */
     // FIXME: Replace existing attributes instead of adding new ones
     @Throws
-    fun injectHtml(html: String, baseHref: String): String {
-        val baseUri = baseHref.removeSuffix("/")
+    internal fun injectHtml(html: String): String {
         val document = Jsoup.parse(html)
         val content = StringBuilder(html)
-        injectStyles(content, baseHref = baseUri)
+        injectStyles(content)
         injectCssProperties(content)
         injectDir(content)
         injectLang(content, document)
@@ -42,9 +44,10 @@ data class ReadiumCss(
     /**
      * Inject the Readium CSS stylesheets and font face declarations.
      */
-    private fun injectStyles(content: StringBuilder, baseHref: String) {
+    private fun injectStyles(content: StringBuilder) {
         val hasStyles = content.hasStyles()
-        val stylesheetsFolder = baseHref + "/readium-css/" + (layout.stylesheets.folder?.plus("/") ?: "")
+        val assetsBaseHref = assetsBaseHref.removeSuffix("/")
+        val stylesheetsFolder = assetsBaseHref + "/readium/readium-css/" + (layout.stylesheets.folder?.plus("/") ?: "")
 
         val headBeforeIndex = content.indexForOpeningTag("head")
         content.insert(headBeforeIndex, "\n" + buildList {
@@ -63,9 +66,55 @@ data class ReadiumCss(
         val endHeadIndex = content.indexForClosingTag("head")
         content.insert(endHeadIndex, "\n" + buildList {
             add(stylesheetLink(stylesheetsFolder + "ReadiumCSS-after.css"))
-            add(fontFace(fontFamily = "OpenDyslexic", href = "$baseHref/fonts/OpenDyslexic-Regular.otf"))
-            add("<style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style>")
+
+            if (fontInjectables.isNotEmpty()) {
+                add("""
+                    <style type="text/css">
+                    ${fontInjectables.joinToString("\n")}
+                    </style>
+                """.trimIndent())
+            }
         }.joinToString("\n") + "\n")
+    }
+
+    /**
+     * Generates the font face declarations from the declared font families.
+     */
+    private val fontInjectables: List<String> by lazy {
+        val assetsBaseHref = assetsBaseHref.removeSuffix("/")
+
+        buildList {
+            val googleFonts = mutableListOf<FontFamily>()
+
+            for (declaration in fontFamilies) {
+                when (val source = declaration.source) {
+                    // No-op, already declared in Readium CSS stylesheets.
+                    FontFamilySource.ReadiumCss -> {}
+
+                    FontFamilySource.GoogleFonts -> {
+                        googleFonts.add(declaration.fontFamily)
+                    }
+
+                    is FontFamilySource.Assets -> {
+                        val href = assetsBaseHref + "/" + source.path.removePrefix("/")
+                        add("""@font-face { font-family: "${declaration.fontFamily.name}"; src: url("$href"); }""")
+                    }
+                }
+            }
+
+            if (googleFonts.isNotEmpty()) {
+                val families = googleFonts.joinToString("|") { it.name }
+
+                val uri = Uri.parse("https://fonts.googleapis.com/css")
+                    .buildUpon()
+                    .appendQueryParameter("family", families)
+                    .build()
+                    .toString()
+
+                // @import needs to be at the top of the <style> declaration.
+                add(0, "@import url('$uri');")
+            }
+        }
     }
 
     /**
@@ -80,14 +129,7 @@ data class ReadiumCss(
     }
 
     private fun stylesheetLink(href: String): String =
-        """
-            <link rel="stylesheet" type="text/css" href="$href"/>
-        """.trimIndent()
-
-    private fun fontFace(fontFamily: String, href: String): String =
-        """
-            <style type="text/css">@font-face { font-family: "$fontFamily"; src: url("$href") format('truetype'); }</style>
-        """.trimIndent()
+        """<link rel="stylesheet" type="text/css" href="$href"/>"""
 
     /**
      * Inject the current Readium CSS properties inline in `html`.

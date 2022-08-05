@@ -704,7 +704,7 @@ class EpubSettingsReflowableTest {
     @Test
     fun `Update Readium CSS using EPUB settings`() {
         assertEquals(
-            ReadiumCss(
+            readiumCss(
                 userProperties = UserProperties(
                     view = View.PAGED,
                     colCount = ColCount.AUTO,
@@ -724,11 +724,11 @@ class EpubSettingsReflowableTest {
                     a11yNormalize = false,
                 )
             ),
-            ReadiumCss().update(settings())
+            readiumCss().update(settings())
         )
 
         assertEquals(
-            ReadiumCss(
+            readiumCss(
                 userProperties = UserProperties(
                     view = View.SCROLL,
                     colCount = ColCount.AUTO,
@@ -736,7 +736,7 @@ class EpubSettingsReflowableTest {
                     textColor = CssColor.int(3),
                     backgroundColor = CssColor.int(4),
                     fontOverride = true,
-                    fontFamily = listOf("Roboto"),
+                    fontFamily = listOf("Roboto", "sans-serif"),
                     advancedSettings = true,
                     typeScale = 1.4,
                     textAlign = CssTextAlign.LEFT,
@@ -750,7 +750,7 @@ class EpubSettingsReflowableTest {
                     a11yNormalize = true,
                 )
             ),
-            ReadiumCss().update(
+            readiumCss().update(
                 settings {
                     it[backgroundColor] = Color(4)
                     it[fontFamily] = FontFamily.ROBOTO
@@ -773,7 +773,7 @@ class EpubSettingsReflowableTest {
         )
 
         assertEquals(
-            ReadiumCss(
+            readiumCss(
                 userProperties = UserProperties(
                     view = View.PAGED,
                     colCount = ColCount.ONE,
@@ -795,7 +795,7 @@ class EpubSettingsReflowableTest {
                     a11yNormalize = false,
                 )
             ),
-            ReadiumCss().update(
+            readiumCss().update(
                 settings {
                     it[columnCount!!] = ColumnCount.ONE
                     it[letterSpacing!!] = 1.0
@@ -808,7 +808,7 @@ class EpubSettingsReflowableTest {
         )
 
         assertEquals(
-            ReadiumCss(
+            readiumCss(
                 userProperties = UserProperties(
                     view = View.PAGED,
                     colCount = ColCount.TWO,
@@ -828,7 +828,7 @@ class EpubSettingsReflowableTest {
                     a11yNormalize = false,
                 )
             ),
-            ReadiumCss().update(
+            readiumCss().update(
                 settings {
                     it[columnCount!!] = ColumnCount.TWO
                     it[textAlign!!] = TextAlign.JUSTIFY
@@ -840,7 +840,7 @@ class EpubSettingsReflowableTest {
 
     @Test
     fun `Changing image filter flags`() {
-        var sut = ReadiumCss()
+        var sut = readiumCss()
         assertNull(sut.userProperties.darkenImages)
         assertNull(sut.userProperties.invertImages)
 
@@ -882,15 +882,15 @@ class EpubSettingsReflowableTest {
 
     @Test
     fun `Changing the font or normalizing the text activate the fontOverride flag`() {
-        assertEquals(false, ReadiumCss().update(settings()).userProperties.fontOverride)
+        assertEquals(false, readiumCss().update(settings()).userProperties.fontOverride)
 
-        assertEquals(true, ReadiumCss().update(
+        assertEquals(true, readiumCss().update(
             settings {
                 it[fontFamily] = FontFamily.ROBOTO
             }
         ).userProperties.fontOverride)
 
-        assertEquals(true, ReadiumCss().update(
+        assertEquals(true, readiumCss().update(
             settings {
                 it[normalizedText] = true
             }
@@ -903,12 +903,12 @@ class EpubSettingsReflowableTest {
 
         assertEquals(
             Layout(language = Language("ar"), stylesheets = Layout.Stylesheets.Rtl, readingProgression = ReadingProgression.RTL),
-            ReadiumCss().update(settings(metadata)).layout
+            readiumCss().update(settings(metadata)).layout
         )
 
         assertEquals(
             Layout(language = Language("fr"), stylesheets = Layout.Stylesheets.Rtl, readingProgression = ReadingProgression.RTL),
-            ReadiumCss().update(
+            readiumCss().update(
                 settings(metadata) {
                     it[language] = Language("fr")
                 }
@@ -917,7 +917,7 @@ class EpubSettingsReflowableTest {
 
         assertEquals(
             Layout(language = Language("fr"), stylesheets = Layout.Stylesheets.Default, readingProgression = ReadingProgression.LTR),
-            ReadiumCss().update(
+            readiumCss().update(
                 settings(metadata) {
                     it[language] = Language("fr")
                     it[readingProgression] = ReadingProgression.LTR
@@ -927,7 +927,7 @@ class EpubSettingsReflowableTest {
 
         assertEquals(
             Layout(language = Language("ar"), stylesheets = Layout.Stylesheets.Default, readingProgression = ReadingProgression.LTR),
-            ReadiumCss().update(
+            readiumCss().update(
                 settings(metadata) {
                     it[readingProgression] = ReadingProgression.LTR
                 }
@@ -935,8 +935,41 @@ class EpubSettingsReflowableTest {
         )
     }
 
-    private fun settings(metadata: Metadata = metadata(), init: Reflowable.(MutablePreferences) -> Unit = {}): Reflowable {
-        val settings = Reflowable(fontFamilies = listOf(FontFamily.ACCESSIBLE_DFA, FontFamily.ROBOTO))
+    @Test
+    fun `Font families are added with their alternate fallbacks`() {
+        val f1 = FontFamily("Times New Roman")
+        val f2 = FontFamily("Arial", alternate = f1)
+        val f3 = FontFamily("Helvetica", alternate = f2)
+        val ffs = listOf(f1, f2, f3)
+
+        assertEquals(
+            listOf("Times New Roman"),
+            readiumCss().update(settings(fontFamilies = ffs) { it[fontFamily] = f1 }).userProperties.fontFamily
+        )
+
+        assertEquals(
+            listOf("Arial", "Times New Roman"),
+            readiumCss().update(settings(fontFamilies = ffs) { it[fontFamily] = f2 }).userProperties.fontFamily
+        )
+
+        assertEquals(
+            listOf("Helvetica", "Arial", "Times New Roman"),
+            readiumCss().update(settings(fontFamilies = ffs) { it[fontFamily] = f3 }).userProperties.fontFamily
+        )
+    }
+
+    private fun readiumCss(userProperties: UserProperties = UserProperties()): ReadiumCss =
+        ReadiumCss(
+            userProperties = userProperties,
+            assetsBaseHref = "/assets/"
+        )
+
+    private fun settings(
+        metadata: Metadata = metadata(),
+        fontFamilies: List<FontFamily> = listOf(FontFamily.ACCESSIBLE_DFA, FontFamily.ROBOTO),
+        init: Reflowable.(MutablePreferences) -> Unit = {}
+    ): Reflowable {
+        val settings = Reflowable(fontFamilies = fontFamilies)
         return settings.update(
             metadata = metadata,
             preferences = Preferences { init(settings, this) }

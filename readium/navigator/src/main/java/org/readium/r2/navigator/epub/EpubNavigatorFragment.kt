@@ -34,8 +34,8 @@ import org.readium.r2.navigator.*
 import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel.RunScriptCommand
 import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
-import org.readium.r2.navigator.epub.css.FontFamilySource.GoogleFonts
-import org.readium.r2.navigator.epub.css.FontFamilySource.ReadiumCss
+import org.readium.r2.navigator.epub.css.FontFamilySource
+import org.readium.r2.navigator.epub.css.FontFamilySource.*
 import org.readium.r2.navigator.epub.css.from
 import org.readium.r2.navigator.extensions.optRectF
 import org.readium.r2.navigator.extensions.positionsByResource
@@ -137,12 +137,14 @@ class EpubNavigatorFragment private constructor(
 
         companion object {
             val DEFAULT_FONT_FAMILIES: List<FontFamilyDeclaration> = listOf(
+                FontFamily.LITERATA.from(GoogleFonts),
                 FontFamily.PT_SERIF.from(GoogleFonts),
                 FontFamily.ROBOTO.from(GoogleFonts),
                 FontFamily.SOURCE_SANS_PRO.from(GoogleFonts),
                 FontFamily.VOLLKORN.from(GoogleFonts),
                 FontFamily.ACCESSIBLE_DFA.from(ReadiumCss),
                 FontFamily.IA_WRITER_DUOSPACE.from(ReadiumCss),
+                FontFamily.OPEN_DYSLEXIC.from(Assets("readium/fonts/OpenDyslexic-Regular.otf")),
             )
         }
     }

@@ -28,7 +28,16 @@ sealed class FontFamilySource {
     object ReadiumCss : FontFamilySource()
 
     /**
-     * A typeface downloaded from Google Fonts.
+     * A typeface embedded in the app assets.
+     *
+     * @param path Path to the font file, relative to the assets folder.
+     */
+    data class Assets(val path: String) : FontFamilySource()
+
+    /**
+     * A typeface hosted by Google Fonts.
+     *
+     * Warning: the navigator requires an Internet connection to use these fonts.
      *
      * See https://fonts.google.com/ for the list of available fonts.
      */

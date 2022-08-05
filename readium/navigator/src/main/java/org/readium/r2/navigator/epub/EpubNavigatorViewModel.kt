@@ -61,9 +61,12 @@ internal class EpubNavigatorViewModel(
     )
     val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
 
+    private val assetsBaseHref = "https://readium/assets/"
+
     private val css = MutableStateFlow(
         ReadiumCss(
-            fontFamilies = config.fontFamilies
+            fontFamilies = config.fontFamilies,
+            assetsBaseHref = assetsBaseHref
         ).update(settings.value)
     )
 

@@ -92,7 +92,7 @@ data class FontFamily(val name: String, val alternate: FontFamily? = null) {
         // Accessibility
         val ACCESSIBLE_DFA = FontFamily("AccessibleDfA")
         val IA_WRITER_DUOSPACE = FontFamily("IA Writer Duospace", alternate = MONOSPACE)
-        val OPEN_DYSLEXIC = FontFamily("OpenDyslexic", alternate = ACCESSIBLE_DFA)
+        val OPEN_DYSLEXIC = FontFamily("OpenDyslexic")
 
         // System
         val ROBOTO = FontFamily("Roboto", alternate = SANS_SERIF)

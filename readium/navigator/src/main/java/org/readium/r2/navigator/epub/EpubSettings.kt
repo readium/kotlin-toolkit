@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.r2.navigator.epub
 
 import org.readium.r2.navigator.epub.css.*
@@ -306,7 +308,7 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
                     .takeIf { it != Color.AUTO }
                     ?.let { CssColor.int(it.int) },
                 fontOverride = (fontFamily.value != null || normalizedText.value),
-                fontFamily = fontFamily.value?.run { listOf(name) },
+                fontFamily = fontFamily.value?.toCss(),
                 // Font size is handled natively with WebSettings.textZoom.
                 // See https://github.com/readium/mobile/issues/1#issuecomment-652431984
 //                fontSize = fontSize.value
@@ -331,4 +333,9 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
             )
         )
     }
+}
+
+private fun FontFamily.toCss(): List<String> = buildList {
+    add(name)
+    alternate?.let { addAll(it.toCss()) }
 }
