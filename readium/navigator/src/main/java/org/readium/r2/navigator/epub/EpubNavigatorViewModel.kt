@@ -17,10 +17,10 @@ import org.readium.r2.navigator.*
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.navigator.epub.extensions.javascriptForGroup
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
-import org.readium.r2.navigator.settings.FontFamily
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import kotlin.reflect.KClass
@@ -100,6 +100,26 @@ internal class EpubNavigatorViewModel(
                 previousCss = css
             }
             .launchIn(viewModelScope)
+    }
+
+    /**
+     * Returns a new [Resource] to serve the given [href].
+     *
+     * If the [Resource] is an HTML document, injects the required JavaScript and CSS files.
+     *
+     * @param assetsBaseHref Base URL where the Readium CSS and JavaScripts are served.
+     */
+    fun serve(href: String, assetsBaseHref: String): Pair<Link, Resource> {
+        val link = publication.linkWithHref(href)
+            // Query parameters must be kept as they might be relevant for the fetcher.
+            ?.copy(href = href)
+            ?: Link(href = href)
+
+        var resource = publication.get(link)
+        if (link.mediaType.isHtml) {
+            resource = resource.injectHtml(publication, css.value, baseHref = assetsBaseHref)
+        }
+        return Pair(link, resource)
     }
 
     fun onResourceLoaded(link: Link?, webView: R2BasicWebView): RunScriptCommand {

@@ -82,7 +82,7 @@ data class Manifest(
      * Searches through (in order) [readingOrder], [resources] and [links] recursively following
      * alternate and children links.
      *
-     * If there's no match, try again after removing any query parameter and anchor from the
+     * If there's no match, tries again after removing any query parameter and anchor from the
      * given [href].
      */
     fun linkWithHref(href: String): Link? {

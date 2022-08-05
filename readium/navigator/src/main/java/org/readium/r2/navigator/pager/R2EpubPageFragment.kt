@@ -14,7 +14,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.PointF
 import android.os.Bundle
-import android.util.Base64
 import android.util.DisplayMetrics
 import android.view.*
 import android.webkit.WebResourceRequest
@@ -37,8 +36,6 @@ import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.ReadingProgression
-import java.io.IOException
-import java.io.InputStream
 import kotlin.math.roundToInt
 
 class R2EpubPageFragment : Fragment() {
@@ -189,41 +186,8 @@ class R2EpubPageFragment : Fragment() {
                 }
             }
 
-            // prevent favicon.ico to be loaded, this was causing NullPointerException in NanoHttp
-            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
-                if (!request.isForMainFrame && request.url.path?.endsWith("/favicon.ico") == true) {
-                    try {
-                        return WebResourceResponse("image/png", null, null)
-                    } catch (e: Exception) {
-                    }
-                }
-                return null
-            }
-
-            private fun injectScriptFile(view: WebView?, scriptFile: String) {
-                val input: InputStream
-                try {
-                    input = resources.assets.open(scriptFile)
-                    val buffer = ByteArray(input.available())
-                    input.read(buffer)
-                    input.close()
-
-                    // String-ify the script byte-array using BASE64 encoding !!!
-                    val encoded = Base64.encodeToString(buffer, Base64.NO_WRAP)
-                    view?.loadUrl("javascript:(function() {" +
-                            "var parent = document.getElementsByTagName('head').item(0);" +
-                            "var script = document.createElement('script');" +
-                            "script.type = 'text/javascript';" +
-                            // Tell the browser to BASE64-decode the string into your script !!!
-                            "script.innerHTML = window.atob('" + encoded + "');" +
-                            "parent.appendChild(script)" +
-                            "})()")
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                } catch (e1: IllegalStateException) {
-                    // not attached to a context
-                }
-            }
+            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
+                (webView as? R2BasicWebView)?.shouldInterceptRequest(view, request)
         }
 
         webView.isHapticFeedbackEnabled = false

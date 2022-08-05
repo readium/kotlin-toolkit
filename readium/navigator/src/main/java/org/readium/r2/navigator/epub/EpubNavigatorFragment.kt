@@ -18,6 +18,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.collection.forEach
 import androidx.fragment.app.Fragment
@@ -27,6 +28,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
+import androidx.webkit.WebViewAssetLoader
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.json.JSONObject
@@ -52,6 +54,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.fetcher.ResourceInputStream
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -60,6 +63,8 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
+import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.launchWebBrowser
 import org.readium.r2.shared.util.mediatype.MediaType
 import kotlin.math.ceil
@@ -80,7 +85,7 @@ typealias JavascriptInterfaceFactory = (resource: Link) -> Any?
 @OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class)
 class EpubNavigatorFragment private constructor(
     override val publication: Publication,
-    private val baseUrl: String,
+    private val baseUrl: String?,
     private val initialLocator: Locator?,
     internal val listener: Listener?,
     internal val paginationListener: PaginationListener?,
@@ -210,6 +215,10 @@ class EpubNavigatorFragment private constructor(
         preferences = context.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
     }
 
+    private fun Link.url(): String =
+        if (baseUrl != null) withBaseUrl(baseUrl).href
+        else Href(href.removePrefix("/"), "https://readium/publication/").percentEncodedString
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         currentActivity = requireActivity()
         _binding = ActivityR2ViewpagerBinding.inflate(inflater, container, false)
@@ -227,7 +236,7 @@ class EpubNavigatorFragment private constructor(
                 resourcesSingle = publication.readingOrder.mapIndexed { index, link ->
                     PageResource.EpubReflowable(
                         link = link,
-                        url = link.withBaseUrl(baseUrl).href,
+                        url = link.url(),
                         positionCount = positionsByReadingOrder.getOrNull(index)?.size ?: 0
                     )
                 }
@@ -245,7 +254,7 @@ class EpubNavigatorFragment private constructor(
                 var doublePageRight = ""
 
                 for ((index, link) in publication.readingOrder.withIndex()) {
-                    val url = link.withBaseUrl(baseUrl).href
+                    val url = link.url()
                     resourcesSingle.add(PageResource.EpubFxl(url))
 
                     // add first page to the right,
@@ -627,9 +636,9 @@ class EpubNavigatorFragment private constructor(
             val url = request.url?.toString()
                 ?: return false
 
-            val baseUrl = baseUrl.takeIf { it.isNotBlank() }
+            val baseUrl = baseUrl?.takeIf { it.isNotBlank() }
                 ?: publication.linkWithRel("self")?.href
-                ?: return false
+                ?: "https://readium/publication/"
 
             if (!url.startsWith(baseUrl)) {
                 openExternalLink(request.url)
@@ -645,6 +654,47 @@ class EpubNavigatorFragment private constructor(
             val context = context ?: return
             launchWebBrowser(context, url)
         }
+
+        override fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? {
+            if (request.url.host != "readium") return null
+            val path = request.url.path ?: return null
+
+            if (path.startsWith("/publication/")) {
+                val (link, resource) = viewModel.serve(path.removePrefix("/publication"), assetsBaseHref = assetsBaseHref)
+                val stream = ResourceInputStream(resource)
+
+                val range = HttpHeaders(request.requestHeaders).range
+
+                val responseHeaders = mutableMapOf(
+                    "Accept-Ranges" to "bytes",
+                )
+                return if (range == null) {
+                    WebResourceResponse(link.type, null, 200, "OK", responseHeaders, stream)
+                } else {
+                    val length = stream.available()
+                    val longRange = range.toLongRange(length.toLong())
+
+                    responseHeaders["Content-Range"] = "bytes ${longRange.start}-${longRange.last}/$length"
+                    // Content-Length will automatically be filled by the WebView using the
+                    // Content-Range header.
+//                    responseHeaders["Content-Length"] = (longRange.last - longRange.first + 1).toString()
+
+                    WebResourceResponse(link.type, null, 206, "Partial Content", responseHeaders, stream)
+                }
+            } else {
+                return assetsLoader.shouldInterceptRequest(request.url)
+            }
+        }
+
+        private val assetsLoader by lazy {
+            WebViewAssetLoader.Builder()
+                .setDomain("readium")
+                .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(requireContext()))
+                .build()
+        }
+
+        private val assetsBaseHref =
+            "https://readium/assets/readium"
     }
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
@@ -859,15 +909,16 @@ class EpubNavigatorFragment private constructor(
          * Creates a factory for [EpubNavigatorFragment].
          *
          * @param publication EPUB publication to render in the navigator.
-         * @param baseUrl A base URL where this publication is served from.
+         * @param baseUrl A base URL where this publication is served from. This is optional, only
+         * if you use a local HTTP server.
          * @param initialLocator The first location which should be visible when rendering the
-         *        publication. Can be used to restore the last reading location.
+         * publication. Can be used to restore the last reading location.
          * @param listener Optional listener to implement to observe events, such as user taps.
          * @param config Additional configuration.
          */
         fun createFactory(
             publication: Publication,
-            baseUrl: String,
+            baseUrl: String?,
             initialLocator: Locator? = null,
             listener: Listener? = null,
             paginationListener: PaginationListener? = null,

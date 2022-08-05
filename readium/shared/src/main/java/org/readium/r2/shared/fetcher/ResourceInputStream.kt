@@ -60,7 +60,7 @@ class ResourceInputStream(
         checkNotClosed()
 
         val newPosition = (position + n).coerceAtMost(end)
-        val skipped = position - newPosition
+        val skipped = newPosition - position
         position = newPosition
         skipped
     }

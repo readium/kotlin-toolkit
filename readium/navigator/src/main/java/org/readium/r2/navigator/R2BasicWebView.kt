@@ -20,6 +20,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.webkit.URLUtil
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.widget.ImageButton
 import android.widget.ListPopupWindow
@@ -64,18 +65,19 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
         fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
 
-        @InternalReadiumApi
-        fun javascriptInterfacesForResource(link: Link): Map<String, Any?> = emptyMap()
-
         /**
          * Returns the custom [ActionMode.Callback] to be used with the text selection menu.
          */
         val selectionActionModeCallback: ActionMode.Callback? get() = null
 
-        /**
-         * Offers an opportunity to override a request loaded by the given web view.
-         */
+        @InternalReadiumApi
+        fun javascriptInterfacesForResource(link: Link): Map<String, Any?> = emptyMap()
+
+        @InternalReadiumApi
         fun shouldOverrideUrlLoading(webView: WebView, request: WebResourceRequest): Boolean = false
+
+        @InternalReadiumApi
+        fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? = null
     }
 
     lateinit var listener: Listener
@@ -555,6 +557,17 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         if (resourceUrl == request.url?.toString()) return false
 
         return listener.shouldOverrideUrlLoading(this, request)
+    }
+
+    internal fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? {
+        // Prevent favicon.ico to be loaded, this was causing a NullPointerException in NanoHttp
+        if (!request.isForMainFrame && request.url.path?.endsWith("/favicon.ico") == true) {
+            tryOrLog<Unit> {
+                return WebResourceResponse("image/png", null, null)
+            }
+        }
+
+        return listener.shouldInterceptRequest(webView, request)
     }
 
     // Text selection ActionMode overrides

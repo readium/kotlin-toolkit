@@ -245,6 +245,17 @@ abstract class TransformingResource(
     private val cacheBytes: Boolean = true
 ) : ProxyResource(resource) {
 
+    companion object {
+        /**
+         * Creates a [TransformingResource] using the given [transform] function.
+         */
+        operator fun invoke(resource: Resource, transform: suspend (ByteArray) -> ByteArray): TransformingResource =
+            object : TransformingResource(resource) {
+                override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
+                    data.mapCatching { transform(it) }
+            }
+    }
+
     private lateinit var _bytes: ResourceTry<ByteArray>
 
     abstract suspend fun transform(data: ResourceTry<ByteArray>):  ResourceTry<ByteArray>
@@ -274,7 +285,6 @@ abstract class TransformingResource(
         }
 
     override suspend fun length(): ResourceTry<Long> = bytes().map { it.size.toLong() }
-
 }
 
 /**
