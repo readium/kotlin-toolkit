@@ -69,7 +69,7 @@ internal class NetworkService {
     private fun HttpURLConnection.appendRequestHeaders(headers: Map<String, String>): HttpURLConnection =
         apply {
             for ((key, value) in headers) {
-                this.setRequestProperty(key, value)
+                setRequestProperty(key, value)
             }
         }
 
