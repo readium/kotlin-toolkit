@@ -20,6 +20,7 @@ data class ReadiumCss(
     val userProperties: UserProperties = UserProperties(),
     val fontFamilies: List<FontFamilyDeclaration> = emptyList(),
 ) {
+
     /**
      * Injects Readium CSS in the given [html] resource.
      *
@@ -27,10 +28,11 @@ data class ReadiumCss(
      */
     // FIXME: Replace existing attributes instead of adding new ones
     @Throws
-    fun injectHtml(html: String, baseHref: String = "/assets"): String {
+    fun injectHtml(html: String, baseHref: String): String {
+        val baseUri = baseHref.removeSuffix("/")
         val document = Jsoup.parse(html)
         val content = StringBuilder(html)
-        injectStyles(content, baseHref = baseHref)
+        injectStyles(content, baseHref = baseUri)
         injectCssProperties(content)
         injectDir(content)
         injectLang(content, document)
@@ -94,12 +96,13 @@ data class ReadiumCss(
      * the first layout pass.
      */
     private fun injectCssProperties(content: StringBuilder) {
-        val css = rsProperties.toCss() + userProperties.toCss()
+        var css = rsProperties.toCss() + userProperties.toCss()
         if (css.isBlank()) {
             return
         }
+        css = css.replace("\"", "&quot;")
         val index = content.indexForTagAttributes("html")
-        content.insert(index, " style=\"${css.replace("\"", "\\\"")}\"")
+        content.insert(index, " style=\"$css\"")
     }
 
     /**
@@ -131,7 +134,8 @@ data class ReadiumCss(
             attr("xml:lang").takeIf { it.isNotEmpty() }
                 ?: attr("lang").takeIf { it.isNotEmpty() }
 
-        if (document.lang() != null) {
+        val html = document.selectFirst("html")
+        if (html?.lang() != null) {
             return
         }
 

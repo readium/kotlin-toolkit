@@ -47,7 +47,8 @@ class HtmlInjectionTest {
                         </head>
                         <body></body>
                     </html>
-                """.trimIndent()
+                """.trimIndent(),
+                baseHref = "/assets/"
             )
         )
     }
@@ -89,7 +90,8 @@ class HtmlInjectionTest {
                         </head>
                         <body xmlns:xlink="http://www.w3.org/1999/xlink"></body>
                     </html>
-                """.trimIndent()
+                """.trimIndent(),
+                baseHref = "/assets/"
             )
         )
     }
@@ -117,7 +119,8 @@ class HtmlInjectionTest {
             sut.injectHtml(
                 """
                     <?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml"><head xmlns:xlink="http://www.w3.org/1999/xlink"><title>Publication</title><link rel="stylesheet" href="style.css" type="text/css"/></head><body xmlns:xlink="http://www.w3.org/1999/xlink"></body></html>
-                """.trimIndent()
+                """.trimIndent(),
+                baseHref = "/assets/"
             )
         )
     }
@@ -145,7 +148,8 @@ class HtmlInjectionTest {
             sut.injectHtml(
                 """
                     <?xml version="1.0" encoding="utf-8"?><HTML xmlns="http://www.w3.org/1999/xhtml"><HEAD xmlns:xlink="http://www.w3.org/1999/xlink"><title>Publication</title><link rel="stylesheet" href="style.css" type="text/css"/></HEAD><BODY xmlns:xlink="http://www.w3.org/1999/xlink"></BODY></HTML>
-                """.trimIndent()
+                """.trimIndent(),
+                baseHref = "/assets/"
             )
         )
     }
@@ -186,7 +190,8 @@ class HtmlInjectionTest {
                         </head>
                         <body></body>
                     </html>
-                """.trimIndent()
+                """.trimIndent(),
+                baseHref = "/assets/"
             )
         )
     }
@@ -212,7 +217,8 @@ class HtmlInjectionTest {
                         </head>
                         <body></body>
                     </html>
-                """.trimIndent()
+                """.trimIndent(),
+                baseHref = "/assets/"
             ).contains("ReadiumCSS-default.css")
         )
 
@@ -227,7 +233,8 @@ class HtmlInjectionTest {
                         </head>
                         <body style="color: red;"></body>
                     </html>
-                """.trimIndent()
+                """.trimIndent(),
+                baseHref = "/assets/"
             ).contains("ReadiumCSS-default.css")
         )
 
@@ -243,7 +250,8 @@ class HtmlInjectionTest {
                         </head>
                         <body></body>
                     </html>
-                """.trimIndent()
+                """.trimIndent(),
+                baseHref = "/assets/"
             ).contains("ReadiumCSS-default.css")
         )
     }
@@ -285,7 +293,8 @@ class HtmlInjectionTest {
                         </head>
                         <body></body>
                     </html>
-                """.trimIndent()
+                """.trimIndent(),
+                baseHref = "/assets/"
             )
         )
     }
@@ -327,7 +336,8 @@ class HtmlInjectionTest {
                         </head>
                         <body></body>
                     </html>
-                """.trimIndent()
+                """.trimIndent(),
+                baseHref = "/assets/"
             )
         )
     }
@@ -370,7 +380,8 @@ class HtmlInjectionTest {
                         </head>
                         <body></body>
                     </html>
-                """.trimIndent()
+                """.trimIndent(),
+                baseHref = "/assets/"
             )
         )
     }
@@ -412,7 +423,8 @@ class HtmlInjectionTest {
                         </head>
                         <body></body>
                     </html>
-                """.trimIndent()
+                """.trimIndent(),
+                baseHref = "/assets/"
             )
         )
     }
@@ -454,7 +466,8 @@ class HtmlInjectionTest {
                         </head>
                         <body xml:lang="en-US"></body>
                     </html>
-                """.trimIndent()
+                """.trimIndent(),
+                baseHref = "/assets/"
             )
         )
     }
@@ -496,7 +509,8 @@ class HtmlInjectionTest {
                         </head>
                         <body lang="en-US"></body>
                     </html>
-                """.trimIndent()
+                """.trimIndent(),
+                baseHref = "/assets/"
             )
         )
     }
