@@ -49,6 +49,8 @@ class R2EpubPageFragment : Fragment() {
     internal val link: Link?
         get() = requireArguments().getParcelable("link")
 
+    private var pendingLocator: Locator? = null
+
     private val positionCount: Long
         get() = requireArguments().getLong("positionCount")
 
@@ -84,6 +86,11 @@ class R2EpubPageFragment : Fragment() {
 
     private val shouldApplyInsetsPadding: Boolean
         get() = navigator?.config?.shouldApplyInsetsPadding ?: true
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        pendingLocator = requireArguments().getParcelable("initialLocator")
+    }
 
     @SuppressLint("SetJavaScriptEnabled", "JavascriptInterface")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -319,16 +326,27 @@ class R2EpubPageFragment : Fragment() {
             val webView = requireNotNull(webView)
             webView.visibility = View.VISIBLE
 
-            if (isCurrentResource) {
-                val epubNavigator = requireNotNull(navigator)
-                val locator = epubNavigator.pendingLocator
-                epubNavigator.pendingLocator = null
-                if (locator != null) {
-                    loadLocator(webView, epubNavigator.readingProgression, locator)
+            pendingLocator
+                ?.let { locator ->
+                    loadLocator(webView, requireNotNull(navigator).readingProgression, locator)
                 }
+                .also { pendingLocator = null }
 
-                webView.listener.onPageLoaded()
-            }
+            webView.listener.onPageLoaded()
+        }
+    }
+
+    internal fun loadLocator(locator: Locator) {
+        if (!isLoaded.value) {
+            pendingLocator = locator
+            return
+        }
+
+        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+            val webView = requireNotNull(webView)
+            val epubNavigator = requireNotNull(navigator)
+            loadLocator(webView, epubNavigator.readingProgression, locator)
+            webView.listener.onProgressionChanged()
         }
     }
 
@@ -345,35 +363,35 @@ class R2EpubPageFragment : Fragment() {
             return
         }
 
-        var progression = locator.locations.progression
-        if (progression != null) {
-            // We need to reverse the progression with RTL because the Web View
-            // always scrolls from left to right, no matter the reading direction.
-            progression =
-                if (webView.scrollMode || readingProgression == ReadingProgression.LTR) progression
-                else 1 - progression
+        var progression = locator.locations.progression ?: 0.0
 
-            if (webView.scrollMode) {
-                webView.scrollToPosition(progression)
+        // We need to reverse the progression with RTL because the Web View
+        // always scrolls from left to right, no matter the reading direction.
+        progression =
+            if (webView.scrollMode || readingProgression == ReadingProgression.LTR) progression
+            else 1 - progression
 
-            } else {
-                // Figure out the target web view "page" from the requested
-                // progression.
-                var item = (progression * webView.numPages).roundToInt()
-                if (readingProgression == ReadingProgression.RTL && item > 0) {
-                    item -= 1
-                }
-                webView.setCurrentItem(item, false)
+        if (webView.scrollMode) {
+            webView.scrollToPosition(progression)
+
+        } else {
+            // Figure out the target web view "page" from the requested
+            // progression.
+            var item = (progression * webView.numPages).roundToInt()
+            if (readingProgression == ReadingProgression.RTL && item > 0) {
+                item -= 1
             }
+            webView.setCurrentItem(item, false)
         }
     }
 
     companion object {
-        fun newInstance(url: String, link: Link? = null, positionCount: Int = 0): R2EpubPageFragment =
+        fun newInstance(url: String, link: Link? = null, initialLocator: Locator? = null, positionCount: Int = 0): R2EpubPageFragment =
             R2EpubPageFragment().apply {
                 arguments = Bundle().apply {
                     putString("url", url)
                     putParcelable("link", link)
+                    putParcelable("initialLocator", initialLocator)
                     putLong("positionCount", positionCount.toLong())
                 }
             }

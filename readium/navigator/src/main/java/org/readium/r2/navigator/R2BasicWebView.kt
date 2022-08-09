@@ -505,6 +505,11 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         runJavaScript("getSelectionRect();", callback)
     }
 
+    internal suspend fun findFirstVisibleLocator(): Locator? =
+        runJavaScriptSuspend("readium.findFirstVisibleLocator();")
+            .let { tryOrNull { JSONObject(it) } }
+            ?.let { Locator.fromJSON(it) }
+
     fun createHighlight(locator: String?, color: String?, callback: (String) -> Unit) {
         uiScope.launch {
             runJavaScript("createHighlight($locator, $color, true);", callback)

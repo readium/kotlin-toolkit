@@ -37,7 +37,6 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalMedia2::class, ExperimentalTime::class, ExperimentalCoroutinesApi::class)
 class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListener {
 
-    override val model: ReaderViewModel by activityViewModels()
     override lateinit var navigator: MediaNavigator
     
     private lateinit var displayedPlayback: MediaNavigator.Playback
@@ -65,7 +64,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
         binding.publicationTitle.text = model.publication.metadata.title
 
         viewLifecycleOwner.lifecycleScope.launch {
-            model.publication.cover()?.let {
+            publication.cover()?.let {
                 binding.coverView.setImageBitmap(it)
             }
         }

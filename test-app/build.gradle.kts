@@ -36,8 +36,12 @@ android {
         jvmTarget = "1.8"
         freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.2.0-rc02"
+    }
     buildFeatures {
         viewBinding = true
+        compose = true
     }
     buildTypes {
         getByName("release") {
@@ -72,16 +76,22 @@ dependencies {
     // Only required if you want to support PDF files using PDFium.
     implementation(project(":readium:adapters:pdfium"))
 
-    implementation("androidx.core:core-ktx:1.8.0")
+    implementation("androidx.activity:activity-compose:1.5.0")
     implementation("androidx.activity:activity-ktx:1.5.0")
     implementation("androidx.appcompat:appcompat:1.4.2")
     implementation("androidx.browser:browser:1.4.0")
     implementation("androidx.cardview:cardview:1.0.0")
+    implementation("androidx.compose.animation:animation:1.1.1")
+    implementation("androidx.compose.foundation:foundation:1.2.0-rc02")
+    implementation("androidx.compose.material:material-icons-extended:1.1.1")
+    implementation("androidx.compose.material:material:1.1.1")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.core:core-ktx:1.8.0")
     implementation("androidx.fragment:fragment-ktx:1.5.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.5.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0")
     implementation("androidx.navigation:navigation-fragment-ktx:2.5.0")
     implementation("androidx.navigation:navigation-ui-ktx:2.5.0")
     implementation("androidx.paging:paging-runtime-ktx:3.1.1")
@@ -115,6 +125,9 @@ dependencies {
 
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
     kapt("androidx.lifecycle:lifecycle-compiler:2.5.0")
+
+    debugImplementation("androidx.compose.ui:ui-tooling:1.1.1")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.1.1")
 
     // Tests
     testImplementation("junit:junit:4.13.2")

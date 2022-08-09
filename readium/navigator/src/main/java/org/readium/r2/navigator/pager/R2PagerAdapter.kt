@@ -10,10 +10,14 @@
 package org.readium.r2.navigator.pager
 
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.ViewGroup
+import androidx.collection.LongSparseArray
+import androidx.collection.forEach
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
 
 
 class R2PagerAdapter internal constructor(val fm: FragmentManager, private val resources: List<PageResource>) : R2FragmentPagerAdapter(fm) {
@@ -40,7 +44,8 @@ class R2PagerAdapter internal constructor(val fm: FragmentManager, private val r
         return nextFragment
     }
 
-    override fun setPrimaryItem(container: ViewGroup, position: Int, `object`: Any) {
+    override fun setPrimaryItem(container: ViewGroup, position: Int, `object`: Any)
+    {
         if (getCurrentFragment() !== `object`) {
             currentFragment = `object` as Fragment
             nextFragment = mFragments.get(getItemId(position + 1))
@@ -49,17 +54,26 @@ class R2PagerAdapter internal constructor(val fm: FragmentManager, private val r
         super.setPrimaryItem(container, position, `object`)
     }
 
-    override fun getItem(position: Int): Fragment =
-        when (val resource = resources[position]) {
+    override fun getItem(position: Int): Fragment {
+        val locator = popPendingLocatorAt(getItemId(position))
+        return when (val resource = resources[position]) {
             is PageResource.EpubReflowable -> {
-                R2EpubPageFragment.newInstance(resource.url, resource.link, positionCount = resource.positionCount)
+                R2EpubPageFragment.newInstance(
+                    resource.url,
+                    resource.link,
+                    initialLocator = locator,
+                    positionCount = resource.positionCount
+                )
             }
             is PageResource.EpubFxl -> {
                 R2FXLPageFragment.newInstance(resource.url1, resource.url2)
             }
             is PageResource.Cbz -> {
                 fm.fragmentFactory
-                    .instantiate(ClassLoader.getSystemClassLoader(), R2CbzPageFragment::class.java.name)
+                    .instantiate(
+                        ClassLoader.getSystemClassLoader(),
+                        R2CbzPageFragment::class.java.name
+                    )
                     .also {
                         it.arguments = Bundle().apply {
                             putParcelable("link", resource.link)
@@ -67,9 +81,38 @@ class R2PagerAdapter internal constructor(val fm: FragmentManager, private val r
                     }
             }
         }
+    }
 
     override fun getCount(): Int {
         return resources.size
     }
 
+    override fun restoreState(state: Parcelable?, loader: ClassLoader?) {
+        super.restoreState(state, loader)
+
+        pendingLocators.forEach { i, locator ->
+            (mFragments.get(i) as? R2EpubPageFragment)?.loadLocator(locator)
+        }
+        pendingLocators.clear()
+    }
+
+    private val pendingLocators = LongSparseArray<Locator>()
+
+    /**
+     * Loads the given [Locator] in the page fragment at the given position. If not loaded, it
+     * will be used when the fragment will be created.
+     */
+    internal fun loadLocatorAt(position: Int, locator: Locator) {
+        val id = getItemId(position)
+        val fragment = mFragments.get(id)
+        if (fragment == null) {
+            pendingLocators.put(id, locator)
+        } else {
+            (fragment as? R2EpubPageFragment)?.loadLocator(locator)
+        }
+    }
+
+    private fun popPendingLocatorAt(id: Long): Locator? =
+        pendingLocators.get(id)
+            .also { pendingLocators.remove(id) }
 }

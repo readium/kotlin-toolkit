@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Added
 
+#### Shared
+
+* Extract the raw content (text, images, etc.) of a publication. [Take a look at the user guide](docs/guides/content.md).
+
 #### Navigator
 
 * Improved Javascript support in the EPUB navigator:
@@ -34,7 +38,8 @@ All notable changes to this project will be documented in this file. Take a look
         ```kotlin
         val result = navigator.evaluateJavascript("customInterface.api('argument')")
         ```
-* New [PSPDFKit](readium/adapters/pspdfkit) adapter for rendering PDF documents.
+* New [PSPDFKit](readium/adapters/pspdfkit) adapter for rendering PDF documents. [Take a look at the user guide](docs/guides/pdf.md).
+* A brand new text-to-speech implementation. [Take a look at the user guide](docs/guides/tts.md).
 
 ### Changed
 
@@ -52,6 +57,8 @@ All notable changes to this project will be documented in this file. Take a look
 #### Navigator
 
 * [swift-toolkit#61](https://github.com/readium/swift-toolkit/issues/61) Fixed serving EPUB resources when the HREF contains an anchor or query parameters.
+* Fixed emitting `currentLocator` with fixed layout EPUBs.
+* Prevent refreshing an already loaded EPUB resource when jumping to a `Locator` in it.
 
 
 ## [2.2.0]

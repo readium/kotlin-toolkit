@@ -13,22 +13,46 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Bundle
 import android.view.*
+import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
-import android.widget.*
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.PopupWindow
+import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.navigator.util.EdgeTapNavigation
+import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentReaderBinding
 import org.readium.r2.testapp.domain.model.Highlight
+import org.readium.r2.testapp.reader.tts.TtsControls
+import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.utils.*
+import org.readium.r2.testapp.utils.extensions.confirmDialog
+import org.readium.r2.testapp.utils.extensions.throttleLatest
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 /*
  * Base reader fragment class
@@ -51,35 +75,172 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         return binding.root
     }
 
+    /**
+     * When true, the user won't be able to interact with the navigator.
+     */
+    private var disableTouches by mutableStateOf(false)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         navigatorFragment = navigator as Fragment
 
-        val viewScope = viewLifecycleOwner.lifecycleScope
+        setupObservers()
 
-        navigator.currentLocator
-            .onEach { model.saveProgression(it) }
-            .launchIn(viewScope)
+        childFragmentManager.addOnBackStackChangedListener {
+            updateSystemUiVisibility()
+        }
+        binding.fragmentReaderContainer.setOnApplyWindowInsetsListener { container, insets ->
+            updateSystemUiPadding(container, insets)
+            insets
+        }
 
+        binding.overlay.setContent {
+            if (disableTouches) {
+                // Add an invisible box on top of the navigator to intercept touch gestures.
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pointerInput(Unit) {
+                            detectTapGestures {
+                                requireActivity().toggleSystemUi()
+                            }
+                        }
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .systemBarsPadding(),
+                content = { Overlay() }
+            )
+        }
+    }
+
+    @Composable
+    private fun BoxScope.Overlay() {
+        model.tts?.let { tts ->
+            TtsControls(
+                model = tts,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(8.dp)
+            )
+        }
+    }
+
+    private fun setupObservers() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                navigator.currentLocator
+                    .onEach { model.saveProgression(it) }
+                    .launchIn(this)
+
+                setupHighlights(this)
+                setupSearch(this)
+                setupTts(this)
+            }
+        }
+    }
+
+    private suspend fun setupHighlights(scope: CoroutineScope) {
         (navigator as? DecorableNavigator)?.let { navigator ->
             navigator.addDecorationListener("highlights", decorationListener)
 
             model.highlightDecorations
                 .onEach { navigator.applyDecorations(it, "highlights") }
-                .launchIn(viewScope)
+                .launchIn(scope)
+        }
+    }
 
+    private suspend fun setupSearch(scope: CoroutineScope) {
+        (navigator as? DecorableNavigator)?.let { navigator ->
             model.searchDecorations
                 .onEach { navigator.applyDecorations(it, "search") }
-                .launchIn(viewScope)
+                .launchIn(scope)
+        }
+    }
 
-            childFragmentManager.addOnBackStackChangedListener {
-                updateSystemUiVisibility()
+    /**
+     * Setup text-to-speech observers, if available.
+     */
+    private suspend fun setupTts(scope: CoroutineScope) {
+        model.tts?.apply {
+            events
+                .onEach { event ->
+                    when (event) {
+                        is TtsViewModel.Event.OnError ->
+                            showError(event.error)
+
+                        is TtsViewModel.Event.OnMissingVoiceData ->
+                            confirmAndInstallTtsVoice(event.language)
+                    }
+                }
+                .launchIn(scope)
+
+            // Navigate to the currently spoken utterance.
+            state.map { it.playingUtterance }
+                .filterNotNull()
+                // Prevent jumping to many locations when the user skips repeatedly forward/backward.
+                .throttleLatest(500.milliseconds)
+                .onEach { locator ->
+                    navigator.go(locator, animated = false)
+                }
+                .launchIn(scope)
+
+            // Navigate to the currently spoken word.
+            // This will automatically turn pages when needed.
+            state.map { it.playingWordRange }
+                .filterNotNull()
+                // Improve performances by throttling the moves to maximum one per second.
+                .throttleLatest(1.seconds)
+                .onEach { locator ->
+                    navigator.go(locator, animated = false)
+                }
+                .launchIn(scope)
+
+            // Prevent interacting with the publication (including page turns) while the TTS is
+            // playing.
+            state.map { it.isPlaying }
+                .distinctUntilChanged()
+                .onEach { isPlaying ->
+                    disableTouches = isPlaying
+                }
+                .launchIn(scope)
+
+            // Highlight the currently spoken utterance.
+            (navigator as? DecorableNavigator)?.let { navigator ->
+                state.map { it.playingUtterance }
+                    .distinctUntilChanged()
+                    .onEach { locator ->
+                        val decoration = locator?.let {
+                            Decoration(
+                                id = "tts",
+                                locator = it,
+                                style = Decoration.Style.Highlight(tint = Color.RED)
+                            )
+                        }
+                        navigator.applyDecorations(listOfNotNull(decoration), "tts")
+                    }
+                    .launchIn(scope)
             }
-            binding.fragmentReaderContainer.setOnApplyWindowInsetsListener { container, insets ->
-                updateSystemUiPadding(container, insets)
-                insets
-            }
+        }
+    }
+
+    /**
+     * Confirms with the user if they want to download the TTS voice data for the given language.
+     */
+    private suspend fun confirmAndInstallTtsVoice(language: Language) {
+        val activity = activity ?: return
+        val tts = model.tts ?: return
+
+        if (
+            activity.confirmDialog(
+                getString(R.string.tts_error_language_support_incomplete, language.locale.displayLanguage)
+            )
+        ) {
+            tts.requestInstallVoice(activity)
         }
     }
 
@@ -88,10 +249,29 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         super.onDestroyView()
     }
 
+    override fun onStop() {
+        super.onStop()
+
+        model.tts?.pause()
+    }
+
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
         setMenuVisibility(!hidden)
         requireActivity().invalidateOptionsMenu()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, menuInflater)
+        menu.findItem(R.id.tts).isVisible = (model.tts != null)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.tts -> checkNotNull(model.tts).start(navigator)
+            else -> return super.onOptionsItemSelected(item)
+        }
+        return true
     }
 
     // DecorableNavigator.Listener

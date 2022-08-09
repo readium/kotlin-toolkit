@@ -11,6 +11,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.media.MediaPlayback
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -38,7 +39,6 @@ import kotlin.time.ExperimentalTime
  *   interactions such as tapping/clicking the edge of the page to skip to the next one should be
  *   implemented by the reading app, and not the navigator.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 interface Navigator {
 
     /**
@@ -104,10 +104,18 @@ interface NavigatorDelegate {
  * A navigator rendering the publication visually on-screen.
  */
 interface VisualNavigator : Navigator {
+
     /**
      * Current reading progression direction.
      */
     val readingProgression: ReadingProgression
+
+    /**
+     * Returns the [Locator] to the first content element that begins on the current screen.
+     */
+    @ExperimentalReadiumApi
+    suspend fun firstVisibleElementLocator(): Locator? =
+        currentLocator.value
 
     interface Listener : Navigator.Listener {
         /**
