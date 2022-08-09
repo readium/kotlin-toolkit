@@ -7,6 +7,7 @@
 package org.readium.r2.navigator.epub
 
 import android.app.Application
+import android.content.Context
 import android.graphics.PointF
 import android.graphics.RectF
 import android.net.Uri
@@ -30,6 +31,7 @@ import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceInputStream
@@ -38,6 +40,7 @@ import org.readium.r2.shared.fetcher.fallback
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
+import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.http.HttpHeaders
@@ -57,6 +60,8 @@ internal class EpubNavigatorViewModel(
         baseUrl?.let { it.removeSuffix("/") + "/" }
             ?: publication.linkWithRel("self")?.href
             ?: "https://readium/publication/"
+
+    val preferences = application.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
     // Make a copy to prevent new decoration templates from being registered after initializing
     // the navigator.
@@ -284,6 +289,16 @@ internal class EpubNavigatorViewModel(
 
         css.update { it.update(settings) }
     }
+
+    /**
+     * Indicates whether the navigator is scrollable instead of paginated.
+     */
+    val isOverflowScrolled: Boolean get() =
+        if (config.useLegacySettings) {
+            preferences.getBoolean(SCROLL_REF, false)
+        } else {
+            (settings.value as? EpubSettings.Reflowable)?.overflow?.value == Presentation.Overflow.SCROLLED
+        }
 
     // Selection
 

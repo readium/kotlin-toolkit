@@ -6,7 +6,6 @@
 
 package org.readium.r2.navigator.epub
 
-import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.PointF
 import android.graphics.RectF
@@ -50,7 +49,6 @@ import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.COLUMN_COUNT_REF
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -148,6 +146,11 @@ class EpubNavigatorFragment private constructor(
          */
         val shouldApplyInsetsPadding: Boolean? = true,
 
+        /**
+         * Indicates whether the navigator should use the legacy user settings API.
+         */
+        val useLegacySettings: Boolean = true,
+
         internal val javascriptInterfaces: MutableMap<String, JavascriptInterfaceFactory> = mutableMapOf()
     ) {
         /**
@@ -221,7 +224,7 @@ class EpubNavigatorFragment private constructor(
     private lateinit var resourcesSingle: List<PageResource>
     private lateinit var resourcesDouble: List<PageResource>
 
-    lateinit var preferences: SharedPreferences
+    val preferences: SharedPreferences get() = viewModel.preferences
     internal lateinit var publicationIdentifier: String
 
     internal var currentPagerPosition: Int = 0
@@ -234,11 +237,6 @@ class EpubNavigatorFragment private constructor(
 
     private var _binding: ActivityR2ViewpagerBinding? = null
     private val binding get() = _binding!!
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        preferences = context.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         currentActivity = requireActivity()
@@ -337,7 +335,7 @@ class EpubNavigatorFragment private constructor(
 //                    resourcePager.disableTouchEvents = true
 //                }
                 currentReflowablePageFragment?.webView?.let { webView ->
-                    if (preferences.getBoolean(SCROLL_REF, false)) {
+                    if (viewModel.isOverflowScrolled) {
                         if (currentPagerPosition < position) {
                             // handle swipe LEFT
                             webView.scrollToStart()
