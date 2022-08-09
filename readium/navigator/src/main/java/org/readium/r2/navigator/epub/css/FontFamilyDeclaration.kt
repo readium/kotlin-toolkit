@@ -23,6 +23,11 @@ data class FontFamilyDeclaration(
  */
 sealed class FontFamilySource {
     /**
+     * A typeface shipped with Android.
+     */
+    object System : FontFamilySource()
+
+    /**
      * A typeface embedded with Readium CSS, under the fonts/ directory.
      */
     object ReadiumCss : FontFamilySource()

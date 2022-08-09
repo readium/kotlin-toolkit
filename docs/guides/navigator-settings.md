@@ -113,7 +113,7 @@ You can use the `Configurable` API to build a user settings interface dynamicall
 For example, you could group the user settings per nature of publications:
 
 * `ReflowableUserSettings` for a visual publication with adjustable fonts and dimensions, such as a reflowable EPUB, HTML document or PDF with reflow mode enabled.
-* `FixedUserSettings` for a visual publication with a fixed layout, such as FXL EPUB, PDF or comic books.
+* `FixedLayoutUserSettings` for a visual publication with a fixed layout, such as FXL EPUB, PDF or comic books.
 * `PlaybackUserSettings` for an audiobook, text-to-speech or EPUB media overlays settings.
 
 ### Binding with the `Configurable` Navigator
@@ -222,7 +222,7 @@ fun ReflowableUserSettings(
     }
 
     if (font != null) {
-        DropdownMenuItem("Font", font, preferences, edit) { value ->
+        MenuItem("Font", font, preferences, edit) { value ->
             when (value) {
                 Font.ORIGINAL -> "Original"
                 else -> font.label(value)
@@ -324,7 +324,7 @@ In this example, we chose a dropdown menu built using the `setting.values`, whic
 
 ```kotlin
 @Composable
-fun <T> DropdownMenuItem(
+fun <T> MenuItem(
     title: String,
     setting: EnumSetting<T>,
     preferences: Preferences,
