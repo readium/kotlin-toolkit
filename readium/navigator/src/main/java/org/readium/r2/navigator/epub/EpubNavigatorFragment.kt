@@ -136,6 +136,11 @@ class EpubNavigatorFragment private constructor(
         }
 
         companion object {
+            /**
+             * Default font family declarations.
+             *
+             * Warning: Most of them require an Internet connection (Google Fonts).
+             */
             val DEFAULT_FONT_FAMILIES: List<FontFamilyDeclaration> = listOf(
                 FontFamily.LITERATA.from(GoogleFonts),
                 FontFamily.PT_SERIF.from(GoogleFonts),

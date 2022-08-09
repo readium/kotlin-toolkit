@@ -26,7 +26,9 @@ import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
+import org.readium.r2.shared.publication.presentation.Presentation.Spread
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.ColorPicker
@@ -92,6 +94,16 @@ fun UserSettings(
         Divider()
 
         when (settings) {
+            is EpubSettings.FixedLayout ->
+                FixedLayoutUserSettings(
+                    preferences = preferences,
+                    edit = edit,
+                    language = settings.language,
+                    readingProgression = settings.readingProgression,
+                    spread = settings.spread,
+                    theme = settings.theme,
+                )
+
             is EpubSettings.Reflowable ->
                 ReflowableUserSettings(
                     preferences = preferences,
@@ -119,6 +131,59 @@ fun UserSettings(
                     typeScale = settings.typeScale,
                     wordSpacing = settings.wordSpacing,
                 )
+        }
+    }
+}
+
+/**
+ * User settings for a publication with a fixed layout, such as fixed-layout EPUB, PDF or comic book.
+ */
+@Composable
+private fun FixedLayoutUserSettings(
+    preferences: Preferences,
+    edit: EditPreferences,
+    spread: EnumSetting<Spread>? = null,
+    language: ValueSetting<Language?>? = null,
+    readingProgression: EnumSetting<ReadingProgression>? = null,
+    theme: EnumSetting<Theme>? = null,
+) {
+    if (language != null || readingProgression != null) {
+        if (language != null) {
+            LanguageItem(language, preferences, edit)
+        }
+
+        if (readingProgression != null) {
+            ButtonGroupItem(title = "Reading progression", readingProgression, preferences , edit) { value ->
+                when (value) {
+                    ReadingProgression.AUTO -> "Auto"
+                    else -> value.name
+                }
+            }
+        }
+
+        Divider()
+    }
+
+    if (theme != null) {
+        ButtonGroupItem("Theme", theme, preferences, edit) { value ->
+            when (value) {
+                Theme.LIGHT -> "Light"
+                Theme.DARK -> "Dark"
+                Theme.SEPIA -> "Sepia"
+            }
+        }
+
+        Divider()
+    }
+
+    if (spread != null) {
+        ButtonGroupItem("Spread", spread, preferences, edit) { value ->
+            when (value) {
+                Spread.AUTO -> "Auto"
+                Spread.BOTH -> "Both"
+                Spread.NONE -> "None"
+                Spread.LANDSCAPE -> "Landscape"
+            }
         }
     }
 }

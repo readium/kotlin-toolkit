@@ -56,6 +56,7 @@ data class Setting<V, E>(
         const val PARAGRAPH_SPACING = "paragraphSpacing"
         const val PUBLISHER_STYLES = "publisherStyles"
         const val READING_PROGRESSION = "readingProgression"
+        const val SPREAD = "spread"
         const val TEXT_ALIGN = "textAlign"
         const val TEXT_COLOR = "textColor"
         const val THEME = "theme"
