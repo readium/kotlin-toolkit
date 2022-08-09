@@ -69,6 +69,7 @@ internal class EpubNavigatorViewModel(
 
     private val css = MutableStateFlow(
         ReadiumCss(
+            rsProperties = config.readiumCssRsProperties,
             fontFamilies = config.fontFamilies,
             assetsBaseHref = assetsBaseHref
         ).update(settings.value)
