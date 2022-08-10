@@ -26,7 +26,6 @@ import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.publication.presentation.Presentation.Spread
 import org.readium.r2.shared.util.Language
@@ -118,7 +117,6 @@ fun UserSettings(
                     letterSpacing = settings.letterSpacing,
                     ligatures = settings.ligatures,
                     lineHeight = settings.lineHeight,
-                    normalizedText = settings.normalizedText,
                     overflow = settings.overflow,
                     pageMargins = settings.pageMargins,
                     paragraphIndent = settings.paragraphIndent,
@@ -127,6 +125,7 @@ fun UserSettings(
                     readingProgression = settings.readingProgression,
                     textAlign = settings.textAlign,
                     textColor = settings.textColor,
+                    textNormalization = settings.textNormalization,
                     theme = settings.theme,
                     typeScale = settings.typeScale,
                     wordSpacing = settings.wordSpacing,
@@ -206,7 +205,6 @@ private fun ReflowableUserSettings(
     letterSpacing: PercentSetting? = null,
     ligatures: ToggleSetting? = null,
     lineHeight: RangeSetting<Double>? = null,
-    normalizedText: ToggleSetting? = null,
     overflow: EnumSetting<Overflow>? = null,
     pageMargins: RangeSetting<Double>? = null,
     paragraphIndent: PercentSetting? = null,
@@ -215,6 +213,7 @@ private fun ReflowableUserSettings(
     readingProgression: EnumSetting<ReadingProgression>? = null,
     textAlign: EnumSetting<ReadiumTextAlign>? = null,
     textColor: ColorSetting? = null,
+    textNormalization: EnumSetting<TextNormalization>? = null,
     theme: EnumSetting<Theme>? = null,
     typeScale: RangeSetting<Double>? = null,
     wordSpacing: PercentSetting? = null,
@@ -296,7 +295,7 @@ private fun ReflowableUserSettings(
         Divider()
     }
 
-    if (fontFamily != null || fontSize != null || normalizedText != null) {
+    if (fontFamily != null || fontSize != null || textNormalization != null) {
         if (fontFamily != null) {
             MenuItem("Typeface", fontFamily, preferences, edit) { value ->
                 value?.name ?: "Original"
@@ -307,8 +306,14 @@ private fun ReflowableUserSettings(
             StepperItem("Font size", fontSize, preferences, edit)
         }
 
-        if (normalizedText != null) {
-            SwitchItem("Normalized text", normalizedText, preferences, edit)
+        if (textNormalization != null) {
+            ButtonGroupItem("Text normalization", textNormalization, preferences, edit) { value ->
+                when (value) {
+                    TextNormalization.NONE -> "None"
+                    TextNormalization.BOLD -> "Bold"
+                    TextNormalization.ACCESSIBILITY -> "A11y"
+                }
+            }
         }
 
         Divider()
@@ -636,6 +641,7 @@ private fun Configurable.Settings.presets(): List<Preset> =
             Preset("Increase legibility") {
                 settings.wordSpacing?.let { set(it, 0.6) }
                 set(settings.fontSize, 1.4)
+                set(settings.textNormalization, TextNormalization.ACCESSIBILITY)
             },
             Preset("Document") {
                 set(settings.overflow, Overflow.SCROLLED)

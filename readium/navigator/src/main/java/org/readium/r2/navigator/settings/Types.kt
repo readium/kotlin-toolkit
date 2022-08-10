@@ -39,6 +39,17 @@ enum class TextAlign {
 
 @ExperimentalReadiumApi
 @Serializable
+enum class TextNormalization {
+    /** No text normalization. */
+    @SerialName("none") NONE,
+    /** Force bold text. */
+    @SerialName("bold") BOLD,
+    /** Normalize text to increase accessibility. */
+    @SerialName("a11y") ACCESSIBILITY,
+}
+
+@ExperimentalReadiumApi
+@Serializable
 enum class ColumnCount {
     @SerialName("auto") AUTO,
     @SerialName("1") ONE,

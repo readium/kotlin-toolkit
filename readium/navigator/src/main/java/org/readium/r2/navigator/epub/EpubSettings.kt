@@ -105,7 +105,6 @@ sealed class EpubSettings : Configurable.Settings {
      * @param letterSpacing Space between letters.
      * @param ligatures Enable ligatures in Arabic.
      * @param lineHeight Leading line height.
-     * @param normalizedText Normalize font style, weight and variants to increase legibility.
      * @param overflow Indicates if the overflow of resources should be handled using dynamic
      * pagination or scrolling.
      * @param pageMargins Factor applied to horizontal margins.
@@ -116,6 +115,7 @@ sealed class EpubSettings : Configurable.Settings {
      * @param readingProgression Direction of the reading progression across resources.
      * @param textAlign Page text alignment.
      * @param textColor Default page text color.
+     * @param textNormalization Normalize font style, weight and variants using a specific strategy.
      * @param theme Reader theme.
      * @param typeScale Scale applied to all element font sizes.
      * @param wordSpacing Space between words.
@@ -132,7 +132,6 @@ sealed class EpubSettings : Configurable.Settings {
         val letterSpacing: PercentSetting? = LETTER_SPACING,
         val ligatures: ToggleSetting? = LIGATURES,
         val lineHeight: RangeSetting<Double> = LINE_HEIGHT,
-        val normalizedText: ToggleSetting = NORMALIZED_TEXT,
         val overflow: EnumSetting<Overflow> = OVERFLOW,
         val pageMargins: RangeSetting<Double> = PAGE_MARGINS,
         val paragraphIndent: PercentSetting? = PARAGRAPH_INDENT,
@@ -141,6 +140,7 @@ sealed class EpubSettings : Configurable.Settings {
         val readingProgression: EnumSetting<ReadingProgression> = READING_PROGRESSION,
         val textAlign: EnumSetting<TextAlign>? = TEXT_ALIGN,
         val textColor: ColorSetting = TEXT_COLOR,
+        val textNormalization: EnumSetting<TextNormalization> = TEXT_NORMALIZATION,
         val theme: EnumSetting<Theme> = THEME,
         val typeScale: RangeSetting<Double> = TYPE_SCALE,
         val wordSpacing: PercentSetting? = WORD_SPACING,
@@ -237,12 +237,6 @@ sealed class EpubSettings : Configurable.Settings {
                 activator = RequiresPublisherStylesDisabled
             )
 
-            /** Normalize font style, weight and variants to increase legibility. */
-            val NORMALIZED_TEXT: ToggleSetting = ToggleSetting(
-                key = Setting.NORMALIZED_TEXT,
-                value = false,
-            )
-
             /**
              * Indicates if the overflow of resources should be handled using dynamic
              * pagination or scrolling.
@@ -313,6 +307,13 @@ sealed class EpubSettings : Configurable.Settings {
                 value = Color.AUTO
             )
 
+            /** Normalize font style, weight and variants using a specific strategy. */
+            val TEXT_NORMALIZATION: EnumSetting<TextNormalization> = EnumSetting(
+                key = Setting.TEXT_NORMALIZATION,
+                value = TextNormalization.NONE,
+                values = listOf(TextNormalization.NONE, TextNormalization.BOLD, TextNormalization.ACCESSIBILITY)
+            )
+
             /** Reader theme. */
             val THEME: EnumSetting<Theme> = EnumSetting(
                 key = Setting.THEME,
@@ -379,7 +380,6 @@ sealed class EpubSettings : Configurable.Settings {
                 ligatures = if (layout.stylesheets != Stylesheets.Rtl) null
                     else (ligatures ?: LIGATURES).copyFirstValidValueFrom(preferences, defaults, fallback = LIGATURES),
                 lineHeight = lineHeight.copyFirstValidValueFrom(preferences, defaults, fallback = LINE_HEIGHT),
-                normalizedText = normalizedText.copyFirstValidValueFrom(preferences, defaults, fallback = NORMALIZED_TEXT),
                 overflow = overflow.copyFirstValidValueFrom(preferences, defaults, fallback = OVERFLOW),
                 pageMargins = pageMargins.copyFirstValidValueFrom(preferences, defaults, fallback = PAGE_MARGINS),
                 paragraphIndent = if (layout.stylesheets == Stylesheets.CjkVertical || layout.stylesheets == Stylesheets.CjkHorizontal) null
@@ -390,6 +390,7 @@ sealed class EpubSettings : Configurable.Settings {
                 textAlign = if (layout.stylesheets == Stylesheets.CjkVertical || layout.stylesheets == Stylesheets.CjkHorizontal) null
                     else (textAlign ?: TEXT_ALIGN).copyFirstValidValueFrom(preferences, defaults, fallback = TEXT_ALIGN),
                 textColor = textColor.copyFirstValidValueFrom( preferences, defaults, fallback = TEXT_COLOR),
+                textNormalization = textNormalization.copyFirstValidValueFrom(preferences, defaults, fallback = TEXT_NORMALIZATION),
                 theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME),
                 typeScale = typeScale.copyFirstValidValueFrom( preferences, defaults, fallback = TYPE_SCALE),
                 wordSpacing = if (layout.stylesheets != Stylesheets.Default) null
@@ -432,7 +433,7 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
                 backgroundColor = backgroundColor.value
                     .takeIf { it != Color.AUTO }
                     ?.let { CssColor.int(it.int) },
-                fontOverride = (fontFamily.value != null || normalizedText.value),
+                fontOverride = (fontFamily.value != null || (textNormalization.value == TextNormalization.ACCESSIBILITY)),
                 fontFamily = fontFamily.value?.toCss(),
                 // Font size is handled natively with WebSettings.textZoom.
                 // See https://github.com/readium/mobile/issues/1#issuecomment-652431984
@@ -454,7 +455,10 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
                 letterSpacing = letterSpacing?.run { Length.Relative.Rem(value / 2) },
                 bodyHyphens = hyphens?.run { if (value) Hyphens.AUTO else Hyphens.NONE },
                 ligatures = ligatures?.run { if (value) Ligatures.COMMON else Ligatures.NONE },
-                a11yNormalize = normalizedText.value,
+                a11yNormalize = textNormalization.value == TextNormalization.ACCESSIBILITY,
+                overrides = mapOf(
+                    "font-weight" to if (textNormalization.value == TextNormalization.BOLD) "bold" else null
+                )
             )
         )
     }
