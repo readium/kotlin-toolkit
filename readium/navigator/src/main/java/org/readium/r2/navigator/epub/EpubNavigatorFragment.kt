@@ -36,8 +36,8 @@ import org.readium.r2.navigator.*
 import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel.RunScriptCommand
 import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
-import org.readium.r2.navigator.epub.css.FontFamilySource
 import org.readium.r2.navigator.epub.css.FontFamilySource.*
+import org.readium.r2.navigator.epub.css.RsProperties
 import org.readium.r2.navigator.epub.css.from
 import org.readium.r2.navigator.extensions.optRectF
 import org.readium.r2.navigator.extensions.positionsByResource
@@ -109,7 +109,16 @@ class EpubNavigatorFragment private constructor(
         /**
          * Font families available in reflowable resources.
          */
+        @ExperimentalReadiumApi
         val fontFamilies: List<FontFamilyDeclaration> = DEFAULT_FONT_FAMILIES,
+
+        /**
+         * Readium CSS reading system settings.
+         *
+         * See https://readium.org/readium-css/docs/CSS19-api.html#reading-system-styles
+         */
+        @ExperimentalReadiumApi
+        val readiumCssRsProperties: RsProperties = RsProperties(),
 
         /**
          * Supported HTML decoration templates.
@@ -141,6 +150,11 @@ class EpubNavigatorFragment private constructor(
         }
 
         companion object {
+            /**
+             * Default font family declarations.
+             *
+             * Warning: Most of them require an Internet connection (Google Fonts).
+             */
             val DEFAULT_FONT_FAMILIES: List<FontFamilyDeclaration> = listOf(
                 FontFamily.LITERATA.from(GoogleFonts),
                 FontFamily.PT_SERIF.from(GoogleFonts),

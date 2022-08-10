@@ -17,16 +17,109 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
+import org.readium.r2.shared.publication.presentation.Presentation.Spread
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Language
 import org.readium.r2.navigator.epub.css.Color as CssColor
 import org.readium.r2.navigator.epub.css.TextAlign as CssTextAlign
 
+/**
+ * EPUB navigator settings.
+ *
+ * There are two implementations, depending on the type of publications: [Reflowable] and [FixedLayout].
+ */
 @ExperimentalReadiumApi
 sealed class EpubSettings : Configurable.Settings {
 
     internal abstract fun update(metadata: Metadata, preferences: Preferences, defaults: Preferences = Preferences()): EpubSettings
 
+    /**
+     * EPUB navigator settings for fixed-layout publications.
+     *
+     * @param language Language of the publication content.
+     * @param readingProgression Direction of the reading progression across resources.
+     * @param spread Indicates the condition to be met for the publication to be rendered with a
+     * synthetic spread (dual-page).
+     * @param theme Reader theme.
+     */
+    @ExperimentalReadiumApi
+    data class FixedLayout(
+        val language: ValueSetting<Language?> = LANGUAGE,
+        val readingProgression: EnumSetting<ReadingProgression> = READING_PROGRESSION,
+        val spread: EnumSetting<Spread> = SPREAD,
+        val theme: EnumSetting<Theme> = THEME,
+    ) : EpubSettings() {
+
+        companion object {
+
+            /** Language of the publication content. */
+            val LANGUAGE: ValueSetting<Language?> = ValueSetting(
+                key = Setting.LANGUAGE,
+                value = null,
+            )
+
+            /** Direction of the reading progression across resources. */
+            val READING_PROGRESSION: EnumSetting<ReadingProgression> = EnumSetting(
+                key = Setting.READING_PROGRESSION,
+                value = ReadingProgression.AUTO,
+                values = listOf(ReadingProgression.AUTO, ReadingProgression.LTR, ReadingProgression.RTL)
+            )
+
+            /**
+             * Indicates the condition to be met for the publication to be rendered with a
+             * synthetic spread (dual-page).
+             */
+            val SPREAD: EnumSetting<Spread> = EnumSetting(
+                key = Setting.SPREAD,
+                value = Spread.AUTO,
+                values = listOf(Spread.AUTO, Spread.NONE, Spread.BOTH, Spread.LANDSCAPE),
+            )
+
+            /** Reader theme. */
+            val THEME: EnumSetting<Theme> = EnumSetting(
+                key = Setting.THEME,
+                value = Theme.LIGHT,
+                values = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
+            )
+        }
+
+        override fun update(metadata: Metadata, preferences: Preferences, defaults: Preferences): FixedLayout =
+            copy(
+                language = language.copyFirstValidValueFrom(preferences, defaults, fallback = LANGUAGE),
+                readingProgression = readingProgression.copyFirstValidValueFrom(preferences, defaults, fallback = READING_PROGRESSION),
+                spread = spread.copyFirstValidValueFrom(preferences, defaults, fallback = SPREAD),
+                theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME),
+            )
+    }
+
+    /**
+     * EPUB navigator settings for reflowable publications.
+     *
+     * @param backgroundColor Default page background color.
+     * @param columnCount Number of columns to display (one-page view or two-page spread).
+     * @param fontFamily Default typeface for the text.
+     * @param fontSize Base text font size.
+     * @param hyphens Enable hyphenation.
+     * @param imageFilter Filter applied to images in dark theme.
+     * @param language Language of the publication content.
+     * @param letterSpacing Space between letters.
+     * @param ligatures Enable ligatures in Arabic.
+     * @param lineHeight Leading line height.
+     * @param overflow Indicates if the overflow of resources should be handled using dynamic
+     * pagination or scrolling.
+     * @param pageMargins Factor applied to horizontal margins.
+     * @param paragraphIndent Text indentation for paragraphs.
+     * @param paragraphSpacing Vertical margins for paragraphs.
+     * @param publisherStyles Indicates whether the original publisher styles should be observed.
+     * Many settings require this to be off.
+     * @param readingProgression Direction of the reading progression across resources.
+     * @param textAlign Page text alignment.
+     * @param textColor Default page text color.
+     * @param textNormalization Normalize font style, weight and variants using a specific strategy.
+     * @param theme Reader theme.
+     * @param typeScale Scale applied to all element font sizes.
+     * @param wordSpacing Space between words.
+     */
     @ExperimentalReadiumApi
     data class Reflowable(
         val backgroundColor: ColorSetting = BACKGROUND_COLOR,
@@ -39,7 +132,6 @@ sealed class EpubSettings : Configurable.Settings {
         val letterSpacing: PercentSetting? = LETTER_SPACING,
         val ligatures: ToggleSetting? = LIGATURES,
         val lineHeight: RangeSetting<Double> = LINE_HEIGHT,
-        val normalizedText: ToggleSetting = NORMALIZED_TEXT,
         val overflow: EnumSetting<Overflow> = OVERFLOW,
         val pageMargins: RangeSetting<Double> = PAGE_MARGINS,
         val paragraphIndent: PercentSetting? = PARAGRAPH_INDENT,
@@ -48,6 +140,7 @@ sealed class EpubSettings : Configurable.Settings {
         val readingProgression: EnumSetting<ReadingProgression> = READING_PROGRESSION,
         val textAlign: EnumSetting<TextAlign>? = TEXT_ALIGN,
         val textColor: ColorSetting = TEXT_COLOR,
+        val textNormalization: EnumSetting<TextNormalization> = TEXT_NORMALIZATION,
         val theme: EnumSetting<Theme> = THEME,
         val typeScale: RangeSetting<Double> = TYPE_SCALE,
         val wordSpacing: PercentSetting? = WORD_SPACING,
@@ -73,17 +166,20 @@ sealed class EpubSettings : Configurable.Settings {
 
         companion object {
 
+            /** Default page background color. */
             val BACKGROUND_COLOR: ColorSetting = ColorSetting(
                 key = Setting.BACKGROUND_COLOR,
                 value = Color.AUTO
             )
 
+            /** Number of columns to display (one-page view or two-page spread). */
             val COLUMN_COUNT: EnumSetting<ColumnCount> = EnumSetting(
                 key = Setting.COLUMN_COUNT,
                 value = ColumnCount.AUTO,
                 values = listOf(ColumnCount.AUTO, ColumnCount.ONE, ColumnCount.TWO),
             )
 
+            /** Default typeface for the text. */
             val FONT_FAMILY: EnumSetting<FontFamily?> = EnumSetting(
                 key = Setting.FONT_FAMILY,
                 coder = FontFamily.Coder(),
@@ -92,41 +188,48 @@ sealed class EpubSettings : Configurable.Settings {
                 label = { it?.name }
             )
 
+            /** Base text font size. */
             val FONT_SIZE: PercentSetting = PercentSetting(
                 key = Setting.FONT_SIZE,
                 value = 1.0,
                 range = 0.4..5.0
             )
 
+            /** Enable hyphenation. */
             val HYPHENS: ToggleSetting = ToggleSetting(
                 key = Setting.HYPHENS,
                 value = true,
                 activator = RequiresPublisherStylesDisabled
             )
 
+            /** Filter applied to images in dark theme. */
             val IMAGE_FILTER: EnumSetting<ImageFilter> = EnumSetting(
                 key = Setting.IMAGE_FILTER,
                 value = ImageFilter.NONE,
                 values = listOf(ImageFilter.NONE, ImageFilter.DARKEN, ImageFilter.INVERT)
             )
 
+            /** Language of the publication content. */
             val LANGUAGE: ValueSetting<Language?> = ValueSetting(
                 key = Setting.LANGUAGE,
                 value = null,
             )
 
+            /** Space between letters. */
             val LETTER_SPACING: PercentSetting = PercentSetting(
                 key = Setting.LETTER_SPACING,
                 value = 0.0,
                 activator = RequiresPublisherStylesDisabled
             )
 
+            /** Enable ligatures in Arabic. */
             val LIGATURES: ToggleSetting = ToggleSetting(
                 key = Setting.LIGATURES,
                 value = true,
                 activator = RequiresPublisherStylesDisabled
             )
 
+            /** Leading line height. */
             val LINE_HEIGHT: RangeSetting<Double> = RangeSetting(
                 key = Setting.LINE_HEIGHT,
                 value = 1.2,
@@ -134,23 +237,24 @@ sealed class EpubSettings : Configurable.Settings {
                 activator = RequiresPublisherStylesDisabled
             )
 
-            val NORMALIZED_TEXT: ToggleSetting = ToggleSetting(
-                key = Setting.NORMALIZED_TEXT,
-                value = false,
-            )
-
+            /**
+             * Indicates if the overflow of resources should be handled using dynamic
+             * pagination or scrolling.
+             */
             val OVERFLOW: EnumSetting<Overflow> = EnumSetting(
                 key = Setting.OVERFLOW,
                 value = Overflow.PAGINATED,
                 values = listOf(Overflow.PAGINATED, Overflow.SCROLLED)
             )
 
+            /** Factor applied to horizontal margins. */
             val PAGE_MARGINS: RangeSetting<Double> = RangeSetting(
                 key = Setting.PAGE_MARGINS,
                 value = 1.0,
                 range = 0.5..2.0
             )
 
+            /** Text indentation for paragraphs. */
             val PARAGRAPH_INDENT: PercentSetting = PercentSetting(
                 key = Setting.PARAGRAPH_INDENT,
                 value = 0.0,
@@ -159,6 +263,7 @@ sealed class EpubSettings : Configurable.Settings {
                 activator = RequiresPublisherStylesDisabled
             )
 
+            /** Vertical margins for paragraphs. */
             val PARAGRAPH_SPACING: PercentSetting = PercentSetting(
                 key = Setting.PARAGRAPH_SPACING,
                 value = 0.0,
@@ -166,17 +271,24 @@ sealed class EpubSettings : Configurable.Settings {
                 activator = RequiresPublisherStylesDisabled
             )
 
+            /**
+             * Indicates whether the original publisher styles should be observed.
+             *
+             * Many settings require this to be off.
+             */
             val PUBLISHER_STYLES: ToggleSetting = ToggleSetting(
                 key = Setting.PUBLISHER_STYLES,
                 value = true,
             )
 
+            /** Direction of the reading progression across resources. */
             val READING_PROGRESSION: EnumSetting<ReadingProgression> = EnumSetting(
                 key = Setting.READING_PROGRESSION,
                 value = ReadingProgression.AUTO,
                 values = listOf(ReadingProgression.AUTO, ReadingProgression.LTR, ReadingProgression.RTL)
             )
 
+            /** Page text alignment. */
             val TEXT_ALIGN: EnumSetting<TextAlign> = EnumSetting(
                 key = Setting.TEXT_ALIGN,
                 value = TextAlign.START,
@@ -189,18 +301,31 @@ sealed class EpubSettings : Configurable.Settings {
                 activator = RequiresPublisherStylesDisabled
             )
 
+            /** Default page text color. */
             val TEXT_COLOR: ColorSetting = ColorSetting(
                 key = Setting.TEXT_COLOR,
                 value = Color.AUTO
             )
 
+            /** Normalize font style, weight and variants using a specific strategy. */
+            val TEXT_NORMALIZATION: EnumSetting<TextNormalization> = EnumSetting(
+                key = Setting.TEXT_NORMALIZATION,
+                value = TextNormalization.NONE,
+                values = listOf(TextNormalization.NONE, TextNormalization.BOLD, TextNormalization.ACCESSIBILITY)
+            )
+
+            /** Reader theme. */
             val THEME: EnumSetting<Theme> = EnumSetting(
                 key = Setting.THEME,
                 value = Theme.LIGHT,
                 values = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
             )
 
-            // https://readium.org/readium-css/docs/CSS19-api.html#typography
+            /**
+             * Scale applied to all element font sizes.
+             *
+             * See https://readium.org/readium-css/docs/CSS19-api.html#typography
+             */
             val TYPE_SCALE: RangeSetting<Double> = RangeSetting(
                 key = Setting.TYPE_SCALE,
                 value = 1.2,
@@ -209,6 +334,7 @@ sealed class EpubSettings : Configurable.Settings {
                 activator = RequiresPublisherStylesDisabled
             )
 
+            /** Space between words. */
             val WORD_SPACING: PercentSetting = PercentSetting(
                 key = Setting.WORD_SPACING,
                 value = 0.0,
@@ -254,7 +380,6 @@ sealed class EpubSettings : Configurable.Settings {
                 ligatures = if (layout.stylesheets != Stylesheets.Rtl) null
                     else (ligatures ?: LIGATURES).copyFirstValidValueFrom(preferences, defaults, fallback = LIGATURES),
                 lineHeight = lineHeight.copyFirstValidValueFrom(preferences, defaults, fallback = LINE_HEIGHT),
-                normalizedText = normalizedText.copyFirstValidValueFrom(preferences, defaults, fallback = NORMALIZED_TEXT),
                 overflow = overflow.copyFirstValidValueFrom(preferences, defaults, fallback = OVERFLOW),
                 pageMargins = pageMargins.copyFirstValidValueFrom(preferences, defaults, fallback = PAGE_MARGINS),
                 paragraphIndent = if (layout.stylesheets == Stylesheets.CjkVertical || layout.stylesheets == Stylesheets.CjkHorizontal) null
@@ -265,6 +390,7 @@ sealed class EpubSettings : Configurable.Settings {
                 textAlign = if (layout.stylesheets == Stylesheets.CjkVertical || layout.stylesheets == Stylesheets.CjkHorizontal) null
                     else (textAlign ?: TEXT_ALIGN).copyFirstValidValueFrom(preferences, defaults, fallback = TEXT_ALIGN),
                 textColor = textColor.copyFirstValidValueFrom( preferences, defaults, fallback = TEXT_COLOR),
+                textNormalization = textNormalization.copyFirstValidValueFrom(preferences, defaults, fallback = TEXT_NORMALIZATION),
                 theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME),
                 typeScale = typeScale.copyFirstValidValueFrom( preferences, defaults, fallback = TYPE_SCALE),
                 wordSpacing = if (layout.stylesheets != Stylesheets.Default) null
@@ -307,7 +433,7 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
                 backgroundColor = backgroundColor.value
                     .takeIf { it != Color.AUTO }
                     ?.let { CssColor.int(it.int) },
-                fontOverride = (fontFamily.value != null || normalizedText.value),
+                fontOverride = (fontFamily.value != null || (textNormalization.value == TextNormalization.ACCESSIBILITY)),
                 fontFamily = fontFamily.value?.toCss(),
                 // Font size is handled natively with WebSettings.textZoom.
                 // See https://github.com/readium/mobile/issues/1#issuecomment-652431984
@@ -329,7 +455,10 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
                 letterSpacing = letterSpacing?.run { Length.Relative.Rem(value / 2) },
                 bodyHyphens = hyphens?.run { if (value) Hyphens.AUTO else Hyphens.NONE },
                 ligatures = ligatures?.run { if (value) Ligatures.COMMON else Ligatures.NONE },
-                a11yNormalize = normalizedText.value,
+                a11yNormalize = textNormalization.value == TextNormalization.ACCESSIBILITY,
+                overrides = mapOf(
+                    "font-weight" to if (textNormalization.value == TextNormalization.BOLD) "bold" else null
+                )
             )
         )
     }

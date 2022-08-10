@@ -499,6 +499,7 @@ class HtmlInjectionTest {
     fun `Inject font declarations`() {
         val sut = ReadiumCss(
             fontFamilies = listOf(
+                FontFamily.SANS_SERIF.from(FontFamilySource.System),
                 FontFamily.ROBOTO.from(FontFamilySource.GoogleFonts),
                 FontFamily.LITERATA.from(FontFamilySource.GoogleFonts),
                 FontFamily.LIBRE_FRANKLIN.from(FontFamilySource.Assets("fonts/LibreFranklin.otf")),

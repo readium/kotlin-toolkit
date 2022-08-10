@@ -76,11 +76,45 @@ open class Preferences(
         : this(json.toMap())
 
     /**
+     * Creates a copy of this [Preferences] receiver, keeping only the preferences for the given
+     * settings.
+     */
+    fun filter(vararg settings: Setting<*, *>): Preferences =
+        filter(*settings.map { it.key }.toTypedArray())
+
+    /**
+     * Creates a copy of this [Preferences] receiver, keeping only the preferences for the given
+     * settings.
+     */
+    fun filterNot(vararg settings: Setting<*, *>): Preferences =
+        filterNot(*settings.map { it.key }.toTypedArray())
+
+    /**
+     * Creates a copy of this [Preferences] receiver, keeping only the preferences for the given
+     * setting [keys].
+     */
+    fun filter(vararg keys: String): Preferences =
+        Preferences(values.filterKeys { it in keys })
+
+    /**
+     * Creates a copy of this [Preferences] receiver, keeping only the preferences for the given
+     * setting [keys].
+     */
+    fun filterNot(vararg keys: String): Preferences =
+        Preferences(values.filterKeys { it !in keys })
+
+    /**
      * Creates a copy of this [Preferences] receiver after modifying it with the given
      * [updates] builder.
      */
     fun copy(updates: MutablePreferences.() -> Unit): Preferences =
         Preferences(toMutablePreferences().apply(updates))
+
+    /**
+     * Creates a new [Preferences] object by replacing or adding values to the receiver from [other].
+     */
+    operator fun plus(other: Preferences): Preferences =
+        copy { merge(other) }
 
     /**
      * Creates a mutable copy of this [Preferences] receiver.
@@ -175,6 +209,13 @@ class MutablePreferences(
         for ((key, value) in other.values) {
             values[key] = value
         }
+    }
+
+    /**
+     * Merges the preferences of [other], overwriting the ones from the receiver in case of conflict.
+     */
+    operator fun plusAssign(other: Preferences) {
+        merge(other)
     }
 
     /**

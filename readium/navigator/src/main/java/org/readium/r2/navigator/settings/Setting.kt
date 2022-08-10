@@ -45,10 +45,9 @@ data class Setting<V, E>(
         const val HYPHENS = "hyphens"
         const val IMAGE_FILTER = "imageFilter"
         const val LANGUAGE = "language"
+        const val LETTER_SPACING = "letterSpacing"
         const val LIGATURES = "ligatures"
         const val LINE_HEIGHT = "lineHeight"
-        const val LETTER_SPACING = "letterSpacing"
-        const val NORMALIZED_TEXT = "normalizedText"
         const val ORIENTATION = "orientation"
         const val OVERFLOW = "overflow"
         const val PAGE_MARGINS = "pageMargins"
@@ -56,11 +55,23 @@ data class Setting<V, E>(
         const val PARAGRAPH_SPACING = "paragraphSpacing"
         const val PUBLISHER_STYLES = "publisherStyles"
         const val READING_PROGRESSION = "readingProgression"
+        const val SPREAD = "spread"
         const val TEXT_ALIGN = "textAlign"
         const val TEXT_COLOR = "textColor"
+        const val TEXT_NORMALIZATION = "textNormalization"
         const val THEME = "theme"
         const val TYPE_SCALE = "typeScale"
         const val WORD_SPACING = "wordSpacing"
+
+        /**
+         * Keys of settings that are tied to a single publication and should not be shared between
+         * several publications.
+         */
+        @ExperimentalReadiumApi
+        val PUBLICATION_SETTINGS = listOf(
+            LANGUAGE,
+            READING_PROGRESSION,
+        ).toTypedArray()
     }
 
     /**

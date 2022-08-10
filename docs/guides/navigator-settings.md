@@ -8,6 +8,8 @@ A few Readium components – such as the Navigator – support dynamic configura
 
 The application cannot explicitly set the Navigator settings. Instead, you can submit a set of `Preferences` to the Navigator (`Configurable`) which will in turn recompute its settings and refresh the presentation. Then, the application can update its user settings interface with the new settings emitted by the Navigator.
 
+For a concrete example: "font size" is a **setting**, the application can submit the font size value `150%` which is a **preference**.
+
 <img src="assets/settings-flow.svg">
 
 ```kotlin
@@ -113,7 +115,7 @@ You can use the `Configurable` API to build a user settings interface dynamicall
 For example, you could group the user settings per nature of publications:
 
 * `ReflowableUserSettings` for a visual publication with adjustable fonts and dimensions, such as a reflowable EPUB, HTML document or PDF with reflow mode enabled.
-* `FixedUserSettings` for a visual publication with a fixed layout, such as FXL EPUB, PDF or comic books.
+* `FixedLayoutUserSettings` for a visual publication with a fixed layout, such as FXL EPUB, PDF or comic books.
 * `PlaybackUserSettings` for an audiobook, text-to-speech or EPUB media overlays settings.
 
 ### Binding with the `Configurable` Navigator
@@ -222,7 +224,7 @@ fun ReflowableUserSettings(
     }
 
     if (font != null) {
-        DropdownMenuItem("Font", font, preferences, edit) { value ->
+        MenuItem("Font", font, preferences, edit) { value ->
             when (value) {
                 Font.ORIGINAL -> "Original"
                 else -> font.label(value)
@@ -324,7 +326,7 @@ In this example, we chose a dropdown menu built using the `setting.values`, whic
 
 ```kotlin
 @Composable
-fun <T> DropdownMenuItem(
+fun <T> MenuItem(
     title: String,
     setting: EnumSetting<T>,
     preferences: Preferences,
@@ -379,7 +381,7 @@ fun DropdownMenuButton(
 
 ## Save and restore the user preferences
 
-Having a user settings screen is moot if you cannot save and restore the selected preferences for future session. Thankfully you can serialize `Preferences` to a JSON object.
+Having a user settings screen is moot if you cannot save and restore the selected preferences for future sessions. Thankfully you can serialize `Preferences` to a JSON object.
 
 ```kotlin
 val json = preferences.toJSON().toString()
@@ -391,6 +393,37 @@ When you are ready to restore the user preferences, construct a new `Preferences
 val preferences = Preferences(json)
 ```
 
-We recommend storing a different set of preferences per publication profile (`publication.profile`), but you could also store the preferences for each publication.
-
 In the Test App, `UserSettingsViewModel` delegates the preferences state hoisting and persistence to `PreferencesStore`, which acts as a single source of truth.
+
+### Splitting and merging preferences
+
+How you store user preferences has an impact on the available features. You could have, for example:
+
+* A different unique set of preferences for each publication.
+* Preferences shared between publications with the same profile or media type (EPUB, PDF, etc.).
+* Global preferences shared with all publications (e.g. theme).
+* Several user setting profiles/themes that the user can switch to and modify independently.
+* Some settings that are not stored as JSON and will need to be reconstructed (e.g. the publication language).
+
+Use the `filter` and `filterNot` API to extract settings from a `Preferences` object. You can then combine them with the `+` operator.
+
+```kotlin
+val appPrefs = prefs.filter(settings.theme)
+val bookPrefs = prefs.filter(settings.language, settings.readingProgression)
+val profilePrefs = prefs.filterNot(settings.theme, settings.language, settings.readingProgression)
+
+val combinedPrefs = appPrefs + profilePrefs + bookPrefs
+```
+
+### Settings scoped to a publication
+
+:warning: Some settings are really tied to a particular publication and should never be shared between several publications, such as the language. It's recommended that you store these settings separately per book.
+
+While you can filter such settings explicitly, Readium offers a list of known publication-scoped settings with `Setting.PUBLICATION_SETTINGS`. Take a look at `PreferencesStore` in the Test App for an example.
+
+```kotlin
+// Filter the preferences that are related to the publication.
+val bookPrefs = prefs.filter(*Setting.PUBLICATION_SETTINGS)
+// Filter the preferences that will be shared between publications of the same profile.
+val profilePrefs = prefs.filterNot(*Setting.PUBLICATION_SETTINGS)
+```

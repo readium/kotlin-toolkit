@@ -42,7 +42,6 @@ class EpubSettingsReflowableTest {
         assertEquals(0.0, settings.letterSpacing?.value)
         assertEquals(true,  settings.ligatures?.value)
         assertEquals(1.2, settings.lineHeight.value)
-        assertFalse(settings.normalizedText.value)
         assertEquals(Overflow.PAGINATED, settings.overflow.value)
         assertEquals(1.0, settings.pageMargins.value)
         assertEquals(0.0, settings.paragraphIndent?.value)
@@ -50,6 +49,7 @@ class EpubSettingsReflowableTest {
         assertTrue(settings.publisherStyles.value)
         assertEquals(TextAlign.START, settings.textAlign?.value)
         assertEquals(Color.AUTO, settings.textColor.value)
+        assertEquals(TextNormalization.NONE, settings.textNormalization.value)
         assertEquals(listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY), settings.textAlign?.values)
         assertEquals(Theme.LIGHT, settings.theme.value)
         assertEquals(1.2, settings.typeScale.value)
@@ -151,7 +151,6 @@ class EpubSettingsReflowableTest {
             set(sut.hyphens!!, false)
             set(sut.letterSpacing!!, 0.2)
             set(sut.lineHeight, 1.8)
-            set(sut.normalizedText, true)
             set(sut.overflow, Overflow.PAGINATED)
             set(sut.pageMargins, 1.4)
             set(sut.paragraphIndent!!, 0.2)
@@ -159,6 +158,7 @@ class EpubSettingsReflowableTest {
             set(sut.publisherStyles, false)
             set(sut.textAlign!!, TextAlign.LEFT)
             set(sut.textColor, Color(5))
+            set(sut.textNormalization, TextNormalization.BOLD)
             set(sut.theme, Theme.DARK)
             set(sut.typeScale, 1.5)
             set(sut.wordSpacing!!, 0.2)
@@ -172,7 +172,6 @@ class EpubSettingsReflowableTest {
             set(sut.hyphens!!, true)
             set(sut.letterSpacing!!, 0.4)
             set(sut.lineHeight, 1.9)
-            set(sut.normalizedText, false)
             set(sut.overflow, Overflow.SCROLLED)
             set(sut.pageMargins, 1.5)
             set(sut.paragraphIndent!!, 0.3)
@@ -180,6 +179,7 @@ class EpubSettingsReflowableTest {
             set(sut.publisherStyles, true)
             set(sut.textAlign!!, TextAlign.RIGHT)
             set(sut.textColor, Color(6))
+            set(sut.textNormalization, TextNormalization.ACCESSIBILITY)
             set(sut.theme, Theme.SEPIA)
             set(sut.typeScale, 1.6)
             set(sut.wordSpacing!!, 0.4)
@@ -196,7 +196,6 @@ class EpubSettingsReflowableTest {
         assertNull(sut.ligatures)
         assertEquals(0.2, sut.letterSpacing?.value)
         assertEquals(1.8, sut.lineHeight.value)
-        assertTrue(sut.normalizedText.value)
         assertEquals(Overflow.PAGINATED, sut.overflow.value)
         assertEquals(1.4, sut.pageMargins.value)
         assertEquals(0.2, sut.paragraphIndent?.value)
@@ -204,6 +203,7 @@ class EpubSettingsReflowableTest {
         assertFalse(sut.publisherStyles.value)
         assertEquals(TextAlign.LEFT, sut.textAlign?.value)
         assertEquals(Color(5), sut.textColor.value)
+        assertEquals(TextNormalization.BOLD, sut.textNormalization.value)
         assertEquals(1.5, sut.typeScale.value)
         assertEquals(Theme.DARK, sut.theme.value)
         assertEquals(0.2, sut.wordSpacing?.value)
@@ -221,7 +221,6 @@ class EpubSettingsReflowableTest {
             set(sut.hyphens!!, false)
             set(sut.letterSpacing!!, 0.2)
             set(sut.lineHeight, 1.8)
-            set(sut.normalizedText, true)
             set(sut.overflow, Overflow.PAGINATED)
             set(sut.pageMargins, 1.4)
             set(sut.paragraphIndent!!, 0.2)
@@ -229,6 +228,7 @@ class EpubSettingsReflowableTest {
             set(sut.publisherStyles, false)
             set(sut.textAlign!!, TextAlign.LEFT)
             set(sut.textColor, Color(6))
+            set(sut.textNormalization, TextNormalization.BOLD)
             set(sut.theme, Theme.DARK)
             set(sut.typeScale, 1.4)
             set(sut.wordSpacing!!, 0.2)
@@ -244,7 +244,6 @@ class EpubSettingsReflowableTest {
         assertEquals(0.2, sut.letterSpacing?.value)
         assertEquals(1.8, sut.lineHeight.value)
         assertNull(sut.ligatures)
-        assertTrue(sut.normalizedText.value)
         assertEquals(Overflow.PAGINATED, sut.overflow.value)
         assertEquals(1.4, sut.pageMargins.value)
         assertEquals(0.2, sut.paragraphIndent?.value)
@@ -252,6 +251,7 @@ class EpubSettingsReflowableTest {
         assertFalse(sut.publisherStyles.value)
         assertEquals(TextAlign.LEFT, sut.textAlign?.value)
         assertEquals(Color(6), sut.textColor.value)
+        assertEquals(TextNormalization.BOLD, sut.textNormalization.value)
         assertEquals(Theme.DARK, sut.theme.value)
         assertEquals(1.4, sut.typeScale.value)
         assertEquals(0.2, sut.wordSpacing?.value)
@@ -722,6 +722,9 @@ class EpubSettingsReflowableTest {
                     bodyHyphens = Hyphens.AUTO,
                     ligatures = null,
                     a11yNormalize = false,
+                    overrides = mapOf(
+                        "font-weight" to null
+                    )
                 )
             ),
             readiumCss().update(settings())
@@ -747,7 +750,10 @@ class EpubSettingsReflowableTest {
                     letterSpacing = Length.Relative.Rem(0.3),
                     bodyHyphens = Hyphens.NONE,
                     ligatures = null,
-                    a11yNormalize = true,
+                    a11yNormalize = false,
+                    overrides = mapOf(
+                        "font-weight" to "bold"
+                    )
                 )
             ),
             readiumCss().update(
@@ -757,7 +763,6 @@ class EpubSettingsReflowableTest {
                     it[hyphens!!] = false
                     it[letterSpacing!!] = 0.6
                     it[lineHeight] = 1.8
-                    it[normalizedText] = true
                     it[overflow] = Overflow.SCROLLED
                     it[pageMargins] = 1.9
                     it[paragraphIndent!!] = 0.2
@@ -766,6 +771,7 @@ class EpubSettingsReflowableTest {
                     it[textAlign!!] = TextAlign.LEFT
                     it[theme] = Theme.LIGHT
                     it[textColor] = Color(3)
+                    it[textNormalization] = TextNormalization.BOLD
                     it[typeScale] = 1.4
                     it[wordSpacing!!] = 0.4
                 }
@@ -781,7 +787,7 @@ class EpubSettingsReflowableTest {
                     appearance = Appearance.NIGHT,
                     darkenImages = false,
                     invertImages = false,
-                    fontOverride = false,
+                    fontOverride = true,
                     advancedSettings = true,
                     typeScale = 1.2,
                     textAlign = CssTextAlign.RIGHT,
@@ -792,7 +798,10 @@ class EpubSettingsReflowableTest {
                     letterSpacing = Length.Relative.Rem(0.5),
                     bodyHyphens = Hyphens.AUTO,
                     ligatures = null,
-                    a11yNormalize = false,
+                    a11yNormalize = true,
+                    overrides = mapOf(
+                        "font-weight" to null
+                    )
                 )
             ),
             readiumCss().update(
@@ -801,6 +810,7 @@ class EpubSettingsReflowableTest {
                     it[letterSpacing!!] = 1.0
                     it[publisherStyles] = false
                     it[textAlign!!] = TextAlign.RIGHT
+                    it[textNormalization] = TextNormalization.ACCESSIBILITY
                     it[theme] = Theme.DARK
                     it[wordSpacing!!] = 1.0
                 }
@@ -826,6 +836,9 @@ class EpubSettingsReflowableTest {
                     bodyHyphens = Hyphens.AUTO,
                     ligatures = null,
                     a11yNormalize = false,
+                    overrides = mapOf(
+                        "font-weight" to null
+                    )
                 )
             ),
             readiumCss().update(
@@ -881,7 +894,7 @@ class EpubSettingsReflowableTest {
     }
 
     @Test
-    fun `Changing the font or normalizing the text activate the fontOverride flag`() {
+    fun `Changing the font or normalizing the text for accessibility activate the fontOverride flag`() {
         assertEquals(false, readiumCss().update(settings()).userProperties.fontOverride)
 
         assertEquals(true, readiumCss().update(
@@ -892,7 +905,7 @@ class EpubSettingsReflowableTest {
 
         assertEquals(true, readiumCss().update(
             settings {
-                it[normalizedText] = true
+                it[textNormalization] = TextNormalization.ACCESSIBILITY
             }
         ).userProperties.fontOverride)
     }

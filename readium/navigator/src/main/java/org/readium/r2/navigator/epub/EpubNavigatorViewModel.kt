@@ -23,6 +23,8 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.epub.EpubLayout
+import org.readium.r2.shared.publication.presentation.presentation
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
@@ -52,7 +54,10 @@ internal class EpubNavigatorViewModel(
     val events: Flow<Event> get() = _events.receiveAsFlow()
 
     private val _settings = MutableStateFlow<EpubSettings>(
-        EpubSettings.Reflowable(fontFamilies = config.fontFamilies.map { it.fontFamily })
+        when (publication.metadata.presentation.layout) {
+            EpubLayout.FIXED -> EpubSettings.FixedLayout()
+            EpubLayout.REFLOWABLE, null -> EpubSettings.Reflowable(fontFamilies = config.fontFamilies.map { it.fontFamily })
+        }
             .update(
                 metadata = publication.metadata,
                 preferences = config.preferences,
@@ -65,6 +70,7 @@ internal class EpubNavigatorViewModel(
 
     private val css = MutableStateFlow(
         ReadiumCss(
+            rsProperties = config.readiumCssRsProperties,
             fontFamilies = config.fontFamilies,
             assetsBaseHref = assetsBaseHref
         ).update(settings.value)

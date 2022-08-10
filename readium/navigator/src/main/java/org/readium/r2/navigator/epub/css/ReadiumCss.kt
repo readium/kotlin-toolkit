@@ -88,6 +88,9 @@ data class ReadiumCss(
 
             for (declaration in fontFamilies) {
                 when (val source = declaration.source) {
+                    // No-op, shipped with Android.
+                    FontFamilySource.System -> {}
+
                     // No-op, already declared in Readium CSS stylesheets.
                     FontFamilySource.ReadiumCss -> {}
 
