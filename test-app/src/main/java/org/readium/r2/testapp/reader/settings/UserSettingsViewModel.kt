@@ -24,11 +24,13 @@ import org.readium.r2.shared.publication.Publication
  *
  * Note: This is not an Android [ViewModel], but it is a component of [ReaderViewModel].
  *
+ * @param bookId Database ID for the book.
  * @param profile Publication profile (e.g. EPUB, PDF, audiobook).
  */
 @OptIn(ExperimentalReadiumApi::class)
 class UserSettingsViewModel(
     application: Application,
+    private val bookId: Long,
     private val profile: Publication.Profile?,
     scope: CoroutineScope
 ) {
@@ -37,7 +39,7 @@ class UserSettingsViewModel(
     /**
      * Current user preferences saved in the store.
      */
-    val preferences: StateFlow<Preferences> = store[profile]
+    val preferences: StateFlow<Preferences> = store[bookId, profile]
         .stateIn(scope, SharingStarted.Eagerly, initialValue = Preferences())
 
     /**
@@ -71,6 +73,6 @@ class UserSettingsViewModel(
      * Edits and saves the user preferences.
      */
     fun edit(changes: MutablePreferences.() -> Unit) {
-        store[profile] = preferences.value.copy(changes)
+        store[bookId, profile] = preferences.value.copy(changes)
     }
 }

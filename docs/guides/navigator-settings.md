@@ -8,6 +8,8 @@ A few Readium components – such as the Navigator – support dynamic configura
 
 The application cannot explicitly set the Navigator settings. Instead, you can submit a set of `Preferences` to the Navigator (`Configurable`) which will in turn recompute its settings and refresh the presentation. Then, the application can update its user settings interface with the new settings emitted by the Navigator.
 
+For a concrete example: "font size" is a **setting**, the application can submit the font size value `150%` which is a **preference**.
+
 <img src="assets/settings-flow.svg">
 
 ```kotlin
@@ -379,7 +381,7 @@ fun DropdownMenuButton(
 
 ## Save and restore the user preferences
 
-Having a user settings screen is moot if you cannot save and restore the selected preferences for future session. Thankfully you can serialize `Preferences` to a JSON object.
+Having a user settings screen is moot if you cannot save and restore the selected preferences for future sessions. Thankfully you can serialize `Preferences` to a JSON object.
 
 ```kotlin
 val json = preferences.toJSON().toString()
@@ -391,6 +393,37 @@ When you are ready to restore the user preferences, construct a new `Preferences
 val preferences = Preferences(json)
 ```
 
-We recommend storing a different set of preferences per publication profile (`publication.profile`), but you could also store the preferences for each publication.
-
 In the Test App, `UserSettingsViewModel` delegates the preferences state hoisting and persistence to `PreferencesStore`, which acts as a single source of truth.
+
+### Splitting and merging preferences
+
+How you store user preferences has an impact on the available features. You could have, for example:
+
+* A different unique set of preferences for each publication.
+* Preferences shared between publications with the same profile or media type (EPUB, PDF, etc.).
+* Global preferences shared with all publications (e.g. theme).
+* Several user setting profiles/themes that the user can switch to and modify independently.
+* Some settings that are not stored as JSON and will need to be reconstructed (e.g. the publication language).
+
+Use the `filter` and `filterNot` API to extract settings from a `Preferences` object. You can then combine them with the `+` operator.
+
+```kotlin
+val appPrefs = prefs.filter(settings.theme)
+val bookPrefs = prefs.filter(settings.language, settings.readingProgression)
+val profilePrefs = prefs.filterNot(settings.theme, settings.language, settings.readingProgression)
+
+val combinedPrefs = appPrefs + profilePrefs + bookPrefs
+```
+
+### Settings scoped to a publication
+
+:warning: Some settings are really tied to a particular publication and should never be shared between several publications, such as the language. It's recommended that you store these settings separately per book.
+
+While you can filter such settings explicitly, Readium offers a list of known publication-scoped settings with `Setting.PUBLICATION_SETTINGS`. Take a look at `PreferencesStore` in the Test App for an example.
+
+```kotlin
+// Filter the preferences that are related to the publication.
+val bookPrefs = prefs.filter(*Setting.PUBLICATION_SETTINGS)
+// Filter the preferences that will be shared between publications of the same profile.
+val profilePrefs = prefs.filterNot(*Setting.PUBLICATION_SETTINGS)
+```

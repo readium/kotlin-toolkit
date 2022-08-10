@@ -77,3 +77,7 @@ A better way to support new font families is to embed them directly in your app 
     openDyslexic.from(FontFamilySource.Assets("fonts/OpenDyslexic-Regular.otf"))
     ```
 
+## Android Downloadable Fonts
+
+Android [Downloadable Fonts](https://developer.android.com/guide/topics/ui/look-and-feel/downloadable-fonts) are not yet supported. Please open a new issue if you want to contribute this feature to Readium.
+

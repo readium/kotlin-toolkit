@@ -62,6 +62,16 @@ data class Setting<V, E>(
         const val THEME = "theme"
         const val TYPE_SCALE = "typeScale"
         const val WORD_SPACING = "wordSpacing"
+
+        /**
+         * Keys of settings that are tied to a single publication and should not be shared between
+         * several publications.
+         */
+        @ExperimentalReadiumApi
+        val PUBLICATION_SETTINGS = listOf(
+            LANGUAGE,
+            READING_PROGRESSION,
+        ).toTypedArray()
     }
 
     /**

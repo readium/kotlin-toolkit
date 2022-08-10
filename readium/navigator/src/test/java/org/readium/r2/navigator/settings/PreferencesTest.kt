@@ -484,4 +484,78 @@ class PreferencesTest {
             assertEquals(1, get(columnCount))
         }
     }
+
+    @Test
+    fun `Filter in setting keys`() {
+        assertEquals(
+            Preferences(
+                mapOf(
+                    "publisherStyles" to JsonPrimitive(false),
+                    "readingProgression" to JsonPrimitive("ltr")
+                )
+            ),
+            Preferences(
+                mapOf(
+                    "publisherStyles" to JsonPrimitive(false),
+                    "fontSize" to JsonPrimitive(1.2),
+                    "readingProgression" to JsonPrimitive("ltr")
+                )
+            ).filter(Setting.PUBLISHER_STYLES, Setting.READING_PROGRESSION)
+        )
+    }
+
+    @Test
+    fun `Filter out setting keys`() {
+        assertEquals(
+            Preferences(
+                mapOf(
+                    "fontSize" to JsonPrimitive(1.2),
+                )
+            ),
+            Preferences(
+                mapOf(
+                    "publisherStyles" to JsonPrimitive(false),
+                    "fontSize" to JsonPrimitive(1.2),
+                    "readingProgression" to JsonPrimitive("ltr")
+                )
+            ).filterNot(Setting.PUBLISHER_STYLES, Setting.READING_PROGRESSION)
+        )
+    }
+
+    @Test
+    fun `Filter in settings`() {
+        assertEquals(
+            Preferences(
+                mapOf(
+                    "publisherStyles" to JsonPrimitive(false),
+                    "readingProgression" to JsonPrimitive("ltr")
+                )
+            ),
+            Preferences(
+                mapOf(
+                    "publisherStyles" to JsonPrimitive(false),
+                    "fontSize" to JsonPrimitive(1.2),
+                    "readingProgression" to JsonPrimitive("ltr")
+                )
+            ).filter(publisherStyles, readingProgression)
+        )
+    }
+
+    @Test
+    fun `Filter out settings`() {
+        assertEquals(
+            Preferences(
+                mapOf(
+                    "fontSize" to JsonPrimitive(1.2),
+                )
+            ),
+            Preferences(
+                mapOf(
+                    "publisherStyles" to JsonPrimitive(false),
+                    "fontSize" to JsonPrimitive(1.2),
+                    "readingProgression" to JsonPrimitive("ltr")
+                )
+            ).filterNot(publisherStyles, readingProgression)
+        )
+    }
 }

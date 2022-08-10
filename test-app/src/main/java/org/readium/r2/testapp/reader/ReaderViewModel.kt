@@ -73,6 +73,7 @@ class ReaderViewModel(
 
     val settings: UserSettingsViewModel = UserSettingsViewModel(
         application = application,
+        bookId = readerInitData.bookId,
         profile = readerInitData.publication.profile,
         scope = viewModelScope
     )
