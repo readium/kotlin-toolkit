@@ -35,8 +35,6 @@ sealed class EpubSettings : Configurable.Settings {
     abstract val language: ValueSetting<Language?>
     /** Direction of the reading progression across resources. */
     abstract val readingProgression: EnumSetting<ReadingProgression>
-    /** Reader theme. */
-    abstract val theme: EnumSetting<Theme>
 
     internal abstract fun update(metadata: Metadata, preferences: Preferences, defaults: Preferences = Preferences()): EpubSettings
 
@@ -47,14 +45,12 @@ sealed class EpubSettings : Configurable.Settings {
      * @param readingProgression Direction of the reading progression across resources.
      * @param spread Indicates the condition to be met for the publication to be rendered with a
      * synthetic spread (dual-page).
-     * @param theme Reader theme.
      */
     @ExperimentalReadiumApi
     data class FixedLayout(
         override val language: ValueSetting<Language?> = LANGUAGE,
         override val readingProgression: EnumSetting<ReadingProgression> = READING_PROGRESSION,
         val spread: EnumSetting<Spread> = SPREAD,
-        override val theme: EnumSetting<Theme> = THEME,
     ) : EpubSettings() {
 
         companion object {
@@ -82,13 +78,6 @@ sealed class EpubSettings : Configurable.Settings {
                 // FIXME: Support Spread.AUTO and Spread.LANDSCAPE.
                 values = listOf(Spread.NONE, Spread.BOTH),
             )
-
-            /** Reader theme. */
-            val THEME: EnumSetting<Theme> = EnumSetting(
-                key = Setting.THEME,
-                value = Theme.LIGHT,
-                values = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
-            )
         }
 
         override fun update(metadata: Metadata, preferences: Preferences, defaults: Preferences): FixedLayout =
@@ -96,7 +85,6 @@ sealed class EpubSettings : Configurable.Settings {
                 language = language.copyFirstValidValueFrom(preferences, defaults, fallback = LANGUAGE),
                 readingProgression = readingProgression.copyFirstValidValueFrom(preferences, defaults, fallback = READING_PROGRESSION),
                 spread = spread.copyFirstValidValueFrom(preferences, defaults, fallback = SPREAD),
-                theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME),
             )
     }
 
@@ -149,7 +137,7 @@ sealed class EpubSettings : Configurable.Settings {
         val textAlign: EnumSetting<TextAlign>? = TEXT_ALIGN,
         val textColor: ColorSetting = TEXT_COLOR,
         val textNormalization: EnumSetting<TextNormalization> = TEXT_NORMALIZATION,
-        override val theme: EnumSetting<Theme> = THEME,
+        val theme: EnumSetting<Theme> = THEME,
         val typeScale: RangeSetting<Double> = TYPE_SCALE,
         val wordSpacing: PercentSetting? = WORD_SPACING,
 

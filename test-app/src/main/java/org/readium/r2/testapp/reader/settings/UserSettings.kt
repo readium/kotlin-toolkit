@@ -100,7 +100,6 @@ fun UserSettings(
                     language = settings.language,
                     readingProgression = settings.readingProgression,
                     spread = settings.spread,
-                    theme = settings.theme,
                 )
 
             is EpubSettings.Reflowable ->
@@ -144,7 +143,6 @@ private fun FixedLayoutUserSettings(
     spread: EnumSetting<Spread>? = null,
     language: ValueSetting<Language?>? = null,
     readingProgression: EnumSetting<ReadingProgression>? = null,
-    theme: EnumSetting<Theme>? = null,
 ) {
     if (language != null || readingProgression != null) {
         if (language != null) {
@@ -157,18 +155,6 @@ private fun FixedLayoutUserSettings(
                     ReadingProgression.AUTO -> "Auto"
                     else -> value.name
                 }
-            }
-        }
-
-        Divider()
-    }
-
-    if (theme != null) {
-        ButtonGroupItem("Theme", theme, preferences, edit) { value ->
-            when (value) {
-                Theme.LIGHT -> "Light"
-                Theme.DARK -> "Dark"
-                Theme.SEPIA -> "Sepia"
             }
         }
 
