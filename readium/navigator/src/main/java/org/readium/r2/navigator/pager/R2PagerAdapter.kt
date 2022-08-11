@@ -30,7 +30,7 @@ class R2PagerAdapter internal constructor(val fm: FragmentManager, private val r
 
     internal sealed class PageResource {
         data class EpubReflowable(val link: Link, val url: String, val positionCount: Int) : PageResource()
-        data class EpubFxl(val url1: String, val url2: String? = null) : PageResource()
+        data class EpubFxl(val leftLink: Link? = null, val leftUrl: String? = null, val rightLink: Link? = null, val rightUrl: String? = null) : PageResource()
         data class Cbz(val link: Link) : PageResource()
     }
 
@@ -60,6 +60,9 @@ class R2PagerAdapter internal constructor(val fm: FragmentManager, private val r
         super.setPrimaryItem(container, position, `object`)
     }
 
+    internal fun getResource(position: Int): PageResource? =
+        resources.getOrNull(position)
+
     override fun getItem(position: Int): Fragment {
         val locator = popPendingLocatorAt(getItemId(position))
         val fragment = when (val resource = resources[position]) {
@@ -72,7 +75,7 @@ class R2PagerAdapter internal constructor(val fm: FragmentManager, private val r
                 )
             }
             is PageResource.EpubFxl -> {
-                R2FXLPageFragment.newInstance(resource.url1, resource.url2)
+                R2FXLPageFragment.newInstance(resource.leftUrl, resource.rightUrl)
             }
             is PageResource.Cbz -> {
                 fm.fragmentFactory

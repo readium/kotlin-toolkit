@@ -71,8 +71,9 @@ sealed class EpubSettings : Configurable.Settings {
              */
             val SPREAD: EnumSetting<Spread> = EnumSetting(
                 key = Setting.SPREAD,
-                value = Spread.AUTO,
-                values = listOf(Spread.AUTO, Spread.NONE, Spread.BOTH, Spread.LANDSCAPE),
+                value = Spread.NONE,
+                // FIXME: Support Spread.AUTO and Spread.LANDSCAPE.
+                values = listOf(Spread.NONE, Spread.BOTH),
             )
 
             /** Reader theme. */

@@ -28,8 +28,11 @@ import org.readium.r2.navigator.*
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.navigator.epub.extensions.javascriptForGroup
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
+import org.readium.r2.navigator.settings.ColumnCount
+import org.readium.r2.navigator.settings.Configurable
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createViewModelFactory
+import org.readium.r2.shared.COLUMN_COUNT_REF
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.addPrefix
@@ -47,6 +50,10 @@ import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
 import org.readium.r2.shared.util.mediatype.MediaType
 import kotlin.reflect.KClass
+
+internal enum class DualPage {
+    AUTO, OFF, ON
+}
 
 @OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
 internal class EpubNavigatorViewModel(
@@ -81,6 +88,8 @@ internal class EpubNavigatorViewModel(
     sealed class Event {
         data class GoTo(val target: Link) : Event()
         data class OpenExternalLink(val url: Uri) : Event()
+        /** Refreshes all the resources in the view pager. */
+        object InvalidateViewPager : Event()
         data class RunScript(val command: RunScriptCommand) : Event()
     }
 
@@ -280,8 +289,9 @@ internal class EpubNavigatorViewModel(
 
     // Settings
 
-    fun applyPreferences(preferences: Preferences) {
-        val settings = _settings.updateAndGet {
+    fun submitPreferences(preferences: Preferences) = viewModelScope.launch {
+        val oldSettings: EpubSettings = settings.value
+        val newSettings = _settings.updateAndGet {
             it.update(
                 metadata = publication.metadata,
                 preferences = preferences,
@@ -289,8 +299,50 @@ internal class EpubNavigatorViewModel(
             )
         }
 
-        css.update { it.update(settings) }
+        css.update { it.update(newSettings) }
+
+        val needsInvalidation: Boolean =
+            when {
+                oldSettings is EpubSettings.Reflowable && newSettings is EpubSettings.Reflowable -> (
+                    oldSettings.readingProgression.value != newSettings.readingProgression.value
+                )
+                oldSettings is EpubSettings.FixedLayout && newSettings is EpubSettings.FixedLayout -> (
+                    oldSettings.readingProgression.value != newSettings.readingProgression.value ||
+                    oldSettings.spread.value != newSettings.spread.value
+                )
+                else -> true
+            }
+
+        if (needsInvalidation) {
+            _events.send(Event.InvalidateViewPager)
+        }
     }
+
+    /**
+     * Indicates whether the dual page mode is enabled.
+     */
+    val dualPageMode: DualPage get() =
+        if (useLegacySettings) {
+            when (preferences.getInt(COLUMN_COUNT_REF, 0)) {
+                1 -> DualPage.OFF
+                2 -> DualPage.ON
+                else -> DualPage.AUTO
+            }
+        } else {
+            when (val settings = settings.value) {
+                is EpubSettings.FixedLayout -> when (settings.spread.value) {
+                    Presentation.Spread.AUTO -> DualPage.AUTO
+                    Presentation.Spread.BOTH -> DualPage.ON
+                    Presentation.Spread.NONE -> DualPage.OFF
+                    Presentation.Spread.LANDSCAPE -> DualPage.AUTO
+                }
+                is EpubSettings.Reflowable -> when (settings.columnCount?.value) {
+                    ColumnCount.ONE, null -> DualPage.OFF
+                    ColumnCount.TWO -> DualPage.ON
+                    ColumnCount.AUTO -> DualPage.AUTO
+                }
+            }
+        }
 
     /**
      * Indicates whether the navigator is scrollable instead of paginated.
