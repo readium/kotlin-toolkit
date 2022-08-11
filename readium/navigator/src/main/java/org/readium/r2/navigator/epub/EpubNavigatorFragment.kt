@@ -28,7 +28,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
-import androidx.webkit.WebViewAssetLoader
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.json.JSONObject
@@ -54,7 +53,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.fetcher.ResourceInputStream
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -64,7 +62,6 @@ import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.Href
-import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.launchWebBrowser
 import org.readium.r2.shared.util.mediatype.MediaType
 import kotlin.math.ceil
@@ -200,7 +197,7 @@ class EpubNavigatorFragment private constructor(
     }
 
     private val viewModel: EpubNavigatorViewModel by viewModels {
-        EpubNavigatorViewModel.createFactory(publication, config)
+        EpubNavigatorViewModel.createFactory(requireActivity().application, publication, config)
     }
 
     internal lateinit var positionsByReadingOrder: List<List<Locator>>
@@ -669,43 +666,8 @@ class EpubNavigatorFragment private constructor(
             launchWebBrowser(context, url)
         }
 
-        override fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? {
-            if (request.url.host != "readium") return null
-            val path = request.url.path ?: return null
-
-            if (path.startsWith("/publication/")) {
-                val (link, resource) = viewModel.serve(path.removePrefix("/publication"))
-                val stream = ResourceInputStream(resource)
-
-                val range = HttpHeaders(request.requestHeaders).range
-
-                val responseHeaders = mutableMapOf(
-                    "Accept-Ranges" to "bytes",
-                )
-                return if (range == null) {
-                    WebResourceResponse(link.type, null, 200, "OK", responseHeaders, stream)
-                } else {
-                    val length = stream.available()
-                    val longRange = range.toLongRange(length.toLong())
-
-                    responseHeaders["Content-Range"] = "bytes ${longRange.start}-${longRange.last}/$length"
-                    // Content-Length will automatically be filled by the WebView using the
-                    // Content-Range header.
-//                    responseHeaders["Content-Length"] = (longRange.last - longRange.first + 1).toString()
-
-                    WebResourceResponse(link.type, null, 206, "Partial Content", responseHeaders, stream)
-                }
-            } else {
-                return assetsLoader.shouldInterceptRequest(request.url)
-            }
-        }
-
-        private val assetsLoader by lazy {
-            WebViewAssetLoader.Builder()
-                .setDomain("readium")
-                .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(requireContext()))
-                .build()
-        }
+        override fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? =
+            viewModel.shouldInterceptRequest(request)
     }
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {

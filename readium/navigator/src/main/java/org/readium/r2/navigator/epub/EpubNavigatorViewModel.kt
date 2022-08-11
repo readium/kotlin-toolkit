@@ -6,10 +6,14 @@
 
 package org.readium.r2.navigator.epub
 
+import android.app.Application
 import android.graphics.PointF
 import android.graphics.RectF
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.webkit.WebViewAssetLoader
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import org.json.JSONObject
@@ -21,14 +25,18 @@ import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.ResourceInputStream
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.util.http.HttpHeaders
+import org.readium.r2.shared.util.http.HttpRange
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
 internal class EpubNavigatorViewModel(
+    application: Application,
     val publication: Publication,
     val config: EpubNavigatorFragment.Configuration,
 ) : ViewModel() {
@@ -108,24 +116,6 @@ internal class EpubNavigatorViewModel(
             .launchIn(viewModelScope)
     }
 
-    /**
-     * Returns a new [Resource] to serve the given [href].
-     *
-     * If the [Resource] is an HTML document, injects the required JavaScript and CSS files.
-     */
-    fun serve(href: String): Pair<Link, Resource> {
-        val link = publication.linkWithHref(href)
-            // Query parameters must be kept as they might be relevant for the fetcher.
-            ?.copy(href = href)
-            ?: Link(href = href)
-
-        var resource = publication.get(link)
-        if (link.mediaType.isHtml) {
-            resource = resource.injectHtml(publication, css.value, baseHref = assetsBaseHref)
-        }
-        return Pair(link, resource)
-    }
-
     fun onResourceLoaded(link: Link?, webView: R2BasicWebView): RunScriptCommand {
         val templates = decorationTemplates.toJSON().toString()
             .replace("\\n", " ")
@@ -143,6 +133,72 @@ internal class EpubNavigatorViewModel(
         }
 
         return RunScriptCommand(script, scope = RunScriptCommand.Scope.WebView(webView))
+    }
+
+    // Server
+
+    /**
+     * Serves the requests of the navigator web views.
+     *
+     * https://readium/publication/ serves the publication resources through its fetcher.
+     * https://readium/assets/ serves the application assets.
+     */
+    fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? {
+        if (request.url.host != "readium") return null
+        val path = request.url.path ?: return null
+
+        return when {
+            path.startsWith("/publication/") -> {
+                servePublicationResource(
+                    href = path.removePrefix("/publication"),
+                    range = HttpHeaders(request.requestHeaders).range
+                )
+            }
+            else -> {
+                assetsLoader.shouldInterceptRequest(request.url)
+            }
+        }
+    }
+
+    /**
+     * Returns a new [Resource] to serve the given [href] in the publication.
+     *
+     * If the [Resource] is an HTML document, injects the required JavaScript and CSS files.
+     */
+    private fun servePublicationResource(href: String, range: HttpRange?): WebResourceResponse {
+        val link = publication.linkWithHref(href)
+            // Query parameters must be kept as they might be relevant for the fetcher.
+            ?.copy(href = href)
+            ?: Link(href = href)
+
+        var resource = publication.get(link)
+        if (link.mediaType.isHtml) {
+            resource = resource.injectHtml(publication, css.value, baseHref = assetsBaseHref)
+        }
+
+        val headers = mutableMapOf(
+            "Accept-Ranges" to "bytes",
+        )
+
+        if (range == null) {
+            return WebResourceResponse(link.type, null, 200, "OK", headers, ResourceInputStream(resource))
+
+        } else { // Byte range request
+            val stream = ResourceInputStream(resource)
+            val length = stream.available()
+            val longRange = range.toLongRange(length.toLong())
+            headers["Content-Range"] = "bytes ${longRange.first}-${longRange.last}/$length"
+            // Content-Length will automatically be filled by the WebView using the Content-Range header.
+//            headers["Content-Length"] = (longRange.last - longRange.first + 1).toString()
+            return WebResourceResponse(link.type, null, 206, "Partial Content", headers, stream)
+        }
+    }
+
+    private val assetsLoader by lazy {
+        WebViewAssetLoader.Builder()
+            .setDomain("readium")
+            .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(application))
+            .build()
     }
 
     // Settings
@@ -235,8 +291,8 @@ internal class EpubNavigatorViewModel(
     }
 
     companion object {
-        fun createFactory(publication: Publication, config: EpubNavigatorFragment.Configuration) = createViewModelFactory {
-            EpubNavigatorViewModel(publication, config)
+        fun createFactory(application: Application, publication: Publication, config: EpubNavigatorFragment.Configuration) = createViewModelFactory {
+            EpubNavigatorViewModel(application, publication, config)
         }
     }
 }
