@@ -9,6 +9,7 @@ package org.readium.r2.navigator.epub
 import android.app.Application
 import android.graphics.PointF
 import android.graphics.RectF
+import android.net.Uri
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import androidx.lifecycle.ViewModel
@@ -16,6 +17,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.webkit.WebViewAssetLoader
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.epub.css.ReadiumCss
@@ -24,12 +26,15 @@ import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceInputStream
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
 import kotlin.reflect.KClass
@@ -38,8 +43,14 @@ import kotlin.reflect.KClass
 internal class EpubNavigatorViewModel(
     application: Application,
     val publication: Publication,
+    baseUrl: String?,
     val config: EpubNavigatorFragment.Configuration,
 ) : ViewModel() {
+
+    private val baseUrl: String =
+        baseUrl?.let { it.removeSuffix("/") + "/" }
+            ?: publication.linkWithRel("self")?.href
+            ?: "https://readium/publication/"
 
     // Make a copy to prevent new decoration templates from being registered after initializing
     // the navigator.
@@ -55,6 +66,8 @@ internal class EpubNavigatorViewModel(
     }
 
     sealed class Event {
+        data class GoTo(val target: Link) : Event()
+        data class OpenExternalLink(val url: Uri) : Event()
         data class RunScript(val command: RunScriptCommand) : Event()
     }
 
@@ -136,6 +149,39 @@ internal class EpubNavigatorViewModel(
     }
 
     // Server
+
+    /**
+     * Generates the URL to the given publication link.
+     */
+    fun urlTo(link: Link): String =
+        with(link) {
+            // Already an absolute URL?
+            if (Uri.parse(href).scheme != null) {
+                href
+            } else {
+                Href(
+                    href = href.removePrefix("/"),
+                    baseHref = baseUrl
+                ).percentEncodedString
+            }
+        }
+
+    /**
+     * Intercepts and handles web view navigation to [url].
+     */
+    fun navigateToUrl(url: Uri) = viewModelScope.launch {
+        var href = url.toString()
+        if (href.startsWith(baseUrl)) {
+            href = href.removePrefix(baseUrl).addPrefix("/")
+            val link = publication.linkWithHref(href)
+                // Query parameters must be kept as they might be relevant for the fetcher.
+                ?.copy(href = href)
+                ?.let { _events.send(Event.GoTo(it)) }
+
+        } else {
+            _events.send(Event.OpenExternalLink(url))
+        }
+    }
 
     /**
      * Serves the requests of the navigator web views.
@@ -291,8 +337,8 @@ internal class EpubNavigatorViewModel(
     }
 
     companion object {
-        fun createFactory(application: Application, publication: Publication, config: EpubNavigatorFragment.Configuration) = createViewModelFactory {
-            EpubNavigatorViewModel(application, publication, config)
+        fun createFactory(application: Application, publication: Publication, baseUrl: String?, config: EpubNavigatorFragment.Configuration) = createViewModelFactory {
+            EpubNavigatorViewModel(application, publication, baseUrl = baseUrl, config)
         }
     }
 }

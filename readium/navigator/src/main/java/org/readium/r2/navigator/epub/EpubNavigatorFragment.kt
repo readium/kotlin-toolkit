@@ -10,7 +10,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.PointF
 import android.graphics.RectF
-import android.net.Uri
 import android.os.Bundle
 import android.view.ActionMode
 import android.view.LayoutInflater
@@ -25,8 +24,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.whenStarted
 import androidx.viewpager.widget.ViewPager
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -40,7 +41,6 @@ import org.readium.r2.navigator.epub.css.RsProperties
 import org.readium.r2.navigator.epub.css.from
 import org.readium.r2.navigator.extensions.optRectF
 import org.readium.r2.navigator.extensions.positionsByResource
-import org.readium.r2.navigator.extensions.withBaseUrl
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
@@ -51,7 +51,6 @@ import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.COLUMN_COUNT_REF
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.SCROLL_REF
-import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -61,7 +60,6 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
-import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.launchWebBrowser
 import org.readium.r2.shared.util.mediatype.MediaType
 import kotlin.math.ceil
@@ -197,7 +195,7 @@ class EpubNavigatorFragment private constructor(
     }
 
     private val viewModel: EpubNavigatorViewModel by viewModels {
-        EpubNavigatorViewModel.createFactory(requireActivity().application, publication, config)
+        EpubNavigatorViewModel.createFactory(requireActivity().application, publication, baseUrl = baseUrl, config)
     }
 
     internal lateinit var positionsByReadingOrder: List<List<Locator>>
@@ -226,10 +224,6 @@ class EpubNavigatorFragment private constructor(
         preferences = context.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
     }
 
-    private fun Link.url(): String =
-        if (baseUrl != null) withBaseUrl(baseUrl).href
-        else Href(href.removePrefix("/"), "https://readium/publication/").percentEncodedString
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         currentActivity = requireActivity()
         _binding = ActivityR2ViewpagerBinding.inflate(inflater, container, false)
@@ -247,7 +241,7 @@ class EpubNavigatorFragment private constructor(
                 resourcesSingle = publication.readingOrder.mapIndexed { index, link ->
                     PageResource.EpubReflowable(
                         link = link,
-                        url = link.url(),
+                        url = viewModel.urlTo(link),
                         positionCount = positionsByReadingOrder.getOrNull(index)?.size ?: 0
                     )
                 }
@@ -265,7 +259,7 @@ class EpubNavigatorFragment private constructor(
                 var doublePageRight = ""
 
                 for ((index, link) in publication.readingOrder.withIndex()) {
-                    val url = link.url()
+                    val url = viewModel.urlTo(link)
                     resourcesSingle.add(PageResource.EpubFxl(url))
 
                     // add first page to the right,
@@ -358,32 +352,43 @@ class EpubNavigatorFragment private constructor(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        lifecycleScope.launch {
-            viewModel.events
-                .flowWithLifecycle(lifecycle)
-                .onEach(::handleEvent)
-                .launchIn(this)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.events
+                    .onEach(::handleEvent)
+                    .launchIn(this)
 
-            var previousSettings = viewModel.settings.value
-            viewModel.settings
-                .onEach {
-                    onSettingsChange(previousSettings, it)
-                    previousSettings = it
+                var previousSettings = viewModel.settings.value
+                viewModel.settings
+                    .onEach {
+                        onSettingsChange(previousSettings, it)
+                        previousSettings = it
+                    }
+                    .launchIn(this)
+            }
+
+            whenStarted {
+                // Restore the last locator before a configuration change (e.g. screen rotation), or the
+                // initial locator when given.
+                val locator = savedInstanceState?.getParcelable("locator") ?: initialLocator
+                if (locator != null) {
+                    go(locator)
                 }
-                .launchIn(this)
-        }
-
-        // Restore the last locator before a configuration change (e.g. screen rotation), or the
-        // initial locator when given.
-        val locator = savedInstanceState?.getParcelable("locator") ?: initialLocator
-        if (locator != null) {
-            go(locator)
+            }
         }
     }
 
     private fun handleEvent(event: EpubNavigatorViewModel.Event) {
         when (event) {
-            is EpubNavigatorViewModel.Event.RunScript -> run(event.command)
+            is EpubNavigatorViewModel.Event.RunScript -> {
+                run(event.command)
+            }
+            is EpubNavigatorViewModel.Event.GoTo -> {
+                go(event.target)
+            }
+            is EpubNavigatorViewModel.Event.OpenExternalLink -> {
+                launchWebBrowser(requireContext(), event.url)
+            }
         }
     }
 
@@ -644,26 +649,9 @@ class EpubNavigatorFragment private constructor(
          * Prevents opening external links in the web view and handles internal links.
          */
         override fun shouldOverrideUrlLoading(webView: WebView, request: WebResourceRequest): Boolean {
-            val url = request.url?.toString()
-                ?: return false
-
-            val baseUrl = baseUrl?.takeIf { it.isNotBlank() }
-                ?: publication.linkWithRel("self")?.href
-                ?: "https://readium/publication/"
-
-            if (!url.startsWith(baseUrl)) {
-                openExternalLink(request.url)
-            } else {
-                // Navigate to an internal link
-                go(Link(href = url.removePrefix(baseUrl).addPrefix("/")))
-            }
-
+            val url = request.url ?: return false
+            viewModel.navigateToUrl(url)
             return true
-        }
-
-        private fun openExternalLink(url: Uri) {
-            val context = context ?: return
-            launchWebBrowser(context, url)
         }
 
         override fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? =
@@ -891,7 +879,7 @@ class EpubNavigatorFragment private constructor(
          */
         fun createFactory(
             publication: Publication,
-            baseUrl: String?,
+            baseUrl: String? = null,
             initialLocator: Locator? = null,
             listener: Listener? = null,
             paginationListener: PaginationListener? = null,
