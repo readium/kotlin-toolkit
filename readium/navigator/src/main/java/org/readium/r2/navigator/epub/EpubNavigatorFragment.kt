@@ -10,6 +10,7 @@ import android.content.SharedPreferences
 import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Bundle
+import android.util.LayoutDirection
 import android.view.ActionMode
 import android.view.LayoutInflater
 import android.view.View
@@ -301,10 +302,7 @@ class EpubNavigatorFragment private constructor(
             }
         }
 
-        adapter = createAdapter()
-
-        resourcePager.adapter = adapter
-        resourcePager.direction = publication.metadata.effectiveReadingProgression
+        resetAdapter()
 
         if (publication.cssStyle == ReadingProgression.RTL.value) {
             resourcePager.direction = ReadingProgression.RTL
@@ -345,8 +343,8 @@ class EpubNavigatorFragment private constructor(
         return view
     }
 
-    private fun createAdapter(): R2PagerAdapter =
-        when (publication.metadata.presentation.layout) {
+    private fun resetAdapter() {
+        adapter = when (publication.metadata.presentation.layout) {
             EpubLayout.REFLOWABLE, null -> {
                 R2PagerAdapter(childFragmentManager, resourcesSingle)
             }
@@ -361,9 +359,16 @@ class EpubNavigatorFragment private constructor(
                     }
                 }
             }
-        }.apply {
-            listener = PagerAdapterListener()
         }
+        adapter.listener = PagerAdapterListener()
+        resourcePager.adapter = adapter
+        resourcePager.direction = readingProgression
+        resourcePager.layoutDirection = when (readingProgression) {
+            ReadingProgression.RTL, ReadingProgression.BTT -> LayoutDirection.RTL
+            ReadingProgression.LTR, ReadingProgression.AUTO -> LayoutDirection.LTR
+            ReadingProgression.TTB -> LayoutDirection.LTR
+        }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -415,8 +420,7 @@ class EpubNavigatorFragment private constructor(
 
     private fun invalidateResourcePager() {
         val locator = currentLocator.value
-        adapter = createAdapter()
-        resourcePager.adapter = adapter
+        resetAdapter()
         resourcePager.invalidate()
         go(locator)
     }
@@ -584,7 +588,7 @@ class EpubNavigatorFragment private constructor(
     private inner class WebViewListener : R2BasicWebView.Listener {
 
         override val readingProgression: ReadingProgression
-            get() = this@EpubNavigatorFragment.readingProgression
+            get() = viewModel.readingProgression
 
         override fun onResourceLoaded(link: Link?, webView: R2BasicWebView, url: String?) {
             run(viewModel.onResourceLoaded(link, webView))
@@ -728,7 +732,7 @@ class EpubNavigatorFragment private constructor(
         resourcePager.setCurrentItem(resourcePager.currentItem + 1, animated)
 
         currentReflowablePageFragment?.webView?.let { webView ->
-            if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
+            if (readingProgression == ReadingProgression.RTL) {
                 webView.setCurrentItem(webView.numPages - 1, false)
             } else {
                 webView.setCurrentItem(0, false)
@@ -747,7 +751,7 @@ class EpubNavigatorFragment private constructor(
         resourcePager.setCurrentItem(resourcePager.currentItem - 1, animated)
 
         currentReflowablePageFragment?.webView?.let { webView ->
-            if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
+            if (readingProgression == ReadingProgression.RTL) {
                 webView.setCurrentItem(0, false)
             } else {
                 webView.setCurrentItem(webView.numPages - 1, false)
@@ -788,7 +792,7 @@ class EpubNavigatorFragment private constructor(
     }
 
     override val readingProgression: ReadingProgression
-        get() = publication.metadata.effectiveReadingProgression
+        get() = viewModel.readingProgression
 
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
     private val _currentLocator = MutableStateFlow(initialLocator

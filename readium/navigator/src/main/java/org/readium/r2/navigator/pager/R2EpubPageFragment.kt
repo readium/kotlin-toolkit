@@ -232,9 +232,10 @@ class R2EpubPageFragment : Fragment() {
                 .map { it.overflow.value == Presentation.Overflow.SCROLLED }
                 .distinctUntilChanged()
 
-            viewLifecycleOwner.lifecycleScope.launch {
+            val lifecycleOwner = viewLifecycleOwner
+            lifecycleOwner.lifecycleScope.launch {
                 isOverflowScrolled
-                    .flowWithLifecycle(viewLifecycleOwner.lifecycle)
+                    .flowWithLifecycle(lifecycleOwner.lifecycle)
                     .collectLatest { webView?.scrollModeFlow?.value = it }
             }
         }
@@ -278,6 +279,8 @@ class R2EpubPageFragment : Fragment() {
     }
 
     private fun updatePadding() {
+        if (view == null) return
+
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
             val window = activity?.window ?: return@launchWhenResumed
             var top = 0

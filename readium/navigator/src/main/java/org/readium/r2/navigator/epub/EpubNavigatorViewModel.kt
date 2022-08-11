@@ -29,7 +29,6 @@ import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.navigator.epub.extensions.javascriptForGroup
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.settings.ColumnCount
-import org.readium.r2.navigator.settings.Configurable
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.COLUMN_COUNT_REF
@@ -42,6 +41,7 @@ import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.fetcher.fallback
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
@@ -291,6 +291,8 @@ internal class EpubNavigatorViewModel(
 
     fun submitPreferences(preferences: Preferences) = viewModelScope.launch {
         val oldSettings: EpubSettings = settings.value
+        val oldReadingProgression = readingProgression
+
         val newSettings = _settings.updateAndGet {
             it.update(
                 metadata = publication.metadata,
@@ -301,22 +303,29 @@ internal class EpubNavigatorViewModel(
 
         css.update { it.update(newSettings) }
 
-        val needsInvalidation: Boolean =
-            when {
-                oldSettings is EpubSettings.Reflowable && newSettings is EpubSettings.Reflowable -> (
-                    oldSettings.readingProgression.value != newSettings.readingProgression.value
-                )
-                oldSettings is EpubSettings.FixedLayout && newSettings is EpubSettings.FixedLayout -> (
-                    oldSettings.readingProgression.value != newSettings.readingProgression.value ||
-                    oldSettings.spread.value != newSettings.spread.value
-                )
-                else -> true
-            }
+        val needsInvalidation: Boolean = (
+            oldReadingProgression != readingProgression ||
+            (oldSettings as? EpubSettings.FixedLayout)?.spread?.value != (newSettings as? EpubSettings.FixedLayout)?.spread?.value
+        )
 
         if (needsInvalidation) {
             _events.send(Event.InvalidateViewPager)
         }
     }
+
+    /**
+     * Effective reading progression.
+     */
+    val readingProgression: ReadingProgression get() =
+        if (useLegacySettings) {
+            publication.metadata.effectiveReadingProgression
+        } else {
+            if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
+                settings.value.readingProgression.value
+            } else {
+                css.value.layout.readingProgression
+            }
+        }
 
     /**
      * Indicates whether the dual page mode is enabled.

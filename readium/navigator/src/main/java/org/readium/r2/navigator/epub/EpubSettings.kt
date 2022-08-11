@@ -31,6 +31,13 @@ import org.readium.r2.navigator.epub.css.TextAlign as CssTextAlign
 @ExperimentalReadiumApi
 sealed class EpubSettings : Configurable.Settings {
 
+    /** Language of the publication content. */
+    abstract val language: ValueSetting<Language?>
+    /** Direction of the reading progression across resources. */
+    abstract val readingProgression: EnumSetting<ReadingProgression>
+    /** Reader theme. */
+    abstract val theme: EnumSetting<Theme>
+
     internal abstract fun update(metadata: Metadata, preferences: Preferences, defaults: Preferences = Preferences()): EpubSettings
 
     /**
@@ -44,10 +51,10 @@ sealed class EpubSettings : Configurable.Settings {
      */
     @ExperimentalReadiumApi
     data class FixedLayout(
-        val language: ValueSetting<Language?> = LANGUAGE,
-        val readingProgression: EnumSetting<ReadingProgression> = READING_PROGRESSION,
+        override val language: ValueSetting<Language?> = LANGUAGE,
+        override val readingProgression: EnumSetting<ReadingProgression> = READING_PROGRESSION,
         val spread: EnumSetting<Spread> = SPREAD,
-        val theme: EnumSetting<Theme> = THEME,
+        override val theme: EnumSetting<Theme> = THEME,
     ) : EpubSettings() {
 
         companion object {
@@ -129,7 +136,7 @@ sealed class EpubSettings : Configurable.Settings {
         val fontSize: PercentSetting = FONT_SIZE,
         val hyphens: ToggleSetting? = HYPHENS,
         val imageFilter: EnumSetting<ImageFilter>? = IMAGE_FILTER,
-        val language: ValueSetting<Language?> = LANGUAGE,
+        override val language: ValueSetting<Language?> = LANGUAGE,
         val letterSpacing: PercentSetting? = LETTER_SPACING,
         val ligatures: ToggleSetting? = LIGATURES,
         val lineHeight: RangeSetting<Double> = LINE_HEIGHT,
@@ -138,11 +145,11 @@ sealed class EpubSettings : Configurable.Settings {
         val paragraphIndent: PercentSetting? = PARAGRAPH_INDENT,
         val paragraphSpacing: PercentSetting = PARAGRAPH_SPACING,
         val publisherStyles: ToggleSetting = PUBLISHER_STYLES,
-        val readingProgression: EnumSetting<ReadingProgression> = READING_PROGRESSION,
+        override val readingProgression: EnumSetting<ReadingProgression> = READING_PROGRESSION,
         val textAlign: EnumSetting<TextAlign>? = TEXT_ALIGN,
         val textColor: ColorSetting = TEXT_COLOR,
         val textNormalization: EnumSetting<TextNormalization> = TEXT_NORMALIZATION,
-        val theme: EnumSetting<Theme> = THEME,
+        override val theme: EnumSetting<Theme> = THEME,
         val typeScale: RangeSetting<Double> = TYPE_SCALE,
         val wordSpacing: PercentSetting? = WORD_SPACING,
 
