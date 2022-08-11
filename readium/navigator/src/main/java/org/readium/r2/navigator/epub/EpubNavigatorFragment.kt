@@ -304,7 +304,8 @@ class EpubNavigatorFragment private constructor(
 
         resetAdapter()
 
-        if (publication.cssStyle == ReadingProgression.RTL.value) {
+        @Suppress("DEPRECATION")
+        if (viewModel.useLegacySettings && publication.cssStyle == ReadingProgression.RTL.value) {
             resourcePager.direction = ReadingProgression.RTL
         }
 
@@ -886,6 +887,7 @@ class EpubNavigatorFragment private constructor(
             _currentLocator.value = currentLocator
 
             // Deprecated notifications
+            @Suppress("DEPRECATION")
             navigatorDelegate?.locationDidChange(navigator = navigator, locator = currentLocator)
             reflowableWebView?.let {
                 paginationListener?.onPageChanged(

@@ -132,6 +132,7 @@ class R2EpubPageFragment : Fragment() {
         webView.preferences = preferences
 
         if (viewModel.useLegacySettings) {
+            @Suppress("DEPRECATION")
             webView.setScrollMode(preferences.getBoolean(SCROLL_REF, false))
         }
         webView.settings.javaScriptEnabled = true

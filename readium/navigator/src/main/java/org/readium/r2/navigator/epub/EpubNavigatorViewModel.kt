@@ -195,7 +195,7 @@ internal class EpubNavigatorViewModel(
         var href = url.toString()
         if (href.startsWith(baseUrl)) {
             href = href.removePrefix(baseUrl).addPrefix("/")
-            val link = publication.linkWithHref(href)
+            publication.linkWithHref(href)
                 // Query parameters must be kept as they might be relevant for the fetcher.
                 ?.copy(href = href)
                 ?.let { _events.send(Event.GoTo(it)) }
@@ -332,6 +332,7 @@ internal class EpubNavigatorViewModel(
      */
     val dualPageMode: DualPage get() =
         if (useLegacySettings) {
+            @Suppress("DEPRECATION")
             when (preferences.getInt(COLUMN_COUNT_REF, 0)) {
                 1 -> DualPage.OFF
                 2 -> DualPage.ON
@@ -358,6 +359,7 @@ internal class EpubNavigatorViewModel(
      */
     val isOverflowScrolled: Boolean get() =
         if (useLegacySettings) {
+            @Suppress("DEPRECATION")
             preferences.getBoolean(SCROLL_REF, false)
         } else {
             (settings.value as? EpubSettings.Reflowable)?.overflow?.value == Presentation.Overflow.SCROLLED

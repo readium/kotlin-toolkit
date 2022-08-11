@@ -5,6 +5,7 @@
  */
 
 @file:OptIn(InternalReadiumApi::class)
+@file:Suppress("DEPRECATION")
 
 package org.readium.r2.shared.publication
 
@@ -63,7 +64,9 @@ class Publication(
     private val fetcher: Fetcher = EmptyFetcher(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
     // FIXME: To refactor after specifying the User and Rendition Settings API
+    @Deprecated("Migrate to the new Settings API (see migration guide)")
     var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(),
+    @Deprecated("Migrate to the new Settings API (see migration guide)")
     var cssStyle: String? = null,
 ) : PublicationServicesHolder {
 
@@ -236,6 +239,7 @@ class Publication(
          * Server, and set in the self [Link]. Unfortunately, the self [Link] is not available
          * in the navigator at the moment without changing the code in reading apps.
          */
+        @Deprecated("The HTTP server is not needed anymore (see migration guide)")
         fun localBaseUrlOf(filename: String, port: Int): String {
             val sanitizedFilename = filename
                 .removePrefix("/")
@@ -248,6 +252,7 @@ class Publication(
         /**
          * Gets the absolute URL of a resource locally served through HTTP.
          */
+        @Deprecated("The HTTP server is not needed anymore (see migration guide)")
         fun localUrlOf(filename: String, port: Int, href: String): String =
             localBaseUrlOf(filename, port) + href
 

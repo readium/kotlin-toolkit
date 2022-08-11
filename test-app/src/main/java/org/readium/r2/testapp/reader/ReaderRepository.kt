@@ -133,7 +133,7 @@ class ReaderRepository(
             is VisualReaderInitData -> {
                 initData.publication.close()
             }
-            null -> {
+            null, is DummyReaderInitData -> {
                 // Do nothing
             }
         }
