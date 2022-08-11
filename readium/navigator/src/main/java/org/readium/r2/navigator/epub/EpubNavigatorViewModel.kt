@@ -56,6 +56,8 @@ internal class EpubNavigatorViewModel(
     val config: EpubNavigatorFragment.Configuration,
 ) : AndroidViewModel(application) {
 
+    val useLegacySettings: Boolean = (baseUrl != null)
+
     private val baseUrl: String =
         baseUrl?.let { it.removeSuffix("/") + "/" }
             ?: publication.linkWithRel("self")?.href
@@ -294,7 +296,7 @@ internal class EpubNavigatorViewModel(
      * Indicates whether the navigator is scrollable instead of paginated.
      */
     val isOverflowScrolled: Boolean get() =
-        if (config.useLegacySettings) {
+        if (useLegacySettings) {
             preferences.getBoolean(SCROLL_REF, false)
         } else {
             (settings.value as? EpubSettings.Reflowable)?.overflow?.value == Presentation.Overflow.SCROLLED

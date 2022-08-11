@@ -131,7 +131,7 @@ class R2EpubPageFragment : Fragment() {
         }
         webView.preferences = preferences
 
-        if (viewModel.config.useLegacySettings) {
+        if (viewModel.useLegacySettings) {
             webView.setScrollMode(preferences.getBoolean(SCROLL_REF, false))
         }
         webView.settings.javaScriptEnabled = true
@@ -226,7 +226,7 @@ class R2EpubPageFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        if (!viewModel.config.useLegacySettings) {
+        if (!viewModel.useLegacySettings) {
             val isOverflowScrolled = viewModel.settings
                 .filterIsInstance<EpubSettings.Reflowable>()
                 .map { it.overflow.value == Presentation.Overflow.SCROLLED }

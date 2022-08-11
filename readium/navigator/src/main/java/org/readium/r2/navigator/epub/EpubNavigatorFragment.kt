@@ -146,11 +146,6 @@ class EpubNavigatorFragment private constructor(
          */
         val shouldApplyInsetsPadding: Boolean? = true,
 
-        /**
-         * Indicates whether the navigator should use the legacy user settings API.
-         */
-        val useLegacySettings: Boolean = true,
-
         internal val javascriptInterfaces: MutableMap<String, JavascriptInterfaceFactory> = mutableMapOf()
     ) {
         /**
