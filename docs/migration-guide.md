@@ -2,6 +2,36 @@
 
 All migration steps necessary in reading apps to upgrade to major versions of the Kotlin Readium toolkit will be documented in this file.
 
+## 2.4.0
+
+### Removing the HTTP server
+
+The local HTTP server is not needed anymore to render EPUB publications. You can safely drop all occurrences of `Server` from your project and remove the `baseUrl` parameter when calling `EpubNavigatorFragment.createFactory()`.
+
+#### Serving app assets
+
+If you were serving `assets/` files (e.g. fonts or scripts) to the EPUB resources, you can still do so with the new API.
+
+First, declare the `assets/` paths that will be available to EPUB resources when creating the navigator. You can use [simple glob patterns](https://developer.android.com/reference/android/os/PatternMatcher#PATTERN_SIMPLE_GLOB) to allow multiple assets in one go, e.g. `fonts/.*`.
+
+```kotlin
+EpubNavigatorFragment.createFactory(
+    ...,
+    config = EpubNavigatorFragment.Configuration(
+        servedAssets = listOf(
+            "fonts/.*",
+            "annotation-icon.svg"
+        )
+    )
+)
+```
+
+Then, use the base URL `https://readium/assets/` to fetch your app assets from the web views. For example:
+
+* `https://readium/assets/fonts/OpenDyslexic.otf`
+* `https://readium/assets/annotation-icon.svg`
+
+
 ## 2.3.0
 
 ### PDF support
