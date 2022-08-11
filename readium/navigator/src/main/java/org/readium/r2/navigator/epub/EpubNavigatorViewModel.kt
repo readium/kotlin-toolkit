@@ -10,6 +10,8 @@ import android.app.Application
 import android.graphics.PointF
 import android.graphics.RectF
 import android.net.Uri
+import android.os.PatternMatcher
+import android.os.PatternMatcher.PATTERN_SIMPLE_GLOB
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import androidx.lifecycle.AndroidViewModel
@@ -204,9 +206,10 @@ internal class EpubNavigatorViewModel(
                     range = HttpHeaders(request.requestHeaders).range
                 )
             }
-            else -> {
+            path.startsWith("/assets/") && isServedAsset(path.removePrefix("/assets/")) -> {
                 assetsLoader.shouldInterceptRequest(request.url)
             }
+            else -> null
         }
     }
 
@@ -254,6 +257,12 @@ internal class EpubNavigatorViewModel(
                     .replace("\${href}", link.href)
             }
         }
+
+    private fun isServedAsset(path: String): Boolean =
+        servedAssetPatterns.any { it.match(path) }
+
+    private val servedAssetPatterns: List<PatternMatcher> =
+        config.servedAssets.map { PatternMatcher(it, PATTERN_SIMPLE_GLOB) }
 
     private val assetsLoader by lazy {
         WebViewAssetLoader.Builder()

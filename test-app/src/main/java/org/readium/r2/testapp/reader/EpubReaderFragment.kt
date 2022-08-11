@@ -16,8 +16,6 @@ import android.widget.ImageView
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
@@ -36,7 +34,6 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.epub.UserSettings
 import org.readium.r2.testapp.search.SearchFragment
-import org.readium.r2.testapp.utils.extensions.toDataUrl
 
 @OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
 class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listener {
@@ -70,7 +67,14 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                 initialLocator = readerData.initialLocation,
                 listener = this,
                 config = EpubNavigatorFragment.Configuration(
-                    preferences = model.settings.preferences.value
+                    preferences = model.settings.preferences.value,
+                    // App assets which will be accessible from the EPUB resources.
+                    // You can use simple glob patterns, such as "images/.*" to allow several
+                    // assets in one go.
+                    servedAssets = listOf(
+                        /** Icon for the annotation side mark, see [annotationMarkTemplate]. */
+                        "annotation-icon.svg"
+                    )
                 ).apply {
                     // Register the HTML template for our custom [DecorationStyleAnnotationMark].
                     decorationTemplates[DecorationStyleAnnotationMark::class] = annotationMarkTemplate(activity)
@@ -251,15 +255,11 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
  *
  * This one will display a tinted "pen" icon in the page margin to show that a highlight has an
  * associated note.
+ *
+ * Note that the icon is served from the app assets folder.
  */
 @OptIn(ExperimentalDecorator::class)
 private fun annotationMarkTemplate(context: Context, @ColorInt defaultTint: Int = Color.YELLOW): HtmlDecorationTemplate {
-    // Converts the pen icon to a base 64 data URL, to be embedded in the decoration stylesheet.
-    // Alternatively, serve the image with the local HTTP server and use its URL.
-    val imageUrl = ContextCompat.getDrawable(context, R.drawable.ic_baseline_edit_24)
-        ?.toBitmap()?.toDataUrl()
-    requireNotNull(imageUrl)
-
     val className = "testapp-annotation-mark"
     return HtmlDecorationTemplate(
         layout = HtmlDecorationTemplate.Layout.BOUNDS,
@@ -280,7 +280,7 @@ private fun annotationMarkTemplate(context: Context, @ColorInt defaultTint: Int 
                 width: 30px;
                 height: 30px;
                 border-radius: 50%;
-                background: url('$imageUrl') no-repeat center;
+                background: url('https://readium/assets/annotation-icon.svg') no-repeat center;
                 background-size: auto 50%;
                 opacity: 0.8;
             }

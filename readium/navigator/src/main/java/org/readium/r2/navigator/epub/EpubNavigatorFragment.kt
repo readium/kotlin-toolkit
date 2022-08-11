@@ -88,18 +88,34 @@ class EpubNavigatorFragment private constructor(
 ) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable {
 
     // Make a copy to prevent the user from modifying the configuration after initialization.
-    internal val config: Configuration = config.copy()
+    internal val config: Configuration = config.copy(
+        servedAssets = config.servedAssets + "readium/.*"
+    )
 
     data class Configuration(
         /**
          * Initial set of setting preferences.
          */
+        @ExperimentalReadiumApi
         val preferences: Preferences = Preferences(),
 
         /**
          * Fallback preferences when missing.
          */
+        @ExperimentalReadiumApi
         val defaultPreferences: Preferences = Preferences(),
+
+        /**
+         * Patterns for asset paths which will be available to EPUB resources under
+         * https://readium/assets/.
+         *
+         * The patterns can use simple glob wildcards, see:
+         * https://developer.android.com/reference/android/os/PatternMatcher#PATTERN_SIMPLE_GLOB
+         *
+         * Use .* to serve all app assets.
+         */
+        @ExperimentalReadiumApi
+        val servedAssets: List<String> = emptyList(),
 
         /**
          * Font families available in reflowable resources.
@@ -195,7 +211,7 @@ class EpubNavigatorFragment private constructor(
     }
 
     private val viewModel: EpubNavigatorViewModel by viewModels {
-        EpubNavigatorViewModel.createFactory(requireActivity().application, publication, baseUrl = baseUrl, config)
+        EpubNavigatorViewModel.createFactory(requireActivity().application, publication, baseUrl = baseUrl, this.config)
     }
 
     internal lateinit var positionsByReadingOrder: List<List<Locator>>
