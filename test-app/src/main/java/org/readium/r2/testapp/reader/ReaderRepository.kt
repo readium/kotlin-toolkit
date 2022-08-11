@@ -95,18 +95,7 @@ class ReaderRepository(
         publication: Publication,
         initialLocator: Locator?
     ): VisualReaderInitData {
-        val url = prepareToServe(publication)
-        return VisualReaderInitData(bookId, publication, url, initialLocator)
-    }
-
-    private fun prepareToServe(publication: Publication): URL {
-        val userProperties =
-            application.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json"
-        val url =
-            checkNotNull(readium.server)
-                .addPublication(publication, userPropertiesFile = File(userProperties))
-
-        return url ?: throw Exception("Cannot add the publication to the HTTP server.")
+        return VisualReaderInitData(bookId, publication, initialLocator)
     }
 
     @OptIn(ExperimentalMedia2::class)

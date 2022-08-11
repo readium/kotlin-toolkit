@@ -13,9 +13,11 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.Navigator
+import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.Configurable
 import org.readium.r2.navigator.settings.MutablePreferences
 import org.readium.r2.navigator.settings.Preferences
+import org.readium.r2.navigator.settings.Theme
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
 
@@ -47,6 +49,14 @@ class UserSettingsViewModel(
      */
     private val _settings = MutableStateFlow<Configurable.Settings?>(null)
     val settings: StateFlow<Configurable.Settings?> = _settings.asStateFlow()
+
+    /**
+     * Current reader theme.
+     */
+    val theme: StateFlow<Theme> = settings
+        .filterIsInstance<EpubSettings.Reflowable>()
+        .map { it.theme.value }
+        .stateIn(scope, SharingStarted.Lazily, initialValue = Theme.LIGHT)
 
     fun bind(navigator: Navigator, lifecycleOwner: LifecycleOwner) {
         val configurable = (navigator as? Configurable) ?: return

@@ -148,8 +148,6 @@ private fun TtsSettingsDialog(
     onConfigChange: (Configuration) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val context = LocalContext.current
-
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
