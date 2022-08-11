@@ -12,7 +12,7 @@ package org.readium.r2.shared.fetcher
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.annotation.StringRes
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.json.JSONObject
@@ -24,6 +24,7 @@ import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
@@ -209,6 +210,47 @@ class FailureResource(private val link: Link, private val error: Resource.Except
         "${javaClass.simpleName}(${error})"
             
 }
+
+/**
+ * Resource that will act as a proxy to the first given resource that is not a failure.
+ */
+class FallbackResource(private val originalResource: Resource, private vararg val fallbackResources: Resource) : Resource {
+    init {
+        require(fallbackResources.isNotEmpty())
+    }
+
+    private val coroutineScope =
+        CoroutineScope(Dispatchers.Default)
+
+    private val resource: Deferred<Resource> = coroutineScope.async {
+        (listOf(originalResource) + fallbackResources).firstOrNull { it.length().isSuccess }
+            ?: originalResource
+    }
+
+    override suspend fun link(): Link =
+        resource.await().link()
+
+    override suspend fun length(): ResourceTry<Long> =
+        resource.await().length()
+
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+        resource.await().read(range)
+
+    override suspend fun close() {
+        coroutineScope.cancel()
+        originalResource.close()
+        fallbackResources.forEach { it.close() }
+    }
+}
+
+/**
+ * Falls back to the given resources if the receiver failed.
+ *
+ * The first non-failed resource will be used.
+ */
+fun Resource.fallback(vararg others: Resource): Resource =
+    if (others.isEmpty()) this
+    else FallbackResource(this, *others)
 
 /**
  * A base class for a [Resource] which acts as a proxy to another one.

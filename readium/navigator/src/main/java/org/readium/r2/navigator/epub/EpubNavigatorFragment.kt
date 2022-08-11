@@ -366,7 +366,9 @@ class EpubNavigatorFragment private constructor(
                     }
                     .launchIn(this)
             }
+        }
 
+        viewLifecycleOwner.lifecycleScope.launch {
             whenStarted {
                 // Restore the last locator before a configuration change (e.g. screen rotation), or the
                 // initial locator when given.

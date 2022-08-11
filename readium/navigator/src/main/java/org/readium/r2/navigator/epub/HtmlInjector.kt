@@ -26,7 +26,7 @@ internal fun Resource.injectHtml(publication: Publication, css: ReadiumCss, base
         val injectables = mutableListOf<String>()
 
         val baseUri = baseHref.removeSuffix("/")
-        if (publication.metadata.presentation.layoutOf(link) == EpubLayout.REFLOWABLE) {
+        if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
             content = css.injectHtml(content)
             injectables.add(script("$baseUri/readium/scripts/readium-reflowable.js"))
         } else {

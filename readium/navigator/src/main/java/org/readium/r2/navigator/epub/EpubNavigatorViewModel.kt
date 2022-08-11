@@ -12,12 +12,14 @@ import android.graphics.RectF
 import android.net.Uri
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.webkit.WebViewAssetLoader
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.epub.css.ReadiumCss
@@ -29,14 +31,16 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceInputStream
+import org.readium.r2.shared.fetcher.StringResource
+import org.readium.r2.shared.fetcher.fallback
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
+import org.readium.r2.shared.util.mediatype.MediaType
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
@@ -45,7 +49,7 @@ internal class EpubNavigatorViewModel(
     val publication: Publication,
     baseUrl: String?,
     val config: EpubNavigatorFragment.Configuration,
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     private val baseUrl: String =
         baseUrl?.let { it.removeSuffix("/") + "/" }
@@ -218,6 +222,7 @@ internal class EpubNavigatorViewModel(
             ?: Link(href = href)
 
         var resource = publication.get(link)
+            .fallback(notFoundResource(link))
         if (link.mediaType.isHtml) {
             resource = resource.injectHtml(publication, css.value, baseHref = assetsBaseHref)
         }
@@ -239,6 +244,16 @@ internal class EpubNavigatorViewModel(
             return WebResourceResponse(link.type, null, 206, "Partial Content", headers, stream)
         }
     }
+
+    private fun notFoundResource(link: Link): Resource =
+        StringResource(link.copy(type = MediaType.XHTML.toString())) {
+            withContext(Dispatchers.IO) {
+                getApplication<Application>().assets
+                    .open("readium/404.xhtml").bufferedReader()
+                    .use { it.readText() }
+                    .replace("\${href}", link.href)
+            }
+        }
 
     private val assetsLoader by lazy {
         WebViewAssetLoader.Builder()
