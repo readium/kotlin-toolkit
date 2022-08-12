@@ -41,7 +41,7 @@ internal class NetworkService {
         }
     }
 
-    suspend fun fetch(url: String, method: Method = Method.GET, parameters: URLParameters = emptyMap(), timeout: Duration? = null): Try<ByteArray, NetworkException> =
+    suspend fun fetch(url: String, method: Method = Method.GET, parameters: URLParameters = emptyMap(), timeout: Duration? = null, headers: Map<String, String> = emptyMap()): Try<ByteArray, NetworkException> =
         withContext(Dispatchers.IO) {
             try {
                 @Suppress("NAME_SHADOWING")
@@ -52,6 +52,7 @@ internal class NetworkService {
                 if (timeout != null) {
                     connection.connectTimeout = timeout.inWholeMilliseconds.toInt()
                 }
+                connection.appendRequestHeaders(headers)
 
                 val status = connection.responseCode
                 if (status >= 400) {
@@ -62,6 +63,13 @@ internal class NetworkService {
             } catch (e: Exception) {
                 Timber.e(e)
                 Try.failure(NetworkException(status = null, cause = e))
+            }
+        }
+
+    private fun HttpURLConnection.appendRequestHeaders(headers: Map<String, String>): HttpURLConnection =
+        apply {
+            for ((key, value) in headers) {
+                setRequestProperty(key, value)
             }
         }
 
