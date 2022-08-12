@@ -10,6 +10,7 @@ package org.readium.r2.navigator.epub
 
 import kotlinx.serialization.json.JsonPrimitive
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.navigator.epub.EpubSettings.Reflowable
 import org.readium.r2.navigator.epub.css.*
 import org.readium.r2.navigator.settings.*
@@ -22,11 +23,13 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Language
+import org.robolectric.RobolectricTestRunner
 import kotlin.test.*
 import android.graphics.Color as AndroidColor
 import org.readium.r2.navigator.epub.css.Color.Companion as CssColor
 import org.readium.r2.navigator.epub.css.TextAlign as CssTextAlign
 
+@RunWith(RobolectricTestRunner::class)
 class EpubSettingsReflowableTest {
 
     @Test

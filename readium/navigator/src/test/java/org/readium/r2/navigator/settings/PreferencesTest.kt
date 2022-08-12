@@ -10,8 +10,10 @@ package org.readium.r2.navigator.settings
 
 import kotlinx.serialization.json.JsonPrimitive
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
+import org.robolectric.RobolectricTestRunner
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
@@ -67,6 +69,7 @@ private val theme: EnumSetting<Theme> = EnumSetting(
     values = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
 )
 
+@RunWith(RobolectricTestRunner::class)
 class PreferencesTest {
 
     @Test

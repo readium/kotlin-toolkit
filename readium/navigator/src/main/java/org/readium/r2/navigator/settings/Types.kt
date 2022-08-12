@@ -14,14 +14,14 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import android.graphics.Color as AndroidColor
 
 // https://github.com/readium/readium-css/blob/master/css/src/modules/ReadiumCSS-day_mode.css
-private @ColorInt val dayContentColor: Int = AndroidColor.parseColor("#121212")
-private @ColorInt val dayBackgroundColor: Int = AndroidColor.parseColor("#FFFFFF")
+@ColorInt private val dayContentColor: Int = AndroidColor.parseColor("#121212")
+@ColorInt private val dayBackgroundColor: Int = AndroidColor.parseColor("#FFFFFF")
 // https://github.com/readium/readium-css/blob/master/css/src/modules/ReadiumCSS-night_mode.css
-private @ColorInt val nightContentColor: Int = AndroidColor.parseColor("#FEFEFE")
-private @ColorInt val nightBackgroundColor: Int = AndroidColor.parseColor("#000000")
+@ColorInt private val nightContentColor: Int = AndroidColor.parseColor("#FEFEFE")
+@ColorInt private val nightBackgroundColor: Int = AndroidColor.parseColor("#000000")
 // https://github.com/readium/readium-css/blob/master/css/src/modules/ReadiumCSS-sepia_mode.css
-private @ColorInt val sepiaContentColor: Int = AndroidColor.parseColor("#121212")
-private @ColorInt val sepiaBackgroundColor: Int = AndroidColor.parseColor("#faf4e8")
+@ColorInt private val sepiaContentColor: Int = AndroidColor.parseColor("#121212")
+@ColorInt private val sepiaBackgroundColor: Int = AndroidColor.parseColor("#faf4e8")
 
 @ExperimentalReadiumApi
 @Serializable
