@@ -74,6 +74,48 @@ Then, use the base URL `https://readium/assets/` to fetch your app assets from t
 * `https://readium/assets/fonts/OpenDyslexic.otf`
 * `https://readium/assets/annotation-icon.svg`
 
+### Upgrading to the new Settings API
+
+The 2.3.0 release introduces a brand new user settings API to configure the EPUB Navigator. This new API is easier and safer to use, [take a look at the user guide](guides/navigator-settings.md) to learn how to integrate it in your app.
+
+If you integrated the EPUB navigator from a previous version, follow these steps to migrate:
+
+1. Get familiar with [the concepts of this new API](guides/navigator-settings.md#overview).
+2. Remove the local HTTP server from your app, [as explained in the previous section](#removing-the-http-server)
+3. Remove the whole [`UserSettings.kt`](https://github.com/readium/kotlin-toolkit/blob/f132e541a1d2c290a83974fb017efb352e0f825f/test-app/src/main/java/org/readium/r2/testapp/epub/UserSettings.kt) file from your app, if you copied it from the Test App.
+4. Adapt your user settings interface to the new API. The [Test App](https://github.com/readium/kotlin-toolkit/tree/develop/test-app/src/main/java/org/readium/r2/testapp/reader/settings) and the [user guide](guides/navigator-settings.md#build-a-user-settings-interface) contain examples using Jetpack Compose.
+5. [Handle the persistence of the user preferences](guides/navigator-settings.md#save-and-restore-the-user-preferences). The settings are not stored in the `SharedPreferences` with identifier `org.readium.r2.settings` anymore. Instead, you are responsible for persisting and restoring the user preferences as you see fit (e.g. as a JSON file).
+6. Make sure you [restore the stored user preferences](guides/navigator-settings.md#setting-the-initial-navigator-preferences-and-app-defaults) when initializing the EPUB navigator.
+
+Refer to the following table for the correspondence between legacy settings and new ones.
+
+| **Legacy**              | **New**                                                |
+|-------------------------|--------------------------------------------------------|
+| `APPEARANCE_REF`        | `theme`                                                |
+| `COLUMN_COUNT_REF`      | `columnCount` (reflowable) and `spread` (fixed-layout) |
+| `FONT_FAMILY_REF`       | `fontFamily`                                           |
+| `FONT_OVERRIDE_REF`     | N/A (handled automatically)                            |
+| `FONT_SIZE_REF`         | `fontSize`                                             |
+| `LETTER_SPACING_REF`    | `letterSpacing`                                        |
+| `LINE_HEIGHT_REF`       | `lineHeight`                                           |
+| `PAGE_MARGINS_REF`      | `pageMargins`                                          |
+| `PUBLISHER_DEFAULT_REF` | `publisherStyles`                                      |
+| `reader_brightness`     | N/A (out of scope for Readium)                         |
+| `SCROLL_REF`            | `overflow` (`scrolled`)                                |
+| `TEXT_ALIGNMENT_REF`    | `textAlign`                                            |
+| `WORD_SPACING_REF`      | `wordSpacing`                                          |
+| N/A                     | `language`                                             |
+| N/A                     | `readingProgression` (e.g. RTL)                        |
+| N/A                     | `textColor`                                            |
+| N/A                     | `backgroundColor`                                      |
+| N/A                     | `imageFilter` (dark theme only)                        |
+| N/A                     | `paragraphIndent`                                      |
+| N/A                     | `paragraphSpacing`                                     |
+| N/A                     | `typeScale`                                            |
+| N/A                     | `textNormalization` (force bold, accessibility)        |
+| N/A                     | `hyphens`                                              |
+| N/A                     | `ligatures` (arabic)                                   |
+
 
 ## 2.1.0
 

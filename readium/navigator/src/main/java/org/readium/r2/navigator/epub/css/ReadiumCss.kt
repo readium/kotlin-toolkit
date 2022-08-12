@@ -14,7 +14,6 @@ import org.readium.r2.navigator.settings.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
 
-// FIXME: Custom Fonts
 @ExperimentalReadiumApi
 data class ReadiumCss(
     val layout: Layout = Layout(language = null, Layout.Stylesheets.Default, ReadingProgression.LTR),
