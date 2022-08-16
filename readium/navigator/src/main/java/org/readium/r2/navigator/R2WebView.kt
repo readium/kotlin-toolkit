@@ -688,13 +688,12 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 mActivePointerId = ev.getPointerId(0)
             }
             MotionEvent.ACTION_MOVE -> {
-
                 if ((mLastMotionX > (width - mGutterSize)) || (mLastMotionX < mGutterSize)) {
                     requestDisallowInterceptTouchEvent(true)
                     return false
                 }
 
-                if (!mIsBeingDragged) {
+                if (!isSelecting && !mIsBeingDragged) {
                     mInitialVelocity = getCurrentXVelocity()
                     val pointerIndex = ev.findPointerIndex(mActivePointerId)
                     val x = ev.getX(pointerIndex)
