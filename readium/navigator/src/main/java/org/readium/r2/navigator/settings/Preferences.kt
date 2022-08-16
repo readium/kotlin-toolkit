@@ -148,6 +148,9 @@ open class Preferences(
 
     override fun toString(): String =
         toJsonString()
+
+    // Don't remove, this is used for extensions.
+    companion object;
 }
 
 /**

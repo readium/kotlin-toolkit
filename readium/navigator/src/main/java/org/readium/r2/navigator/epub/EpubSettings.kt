@@ -8,6 +8,7 @@
 
 package org.readium.r2.navigator.epub
 
+import android.content.Context
 import org.readium.r2.navigator.epub.css.*
 import org.readium.r2.navigator.epub.css.Layout.Stylesheets
 import org.readium.r2.navigator.settings.*
@@ -247,7 +248,7 @@ sealed class EpubSettings : Configurable.Settings {
             val PAGE_MARGINS: RangeSetting<Double> = RangeSetting(
                 key = Setting.PAGE_MARGINS,
                 value = 1.0,
-                range = 0.5..2.0
+                range = 0.5..4.0
             )
 
             /** Text indentation for paragraphs. */
@@ -463,4 +464,107 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
 private fun FontFamily.toCss(): List<String> = buildList {
     add(name)
     alternate?.let { addAll(it.toCss()) }
+}
+
+/**
+ * Loads the preferences from the legacy EPUB settings stored in the [SharedPreferences] with
+ * given [sharedPreferencesName].
+ *
+ * This can be used to migrate the legacy settings to the new [Preferences] format.
+ *
+ * If you changed the `fontFamilyValues` in the original Test App `UserSettings`, pass it to
+ * [fontFamilies] to migrate the font family properly.
+ */
+@ExperimentalReadiumApi
+fun Preferences.Companion.fromLegacyEpubSettings(
+    context: Context,
+    sharedPreferencesName: String = "org.readium.r2.settings",
+    fontFamilies: List<String> = listOf(
+        "Original", "PT Serif", "Roboto", "Source Sans Pro", "Vollkorn", "OpenDyslexic",
+        "AccessibleDfA", "IA Writer Duospace"
+    )
+): Preferences {
+    val sp = context.getSharedPreferences(sharedPreferencesName, Context.MODE_PRIVATE)
+    return Preferences {
+        if (sp.contains("appearance")) {
+            val appearance = sp.getInt("appearance", 0)
+            set(EpubSettings.Reflowable.THEME, when (appearance) {
+                0 -> Theme.LIGHT
+                1 -> Theme.SEPIA
+                2 -> Theme.DARK
+                else -> null
+            })
+        }
+
+        if (sp.contains("scroll")) {
+            set(EpubSettings.Reflowable.OVERFLOW,
+                if (sp.getBoolean("scroll", false)) Overflow.SCROLLED
+                else Overflow.PAGINATED
+            )
+        }
+
+        if (sp.contains("colCount")) {
+            val colCount = sp.getInt("colCount", 0)
+            set(EpubSettings.Reflowable.COLUMN_COUNT, when (colCount) {
+                0 -> ColumnCount.AUTO
+                1 -> ColumnCount.ONE
+                2 -> ColumnCount.TWO
+                else -> null
+            })
+        }
+
+        if (sp.contains("pageMargins")) {
+            val pageMargins = sp.getFloat("pageMargins", 1.0f).toDouble()
+            set(EpubSettings.Reflowable.PAGE_MARGINS, pageMargins)
+        }
+
+        if (sp.contains("fontFamily")) {
+            val index = sp.getInt("fontFamily", 0)
+            val fontFamily = fontFamilies.getOrNull(index)
+            if (fontFamily != null && fontFamily != "Original") {
+                val setting = EpubSettings.Reflowable.FONT_FAMILY.copy(
+                    values = fontFamilies
+                        .mapNotNull {
+                            if (it == "Original") null
+                            else FontFamily(it)
+                        }
+                )
+                set(setting, FontFamily(fontFamily))
+            }
+        }
+
+        if (sp.contains("fontSize")) {
+            val fontSize = (sp.getFloat("fontSize", 0f) / 100).toDouble()
+            set(EpubSettings.Reflowable.FONT_SIZE, fontSize)
+        }
+
+        if (sp.contains("textAlign")) {
+            val textAlign = sp.getInt("textAlign", 0)
+            set(EpubSettings.Reflowable.TEXT_ALIGN, when (textAlign) {
+                0 -> TextAlign.JUSTIFY
+                1 -> TextAlign.START
+                else -> null
+            })
+        }
+
+        if (sp.contains("wordSpacing")) {
+            val wordSpacing = sp.getFloat("wordSpacing", 0f).toDouble()
+            set(EpubSettings.Reflowable.WORD_SPACING, wordSpacing)
+        }
+
+        if (sp.contains("letterSpacing")) {
+            val letterSpacing = sp.getFloat("letterSpacing", 0f).toDouble() * 2
+            set(EpubSettings.Reflowable.LETTER_SPACING, letterSpacing)
+        }
+
+        if (sp.contains("lineHeight")) {
+            val lineHeight = sp.getFloat("lineHeight", 1.2f).toDouble()
+            set(EpubSettings.Reflowable.LINE_HEIGHT, lineHeight)
+        }
+
+        if (sp.contains("advancedSettings")) {
+            val advancedSettings = sp.getBoolean("advancedSettings", false)
+            set(EpubSettings.Reflowable.PUBLISHER_STYLES, !advancedSettings)
+        }
+    }
 }

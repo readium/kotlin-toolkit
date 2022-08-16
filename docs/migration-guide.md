@@ -84,7 +84,8 @@ If you integrated the EPUB navigator from a previous version, follow these steps
 2. Remove the local HTTP server from your app, [as explained in the previous section](#removing-the-http-server)
 3. Remove the whole [`UserSettings.kt`](https://github.com/readium/kotlin-toolkit/blob/f132e541a1d2c290a83974fb017efb352e0f825f/test-app/src/main/java/org/readium/r2/testapp/epub/UserSettings.kt) file from your app, if you copied it from the Test App.
 4. Adapt your user settings interface to the new API. The [Test App](https://github.com/readium/kotlin-toolkit/tree/develop/test-app/src/main/java/org/readium/r2/testapp/reader/settings) and the [user guide](guides/navigator-settings.md#build-a-user-settings-interface) contain examples using Jetpack Compose.
-5. [Handle the persistence of the user preferences](guides/navigator-settings.md#save-and-restore-the-user-preferences). The settings are not stored in the `SharedPreferences` with identifier `org.readium.r2.settings` anymore. Instead, you are responsible for persisting and restoring the user preferences as you see fit (e.g. as a JSON file).
+5. [Handle the persistence of the user preferences](guides/navigator-settings.md#save-and-restore-the-user-preferences). The settings are not stored in the `SharedPreferences` with name `org.readium.r2.settings` anymore. Instead, you are responsible for persisting and restoring the user preferences as you see fit (e.g. as a JSON file).
+    * If you want to migrate the legacy `SharedPreferences` settings, you can use the helper `Preferences.fromLegacyEpubSettings()` which will create a new `Preferences` object after translating the existing user settings.
 6. Make sure you [restore the stored user preferences](guides/navigator-settings.md#setting-the-initial-navigator-preferences-and-app-defaults) when initializing the EPUB navigator.
 
 Refer to the following table for the correspondence between legacy settings and new ones.

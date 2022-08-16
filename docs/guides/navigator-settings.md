@@ -2,6 +2,8 @@
 
 :warning: The Navigator Setting API is still experimental and currently only available with `EpubNavigatorFragment`.
 
+Take a look at the [migration guide](../migration-guide.md) if you are already using the legacy EPUB settings.
+
 ## Overview
 
 A few Readium components – such as the Navigator – support dynamic configuration through the `Configurable` interface. It provides an easy way to build a user settings interface and save user preferences as a JSON object.
