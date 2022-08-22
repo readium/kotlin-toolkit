@@ -57,7 +57,7 @@ dependencies {
 
     api(project(":readium:shared"))
 
-    implementation("androidx.appcompat:appcompat:1.4.1")
+    implementation("androidx.appcompat:appcompat:1.5.0")
     @Suppress("GradleDependency")
     implementation("com.github.barteksc:pdfium-android:1.8.2")
     implementation("com.jakewharton.timber:timber:5.0.1")
@@ -76,7 +76,7 @@ dependencies {
         exclude(module = "support-v4")
     }
     implementation("joda-time:joda-time:2.10.13")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
     // Tests
     testImplementation("junit:junit:4.13.2")
