@@ -1,3 +1,6 @@
+import ModuleDependency.Project.navigator
+import ModuleDependency.Project.shared
+
 /*
  * Copyright 2022 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
@@ -15,12 +18,12 @@ plugins {
 android {
     resourcePrefix = "readium_"
 
-    compileSdk = 32
+    compileSdk = AndroidConfig.COMPILE_SDK_VERSION
 
     defaultConfig {
-        minSdk = 21
-        targetSdk = 32
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        minSdk = AndroidConfig.MIN_SDK_VERSION
+        targetSdk = AndroidConfig.TARGET_SDK_VERSION
+        testInstrumentationRunner = AndroidConfig.TEST_INSTRUMENTATION_RUNNER
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -58,8 +61,8 @@ afterEvaluate {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    api(project(":readium:shared"))
-    api(project(":readium:navigator"))
+    api(shared())
+    api(navigator())
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")

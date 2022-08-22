@@ -1,3 +1,5 @@
+import ModuleDependency.Project.shared
+
 /*
  * Copyright 2018 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
@@ -16,12 +18,12 @@ android {
     // FIXME: This doesn't pass the lint because some resources don"t start with r2_ yet. We need to rename all resources for the next major version.
 //    resourcePrefix "r2_"
 
-    compileSdk = 32
+    compileSdk = AndroidConfig.COMPILE_SDK_VERSION
 
     defaultConfig {
-        minSdk = 21
-        targetSdk = 32
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        minSdk = AndroidConfig.MIN_SDK_VERSION
+        targetSdk = AndroidConfig.TARGET_SDK_VERSION
+        testInstrumentationRunner = AndroidConfig.TEST_INSTRUMENTATION_RUNNER
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -59,7 +61,7 @@ afterEvaluate {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    api(project(":readium:shared"))
+    api(shared())
 
     implementation("androidx.activity:activity-ktx:1.4.0")
     implementation("androidx.appcompat:appcompat:1.4.1")

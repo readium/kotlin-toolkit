@@ -1,3 +1,5 @@
+import ModuleDependency.Project.shared
+
 /*
  * Copyright 2018 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
@@ -5,19 +7,19 @@
  */
 
 plugins {
-    id("com.android.library")
-    id("kotlin-android")
-    id("kotlin-parcelize")
-    id("maven-publish")
-    id("org.jetbrains.dokka")
+    id(Plugins.ANDROID_LIBRARY)
+    kotlin(Plugins.ANDROID)
+    id(Plugins.KOTLIN_PARCELIZE)
+    id(Plugins.MAVEN_PUBLISH)
+    id(Plugins.DOKKA)
 }
 
 android {
-    compileSdk = 32
+    compileSdk = AndroidConfig.COMPILE_SDK_VERSION
     defaultConfig {
-        minSdk = 21
-        targetSdk = 32
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        minSdk = AndroidConfig.MIN_SDK_VERSION
+        targetSdk = AndroidConfig.TARGET_SDK_VERSION
+        testInstrumentationRunner = AndroidConfig.TEST_INSTRUMENTATION_RUNNER
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -27,7 +29,7 @@ android {
         unitTests.isIncludeAndroidResources = true
     }
     buildTypes {
-        getByName("release") {
+        getByName(Flavors.BuildTypes.RELEASE) {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
@@ -51,17 +53,17 @@ afterEvaluate {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    api(project(":readium:shared"))
+    api(shared())
 
-    implementation("androidx.appcompat:appcompat:1.5.0")
-    implementation("com.jakewharton.timber:timber:5.0.1")
-    implementation("joda-time:joda-time:2.10.13")
-    implementation("nl.komponents.kovenant:kovenant:3.3.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation(libs.appcompat)
+    implementation(libs.timber)
+    implementation(libs.joda.time)
+    implementation(libs.kovenant)
+    implementation(libs.coroutines.core)
 
     // Tests
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.robolectric:robolectric:4.7.3")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.expresso.core)
 }

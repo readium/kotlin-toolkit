@@ -1,3 +1,10 @@
+import ModuleDependency.Project.lcp
+import ModuleDependency.Project.navigator
+import ModuleDependency.Project.navigatorMedia2
+import ModuleDependency.Project.opds
+import ModuleDependency.Project.shared
+import ModuleDependency.Project.streamer
+
 /*
  * Copyright 2021 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
@@ -13,16 +20,17 @@ plugins {
 
 android {
 
-    compileSdk = 32
+    compileSdk = AndroidConfig.COMPILE_SDK_VERSION
     defaultConfig {
-        minSdk = 21
-        targetSdk = 32
 
-        applicationId = "org.readium.r2reader"
+        minSdk = AndroidConfig.MIN_SDK_VERSION
+        targetSdk = AndroidConfig.TARGET_SDK_VERSION
 
-        versionName = "2.2.0"
+        applicationId = AndroidConfig.APP_ID
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        versionName = AndroidConfig.VERSION_NAME
+
+        testInstrumentationRunner = AndroidConfig.TEST_INSTRUMENTATION_RUNNER
         ndk.abiFilters.add("armeabi-v7a")
         ndk.abiFilters.add("arm64-v8a")
         ndk.abiFilters.add("x86")
@@ -63,13 +71,13 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.10")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
 
-    implementation(project(":readium:shared"))
-    implementation(project(":readium:streamer"))
-    implementation(project(":readium:navigator"))
-    implementation(project(":readium:navigator-media2"))
+    implementation(shared())
+    implementation(streamer())
+    implementation(navigator())
+    implementation(navigatorMedia2())
 
-    implementation(project(":readium:opds"))
-    implementation(project(":readium:lcp"))
+    implementation(opds())
+    implementation(lcp())
 
     implementation("androidx.core:core-ktx:1.8.0")
     implementation("androidx.activity:activity-ktx:1.5.1")

@@ -1,3 +1,5 @@
+import ModuleDependency.Project.shared
+
 /*
  * Copyright 2018 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
@@ -15,11 +17,11 @@ plugins {
 
 android {
 
-    compileSdk = 32
+    compileSdk = AndroidConfig.COMPILE_SDK_VERSION
     defaultConfig {
-        minSdk = 21
-        targetSdk = 32
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        minSdk = AndroidConfig.MIN_SDK_VERSION
+        targetSdk = AndroidConfig.TARGET_SDK_VERSION
+        testInstrumentationRunner = AndroidConfig.TEST_INSTRUMENTATION_RUNNER
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -57,7 +59,7 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
-    api(project(":readium:shared"))
+    api(shared())
 
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.core:core-ktx:1.8.0")
