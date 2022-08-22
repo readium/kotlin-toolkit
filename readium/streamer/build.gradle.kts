@@ -33,7 +33,7 @@ android {
         allWarningsAsErrors = true
     }
     buildTypes {
-        getByName("release") {
+        getByName(Flavors.BuildTypes.RELEASE) {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
@@ -43,9 +43,9 @@ android {
 afterEvaluate {
     publishing {
         publications {
-            create<MavenPublication>("release") {
-                from(components.getByName("release"))
-                groupId = "com.github.readium"
+            create<MavenPublication>(Flavors.BuildTypes.RELEASE) {
+                from(components.getByName(Flavors.BuildTypes.RELEASE))
+                groupId = AndroidConfig.GROUP_ID
                 artifactId = "readium-streamer"
                 artifact(tasks.findByName("sourcesJar"))
                 artifact(tasks.findByName("javadocsJar"))
@@ -61,12 +61,9 @@ dependencies {
 
     implementation(libs.appcompat)
     @Suppress("GradleDependency")
-    implementation("com.github.barteksc:pdfium-android:1.8.2")
+    implementation(libs.pdfium.android)
     implementation(libs.timber)
-    implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
-        exclude(group = "org.parboiled")
-    }
-    implementation("com.github.edrlab.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
+    implementation(libs.bundles.nanohttpd) {
         exclude(group = "org.parboiled")
     }
     //AM NOTE: conflicting support libraries, excluding these

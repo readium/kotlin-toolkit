@@ -31,7 +31,7 @@ android {
         unitTests.isIncludeAndroidResources = true
     }
     buildTypes {
-        getByName("release") {
+        getByName(Flavors.BuildTypes.RELEASE) {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
@@ -41,9 +41,9 @@ android {
 afterEvaluate {
     publishing {
         publications {
-            create<MavenPublication>("release") {
-                from(components.getByName("release"))
-                groupId = "com.github.readium"
+            create<MavenPublication>(Flavors.BuildTypes.RELEASE) {
+                from(components.getByName(Flavors.BuildTypes.RELEASE))
+                groupId = AndroidConfig.GROUP_ID
                 artifactId = "readium-shared"
                 artifact(tasks.findByName("sourcesJar"))
                 artifact(tasks.findByName("javadocsJar"))
@@ -57,13 +57,12 @@ dependencies {
 
     implementation(libs.appcompat)
     implementation(libs.androidx.browser)
-    implementation("com.github.kittinunf.fuel:fuel-android:2.3.1")
-    implementation("com.github.kittinunf.fuel:fuel:2.3.1")
+    implementation(libs.bundles.fuel)
     implementation(libs.timber)
     implementation(libs.joda.time)
     implementation(libs.bundles.kovenant)
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.10")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation(libs.kotlin.reflect)
+    implementation(libs.coroutines.core)
     implementation(libs.jsoup)
 
     // Tests

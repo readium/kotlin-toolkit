@@ -9,7 +9,7 @@ object AndroidConfig {
     const val COMPILE_SDK_VERSION = 32
     const val NDK_VERSION = "23.0.7599858"
     const val TEST_INSTRUMENTATION_RUNNER = "androidx.test.runner.AndroidJUnitRunner"
-
+    const val GROUP_ID = "com.github.readium"
     const val VERSION_CODE = 1
     val VERSION_NAME = calculateVersionName()
     private const val versionMajor = 2

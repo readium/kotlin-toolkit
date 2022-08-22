@@ -33,7 +33,7 @@ android {
         allWarningsAsErrors = true
     }
     buildTypes {
-        getByName("release") {
+        getByName(Flavors.BuildTypes.RELEASE) {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
@@ -43,9 +43,9 @@ android {
 afterEvaluate {
     publishing {
         publications {
-            create<MavenPublication>("release") {
-                from(components.getByName("release"))
-                groupId = "com.github.readium"
+            create<MavenPublication>(Flavors.BuildTypes.RELEASE) {
+                from(components.getByName(Flavors.BuildTypes.RELEASE))
+                groupId = AndroidConfig.GROUP_ID
                 artifactId = "readium-lcp"
                 artifact(tasks.findByName("sourcesJar"))
                 artifact(tasks.findByName("javadocsJar"))

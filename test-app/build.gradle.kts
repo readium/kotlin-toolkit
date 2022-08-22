@@ -48,7 +48,7 @@ android {
         viewBinding = true
     }
     buildTypes {
-        getByName("release") {
+        getByName(Flavors.BuildTypes.RELEASE) {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
@@ -58,7 +58,7 @@ android {
     }
 
     sourceSets {
-        getByName("main") {
+        getByName(Flavors.Default.MAIN) {
             java.srcDirs("src/main/java")
             res.srcDirs("src/main/res")
             assets.srcDirs("src/main/assets")
@@ -68,8 +68,8 @@ android {
 
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.10")
-    implementation("androidx.legacy:legacy-support-v4:1.0.0")
+    implementation(libs.kotlin.stdlib.jdk8)
+    implementation(libs.legacy.v4)
 
     implementation(shared())
     implementation(streamer())
@@ -80,30 +80,27 @@ dependencies {
     implementation(lcp())
 
     implementation(libs.androidx.core)
-    implementation("androidx.activity:activity-ktx:1.5.1")
+    implementation(libs.activity.ktx)
     implementation(libs.appcompat)
     implementation(libs.androidx.browser)
-    implementation("androidx.cardview:cardview:1.0.0")
+    implementation(libs.androidx.cardview)
     implementation(libs.constraint.layout)
     implementation(libs.fragment.ktx)
     implementation(libs.lifecycle.livedata)
     implementation(libs.lifecycle.runtime)
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.bundles.navigation)
-    implementation("androidx.paging:paging-runtime-ktx:3.1.1")
+    implementation(libs.androidx.paging)
     implementation(libs.recyclerview)
-    implementation("androidx.viewpager2:viewpager2:1.0.0")
+    implementation(libs.androidx.viewpager2)
     implementation(libs.webkit)
-    implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
-        exclude(group = "org.parboiled")
-    }
-    implementation("com.github.edrlab.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
+    implementation(libs.bundles.nanohttpd) {
         exclude(group = "org.parboiled")
     }
     implementation(libs.material)
     implementation(libs.timber)
     // AM NOTE: needs to stay this version for now (June 24,2020)
-    implementation("com.squareup.picasso:picasso:2.71828")
+    implementation(libs.picasso)
     implementation(libs.joda.time)
     implementation(libs.coroutines.core)
     // AM NOTE: needs to stay this version for now (June 24,2020)
@@ -115,8 +112,8 @@ dependencies {
     implementation(libs.bundles.room)
     kapt(libs.room.compiler)
 
-    implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
-    kapt("androidx.lifecycle:lifecycle-compiler:2.5.1")
+    implementation(libs.lifecycle.extensions)
+    kapt(libs.lifecycle.compiler)
 
     // Tests
     testImplementation(libs.junit)

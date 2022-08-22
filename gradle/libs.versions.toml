@@ -30,6 +30,11 @@ kovenant = "3.3.0"
 mcxiaoke = "0.5.5"
 zeroturnaround = "1.14"
 media2 = "1.2.1"
+media = "1.6.0"
+viewpager2 = "1.0.0"
+work-runtime = "2.7.1"
+fuel = "2.3.1"
+nanohttpd = "master-SNAPSHOT"
 
 [libraries]
 kotlin-gradle = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -48,6 +53,8 @@ lifecycle-livedata = { group = "androidx.lifecycle", name = "lifecycle-livedata-
 lifecycle-runtime = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
 lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 lifecycle-vmsavedstate = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-savedstate", version.ref = "lifecycle" }
+lifecycle-extensions = { group = "androidx.lifecycle", name = "lifecycle-extensions", version = "2.2.0" }
+lifecycle-compiler = { group = "androidx.lifecycle", name = "lifecycle-compiler", version.ref = "lifecycle" }
 navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation" }
 navigation-ui = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigation" }
 activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity-ktx" }
@@ -77,12 +84,30 @@ kovenant-combine = { group = "nl.komponents.kovenant", name = "kovenant-combine"
 kovenant-core = { group = "nl.komponents.kovenant", name = "kovenant-core", version.ref = "kovenant" }
 kovenant-functional = { group = "nl.komponents.kovenant", name = "kovenant-functional", version.ref = "kovenant" }
 kovenant-jvm = { group = "nl.komponents.kovenant", name = "kovenant-jvm", version.ref = "kovenant" }
-
 mcxiaoke-async = { group = "com.mcxiaoke.koi", name = "async", version.ref = "mcxiaoke" }
 mcxiaoke-core = { group = "com.mcxiaoke.koi", name = "core", version.ref = "mcxiaoke" }
 zeroturnaround = { group = "org.zeroturnaround", name = "zt-zip", version.ref = "zeroturnaround" }
 media2-session = { group = "androidx.media2", name = "media2-session", version.ref = "media2" }
 media2-player = { group = "androidx.media2", name = "media2-player", version.ref = "media2" }
+androidx-media = { group = "androidx.media", name = "media", version.ref = "media" }
+androidx-viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", version.ref = "viewpager2" }
+androidx-work-runtime = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work-runtime" }
+rtl-viewpager = { group = "com.duolingo.open", name = "rtl-viewpager", version = "1.0.3" }
+pdf-viewer = { group = "com.github.barteksc", name = "android-pdf-viewer", version = "2.8.2" }
+photoview = { group = "com.github.chrisbanes", name = "PhotoView", version = "2.3.0" }
+shopgun-utils = { group = "com.shopgun.android", name = "utils", version = "1.0.9" }
+fuel-android = { group = "com.github.kittinunf.fuel", name = "fuel-android", version.ref = "fuel" }
+fuel-core = { group = "com.github.kittinunf.fuel", name = "fuel", version.ref = "fuel" }
+kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version = "1.6.10" }
+nanohttpd-core = { group = "com.github.edrlab.nanohttpd", name = "nanohttpd", version.ref = "nanohttpd" }
+nanohttpd-nanolets = { group = "com.github.edrlab.nanohttpd", name = "nanohttpd-nanolets", version.ref = "nanohttpd" }
+pdfium-android = { group = "com.github.barteksc", name = "pdfium-android", version = "1.8.2" }
+androidx-cardview = { group = "androidx.cardview", name = "cardview", version = "1.0.0" }
+androidx-paging = { group = "androidx.paging", name = "paging-runtime-ktx", version = "3.1.1" }
+picasso = { group = "com.squareup.picasso", name = "picasso", version = "2.71828" }
+
+kotlin-stdlib-jdk8 = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version = "1.7.10" }
+
 
 [bundles]
 room = ["room-runtime", "room-ktx"]
@@ -92,6 +117,8 @@ lifecycle = ["lifecycle-livedata", "lifecycle-runtime", "lifecycle-viewmodel", "
 navigation = ["navigation-fragment", "navigation-ui"]
 mcxiaoke = ["mcxiaoke-async", "mcxiaoke-core"]
 media2 = ["media2-session", "media2-player"]
+fuel = ["fuel-android", "fuel-core"]
+nanohttpd = ["nanohttpd-core", "nanohttpd-nanolets"]
 kovenant = ["kovenant-base", "kovenant-android", "kovenant-combine", "kovenant-core", "kovenant-functional", "kovenant-jvm"]
 test-frameworks = ["junit", "ext-junit", "expresso-core", "robolectric", "kotlin-junit", "assertj", "coroutines-test"]
 
