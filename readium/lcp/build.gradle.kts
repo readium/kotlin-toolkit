@@ -15,10 +15,10 @@ plugins {
 
 android {
 
-    compileSdk = 31
+    compileSdk = 32
     defaultConfig {
         minSdk = 21
-        targetSdk = 31
+        targetSdk = 32
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -55,13 +55,13 @@ afterEvaluate {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
     api(project(":readium:shared"))
 
-    implementation("androidx.constraintlayout:constraintlayout:2.1.3")
-    implementation("androidx.core:core-ktx:1.7.0")
-    implementation("com.google.android.material:material:1.5.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.core:core-ktx:1.8.0")
+    implementation("com.google.android.material:material:1.6.1")
     implementation("com.jakewharton.timber:timber:5.0.1")
     implementation("com.mcxiaoke.koi:async:0.5.5") {
         exclude(module = "support-v4")
