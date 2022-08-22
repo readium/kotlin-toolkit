@@ -61,16 +61,16 @@ dependencies {
     api(project(":readium:shared"))
     api(project(":readium:navigator"))
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
     implementation("com.jakewharton.timber:timber:5.0.1")
 
-    implementation("androidx.media2:media2-session:1.2.0")
-    implementation("androidx.media2:media2-player:1.2.0")
+    implementation("androidx.media2:media2-session:1.2.1")
+    implementation("androidx.media2:media2-player:1.2.1")
 
-    implementation("com.google.android.exoplayer:exoplayer-core:2.16.1")
-    implementation("com.google.android.exoplayer:extension-media2:2.16.1")
+    implementation("com.google.android.exoplayer:exoplayer-core:2.18.1")
+    implementation("com.google.android.exoplayer:extension-media2:2.18.1")
 
     testImplementation("junit:junit:4.13.2")
 
