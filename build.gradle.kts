@@ -7,10 +7,10 @@
 import org.jetbrains.dokka.gradle.DokkaTaskPartial
 
 plugins {
-    id("com.android.application") apply false version "7.2.2"
-    id("com.android.library") apply false version "7.2.2"
-    id("org.jetbrains.kotlin.android") apply false
-    id("org.jetbrains.dokka") apply true
+    id(Plugins.ANDROID_APPLICATION) apply false version "7.2.2"
+    id(Plugins.ANDROID_LIBRARY) apply false version "7.2.2"
+    kotlin(Plugins.ANDROID) apply false
+    id(Plugins.DOKKA) apply true
 }
 
 subprojects {

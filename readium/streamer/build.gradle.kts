@@ -7,11 +7,11 @@ import ModuleDependency.Project.shared
  */
 
 plugins {
-    id("com.android.library")
-    id("kotlin-android")
-    id("kotlin-parcelize")
-    id("maven-publish")
-    id("org.jetbrains.dokka")
+    id(Plugins.ANDROID_LIBRARY)
+    id(Plugins.KOTLIN_ANDROID)
+    id(Plugins.KOTLIN_PARCELIZE)
+    id(Plugins.MAVEN_PUBLISH)
+    id(Plugins.DOKKA)
 }
 
 android {
@@ -59,10 +59,10 @@ dependencies {
 
     api(shared())
 
-    implementation("androidx.appcompat:appcompat:1.5.0")
+    implementation(libs.appcompat)
     @Suppress("GradleDependency")
     implementation("com.github.barteksc:pdfium-android:1.8.2")
-    implementation("com.jakewharton.timber:timber:5.0.1")
+    implementation(libs.timber)
     implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
         exclude(group = "org.parboiled")
     }
@@ -70,20 +70,17 @@ dependencies {
         exclude(group = "org.parboiled")
     }
     //AM NOTE: conflicting support libraries, excluding these
-    implementation("com.mcxiaoke.koi:core:0.5.5") {
-        exclude(module = "support-v4")
-    }
     // useful extensions (only ~100k)
-    implementation("com.mcxiaoke.koi:async:0.5.5") {
+    implementation(libs.bundles.mcxiaoke) {
         exclude(module = "support-v4")
     }
-    implementation("joda-time:joda-time:2.10.13")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation(libs.joda.time)
+    implementation(libs.coroutines.core)
 
     // Tests
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.assertj:assertj-core:3.22.0")
-    testImplementation("org.robolectric:robolectric:4.7.3")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    testImplementation(libs.junit)
+    testImplementation(libs.assertj)
+    testImplementation(libs.robolectric)
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.expresso.core)
 }

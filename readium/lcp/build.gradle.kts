@@ -7,12 +7,12 @@ import ModuleDependency.Project.shared
  */
 
 plugins {
-    id("com.android.library")
-    id("kotlin-android")
-    id("kotlin-parcelize")
-    id("kotlin-kapt")
-    id("maven-publish")
-    id("org.jetbrains.dokka")
+    id(Plugins.ANDROID_LIBRARY)
+    id(Plugins.KOTLIN_ANDROID)
+    id(Plugins.KOTLIN_PARCELIZE)
+    id(Plugins.KAPT)
+    id(Plugins.MAVEN_PUBLISH)
+    id(Plugins.DOKKA)
 }
 
 android {
@@ -57,32 +57,27 @@ afterEvaluate {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation(libs.coroutines.core)
 
     api(shared())
 
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.core:core-ktx:1.8.0")
-    implementation("com.google.android.material:material:1.6.1")
-    implementation("com.jakewharton.timber:timber:5.0.1")
-    implementation("com.mcxiaoke.koi:async:0.5.5") {
+    implementation(libs.constraint.layout)
+    implementation(libs.androidx.core)
+    implementation(libs.material)
+    implementation(libs.timber)
+    implementation(libs.bundles.mcxiaoke) {
         exclude(module = "support-v4")
     }
-    implementation("com.mcxiaoke.koi:core:0.5.5") {
-        exclude(module = "support-v4")
-    }
-    implementation("joda-time:joda-time:2.10.13")
-    implementation("org.zeroturnaround:zt-zip:1.14")
-    implementation("androidx.browser:browser:1.4.0")
+    implementation(libs.joda.time)
+    implementation(libs.zeroturnaround)
+    implementation(libs.androidx.browser)
 
     // Room database
-    val roomVersion = "2.4.1"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    kapt("androidx.room:room-compiler:$roomVersion")
+    implementation(libs.bundles.room)
+    kapt(libs.room.compiler)
 
     // Tests
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.expresso.core)
 }

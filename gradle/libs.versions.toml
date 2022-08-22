@@ -1,17 +1,17 @@
 [versions]
 kotlin = "1.6.10"
 dokka = "1.5.30"
-room = "2.4.0"
+room = "2.4.1"
 coroutines = "1.6.0"
 exoplayer = "2.16.1"
 lifecycle = "2.4.0"
 navigation = "2.3.5"
-constraint = "2.1.2"
+constraint = "2.1.3"
 androidx-core = "1.7.0"
-material = "1.4.0"
+material = "1.5.0"
 androidx-browser = "1.4.0"
 activity-ktx = "1.4.0"
-appcompat = "1.4.0"
+appcompat = "1.4.1"
 fragment-ktx = "1.4.0"
 legacy = "1.0.0"
 recyclerview = "1.2.1"
@@ -27,6 +27,9 @@ kotlin-junit = "1.6.10"
 assertj = "3.21.0"
 coroutines-test = "1.5.2"
 kovenant = "3.3.0"
+mcxiaoke = "0.5.5"
+zeroturnaround = "1.14"
+media2 = "1.2.1"
 
 [libraries]
 kotlin-gradle = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -39,6 +42,7 @@ coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutin
 exoplayer-core = { group = "com.google.android.exoplayer", name = "exoplayer-core", version.ref = "exoplayer" }
 exoplayer-ui = { group = "com.google.android.exoplayer", name = "exoplayer-ui", version.ref = "exoplayer" }
 exoplayer-mediasession = { group = "com.google.android.exoplayer", name = "extension-mediasession", version.ref = "exoplayer" }
+exoplayer-extension-media2 = { group = "com.google.android.exoplayer", name = "extension-media2", version.ref = "exoplayer" }
 exoplayer-workmanager = { group = "com.google.android.exoplayer", name = "extension-workmanager", version.ref = "exoplayer" }
 lifecycle-livedata = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
 lifecycle-runtime = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
@@ -67,14 +71,28 @@ robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "
 kotlin-junit = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit", version.ref = "kotlin-junit" }
 assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertj" }
 coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines-test" }
-kovenant = { group = "nl.komponents.kovenant", name = "kovenant", version.ref = "kovenant" }
+kovenant-base = { group = "nl.komponents.kovenant", name = "kovenant", version.ref = "kovenant" }
+kovenant-android = { group = "nl.komponents.kovenant", name = "kovenant-android", version.ref = "kovenant" }
+kovenant-combine = { group = "nl.komponents.kovenant", name = "kovenant-combine", version.ref = "kovenant" }
+kovenant-core = { group = "nl.komponents.kovenant", name = "kovenant-core", version.ref = "kovenant" }
+kovenant-functional = { group = "nl.komponents.kovenant", name = "kovenant-functional", version.ref = "kovenant" }
+kovenant-jvm = { group = "nl.komponents.kovenant", name = "kovenant-jvm", version.ref = "kovenant" }
+
+mcxiaoke-async = { group = "com.mcxiaoke.koi", name = "async", version.ref = "mcxiaoke" }
+mcxiaoke-core = { group = "com.mcxiaoke.koi", name = "core", version.ref = "mcxiaoke" }
+zeroturnaround = { group = "org.zeroturnaround", name = "zt-zip", version.ref = "zeroturnaround" }
+media2-session = { group = "androidx.media2", name = "media2-session", version.ref = "media2" }
+media2-player = { group = "androidx.media2", name = "media2-player", version.ref = "media2" }
 
 [bundles]
-room = ["room-runtime", "room-compiler"]
-exoplayer = ["exoplayer-core", "exoplayer-ui", "exoplayer-mediasession", "exoplayer-workmanager"]
+room = ["room-runtime", "room-ktx"]
+exoplayer = ["exoplayer-core", "exoplayer-ui", "exoplayer-mediasession", "exoplayer-extension-media2", "exoplayer-workmanager"]
 coroutines = ["coroutines-core", "coroutines-android"]
 lifecycle = ["lifecycle-livedata", "lifecycle-runtime", "lifecycle-viewmodel", "lifecycle-vmsavedstate"]
 navigation = ["navigation-fragment", "navigation-ui"]
+mcxiaoke = ["mcxiaoke-async", "mcxiaoke-core"]
+media2 = ["media2-session", "media2-player"]
+kovenant = ["kovenant-base", "kovenant-android", "kovenant-combine", "kovenant-core", "kovenant-functional", "kovenant-jvm"]
 test-frameworks = ["junit", "ext-junit", "expresso-core", "robolectric", "kotlin-junit", "assertj", "coroutines-test"]
 
 [plugins]

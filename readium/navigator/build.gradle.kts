@@ -7,11 +7,11 @@ import ModuleDependency.Project.shared
  */
 
 plugins {
-    id("com.android.library")
-    id("kotlin-android")
-    id("kotlin-parcelize")
-    id("maven-publish")
-    id("org.jetbrains.dokka")
+    id(Plugins.ANDROID_LIBRARY)
+    id(Plugins.KOTLIN_ANDROID)
+    id(Plugins.KOTLIN_PARCELIZE)
+    id(Plugins.MAVEN_PUBLISH)
+    id(Plugins.DOKKA)
 }
 
 android {
@@ -63,22 +63,19 @@ dependencies {
 
     api(shared())
 
-    implementation("androidx.activity:activity-ktx:1.4.0")
-    implementation("androidx.appcompat:appcompat:1.4.1")
-    implementation("androidx.browser:browser:1.4.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.3")
-    implementation("androidx.core:core-ktx:1.7.0")
-    implementation("androidx.fragment:fragment-ktx:1.4.0")
-    implementation("androidx.legacy:legacy-support-core-ui:1.0.0")
-    implementation("androidx.legacy:legacy-support-v4:1.0.0")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.4.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.4.0")
-    implementation("androidx.recyclerview:recyclerview:1.2.1")
+    implementation(libs.activity.ktx)
+    implementation(libs.appcompat)
+    implementation(libs.androidx.browser)
+    implementation(libs.constraint.layout)
+    implementation(libs.androidx.core)
+    implementation(libs.fragment.ktx)
+    implementation(libs.legacy.ui)
+    implementation(libs.legacy.v4)
+    implementation(libs.bundles.lifecycle)
+    implementation(libs.recyclerview)
     implementation("androidx.media:media:1.6.0")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
-    implementation("androidx.webkit:webkit:1.4.0")
+    implementation(libs.webkit)
     // Needed to avoid a crash with API 31, see https://stackoverflow.com/a/69152986/1474476
     implementation("androidx.work:work-runtime-ktx:2.7.1")
     implementation("com.duolingo.open:rtl-viewpager:1.0.3")
@@ -86,26 +83,20 @@ dependencies {
     // ChrisBane/PhotoView ( for the Zoom handling )
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
 
-    implementation("androidx.media2:media2-session:1.2.1")
-    implementation("androidx.media2:media2-player:1.2.1")
+    implementation(libs.bundles.media2)
     // ExoPlayer is used by the Audio Navigator.
-    api("com.google.android.exoplayer:exoplayer-core:2.18.1")
-    api("com.google.android.exoplayer:exoplayer-ui:2.18.1")
-    api("com.google.android.exoplayer:extension-mediasession:2.18.1")
-    api("com.google.android.exoplayer:extension-media2:2.18.1")
-    api("com.google.android.exoplayer:extension-workmanager:2.18.1")
-    implementation("com.google.android.material:material:1.6.1")
-    implementation("com.jakewharton.timber:timber:5.0.1")
+    api(libs.bundles.exoplayer)
+    implementation(libs.material)
+    implementation(libs.timber)
     implementation("com.shopgun.android:utils:1.0.9")
-    implementation("joda-time:joda-time:2.10.13")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation(libs.joda.time)
+    implementation(libs.bundles.coroutines)
     // AM NOTE: needs to stay this version for now (June 24,2020)
     //noinspection GradleDependency
-    implementation("org.jsoup:jsoup:1.14.3")
+    implementation(libs.jsoup)
 
     // Tests
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.expresso.core)
 }

@@ -5,11 +5,11 @@
  */
 
 plugins {
-    id("com.android.library")
-    id("kotlin-android")
-    id("kotlin-parcelize")
-    id("maven-publish")
-    id("org.jetbrains.dokka")
+    id(Plugins.ANDROID_LIBRARY)
+    id(Plugins.KOTLIN_ANDROID)
+    id(Plugins.KOTLIN_PARCELIZE)
+    id(Plugins.MAVEN_PUBLISH)
+    id(Plugins.DOKKA)
 }
 
 android {
@@ -55,29 +55,24 @@ afterEvaluate {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    implementation("androidx.appcompat:appcompat:1.4.1")
-    implementation("androidx.browser:browser:1.4.0")
+    implementation(libs.appcompat)
+    implementation(libs.androidx.browser)
     implementation("com.github.kittinunf.fuel:fuel-android:2.3.1")
     implementation("com.github.kittinunf.fuel:fuel:2.3.1")
-    implementation("com.jakewharton.timber:timber:5.0.1")
-    implementation("joda-time:joda-time:2.10.13")
-    implementation("nl.komponents.kovenant:kovenant-android:3.3.0")
-    implementation("nl.komponents.kovenant:kovenant-combine:3.3.0")
-    implementation("nl.komponents.kovenant:kovenant-core:3.3.0")
-    implementation("nl.komponents.kovenant:kovenant-functional:3.3.0")
-    implementation("nl.komponents.kovenant:kovenant-jvm:3.3.0")
-    implementation("nl.komponents.kovenant:kovenant:3.3.0")
+    implementation(libs.timber)
+    implementation(libs.joda.time)
+    implementation(libs.bundles.kovenant)
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.10")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
-    implementation("org.jsoup:jsoup:1.14.3")
+    implementation(libs.jsoup)
 
     // Tests
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.assertj:assertj-core:3.22.0")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.6.10")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
-    testImplementation("org.robolectric:robolectric:4.7.3")
+    testImplementation(libs.junit)
+    testImplementation(libs.assertj)
+    testImplementation(libs.kotlin.junit)
+    testImplementation(libs.coroutines.test)
+    testImplementation(libs.robolectric)
 
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.expresso.core)
 }

@@ -12,10 +12,10 @@ import ModuleDependency.Project.streamer
  */
 
 plugins {
-    id("com.android.application")
-    id("kotlin-android")
-    id("kotlin-kapt")
-    id("kotlin-parcelize")
+    id(Plugins.ANDROID_APPLICATION)
+    id(Plugins.KOTLIN_ANDROID)
+    id(Plugins.KAPT)
+    id(Plugins.KOTLIN_PARCELIZE)
 }
 
 android {
@@ -79,51 +79,47 @@ dependencies {
     implementation(opds())
     implementation(lcp())
 
-    implementation("androidx.core:core-ktx:1.8.0")
+    implementation(libs.androidx.core)
     implementation("androidx.activity:activity-ktx:1.5.1")
-    implementation("androidx.appcompat:appcompat:1.5.0")
-    implementation("androidx.browser:browser:1.4.0")
+    implementation(libs.appcompat)
+    implementation(libs.androidx.browser)
     implementation("androidx.cardview:cardview:1.0.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.fragment:fragment-ktx:1.5.2")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.5.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")
-    implementation("androidx.navigation:navigation-fragment-ktx:2.5.1")
-    implementation("androidx.navigation:navigation-ui-ktx:2.5.1")
+    implementation(libs.constraint.layout)
+    implementation(libs.fragment.ktx)
+    implementation(libs.lifecycle.livedata)
+    implementation(libs.lifecycle.runtime)
+    implementation(libs.lifecycle.viewmodel)
+    implementation(libs.bundles.navigation)
     implementation("androidx.paging:paging-runtime-ktx:3.1.1")
-    implementation("androidx.recyclerview:recyclerview:1.2.1")
+    implementation(libs.recyclerview)
     implementation("androidx.viewpager2:viewpager2:1.0.0")
-    implementation("androidx.webkit:webkit:1.4.0")
+    implementation(libs.webkit)
     implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
         exclude(group = "org.parboiled")
     }
     implementation("com.github.edrlab.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
         exclude(group = "org.parboiled")
     }
-    implementation("com.google.android.material:material:1.6.1")
-    implementation("com.jakewharton.timber:timber:5.0.1")
+    implementation(libs.material)
+    implementation(libs.timber)
     // AM NOTE: needs to stay this version for now (June 24,2020)
     implementation("com.squareup.picasso:picasso:2.71828")
-    implementation("joda-time:joda-time:2.10.13")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation(libs.joda.time)
+    implementation(libs.coroutines.core)
     // AM NOTE: needs to stay this version for now (June 24,2020)
-    implementation("org.jsoup:jsoup:1.14.3")
+    implementation(libs.jsoup)
 
-    implementation("androidx.media2:media2-session:1.2.1")
-    implementation("androidx.media2:media2-player:1.2.1")
+    implementation(libs.bundles.media2)
 
     // Room database
-    val roomVersion = "2.4.1"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    kapt("androidx.room:room-compiler:$roomVersion")
+    implementation(libs.bundles.room)
+    kapt(libs.room.compiler)
 
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
     kapt("androidx.lifecycle:lifecycle-compiler:2.5.1")
 
     // Tests
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.expresso.core)
 }

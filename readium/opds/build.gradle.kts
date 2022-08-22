@@ -8,7 +8,7 @@ import ModuleDependency.Project.shared
 
 plugins {
     id(Plugins.ANDROID_LIBRARY)
-    kotlin(Plugins.ANDROID)
+    id(Plugins.KOTLIN_ANDROID)
     id(Plugins.KOTLIN_PARCELIZE)
     id(Plugins.MAVEN_PUBLISH)
     id(Plugins.DOKKA)
@@ -58,7 +58,7 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.timber)
     implementation(libs.joda.time)
-    implementation(libs.kovenant)
+    implementation(libs.kovenant.base)
     implementation(libs.coroutines.core)
 
     // Tests
