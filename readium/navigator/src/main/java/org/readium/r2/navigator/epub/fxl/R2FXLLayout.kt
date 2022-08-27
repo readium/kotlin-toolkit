@@ -183,10 +183,10 @@ class R2FXLLayout : FrameLayout {
 
     private fun init(context: Context) {
         gestureListener = GestureListener()
-        scaleDetector = ScaleGestureDetector(context, gestureListener)
+        scaleDetector = ScaleGestureDetector(context, gestureListener!!)
 
         scaleDetector!!.isQuickScaleEnabled = false
-        gestureDetector = GestureDetector(context, gestureListener)
+        gestureDetector = GestureDetector(context, gestureListener!!)
         simpleOnGlobalLayoutChangedListener = SimpleOnGlobalLayoutChangedListener()
         viewTreeObserver.addOnGlobalLayoutListener(simpleOnGlobalLayoutChangedListener)
     }
