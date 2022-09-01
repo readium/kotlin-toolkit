@@ -290,7 +290,8 @@ internal class EpubNavigatorViewModel(
     // Settings
 
     fun submitPreferences(preferences: Preferences) = viewModelScope.launch {
-        val oldSettings: EpubSettings = settings.value
+        val oldReflowSettings = (settings.value as? EpubSettings.Reflowable)
+        val oldFixedSettings = (settings.value as? EpubSettings.FixedLayout)
         val oldReadingProgression = readingProgression
 
         val newSettings = _settings.updateAndGet {
@@ -300,12 +301,15 @@ internal class EpubNavigatorViewModel(
                 defaults = config.defaultPreferences
             )
         }
+        val newReflowSettings = (newSettings as? EpubSettings.Reflowable)
+        val newFixedSettings = (newSettings as? EpubSettings.FixedLayout)
 
         css.update { it.update(newSettings) }
 
         val needsInvalidation: Boolean = (
             oldReadingProgression != readingProgression ||
-            (oldSettings as? EpubSettings.FixedLayout)?.spread?.value != (newSettings as? EpubSettings.FixedLayout)?.spread?.value
+            oldReflowSettings?.verticalText?.value != newReflowSettings?.verticalText?.value ||
+            oldFixedSettings?.spread?.value != newFixedSettings?.spread?.value
         )
 
         if (needsInvalidation) {
@@ -357,12 +361,12 @@ internal class EpubNavigatorViewModel(
     /**
      * Indicates whether the navigator is scrollable instead of paginated.
      */
-    val isOverflowScrolled: Boolean get() =
+    val isScrollEnabled: Boolean get() =
         if (useLegacySettings) {
             @Suppress("DEPRECATION")
             preferences.getBoolean(SCROLL_REF, false)
         } else {
-            (settings.value as? EpubSettings.Reflowable)?.overflow?.value == Presentation.Overflow.SCROLLED
+            (settings.value as? EpubSettings.Reflowable)?.scroll?.value ?: true
         }
 
     // Selection

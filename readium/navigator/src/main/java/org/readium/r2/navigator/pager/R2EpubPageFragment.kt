@@ -228,14 +228,14 @@ class R2EpubPageFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         if (!viewModel.useLegacySettings) {
-            val isOverflowScrolled = viewModel.settings
+            val isScrollEnabled = viewModel.settings
                 .filterIsInstance<EpubSettings.Reflowable>()
-                .map { it.overflow.value == Presentation.Overflow.SCROLLED }
+                .map { it.scroll?.value ?: true }
                 .distinctUntilChanged()
 
             val lifecycleOwner = viewLifecycleOwner
             lifecycleOwner.lifecycleScope.launch {
-                isOverflowScrolled
+                isScrollEnabled
                     .flowWithLifecycle(lifecycleOwner.lifecycle)
                     .collectLatest { webView?.scrollModeFlow?.value = it }
             }
@@ -301,7 +301,7 @@ class R2EpubPageFragment : Fragment() {
                 }
             }
 
-            if (!viewModel.isOverflowScrolled) {
+            if (!viewModel.isScrollEnabled) {
                 val margin = resources.getDimension(R.dimen.r2_navigator_epub_vertical_padding).toInt()
                 top += margin
                 bottom += margin

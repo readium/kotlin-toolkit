@@ -316,7 +316,7 @@ class EpubNavigatorFragment private constructor(
 //                    resourcePager.disableTouchEvents = true
 //                }
                 currentReflowablePageFragment?.webView?.let { webView ->
-                    if (viewModel.isOverflowScrolled) {
+                    if (viewModel.isScrollEnabled) {
                         if (currentPagerPosition < position) {
                             // handle swipe LEFT
                             webView.scrollToStart()
