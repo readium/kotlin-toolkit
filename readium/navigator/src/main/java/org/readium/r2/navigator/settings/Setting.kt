@@ -72,6 +72,7 @@ data class Setting<V, E>(
         val PUBLICATION_SETTINGS = listOf(
             LANGUAGE,
             READING_PROGRESSION,
+            VERTICAL_TEXT
         ).toTypedArray()
     }
 

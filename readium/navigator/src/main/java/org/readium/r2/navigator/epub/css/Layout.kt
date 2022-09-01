@@ -23,7 +23,7 @@ data class Layout(
         fun from(language: Language?, hasMultipleLanguages: Boolean, readingProgression: ReadingProgression, verticalText: Boolean?): Layout {
             // https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#missing-page-progression-direction
             val rp = when {
-                readingProgression != ReadingProgression.AUTO ->
+                readingProgression.isHorizontal == true ->
                     readingProgression
 
                 !hasMultipleLanguages && language != null && language.isRtl ->

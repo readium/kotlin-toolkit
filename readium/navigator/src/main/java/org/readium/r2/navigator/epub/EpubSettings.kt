@@ -60,8 +60,8 @@ sealed class EpubSettings : Configurable.Settings {
             /** Direction of the reading progression across resources. */
             val READING_PROGRESSION: EnumSetting<ReadingProgression> = EnumSetting(
                 key = Setting.READING_PROGRESSION,
-                value = ReadingProgression.AUTO,
-                values = listOf(ReadingProgression.AUTO, ReadingProgression.LTR, ReadingProgression.RTL)
+                value = ReadingProgression.LTR,
+                values = listOf(ReadingProgression.LTR, ReadingProgression.RTL)
             )
 
             /**
@@ -277,8 +277,8 @@ sealed class EpubSettings : Configurable.Settings {
             /** Direction of the reading progression across resources. */
             val READING_PROGRESSION: EnumSetting<ReadingProgression> = EnumSetting(
                 key = Setting.READING_PROGRESSION,
-                value = ReadingProgression.AUTO,
-                values = listOf(ReadingProgression.AUTO, ReadingProgression.LTR, ReadingProgression.RTL)
+                value = ReadingProgression.LTR,
+                values = listOf(ReadingProgression.LTR, ReadingProgression.RTL)
             )
 
             /**
@@ -366,14 +366,14 @@ sealed class EpubSettings : Configurable.Settings {
 
         override fun update(metadata: Metadata, preferences: Preferences, defaults: Preferences): Reflowable {
             val language = language.copyFirstValidValueFrom(preferences, defaults, fallback = LANGUAGE)
-            val readingProgression = readingProgression.copyFirstValidValueFrom(preferences, defaults, fallback = READING_PROGRESSION)
 
             val layout = Layout.from(
                 language = language.value ?: metadata.language,
                 hasMultipleLanguages =
                     if (language.value != null) false
                     else metadata.languages.size > 1,
-                readingProgression = readingProgression.value.takeIf { it != ReadingProgression.AUTO }
+                readingProgression =  (preferences[readingProgression] ?: defaults[readingProgression])
+                    .takeIf { it == ReadingProgression.LTR || it == ReadingProgression.RTL }
                     ?: metadata.readingProgression,
                 verticalText = (preferences[verticalText] ?: defaults[verticalText])
             )
@@ -406,7 +406,7 @@ sealed class EpubSettings : Configurable.Settings {
                     else (paragraphIndent ?: PARAGRAPH_INDENT).copyFirstValidValueFrom(preferences, defaults, fallback = PARAGRAPH_INDENT),
                 paragraphSpacing = paragraphSpacing.copyFirstValidValueFrom(preferences, defaults, fallback = PARAGRAPH_SPACING),
                 publisherStyles = publisherStyles.copyFirstValidValueFrom(preferences, defaults, fallback = PUBLISHER_STYLES),
-                readingProgression = readingProgression,
+                readingProgression = READING_PROGRESSION.copy(value = layout.readingProgression),
                 scroll = scroll,
                 textAlign = if (layout.stylesheets == Stylesheets.CjkVertical || layout.stylesheets == Stylesheets.CjkHorizontal) null
                     else (textAlign ?: TEXT_ALIGN).copyFirstValidValueFrom(preferences, defaults, fallback = TEXT_ALIGN),

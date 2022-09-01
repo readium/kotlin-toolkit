@@ -26,12 +26,12 @@ import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.publication.presentation.Presentation.Spread
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.ColorPicker
 import org.readium.r2.testapp.utils.compose.DropdownMenuButton
-import org.readium.r2.testapp.utils.compose.ToggleButton
 import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
 import java.util.*
 import org.readium.r2.navigator.settings.Color as ReadiumColor
@@ -139,7 +139,7 @@ fun UserSettings(
  * User settings for a publication with a fixed layout, such as fixed-layout EPUB, PDF or comic book.
  */
 @Composable
-private fun FixedLayoutUserSettings(
+private fun ColumnScope.FixedLayoutUserSettings(
     preferences: Preferences,
     edit: EditPreferences,
     spread: EnumSetting<Spread>? = null,
@@ -193,7 +193,7 @@ private fun FixedLayoutUserSettings(
  * a reflowable EPUB, HTML document or PDF with reflow mode enabled.
  */
 @Composable
-private fun ReflowableUserSettings(
+private fun ColumnScope.ReflowableUserSettings(
     preferences: Preferences,
     edit: EditPreferences,
     backgroundColor: ColorSetting? = null,
@@ -221,22 +221,39 @@ private fun ReflowableUserSettings(
     wordSpacing: PercentSetting? = null,
 ) {
     if (language != null || readingProgression != null || verticalText != null) {
+        fun reset() {
+            edit {
+                remove(language)
+                remove(readingProgression)
+                remove(verticalText)
+            }
+        }
+
         if (language != null) {
             LanguageItem(language, preferences, edit)
         }
 
         if (readingProgression != null) {
             ButtonGroupItem(title = "Reading progression", readingProgression, preferences , edit) { value ->
-                when (value) {
-                    ReadingProgression.AUTO -> "Auto"
-                    else -> value.name
-                }
+                value.name
             }
         }
 
         if (verticalText != null) {
-            // As this setting is
-            SwitchItem(title = "Vertical text", verticalText, preferences, edit, clearable = true)
+            SwitchItem(title = "Vertical text", verticalText, preferences, edit)
+        }
+
+        // The language settings are specific to a publication. This button resets only the
+        // language preferences to the publication's default metadata for convenience.
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.End),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(onClick = ::reset) {
+                Text("Reset to publication", style = MaterialTheme.typography.caption)
+            }
         }
 
         Divider()
@@ -508,32 +525,19 @@ private fun SwitchItem(
     title: String,
     setting: ToggleSetting,
     preferences: Preferences,
-    edit: EditPreferences,
-    clearable: Boolean = false,
+    edit: EditPreferences
 ) {
     Item(
         title = title,
         isActive = preferences.isActive(setting),
         onClick = { edit { toggle(setting)} }
     ) {
-        Row {
-            if (clearable) {
-                ToggleButton(
-                    onClick = { edit { remove(setting) } },
-                    selected = preferences[setting] == null,
-                    content = {
-                        Text("Auto", style = MaterialTheme.typography.caption)
-                    }
-                )
+        Switch(
+            checked = preferences[setting] ?: setting.value,
+            onCheckedChange = { value ->
+                edit { set(setting, value) }
             }
-
-            Switch(
-                checked = preferences[setting] ?: setting.value,
-                onCheckedChange = { value ->
-                    edit { set(setting, value) }
-                }
-            )
-        }
+        )
     }
 }
 
