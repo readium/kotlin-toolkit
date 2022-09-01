@@ -379,7 +379,7 @@ private fun <T> ButtonGroupItem(
     setting: EnumSetting<T>,
     preferences: Preferences,
     edit: EditPreferences,
-    label: (T) -> String
+    formatValue: (T) -> String
 ) {
     Item(title, isActive = preferences.isActive(setting)) {
         ToggleButtonGroup(
@@ -393,7 +393,7 @@ private fun <T> ButtonGroupItem(
             }
         ) { option ->
             Text(
-                text = label(option),
+                text = formatValue(option),
                 style = MaterialTheme.typography.caption
             )
         }
@@ -409,12 +409,12 @@ private fun <T> MenuItem(
     setting: EnumSetting<T>,
     preferences: Preferences,
     edit: EditPreferences,
-    label: (T) -> String
+    formatValue: (T) -> String
 ) {
     MenuItem(
         title = title, setting, preferences, edit,
         values = setting.values ?: emptyList(),
-        label = label
+        formatValue = formatValue
     )
 }
 
@@ -428,13 +428,13 @@ private fun <T> MenuItem(
     preferences: Preferences,
     edit: EditPreferences,
     values: List<T>,
-    label: (T) -> String
+    formatValue: (T) -> String
 ) {
     Item(title, isActive = preferences.isActive(setting)) {
         DropdownMenuButton(
             text = {
                 Text(
-                    text = label(preferences[setting] ?: setting.value),
+                    text = formatValue(preferences[setting] ?: setting.value),
                     style = MaterialTheme.typography.caption
                 )
             }
@@ -446,7 +446,7 @@ private fun <T> MenuItem(
                         edit { set(setting, value) }
                     }
                 ) {
-                    Text(label(value))
+                    Text(formatValue(value))
                 }
             }
         }
@@ -480,7 +480,7 @@ private fun StepperItem(
             )
 
             Text(
-                text = setting.label((preferences[setting] ?: setting.value)),
+                text = setting.formatValue((preferences[setting] ?: setting.value)),
                 modifier = Modifier.widthIn(min = 30.dp),
                 textAlign = TextAlign.Center
             )
@@ -598,7 +598,7 @@ fun LanguageItem(
     MenuItem(
         title = "Language", setting, preferences, edit,
         values = listOf(null) + languages,
-        label = { it?.locale?.displayName ?: "Default" }
+        formatValue = { it?.locale?.displayName ?: "Default" }
     )
 }
 

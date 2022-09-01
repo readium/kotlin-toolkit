@@ -185,7 +185,7 @@ sealed class EpubSettings : Configurable.Settings {
                 coder = FontFamily.Coder(),
                 value = null,
                 values = listOf(null),
-                label = { it?.name }
+                formatValue = { it?.name }
             )
 
             /** Base text font size. */

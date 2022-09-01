@@ -166,7 +166,7 @@ data class RangeExtras<V : Comparable<V>>(
     val range: ClosedRange<V>,
     val suggestedSteps: List<V>?,
     val suggestedIncrement: V?,
-    val label: (V) -> String,
+    val formatValue: (V) -> String,
 )
 
 /**
@@ -177,8 +177,8 @@ data class RangeExtras<V : Comparable<V>>(
  * MUST be sorted in increasing order.
  * @param suggestedIncrement Suggested value increment which can be used to decrement or increment
  * the setting.
- * @param label Returns a user-facing label for the given value. This can be used to format the
- * value unit.
+ * @param formatValue Returns a user-facing description for the given value. This can be used to
+ * format the value unit.
  */
 @ExperimentalReadiumApi
 inline fun <reified V : Comparable<V>> RangeSetting(
@@ -187,7 +187,7 @@ inline fun <reified V : Comparable<V>> RangeSetting(
     range: ClosedRange<V>,
     suggestedSteps: List<V>? = null,
     suggestedIncrement: V? = null,
-    noinline label: (V) -> String = { v ->
+    noinline formatValue: (V) -> String = { v ->
         when (v) {
             is Number -> NumberFormat.getNumberInstance().run {
                 maximumFractionDigits = 5
@@ -205,7 +205,7 @@ inline fun <reified V : Comparable<V>> RangeSetting(
             range = range,
             suggestedSteps = suggestedSteps,
             suggestedIncrement = suggestedIncrement,
-            label = label
+            formatValue = formatValue
         ),
         coder = SerializerSettingCoder(),
         validator = RangeSettingValidator(range) then validator,
@@ -213,11 +213,11 @@ inline fun <reified V : Comparable<V>> RangeSetting(
     )
 
 /**
- * Returns a user-facing label for the given [RangeSetting] value.
+ * Returns a user-facing description for the given [RangeSetting] value.
  */
 @ExperimentalReadiumApi
-fun <V : Comparable<V>> RangeSetting<V>.label(value: V): String =
-    extras.label(value)
+fun <V : Comparable<V>> RangeSetting<V>.formatValue(value: V): String =
+    extras.formatValue(value)
 
 /**
  * A [RangeSetting] representing a percentage from 0.0 to 1.0.
@@ -247,7 +247,7 @@ fun PercentSetting(
     RangeSetting(
         key = key, value = value, range = range,
         suggestedSteps = suggestedSteps, suggestedIncrement = suggestedIncrement,
-        label = { v ->
+        formatValue = { v ->
             NumberFormat.getPercentInstance().run {
                 maximumFractionDigits = 0
                 format(v)
@@ -268,7 +268,7 @@ typealias EnumSetting<E> = Setting<E, EnumExtras<E>>
 @ExperimentalReadiumApi
 data class EnumExtras<E>(
     val values: List<E>?,
-    val label: (E) -> String?,
+    val formatValue: (E) -> String?,
     val originalValidator: SettingValidator<E>,
 )
 
@@ -277,14 +277,14 @@ data class EnumExtras<E>(
  *
  * @param values List of valid [E] values for this setting. Not all members of the enum are
  * necessary supported.
- * @param label Returns a user-facing label for the given value, when one is available.
+ * @param formatValue Returns a user-facing description for the given value, when one is available.
  */
 @ExperimentalReadiumApi
 inline fun <reified E> EnumSetting(
     key: String,
     value: E,
     values: List<E>?,
-    noinline label: (E) -> String? = { null },
+    noinline formatValue: (E) -> String? = { null },
     coder: SettingCoder<E> = SerializerSettingCoder(),
     validator: SettingValidator<E> = IdentitySettingValidator(),
     activator: SettingActivator = NullSettingActivator,
@@ -293,7 +293,7 @@ inline fun <reified E> EnumSetting(
         key = key, value = value,
         extras = EnumExtras(
             values = values,
-            label = label,
+            formatValue = formatValue,
             originalValidator = validator
         ),
         coder = coder,
@@ -323,11 +323,11 @@ val <E> EnumSetting<E>.values: List<E>?
     get() = extras.values
 
 /**
- * Returns a user-facing label for the given [value], when one is available.
+ * Returns a user-facing description for the given [value], when one is available.
  */
 @ExperimentalReadiumApi
-fun <E> EnumSetting<E>.label(value: E): String? =
-    extras.label(value)
+fun <E> EnumSetting<E>.formatValue(value: E): String? =
+    extras.formatValue(value)
 
 /**
  * A color [Setting].
@@ -343,12 +343,12 @@ fun ColorSetting(
     key: String,
     value: Color,
     values: List<Color>? = null,
-    label: (Color) -> String? = { null },
+    formatValue: (Color) -> String? = { null },
     coder: Color.Coder = Color.Coder(),
     validator: SettingValidator<Color> = IdentitySettingValidator(),
     activator: SettingActivator = NullSettingActivator,
 ) : ColorSetting =
     EnumSetting(
-        key = key, value = value, values = values, label = label,
+        key = key, value = value, values = values, formatValue = formatValue,
         coder = coder, validator = validator, activator = activator
     )
