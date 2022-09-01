@@ -42,32 +42,47 @@ class EpubSettingsReflowableTest {
         assertEquals(0.0, settings.letterSpacing?.value)
         assertEquals(true,  settings.ligatures?.value)
         assertEquals(1.2, settings.lineHeight.value)
-        assertEquals(Overflow.PAGINATED, settings.overflow.value)
-        assertEquals(1.0, settings.pageMargins.value)
+        assertEquals(1.0, settings.pageMargins?.value)
         assertEquals(0.0, settings.paragraphIndent?.value)
         assertEquals(0.0, settings.paragraphSpacing.value)
         assertTrue(settings.publisherStyles.value)
+        assertEquals(false, settings.scroll?.value)
         assertEquals(TextAlign.START, settings.textAlign?.value)
         assertEquals(Color.AUTO, settings.textColor.value)
         assertEquals(TextNormalization.NONE, settings.textNormalization.value)
         assertEquals(listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY), settings.textAlign?.values)
         assertEquals(Theme.LIGHT, settings.theme.value)
         assertEquals(1.2, settings.typeScale.value)
+        assertEquals(false, settings.verticalText.value)
         assertEquals(0.0, settings.wordSpacing?.value)
     }
 
     @Test
-    fun `Column count is only available when not in scrolled overflow and not with a CJK vertical layout`() {
+    fun `Column count is only available when not in scroll mode and not with a CJK vertical layout`() {
         val sut = Reflowable()
 
-        assertNotNull(sut.update(metadata(), Preferences { remove(Reflowable.OVERFLOW) }).columnCount)
-        assertNotNull(sut.update(metadata(), Preferences { set(Reflowable.OVERFLOW, Overflow.PAGINATED) }).columnCount)
-        assertNull(sut.update(metadata(), Preferences { set(Reflowable.OVERFLOW, Overflow.SCROLLED) }).columnCount)
+        assertNotNull(sut.update(metadata(), Preferences { remove(Reflowable.SCROLL) }).columnCount)
+        assertNotNull(sut.update(metadata(), Preferences { set(Reflowable.SCROLL, false) }).columnCount)
+        assertNull(sut.update(metadata(), Preferences { set(Reflowable.SCROLL, true) }).columnCount)
 
         assertNotNull(sut.update(metadata(), Preferences()).columnCount)
         assertNotNull(sut.update(rtlMetadata, Preferences()).columnCount)
         assertNotNull(sut.update(cjkHorizontalMetadata, Preferences()).columnCount)
         assertNull(sut.update(cjkVerticalMetadata, Preferences()).columnCount)
+    }
+
+    @Test
+    fun `Page margins is only available when not in scroll mode and not with a CJK vertical layout`() {
+        val sut = Reflowable()
+
+        assertNotNull(sut.update(metadata(), Preferences { remove(Reflowable.SCROLL) }).pageMargins)
+        assertNotNull(sut.update(metadata(), Preferences { set(Reflowable.SCROLL, false) }).pageMargins)
+        assertNull(sut.update(metadata(), Preferences { set(Reflowable.SCROLL, true) }).pageMargins)
+
+        assertNotNull(sut.update(metadata(), Preferences()).pageMargins)
+        assertNotNull(sut.update(rtlMetadata, Preferences()).pageMargins)
+        assertNotNull(sut.update(cjkHorizontalMetadata, Preferences()).pageMargins)
+        assertNull(sut.update(cjkVerticalMetadata, Preferences()).pageMargins)
     }
 
     @Test
@@ -151,16 +166,17 @@ class EpubSettingsReflowableTest {
             set(sut.hyphens!!, false)
             set(sut.letterSpacing!!, 0.2)
             set(sut.lineHeight, 1.8)
-            set(sut.overflow, Overflow.PAGINATED)
-            set(sut.pageMargins, 1.4)
+            set(sut.pageMargins!!, 1.4)
             set(sut.paragraphIndent!!, 0.2)
             set(sut.paragraphSpacing, 0.4)
             set(sut.publisherStyles, false)
+            set(sut.scroll!!, false)
             set(sut.textAlign!!, TextAlign.LEFT)
             set(sut.textColor, Color(5))
             set(sut.textNormalization, TextNormalization.BOLD)
             set(sut.theme, Theme.DARK)
             set(sut.typeScale, 1.5)
+            set(sut.verticalText, false)
             set(sut.wordSpacing!!, 0.2)
         }
 
@@ -172,16 +188,17 @@ class EpubSettingsReflowableTest {
             set(sut.hyphens!!, true)
             set(sut.letterSpacing!!, 0.4)
             set(sut.lineHeight, 1.9)
-            set(sut.overflow, Overflow.SCROLLED)
-            set(sut.pageMargins, 1.5)
+            set(sut.pageMargins!!, 1.5)
             set(sut.paragraphIndent!!, 0.3)
             set(sut.paragraphIndent!!, 0.5)
             set(sut.publisherStyles, true)
+            set(sut.scroll!!, true)
             set(sut.textAlign!!, TextAlign.RIGHT)
             set(sut.textColor, Color(6))
             set(sut.textNormalization, TextNormalization.ACCESSIBILITY)
             set(sut.theme, Theme.SEPIA)
             set(sut.typeScale, 1.6)
+            set(sut.verticalText, true)
             set(sut.wordSpacing!!, 0.4)
         }
 
@@ -196,16 +213,17 @@ class EpubSettingsReflowableTest {
         assertNull(sut.ligatures)
         assertEquals(0.2, sut.letterSpacing?.value)
         assertEquals(1.8, sut.lineHeight.value)
-        assertEquals(Overflow.PAGINATED, sut.overflow.value)
-        assertEquals(1.4, sut.pageMargins.value)
+        assertEquals(1.4, sut.pageMargins?.value)
         assertEquals(0.2, sut.paragraphIndent?.value)
         assertEquals(0.4, sut.paragraphSpacing.value)
         assertFalse(sut.publisherStyles.value)
+        assertEquals(false, sut.scroll?.value)
         assertEquals(TextAlign.LEFT, sut.textAlign?.value)
         assertEquals(Color(5), sut.textColor.value)
         assertEquals(TextNormalization.BOLD, sut.textNormalization.value)
         assertEquals(1.5, sut.typeScale.value)
         assertEquals(Theme.DARK, sut.theme.value)
+        assertEquals(false, sut.verticalText.value)
         assertEquals(0.2, sut.wordSpacing?.value)
     }
 
@@ -221,16 +239,17 @@ class EpubSettingsReflowableTest {
             set(sut.hyphens!!, false)
             set(sut.letterSpacing!!, 0.2)
             set(sut.lineHeight, 1.8)
-            set(sut.overflow, Overflow.PAGINATED)
-            set(sut.pageMargins, 1.4)
+            set(sut.pageMargins!!, 1.4)
             set(sut.paragraphIndent!!, 0.2)
             set(sut.paragraphSpacing, 0.4)
             set(sut.publisherStyles, false)
+            set(sut.scroll!!, false)
             set(sut.textAlign!!, TextAlign.LEFT)
             set(sut.textColor, Color(6))
             set(sut.textNormalization, TextNormalization.BOLD)
             set(sut.theme, Theme.DARK)
             set(sut.typeScale, 1.4)
+            set(sut.verticalText, false)
             set(sut.wordSpacing!!, 0.2)
         }
 
@@ -244,16 +263,17 @@ class EpubSettingsReflowableTest {
         assertEquals(0.2, sut.letterSpacing?.value)
         assertEquals(1.8, sut.lineHeight.value)
         assertNull(sut.ligatures)
-        assertEquals(Overflow.PAGINATED, sut.overflow.value)
-        assertEquals(1.4, sut.pageMargins.value)
+        assertEquals(1.4, sut.pageMargins?.value)
         assertEquals(0.2, sut.paragraphIndent?.value)
         assertEquals(0.4, sut.paragraphSpacing.value)
         assertFalse(sut.publisherStyles.value)
+        assertEquals(false, sut.scroll?.value)
         assertEquals(TextAlign.LEFT, sut.textAlign?.value)
         assertEquals(Color(6), sut.textColor.value)
         assertEquals(TextNormalization.BOLD, sut.textNormalization.value)
         assertEquals(Theme.DARK, sut.theme.value)
         assertEquals(1.4, sut.typeScale.value)
+        assertEquals(false, sut.verticalText.value)
         assertEquals(0.2, sut.wordSpacing?.value)
     }
 
@@ -293,16 +313,16 @@ class EpubSettingsReflowableTest {
     }
 
     @Test
-    fun `Null overflow reverts to the default one`() {
+    fun `Null scroll reverts to the default one`() {
         var sut = Reflowable()
 
         sut = sut.update(metadata(), Preferences {
-            set(sut.overflow, Overflow.SCROLLED)
+            set(sut.scroll!!, true)
         })
-        assertEquals(Overflow.SCROLLED, sut.overflow.value)
+        assertEquals(true, sut.scroll!!.value)
 
         sut = sut.update(metadata(), Preferences {})
-        assertEquals(Overflow.PAGINATED, sut.overflow.value)
+        assertEquals(false, sut.scroll!!.value)
     }
 
     @Test
@@ -735,7 +755,7 @@ class EpubSettingsReflowableTest {
                 userProperties = UserProperties(
                     view = View.SCROLL,
                     colCount = ColCount.AUTO,
-                    pageMargins = 1.9,
+                    pageMargins = null,
                     textColor = CssColor.int(3),
                     backgroundColor = CssColor.int(4),
                     fontOverride = true,
@@ -763,11 +783,10 @@ class EpubSettingsReflowableTest {
                     it[hyphens!!] = false
                     it[letterSpacing!!] = 0.6
                     it[lineHeight] = 1.8
-                    it[overflow] = Overflow.SCROLLED
-                    it[pageMargins] = 1.9
                     it[paragraphIndent!!] = 0.2
                     it[paragraphSpacing] = 0.4
                     it[publisherStyles] = false
+                    it[scroll!!] = true
                     it[textAlign!!] = TextAlign.LEFT
                     it[theme] = Theme.LIGHT
                     it[textColor] = Color(3)

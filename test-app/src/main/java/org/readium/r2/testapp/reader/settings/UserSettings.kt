@@ -117,17 +117,18 @@ fun UserSettings(
                     letterSpacing = settings.letterSpacing,
                     ligatures = settings.ligatures,
                     lineHeight = settings.lineHeight,
-                    overflow = settings.overflow,
                     pageMargins = settings.pageMargins,
                     paragraphIndent = settings.paragraphIndent,
                     paragraphSpacing = settings.paragraphSpacing,
                     publisherStyles = settings.publisherStyles,
                     readingProgression = settings.readingProgression,
+                    scroll = settings.scroll,
                     textAlign = settings.textAlign,
                     textColor = settings.textColor,
                     textNormalization = settings.textNormalization,
                     theme = settings.theme,
                     typeScale = settings.typeScale,
+                    verticalText = settings.verticalText,
                     wordSpacing = settings.wordSpacing,
                 )
         }
@@ -138,7 +139,7 @@ fun UserSettings(
  * User settings for a publication with a fixed layout, such as fixed-layout EPUB, PDF or comic book.
  */
 @Composable
-private fun FixedLayoutUserSettings(
+private fun ColumnScope.FixedLayoutUserSettings(
     preferences: Preferences,
     edit: EditPreferences,
     spread: EnumSetting<Spread>? = null,
@@ -147,6 +148,13 @@ private fun FixedLayoutUserSettings(
     theme: EnumSetting<Theme>? = null,
 ) {
     if (language != null || readingProgression != null) {
+        fun reset() {
+            edit {
+                remove(language)
+                remove(readingProgression)
+            }
+        }
+
         if (language != null) {
             LanguageItem(language, preferences, edit)
         }
@@ -157,6 +165,19 @@ private fun FixedLayoutUserSettings(
                     ReadingProgression.AUTO -> "Auto"
                     else -> value.name
                 }
+            }
+        }
+
+        // The language settings are specific to a publication. This button resets only the
+        // language preferences to the publication's default metadata for convenience.
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.End),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(onClick = ::reset) {
+                Text("Reset to publication", style = MaterialTheme.typography.caption)
             }
         }
 
@@ -192,7 +213,7 @@ private fun FixedLayoutUserSettings(
  * a reflowable EPUB, HTML document or PDF with reflow mode enabled.
  */
 @Composable
-private fun ReflowableUserSettings(
+private fun ColumnScope.ReflowableUserSettings(
     preferences: Preferences,
     edit: EditPreferences,
     backgroundColor: ColorSetting? = null,
@@ -205,31 +226,76 @@ private fun ReflowableUserSettings(
     letterSpacing: PercentSetting? = null,
     ligatures: ToggleSetting? = null,
     lineHeight: RangeSetting<Double>? = null,
-    overflow: EnumSetting<Overflow>? = null,
     pageMargins: RangeSetting<Double>? = null,
     paragraphIndent: PercentSetting? = null,
     paragraphSpacing: PercentSetting? = null,
     publisherStyles: ToggleSetting? = null,
     readingProgression: EnumSetting<ReadingProgression>? = null,
+    scroll: ToggleSetting? = null,
     textAlign: EnumSetting<ReadiumTextAlign>? = null,
     textColor: ColorSetting? = null,
     textNormalization: EnumSetting<TextNormalization>? = null,
     theme: EnumSetting<Theme>? = null,
     typeScale: RangeSetting<Double>? = null,
+    verticalText: ToggleSetting? = null,
     wordSpacing: PercentSetting? = null,
 ) {
-    if (language != null || readingProgression != null) {
+    if (language != null || readingProgression != null || verticalText != null) {
+        fun reset() {
+            edit {
+                remove(language)
+                remove(readingProgression)
+                remove(verticalText)
+            }
+        }
+
         if (language != null) {
             LanguageItem(language, preferences, edit)
         }
 
         if (readingProgression != null) {
             ButtonGroupItem(title = "Reading progression", readingProgression, preferences , edit) { value ->
+                value.name
+            }
+        }
+
+        if (verticalText != null) {
+            SwitchItem(title = "Vertical text", verticalText, preferences, edit)
+        }
+
+        // The language settings are specific to a publication. This button resets only the
+        // language preferences to the publication's default metadata for convenience.
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.End),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(onClick = ::reset) {
+                Text("Reset to publication", style = MaterialTheme.typography.caption)
+            }
+        }
+
+        Divider()
+    }
+
+    if (scroll != null || columnCount != null || pageMargins != null) {
+        if (scroll != null) {
+            SwitchItem(title = "Scroll", scroll, preferences, edit)
+        }
+
+        if (columnCount != null) {
+            ButtonGroupItem("Columns", columnCount, preferences, edit) { value ->
                 when (value) {
-                    ReadingProgression.AUTO -> "Auto"
-                    else -> value.name
+                    ColumnCount.AUTO -> "Auto"
+                    ColumnCount.ONE -> "1"
+                    ColumnCount.TWO -> "2"
                 }
             }
+        }
+
+        if (pageMargins != null) {
+            StepperItem("Page margins", pageMargins, preferences, edit)
         }
 
         Divider()
@@ -262,34 +328,6 @@ private fun ReflowableUserSettings(
 
         if (backgroundColor != null) {
             ColorItem("Background color", backgroundColor, preferences, edit)
-        }
-
-        Divider()
-    }
-
-    if (overflow != null || columnCount != null || pageMargins != null) {
-        if (overflow != null) {
-            ButtonGroupItem("Overflow", overflow, preferences, edit) { value ->
-                when (value) {
-                    Overflow.AUTO -> "Auto"
-                    Overflow.PAGINATED -> "Paginated"
-                    Overflow.SCROLLED -> "Scrolled"
-                }
-            }
-        }
-
-        if (columnCount != null) {
-            ButtonGroupItem("Columns", columnCount, preferences, edit) { value ->
-                when (value) {
-                    ColumnCount.AUTO -> "Auto"
-                    ColumnCount.ONE -> "1"
-                    ColumnCount.TWO -> "2"
-                }
-            }
-        }
-
-        if (pageMargins != null) {
-            StepperItem("Page margins", pageMargins, preferences, edit)
         }
 
         Divider()
@@ -379,7 +417,7 @@ private fun <T> ButtonGroupItem(
     setting: EnumSetting<T>,
     preferences: Preferences,
     edit: EditPreferences,
-    label: (T) -> String
+    formatValue: (T) -> String
 ) {
     Item(title, isActive = preferences.isActive(setting)) {
         ToggleButtonGroup(
@@ -393,7 +431,7 @@ private fun <T> ButtonGroupItem(
             }
         ) { option ->
             Text(
-                text = label(option),
+                text = formatValue(option),
                 style = MaterialTheme.typography.caption
             )
         }
@@ -409,12 +447,12 @@ private fun <T> MenuItem(
     setting: EnumSetting<T>,
     preferences: Preferences,
     edit: EditPreferences,
-    label: (T) -> String
+    formatValue: (T) -> String
 ) {
     MenuItem(
         title = title, setting, preferences, edit,
         values = setting.values ?: emptyList(),
-        label = label
+        formatValue = formatValue
     )
 }
 
@@ -428,13 +466,13 @@ private fun <T> MenuItem(
     preferences: Preferences,
     edit: EditPreferences,
     values: List<T>,
-    label: (T) -> String
+    formatValue: (T) -> String
 ) {
     Item(title, isActive = preferences.isActive(setting)) {
         DropdownMenuButton(
             text = {
                 Text(
-                    text = label(preferences[setting] ?: setting.value),
+                    text = formatValue(preferences[setting] ?: setting.value),
                     style = MaterialTheme.typography.caption
                 )
             }
@@ -446,7 +484,7 @@ private fun <T> MenuItem(
                         edit { set(setting, value) }
                     }
                 ) {
-                    Text(label(value))
+                    Text(formatValue(value))
                 }
             }
         }
@@ -480,7 +518,7 @@ private fun StepperItem(
             )
 
             Text(
-                text = setting.label((preferences[setting] ?: setting.value)),
+                text = setting.formatValue((preferences[setting] ?: setting.value)),
                 modifier = Modifier.widthIn(min = 30.dp),
                 textAlign = TextAlign.Center
             )
@@ -598,7 +636,7 @@ fun LanguageItem(
     MenuItem(
         title = "Language", setting, preferences, edit,
         values = listOf(null) + languages,
-        label = { it?.locale?.displayName ?: "Default" }
+        formatValue = { it?.locale?.displayName ?: "Default" }
     )
 }
 
@@ -644,14 +682,14 @@ private fun Configurable.Settings.presets(): List<Preset> =
                 set(settings.textNormalization, TextNormalization.ACCESSIBILITY)
             },
             Preset("Document") {
-                set(settings.overflow, Overflow.SCROLLED)
+                settings.scroll?.let { set(it, true) }
             },
             Preset("Ebook") {
-                set(settings.overflow, Overflow.PAGINATED)
+                settings.scroll?.let { set(it, false) }
             },
             Preset("Manga") {
                 set(settings.readingProgression, ReadingProgression.RTL)
-                set(settings.overflow, Overflow.PAGINATED)
+                settings.scroll?.let { set(it, false) }
             }
         )
         else -> emptyList()

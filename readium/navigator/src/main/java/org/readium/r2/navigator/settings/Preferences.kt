@@ -191,7 +191,8 @@ class MutablePreferences(
     /**
      * Removes the preference for the given [setting].
      */
-    fun <V> remove(setting: Setting<V, *>) {
+    fun <V> remove(setting: Setting<V, *>?) {
+        setting ?: return
         values.remove(setting.key)
     }
 

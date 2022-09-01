@@ -27,7 +27,7 @@ class EpubSettingsFixedLayoutTest {
         val settings = EpubSettings.FixedLayout()
         assertNull(settings.language.value)
         assertEquals(Spread.AUTO, settings.spread.value)
-        assertEquals(ReadingProgression.AUTO, settings.readingProgression.value)
+        assertEquals(ReadingProgression.LTR, settings.readingProgression.value)
         assertEquals(Theme.LIGHT, settings.theme.value)
     }
 
