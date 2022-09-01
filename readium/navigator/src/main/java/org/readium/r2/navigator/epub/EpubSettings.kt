@@ -365,10 +365,10 @@ sealed class EpubSettings : Configurable.Settings {
         }
 
         override fun update(metadata: Metadata, preferences: Preferences, defaults: Preferences): Reflowable {
-            val language = language.copyFirstValidValueFrom(preferences, defaults, fallback = LANGUAGE)
+            val language = language.copyFirstValidValueFrom(preferences, defaults, fallback = metadata.language)
 
             val layout = Layout.from(
-                language = language.value ?: metadata.language,
+                language = language.value,
                 hasMultipleLanguages =
                     if (language.value != null) false
                     else metadata.languages.size > 1,

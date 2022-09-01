@@ -148,6 +148,13 @@ private fun ColumnScope.FixedLayoutUserSettings(
     theme: EnumSetting<Theme>? = null,
 ) {
     if (language != null || readingProgression != null) {
+        fun reset() {
+            edit {
+                remove(language)
+                remove(readingProgression)
+            }
+        }
+
         if (language != null) {
             LanguageItem(language, preferences, edit)
         }
@@ -158,6 +165,19 @@ private fun ColumnScope.FixedLayoutUserSettings(
                     ReadingProgression.AUTO -> "Auto"
                     else -> value.name
                 }
+            }
+        }
+
+        // The language settings are specific to a publication. This button resets only the
+        // language preferences to the publication's default metadata for convenience.
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.End),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(onClick = ::reset) {
+                Text("Reset to publication", style = MaterialTheme.typography.caption)
             }
         }
 

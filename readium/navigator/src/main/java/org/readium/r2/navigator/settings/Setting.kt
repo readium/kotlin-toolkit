@@ -88,11 +88,20 @@ data class Setting<V, E>(
      * Each preference is verified using the setting [validator].
      */
     fun copyFirstValidValueFrom(vararg candidates: Preferences?, fallback: Setting<V, E> = this): Setting<V, E> =
+        copyFirstValidValueFrom(*candidates, fallback = fallback.value)
+
+    /**
+     * Creates a copy of the [Setting] receiver, after replacing its value with the first valid
+     * value taken from the given [Preferences] objects, in order.
+     *
+     * Each preference is verified using the setting [validator].
+     */
+    fun copyFirstValidValueFrom(vararg candidates: Preferences?, fallback: V): Setting<V, E> =
         copy(
             value = candidates
                 .mapNotNull { candidate -> candidate?.get(this) }
                 .firstNotNullOfOrNull(::validate)
-                ?: fallback.value
+                ?: fallback
         )
 
     // We only want to use the setting key and value to test the structural equality, so we
