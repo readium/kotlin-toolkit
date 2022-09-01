@@ -16,7 +16,6 @@ import org.readium.r2.navigator.settings.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.publication.presentation.Presentation.Spread
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Language
@@ -105,19 +104,22 @@ sealed class EpubSettings : Configurable.Settings {
      * @param letterSpacing Space between letters.
      * @param ligatures Enable ligatures in Arabic.
      * @param lineHeight Leading line height.
-     * @param overflow Indicates if the overflow of resources should be handled using dynamic
-     * pagination or scrolling.
      * @param pageMargins Factor applied to horizontal margins.
      * @param paragraphIndent Text indentation for paragraphs.
      * @param paragraphSpacing Vertical margins for paragraphs.
      * @param publisherStyles Indicates whether the original publisher styles should be observed.
      * Many settings require this to be off.
      * @param readingProgression Direction of the reading progression across resources.
+     * @param scroll Indicates if the overflow of resources should be handled using scrolling
+     * instead of synthetic pagination.
      * @param textAlign Page text alignment.
      * @param textColor Default page text color.
      * @param textNormalization Normalize font style, weight and variants using a specific strategy.
      * @param theme Reader theme.
      * @param typeScale Scale applied to all element font sizes.
+     * @param verticalText Indicates whether the text should be laid out vertically. This is used
+     * for example with CJK languages. This setting is automatically derived from the language if
+     * no preference is given.
      * @param wordSpacing Space between words.
      */
     @ExperimentalReadiumApi
@@ -132,17 +134,18 @@ sealed class EpubSettings : Configurable.Settings {
         val letterSpacing: PercentSetting? = LETTER_SPACING,
         val ligatures: ToggleSetting? = LIGATURES,
         val lineHeight: RangeSetting<Double> = LINE_HEIGHT,
-        val overflow: EnumSetting<Overflow> = OVERFLOW,
-        val pageMargins: RangeSetting<Double> = PAGE_MARGINS,
+        val pageMargins: RangeSetting<Double>? = PAGE_MARGINS,
         val paragraphIndent: PercentSetting? = PARAGRAPH_INDENT,
         val paragraphSpacing: PercentSetting = PARAGRAPH_SPACING,
         val publisherStyles: ToggleSetting = PUBLISHER_STYLES,
         val readingProgression: EnumSetting<ReadingProgression> = READING_PROGRESSION,
+        val scroll: ToggleSetting? = SCROLL,
         val textAlign: EnumSetting<TextAlign>? = TEXT_ALIGN,
         val textColor: ColorSetting = TEXT_COLOR,
         val textNormalization: EnumSetting<TextNormalization> = TEXT_NORMALIZATION,
         val theme: EnumSetting<Theme> = THEME,
         val typeScale: RangeSetting<Double> = TYPE_SCALE,
+        val verticalText: ToggleSetting = VERTICAL_TEXT,
         val wordSpacing: PercentSetting? = WORD_SPACING,
 
         internal val layout: Layout = Layout()
@@ -237,16 +240,6 @@ sealed class EpubSettings : Configurable.Settings {
                 activator = RequiresPublisherStylesDisabled
             )
 
-            /**
-             * Indicates if the overflow of resources should be handled using dynamic
-             * pagination or scrolling.
-             */
-            val OVERFLOW: EnumSetting<Overflow> = EnumSetting(
-                key = Setting.OVERFLOW,
-                value = Overflow.PAGINATED,
-                values = listOf(Overflow.PAGINATED, Overflow.SCROLLED)
-            )
-
             /** Factor applied to horizontal margins. */
             val PAGE_MARGINS: RangeSetting<Double> = RangeSetting(
                 key = Setting.PAGE_MARGINS,
@@ -286,6 +279,15 @@ sealed class EpubSettings : Configurable.Settings {
                 key = Setting.READING_PROGRESSION,
                 value = ReadingProgression.AUTO,
                 values = listOf(ReadingProgression.AUTO, ReadingProgression.LTR, ReadingProgression.RTL)
+            )
+
+            /**
+             * Indicates if the overflow of resources should be handled using scrolling instead
+             * of synthetic pagination.
+             */
+            val SCROLL: ToggleSetting = ToggleSetting(
+                key = Setting.SCROLL,
+                value = false,
             )
 
             /** Page text alignment. */
@@ -334,6 +336,17 @@ sealed class EpubSettings : Configurable.Settings {
                 activator = RequiresPublisherStylesDisabled
             )
 
+            /**
+             * Indicates whether the text should be laid out vertically. This is used for example
+             * with CJK languages.
+             *
+             * This setting is automatically derived from the language if no preference is given.
+             */
+            val VERTICAL_TEXT: ToggleSetting = ToggleSetting(
+                key = Setting.VERTICAL_TEXT,
+                value = false,
+            )
+
             /** Space between words. */
             val WORD_SPACING: PercentSetting = PercentSetting(
                 key = Setting.WORD_SPACING,
@@ -361,13 +374,20 @@ sealed class EpubSettings : Configurable.Settings {
                     if (language.value != null) false
                     else metadata.languages.size > 1,
                 readingProgression = readingProgression.value.takeIf { it != ReadingProgression.AUTO }
-                    ?: metadata.readingProgression
+                    ?: metadata.readingProgression,
+                verticalText = (preferences[verticalText] ?: defaults[verticalText])
             )
+            val isVerticalText = (layout.stylesheets == Stylesheets.CjkVertical)
+
+            val scroll = if (isVerticalText) null
+                else (scroll ?: SCROLL).copyFirstValidValueFrom(preferences, defaults, fallback = SCROLL)
+
+            val isPaginated = (scroll?.value == false)
 
             return copy(
                 backgroundColor = backgroundColor.copyFirstValidValueFrom(preferences, defaults, fallback = BACKGROUND_COLOR),
-                columnCount = if (preferences[overflow] == Overflow.SCROLLED || layout.stylesheets == Stylesheets.CjkVertical) null
-                    else (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(preferences, defaults, fallback = COLUMN_COUNT),
+                columnCount = if (isPaginated) (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(preferences, defaults, fallback = COLUMN_COUNT)
+                    else null,
                 fontFamily = fontFamily.copyFirstValidValueFrom(preferences, defaults, fallback = FONT_FAMILY),
                 fontSize = fontSize.copyFirstValidValueFrom(preferences, defaults, fallback = FONT_SIZE),
                 hyphens = if (layout.stylesheets != Stylesheets.Default) null
@@ -380,19 +400,21 @@ sealed class EpubSettings : Configurable.Settings {
                 ligatures = if (layout.stylesheets != Stylesheets.Rtl) null
                     else (ligatures ?: LIGATURES).copyFirstValidValueFrom(preferences, defaults, fallback = LIGATURES),
                 lineHeight = lineHeight.copyFirstValidValueFrom(preferences, defaults, fallback = LINE_HEIGHT),
-                overflow = overflow.copyFirstValidValueFrom(preferences, defaults, fallback = OVERFLOW),
-                pageMargins = pageMargins.copyFirstValidValueFrom(preferences, defaults, fallback = PAGE_MARGINS),
+                pageMargins = if (isPaginated) (pageMargins ?: PAGE_MARGINS).copyFirstValidValueFrom(preferences, defaults, fallback = PAGE_MARGINS)
+                    else null,
                 paragraphIndent = if (layout.stylesheets == Stylesheets.CjkVertical || layout.stylesheets == Stylesheets.CjkHorizontal) null
                     else (paragraphIndent ?: PARAGRAPH_INDENT).copyFirstValidValueFrom(preferences, defaults, fallback = PARAGRAPH_INDENT),
                 paragraphSpacing = paragraphSpacing.copyFirstValidValueFrom(preferences, defaults, fallback = PARAGRAPH_SPACING),
                 publisherStyles = publisherStyles.copyFirstValidValueFrom(preferences, defaults, fallback = PUBLISHER_STYLES),
                 readingProgression = readingProgression,
+                scroll = scroll,
                 textAlign = if (layout.stylesheets == Stylesheets.CjkVertical || layout.stylesheets == Stylesheets.CjkHorizontal) null
                     else (textAlign ?: TEXT_ALIGN).copyFirstValidValueFrom(preferences, defaults, fallback = TEXT_ALIGN),
                 textColor = textColor.copyFirstValidValueFrom( preferences, defaults, fallback = TEXT_COLOR),
                 textNormalization = textNormalization.copyFirstValidValueFrom(preferences, defaults, fallback = TEXT_NORMALIZATION),
                 theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME),
                 typeScale = typeScale.copyFirstValidValueFrom( preferences, defaults, fallback = TYPE_SCALE),
+                verticalText = VERTICAL_TEXT.copy(value = isVerticalText),
                 wordSpacing = if (layout.stylesheets != Stylesheets.Default) null
                     else (wordSpacing ?: WORD_SPACING).copyFirstValidValueFrom( preferences, defaults, fallback = WORD_SPACING),
                 layout = layout
@@ -409,17 +431,17 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
         copy(
             layout = settings.layout,
             userProperties = userProperties.copy(
-                view = when (overflow.value) {
-                    Overflow.AUTO -> null
-                    Overflow.PAGINATED -> View.PAGED
-                    Overflow.SCROLLED -> View.SCROLL
+                view = when (scroll?.value) {
+                    null -> null
+                    false -> View.PAGED
+                    true -> View.SCROLL
                 },
                 colCount = when (columnCount?.value) {
                     ColumnCount.ONE -> ColCount.ONE
                     ColumnCount.TWO -> ColCount.TWO
                     else -> ColCount.AUTO
                 },
-                pageMargins = pageMargins.value,
+                pageMargins = pageMargins?.value,
                 appearance = when (theme.value) {
                     Theme.LIGHT -> null
                     Theme.DARK -> Appearance.NIGHT

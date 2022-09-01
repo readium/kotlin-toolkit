@@ -26,12 +26,12 @@ import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.publication.presentation.Presentation.Spread
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.ColorPicker
 import org.readium.r2.testapp.utils.compose.DropdownMenuButton
+import org.readium.r2.testapp.utils.compose.ToggleButton
 import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
 import java.util.*
 import org.readium.r2.navigator.settings.Color as ReadiumColor
@@ -117,17 +117,18 @@ fun UserSettings(
                     letterSpacing = settings.letterSpacing,
                     ligatures = settings.ligatures,
                     lineHeight = settings.lineHeight,
-                    overflow = settings.overflow,
                     pageMargins = settings.pageMargins,
                     paragraphIndent = settings.paragraphIndent,
                     paragraphSpacing = settings.paragraphSpacing,
                     publisherStyles = settings.publisherStyles,
                     readingProgression = settings.readingProgression,
+                    scroll = settings.scroll,
                     textAlign = settings.textAlign,
                     textColor = settings.textColor,
                     textNormalization = settings.textNormalization,
                     theme = settings.theme,
                     typeScale = settings.typeScale,
+                    verticalText = settings.verticalText,
                     wordSpacing = settings.wordSpacing,
                 )
         }
@@ -205,20 +206,21 @@ private fun ReflowableUserSettings(
     letterSpacing: PercentSetting? = null,
     ligatures: ToggleSetting? = null,
     lineHeight: RangeSetting<Double>? = null,
-    overflow: EnumSetting<Overflow>? = null,
     pageMargins: RangeSetting<Double>? = null,
     paragraphIndent: PercentSetting? = null,
     paragraphSpacing: PercentSetting? = null,
     publisherStyles: ToggleSetting? = null,
     readingProgression: EnumSetting<ReadingProgression>? = null,
+    scroll: ToggleSetting? = null,
     textAlign: EnumSetting<ReadiumTextAlign>? = null,
     textColor: ColorSetting? = null,
     textNormalization: EnumSetting<TextNormalization>? = null,
     theme: EnumSetting<Theme>? = null,
     typeScale: RangeSetting<Double>? = null,
+    verticalText: ToggleSetting? = null,
     wordSpacing: PercentSetting? = null,
 ) {
-    if (language != null || readingProgression != null) {
+    if (language != null || readingProgression != null || verticalText != null) {
         if (language != null) {
             LanguageItem(language, preferences, edit)
         }
@@ -230,6 +232,33 @@ private fun ReflowableUserSettings(
                     else -> value.name
                 }
             }
+        }
+
+        if (verticalText != null) {
+            // As this setting is
+            SwitchItem(title = "Vertical text", verticalText, preferences, edit, clearable = true)
+        }
+
+        Divider()
+    }
+
+    if (scroll != null || columnCount != null || pageMargins != null) {
+        if (scroll != null) {
+            SwitchItem(title = "Scroll", scroll, preferences, edit)
+        }
+
+        if (columnCount != null) {
+            ButtonGroupItem("Columns", columnCount, preferences, edit) { value ->
+                when (value) {
+                    ColumnCount.AUTO -> "Auto"
+                    ColumnCount.ONE -> "1"
+                    ColumnCount.TWO -> "2"
+                }
+            }
+        }
+
+        if (pageMargins != null) {
+            StepperItem("Page margins", pageMargins, preferences, edit)
         }
 
         Divider()
@@ -262,34 +291,6 @@ private fun ReflowableUserSettings(
 
         if (backgroundColor != null) {
             ColorItem("Background color", backgroundColor, preferences, edit)
-        }
-
-        Divider()
-    }
-
-    if (overflow != null || columnCount != null || pageMargins != null) {
-        if (overflow != null) {
-            ButtonGroupItem("Overflow", overflow, preferences, edit) { value ->
-                when (value) {
-                    Overflow.AUTO -> "Auto"
-                    Overflow.PAGINATED -> "Paginated"
-                    Overflow.SCROLLED -> "Scrolled"
-                }
-            }
-        }
-
-        if (columnCount != null) {
-            ButtonGroupItem("Columns", columnCount, preferences, edit) { value ->
-                when (value) {
-                    ColumnCount.AUTO -> "Auto"
-                    ColumnCount.ONE -> "1"
-                    ColumnCount.TWO -> "2"
-                }
-            }
-        }
-
-        if (pageMargins != null) {
-            StepperItem("Page margins", pageMargins, preferences, edit)
         }
 
         Divider()
@@ -507,19 +508,32 @@ private fun SwitchItem(
     title: String,
     setting: ToggleSetting,
     preferences: Preferences,
-    edit: EditPreferences
+    edit: EditPreferences,
+    clearable: Boolean = false,
 ) {
     Item(
         title = title,
         isActive = preferences.isActive(setting),
         onClick = { edit { toggle(setting)} }
     ) {
-        Switch(
-            checked = preferences[setting] ?: setting.value,
-            onCheckedChange = { value ->
-                edit { set(setting, value) }
+        Row {
+            if (clearable) {
+                ToggleButton(
+                    onClick = { edit { remove(setting) } },
+                    selected = preferences[setting] == null,
+                    content = {
+                        Text("Auto", style = MaterialTheme.typography.caption)
+                    }
+                )
             }
-        )
+
+            Switch(
+                checked = preferences[setting] ?: setting.value,
+                onCheckedChange = { value ->
+                    edit { set(setting, value) }
+                }
+            )
+        }
     }
 }
 
@@ -644,14 +658,14 @@ private fun Configurable.Settings.presets(): List<Preset> =
                 set(settings.textNormalization, TextNormalization.ACCESSIBILITY)
             },
             Preset("Document") {
-                set(settings.overflow, Overflow.SCROLLED)
+                settings.scroll?.let { set(it, true) }
             },
             Preset("Ebook") {
-                set(settings.overflow, Overflow.PAGINATED)
+                settings.scroll?.let { set(it, false) }
             },
             Preset("Manga") {
                 set(settings.readingProgression, ReadingProgression.RTL)
-                set(settings.overflow, Overflow.PAGINATED)
+                settings.scroll?.let { set(it, false) }
             }
         )
         else -> emptyList()

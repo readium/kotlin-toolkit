@@ -20,9 +20,9 @@ data class Layout(
     val readingProgression: ReadingProgression = ReadingProgression.LTR,
 ) {
     companion object {
-        fun from(language: Language?, hasMultipleLanguages: Boolean, readingProgression: ReadingProgression): Layout {
+        fun from(language: Language?, hasMultipleLanguages: Boolean, readingProgression: ReadingProgression, verticalText: Boolean?): Layout {
             // https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#missing-page-progression-direction
-            var rp = when {
+            val rp = when {
                 readingProgression != ReadingProgression.AUTO ->
                     readingProgression
 
@@ -33,21 +33,24 @@ data class Layout(
                     ReadingProgression.LTR
             }
 
-            val stylesheets =
-                if (language != null && language.isCjk) {
-                    if (rp == ReadingProgression.RTL)
+            val stylesheets: Stylesheets =
+                when {
+                    verticalText == true -> {
                         Stylesheets.CjkVertical
-                    else
-                        Stylesheets.CjkHorizontal
-                } else if (rp == ReadingProgression.RTL) {
-                    Stylesheets.Rtl
-                } else {
-                    Stylesheets.Default
+                    }
+                    language != null && language.isCjk -> {
+                        if (rp == ReadingProgression.RTL && verticalText != false)
+                            Stylesheets.CjkVertical
+                        else
+                            Stylesheets.CjkHorizontal
+                    }
+                    rp == ReadingProgression.RTL -> {
+                        Stylesheets.Rtl
+                    }
+                    else -> {
+                        Stylesheets.Default
+                    }
                 }
-
-            if (stylesheets == Stylesheets.CjkVertical) {
-                rp = ReadingProgression.TTB
-            }
 
             return Layout(language, stylesheets, rp)
         }
