@@ -161,6 +161,9 @@ data class ReadiumCss(
             Layout.HtmlDir.Rtl -> "rtl"
         } ?: return
 
+        // Removes any dir attributes in html/body.
+        content.replace(0, content.length, content.replace(dirRegex, "$1"))
+
         val injectable = " dir=\"$dir\""
         content.insert(content.indexForTagAttributes("html"), injectable)
         content.insert(content.indexForTagAttributes("body"), injectable)
@@ -212,3 +215,5 @@ data class ReadiumCss(
                 ?: throw IllegalArgumentException("No <$tag> opening tag found in this resource")
         ) + tag.length + 1
 }
+
+private val dirRegex = Regex("""(<(?:html|body)[^\>]*)\s+dir=[\"']\w*[\"']""", setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
