@@ -59,11 +59,11 @@ class UserSettingsViewModel(
         .stateIn(scope, SharingStarted.Lazily, initialValue = Theme.LIGHT)
 
     fun bind(navigator: Navigator, lifecycleOwner: LifecycleOwner) {
-        val configurable = (navigator as? Configurable) ?: return
+        val configurable = (navigator as? Configurable<*>) ?: return
         bind(configurable, lifecycleOwner)
     }
 
-    fun bind(configurable: Configurable, lifecycleOwner: LifecycleOwner) {
+    fun bind(configurable: Configurable<*>, lifecycleOwner: LifecycleOwner) {
         with(lifecycleOwner) {
             configurable.settings
                 .flowWithLifecycle(lifecycle)

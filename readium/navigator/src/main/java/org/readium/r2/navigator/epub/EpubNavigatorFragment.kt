@@ -80,7 +80,7 @@ class EpubNavigatorFragment private constructor(
     internal val listener: Listener?,
     internal val paginationListener: PaginationListener?,
     config: Configuration,
-) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable {
+) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable<EpubSettings> {
 
     // Make a copy to prevent the user from modifying the configuration after initialization.
     internal val config: Configuration = config.copy(
@@ -702,7 +702,7 @@ class EpubNavigatorFragment private constructor(
             ReadingProgression.RTL, ReadingProgression.BTT ->
                 webView.scrollLeft(animated)
         }
-        viewLifecycleOwner.lifecycleScope.launch { completion() }
+        lifecycleScope.launch { completion() }
         return true
     }
 
@@ -720,7 +720,7 @@ class EpubNavigatorFragment private constructor(
             ReadingProgression.RTL, ReadingProgression.BTT ->
                 webView.scrollRight(animated)
         }
-        viewLifecycleOwner.lifecycleScope.launch { completion() }
+        lifecycleScope.launch { completion() }
         return true
     }
 

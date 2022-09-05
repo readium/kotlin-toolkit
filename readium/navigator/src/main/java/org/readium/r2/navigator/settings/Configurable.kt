@@ -14,7 +14,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * A [Configurable] is a component with a set of configurable [Settings].
  */
 @ExperimentalReadiumApi
-interface Configurable {
+interface Configurable<T : Settings> {
 
     /**
      * Marker interface for the [Setting] properties holder.
@@ -26,7 +26,7 @@ interface Configurable {
      *
      * Implementers: Override to set the actual [Settings] sub-type.
      */
-    val settings: StateFlow<Settings>
+    val settings: StateFlow<T>
 
     /**
      * Submits a new set of [Preferences] to update the current [Settings].

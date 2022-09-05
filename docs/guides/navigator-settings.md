@@ -120,12 +120,12 @@ For example, you could group the user settings per nature of publications:
 This first [stateful composable](https://developer.android.com/jetpack/compose/state#stateful-vs-stateless) binds directly with a `Configurable` object to recompose when its settings are refreshed and to apply the preferences when the user interacts with the interface. It delegates the actual interface to a stateless `UserSettings` composable.
 
 ```kotlin
-if (navigator is Configurable) {
+if (navigator is Configurable<*>) {
     UserSettings(navigator)
 }
 
 @Composable
-fun UserSettings(configurable: Configurable) {
+fun UserSettings(configurable: Configurable<*>) {
     val settings by configurable.settings.collectAsState()
     var preferences by remember { mutableStateOf(Preferences()) }
 
