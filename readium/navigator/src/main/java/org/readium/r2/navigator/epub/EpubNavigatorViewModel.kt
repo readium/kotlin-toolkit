@@ -324,11 +324,7 @@ internal class EpubNavigatorViewModel(
         if (useLegacySettings) {
             publication.metadata.effectiveReadingProgression
         } else {
-            if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
-                settings.value.readingProgression.value
-            } else {
-                css.value.layout.readingProgression
-            }
+            settings.value.readingProgression.value
         }
 
     /**
