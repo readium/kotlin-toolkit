@@ -6,7 +6,6 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.TransformingResource
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.epub.layoutOf
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isProtected
 import timber.log.Timber

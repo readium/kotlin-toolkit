@@ -1,10 +1,10 @@
 package org.readium.r2.navigator.epub.css
 
-import android.graphics.Color as AndroidColor
 import org.junit.Test
-import kotlin.test.assertEquals
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Either
+import kotlin.test.assertEquals
+import android.graphics.Color as AndroidColor
 
 @OptIn(ExperimentalReadiumApi::class)
 class PropertiesTest {

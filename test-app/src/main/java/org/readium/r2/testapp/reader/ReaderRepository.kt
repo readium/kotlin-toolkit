@@ -8,11 +8,9 @@ package org.readium.r2.testapp.reader
 
 import android.app.Activity
 import android.app.Application
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.json.JSONObject
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
-import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
@@ -24,7 +22,6 @@ import org.readium.r2.testapp.MediaService
 import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.bookshelf.BookRepository
 import java.io.File
-import java.net.URL
 
 /**
  * Open and store publications in order for them to be listened or read.

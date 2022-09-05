@@ -7,7 +7,6 @@
 package org.readium.r2.navigator.epub.css
 
 import androidx.annotation.ColorInt
-import org.readium.r2.navigator.settings.Setting
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Either
 import java.text.NumberFormat

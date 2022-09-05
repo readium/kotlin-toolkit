@@ -8,7 +8,10 @@ package org.readium.r2.streamer.parser.epub
 
 import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.toHexBytes
-import org.readium.r2.shared.fetcher.*
+import org.readium.r2.shared.fetcher.LazyResource
+import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.ResourceTry
+import org.readium.r2.shared.fetcher.TransformingResource
 import org.readium.r2.shared.publication.encryption.encryption
 import kotlin.experimental.xor
 

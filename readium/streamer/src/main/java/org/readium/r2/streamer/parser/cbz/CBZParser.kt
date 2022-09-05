@@ -11,9 +11,10 @@ package org.readium.r2.streamer.parser.cbz
 
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.extensions.fromArchiveOrDirectory

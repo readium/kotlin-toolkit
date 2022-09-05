@@ -9,6 +9,8 @@
 package org.readium.r2.navigator.epub
 
 import android.content.Context
+import org.readium.r2.navigator.epub.EpubSettings.FixedLayout
+import org.readium.r2.navigator.epub.EpubSettings.Reflowable
 import org.readium.r2.navigator.epub.css.*
 import org.readium.r2.navigator.epub.css.Layout.Stylesheets
 import org.readium.r2.navigator.settings.*

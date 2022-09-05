@@ -16,12 +16,11 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.URITemplate
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
-import java.io.File
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Function used to recursively transform the href of a [Link] when parsing its JSON

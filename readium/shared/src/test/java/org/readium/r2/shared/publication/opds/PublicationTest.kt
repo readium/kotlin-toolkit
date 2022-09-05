@@ -9,14 +9,9 @@
 
 package org.readium.r2.shared.publication.opds
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.readium.r2.shared.publication.LocalizedString
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.PublicationCollection
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.*
 
 class PublicationTest {
 

@@ -7,6 +7,7 @@
 package org.readium.r2.navigator.settings
 
 import kotlinx.coroutines.flow.StateFlow
+import org.readium.r2.navigator.settings.Configurable.Settings
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**

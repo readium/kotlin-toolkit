@@ -17,9 +17,7 @@ import org.readium.r2.navigator.tts.TtsEngine.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Language
-import org.readium.r2.shared.util.MapWithDefaultCompanion
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.getOrDefault
 import java.util.*
 import kotlin.Exception
 import kotlin.coroutines.resume

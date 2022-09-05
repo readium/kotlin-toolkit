@@ -9,10 +9,10 @@
 
 package org.readium.r2.streamer.extensions
 
-import org.junit.Test
-import org.readium.r2.shared.publication.Link
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Test
+import org.readium.r2.shared.publication.Link
 
 class LinkTest {
 

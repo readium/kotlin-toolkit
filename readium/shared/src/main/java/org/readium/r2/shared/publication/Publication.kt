@@ -32,7 +32,6 @@ import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Ref
 import org.readium.r2.shared.util.mediatype.MediaType
-import timber.log.Timber
 import java.net.URL
 import java.net.URLEncoder
 import kotlin.reflect.KClass

@@ -9,11 +9,11 @@
 
 package org.readium.r2.streamer.parser.epub
 
+import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.Collection
-import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.util.Href

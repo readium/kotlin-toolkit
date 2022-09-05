@@ -9,7 +9,6 @@ package org.readium.r2.testapp.reader
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.shared.publication.*
-import java.net.URL
 
 sealed class ReaderInitData {
     abstract val bookId: Long

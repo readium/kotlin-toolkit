@@ -10,8 +10,6 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import org.json.JSONArray
@@ -26,7 +24,6 @@ import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import org.readium.r2.shared.util.mediatype.MediaType
-import java.io.File
 
 /**
  * Holds the metadata of a Readium publication, as described in the Readium Web Publication Manifest.

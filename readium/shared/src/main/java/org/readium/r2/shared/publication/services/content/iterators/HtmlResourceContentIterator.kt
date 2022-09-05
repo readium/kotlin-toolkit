@@ -21,9 +21,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.services.content.Content
-import org.readium.r2.shared.publication.services.content.Content.Attribute
-import org.readium.r2.shared.publication.services.content.Content.AttributeKey
-import org.readium.r2.shared.publication.services.content.Content.TextElement
+import org.readium.r2.shared.publication.services.content.Content.*
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.mediatype.MediaType

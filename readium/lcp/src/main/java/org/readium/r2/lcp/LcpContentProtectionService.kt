@@ -10,7 +10,6 @@
 package org.readium.r2.lcp
 
 import org.readium.r2.shared.publication.ContentProtection
-import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
 
