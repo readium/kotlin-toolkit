@@ -367,6 +367,16 @@ class MetadataMiscTest {
             "http://my.url/#property0"
         )
     }
+
+    @Test
+    // See https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#multiple-language-items
+    fun `Languages are ordered to match the reading progression`() {
+        assertThat(parsePackageDocument("package/languages-order.opf").metadata.languages)
+            .isEqualTo(listOf("ar", "en"))
+
+        assertThat(parsePackageDocument("package/languages-order-nomatch.opf").metadata.languages)
+            .isEqualTo(listOf("en", "fr"))
+    }
 }
 
 @RunWith(RobolectricTestRunner::class)

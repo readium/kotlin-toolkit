@@ -191,7 +191,26 @@ internal class PubMetadataAdapter(
         contributors = contributors(null)
     )
 
-    val languages = items[Vocabularies.DCTERMS + "language"]?.map(MetadataItem::value).orEmpty()
+    val languages = run {
+        var langs = items[Vocabularies.DCTERMS + "language"]?.map(MetadataItem::value).orEmpty()
+
+        // https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#multiple-language-items
+        if (langs.size > 1 && readingProgression == ReadingProgression.RTL) {
+            val rtlLanguages = listOf("ar", "fa", "he", "zh", "zh-hant", "zh-tw", "zh-hk", "ko", "ja")
+            val primaryLangIndex = langs.indexOfFirst { it in rtlLanguages }
+            if (primaryLangIndex > 0) {
+                langs = langs
+                    .toMutableList()
+                    .apply {
+                        val primaryLang = removeAt(primaryLangIndex)
+                        add(0, primaryLang)
+                    }
+                    .toList()
+            }
+        }
+
+        langs
+    }
 
     val identifier: String?
 
