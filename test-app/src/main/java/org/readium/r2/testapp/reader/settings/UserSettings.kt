@@ -692,7 +692,10 @@ private fun PresetsMenuButton(edit: EditPreferences, presets: List<Preset>) {
             DropdownMenuItem(
                 onClick = {
                     dismiss()
-                    edit(preset.changes)
+                    edit {
+                        clear()
+                        preset.changes(this)
+                    }
                 }
             ) {
                 Text(preset.title)
