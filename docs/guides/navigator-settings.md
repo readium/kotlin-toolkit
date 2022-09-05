@@ -20,7 +20,7 @@ val settings = navigator.settings.value
 
 // 2. Create a new set of preferences.
 val preferences = Preferences {
-    set(settings.overflow, Overflow.PAGINATED)
+    set(settings.fontFamily, FontFamily.SERIF)
     increment(settings.fontSize)
     toggle(settings.publisherStyles)
 }
@@ -45,11 +45,6 @@ Here are some of the available setting types:
 The `Setting` objects are technical low-level properties. While some of them can be directly exposed to the user, such as the font size, other settings should not be displayed as-is.
 
 For example in EPUB, we simulate two pages side by side with `columnCount` (`auto`, `1`, `2`) for reflowable resources and `spread` (`auto`, `landscape`, `both`, `none`) for a fixed layout publication. Instead of showing both settings with all their possible values in the user interface, you might prefer showing a single switch button to enable a dual-page mode which will set both settings appropriately.
-
-Similarly, you might want to cluster several settings together. For example, given a scrolled mode switch in the user interface:
-
-* when on, `overflow` is set to `scrolled` and `readingProgression` to `ttb`
-* when off, `overflow` is set to `paginated` and the user can freely select the `readingProgression` between the two values `ltr` and `rtl`
 
 ### Preferences
 
@@ -81,7 +76,7 @@ val updatedPreferences = preferences.copy {
 
 ```kotlin
 preferences.copy {
-    set(settings.overflow, Overflow.PAGINATED, activate = false)
+    set(settings.fontFamily, FontFamily.SERIF, activate = false)
     increment(settings.fontSize, activate = false)
     toggle(settings.publisherStyles, activate = false)
 }
@@ -98,7 +93,7 @@ EpubNavigatorFragment.createFactory(
     config = EpubNavigatorFragment.Configuration(
         preferences = preferencesStore.get(publication.profile),
         defaultPreferences = Preferences {
-            set(EpubSettings.OVERFLOW, Overflow.SCROLLED)
+            set(EpubSettings.scroll, true)
         }
     )
 )
@@ -106,7 +101,7 @@ EpubNavigatorFragment.createFactory(
 
 The `defaultPreferences` are used as fallback values when the default Navigator settings are not suitable for your application.
 
-:point_up: When you don't have access to an `EpubSettings` instance, the "prototype" settings (e.g. `EpubSettings.OVERFLOW`) are helpful to modify a `Preferences` object.
+:point_up: When you don't have access to an `EpubSettings` instance, the "prototype" settings (e.g. `EpubSettings.SCROLL`) are helpful to modify a `Preferences` object.
 
 ## Build a user settings interface
 

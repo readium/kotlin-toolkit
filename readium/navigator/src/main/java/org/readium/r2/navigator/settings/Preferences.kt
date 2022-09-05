@@ -29,7 +29,7 @@ import org.readium.r2.shared.extensions.tryOrLog
  *
  *     // Build a new set of Preferences, using the Setting objects as keys.
  *     val prefs = Preferences {
- *         set(settings.overflow, Overflow.PAGINATED)
+ *         set(settings.scroll, false)
  *         increment(settings.fontSize)
  *     }
  *

@@ -87,7 +87,7 @@ data class Setting<V, E>(
      *
      * Each preference is verified using the setting [validator].
      */
-    fun copyFirstValidValueFrom(vararg candidates: Preferences?, fallback: Setting<V, E> = this): Setting<V, E> =
+    fun copyFirstValidValueFrom(vararg candidates: Preferences, fallback: Setting<V, E> = this): Setting<V, E> =
         copyFirstValidValueFrom(*candidates, fallback = fallback.value)
 
     /**
@@ -96,10 +96,10 @@ data class Setting<V, E>(
      *
      * Each preference is verified using the setting [validator].
      */
-    fun copyFirstValidValueFrom(vararg candidates: Preferences?, fallback: V): Setting<V, E> =
+    fun copyFirstValidValueFrom(vararg candidates: Preferences, fallback: V): Setting<V, E> =
         copy(
             value = candidates
-                .mapNotNull { candidate -> candidate?.get(this) }
+                .mapNotNull { candidate -> candidate[this] }
                 .firstNotNullOfOrNull(::validate)
                 ?: fallback
         )
