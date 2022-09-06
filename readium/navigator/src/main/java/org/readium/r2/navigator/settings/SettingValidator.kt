@@ -71,5 +71,5 @@ class CombinedSettingValidator<V>(
  * Combines the [SettingValidator] receiver with the given [other] validator.
  */
 @ExperimentalReadiumApi
-infix fun <V> SettingValidator<V>.then(other: SettingValidator<V>): SettingValidator<V> =
+operator fun <V> SettingValidator<V>.plus(other: SettingValidator<V>): SettingValidator<V> =
     CombinedSettingValidator(this, other)

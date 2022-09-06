@@ -141,7 +141,7 @@ private fun ColumnScope.FixedLayoutUserSettings(
     preferences: Preferences,
     edit: EditPreferences,
     spread: EnumSetting<Spread>? = null,
-    language: ValueSetting<Language?>? = null,
+    language: Setting<Language?>? = null,
     readingProgression: EnumSetting<ReadingProgression>? = null,
 ) {
     if (language != null || readingProgression != null) {
@@ -207,7 +207,7 @@ private fun ColumnScope.ReflowableUserSettings(
     fontSize: PercentSetting? = null,
     hyphens: ToggleSetting? = null,
     imageFilter: EnumSetting<ImageFilter>? = null,
-    language: ValueSetting<Language?>? = null,
+    language: Setting<Language?>? = null,
     letterSpacing: PercentSetting? = null,
     ligatures: ToggleSetting? = null,
     lineHeight: RangeSetting<Double>? = null,
@@ -447,7 +447,7 @@ private fun <T> MenuItem(
 @Composable
 private fun <T> MenuItem(
     title: String,
-    setting: Setting<T, *>,
+    setting: Setting<T>,
     preferences: Preferences,
     edit: EditPreferences,
     values: List<T>,
@@ -603,11 +603,11 @@ private fun ColorItem(
 }
 
 /**
- * Component for a `ValueSetting<Language?>`.
+ * Component for a `Setting<Language?>`.
  */
 @Composable
 fun LanguageItem(
-     setting: ValueSetting<Language?>,
+     setting: Setting<Language?>,
      preferences: Preferences,
      edit: EditPreferences
 ) {
