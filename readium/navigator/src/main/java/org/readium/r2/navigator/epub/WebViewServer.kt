@@ -26,7 +26,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
  */
 @OptIn(ExperimentalReadiumApi::class)
 internal class WebViewServer(
-    application: Application,
+    private val application: Application,
     private val publication: Publication,
     servedAssets: List<String>,
 ) {
@@ -77,7 +77,7 @@ internal class WebViewServer(
             ?: Link(href = href)
 
         var resource = publication.get(link)
-            .fallback(notFoundResource(link))
+            .fallback { errorResource(link, error = it) }
         if (link.mediaType.isHtml) {
             resource = resource.injectHtml(publication, css, baseHref = assetsBaseHref)
         }
@@ -100,12 +100,13 @@ internal class WebViewServer(
         }
     }
 
-    private fun notFoundResource(link: Link): Resource =
+    private fun errorResource(link: Link, error: Resource.Exception): Resource =
         StringResource(link.copy(type = MediaType.XHTML.toString())) {
             withContext(Dispatchers.IO) {
                 assetManager
-                    .open("readium/404.xhtml").bufferedReader()
+                    .open("readium/error.xhtml").bufferedReader()
                     .use { it.readText() }
+                    .replace("\${error}", error.getUserMessage(application))
                     .replace("\${href}", link.href)
             }
         }
