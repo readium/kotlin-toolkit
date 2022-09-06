@@ -11,18 +11,13 @@ import android.content.Context
 import android.graphics.PointF
 import android.graphics.RectF
 import android.net.Uri
-import android.os.PatternMatcher
-import android.os.PatternMatcher.PATTERN_SIMPLE_GLOB
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.webkit.WebViewAssetLoader
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.epub.css.ReadiumCss
@@ -35,10 +30,6 @@ import org.readium.r2.shared.COLUMN_COUNT_REF
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.addPrefix
-import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.fetcher.ResourceInputStream
-import org.readium.r2.shared.fetcher.StringResource
-import org.readium.r2.shared.fetcher.fallback
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
@@ -46,9 +37,6 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.Href
-import org.readium.r2.shared.util.http.HttpHeaders
-import org.readium.r2.shared.util.http.HttpRange
-import org.readium.r2.shared.util.mediatype.MediaType
 import kotlin.reflect.KClass
 
 internal enum class DualPage {
@@ -59,16 +47,12 @@ internal enum class DualPage {
 internal class EpubNavigatorViewModel(
     application: Application,
     val publication: Publication,
-    baseUrl: String?,
     val config: EpubNavigatorFragment.Configuration,
+    baseUrl: String?,
+    private val server: WebViewServer?,
 ) : AndroidViewModel(application) {
 
-    val useLegacySettings: Boolean = (baseUrl != null)
-
-    private val baseUrl: String =
-        baseUrl?.let { it.removeSuffix("/") + "/" }
-            ?: publication.linkWithRel("self")?.href
-            ?: "https://readium/publication/"
+    val useLegacySettings: Boolean = (server == null)
 
     val preferences = application.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
@@ -113,13 +97,11 @@ internal class EpubNavigatorViewModel(
     )
     val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
 
-    private val assetsBaseHref = "https://readium/assets/"
-
     private val css = MutableStateFlow(
         ReadiumCss(
             rsProperties = config.readiumCssRsProperties,
             fontFamilies = config.fontFamilies,
-            assetsBaseHref = assetsBaseHref
+            assetsBaseHref = server?.assetsBaseHref ?: ""
         ).update(settings.value)
     )
 
@@ -174,7 +156,13 @@ internal class EpubNavigatorViewModel(
         return RunScriptCommand(script, scope = RunScriptCommand.Scope.WebView(webView))
     }
 
-    // Server
+    // Serving resources
+
+    val baseUrl: String = requireNotNull(
+        baseUrl?.let { it.removeSuffix("/") + "/" }
+            ?: publication.linkWithRel("self")?.href
+            ?: server?.publicationBaseHref
+    )
 
     /**
      * Generates the URL to the given publication link.
@@ -209,87 +197,8 @@ internal class EpubNavigatorViewModel(
         }
     }
 
-    /**
-     * Serves the requests of the navigator web views.
-     *
-     * https://readium/publication/ serves the publication resources through its fetcher.
-     * https://readium/assets/ serves the application assets.
-     */
-    fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? {
-        if (request.url.host != "readium") return null
-        val path = request.url.path ?: return null
-
-        return when {
-            path.startsWith("/publication/") -> {
-                servePublicationResource(
-                    href = path.removePrefix("/publication"),
-                    range = HttpHeaders(request.requestHeaders).range
-                )
-            }
-            path.startsWith("/assets/") && isServedAsset(path.removePrefix("/assets/")) -> {
-                assetsLoader.shouldInterceptRequest(request.url)
-            }
-            else -> null
-        }
-    }
-
-    /**
-     * Returns a new [Resource] to serve the given [href] in the publication.
-     *
-     * If the [Resource] is an HTML document, injects the required JavaScript and CSS files.
-     */
-    private fun servePublicationResource(href: String, range: HttpRange?): WebResourceResponse {
-        val link = publication.linkWithHref(href)
-            // Query parameters must be kept as they might be relevant for the fetcher.
-            ?.copy(href = href)
-            ?: Link(href = href)
-
-        var resource = publication.get(link)
-            .fallback(notFoundResource(link))
-        if (link.mediaType.isHtml) {
-            resource = resource.injectHtml(publication, css.value, baseHref = assetsBaseHref)
-        }
-
-        val headers = mutableMapOf(
-            "Accept-Ranges" to "bytes",
-        )
-
-        if (range == null) {
-            return WebResourceResponse(link.type, null, 200, "OK", headers, ResourceInputStream(resource))
-
-        } else { // Byte range request
-            val stream = ResourceInputStream(resource)
-            val length = stream.available()
-            val longRange = range.toLongRange(length.toLong())
-            headers["Content-Range"] = "bytes ${longRange.first}-${longRange.last}/$length"
-            // Content-Length will automatically be filled by the WebView using the Content-Range header.
-//            headers["Content-Length"] = (longRange.last - longRange.first + 1).toString()
-            return WebResourceResponse(link.type, null, 206, "Partial Content", headers, stream)
-        }
-    }
-
-    private fun notFoundResource(link: Link): Resource =
-        StringResource(link.copy(type = MediaType.XHTML.toString())) {
-            withContext(Dispatchers.IO) {
-                getApplication<Application>().assets
-                    .open("readium/404.xhtml").bufferedReader()
-                    .use { it.readText() }
-                    .replace("\${href}", link.href)
-            }
-        }
-
-    private fun isServedAsset(path: String): Boolean =
-        servedAssetPatterns.any { it.match(path) }
-
-    private val servedAssetPatterns: List<PatternMatcher> =
-        config.servedAssets.map { PatternMatcher(it, PATTERN_SIMPLE_GLOB) }
-
-    private val assetsLoader by lazy {
-        WebViewAssetLoader.Builder()
-            .setDomain("readium")
-            .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(application))
-            .build()
-    }
+    fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? =
+        server?.shouldInterceptRequest(request, css.value)
 
     // Settings
 
@@ -455,7 +364,11 @@ internal class EpubNavigatorViewModel(
 
     companion object {
         fun createFactory(application: Application, publication: Publication, baseUrl: String?, config: EpubNavigatorFragment.Configuration) = createViewModelFactory {
-            EpubNavigatorViewModel(application, publication, baseUrl = baseUrl, config)
+            EpubNavigatorViewModel(application, publication, config,
+                baseUrl = baseUrl,
+                server = if (baseUrl != null) null
+                    else WebViewServer(application, publication, servedAssets = config.servedAssets)
+            )
         }
     }
 }
