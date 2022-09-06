@@ -381,13 +381,13 @@ fun DropdownMenuButton(
 Having a user settings screen is moot if you cannot save and restore the selected preferences for future sessions. Thankfully you can serialize `Preferences` to a JSON object.
 
 ```kotlin
-val json = preferences.toJSON().toString()
+val json = preferences.toJsonString()
 ```
 
 When you are ready to restore the user preferences, construct a new `Preferences` object from the JSON string.
 
 ```kotlin
-val preferences = Preferences(json)
+val preferences = Preferences.fromJson(json)
 ```
 
 In the Test App, `UserSettingsViewModel` delegates the preferences state hoisting and persistence to `PreferencesStore`, which acts as a single source of truth.

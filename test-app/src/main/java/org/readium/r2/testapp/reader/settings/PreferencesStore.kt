@@ -39,8 +39,8 @@ class PreferencesStore(
      */
     operator fun get(bookId: Long, profile: Publication.Profile?): Flow<Preferences> =
         store.data.map { data ->
-            val profilePrefs = Preferences(data[key(profile)])
-            val bookPrefs = Preferences(data[key(bookId)])
+            val profilePrefs = Preferences.fromJson(data[key(profile)]) ?: Preferences()
+            val bookPrefs = Preferences.fromJson(data[key(bookId)]) ?: Preferences()
             profilePrefs + bookPrefs
         }
 

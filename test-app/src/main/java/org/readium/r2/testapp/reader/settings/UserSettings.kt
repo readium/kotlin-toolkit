@@ -662,19 +662,19 @@ private fun Configurable.Settings.presets(): List<Preset> =
     when (val settings = this) {
         is EpubSettings.Reflowable -> listOf(
             Preset("Increase legibility") {
-                settings.wordSpacing?.let { set(it, 0.6) }
+                set(settings.wordSpacing, 0.6)
                 set(settings.fontSize, 1.4)
                 set(settings.textNormalization, TextNormalization.ACCESSIBILITY)
             },
             Preset("Document") {
-                settings.scroll?.let { set(it, true) }
+                set(settings.scroll, true)
             },
             Preset("Ebook") {
-                settings.scroll?.let { set(it, false) }
+                set(settings.scroll, false)
             },
             Preset("Manga") {
+                set(settings.scroll, false)
                 set(settings.readingProgression, ReadingProgression.RTL)
-                settings.scroll?.let { set(it, false) }
             }
         )
         else -> emptyList()

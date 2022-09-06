@@ -10,9 +10,13 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
+import org.json.JSONObject
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.util.logging.WarningLogger
 
 /**
  * Set of preferences used to update a [Configurable]'s settings.
@@ -57,23 +61,6 @@ open class Preferences(
      */
     constructor(preferences: MutablePreferences)
         : this(preferences.values.toMap())
-
-    /**
-     * Creates a [Preferences] object from its JSON representation.
-     */
-    constructor(jsonString: String?)
-        : this(jsonString
-            ?.let {
-                tryOrLog { Json.parseToJsonElement(it) } as? JsonObject
-            }
-            ?: buildJsonObject {}
-        )
-
-    /**
-     * Creates a [Preferences] object from its JSON representation.
-     */
-    constructor(json: JsonObject)
-        : this(json.toMap())
 
     /**
      * Creates a copy of this [Preferences] receiver, keeping only the preferences for the given
@@ -157,8 +144,24 @@ open class Preferences(
     override fun toString(): String =
         toJsonString()
 
-    // Don't remove, this is used for extensions.
-    companion object;
+    companion object {
+        /**
+         * Creates a [Preferences] object from its JSON representation.
+         */
+        fun fromJson(json: JsonObject?): Preferences? {
+            json ?: return null
+            return Preferences(json.toMap())
+        }
+
+        /**
+         * Creates a [Preferences] object from its JSON representation.
+         */
+        fun fromJson(jsonString: String?): Preferences? {
+            jsonString ?: return null
+            val json = tryOrNull { Json.parseToJsonElement(jsonString) as? JsonObject }
+            return fromJson(json)
+        }
+    }
 }
 
 /**
