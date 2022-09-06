@@ -386,76 +386,94 @@ data class Color(private val css: String) : Cssable {
 /** CSS length dimension. */
 @ExperimentalReadiumApi
 interface Length : Cssable {
-    val value: Double
-    val unit: String
-
-    override fun toCss(): String? =
-        NumberFormat.getNumberInstance().run {
-            maximumFractionDigits = 2
-            format(value)
-        } + unit
 
     /** Absolute CSS length. */
-    sealed class Absolute(
-        override val value: Double,
-        override val unit: String
-    ) : Length, Cssable {
+    interface Absolute : Length {
         /** Centimeters */
-        class Cm(value: Double) : Absolute(value, "cm")
-        /** Millimeters */
-        class Mm(value: Double) : Absolute(value, "mm")
-        /** Inches */
-        class In(value: Double) : Absolute(value, "in")
-        /** Pixels */
-        class Px(value: Double) : Absolute(value, "px")
-        /** Points */
-        class Pt(value: Double) : Absolute(value, "pt")
-        /** Picas */
-        class Pc(value: Double) : Absolute(value, "pc")
-
-        override fun equals(other: Any?): Boolean {
-            val otherSetting = (other as? Absolute) ?: return false
-            return otherSetting.value == value && otherSetting.unit == unit
+        @JvmInline
+        value class Cm(val value: Double) : Absolute {
+            override fun toCss(): String = value.toCss("cm")
         }
 
-        override fun hashCode(): Int {
-            var result = value.hashCode()
-            result = 31 * result + unit.hashCode()
-            return result
+        /** Millimeters */
+        @JvmInline
+        value class Mm(val value: Double) : Absolute {
+            override fun toCss(): String = value.toCss("mm")
+        }
+
+        /** Inches */
+        @JvmInline
+        value class In(val value: Double) : Absolute {
+            override fun toCss(): String = value.toCss("in")
+        }
+
+        /** Pixels */
+        @JvmInline
+        value class Px(val value: Double) : Absolute {
+            override fun toCss(): String = value.toCss("px")
+        }
+
+        /** Points */
+        @JvmInline
+        value class Pt(val value: Double) : Absolute {
+            override fun toCss(): String = value.toCss("pt")
+        }
+
+        /** Picas */
+        @JvmInline
+        value class Pc(val value: Double) : Absolute {
+            override fun toCss(): String = value.toCss("pc")
         }
     }
 
     /** Relative CSS length. */
-    sealed class Relative(
-        override val value: Double,
-        override val unit: String
-    ) : Length {
+    interface Relative : Length {
         /** Relative to the font-size of the element. */
-        class Em(value: Double) : Relative(value, "em")
-        /** Relative to the width of the "0" (zero). */
-        class Ch(value: Double) : Relative(value, "ch")
-        /** Relative to font-size of the root element. */
-        class Rem(value: Double) : Relative(value, "rem")
-        /** Relative to 1% of the width of the viewport. */
-        class Vw(value: Double) : Relative(value, "vw")
-        /** Relative to 1% of the height of the viewport. */
-        class Vh(value: Double) : Relative(value, "vh")
-        /** Relative to 1% of viewport's smaller dimension. */
-        class VMin(value: Double) : Relative(value, "vmin")
-        /** Relative to 1% of viewport's larger dimension. */
-        class VMax(value: Double) : Relative(value, "vmax")
-        /** Relative to the parent element. */
-        class Percent(value: Double) : Relative(value * 100, "%")
-
-        override fun equals(other: Any?): Boolean {
-            val otherSetting = (other as? Relative) ?: return false
-            return otherSetting.value == value && otherSetting.unit == unit
+        @JvmInline
+        value class Em(val value: Double) : Relative {
+            override fun toCss(): String = value.toCss("em")
         }
 
-        override fun hashCode(): Int {
-            var result = value.hashCode()
-            result = 31 * result + unit.hashCode()
-            return result
+        /** Relative to the width of the "0" (zero). */
+        @JvmInline
+        value class Ch(val value: Double) : Relative {
+            override fun toCss(): String = value.toCss("ch")
+        }
+
+        /** Relative to font-size of the root element. */
+        @JvmInline
+        value class Rem(val value: Double) : Relative {
+            override fun toCss(): String = value.toCss("rem")
+        }
+
+        /** Relative to 1% of the width of the viewport. */
+        @JvmInline
+        value class Vw(val value: Double) : Relative {
+            override fun toCss(): String = value.toCss("vw")
+        }
+
+        /** Relative to 1% of the height of the viewport. */
+        @JvmInline
+        value class Vh(val value: Double) : Relative {
+            override fun toCss(): String = value.toCss("vh")
+        }
+
+        /** Relative to 1% of viewport's smaller dimension. */
+        @JvmInline
+        value class VMin(val value: Double) : Relative {
+            override fun toCss(): String = value.toCss("vmin")
+        }
+
+        /** Relative to 1% of viewport's larger dimension. */
+        @JvmInline
+        value class VMax(val value: Double) : Relative {
+            override fun toCss(): String = value.toCss("vmax")
+        }
+
+        /** Relative to the parent element. */
+        @JvmInline
+        value class Percent(val value: Double) : Relative {
+            override fun toCss(): String = (value * 100).toCss("%")
         }
     }
 }
@@ -541,3 +559,12 @@ private fun flag(name: String, value: Boolean?) = Cssable {
 */
 private fun String.toCss(): String =
     '"' + replace("\"", "\\\"") + '"'
+
+/**
+ * Converts a [Double] to a string literal with the given [unit].
+ */
+private fun Double.toCss(unit: String): String =
+    NumberFormat.getNumberInstance().run {
+        maximumFractionDigits = 2
+        format(this@toCss)
+    } + unit
