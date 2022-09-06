@@ -10,7 +10,6 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
-import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
@@ -41,17 +40,6 @@ data class Manifest(
     val subcollections: Map<String, List<PublicationCollection>> = emptyMap()
 
 ) : JSONable, Parcelable {
-
-    /** Returns the first [Publication.Profile] this publication conforms to. */
-    @IgnoredOnParcel
-    val profile: Publication.Profile? by lazy {
-        for (profile in listOf(Publication.Profile.EPUB, Publication.Profile.PDF, Publication.Profile.DIVINA, Publication.Profile.AUDIOBOOK)) {
-            if (conformsTo(profile)) {
-                return@lazy profile
-            }
-        }
-        null
-    }
 
     /**
      * Returns whether this manifest conforms to the given Readium Web Publication Profile.

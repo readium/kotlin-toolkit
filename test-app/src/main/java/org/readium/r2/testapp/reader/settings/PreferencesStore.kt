@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.settings.Setting
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.testapp.reader.NavigatorKind
 import androidx.datastore.preferences.core.Preferences as JetpackPreferences
 
 /**
@@ -35,25 +35,25 @@ class PreferencesStore(
 ) {
     /**
      * Observes the [Preferences] for the publication with the given [bookId] and
-     * publication [profile].
+     * navigator [kind].
      */
-    operator fun get(bookId: Long, profile: Publication.Profile?): Flow<Preferences> =
+    operator fun get(bookId: Long, kind: NavigatorKind?): Flow<Preferences> =
         store.data.map { data ->
-            val profilePrefs = Preferences.fromJson(data[key(profile)]) ?: Preferences()
+            val profilePrefs = Preferences.fromJson(data[key(kind)]) ?: Preferences()
             val bookPrefs = Preferences.fromJson(data[key(bookId)]) ?: Preferences()
             profilePrefs + bookPrefs
         }
 
     /**
-     * Sets the [preferences] for the publication with the given [bookId] and publication [profile].
+     * Sets the [preferences] for the publication with the given [bookId] and navigator [kind].
      */
-    operator fun set(bookId: Long, profile: Publication.Profile?, preferences: Preferences) {
+    operator fun set(bookId: Long, kind: NavigatorKind?, preferences: Preferences) {
         scope.launch {
             store.edit { data ->
                 // Filter the preferences that are related to the publication.
                 data[key(bookId)] = preferences.filter(*Setting.PUBLICATION_SETTINGS).toJsonString()
                 // Filter the preferences that will be shared between publications of the same profile.
-                data[key(profile)] = preferences.filterNot(*Setting.PUBLICATION_SETTINGS).toJsonString()
+                data[key(kind)] = preferences.filterNot(*Setting.PUBLICATION_SETTINGS).toJsonString()
             }
         }
     }
@@ -64,10 +64,11 @@ class PreferencesStore(
     private fun key(bookId: Long): JetpackPreferences.Key<String> =
         stringPreferencesKey("book-$bookId")
 
-    /** [DataStore] key for the given publication [profile]. */
-    private fun key(profile: Publication.Profile?): JetpackPreferences.Key<String> =
-        if (profile != null) stringPreferencesKey(profile.uri)
+    /** [DataStore] key for the given navigator [kind]. */
+    private fun key(kind: NavigatorKind?): JetpackPreferences.Key<String> =
+        if (kind != null) stringPreferencesKey("kind-${kind.name}")
         else stringPreferencesKey("default")
+
 }
 
 private val Context.preferences: DataStore<JetpackPreferences>

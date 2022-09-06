@@ -10,23 +10,37 @@ import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.shared.publication.*
 
+enum class NavigatorKind {
+    EPUB, PDF, AUDIO, IMAGE
+}
+
 sealed class ReaderInitData {
     abstract val bookId: Long
     abstract val publication: Publication
+    abstract val navigatorKind: NavigatorKind?
 }
 
 data class VisualReaderInitData(
     override val bookId: Long,
     override val publication: Publication,
     val initialLocation: Locator? = null
-) : ReaderInitData()
+) : ReaderInitData() {
+    override val navigatorKind: NavigatorKind? = when {
+        publication.conformsTo(Publication.Profile.EPUB) -> NavigatorKind.EPUB
+        publication.conformsTo(Publication.Profile.PDF) -> NavigatorKind.PDF
+        publication.conformsTo(Publication.Profile.DIVINA) -> NavigatorKind.IMAGE
+        else -> null
+    }
+}
 
 @ExperimentalMedia2
 data class MediaReaderInitData(
     override val bookId: Long,
     override val publication: Publication,
     val mediaNavigator: MediaNavigator,
-) : ReaderInitData()
+) : ReaderInitData() {
+    override val navigatorKind: NavigatorKind = NavigatorKind.AUDIO
+}
 
 data class DummyReaderInitData(
     override val bookId: Long,
@@ -34,4 +48,6 @@ data class DummyReaderInitData(
     override val publication: Publication = Publication(Manifest(
         metadata = Metadata(identifier = "dummy", localizedTitle = LocalizedString(""))
     ))
+
+    override val navigatorKind: NavigatorKind? = null
 }

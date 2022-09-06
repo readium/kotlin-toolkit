@@ -91,7 +91,7 @@ EpubNavigatorFragment.createFactory(
     publication = publication,
     ...,
     config = EpubNavigatorFragment.Configuration(
-        preferences = preferencesStore.get(publication.profile),
+        preferences = preferences,
         defaultPreferences = Preferences {
             set(EpubSettings.scroll, true)
         }
