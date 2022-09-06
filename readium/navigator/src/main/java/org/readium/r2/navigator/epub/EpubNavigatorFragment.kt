@@ -922,6 +922,11 @@ class EpubNavigatorFragment private constructor(
         ): FragmentFactory =
             createFragmentFactory { EpubNavigatorFragment(publication, baseUrl, initialLocator, listener, paginationListener, config) }
 
+        /**
+         * Returns a URL to the application asset at [path], served in the web views.
+         */
+        fun assetUrl(path: String): String =
+            WebViewServer.assetUrl(path)
     }
 
 }

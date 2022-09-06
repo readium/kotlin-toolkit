@@ -11,7 +11,6 @@ package org.readium.r2.navigator.settings
 import kotlinx.serialization.json.JsonElement
 import org.readium.r2.shared.ExperimentalReadiumApi
 import java.text.NumberFormat
-import java.util.*
 
 /**
  * Represents a single configurable property of a [Configurable] component and holds its current

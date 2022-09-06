@@ -101,7 +101,7 @@ internal class EpubNavigatorViewModel(
         ReadiumCss(
             rsProperties = config.readiumCssRsProperties,
             fontFamilies = config.fontFamilies,
-            assetsBaseHref = server?.assetsBaseHref ?: ""
+            assetsBaseHref = WebViewServer.assetsBaseHref
         ).update(settings.value)
     )
 
@@ -158,11 +158,10 @@ internal class EpubNavigatorViewModel(
 
     // Serving resources
 
-    val baseUrl: String = requireNotNull(
+    val baseUrl: String =
         baseUrl?.let { it.removeSuffix("/") + "/" }
             ?: publication.linkWithRel("self")?.href
-            ?: server?.publicationBaseHref
-    )
+            ?: WebViewServer.publicationBaseHref
 
     /**
      * Generates the URL to the given publication link.

@@ -218,6 +218,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 @OptIn(ExperimentalDecorator::class)
 private fun annotationMarkTemplate(@ColorInt defaultTint: Int = Color.YELLOW): HtmlDecorationTemplate {
     val className = "testapp-annotation-mark"
+    val iconUrl = EpubNavigatorFragment.assetUrl("annotation-icon.svg")
     return HtmlDecorationTemplate(
         layout = HtmlDecorationTemplate.Layout.BOUNDS,
         width = HtmlDecorationTemplate.Width.PAGE,
@@ -237,7 +238,7 @@ private fun annotationMarkTemplate(@ColorInt defaultTint: Int = Color.YELLOW): H
                 width: 30px;
                 height: 30px;
                 border-radius: 50%;
-                background: url('https://readium/assets/annotation-icon.svg') no-repeat center;
+                background: url('$iconUrl') no-repeat center;
                 background-size: auto 50%;
                 opacity: 0.8;
             }

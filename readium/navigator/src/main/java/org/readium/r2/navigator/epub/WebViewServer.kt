@@ -16,6 +16,7 @@ import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.fetcher.fallback
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -29,9 +30,13 @@ internal class WebViewServer(
     private val publication: Publication,
     servedAssets: List<String>,
 ) {
+    companion object {
+        val publicationBaseHref = "https://readium/publication/"
+        val assetsBaseHref = "https://readium/assets/"
 
-    val publicationBaseHref = "https://readium/publication/"
-    val assetsBaseHref = "https://readium/assets/"
+        fun assetUrl(path: String): String =
+            Href(path, baseHref = assetsBaseHref).percentEncodedString
+    }
 
     private val assetManager: AssetManager = application.assets
 
