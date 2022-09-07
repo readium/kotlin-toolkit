@@ -12,12 +12,7 @@ package org.readium.r2.streamer.fetcher
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.drm.DRMLicense
 import org.readium.r2.shared.extensions.inflate
-import org.readium.r2.shared.fetcher.TransformingResource
-import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.fetcher.ResourceTry
-import org.readium.r2.shared.fetcher.LazyResource
-import org.readium.r2.shared.fetcher.flatMapCatching
-import org.readium.r2.shared.fetcher.mapCatching
+import org.readium.r2.shared.fetcher.*
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.util.Try

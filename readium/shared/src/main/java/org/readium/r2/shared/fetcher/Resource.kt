@@ -12,7 +12,7 @@ package org.readium.r2.shared.fetcher
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.annotation.StringRes
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.json.JSONObject
@@ -211,6 +211,53 @@ class FailureResource(private val link: Link, private val error: Resource.Except
 }
 
 /**
+ * Resource that will act as a proxy to a fallback resource if the [originalResource] errors out.
+ */
+class FallbackResource(
+    private val originalResource: Resource,
+    private val fallbackResourceFactory: (Resource.Exception) -> Resource
+) : Resource {
+    private val coroutineScope =
+        CoroutineScope(Dispatchers.Default)
+
+    private val resource: Deferred<Resource> = coroutineScope.async {
+        when (val result = originalResource.length()) {
+            is Try.Success -> originalResource
+            is Try.Failure -> fallbackResourceFactory(result.exception)
+        }
+    }
+
+    override suspend fun link(): Link =
+        resource.await().link()
+
+    override suspend fun length(): ResourceTry<Long> =
+        resource.await().length()
+
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+        resource.await().read(range)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override suspend fun close() {
+        coroutineScope.cancel()
+        if (resource.isCompleted) {
+            resource.getCompleted().close()
+        }
+    }
+}
+
+/**
+ * Falls back to alternative resources when the receiver fails.
+ */
+fun Resource.fallback(fallbackResourceFactory: (Resource.Exception) -> Resource): Resource =
+    FallbackResource(this, fallbackResourceFactory)
+
+/**
+ * Falls back to the given alternative [resource] when the receiver fails.
+ */
+fun Resource.fallback(fallbackResource: Resource): Resource =
+    FallbackResource(this) { fallbackResource }
+
+/**
  * A base class for a [Resource] which acts as a proxy to another one.
  *
  * Every function is delegating to the proxied resource, and subclasses should override some of them.
@@ -245,6 +292,17 @@ abstract class TransformingResource(
     private val cacheBytes: Boolean = true
 ) : ProxyResource(resource) {
 
+    companion object {
+        /**
+         * Creates a [TransformingResource] using the given [transform] function.
+         */
+        operator fun invoke(resource: Resource, transform: suspend (ByteArray) -> ByteArray): TransformingResource =
+            object : TransformingResource(resource) {
+                override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
+                    data.mapCatching { transform(it) }
+            }
+    }
+
     private lateinit var _bytes: ResourceTry<ByteArray>
 
     abstract suspend fun transform(data: ResourceTry<ByteArray>):  ResourceTry<ByteArray>
@@ -274,7 +332,6 @@ abstract class TransformingResource(
         }
 
     override suspend fun length(): ResourceTry<Long> = bytes().map { it.size.toLong() }
-
 }
 
 /**

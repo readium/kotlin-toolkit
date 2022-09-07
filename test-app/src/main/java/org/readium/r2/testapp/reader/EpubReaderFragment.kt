@@ -10,35 +10,29 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.view.*
-import android.view.accessibility.AccessibilityManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import androidx.annotation.ColorInt
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.delay
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
 import org.readium.r2.navigator.html.toCss
-import org.readium.r2.shared.APPEARANCE_REF
-import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.ReadiumCSSName
-import org.readium.r2.shared.SCROLL_REF
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.epub.UserSettings
 import org.readium.r2.testapp.search.SearchFragment
-import org.readium.r2.testapp.utils.extensions.toDataUrl
 
-@OptIn(ExperimentalDecorator::class)
+@OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
 class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listener {
 
     override lateinit var navigator: Navigator
@@ -47,31 +41,32 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     private lateinit var menuSearch: MenuItem
     lateinit var menuSearchView: SearchView
 
-    private lateinit var userSettings: UserSettings
     private var isSearchViewIconified = true
 
-    // Accessibility
-    private var isExploreByTouchEnabled = false
-
     override fun onCreate(savedInstanceState: Bundle?) {
-        val activity = requireActivity()
-
         if (savedInstanceState != null) {
             isSearchViewIconified = savedInstanceState.getBoolean(IS_SEARCH_VIEW_ICONIFIED)
         }
 
         val readerData = model.readerInitData as VisualReaderInitData
-        val baseUrl = checkNotNull(readerData.baseUrl).toString()
 
         childFragmentManager.fragmentFactory =
             EpubNavigatorFragment.createFactory(
                 publication = publication,
-                baseUrl = baseUrl,
                 initialLocator = readerData.initialLocation,
                 listener = this,
-                config = EpubNavigatorFragment.Configuration().apply {
+                config = EpubNavigatorFragment.Configuration(
+                    preferences = model.settings.preferences.value,
+                    // App assets which will be accessible from the EPUB resources.
+                    // You can use simple glob patterns, such as "images/.*" to allow several
+                    // assets in one go.
+                    servedAssets = listOf(
+                        /** Icon for the annotation side mark, see [annotationMarkTemplate]. */
+                        "annotation-icon.svg"
+                    )
+                ).apply {
                     // Register the HTML template for our custom [DecorationStyleAnnotationMark].
-                    decorationTemplates[DecorationStyleAnnotationMark::class] = annotationMarkTemplate(activity)
+                    decorationTemplates[DecorationStyleAnnotationMark::class] = annotationMarkTemplate()
                     selectionActionModeCallback = customSelectionActionModeCallback
                 }
             )
@@ -110,49 +105,20 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val activity = requireActivity()
-        userSettings = UserSettings(navigatorFragment.preferences, activity, publication.userSettingsUIPreset)
-
        // This is a hack to draw the right background color on top and bottom blank spaces
-        navigatorFragment.lifecycleScope.launchWhenStarted {
-            val appearancePref = navigatorFragment.preferences.getInt(APPEARANCE_REF, 0)
-            val backgroundsColors = mutableListOf("#ffffff", "#faf4e8", "#000000")
-            navigatorFragment.resourcePager.setBackgroundColor(Color.parseColor(backgroundsColors[appearancePref]))
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        val activity = requireActivity()
-
-        userSettings.resourcePager = navigatorFragment.resourcePager
-
-        // If TalkBack or any touch exploration service is activated we force scroll mode (and
-        // override user preferences)
-        val am = activity.getSystemService(AppCompatActivity.ACCESSIBILITY_SERVICE) as AccessibilityManager
-        isExploreByTouchEnabled = am.isTouchExplorationEnabled
-
-        if (isExploreByTouchEnabled) {
-            // Preset & preferences adapted
-            publication.userSettingsUIPreset[ReadiumCSSName.ref(SCROLL_REF)] = true
-            navigatorFragment.preferences.edit().putBoolean(SCROLL_REF, true).apply() //overriding user preferences
-            userSettings.saveChanges()
-
-            lifecycleScope.launchWhenResumed {
-                delay(500)
-                userSettings.updateViewCSS(SCROLL_REF)
-            }
-        } else {
-            if (publication.cssStyle != "cjk-vertical") {
-                publication.userSettingsUIPreset.remove(ReadiumCSSName.ref(SCROLL_REF))
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                model.settings.theme
+                    .onEach { theme ->
+                        navigatorFragment.resourcePager.setBackgroundColor(theme.backgroundColor)
+                    }
+                    .launchIn(this)
             }
         }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, menuInflater)
-
-        menu.findItem(R.id.settings).isVisible = true
 
         menuSearch = menu.findItem(R.id.search).apply {
             isVisible = true
@@ -214,28 +180,17 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         }
     }
 
-    @OptIn(InternalReadiumApi::class)
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (super.onOptionsItemSelected(item)) {
-            return true
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        when (item.itemId) {
+            R.id.search -> {
+                super.onOptionsItemSelected(item)
+            }
+            android.R.id.home -> {
+                menuSearch.collapseActionView()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
-
-       return when (item.itemId) {
-           R.id.settings -> {
-               userSettings.userSettingsPopUp().showAsDropDown(requireActivity().findViewById(R.id.settings), 0, 0, Gravity.END)
-               true
-           }
-           R.id.search -> {
-               super.onOptionsItemSelected(item)
-           }
-           android.R.id.home -> {
-               menuSearch.collapseActionView()
-               true
-           }
-
-            else -> false
-        }
-    }
 
     private fun showSearchFragment() {
         childFragmentManager.commit {
@@ -257,16 +212,13 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
  *
  * This one will display a tinted "pen" icon in the page margin to show that a highlight has an
  * associated note.
+ *
+ * Note that the icon is served from the app assets folder.
  */
 @OptIn(ExperimentalDecorator::class)
-private fun annotationMarkTemplate(context: Context, @ColorInt defaultTint: Int = Color.YELLOW): HtmlDecorationTemplate {
-    // Converts the pen icon to a base 64 data URL, to be embedded in the decoration stylesheet.
-    // Alternatively, serve the image with the local HTTP server and use its URL.
-    val imageUrl = ContextCompat.getDrawable(context, R.drawable.ic_baseline_edit_24)
-        ?.toBitmap()?.toDataUrl()
-    requireNotNull(imageUrl)
-
+private fun annotationMarkTemplate(@ColorInt defaultTint: Int = Color.YELLOW): HtmlDecorationTemplate {
     val className = "testapp-annotation-mark"
+    val iconUrl = EpubNavigatorFragment.assetUrl("annotation-icon.svg")
     return HtmlDecorationTemplate(
         layout = HtmlDecorationTemplate.Layout.BOUNDS,
         width = HtmlDecorationTemplate.Width.PAGE,
@@ -286,7 +238,7 @@ private fun annotationMarkTemplate(context: Context, @ColorInt defaultTint: Int 
                 width: 30px;
                 height: 30px;
                 border-radius: 50%;
-                background: url('$imageUrl') no-repeat center;
+                background: url('$iconUrl') no-repeat center;
                 background-size: auto 50%;
                 opacity: 0.8;
             }

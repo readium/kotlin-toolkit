@@ -155,7 +155,7 @@ data class Metadata(
         belongsTo["series"] ?: emptyList()
 
     /**
-     * Returns the [Language] resolved from the first declared BCP 47 language.
+     * Returns the [Language] resolved from the declared BCP 47 primary language.
      */
     @IgnoredOnParcel
     val language: Language? by lazy {

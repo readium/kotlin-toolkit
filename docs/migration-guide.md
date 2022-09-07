@@ -45,6 +45,78 @@ override fun onCreate(savedInstanceState: Bundle?) {
 }
 ```
 
+### Removing the HTTP server
+
+The local HTTP server is not needed anymore to render EPUB publications. You can safely drop all occurrences of `Server` from your project and remove the `baseUrl` parameter when calling `EpubNavigatorFragment.createFactory()`.
+
+:warning: You **must** adopt the new Settings API to remove the HTTP server, as described in the next section of this migration guide.
+
+#### Serving app assets
+
+If you were serving `assets/` files (e.g. fonts or scripts) to the EPUB resources, you can still do so with the new API.
+
+First, declare the `assets/` paths that will be available to EPUB resources when creating the navigator. You can use [simple glob patterns](https://developer.android.com/reference/android/os/PatternMatcher#PATTERN_SIMPLE_GLOB) to allow multiple assets in one go, e.g. `fonts/.*`.
+
+```kotlin
+EpubNavigatorFragment.createFactory(
+    ...,
+    config = EpubNavigatorFragment.Configuration(
+        servedAssets = listOf(
+            "fonts/.*",
+            "annotation-icon.svg"
+        )
+    )
+)
+```
+
+Then, use the base URL `https://readium/assets/` to fetch your app assets from the web views. For example:
+
+* `https://readium/assets/fonts/OpenDyslexic.otf`
+* `https://readium/assets/annotation-icon.svg`
+
+### Upgrading to the new Settings API
+
+The 2.3.0 release introduces a brand new user settings API to configure the EPUB Navigator. This new API is easier and safer to use, [take a look at the user guide](guides/navigator-settings.md) to learn how to integrate it in your app.
+
+If you integrated the EPUB navigator from a previous version, follow these steps to migrate:
+
+1. Get familiar with [the concepts of this new API](guides/navigator-settings.md#overview).
+2. Remove the local HTTP server from your app, [as explained in the previous section](#removing-the-http-server)
+3. Remove the whole [`UserSettings.kt`](https://github.com/readium/kotlin-toolkit/blob/f132e541a1d2c290a83974fb017efb352e0f825f/test-app/src/main/java/org/readium/r2/testapp/epub/UserSettings.kt) file from your app, if you copied it from the Test App.
+4. Adapt your user settings interface to the new API. The [Test App](https://github.com/readium/kotlin-toolkit/tree/develop/test-app/src/main/java/org/readium/r2/testapp/reader/settings) and the [user guide](guides/navigator-settings.md#build-a-user-settings-interface) contain examples using Jetpack Compose.
+5. [Handle the persistence of the user preferences](guides/navigator-settings.md#save-and-restore-the-user-preferences). The settings are not stored in the `SharedPreferences` with name `org.readium.r2.settings` anymore. Instead, you are responsible for persisting and restoring the user preferences as you see fit (e.g. as a JSON file).
+    * If you want to migrate the legacy `SharedPreferences` settings, you can use the helper `Preferences.fromLegacyEpubSettings()` which will create a new `Preferences` object after translating the existing user settings.
+6. Make sure you [restore the stored user preferences](guides/navigator-settings.md#setting-the-initial-navigator-preferences-and-app-defaults) when initializing the EPUB navigator.
+
+Refer to the following table for the correspondence between legacy settings and new ones.
+
+| **Legacy**              | **New**                                                |
+|-------------------------|--------------------------------------------------------|
+| `APPEARANCE_REF`        | `theme`                                                |
+| `COLUMN_COUNT_REF`      | `columnCount` (reflowable) and `spread` (fixed-layout) |
+| `FONT_FAMILY_REF`       | `fontFamily`                                           |
+| `FONT_OVERRIDE_REF`     | N/A (handled automatically)                            |
+| `FONT_SIZE_REF`         | `fontSize`                                             |
+| `LETTER_SPACING_REF`    | `letterSpacing`                                        |
+| `LINE_HEIGHT_REF`       | `lineHeight`                                           |
+| `PAGE_MARGINS_REF`      | `pageMargins`                                          |
+| `PUBLISHER_DEFAULT_REF` | `publisherStyles`                                      |
+| `reader_brightness`     | N/A (out of scope for Readium)                         |
+| `SCROLL_REF`            | `overflow` (`scrolled`)                                |
+| `TEXT_ALIGNMENT_REF`    | `textAlign`                                            |
+| `WORD_SPACING_REF`      | `wordSpacing`                                          |
+| N/A                     | `language`                                             |
+| N/A                     | `readingProgression` (e.g. RTL)                        |
+| N/A                     | `textColor`                                            |
+| N/A                     | `backgroundColor`                                      |
+| N/A                     | `imageFilter` (dark theme only)                        |
+| N/A                     | `paragraphIndent`                                      |
+| N/A                     | `paragraphSpacing`                                     |
+| N/A                     | `typeScale`                                            |
+| N/A                     | `textNormalization` (force bold, accessibility)        |
+| N/A                     | `hyphens`                                              |
+| N/A                     | `ligatures` (arabic)                                   |
+
 
 ## 2.1.0
 

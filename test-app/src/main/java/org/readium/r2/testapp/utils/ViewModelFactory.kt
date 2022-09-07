@@ -8,7 +8,6 @@ package org.readium.r2.testapp.utils
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import timber.log.Timber
 
 /**
  * Creates a [ViewModelProvider.Factory] for a single type of [ViewModel] using the result of the

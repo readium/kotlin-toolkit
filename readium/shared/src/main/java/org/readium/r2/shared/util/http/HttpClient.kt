@@ -14,7 +14,6 @@ import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
 import java.io.InputStream
 import java.nio.charset.Charset
-import java.util.*
 
 /**
  * An HTTP client performs HTTP requests.
@@ -110,33 +109,24 @@ data class HttpResponse(
     val mediaType: MediaType,
 ) {
 
+    private val httpHeaders = HttpHeaders(headers)
+
     /**
      * Finds the first value of the first header matching the given name.
      * In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
      */
-    fun valueForHeader(name: String): String? =
-        valuesForHeader(name).firstOrNull()
+    fun valueForHeader(name: String): String? = httpHeaders[name]
 
     /**
      * Finds all the values of the first header matching the given name.
      * In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
      */
-    fun valuesForHeader(name: String): List<String> {
-        @Suppress("NAME_SHADOWING")
-        val name = name.lowercase(Locale.ROOT)
-        return headers
-            .filterKeys { it.lowercase(Locale.ROOT) == name }
-            .values
-            .flatten()
-    }
+    fun valuesForHeader(name: String): List<String> = httpHeaders.getAll(name)
 
     /**
      * Indicates whether this server supports byte range requests.
      */
-    val acceptsByteRanges: Boolean get() {
-        return valueForHeader("Accept-Ranges")?.lowercase(Locale.ROOT) == "bytes"
-            || valueForHeader("Content-Range")?.lowercase(Locale.ROOT)?.startsWith("bytes") == true
-    }
+    val acceptsByteRanges: Boolean get() = httpHeaders.acceptsByteRanges
 
     /**
      * The expected content length for this response, when known.
@@ -144,9 +134,5 @@ data class HttpResponse(
      * Warning: For byte range requests, this will be the length of the chunk, not the full
      * resource.
      */
-    val contentLength: Long? get() =
-        valueForHeader("Content-Length")
-            ?.toLongOrNull()
-            ?.takeIf { it >= 0 }
-
+    val contentLength: Long? get() = httpHeaders.contentLength
 }

@@ -11,20 +11,23 @@ package org.readium.r2.shared.publication
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import org.readium.r2.shared.util.MapWithDefaultCompanion
 import java.util.*
 
+@Serializable
 @Parcelize
 enum class ReadingProgression(val value: String) : Parcelable {
     /** Right to left */
-    RTL("rtl"),
+    @SerialName("rtl") RTL("rtl"),
     /** Left to right */
-    LTR("ltr"),
+    @SerialName("ltr") LTR("ltr"),
     /** Top to bottom */
-    TTB("ttb"),
+    @SerialName("ttb") TTB("ttb"),
     /** Bottom to top */
-    BTT("btt"),
-    AUTO("auto");
+    @SerialName("btt") BTT("btt"),
+    @SerialName("auto") AUTO("auto");
 
     /**
      * Indicates whether this reading progression is on the horizontal axis, or null if unknown.

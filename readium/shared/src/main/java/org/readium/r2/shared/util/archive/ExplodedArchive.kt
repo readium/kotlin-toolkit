@@ -16,7 +16,6 @@ import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.readRange
 import org.readium.r2.shared.extensions.tryOr
 import java.io.File
-import java.lang.IllegalArgumentException
 
 /**
  * An archive exploded on the file system as a directory.

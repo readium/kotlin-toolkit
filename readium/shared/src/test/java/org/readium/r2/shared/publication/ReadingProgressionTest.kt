@@ -2,7 +2,6 @@ package org.readium.r2.shared.publication
 
 import org.junit.Assert.*
 import org.junit.Test
-import org.readium.r2.shared.publication.ReadingProgression
 
 class ReadingProgressionTest {
 

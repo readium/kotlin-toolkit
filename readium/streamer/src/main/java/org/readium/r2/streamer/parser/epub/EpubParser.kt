@@ -7,6 +7,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.streamer.parser.epub
 
 import kotlinx.coroutines.runBlocking
@@ -39,6 +41,7 @@ import org.readium.r2.streamer.fetcher.LcpDecryptor
 import org.readium.r2.streamer.parser.PubBox
 import java.io.File
 
+@Suppress("DEPRECATION")
 object EPUBConstant {
 
     @Deprecated("Use [MediaType.EPUB.toString()] instead", replaceWith = ReplaceWith("MediaType.EPUB.toString()"))
@@ -240,6 +243,7 @@ class EpubParser(
 
 }
 
+@Suppress("DEPRECATION")
 internal fun Publication.setLayoutStyle() {
     val layout = ReadiumCssLayout(metadata)
 

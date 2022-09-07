@@ -22,9 +22,15 @@ import org.readium.r2.shared.publication.Locator
 
 class R2PagerAdapter internal constructor(val fm: FragmentManager, private val resources: List<PageResource>) : R2FragmentPagerAdapter(fm) {
 
+    internal interface Listener {
+        fun onCreatePageFragment(fragment: Fragment) {}
+    }
+
+    internal var listener: Listener? = null
+
     internal sealed class PageResource {
         data class EpubReflowable(val link: Link, val url: String, val positionCount: Int) : PageResource()
-        data class EpubFxl(val url1: String, val url2: String? = null) : PageResource()
+        data class EpubFxl(val leftLink: Link? = null, val leftUrl: String? = null, val rightLink: Link? = null, val rightUrl: String? = null) : PageResource()
         data class Cbz(val link: Link) : PageResource()
     }
 
@@ -54,9 +60,12 @@ class R2PagerAdapter internal constructor(val fm: FragmentManager, private val r
         super.setPrimaryItem(container, position, `object`)
     }
 
+    internal fun getResource(position: Int): PageResource? =
+        resources.getOrNull(position)
+
     override fun getItem(position: Int): Fragment {
         val locator = popPendingLocatorAt(getItemId(position))
-        return when (val resource = resources[position]) {
+        val fragment = when (val resource = resources[position]) {
             is PageResource.EpubReflowable -> {
                 R2EpubPageFragment.newInstance(
                     resource.url,
@@ -66,7 +75,7 @@ class R2PagerAdapter internal constructor(val fm: FragmentManager, private val r
                 )
             }
             is PageResource.EpubFxl -> {
-                R2FXLPageFragment.newInstance(resource.url1, resource.url2)
+                R2FXLPageFragment.newInstance(resource.leftUrl, resource.rightUrl)
             }
             is PageResource.Cbz -> {
                 fm.fragmentFactory
@@ -81,6 +90,8 @@ class R2PagerAdapter internal constructor(val fm: FragmentManager, private val r
                     }
             }
         }
+        listener?.onCreatePageFragment(fragment)
+        return fragment
     }
 
     override fun getCount(): Int {

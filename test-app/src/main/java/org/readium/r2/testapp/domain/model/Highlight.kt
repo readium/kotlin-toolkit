@@ -10,7 +10,6 @@ import androidx.annotation.ColorInt
 import androidx.room.*
 import org.json.JSONObject
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.util.MapWithDefaultCompanion
 
 /**
  * @param id Primary key, auto-incremented
@@ -85,7 +84,15 @@ data class Highlight(
     enum class Style(val value: String) {
         HIGHLIGHT("highlight"), UNDERLINE("underline");
 
-        companion object : MapWithDefaultCompanion<String, Style>(values(), Style::value, HIGHLIGHT)
+        companion object {
+            val DEFAULT = HIGHLIGHT
+
+            fun getOrDefault(value: String?) = when (value) {
+                "underline" -> UNDERLINE
+                "highlight" -> HIGHLIGHT
+                else -> DEFAULT
+            }
+        }
     }
 
     companion object {
@@ -107,7 +114,7 @@ data class Highlight(
 
 class HighlightConverters {
     @TypeConverter
-    fun styleFromString(value: String?): Highlight.Style = Highlight.Style(value)
+    fun styleFromString(value: String?): Highlight.Style = Highlight.Style.getOrDefault(value)
     @TypeConverter
     fun styleToString(style: Highlight.Style): String = style.value
 

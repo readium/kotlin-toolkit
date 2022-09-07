@@ -175,5 +175,4 @@ private typealias LocatorOrProgression = Either<Locator, Double>
  * Returns this locator if not null, or the given [progression] as a fallback.
  */
 private fun Locator?.orProgression(progression: Double): LocatorOrProgression =
-    this?.let { Either.Left(it) }
-        ?: Either.Right(progression)
+    Either(this ?: progression)

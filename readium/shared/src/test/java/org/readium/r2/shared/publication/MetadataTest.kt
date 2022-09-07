@@ -10,11 +10,13 @@
 package org.readium.r2.shared.publication
 
 import org.json.JSONObject
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.extensions.iso8601ToDate
+import org.readium.r2.shared.util.Language
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -309,7 +311,27 @@ class MetadataTest {
         assertEquals(ReadingProgression.LTR, createMetadata(languages = listOf("zh-foo"), readingProgression = ReadingProgression.AUTO).effectiveReadingProgression)
     }
 
+    @Test fun `get primary language with no language`() {
+        assertNull(createMetadata(languages = listOf(), readingProgression = ReadingProgression.AUTO).language)
+        assertNull(createMetadata(languages = listOf(), readingProgression = ReadingProgression.LTR).language)
+        assertNull(createMetadata(languages = listOf(), readingProgression = ReadingProgression.RTL).language)
+    }
+
+    @Test fun `get primary language with a single language`() {
+        assertEquals(
+            Language("en"),
+            createMetadata(languages = listOf("en"), readingProgression = ReadingProgression.AUTO).language
+        )
+        assertEquals(
+            Language("en"),
+            createMetadata(languages = listOf("en"), readingProgression = ReadingProgression.LTR).language
+        )
+        assertEquals(
+            Language("en"),
+            createMetadata(languages = listOf("en"), readingProgression = ReadingProgression.RTL).language
+        )
+    }
+
     private fun createMetadata(languages: List<String>, readingProgression: ReadingProgression): Metadata =
         Metadata(localizedTitle = LocalizedString("Title"), languages = languages, readingProgression = readingProgression)
-
 }

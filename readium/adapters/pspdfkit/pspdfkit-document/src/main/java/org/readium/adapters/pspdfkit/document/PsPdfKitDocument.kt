@@ -13,18 +13,18 @@ import com.pspdfkit.annotations.actions.GoToAction
 import com.pspdfkit.document.DocumentSource
 import com.pspdfkit.document.OutlineElement
 import com.pspdfkit.document.PageBinding
-import com.pspdfkit.document.PdfDocument as _PsPdfKitDocument
 import com.pspdfkit.document.PdfDocumentLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import timber.log.Timber
 import java.io.File
-import org.readium.r2.shared.util.pdf.PdfDocument
 import kotlin.reflect.KClass
+import com.pspdfkit.document.PdfDocument as _PsPdfKitDocument
 
 @PdfSupport
 class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPdfKitDocument> {

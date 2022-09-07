@@ -11,10 +11,10 @@ package org.readium.r2.streamer.parser.divina
 
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.container.ContainerError
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.extensions.fromArchiveOrDirectory

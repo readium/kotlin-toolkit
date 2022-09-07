@@ -9,10 +9,10 @@
 
 package org.readium.r2.shared.extensions
 
+import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 import java.util.zip.Inflater
-import timber.log.Timber
 
 /**
  * Inflates a ZIP-compressed [ByteArray].

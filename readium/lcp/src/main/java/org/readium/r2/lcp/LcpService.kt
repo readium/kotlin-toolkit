@@ -17,7 +17,6 @@ import org.readium.r2.lcp.service.*
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.util.Try
 import java.io.File
-import java.lang.Exception
 
 /**
  * Service used to acquire and open publications protected with LCP.
