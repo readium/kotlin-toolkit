@@ -9,9 +9,9 @@
 
 package org.readium.r2.streamer.extensions
 
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.io.File
-import org.junit.Assert.assertEquals
 
 class FileTest {
 

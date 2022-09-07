@@ -7,8 +7,6 @@
 package org.readium.r2.shared.publication.services
 
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.ServiceFactory
-import org.readium.r2.shared.util.Ref
 import timber.log.Timber
 
 /**

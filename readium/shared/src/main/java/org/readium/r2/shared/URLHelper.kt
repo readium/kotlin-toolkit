@@ -9,4 +9,3 @@
 
 package org.readium.r2.shared
 
-import org.readium.r2.shared.util.Href

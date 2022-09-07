@@ -6,11 +6,11 @@
 
 package org.readium.r2.navigator.epub
 
-import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Bundle
+import android.util.LayoutDirection
 import android.view.ActionMode
 import android.view.LayoutInflater
 import android.view.View
@@ -20,10 +20,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.collection.forEach
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentFactory
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -48,9 +45,7 @@ import org.readium.r2.navigator.pager.R2PagerAdapter.PageResource
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.util.createFragmentFactory
-import org.readium.r2.shared.COLUMN_COUNT_REF
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -85,7 +80,7 @@ class EpubNavigatorFragment private constructor(
     internal val listener: Listener?,
     internal val paginationListener: PaginationListener?,
     config: Configuration,
-) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable {
+) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable<EpubSettings> {
 
     // Make a copy to prevent the user from modifying the configuration after initialization.
     internal val config: Configuration = config.copy(
@@ -195,7 +190,7 @@ class EpubNavigatorFragment private constructor(
     override val settings: StateFlow<EpubSettings> get() = viewModel.settings
 
     override fun submitPreferences(preferences: Preferences) {
-        viewModel.applyPreferences(preferences)
+        viewModel.submitPreferences(preferences)
     }
 
     /**
@@ -221,7 +216,9 @@ class EpubNavigatorFragment private constructor(
     private lateinit var resourcesSingle: List<PageResource>
     private lateinit var resourcesDouble: List<PageResource>
 
-    lateinit var preferences: SharedPreferences
+    @Deprecated("Migrate to the new Settings API (see migration guide)")
+    val preferences: SharedPreferences get() = viewModel.preferences
+
     internal lateinit var publicationIdentifier: String
 
     internal var currentPagerPosition: Int = 0
@@ -234,11 +231,6 @@ class EpubNavigatorFragment private constructor(
 
     private var _binding: ActivityR2ViewpagerBinding? = null
     private val binding get() = _binding!!
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        preferences = context.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         currentActivity = requireActivity()
@@ -262,7 +254,6 @@ class EpubNavigatorFragment private constructor(
                     )
                 }
 
-                adapter = R2PagerAdapter(childFragmentManager, resourcesSingle)
                 resourcePager.type = Publication.TYPE.EPUB
             }
 
@@ -271,62 +262,50 @@ class EpubNavigatorFragment private constructor(
                 val resourcesDouble = mutableListOf<PageResource>()
 
                 // TODO needs work, currently showing two resources for fxl, needs to understand which two resources, left & right, or only right etc.
-                var doublePageLeft = ""
-                var doublePageRight = ""
+                var doublePageLeft: Link? = null
+                var doublePageRight: Link? = null
 
                 for ((index, link) in publication.readingOrder.withIndex()) {
                     val url = viewModel.urlTo(link)
-                    resourcesSingle.add(PageResource.EpubFxl(url))
+                    resourcesSingle.add(PageResource.EpubFxl(leftLink = link, leftUrl = url))
 
                     // add first page to the right,
                     if (index == 0) {
-                        resourcesDouble.add(PageResource.EpubFxl("", url))
+                        resourcesDouble.add(PageResource.EpubFxl(rightLink = link, rightUrl = url))
                     } else {
                         // add double pages, left & right
-                        if (doublePageLeft == "") {
-                            doublePageLeft = url
+                        if (doublePageLeft == null) {
+                            doublePageLeft = link
                         } else {
-                            doublePageRight = url
+                            doublePageRight = link
                             resourcesDouble.add(
                                 PageResource.EpubFxl(
-                                    doublePageLeft,
-                                    doublePageRight
+                                    leftLink = doublePageLeft,
+                                    leftUrl = viewModel.urlTo(doublePageLeft),
+                                    rightLink = doublePageRight,
+                                    rightUrl = viewModel.urlTo(doublePageRight),
                                 )
                             )
-                            doublePageLeft = ""
+                            doublePageLeft = null
                         }
                     }
                 }
                 // add last page if there is only a left page remaining
-                if (doublePageLeft != "") {
-                    resourcesDouble.add(PageResource.EpubFxl(doublePageLeft, ""))
+                if (doublePageLeft != null) {
+                    resourcesDouble.add(PageResource.EpubFxl(leftLink = doublePageLeft, leftUrl = viewModel.urlTo(doublePageLeft)))
                 }
 
                 this.resourcesSingle = resourcesSingle
                 this.resourcesDouble = resourcesDouble
 
                 resourcePager.type = Publication.TYPE.FXL
-                adapter = when (preferences.getInt(COLUMN_COUNT_REF, 0)) {
-                    1 -> {
-                        R2PagerAdapter(childFragmentManager, resourcesSingle)
-                    }
-                    2 -> {
-                        R2PagerAdapter(childFragmentManager, resourcesDouble)
-                    }
-                    else -> {
-                        // TODO based on device
-                        // TODO decide if 1 page or 2 page
-                        R2PagerAdapter(childFragmentManager, resourcesSingle)
-                    }
-                }
             }
         }
-        adapter.listener = PagerAdapterListener()
 
-        resourcePager.adapter = adapter
-        resourcePager.direction = publication.metadata.effectiveReadingProgression
+        resetAdapter()
 
-        if (publication.cssStyle == ReadingProgression.RTL.value) {
+        @Suppress("DEPRECATION")
+        if (viewModel.useLegacySettings && publication.cssStyle == ReadingProgression.RTL.value) {
             resourcePager.direction = ReadingProgression.RTL
         }
 
@@ -337,7 +316,7 @@ class EpubNavigatorFragment private constructor(
 //                    resourcePager.disableTouchEvents = true
 //                }
                 currentReflowablePageFragment?.webView?.let { webView ->
-                    if (preferences.getBoolean(SCROLL_REF, false)) {
+                    if (viewModel.isScrollEnabled) {
                         if (currentPagerPosition < position) {
                             // handle swipe LEFT
                             webView.scrollToStart()
@@ -363,6 +342,33 @@ class EpubNavigatorFragment private constructor(
         })
 
         return view
+    }
+
+    private fun resetAdapter() {
+        adapter = when (publication.metadata.presentation.layout) {
+            EpubLayout.REFLOWABLE, null -> {
+                R2PagerAdapter(childFragmentManager, resourcesSingle)
+            }
+            EpubLayout.FIXED -> {
+                when (viewModel.dualPageMode) {
+                    // FIXME: Properly implement DualPage.AUTO depending on the device orientation.
+                    DualPage.OFF, DualPage.AUTO -> {
+                        R2PagerAdapter(childFragmentManager, resourcesSingle)
+                    }
+                    DualPage.ON -> {
+                        R2PagerAdapter(childFragmentManager, resourcesDouble)
+                    }
+                }
+            }
+        }
+        adapter.listener = PagerAdapterListener()
+        resourcePager.adapter = adapter
+        resourcePager.direction = readingProgression
+        resourcePager.layoutDirection = when (readingProgression) {
+            ReadingProgression.RTL, ReadingProgression.BTT -> LayoutDirection.RTL
+            ReadingProgression.LTR, ReadingProgression.AUTO -> LayoutDirection.LTR
+            ReadingProgression.TTB -> LayoutDirection.LTR
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -404,10 +410,20 @@ class EpubNavigatorFragment private constructor(
             is EpubNavigatorViewModel.Event.GoTo -> {
                 go(event.target)
             }
+            EpubNavigatorViewModel.Event.InvalidateViewPager -> {
+                invalidateResourcePager()
+            }
             is EpubNavigatorViewModel.Event.OpenExternalLink -> {
                 launchWebBrowser(requireContext(), event.url)
             }
         }
+    }
+
+    private fun invalidateResourcePager() {
+        val locator = currentLocator.value
+        resetAdapter()
+        resourcePager.invalidate()
+        go(locator)
     }
 
     private fun onSettingsChange(previous: EpubSettings, new: EpubSettings) {
@@ -452,7 +468,7 @@ class EpubNavigatorFragment private constructor(
             val page = resources.withIndex().firstOrNull { (_, res) ->
                 when (res) {
                     is PageResource.EpubReflowable -> res.link.href == href
-                    is PageResource.EpubFxl -> res.url1.endsWith(href) || res.url2?.endsWith(href) == true
+                    is PageResource.EpubFxl -> res.leftUrl?.endsWith(href) == true || res.rightUrl?.endsWith(href) == true
                     else -> false
                 }
             } ?: return
@@ -468,17 +484,13 @@ class EpubNavigatorFragment private constructor(
             setCurrent(resourcesSingle)
         } else {
 
-            when (preferences.getInt(COLUMN_COUNT_REF, 0)) {
-                1 -> {
+            when (viewModel.dualPageMode) {
+                // FIXME: Properly implement DualPage.AUTO depending on the device orientation.
+                DualPage.OFF, DualPage.AUTO -> {
                     setCurrent(resourcesSingle)
                 }
-                2 -> {
+                DualPage.ON -> {
                     setCurrent(resourcesDouble)
-                }
-                else -> {
-                    // TODO based on device
-                    // TODO decide if 1 page or 2 page
-                    setCurrent(resourcesSingle)
                 }
             }
         }
@@ -577,7 +589,7 @@ class EpubNavigatorFragment private constructor(
     private inner class WebViewListener : R2BasicWebView.Listener {
 
         override val readingProgression: ReadingProgression
-            get() = this@EpubNavigatorFragment.readingProgression
+            get() = viewModel.readingProgression
 
         override fun onResourceLoaded(link: Link?, webView: R2BasicWebView, url: String?) {
             run(viewModel.onResourceLoaded(link, webView))
@@ -690,7 +702,7 @@ class EpubNavigatorFragment private constructor(
             ReadingProgression.RTL, ReadingProgression.BTT ->
                 webView.scrollLeft(animated)
         }
-        viewLifecycleOwner.lifecycleScope.launch { completion() }
+        lifecycleScope.launch { completion() }
         return true
     }
 
@@ -708,7 +720,7 @@ class EpubNavigatorFragment private constructor(
             ReadingProgression.RTL, ReadingProgression.BTT ->
                 webView.scrollRight(animated)
         }
-        viewLifecycleOwner.lifecycleScope.launch { completion() }
+        lifecycleScope.launch { completion() }
         return true
     }
 
@@ -721,7 +733,7 @@ class EpubNavigatorFragment private constructor(
         resourcePager.setCurrentItem(resourcePager.currentItem + 1, animated)
 
         currentReflowablePageFragment?.webView?.let { webView ->
-            if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
+            if (readingProgression == ReadingProgression.RTL) {
                 webView.setCurrentItem(webView.numPages - 1, false)
             } else {
                 webView.setCurrentItem(0, false)
@@ -740,7 +752,7 @@ class EpubNavigatorFragment private constructor(
         resourcePager.setCurrentItem(resourcePager.currentItem - 1, animated)
 
         currentReflowablePageFragment?.webView?.let { webView ->
-            if (publication.metadata.effectiveReadingProgression == ReadingProgression.RTL) {
+            if (readingProgression == ReadingProgression.RTL) {
                 webView.setCurrentItem(0, false)
             } else {
                 webView.setCurrentItem(webView.numPages - 1, false)
@@ -781,7 +793,7 @@ class EpubNavigatorFragment private constructor(
     }
 
     override val readingProgression: ReadingProgression
-        get() = publication.metadata.effectiveReadingProgression
+        get() = viewModel.readingProgression
 
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
     private val _currentLocator = MutableStateFlow(initialLocator
@@ -852,16 +864,20 @@ class EpubNavigatorFragment private constructor(
                 progression.coerceIn(0.0, 1.0)
             } ?: 0.0
 
-            val resource = publication.readingOrder[resourcePager.currentItem]
-            val positionLocator = publication.positionsByResource[resource.href]?.let { positions ->
+            val link = when (val pageResource = adapter.getResource(resourcePager.currentItem)) {
+                is PageResource.EpubFxl -> checkNotNull(pageResource.leftLink ?: pageResource.rightLink)
+                is PageResource.EpubReflowable -> pageResource.link
+                else -> throw IllegalStateException("Expected EpubFxl or EpubReflowable page resources")
+            }
+            val positionLocator = publication.positionsByResource[link.href]?.let { positions ->
                 val index = ceil(progression * (positions.size - 1)).toInt()
                 positions.getOrNull(index)
             }
 
             val currentLocator = Locator(
-                href = resource.href,
-                type = resource.type ?: MediaType.XHTML.toString(),
-                title = tableOfContentsTitleByHref[resource.href] ?: positionLocator?.title ?: resource.title,
+                href = link.href,
+                type = link.type ?: MediaType.XHTML.toString(),
+                title = tableOfContentsTitleByHref[link.href] ?: positionLocator?.title ?: link.title,
                 locations = (positionLocator?.locations ?: Locator.Locations()).copy(
                     progression = progression
                 ),
@@ -871,6 +887,7 @@ class EpubNavigatorFragment private constructor(
             _currentLocator.value = currentLocator
 
             // Deprecated notifications
+            @Suppress("DEPRECATION")
             navigatorDelegate?.locationDidChange(navigator = navigator, locator = currentLocator)
             reflowableWebView?.let {
                 paginationListener?.onPageChanged(
@@ -905,6 +922,11 @@ class EpubNavigatorFragment private constructor(
         ): FragmentFactory =
             createFragmentFactory { EpubNavigatorFragment(publication, baseUrl, initialLocator, listener, paginationListener, config) }
 
+        /**
+         * Returns a URL to the application asset at [path], served in the web views.
+         */
+        fun assetUrl(path: String): String =
+            WebViewServer.assetUrl(path)
     }
 
 }

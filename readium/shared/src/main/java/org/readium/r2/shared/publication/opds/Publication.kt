@@ -9,8 +9,8 @@
 
 package org.readium.r2.shared.publication.opds
 
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Publication
 
 // OPDS extensions for [Publication]
 

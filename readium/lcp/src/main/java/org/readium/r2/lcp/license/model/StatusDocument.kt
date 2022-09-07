@@ -9,7 +9,6 @@
 
 package org.readium.r2.lcp.license.model
 
-import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.components.Link

@@ -1,7 +1,8 @@
 package org.readium.r2.navigator.epub.css
 
 import org.junit.Test
-import org.readium.r2.navigator.epub.css.Layout.*
+import org.readium.r2.navigator.epub.css.Layout.HtmlDir
+import org.readium.r2.navigator.epub.css.Layout.Stylesheets
 import org.readium.r2.shared.publication.ReadingProgression.*
 import org.readium.r2.shared.util.Language
 import kotlin.test.assertEquals

@@ -9,8 +9,8 @@
 
 package org.readium.r2.shared.publication.epub
 
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Publication
 
 // EPUB extensions for [Publication].
 // https://readium.org/webpub-manifest/schema/extensions/epub/subcollections.schema.json

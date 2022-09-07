@@ -26,7 +26,6 @@ import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation.Overflow
 import org.readium.r2.shared.publication.presentation.Presentation.Spread
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.reader.ReaderViewModel
@@ -100,7 +99,6 @@ fun UserSettings(
                     language = settings.language,
                     readingProgression = settings.readingProgression,
                     spread = settings.spread,
-                    theme = settings.theme,
                 )
 
             is EpubSettings.Reflowable ->
@@ -143,9 +141,8 @@ private fun ColumnScope.FixedLayoutUserSettings(
     preferences: Preferences,
     edit: EditPreferences,
     spread: EnumSetting<Spread>? = null,
-    language: ValueSetting<Language?>? = null,
+    language: Setting<Language?>? = null,
     readingProgression: EnumSetting<ReadingProgression>? = null,
-    theme: EnumSetting<Theme>? = null,
 ) {
     if (language != null || readingProgression != null) {
         fun reset() {
@@ -184,18 +181,6 @@ private fun ColumnScope.FixedLayoutUserSettings(
         Divider()
     }
 
-    if (theme != null) {
-        ButtonGroupItem("Theme", theme, preferences, edit) { value ->
-            when (value) {
-                Theme.LIGHT -> "Light"
-                Theme.DARK -> "Dark"
-                Theme.SEPIA -> "Sepia"
-            }
-        }
-
-        Divider()
-    }
-
     if (spread != null) {
         ButtonGroupItem("Spread", spread, preferences, edit) { value ->
             when (value) {
@@ -222,7 +207,7 @@ private fun ColumnScope.ReflowableUserSettings(
     fontSize: PercentSetting? = null,
     hyphens: ToggleSetting? = null,
     imageFilter: EnumSetting<ImageFilter>? = null,
-    language: ValueSetting<Language?>? = null,
+    language: Setting<Language?>? = null,
     letterSpacing: PercentSetting? = null,
     ligatures: ToggleSetting? = null,
     lineHeight: RangeSetting<Double>? = null,
@@ -462,7 +447,7 @@ private fun <T> MenuItem(
 @Composable
 private fun <T> MenuItem(
     title: String,
-    setting: Setting<T, *>,
+    setting: Setting<T>,
     preferences: Preferences,
     edit: EditPreferences,
     values: List<T>,
@@ -618,11 +603,11 @@ private fun ColorItem(
 }
 
 /**
- * Component for a `ValueSetting<Language?>`.
+ * Component for a `Setting<Language?>`.
  */
 @Composable
 fun LanguageItem(
-     setting: ValueSetting<Language?>,
+     setting: Setting<Language?>,
      preferences: Preferences,
      edit: EditPreferences
 ) {
@@ -677,19 +662,19 @@ private fun Configurable.Settings.presets(): List<Preset> =
     when (val settings = this) {
         is EpubSettings.Reflowable -> listOf(
             Preset("Increase legibility") {
-                settings.wordSpacing?.let { set(it, 0.6) }
+                set(settings.wordSpacing, 0.6)
                 set(settings.fontSize, 1.4)
                 set(settings.textNormalization, TextNormalization.ACCESSIBILITY)
             },
             Preset("Document") {
-                settings.scroll?.let { set(it, true) }
+                set(settings.scroll, true)
             },
             Preset("Ebook") {
-                settings.scroll?.let { set(it, false) }
+                set(settings.scroll, false)
             },
             Preset("Manga") {
+                set(settings.scroll, false)
                 set(settings.readingProgression, ReadingProgression.RTL)
-                settings.scroll?.let { set(it, false) }
             }
         )
         else -> emptyList()
@@ -707,7 +692,10 @@ private fun PresetsMenuButton(edit: EditPreferences, presets: List<Preset>) {
             DropdownMenuItem(
                 onClick = {
                     dismiss()
-                    edit(preset.changes)
+                    edit {
+                        clear()
+                        preset.changes(this)
+                    }
                 }
             ) {
                 Text(preset.title)

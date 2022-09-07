@@ -14,7 +14,6 @@ import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
 import java.io.InputStream
 import java.nio.charset.Charset
-import java.util.*
 
 /**
  * An HTTP client performs HTTP requests.

@@ -7,6 +7,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.r2.navigator.pager
 
 import android.annotation.SuppressLint
@@ -21,6 +23,8 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewClientCompat
 import kotlinx.coroutines.flow.*
@@ -30,7 +34,10 @@ import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.R2WebView
 import org.readium.r2.navigator.databinding.ViewpagerFragmentEpubBinding
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
+import org.readium.r2.navigator.epub.EpubNavigatorViewModel
+import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.extensions.htmlId
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Link
@@ -56,6 +63,7 @@ class R2EpubPageFragment : Fragment() {
 
     private lateinit var containerView: View
     private lateinit var preferences: SharedPreferences
+    private lateinit var viewModel: EpubNavigatorViewModel
 
     private var _binding: ViewpagerFragmentEpubBinding? = null
     private val binding get() = _binding!!
@@ -104,6 +112,7 @@ class R2EpubPageFragment : Fragment() {
         _binding = ViewpagerFragmentEpubBinding.inflate(inflater, container, false)
         containerView = binding.root
         preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
+        viewModel = ViewModelProvider(requireParentFragment()).get(EpubNavigatorViewModel::class.java)
 
         val webView = binding.webView
         this.webView = webView
@@ -123,7 +132,10 @@ class R2EpubPageFragment : Fragment() {
         }
         webView.preferences = preferences
 
-        webView.setScrollMode(preferences.getBoolean(SCROLL_REF, false))
+        if (viewModel.useLegacySettings) {
+            @Suppress("DEPRECATION")
+            webView.setScrollMode(preferences.getBoolean(SCROLL_REF, false))
+        }
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false
         webView.isHorizontalScrollBarEnabled = false
@@ -213,6 +225,24 @@ class R2EpubPageFragment : Fragment() {
         return containerView
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        if (!viewModel.useLegacySettings) {
+            val isScrollEnabled = viewModel.settings
+                .filterIsInstance<EpubSettings.Reflowable>()
+                .map { it.scroll?.value ?: true }
+                .distinctUntilChanged()
+
+            val lifecycleOwner = viewLifecycleOwner
+            lifecycleOwner.lifecycleScope.launch {
+                isScrollEnabled
+                    .flowWithLifecycle(lifecycleOwner.lifecycle)
+                    .collectLatest { webView?.scrollModeFlow?.value = it }
+            }
+        }
+    }
+
     override fun onDetach() {
         super.onDetach()
 
@@ -251,6 +281,8 @@ class R2EpubPageFragment : Fragment() {
     }
 
     private fun updatePadding() {
+        if (view == null) return
+
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
             val window = activity?.window ?: return@launchWhenResumed
             var top = 0
@@ -270,8 +302,7 @@ class R2EpubPageFragment : Fragment() {
                 }
             }
 
-            val scrollMode = preferences.getBoolean(SCROLL_REF, false)
-            if (!scrollMode) {
+            if (!viewModel.isScrollEnabled) {
                 val margin = resources.getDimension(R.dimen.r2_navigator_epub_vertical_padding).toInt()
                 top += margin
                 bottom += margin

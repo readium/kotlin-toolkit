@@ -11,13 +11,10 @@ import android.content.SharedPreferences
 import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
-import android.net.Uri
 import android.os.Build
 import android.text.Html
 import android.util.AttributeSet
 import android.view.*
-import android.view.Gravity
-import android.view.LayoutInflater
 import android.webkit.URLUtil
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -27,8 +24,11 @@ import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.annotation.RequiresApi
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.safety.Safelist
@@ -37,7 +37,9 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Href
 import timber.log.Timber
 import kotlin.coroutines.resume

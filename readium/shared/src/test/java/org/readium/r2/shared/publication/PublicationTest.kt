@@ -10,7 +10,6 @@
 package org.readium.r2.shared.publication
 
 import kotlinx.coroutines.runBlocking
-import org.hamcrest.CoreMatchers.instanceOf
 import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
@@ -27,7 +26,6 @@ import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.Ref
 import org.robolectric.RobolectricTestRunner
 import java.net.URL
-import kotlin.reflect.KClass
 
 @RunWith(RobolectricTestRunner::class)
 class PublicationTest {

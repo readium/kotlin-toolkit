@@ -7,10 +7,13 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.shared
 
 import java.io.Serializable
 
+@Deprecated("Migrate to the new Settings API (see migration guide)")
 sealed class UserProperty(var ref: String, var name: String) {
 
     private val value: String
@@ -26,10 +29,12 @@ sealed class UserProperty(var ref: String, var name: String) {
 
 // TODO add here your new Subclasses of UserPreference. It has to be an abstract class inheriting from UserSetting.
 
+@Deprecated("Migrate to the new Settings API (see migration guide)")
 class Enumerable(var index: Int, private val values: List<String>, ref: String, name: String) : UserProperty(ref, name) {
     override fun toString() = values[index]
 }
 
+@Deprecated("Migrate to the new Settings API (see migration guide)")
 class Incremental(var value: Float,
                   val min: Float,
                   val max: Float,
@@ -49,6 +54,7 @@ class Incremental(var value: Float,
     override fun toString() = value.toString() + suffix
 }
 
+@Deprecated("Migrate to the new Settings API (see migration guide)")
 class Switchable(onValue: String, offValue: String, var on: Boolean, ref: String, name: String) : UserProperty(ref, name) {
 
     private val values = mapOf(true to onValue, false to offValue)
@@ -61,6 +67,7 @@ class Switchable(onValue: String, offValue: String, var on: Boolean, ref: String
 }
 
 
+@Deprecated("Migrate to the new Settings API (see migration guide)")
 class UserProperties : Serializable {
 
     val properties: MutableList<UserProperty> = mutableListOf()

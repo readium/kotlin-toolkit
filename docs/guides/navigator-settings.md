@@ -2,6 +2,8 @@
 
 :warning: The Navigator Setting API is still experimental and currently only available with `EpubNavigatorFragment`.
 
+Take a look at the [migration guide](../migration-guide.md) if you are already using the legacy EPUB settings.
+
 ## Overview
 
 A few Readium components – such as the Navigator – support dynamic configuration through the `Configurable` interface. It provides an easy way to build a user settings interface and save user preferences as a JSON object.
@@ -18,7 +20,7 @@ val settings = navigator.settings.value
 
 // 2. Create a new set of preferences.
 val preferences = Preferences {
-    set(settings.overflow, Overflow.PAGINATED)
+    set(settings.fontFamily, FontFamily.SERIF)
     increment(settings.fontSize)
     toggle(settings.publisherStyles)
 }
@@ -43,11 +45,6 @@ Here are some of the available setting types:
 The `Setting` objects are technical low-level properties. While some of them can be directly exposed to the user, such as the font size, other settings should not be displayed as-is.
 
 For example in EPUB, we simulate two pages side by side with `columnCount` (`auto`, `1`, `2`) for reflowable resources and `spread` (`auto`, `landscape`, `both`, `none`) for a fixed layout publication. Instead of showing both settings with all their possible values in the user interface, you might prefer showing a single switch button to enable a dual-page mode which will set both settings appropriately.
-
-Similarly, you might want to cluster several settings together. For example, given a scrolled mode switch in the user interface:
-
-* when on, `overflow` is set to `scrolled` and `readingProgression` to `ttb`
-* when off, `overflow` is set to `paginated` and the user can freely select the `readingProgression` between the two values `ltr` and `rtl`
 
 ### Preferences
 
@@ -79,7 +76,7 @@ val updatedPreferences = preferences.copy {
 
 ```kotlin
 preferences.copy {
-    set(settings.overflow, Overflow.PAGINATED, activate = false)
+    set(settings.fontFamily, FontFamily.SERIF, activate = false)
     increment(settings.fontSize, activate = false)
     toggle(settings.publisherStyles, activate = false)
 }
@@ -94,9 +91,9 @@ EpubNavigatorFragment.createFactory(
     publication = publication,
     ...,
     config = EpubNavigatorFragment.Configuration(
-        preferences = preferencesStore.get(publication.profile),
+        preferences = preferences,
         defaultPreferences = Preferences {
-            set(EpubSettings.OVERFLOW, Overflow.SCROLLED)
+            set(EpubSettings.scroll, true)
         }
     )
 )
@@ -104,7 +101,7 @@ EpubNavigatorFragment.createFactory(
 
 The `defaultPreferences` are used as fallback values when the default Navigator settings are not suitable for your application.
 
-:point_up: When you don't have access to an `EpubSettings` instance, the "prototype" settings (e.g. `EpubSettings.OVERFLOW`) are helpful to modify a `Preferences` object.
+:point_up: When you don't have access to an `EpubSettings` instance, the "prototype" settings (e.g. `EpubSettings.SCROLL`) are helpful to modify a `Preferences` object.
 
 ## Build a user settings interface
 
@@ -123,12 +120,12 @@ For example, you could group the user settings per nature of publications:
 This first [stateful composable](https://developer.android.com/jetpack/compose/state#stateful-vs-stateless) binds directly with a `Configurable` object to recompose when its settings are refreshed and to apply the preferences when the user interacts with the interface. It delegates the actual interface to a stateless `UserSettings` composable.
 
 ```kotlin
-if (navigator is Configurable) {
+if (navigator is Configurable<*>) {
     UserSettings(navigator)
 }
 
 @Composable
-fun UserSettings(configurable: Configurable) {
+fun UserSettings(configurable: Configurable<*>) {
     val settings by configurable.settings.collectAsState()
     var preferences by remember { mutableStateOf(Preferences()) }
 
@@ -384,13 +381,13 @@ fun DropdownMenuButton(
 Having a user settings screen is moot if you cannot save and restore the selected preferences for future sessions. Thankfully you can serialize `Preferences` to a JSON object.
 
 ```kotlin
-val json = preferences.toJSON().toString()
+val json = preferences.toJsonString()
 ```
 
 When you are ready to restore the user preferences, construct a new `Preferences` object from the JSON string.
 
 ```kotlin
-val preferences = Preferences(json)
+val preferences = Preferences.fromJson(json)
 ```
 
 In the Test App, `UserSettingsViewModel` delegates the preferences state hoisting and persistence to `PreferencesStore`, which acts as a single source of truth.

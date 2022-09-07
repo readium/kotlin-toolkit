@@ -24,7 +24,6 @@ import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
@@ -212,19 +211,20 @@ class FailureResource(private val link: Link, private val error: Resource.Except
 }
 
 /**
- * Resource that will act as a proxy to the first given resource that is not a failure.
+ * Resource that will act as a proxy to a fallback resource if the [originalResource] errors out.
  */
-class FallbackResource(private val originalResource: Resource, private vararg val fallbackResources: Resource) : Resource {
-    init {
-        require(fallbackResources.isNotEmpty())
-    }
-
+class FallbackResource(
+    private val originalResource: Resource,
+    private val fallbackResourceFactory: (Resource.Exception) -> Resource
+) : Resource {
     private val coroutineScope =
         CoroutineScope(Dispatchers.Default)
 
     private val resource: Deferred<Resource> = coroutineScope.async {
-        (listOf(originalResource) + fallbackResources).firstOrNull { it.length().isSuccess }
-            ?: originalResource
+        when (val result = originalResource.length()) {
+            is Try.Success -> originalResource
+            is Try.Failure -> fallbackResourceFactory(result.exception)
+        }
     }
 
     override suspend fun link(): Link =
@@ -236,21 +236,26 @@ class FallbackResource(private val originalResource: Resource, private vararg va
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
         resource.await().read(range)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun close() {
         coroutineScope.cancel()
-        originalResource.close()
-        fallbackResources.forEach { it.close() }
+        if (resource.isCompleted) {
+            resource.getCompleted().close()
+        }
     }
 }
 
 /**
- * Falls back to the given resources if the receiver failed.
- *
- * The first non-failed resource will be used.
+ * Falls back to alternative resources when the receiver fails.
  */
-fun Resource.fallback(vararg others: Resource): Resource =
-    if (others.isEmpty()) this
-    else FallbackResource(this, *others)
+fun Resource.fallback(fallbackResourceFactory: (Resource.Exception) -> Resource): Resource =
+    FallbackResource(this, fallbackResourceFactory)
+
+/**
+ * Falls back to the given alternative [resource] when the receiver fails.
+ */
+fun Resource.fallback(fallbackResource: Resource): Resource =
+    FallbackResource(this) { fallbackResource }
 
 /**
  * A base class for a [Resource] which acts as a proxy to another one.
