@@ -6,6 +6,7 @@
 
 package org.readium.r2.shared.util.http
 
+import android.os.Bundle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.Try
@@ -36,8 +37,14 @@ class DefaultHttpClient constructor(
     private val additionalHeaders: Map<String, String> = mapOf(),
     private val connectTimeout: Duration? = null,
     private val readTimeout: Duration? = null,
-    var callback: Callback? = null,
+    var callback: Callback = object : Callback {},
 ) : HttpClient {
+    companion object {
+        /**
+         * [HttpRequest.extras] key for the number of redirections performed for a request.
+         */
+        const val EXTRA_REDIRECT_COUNT = "redirectCount"
+    }
 
     /**
      * Callbacks allowing to override some behavior of the [DefaultHttpClient].
@@ -64,6 +71,22 @@ class DefaultHttpClient constructor(
          */
         suspend fun onRecoverRequest(request: HttpRequest, error: HttpException): HttpTry<HttpRequest> =
             Try.failure(error)
+
+        /**
+         * Redirections are followed by default when the host and protocols are the same.
+         * However, if for example an HTTP server redirects to an HTTPS URI, you will need to
+         * confirm explicitly the redirection by implementing this callback as it is potentially
+         * unsafe.
+         *
+         * It's recommended to confirm the redirection with the user, especially for a POST request.
+         *
+         * You can return either:
+         *   - the provided [newRequest] to proceed with the redirection
+         *   - a different redirection request
+         *   - a [HttpException.CANCELLED] error to abort the redirection
+         */
+        suspend fun onFollowUnsafeRedirect(request: HttpRequest, response: HttpResponse, newRequest: HttpRequest): HttpTry<HttpRequest> =
+            Try.failure(HttpException.CANCELLED)
 
         /**
          * Called when the HTTP client received an HTTP response for the given [request].
@@ -124,40 +147,78 @@ class DefaultHttpClient constructor(
                         headers = connection.safeHeaders,
                         mediaType = connection.sniffMediaType() ?: MediaType.BINARY,
                     )
+                    callback.onResponseReceived(request, response)
 
-                    callback?.onResponseReceived(request, response)
-                    Try.success(HttpStreamResponse(
-                        response = response,
-                        body = connection.inputStream,
-                    ))
+                    if (statusCode in 300..399) {
+                        followUnsafeRedirect(request, response)
+                    } else {
+                        Try.success(
+                            HttpStreamResponse(
+                                response = response,
+                                body = connection.inputStream,
+                            )
+                        )
+                    }
 
                 } catch (e: Exception) {
                     Try.failure(HttpException.wrap(e))
                 }
             }
 
-
-        return onStartRequest(request)
+        return callback.onStartRequest(request)
             .flatMap { tryStream(it) }
             .tryRecover { error ->
                 if (error.kind != HttpException.Kind.Cancelled) {
-                    onRecoverRequest(request, error)
+                    callback.onRecoverRequest(request, error)
                         .flatMap { stream(it) }
                 } else {
                     Try.failure(error)
                 }
             }
             .onFailure {
-                callback?.onRequestFailed(request, it)
+                callback.onRequestFailed(request, it)
                 Timber.e(it, "HTTP request failed ${request.url}")
             }
     }
 
-    private suspend fun onStartRequest(request: HttpRequest): HttpTry<HttpRequest> =
-        callback?.onStartRequest(request) ?: Try.success(request)
+    /**
+     * HTTPUrlConnection follows by default redirections when the host and protocols are the same.
+     *
+     * However, if for example an HTTP server redirects to an HTTPS URI we need to handle the
+     * redirection manually as it is considered unsafe. Apps will need to confirm explicitly the
+     * redirection with [Callback.onFollowUnsafeRedirect].
+     *
+     * See https://bugs.openjdk.java.net/browse/JDK-4620571?focusedCommentId=12159233&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-12159233
+     */
+    private suspend fun followUnsafeRedirect(request: HttpRequest, response: HttpResponse): HttpTry<HttpStreamResponse> {
+        // > A user agent should never automatically redirect a request more than 5 times, since
+        // > such redirections usually indicate an infinite loop.
+        // > https://www.rfc-editor.org/rfc/rfc1945.html#section-9.3
+        val redirectCount = request.extras.getInt(EXTRA_REDIRECT_COUNT)
+        if (redirectCount > 5) {
+            return Try.failure(HttpException.CANCELLED)
+        }
 
-    private suspend fun onRecoverRequest(request: HttpRequest, error: HttpException): HttpTry<HttpRequest> =
-        callback?.onRecoverRequest(request, error) ?: Try.failure(error)
+        val location = response.valueForHeader("Location")
+            ?: return Try.failure(HttpException(kind = HttpException.Kind.MalformedResponse))
+
+        val newRequest = HttpRequest(
+            url = location,
+            body = request.body,
+            method = request.method,
+            headers = buildMap {
+                response.valueForHeader("Set-Cookie")
+                    ?.let { put("Cookie", it) }
+            },
+            extras = Bundle().apply {
+                putInt(EXTRA_REDIRECT_COUNT, redirectCount + 1)
+            }
+        )
+
+        return callback
+            .onFollowUnsafeRedirect(request, response = response, newRequest = newRequest)
+            .flatMap { stream(it) }
+    }
 
     private fun HttpRequest.toHttpURLConnection(): HttpURLConnection {
         val url = URL(url)
