@@ -8,7 +8,10 @@ package org.readium.r2.testapp.utils.compose
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.material.*
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedButton
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.tooling.preview.Preview

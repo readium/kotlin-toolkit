@@ -8,12 +8,16 @@
 
 package org.readium.r2.navigator.epub
 
+import android.content.Context
+import org.readium.r2.navigator.epub.EpubSettings.FixedLayout
+import org.readium.r2.navigator.epub.EpubSettings.Reflowable
 import org.readium.r2.navigator.epub.css.*
 import org.readium.r2.navigator.epub.css.Layout.Stylesheets
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.settings.Color
 import org.readium.r2.navigator.settings.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.Spread
@@ -30,7 +34,10 @@ import org.readium.r2.navigator.epub.css.TextAlign as CssTextAlign
 @ExperimentalReadiumApi
 sealed class EpubSettings : Configurable.Settings {
 
-    internal abstract fun update(metadata: Metadata, preferences: Preferences, defaults: Preferences = Preferences()): EpubSettings
+    /** Language of the publication content. */
+    abstract val language: Setting<Language?>
+    /** Direction of the reading progression across resources. */
+    abstract val readingProgression: EnumSetting<ReadingProgression>
 
     /**
      * EPUB navigator settings for fixed-layout publications.
@@ -39,28 +46,36 @@ sealed class EpubSettings : Configurable.Settings {
      * @param readingProgression Direction of the reading progression across resources.
      * @param spread Indicates the condition to be met for the publication to be rendered with a
      * synthetic spread (dual-page).
-     * @param theme Reader theme.
      */
     @ExperimentalReadiumApi
-    data class FixedLayout(
-        val language: ValueSetting<Language?> = LANGUAGE,
-        val readingProgression: EnumSetting<ReadingProgression> = READING_PROGRESSION,
-        val spread: EnumSetting<Spread> = SPREAD,
-        val theme: EnumSetting<Theme> = THEME,
+    data class FixedLayout internal constructor(
+        override val language: Setting<Language?>,
+        override val readingProgression: EnumSetting<ReadingProgression>,
+        val spread: EnumSetting<Spread>,
     ) : EpubSettings() {
+
+        constructor() : this(
+            language = languageSetting(),
+            readingProgression = readingProgressionSetting(),
+            spread = spreadSetting(),
+        )
 
         companion object {
 
             /** Language of the publication content. */
-            val LANGUAGE: ValueSetting<Language?> = ValueSetting(
+            private fun languageSetting(
+                value: Language? = null
+            ): Setting<Language?> = Setting(
                 key = Setting.LANGUAGE,
-                value = null,
+                value = value,
             )
 
             /** Direction of the reading progression across resources. */
-            val READING_PROGRESSION: EnumSetting<ReadingProgression> = EnumSetting(
+            private fun readingProgressionSetting(
+                value: ReadingProgression? = null
+            ): EnumSetting<ReadingProgression> = EnumSetting(
                 key = Setting.READING_PROGRESSION,
-                value = ReadingProgression.LTR,
+                value = value ?: ReadingProgression.LTR,
                 values = listOf(ReadingProgression.LTR, ReadingProgression.RTL)
             )
 
@@ -68,26 +83,27 @@ sealed class EpubSettings : Configurable.Settings {
              * Indicates the condition to be met for the publication to be rendered with a
              * synthetic spread (dual-page).
              */
-            val SPREAD: EnumSetting<Spread> = EnumSetting(
+            private fun spreadSetting(
+                value: Spread? = null
+            ): EnumSetting<Spread> = EnumSetting(
                 key = Setting.SPREAD,
-                value = Spread.AUTO,
-                values = listOf(Spread.AUTO, Spread.NONE, Spread.BOTH, Spread.LANDSCAPE),
-            )
-
-            /** Reader theme. */
-            val THEME: EnumSetting<Theme> = EnumSetting(
-                key = Setting.THEME,
-                value = Theme.LIGHT,
-                values = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
+                value = value ?: Spread.NONE,
+                // FIXME: Support Spread.AUTO and Spread.LANDSCAPE.
+                values = listOf(Spread.NONE, Spread.BOTH),
             )
         }
 
-        override fun update(metadata: Metadata, preferences: Preferences, defaults: Preferences): FixedLayout =
-            copy(
-                language = language.copyFirstValidValueFrom(preferences, defaults, fallback = LANGUAGE),
-                readingProgression = readingProgression.copyFirstValidValueFrom(preferences, defaults, fallback = READING_PROGRESSION),
-                spread = spread.copyFirstValidValueFrom(preferences, defaults, fallback = SPREAD),
-                theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME),
+        internal fun update(preferences: Preferences, defaults: Preferences): FixedLayout =
+            FixedLayout(
+                language = languageSetting(
+                    value = language.firstValidValue(preferences, defaults)
+                ),
+                readingProgression = readingProgressionSetting(
+                    value = readingProgression.firstValidValue(preferences, defaults)
+                ),
+                spread = spreadSetting(
+                    value = spread.firstValidValue(preferences, defaults)
+                ),
             )
     }
 
@@ -123,145 +139,287 @@ sealed class EpubSettings : Configurable.Settings {
      * @param wordSpacing Space between words.
      */
     @ExperimentalReadiumApi
-    data class Reflowable(
-        val backgroundColor: ColorSetting = BACKGROUND_COLOR,
-        val columnCount: EnumSetting<ColumnCount>? = COLUMN_COUNT,
-        val fontFamily: EnumSetting<FontFamily?> = FONT_FAMILY,
-        val fontSize: PercentSetting = FONT_SIZE,
-        val hyphens: ToggleSetting? = HYPHENS,
-        val imageFilter: EnumSetting<ImageFilter>? = IMAGE_FILTER,
-        val language: ValueSetting<Language?> = LANGUAGE,
-        val letterSpacing: PercentSetting? = LETTER_SPACING,
-        val ligatures: ToggleSetting? = LIGATURES,
-        val lineHeight: RangeSetting<Double> = LINE_HEIGHT,
-        val pageMargins: RangeSetting<Double>? = PAGE_MARGINS,
-        val paragraphIndent: PercentSetting? = PARAGRAPH_INDENT,
-        val paragraphSpacing: PercentSetting = PARAGRAPH_SPACING,
-        val publisherStyles: ToggleSetting = PUBLISHER_STYLES,
-        val readingProgression: EnumSetting<ReadingProgression> = READING_PROGRESSION,
-        val scroll: ToggleSetting? = SCROLL,
-        val textAlign: EnumSetting<TextAlign>? = TEXT_ALIGN,
-        val textColor: ColorSetting = TEXT_COLOR,
-        val textNormalization: EnumSetting<TextNormalization> = TEXT_NORMALIZATION,
-        val theme: EnumSetting<Theme> = THEME,
-        val typeScale: RangeSetting<Double> = TYPE_SCALE,
-        val verticalText: ToggleSetting = VERTICAL_TEXT,
-        val wordSpacing: PercentSetting? = WORD_SPACING,
+    data class Reflowable internal constructor(
+        val backgroundColor: ColorSetting = backgroundColorSetting(),
+        val columnCount: EnumSetting<ColumnCount> = columnCountSetting(),
+        val fontFamily: EnumSetting<FontFamily?> = fontFamilySetting(),
+        val fontSize: PercentSetting = fontSizeSetting(),
+        val hyphens: ToggleSetting = hyphensSetting(),
+        val imageFilter: EnumSetting<ImageFilter> = imageFilterSetting(),
+        override val language: Setting<Language?> = languageSetting(),
+        val letterSpacing: PercentSetting = letterSpacingSetting(),
+        val ligatures: ToggleSetting = ligaturesSetting(),
+        val lineHeight: RangeSetting<Double> = lineHeightSetting(),
+        val pageMargins: RangeSetting<Double> = pageMarginsSetting(),
+        val paragraphIndent: PercentSetting = paragraphIndentSetting(),
+        val paragraphSpacing: PercentSetting = paragraphSpacingSetting(),
+        val publisherStyles: ToggleSetting = publisherStylesSetting(),
+        override val readingProgression: EnumSetting<ReadingProgression> = readingProgressionSetting(),
+        val scroll: ToggleSetting = scrollSetting(),
+        val textAlign: EnumSetting<TextAlign> = textAlignSetting(),
+        val textColor: ColorSetting = textColorSetting(),
+        val textNormalization: EnumSetting<TextNormalization> = textNormalizationSetting(),
+        val theme: EnumSetting<Theme> = themeSetting(),
+        val typeScale: RangeSetting<Double> = typeScaleSetting(),
+        val verticalText: ToggleSetting = verticalTextSetting(),
+        val wordSpacing: PercentSetting = wordSpacingSetting(),
 
-        internal val layout: Layout = Layout()
+        internal val layout: Layout
     ) : EpubSettings() {
 
-        constructor(
-            fontFamilies: List<FontFamily> = emptyList(),
-            namedColors: Map<String, Int> = emptyMap()
-        ) : this(
-            backgroundColor = BACKGROUND_COLOR.copy(
-                coder = Color.Coder(namedColors)
-            ),
-            fontFamily = FONT_FAMILY.copy(
-                coder = FontFamily.Coder(fontFamilies),
-                values = listOf(null) + fontFamilies
-            ),
-            textColor = TEXT_COLOR.copy(
-                coder = Color.Coder(namedColors)
-            ),
-        )
+        internal fun update(
+            metadata: Metadata,
+            fontFamilies: List<FontFamily>,
+            namedColors: Map<String, Int>,
+            defaults: Preferences,
+            preferences: Preferences,
+        ): Reflowable {
+            val layoutResolver = createLayoutResolver(metadata, defaults)
+            val layout = layoutResolver(preferences)
+
+            return Reflowable(
+                backgroundColor = backgroundColorSetting(
+                    value = backgroundColor.firstValidValue(preferences, defaults),
+                    namedColors = namedColors
+                ),
+                columnCount = columnCountSetting(
+                    layoutResolver = layoutResolver,
+                    value = columnCount.firstValidValue(preferences, defaults),
+                ),
+                fontFamily = fontFamilySetting(
+                    value = fontFamily.firstValidValue(preferences, defaults),
+                    fontFamilies = fontFamilies
+                ),
+                fontSize = fontSizeSetting(
+                    value = fontSize.firstValidValue(preferences, defaults),
+                ),
+                hyphens = hyphensSetting(
+                    layoutResolver = layoutResolver,
+                    value = hyphens.firstValidValue(preferences, defaults),
+                ),
+                imageFilter = imageFilterSetting(
+                    value = imageFilter.firstValidValue(preferences, defaults),
+                ),
+                language = languageSetting(
+                    value = language.firstValidValue(preferences, defaults) ?: metadata.language,
+                ),
+                letterSpacing = letterSpacingSetting(
+                    layoutResolver = layoutResolver,
+                    value = letterSpacing.firstValidValue(preferences, defaults),
+                ),
+                ligatures = ligaturesSetting(
+                    layoutResolver = layoutResolver,
+                    value = ligatures.firstValidValue(preferences, defaults),
+                ),
+                lineHeight = lineHeightSetting(
+                    value = lineHeight.firstValidValue(preferences, defaults),
+                ),
+                pageMargins = pageMarginsSetting(
+                    layoutResolver = layoutResolver,
+                    value = pageMargins.firstValidValue(preferences, defaults),
+                ),
+                paragraphIndent = paragraphIndentSetting(
+                    layoutResolver = layoutResolver,
+                    value = paragraphIndent.firstValidValue(preferences, defaults),
+                ),
+                paragraphSpacing = paragraphSpacingSetting(
+                    value = paragraphSpacing.firstValidValue(preferences, defaults),
+                ),
+                publisherStyles = publisherStylesSetting(
+                    value = publisherStyles.firstValidValue(preferences, defaults),
+                ),
+                readingProgression = readingProgressionSetting(
+                    value = layout.readingProgression
+                ),
+                scroll = scrollSetting(
+                    layoutResolver = layoutResolver,
+                    value = scroll.firstValidValue(preferences, defaults),
+                ),
+                textAlign = textAlignSetting(
+                    layoutResolver = layoutResolver,
+                    value = textAlign.firstValidValue(preferences, defaults),
+                ),
+                textColor = textColorSetting(
+                    value = textColor.firstValidValue(preferences, defaults),
+                    namedColors = namedColors,
+                ),
+                textNormalization = textNormalizationSetting(
+                    value = textNormalization.firstValidValue(preferences, defaults),
+                ),
+                theme = themeSetting(
+                    value = theme.firstValidValue(preferences, defaults),
+                ),
+                typeScale = typeScaleSetting(
+                    value = typeScale.firstValidValue(preferences, defaults),
+                ),
+                verticalText = verticalTextSetting(
+                    value = layout.stylesheets == Stylesheets.CjkVertical
+                ),
+                wordSpacing = wordSpacingSetting(
+                    layoutResolver = layoutResolver,
+                    value = wordSpacing.firstValidValue(preferences, defaults),
+                ),
+                layout = layout
+            )
+        }
 
         companion object {
 
+            operator fun invoke(
+                metadata: Metadata = Metadata(localizedTitle = LocalizedString("")),
+                fontFamilies: List<FontFamily> = emptyList(),
+                namedColors: Map<String, Int> = emptyMap(),
+                defaults: Preferences = Preferences(),
+                preferences: Preferences = Preferences(),
+            ) : Reflowable =
+                Reflowable(layout = Layout()).update(metadata, fontFamilies, namedColors, defaults = defaults, preferences = preferences)
+
             /** Default page background color. */
-            val BACKGROUND_COLOR: ColorSetting = ColorSetting(
+            private fun backgroundColorSetting(
+                value: Color? = null,
+                namedColors: Map<String, Int> = emptyMap()
+            ): ColorSetting = ColorSetting(
                 key = Setting.BACKGROUND_COLOR,
-                value = Color.AUTO
+                value = value ?: Color.AUTO,
+                coder = Color.Coder(namedColors)
             )
 
             /** Number of columns to display (one-page view or two-page spread). */
-            val COLUMN_COUNT: EnumSetting<ColumnCount> = EnumSetting(
+            private fun columnCountSetting(
+                layoutResolver: (Preferences) -> Layout = { Layout() },
+                value: ColumnCount? = null
+            ): EnumSetting<ColumnCount> = EnumSetting(
                 key = Setting.COLUMN_COUNT,
-                value = ColumnCount.AUTO,
+                value = value ?: ColumnCount.AUTO,
                 values = listOf(ColumnCount.AUTO, ColumnCount.ONE, ColumnCount.TWO),
+                activator = requiresScroll(false),
             )
 
             /** Default typeface for the text. */
-            val FONT_FAMILY: EnumSetting<FontFamily?> = EnumSetting(
+            private fun fontFamilySetting(
+                value: FontFamily? = null,
+                fontFamilies: List<FontFamily> = emptyList()
+            ): EnumSetting<FontFamily?> = fontFamilySetting(
+                coder = FontFamily.Coder(fontFamilies),
+                value = value,
+                values = listOf(null) + fontFamilies,
+            )
+
+            /** Default typeface for the text. */
+            private fun fontFamilySetting(
+                coder: FontFamily.Coder,
+                value: FontFamily?,
+                values: List<FontFamily?>,
+            ): EnumSetting<FontFamily?> = EnumSetting(
                 key = Setting.FONT_FAMILY,
-                coder = FontFamily.Coder(),
-                value = null,
-                values = listOf(null),
+                coder = coder,
+                value = value,
+                values = values,
                 formatValue = { it?.name }
             )
 
             /** Base text font size. */
-            val FONT_SIZE: PercentSetting = PercentSetting(
+            private fun fontSizeSetting(
+                value: Double? = null
+            ): PercentSetting = PercentSetting(
                 key = Setting.FONT_SIZE,
-                value = 1.0,
+                value = value ?: 1.0,
                 range = 0.4..5.0
             )
 
             /** Enable hyphenation. */
-            val HYPHENS: ToggleSetting = ToggleSetting(
+            private fun hyphensSetting(
+                layoutResolver: (Preferences) -> Layout = { Layout() },
+                value: Boolean? = null
+            ): ToggleSetting = ToggleSetting(
                 key = Setting.HYPHENS,
-                value = true,
-                activator = RequiresPublisherStylesDisabled
+                value = value ?: true,
+                activator = requiresPublisherStylesDisabled
+                    + requiresStylesheet(layoutResolver, Stylesheets.Default)
             )
 
             /** Filter applied to images in dark theme. */
-            val IMAGE_FILTER: EnumSetting<ImageFilter> = EnumSetting(
+            private fun imageFilterSetting(
+                value: ImageFilter? = null
+            ): EnumSetting<ImageFilter> = EnumSetting(
                 key = Setting.IMAGE_FILTER,
-                value = ImageFilter.NONE,
-                values = listOf(ImageFilter.NONE, ImageFilter.DARKEN, ImageFilter.INVERT)
+                value = value ?: ImageFilter.NONE,
+                values = listOf(ImageFilter.NONE, ImageFilter.DARKEN, ImageFilter.INVERT),
+                activator = requiresTheme(Theme.DARK)
             )
 
             /** Language of the publication content. */
-            val LANGUAGE: ValueSetting<Language?> = ValueSetting(
+            private fun languageSetting(
+                value: Language? = null
+            ): Setting<Language?> = Setting(
                 key = Setting.LANGUAGE,
-                value = null,
+                value = value,
             )
 
             /** Space between letters. */
-            val LETTER_SPACING: PercentSetting = PercentSetting(
+            private fun letterSpacingSetting(
+                layoutResolver: (Preferences) -> Layout = { Layout() },
+                value: Double? = null
+            ): PercentSetting = PercentSetting(
                 key = Setting.LETTER_SPACING,
-                value = 0.0,
-                activator = RequiresPublisherStylesDisabled
+                value = value ?: 0.0,
+                activator = requiresPublisherStylesDisabled
+                    + requiresStylesheet(layoutResolver, Stylesheets.Default)
             )
 
             /** Enable ligatures in Arabic. */
-            val LIGATURES: ToggleSetting = ToggleSetting(
+            private fun ligaturesSetting(
+                layoutResolver: (Preferences) -> Layout = { Layout() },
+                value: Boolean? = null
+            ): ToggleSetting = ToggleSetting(
                 key = Setting.LIGATURES,
-                value = true,
-                activator = RequiresPublisherStylesDisabled
+                value = value ?: true,
+                activator = requiresPublisherStylesDisabled
+                    + requiresStylesheet(layoutResolver, Stylesheets.Rtl)
             )
 
             /** Leading line height. */
-            val LINE_HEIGHT: RangeSetting<Double> = RangeSetting(
+            private fun lineHeightSetting(
+                value: Double? = null
+            ): RangeSetting<Double> = RangeSetting(
                 key = Setting.LINE_HEIGHT,
-                value = 1.2,
+                value = value ?: 1.2,
                 range = 1.0..2.0,
-                activator = RequiresPublisherStylesDisabled
+                activator = requiresPublisherStylesDisabled
             )
 
             /** Factor applied to horizontal margins. */
-            val PAGE_MARGINS: RangeSetting<Double> = RangeSetting(
+            private fun pageMarginsSetting(
+                layoutResolver: (Preferences) -> Layout = { Layout() },
+                value: Double? = null
+            ): RangeSetting<Double> = RangeSetting(
                 key = Setting.PAGE_MARGINS,
-                value = 1.0,
-                range = 0.5..2.0
+                value = value ?: 1.0,
+                range = 0.5..4.0,
+                activator = requiresScroll(false),
             )
 
             /** Text indentation for paragraphs. */
-            val PARAGRAPH_INDENT: PercentSetting = PercentSetting(
+            private fun paragraphIndentSetting(
+                layoutResolver: (Preferences) -> Layout = { Layout() },
+                value: Double? = null
+            ): PercentSetting = PercentSetting(
                 key = Setting.PARAGRAPH_INDENT,
-                value = 0.0,
+                value = value ?: 0.0,
                 range = 0.0..3.0,
                 suggestedIncrement = 0.2,
-                activator = RequiresPublisherStylesDisabled
+                activator = requiresPublisherStylesDisabled
+                    + requiresStylesheet(layoutResolver) { it == Stylesheets.Default || it == Stylesheets.Rtl }
             )
 
             /** Vertical margins for paragraphs. */
-            val PARAGRAPH_SPACING: PercentSetting = PercentSetting(
+            private fun paragraphSpacingSetting(
+                value: Double? = null
+            ): PercentSetting = PercentSetting(
                 key = Setting.PARAGRAPH_SPACING,
-                value = 0.0,
+                value = value ?: 0.0,
                 range = 0.0..2.0,
-                activator = RequiresPublisherStylesDisabled
+                activator = requiresPublisherStylesDisabled
             )
 
             /**
@@ -269,15 +427,19 @@ sealed class EpubSettings : Configurable.Settings {
              *
              * Many settings require this to be off.
              */
-            val PUBLISHER_STYLES: ToggleSetting = ToggleSetting(
+            private fun publisherStylesSetting(
+                value: Boolean? = null
+            ): ToggleSetting = ToggleSetting(
                 key = Setting.PUBLISHER_STYLES,
-                value = true,
+                value = value ?: true
             )
 
             /** Direction of the reading progression across resources. */
-            val READING_PROGRESSION: EnumSetting<ReadingProgression> = EnumSetting(
+            private fun readingProgressionSetting(
+                value: ReadingProgression? = null
+            ): EnumSetting<ReadingProgression> = EnumSetting(
                 key = Setting.READING_PROGRESSION,
-                value = ReadingProgression.LTR,
+                value = value ?: ReadingProgression.LTR,
                 values = listOf(ReadingProgression.LTR, ReadingProgression.RTL)
             )
 
@@ -285,41 +447,56 @@ sealed class EpubSettings : Configurable.Settings {
              * Indicates if the overflow of resources should be handled using scrolling instead
              * of synthetic pagination.
              */
-            val SCROLL: ToggleSetting = ToggleSetting(
+            private fun scrollSetting(
+                layoutResolver: (Preferences) -> Layout = { Layout() },
+                value: Boolean? = null
+            ): ToggleSetting = ToggleSetting(
                 key = Setting.SCROLL,
-                value = false,
+                value = value ?: false
             )
 
             /** Page text alignment. */
-            val TEXT_ALIGN: EnumSetting<TextAlign> = EnumSetting(
+            private fun textAlignSetting(
+                layoutResolver: (Preferences) -> Layout = { Layout() },
+                value: TextAlign? = null
+            ): EnumSetting<TextAlign> = EnumSetting(
                 key = Setting.TEXT_ALIGN,
-                value = TextAlign.START,
+                value = value ?: TextAlign.START,
                 values = listOf(
                     TextAlign.START,
                     TextAlign.LEFT,
                     TextAlign.RIGHT,
                     TextAlign.JUSTIFY
                 ),
-                activator = RequiresPublisherStylesDisabled
+                activator = requiresPublisherStylesDisabled
+                    + requiresStylesheet(layoutResolver) { it == Stylesheets.Default || it == Stylesheets.Rtl }
             )
 
             /** Default page text color. */
-            val TEXT_COLOR: ColorSetting = ColorSetting(
+            private fun textColorSetting(
+                value: Color? = null,
+                namedColors: Map<String, Int> = emptyMap()
+            ): ColorSetting = ColorSetting(
                 key = Setting.TEXT_COLOR,
-                value = Color.AUTO
+                value = value ?: Color.AUTO,
+                coder = Color.Coder(namedColors)
             )
 
             /** Normalize font style, weight and variants using a specific strategy. */
-            val TEXT_NORMALIZATION: EnumSetting<TextNormalization> = EnumSetting(
+            private fun textNormalizationSetting(
+                value: TextNormalization? = null
+            ): EnumSetting<TextNormalization> = EnumSetting(
                 key = Setting.TEXT_NORMALIZATION,
-                value = TextNormalization.NONE,
+                value = value ?: TextNormalization.NONE,
                 values = listOf(TextNormalization.NONE, TextNormalization.BOLD, TextNormalization.ACCESSIBILITY)
             )
 
             /** Reader theme. */
-            val THEME: EnumSetting<Theme> = EnumSetting(
+            private fun themeSetting(
+                value: Theme? = null
+            ): EnumSetting<Theme> = EnumSetting(
                 key = Setting.THEME,
-                value = Theme.LIGHT,
+                value = value ?: Theme.LIGHT,
                 values = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
             )
 
@@ -328,12 +505,14 @@ sealed class EpubSettings : Configurable.Settings {
              *
              * See https://readium.org/readium-css/docs/CSS19-api.html#typography
              */
-            val TYPE_SCALE: RangeSetting<Double> = RangeSetting(
+            private fun typeScaleSetting(
+                value: Double? = null
+            ): RangeSetting<Double> = RangeSetting(
                 key = Setting.TYPE_SCALE,
-                value = 1.2,
+                value = value ?: 1.2,
                 range = 1.0..2.0,
                 suggestedSteps = listOf(1.0, 1.067, 1.125, 1.2, 1.25, 1.333, 1.414, 1.5, 1.618),
-                activator = RequiresPublisherStylesDisabled
+                activator = requiresPublisherStylesDisabled
             )
 
             /**
@@ -342,83 +521,83 @@ sealed class EpubSettings : Configurable.Settings {
              *
              * This setting is automatically derived from the language if no preference is given.
              */
-            val VERTICAL_TEXT: ToggleSetting = ToggleSetting(
+            private fun verticalTextSetting(
+                value: Boolean? = null
+            ): ToggleSetting = ToggleSetting(
                 key = Setting.VERTICAL_TEXT,
-                value = false,
+                value = value ?: false,
             )
 
             /** Space between words. */
-            val WORD_SPACING: PercentSetting = PercentSetting(
+            private fun wordSpacingSetting(
+                layoutResolver: (Preferences) -> Layout = { Layout() },
+                value: Double? = null
+            ): PercentSetting = PercentSetting(
                 key = Setting.WORD_SPACING,
-                value = 0.0,
-                activator = RequiresPublisherStylesDisabled
+                value = value ?: 0.0,
+                activator = requiresPublisherStylesDisabled
+                    + requiresStylesheet(layoutResolver, Stylesheets.Default)
             )
 
-            private object RequiresPublisherStylesDisabled : SettingActivator {
+            /** [SettingActivator] for settings requiring the publisher styles to be disabled. */
+            private val requiresPublisherStylesDisabled = RequiresPreferenceSettingActivator(
+                key = Setting.PUBLISHER_STYLES,
+                value = false
+            )
+
+            /** [SettingActivator] for settings active only with the given [theme]. */
+            private fun requiresTheme(theme: Theme) = RequiresPreferenceSettingActivator(
+                key = Setting.THEME,
+                value = theme
+            )
+
+            /** [SettingActivator] for settings active when the scroll is enabled or disabled. */
+            private fun requiresScroll(scroll: Boolean) = RequiresPreferenceSettingActivator(
+                key = Setting.SCROLL,
+                value = scroll
+            )
+
+            /** [SettingActivator] for settings active only with the given layout [stylesheet]. */
+            private fun requiresStylesheet(layoutResolver: (Preferences) -> Layout, value: Stylesheets) =
+                MatchLayoutSettingActivator(layoutResolver) { layout ->
+                    layout.stylesheets == value
+                }
+
+            /**
+             * [SettingActivator] for settings active when the layout stylesheet matches the given
+             * condition.
+             */
+            private fun requiresStylesheet(layoutResolver: (Preferences) -> Layout, matches: (Stylesheets) -> Boolean) =
+                MatchLayoutSettingActivator(layoutResolver) { layout ->
+                    matches(layout.stylesheets)
+                }
+
+            private class MatchLayoutSettingActivator(
+                val layoutResolver: (Preferences) -> Layout,
+                val matches: (Layout) -> Boolean
+            ) : SettingActivator {
                 override fun isActiveWithPreferences(preferences: Preferences): Boolean =
-                    preferences[PUBLISHER_STYLES] == false
+                    matches(layoutResolver(preferences))
 
                 override fun activateInPreferences(preferences: MutablePreferences) {
-                    preferences[PUBLISHER_STYLES] = false
+                    // Cannot activate automatically.
                 }
             }
-        }
 
-        override fun update(metadata: Metadata, preferences: Preferences, defaults: Preferences): Reflowable {
-            val language = language.copyFirstValidValueFrom(preferences, defaults, fallback = metadata.language)
+            private fun createLayoutResolver(metadata: Metadata, defaults: Preferences): (Preferences) -> Layout =
+                { preferences ->
+                    val language = languageSetting().firstValidValue(preferences, defaults) ?: metadata.language
+                    val readingProgression = readingProgressionSetting()
 
-            val layout = Layout.from(
-                language = language.value,
-                hasMultipleLanguages =
-                    if (language.value != null) false
-                    else metadata.languages.size > 1,
-                readingProgression =  (preferences[readingProgression] ?: defaults[readingProgression])
-                    .takeIf { it == ReadingProgression.LTR || it == ReadingProgression.RTL }
-                    ?: metadata.readingProgression,
-                verticalText = (preferences[verticalText] ?: defaults[verticalText])
-            )
-            val isVerticalText = (layout.stylesheets == Stylesheets.CjkVertical)
-
-            val scroll = if (isVerticalText) null
-                else (scroll ?: SCROLL).copyFirstValidValueFrom(preferences, defaults, fallback = SCROLL)
-
-            val isPaginated = (scroll?.value == false)
-
-            return copy(
-                backgroundColor = backgroundColor.copyFirstValidValueFrom(preferences, defaults, fallback = BACKGROUND_COLOR),
-                columnCount = if (isPaginated) (columnCount ?: COLUMN_COUNT).copyFirstValidValueFrom(preferences, defaults, fallback = COLUMN_COUNT)
-                    else null,
-                fontFamily = fontFamily.copyFirstValidValueFrom(preferences, defaults, fallback = FONT_FAMILY),
-                fontSize = fontSize.copyFirstValidValueFrom(preferences, defaults, fallback = FONT_SIZE),
-                hyphens = if (layout.stylesheets != Stylesheets.Default) null
-                    else (hyphens ?: HYPHENS).copyFirstValidValueFrom(preferences, defaults, fallback = HYPHENS),
-                imageFilter = if (preferences[theme] != Theme.DARK) null
-                    else (imageFilter ?: IMAGE_FILTER).copyFirstValidValueFrom(preferences, defaults, fallback = IMAGE_FILTER),
-                language = language,
-                letterSpacing = if (layout.stylesheets != Stylesheets.Default) null
-                    else (letterSpacing ?: LETTER_SPACING).copyFirstValidValueFrom(preferences, defaults, fallback = LETTER_SPACING),
-                ligatures = if (layout.stylesheets != Stylesheets.Rtl) null
-                    else (ligatures ?: LIGATURES).copyFirstValidValueFrom(preferences, defaults, fallback = LIGATURES),
-                lineHeight = lineHeight.copyFirstValidValueFrom(preferences, defaults, fallback = LINE_HEIGHT),
-                pageMargins = if (isPaginated) (pageMargins ?: PAGE_MARGINS).copyFirstValidValueFrom(preferences, defaults, fallback = PAGE_MARGINS)
-                    else null,
-                paragraphIndent = if (layout.stylesheets == Stylesheets.CjkVertical || layout.stylesheets == Stylesheets.CjkHorizontal) null
-                    else (paragraphIndent ?: PARAGRAPH_INDENT).copyFirstValidValueFrom(preferences, defaults, fallback = PARAGRAPH_INDENT),
-                paragraphSpacing = paragraphSpacing.copyFirstValidValueFrom(preferences, defaults, fallback = PARAGRAPH_SPACING),
-                publisherStyles = publisherStyles.copyFirstValidValueFrom(preferences, defaults, fallback = PUBLISHER_STYLES),
-                readingProgression = READING_PROGRESSION.copy(value = layout.readingProgression),
-                scroll = scroll,
-                textAlign = if (layout.stylesheets == Stylesheets.CjkVertical || layout.stylesheets == Stylesheets.CjkHorizontal) null
-                    else (textAlign ?: TEXT_ALIGN).copyFirstValidValueFrom(preferences, defaults, fallback = TEXT_ALIGN),
-                textColor = textColor.copyFirstValidValueFrom( preferences, defaults, fallback = TEXT_COLOR),
-                textNormalization = textNormalization.copyFirstValidValueFrom(preferences, defaults, fallback = TEXT_NORMALIZATION),
-                theme = theme.copyFirstValidValueFrom(preferences, defaults, fallback = THEME),
-                typeScale = typeScale.copyFirstValidValueFrom( preferences, defaults, fallback = TYPE_SCALE),
-                verticalText = VERTICAL_TEXT.copy(value = isVerticalText),
-                wordSpacing = if (layout.stylesheets != Stylesheets.Default) null
-                    else (wordSpacing ?: WORD_SPACING).copyFirstValidValueFrom( preferences, defaults, fallback = WORD_SPACING),
-                layout = layout
-            )
+                    Layout.from(
+                        language = language,
+                        hasMultipleLanguages = if (language == null) metadata.languages.size > 1 else false,
+                        readingProgression = readingProgression.firstValidValue(preferences, defaults)
+                            ?: readingProgression.validate(metadata.readingProgression)
+                            ?: ReadingProgression.AUTO,
+                        verticalText = verticalTextSetting().firstValidValue(preferences, defaults)
+                    )
+                }
         }
     }
 }
@@ -431,52 +610,50 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
         copy(
             layout = settings.layout,
             userProperties = userProperties.copy(
-                view = when (scroll?.value) {
-                    null -> null
+                view = when (scroll.value) {
                     false -> View.PAGED
                     true -> View.SCROLL
                 },
-                colCount = when (columnCount?.value) {
+                colCount = when (columnCount.value) {
                     ColumnCount.ONE -> ColCount.ONE
                     ColumnCount.TWO -> ColCount.TWO
                     else -> ColCount.AUTO
                 },
-                pageMargins = pageMargins?.value,
+                pageMargins = pageMargins.value,
                 appearance = when (theme.value) {
                     Theme.LIGHT -> null
                     Theme.DARK -> Appearance.NIGHT
                     Theme.SEPIA -> Appearance.SEPIA
                 },
-                darkenImages = imageFilter?.value?.let { it == ImageFilter.DARKEN },
-                invertImages = imageFilter?.value?.let { it == ImageFilter.INVERT },
+                darkenImages = imageFilter.value == ImageFilter.DARKEN,
+                invertImages = imageFilter.value == ImageFilter.INVERT,
                 textColor = textColor.value
                     .takeIf { it != Color.AUTO }
-                    ?.let { CssColor.int(it.int) },
+                    ?.let { CssColor.Int(it.int) },
                 backgroundColor = backgroundColor.value
                     .takeIf { it != Color.AUTO }
-                    ?.let { CssColor.int(it.int) },
+                    ?.let { CssColor.Int(it.int) },
                 fontOverride = (fontFamily.value != null || (textNormalization.value == TextNormalization.ACCESSIBILITY)),
                 fontFamily = fontFamily.value?.toCss(),
                 // Font size is handled natively with WebSettings.textZoom.
                 // See https://github.com/readium/mobile/issues/1#issuecomment-652431984
 //                fontSize = fontSize.value
-//                    ?.let { Length.Relative.Percent(it) },
+//                    ?.let { Length.Percent(it) },
                 advancedSettings = !publisherStyles.value,
                 typeScale = typeScale.value,
-                textAlign = when (textAlign?.value) {
+                textAlign = when (textAlign.value) {
                     TextAlign.JUSTIFY -> CssTextAlign.JUSTIFY
                     TextAlign.LEFT -> CssTextAlign.LEFT
                     TextAlign.RIGHT -> CssTextAlign.RIGHT
                     TextAlign.START, TextAlign.CENTER, TextAlign.END -> CssTextAlign.START
-                    else -> null
                 },
                 lineHeight = Either(lineHeight.value),
-                paraSpacing = Length.Relative.Rem(paragraphSpacing.value),
-                paraIndent = paragraphIndent?.run { Length.Relative.Rem(value) },
-                wordSpacing = wordSpacing?.run { Length.Relative.Rem(value) },
-                letterSpacing = letterSpacing?.run { Length.Relative.Rem(value / 2) },
-                bodyHyphens = hyphens?.run { if (value) Hyphens.AUTO else Hyphens.NONE },
-                ligatures = ligatures?.run { if (value) Ligatures.COMMON else Ligatures.NONE },
+                paraSpacing = Length.Rem(paragraphSpacing.value),
+                paraIndent = Length.Rem(paragraphIndent.value),
+                wordSpacing = Length.Rem(wordSpacing.value),
+                letterSpacing = Length.Rem(letterSpacing.value / 2),
+                bodyHyphens = if (hyphens.value) Hyphens.AUTO else Hyphens.NONE,
+                ligatures = if (ligatures.value) Ligatures.COMMON else Ligatures.NONE,
                 a11yNormalize = textNormalization.value == TextNormalization.ACCESSIBILITY,
                 overrides = mapOf(
                     "font-weight" to if (textNormalization.value == TextNormalization.BOLD) "bold" else null
@@ -489,4 +666,105 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
 private fun FontFamily.toCss(): List<String> = buildList {
     add(name)
     alternate?.let { addAll(it.toCss()) }
+}
+
+/**
+ * Loads the preferences from the legacy EPUB settings stored in the [SharedPreferences] with
+ * given [sharedPreferencesName].
+ *
+ * This can be used to migrate the legacy settings to the new [Preferences] format.
+ *
+ * If you changed the `fontFamilyValues` in the original Test App `UserSettings`, pass it to
+ * [fontFamilies] to migrate the font family properly.
+ */
+@ExperimentalReadiumApi
+fun Preferences.Companion.fromLegacyEpubSettings(
+    context: Context,
+    sharedPreferencesName: String = "org.readium.r2.settings",
+    fontFamilies: List<String> = listOf(
+        "Original", "PT Serif", "Roboto", "Source Sans Pro", "Vollkorn", "OpenDyslexic",
+        "AccessibleDfA", "IA Writer Duospace"
+    )
+): Preferences {
+    val sp = context.getSharedPreferences(sharedPreferencesName, Context.MODE_PRIVATE)
+
+    var fontFamily: FontFamily? = null
+    if (sp.contains("fontFamily")) {
+        fontFamily = sp.getInt("fontFamily", 0)
+            .let { fontFamilies.getOrNull(it) }
+            .takeUnless { it == "Original" }
+            ?.let { FontFamily(it) }
+    }
+
+    val fontFamilies = listOfNotNull(fontFamily)
+    val settings = Reflowable(
+        fontFamilies = fontFamilies
+    )
+
+    return Preferences {
+        set(settings.fontFamily, fontFamily)
+
+        if (sp.contains("appearance")) {
+            val appearance = sp.getInt("appearance", 0)
+            set(settings.theme, when (appearance) {
+                0 -> Theme.LIGHT
+                1 -> Theme.SEPIA
+                2 -> Theme.DARK
+                else -> null
+            })
+        }
+
+        if (sp.contains("scroll")) {
+            set(settings.scroll, sp.getBoolean("scroll", false))
+        }
+
+        if (sp.contains("colCount")) {
+            val colCount = sp.getInt("colCount", 0)
+            set(settings.columnCount, when (colCount) {
+                0 -> ColumnCount.AUTO
+                1 -> ColumnCount.ONE
+                2 -> ColumnCount.TWO
+                else -> null
+            })
+        }
+
+        if (sp.contains("pageMargins")) {
+            val pageMargins = sp.getFloat("pageMargins", 1.0f).toDouble()
+            set(settings.pageMargins, pageMargins)
+        }
+
+        if (sp.contains("fontSize")) {
+            val fontSize = (sp.getFloat("fontSize", 0f) / 100).toDouble()
+            set(settings.fontSize, fontSize)
+        }
+
+        if (sp.contains("textAlign")) {
+            val textAlign = sp.getInt("textAlign", 0)
+            set(settings.textAlign, when (textAlign) {
+                0 -> TextAlign.JUSTIFY
+                1 -> TextAlign.START
+                else -> null
+            })
+        }
+
+        if (sp.contains("wordSpacing")) {
+            val wordSpacing = sp.getFloat("wordSpacing", 0f).toDouble()
+            set(settings.wordSpacing, wordSpacing)
+        }
+
+        if (sp.contains("letterSpacing")) {
+            val letterSpacing = sp.getFloat("letterSpacing", 0f).toDouble() * 2
+            set(settings.letterSpacing, letterSpacing)
+        }
+
+        if (sp.contains("lineHeight")) {
+            val lineHeight = sp.getFloat("lineHeight", 1.2f).toDouble()
+            set(settings.lineHeight, lineHeight)
+        }
+
+        if (sp.contains("advancedSettings")) {
+            val advancedSettings = sp.getBoolean("advancedSettings", false)
+            set(settings.publisherStyles, !advancedSettings)
+        }
+    }
 }

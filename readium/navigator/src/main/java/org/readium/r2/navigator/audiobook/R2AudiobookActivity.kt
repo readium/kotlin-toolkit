@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.widget.SeekBar
@@ -21,7 +22,6 @@ import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.databinding.ActivityR2AudiobookBinding
-import org.readium.r2.navigator.extensions.withBaseUrl
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.isRestricted
@@ -425,4 +425,15 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
     }
 
+}
+
+internal fun Link.withBaseUrl(baseUrl: String): Link {
+    // Already an absolute URL?
+    if (Uri.parse(href).scheme != null) {
+        return this
+    }
+
+    check(!baseUrl.endsWith("/"))
+    check(href.startsWith("/"))
+    return copy(href = baseUrl + href)
 }

@@ -14,10 +14,8 @@ import kotlinx.parcelize.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.extensions.putIfNotEmpty
-import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 
 /**

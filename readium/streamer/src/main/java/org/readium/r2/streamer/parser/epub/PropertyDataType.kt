@@ -9,8 +9,6 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import timber.log.Timber
-
 internal val PACKAGE_RESERVED_PREFIXES = mapOf(
     "dcterms" to Vocabularies.DCTERMS,
     "media" to Vocabularies.MEDIA,

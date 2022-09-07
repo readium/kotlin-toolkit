@@ -13,9 +13,6 @@ import android.content.Context
 import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.*
-import android.view.KeyEvent
-import android.view.View
-import android.view.ViewGroup
 import android.view.animation.Interpolator
 import android.widget.EdgeEffect
 import android.widget.Scroller
@@ -27,7 +24,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.BuildConfig.DEBUG
-import org.readium.r2.shared.SCROLL_REF
 import timber.log.Timber
 import kotlin.math.*
 

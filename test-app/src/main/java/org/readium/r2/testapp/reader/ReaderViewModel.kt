@@ -12,21 +12,14 @@ import android.graphics.Color
 import android.os.Bundle
 import androidx.annotation.ColorInt
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.paging.*
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
-import org.readium.r2.navigator.Navigator
-import org.readium.r2.navigator.epub.EpubNavigatorFragment
-import org.readium.r2.navigator.settings.Configurable
-import org.readium.r2.navigator.settings.MutablePreferences
-import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
@@ -74,7 +67,7 @@ class ReaderViewModel(
     val settings: UserSettingsViewModel = UserSettingsViewModel(
         application = application,
         bookId = readerInitData.bookId,
-        profile = readerInitData.publication.profile,
+        kind = readerInitData.navigatorKind,
         scope = viewModelScope
     )
 

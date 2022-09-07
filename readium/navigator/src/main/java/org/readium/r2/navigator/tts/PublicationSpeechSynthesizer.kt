@@ -17,7 +17,10 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.services.content.*
+import org.readium.r2.shared.publication.services.content.Content
+import org.readium.r2.shared.publication.services.content.ContentTokenizer
+import org.readium.r2.shared.publication.services.content.TextContentTokenizer
+import org.readium.r2.shared.publication.services.content.content
 import org.readium.r2.shared.util.*
 import org.readium.r2.shared.util.tokenizer.TextUnit
 import java.util.*

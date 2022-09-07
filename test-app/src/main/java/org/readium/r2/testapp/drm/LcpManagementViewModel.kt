@@ -10,7 +10,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import org.readium.r2.lcp.LcpLicense
-import org.readium.r2.lcp.MaterialRenewListener
 import org.readium.r2.shared.util.Try
 import java.util.*
 

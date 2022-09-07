@@ -60,8 +60,6 @@ class Application : android.app.Application() {
 
         readium = Readium(this)
 
-        readium.onAppStart()
-
         storageDir = computeStorageDir()
 
         /*
@@ -92,11 +90,6 @@ class Application : android.app.Application() {
                 )
             }
 
-    }
-
-    override fun onTerminate() {
-        super.onTerminate()
-        readium.onAppTerminate()
     }
 
     private fun computeStorageDir(): File {

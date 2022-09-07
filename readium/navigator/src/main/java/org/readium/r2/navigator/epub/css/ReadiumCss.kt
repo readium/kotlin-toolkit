@@ -14,7 +14,6 @@ import org.readium.r2.navigator.settings.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
 
-// FIXME: Custom Fonts
 @ExperimentalReadiumApi
 data class ReadiumCss(
     val layout: Layout = Layout(language = null, Layout.Stylesheets.Default, ReadingProgression.LTR),
@@ -162,6 +161,9 @@ data class ReadiumCss(
             Layout.HtmlDir.Rtl -> "rtl"
         } ?: return
 
+        // Removes any dir attributes in html/body.
+        content.replace(0, content.length, content.replace(dirRegex, "$1"))
+
         val injectable = " dir=\"$dir\""
         content.insert(content.indexForTagAttributes("html"), injectable)
         content.insert(content.indexForTagAttributes("body"), injectable)
@@ -213,3 +215,5 @@ data class ReadiumCss(
                 ?: throw IllegalArgumentException("No <$tag> opening tag found in this resource")
         ) + tag.length + 1
 }
+
+private val dirRegex = Regex("""(<(?:html|body)[^\>]*)\s+dir=[\"']\w*[\"']""", setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))

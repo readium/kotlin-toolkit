@@ -10,9 +10,13 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
+import org.json.JSONObject
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.util.logging.WarningLogger
 
 /**
  * Set of preferences used to update a [Configurable]'s settings.
@@ -29,7 +33,7 @@ import org.readium.r2.shared.extensions.tryOrLog
  *
  *     // Build a new set of Preferences, using the Setting objects as keys.
  *     val prefs = Preferences {
- *         set(settings.overflow, Overflow.PAGINATED)
+ *         set(settings.scroll, false)
  *         increment(settings.fontSize)
  *     }
  *
@@ -59,34 +63,17 @@ open class Preferences(
         : this(preferences.values.toMap())
 
     /**
-     * Creates a [Preferences] object from its JSON representation.
-     */
-    constructor(jsonString: String?)
-        : this(jsonString
-            ?.let {
-                tryOrLog { Json.parseToJsonElement(it) } as? JsonObject
-            }
-            ?: buildJsonObject {}
-        )
-
-    /**
-     * Creates a [Preferences] object from its JSON representation.
-     */
-    constructor(json: JsonObject)
-        : this(json.toMap())
-
-    /**
      * Creates a copy of this [Preferences] receiver, keeping only the preferences for the given
      * settings.
      */
-    fun filter(vararg settings: Setting<*, *>): Preferences =
+    fun filter(vararg settings: Setting<*>): Preferences =
         filter(*settings.map { it.key }.toTypedArray())
 
     /**
      * Creates a copy of this [Preferences] receiver, keeping only the preferences for the given
      * settings.
      */
-    fun filterNot(vararg settings: Setting<*, *>): Preferences =
+    fun filterNot(vararg settings: Setting<*>): Preferences =
         filterNot(*settings.map { it.key }.toTypedArray())
 
     /**
@@ -125,8 +112,16 @@ open class Preferences(
     /**
      * Gets the preference for the given [setting], if set.
      */
-    operator fun <V> get(setting: Setting<V, *>): V? =
-        values[setting.key]?.let { setting.decode(it) }
+    operator fun <V> get(setting: Setting<V>): V? =
+        get(setting.key, coder = setting)
+
+    /**
+     * Gets the preference for the given [setting] key, if set.
+     *
+     * The value will be decoded using [coder].
+     */
+    operator fun <V> get(key: String, coder: SettingCoder<V>): V? =
+        values[key]?.let { coder.decode(it) }
 
     /**
      * Serializes this [Preferences] to a JSON object.
@@ -148,6 +143,24 @@ open class Preferences(
 
     override fun toString(): String =
         toJsonString()
+
+    companion object {
+        /**
+         * Creates a [Preferences] object from its JSON representation.
+         */
+        fun fromJson(json: JsonObject?): Preferences? {
+            json ?: return null
+            return Preferences(json.toMap())
+        }
+
+        /**
+         * Creates a [Preferences] object from its JSON representation.
+         */
+        fun fromJson(jsonString: String): Preferences? {
+            val json = tryOrNull { Json.parseToJsonElement(jsonString) as? JsonObject }
+            return fromJson(json)
+        }
+    }
 }
 
 /**
@@ -165,8 +178,21 @@ class MutablePreferences(
     /**
      * Sets the preference for the given [setting].
      */
-    operator fun <V> set(setting: Setting<V, *>, preference: V?) {
+    operator fun <V> set(setting: Setting<V>, preference: V?) {
         set(setting, preference, activate = true)
+    }
+
+    /**
+     * Sets the preference for the given setting [key].
+     *
+     * @param coder Coder used to encode the value.
+     */
+    operator fun <V> set(key: String, coder: SettingCoder<V>, preference: V?) {
+        if (preference == null) {
+            values.remove(key)
+        } else {
+            values[key] = coder.encode(preference)
+        }
     }
 
     /**
@@ -174,24 +200,20 @@ class MutablePreferences(
      *
      * @param activate Indicates whether the setting will be force activated if needed.
      */
-    fun <V> set(setting: Setting<V, *>, preference: V?, activate: Boolean = true) {
-        val encodedValue = preference
-            ?.let { setting.validate(it) }
-            ?.let { setting.encode(it) }
-        if (encodedValue == null) {
-            values.remove(setting.key)
-        } else {
-            values[setting.key] = encodedValue
-            if (activate) {
-                activate(setting)
-            }
+    fun <V> set(setting: Setting<V>, preference: V?, activate: Boolean = true) {
+        val value = preference?.let { setting.validate(it) }
+
+        set(key = setting.key, coder = setting.coder, preference = value)
+
+        if (value != null && activate) {
+            activate(setting)
         }
     }
 
     /**
      * Removes the preference for the given [setting].
      */
-    fun <V> remove(setting: Setting<V, *>?) {
+    fun <V> remove(setting: Setting<V>?) {
         setting ?: return
         values.remove(setting.key)
     }
@@ -222,7 +244,7 @@ class MutablePreferences(
     /**
      * Returns the preference for the [Setting] receiver, or its current value when missing.
      */
-    internal val <V> Setting<V, *>.prefOrValue: V get() =
+    internal val <V> Setting<V>.prefOrValue: V get() =
         get(this) ?: value
 }
 
@@ -235,14 +257,14 @@ class MutablePreferences(
  * Use [MutablePreferences.activate] to activate it.
  */
 @ExperimentalReadiumApi
-fun <T> Preferences.isActive(setting: Setting<T, *>): Boolean =
+fun <T> Preferences.isActive(setting: Setting<T>): Boolean =
     setting.isActiveWithPreferences(this)
 
 /**
  * Activates the given [setting] in the preferences, if needed.
  */
 @ExperimentalReadiumApi
-fun <T> MutablePreferences.activate(setting: Setting<T, *>) {
+fun <T> MutablePreferences.activate(setting: Setting<T>) {
     if (!isActive(setting)) {
         setting.activateInPreferences(this)
     }
@@ -254,7 +276,7 @@ fun <T> MutablePreferences.activate(setting: Setting<T, *>) {
  * @param activate Indicates whether the setting will be force activated if needed.
  */
 @ExperimentalReadiumApi
-fun <T> MutablePreferences.update(setting: Setting<T, *>, activate: Boolean = true, transform: (T) -> T) {
+fun <T> MutablePreferences.update(setting: Setting<T>, activate: Boolean = true, transform: (T) -> T) {
     set(setting, transform(setting.prefOrValue), activate = activate)
 }
 
@@ -294,7 +316,7 @@ fun <E> MutablePreferences.toggle(setting: EnumSetting<E>, preference: E, activa
  */
 @ExperimentalReadiumApi
 fun <V : Comparable<V>> MutablePreferences.increment(setting: RangeSetting<V>, activate: Boolean = true, next: (V) -> V) {
-    val steps = setting.extras.suggestedSteps
+    val steps = setting.suggestedSteps
     if (steps == null) {
         update(setting, activate, next)
     } else {
@@ -314,7 +336,7 @@ fun <V : Comparable<V>> MutablePreferences.increment(setting: RangeSetting<V>, a
  */
 @ExperimentalReadiumApi
 fun <V : Comparable<V>> MutablePreferences.decrement(setting: RangeSetting<V>, activate: Boolean = true, previous: (V) -> V) {
-    val steps = setting.extras.suggestedSteps
+    val steps = setting.suggestedSteps
     if (steps == null) {
         update(setting, activate, previous)
     } else {
@@ -332,7 +354,7 @@ fun <V : Comparable<V>> MutablePreferences.decrement(setting: RangeSetting<V>, a
  * @param activate Indicates whether the setting will be force activated if needed.
  */
 @ExperimentalReadiumApi
-fun MutablePreferences.increment(setting: RangeSetting<Int>, amount: Int = setting.extras.suggestedIncrement ?: 1, activate: Boolean = true) {
+fun MutablePreferences.increment(setting: RangeSetting<Int>, amount: Int = setting.suggestedIncrement ?: 1, activate: Boolean = true) {
     increment(setting, activate) { it + amount }
 }
 
@@ -344,7 +366,7 @@ fun MutablePreferences.increment(setting: RangeSetting<Int>, amount: Int = setti
  * @param activate Indicates whether the setting will be force activated if needed.
  */
 @ExperimentalReadiumApi
-fun MutablePreferences.decrement(setting: RangeSetting<Int>, amount: Int = setting.extras.suggestedIncrement ?: 1, activate: Boolean = true) {
+fun MutablePreferences.decrement(setting: RangeSetting<Int>, amount: Int = setting.suggestedIncrement ?: 1, activate: Boolean = true) {
     decrement(setting, activate) { it - amount }
 }
 
@@ -367,7 +389,7 @@ fun MutablePreferences.adjustBy(setting: RangeSetting<Int>, amount: Int, activat
  * @param activate Indicates whether the setting will be force activated if needed.
  */
 @ExperimentalReadiumApi
-fun MutablePreferences.increment(setting: RangeSetting<Double>, amount: Double = setting.extras.suggestedIncrement ?: 0.1, activate: Boolean = true) {
+fun MutablePreferences.increment(setting: RangeSetting<Double>, amount: Double = setting.suggestedIncrement ?: 0.1, activate: Boolean = true) {
     increment(setting, activate) { it + amount }
 }
 
@@ -379,7 +401,7 @@ fun MutablePreferences.increment(setting: RangeSetting<Double>, amount: Double =
  * @param activate Indicates whether the setting will be force activated if needed.
  */
 @ExperimentalReadiumApi
-fun MutablePreferences.decrement(setting: RangeSetting<Double>, amount: Double = setting.extras.suggestedIncrement ?: 0.1, activate: Boolean = true) {
+fun MutablePreferences.decrement(setting: RangeSetting<Double>, amount: Double = setting.suggestedIncrement ?: 0.1, activate: Boolean = true) {
     decrement(setting, activate) { it - amount }
 }
 

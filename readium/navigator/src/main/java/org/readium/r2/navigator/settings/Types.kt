@@ -11,13 +11,24 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
 import org.readium.r2.shared.ExperimentalReadiumApi
+import android.graphics.Color as AndroidColor
+
+// https://github.com/readium/readium-css/blob/master/css/src/modules/ReadiumCSS-day_mode.css
+@ColorInt private val dayContentColor: Int = AndroidColor.parseColor("#121212")
+@ColorInt private val dayBackgroundColor: Int = AndroidColor.parseColor("#FFFFFF")
+// https://github.com/readium/readium-css/blob/master/css/src/modules/ReadiumCSS-night_mode.css
+@ColorInt private val nightContentColor: Int = AndroidColor.parseColor("#FEFEFE")
+@ColorInt private val nightBackgroundColor: Int = AndroidColor.parseColor("#000000")
+// https://github.com/readium/readium-css/blob/master/css/src/modules/ReadiumCSS-sepia_mode.css
+@ColorInt private val sepiaContentColor: Int = AndroidColor.parseColor("#121212")
+@ColorInt private val sepiaBackgroundColor: Int = AndroidColor.parseColor("#faf4e8")
 
 @ExperimentalReadiumApi
 @Serializable
-enum class Theme {
-    @SerialName("light") LIGHT,
-    @SerialName("dark") DARK,
-    @SerialName("sepia") SEPIA;
+enum class Theme(@ColorInt val contentColor: Int, @ColorInt val backgroundColor: Int) {
+    @SerialName("light") LIGHT(contentColor = dayContentColor, backgroundColor = dayBackgroundColor),
+    @SerialName("dark") DARK(contentColor = nightContentColor, backgroundColor = nightBackgroundColor),
+    @SerialName("sepia") SEPIA(contentColor = sepiaContentColor, backgroundColor = sepiaBackgroundColor);
 }
 
 @ExperimentalReadiumApi

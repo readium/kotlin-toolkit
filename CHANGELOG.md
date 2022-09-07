@@ -39,14 +39,37 @@ All notable changes to this project will be documented in this file. Take a look
         val result = navigator.evaluateJavascript("customInterface.api('argument')")
         ```
 * New [PSPDFKit](readium/adapters/pspdfkit) adapter for rendering PDF documents. [Take a look at the user guide](docs/guides/pdf.md).
-* A brand new text-to-speech implementation. [Take a look at the user guide](docs/guides/tts.md).
+* [A brand new text-to-speech implementation](docs/guides/tts.md).
+* [Support for custom fonts with the EPUB navigator](docs/guides/epub-custom-fonts.md).
+* New EPUB user settings, as part of [the revamped Settings API](docs/guides/navigator-settings.md):
+    * `backgroundColor` - Default page background color.
+    * `textColor` - Default page text color.
+    * `textNormalization` - Normalize font style, weight and variants using a specific strategy (force bold, accessibility).
+    * `imageFilter` - Filter applied to images in dark theme (darken, invert colors)
+    * `language` - Language of the publication content.
+    * `readingProgression` - Direction of the reading progression across resources, e.g. RTL.
+    * `typeScale` - Scale applied to all element font sizes.
+    * `paragraphIndent` - Text indentation for paragraphs.
+    * `paragraphSpacing` - Vertical margins for paragraphs.
+    * `hyphens` - Enable hyphenation.
+    * `ligatures` - Enable ligatures in Arabic.
 
 ### Changed
 
 #### Shared
 
 * `TransformingResource` now caches its content by default, as it is the correct behavior in most cases. Set `cacheBytes = false` explicitly to revert to the previous behavior.
-* The previous PDF navigator was extracted in its own package to support third-party PDF engines. **This is a breaking change** if your app supported PDF, take a look at [the migration guide](docs/migration-guide.md).
+* The previous PDF navigator was extracted in its own package to support third-party PDF engines. **This is a breaking change** if your app supported PDF, take a look at [the migration guide](docs/migration-guide.md#230).
+
+#### Navigator
+
+* The EPUB user settings API got revamped. [Take a look at the user guide](docs/guides/navigator-settings.md) and the [migration guide](docs/migration-guide.md#230) to learn how to use it.
+
+### Deprecated
+
+#### Streamer
+
+* The local HTTP server is not needed anymore to render EPUB publications. [Take a look at the migration guide](docs/migration-guide.md#230).
 
 ### Fixed
 

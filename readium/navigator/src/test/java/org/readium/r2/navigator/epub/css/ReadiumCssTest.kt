@@ -545,4 +545,49 @@ class HtmlInjectionTest {
             )
         )
     }
+
+    @Test
+    fun `Remove existing dir attributes in html and body`() {
+        val sut = ReadiumCss(
+            layout = Layout(
+                language = null,
+                stylesheets = Layout.Stylesheets.Default,
+                readingProgression = ReadingProgression.LTR
+            ),
+            assetsBaseHref = "/assets/"
+        )
+        assertEquals(
+            """
+                <?xml version="1.0" encoding="utf-8"?>
+                <html dir="ltr" xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+                    <head>
+                <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-before.css"/>
+                <style>audio[controls] { width: revert; height: revert; }</style>
+                
+                        <title>Publication</title>
+                        <link rel="stylesheet" href="style.css" type="text/css"/>
+                    
+                <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-after.css"/>
+                </head>
+                    <BODY dir="ltr">
+                        <p dir="rtl"></p>
+                    </body>
+                </html>
+            """.trimIndent(),
+            sut.injectHtml(
+                """
+                    <?xml version="1.0" encoding="utf-8"?>
+                    <html xmlns="http://www.w3.org/1999/xhtml" dir="rtl" xmlns:epub="http://www.idpf.org/2007/ops">
+                        <head>
+                            <title>Publication</title>
+                            <link rel="stylesheet" href="style.css" type="text/css"/>
+                        </head>
+                        <BODY DIR='rtl'>
+                            <p dir="rtl"></p>
+                        </body>
+                    </html>
+                """.trimIndent()
+            )
+        )
+    }
 }

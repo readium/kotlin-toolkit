@@ -21,16 +21,19 @@ import java.util.*
  * @param code BCP-47 language code
  */
 @Serializable(with = Language.Serializer::class)
-data class Language(val code: String) {
+class Language(code: String) {
 
     /**
      * Creates a [Language] from a Java [Locale].
      */
     constructor(locale: Locale) : this(code = locale.toLanguageTag())
 
-    val normalizedCode by lazy { code.replace("_", "-") }
+    /**
+     * BCP-47 language code.
+     */
+    val code = code.replace("_", "-")
 
-    val locale: Locale by lazy { Locale.forLanguageTag(normalizedCode) }
+    val locale: Locale by lazy { Locale.forLanguageTag(code) }
 
     /** Indicates whether this language is a regional variant. */
     val isRegional: Boolean by lazy {
@@ -39,7 +42,20 @@ data class Language(val code: String) {
 
     /** Returns this [Language] after stripping the region. */
     fun removeRegion(): Language =
-        Language(normalizedCode.split("-", limit = 2).first())
+        Language(code.split("-", limit = 2).first())
+
+    override fun toString(): String =
+        "Language($code)"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        if (code != (other as Language).code) return false
+        return true
+    }
+
+    override fun hashCode(): Int =
+        code.hashCode()
 
     object Serializer : KSerializer<Language> {
         override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Language", PrimitiveKind.STRING)
