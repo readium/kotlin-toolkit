@@ -39,8 +39,11 @@ class PreferencesStore(
      */
     operator fun get(bookId: Long, kind: NavigatorKind?): Flow<Preferences> =
         store.data.map { data ->
-            val profilePrefs = Preferences.fromJson(data[key(kind)]) ?: Preferences()
-            val bookPrefs = Preferences.fromJson(data[key(bookId)]) ?: Preferences()
+            fun prefs(key: JetpackPreferences.Key<String>): Preferences =
+                data[key]?.let { Preferences.fromJson (it) } ?: Preferences()
+
+            val profilePrefs = prefs(key(kind))
+            val bookPrefs = prefs(key(bookId))
             profilePrefs + bookPrefs
         }
 

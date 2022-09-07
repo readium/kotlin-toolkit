@@ -87,11 +87,15 @@ class PreferencesTest {
     }
 
     @Test
-    fun `Parse from empty or invalid JSON`() {
-        assertEquals(Preferences(), Preferences(null))
-        assertEquals(Preferences(), Preferences(""))
-        assertEquals(Preferences(), Preferences("{}"))
-        assertEquals(Preferences(), Preferences("invalid"))
+    fun `Parse from empty JSON`() {
+        assertEquals(Preferences(), Preferences.fromJson("{}"))
+    }
+
+    @Test
+    fun `Parse from invalid JSON`() {
+        assertNull(Preferences.fromJson(null))
+        assertNull(Preferences.fromJson(""))
+        assertNull(Preferences.fromJson("invalid"))
     }
 
     @Test
@@ -102,7 +106,7 @@ class PreferencesTest {
                 "fontSize" to JsonPrimitive(1.2),
                 "readingProgression" to JsonPrimitive("ltr")
             )),
-            Preferences("""{"publisherStyles":false,"fontSize":1.2,"readingProgression":"ltr"}"""),
+            Preferences.fromJson("""{"publisherStyles":false,"fontSize":1.2,"readingProgression":"ltr"}"""),
         )
     }
 

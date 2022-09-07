@@ -156,8 +156,7 @@ open class Preferences(
         /**
          * Creates a [Preferences] object from its JSON representation.
          */
-        fun fromJson(jsonString: String?): Preferences? {
-            jsonString ?: return null
+        fun fromJson(jsonString: String): Preferences? {
             val json = tryOrNull { Json.parseToJsonElement(jsonString) as? JsonObject }
             return fromJson(json)
         }

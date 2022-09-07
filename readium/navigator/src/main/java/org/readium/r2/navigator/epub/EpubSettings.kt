@@ -17,6 +17,7 @@ import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.settings.Color
 import org.readium.r2.navigator.settings.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.Spread
@@ -92,7 +93,7 @@ sealed class EpubSettings : Configurable.Settings {
             )
         }
 
-        fun update(preferences: Preferences, defaults: Preferences): FixedLayout =
+        internal fun update(preferences: Preferences, defaults: Preferences): FixedLayout =
             FixedLayout(
                 language = languageSetting(
                     value = language.firstValidValue(preferences, defaults)
@@ -139,64 +140,34 @@ sealed class EpubSettings : Configurable.Settings {
      */
     @ExperimentalReadiumApi
     data class Reflowable internal constructor(
-        val backgroundColor: ColorSetting,
-        val columnCount: EnumSetting<ColumnCount>,
-        val fontFamily: EnumSetting<FontFamily?>,
-        val fontSize: PercentSetting,
-        val hyphens: ToggleSetting,
-        val imageFilter: EnumSetting<ImageFilter>,
-        override val language: Setting<Language?>,
-        val letterSpacing: PercentSetting,
-        val ligatures: ToggleSetting,
-        val lineHeight: RangeSetting<Double>,
-        val pageMargins: RangeSetting<Double>,
-        val paragraphIndent: PercentSetting,
-        val paragraphSpacing: PercentSetting,
-        val publisherStyles: ToggleSetting,
-        override val readingProgression: EnumSetting<ReadingProgression>,
-        val scroll: ToggleSetting,
-        val textAlign: EnumSetting<TextAlign>,
-        val textColor: ColorSetting,
-        val textNormalization: EnumSetting<TextNormalization>,
-        val theme: EnumSetting<Theme>,
-        val typeScale: RangeSetting<Double>,
-        val verticalText: ToggleSetting,
-        val wordSpacing: PercentSetting,
+        val backgroundColor: ColorSetting = backgroundColorSetting(),
+        val columnCount: EnumSetting<ColumnCount> = columnCountSetting(),
+        val fontFamily: EnumSetting<FontFamily?> = fontFamilySetting(),
+        val fontSize: PercentSetting = fontSizeSetting(),
+        val hyphens: ToggleSetting = hyphensSetting(),
+        val imageFilter: EnumSetting<ImageFilter> = imageFilterSetting(),
+        override val language: Setting<Language?> = languageSetting(),
+        val letterSpacing: PercentSetting = letterSpacingSetting(),
+        val ligatures: ToggleSetting = ligaturesSetting(),
+        val lineHeight: RangeSetting<Double> = lineHeightSetting(),
+        val pageMargins: RangeSetting<Double> = pageMarginsSetting(),
+        val paragraphIndent: PercentSetting = paragraphIndentSetting(),
+        val paragraphSpacing: PercentSetting = paragraphSpacingSetting(),
+        val publisherStyles: ToggleSetting = publisherStylesSetting(),
+        override val readingProgression: EnumSetting<ReadingProgression> = readingProgressionSetting(),
+        val scroll: ToggleSetting = scrollSetting(),
+        val textAlign: EnumSetting<TextAlign> = textAlignSetting(),
+        val textColor: ColorSetting = textColorSetting(),
+        val textNormalization: EnumSetting<TextNormalization> = textNormalizationSetting(),
+        val theme: EnumSetting<Theme> = themeSetting(),
+        val typeScale: RangeSetting<Double> = typeScaleSetting(),
+        val verticalText: ToggleSetting = verticalTextSetting(),
+        val wordSpacing: PercentSetting = wordSpacingSetting(),
 
         internal val layout: Layout
     ) : EpubSettings() {
 
-        constructor(
-            fontFamilies: List<FontFamily> = emptyList(),
-            namedColors: Map<String, Int> = emptyMap(),
-        ) : this(
-            backgroundColor = backgroundColorSetting(namedColors = namedColors),
-            columnCount = columnCountSetting(),
-            fontFamily = fontFamilySetting(fontFamilies = fontFamilies),
-            fontSize = fontSizeSetting(),
-            hyphens = hyphensSetting(),
-            imageFilter = imageFilterSetting(),
-            language = languageSetting(),
-            letterSpacing = letterSpacingSetting(),
-            ligatures = ligaturesSetting(),
-            lineHeight = lineHeightSetting(),
-            pageMargins = pageMarginsSetting(),
-            paragraphIndent = paragraphIndentSetting(),
-            paragraphSpacing = paragraphSpacingSetting(),
-            publisherStyles = publisherStylesSetting(),
-            readingProgression = readingProgressionSetting(),
-            scroll = scrollSetting(),
-            textAlign = textAlignSetting(),
-            textColor = backgroundColorSetting(namedColors = namedColors),
-            textNormalization = textNormalizationSetting(),
-            theme = themeSetting(),
-            typeScale = typeScaleSetting(),
-            verticalText = verticalTextSetting(),
-            wordSpacing = wordSpacingSetting(),
-            layout = Layout()
-        )
-
-        fun update(
+        internal fun update(
             metadata: Metadata,
             fontFamilies: List<FontFamily>,
             namedColors: Map<String, Int>,
@@ -251,8 +222,7 @@ sealed class EpubSettings : Configurable.Settings {
                     layoutResolver = layoutResolver,
                     value = paragraphIndent.firstValidValue(preferences, defaults),
                 ),
-                paragraphSpacing = paragraphIndentSetting(
-                    layoutResolver = layoutResolver,
+                paragraphSpacing = paragraphSpacingSetting(
                     value = paragraphSpacing.firstValidValue(preferences, defaults),
                 ),
                 publisherStyles = publisherStylesSetting(
@@ -294,6 +264,16 @@ sealed class EpubSettings : Configurable.Settings {
         }
 
         companion object {
+
+            operator fun invoke(
+                metadata: Metadata = Metadata(localizedTitle = LocalizedString("")),
+                fontFamilies: List<FontFamily> = emptyList(),
+                namedColors: Map<String, Int> = emptyMap(),
+                defaults: Preferences = Preferences(),
+                preferences: Preferences = Preferences(),
+            ) : Reflowable =
+                Reflowable(layout = Layout()).update(metadata, fontFamilies, namedColors, defaults = defaults, preferences = preferences)
+
             /** Default page background color. */
             private fun backgroundColorSetting(
                 value: Color? = null,

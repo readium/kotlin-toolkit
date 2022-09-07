@@ -48,7 +48,7 @@ class EpubSettingsFixedLayoutTest {
             set(sut.spread, Spread.LANDSCAPE)
         }
 
-        sut = sut.update(metadata(), preferences = preferences, defaults = defaults)
+        sut = sut.update(preferences = preferences, defaults = defaults)
         assertEquals(Language("fr"), sut.language.value)
         assertEquals(Spread.BOTH, sut.spread.value)
         assertEquals(ReadingProgression.LTR, sut.readingProgression.value)
@@ -64,16 +64,9 @@ class EpubSettingsFixedLayoutTest {
             set(sut.spread, Spread.BOTH)
         }
 
-        sut = sut.update(metadata(), preferences = Preferences(), defaults = defaults)
+        sut = sut.update(preferences = Preferences(), defaults = defaults)
         assertEquals(Language("fr"), sut.language.value)
         assertEquals(Spread.BOTH, sut.spread.value)
         assertEquals(ReadingProgression.LTR, sut.readingProgression.value)
     }
-
-    private fun metadata(language: String? = null, readingProgression: ReadingProgression = ReadingProgression.AUTO): Metadata =
-        Metadata(
-            localizedTitle = LocalizedString(""),
-            languages = listOfNotNull(language),
-            readingProgression = readingProgression
-        )
 }
