@@ -115,9 +115,9 @@ data class UserProperties(
     val textAlign: TextAlign? = null,
     val lineHeight: Either<Length, Double>? = null, // line-height supports unitless numbers
     val paraSpacing: Length? = null,
-    val paraIndent: Length.Relative.Rem? = null,
-    val wordSpacing: Length.Relative.Rem? = null,
-    val letterSpacing: Length.Relative.Rem? = null,
+    val paraIndent: Length.Rem? = null,
+    val wordSpacing: Length.Rem? = null,
+    val letterSpacing: Length.Rem? = null,
     val bodyHyphens: Hyphens? = null,
     val ligatures: Ligatures? = null,
 
@@ -241,7 +241,7 @@ data class RsProperties(
     val paraIndent: Length? = null,
 
     // Safeguards
-    val maxLineLength: Length.Relative.Rem? = null,
+    val maxLineLength: Length.Rem? = null,
     val maxMediaWidth: Length? = null,
     val maxMediaHeight: Length? = null,
     val boxSizingMedia: BoxSizing? = null,
@@ -362,24 +362,31 @@ enum class Appearance(private val css: String?) : Cssable {
 
 /** CSS color. */
 @ExperimentalReadiumApi
-data class Color(private val css: String) : Cssable {
-    override fun toCss(): String = css
+interface Color : Cssable {
 
-    companion object {
-        fun rgb(red: Int, green: Int, blue: Int): Color {
+    data class Rgb(val red: kotlin.Int, val green: kotlin.Int, val blue: kotlin.Int): Color {
+        init {
             require(red in 0..255)
             require(green in 0..255)
             require(blue in 0..255)
-            return Color("rgb($red, $green, $blue)")
         }
 
-        fun hex(color: String): Color {
+        override fun toCss(): String = "rgb($red, $green, $blue)"
+    }
+
+    @JvmInline
+    value class Hex(val color: String): Color {
+        init {
             require(Regex("^#(?:[0-9a-fA-F]{3}){1,2}$").matches(color))
-            return Color(color)
         }
 
-        fun int(@ColorInt color: Int): Color =
-            Color(String.format("#%06X", 0xFFFFFF and color))
+        override fun toCss(): String = color
+    }
+
+    @JvmInline
+    value class Int(@ColorInt val color: kotlin.Int): Color {
+        override fun toCss(): String =
+            String.format("#%06X", 0xFFFFFF and color)
     }
 }
 
@@ -388,93 +395,93 @@ data class Color(private val css: String) : Cssable {
 interface Length : Cssable {
 
     /** Absolute CSS length. */
-    interface Absolute : Length {
-        /** Centimeters */
-        @JvmInline
-        value class Cm(val value: Double) : Absolute {
-            override fun toCss(): String = value.toCss("cm")
-        }
+    interface Absolute : Length
 
-        /** Millimeters */
-        @JvmInline
-        value class Mm(val value: Double) : Absolute {
-            override fun toCss(): String = value.toCss("mm")
-        }
+    /** Centimeters */
+    @JvmInline
+    value class Cm(val value: Double) : Absolute {
+        override fun toCss(): String = value.toCss("cm")
+    }
 
-        /** Inches */
-        @JvmInline
-        value class In(val value: Double) : Absolute {
-            override fun toCss(): String = value.toCss("in")
-        }
+    /** Millimeters */
+    @JvmInline
+    value class Mm(val value: Double) : Absolute {
+        override fun toCss(): String = value.toCss("mm")
+    }
 
-        /** Pixels */
-        @JvmInline
-        value class Px(val value: Double) : Absolute {
-            override fun toCss(): String = value.toCss("px")
-        }
+    /** Inches */
+    @JvmInline
+    value class In(val value: Double) : Absolute {
+        override fun toCss(): String = value.toCss("in")
+    }
 
-        /** Points */
-        @JvmInline
-        value class Pt(val value: Double) : Absolute {
-            override fun toCss(): String = value.toCss("pt")
-        }
+    /** Pixels */
+    @JvmInline
+    value class Px(val value: Double) : Absolute {
+        override fun toCss(): String = value.toCss("px")
+    }
 
-        /** Picas */
-        @JvmInline
-        value class Pc(val value: Double) : Absolute {
-            override fun toCss(): String = value.toCss("pc")
-        }
+    /** Points */
+    @JvmInline
+    value class Pt(val value: Double) : Absolute {
+        override fun toCss(): String = value.toCss("pt")
+    }
+
+    /** Picas */
+    @JvmInline
+    value class Pc(val value: Double) : Absolute {
+        override fun toCss(): String = value.toCss("pc")
     }
 
     /** Relative CSS length. */
-    interface Relative : Length {
-        /** Relative to the font-size of the element. */
-        @JvmInline
-        value class Em(val value: Double) : Relative {
-            override fun toCss(): String = value.toCss("em")
-        }
+    interface Relative : Length
 
-        /** Relative to the width of the "0" (zero). */
-        @JvmInline
-        value class Ch(val value: Double) : Relative {
-            override fun toCss(): String = value.toCss("ch")
-        }
+    /** Relative to the font-size of the element. */
+    @JvmInline
+    value class Em(val value: Double) : Relative {
+        override fun toCss(): String = value.toCss("em")
+    }
 
-        /** Relative to font-size of the root element. */
-        @JvmInline
-        value class Rem(val value: Double) : Relative {
-            override fun toCss(): String = value.toCss("rem")
-        }
+    /** Relative to the width of the "0" (zero). */
+    @JvmInline
+    value class Ch(val value: Double) : Relative {
+        override fun toCss(): String = value.toCss("ch")
+    }
 
-        /** Relative to 1% of the width of the viewport. */
-        @JvmInline
-        value class Vw(val value: Double) : Relative {
-            override fun toCss(): String = value.toCss("vw")
-        }
+    /** Relative to font-size of the root element. */
+    @JvmInline
+    value class Rem(val value: Double) : Relative {
+        override fun toCss(): String = value.toCss("rem")
+    }
 
-        /** Relative to 1% of the height of the viewport. */
-        @JvmInline
-        value class Vh(val value: Double) : Relative {
-            override fun toCss(): String = value.toCss("vh")
-        }
+    /** Relative to 1% of the width of the viewport. */
+    @JvmInline
+    value class Vw(val value: Double) : Relative {
+        override fun toCss(): String = value.toCss("vw")
+    }
 
-        /** Relative to 1% of viewport's smaller dimension. */
-        @JvmInline
-        value class VMin(val value: Double) : Relative {
-            override fun toCss(): String = value.toCss("vmin")
-        }
+    /** Relative to 1% of the height of the viewport. */
+    @JvmInline
+    value class Vh(val value: Double) : Relative {
+        override fun toCss(): String = value.toCss("vh")
+    }
 
-        /** Relative to 1% of viewport's larger dimension. */
-        @JvmInline
-        value class VMax(val value: Double) : Relative {
-            override fun toCss(): String = value.toCss("vmax")
-        }
+    /** Relative to 1% of viewport's smaller dimension. */
+    @JvmInline
+    value class VMin(val value: Double) : Relative {
+        override fun toCss(): String = value.toCss("vmin")
+    }
 
-        /** Relative to the parent element. */
-        @JvmInline
-        value class Percent(val value: Double) : Relative {
-            override fun toCss(): String = (value * 100).toCss("%")
-        }
+    /** Relative to 1% of viewport's larger dimension. */
+    @JvmInline
+    value class VMax(val value: Double) : Relative {
+        override fun toCss(): String = value.toCss("vmax")
+    }
+
+    /** Relative to the parent element. */
+    @JvmInline
+    value class Percent(val value: Double) : Relative {
+        override fun toCss(): String = (value * 100).toCss("%")
     }
 }
 

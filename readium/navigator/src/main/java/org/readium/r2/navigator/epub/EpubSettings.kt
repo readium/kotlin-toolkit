@@ -649,16 +649,16 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
                 invertImages = imageFilter.value == ImageFilter.INVERT,
                 textColor = textColor.value
                     .takeIf { it != Color.AUTO }
-                    ?.let { CssColor.int(it.int) },
+                    ?.let { CssColor.Int(it.int) },
                 backgroundColor = backgroundColor.value
                     .takeIf { it != Color.AUTO }
-                    ?.let { CssColor.int(it.int) },
+                    ?.let { CssColor.Int(it.int) },
                 fontOverride = (fontFamily.value != null || (textNormalization.value == TextNormalization.ACCESSIBILITY)),
                 fontFamily = fontFamily.value?.toCss(),
                 // Font size is handled natively with WebSettings.textZoom.
                 // See https://github.com/readium/mobile/issues/1#issuecomment-652431984
 //                fontSize = fontSize.value
-//                    ?.let { Length.Relative.Percent(it) },
+//                    ?.let { Length.Percent(it) },
                 advancedSettings = !publisherStyles.value,
                 typeScale = typeScale.value,
                 textAlign = when (textAlign.value) {
@@ -668,10 +668,10 @@ fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
                     TextAlign.START, TextAlign.CENTER, TextAlign.END -> CssTextAlign.START
                 },
                 lineHeight = Either(lineHeight.value),
-                paraSpacing = Length.Relative.Rem(paragraphSpacing.value),
-                paraIndent = Length.Relative.Rem(paragraphIndent.value),
-                wordSpacing = Length.Relative.Rem(wordSpacing.value),
-                letterSpacing = Length.Relative.Rem(letterSpacing.value / 2),
+                paraSpacing = Length.Rem(paragraphSpacing.value),
+                paraIndent = Length.Rem(paragraphIndent.value),
+                wordSpacing = Length.Rem(wordSpacing.value),
+                letterSpacing = Length.Rem(letterSpacing.value / 2),
                 bodyHyphens = if (hyphens.value) Hyphens.AUTO else Hyphens.NONE,
                 ligatures = if (ligatures.value) Ligatures.COMMON else Ligatures.NONE,
                 a11yNormalize = textNormalization.value == TextNormalization.ACCESSIBILITY,
