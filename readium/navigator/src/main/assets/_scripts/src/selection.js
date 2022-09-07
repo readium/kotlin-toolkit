@@ -4,7 +4,7 @@
 //  available in the top-level LICENSE file of the project.
 //
 
-import { log as logNative, logError } from "./utils";
+import { log as logNative, logError, snapCurrentOffset } from "./utils";
 import { toNativeRect } from "./rect";
 import { TextRange } from "./vendor/hypothesis/anchoring/text-range";
 
@@ -13,6 +13,28 @@ import matchAll from "string.prototype.matchall";
 matchAll.shim();
 
 const debug = true;
+
+// Notify native code that the selection changes.
+window.addEventListener(
+  "load",
+  function () {
+    var isSelecting = false;
+    document.addEventListener("selectionchange", function () {
+      const collapsed = window.getSelection().isCollapsed;
+
+      if (collapsed && isSelecting) {
+        isSelecting = false;
+        Android.onSelectionEnd();
+        // Snaps the current column in case the user shifted the scroll by dragging the text selection.
+        snapCurrentOffset();
+      } else if (!collapsed && !isSelecting) {
+        isSelecting = true;
+        Android.onSelectionStart();
+      }
+    });
+  },
+  false
+);
 
 export function getCurrentSelection() {
   const text = getCurrentSelectionText();

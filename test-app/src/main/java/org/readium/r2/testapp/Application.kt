@@ -8,6 +8,7 @@ package org.readium.r2.testapp
 
 import android.content.*
 import android.os.IBinder
+import com.google.android.material.color.DynamicColors
 import kotlinx.coroutines.*
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.bookshelf.BookRepository
@@ -56,6 +57,7 @@ class Application : android.app.Application() {
 
     override fun onCreate() {
         super.onCreate()
+        DynamicColors.applyToActivitiesIfAvailable(this)
         if (DEBUG) Timber.plant(Timber.DebugTree())
 
         readium = Readium(this)

@@ -15,7 +15,6 @@ window.addEventListener(
   false
 );
 
-// Notify native code that the page has loaded.
 window.addEventListener(
   "load",
   function () {
@@ -220,7 +219,7 @@ function snapOffset(offset) {
 }
 
 // Snaps the current offset to the page width.
-function snapCurrentOffset() {
+export function snapCurrentOffset() {
   //        Android.log("snapCurrentOffset");
   if (isScrollModeEnabled()) {
     return;

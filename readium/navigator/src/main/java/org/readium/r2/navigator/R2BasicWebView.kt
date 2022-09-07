@@ -88,6 +88,9 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     var resourceUrl: String? = null
 
     internal val scrollModeFlow = MutableStateFlow(false)
+    
+    /** Indicates that a user text selection is active. */
+    internal var isSelecting = false
 
     val scrollMode: Boolean get() = scrollModeFlow.value
 
@@ -228,6 +231,11 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
      */
     @android.webkit.JavascriptInterface
     fun onTap(eventJson: String): Boolean {
+        // If there's an on-going selection, the tap will dismiss it so we don't forward it.
+        if (isSelecting) {
+            return false
+        }
+
         val event = TapEvent.fromJSON(eventJson) ?: return false
 
         // The script prevented the default behavior.
@@ -395,6 +403,16 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             ?: return false
 
         return runBlocking(uiScope.coroutineContext) { listener.onDragEnd(event) }
+    }
+
+    @android.webkit.JavascriptInterface
+    fun onSelectionStart() {
+        isSelecting = true
+    }
+
+    @android.webkit.JavascriptInterface
+    fun onSelectionEnd() {
+        isSelecting = false
     }
 
     /** Produced by gestures.js */
