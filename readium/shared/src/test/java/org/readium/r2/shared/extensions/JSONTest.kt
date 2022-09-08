@@ -71,6 +71,12 @@ class JSONTest {
         ))
     }
 
+    @Test
+    fun `optNullableString() handles ill-typed values`() {
+        val sut = JSONObject("""{ "key": ["jhhh", "mlkk"] }""")
+
+        assertNull(sut.optNullableString("key"))
+    }
 }
 
 @RunWith(RobolectricTestRunner::class)
@@ -86,5 +92,4 @@ class JSONAndroidTest {
 
         assertNull(sut.optNullableString("key"))
     }
-
 }
