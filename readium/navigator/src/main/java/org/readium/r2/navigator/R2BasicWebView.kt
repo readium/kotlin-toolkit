@@ -37,10 +37,12 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.use
 import timber.log.Timber
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -80,6 +82,9 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
         @InternalReadiumApi
         fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? = null
+
+        @InternalReadiumApi
+        fun resourceAtUrl(url: String): Resource?
     }
 
     lateinit var listener: Listener
@@ -330,10 +335,18 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         val absoluteUrl = Href(href, baseHref = resourceUrl).percentEncodedString
             .substringBefore("#")
 
-        val aside = tryOrNull { Jsoup.connect(absoluteUrl).get() }
-            ?.select("#$id")
-            ?.first()?.html()
-            ?: return false
+        val aside = runBlocking {
+            tryOrLog {
+                listener.resourceAtUrl(absoluteUrl)
+                    ?.use { res ->
+                        res.readAsString()
+                            .map { Jsoup.parse(it) }
+                            .getOrThrow()
+                    }
+                    ?.select("#$id")
+                    ?.first()?.html()
+            }
+        } ?: return false
 
         val safe = Jsoup.clean(aside, Safelist.relaxed())
 
