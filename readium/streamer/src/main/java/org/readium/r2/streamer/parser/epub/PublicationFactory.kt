@@ -27,20 +27,21 @@ internal class PublicationFactory(
     private val displayOptions: Map<String, String> = emptyMap()
 ) {
     private val epubVersion = packageDocument.epubVersion
-    private val links = packageDocument.metadata.links
     private val spine = packageDocument.spine
     private val manifest = packageDocument.manifest
+    private val globalLinks = packageDocument.metadata.globalMetadata
+        .filterIsInstance<MetadataItem.Link>()
 
     private val pubMetadata = PubMetadataAdapter(
         epubVersion,
-        packageDocument.metadata.global,
+        packageDocument.metadata.globalMetadata,
         fallbackTitle,
         packageDocument.uniqueIdentifierId,
         spine.direction,
         displayOptions
     )
 
-    private val itemMetadata = packageDocument.metadata.refine
+    private val itemMetadata = packageDocument.metadata.otherMetadata
         .mapValues { LinkMetadataAdapter(epubVersion, it.value) }
 
     @Suppress("Unchecked_cast")
@@ -53,7 +54,7 @@ internal class PublicationFactory(
     fun create(): Manifest {
         // Compute metadata
         val metadata = pubMetadata.metadata()
-        val metadataLinks = links.mapNotNull(::mapEpubLink)
+        val metadataLinks = globalLinks.mapNotNull(::mapEpubLink)
 
         // Compute links
         val readingOrderIds = spine.itemrefs.filter { it.linear }.map { it.idref }
@@ -88,7 +89,7 @@ internal class PublicationFactory(
     }
 
     /** Compute a Publication [Link] from an Epub metadata link */
-    private fun mapEpubLink(link: EpubLink): Link? {
+    private fun mapEpubLink(link: MetadataItem.Link): Link? {
         val contains: MutableList<String> = mutableListOf()
         if (link.rels.contains(Vocabularies.LINK + "record")) {
             if (link.properties.contains(Vocabularies.LINK + "onix"))
