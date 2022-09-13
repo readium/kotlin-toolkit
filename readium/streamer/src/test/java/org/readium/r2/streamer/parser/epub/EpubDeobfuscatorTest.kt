@@ -11,6 +11,7 @@ package org.readium.r2.streamer.parser.epub
 
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.extensions.toMap
@@ -23,7 +24,6 @@ import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.streamer.readBlocking
 import org.robolectric.RobolectricTestRunner
 import java.io.File
-import org.junit.Assert.assertNotNull
 
 @RunWith(RobolectricTestRunner::class)
 class EpubDeobfuscatorTest {

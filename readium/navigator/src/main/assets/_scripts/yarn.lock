@@ -1300,6 +1300,13 @@ caniuse-lite@^1.0.30001280:
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001283.tgz#8573685bdae4d733ef18f78d44ba0ca5fe9e896b"
   integrity sha512-9RoKo841j1GQFSJz/nCXOj0sD7tHBtlowjYlrqIUS812x9/emfBLBt6IyMz1zIaYc/eRL8Cs6HPUVi2Hzq4sIg==
 
+cartesian@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/cartesian/-/cartesian-1.0.1.tgz#ae3fc8a63e2ba7e2c4989ce696207457bcae65af"
+  integrity sha1-rj/Ipj4rp+LEmJzmliB0V7yuZa8=
+  dependencies:
+    xtend "^4.0.1"
+
 chalk@^2.0.0:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.4.2.tgz#cd42541677a54333cf541a49108c1432b44c9424"
@@ -1403,6 +1410,14 @@ cross-spawn@^7.0.2, cross-spawn@^7.0.3:
     path-key "^3.1.0"
     shebang-command "^2.0.0"
     which "^2.0.1"
+
+css-selector-generator@^3.6.0:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/css-selector-generator/-/css-selector-generator-3.6.0.tgz#06293fb3d9303cc4b55f2d8e40aa6b85bf1c405b"
+  integrity sha512-t1wTGaASlIyCd5nYA0sptNgn97bkAWlZlVSvQKXbR9xhWANDvTu9blgAFyZ8db8xGyTzUIDYjngjAmwmMNM+KQ==
+  dependencies:
+    cartesian "^1.0.1"
+    iselement "^1.1.4"
 
 debug@^4.0.1, debug@^4.1.0, debug@^4.1.1:
   version "4.3.2"
@@ -2008,6 +2023,11 @@ is-weakref@^1.0.1:
   dependencies:
     call-bind "^1.0.0"
 
+iselement@^1.1.4:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/iselement/-/iselement-1.1.4.tgz#7e55b52a8ebca50a7e2e80e5b8d2840f32353146"
+  integrity sha1-flW1Ko68pQp+LoDluNKEDzI1MUY=
+
 isexe@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
@@ -2187,9 +2207,9 @@ minimatch@^3.0.4:
     brace-expansion "^1.1.7"
 
 minimist@^1.2.0, minimist@^1.2.5:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
-  integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.6.tgz#8637a5b759ea0d6e98702cfb3a9283323c93af44"
+  integrity sha512-Jsjnk4bw3YJqYzbdyBiNsPWHPfO++UGG749Cxs6peCu5Xg4nrena6OVxOYxrQTqww0Jmwt+Ref8rggumkTLz9Q==
 
 ms@2.1.2:
   version "2.1.2"
@@ -2877,6 +2897,11 @@ wrappy@1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
   integrity sha1-tSQ9jz7BqjXxNkYFvA0QNuMKtp8=
+
+xtend@^4.0.1:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/xtend/-/xtend-4.0.2.tgz#bb72779f5fa465186b1f438f674fa347fdb5db54"
+  integrity sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==
 
 yallist@^4.0.0:
   version "4.0.0"

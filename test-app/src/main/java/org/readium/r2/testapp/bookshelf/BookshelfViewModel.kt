@@ -6,6 +6,7 @@
 
 package org.readium.r2.testapp.bookshelf
 
+import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.graphics.Bitmap
@@ -17,20 +18,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.readium.r2.lcp.LcpService
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.extensions.mediaType
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
 import org.readium.r2.shared.publication.services.cover
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.streamer.Streamer
 import org.readium.r2.testapp.BuildConfig
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.reader.ReaderActivityContract
+import org.readium.r2.testapp.reader.ReaderRepository
 import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
 import org.readium.r2.testapp.utils.extensions.moveTo
@@ -45,32 +44,22 @@ import kotlin.time.ExperimentalTime
 
 class BookshelfViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val r2Application = application as org.readium.r2.testapp.Application
-    private val bookRepository = r2Application.bookRepository
+    val channel = EventChannel(Channel<Event>(Channel.BUFFERED), viewModelScope)
+    val books = app.bookRepository.books()
+
+    private val app get() = getApplication<org.readium.r2.testapp.Application>()
+
     private val preferences =
         application.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
-    private var lcpService = LcpService(application)
-        ?.let { Try.success(it) }
-        ?: Try.failure(Exception("liblcp is missing on the classpath"))
-    private var streamer = Streamer(
-        application,
-        contentProtections = listOfNotNull(
-            lcpService.getOrNull()?.contentProtection()
-        )
-    )
-    private var r2Directory: String = r2Application.r2Directory
-    val channel = EventChannel(Channel<Event>(Channel.BUFFERED), viewModelScope)
-
-    val books = bookRepository.books()
 
     init {
         copySamplesFromAssetsToStorage()
     }
 
     fun deleteBook(book: Book) = viewModelScope.launch {
-        book.id?.let { bookRepository.deleteBook(it) }
+        book.id?.let { app.bookRepository.deleteBook(it) }
         tryOrNull { File(book.href).delete() }
-        tryOrNull { File("${r2Application.r2Directory}covers/${book.id}.png").delete() }
+        tryOrNull { File(app.storageDir, "covers/${book.id}.png").delete() }
     }
 
     private suspend fun addPublicationToDatabase(
@@ -78,7 +67,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         mediaType: MediaType,
         publication: Publication
     ): Long {
-        val id = bookRepository.insertBook(href, mediaType, publication)
+        val id = app.bookRepository.insertBook(href, mediaType, publication)
         storeCoverImage(publication, id.toString())
         return id
     }
@@ -86,14 +75,14 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     fun copySamplesFromAssetsToStorage() = viewModelScope.launch(Dispatchers.IO) {
         withContext(Dispatchers.IO) {
             if (!preferences.contains("samples")) {
-                val dir = File(r2Directory)
+                val dir = app.storageDir
                 if (!dir.exists()) {
                     dir.mkdirs()
                 }
-                val samples = r2Application.assets.list("Samples")?.filterNotNull().orEmpty()
+                val samples = app.assets.list("Samples")?.filterNotNull().orEmpty()
                 for (element in samples) {
                     val file =
-                        r2Application.assets.open("Samples/$element").copyToTempFile(r2Directory)
+                        app.assets.open("Samples/$element").copyToTempFile(app.storageDir)
                     if (file != null)
                         importPublication(file)
                     else if (BuildConfig.DEBUG)
@@ -107,7 +96,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     fun importPublicationFromUri(
         uri: Uri
     ) = viewModelScope.launch {
-        uri.copyToTempFile(r2Application, r2Directory)
+        uri.copyToTempFile(app, app.storageDir)
             ?.let {
                 importPublication(it)
             }
@@ -121,7 +110,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             if (sourceMediaType != MediaType.LCP_LICENSE_DOCUMENT)
                 FileAsset(sourceFile, sourceMediaType)
             else {
-                lcpService
+                app.readium.lcpService
                     .flatMap { it.acquirePublication(sourceFile) }
                     .fold(
                         {
@@ -140,7 +129,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
 
         val mediaType = publicationAsset.mediaType()
         val fileName = "${UUID.randomUUID()}.${mediaType.fileExtension}"
-        val libraryAsset = FileAsset(File(r2Directory + fileName), mediaType)
+        val libraryAsset = FileAsset(File(app.storageDir, fileName), mediaType)
 
         try {
             publicationAsset.file.moveTo(libraryAsset.file)
@@ -151,7 +140,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             return
         }
 
-        streamer.open(libraryAsset, allowUserInteraction = false, sender = r2Application)
+        app.readium.streamer.open(libraryAsset, allowUserInteraction = false)
             .onSuccess {
                 addPublicationToDatabase(libraryAsset.file.path, libraryAsset.mediaType(), it).let { id ->
 
@@ -164,19 +153,23 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             .onFailure {
                 tryOrNull { libraryAsset.file.delete() }
                 Timber.d(it)
-                channel.send(Event.ImportPublicationFailed(it.getUserMessage(r2Application)))
+                channel.send(Event.ImportPublicationFailed(it.getUserMessage(app)))
             }
     }
 
     @OptIn(ExperimentalTime::class)
     fun openBook(
         bookId: Long,
+        activity: Activity
     ) = viewModelScope.launch {
-        val readerRepository = r2Application.readerRepository.await()
-        readerRepository.open(bookId)
+        val readerRepository = app.readerRepository.await()
+        readerRepository.open(bookId, activity)
             .onFailure { exception ->
-                val message = when (exception)  {
-                    is UserException -> exception.getUserMessage(r2Application)
+                if (exception is ReaderRepository.CancellationException)
+                    return@launch
+
+                val message = when (exception) {
+                    is UserException -> exception.getUserMessage(app)
                     else -> exception.message
                 }
                 channel.send(Event.OpenBookError(message))
@@ -188,18 +181,18 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     fun closeBook(bookId: Long) = viewModelScope.launch {
-        val readerRepository = r2Application.readerRepository.await()
+        val readerRepository = app.readerRepository.await()
         readerRepository.close(bookId)
     }
 
     private fun storeCoverImage(publication: Publication, imageName: String) =
         viewModelScope.launch(Dispatchers.IO) {
             // TODO Figure out where to store these cover images
-            val coverImageDir = File("${r2Directory}covers/")
+            val coverImageDir = File(app.storageDir, "covers/")
             if (!coverImageDir.exists()) {
                 coverImageDir.mkdirs()
             }
-            val coverImageFile = File("${r2Directory}covers/${imageName}.png")
+            val coverImageFile = File(app.storageDir, "covers/${imageName}.png")
 
             val bitmap: Bitmap? = publication.cover()
 

@@ -315,7 +315,7 @@ internal class LicenseValidation(
     private suspend fun fetchStatus(license: LicenseDocument) {
         val url = license.url(LicenseDocument.Rel.status, preferredType = MediaType.LCP_STATUS_DOCUMENT).toString()
         // Short timeout to avoid blocking the License, since the LSD is optional.
-        val data = network.fetch(url, timeout = 5.seconds)
+        val data = network.fetch(url, timeout = 5.seconds, headers = mapOf("Accept" to MediaType.LCP_STATUS_DOCUMENT.toString()))
             .getOrElse { throw LcpException.Network(it) }
 
         raise(Event.retrievedStatusData(data))

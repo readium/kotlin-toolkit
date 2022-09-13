@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.readium.adapters.pspdfkit.navigator">
+
+    <!--
+    > Make sure you have the android:largeHeap="true" property in your <application> tag in
+    > AndroidManifest.xml. Rendering PDF files can be memory intensive, and this property will
+    > ensure your app has enough heap allocated to avoid hitting out-of-memory errors
+    > https://pspdfkit.com/guides/android/basics/using-fragment/
+    -->
+    <application android:largeHeap="true" />
+
+</manifest>

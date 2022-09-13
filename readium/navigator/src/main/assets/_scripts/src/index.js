@@ -17,6 +17,7 @@ import {
   scrollToStart,
   scrollToText,
   setProperty,
+  setCSSProperties,
 } from "./utils";
 import {
   createAnnotation,
@@ -27,6 +28,7 @@ import {
   rectangleForHighlightWithID,
   setScrollMode,
 } from "./highlight";
+import { findFirstVisibleLocator } from "./dom";
 import { getCurrentSelection } from "./selection";
 import { getDecorations, registerTemplates } from "./decorator";
 
@@ -40,6 +42,7 @@ window.readium = {
   scrollRight: scrollRight,
   scrollToStart: scrollToStart,
   scrollToEnd: scrollToEnd,
+  setCSSProperties: setCSSProperties,
   setProperty: setProperty,
   removeProperty: removeProperty,
 
@@ -49,6 +52,9 @@ window.readium = {
   // decoration
   registerDecorationTemplates: registerTemplates,
   getDecorations: getDecorations,
+
+  // DOM
+  findFirstVisibleLocator: findFirstVisibleLocator,
 };
 
 // Legacy highlights API.

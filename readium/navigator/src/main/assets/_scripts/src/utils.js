@@ -15,7 +15,6 @@ window.addEventListener(
   false
 );
 
-// Notify native code that the page has loaded.
 window.addEventListener(
   "load",
   function () {
@@ -62,7 +61,7 @@ function appendVirtualColumnIfNeeded() {
   }
 }
 
-var pageWidth = 1;
+export var pageWidth = 1;
 
 function onViewportWidthChanged() {
   // We can't rely on window.innerWidth for the pageWidth on Android, because if the
@@ -87,15 +86,15 @@ export function getColumnCountPerScreen() {
 }
 
 export function isScrollModeEnabled() {
+  const style = document.documentElement.style;
   return (
-    document.documentElement.style
-      .getPropertyValue("--USER__scroll")
-      .toString()
-      .trim() == "readium-scroll-on"
+    style.getPropertyValue("--USER__view").trim() == "readium-scroll-on" ||
+    // FIXME: Will need to be removed in Readium 3.0, --USER__scroll was incorrect.
+    style.getPropertyValue("--USER__scroll").trim() == "readium-scroll-on"
   );
 }
 
-function isRTL() {
+export function isRTL() {
   return document.body.dir.toLowerCase() == "rtl";
 }
 
@@ -143,7 +142,7 @@ export function scrollToText(text) {
 }
 
 function scrollToRange(range) {
-  scrollToRect(range.getBoundingClientRect());
+  return scrollToRect(range.getBoundingClientRect());
 }
 
 function scrollToRect(rect) {
@@ -155,6 +154,8 @@ function scrollToRect(rect) {
       rect.left + window.scrollX
     );
   }
+
+  return true;
 }
 
 export function scrollToStart() {
@@ -218,7 +219,7 @@ function snapOffset(offset) {
 }
 
 // Snaps the current offset to the page width.
-function snapCurrentOffset() {
+export function snapCurrentOffset() {
   //        Android.log("snapCurrentOffset");
   if (isScrollModeEnabled()) {
     return;
@@ -236,7 +237,16 @@ export function rangeFromLocator(locator) {
     return null;
   }
   try {
-    let anchor = new TextQuoteAnchor(document.body, text.highlight, {
+    var root;
+    let locations = locator.locations;
+    if (locations && locations.cssSelector) {
+      root = document.querySelector(locations.cssSelector);
+    }
+    if (!root) {
+      root = document.body;
+    }
+
+    let anchor = new TextQuoteAnchor(root, text.highlight, {
       prefix: text.before,
       suffix: text.after,
     });
@@ -249,11 +259,20 @@ export function rangeFromLocator(locator) {
 
 /// User Settings.
 
+export function setCSSProperties(properties) {
+  for (const name in properties) {
+    setProperty(name, properties[name]);
+  }
+}
+
 // For setting user setting.
 export function setProperty(key, value) {
-  var root = document.documentElement;
-
-  root.style.setProperty(key, value);
+  if (value === null) {
+    removeProperty(key);
+  } else {
+    var root = document.documentElement;
+    root.style.setProperty(key, value);
+  }
 }
 
 // For removing user setting.

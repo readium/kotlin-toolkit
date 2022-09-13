@@ -15,8 +15,8 @@ import org.json.JSONObject
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.service.URLParameters
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.URITemplate
+import org.readium.r2.shared.util.mediatype.MediaType
 import java.net.URL
 
 data class Link(val json: JSONObject) {

@@ -7,9 +7,12 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.streamer.parser.epub
 
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.drm.DRM
@@ -21,6 +24,8 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
 import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.publication.services.content.DefaultContentService
+import org.readium.r2.shared.publication.services.content.iterators.HtmlResourceContentIterator
 import org.readium.r2.shared.publication.services.search.StringSearchService
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -36,6 +41,7 @@ import org.readium.r2.streamer.fetcher.LcpDecryptor
 import org.readium.r2.streamer.parser.PubBox
 import java.io.File
 
+@Suppress("DEPRECATION")
 object EPUBConstant {
 
     @Deprecated("Use [MediaType.EPUB.toString()] instead", replaceWith = ReplaceWith("MediaType.EPUB.toString()"))
@@ -89,7 +95,7 @@ class EpubParser(
     override suspend fun parse(asset: PublicationAsset, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? =
         _parse(asset, fetcher, asset.name)
 
-    @OptIn(Search::class)
+    @OptIn(Search::class, ExperimentalReadiumApi::class)
     suspend fun _parse(asset: PublicationAsset, fetcher: Fetcher, fallbackTitle: String): Publication.Builder? {
 
         if (asset.mediaType() != MediaType.EPUB)
@@ -120,6 +126,9 @@ class EpubParser(
             servicesBuilder = Publication.ServicesBuilder(
                 positions = EpubPositionsService.createFactory(reflowablePositionsStrategy),
                 search = StringSearchService.createDefaultFactory(),
+                content = DefaultContentService.createFactory(listOf(
+                    HtmlResourceContentIterator.createFactory()
+                )),
             )
         )
     }
@@ -181,24 +190,35 @@ class EpubParser(
             ?: emptyMap()
 
     private suspend fun parseNavigationData(packageDocument: PackageDocument, fetcher: Fetcher): Map<String, List<Link>> =
-        if (packageDocument.epubVersion < 3.0) {
-            val ncxItem =
-                if (packageDocument.spine.toc != null) {
-                    packageDocument.manifest.firstOrNull { it.id == packageDocument.spine.toc }
-                } else {
-                    packageDocument.manifest.firstOrNull { MediaType.NCX.contains(it.mediaType) }
-                }
-            ncxItem?.let {
+        parseNavigationDocument(packageDocument, fetcher)
+            ?: parseNcx(packageDocument, fetcher)
+            ?: emptyMap()
+
+    private suspend fun parseNavigationDocument(packageDocument: PackageDocument, fetcher: Fetcher): Map<String, List<Link>>? =
+        packageDocument.manifest
+            .firstOrNull { it.properties.contains(Vocabularies.ITEM + "nav") }
+            ?.let { navItem ->
+                val navPath = Href(navItem.href, baseHref = packageDocument.path).string
+                fetcher.readAsXmlOrNull(navPath)
+                    ?.let { NavigationDocumentParser.parse(it, navPath) }
+            }
+            ?.takeUnless { it.isEmpty() }
+
+    private suspend fun parseNcx(packageDocument: PackageDocument, fetcher: Fetcher): Map<String, List<Link>>? {
+        val ncxItem =
+            if (packageDocument.spine.toc != null) {
+                packageDocument.manifest.firstOrNull { it.id == packageDocument.spine.toc }
+            } else {
+                packageDocument.manifest.firstOrNull { MediaType.NCX.contains(it.mediaType) }
+            }
+
+        return ncxItem
+            ?.let {
                 val ncxPath = Href(ncxItem.href, baseHref = packageDocument.path).string
                 fetcher.readAsXmlOrNull(ncxPath)?.let { NcxParser.parse(it, ncxPath) }
             }
-        } else {
-            val navItem = packageDocument.manifest.firstOrNull { it.properties.contains(Vocabularies.ITEM + "nav") }
-            navItem?.let {
-                val navPath = Href(navItem.href, baseHref = packageDocument.path).string
-                fetcher.readAsXmlOrNull(navPath)?.let { NavigationDocumentParser.parse(it, navPath) }
-            }
-        }.orEmpty()
+            ?.takeUnless { it.isEmpty() }
+    }
 
     private suspend fun parseDisplayOptions(fetcher: Fetcher): Map<String, String> {
         val displayOptionsXml =
@@ -223,6 +243,7 @@ class EpubParser(
 
 }
 
+@Suppress("DEPRECATION")
 internal fun Publication.setLayoutStyle() {
     val layout = ReadiumCssLayout(metadata)
 

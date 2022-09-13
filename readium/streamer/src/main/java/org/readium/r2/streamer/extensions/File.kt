@@ -10,7 +10,7 @@
 package org.readium.r2.streamer.extensions
 
 import java.io.File
-import java.util.Locale
+import java.util.*
 
 internal val File.lowercasedExtension: String
     get() = extension.lowercase(Locale.getDefault())

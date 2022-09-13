@@ -15,11 +15,11 @@ plugins {
 android {
     resourcePrefix = "readium_"
 
-    compileSdk = 31
+    compileSdk = 33
 
     defaultConfig {
         minSdk = 21
-        targetSdk = 31
+        targetSdk = 33
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -28,7 +28,10 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
-        freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
+        freeCompilerArgs = freeCompilerArgs + listOf(
+            "-opt-in=kotlin.RequiresOptIn",
+            "-opt-in=org.readium.r2.shared.InternalReadiumApi"
+        )
     }
     buildTypes {
         getByName("release") {
@@ -61,16 +64,16 @@ dependencies {
     api(project(":readium:shared"))
     api(project(":readium:navigator"))
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
 
     implementation("com.jakewharton.timber:timber:5.0.1")
 
-    implementation("androidx.media2:media2-session:1.2.0")
-    implementation("androidx.media2:media2-player:1.2.0")
+    implementation("androidx.media2:media2-session:1.2.1")
+    implementation("androidx.media2:media2-player:1.2.1")
 
-    implementation("com.google.android.exoplayer:exoplayer-core:2.16.1")
-    implementation("com.google.android.exoplayer:extension-media2:2.16.1")
+    implementation("com.google.android.exoplayer:exoplayer-core:2.17.1")
+    implementation("com.google.android.exoplayer:extension-media2:2.17.1")
 
     testImplementation("junit:junit:4.13.2")
 

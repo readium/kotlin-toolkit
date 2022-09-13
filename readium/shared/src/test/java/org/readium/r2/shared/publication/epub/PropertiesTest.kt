@@ -9,7 +9,8 @@
 
 package org.readium.r2.shared.publication.epub
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.readium.r2.shared.publication.Properties
 

@@ -11,6 +11,8 @@ package org.readium.r2.streamer.parser.image
 
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Publication
@@ -20,8 +22,6 @@ import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.streamer.parseBlocking
 import java.io.File
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 
 class ImageParserTest {
 

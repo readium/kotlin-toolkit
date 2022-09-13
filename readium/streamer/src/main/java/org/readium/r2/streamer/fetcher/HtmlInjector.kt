@@ -7,13 +7,18 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.streamer.fetcher
 
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.ReadiumCSSName
-import org.readium.r2.shared.fetcher.*
+import org.readium.r2.shared.fetcher.LazyResource
+import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.ResourceTry
+import org.readium.r2.shared.fetcher.TransformingResource
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.layoutOf
@@ -42,7 +47,7 @@ internal class HtmlInjector(
     private suspend fun inject(resource: Resource): Resource = object : TransformingResource(resource) {
 
         override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
-            resource.read().mapCatching {
+            data.map {
                 val trimmedText = it.toString(link().mediaType.charset ?: Charsets.UTF_8).trim()
                 val res = if (publication.metadata.presentation.layoutOf(link()) == EpubLayout.REFLOWABLE)
                     injectReflowableHtml(trimmedText)

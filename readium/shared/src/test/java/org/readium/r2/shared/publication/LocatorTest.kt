@@ -10,7 +10,8 @@
 package org.readium.r2.shared.publication
 
 import org.json.JSONObject
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
@@ -113,7 +114,6 @@ class LocatorTest {
             ).copyWithLocations(
                 fragments = listOf("p=4", "frag34"),
                 progression = 0.74,
-                position = 42,
                 totalProgression = 0.32,
                 otherLocations = mapOf("other" to "other-location")
             )
@@ -484,5 +484,4 @@ class LocatorCollectionTest {
             ).toJSON()
         )
     }
-
 }

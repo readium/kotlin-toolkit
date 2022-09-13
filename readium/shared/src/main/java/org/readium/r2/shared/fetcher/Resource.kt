@@ -9,8 +9,12 @@
 
 package org.readium.r2.shared.fetcher
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.annotation.StringRes
-import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.json.JSONObject
 import org.readium.r2.shared.R
 import org.readium.r2.shared.UserException
@@ -99,6 +103,15 @@ interface Resource : SuspendingCloseable {
      */
     suspend fun readAsXml(): ResourceTry<ElementNode> =
         read().mapCatching { XmlParser().parse(ByteArrayInputStream(it)) }
+
+    /**
+     * Reads the full content as a [Bitmap].
+     */
+    suspend fun readAsBitmap(): ResourceTry<Bitmap> =
+        read().mapCatching {
+            BitmapFactory.decodeByteArray(it, 0, it.size)
+                ?: throw kotlin.Exception("Could not decode resource ${link().href} as a bitmap")
+        }
 
     companion object {
         /**
@@ -198,6 +211,53 @@ class FailureResource(private val link: Link, private val error: Resource.Except
 }
 
 /**
+ * Resource that will act as a proxy to a fallback resource if the [originalResource] errors out.
+ */
+class FallbackResource(
+    private val originalResource: Resource,
+    private val fallbackResourceFactory: (Resource.Exception) -> Resource
+) : Resource {
+    private val coroutineScope =
+        CoroutineScope(Dispatchers.Default)
+
+    private val resource: Deferred<Resource> = coroutineScope.async {
+        when (val result = originalResource.length()) {
+            is Try.Success -> originalResource
+            is Try.Failure -> fallbackResourceFactory(result.exception)
+        }
+    }
+
+    override suspend fun link(): Link =
+        resource.await().link()
+
+    override suspend fun length(): ResourceTry<Long> =
+        resource.await().length()
+
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+        resource.await().read(range)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override suspend fun close() {
+        coroutineScope.cancel()
+        if (resource.isCompleted) {
+            resource.getCompleted().close()
+        }
+    }
+}
+
+/**
+ * Falls back to alternative resources when the receiver fails.
+ */
+fun Resource.fallback(fallbackResourceFactory: (Resource.Exception) -> Resource): Resource =
+    FallbackResource(this, fallbackResourceFactory)
+
+/**
+ * Falls back to the given alternative [resource] when the receiver fails.
+ */
+fun Resource.fallback(fallbackResource: Resource): Resource =
+    FallbackResource(this) { fallbackResource }
+
+/**
  * A base class for a [Resource] which acts as a proxy to another one.
  *
  * Every function is delegating to the proxied resource, and subclasses should override some of them.
@@ -216,74 +276,32 @@ abstract class ProxyResource(protected val resource: Resource) : Resource {
 
     override fun toString(): String =
         "${javaClass.simpleName}($resource)"
-
-}
-
-/**
- * Caches the members of [resource] on first access, to optimize subsequent accesses.
- *
- * This can be useful when reading [resource] is expensive.
- *
- * Warning: bytes are read and cached entirely the first time, even if only a [range] is requested.
- * So this is not appropriate for large resources.
- */
-@Deprecated("If you were caching a TransformingResource, build it with cacheBytes set to true." +
-        "Otherwise, please report your use case.",
-    level = DeprecationLevel.ERROR)
-class CachingResource(private val resource: Resource) : Resource {
-
-    private lateinit var _link: Link
-    private lateinit var _length: ResourceTry<Long>
-    private lateinit var _bytes: ResourceTry<ByteArray>
-
-    override suspend fun link(): Link {
-        if (!::_link.isInitialized) {
-            _link = resource.link()
-        }
-        return _link
-    }
-
-    override suspend fun length(): ResourceTry<Long> {
-        if (!::_length.isInitialized) {
-            _length = if (::_bytes.isInitialized) _bytes.map { it.size.toLong() } else resource.length()
-        }
-        return _length
-    }
-
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
-        if (!::_bytes.isInitialized) {
-            _bytes = resource.read()
-        }
-
-        if (range == null)
-            return _bytes
-
-        return _bytes.map {
-            @Suppress("NAME_SHADOWING")
-            val range = range
-                .coerceIn(0L.. it.size)
-                .requireLengthFitInt()
-
-            it.sliceArray(range.map(Long::toInt)) }
-    }
-
-    override suspend fun close() = resource.close()
-
-    override fun toString(): String =
-        "${javaClass.simpleName}($resource)"
 }
 
 /**
  * Transforms the bytes of [resource] on-the-fly.
  *
+ * If you set [cacheBytes] to false, consider providing your own implementation of [length] to avoid
+ * unnecessary transformations.
+ *
  * Warning: The transformation runs on the full content of [resource], so it's not appropriate for
- * large resources which can't be held in memory. Pass [cacheBytes] = true to cache the result of
- * the transformation. This may be useful if multiple ranges will be read.
+ * large resources which can't be held in memory.
  */
 abstract class TransformingResource(
     resource: Resource,
-    private val cacheBytes: Boolean = false
+    private val cacheBytes: Boolean = true
 ) : ProxyResource(resource) {
+
+    companion object {
+        /**
+         * Creates a [TransformingResource] using the given [transform] function.
+         */
+        operator fun invoke(resource: Resource, transform: suspend (ByteArray) -> ByteArray): TransformingResource =
+            object : TransformingResource(resource) {
+                override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
+                    data.mapCatching { transform(it) }
+            }
+    }
 
     private lateinit var _bytes: ResourceTry<ByteArray>
 
@@ -314,7 +332,6 @@ abstract class TransformingResource(
         }
 
     override suspend fun length(): ResourceTry<Long> = bytes().map { it.size.toLong() }
-
 }
 
 /**
@@ -350,6 +367,42 @@ class LazyResource(private val factory: suspend () -> Resource) : Resource {
         }
     
 }
+
+/**
+ * Protects the access to a wrapped resource with a mutex to make it thread-safe.
+ *
+ * This doesn't implement [ProxyResource] to avoid forgetting the synchronization for a future API.
+ */
+class SynchronizedResource(
+    private val resource: Resource
+) : Resource {
+
+    private val mutex = Mutex()
+
+    override suspend fun link(): Link =
+        mutex.withLock { resource.link() }
+
+    override suspend fun length(): ResourceTry<Long> =
+        mutex.withLock { resource.length() }
+
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+        mutex.withLock { resource.read(range) }
+
+    override suspend fun close() =
+        mutex.withLock { resource.close() }
+
+    override val file: File? get() =
+        resource.file
+
+    override fun toString(): String =
+        "${javaClass.simpleName}($resource)"
+}
+
+/**
+ * Wraps this resource in a [SynchronizedResource] to protect the access from multiple threads.
+ */
+fun Resource.synchronized(): SynchronizedResource =
+    SynchronizedResource(this)
 
 /**
  * Wraps a [Resource] and buffers its content.

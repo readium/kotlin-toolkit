@@ -7,8 +7,6 @@
 package org.readium.r2.shared.publication.services
 
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.ServiceFactory
-import org.readium.r2.shared.util.Ref
 import timber.log.Timber
 
 /**
@@ -48,9 +46,9 @@ var Publication.ServicesBuilder.locatorServiceFactory: ServiceFactory?
 
 open class DefaultLocatorService(val readingOrder: List<Link>, val positionsByReadingOrder: suspend () -> List<List<Locator>>) : LocatorService {
 
-    constructor(readingOrder: List<Link>, publication: Ref<Publication>)
+    constructor(readingOrder: List<Link>, services: PublicationServicesHolder)
             : this(readingOrder, positionsByReadingOrder = {
-        publication()?.positionsByReadingOrder() ?: emptyList()
+        services.findService(PositionsService::class)?.positionsByReadingOrder() ?: emptyList()
     })
 
     override suspend fun locate(locator: Locator): Locator? =

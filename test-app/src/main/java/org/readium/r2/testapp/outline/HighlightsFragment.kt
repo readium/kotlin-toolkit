@@ -61,7 +61,6 @@ class HighlightsFragment : Fragment() {
 
         highlightAdapter = HighlightAdapter(publication, onDeleteHighlightRequested = { highlight -> viewModel.deleteHighlight(highlight.id) }, onHighlightSelectedRequested = { highlight -> onHighlightSelected(highlight) })
         binding.listView.apply {
-            setHasFixedSize(true)
             layoutManager = LinearLayoutManager(requireContext())
             adapter = highlightAdapter
         }
@@ -83,10 +82,6 @@ class HighlightAdapter(private val publication: Publication,
                        private val onDeleteHighlightRequested: (Highlight) -> Unit,
                        private val onHighlightSelectedRequested: (Highlight) -> Unit) :
         ListAdapter<Highlight, HighlightAdapter.ViewHolder>(HighlightsDiff()) {
-
-    init {
-        setHasStableIds(true)
-    }
 
     override fun onCreateViewHolder(
             parent: ViewGroup,

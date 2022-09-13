@@ -14,10 +14,10 @@ import org.readium.r2.testapp.utils.ContentResolverUtil
 import java.io.File
 import java.util.*
 
-suspend fun Uri.copyToTempFile(context: Context, dir: String): File? = tryOrNull {
+suspend fun Uri.copyToTempFile(context: Context, dir: File): File? = tryOrNull {
     val filename = UUID.randomUUID().toString()
     val mediaType = MediaType.ofUri(this, context.contentResolver)
-    val path = "$dir$filename.${mediaType?.fileExtension ?: "tmp"}"
-    ContentResolverUtil.getContentInputStream(context, this, path)
-    return@tryOrNull File(path)
+    val file = File(dir, "$filename.${mediaType?.fileExtension ?: "tmp"}")
+    ContentResolverUtil.getContentInputStream(context, this, file)
+    file
 }

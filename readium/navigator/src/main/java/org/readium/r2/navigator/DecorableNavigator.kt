@@ -154,7 +154,7 @@ sealed class DecorationChange {
  * The changes need to be applied in the same order, one by one.
  */
 @ExperimentalDecorator
-suspend fun List<Decoration>.changesByHref(target: List<Decoration>): Map<String, List<DecorationChange>> = withContext(Dispatchers.IO) {
+suspend fun List<Decoration>.changesByHref(target: List<Decoration>): Map<String, List<DecorationChange>> = withContext(Dispatchers.Default) {
     val source = this@changesByHref
     val result = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
         override fun getOldListSize(): Int = source.size

@@ -10,11 +10,13 @@ package org.readium.r2.shared.publication.presentation
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optNullableBoolean
-import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.MapCompanion
 
 /**
@@ -99,11 +101,12 @@ data class Presentation(
      * Suggested method for constraining a resource inside the viewport.
      */
     @Parcelize
+    @Serializable
     enum class Fit(val value: String) : Parcelable {
-        WIDTH("width"),
-        HEIGHT("height"),
-        CONTAIN("contain"),
-        COVER("cover");
+        @SerialName("width") WIDTH("width"),
+        @SerialName("height") HEIGHT("height"),
+        @SerialName("contain") CONTAIN("contain"),
+        @SerialName("cover") COVER("cover");
 
         companion object : MapCompanion<String, Fit>(values(), Fit::value) {
 
@@ -118,10 +121,11 @@ data class Presentation(
      * Suggested orientation for the device when displaying the linked resource.
      */
     @Parcelize
+    @Serializable
     enum class Orientation(val value: String) : Parcelable {
-        AUTO("auto"),
-        LANDSCAPE("landscape"),
-        PORTRAIT("portrait");
+        @SerialName("auto") AUTO("auto"),
+        @SerialName("landscape") LANDSCAPE("landscape"),
+        @SerialName("portrait") PORTRAIT("portrait");
 
         companion object : MapCompanion<String, Orientation>(values(), Orientation::value) {
 
@@ -143,10 +147,11 @@ data class Presentation(
      * Suggested method for handling overflow while displaying the linked resource.
      */
     @Parcelize
+    @Serializable
     enum class Overflow(val value: String) : Parcelable {
-        AUTO("auto"),
-        PAGINATED("paginated"),
-        SCROLLED("scrolled");
+        @SerialName("auto") AUTO("auto"),
+        @SerialName("paginated") PAGINATED("paginated"),
+        @SerialName("scrolled") SCROLLED("scrolled");
 
         companion object : MapCompanion<String, Overflow>(values(), Overflow::value) {
 
@@ -169,10 +174,11 @@ data class Presentation(
      * synthetic spreads.
      */
     @Parcelize
+    @Serializable
     enum class Page(val value: String) : Parcelable {
-        LEFT("left"),
-        RIGHT("right"),
-        CENTER("center");
+        @SerialName("left") LEFT("left"),
+        @SerialName("right") RIGHT("right"),
+        @SerialName("center") CENTER("center");
 
         companion object : MapCompanion<String, Page>(values(), Page::value)
     }
@@ -182,11 +188,12 @@ data class Presentation(
      * spread.
      */
     @Parcelize
+    @Serializable
     enum class Spread(val value: String) : Parcelable {
-        AUTO("auto"),
-        BOTH("both"),
-        NONE("none"),
-        LANDSCAPE("landscape");
+        @SerialName("auto") AUTO("auto"),
+        @SerialName("both") BOTH("both"),
+        @SerialName("none") NONE("none"),
+        @SerialName("landscape") LANDSCAPE("landscape");
 
         companion object : MapCompanion<String, Spread>(values(), Spread::value) {
 

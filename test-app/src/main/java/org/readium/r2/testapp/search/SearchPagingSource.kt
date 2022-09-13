@@ -11,7 +11,6 @@ import androidx.paging.PagingState
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.LocatorCollection
-import org.readium.r2.shared.publication.services.search.SearchIterator
 import org.readium.r2.shared.publication.services.search.SearchTry
 
 @OptIn(Search::class)

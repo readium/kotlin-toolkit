@@ -84,15 +84,9 @@ class CatalogFeedListFragment : Fragment() {
                 href = "http://open.minitex.org/textbooks/",
                 type = 1
             )
-            val sEBCatalog = Catalog(
-                title = "Standard eBooks Catalog",
-                href = "https://standardebooks.org/opds/all",
-                type = 1
-            )
 
             catalogFeedListViewModel.insertCatalog(oPDS2Catalog)
             catalogFeedListViewModel.insertCatalog(oTBCatalog)
-            catalogFeedListViewModel.insertCatalog(sEBCatalog)
         }
 
         binding.catalogFeedAddCatalogFab.setOnClickListener {

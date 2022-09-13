@@ -21,7 +21,6 @@ import com.github.chrisbanes.photoview.PhotoView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.R
 import org.readium.r2.navigator.databinding.ViewpagerFragmentCbzBinding
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication

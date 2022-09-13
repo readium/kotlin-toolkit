@@ -10,13 +10,14 @@ plugins {
     id("kotlin-parcelize")
     id("maven-publish")
     id("org.jetbrains.dokka")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
-    compileSdk = 31
+    compileSdk = 33
     defaultConfig {
         minSdk = 21
-        targetSdk = 31
+        targetSdk = 33
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -24,8 +25,11 @@ android {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
         allWarningsAsErrors = true
+        freeCompilerArgs = freeCompilerArgs + listOf(
+            "-opt-in=kotlin.RequiresOptIn",
+            "-opt-in=org.readium.r2.shared.InternalReadiumApi"
+        )
     }
     testOptions {
         unitTests.isIncludeAndroidResources = true
@@ -60,24 +64,26 @@ dependencies {
     implementation("com.github.kittinunf.fuel:fuel-android:2.3.1")
     implementation("com.github.kittinunf.fuel:fuel:2.3.1")
     implementation("com.jakewharton.timber:timber:5.0.1")
-    implementation("joda-time:joda-time:2.10.13")
+    implementation("joda-time:joda-time:2.10.14")
     implementation("nl.komponents.kovenant:kovenant-android:3.3.0")
     implementation("nl.komponents.kovenant:kovenant-combine:3.3.0")
     implementation("nl.komponents.kovenant:kovenant-core:3.3.0")
     implementation("nl.komponents.kovenant:kovenant-functional:3.3.0")
     implementation("nl.komponents.kovenant:kovenant-jvm:3.3.0")
     implementation("nl.komponents.kovenant:kovenant:3.3.0")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.10")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
-    implementation("org.jsoup:jsoup:1.14.3")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.21")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0-RC")
+    implementation("org.jsoup:jsoup:1.15.1")
 
     // Tests
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.assertj:assertj-core:3.22.0")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.6.10")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0")
-    testImplementation("org.robolectric:robolectric:4.7.3")
+    testImplementation("org.assertj:assertj-core:3.23.1")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.6.21")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.2")
+    testImplementation("org.robolectric:robolectric:4.8.1")
 
+    androidTestImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.6.10")
     androidTestImplementation("androidx.test.ext:junit:1.1.3")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
 }

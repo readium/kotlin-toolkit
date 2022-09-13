@@ -11,31 +11,35 @@ import android.content.SharedPreferences
 import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
-import android.net.Uri
 import android.os.Build
 import android.text.Html
 import android.util.AttributeSet
 import android.view.*
-import android.view.Gravity
-import android.view.LayoutInflater
 import android.webkit.URLUtil
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.widget.ImageButton
 import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.annotation.RequiresApi
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.jsoup.Jsoup
-import org.jsoup.safety.Whitelist
+import org.jsoup.safety.Safelist
 import org.readium.r2.navigator.extensions.optRectF
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Href
 import timber.log.Timber
 import kotlin.coroutines.resume
@@ -53,6 +57,9 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         fun onPageEnded(end: Boolean)
         fun onScroll()
         fun onTap(point: PointF): Boolean
+        fun onDragStart(event: DragEvent): Boolean
+        fun onDragMove(event: DragEvent): Boolean
+        fun onDragEnd(event: DragEvent): Boolean
         fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean = false
         fun onProgressionChanged()
         fun onHighlightActivated(id: String)
@@ -65,19 +72,25 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
          */
         val selectionActionModeCallback: ActionMode.Callback? get() = null
 
-        /**
-         * Offers an opportunity to override a request loaded by the given web view.
-         */
+        @InternalReadiumApi
+        fun javascriptInterfacesForResource(link: Link): Map<String, Any?> = emptyMap()
+
+        @InternalReadiumApi
         fun shouldOverrideUrlLoading(webView: WebView, request: WebResourceRequest): Boolean = false
+
+        @InternalReadiumApi
+        fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? = null
     }
 
     lateinit var listener: Listener
-    lateinit var navigator: Navigator
     internal var preferences: SharedPreferences? = null
 
     var resourceUrl: String? = null
 
     internal val scrollModeFlow = MutableStateFlow(false)
+    
+    /** Indicates that a user text selection is active. */
+    internal var isSelecting = false
 
     val scrollMode: Boolean get() = scrollModeFlow.value
 
@@ -218,6 +231,11 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
      */
     @android.webkit.JavascriptInterface
     fun onTap(eventJson: String): Boolean {
+        // If there's an on-going selection, the tap will dismiss it so we don't forward it.
+        if (isSelecting) {
+            return false
+        }
+
         val event = TapEvent.fromJSON(eventJson) ?: return false
 
         // The script prevented the default behavior.
@@ -317,7 +335,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             ?.first()?.html()
             ?: return false
 
-        val safe = Jsoup.clean(aside, Whitelist.relaxed())
+        val safe = Jsoup.clean(aside, Safelist.relaxed())
 
         // Initialize a new instance of LayoutInflater service
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -361,6 +379,81 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         mPopupWindow.showAtLocation(this, Gravity.CENTER, 0, 0)
 
         return true
+    }
+
+    @android.webkit.JavascriptInterface
+    fun onDragStart(eventJson: String): Boolean {
+        val event = DragEvent.fromJSON(eventJson)?.takeIf { it.isValid }
+            ?: return false
+
+        return runBlocking(uiScope.coroutineContext) { listener.onDragStart(event) }
+    }
+
+    @android.webkit.JavascriptInterface
+    fun onDragMove(eventJson: String): Boolean {
+        val event = DragEvent.fromJSON(eventJson)?.takeIf { it.isValid }
+            ?: return false
+
+        return runBlocking(uiScope.coroutineContext) { listener.onDragMove(event) }
+    }
+
+    @android.webkit.JavascriptInterface
+    fun onDragEnd(eventJson: String): Boolean {
+        val event = DragEvent.fromJSON(eventJson)?.takeIf { it.isValid }
+            ?: return false
+
+        return runBlocking(uiScope.coroutineContext) { listener.onDragEnd(event) }
+    }
+
+    @android.webkit.JavascriptInterface
+    fun onSelectionStart() {
+        isSelecting = true
+    }
+
+    @android.webkit.JavascriptInterface
+    fun onSelectionEnd() {
+        isSelecting = false
+    }
+
+    /** Produced by gestures.js */
+    data class DragEvent(
+        val defaultPrevented: Boolean,
+        val startPoint: PointF,
+        val currentPoint: PointF,
+        val offset: PointF,
+        val interactiveElement: String?
+    ) {
+        internal val isValid: Boolean get() =
+            !defaultPrevented && (interactiveElement == null)
+
+        companion object {
+            fun fromJSONObject(obj: JSONObject?): DragEvent? {
+                obj ?: return null
+
+                val x = obj.optDouble("x").toFloat()
+                val y = obj.optDouble("y").toFloat()
+
+                return DragEvent(
+                    defaultPrevented = obj.optBoolean("defaultPrevented"),
+                    startPoint = PointF(
+                        obj.optDouble("startX").toFloat(),
+                        obj.optDouble("startY").toFloat()
+                    ),
+                    currentPoint = PointF(
+                        obj.optDouble("currentX").toFloat(),
+                        obj.optDouble("currentY").toFloat()
+                    ),
+                    offset = PointF(
+                        obj.optDouble("offsetX").toFloat(),
+                        obj.optDouble("offsetY").toFloat()
+                    ),
+                    interactiveElement = obj.optNullableString("interactiveElement")
+                )
+            }
+
+            fun fromJSON(json: String): DragEvent? =
+                fromJSONObject(tryOrNull { JSONObject(json) })
+        }
     }
 
     @android.webkit.JavascriptInterface
@@ -434,6 +527,11 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         runJavaScript("getSelectionRect();", callback)
     }
 
+    internal suspend fun findFirstVisibleLocator(): Locator? =
+        runJavaScriptSuspend("readium.findFirstVisibleLocator();")
+            .let { tryOrNull { JSONObject(it) } }
+            ?.let { Locator.fromJSON(it) }
+
     fun createHighlight(locator: String?, color: String?, callback: (String) -> Unit) {
         uiScope.launch {
             runJavaScript("createHighlight($locator, $color, true);", callback)
@@ -479,6 +577,17 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         if (resourceUrl == request.url?.toString()) return false
 
         return listener.shouldOverrideUrlLoading(this, request)
+    }
+
+    internal fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? {
+        // Prevent favicon.ico to be loaded, this was causing a NullPointerException in NanoHttp
+        if (!request.isForMainFrame && request.url.path?.endsWith("/favicon.ico") == true) {
+            tryOrLog<Unit> {
+                return WebResourceResponse("image/png", null, null)
+            }
+        }
+
+        return listener.shouldInterceptRequest(webView, request)
     }
 
     // Text selection ActionMode overrides

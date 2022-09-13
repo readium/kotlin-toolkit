@@ -6,23 +6,22 @@
 
 package org.readium.r2.testapp.reader
 
+import android.app.Activity
 import android.app.Application
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.json.JSONObject
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
-import org.readium.r2.shared.Injectable
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
+import org.readium.r2.shared.publication.services.isRestricted
+import org.readium.r2.shared.publication.services.protectionError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.streamer.Streamer
-import org.readium.r2.streamer.server.Server
 import org.readium.r2.testapp.MediaService
+import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.bookshelf.BookRepository
 import java.io.File
-import java.net.URL
 
 /**
  * Open and store publications in order for them to be listened or read.
@@ -31,30 +30,31 @@ import java.net.URL
  * Pass the method result to the activity to enable it to know which current publication it must
  * retrieve from this repository - media or visual.
  */
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalMedia2::class)
+@OptIn(ExperimentalMedia2::class)
 class ReaderRepository(
     private val application: Application,
-    private val streamer: Streamer,
-    private val server: Server,
+    private val readium: Readium,
     private val mediaBinder: MediaService.Binder,
     private val bookRepository: BookRepository
 ) {
+    object CancellationException : Exception()
+
     private val repository: MutableMap<Long, ReaderInitData> =
         mutableMapOf()
 
     operator fun get(bookId: Long): ReaderInitData? =
         repository[bookId]
 
-    suspend fun open(bookId: Long): Try<Unit, Exception> {
+    suspend fun open(bookId: Long, activity: Activity): Try<Unit, Exception> {
         return try {
-            openThrowing(bookId)
+            openThrowing(bookId, activity)
             Try.success(Unit)
         } catch (e: Exception) {
             Try.failure(e)
         }
     }
 
-    private suspend fun openThrowing(bookId: Long) {
+    private suspend fun openThrowing(bookId: Long, activity: Activity) {
         if (bookId in repository.keys) {
             return
         }
@@ -66,8 +66,14 @@ class ReaderRepository(
         require(file.exists())
         val asset = FileAsset(file)
 
-        val publication = streamer.open(asset, allowUserInteraction = true, sender = application)
+        val publication = readium.streamer.open(asset, allowUserInteraction = true, sender = activity)
             .getOrThrow()
+
+        // The publication is protected with a DRM and not unlocked.
+        if (publication.isRestricted) {
+            throw publication.protectionError
+                ?: CancellationException
+        }
 
         val initialLocator = book.progression?.let { Locator.fromJSON(JSONObject(it)) }
 
@@ -86,17 +92,7 @@ class ReaderRepository(
         publication: Publication,
         initialLocator: Locator?
     ): VisualReaderInitData {
-        val url = prepareToServe(publication)
-        return VisualReaderInitData(bookId, publication, url, initialLocator)
-    }
-
-    private fun prepareToServe(publication: Publication): URL {
-        val userProperties =
-            application.filesDir.path + "/" + Injectable.Style.rawValue + "/UserProperties.json"
-        val url =
-            server.addPublication(publication, userPropertiesFile = File(userProperties))
-
-        return url ?: throw Exception("Cannot add the publication to the HTTP server.")
+        return VisualReaderInitData(bookId, publication, initialLocator)
     }
 
     @OptIn(ExperimentalMedia2::class)
@@ -123,7 +119,7 @@ class ReaderRepository(
             is VisualReaderInitData -> {
                 initData.publication.close()
             }
-            null -> {
+            null, is DummyReaderInitData -> {
                 // Do nothing
             }
         }

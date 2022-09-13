@@ -18,7 +18,6 @@ import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
-import java.lang.Exception
 
 /**
  * Copies this stream to the given output stream, returning the number of bytes copied
