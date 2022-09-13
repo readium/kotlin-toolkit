@@ -1,10 +1,7 @@
 /*
- * Module: r2-streamer-kotlin
- * Developers: Quentin Gliosca
- *
- * Copyright (c) 2018. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.streamer.parser.epub
@@ -29,32 +26,34 @@ internal class PublicationFactory(
     private val epubVersion = packageDocument.epubVersion
     private val spine = packageDocument.spine
     private val manifest = packageDocument.manifest
-    private val globalLinks = packageDocument.metadata.globalMetadata
-        .filterIsInstance<MetadataItem.Link>()
+    private val globalMetadata = packageDocument.metadata.filter { it.refines == null }
 
     private val pubMetadata = PubMetadataAdapter(
         epubVersion,
-        packageDocument.metadata.globalMetadata,
+        globalMetadata,
         fallbackTitle,
         packageDocument.uniqueIdentifierId,
         spine.direction,
         displayOptions
     )
 
-    private val itemMetadata = packageDocument.metadata.otherMetadata
-        .mapValues { LinkMetadataAdapter(epubVersion, it.value) }
+    private val itemMetadata = packageDocument.metadata
+        .filter { it.refines != null }
+        .groupBy(MetadataItem::refines)
+        .mapValues { DurationAdapter(it.value) }
 
     @Suppress("Unchecked_cast")
     private val itemById = manifest
         .filter { it.id != null }
         .associateBy(Item::id) as Map<String, Item>
 
-    private val itemrefByIdref = spine.itemrefs.associateBy(Itemref::idref)
+    private val itemrefByIdref = spine.itemrefs
+        .associateBy(Itemref::idref)
 
     fun create(): Manifest {
         // Compute metadata
-        val metadata = pubMetadata.metadata()
-        val metadataLinks = pubMetadata.links()
+        val metadata = computeMetadata(pubMetadata)
+        val metadataLinks = pubMetadata.links
 
         // Compute links
         val readingOrderIds = spine.itemrefs.filter { it.linear }.map { it.idref }
@@ -88,6 +87,37 @@ internal class PublicationFactory(
         )
     }
 
+    private fun computeMetadata(adapter: PubMetadataAdapter) = with(adapter) {
+        Metadata(
+            identifier = identifier,
+            conformsTo = setOf(Publication.Profile.EPUB),
+            modified = modified,
+            published = published,
+            accessibility = accessibility,
+            languages = languages,
+            localizedTitle = localizedTitle,
+            localizedSortAs = localizedSortAs,
+            localizedSubtitle = localizedSubtitle,
+            duration = duration,
+            subjects = subjects,
+            description = description,
+            readingProgression = spine.direction,
+            belongsToCollections = belongsToCollections,
+            belongsToSeries = belongsToSeries,
+            otherMetadata = otherMetadata,
+
+            authors = contributors("aut"),
+            translators = contributors("trl"),
+            editors = contributors("edt"),
+            publishers = contributors("pbl"),
+            artists = contributors("art"),
+            illustrators = contributors("ill"),
+            colorists = contributors("clr"),
+            narrators = contributors("nrt"),
+            contributors = contributors(null)
+        )
+    }
+
     /** Recursively find the ids of the fallback items in [items] */
     private fun computeIdsWithFallbacks(ids: List<String>): Set<String> {
         val fallbackIds: MutableSet<String> = mutableSetOf()
@@ -112,7 +142,7 @@ internal class PublicationFactory(
         return Link(
             href = item.href,
             type = item.mediaType,
-            duration = itemMetadata[item.id]?.duration,
+            duration = itemMetadata[item.id]?.adapt(),
             rels = rels,
             properties = properties,
             alternates = computeAlternates(item, fallbackChain)

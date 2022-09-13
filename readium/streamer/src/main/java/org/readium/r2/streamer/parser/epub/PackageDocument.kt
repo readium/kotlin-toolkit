@@ -17,7 +17,7 @@ internal data class PackageDocument(
     val path: String,
     val epubVersion: Double,
     val uniqueIdentifierId: String?,
-    val metadata: EpubMetadata,
+    val metadata: List<MetadataItem>,
     val manifest: List<Item>,
     val spine: Spine
 ) {
