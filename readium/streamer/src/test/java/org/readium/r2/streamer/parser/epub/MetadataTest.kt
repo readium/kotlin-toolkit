@@ -463,8 +463,8 @@ class AccessibilityTest {
     @Test fun `accessModesSufficient are rightly parsed`() {
         assertThat(epub2Metadata.accessibility?.accessModesSufficient)
             .containsExactlyInAnyOrder(
-                setOf(Accessibility.AccessMode.VISUAL, Accessibility.AccessMode.TEXTUAL),
-                setOf(Accessibility.AccessMode.TEXTUAL)
+                setOf(Accessibility.PrimaryAccessMode.VISUAL, Accessibility.PrimaryAccessMode.TEXTUAL),
+                setOf(Accessibility.PrimaryAccessMode.TEXTUAL)
             )
     }
 

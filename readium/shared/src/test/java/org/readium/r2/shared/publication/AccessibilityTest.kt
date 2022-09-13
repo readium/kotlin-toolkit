@@ -94,8 +94,8 @@ class AccessibilityTest {
                 ),
                 accessModesSufficient = setOf(
                     setOf(
-                        Accessibility.AccessMode.VISUAL,
-                        Accessibility.AccessMode.TACTILE
+                        Accessibility.PrimaryAccessMode.VISUAL,
+                        Accessibility.PrimaryAccessMode.TACTILE
                     )
                 ),
                 features = setOf(
@@ -200,9 +200,9 @@ class AccessibilityTest {
                 summary = null,
                 accessModes = emptySet(),
                 accessModesSufficient = setOf(
-                    setOf(Accessibility.AccessMode.AUDITORY),
-                    setOf(Accessibility.AccessMode.VISUAL, Accessibility.AccessMode.TACTILE),
-                    setOf(Accessibility.AccessMode.VISUAL)
+                    setOf(Accessibility.PrimaryAccessMode.AUDITORY),
+                    setOf(Accessibility.PrimaryAccessMode.VISUAL, Accessibility.PrimaryAccessMode.TACTILE),
+                    setOf(Accessibility.PrimaryAccessMode.VISUAL)
                 ),
                 features = emptySet(),
                 hazards = emptySet()
@@ -288,9 +288,9 @@ class AccessibilityTest {
                 summary = "Summary",
                 accessModes = setOf(Accessibility.AccessMode.AUDITORY, Accessibility.AccessMode.CHART_ON_VISUAL),
                 accessModesSufficient = setOf(
-                    setOf(Accessibility.AccessMode.AUDITORY),
-                    setOf(Accessibility.AccessMode.VISUAL, Accessibility.AccessMode.TACTILE),
-                    setOf(Accessibility.AccessMode.VISUAL)
+                    setOf(Accessibility.PrimaryAccessMode.AUDITORY),
+                    setOf(Accessibility.PrimaryAccessMode.VISUAL, Accessibility.PrimaryAccessMode.TACTILE),
+                    setOf(Accessibility.PrimaryAccessMode.VISUAL)
                 ),
                 features = setOf(Accessibility.Feature.READING_ORDER, Accessibility.Feature.ALTERNATIVE_TEXT),
                 hazards = setOf(Accessibility.Hazard.FLASHING, Accessibility.Hazard.MOTION_SIMULATION)

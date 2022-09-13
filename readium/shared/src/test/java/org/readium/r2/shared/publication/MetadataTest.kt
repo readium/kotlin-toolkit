@@ -43,7 +43,7 @@ class MetadataTest {
                 accessibility = Accessibility(
                     conformsTo = setOf(Accessibility.Profile.WCAG_20_A),
                     accessModes = setOf(Accessibility.AccessMode.TEXTUAL),
-                    accessModesSufficient = setOf(setOf(Accessibility.AccessMode.TEXTUAL)),
+                    accessModesSufficient = setOf(setOf(Accessibility.PrimaryAccessMode.TEXTUAL)),
                     features = setOf(Accessibility.Feature.ARIA),
                     hazards = setOf(Accessibility.Hazard.FLASHING)
                 ),
@@ -260,7 +260,7 @@ class MetadataTest {
                 accessibility = Accessibility(
                     conformsTo = setOf(Accessibility.Profile.WCAG_20_A),
                     accessModes = setOf(Accessibility.AccessMode.TEXTUAL),
-                    accessModesSufficient = setOf(setOf(Accessibility.AccessMode.TEXTUAL)),
+                    accessModesSufficient = setOf(setOf(Accessibility.PrimaryAccessMode.TEXTUAL)),
                     features = setOf(Accessibility.Feature.ARIA),
                     hazards = setOf(Accessibility.Hazard.FLASHING)
                 ),

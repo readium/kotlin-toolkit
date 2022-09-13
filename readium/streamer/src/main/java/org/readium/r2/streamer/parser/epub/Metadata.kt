@@ -248,7 +248,7 @@ internal class PubMetadataAdapter(
         .mapNotNull(::mapEpubLink)
 
     /** Compute a Publication [Link] from an Epub metadata link */
-    private fun mapEpubLink(link: MetadataItem.Link): Link? {
+    private fun mapEpubLink(link: MetadataItem.Link): Link {
         val contains: MutableList<String> = mutableListOf()
         if (link.rels.contains(Vocabularies.LINK + "record")) {
             if (link.properties.contains(Vocabularies.LINK + "onix"))
@@ -453,8 +453,11 @@ internal class PubMetadataAdapter(
         val accessModesSufficient = itemsWithProperty(Vocabularies.SCHEMA + "accessModeSufficient")
             .map { it.value.split(",").map(String::trim).distinct() }
             .distinct()
-            .map { modeGroups -> modeGroups.map { Accessibility.AccessMode(it) }.toSet() }
-            .toSet()
+            .mapNotNull { modeGroups -> modeGroups
+                .mapNotNull { Accessibility.PrimaryAccessMode(it) }
+                .toSet()
+                .takeUnless(Set<Accessibility.PrimaryAccessMode>::isEmpty)
+            }.toSet()
 
         val features = itemsWithProperty(Vocabularies.SCHEMA + "accessibilityFeature")
             .map { Accessibility.Feature(it.value) }

@@ -8,15 +8,19 @@ package org.readium.r2.shared.publication
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.publication.Accessibility.AccessMode.Companion.toJSONArray
+import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode.Companion.toJSONArray
 import org.readium.r2.shared.publication.Accessibility.Feature.Companion.toJSONArray
 import org.readium.r2.shared.publication.Accessibility.Hazard.Companion.toJSONArray
 import org.readium.r2.shared.publication.Accessibility.Profile.Companion.toJSONArray
+import org.readium.r2.shared.util.MapCompanion
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 
@@ -26,7 +30,7 @@ data class Accessibility(
     val certification: Certification? = null,
     val summary: String? = null,
     val accessModes: Set<AccessMode>,
-    val accessModesSufficient: Set<Set<AccessMode>>,
+    val accessModesSufficient: Set<Set<PrimaryAccessMode>>,
     val features: Set<Feature>,
     val hazards: Set<Hazard>
 ) : JSONable, Parcelable {
@@ -109,7 +113,7 @@ data class Accessibility(
             val VISUAL = AccessMode("visual")
 
             /**
-             * Creates a list of [Hazard] from its RWPM JSON representation.
+             * Creates a list of [AccessMode] from its RWPM JSON representation.
              */
             fun fromJSONArray(json: JSONArray?): List<AccessMode> =
                 json?.filterIsInstance(String::class.java)
@@ -118,6 +122,30 @@ data class Accessibility(
 
             fun Set<AccessMode>.toJSONArray(): JSONArray =
                 JSONArray(this.map(AccessMode::value))
+        }
+    }
+
+    @Parcelize
+    @Serializable
+    enum class PrimaryAccessMode(val value: String) : Parcelable {
+
+        @SerialName("auditory") AUDITORY("auditory"),
+        @SerialName("tactile") TACTILE("tactile"),
+        @SerialName("textual") TEXTUAL("textual"),
+        @SerialName("visual") VISUAL("visual");
+
+        companion object : MapCompanion<String, PrimaryAccessMode>(values(), PrimaryAccessMode::value) {
+
+            /**
+             * Creates a list of [PrimaryAccessMode] from its RWPM JSON representation.
+             */
+            fun fromJSONArray(json: JSONArray?): List<PrimaryAccessMode> =
+                json?.filterIsInstance(String::class.java)
+                    ?.mapNotNull { get(it) }
+                    .orEmpty()
+
+            fun Set<PrimaryAccessMode>.toJSONArray(): JSONArray =
+                JSONArray(this.map(PrimaryAccessMode::value))
         }
     }
 
@@ -160,7 +188,7 @@ data class Accessibility(
             val NONE = Feature("none")
 
             /**
-             * Creates a list of [Hazard] from its RWPM JSON representation.
+             * Creates a list of [Feature] from its RWPM JSON representation.
              */
             fun fromJSONArray(json: JSONArray?): List<Feature> =
                 json?.filterIsInstance(String::class.java)
@@ -230,9 +258,10 @@ data class Accessibility(
             val accessModesSufficient = (json.remove("accessModeSufficient") as? JSONArray)
                 ?.mapNotNull {
                     when (it) {
-                        is JSONArray -> AccessMode.fromJSONArray(it).toSet()
-                            .takeUnless(Set<AccessMode>::isEmpty)
-                        is String -> setOf(AccessMode(it))
+                        is JSONArray -> PrimaryAccessMode.fromJSONArray(it).toSet()
+                            .takeUnless(Set<PrimaryAccessMode>::isEmpty)
+                        is String -> setOfNotNull(PrimaryAccessMode(it))
+                            .takeUnless(Set<PrimaryAccessMode>::isEmpty)
                         else -> null
                     }
                 }.orEmpty()
