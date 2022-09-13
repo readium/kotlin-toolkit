@@ -37,11 +37,11 @@ data class Accessibility(
 
         companion object {
 
-            val WCAG_20_A = Profile("https://idpf.org/epub/a11y/accessibility-20170105.html#wcag-a")
+            val WCAG_20_A = Profile("http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a")
 
-            val WCAG_20_AA = Profile("https://idpf.org/epub/a11y/accessibility-20170105.html#wcag-aa")
+            val WCAG_20_AA = Profile("http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aa")
 
-            val WCAG_20_AAA = Profile("https://idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa")
+            val WCAG_20_AAA = Profile("http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa")
 
             fun Set<Profile>.toJSONArray(): JSONArray =
                 JSONArray(this.map(Profile::uri))

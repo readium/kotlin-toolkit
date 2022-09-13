@@ -54,7 +54,7 @@ internal class PublicationFactory(
     fun create(): Manifest {
         // Compute metadata
         val metadata = pubMetadata.metadata()
-        val metadataLinks = globalLinks.mapNotNull(::mapEpubLink)
+        val metadataLinks = pubMetadata.links()
 
         // Compute links
         val readingOrderIds = spine.itemrefs.filter { it.linear }.map { it.idref }
@@ -85,23 +85,6 @@ internal class PublicationFactory(
             resources = resources,
             tableOfContents = toc,
             subcollections = subcollections
-        )
-    }
-
-    /** Compute a Publication [Link] from an Epub metadata link */
-    private fun mapEpubLink(link: MetadataItem.Link): Link? {
-        val contains: MutableList<String> = mutableListOf()
-        if (link.rels.contains(Vocabularies.LINK + "record")) {
-            if (link.properties.contains(Vocabularies.LINK + "onix"))
-                contains.add("onix")
-            if (link.properties.contains(Vocabularies.LINK + "xmp"))
-                contains.add("xmp")
-        }
-        return Link(
-            href = link.href,
-            type = link.mediaType,
-            rels = link.rels,
-            properties = Properties(mapOf("contains" to contains))
         )
     }
 

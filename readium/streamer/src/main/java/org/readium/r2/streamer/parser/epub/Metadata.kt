@@ -58,9 +58,9 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
     private fun parseLinkElement(element: ElementNode, filePath: String): MetadataItem.Link? {
         val href = element.getAttr("href") ?: return null
         val relAttr = element.getAttr("rel").orEmpty()
-        val rel = parseProperties(relAttr).mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.LINK) }
+        val rel = parseProperties(relAttr).map { resolveProperty(it, prefixMap, DEFAULT_VOCAB.LINK) }
         val propAttr = element.getAttr("properties").orEmpty()
-        val properties = parseProperties(propAttr).mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.LINK) }
+        val properties = parseProperties(propAttr).map { resolveProperty(it, prefixMap, DEFAULT_VOCAB.LINK) }
         val mediaType = element.getAttr("media-type")
         val refines = element.getAttr("refines")?.removePrefix("#")
         return MetadataItem.Link(
@@ -148,7 +148,7 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
         )
     }
 
-    private fun dateWithLegacyAttr(element: ElementNode, name: String, value: String): MetadataItem.Meta? {
+    private fun dateWithLegacyAttr(element: ElementNode, name: String, value: String): MetadataItem.Meta {
         val eventAttr = element.getAttrNs("event", Namespaces.OPF)
         val propName = if (eventAttr == "modification") Vocabularies.DCTERMS + "modified" else name
         return MetadataItem.Meta(
@@ -180,7 +180,7 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
     }
 }
 
-internal open class MetadataAdapter(val epubVersion: Double, private val items: List<MetadataItem>) {
+internal open class MetadataAdapter(val epubVersion: Double, protected val items: List<MetadataItem>) {
     val duration = firstWithProperty(Vocabularies.MEDIA + "duration")
         ?.let { ClockValueParser.parse(it.value) }
 
@@ -219,6 +219,7 @@ internal class PubMetadataAdapter(
         conformsTo = setOf(Publication.Profile.EPUB),
         modified = modified,
         published = published,
+        accessibility = accessibility,
         languages = languages,
         localizedTitle = localizedTitle,
         localizedSortAs = localizedSortAs,
@@ -241,6 +242,27 @@ internal class PubMetadataAdapter(
         narrators = contributors("nrt"),
         contributors = contributors(null)
     )
+
+    fun links(): List<Link> = items
+        .filterIsInstance(MetadataItem.Link::class.java)
+        .mapNotNull(::mapEpubLink)
+
+    /** Compute a Publication [Link] from an Epub metadata link */
+    private fun mapEpubLink(link: MetadataItem.Link): Link? {
+        val contains: MutableList<String> = mutableListOf()
+        if (link.rels.contains(Vocabularies.LINK + "record")) {
+            if (link.properties.contains(Vocabularies.LINK + "onix"))
+                contains.add("onix")
+            if (link.properties.contains(Vocabularies.LINK + "xmp"))
+                contains.add("xmp")
+        }
+        return Link(
+            href = link.href,
+            type = link.mediaType,
+            rels = link.rels,
+            properties = Properties(mapOf("contains" to contains))
+        )
+    }
 
     val languages = run {
         var langs = itemsWithProperty(Vocabularies.DCTERMS + "language")
@@ -308,7 +330,7 @@ internal class PubMetadataAdapter(
 
     init {
         val allCollections = itemsWithProperty(Vocabularies.META + "belongs-to-collection")
-            .orEmpty().map { it.toCollection() }
+            .map { it.toCollection() }
         val (seriesMeta, collectionsMeta) = allCollections.partition { it.first == "series" }
 
         belongsToCollections = collectionsMeta.map(Pair<String?, Collection>::second)
@@ -406,21 +428,100 @@ internal class PubMetadataAdapter(
         )
     }
 
+    val accessibility: Accessibility?
+
+    private val nonAccessibilityProfiles: List<MetadataItem.Meta>
+
+    init {
+        val (accessibilityProfiles, otherProfiles) =
+            itemsWithProperty(Vocabularies.DCTERMS + "conformsTo")
+                .map { it to accessibilityProfileFromString(it.value) }
+                .partition { it.second != null }
+
+        nonAccessibilityProfiles = otherProfiles.map { it.first }
+
+        val conformsTo = accessibilityProfiles.mapNotNull { it.second }
+            .toSet()
+
+        val summary = firstWithProperty(Vocabularies.SCHEMA + "accessibilitySummary")
+            ?.value
+
+        val accessModes = itemsWithProperty(Vocabularies.SCHEMA + "accessMode")
+            .map { Accessibility.AccessMode(it.value) }
+            .toSet()
+
+        val accessModesSufficient = itemsWithProperty(Vocabularies.SCHEMA + "accessModeSufficient")
+            .map { it.value.split(",").map(String::trim).distinct() }
+            .distinct()
+            .map { modeGroups -> modeGroups.map { Accessibility.AccessMode(it) }.toSet() }
+            .toSet()
+
+        val features = itemsWithProperty(Vocabularies.SCHEMA + "accessibilityFeature")
+            .map { Accessibility.Feature(it.value) }
+            .toSet()
+
+        val hazards = itemsWithProperty(Vocabularies.SCHEMA + "accessibilityHazard")
+            .map { Accessibility.Hazard(it.value) }
+            .toSet()
+
+        var certification = firstWithProperty(Vocabularies.A11Y + "certifiedBy")
+            ?.toCertification()
+            ?: Accessibility.Certification(certifiedBy = null, credential = null, report = null)
+
+        if (certification.credential == null) {
+            val credential = firstWithProperty(Vocabularies.A11Y + "certifierCredential")
+                ?.value
+            credential?.let { certification = certification.copy(credential = it) }
+        }
+
+        if (certification.report == null) {
+            val report = firstWithRel(Vocabularies.A11Y + "certifierReport")?.href
+                ?: firstWithProperty(Vocabularies.A11Y + "certifierReport")?.value
+            certification = certification.copy(report = report)
+        }
+
+        val finalCertification = certification
+            .takeUnless { certification.certifiedBy == null && certification.credential == null &&
+                certification.report == null }
+
+        accessibility = if (conformsTo.isNotEmpty() || finalCertification != null || summary != null ||
+            accessModes.isNotEmpty() || accessModesSufficient.isNotEmpty() ||
+            features.isNotEmpty() || hazards.isNotEmpty()) {
+            Accessibility(
+                conformsTo = conformsTo,
+                certification = certification,
+                summary = summary,
+                accessModes = accessModes,
+                accessModesSufficient = accessModesSufficient,
+                features = features,
+                hazards = hazards
+            )
+        } else null
+    }
+
+
     val otherMetadata: Map<String, Any>
 
     init {
         val dcterms = listOf(
             "identifier", "language", "title", "date", "modified", "description",
-            "duration", "creator", "publisher", "contributor"
+            "duration", "creator", "publisher", "contributor", "conformsTo"
         ).map { Vocabularies.DCTERMS + it }
+        val a11y = listOf("certifiedBy", "certifierReport", "certifierCredential")
+            .map { Vocabularies.A11Y + it }
+        val schema = listOf(
+            "accessMode", "accessModeSufficient", "accessibilityFeature",
+            "accessibilityHazard", "accessibilitySummary"
+        ).map { Vocabularies.SCHEMA + it }
         val media = listOf("narrator", "duration").map { Vocabularies.MEDIA + it }
         val rendition = listOf("flow", "spread", "orientation", "layout").map { Vocabularies.RENDITION + it }
-        val usedProperties: List<String> = dcterms + media + rendition
+        val usedProperties: List<String> = dcterms + media + rendition + a11y + schema
 
         val otherItemsMap = metadataItems
             .filterIsInstance(MetadataItem.Meta::class.java)
+            .filter { it.property !in usedProperties }
+            .plus(nonAccessibilityProfiles)
             .groupBy(MetadataItem.Meta::property)
-            .filterKeys { it !in usedProperties }
             .mapValues {
                 val values = it.value.map(MetadataItem.Meta::toMap)
                 when(values.size) {
@@ -459,10 +560,18 @@ internal sealed class MetadataItem {
     ) : MetadataItem() {
 
         private val metaChildren: List<Meta> =
-            children.filterIsInstance(MetadataItem.Meta::class.java)
+            children.filterIsInstance(Meta::class.java)
 
         private val metaChildrenByProperty: Map<String, List<Meta>> =
             metaChildren.groupBy(Meta::property)
+
+        private val linkChildren: List<Link> =
+            children.filterIsInstance(Link::class.java)
+
+        private val linkChildrenByRel: Map<String, List<Link>> =
+            linkChildren
+                .flatMap { link -> link.rels.map { rel -> Pair(rel, link) } }
+                .groupBy({ it.first} ) { it.second }
 
         fun toSubject():
             Subject {
@@ -502,6 +611,23 @@ internal sealed class MetadataItem {
 
         fun toCollection() = toContributor()
 
+        fun toCertification(): Accessibility.Certification {
+            require(property == Vocabularies.A11Y + "certifiedBy")
+
+            val credential = metaChildrenByProperty[Vocabularies.A11Y + "certifierCredential"]
+                ?.firstOrNull()
+                ?.value
+
+            val report = linkChildrenByRel[Vocabularies.A11Y + "certifierReport"]?.firstOrNull()?.href
+                ?: metaChildrenByProperty[Vocabularies.A11Y + "certifierReport"]?.firstOrNull()?.value
+
+            return Accessibility.Certification(
+                certifiedBy = value,
+                credential = credential,
+                report = report
+            )
+        }
+
         fun toMap(): Any =
             if (children.isEmpty())
                 value
@@ -519,7 +645,7 @@ internal sealed class MetadataItem {
         private val fileAs
             get() = metaChildrenByProperty[Vocabularies.META + "file-as"]
                 ?.firstOrNull()
-                ?.let { Pair(it.lang.takeUnless { it == "" } , it.value) }
+                ?.let { Pair(it.lang.takeUnless(String::isEmpty) , it.value) }
 
         private val titleType
             get() = firstValue(Vocabularies.META + "title-type")
@@ -552,7 +678,7 @@ internal sealed class MetadataItem {
             get() = firstValue(Vocabularies.META + "role")
 
         private fun localizedString(): LocalizedString {
-            val values = mapOf(lang.takeUnless { it == "" } to value).plus(alternateScript)
+            val values = mapOf(lang.takeUnless(String::isEmpty) to value).plus(alternateScript)
             return LocalizedString.fromStrings(values)
         }
 

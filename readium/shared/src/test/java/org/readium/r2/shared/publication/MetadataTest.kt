@@ -96,7 +96,7 @@ class MetadataTest {
                 "modified": "2001-01-01T12:36:27.000Z",
                 "published": "2001-01-02T12:36:27.000Z",
                 "accessibility": {
-                    "conformsTo": "https://idpf.org/epub/a11y/accessibility-20170105.html#wcag-a",
+                    "conformsTo": "http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a",
                     "accessMode": ["textual"],
                     "accessModeSufficient": ["textual"],
                     "hazard": ["flashing"],
@@ -206,7 +206,7 @@ class MetadataTest {
                 "modified": "2001-01-01T12:36:27.000Z",
                 "published": "2001-01-02T12:36:27.000Z",
                 "accessibility": {
-                    "conformsTo": ["https://idpf.org/epub/a11y/accessibility-20170105.html#wcag-a"],
+                    "conformsTo": ["http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a"],
                     "accessMode": ["textual"],
                     "accessModeSufficient": [["textual"]],
                     "hazard": ["flashing"],

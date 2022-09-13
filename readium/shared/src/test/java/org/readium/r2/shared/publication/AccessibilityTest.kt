@@ -139,7 +139,7 @@ class AccessibilityTest {
             ),
             Accessibility.fromJSON(
                 JSONObject("""{
-                    "conformsTo": "https://idpf.org/epub/a11y/accessibility-20170105.html#wcag-a"
+                    "conformsTo": "http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a"
                 }""")
             )
         )
@@ -162,7 +162,7 @@ class AccessibilityTest {
             ),
              Accessibility.fromJSON(
                  JSONObject("""{
-                    "conformsTo": ["https://idpf.org/epub/a11y/accessibility-20170105.html#wcag-a", "https://profile2"]
+                    "conformsTo": ["http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a", "https://profile2"]
                  }""")
              )
         )
@@ -266,7 +266,7 @@ class AccessibilityTest {
     fun `get full JSON`() {
         assertJSONEquals(
             JSONObject("""{
-                "conformsTo": ["https://idpf.org/epub/a11y/accessibility-20170105.html#wcag-a", "https://profile2"],
+                "conformsTo": ["http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a", "https://profile2"],
                 "certification": {
                     "certifiedBy": "company1",
                     "credential": "credential1",
