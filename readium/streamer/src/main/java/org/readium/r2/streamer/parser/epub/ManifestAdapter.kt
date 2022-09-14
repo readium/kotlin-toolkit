@@ -25,7 +25,6 @@ internal class ManifestAdapter(
     private val epubVersion = packageDocument.epubVersion
     private val spine = packageDocument.spine
 
-
     fun adapt(): Manifest {
         // Compute metadata
         val metadata = MetadataAdapter(
@@ -63,7 +62,7 @@ internal class ManifestAdapter(
         // Build Publication object
         return Manifest(
             metadata = metadata.metadata,
-            links = metadata.links,
+            links = emptyList(),
             readingOrder = readingOrder,
             resources = resources,
             tableOfContents = toc,
