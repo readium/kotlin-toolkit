@@ -48,23 +48,32 @@ internal fun List<MetadataItem>.firstWithRel(rel: String) = this
 internal fun List<MetadataItem>.firstValue(property: String) = this
     .firstWithProperty(property)?.value
 
-internal fun List<MetadataItem>.takeAllWithProperty(property: String) =
-    partition { it is MetadataItem.Meta && it.property == property }
+@Suppress("Unchecked_Cast")
+internal fun List<MetadataItem>.takeAllWithProperty(vararg property: String): Pair<List<MetadataItem.Meta>, List<MetadataItem>> =
+    partition { it is MetadataItem.Meta && it.property in property }
+        as Pair<List<MetadataItem.Meta>, List<MetadataItem>>
 
-internal fun List<MetadataItem>.takeFirstWithProperty(property: String) =
-    removeFirstOrNull { it is MetadataItem.Meta && it.property == property }
+@Suppress("Unchecked_Cast")
+internal fun List<MetadataItem>.takeAllMetasWhen(predicate: (MetadataItem.Meta) -> Boolean): Pair<List<MetadataItem.Meta>, List<MetadataItem>> =
+    partition { it is MetadataItem.Meta && predicate(it) }
+        as Pair<List<MetadataItem.Meta>, List<MetadataItem>>
 
-internal fun List<MetadataItem>.takeAllWithRel(rel: String) =
+internal fun List<MetadataItem>.takeFirstWithProperty(property: String, id: String? = null): Pair<MetadataItem.Meta?, List<MetadataItem>> =
+    removeFirstOrNull { it.property == property && (id == null || it.id == id) }
+
+@Suppress("Unchecked_Cast")
+internal fun List<MetadataItem>.takeAllWithRel(rel: String): Pair<List<MetadataItem.Link>, List<MetadataItem>> =
     partition { it is MetadataItem.Link && it.rels.contains(rel) }
+    as Pair<List<MetadataItem.Link>, List<MetadataItem>>
 
-internal fun List<MetadataItem>.takeFirstWithRel(rel: String) =
-    removeFirstOrNull { it is MetadataItem.Link && it.rels.contains(rel) }
+internal fun List<MetadataItem>.takeFirstWithRel(rel: String): Pair<MetadataItem.Link?, List<MetadataItem>> =
+    removeFirstOrNull { it.rels.contains(rel) }
 
-internal fun <T> List<T>.removeFirstOrNull(predicate: (T) -> Boolean): Pair<T?, List<T>> {
-    var consumed: T? = null
+internal inline fun <reified T, reified S : T> List<T>.removeFirstOrNull(predicate: (S) -> Boolean): Pair<S?, List<T>> {
+    var consumed: S? = null
     val remaining: MutableList<T> = mutableListOf()
     for (element: T in this) {
-        if (predicate(element)) {
+        if (consumed == null && element is S && predicate(element)) {
             consumed = element
         } else {
             remaining.add(element)

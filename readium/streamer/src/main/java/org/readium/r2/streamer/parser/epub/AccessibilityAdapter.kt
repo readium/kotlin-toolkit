@@ -1,44 +1,60 @@
+/*
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.publication.Accessibility
 
-internal class AccessibilityAdapter(private val items: List<MetadataItem>) {
+internal class AccessibilityAdapter {
 
-    fun adapt(): Accessibility? {
-        val (accessibilityProfiles, _) =
-            items.metasWithProperty(Vocabularies.DCTERMS + "conformsTo")
-                .map { it to accessibilityProfileFromString(it.value) }
+    fun adapt(items: List<MetadataItem>): Pair<Accessibility?, List<MetadataItem>> {
+        val (accessibilityProfiles, remainingItemsToNull) =
+            items.map { it to if (it is MetadataItem.Meta && it.property == Vocabularies.DCTERMS + "conformsTo" ) accessibilityProfileFromString(it.value) else null }
                 .partition { it.second != null }
-
-        //val nonAccessibilityProfiles = otherProfiles.map { it.first }
 
         val conformsTo = accessibilityProfiles
             .mapNotNull { it.second }
             .toSet()
 
-        val summary = items.firstWithProperty(Vocabularies.SCHEMA + "accessibilitySummary")
+        var remainingItems = remainingItemsToNull
+            .map { it.first }
+
+        val summary = remainingItems
+            .takeFirstWithProperty(Vocabularies.SCHEMA + "accessibilitySummary")
+            .let { remainingItems = it.second; it.first }
             ?.value
 
-        val accessModes = items.metasWithProperty(Vocabularies.SCHEMA + "accessMode")
-            .map { Accessibility.AccessMode(it.value) }
+        val accessModes = remainingItems
+            .takeAllWithProperty(Vocabularies.SCHEMA + "accessMode")
+            .let { remainingItems = it.second; it.first }
+            .map { accessMode -> Accessibility.AccessMode(accessMode.value) }
             .toSet()
 
-        val accessModesSufficient = adaptAccessModeSufficient()
+        val accessModesSufficient = adaptAccessModeSufficient(remainingItems)
+            .let { remainingItems = it.second; it.first }
 
-        val features = items.metasWithProperty(Vocabularies.SCHEMA + "accessibilityFeature")
+        val features = remainingItems
+            .takeAllWithProperty(Vocabularies.SCHEMA + "accessibilityFeature")
+            .let { remainingItems = it.second; it.first }
             .map { Accessibility.Feature(it.value) }
             .toSet()
 
-        val hazards = items.metasWithProperty(Vocabularies.SCHEMA + "accessibilityHazard")
+        val hazards = remainingItems
+            .takeAllWithProperty(Vocabularies.SCHEMA + "accessibilityHazard")
+            .let { remainingItems = it.second; it.first }
             .map { Accessibility.Hazard(it.value) }
             .toSet()
 
-        val certification = adaptCertification()
+        val certification = adaptCertification(remainingItems)
+            .let { remainingItems = it.second; it.first }
 
-        return if (conformsTo.isNotEmpty() || certification != null || summary != null ||
-            accessModes.isNotEmpty() || accessModesSufficient.isNotEmpty() ||
-            features.isNotEmpty() || hazards.isNotEmpty()) {
-            Accessibility(
+        return if (remainingItems == items) {
+            null to remainingItems
+        } else {
+            val accessibility = Accessibility(
                 conformsTo = conformsTo,
                 certification = certification,
                 summary = summary,
@@ -47,39 +63,56 @@ internal class AccessibilityAdapter(private val items: List<MetadataItem>) {
                 features = features,
                 hazards = hazards
             )
-        } else null
+            accessibility to remainingItems
+        }
     }
 
-    private fun adaptAccessModeSufficient(): Set<Set<Accessibility.PrimaryAccessMode>> =
-        items.metasWithProperty(Vocabularies.SCHEMA + "accessModeSufficient")
-            .map { it.value.split(",").map(String::trim).distinct() }
+    private fun adaptAccessModeSufficient(items: List<MetadataItem>): Pair<Set<Set<Accessibility.PrimaryAccessMode>>, List<MetadataItem>> = items
+        .takeAllWithProperty(Vocabularies.SCHEMA + "accessModeSufficient")
+        .mapFirst {
+            it.map { it.value.split(",").map(String::trim).distinct() }
             .distinct()
             .mapNotNull { modeGroups -> modeGroups
                 .mapNotNull { Accessibility.PrimaryAccessMode(it) }
                 .toSet()
                 .takeUnless(Set<Accessibility.PrimaryAccessMode>::isEmpty)
             }.toSet()
+        }
 
-    private fun adaptCertification(): Accessibility.Certification? {
-        var certification = items.firstWithProperty(Vocabularies.A11Y + "certifiedBy")
+    private fun adaptCertification(items: List<MetadataItem>): Pair<Accessibility.Certification?, List<MetadataItem>> {
+        var remainingItems = items
+
+        var certification = remainingItems
+            .takeFirstWithProperty(Vocabularies.A11Y + "certifiedBy")
+            .let { remainingItems = it.second; it.first }
             ?.toCertification()
             ?: Accessibility.Certification(certifiedBy = null, credential = null, report = null)
 
         if (certification.credential == null) {
-            val credential = items.firstWithProperty(Vocabularies.A11Y + "certifierCredential")
-                ?.value
-            credential?.let { certification = certification.copy(credential = it) }
+            remainingItems.takeFirstWithProperty(Vocabularies.A11Y + "certifierCredential")
+                .let { remainingItems = it.second; it.first }
+                ?.let { certification = certification.copy(credential = it.value) }
         }
 
         if (certification.report == null) {
-            val report = items.firstWithRel(Vocabularies.A11Y + "certifierReport")?.href
-                ?: items.firstWithProperty(Vocabularies.A11Y + "certifierReport")?.value
-            certification = certification.copy(report = report)
+            remainingItems
+                .takeFirstWithProperty(Vocabularies.A11Y + "certifierReport")
+                .let { remainingItems = it.second; it.first }
+                ?.let { certification = certification.copy(report = it.value) }
         }
 
-        return certification
-            .takeUnless { certification.certifiedBy == null && certification.credential == null &&
-                certification.report == null }
+        if (certification.report == null) {
+            remainingItems
+                .takeFirstWithRel(Vocabularies.A11Y + "certifierReport")
+                .let { remainingItems = it.second; it.first }
+                ?.let { certification = certification.copy(report = it.href) }
+        }
+
+        return if (remainingItems.size == items.size) {
+            null to remainingItems
+        } else {
+            certification to remainingItems
+        }
     }
 
     private fun MetadataItem.Meta.toCertification(): Accessibility.Certification {
@@ -98,7 +131,7 @@ internal class AccessibilityAdapter(private val items: List<MetadataItem>) {
         )
     }
 
-    fun accessibilityProfileFromString(value: String): Accessibility.Profile? = when {
+    private fun accessibilityProfileFromString(value: String): Accessibility.Profile? = when {
         isWCAG_20_A(value) -> Accessibility.Profile.WCAG_20_A
         isWCAG_20_AA(value) -> Accessibility.Profile.WCAG_20_AA
         isWCAG_20_AAA(value) -> Accessibility.Profile.WCAG_20_AAA

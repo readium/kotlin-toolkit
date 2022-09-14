@@ -12,94 +12,154 @@ import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.Collection
 import org.readium.r2.shared.publication.presentation.Presentation
 
-internal class PubMetadataAdapter(
-    epubVersion: Double,
-    items: List<MetadataItem>,
-    fallbackTitle: String,
-    uniqueIdentifierId: String?,
-    readingProgression: ReadingProgression,
-    displayOptions: Map<String, String>
+internal class MetadataAdapter(
+    private val epubVersion: Double,
+    private val fallbackTitle: String,
+    private val uniqueIdentifierId: String?,
+    private val readingProgression: ReadingProgression,
+    private val displayOptions: Map<String, String>
 ) {
-    val links: List<Link> =
-        LinksAdapter(items).adapt()
+    data class Result(
+        val links: List<Link>,
+        val metadata: Metadata,
+        val durationById: Map<String, Double?>,
+        val coverId: String?
+    )
 
-    val duration: Double? =
-        DurationAdapter(items).adapt()
+    fun adapt(items: List<MetadataItem>): Result {
+        val (globalItems: List<MetadataItem>, refiningItems: List<MetadataItem>) =
+            items.partition { it.refines == null }
 
-    val languages: List<String> =
-        LanguageAdapter(readingProgression, items).adapt()
+        @Suppress("Unchecked_cast")
+        val durationById = refiningItems
+            .groupBy(MetadataItem::refines)
+            .mapValues { DurationAdapter().adapt(it.value).first }
+            as Map<String, Double?>
 
-    val identifier: String? =
-        IdentifierAdapter(uniqueIdentifierId, items).adapt()
+        var remainingItems: List<MetadataItem> = globalItems
 
-    val published = items
-        .firstWithProperty(Vocabularies.DCTERMS + "date")?.value
-        ?.iso8601ToDate()
+        val coverId: String? = remainingItems
+            .takeFirstWithProperty("cover")
+            .let { remainingItems = it.second; it.first }
+            ?.value
 
-    val modified = items
-        .firstWithProperty(Vocabularies.DCTERMS + "modified")?.value
-        ?.iso8601ToDate()
+        val duration: Double? = DurationAdapter()
+            .adapt(remainingItems)
+            .let { remainingItems = it.second; it.first }
 
-    val description = items
-        .firstWithProperty(Vocabularies.DCTERMS + "description")?.value
+        val languages: List<String> = LanguageAdapter(readingProgression)
+            .adapt(remainingItems)
+            .let { remainingItems =  it.second; it.first }
 
-    val cover: String? = items
-        .firstWithProperty("cover")?.value
+        val identifier: String? = IdentifierAdapter(uniqueIdentifierId)
+            .adapt(remainingItems)
+            .let { remainingItems = it.second; it.first }
 
-    private val titles: Triple<LocalizedString, LocalizedString?, LocalizedString?> =
-        TitleAdapter(fallbackTitle, items).adapt()
+        val published = remainingItems
+            .takeFirstWithProperty(Vocabularies.DCTERMS + "date")
+            .let { remainingItems = it.second; it.first }
+            ?.value
+            ?.iso8601ToDate()
 
-    val localizedTitle: LocalizedString =
-        titles.first
+        val modified = remainingItems
+            .takeFirstWithProperty(Vocabularies.DCTERMS + "modified")
+            .let { remainingItems = it.second; it.first }
+            ?.value?.iso8601ToDate()
 
-    val localizedSortAs: LocalizedString? =
-        titles.second
+        val description = remainingItems
+            .takeFirstWithProperty(Vocabularies.DCTERMS + "description")
+            .let { remainingItems = it.second; it.first }
+            ?.value
 
-    val localizedSubtitle: LocalizedString? =
-        titles.third
+        val (localizedTitle, localizedSortAs, localizedSubtitle) = TitleAdapter(fallbackTitle)
+            .adapt(remainingItems)
+            .let { remainingItems = it.second; it.first }
 
-    private val allCollections: Pair<List<Collection>, List<Collection>> =
-        CollectionAdapter(items).adapt()
+        val (belongsToCollections, belongsToSeries) = CollectionAdapter()
+            .adapt(remainingItems)
+            .let { remainingItems = it.second; it.first }
 
-    val belongsToCollections: List<Collection> =
-        allCollections.first
+        val subjects: List<Subject> = SubjectAdapter()
+            .adapt(remainingItems)
+            .let { remainingItems = it.second; it.first }
 
-    val belongsToSeries: List<Collection> =
-        allCollections.second
+        val allContributors: Map<String?, List<Contributor>> = ContributorAdapter()
+            .adapt(remainingItems)
+            .let { remainingItems = it.second; it.first }
 
-    val subjects: List<Subject> =
-        SubjectAdapter(items).adapt()
+        fun contributors(role: String?): List<Contributor> =
+            allContributors[role].orEmpty()
 
-    private val allContributors: Map<String?, List<Contributor>> =
-        ContributorAdapter(items).adapt()
+        val accessibility: Accessibility? = AccessibilityAdapter()
+            .adapt(remainingItems)
+            .let { remainingItems = it.second; it.first }
 
-    fun contributors(role: String?): List<Contributor> =
-        allContributors[role].orEmpty()
+        val presentation: Presentation = PresentationAdapter(epubVersion, displayOptions)
+            .adapt(remainingItems)
+            .let { remainingItems = it.second; it.first }
 
-    val accessibility: Accessibility? =
-        AccessibilityAdapter(items).adapt()
+        val links: List<Link> = LinksAdapter()
+            .adapt(remainingItems)
+            .let { remainingItems = it.second; it.first }
 
-    private val presentation: Presentation =
-        PresentationAdapter(epubVersion, displayOptions, items).adapt()
+        val remainingMetadata: Map<String, Any> = OtherMetadataAdapter()
+            .adapt(remainingItems)
 
-    val otherMetadata: Map<String, Any> =
-        OtherMetadataAdapter(items).adapt() + Pair("presentation", presentation.toJSON().toMap())
+        val otherMetadata: Map<String, Any> =
+                remainingMetadata + Pair("presentation", presentation.toJSON().toMap())
+
+        val metadata = Metadata(
+            identifier = identifier,
+            conformsTo = setOf(Publication.Profile.EPUB),
+            modified = modified,
+            published = published,
+            accessibility = accessibility,
+            languages = languages,
+            localizedTitle = localizedTitle,
+            localizedSortAs = localizedSortAs,
+            localizedSubtitle = localizedSubtitle,
+            duration = duration,
+            subjects = subjects,
+            description = description,
+            readingProgression = readingProgression,
+            belongsToCollections = belongsToCollections,
+            belongsToSeries = belongsToSeries,
+            otherMetadata = otherMetadata,
+
+            authors = contributors("aut"),
+            translators = contributors("trl"),
+            editors = contributors("edt"),
+            publishers = contributors("pbl"),
+            artists = contributors("art"),
+            illustrators = contributors("ill"),
+            colorists = contributors("clr"),
+            narrators = contributors("nrt"),
+            contributors = contributors(null)
+        )
+
+        return Result(
+            links = links,
+            metadata =  metadata,
+            durationById = durationById,
+            coverId = coverId
+        )
+    }
 }
 
-internal class DurationAdapter(private val items: List<MetadataItem>) {
+private class DurationAdapter {
 
-    fun adapt(): Pair<Double? =
-        items.firstWithProperty(Vocabularies.MEDIA + "duration")
-            ?.let { ClockValueParser.parse(it.value) }
+    fun adapt(items: List<MetadataItem>): Pair<Double?, List<MetadataItem>> =
+        items.takeFirstWithProperty(Vocabularies.MEDIA + "duration")
+            .mapFirstNotNull { ClockValueParser.parse(it.value) }
 }
 
-private class LinksAdapter(private val items: List<MetadataItem>) {
+private class LinksAdapter {
 
-    fun adapt(): List<Link> =
-        items.filterIsInstance(MetadataItem.Link::class.java)
-            .map(::mapLink)
+    @Suppress("Unchecked_cast")
+    fun adapt(items: List<MetadataItem>): Pair<List<Link>, List<MetadataItem>> =
+        items.partition { it is MetadataItem.Link }
+            .mapFirst { (it as List<MetadataItem.Link>).map(::mapLink) }
 
-    /** Compute a Publication [Link] from an Epub metadata link */
     private fun mapLink(link: MetadataItem.Link): Link {
         val contains: MutableList<String> = mutableListOf()
         if (link.rels.contains(Vocabularies.LINK + "record")) {
@@ -117,24 +177,29 @@ private class LinksAdapter(private val items: List<MetadataItem>) {
     }
 }
 
-private class IdentifierAdapter(private val uniqueIdentifierId: String?, private val items: List<MetadataItem>) {
+private class IdentifierAdapter(private val uniqueIdentifierId: String?) {
 
-    fun adapt(): String? {
-        val identifiers = items.metasWithProperty(Vocabularies.DCTERMS + "identifier")
+    fun adapt(items: List<MetadataItem>): Pair<String?, List<MetadataItem>> {
+        val uniqueIdentifier = items
+            .takeFirstWithProperty(Vocabularies.DCTERMS + "identifier", uniqueIdentifierId)
 
-        return uniqueIdentifierId
-            ?.let { uniqueId -> identifiers.firstOrNull { it.id == uniqueId }?.value }
-            ?: identifiers.firstOrNull()?.value
+        if (uniqueIdentifier.first != null) {
+            return uniqueIdentifier
+                .mapFirstNotNull { it.value }
+        }
+
+        return items
+            .takeFirstWithProperty(Vocabularies.DCTERMS + "identifier")
+            .mapFirstNotNull { it.value }
     }
 }
 
+private class LanguageAdapter(private val readingProgression: ReadingProgression) {
 
-private class LanguageAdapter(private val readingProgression: ReadingProgression, private val items: List<MetadataItem>) {
-
-    fun adapt(): List<String> = items
-        .metasWithProperty(Vocabularies.DCTERMS + "language")
-        .map(MetadataItem.Meta::value)
-        .let { forceRtlPrimaryLangIfNeeded(it) }
+    fun adapt(items: List<MetadataItem>): Pair<List<String>, List<MetadataItem>> = items
+        .takeAllWithProperty(Vocabularies.DCTERMS + "language")
+        .mapFirst { it.map(MetadataItem.Meta::value) }
+        .mapFirst { forceRtlPrimaryLangIfNeeded(it) }
 
     private fun forceRtlPrimaryLangIfNeeded(langs: List<String>): List<String> {
         // https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#multiple-language-items
@@ -157,36 +222,52 @@ private class LanguageAdapter(private val readingProgression: ReadingProgression
     }
 }
 
-private class TitleAdapter(private val fallbackTitle: String, private val items: List<MetadataItem>) {
+private class TitleAdapter(private val fallbackTitle: String) {
 
-    fun adapt(): Triple<LocalizedString, LocalizedString?, LocalizedString?> {
+    fun adapt(items: List<MetadataItem>): Pair<Triple<LocalizedString, LocalizedString?, LocalizedString?>, List<MetadataItem>> {
         val titles = items.metasWithProperty(Vocabularies.DCTERMS + "title")
-            .map { it.title }
-        val mainTitle = titles.firstOrNull { it.type == "main" }
+            .map { it.title to it }
+
+        val mainTitleWithItem = titles.firstOrNull { it.first.type == "main" }
             ?: titles.firstOrNull()
+        val mainTitle = mainTitleWithItem?.first
+        val mainTitleItem = mainTitleWithItem?.second
 
         val localizedTitle = mainTitle?.value
             ?: LocalizedString(fallbackTitle)
         val localizedSortAs = mainTitle?.fileAs
             ?: items.firstWithProperty("calibre:title_sort")
                 ?.let { LocalizedString(it.value) }
-        val localizedSubtitle = titles.filter { it.type == "subtitle" }
-            .sortedBy(Title::displaySeq).firstOrNull()?.value
 
-        return Triple(localizedTitle, localizedSortAs, localizedSubtitle)
+        val subtitleWithItem = titles
+            .filter { it.first.type == "subtitle" }
+            .sortedBy{ it.first.displaySeq }
+            .firstOrNull()
+        val localizedSubtitle = subtitleWithItem?.first?.value
+        val subtitleItem = subtitleWithItem?.second
+
+        val remainingItems = items
+            .removeFirstOrNull { it == mainTitleItem }.second
+            .removeFirstOrNull { it == subtitleItem }.second
+
+        return Triple(localizedTitle, localizedSortAs, localizedSubtitle) to remainingItems
     }
 }
 
-private class SubjectAdapter(private val items: List<MetadataItem>) {
+private class SubjectAdapter {
 
-    fun adapt(): List<Subject> {
-        val subjectItems = items.metasWithProperty(Vocabularies.DCTERMS + "subject")
-        val parsedSubjects = subjectItems.map { it.toSubject() }
+    fun adapt(items: List<MetadataItem>): Pair<List<Subject>, List<MetadataItem>> {
+        val (subjectItems, remainingItems) = items
+            .takeAllWithProperty(Vocabularies.DCTERMS + "subject")
+        val parsedSubjects = subjectItems
+            .map { it.toSubject() }
+
         val hasToSplit = parsedSubjects.size == 1 && parsedSubjects.first().run {
             localizedName.translations.size == 1 && code == null && scheme == null && sortAs == null
         }
+        val subjects = if (hasToSplit) splitSubject(parsedSubjects.first()) else parsedSubjects
 
-        return if (hasToSplit) splitSubject(parsedSubjects.first()) else parsedSubjects
+        return subjects to remainingItems
     }
 
     private fun splitSubject(subject: Subject): List<Subject> {
@@ -206,18 +287,23 @@ private class SubjectAdapter(private val items: List<MetadataItem>) {
     }
 }
 
-private class ContributorAdapter(private val items: List<MetadataItem>) {
+private class ContributorAdapter {
 
-    fun adapt(): Map<String?, List<Contributor>> {
-        val contributors = items.metasWithProperty(Vocabularies.DCTERMS + "creator") +
-            items.metasWithProperty(Vocabularies.DCTERMS + "contributor") +
-            items.metasWithProperty(Vocabularies.DCTERMS + "publisher") +
-            items.metasWithProperty(Vocabularies.MEDIA + "narrator")
+    fun adapt(items: List<MetadataItem>): Pair<Map<String?, List<Contributor>>, List<MetadataItem>> {
+        val (contributorItems, remainingItems) = items.takeAllWithProperty(
+            Vocabularies.DCTERMS + "creator",
+            Vocabularies.DCTERMS + "contributor",
+            Vocabularies.DCTERMS + "publisher",
+            Vocabularies.MEDIA + "narrator"
+        )
 
-        return contributors
+        val contributors = contributorItems
             .map(MetadataItem.Meta::toContributor)
             .groupBy(Pair<String?, Contributor>::first)
             .mapValues { it.value.map(Pair<String?, Contributor>::second) }
+
+        return contributors to remainingItems
+
     }
 }
 
@@ -241,78 +327,69 @@ private fun MetadataItem.Meta.toContributor(): Pair<String?, Contributor> {
     return Pair(type, contributor)
 }
 
-private class CollectionAdapter(private val items: List<MetadataItem>) {
+private class CollectionAdapter {
 
-    fun adapt(): Pair<List<Collection>, List<Collection>> {
-        val allCollections = items.metasWithProperty(Vocabularies.META + "belongs-to-collection")
+    fun adapt(items: List<MetadataItem>): Pair<Pair<List<Collection>, List<Collection>>, List<MetadataItem>> {
+        val (collectionItems, remainingItems) = items
+            .takeAllWithProperty(Vocabularies.META + "belongs-to-collection")
+        val allCollections = collectionItems
             .map { it.toCollection() }
-        val (seriesMeta, collectionsMeta) = allCollections.partition { it.first == "series" }
+        val (series, collections) = allCollections
+            .partition { it.first == "series" }
 
-        val belongsToCollections = collectionsMeta.map(Pair<String?, Collection>::second)
+        val belongsToCollections = collections.map(Pair<String?, Collection>::second)
+        val belongsToSeries = series.map(Pair<String?, Collection>::second)
 
-        val belongsToSeries =
-            if (seriesMeta.isNotEmpty())
-                seriesMeta.map(Pair<String?, Collection>::second)
-            else
-                items.firstWithProperty("calibre:series")?.let {
-                    val name = LocalizedString.fromStrings(mapOf(it.lang to it.value))
-                    val position = items.firstWithProperty("calibre:series_index")?.value?.toDoubleOrNull()
-                    listOf(Collection(localizedName = name, position = position))
-                }.orEmpty()
+        return handleCalibreSeries(Pair(belongsToCollections, belongsToSeries), remainingItems)
+    }
 
-        return Pair(belongsToCollections, belongsToSeries)
+    private fun handleCalibreSeries(allCollections: Pair<List<Collection>, List<Collection>>, items: List<MetadataItem>): Pair<Pair<List<Collection>, List<Collection>>, List<MetadataItem>> {
+        if (allCollections.second.isNotEmpty()) {
+            return allCollections to items
+        }
+
+        val (seriesItem, remainingItems) = items.takeFirstWithProperty("calibre:series")
+
+        val series = seriesItem?.let {
+            val name = LocalizedString.fromStrings(mapOf(it.lang to it.value))
+            val position = items.firstWithProperty("calibre:series_index")?.value?.toDoubleOrNull()
+            listOf(Collection(localizedName = name, position = position))
+        }.orEmpty()
+
+        return Pair(allCollections.first, series) to remainingItems
     }
 
     private fun MetadataItem.Meta.toCollection(): Pair<String?, Contributor> =
         toContributor()
 }
 
-private class OtherMetadataAdapter(private val items: List<MetadataItem>) {
+private class OtherMetadataAdapter {
 
-    fun adapt(): Map<String, Any> {
-        val dcterms = listOf(
-            "identifier", "language", "title", "date", "modified", "description",
-            "duration", "creator", "publisher", "contributor", "conformsTo"
-        ).map { Vocabularies.DCTERMS + it }
-        val a11y = listOf("certifiedBy", "certifierReport", "certifierCredential")
-            .map { Vocabularies.A11Y + it }
-        val schema = listOf(
-            "accessMode", "accessModeSufficient", "accessibilityFeature",
-            "accessibilityHazard", "accessibilitySummary"
-        ).map { Vocabularies.SCHEMA + it }
-        val media = listOf("narrator", "duration").map { Vocabularies.MEDIA + it }
-        val rendition =
-            listOf("flow", "spread", "orientation", "layout").map { Vocabularies.RENDITION + it }
-        val usedProperties: List<String> = dcterms + media + rendition + a11y + schema
-
-        return items
-            .filterIsInstance(MetadataItem.Meta::class.java)
-            .filter { it.property !in usedProperties }
-            //.plus(nonAccessibilityProfiles)
+    fun adapt(items: List<MetadataItem>): Map<String, Any> =
+        items.filterIsInstance(MetadataItem.Meta::class.java)
             .groupBy(MetadataItem.Meta::property)
-            .mapValues {
-                val values = it.value.map(MetadataItem.Meta::toMap)
+            .mapValues { entry ->
+                val values = entry.value.map { it.toMap() }
                 when (values.size) {
                     1 -> values[0]
                     else -> values
                 }
             }
-    }
-}
 
-private fun MetadataItem.Meta.toMap(): Any =
-    if (children.isEmpty())
-        value
-    else {
-        val mappedMetaChildren = children
-            .filterIsInstance(MetadataItem.Meta::class.java)
-            .associate { Pair(it.property, it.toMap()) }
-        val mappedLinkChildren = children
-            .filterIsInstance(MetadataItem.Link::class.java)
-            .flatMap { link -> link.rels.map { rel -> Pair(rel, link.href) } }
-            .toMap()
-        mappedMetaChildren + mappedLinkChildren + Pair("@value", value)
-    }
+    private fun MetadataItem.Meta.toMap(): Any =
+        if (children.isEmpty())
+            value
+        else {
+            val mappedMetaChildren = children
+                .filterIsInstance(MetadataItem.Meta::class.java)
+                .associate { Pair(it.property, it.toMap()) }
+            val mappedLinkChildren = children
+                .filterIsInstance(MetadataItem.Link::class.java)
+                .flatMap { link -> link.rels.map { rel -> Pair(rel, link.href) } }
+                .toMap()
+            mappedMetaChildren + mappedLinkChildren + Pair("@value", value)
+        }
+}
 
 private data class Title(
     val value: LocalizedString,
@@ -369,3 +446,16 @@ private val MetadataItem.identifier
 
 private val MetadataItem.role
     get() = children.firstValue(Vocabularies.META + "role")
+
+
+private fun <A: Any, B, R : Any> Pair<A?, B>.mapFirstNotNull(predicate: (A) -> R?): Pair<R?, B> =
+    first?.let { predicate(it) } to second
+
+private fun <A, B: Any, R: Any> Pair<A, B?>.mapSecondNotNull(predicate: (B) -> R?): Pair<A, R?> =
+    first to second?.let { predicate(it) }
+
+internal fun <A: Any, B, R : Any> Pair<A, B>.mapFirst(predicate: (A) -> R): Pair<R, B> =
+    predicate(first) to second
+
+private fun <A, B: Any, R: Any> Pair<A, B>.mapSecond(predicate: (B) -> R): Pair<A, R> =
+    first to predicate(second)

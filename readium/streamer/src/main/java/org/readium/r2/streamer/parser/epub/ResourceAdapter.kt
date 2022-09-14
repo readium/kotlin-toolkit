@@ -7,41 +7,18 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.extensions.toMap
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.encryption.Encryption
 
-/**
- * Creates a [Publication] model from an EPUB package's document.
- *
- * @param displayOptions iBooks Display Options XML file to use as a fallback for the metadata.
- *        See https://github.com/readium/architecture/blob/master/streamer/parser/metadata.md#epub-2x-9
- */
-internal class PublicationFactory(
-    private val fallbackTitle: String,
-    private val packageDocument: PackageDocument,
-    private val navigationData: Map<String, List<Link>> = emptyMap(),
-    private val encryptionData: Map<String, Encryption> = emptyMap(),
-    private val displayOptions: Map<String, String> = emptyMap()
+internal class ResourceAdapter(
+    private val epubVersion: Double,
+    private val spine: Spine,
+    private val manifest: List<Item>,
+    private val encryptionData: Map<String, Encryption>,
+    private val coverId: String?,
+    private val durationById: Map<String, Double?>
 ) {
-    private val epubVersion = packageDocument.epubVersion
-    private val spine = packageDocument.spine
-    private val manifest = packageDocument.manifest
-    private val globalMetadata = packageDocument.metadata.filter { it.refines == null }
-
-    private val pubMetadata = PubMetadataAdapter(
-        epubVersion,
-        globalMetadata,
-        fallbackTitle,
-        packageDocument.uniqueIdentifierId,
-        spine.direction,
-        displayOptions
-    )
-
-    private val itemMetadata = packageDocument.metadata
-        .filter { it.refines != null }
-        .groupBy(MetadataItem::refines)
-        .mapValues { DurationAdapter(it.value) }
-
     @Suppress("Unchecked_cast")
     private val itemById = manifest
         .filter { it.id != null }
@@ -50,72 +27,13 @@ internal class PublicationFactory(
     private val itemrefByIdref = spine.itemrefs
         .associateBy(Itemref::idref)
 
-    fun create(): Manifest {
-        // Compute metadata
-        val metadata = computeMetadata(pubMetadata)
-        val metadataLinks = pubMetadata.links
-
-        // Compute links
+    fun adapt(): Pair<List<Link>, List<Link>> {
         val readingOrderIds = spine.itemrefs.filter { it.linear }.map { it.idref }
-        val readingOrder = readingOrderIds.mapNotNull { itemById[it]?.let { computeLink(it) } }
+        val readingOrder = readingOrderIds.mapNotNull { id -> itemById[id]?.let { item -> computeLink(item) } }
         val readingOrderAllIds = computeIdsWithFallbacks(readingOrderIds)
         val resourceItems = manifest.filterNot { it.id in readingOrderAllIds }
         val resources = resourceItems.map { computeLink(it) }
-
-        // Compute toc and otherCollections
-        val toc = navigationData["toc"].orEmpty()
-        val subcollections = navigationData
-            .minus("toc")
-            .mapKeys {
-                when (it.key) {
-                    // RWPM uses camel case for the roles
-                    // https://github.com/readium/webpub-manifest/issues/53
-                    "page-list" -> "pageList"
-                    else -> it.key
-                }
-            }
-            .mapValues { listOf(PublicationCollection(links = it.value)) }
-
-        // Build Publication object
-        return Manifest(
-            metadata = metadata,
-            links = metadataLinks,
-            readingOrder = readingOrder,
-            resources = resources,
-            tableOfContents = toc,
-            subcollections = subcollections
-        )
-    }
-
-    private fun computeMetadata(adapter: PubMetadataAdapter) = with(adapter) {
-        Metadata(
-            identifier = identifier,
-            conformsTo = setOf(Publication.Profile.EPUB),
-            modified = modified,
-            published = published,
-            accessibility = accessibility,
-            languages = languages,
-            localizedTitle = localizedTitle,
-            localizedSortAs = localizedSortAs,
-            localizedSubtitle = localizedSubtitle,
-            duration = duration,
-            subjects = subjects,
-            description = description,
-            readingProgression = spine.direction,
-            belongsToCollections = belongsToCollections,
-            belongsToSeries = belongsToSeries,
-            otherMetadata = otherMetadata,
-
-            authors = contributors("aut"),
-            translators = contributors("trl"),
-            editors = contributors("edt"),
-            publishers = contributors("pbl"),
-            artists = contributors("art"),
-            illustrators = contributors("ill"),
-            colorists = contributors("clr"),
-            narrators = contributors("nrt"),
-            contributors = contributors(null)
-        )
+        return Pair(readingOrder, resources)
     }
 
     /** Recursively find the ids of the fallback items in [items] */
@@ -142,7 +60,7 @@ internal class PublicationFactory(
         return Link(
             href = item.href,
             type = item.mediaType,
-            duration = itemMetadata[item.id]?.adapt(),
+            duration = durationById[item.id],
             rels = rels,
             properties = properties,
             alternates = computeAlternates(item, fallbackChain)
@@ -164,7 +82,6 @@ internal class PublicationFactory(
             properties.putAll(parseItemrefProperties(itemref.properties))
         }
 
-        val coverId = pubMetadata.cover
         if (coverId != null && item.id == coverId) rels.add("cover")
 
         encryptionData[item.href]?.let {
