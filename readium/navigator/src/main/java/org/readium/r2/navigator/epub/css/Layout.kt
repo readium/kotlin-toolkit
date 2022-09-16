@@ -14,14 +14,14 @@ import org.readium.r2.shared.util.Language
  *
  * See https://github.com/readium/readium-css/tree/master/css/dist
  */
-data class Layout(
+internal data class Layout(
     val language: Language? = null,
     val stylesheets: Stylesheets = Stylesheets.Default,
     val readingProgression: ReadingProgression = ReadingProgression.LTR,
 ) {
     companion object {
 
-        internal fun from(language: Language?, hasMultipleLanguages: Boolean, readingProgression: ReadingProgression, verticalText: Boolean?): Layout {
+        fun from(language: Language?, hasMultipleLanguages: Boolean, readingProgression: ReadingProgression, verticalText: Boolean?): Layout {
             // https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#missing-page-progression-direction
             val rp = when {
                 readingProgression.isHorizontal == true ->

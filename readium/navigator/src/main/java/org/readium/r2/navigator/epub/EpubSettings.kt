@@ -631,8 +631,7 @@ sealed class EpubSettings : Configurable.Settings {
     }
 }
 
-@ExperimentalReadiumApi
-fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
+internal fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
     if (settings !is EpubSettings.Reflowable) return this
 
     return with(settings) {
