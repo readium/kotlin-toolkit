@@ -431,8 +431,8 @@ class AccessibilityTest {
     }
 
     @Test fun `conformsTo contains WCAG profiles and only them`() {
-        assertThat(epub2Metadata.accessibility?.conformsTo).containsExactlyInAnyOrder(Accessibility.Profile.WCAG_20_A)
-        assertThat(epub3Metadata.accessibility?.conformsTo).containsExactlyInAnyOrder(Accessibility.Profile.WCAG_20_A)
+        assertThat(epub2Metadata.accessibility?.conformsTo).containsExactlyInAnyOrder(Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A)
+        assertThat(epub3Metadata.accessibility?.conformsTo).containsExactlyInAnyOrder(Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A)
     }
 
     @Test fun `certification is rightly parsed`() {

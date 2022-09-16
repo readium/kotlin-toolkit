@@ -11,16 +11,12 @@ import org.readium.r2.shared.publication.Accessibility
 internal class AccessibilityAdapter {
 
     fun adapt(items: List<MetadataItem>): Pair<Accessibility?, List<MetadataItem>> {
-        val (accessibilityProfiles, remainingItemsToNull) =
-            items.map { it to if (it is MetadataItem.Meta && it.property == Vocabularies.DCTERMS + "conformsTo" ) accessibilityProfileFromString(it.value) else null }
-                .partition { it.second != null }
+        var remainingItems = items
 
-        val conformsTo = accessibilityProfiles
-            .mapNotNull { it.second }
+        val conformsTo = remainingItems
+            .mapTakeNotNull{ conformedToProfileOrNull(it) }
+            .let { remainingItems = it.second; it.first }
             .toSet()
-
-        var remainingItems = remainingItemsToNull
-            .map { it.first }
 
         val summary = remainingItems
             .takeFirstWithProperty(Vocabularies.SCHEMA + "accessibilitySummary")
@@ -66,6 +62,14 @@ internal class AccessibilityAdapter {
             accessibility to remainingItems
         }
     }
+
+    private fun conformedToProfileOrNull(item: MetadataItem): Accessibility.Profile? =
+        if (item is MetadataItem.Meta && item.property == Vocabularies.DCTERMS + "conformsTo") {
+            accessibilityProfileFromString(item.value)
+        } else if (item is MetadataItem.Link && item.href == Vocabularies.DCTERMS + "conformsTo") {
+            accessibilityProfileFromString(item.href)
+        } else
+            null
 
     private fun adaptAccessModeSufficient(items: List<MetadataItem>): Pair<Set<Set<Accessibility.PrimaryAccessMode>>, List<MetadataItem>> = items
         .takeAllWithProperty(Vocabularies.SCHEMA + "accessModeSufficient")
@@ -132,9 +136,9 @@ internal class AccessibilityAdapter {
     }
 
     private fun accessibilityProfileFromString(value: String): Accessibility.Profile? = when {
-        isWCAG_20_A(value) -> Accessibility.Profile.WCAG_20_A
-        isWCAG_20_AA(value) -> Accessibility.Profile.WCAG_20_AA
-        isWCAG_20_AAA(value) -> Accessibility.Profile.WCAG_20_AAA
+        isWCAG_20_A(value) -> Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A
+        isWCAG_20_AA(value) -> Accessibility.Profile.EPUB_A11Y_10_WCAG_20_AA
+        isWCAG_20_AAA(value) -> Accessibility.Profile.EPUB_A11Y_WCAG_20_AAA
         else -> null
     }
 

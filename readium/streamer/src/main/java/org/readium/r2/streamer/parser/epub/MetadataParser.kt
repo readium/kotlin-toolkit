@@ -155,3 +155,30 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
         }
     }
 }
+
+internal sealed class MetadataItem {
+
+    abstract val id: String?
+    abstract val children: List<MetadataItem>
+    abstract val refines: String?
+
+    data class Link(
+        override val id: String?,
+        override val refines: String?,
+        override val children: List<MetadataItem> = emptyList(),
+        val href: String,
+        val rels: Set<String>,
+        val mediaType: String?,
+        val properties: List<String> = emptyList(),
+    ) : MetadataItem()
+
+    data class Meta(
+        override val id: String?,
+        override val refines: String? = null,
+        override val children: List<MetadataItem> = emptyList(),
+        val property: String,
+        val value: String,
+        val lang: String,
+        val scheme: String? = null,
+    ) : MetadataItem()
+}

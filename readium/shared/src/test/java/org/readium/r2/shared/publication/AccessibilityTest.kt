@@ -129,7 +129,7 @@ class AccessibilityTest {
     fun `conformsTo can be a JSON literal`() {
         assertEquals(
             Accessibility(
-                conformsTo = setOf(Accessibility.Profile.WCAG_20_A),
+                conformsTo = setOf(Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A),
                 certification = null,
                 summary = null,
                 accessModes = emptySet(),
@@ -150,7 +150,7 @@ class AccessibilityTest {
         assertEquals(
             Accessibility(
                 conformsTo = setOf(
-                    Accessibility.Profile.WCAG_20_A,
+                    Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A,
                     Accessibility.Profile("https://profile2")
                 ),
                 certification = null,
@@ -279,7 +279,7 @@ class AccessibilityTest {
                 "hazard": ["flashing", "motionSimulation"]
             }"""),
             Accessibility(
-                conformsTo = setOf(Accessibility.Profile.WCAG_20_A, Accessibility.Profile("https://profile2")),
+                conformsTo = setOf(Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A, Accessibility.Profile("https://profile2")),
                 certification = Accessibility.Certification(
                     certifiedBy = "company1",
                     credential = "credential1",

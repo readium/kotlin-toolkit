@@ -181,7 +181,7 @@ private class IdentifierAdapter(private val uniqueIdentifierId: String?) {
 
     fun adapt(items: List<MetadataItem>): Pair<String?, List<MetadataItem>> {
         val uniqueIdentifier = items
-            .takeFirstWithProperty(Vocabularies.DCTERMS + "identifier", uniqueIdentifierId)
+            .takeFirstWithProperty(Vocabularies.DCTERMS + "identifier", id = uniqueIdentifierId)
 
         if (uniqueIdentifier.first != null) {
             return uniqueIdentifier
@@ -224,7 +224,13 @@ private class LanguageAdapter(private val readingProgression: ReadingProgression
 
 private class TitleAdapter(private val fallbackTitle: String) {
 
-    fun adapt(items: List<MetadataItem>): Pair<Triple<LocalizedString, LocalizedString?, LocalizedString?>, List<MetadataItem>> {
+    data class Result(
+        val localizedTitle: LocalizedString,
+        val localizedSortAs: LocalizedString?,
+        val localizedSubtitle: LocalizedString?
+    )
+
+    fun adapt(items: List<MetadataItem>): Pair<Result, List<MetadataItem>> {
         val titles = items.metasWithProperty(Vocabularies.DCTERMS + "title")
             .map { it.title to it }
 
@@ -250,7 +256,7 @@ private class TitleAdapter(private val fallbackTitle: String) {
             .removeFirstOrNull { it == mainTitleItem }.second
             .removeFirstOrNull { it == subtitleItem }.second
 
-        return Triple(localizedTitle, localizedSortAs, localizedSubtitle) to remainingItems
+        return Result(localizedTitle, localizedSortAs, localizedSubtitle) to remainingItems
     }
 }
 
@@ -329,9 +335,18 @@ private fun MetadataItem.Meta.toContributor(): Pair<String?, Contributor> {
 
 private class CollectionAdapter {
 
-    fun adapt(items: List<MetadataItem>): Pair<Pair<List<Collection>, List<Collection>>, List<MetadataItem>> {
-        val (collectionItems, remainingItems) = items
+    data class Result(
+        val belongsToCollections: List<Collection>,
+        val belongsToSeries: List<Collection>
+    )
+
+    fun adapt(items: List<MetadataItem>): Pair<Result, List<MetadataItem>> {
+        var remainingItems: List<MetadataItem> = items
+
+        val collectionItems = remainingItems
             .takeAllWithProperty(Vocabularies.META + "belongs-to-collection")
+            .let { remainingItems = it.second; it.first }
+
         val allCollections = collectionItems
             .map { it.toCollection() }
         val (series, collections) = allCollections
@@ -339,15 +354,12 @@ private class CollectionAdapter {
 
         val belongsToCollections = collections.map(Pair<String?, Collection>::second)
         val belongsToSeries = series.map(Pair<String?, Collection>::second)
+            .ifEmpty { legacySeries(items).let { remainingItems = it.second; it.first } }
 
-        return handleCalibreSeries(Pair(belongsToCollections, belongsToSeries), remainingItems)
+        return  Result(belongsToCollections, belongsToSeries) to remainingItems
     }
 
-    private fun handleCalibreSeries(allCollections: Pair<List<Collection>, List<Collection>>, items: List<MetadataItem>): Pair<Pair<List<Collection>, List<Collection>>, List<MetadataItem>> {
-        if (allCollections.second.isNotEmpty()) {
-            return allCollections to items
-        }
-
+    private fun legacySeries(items: List<MetadataItem>): Pair<List<Collection>, List<MetadataItem>> {
         val (seriesItem, remainingItems) = items.takeFirstWithProperty("calibre:series")
 
         val series = seriesItem?.let {
@@ -356,7 +368,7 @@ private class CollectionAdapter {
             listOf(Collection(localizedName = name, position = position))
         }.orEmpty()
 
-        return Pair(allCollections.first, series) to remainingItems
+        return series to remainingItems
     }
 
     private fun MetadataItem.Meta.toCollection(): Pair<String?, Contributor> =
@@ -422,40 +434,32 @@ private val MetadataItem.Meta.fileAs
         ?.let { Pair(it.lang.takeUnless(String::isEmpty) , it.value) }
 
 private val MetadataItem.Meta.authority
-    get() = children.firstValue(Vocabularies.META + "authority")
+    get() = children.firstWithProperty(Vocabularies.META + "authority")?.value
 
 private val MetadataItem.Meta.term
-    get() = children.firstValue(Vocabularies.META + "term")
+    get() = children.firstWithProperty(Vocabularies.META + "term")?.value
 
 private val MetadataItem.Meta.titleType
-    get() = children.firstValue(Vocabularies.META + "title-type")
+    get() = children.firstWithProperty(Vocabularies.META + "title-type")?.value
 
 private val MetadataItem.displaySeq
-    get() = children.firstValue(Vocabularies.META + "display-seq")
+    get() = children.firstWithProperty(Vocabularies.META + "display-seq")
+        ?.value
         ?.toIntOrNull()
 
 private val MetadataItem.collectionType
-    get() = children.firstValue(Vocabularies.META + "collection-type")
+    get() = children.firstWithProperty(Vocabularies.META + "collection-type")
+        ?.value
 
 private val MetadataItem.groupPosition
-    get() = children.firstValue(Vocabularies.META + "group-position")
+    get() = children.firstWithProperty(Vocabularies.META + "group-position")
+        ?.value
         ?.toDoubleOrNull()
 
 private val MetadataItem.identifier
-    get() = children.firstValue(Vocabularies.DCTERMS + "identifier")
+    get() = children.firstWithProperty(Vocabularies.DCTERMS + "identifier")
+        ?.value
 
 private val MetadataItem.role
-    get() = children.firstValue(Vocabularies.META + "role")
-
-
-private fun <A: Any, B, R : Any> Pair<A?, B>.mapFirstNotNull(predicate: (A) -> R?): Pair<R?, B> =
-    first?.let { predicate(it) } to second
-
-private fun <A, B: Any, R: Any> Pair<A, B?>.mapSecondNotNull(predicate: (B) -> R?): Pair<A, R?> =
-    first to second?.let { predicate(it) }
-
-internal fun <A: Any, B, R : Any> Pair<A, B>.mapFirst(predicate: (A) -> R): Pair<R, B> =
-    predicate(first) to second
-
-private fun <A, B: Any, R: Any> Pair<A, B>.mapSecond(predicate: (B) -> R): Pair<A, R> =
-    first to predicate(second)
+    get() = children.firstWithProperty(Vocabularies.META + "role")
+        ?.value

@@ -41,7 +41,7 @@ class MetadataTest {
                     "fr" to "Sous-titre"
                 )),
                 accessibility = Accessibility(
-                    conformsTo = setOf(Accessibility.Profile.WCAG_20_A),
+                    conformsTo = setOf(Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A),
                     accessModes = setOf(Accessibility.AccessMode.TEXTUAL),
                     accessModesSufficient = setOf(setOf(Accessibility.PrimaryAccessMode.TEXTUAL)),
                     features = setOf(Accessibility.Feature.ARIA),
@@ -258,7 +258,7 @@ class MetadataTest {
                 modified = "2001-01-01T12:36:27.000Z".iso8601ToDate(),
                 published = "2001-01-02T12:36:27.000Z".iso8601ToDate(),
                 accessibility = Accessibility(
-                    conformsTo = setOf(Accessibility.Profile.WCAG_20_A),
+                    conformsTo = setOf(Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A),
                     accessModes = setOf(Accessibility.AccessMode.TEXTUAL),
                     accessModesSufficient = setOf(setOf(Accessibility.PrimaryAccessMode.TEXTUAL)),
                     features = setOf(Accessibility.Feature.ARIA),
