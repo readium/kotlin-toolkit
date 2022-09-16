@@ -168,6 +168,7 @@ data class Metadata(
      *
      * See this issue for more details: https://github.com/readium/architecture/issues/113
      */
+    @Deprecated("You should resolve [ReadingProgression.AUTO] by yourself.")
     @IgnoredOnParcel
     val effectiveReadingProgression: ReadingProgression get() {
         if (readingProgression != ReadingProgression.AUTO) {

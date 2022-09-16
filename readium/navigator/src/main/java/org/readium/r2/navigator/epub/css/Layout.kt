@@ -20,7 +20,8 @@ data class Layout(
     val readingProgression: ReadingProgression = ReadingProgression.LTR,
 ) {
     companion object {
-        fun from(language: Language?, hasMultipleLanguages: Boolean, readingProgression: ReadingProgression, verticalText: Boolean?): Layout {
+
+        internal fun from(language: Language?, hasMultipleLanguages: Boolean, readingProgression: ReadingProgression, verticalText: Boolean?): Layout {
             // https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#missing-page-progression-direction
             val rp = when {
                 readingProgression.isHorizontal == true ->

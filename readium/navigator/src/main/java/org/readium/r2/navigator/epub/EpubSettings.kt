@@ -201,7 +201,7 @@ sealed class EpubSettings : Configurable.Settings {
                     value = imageFilter.firstValidValue(preferences, defaults),
                 ),
                 language = languageSetting(
-                    value = language.firstValidValue(preferences, defaults) ?: metadata.language,
+                    value = layout.language
                 ),
                 letterSpacing = letterSpacingSetting(
                     layoutResolver = layoutResolver,
@@ -586,17 +586,46 @@ sealed class EpubSettings : Configurable.Settings {
 
             private fun createLayoutResolver(metadata: Metadata, defaults: Preferences): (Preferences) -> Layout =
                 { preferences ->
-                    val language = languageSetting().firstValidValue(preferences, defaults) ?: metadata.language
-                    val readingProgression = readingProgressionSetting()
 
-                    Layout.from(
-                        language = language,
-                        hasMultipleLanguages = if (language == null) metadata.languages.size > 1 else false,
-                        readingProgression = readingProgression.firstValidValue(preferences, defaults)
-                            ?: readingProgression.validate(metadata.readingProgression)
-                            ?: ReadingProgression.AUTO,
-                        verticalText = verticalTextSetting().firstValidValue(preferences, defaults)
-                    )
+                    val languageSetting = languageSetting()
+                    val readingProgressionSetting = readingProgressionSetting()
+
+                    val rpPref = readingProgressionSetting.firstValidValue(preferences)
+                    val rpDefault = readingProgressionSetting.firstValidValue(defaults)
+
+                    val langPref = languageSetting.firstValidValue(preferences)
+                    val langDefault = languageSetting.firstValidValue(defaults)
+
+                    val verticalText = verticalTextSetting()
+                        .firstValidValue(preferences, defaults)
+
+                    val language = languageSetting().let { setting ->
+                       setting.firstValidValue(preferences)
+                           ?: metadata.language
+                           ?: setting.firstValidValue(defaults)
+                    }
+
+                    // Compute readingProgression according to the following rule:
+                    // preference value > metadata value > value inferred from language preference >
+                    // value inferred from metadata languages > default value >
+                    // value inferred from language default > LTR
+
+                    when {
+                        rpPref != null ->
+                            Layout.from(language, false, rpPref, verticalText)
+                        metadata.readingProgression.isHorizontal == true ->
+                            Layout.from(language, false, metadata.readingProgression, verticalText)
+                        langPref != null ->
+                            Layout.from(langPref, false, ReadingProgression.AUTO, verticalText)
+                        metadata.languages.isNotEmpty()->
+                            Layout.from(metadata.language, metadata.languages.size > 1, ReadingProgression.AUTO, verticalText)
+                        rpDefault != null ->
+                            Layout.from(language, false, rpDefault, verticalText)
+                        langDefault != null ->
+                            Layout.from(langDefault, false, ReadingProgression.AUTO, verticalText)
+                        else ->
+                            Layout.from(language, false, ReadingProgression.LTR, verticalText)
+                    }
                 }
         }
     }
