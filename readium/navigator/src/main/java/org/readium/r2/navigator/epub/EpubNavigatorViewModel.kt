@@ -183,17 +183,25 @@ internal class EpubNavigatorViewModel(
      * Intercepts and handles web view navigation to [url].
      */
     fun navigateToUrl(url: Uri) = viewModelScope.launch {
-        var href = url.toString()
-        if (href.startsWith(baseUrl)) {
-            href = href.removePrefix(baseUrl).addPrefix("/")
-            publication.linkWithHref(href)
-                // Query parameters must be kept as they might be relevant for the fetcher.
-                ?.copy(href = href)
-                ?.let { _events.send(Event.GoTo(it)) }
-
+        val href = url.toString()
+        val link = internalLinkFromUrl(href)
+        if (link != null) {
+            _events.send(Event.GoTo(link))
         } else {
             _events.send(Event.OpenExternalLink(url))
         }
+    }
+
+    /**
+     * Gets the publication [Link] targeted by the given [url].
+     */
+    fun internalLinkFromUrl(url: String): Link? {
+        if (!url.startsWith(baseUrl)) return null
+
+        val href = url.removePrefix(baseUrl).addPrefix("/")
+        return publication.linkWithHref(href)
+            // Query parameters must be kept as they might be relevant for the fetcher.
+            ?.copy(href = href)
     }
 
     fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? =
