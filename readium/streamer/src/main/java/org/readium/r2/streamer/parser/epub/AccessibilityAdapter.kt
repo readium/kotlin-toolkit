@@ -47,7 +47,7 @@ internal class AccessibilityAdapter {
         val certification = adaptCertification(remainingItems)
             .let { remainingItems = it.second; it.first }
 
-        return if (remainingItems == items) {
+        return if (remainingItems.size == items.size) {
             null to remainingItems
         } else {
             val accessibility = Accessibility(
@@ -73,8 +73,8 @@ internal class AccessibilityAdapter {
 
     private fun adaptAccessModeSufficient(items: List<MetadataItem>): Pair<Set<Set<Accessibility.PrimaryAccessMode>>, List<MetadataItem>> = items
         .takeAllWithProperty(Vocabularies.SCHEMA + "accessModeSufficient")
-        .mapFirst {
-            it.map { it.value.split(",").map(String::trim).distinct() }
+        .mapFirst { metas ->
+            metas.map { it.value.split(",").map(String::trim).distinct() }
             .distinct()
             .mapNotNull { modeGroups -> modeGroups
                 .mapNotNull { Accessibility.PrimaryAccessMode(it) }
@@ -125,8 +125,8 @@ internal class AccessibilityAdapter {
         val credential = children
             .firstWithProperty(Vocabularies.A11Y + "certifierCredential")?.value
 
-        val report = children.firstWithRel(Vocabularies.A11Y + "certifierReport")?.href
-            ?: children.firstWithProperty(Vocabularies.A11Y + "certifierReport")?.value
+        val report = children
+            .firstWithRel(Vocabularies.A11Y + "certifierReport")?.href
 
         return Accessibility.Certification(
             certifiedBy = value,
