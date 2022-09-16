@@ -496,6 +496,47 @@ class HtmlInjectionTest {
     }
 
     @Test
+    fun `Copy BODY lang to HTML when empty`() {
+        val sut = ReadiumCss(
+            layout = Layout(
+                language = Language("fr-CA"),
+                stylesheets = Layout.Stylesheets.Default,
+                readingProgression = ReadingProgression.LTR
+            ),
+            assetsBaseHref = "/assets/"
+        )
+        assertEquals(
+            """
+                <?xml version="1.0" encoding="utf-8"?>
+                <html xml:lang="fr-CA" dir="ltr" xmlns="http://www.w3.org/1999/xhtml">
+                    <head>
+                <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-before.css"/>
+                <style>audio[controls] { width: revert; height: revert; }</style>
+                
+                        <title>Publication</title>
+                        <link rel="stylesheet" href="style.css" type="text/css"/>
+                    
+                <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-after.css"/>
+                </head>
+                    <body dir="ltr" xml:lang=""></body>
+                </html>
+            """.trimIndent(),
+            sut.injectHtml(
+                """
+                    <?xml version="1.0" encoding="utf-8"?>
+                    <html xmlns="http://www.w3.org/1999/xhtml">
+                        <head>
+                            <title>Publication</title>
+                            <link rel="stylesheet" href="style.css" type="text/css"/>
+                        </head>
+                        <body xml:lang=""></body>
+                    </html>
+                """.trimIndent()
+            )
+        )
+    }
+
+    @Test
     fun `Inject font declarations`() {
         val sut = ReadiumCss(
             fontFamilies = listOf(
