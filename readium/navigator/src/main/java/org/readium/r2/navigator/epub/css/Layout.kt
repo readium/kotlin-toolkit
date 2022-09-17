@@ -19,44 +19,6 @@ internal data class Layout(
     val stylesheets: Stylesheets = Stylesheets.Default,
     val readingProgression: ReadingProgression = ReadingProgression.LTR,
 ) {
-    companion object {
-
-        fun from(language: Language?, hasMultipleLanguages: Boolean, readingProgression: ReadingProgression, verticalText: Boolean?): Layout {
-            // https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#missing-page-progression-direction
-            val rp = when {
-                readingProgression.isHorizontal == true ->
-                    readingProgression
-
-                !hasMultipleLanguages && language != null && language.isRtl ->
-                    ReadingProgression.RTL
-
-                else ->
-                    ReadingProgression.LTR
-            }
-
-            val stylesheets: Stylesheets =
-                when {
-                    verticalText == true -> {
-                        Stylesheets.CjkVertical
-                    }
-                    language != null && language.isCjk -> {
-                        if (rp == ReadingProgression.RTL && verticalText != false)
-                            Stylesheets.CjkVertical
-                        else
-                            Stylesheets.CjkHorizontal
-                    }
-                    rp == ReadingProgression.RTL -> {
-                        Stylesheets.Rtl
-                    }
-                    else -> {
-                        Stylesheets.Default
-                    }
-                }
-
-            return Layout(language, stylesheets, rp)
-        }
-    }
-
     /**
      * Readium CSS stylesheet variants.
      */
@@ -79,20 +41,4 @@ internal data class Layout(
     enum class HtmlDir {
         Unspecified, Ltr, Rtl;
     }
-}
-
-private val Language.isRtl: Boolean get() {
-    val c = code.lowercase()
-    return c == "ar"
-        || c == "fa"
-        || c == "he"
-        || c == "zh-hant"
-        || c == "zh-tw"
-}
-
-private val Language.isCjk: Boolean get() {
-    val c = code.lowercase()
-    return c == "ja"
-        || c == "ko"
-        || removeRegion().code.lowercase() == "zh"
 }
