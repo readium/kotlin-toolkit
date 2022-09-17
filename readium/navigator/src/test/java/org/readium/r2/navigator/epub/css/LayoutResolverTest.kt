@@ -468,4 +468,28 @@ class LayoutResolverTest {
             LayoutResolver(metadata = Metadata(localizedTitle = fakeTitle)).resolve(preferences)
         )
     }
+
+    @Test
+    fun `he language setting takes precedence over language metadata`() {
+        val preferences = MutablePreferences().apply {
+            set(languageSetting, Language("he"))
+        }
+
+        assertEquals(
+            Layout(language = Language("he"), stylesheets = Stylesheets.Rtl, readingProgression = RTL),
+            LayoutResolver(metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("en"), readingProgression = LTR)).resolve(preferences)
+        )
+    }
+
+    @Test
+    fun `zh-tw language setting takes precedence over language metadata`() {
+        val preferences = MutablePreferences().apply {
+            set(languageSetting, Language("zh-tw"))
+        }
+
+        assertEquals(
+            Layout(language = Language("zh-tw"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
+            LayoutResolver(metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("en"), readingProgression = LTR)).resolve(preferences)
+        )
+    }
 }

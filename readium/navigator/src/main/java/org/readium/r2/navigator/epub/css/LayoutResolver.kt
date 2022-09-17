@@ -48,16 +48,16 @@ internal class LayoutResolver(
         }
 
         // Compute readingProgression according to the following rule:
-        // preference value > metadata value > value inferred from language preference >
+        // preference value > value inferred from language preference > metadata value
         // value inferred from metadata languages > default value >
         // value inferred from language default > LTR
         val readingProgression = when {
             rpPref != null ->
                 rpPref
-            metadata.readingProgression.isHorizontal == true ->
-                metadata.readingProgression
             langPref != null ->
                 if (langPref.isRtl) ReadingProgression.RTL else ReadingProgression.LTR
+            metadata.readingProgression.isHorizontal == true ->
+                metadata.readingProgression
             metadata.languages.isNotEmpty() ->
                 // https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#missing-page-progression-direction
                 if (metadata.languages.all { Language(it).isRtl }) ReadingProgression.RTL else ReadingProgression.LTR

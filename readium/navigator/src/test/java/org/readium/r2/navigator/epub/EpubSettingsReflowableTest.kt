@@ -1066,7 +1066,7 @@ class EpubSettingsReflowableTest {
         )
 
         assertEquals(
-            Layout(language = Language("fr"), stylesheets = Layout.Stylesheets.Rtl, readingProgression = ReadingProgression.RTL),
+            Layout(language = Language("fr"), stylesheets = Layout.Stylesheets.Default, readingProgression = ReadingProgression.LTR),
             readiumCss().update(
                 settings(metadata) {
                     it[language] = Language("fr")
