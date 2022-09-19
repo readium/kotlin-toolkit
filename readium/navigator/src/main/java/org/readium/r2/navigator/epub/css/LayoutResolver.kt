@@ -59,7 +59,8 @@ internal class LayoutResolver(
             metadata.readingProgression.isHorizontal == true ->
                 metadata.readingProgression
             metadata.languages.isNotEmpty() ->
-                if (metadata.language?.isRtl == true) ReadingProgression.RTL else ReadingProgression.LTR
+                // https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#missing-page-progression-direction
+                if (metadata.languages.all { Language(it).isRtl }) ReadingProgression.RTL else ReadingProgression.LTR
             rpDefault != null ->
                 rpDefault
             langDefault != null ->
