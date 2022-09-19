@@ -38,11 +38,15 @@ internal class LayoutResolver(
         val langPref = languageSetting.firstValidValue(preferences)
         val verticalPref = verticalTextSetting.firstValidValue(preferences)
 
+        // Primary language is not reliable when coming from EPUB.
+        val metadataLanguage = metadata.language
+            .takeIf { metadata.languages.size == 1 }
+
         // Compute language according to the following rule:
         // preference value > metadata value > default value > null
         val language = when {
             langPref != null -> langPref
-            metadata.languages.isNotEmpty() -> metadata.language
+            metadataLanguage != null -> metadataLanguage
             langDefault != null -> langDefault
             else -> null
         }
@@ -58,9 +62,8 @@ internal class LayoutResolver(
                 if (langPref.isRtl) ReadingProgression.RTL else ReadingProgression.LTR
             metadata.readingProgression.isHorizontal == true ->
                 metadata.readingProgression
-            metadata.languages.isNotEmpty() ->
-                // https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#missing-page-progression-direction
-                if (metadata.languages.all { Language(it).isRtl }) ReadingProgression.RTL else ReadingProgression.LTR
+            metadataLanguage != null ->
+                if (metadataLanguage.isRtl) ReadingProgression.RTL else ReadingProgression.LTR
             rpDefault != null ->
                 rpDefault
             langDefault != null ->
