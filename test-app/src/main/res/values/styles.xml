@@ -11,7 +11,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.Material3.Light">
+    <style name="AppTheme" parent="Theme.Material3.DayNight">
 
     </style>
 

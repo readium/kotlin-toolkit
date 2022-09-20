@@ -46,7 +46,9 @@ import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -686,6 +688,10 @@ class EpubNavigatorFragment private constructor(
 
         override fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? =
             viewModel.shouldInterceptRequest(request)
+
+        override fun resourceAtUrl(url: String): Resource? =
+            viewModel.internalLinkFromUrl(url)
+                ?.let { publication.get(it) }
     }
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
