@@ -19,6 +19,11 @@ internal class ResourceAdapter(
     private val coverId: String?,
     private val durationById: Map<String, Double?>
 ) {
+    data class Links(
+        val readingOrder: List<Link>,
+        val resources: List<Link>
+    )
+
     @Suppress("Unchecked_cast")
     private val itemById = manifest
         .filter { it.id != null }
@@ -27,13 +32,13 @@ internal class ResourceAdapter(
     private val itemrefByIdref = spine.itemrefs
         .associateBy(Itemref::idref)
 
-    fun adapt(): Pair<List<Link>, List<Link>> {
+    fun adapt(): Links {
         val readingOrderIds = spine.itemrefs.filter { it.linear }.map { it.idref }
         val readingOrder = readingOrderIds.mapNotNull { id -> itemById[id]?.let { item -> computeLink(item) } }
         val readingOrderAllIds = computeIdsWithFallbacks(readingOrderIds)
         val resourceItems = manifest.filterNot { it.id in readingOrderAllIds }
         val resources = resourceItems.map { computeLink(it) }
-        return Pair(readingOrder, resources)
+        return Links(readingOrder, resources)
     }
 
     /** Recursively find the ids of the fallback items in [items] */

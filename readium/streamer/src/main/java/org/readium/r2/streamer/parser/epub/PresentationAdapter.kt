@@ -15,21 +15,18 @@ internal class PresentationAdapter(
 ) {
 
     fun adapt(items: List<MetadataItem>): Pair<Presentation, List<MetadataItem>> {
-        var remainingItems: List<MetadataItem> = items
+        val itemsHolder = MetadataItemsHolder(items)
 
-        val flowProp = remainingItems
-            .takeFirstWithProperty(Vocabularies.RENDITION + "flow")
-            .let { remainingItems = it.second; it.first }
+        val flowProp = itemsHolder
+            .adapt { it.takeFirstWithProperty(Vocabularies.RENDITION + "flow") }
             ?.value
 
-        val spreadProp = remainingItems
-            .takeFirstWithProperty(Vocabularies.RENDITION + "spread")
-            .let { remainingItems = it.second; it.first }
+        val spreadProp = itemsHolder
+            .adapt { it.takeFirstWithProperty(Vocabularies.RENDITION + "spread") }
             ?.value
 
-        val orientationProp = remainingItems
-            .takeFirstWithProperty(Vocabularies.RENDITION + "orientation")
-            .let { remainingItems = it.second; it.first }
+        val orientationProp = itemsHolder
+            .adapt { it.takeFirstWithProperty(Vocabularies.RENDITION + "orientation") }
             ?.value
 
         val layoutProp =
@@ -38,9 +35,8 @@ internal class PresentationAdapter(
                     "pre-paginated"
                 else
                     "reflowable"
-            } else  remainingItems
-                .takeFirstWithProperty(Vocabularies.RENDITION + "layout")
-                .let { remainingItems = it.second; it.first }
+            } else itemsHolder
+                .adapt { it .takeFirstWithProperty(Vocabularies.RENDITION + "layout") }
                 ?.value
 
         val (overflow, continuous) = when (flowProp) {
@@ -73,6 +69,6 @@ internal class PresentationAdapter(
             layout = layout, orientation = orientation, spread = spread
         )
 
-        return presentation to remainingItems
+        return presentation to itemsHolder.remainingItems
     }
 }

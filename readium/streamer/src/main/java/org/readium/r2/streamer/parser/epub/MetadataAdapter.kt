@@ -36,74 +36,60 @@ internal class MetadataAdapter(
             .mapValues { DurationAdapter().adapt(it.value).first }
             as Map<String, Double?>
 
-        var remainingItems: List<MetadataItem> = globalItems
+        val globalItemsHolder = MetadataItemsHolder(globalItems)
 
-        val coverId: String? = remainingItems
-            .takeFirstWithProperty("cover")
-            .let { remainingItems = it.second; it.first }
+        val coverId: String? = globalItemsHolder
+            .adapt { it.takeFirstWithProperty("cover") }
             ?.value
 
-        val duration: Double? = DurationAdapter()
-            .adapt(remainingItems)
-            .let { remainingItems = it.second; it.first }
+        val duration: Double? = globalItemsHolder
+            .adapt(DurationAdapter()::adapt)
 
-        val languages: List<String> = LanguageAdapter(readingProgression)
-            .adapt(remainingItems)
-            .let { remainingItems =  it.second; it.first }
+        val languages: List<String> = globalItemsHolder
+            .adapt(LanguageAdapter(readingProgression)::adapt)
 
-        val identifier: String? = IdentifierAdapter(uniqueIdentifierId)
-            .adapt(remainingItems)
-            .let { remainingItems = it.second; it.first }
+        val identifier: String? = globalItemsHolder
+            .adapt(IdentifierAdapter(uniqueIdentifierId)::adapt)
 
-        val published = remainingItems
-            .takeFirstWithProperty(Vocabularies.DCTERMS + "date")
-            .let { remainingItems = it.second; it.first }
+        val published = globalItemsHolder
+            .adapt {  it.takeFirstWithProperty(Vocabularies.DCTERMS + "date") }
             ?.value
             ?.iso8601ToDate()
 
-        val modified = remainingItems
-            .takeFirstWithProperty(Vocabularies.DCTERMS + "modified")
-            .let { remainingItems = it.second; it.first }
+        val modified = globalItemsHolder
+            .adapt { it.takeFirstWithProperty(Vocabularies.DCTERMS + "modified") }
             ?.value?.iso8601ToDate()
 
-        val description = remainingItems
-            .takeFirstWithProperty(Vocabularies.DCTERMS + "description")
-            .let { remainingItems = it.second; it.first }
+        val description = globalItemsHolder
+            .adapt { it.takeFirstWithProperty(Vocabularies.DCTERMS + "description") }
             ?.value
 
-        val (localizedTitle, localizedSortAs, localizedSubtitle) = TitleAdapter(fallbackTitle)
-            .adapt(remainingItems)
-            .let { remainingItems = it.second; it.first }
+        val (localizedTitle, localizedSortAs, localizedSubtitle) = globalItemsHolder
+            .adapt(TitleAdapter(fallbackTitle)::adapt)
 
-        val (belongsToCollections, belongsToSeries) = CollectionAdapter()
-            .adapt(remainingItems)
-            .let { remainingItems = it.second; it.first }
+        val (belongsToCollections, belongsToSeries) = globalItemsHolder
+            .adapt(CollectionAdapter()::adapt)
 
-        val subjects: List<Subject> = SubjectAdapter()
-            .adapt(remainingItems)
-            .let { remainingItems = it.second; it.first }
+        val subjects: List<Subject> = globalItemsHolder
+            .adapt(SubjectAdapter()::adapt)
 
-        val allContributors: Map<String?, List<Contributor>> = ContributorAdapter()
-            .adapt(remainingItems)
-            .let { remainingItems = it.second; it.first }
+        val allContributors: Map<String?, List<Contributor>> = globalItemsHolder
+            .adapt(ContributorAdapter()::adapt)
 
         fun contributors(role: String?): List<Contributor> =
             allContributors[role].orEmpty()
 
-        val accessibility: Accessibility? = AccessibilityAdapter()
-            .adapt(remainingItems)
-            .let { remainingItems = it.second; it.first }
+        val accessibility: Accessibility? = globalItemsHolder
+            .adapt(AccessibilityAdapter()::adapt)
 
-        val presentation: Presentation = PresentationAdapter(epubVersion, displayOptions)
-            .adapt(remainingItems)
-            .let { remainingItems = it.second; it.first }
+        val presentation: Presentation = globalItemsHolder
+            .adapt(PresentationAdapter(epubVersion, displayOptions)::adapt)
 
-        val links: List<Link> = LinksAdapter()
-            .adapt(remainingItems)
-            .let { remainingItems = it.second; it.first }
+        val links: List<Link> = globalItemsHolder
+            .adapt(LinksAdapter()::adapt)
 
         val remainingMetadata: Map<String, Any> = OtherMetadataAdapter()
-            .adapt(remainingItems)
+            .adapt(globalItemsHolder.remainingItems)
 
         val otherMetadata: Map<String, Any> =
                 remainingMetadata + Pair("presentation", presentation.toJSON().toMap())
@@ -463,3 +449,4 @@ private val MetadataItem.identifier
 private val MetadataItem.role
     get() = children.firstWithProperty(Vocabularies.META + "role")
         ?.value
+

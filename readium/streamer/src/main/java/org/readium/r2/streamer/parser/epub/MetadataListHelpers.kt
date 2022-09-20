@@ -6,6 +6,21 @@
 
 package org.readium.r2.streamer.parser.epub
 
+internal fun interface MetadataItemsAdapter<T> {
+
+    fun adapt(items: List<MetadataItem>): Pair<T, List<MetadataItem>>
+
+}
+
+internal class MetadataItemsHolder(private var items: List<MetadataItem>) {
+
+    val remainingItems: List<MetadataItem>
+        get() = items
+
+    fun <T> adapt(adapter: MetadataItemsAdapter<T>): T =
+        adapter.adapt(items).let { items = it.second; it.first }
+}
+
 /**
  * Return all meta elements with the given [property].
  */

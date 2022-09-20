@@ -11,44 +11,39 @@ import org.readium.r2.shared.publication.Accessibility
 internal class AccessibilityAdapter {
 
     fun adapt(items: List<MetadataItem>): Pair<Accessibility?, List<MetadataItem>> {
-        var remainingItems = items
+        val itemsHolder = MetadataItemsHolder(items)
 
-        val conformsTo = remainingItems
-            .mapTakeNotNull{ conformedToProfileOrNull(it) }
-            .let { remainingItems = it.second; it.first }
+        val conformsTo = itemsHolder
+            .adapt { list -> list.mapTakeNotNull{ item -> conformedToProfileOrNull(item) } }
             .toSet()
 
-        val summary = remainingItems
-            .takeFirstWithProperty(Vocabularies.SCHEMA + "accessibilitySummary")
-            .let { remainingItems = it.second; it.first }
+        val summary = itemsHolder
+            .adapt { it.takeFirstWithProperty(Vocabularies.SCHEMA + "accessibilitySummary") }
             ?.value
 
-        val accessModes = remainingItems
-            .takeAllWithProperty(Vocabularies.SCHEMA + "accessMode")
-            .let { remainingItems = it.second; it.first }
+        val accessModes = itemsHolder
+            .adapt { it.takeAllWithProperty(Vocabularies.SCHEMA + "accessMode") }
             .map { accessMode -> Accessibility.AccessMode(accessMode.value) }
             .toSet()
 
-        val accessModesSufficient = adaptAccessModeSufficient(remainingItems)
-            .let { remainingItems = it.second; it.first }
+        val accessModesSufficient = itemsHolder
+            .adapt(::adaptAccessModeSufficient)
 
-        val features = remainingItems
-            .takeAllWithProperty(Vocabularies.SCHEMA + "accessibilityFeature")
-            .let { remainingItems = it.second; it.first }
+        val features = itemsHolder
+            .adapt { it.takeAllWithProperty(Vocabularies.SCHEMA + "accessibilityFeature") }
             .map { Accessibility.Feature(it.value) }
             .toSet()
 
-        val hazards = remainingItems
-            .takeAllWithProperty(Vocabularies.SCHEMA + "accessibilityHazard")
-            .let { remainingItems = it.second; it.first }
+        val hazards = itemsHolder
+            .adapt { it.takeAllWithProperty(Vocabularies.SCHEMA + "accessibilityHazard") }
             .map { Accessibility.Hazard(it.value) }
             .toSet()
 
-        val certification = adaptCertification(remainingItems)
-            .let { remainingItems = it.second; it.first }
+        val certification = itemsHolder
+            .adapt(::adaptCertification)
 
-        return if (remainingItems.size == items.size) {
-            null to remainingItems
+        return if (itemsHolder.remainingItems.size == items.size) {
+            null to itemsHolder.remainingItems
         } else {
             val accessibility = Accessibility(
                 conformsTo = conformsTo,
@@ -59,7 +54,7 @@ internal class AccessibilityAdapter {
                 features = features,
                 hazards = hazards
             )
-            accessibility to remainingItems
+            accessibility to itemsHolder.remainingItems
         }
     }
 
@@ -146,7 +141,7 @@ internal class AccessibilityAdapter {
         "EPUB Accessibility 1.1 - WCAG 2.0 Level A",
         "http://idpf.org/epub/a11y/accessibility-20170105.html#wcag-a",
         "http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a",
-        "http://wwwidpf.org/epub/a11y/accessibility-20170105.html#wcag-a",
+        "https://idpf.org/epub/a11y/accessibility-20170105.html#wcag-a",
         "https://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a",
     )
 
@@ -154,7 +149,7 @@ internal class AccessibilityAdapter {
         "EPUB Accessibility 1.1 - WCAG 2.0 Level AA",
         "http://idpf.org/epub/a11y/accessibility-20170105.html#wcag-aa",
         "http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aa",
-        "http://wwwidpf.org/epub/a11y/accessibility-20170105.html#wcag-aa",
+        "https://idpf.org/epub/a11y/accessibility-20170105.html#wcag-aa",
         "https://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aa",
     )
 
@@ -162,7 +157,7 @@ internal class AccessibilityAdapter {
         "EPUB Accessibility 1.1 - WCAG 2.0 Level AAA",
         "http://idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa",
         "http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa",
-        "http://wwwidpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa",
+        "https://idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa",
         "https://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa",
     )
 }
