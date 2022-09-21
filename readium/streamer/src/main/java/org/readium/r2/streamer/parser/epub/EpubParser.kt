@@ -1,10 +1,7 @@
 /*
- * Module: r2-streamer-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann, Quentin Gliosca
- *
- * Copyright (c) 2018. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 @file:Suppress("DEPRECATION")
@@ -106,13 +103,13 @@ class EpubParser(
         val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath)
             ?:  throw Exception("Invalid OPF file.")
 
-        val manifest = PublicationFactory(
+        val manifest = ManifestAdapter(
                 fallbackTitle = fallbackTitle,
                 packageDocument = packageDocument,
                 navigationData = parseNavigationData(packageDocument, fetcher),
                 encryptionData = parseEncryptionData(fetcher),
                 displayOptions = parseDisplayOptions(fetcher)
-            ).create()
+            ).adapt()
 
         @Suppress("NAME_SHADOWING")
         var fetcher = fetcher

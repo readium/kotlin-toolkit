@@ -177,18 +177,21 @@ internal data class ReadiumCss(
     private fun injectLang(content: StringBuilder, document: Document) {
         val language = layout.language?.code ?: return
 
+        fun Element.hasLang(): Boolean =
+            hasAttr("xml:lang") || hasAttr("lang")
+
         fun Element.lang(): String? =
             attr("xml:lang").takeIf { it.isNotEmpty() }
                 ?: attr("lang").takeIf { it.isNotEmpty() }
 
         val html = document.selectFirst("html")
-        if (html?.lang() != null) {
+        if (html?.hasLang() == true) {
             return
         }
 
-        val bodyLang = document.body().lang()
-        if (bodyLang != null) {
-            content.insert(content.indexForTagAttributes("html"), " xml:lang=\"$bodyLang\"")
+        val body = document.body()
+        if (body.hasLang()) {
+            content.insert(content.indexForTagAttributes("html"), " xml:lang=\"${body.lang() ?: language}\"")
         } else {
             val injectable = " xml:lang=\"$language\""
             content.insert(content.indexForTagAttributes("html"), injectable)
