@@ -37,10 +37,7 @@ internal class LayoutResolver(
         val rpPref = readingProgressionSetting.firstValidValue(preferences)
         val langPref = languageSetting.firstValidValue(preferences)
         val verticalPref = verticalTextSetting.firstValidValue(preferences)
-
-        // Primary language is not reliable when coming from EPUB.
         val metadataLanguage = metadata.language
-            .takeIf { metadata.languages.size == 1 }
 
         // Compute language according to the following rule:
         // preference value > metadata value > default value > null

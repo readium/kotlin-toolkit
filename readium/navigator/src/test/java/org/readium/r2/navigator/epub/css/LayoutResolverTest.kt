@@ -12,7 +12,6 @@ import org.junit.Test
 import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.epub.css.Layout.Stylesheets
 import org.readium.r2.navigator.settings.MutablePreferences
-import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Metadata
@@ -32,7 +31,7 @@ class LayoutResolverTest {
     fun `Compute the layout without any preferences or defaults`() {
         assertEquals(
             Layout(language = null, stylesheets = Stylesheets.Default, readingProgression = LTR),
-            LayoutResolver(metadata = Metadata(localizedTitle = fakeTitle),).resolve()
+            LayoutResolver(metadata = Metadata(localizedTitle = fakeTitle)).resolve()
         )
         assertEquals(
             Layout(language = Language("en"), stylesheets = Stylesheets.Default, readingProgression = LTR),
@@ -77,64 +76,6 @@ class LayoutResolverTest {
         assertEquals(
             Layout(language = Language("zh-TW"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
             LayoutResolver(metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("zh-TW"))).resolve()
-        )
-    }
-
-    @Test
-    fun `Compute the layout with automatic reading progression and multiple languages`() {
-        assertEquals(
-            Layout(language = null, stylesheets = Stylesheets.Default, readingProgression = LTR),
-            LayoutResolver(
-                metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("ar", "fr")),
-            ).resolve(Preferences())
-        )
-        assertEquals(
-            Layout(language = null, stylesheets = Stylesheets.Default, readingProgression = LTR),
-            LayoutResolver(
-                metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("fa", "fr")),
-            ).resolve(Preferences())
-        )
-        assertEquals(
-            Layout(language = null, stylesheets = Stylesheets.Default, readingProgression = LTR),
-            LayoutResolver(
-                metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("he", "fr")),
-            ).resolve(Preferences())
-        )
-        assertEquals(
-            Layout(language = null, stylesheets = Stylesheets.Default, readingProgression = LTR),
-            LayoutResolver(
-                metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("ja", "fr")),
-            ).resolve(Preferences())
-        )
-        assertEquals(
-            Layout(language = null, stylesheets = Stylesheets.Default, readingProgression = LTR),
-            LayoutResolver(
-                metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("ko", "fr")),
-            ).resolve(Preferences())
-        )
-        assertEquals(
-            Layout(language = null, stylesheets = Stylesheets.Default, readingProgression = LTR),
-            LayoutResolver(
-                metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("zh", "fr")),
-            ).resolve(Preferences())
-        )
-        assertEquals(
-            Layout(language = null, stylesheets = Stylesheets.Default, readingProgression = LTR),
-            LayoutResolver(
-                metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("zh-HK", "fr")),
-            ).resolve(Preferences())
-        )
-        assertEquals(
-            Layout(language = null, stylesheets = Stylesheets.Default, readingProgression = LTR),
-            LayoutResolver(metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("zh-Hans", "fr")),).resolve()
-        )
-        assertEquals(
-            Layout(language = null, stylesheets = Stylesheets.Default, readingProgression = LTR),
-            LayoutResolver(metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("zh-Hant", "fr")),).resolve()
-        )
-        assertEquals(
-            Layout(language = null, stylesheets = Stylesheets.Default, readingProgression = LTR),
-            LayoutResolver(metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("zh-TW", "fr"))).resolve()
         )
     }
 
