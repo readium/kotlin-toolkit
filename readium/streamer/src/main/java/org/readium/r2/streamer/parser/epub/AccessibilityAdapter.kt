@@ -133,7 +133,7 @@ internal class AccessibilityAdapter {
     private fun accessibilityProfileFromString(value: String): Accessibility.Profile? = when {
         isWCAG_20_A(value) -> Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A
         isWCAG_20_AA(value) -> Accessibility.Profile.EPUB_A11Y_10_WCAG_20_AA
-        isWCAG_20_AAA(value) -> Accessibility.Profile.EPUB_A11Y_WCAG_20_AAA
+        isWCAG_20_AAA(value) -> Accessibility.Profile.EPUB_A11Y_10_WCAG_20_AAA
         else -> null
     }
 

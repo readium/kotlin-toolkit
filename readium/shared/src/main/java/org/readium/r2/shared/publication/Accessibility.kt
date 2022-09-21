@@ -69,7 +69,7 @@ data class Accessibility(
 
             val EPUB_A11Y_10_WCAG_20_AA = Profile("http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aa")
 
-            val EPUB_A11Y_WCAG_20_AAA = Profile("http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa")
+            val EPUB_A11Y_10_WCAG_20_AAA = Profile("http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa")
 
             fun Set<Profile>.toJSONArray(): JSONArray =
                 JSONArray(this.map(Profile::uri))
