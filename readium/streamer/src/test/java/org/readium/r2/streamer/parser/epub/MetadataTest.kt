@@ -424,20 +424,18 @@ class AccessibilityTest {
     private val epub2Metadata = parsePackageDocument("package/accessibility-epub2.opf").metadata
     private val epub3Metadata = parsePackageDocument("package/accessibility-epub3.opf").metadata
 
-    @Test
-    fun `summary is rightly parsed`() {
+    @Test fun `summary is rightly parsed`() {
         val expected = "The publication contains structural and page navigation."
         assertThat(epub2Metadata.accessibility?.summary).isEqualTo(expected)
+        assertThat(epub3Metadata.accessibility?.summary).isEqualTo(expected)
     }
 
-    @Test
-    fun `conformsTo contains WCAG profiles and only them`() {
+    @Test fun `conformsTo contains WCAG profiles and only them`() {
         assertThat(epub2Metadata.accessibility?.conformsTo).containsExactlyInAnyOrder(Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A)
         assertThat(epub3Metadata.accessibility?.conformsTo).containsExactlyInAnyOrder(Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A)
     }
 
-    @Test
-    fun `certification is rightly parsed`() {
+    @Test fun `certification is rightly parsed`() {
         val expectedCertification = Accessibility.Certification(
             certifiedBy = "Accessibility Testers Group",
             credential = "DAISY OK",
@@ -447,48 +445,47 @@ class AccessibilityTest {
         assertThat(epub3Metadata.accessibility?.certification).isEqualTo(expectedCertification)
     }
 
-    @Test
-    fun `features are rightly parsed`() {
+    @Test fun `features are rightly parsed`() {
         assertThat(epub2Metadata.accessibility?.features)
-            .containsExactlyInAnyOrder(
-                Accessibility.Feature.ALTERNATIVE_TEXT,
-                Accessibility.Feature.STRUCTURAL_NAVIGATION
-            )
+            .containsExactlyInAnyOrder(Accessibility.Feature.ALTERNATIVE_TEXT, Accessibility.Feature.STRUCTURAL_NAVIGATION)
     }
 
-    @Test
-    fun `hazards are rightly parsed`() {
+    @Test fun `hazards are rightly parsed`() {
         assertThat(epub2Metadata.accessibility?.hazards)
-            .containsExactlyInAnyOrder(
-                Accessibility.Hazard.MOTION_SIMULATION,
-                Accessibility.Hazard.NO_SOUND_HAZARD
-            )
+            .containsExactlyInAnyOrder(Accessibility.Hazard.MOTION_SIMULATION, Accessibility.Hazard.NO_SOUND_HAZARD)
+        assertThat(epub3Metadata.accessibility?.hazards)
+            .containsExactlyInAnyOrder(Accessibility.Hazard.MOTION_SIMULATION, Accessibility.Hazard.NO_SOUND_HAZARD)
+
     }
 
-    @Test
-    fun `accessModes are rightly parsed`() {
+    @Test fun `accessModes are rightly parsed`() {
         assertThat(epub2Metadata.accessibility?.accessModes)
-            .containsExactlyInAnyOrder(
-                Accessibility.AccessMode.VISUAL,
-                Accessibility.AccessMode.TEXTUAL
-            )
+            .containsExactlyInAnyOrder(Accessibility.AccessMode.VISUAL, Accessibility.AccessMode.TEXTUAL)
+        assertThat(epub3Metadata.accessibility?.accessModes)
+            .containsExactlyInAnyOrder(Accessibility.AccessMode.VISUAL, Accessibility.AccessMode.TEXTUAL)
     }
 
-    @Test
-    fun `accessModesSufficient are rightly parsed`() {
+    @Test fun `accessModesSufficient are rightly parsed`() {
         assertThat(epub2Metadata.accessibility?.accessModesSufficient)
             .containsExactlyInAnyOrder(
-                setOf(
-                    Accessibility.PrimaryAccessMode.VISUAL,
-                    Accessibility.PrimaryAccessMode.TEXTUAL
-                ),
+                setOf(Accessibility.PrimaryAccessMode.VISUAL, Accessibility.PrimaryAccessMode.TEXTUAL),
+                setOf(Accessibility.PrimaryAccessMode.TEXTUAL)
+            )
+        assertThat(epub3Metadata.accessibility?.accessModesSufficient)
+            .containsExactlyInAnyOrder(
+                setOf(Accessibility.PrimaryAccessMode.VISUAL, Accessibility.PrimaryAccessMode.TEXTUAL),
                 setOf(Accessibility.PrimaryAccessMode.TEXTUAL)
             )
     }
 
-    @Test
-    fun `non-accessibility conformsTo end up in otherMetadata`() {
+    @Test fun `non-accessibility conformsTo end up in otherMetadata`() {
         assertThat(epub2Metadata.otherMetadata).contains(
+            entry(
+                Vocabularies.DCTERMS + "conformsTo",
+                "any profile"
+            )
+        )
+        assertThat(epub3Metadata.otherMetadata).contains(
             entry(
                 Vocabularies.DCTERMS + "conformsTo",
                 "any profile"
