@@ -127,6 +127,10 @@ class R2FXLPageFragment : Fragment() {
         webView.settings.setSupportZoom(true)
         webView.settings.builtInZoomControls = true
         webView.settings.displayZoomControls = false
+        // If we don't explicitly override the [textZoom], it will be set by Android's
+        // accessibility font size system setting which breaks the layout of some fixed layouts.
+        // See https://github.com/readium/kotlin-toolkit/issues/76
+        webView.settings.textZoom = 100
 
         webView.setInitialScale(1)
 
