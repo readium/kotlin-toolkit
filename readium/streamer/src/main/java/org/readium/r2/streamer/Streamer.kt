@@ -28,7 +28,6 @@ import org.readium.r2.streamer.parser.epub.EpubParser
 import org.readium.r2.streamer.parser.epub.setLayoutStyle
 import org.readium.r2.streamer.parser.image.ImageParser
 import org.readium.r2.streamer.parser.pdf.PdfParser
-import org.readium.r2.streamer.parser.pdf.PdfiumPdfDocumentFactory
 import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
 
 internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningException>
@@ -57,10 +56,11 @@ class Streamer constructor(
     ignoreDefaultParsers: Boolean = false,
     contentProtections: List<ContentProtection> = emptyList(),
     private val archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
-    private val pdfFactory: PdfDocumentFactory = DefaultPdfDocumentFactory(context),
+    private val pdfFactory: PdfDocumentFactory<*>? = null,
     private val httpClient: DefaultHttpClient = DefaultHttpClient(),
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
+    private val context = context.applicationContext
 
     private val contentProtections: List<ContentProtection> =
         contentProtections + listOf(FallbackContentProtection())
@@ -136,9 +136,7 @@ class Streamer constructor(
         // Transform provided by the reading app in `Streamer.open()`.
         builder.apply(onCreatePublication)
 
-        val publication = builder
-            .apply(onCreatePublication)
-            .build()
+        val publication = builder.build()
             .apply { addLegacyProperties(asset.mediaType()) }
 
         Try.success(publication)
@@ -148,10 +146,10 @@ class Streamer constructor(
     }
 
     private val defaultParsers: List<PublicationParser> by lazy {
-        listOf(
+        listOfNotNull(
             EpubParser(),
-            PdfParser(context, pdfFactory),
-            ReadiumWebPubParser(pdfFactory, httpClient),
+            pdfFactory?.let { PdfParser(context, it) },
+            ReadiumWebPubParser(context, pdfFactory, httpClient),
             ImageParser(),
             AudioParser()
         )
@@ -185,14 +183,3 @@ internal fun MediaType?.toPublicationType(): Publication.TYPE =
         MediaType.EPUB -> Publication.TYPE.EPUB
         else -> Publication.TYPE.WEBPUB
     }
-
-@PdfSupport
-class DefaultPdfDocumentFactory private constructor (
-    private val factory: PdfDocumentFactory
-) : PdfDocumentFactory by factory {
-
-    /** Pdfium is the default implementation. */
-    constructor(context: Context)
-        : this(PdfiumPdfDocumentFactory(context.applicationContext))
-
-}

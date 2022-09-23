@@ -13,9 +13,6 @@ import android.content.Context
 import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.*
-import android.view.KeyEvent
-import android.view.View
-import android.view.ViewGroup
 import android.view.animation.Interpolator
 import android.widget.EdgeEffect
 import android.widget.Scroller
@@ -27,7 +24,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.BuildConfig.DEBUG
-import org.readium.r2.shared.SCROLL_REF
 import timber.log.Timber
 import kotlin.math.*
 
@@ -300,7 +296,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     internal fun updateCurrentItem() {
         val clientWidth = getClientWidth()
         if (!scrollMode && !mIsBeingDragged && clientWidth != null) {
-            mCurItem = scrollX / clientWidth
+            // Sometimes scrollX is not exactly a multiple of clientWidth, so we need to round the result.
+            mCurItem = (scrollX.toDouble() / clientWidth.toDouble()).roundToInt()
         }
     }
 
@@ -687,18 +684,16 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
                 mActivePointerId = ev.getPointerId(0)
             }
             MotionEvent.ACTION_MOVE -> {
-
                 if ((mLastMotionX > (width - mGutterSize)) || (mLastMotionX < mGutterSize)) {
                     requestDisallowInterceptTouchEvent(true)
                     return false
                 }
 
-                if (!mIsBeingDragged) {
+                if (!isSelecting && !mIsBeingDragged) {
                     mInitialVelocity = getCurrentXVelocity()
                     val pointerIndex = ev.findPointerIndex(mActivePointerId)
                     val x = ev.getX(pointerIndex)
                     val xDiff = abs(x - mLastMotionX)
-                    if (DEBUG) Timber.v("Moved x to $x diff=$xDiff")
 
                     if (xDiff > mTouchSlop) {
                         if (DEBUG) Timber.v("Starting drag!")

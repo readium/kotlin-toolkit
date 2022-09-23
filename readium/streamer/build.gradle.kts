@@ -13,10 +13,10 @@ plugins {
 }
 
 android {
-    compileSdk = 31
+    compileSdk = 33
     defaultConfig {
         minSdk = 21
-        targetSdk = 31
+        targetSdk = 33
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -27,8 +27,11 @@ android {
         unitTests.isIncludeAndroidResources = true
     }
     kotlinOptions {
-        freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
         allWarningsAsErrors = true
+        freeCompilerArgs = freeCompilerArgs + listOf(
+            "-opt-in=kotlin.RequiresOptIn",
+            "-opt-in=org.readium.r2.shared.InternalReadiumApi"
+        )
     }
     buildTypes {
         getByName("release") {
@@ -59,7 +62,6 @@ dependencies {
 
     implementation("androidx.appcompat:appcompat:1.4.1")
     @Suppress("GradleDependency")
-    implementation("com.github.barteksc:pdfium-android:1.8.2")
     implementation("com.jakewharton.timber:timber:5.0.1")
     implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
         exclude(group = "org.parboiled")
@@ -75,13 +77,13 @@ dependencies {
     implementation("com.mcxiaoke.koi:async:0.5.5") {
         exclude(module = "support-v4")
     }
-    implementation("joda-time:joda-time:2.10.13")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("joda-time:joda-time:2.10.14")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
 
     // Tests
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.assertj:assertj-core:3.22.0")
-    testImplementation("org.robolectric:robolectric:4.7.3")
+    testImplementation("org.assertj:assertj-core:3.23.1")
+    testImplementation("org.robolectric:robolectric:4.8.1")
     androidTestImplementation("androidx.test.ext:junit:1.1.3")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
 }

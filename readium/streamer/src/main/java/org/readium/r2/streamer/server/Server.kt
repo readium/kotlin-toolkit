@@ -25,6 +25,7 @@ import java.net.URL
 import java.net.URLDecoder
 import java.util.*
 
+@Deprecated("The HTTP server is not needed anymore (see migration guide)")
 class Server(
     port: Int,
     context: Context,
@@ -97,7 +98,7 @@ abstract class AbstractServer(
         if (container?.rootFile?.rootFilePath?.isEmpty() == true) {
             return null
         }
-        val baseUrl = URL(Publication.localBaseUrlOf(filename = filename, port = port))
+        @Suppress("DEPRECATION") val baseUrl = URL(Publication.localBaseUrlOf(filename = filename, port = port))
         val fetcher = ServingFetcher(
             publication,
             enableReadiumNavigatorSupport,

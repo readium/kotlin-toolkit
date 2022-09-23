@@ -17,12 +17,12 @@ import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.asset.FileAsset
 import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.shared.publication.services.InMemoryCacheService
 import org.readium.r2.shared.publication.services.InMemoryCoverService
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.toLinks
-import org.readium.r2.streamer.DefaultPdfDocumentFactory
 import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.parser.PubBox
@@ -34,8 +34,10 @@ import java.io.File
 @PdfSupport
 class PdfParser(
     context: Context,
-    private val pdfFactory: PdfDocumentFactory = DefaultPdfDocumentFactory(context)
+    private val pdfFactory: PdfDocumentFactory<*>
 ) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
+
+    private val context = context.applicationContext
 
     override suspend fun parse(asset: PublicationAsset, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? =
         _parse(asset, fetcher, asset.name)
@@ -55,15 +57,17 @@ class PdfParser(
                 conformsTo = setOf(Publication.Profile.PDF),
                 localizedTitle = LocalizedString(document.title?.ifBlank { null } ?: fallbackTitle),
                 authors = listOfNotNull(document.author).map { Contributor(name = it) },
-                numberOfPages = document.pageCount
+                readingProgression = document.readingProgression,
+                numberOfPages = document.pageCount,
             ),
             readingOrder = listOf(Link(href = fileHref, type = MediaType.PDF.toString())),
             tableOfContents = tableOfContents
         )
 
         val servicesBuilder = Publication.ServicesBuilder(
+            cache = InMemoryCacheService.createFactory(context),
             positions = PdfPositionsService.Companion::create,
-            cover = document.cover?.let { InMemoryCoverService.createFactory(it) }
+            cover = document.cover(context)?.let { InMemoryCoverService.createFactory(it) }
         )
 
         return Publication.Builder(manifest, fetcher, servicesBuilder)

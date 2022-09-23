@@ -7,11 +7,13 @@
 package org.readium.r2.testapp.reader
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
@@ -19,6 +21,7 @@ import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
 import org.readium.navigator.media2.ExperimentalMedia2
+import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.Application
@@ -36,20 +39,20 @@ import org.readium.r2.testapp.outline.OutlineFragment
  */
 open class ReaderActivity : AppCompatActivity() {
 
-    private lateinit var modelFactory: ReaderViewModel.Factory
-    private lateinit var model: ReaderViewModel
+    private val model: ReaderViewModel by viewModels()
+
+    override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
+        val arguments = ReaderActivityContract.parseIntent(this)
+        return ReaderViewModel.createFactory(application as Application, arguments)
+    }
+
     private lateinit var binding: ActivityReaderBinding
     private lateinit var readerFragment: BaseReaderFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val arguments = ReaderActivityContract.parseIntent(this)
-        val app = applicationContext as Application
-        modelFactory = ReaderViewModel.Factory(app, arguments)
-        model = ViewModelProvider(this)[ReaderViewModel::class.java]
-
         /*
-         * [ReaderViewModel.Factory] provides dummy publications if the [ReaderActivity] is restored
-         * after the app process was killed because the [ReaderRepository] is empty.
+         * We provide dummy publications if the [ReaderActivity] is restored after the app process
+         * was killed because the [ReaderRepository] is empty.
          * In that case, finish the activity as soon as possible and go back to the previous one.
          */
         if (model.publication.readingOrder.isEmpty()) {
@@ -75,6 +78,7 @@ open class ReaderActivity : AppCompatActivity() {
         readerFragment?.let { this.readerFragment = it }
 
         model.activityChannel.receive(this) { handleReaderFragmentEvent(it) }
+
         reconfigureActionBar()
 
         supportFragmentManager.setFragmentResultListener(
@@ -105,22 +109,13 @@ open class ReaderActivity : AppCompatActivity() {
         }
     }
 
-    @OptIn(ExperimentalMedia2::class)
     private fun createReaderFragment(readerData: ReaderInitData): BaseReaderFragment? {
-        val readerClass: Class<out Fragment>? = when {
-            readerData is MediaReaderInitData ->
-                AudioReaderFragment::class.java
-            readerData is ComposeVisualReaderInitData ->
-                ComposeReaderFragment::class.java
-            readerData.publication.conformsTo(Publication.Profile.EPUB) ->
-                EpubReaderFragment::class.java
-            readerData.publication.conformsTo(Publication.Profile.PDF) ->
-                PdfReaderFragment::class.java
-            readerData.publication.conformsTo(Publication.Profile.DIVINA) ->
-                ImageReaderFragment::class.java
-            else ->
-                // The Activity should stop as soon as possible because readerData are fake.
-                null
+        val readerClass: Class<out Fragment>? = when (readerData.navigatorKind) {
+            NavigatorKind.EPUB -> EpubReaderFragment::class.java
+            NavigatorKind.PDF -> PdfReaderFragment::class.java
+            NavigatorKind.AUDIO -> AudioReaderFragment::class.java
+            NavigatorKind.IMAGE -> ImageReaderFragment::class.java
+            null -> null
         }
 
         readerClass?.let { it ->
@@ -155,12 +150,8 @@ open class ReaderActivity : AppCompatActivity() {
         )
     }
 
-    override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
-        return modelFactory
-    }
-
     override fun finish() {
-        setResult(Activity.RESULT_OK, intent)
+        setResult(Activity.RESULT_OK, Intent().putExtras(intent))
         super.finish()
     }
 
@@ -168,11 +159,13 @@ open class ReaderActivity : AppCompatActivity() {
         when(event) {
             is ReaderViewModel.Event.OpenOutlineRequested -> showOutlineFragment()
             is ReaderViewModel.Event.OpenDrmManagementRequested -> showDrmManagementFragment()
-            is ReaderViewModel.Event.Failure -> {
-                Toast.makeText(this, event.error.getUserMessage(this), Toast.LENGTH_LONG).show()
-            }
+            is ReaderViewModel.Event.Failure -> showError(event.error)
             else -> {}
         }
+    }
+
+    private fun showError(error: UserException) {
+        Toast.makeText(this, error.getUserMessage(this), Toast.LENGTH_LONG).show()
     }
 
     private fun showOutlineFragment() {

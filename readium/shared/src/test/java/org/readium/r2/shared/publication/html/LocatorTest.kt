@@ -9,7 +9,8 @@
 
 package org.readium.r2.shared.publication.html
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Locator

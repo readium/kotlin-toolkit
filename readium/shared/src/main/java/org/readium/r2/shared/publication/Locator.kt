@@ -21,7 +21,7 @@ import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 
 /**
- * Provides a precise location in a publication in a format that can be stored and shared.
+ * Represents a precise location in a publication in a format that can be stored and shared.
  *
  * There are many different use cases for locators:
  *  - getting back to the last position in a publication
@@ -30,7 +30,7 @@ import org.readium.r2.shared.util.logging.log
  *  - search results
  *  - human-readable (and shareable) reference in a publication
  *
- * https://github.com/readium/architecture/tree/master/locators
+ * https://readium.org/architecture/models/locators/
  */
 @Parcelize
 data class Locator(
@@ -129,6 +129,15 @@ data class Locator(
             put("after", after)
         }
 
+        fun substring(range: IntRange): Text {
+            highlight ?: return this
+            return copy(
+                before = (before ?: "") + highlight.substring(0, range.first),
+                highlight = highlight.substring(range),
+                after = highlight.substring(range.last) + (after ?: "")
+            )
+        }
+
         companion object {
 
             fun fromJSON(json: JSONObject?) = Text(
@@ -136,9 +145,7 @@ data class Locator(
                 highlight = json?.optNullableString("highlight"),
                 after = json?.optNullableString("after")
             )
-
         }
-
     }
 
     /**

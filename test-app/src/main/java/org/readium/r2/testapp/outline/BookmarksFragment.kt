@@ -60,16 +60,15 @@ class BookmarksFragment : Fragment() {
 
         bookmarkAdapter = BookmarkAdapter(publication, onBookmarkDeleteRequested = { bookmark -> viewModel.deleteBookmark(bookmark.id!!) }, onBookmarkSelectedRequested = { bookmark -> onBookmarkSelected(bookmark) })
         binding.listView.apply {
-            setHasFixedSize(true)
             layoutManager = LinearLayoutManager(requireContext())
             adapter = bookmarkAdapter
         }
 
         val comparator: Comparator<Bookmark> = compareBy({ it.resourceIndex }, { it.locator.locations.progression })
-        viewModel.getBookmarks().observe(viewLifecycleOwner, {
-            val bookmarks = it.sortedWith(comparator).toMutableList()
+        viewModel.getBookmarks().observe(viewLifecycleOwner) {
+            val bookmarks = it.sortedWith(comparator)
             bookmarkAdapter.submitList(bookmarks)
-        })
+        }
     }
 
     private fun onBookmarkSelected(bookmark: Bookmark) {
@@ -82,10 +81,6 @@ class BookmarksFragment : Fragment() {
 
 class BookmarkAdapter(private val publication: Publication, private val onBookmarkDeleteRequested: (Bookmark) -> Unit, private val onBookmarkSelectedRequested: (Bookmark) -> Unit) :
         ListAdapter<Bookmark, BookmarkAdapter.ViewHolder>(BookmarksDiff()) {
-
-    init {
-        setHasStableIds(true)
-    }
 
     override fun onCreateViewHolder(
             parent: ViewGroup,

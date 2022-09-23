@@ -15,6 +15,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import timber.log.Timber
+import kotlin.reflect.KClass
 
 /**
  * Unwraps recursively the [JSONObject] to a [Map<String, Any>].
@@ -168,23 +169,14 @@ fun JSONObject.optPositiveDouble(name: String, fallback: Double = -1.0, remove: 
 }
 
 /**
- * Returns the value mapped by [name] if it exists, coercing it if necessary, or `null` if no such
- * mapping exists.
+ * Returns the value mapped by [name] if it exists, or `null` if no such
+ * mapping exists, it is not a string or it is empty.
  * If [remove] is true, then the mapping will be removed from the [JSONObject].
  */
 fun JSONObject.optNullableString(name: String, remove: Boolean = false): String? {
-    // optString() returns "null" if the key exists but contains the `null` value.
-    // https://stackoverflow.com/questions/18226288/json-jsonobject-optstring-returns-string-null
-    if (isNull(name)) {
-        return null
-    }
-
-    val string = optString(name)
-    val value = if (string != "") string else null
-    if (remove) {
-        this.remove(name)
-    }
-    return value
+    val value = if (remove) this.remove(name) else this.opt(name)
+    val string = value as? String
+    return string?.takeUnless(String::isEmpty)
 }
 
 /**
@@ -295,6 +287,21 @@ fun <T> JSONArray.mapNotNull(transform: (Any) -> T?): List<T> {
         val transformedValue = transform(get(i))
         if (transformedValue != null) {
             result.add(transformedValue)
+        }
+    }
+    return result
+}
+
+/**
+ * Returns a list containing only the elements of the original [JSONArray] that are instances of [klass].
+ */
+internal fun <T> JSONArray.filterIsInstance(klass: Class<T>): List<T> {
+    val result = mutableListOf<T>()
+    for (i in 0 until length()) {
+        val e = get(i)
+        if (klass.isInstance(e)) {
+            @Suppress("UNCHECKED_CAST")
+            result.add(e as T)
         }
     }
     return result

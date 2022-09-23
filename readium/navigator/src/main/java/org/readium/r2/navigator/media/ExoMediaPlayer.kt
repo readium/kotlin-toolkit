@@ -28,10 +28,7 @@ import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.audio.PublicationDataSource
@@ -41,7 +38,7 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.*
 import timber.log.Timber
 import java.net.UnknownHostException
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 /**
@@ -76,9 +73,9 @@ class ExoMediaPlayer(
         factory
     }
 
-    private val player: ExoPlayer = SimpleExoPlayer.Builder(context)
-        .setSeekBackIncrementMs(Duration.seconds(30).inWholeMilliseconds)
-        .setSeekForwardIncrementMs(Duration.seconds(30).inWholeMilliseconds)
+    private val player: ExoPlayer = ExoPlayer.Builder(context)
+        .setSeekBackIncrementMs(30.seconds.inWholeMilliseconds)
+        .setSeekForwardIncrementMs(30.seconds.inWholeMilliseconds)
         .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
         .setAudioAttributes(AudioAttributes.Builder()
             .setContentType(C.CONTENT_TYPE_MUSIC)
@@ -139,12 +136,19 @@ class ExoMediaPlayer(
     }
 
     override fun onDestroy() {
-        cancel()
+        // We destroy the player asynchronously, as [onDestroy] might be called synchronously from
+        // [MediaSessionConnector.onStop]. In which case, resetting the [MediaSessionConnector.player]
+        // property crashes the app.
+        destroy.start()
+    }
+
+    private var destroy = async(start = CoroutineStart.LAZY) {
         mediaSessionConnector.setPlayer(null)
         notificationManager.setPlayer(null)
         player.stop()
         player.clearMediaItems()
         player.release()
+        cancel()
     }
 
     private fun prepareTracklist() {
@@ -158,14 +162,14 @@ class ExoMediaPlayer(
         val readingOrder = publication.readingOrder
         val index = readingOrder.indexOfFirstWithHref(locator.href) ?: 0
 
-        val duration = readingOrder[index].duration?.let { Duration.seconds(it) }
+        val duration = readingOrder[index].duration?.seconds
         val time = locator.locations.timeWithDuration(duration)
         player.seekTo(index, time?.inWholeMilliseconds ?: 0)
     }
 
     private inner class PlayerListener : Player.Listener {
 
-        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+        override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState == Player.STATE_IDLE) {
                 listener?.onPlayerStopped()
             }

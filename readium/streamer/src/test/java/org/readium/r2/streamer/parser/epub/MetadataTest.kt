@@ -12,6 +12,7 @@ package org.readium.r2.streamer.parser.epub
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.entry
 import org.joda.time.DateTime
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.*
@@ -19,7 +20,6 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.robolectric.RobolectricTestRunner
-import org.junit.Assert.assertNotNull
 import org.readium.r2.shared.publication.Link as SharedLink
 
 @RunWith(RobolectricTestRunner::class)
@@ -367,6 +367,16 @@ class MetadataMiscTest {
             "http://my.url/#property0"
         )
     }
+
+    @Test
+    // See https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#multiple-language-items
+    fun `Languages are ordered to match the reading progression`() {
+        assertThat(parsePackageDocument("package/languages-order.opf").metadata.languages)
+            .isEqualTo(listOf("ar", "en"))
+
+        assertThat(parsePackageDocument("package/languages-order-nomatch.opf").metadata.languages)
+            .isEqualTo(listOf("en", "fr"))
+    }
 }
 
 @RunWith(RobolectricTestRunner::class)
@@ -382,7 +392,7 @@ class CollectionTest {
     }
 
     @Test
-    fun `Collections with unknown type are put into belongsToCollections (epub3 only`() {
+    fun `Collections with unknown type are put into belongsToCollections (epub3 only)`() {
         assertThat(epub3Metadata.belongsToCollections).contains(
             Collection(localizedName = LocalizedString.fromStrings(mapOf("en" to "Collection A")))
         )
@@ -408,6 +418,62 @@ class CollectionTest {
         assertThat(epub2Metadata.belongsToSeries).contains(expected)
         assertThat(epub3Metadata.belongsToSeries).contains(expected)
     }
+}
 
+@RunWith(RobolectricTestRunner::class)
+class AccessibilityTest {
+    private val epub2Metadata = parsePackageDocument("package/accessibility-epub2.opf").metadata
+    private val epub3Metadata = parsePackageDocument("package/accessibility-epub3.opf").metadata
 
+    @Test fun `summary is rightly parsed`() {
+        val expected = "The publication contains structural and page navigation."
+        assertThat(epub2Metadata.accessibility?.summary).isEqualTo(expected)
+    }
+
+    @Test fun `conformsTo contains WCAG profiles and only them`() {
+        assertThat(epub2Metadata.accessibility?.conformsTo).containsExactlyInAnyOrder(Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A)
+        assertThat(epub3Metadata.accessibility?.conformsTo).containsExactlyInAnyOrder(Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A)
+    }
+
+    @Test fun `certification is rightly parsed`() {
+        val expectedCertification = Accessibility.Certification(
+            certifiedBy = "Accessibility Testers Group",
+            credential = "DAISY OK",
+            report = "https://example.com/a11y-report/"
+        )
+        assertThat(epub2Metadata.accessibility?.certification).isEqualTo(expectedCertification)
+        assertThat(epub3Metadata.accessibility?.certification).isEqualTo(expectedCertification)
+    }
+
+    @Test fun `features are rightly parsed`() {
+        assertThat(epub2Metadata.accessibility?.features)
+            .containsExactlyInAnyOrder(Accessibility.Feature.ALTERNATIVE_TEXT, Accessibility.Feature.STRUCTURAL_NAVIGATION)
+    }
+
+    @Test fun `hazards are rightly parsed`() {
+        assertThat(epub2Metadata.accessibility?.hazards)
+            .containsExactlyInAnyOrder(Accessibility.Hazard.MOTION_SIMULATION, Accessibility.Hazard.NO_SOUND_HAZARD)
+    }
+
+    @Test fun `accessModes are rightly parsed`() {
+        assertThat(epub2Metadata.accessibility?.accessModes)
+            .containsExactlyInAnyOrder(Accessibility.AccessMode.VISUAL, Accessibility.AccessMode.TEXTUAL)
+    }
+
+    @Test fun `accessModesSufficient are rightly parsed`() {
+        assertThat(epub2Metadata.accessibility?.accessModesSufficient)
+            .containsExactlyInAnyOrder(
+                setOf(Accessibility.PrimaryAccessMode.VISUAL, Accessibility.PrimaryAccessMode.TEXTUAL),
+                setOf(Accessibility.PrimaryAccessMode.TEXTUAL)
+            )
+    }
+
+    @Test fun `non-accessibility conformsTo end up in otherMetadata`() {
+        assertThat(epub2Metadata.otherMetadata).contains(
+            entry(
+                Vocabularies.DCTERMS + "conformsTo",
+                "any profile"
+            )
+        )
+    }
 }

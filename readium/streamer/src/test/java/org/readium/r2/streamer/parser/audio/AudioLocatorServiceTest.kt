@@ -7,10 +7,11 @@
 package org.readium.r2.streamer.parser.audio
 
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
-import org.junit.Assert.*
 
 class AudioLocatorServiceTest {
 

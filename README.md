@@ -9,8 +9,11 @@ This toolkit is a modular project, which follows the [Readium Architecture](http
 * [`navigator`](readium/navigator) – Plain `Fragment` and `Activity` classes rendering publications
 * [`opds`](readium/opds) – Parsers for OPDS catalog feeds
 * [`lcp`](readium/lcp) – Service and models for [Readium LCP](https://www.edrlab.org/readium-lcp/)
+* [`adapters`](readium/adapters) – Adapters to use third-party libraries with Readium.
+  * [`adapters/pdfium`](readium/adapters/pdfium) – Parse and render PDFs using the open source library [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid).
+  * [`adapters/pspdfkit`](readium/adapters/pspdfkit) – Parse and render PDFs using the commercial library [PSPDFKit](https://pspdfkit.com/).
 
-A [Test App](test-app) demonstrates how to integrate the Readium Kotlin toolkit in your own reading app
+A [Test App](test-app) demonstrates how to integrate the Readium Kotlin toolkit in your own reading app.
 
 ## Using Readium
 
@@ -22,9 +25,9 @@ Readium modules are distributed through [JitPack](https://jitpack.io/#readium/ko
 
 Make sure that you have the `$readium_version` property set in your root `build.gradle` and add the JitPack repository.
 
-```gradle
+```groovy
 buildscript {
-    ext.readium_version = '2.1.1'
+    ext.readium_version = '2.2.0'
 }
 
 allprojects {
@@ -36,7 +39,7 @@ allprojects {
 
 Then, add the dependencies to the Readium modules you need in your app's `build.gradle`.
 
-```gradle
+```groovy
 dependencies {
     implementation "com.github.readium.kotlin-toolkit:readium-shared:$readium_version"
     implementation "com.github.readium.kotlin-toolkit:readium-streamer:$readium_version"
@@ -56,17 +59,9 @@ First, add the repository as a Git submodule of your app repository, then checko
 git submodule add https://github.com/readium/kotlin-toolkit.git
 ```
 
-Next, declare the Kotlin version used in your root `build.gradle`.
-
-```gradle
-buildscript {
-    ext.kotlin_version = '1.5.31'
-}
-```
-
 Then, add the following to your project's `settings.gradle` file, altering the paths if needed. Keep only the modules you want to use.
 
-```gradle
+```groovy
 include ':readium:shared'
 project(':readium:shared').projectDir = file('kotlin-toolkit/readium/shared')
 
