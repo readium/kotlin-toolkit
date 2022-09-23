@@ -154,23 +154,23 @@ class LayoutResolverTest {
             LayoutResolver(metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("he"), readingProgression = RTL)).resolve()
         )
         assertEquals(
-            Layout(language = Language("ja"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = RTL),
+            Layout(language = Language("ja"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
             LayoutResolver(metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("ja"), readingProgression = RTL)).resolve()
         )
         assertEquals(
-            Layout(language = Language("ko"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = RTL),
+            Layout(language = Language("ko"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
             LayoutResolver(metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("ko"), readingProgression = RTL)).resolve()
         )
         assertEquals(
-            Layout(language = Language("zh"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = RTL),
+            Layout(language = Language("zh"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
             LayoutResolver(metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("zh"), readingProgression = RTL)).resolve()
         )
         assertEquals(
-            Layout(language = Language("zh-HK"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = RTL),
+            Layout(language = Language("zh-HK"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
             LayoutResolver(metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("zh-HK"), readingProgression = RTL)).resolve()
         )
         assertEquals(
-            Layout(language = Language("zh-Hans"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = RTL),
+            Layout(language = Language("zh-Hans"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
             LayoutResolver(metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("zh-Hans"), readingProgression = RTL),).resolve()
         )
         assertEquals(
@@ -360,7 +360,7 @@ class LayoutResolverTest {
             LayoutResolver(metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("en"))).resolve(preferences)
         )
         assertEquals(
-            Layout(language = Language("zh"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = RTL),
+            Layout(language = Language("zh"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
             LayoutResolver(metadata = Metadata(localizedTitle = fakeTitle, languages = listOf("zh"))).resolve(preferences)
         )
     }

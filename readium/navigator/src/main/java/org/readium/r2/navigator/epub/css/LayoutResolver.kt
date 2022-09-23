@@ -41,12 +41,9 @@ internal class LayoutResolver(
 
         // Compute language according to the following rule:
         // preference value > metadata value > default value > null
-        val language = when {
-            langPref != null -> langPref
-            metadataLanguage != null -> metadataLanguage
-            langDefault != null -> langDefault
-            else -> null
-        }
+        val language = langPref
+            ?: metadataLanguage
+            ?: langDefault
 
         // Compute readingProgression according to the following rule:
         // preference value > value inferred from language preference > metadata value
@@ -73,7 +70,7 @@ internal class LayoutResolver(
         // preference value > value computed from language > default value > false
         val verticalText = when {
             verticalPref != null -> verticalPref
-            language != null -> language.isCjk && language.isRtl && readingProgression == ReadingProgression.RTL
+            language != null -> language.isCjk && readingProgression == ReadingProgression.RTL
             verticalDefault != null -> verticalDefault
             else -> false
         }
