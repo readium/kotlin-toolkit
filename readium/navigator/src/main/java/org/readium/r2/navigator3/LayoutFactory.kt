@@ -26,7 +26,7 @@ internal class LayoutFactory(
         val spreads = computeSpreads(links, factories)
         val isVertical = false
         val reverseDirection = false
-        val isPaginated = true
+        val isPaginated = false
         val viewerScrollable = false
         val readingProgression = ReadingProgression.LTR
         return Layout(

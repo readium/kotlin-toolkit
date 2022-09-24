@@ -109,13 +109,16 @@ open class ReaderActivity : AppCompatActivity() {
         }
     }
 
+    @OptIn(ExperimentalMedia2::class)
     private fun createReaderFragment(readerData: ReaderInitData): BaseReaderFragment? {
-        val readerClass: Class<out Fragment>? = when (readerData.navigatorKind) {
-            NavigatorKind.EPUB -> EpubReaderFragment::class.java
-            NavigatorKind.PDF -> PdfReaderFragment::class.java
-            NavigatorKind.AUDIO -> AudioReaderFragment::class.java
-            NavigatorKind.IMAGE -> ImageReaderFragment::class.java
-            null -> null
+        val readerClass: Class<out Fragment>? = when {
+            readerData is ComposeVisualReaderInitData -> ComposeReaderFragment::class.java
+            readerData is MediaReaderInitData -> AudioReaderFragment::class.java
+            readerData.navigatorKind == NavigatorKind.EPUB -> EpubReaderFragment::class.java
+            readerData.navigatorKind == NavigatorKind.PDF -> PdfReaderFragment::class.java
+            readerData.navigatorKind == NavigatorKind.AUDIO -> AudioReaderFragment::class.java
+            readerData.navigatorKind == NavigatorKind.IMAGE -> ImageReaderFragment::class.java
+            else -> null
         }
 
         readerClass?.let { it ->

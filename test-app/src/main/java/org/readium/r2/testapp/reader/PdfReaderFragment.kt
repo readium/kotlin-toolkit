@@ -24,7 +24,7 @@ import org.readium.r2.testapp.R
 @OptIn(PdfSupport::class)
 class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener {
 
-    override lateinit var navigator: Navigator
+    override lateinit var navigator: VisualNavigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val readerData = model.readerInitData as VisualReaderInitData

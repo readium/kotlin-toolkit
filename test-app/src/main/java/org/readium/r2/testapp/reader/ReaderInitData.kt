@@ -8,6 +8,7 @@ package org.readium.r2.testapp.reader
 
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
+import org.readium.r2.navigator3.NavigatorState
 import org.readium.r2.shared.publication.*
 
 enum class NavigatorKind {
@@ -37,7 +38,14 @@ data class ComposeVisualReaderInitData(
     override val bookId: Long,
     override val publication: Publication,
     val navigatorState: NavigatorState
-) : ReaderInitData()
+) : ReaderInitData() {
+    override val navigatorKind: NavigatorKind? =  when {
+        publication.conformsTo(Publication.Profile.EPUB) -> NavigatorKind.EPUB
+        publication.conformsTo(Publication.Profile.PDF) -> NavigatorKind.PDF
+        publication.conformsTo(Publication.Profile.DIVINA) -> NavigatorKind.IMAGE
+        else -> null
+    }
+}
 
 @ExperimentalMedia2
 data class MediaReaderInitData(

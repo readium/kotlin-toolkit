@@ -36,7 +36,7 @@ import org.readium.r2.testapp.search.SearchFragment
 @OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
 class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listener {
 
-    override lateinit var navigator: Navigator
+    override lateinit var navigator: VisualNavigator
     private lateinit var navigatorFragment: EpubNavigatorFragment
 
     private lateinit var menuSearch: MenuItem

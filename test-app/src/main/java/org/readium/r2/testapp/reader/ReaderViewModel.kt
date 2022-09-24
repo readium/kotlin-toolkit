@@ -38,6 +38,7 @@ import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.createViewModelFactory
+import timber.log.Timber
 
 @OptIn(Search::class, ExperimentalDecorator::class, ExperimentalCoroutinesApi::class)
 class ReaderViewModel(

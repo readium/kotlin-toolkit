@@ -6,8 +6,6 @@
 
 import org.jetbrains.dokka.gradle.DokkaTaskPartial
 
-val composeVersion: String by extra { "1.1.1" }
-
 plugins {
     id("com.android.application") apply false
     id("com.android.library") apply false

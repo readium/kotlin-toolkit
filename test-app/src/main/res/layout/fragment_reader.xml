@@ -5,6 +5,11 @@
     android:layout_height="match_parent"
     >
 
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/compose_navigator"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_reader_container"
         android:layout_width="match_parent"

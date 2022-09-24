@@ -62,7 +62,7 @@ import kotlin.time.Duration.Companion.seconds
 @OptIn(ExperimentalDecorator::class)
 abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.Listener {
 
-    private var binding: FragmentReaderBinding by viewLifecycle()
+    protected var binding: FragmentReaderBinding by viewLifecycle()
 
     abstract override val navigator: VisualNavigator
 
@@ -82,8 +82,6 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        navigatorFragment = navigator as Fragment
 
         setupObservers()
 

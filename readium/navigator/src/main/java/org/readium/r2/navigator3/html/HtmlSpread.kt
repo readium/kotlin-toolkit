@@ -11,8 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.viewinterop.AndroidView
-import com.google.common.util.concurrent.MoreExecutors
-import org.readium.r2.navigator.extensions.withBaseUrl
+import org.readium.r2.navigator.audiobook.withBaseUrl
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import timber.log.Timber
