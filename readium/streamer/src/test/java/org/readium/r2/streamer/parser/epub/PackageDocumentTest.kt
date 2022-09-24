@@ -26,8 +26,8 @@ fun parsePackageDocument(path: String): Manifest {
     val pub = PackageDocument::class.java.getResourceAsStream(path)
         ?.let { XmlParser().parse(it) }
         ?.let { PackageDocument.parse(it, "OEBPS/content.opf") }
-        ?.let { PublicationFactory("fallback title", it) }
-        ?.create()
+        ?.let { ManifestAdapter("fallback title", it) }
+        ?.adapt()
     checkNotNull(pub)
     return pub
 }

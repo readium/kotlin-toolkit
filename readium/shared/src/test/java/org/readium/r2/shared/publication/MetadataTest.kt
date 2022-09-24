@@ -1,10 +1,7 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Mickaël Menu
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.shared.publication
@@ -43,8 +40,16 @@ class MetadataTest {
                     "en" to "Subtitle",
                     "fr" to "Sous-titre"
                 )),
+                accessibility = Accessibility(
+                    conformsTo = setOf(Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A),
+                    accessModes = setOf(Accessibility.AccessMode.TEXTUAL),
+                    accessModesSufficient = setOf(setOf(Accessibility.PrimaryAccessMode.TEXTUAL)),
+                    features = setOf(Accessibility.Feature.ARIA),
+                    hazards = setOf(Accessibility.Hazard.FLASHING)
+                ),
                 modified = "2001-01-01T12:36:27.000Z".iso8601ToDate(),
                 published = "2001-01-02T12:36:27.000Z".iso8601ToDate(),
+
                 languages = listOf("en", "fr"),
                 localizedSortAs = LocalizedString("sort key"),
                 subjects = listOf(Subject(name = "Science Fiction"), Subject(name = "Fantasy")),
@@ -90,6 +95,13 @@ class MetadataTest {
                 "subtitle": {"en": "Subtitle", "fr": "Sous-titre"},
                 "modified": "2001-01-01T12:36:27.000Z",
                 "published": "2001-01-02T12:36:27.000Z",
+                "accessibility": {
+                    "conformsTo": "http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a",
+                    "accessMode": ["textual"],
+                    "accessModeSufficient": ["textual"],
+                    "hazard": ["flashing"],
+                    "feature": ["ARIA"]
+                },
                 "language": ["en", "fr"],
                 "sortAs": "sort key",
                 "subject": ["Science Fiction", "Fantasy"],
@@ -193,6 +205,13 @@ class MetadataTest {
                 "subtitle": {"en": "Subtitle", "fr": "Sous-titre"},
                 "modified": "2001-01-01T12:36:27.000Z",
                 "published": "2001-01-02T12:36:27.000Z",
+                "accessibility": {
+                    "conformsTo": ["http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a"],
+                    "accessMode": ["textual"],
+                    "accessModeSufficient": [["textual"]],
+                    "hazard": ["flashing"],
+                    "feature": ["ARIA"]
+                },
                 "language": ["en", "fr"],
                 "sortAs": {"en": "sort key", "fr": "clé de tri"},
                 "subject": [
@@ -238,6 +257,13 @@ class MetadataTest {
                 )),
                 modified = "2001-01-01T12:36:27.000Z".iso8601ToDate(),
                 published = "2001-01-02T12:36:27.000Z".iso8601ToDate(),
+                accessibility = Accessibility(
+                    conformsTo = setOf(Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A),
+                    accessModes = setOf(Accessibility.AccessMode.TEXTUAL),
+                    accessModesSufficient = setOf(setOf(Accessibility.PrimaryAccessMode.TEXTUAL)),
+                    features = setOf(Accessibility.Feature.ARIA),
+                    hazards = setOf(Accessibility.Hazard.FLASHING)
+                ),
                 languages = listOf("en", "fr"),
                 localizedSortAs = LocalizedString.fromStrings(mapOf(
                     "en" to "sort key",
