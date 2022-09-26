@@ -86,6 +86,7 @@ All notable changes to this project will be documented in this file. Take a look
 * Prevent refreshing an already loaded EPUB resource when jumping to a `Locator` in it.
 * [#86](https://github.com/readium/kotlin-toolkit/issues/86) Fixed page swipes while selecting text in an EPUB resource.
 * The `onTap` event is not sent when an EPUB text selection is active anymore, to prevent showing the app bar while dismissing a selection.
+* [#76](https://github.com/readium/kotlin-toolkit/issues/76) Fixed EPUB fixed layout font size affected by device settings.
 
 
 ## [2.2.0]
