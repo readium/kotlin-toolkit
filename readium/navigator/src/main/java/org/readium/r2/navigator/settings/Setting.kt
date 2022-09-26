@@ -8,6 +8,10 @@
 
 package org.readium.r2.navigator.settings
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import org.readium.r2.shared.ExperimentalReadiumApi
 import java.text.NumberFormat
@@ -31,6 +35,13 @@ open class Setting<V>(
     private val validator: SettingValidator<V>,
     private val activator: SettingActivator
 ) : SettingValidator<V> by validator, SettingActivator by activator, SettingCoder<V> by coder {
+
+    @Parcelize
+    @Serializable
+    enum class ScrollAxis(val value: String) : Parcelable {
+        @SerialName("horizontal") HORIZONTAL("horizontal"),
+        @SerialName("vertical") VERTICAL("vertical");
+    }
 
     companion object {
         inline operator fun <reified V> invoke(

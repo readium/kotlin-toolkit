@@ -13,8 +13,6 @@ import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation
 
 /**
  * A [PdfDocumentFragment] renders a single PDF resource.
@@ -56,26 +54,13 @@ abstract class PdfDocumentFragment : Fragment() {
     abstract fun goToPageIndex(index: Int, animated: Boolean): Boolean
 
     /**
-     * Presentation settings for the PDF document.
-     *
-     * WARNING: This API will change when the Presentation API is finalized.
-     * See https://github.com/readium/architecture/pull/164
-     */
-    @ExperimentalReadiumApi
-    data class Settings(
-        val fit: Presentation.Fit? = null,
-        val overflow: Presentation.Overflow = Presentation.Overflow.DEFAULT,
-        val readingProgression: ReadingProgression = ReadingProgression.AUTO
-    )
-
-    /**
      * Current presentation settings for the PDF document.
      *
      * WARNING: This API will change when the Presentation API is finalized.
      * See https://github.com/readium/architecture/pull/164
      */
     @ExperimentalReadiumApi
-    abstract var settings: Settings
+    abstract var settings: PdfSettings
 }
 
 @PdfSupport
@@ -87,6 +72,6 @@ data class PdfDocumentFragmentInput(
     val publication: Publication,
     val link: Link,
     val initialPageIndex: Int,
-    val settings: PdfDocumentFragment.Settings,
+    val settings: PdfSettings,
     val listener: PdfDocumentFragment.Listener?
 )

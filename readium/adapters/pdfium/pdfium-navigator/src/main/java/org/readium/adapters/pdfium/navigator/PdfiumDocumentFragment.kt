@@ -17,6 +17,8 @@ import kotlinx.coroutines.launch
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
 import org.readium.r2.navigator.pdf.PdfDocumentFragmentFactory
+import org.readium.r2.navigator.pdf.PdfSettings
+import org.readium.r2.navigator.settings.Setting
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
@@ -32,7 +34,7 @@ class PdfiumDocumentFragment private constructor(
     private val publication: Publication,
     private val link: Link,
     private val initialPageIndex: Int,
-    settings: Settings,
+    settings: PdfSettings,
     private val appListener: Listener?,
     private val navigatorListener: PdfDocumentFragment.Listener?
 ) : PdfDocumentFragment() {
@@ -56,7 +58,7 @@ class PdfiumDocumentFragment private constructor(
             }
     }
 
-    override var settings: Settings = settings
+    override var settings: PdfSettings = settings
         set(value) {
             if (field == value) return
 
@@ -67,7 +69,10 @@ class PdfiumDocumentFragment private constructor(
 
     private lateinit var pdfView: PDFView
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    private var isReloading: Boolean = false
+    private var hasToReload: Int? = null
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
         PDFView(inflater.context, null)
             .also { pdfView = it }
 
@@ -77,9 +82,17 @@ class PdfiumDocumentFragment private constructor(
     }
 
     private fun reloadDocumentAtPage(pageIndex: Int) {
+        if (isReloading) {
+            hasToReload = pageIndex
+            return
+        }
+
+        isReloading = true
+
         val context = context?.applicationContext ?: return
 
         viewLifecycleOwner.lifecycleScope.launch {
+
             try {
                 val document = PdfiumDocumentFactory(context)
                     // PDFium crashes when reusing the same PdfDocument, so we must not cache it.
@@ -99,7 +112,7 @@ class PdfiumDocumentFragment private constructor(
                             pages(*((pageCount - 1) downTo 0).toList().toIntArray())
                         }
                     }
-                    .swipeHorizontal(settings.readingProgression.isHorizontal ?: false)
+                    .swipeHorizontal(settings.scrollAxis.value == Setting.ScrollAxis.HORIZONTAL)
                     .spacing(10)
                     // Customization of [PDFView] is done before setting the listeners,
                     // to avoid overriding them in reading apps, which would break the
@@ -107,11 +120,19 @@ class PdfiumDocumentFragment private constructor(
                     .apply { appListener?.onConfigurePdfView(this) }
                     .defaultPage(page)
                     .onRender { _, _, _ ->
-                        if (settings.fit == Presentation.Fit.WIDTH) {
+                        if (settings.fit.value == Presentation.Fit.WIDTH) {
                             pdfView.fitToWidth()
                             // Using `fitToWidth` often breaks the use of `defaultPage`, so we
                             // need to jump manually to the target page.
                             pdfView.jumpTo(page, false)
+                        }
+                    }
+                    .onLoad {
+                        val hasToReloadNow = hasToReload
+                        if (hasToReloadNow != null) {
+                            reloadDocumentAtPage(pageIndex)
+                        } else {
+                            isReloading = false
                         }
                     }
                     .onPageChange { index, _ ->
@@ -122,7 +143,6 @@ class PdfiumDocumentFragment private constructor(
                             ?: false
                     }
                     .load()
-
             } catch (e: Exception) {
                 val error = Resource.Exception.wrap(e)
                 Timber.e(error)
@@ -170,9 +190,9 @@ class PdfiumDocumentFragment private constructor(
 
     /**
      * Indicates whether the order of the [PDFView] pages is reversed to take into account
-     * right-to-left and bottom-to-top reading progressions.
+     * right-to-left reading progressions.
      */
     private val isPagesOrderReversed: Boolean get() =
-        settings.readingProgression == ReadingProgression.RTL ||
-            settings.readingProgression == ReadingProgression.BTT
+        settings.scrollAxis.value == Setting.ScrollAxis.HORIZONTAL &&
+            settings.readingProgression.value == ReadingProgression.RTL
 }

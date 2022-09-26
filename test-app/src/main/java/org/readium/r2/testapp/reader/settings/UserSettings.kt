@@ -23,10 +23,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import org.readium.r2.navigator.epub.EpubSettings
+import org.readium.r2.navigator.pdf.PdfSettings
 import org.readium.r2.navigator.settings.*
+import org.readium.r2.navigator.settings.Setting.ScrollAxis
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.Presentation.Spread
+import org.readium.r2.shared.publication.presentation.Presentation.Fit
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.ColorPicker
@@ -99,6 +103,21 @@ fun UserSettings(
                     language = settings.language,
                     readingProgression = settings.readingProgression,
                     spread = settings.spread,
+                    fit = null,
+                    scroll = null,
+                    scrollAxis = null
+                )
+
+            is PdfSettings ->
+                FixedLayoutUserSettings(
+                    preferences = preferences,
+                    edit = edit,
+                    language = null,
+                    readingProgression = settings.readingProgression,
+                    spread = null,
+                    scroll = settings.scroll,
+                    scrollAxis = settings.scrollAxis,
+                    fit = settings.fit
                 )
 
             is EpubSettings.Reflowable ->
@@ -141,8 +160,11 @@ private fun ColumnScope.FixedLayoutUserSettings(
     preferences: Preferences,
     edit: EditPreferences,
     spread: EnumSetting<Spread>? = null,
+    fit: EnumSetting<Fit>? = null,
     language: Setting<Language?>? = null,
     readingProgression: EnumSetting<ReadingProgression>? = null,
+    scroll: ToggleSetting? = null,
+    scrollAxis: EnumSetting<ScrollAxis>? = null
 ) {
     if (language != null || readingProgression != null) {
         fun reset() {
@@ -181,6 +203,19 @@ private fun ColumnScope.FixedLayoutUserSettings(
         Divider()
     }
 
+    if (scroll != null) {
+        SwitchItem(title = "Scroll", scroll, preferences, edit)
+    }
+
+    if (scrollAxis != null) {
+        ButtonGroupItem("Scroll axis", scrollAxis, preferences, edit) { value ->
+            when (value) {
+                ScrollAxis.HORIZONTAL-> "Horizontal"
+                ScrollAxis.VERTICAL -> "Vertical"
+            }
+        }
+    }
+
     if (spread != null) {
         ButtonGroupItem("Spread", spread, preferences, edit) { value ->
             when (value) {
@@ -188,6 +223,17 @@ private fun ColumnScope.FixedLayoutUserSettings(
                 Spread.BOTH -> "Both"
                 Spread.NONE -> "None"
                 Spread.LANDSCAPE -> "Landscape"
+            }
+        }
+    }
+
+    if (fit != null) {
+        ButtonGroupItem("Fit", fit, preferences, edit) { value ->
+            when (value) {
+                Presentation.Fit.CONTAIN-> "Contain"
+                Presentation.Fit.COVER -> "Cover"
+                Presentation.Fit.WIDTH -> "Width"
+                Presentation.Fit.HEIGHT -> "Height"
             }
         }
     }

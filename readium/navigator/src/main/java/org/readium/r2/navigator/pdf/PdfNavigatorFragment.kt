@@ -23,6 +23,8 @@ import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
+import org.readium.r2.navigator.settings.Configurable
+import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.PdfSupport
@@ -50,11 +52,19 @@ import timber.log.Timber
 class PdfNavigatorFragment private constructor(
     override val publication: Publication,
     initialLocator: Locator? = null,
-    private val initialSettings: PdfDocumentFragment.Settings,
-    private val defaultSettings: PdfDocumentFragment.Settings,
+    /**
+     * Initial set of setting preferences.
+     */
+    @ExperimentalReadiumApi
+    val preferences: Preferences = Preferences(),
+    /**
+     * Fallback preferences when missing.
+     */
+    @ExperimentalReadiumApi
+    val defaultPreferences: Preferences = Preferences(),
     private val listener: Listener?,
     private val documentFragmentFactory: PdfDocumentFragmentFactory
-) : Fragment(), VisualNavigator {
+) : Fragment(), VisualNavigator, Configurable<PdfSettings> {
 
     interface Listener : VisualNavigator.Listener {
 
@@ -85,7 +95,7 @@ class PdfNavigatorFragment private constructor(
         ): FragmentFactory = createFragmentFactory {
             PdfNavigatorFragment(
                 publication, initialLocator,
-                initialSettings = PdfDocumentFragment.Settings(), defaultSettings = PdfDocumentFragment.Settings(),
+                preferences = Preferences(), defaultPreferences = Preferences(),
                 listener, documentFragmentFactory
             )
         }
@@ -96,9 +106,8 @@ class PdfNavigatorFragment private constructor(
          * @param publication PDF publication to render in the navigator.
          * @param initialLocator The first location which should be visible when rendering the
          * publication. Can be used to restore the last reading location.
-         * @param settings User presentation settings.
-         * @param defaultSettings Presentation settings used as fallbacks when a user settings is
-         * missing or set to "auto".
+         * @param preferences Initial set of user preferences.
+         * @param defaultPreferences Fallback preferences when missing.
          * @param listener Optional listener to implement to observe events, such as user taps.
          * @param documentFragmentFactory Factory for a [PdfDocumentFragment], provided by third-
          * party PDF engine adapters.
@@ -107,14 +116,14 @@ class PdfNavigatorFragment private constructor(
         fun createFactory(
             publication: Publication,
             initialLocator: Locator? = null,
-            settings: PdfDocumentFragment.Settings,
-            defaultSettings: PdfDocumentFragment.Settings = PdfDocumentFragment.Settings(),
+            preferences: Preferences = Preferences(),
+            defaultPreferences: Preferences = Preferences(),
             listener: Listener? = null,
             documentFragmentFactory: PdfDocumentFragmentFactory,
         ): FragmentFactory = createFragmentFactory {
             PdfNavigatorFragment(
                 publication, initialLocator,
-                initialSettings = settings, defaultSettings = defaultSettings,
+                preferences, defaultPreferences,
                 listener, documentFragmentFactory
             )
         }
@@ -129,20 +138,21 @@ class PdfNavigatorFragment private constructor(
         ) { "[PdfNavigatorFragment] currently supports only publications with a single PDF for reading order" }
     }
 
-    /**
-     * Current user presentation settings.
-     */
-    var settings: PdfDocumentFragment.Settings
-        get() = viewModel.state.value.userSettings
-        set(value) { viewModel.setUserSettings(value) }
+    // Configurable
+
+    override val settings: StateFlow<PdfSettings> get() = viewModel.settings
+
+    override fun submitPreferences(preferences: Preferences) {
+        viewModel.submitPreferences(preferences)
+    }
 
     private val viewModel: PdfNavigatorViewModel by viewModels {
         PdfNavigatorViewModel.createFactory(
             requireActivity().application,
             publication,
             initialLocator,
-            settings = initialSettings,
-            defaultSettings = defaultSettings
+            preferences = preferences,
+            defaultPreferences = defaultPreferences
         )
     }
 
@@ -168,7 +178,7 @@ class PdfNavigatorFragment private constructor(
                 old.locator.href == new.locator.href
             }
             .map { state ->
-                createPdfDocumentFragment(state.locator, state.appliedSettings)
+                createPdfDocumentFragment(state.locator, settings.value)
             }
             .stateIn(viewLifecycleOwner.lifecycleScope, started = SharingStarted.Eagerly, null)
 
@@ -177,14 +187,14 @@ class PdfNavigatorFragment private constructor(
                 documentFragment
                     .filterNotNull()
                     .onEach { fragment ->
-                        childFragmentManager.commit {
+                        childFragmentManager.commitNow {
                             replace(R.id.readium_pdf_container, fragment, "readium_pdf_fragment")
                         }
                     }
                     .launchIn(this)
 
-                viewModel.state
-                    .map { it.appliedSettings }
+                viewModel.settings
+                    .map { it }
                     .distinctUntilChanged()
                     .onEach { settings ->
                         documentFragment.value?.settings = settings
@@ -194,7 +204,7 @@ class PdfNavigatorFragment private constructor(
         }
     }
 
-    private suspend fun createPdfDocumentFragment(locator: Locator, settings: PdfDocumentFragment.Settings): PdfDocumentFragment? {
+    private suspend fun createPdfDocumentFragment(locator: Locator, settings: PdfSettings): PdfDocumentFragment? {
         val link = publication.linkWithHref(locator.href) ?: return null
 
         return try {
@@ -228,7 +238,7 @@ class PdfNavigatorFragment private constructor(
     }
 
     override val readingProgression: ReadingProgression
-        get() = viewModel.state.value.appliedSettings.readingProgression
+        get() = viewModel.settings.value.readingProgression.value
 
     override val currentLocator: StateFlow<Locator>
         get() = viewModel.state
