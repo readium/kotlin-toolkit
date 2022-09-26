@@ -15,7 +15,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
 
 @ExperimentalReadiumApi
-data class ReadiumCss(
+internal data class ReadiumCss(
     val layout: Layout = Layout(language = null, Layout.Stylesheets.Default, ReadingProgression.LTR),
     val rsProperties: RsProperties = RsProperties(),
     val userProperties: UserProperties = UserProperties(),

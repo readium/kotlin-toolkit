@@ -312,12 +312,14 @@ class MetadataMiscTest {
     @Test
     fun `Unique identifier is rightly parsed`() {
         val expected = "urn:uuid:2"
-        assertThat(parsePackageDocument("package/identifier-unique.opf").metadata.identifier).isEqualTo(expected)
+        assertThat(parsePackageDocument("package/identifier-unique.opf").metadata.identifier)
+            .isEqualTo(expected)
     }
 
     @Test
     fun `Rendition properties are parsed`() {
-        val presentation = parsePackageDocument("package/presentation-metadata.opf").metadata.presentation
+        val presentation =
+            parsePackageDocument("package/presentation-metadata.opf").metadata.presentation
         assertThat(presentation.continuous).isEqualTo(false)
         assertThat(presentation.overflow).isEqualTo(Presentation.Overflow.SCROLLED)
         assertThat(presentation.spread).isEqualTo(Presentation.Spread.BOTH)
@@ -332,9 +334,12 @@ class MetadataMiscTest {
             type = "image/jpeg",
             rels = setOf("cover")
         )
-        assertThat(parsePackageDocument("package/cover-epub2.opf").resources.firstWithRel("cover")).isEqualTo(expected)
-        assertThat(parsePackageDocument("package/cover-epub3.opf").resources.firstWithRel("cover")).isEqualTo(expected)
-        assertThat(parsePackageDocument("package/cover-mix.opf").resources.firstWithRel("cover")).isEqualTo(expected)
+        assertThat(parsePackageDocument("package/cover-epub2.opf").resources.firstWithRel("cover"))
+            .isEqualTo(expected)
+        assertThat(parsePackageDocument("package/cover-epub3.opf").resources.firstWithRel("cover"))
+            .isEqualTo(expected)
+        assertThat(parsePackageDocument("package/cover-mix.opf").resources.firstWithRel("cover"))
+            .isEqualTo(expected)
     }
 
     @Test(timeout = PARSE_PUB_TIMEOUT)
@@ -348,7 +353,11 @@ class MetadataMiscTest {
         assertThat(otherMetadata).contains(
             entry(
                 Vocabularies.DCTERMS + "source",
-                listOf("Feedbooks", mapOf("@value" to "Web", "http://my.url/#scheme" to "http"), "Internet")
+                listOf(
+                    "Feedbooks",
+                    mapOf("@value" to "Web", "http://my.url/#scheme" to "http"),
+                    "Internet"
+                )
             ),
             entry(
                 "http://my.url/#property0", mapOf(
@@ -366,16 +375,6 @@ class MetadataMiscTest {
             "presentation",
             "http://my.url/#property0"
         )
-    }
-
-    @Test
-    // See https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#multiple-language-items
-    fun `Languages are ordered to match the reading progression`() {
-        assertThat(parsePackageDocument("package/languages-order.opf").metadata.languages)
-            .isEqualTo(listOf("ar", "en"))
-
-        assertThat(parsePackageDocument("package/languages-order-nomatch.opf").metadata.languages)
-            .isEqualTo(listOf("en", "fr"))
     }
 }
 
@@ -449,9 +448,6 @@ class AccessibilityTest {
     @Test fun `features are rightly parsed`() {
         assertThat(epub2Metadata.accessibility?.features)
             .containsExactlyInAnyOrder(Accessibility.Feature.ALTERNATIVE_TEXT, Accessibility.Feature.STRUCTURAL_NAVIGATION)
-        assertThat(epub3Metadata.accessibility?.features)
-            .containsExactlyInAnyOrder(Accessibility.Feature.ALTERNATIVE_TEXT, Accessibility.Feature.STRUCTURAL_NAVIGATION)
-
     }
 
     @Test fun `hazards are rightly parsed`() {
