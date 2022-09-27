@@ -16,8 +16,6 @@ import com.github.barteksc.pdfviewer.PDFView
 import kotlinx.coroutines.launch
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
-import org.readium.r2.navigator.pdf.PdfDocumentFragmentFactory
-import org.readium.r2.navigator.pdf.PdfSettings
 import org.readium.r2.navigator.settings.Setting
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.PdfSupport
@@ -30,35 +28,21 @@ import timber.log.Timber
 
 @OptIn(ExperimentalReadiumApi::class)
 @PdfSupport
-class PdfiumDocumentFragment private constructor(
+class PdfiumDocumentFragment internal constructor(
     private val publication: Publication,
     private val link: Link,
     private val initialPageIndex: Int,
-    settings: PdfSettings,
+    settings: PdfiumSettings,
     private val appListener: Listener?,
     private val navigatorListener: PdfDocumentFragment.Listener?
-) : PdfDocumentFragment() {
+) : PdfDocumentFragment<PdfiumSettings>() {
 
     interface Listener {
         /** Called when configuring [PDFView]. */
         fun onConfigurePdfView(configurator: PDFView.Configurator) {}
     }
 
-    companion object {
-        fun createFactory(listener: Listener? = null): PdfDocumentFragmentFactory =
-            { input ->
-                PdfiumDocumentFragment(
-                    publication = input.publication,
-                    link = input.link,
-                    initialPageIndex = input.initialPageIndex,
-                    settings = input.settings,
-                    appListener = listener,
-                    navigatorListener = input.listener
-                )
-            }
-    }
-
-    override var settings: PdfSettings = settings
+    override var settings: PdfiumSettings = settings
         set(value) {
             if (field == value) return
 

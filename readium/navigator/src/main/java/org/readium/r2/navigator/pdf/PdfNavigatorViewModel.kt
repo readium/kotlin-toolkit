@@ -11,6 +11,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import org.readium.r2.navigator.settings.Configurable
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -26,7 +27,8 @@ internal class PdfNavigatorViewModel(
     private val publication: Publication,
     initialLocator: Locator,
     preferences: Preferences,
-    private val defaultPreferences: Preferences
+    private val defaultPreferences: Preferences,
+    defaultSettings: PdfSettings
 ) : AndroidViewModel(application) {
 
     data class State(
@@ -42,14 +44,14 @@ internal class PdfNavigatorViewModel(
     val state: StateFlow<State> = _state.asStateFlow()
 
     private val _settings: MutableStateFlow<PdfSettings> = MutableStateFlow(
-        PdfSettings().update(
+        defaultSettings.update(
             metadata = publication.metadata,
             defaults = defaultPreferences,
             preferences = preferences
         )
     )
 
-    val settings: StateFlow<PdfSettings> = _settings.asStateFlow()
+    val settings: StateFlow<Configurable.Settings> = _settings.asStateFlow()
 
     fun submitPreferences(preferences: Preferences) = viewModelScope.launch {
         val oldSettings = settings.value
@@ -86,7 +88,8 @@ internal class PdfNavigatorViewModel(
             publication: Publication,
             initialLocator: Locator?,
             preferences: Preferences,
-            defaultPreferences: Preferences
+            defaultPreferences: Preferences,
+            defaultSettings: PdfSettings
         ) = createViewModelFactory {
             PdfNavigatorViewModel(
                 application = application,
@@ -94,7 +97,8 @@ internal class PdfNavigatorViewModel(
                 initialLocator = initialLocator
                     ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first())),
                 preferences = preferences,
-                defaultPreferences = defaultPreferences
+                defaultPreferences = defaultPreferences,
+                defaultSettings = defaultSettings
             )
         }
     }

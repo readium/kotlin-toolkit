@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.pdf
+package org.readium.adapters.pdfium.navigator
 
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.settings.Setting
@@ -15,7 +15,7 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation
 
 @OptIn(ExperimentalReadiumApi::class)
-internal class PdfLayoutResolver(
+internal class PdfiumLayoutResolver(
     private val metadata: Metadata = Metadata(localizedTitle = LocalizedString("fake title")),
     private val defaults: Preferences = Preferences()
 ) {
@@ -49,13 +49,13 @@ internal class PdfLayoutResolver(
 
     fun resolve(preferences: Preferences = Preferences()): Layout {
         val readingProgressionSetting: Setting<ReadingProgression> =
-            PdfSettings.readingProgressionSetting()
+            PdfiumSettings.readingProgressionSetting()
         val scrollSetting: Setting<Boolean> =
-            PdfSettings.scrollSetting()
+            PdfiumSettings.scrollSetting()
         val scrollAxisSetting: Setting<Setting.ScrollAxis> =
-            PdfSettings.scrollAxisSetting()
+            PdfiumSettings.scrollAxisSetting()
         val fitSetting: Setting<Presentation.Fit> =
-            PdfSettings.fitSetting()
+            PdfiumSettings.fitSetting()
 
         val rpDefault: ReadingProgression? =
             readingProgressionSetting.firstValidValue(defaults)

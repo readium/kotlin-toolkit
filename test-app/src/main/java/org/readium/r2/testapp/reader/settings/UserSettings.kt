@@ -23,12 +23,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import org.readium.r2.navigator.epub.EpubSettings
-import org.readium.r2.navigator.pdf.PdfSettings
+import org.readium.adapters.pdfium.navigator.PdfiumSettings
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.settings.Setting.ScrollAxis
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.Presentation.Spread
 import org.readium.r2.shared.publication.presentation.Presentation.Fit
 import org.readium.r2.shared.util.Language
@@ -61,6 +61,7 @@ fun UserSettings(model: UserSettingsViewModel) {
  * Stateless user settings component displaying the given [settings] and setting user [preferences],
  * using the [edit] closure.
  */
+@OptIn(PdfSupport::class)
 @Composable
 fun UserSettings(
     settings: Configurable.Settings,
@@ -108,7 +109,7 @@ fun UserSettings(
                     scrollAxis = null
                 )
 
-            is PdfSettings ->
+            is PdfiumSettings ->
                 FixedLayoutUserSettings(
                     preferences = preferences,
                     edit = edit,
@@ -230,10 +231,10 @@ private fun ColumnScope.FixedLayoutUserSettings(
     if (fit != null) {
         ButtonGroupItem("Fit", fit, preferences, edit) { value ->
             when (value) {
-                Presentation.Fit.CONTAIN-> "Contain"
-                Presentation.Fit.COVER -> "Cover"
-                Presentation.Fit.WIDTH -> "Width"
-                Presentation.Fit.HEIGHT -> "Height"
+                Fit.CONTAIN-> "Contain"
+                Fit.COVER -> "Cover"
+                Fit.WIDTH -> "Width"
+                Fit.HEIGHT -> "Height"
             }
         }
     }

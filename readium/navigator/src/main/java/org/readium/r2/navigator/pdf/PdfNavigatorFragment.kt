@@ -1,10 +1,7 @@
 /*
- * Module: r2-navigator-kotlin
- * Developers: Mickaël Menu
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.navigator.pdf
@@ -49,7 +46,7 @@ import timber.log.Timber
  */
 @OptIn(ExperimentalReadiumApi::class)
 @PdfSupport
-class PdfNavigatorFragment private constructor(
+class PdfNavigatorFragment<S: PdfSettings>  private constructor(
     override val publication: Publication,
     initialLocator: Locator? = null,
     /**
@@ -63,8 +60,8 @@ class PdfNavigatorFragment private constructor(
     @ExperimentalReadiumApi
     val defaultPreferences: Preferences = Preferences(),
     private val listener: Listener?,
-    private val documentFragmentFactory: PdfDocumentFragmentFactory
-) : Fragment(), VisualNavigator, Configurable<PdfSettings> {
+    private val pdfEngineProvider: PdfEngineProvider<S>
+) : Fragment(), VisualNavigator, Configurable<S> {
 
     interface Listener : VisualNavigator.Listener {
 
@@ -87,16 +84,16 @@ class PdfNavigatorFragment private constructor(
          * party PDF engine adapters.
          */
         @OptIn(ExperimentalReadiumApi::class)
-        fun createFactory(
+        fun <S: PdfSettings> createFactory(
             publication: Publication,
             initialLocator: Locator? = null,
             listener: Listener? = null,
-            documentFragmentFactory: PdfDocumentFragmentFactory,
+            pdfEngineProvider: PdfEngineProvider<S>,
         ): FragmentFactory = createFragmentFactory {
-            PdfNavigatorFragment(
+            PdfNavigatorFragment<S>(
                 publication, initialLocator,
                 preferences = Preferences(), defaultPreferences = Preferences(),
-                listener, documentFragmentFactory
+                listener, pdfEngineProvider
             )
         }
 
@@ -113,18 +110,18 @@ class PdfNavigatorFragment private constructor(
          * party PDF engine adapters.
          */
         @ExperimentalReadiumApi
-        fun createFactory(
+        fun <S: PdfSettings> createFactory(
             publication: Publication,
             initialLocator: Locator? = null,
             preferences: Preferences = Preferences(),
             defaultPreferences: Preferences = Preferences(),
             listener: Listener? = null,
-            documentFragmentFactory: PdfDocumentFragmentFactory,
+            pdfEngineProvider: PdfEngineProvider<S>,
         ): FragmentFactory = createFragmentFactory {
             PdfNavigatorFragment(
                 publication, initialLocator,
                 preferences, defaultPreferences,
-                listener, documentFragmentFactory
+                listener, pdfEngineProvider
             )
         }
     }
@@ -140,7 +137,8 @@ class PdfNavigatorFragment private constructor(
 
     // Configurable
 
-    override val settings: StateFlow<PdfSettings> get() = viewModel.settings
+    @Suppress("Unchecked_cast")
+    override val settings: StateFlow<S> get() = viewModel.settings as StateFlow<S>
 
     override fun submitPreferences(preferences: Preferences) {
         viewModel.submitPreferences(preferences)
@@ -152,11 +150,12 @@ class PdfNavigatorFragment private constructor(
             publication,
             initialLocator,
             preferences = preferences,
-            defaultPreferences = defaultPreferences
+            defaultPreferences = defaultPreferences,
+            defaultSettings = pdfEngineProvider.createDefaultSettings()
         )
     }
 
-    private lateinit var documentFragment: StateFlow<PdfDocumentFragment?>
+    private lateinit var documentFragment: StateFlow<PdfDocumentFragment<S>?>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Clears the savedInstanceState to prevent the child fragment manager from restoring the
@@ -186,14 +185,14 @@ class PdfNavigatorFragment private constructor(
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 documentFragment
                     .filterNotNull()
-                    .onEach { fragment ->
+                    .onEach { fragment: PdfDocumentFragment<S> ->
                         childFragmentManager.commitNow {
                             replace(R.id.readium_pdf_container, fragment, "readium_pdf_fragment")
                         }
                     }
                     .launchIn(this)
 
-                viewModel.settings
+                settings
                     .map { it }
                     .distinctUntilChanged()
                     .onEach { settings ->
@@ -204,12 +203,12 @@ class PdfNavigatorFragment private constructor(
         }
     }
 
-    private suspend fun createPdfDocumentFragment(locator: Locator, settings: PdfSettings): PdfDocumentFragment? {
+    private suspend fun createPdfDocumentFragment(locator: Locator, settings: S): PdfDocumentFragment<S>? {
         val link = publication.linkWithHref(locator.href) ?: return null
 
         return try {
             val pageIndex = (locator.locations.page ?: 1) - 1
-            documentFragmentFactory(PdfDocumentFragmentInput(
+            pdfEngineProvider.createDocumentFragment(PdfDocumentFragmentInput(
                 publication = publication,
                 link = link,
                 initialPageIndex = pageIndex,
@@ -238,7 +237,7 @@ class PdfNavigatorFragment private constructor(
     }
 
     override val readingProgression: ReadingProgression
-        get() = viewModel.settings.value.readingProgression.value
+        get() = settings.value.readingProgressionValue
 
     override val currentLocator: StateFlow<Locator>
         get() = viewModel.state

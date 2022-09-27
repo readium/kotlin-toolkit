@@ -8,19 +8,37 @@ package org.readium.r2.navigator.pdf
 
 import android.graphics.PointF
 import androidx.fragment.app.Fragment
+import org.readium.r2.navigator.settings.Configurable
+import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.ReadingProgression
 
-/**
- * A [PdfDocumentFragment] renders a single PDF resource.
- *
- * To be implemented by third-party PDF engines which can be used with [PdfNavigatorFragment].
- */
+
+/** A [PdfEngineProvider] renders a single PDF resource.
+*
+* To be implemented by third-party PDF engines which can be used with [PdfNavigatorFragment].
+*/
+@ExperimentalReadiumApi
 @PdfSupport
-abstract class PdfDocumentFragment : Fragment() {
+interface PdfEngineProvider<S: Configurable.Settings> {
+
+    suspend fun createDocumentFragment(input: PdfDocumentFragmentInput<S>): PdfDocumentFragment<S>
+
+    fun createDefaultSettings(): S
+}
+
+@ExperimentalReadiumApi
+@PdfSupport
+typealias PdfDocumentFragmentFactory<S> = suspend (PdfDocumentFragmentInput<S>) -> PdfDocumentFragment<S>
+
+@ExperimentalReadiumApi
+@PdfSupport
+abstract class PdfDocumentFragment<S: Configurable.Settings> : Fragment() {
 
     interface Listener {
         /**
@@ -50,7 +68,6 @@ abstract class PdfDocumentFragment : Fragment() {
      * @param animated Indicates if the transition should be animated.
      * @return Whether the jump is valid.
      */
-    @ExperimentalReadiumApi
     abstract fun goToPageIndex(index: Int, animated: Boolean): Boolean
 
     /**
@@ -59,19 +76,24 @@ abstract class PdfDocumentFragment : Fragment() {
      * WARNING: This API will change when the Presentation API is finalized.
      * See https://github.com/readium/architecture/pull/164
      */
-    @ExperimentalReadiumApi
-    abstract var settings: PdfSettings
+    abstract var settings: S
 }
-
-@PdfSupport
-typealias PdfDocumentFragmentFactory = suspend (PdfDocumentFragmentInput) -> PdfDocumentFragment
 
 @OptIn(ExperimentalReadiumApi::class)
 @PdfSupport
-data class PdfDocumentFragmentInput(
+data class PdfDocumentFragmentInput<S: Configurable.Settings>(
     val publication: Publication,
     val link: Link,
     val initialPageIndex: Int,
-    val settings: PdfSettings,
+    val settings: S,
     val listener: PdfDocumentFragment.Listener?
 )
+
+@ExperimentalReadiumApi
+@PdfSupport
+interface PdfSettings : Configurable.Settings {
+
+    val readingProgressionValue: ReadingProgression
+
+    fun update(metadata: Metadata, preferences: Preferences, defaults: Preferences): PdfSettings
+}
