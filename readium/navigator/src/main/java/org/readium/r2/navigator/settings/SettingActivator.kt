@@ -39,20 +39,22 @@ object NullSettingActivator : SettingActivator {
 }
 
 /**
- * [SettingActivator] which checks that the setting with given [key] is [value].
+ * [SettingActivator] which checks that the setting with given [key] is [value] and sets it up in
+ * [Preferences] when it is asked to.
  */
 @ExperimentalReadiumApi
-class RequiresPreferenceSettingActivator<V>(
+class ForcePreferenceSettingActivator<V>(
     val key: String,
     val value: V,
+    val fallbackValue: V,
     val coder: SettingCoder<V>
 ) : SettingActivator {
     companion object {
-        operator fun <V> invoke(setting: Setting<V>, value: V): RequiresPreferenceSettingActivator<V> =
-            RequiresPreferenceSettingActivator(setting.key, value, setting.coder)
+        operator fun <V> invoke(setting: Setting<V>, value: V, fallbackValue: V): ForcePreferenceSettingActivator<V> =
+            ForcePreferenceSettingActivator(setting.key, value, fallbackValue, setting.coder)
 
-        inline operator fun <reified V> invoke(key: String, value: V): RequiresPreferenceSettingActivator<V> =
-            RequiresPreferenceSettingActivator(key, value, coder = SerializerSettingCoder())
+        inline operator fun <reified V> invoke(key: String, value: V, fallbackValue: V): ForcePreferenceSettingActivator<V> =
+            ForcePreferenceSettingActivator(key, value, fallbackValue, coder = SerializerSettingCoder())
     }
 
     override fun isActiveWithPreferences(preferences: Preferences): Boolean =
@@ -62,6 +64,33 @@ class RequiresPreferenceSettingActivator<V>(
         preferences[key, coder] = value
     }
 }
+
+/**
+ * [SettingActivator] which checks that the setting with given [key] is [value].
+ */
+@ExperimentalReadiumApi
+class RequirePreferenceSettingActivator<V>(
+    val key: String,
+    val value: V,
+    val fallbackValue: V,
+    val coder: SettingCoder<V>
+) : SettingActivator {
+    companion object {
+        operator fun <V> invoke(setting: Setting<V>, value: V, fallbackValue: V): ForcePreferenceSettingActivator<V> =
+            ForcePreferenceSettingActivator(setting.key, value, fallbackValue, setting.coder)
+
+        inline operator fun <reified V> invoke(key: String, value: V, fallbackValue: V): ForcePreferenceSettingActivator<V> =
+            ForcePreferenceSettingActivator(key, value, fallbackValue, coder = SerializerSettingCoder())
+    }
+
+    override fun isActiveWithPreferences(preferences: Preferences): Boolean =
+        preferences[key, coder] == value
+
+    override fun activateInPreferences(preferences: MutablePreferences) {
+        // Nothing
+    }
+}
+
 
 /**
  * A [SettingActivator] combining two activators.

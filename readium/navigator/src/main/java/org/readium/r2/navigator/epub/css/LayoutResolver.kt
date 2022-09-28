@@ -8,7 +8,6 @@ package org.readium.r2.navigator.epub.css
 
 import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.Preferences
-import org.readium.r2.navigator.settings.Setting
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
@@ -19,24 +18,19 @@ internal class LayoutResolver(
     private val metadata: Metadata,
     defaults: Preferences = Preferences(),
 ) {
-    private val languageSetting: Setting<Language?> =
-        EpubSettings.Reflowable.languageSetting()
-    private val readingProgressionSetting: Setting<ReadingProgression> =
-        EpubSettings.Reflowable.readingProgressionSetting()
-    private val verticalTextSetting: Setting<Boolean> =
-        EpubSettings.Reflowable.verticalTextSetting()
-
+    private val defaultSettings: EpubSettings.Reflowable =
+        EpubSettings.Reflowable()
     private val rpDefault: ReadingProgression? =
-        readingProgressionSetting.firstValidValue(defaults)
+        defaultSettings.readingProgression.firstValidValue(defaults)
     private val langDefault: Language? =
-        languageSetting.firstValidValue(defaults)
+        defaultSettings.language.firstValidValue(defaults)
     private val verticalDefault: Boolean? =
-        verticalTextSetting.firstValidValue(defaults)
+        defaultSettings.verticalText.firstValidValue(defaults)
 
     fun resolve(preferences: Preferences = Preferences()): Layout {
-        val rpPref = readingProgressionSetting.firstValidValue(preferences)
-        val langPref = languageSetting.firstValidValue(preferences)
-        val verticalPref = verticalTextSetting.firstValidValue(preferences)
+        val rpPref = defaultSettings.readingProgression.firstValidValue(preferences)
+        val langPref = defaultSettings.language.firstValidValue(preferences)
+        val verticalPref = defaultSettings.verticalText.firstValidValue(preferences)
         val metadataLanguage = metadata.language
 
         // Compute language according to the following rule:

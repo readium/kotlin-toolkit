@@ -81,19 +81,13 @@ internal class EpubNavigatorViewModel(
     val events: Flow<Event> get() = _events.receiveAsFlow()
 
     private val _settings = MutableStateFlow<EpubSettings>(
-        when (publication.metadata.presentation.layout) {
-            EpubLayout.FIXED -> EpubSettings.FixedLayout().update(
-                preferences = config.preferences,
-                defaults = config.defaultPreferences
-            )
-            EpubLayout.REFLOWABLE, null -> EpubSettings.Reflowable().update(
-                metadata = publication.metadata,
-                fontFamilies = config.fontFamilies.map { it.fontFamily },
-                namedColors = emptyMap(),
-                preferences = config.preferences,
-                defaults = config.defaultPreferences
-            )
-        }
+        EpubSettingsFactory(
+            publication.metadata,
+            config.fontFamilies.map { it.fontFamily },
+            emptyMap(),
+            config.preferences,
+            config.defaultPreferences
+        ).createSettings()
     )
     val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
 
@@ -215,20 +209,13 @@ internal class EpubNavigatorViewModel(
         val oldReadingProgression = readingProgression
 
         val newSettings = _settings.updateAndGet { settings ->
-            when (settings) {
-                is EpubSettings.FixedLayout -> settings.update(
-                    preferences = preferences,
-                    defaults = config.defaultPreferences
-                )
-
-                is EpubSettings.Reflowable -> settings.update(
-                    metadata = publication.metadata,
-                    fontFamilies = config.fontFamilies.map { it.fontFamily },
-                    namedColors = emptyMap(),
-                    preferences = preferences,
-                    defaults = config.defaultPreferences
-                )
-            }
+            EpubSettingsFactory(
+                publication.metadata,
+                config.fontFamilies.map { it.fontFamily },
+                emptyMap(),
+                config.preferences,
+                config.defaultPreferences
+            ).updateSettings(settings)
         }
         val newReflowSettings = (newSettings as? EpubSettings.Reflowable)
         val newFixedSettings = (newSettings as? EpubSettings.FixedLayout)
