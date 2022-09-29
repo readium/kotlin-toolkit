@@ -46,7 +46,6 @@ import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
@@ -96,11 +95,8 @@ class EpubNavigatorFragment private constructor(
         @ExperimentalReadiumApi
         val preferences: Preferences = Preferences(),
 
-        /**
-         * Fallback preferences when missing.
-         */
         @ExperimentalReadiumApi
-        val defaultPreferences: Preferences = Preferences(),
+        val settingsPolicy: EpubSettingsPolicy = EpubSettingsPolicy.defaultPolicy,
 
         /**
          * Patterns for asset paths which will be available to EPUB resources under
@@ -119,6 +115,9 @@ class EpubNavigatorFragment private constructor(
          */
         @ExperimentalReadiumApi
         val fontFamilies: List<FontFamilyDeclaration> = DEFAULT_FONT_FAMILIES,
+
+        @ExperimentalReadiumApi
+        val namedColors: Map<String, Int> = emptyMap(),
 
         /**
          * Readium CSS reading system settings.

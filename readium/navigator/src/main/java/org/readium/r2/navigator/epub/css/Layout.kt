@@ -6,6 +6,9 @@
 
 package org.readium.r2.navigator.epub.css
 
+import org.readium.r2.navigator.epub.EpubSettingsValues
+import org.readium.r2.navigator.epub.extensions.isCjk
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Language
 
@@ -40,5 +43,24 @@ internal data class Layout(
 
     enum class HtmlDir {
         Unspecified, Ltr, Rtl;
+    }
+
+    @ExperimentalReadiumApi
+    companion object {
+
+        fun from(settingsValues: EpubSettingsValues.Reflowable): Layout {
+            val stylesheets = when {
+                settingsValues.verticalText -> Stylesheets.CjkVertical
+                settingsValues.language?.isCjk == true -> Stylesheets.CjkHorizontal
+                settingsValues.readingProgression == ReadingProgression.RTL -> Stylesheets.Rtl
+                else -> Stylesheets.Default
+            }
+
+            return Layout(
+                language = settingsValues.language,
+                readingProgression = settingsValues.readingProgression,
+                stylesheets = stylesheets
+            )
+        }
     }
 }

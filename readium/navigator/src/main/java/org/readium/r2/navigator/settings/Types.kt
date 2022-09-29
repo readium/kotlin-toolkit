@@ -135,39 +135,40 @@ data class FontFamily(val name: String, val alternate: FontFamily? = null) {
     }
 }
 
-@JvmInline
 @ExperimentalReadiumApi
-value class Color(@ColorInt val int: Int) {
+sealed class Color {
+
+    object Undefined : Color()
+
+    data class PackedInt(@ColorInt val int: Int) : Color()
+
+    data class Name(val name: String) : Color()
+
     companion object {
-        val AUTO = Color(0)
+
+        val AUTO = Undefined
     }
 
-    class Coder(private val namedColors: Map<String, Int> = emptyMap()) : SettingCoder<Color> {
+    class Coder : SettingCoder<Color> {
         override fun decode(json: JsonElement): Color {
             if (json !is JsonPrimitive) {
                 return AUTO
             }
 
             json.intOrNull
-                ?.let { return Color(it) }
+                ?.let { return PackedInt(it) }
 
             json.contentOrNull
-                ?.let { namedColors[it] }
-                ?.let { return Color(it) }
+                ?.let { return Name(it) }
 
             return AUTO
         }
 
-        override fun encode(value: Color): JsonElement {
-            if (value == AUTO) {
-                return JsonNull
+        override fun encode(value: Color): JsonElement =
+            when (value) {
+                Undefined -> JsonNull
+                is PackedInt -> JsonPrimitive(value.int)
+                is Name -> JsonPrimitive(value.name)
             }
-
-            return namedColors
-                .filter { it.value == value.int }
-                .keys.firstOrNull()
-                ?.let { JsonPrimitive(it) }
-                ?: JsonPrimitive(value.int)
-        }
     }
 }

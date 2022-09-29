@@ -20,21 +20,35 @@ import java.text.NumberFormat
  * Represents a single configurable property of a [Configurable] component and holds its current
  * [value].
  *
- * @param key Unique identifier used to serialize [Preferences] to JSON.
+ * @param key Serializable unique identifier used to serialize [Preferences] to JSON.
  * @param value Current value for this setting.
- * @param coder JSON serializer for the [value]
  * @param validator Ensures the validity of a [V] value.
  * @param activator Ensures that the condition required for this setting to be active are met in the
  * given [Preferences] – e.g. another setting having a certain preference.
  */
 @ExperimentalReadiumApi
 open class Setting<V>(
-    val key: String,
+    val key: Key<V>,
     val value: V,
-    internal val coder: SettingCoder<V>,
     private val validator: SettingValidator<V>,
     private val activator: SettingActivator
-) : SettingValidator<V> by validator, SettingActivator by activator, SettingCoder<V> by coder {
+) : SettingValidator<V> by validator, SettingActivator by activator, SettingCoder<V> by key.coder {
+
+    /**
+     *  @param id Unique identifier used to serialize [Preferences] to JSON.
+     *  @param coder JSON serializer for the [value]
+     */
+    class Key<V>(
+        val id: String,
+        val coder: SettingCoder<V>
+    ) {
+
+        companion object {
+
+            inline operator fun <reified V> invoke(id: String): Key<V> =
+                Key(id = id, coder = SerializerSettingCoder())
+        }
+    }
 
     @Parcelize
     @Serializable
@@ -45,59 +59,18 @@ open class Setting<V>(
 
     companion object {
         inline operator fun <reified V> invoke(
-            key: String,
+            key: Key<V>,
             value: V,
-            coder: SettingCoder<V> = SerializerSettingCoder(),
             validator: SettingValidator<V> = IdentitySettingValidator(),
             activator: SettingActivator = NullSettingActivator,
         ) : Setting<V> =
-            Setting(key, value, coder, validator, activator)
-
-        // Official setting keys.
-        const val BACKGROUND_COLOR = "backgroundColor"
-        const val COLUMN_COUNT = "columnCount"
-        const val FIT = "fit"
-        const val FONT_FAMILY = "fontFamily"
-        const val FONT_SIZE = "fontSize"
-        const val HYPHENS = "hyphens"
-        const val IMAGE_FILTER = "imageFilter"
-        const val LANGUAGE = "language"
-        const val LETTER_SPACING = "letterSpacing"
-        const val LIGATURES = "ligatures"
-        const val LINE_HEIGHT = "lineHeight"
-        const val ORIENTATION = "orientation"
-        const val PAGE_MARGINS = "pageMargins"
-        const val PARAGRAPH_INDENT = "paragraphIndent"
-        const val PARAGRAPH_SPACING = "paragraphSpacing"
-        const val PUBLISHER_STYLES = "publisherStyles"
-        const val READING_PROGRESSION = "readingProgression"
-        const val SCROLL = "scroll"
-        const val SCROLL_AXIS = "scrollAxis"
-        const val SPREAD = "spread"
-        const val TEXT_ALIGN = "textAlign"
-        const val TEXT_COLOR = "textColor"
-        const val TEXT_NORMALIZATION = "textNormalization"
-        const val THEME = "theme"
-        const val TYPE_SCALE = "typeScale"
-        const val VERTICAL_TEXT = "verticalText"
-        const val WORD_SPACING = "wordSpacing"
-
-        /**
-         * Keys of settings that are tied to a single publication and should not be shared between
-         * several publications.
-         */
-        @ExperimentalReadiumApi
-        val PUBLICATION_SETTINGS = listOf(
-            LANGUAGE,
-            READING_PROGRESSION,
-            VERTICAL_TEXT
-        ).toTypedArray()
+            Setting(key, value, validator, activator)
     }
 
     /**
      * JSON raw representation for the current value.
      */
-    private val jsonValue: JsonElement = coder.encode(value)
+    private val jsonValue: JsonElement = key.coder.encode(value)
 
     /**
      * Returns the first valid value taken from the given [Preferences] objects, in order.
@@ -129,11 +102,11 @@ open class Setting<V>(
  */
 @ExperimentalReadiumApi
 open class ToggleSetting(
-    key: String,
+    key: Key<Boolean>,
     value: Boolean,
     validator: SettingValidator<Boolean> = IdentitySettingValidator(),
     activator: SettingActivator = NullSettingActivator,
-) : Setting<Boolean>(key, value, SerializerSettingCoder(), validator, activator)
+) : Setting<Boolean>(key, value, validator, activator)
 
 /**
  * A [Setting] whose value is constrained to a range.
@@ -148,9 +121,8 @@ open class ToggleSetting(
  */
 @ExperimentalReadiumApi
 open class RangeSetting<V : Comparable<V>>(
-    key: String,
+    key: Key<V>,
     value: V,
-    coder: SettingCoder<V>,
     val range: ClosedRange<V>,
     val suggestedSteps: List<V>?,
     val suggestedIncrement: V?,
@@ -159,16 +131,14 @@ open class RangeSetting<V : Comparable<V>>(
     activator: SettingActivator
 ) : Setting<V>(
     key, value,
-    coder = coder,
     validator = RangeSettingValidator(range) + validator,
     activator = activator
 ) {
     companion object {
         @ExperimentalReadiumApi
         inline operator fun <reified V : Comparable<V>> invoke(
-            key: String,
+            key: Key<V>,
             value: V,
-            coder: SettingCoder<V> = SerializerSettingCoder(),
             range: ClosedRange<V>,
             suggestedSteps: List<V>? = null,
             suggestedIncrement: V? = null,
@@ -184,7 +154,7 @@ open class RangeSetting<V : Comparable<V>>(
             validator: SettingValidator<V> = IdentitySettingValidator(),
             activator: SettingActivator = NullSettingActivator,
         ) : RangeSetting<V> = RangeSetting(
-            key, value, coder, range, suggestedSteps, suggestedIncrement, formatValue, validator,
+            key, value, range, suggestedSteps, suggestedIncrement, formatValue, validator,
             activator
         )
     }
@@ -201,7 +171,7 @@ open class RangeSetting<V : Comparable<V>>(
  */
 @ExperimentalReadiumApi
 open class PercentSetting(
-    key: String,
+    key: Key<Double>,
     value: Double,
     range: ClosedRange<Double> = 0.0..1.0,
     suggestedSteps: List<Double>? = null,
@@ -215,7 +185,7 @@ open class PercentSetting(
     validator: SettingValidator<Double> = IdentitySettingValidator(),
     activator: SettingActivator = NullSettingActivator
 ) : RangeSetting<Double>(
-    key, value, SerializerSettingCoder(), range, suggestedSteps, suggestedIncrement, formatValue,
+    key, value, range, suggestedSteps, suggestedIncrement, formatValue,
     validator, activator
 )
 
@@ -228,27 +198,25 @@ open class PercentSetting(
  */
 @ExperimentalReadiumApi
 open class EnumSetting<E>(
-    key: String,
+    key: Key<E>,
     value: E,
     val values: List<E>?,
     val formatValue: (E) -> String?,
-    coder: SettingCoder<E>,
     validator: SettingValidator<E>,
     activator: SettingActivator
 ) : Setting<E>(
-    key, value, coder, AllowlistSettingValidator(values) + validator, activator
+    key, value,AllowlistSettingValidator(values) + validator, activator
 ) {
     companion object {
         inline operator fun <reified E> invoke(
-            key: String,
+            key: Key<E>,
             value: E,
             values: List<E>?,
             noinline formatValue: (E) -> String? = { null },
-            coder: SettingCoder<E> = SerializerSettingCoder(),
             validator: SettingValidator<E> = IdentitySettingValidator(),
             activator: SettingActivator = NullSettingActivator,
         ) : EnumSetting<E> =
-            EnumSetting(key, value, values, formatValue, coder, validator, activator)
+            EnumSetting(key, value, values, formatValue, validator, activator)
     }
 }
 
@@ -257,13 +225,12 @@ open class EnumSetting<E>(
  */
 @ExperimentalReadiumApi
 open class ColorSetting(
-    key: String,
+    key: Key<Color>,
     value: Color,
     values: List<Color>? = null,
     formatValue: (Color) -> String? = { null },
-    coder: Color.Coder = Color.Coder(),
     validator: SettingValidator<Color> = IdentitySettingValidator(),
     activator: SettingActivator = NullSettingActivator,
 ) : EnumSetting<Color>(
-    key, value, values, formatValue, coder, validator, activator
+    key, value, values, formatValue, validator, activator
 )

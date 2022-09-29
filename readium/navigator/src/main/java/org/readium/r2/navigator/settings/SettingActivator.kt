@@ -44,24 +44,16 @@ object NullSettingActivator : SettingActivator {
  */
 @ExperimentalReadiumApi
 class ForcePreferenceSettingActivator<V>(
-    val key: String,
+    val key: Setting.Key<V>,
     val value: V,
-    val fallbackValue: V,
-    val coder: SettingCoder<V>
+    val valueFromPreferences: (Preferences) -> V
 ) : SettingActivator {
-    companion object {
-        operator fun <V> invoke(setting: Setting<V>, value: V, fallbackValue: V): ForcePreferenceSettingActivator<V> =
-            ForcePreferenceSettingActivator(setting.key, value, fallbackValue, setting.coder)
-
-        inline operator fun <reified V> invoke(key: String, value: V, fallbackValue: V): ForcePreferenceSettingActivator<V> =
-            ForcePreferenceSettingActivator(key, value, fallbackValue, coder = SerializerSettingCoder())
-    }
 
     override fun isActiveWithPreferences(preferences: Preferences): Boolean =
-        preferences[key, coder] == value
+        valueFromPreferences(preferences) == value
 
     override fun activateInPreferences(preferences: MutablePreferences) {
-        preferences[key, coder] = value
+        preferences[key] = value
     }
 }
 
@@ -70,21 +62,13 @@ class ForcePreferenceSettingActivator<V>(
  */
 @ExperimentalReadiumApi
 class RequirePreferenceSettingActivator<V>(
-    val key: String,
+    val key: Setting.Key<V>,
     val value: V,
-    val fallbackValue: V,
-    val coder: SettingCoder<V>
+    val valueFromPreferences: (Preferences) -> V
 ) : SettingActivator {
-    companion object {
-        operator fun <V> invoke(setting: Setting<V>, value: V, fallbackValue: V): ForcePreferenceSettingActivator<V> =
-            ForcePreferenceSettingActivator(setting.key, value, fallbackValue, setting.coder)
-
-        inline operator fun <reified V> invoke(key: String, value: V, fallbackValue: V): ForcePreferenceSettingActivator<V> =
-            ForcePreferenceSettingActivator(key, value, fallbackValue, coder = SerializerSettingCoder())
-    }
 
     override fun isActiveWithPreferences(preferences: Preferences): Boolean =
-        preferences[key, coder] == value
+        valueFromPreferences(preferences) == value
 
     override fun activateInPreferences(preferences: MutablePreferences) {
         // Nothing

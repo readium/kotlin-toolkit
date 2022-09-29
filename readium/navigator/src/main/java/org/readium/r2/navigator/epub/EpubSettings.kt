@@ -16,6 +16,7 @@ import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.settings.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.presentation.Presentation.Fit
 import org.readium.r2.shared.publication.presentation.Presentation.Spread
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Language
@@ -48,14 +49,7 @@ sealed class EpubSettings : Configurable.Settings {
         override val language: Setting<Language?>,
         override val readingProgression: EnumSetting<ReadingProgression>,
         val spread: EnumSetting<Spread>,
-    ) : EpubSettings() {
-
-        companion object {
-
-            operator fun invoke(): FixedLayout =
-                EpubSettingsFactory().defaultFixedLayoutSettings()
-        }
-    }
+    ) : EpubSettings()
 
     /**
      * EPUB navigator settings for reflowable publications.
@@ -115,17 +109,52 @@ sealed class EpubSettings : Configurable.Settings {
         val wordSpacing: PercentSetting,
 
         internal val layout: Layout
-    ) : EpubSettings() {
+    ) : EpubSettings()
 
-        companion object {
+    companion object {
 
-            operator fun invoke(): Reflowable =
-                EpubSettingsFactory().createDefaultReflowableSettings()
-        }
+        val BACKGROUND_COLOR = Setting.Key<Color>("backgroundColor")
+        val COLUMN_COUNT = Setting.Key<ColumnCount>("columnCount")
+        val FIT = Setting.Key<Fit>("fit")
+        val FONT_FAMILY = Setting.Key<FontFamily?>("fontFamily")
+        val FONT_SIZE = Setting.Key<Double>("fontSize")
+        val HYPHENS = Setting.Key<Boolean>("hyphens")
+        val IMAGE_FILTER = Setting.Key<ImageFilter>("imageFilter")
+        val LANGUAGE = Setting.Key<Language?>("language")
+        val LETTER_SPACING = Setting.Key<Double>("letterSpacing")
+        val LIGATURES = Setting.Key<Boolean>("ligatures")
+        val LINE_HEIGHT = Setting.Key<Double>("lineHeight")
+        val ORIENTATION = Setting.Key<Double>("orientation")
+        val PAGE_MARGINS = Setting.Key<Double>("pageMargins")
+        val PARAGRAPH_INDENT = Setting.Key<Double>("paragraphIndent")
+        val PARAGRAPH_SPACING = Setting.Key<Double>("paragraphSpacing")
+        val PUBLISHER_STYLES = Setting.Key<Boolean>("publisherStyles")
+        val READING_PROGRESSION = Setting.Key<ReadingProgression>("readingProgression")
+        val SCROLL = Setting.Key<Boolean>("scroll")
+        val SCROLL_AXIS = Setting.Key<Boolean>("scrollAxis")
+        val SPREAD = Setting.Key<Spread>("spread")
+        val TEXT_ALIGN = Setting.Key<TextAlign>("textAlign")
+        val TEXT_COLOR = Setting.Key<Color>("textColor")
+        val TEXT_NORMALIZATION = Setting.Key<TextNormalization>("textNormalization")
+        val THEME = Setting.Key<Theme>("theme")
+        val TYPE_SCALE = Setting.Key<Double>("typeScale")
+        val VERTICAL_TEXT = Setting.Key<Boolean>("verticalText")
+        val WORD_SPACING = Setting.Key<Double>("wordSpacing")
+
+        /**
+         * Keys of settings that are tied to a single publication and should not be shared between
+         * several publications.
+         */
+        @ExperimentalReadiumApi
+        val PUBLICATION_SETTINGS = listOf(
+            LANGUAGE,
+            READING_PROGRESSION,
+            VERTICAL_TEXT
+        ).toTypedArray()
     }
 }
 
-internal fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
+internal fun ReadiumCss.update(settings: EpubSettings, namedColors: Map<String, Int>): ReadiumCss {
     if (settings !is Reflowable) return this
 
     return with(settings) {
@@ -149,12 +178,8 @@ internal fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
                 },
                 darkenImages = imageFilter.value == ImageFilter.DARKEN,
                 invertImages = imageFilter.value == ImageFilter.INVERT,
-                textColor = textColor.value
-                    .takeIf { it != Color.AUTO }
-                    ?.let { CssColor.Int(it.int) },
-                backgroundColor = backgroundColor.value
-                    .takeIf { it != Color.AUTO }
-                    ?.let { CssColor.Int(it.int) },
+                textColor = textColor.value.toCSS(namedColors),
+                backgroundColor = backgroundColor.value.toCSS(namedColors),
                 fontOverride = (fontFamily.value != null || (textNormalization.value == TextNormalization.ACCESSIBILITY)),
                 fontFamily = fontFamily.value?.toCss(),
                 // Font size is handled natively with WebSettings.textZoom.
@@ -190,6 +215,17 @@ private fun FontFamily.toCss(): List<String> = buildList {
     alternate?.let { addAll(it.toCss()) }
 }
 
+private fun Color.toCSS(namedColors: Map<String, Int>): CssColor? = when (this) {
+    is Color.Undefined ->
+        null
+    is Color.PackedInt ->
+        CssColor.Int(int)
+    is Color.Name -> {
+        val int = requireNotNull(namedColors[name]) { "Cannot resolve color name: $name." }
+        CssColor.Int(int)
+    }
+}
+
 /**
  * Loads the preferences from the legacy EPUB settings stored in the [SharedPreferences] with
  * given [sharedPreferencesName].
@@ -207,86 +243,79 @@ fun Preferences.Companion.fromLegacyEpubSettings(
         "Original", "PT Serif", "Roboto", "Source Sans Pro", "Vollkorn", "OpenDyslexic",
         "AccessibleDfA", "IA Writer Duospace"
     )
-): Preferences {
+) = Preferences {
+
     val sp = context.getSharedPreferences(sharedPreferencesName, Context.MODE_PRIVATE)
 
-    var fontFamily: FontFamily? = null
     if (sp.contains("fontFamily")) {
-        fontFamily = sp.getInt("fontFamily", 0)
+        val fontFamily = sp.getInt("fontFamily", 0)
             .let { fontFamilies.getOrNull(it) }
             .takeUnless { it == "Original" }
             ?.let { FontFamily(it) }
+
+        set(EpubSettings.FONT_FAMILY, fontFamily)
     }
 
-    val fontFamilies = listOfNotNull(fontFamily)
-    val settings = EpubSettingsFactory(
-        fontFamilies = fontFamilies
-    ).createDefaultReflowableSettings()
+    if (sp.contains("appearance")) {
+        val appearance = sp.getInt("appearance", 0)
+        set(EpubSettings.THEME, when (appearance) {
+            0 -> Theme.LIGHT
+            1 -> Theme.SEPIA
+            2 -> Theme.DARK
+            else -> null
+        })
+    }
 
-    return Preferences {
-        set(settings.fontFamily, fontFamily)
+    if (sp.contains("scroll")) {
+        set(EpubSettings.SCROLL, sp.getBoolean("scroll", false))
+    }
 
-        if (sp.contains("appearance")) {
-            val appearance = sp.getInt("appearance", 0)
-            set(settings.theme, when (appearance) {
-                0 -> Theme.LIGHT
-                1 -> Theme.SEPIA
-                2 -> Theme.DARK
-                else -> null
-            })
-        }
+    if (sp.contains("colCount")) {
+        val colCount = sp.getInt("colCount", 0)
+        set(EpubSettings.COLUMN_COUNT, when (colCount) {
+            0 -> ColumnCount.AUTO
+            1 -> ColumnCount.ONE
+            2 -> ColumnCount.TWO
+            else -> null
+        })
+    }
 
-        if (sp.contains("scroll")) {
-            set(settings.scroll, sp.getBoolean("scroll", false))
-        }
+    if (sp.contains("pageMargins")) {
+        val pageMargins = sp.getFloat("pageMargins", 1.0f).toDouble()
+        set(EpubSettings.PAGE_MARGINS, pageMargins)
+    }
 
-        if (sp.contains("colCount")) {
-            val colCount = sp.getInt("colCount", 0)
-            set(settings.columnCount, when (colCount) {
-                0 -> ColumnCount.AUTO
-                1 -> ColumnCount.ONE
-                2 -> ColumnCount.TWO
-                else -> null
-            })
-        }
+    if (sp.contains("fontSize")) {
+        val fontSize = (sp.getFloat("fontSize", 0f) / 100).toDouble()
+        set(EpubSettings.FONT_SIZE, fontSize)
+    }
 
-        if (sp.contains("pageMargins")) {
-            val pageMargins = sp.getFloat("pageMargins", 1.0f).toDouble()
-            set(settings.pageMargins, pageMargins)
-        }
+    if (sp.contains("textAlign")) {
+        val textAlign = sp.getInt("textAlign", 0)
+        set(EpubSettings.TEXT_ALIGN, when (textAlign) {
+            0 -> TextAlign.JUSTIFY
+            1 -> TextAlign.START
+            else -> null
+        })
+    }
 
-        if (sp.contains("fontSize")) {
-            val fontSize = (sp.getFloat("fontSize", 0f) / 100).toDouble()
-            set(settings.fontSize, fontSize)
-        }
+    if (sp.contains("wordSpacing")) {
+        val wordSpacing = sp.getFloat("wordSpacing", 0f).toDouble()
+        set(EpubSettings.WORD_SPACING, wordSpacing)
+    }
 
-        if (sp.contains("textAlign")) {
-            val textAlign = sp.getInt("textAlign", 0)
-            set(settings.textAlign, when (textAlign) {
-                0 -> TextAlign.JUSTIFY
-                1 -> TextAlign.START
-                else -> null
-            })
-        }
+    if (sp.contains("letterSpacing")) {
+        val letterSpacing = sp.getFloat("letterSpacing", 0f).toDouble() * 2
+        set(EpubSettings.LETTER_SPACING, letterSpacing)
+    }
 
-        if (sp.contains("wordSpacing")) {
-            val wordSpacing = sp.getFloat("wordSpacing", 0f).toDouble()
-            set(settings.wordSpacing, wordSpacing)
-        }
+    if (sp.contains("lineHeight")) {
+        val lineHeight = sp.getFloat("lineHeight", 1.2f).toDouble()
+        set(EpubSettings.LINE_HEIGHT, lineHeight)
+    }
 
-        if (sp.contains("letterSpacing")) {
-            val letterSpacing = sp.getFloat("letterSpacing", 0f).toDouble() * 2
-            set(settings.letterSpacing, letterSpacing)
-        }
-
-        if (sp.contains("lineHeight")) {
-            val lineHeight = sp.getFloat("lineHeight", 1.2f).toDouble()
-            set(settings.lineHeight, lineHeight)
-        }
-
-        if (sp.contains("advancedSettings")) {
-            val advancedSettings = sp.getBoolean("advancedSettings", false)
-            set(settings.publisherStyles, !advancedSettings)
-        }
+    if (sp.contains("advancedSettings")) {
+        val advancedSettings = sp.getBoolean("advancedSettings", false)
+        set(EpubSettings.PUBLISHER_STYLES, !advancedSettings)
     }
 }

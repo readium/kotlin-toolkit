@@ -9,14 +9,9 @@ package org.readium.r2.navigator.settings
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
-import org.json.JSONObject
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.util.logging.WarningLogger
 
 /**
  * Set of preferences used to update a [Configurable]'s settings.
@@ -80,15 +75,15 @@ open class Preferences(
      * Creates a copy of this [Preferences] receiver, keeping only the preferences for the given
      * setting [keys].
      */
-    fun filter(vararg keys: String): Preferences =
-        Preferences(values.filterKeys { it in keys })
+    fun filter(vararg keys: Setting.Key<*>): Preferences =
+        Preferences(values.filterKeys { prefKey -> prefKey in keys.map { key -> key.id } })
 
     /**
      * Creates a copy of this [Preferences] receiver, keeping only the preferences for the given
      * setting [keys].
      */
-    fun filterNot(vararg keys: String): Preferences =
-        Preferences(values.filterKeys { it !in keys })
+    fun filterNot(vararg keys: Setting.Key<*>): Preferences =
+        Preferences(values.filterKeys { prefKey -> prefKey !in keys.map { key -> key.id } })
 
     /**
      * Creates a copy of this [Preferences] receiver after modifying it with the given
@@ -113,15 +108,15 @@ open class Preferences(
      * Gets the preference for the given [setting], if set.
      */
     operator fun <V> get(setting: Setting<V>): V? =
-        get(setting.key, coder = setting)
+        get(setting.key)
 
     /**
      * Gets the preference for the given [setting] key, if set.
      *
      * The value will be decoded using [coder].
      */
-    operator fun <V> get(key: String, coder: SettingCoder<V>): V? =
-        values[key]?.let { coder.decode(it) }
+    operator fun <V> get(key: Setting.Key<V>): V? =
+        values[key.id]?.let { key.coder.decode(it) }
 
     /**
      * Serializes this [Preferences] to a JSON object.
@@ -184,14 +179,12 @@ class MutablePreferences(
 
     /**
      * Sets the preference for the given setting [key].
-     *
-     * @param coder Coder used to encode the value.
      */
-    operator fun <V> set(key: String, coder: SettingCoder<V>, preference: V?) {
+    operator fun <V> set(key: Setting.Key<V>, preference: V?) {
         if (preference == null) {
-            values.remove(key)
+            values.remove(key.id)
         } else {
-            values[key] = coder.encode(preference)
+            values[key.id] = key.coder.encode(preference)
         }
     }
 
@@ -203,7 +196,7 @@ class MutablePreferences(
     fun <V> set(setting: Setting<V>, preference: V?, activate: Boolean = true) {
         val value = preference?.let { setting.validate(it) }
 
-        set(key = setting.key, coder = setting.coder, preference = value)
+        set(key = setting.key, preference = value)
 
         if (value != null && activate) {
             activate(setting)
@@ -215,7 +208,7 @@ class MutablePreferences(
      */
     fun <V> remove(setting: Setting<V>?) {
         setting ?: return
-        values.remove(setting.key)
+        values.remove(setting.key.id)
     }
 
     /**

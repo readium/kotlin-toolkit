@@ -33,9 +33,7 @@ import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
-import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.Href
 import kotlin.reflect.KClass
 
@@ -80,15 +78,16 @@ internal class EpubNavigatorViewModel(
     private val _events = Channel<Event>(Channel.BUFFERED)
     val events: Flow<Event> get() = _events.receiveAsFlow()
 
-    private val _settings = MutableStateFlow<EpubSettings>(
+    private val settingsFactory =
         EpubSettingsFactory(
             publication.metadata,
             config.fontFamilies.map { it.fontFamily },
-            emptyMap(),
-            config.preferences,
-            config.defaultPreferences
-        ).createSettings()
-    )
+            config.settingsPolicy,
+        )
+
+    private val _settings: MutableStateFlow<EpubSettings> =
+        MutableStateFlow(settingsFactory.createSettings(config.preferences))
+
     val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
 
     private val css = MutableStateFlow(
@@ -96,7 +95,7 @@ internal class EpubNavigatorViewModel(
             rsProperties = config.readiumCssRsProperties,
             fontFamilies = config.fontFamilies,
             assetsBaseHref = WebViewServer.assetsBaseHref
-        ).update(settings.value)
+        ).update(settings.value, config.namedColors)
     )
 
     init {
@@ -208,19 +207,17 @@ internal class EpubNavigatorViewModel(
         val oldFixedSettings = (settings.value as? EpubSettings.FixedLayout)
         val oldReadingProgression = readingProgression
 
-        val newSettings = _settings.updateAndGet { settings ->
+        val newSettings =
             EpubSettingsFactory(
                 publication.metadata,
                 config.fontFamilies.map { it.fontFamily },
-                emptyMap(),
-                config.preferences,
-                config.defaultPreferences
-            ).updateSettings(settings)
-        }
+                config.settingsPolicy,
+            ).createSettings(preferences)
+
         val newReflowSettings = (newSettings as? EpubSettings.Reflowable)
         val newFixedSettings = (newSettings as? EpubSettings.FixedLayout)
 
-        css.update { it.update(newSettings) }
+        css.update { it.update(newSettings, config.namedColors) }
 
         val needsInvalidation: Boolean = (
             oldReadingProgression != readingProgression ||
@@ -262,7 +259,7 @@ internal class EpubNavigatorViewModel(
                     Presentation.Spread.NONE -> DualPage.OFF
                     Presentation.Spread.LANDSCAPE -> DualPage.AUTO
                 }
-                is EpubSettings.Reflowable -> when (settings.columnCount?.value) {
+                is EpubSettings.Reflowable -> when (settings.columnCount.value) {
                     ColumnCount.ONE, null -> DualPage.OFF
                     ColumnCount.TWO -> DualPage.ON
                     ColumnCount.AUTO -> DualPage.AUTO
