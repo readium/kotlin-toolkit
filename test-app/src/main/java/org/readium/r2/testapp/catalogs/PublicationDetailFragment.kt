@@ -46,10 +46,9 @@ class PublicationDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         (activity as MainActivity).supportActionBar?.title = publication?.metadata?.title
 
-        if (publication?.images?.isNotEmpty() == true) {
-            Picasso.get().load(publication?.images?.first()?.href)
-                .into(binding.catalogDetailCoverImage)
-        }
+        publication?.images?.firstOrNull()
+            ?.let { Picasso.get().load(it.href) }
+            ?.into(binding.catalogDetailCoverImage)
 
         binding.catalogDetailDescriptionText.text = publication?.metadata?.description
         binding.catalogDetailTitleText.text = publication?.metadata?.title
