@@ -96,7 +96,7 @@ class EpubNavigatorFragment private constructor(
         val preferences: Preferences = Preferences(),
 
         @ExperimentalReadiumApi
-        val settingsPolicy: EpubSettingsPolicy = EpubSettingsPolicy.defaultPolicy,
+        val settingsPolicy: EpubSettingsPolicy = EpubSettingsDefaultPolicy,
 
         /**
          * Patterns for asset paths which will be available to EPUB resources under

@@ -14,9 +14,4 @@ interface EpubSettingsPolicy {
     @ExperimentalReadiumApi
     fun fixedLayoutSettings(metadata: Metadata, preferences: Preferences): EpubSettingsValues.FixedLayout =
         EpubSettingsDefaultPolicy.fixedLayoutSettings(metadata, preferences)
-
-    companion object {
-
-        val defaultPolicy: EpubSettingsPolicy = EpubSettingsDefaultPolicy
-    }
 }
