@@ -24,7 +24,6 @@ import org.readium.r2.navigator.settings.Configurable
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
@@ -44,21 +43,11 @@ import timber.log.Timber
  *
  * To use this [Fragment], create a factory with [PdfNavigatorFragment.createFactory].
  */
-@OptIn(ExperimentalReadiumApi::class)
-@PdfSupport
+@ExperimentalReadiumApi
 class PdfNavigatorFragment<S: PdfSettings>  private constructor(
     override val publication: Publication,
     initialLocator: Locator? = null,
-    /**
-     * Initial set of setting preferences.
-     */
-    @ExperimentalReadiumApi
     val preferences: Preferences = Preferences(),
-    /**
-     * Fallback preferences when missing.
-     */
-    @ExperimentalReadiumApi
-    val defaultPreferences: Preferences = Preferences(),
     private val listener: Listener?,
     private val pdfEngineProvider: PdfEngineProvider<S>
 ) : Fragment(), VisualNavigator, Configurable<S> {
@@ -79,49 +68,21 @@ class PdfNavigatorFragment<S: PdfSettings>  private constructor(
          * @param publication PDF publication to render in the navigator.
          * @param initialLocator The first location which should be visible when rendering the
          * publication. Can be used to restore the last reading location.
-         * @param listener Optional listener to implement to observe events, such as user taps.
-         * @param documentFragmentFactory Factory for a [PdfDocumentFragment], provided by third-
-         * party PDF engine adapters.
-         */
-        @OptIn(ExperimentalReadiumApi::class)
-        fun <S: PdfSettings> createFactory(
-            publication: Publication,
-            initialLocator: Locator? = null,
-            listener: Listener? = null,
-            pdfEngineProvider: PdfEngineProvider<S>,
-        ): FragmentFactory = createFragmentFactory {
-            PdfNavigatorFragment<S>(
-                publication, initialLocator,
-                preferences = Preferences(), defaultPreferences = Preferences(),
-                listener, pdfEngineProvider
-            )
-        }
-
-        /**
-         * Creates a factory for [PdfNavigatorFragment].
-         *
-         * @param publication PDF publication to render in the navigator.
-         * @param initialLocator The first location which should be visible when rendering the
-         * publication. Can be used to restore the last reading location.
          * @param preferences Initial set of user preferences.
-         * @param defaultPreferences Fallback preferences when missing.
          * @param listener Optional listener to implement to observe events, such as user taps.
-         * @param documentFragmentFactory Factory for a [PdfDocumentFragment], provided by third-
-         * party PDF engine adapters.
+         * @param pdfEngineProvider provider for third-party PDF engine adapter.
          */
         @ExperimentalReadiumApi
         fun <S: PdfSettings> createFactory(
             publication: Publication,
             initialLocator: Locator? = null,
             preferences: Preferences = Preferences(),
-            defaultPreferences: Preferences = Preferences(),
             listener: Listener? = null,
             pdfEngineProvider: PdfEngineProvider<S>,
         ): FragmentFactory = createFragmentFactory {
             PdfNavigatorFragment(
                 publication, initialLocator,
-                preferences, defaultPreferences,
-                listener, pdfEngineProvider
+                preferences, listener, pdfEngineProvider
             )
         }
     }
@@ -150,8 +111,7 @@ class PdfNavigatorFragment<S: PdfSettings>  private constructor(
             publication,
             initialLocator,
             preferences = preferences,
-            defaultPreferences = defaultPreferences,
-            defaultSettings = pdfEngineProvider.createDefaultSettings()
+            settingsFactory = pdfEngineProvider::createPdfSettings
         )
     }
 
@@ -163,7 +123,7 @@ class PdfNavigatorFragment<S: PdfSettings>  private constructor(
         super.onCreate(null)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = FragmentContainerView(inflater.context)
         view.id = R.id.readium_pdf_container
         return view

@@ -38,11 +38,21 @@ class UserSettingsViewModel(
 ) {
     private val store = PreferencesStore(application, scope)
 
+    private val publicationPreferences: StateFlow<Preferences> = store[bookId]
+        .stateIn(scope, SharingStarted.Eagerly, initialValue = Preferences())
+
+    private val navigatorPreferences: StateFlow<Preferences> = store[kind]
+        .stateIn(scope, SharingStarted.Eagerly, initialValue = Preferences())
+
     /**
      * Current user preferences saved in the store.
      */
-    val preferences: StateFlow<Preferences> = store[bookId, kind]
+    val preferences: StateFlow<Preferences> =
+        combine(publicationPreferences, navigatorPreferences) { publicationPrefs, navigatorPrefs ->
+            navigatorPrefs + publicationPrefs
+        }
         .stateIn(scope, SharingStarted.Eagerly, initialValue = Preferences())
+
 
     /**
      * Current [Navigator] settings.
@@ -82,7 +92,14 @@ class UserSettingsViewModel(
     /**
      * Edits and saves the user preferences.
      */
-    fun edit(changes: MutablePreferences.() -> Unit) {
-        store[bookId, kind] = preferences.value.copy(changes)
+    fun editNavigatorPreferences(changes: MutablePreferences.() -> Unit) {
+        store[kind] = navigatorPreferences.value.copy(changes)
+    }
+
+    /**
+     * Edits and saves the user preferences.
+     */
+    fun editPublicationPreferences(changes: MutablePreferences.() -> Unit) {
+        store[bookId] = publicationPreferences.value.copy(changes)
     }
 }

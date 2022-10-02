@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.settings.Preferences
-import org.readium.r2.navigator.settings.Setting
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.testapp.reader.NavigatorKind
 import androidx.datastore.preferences.core.Preferences as JetpackPreferences
@@ -34,29 +33,38 @@ class PreferencesStore(
     private val scope: CoroutineScope
 ) {
     /**
-     * Observes the [Preferences] for the publication with the given [bookId] and
-     * navigator [kind].
+     * Observes the [Preferences] for the publication with the given [bookId].
      */
-    operator fun get(bookId: Long, kind: NavigatorKind?): Flow<Preferences> =
-        store.data.map { data ->
-            fun prefs(key: JetpackPreferences.Key<String>): Preferences =
-                data[key]?.let { Preferences.fromJson (it) } ?: Preferences()
-
-            val profilePrefs = prefs(key(kind))
-            val bookPrefs = prefs(key(bookId))
-            profilePrefs + bookPrefs
-        }
+    operator fun get(bookId: Long): Flow<Preferences> =
+        store.data.map { data -> getPreferences(key(bookId), data) }
 
     /**
-     * Sets the [preferences] for the publication with the given [bookId] and navigator [kind].
+     * Observes the [Preferences] for the navigator [kind].
      */
-    operator fun set(bookId: Long, kind: NavigatorKind?, preferences: Preferences) {
+    operator fun get(kind: NavigatorKind?): Flow<Preferences> =
+        store.data.map { data -> getPreferences(key(kind), data) }
+
+    private fun getPreferences(key: JetpackPreferences.Key<String>, data: JetpackPreferences) =
+        data[key]?.let { Preferences.fromJson (it) } ?: Preferences()
+
+    /**
+     * Sets the [preferences] for the publication with the given [bookId].
+     */
+    operator fun set(bookId: Long, preferences: Preferences) {
         scope.launch {
             store.edit { data ->
-                // Filter the preferences that are related to the publication.
-                data[key(bookId)] = preferences.filter(*Setting.PUBLICATION_SETTINGS).toJsonString()
-                // Filter the preferences that will be shared between publications of the same profile.
-                data[key(kind)] = preferences.filterNot(*Setting.PUBLICATION_SETTINGS).toJsonString()
+                data[key(bookId)] = preferences.toJsonString()
+            }
+        }
+    }
+
+    /**
+     * Sets the [preferences] for navigator [kind].
+     */
+    operator fun set(kind: NavigatorKind?, preferences: Preferences) {
+        scope.launch {
+            store.edit { data ->
+                data[key(kind)] = preferences.toJsonString()
             }
         }
     }

@@ -95,6 +95,9 @@ class EpubNavigatorFragment private constructor(
         @ExperimentalReadiumApi
         val preferences: Preferences = Preferences(),
 
+        /**
+         * Policy which computes settings values from metadata and preferences.
+         */
         @ExperimentalReadiumApi
         val settingsPolicy: EpubSettingsPolicy = EpubSettingsDefaultPolicy,
 
@@ -115,9 +118,6 @@ class EpubNavigatorFragment private constructor(
          */
         @ExperimentalReadiumApi
         val fontFamilies: List<FontFamilyDeclaration> = DEFAULT_FONT_FAMILIES,
-
-        @ExperimentalReadiumApi
-        val namedColors: Map<String, Int> = emptyMap(),
 
         /**
          * Readium CSS reading system settings.
@@ -157,19 +157,34 @@ class EpubNavigatorFragment private constructor(
         }
 
         companion object {
+            private val SERIF = FontFamily("serif").from(System)
+            private val SANS_SERIF = FontFamily("sans-serif").from(System)
+            private val MONOSPACE = FontFamily("monospace").from(System)
+
             /**
              * Default font family declarations.
              *
              * Warning: Most of them require an Internet connection (Google Fonts).
              */
             val DEFAULT_FONT_FAMILIES: List<FontFamilyDeclaration> = listOf(
-                FontFamily.LITERATA.from(GoogleFonts),
-                FontFamily.PT_SERIF.from(GoogleFonts),
-                FontFamily.ROBOTO.from(GoogleFonts),
-                FontFamily.SOURCE_SANS_PRO.from(GoogleFonts),
-                FontFamily.VOLLKORN.from(GoogleFonts),
+                // Generic font families
+                // See https://www.w3.org/TR/css-fonts-4/#generic-font-families
+                SERIF,
+                SANS_SERIF,
+                MONOSPACE,
+
+                // Serif
+                FontFamily.LITERATA.from(GoogleFonts, alternate = SERIF),
+                FontFamily.PT_SERIF.from(GoogleFonts, alternate = SERIF),
+                FontFamily.VOLLKORN.from(GoogleFonts, alternate = SERIF),
+
+                // Sans-serif
+                FontFamily.ROBOTO.from(GoogleFonts, alternate = SANS_SERIF),
+                FontFamily.SOURCE_SANS_PRO.from(GoogleFonts, alternate = SANS_SERIF),
+
+                // Accessibility
                 FontFamily.ACCESSIBLE_DFA.from(ReadiumCss),
-                FontFamily.IA_WRITER_DUOSPACE.from(ReadiumCss),
+                FontFamily.IA_WRITER_DUOSPACE.from(ReadiumCss, alternate = MONOSPACE),
                 FontFamily.OPEN_DYSLEXIC.from(Assets("readium/fonts/OpenDyslexic-Regular.otf")),
             )
         }

@@ -15,20 +15,18 @@ import org.readium.r2.navigator.settings.Configurable
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.positions
 
 @OptIn(ExperimentalReadiumApi::class)
-@PdfSupport
 internal class PdfNavigatorViewModel(
     application: Application,
     private val publication: Publication,
     initialLocator: Locator,
     preferences: Preferences,
-    private val defaultPreferences: Preferences,
-    defaultSettings: PdfSettings
+    private val settingsFactory: (Metadata, Preferences) -> PdfSettings
 ) : AndroidViewModel(application) {
 
     data class State(
@@ -44,11 +42,7 @@ internal class PdfNavigatorViewModel(
     val state: StateFlow<State> = _state.asStateFlow()
 
     private val _settings: MutableStateFlow<PdfSettings> = MutableStateFlow(
-        defaultSettings.update(
-            metadata = publication.metadata,
-            defaults = defaultPreferences,
-            preferences = preferences
-        )
+        settingsFactory(publication.metadata, preferences)
     )
 
     val settings: StateFlow<Configurable.Settings> = _settings.asStateFlow()
@@ -56,13 +50,7 @@ internal class PdfNavigatorViewModel(
     fun submitPreferences(preferences: Preferences) = viewModelScope.launch {
         val oldSettings = settings.value
 
-        val newSettings = _settings.updateAndGet { settings ->
-            settings.update(
-                metadata = publication.metadata,
-                preferences = preferences,
-                defaults = defaultPreferences
-            )
-        }
+        _settings.value = settingsFactory(publication.metadata, preferences)
         /*val needsInvalidation: Boolean = (
             oldReadingProgression != readingProgression ||
                 oldReflowSettings?.verticalText?.value != newReflowSettings?.verticalText?.value ||
@@ -88,8 +76,7 @@ internal class PdfNavigatorViewModel(
             publication: Publication,
             initialLocator: Locator?,
             preferences: Preferences,
-            defaultPreferences: Preferences,
-            defaultSettings: PdfSettings
+            settingsFactory: (Metadata, Preferences) -> PdfSettings
         ) = createViewModelFactory {
             PdfNavigatorViewModel(
                 application = application,
@@ -97,8 +84,7 @@ internal class PdfNavigatorViewModel(
                 initialLocator = initialLocator
                     ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first())),
                 preferences = preferences,
-                defaultPreferences = defaultPreferences,
-                defaultSettings = defaultSettings
+                settingsFactory = settingsFactory
             )
         }
     }

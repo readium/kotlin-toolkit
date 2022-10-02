@@ -10,6 +10,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.serializer
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 
 /**
@@ -23,13 +24,14 @@ interface SettingCoder<V> {
 /**
  * A [SettingCoder] using the default Kotlin Serializer associated with the type [V].
  */
-class SerializerSettingCoder<V>(private val serializer: KSerializer<V>) : SettingCoder<V> {
+@InternalReadiumApi
+class SerializerSettingCoder<V>(private val serializer: KSerializer<V>) : SettingCoder<V>{
     companion object {
         inline operator fun <reified V> invoke(): SerializerSettingCoder<V> =
             SerializerSettingCoder(serializer())
     }
 
-    override fun decode(json: JsonElement): V? =
+   override fun decode(json: JsonElement): V? =
         tryOrLog { Json.decodeFromJsonElement(serializer, json) }
 
     override fun encode(value: V): JsonElement =

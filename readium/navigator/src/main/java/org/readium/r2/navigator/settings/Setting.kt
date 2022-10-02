@@ -50,13 +50,6 @@ open class Setting<V>(
         }
     }
 
-    @Parcelize
-    @Serializable
-    enum class ScrollAxis(val value: String) : Parcelable {
-        @SerialName("horizontal") HORIZONTAL("horizontal"),
-        @SerialName("vertical") VERTICAL("vertical");
-    }
-
     companion object {
         inline operator fun <reified V> invoke(
             key: Key<V>,

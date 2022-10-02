@@ -6,7 +6,6 @@
 
 package org.readium.adapters.pspdfkit.navigator
 
-import android.content.Context
 import android.graphics.PointF
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -31,46 +30,24 @@ import com.pspdfkit.listeners.OnPreparePopupToolbarListener
 import com.pspdfkit.ui.PdfFragment
 import com.pspdfkit.ui.toolbar.popup.PdfTextSelectionPopupToolbar
 import org.readium.adapters.pspdfkit.document.PsPdfKitDocument
-import org.readium.adapters.pspdfkit.document.PsPdfKitDocumentFactory
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
-import org.readium.r2.navigator.pdf.PdfDocumentFragmentFactory
+import org.readium.r2.navigator.settings.ScrollAxis
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.services.isProtected
-import org.readium.r2.shared.util.pdf.cachedIn
 
-@OptIn(ExperimentalReadiumApi::class)
-@PdfSupport
-class PsPdfKitDocumentFragment private constructor(
+@ExperimentalReadiumApi
+class PsPdfKitDocumentFragment internal constructor(
     private val publication: Publication,
     private val document: PsPdfKitDocument,
     private val initialPageIndex: Int,
-    settings: Settings,
+    settings: PsPdfKitSettings,
     private val listener: Listener?
-) : PdfDocumentFragment() {
+) : PdfDocumentFragment<PsPdfKitSettings>() {
 
-    companion object {
-        fun createFactory(context: Context): PdfDocumentFragmentFactory =
-            { input ->
-                val publication = input.publication
-                val document = PsPdfKitDocumentFactory(context)
-                    .cachedIn(publication)
-                    .open(publication.get(input.link), null)
-
-                PsPdfKitDocumentFragment(
-                    publication = publication,
-                    document = document,
-                    initialPageIndex = input.initialPageIndex,
-                    settings = input.settings,
-                    listener = input.listener
-                )
-            }
-    }
-
-    override var settings: Settings = settings
+    override var settings: PsPdfKitSettings = settings
         set(value) {
             if (field == value) return
 
@@ -81,7 +58,7 @@ class PsPdfKitDocumentFragment private constructor(
     private lateinit var pdfFragment: PdfFragment
     private val psPdfKitListener = PsPdfKitListener()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
         FragmentContainerView(inflater.context)
             .apply {
                 id = R.id.readium_pspdfkit_fragment
@@ -102,7 +79,7 @@ class PsPdfKitDocumentFragment private constructor(
     }
 
     private fun createPdfFragment(): PdfFragment {
-        document.document.pageBinding = settings.readingProgression.pageBinding ?: PageBinding.LEFT_EDGE
+        document.document.pageBinding = settings.readingProgression.value.pageBinding
 
         val config = PdfConfiguration.Builder()
             .animateScrollOnEdgeTaps(false)
@@ -117,14 +94,17 @@ class PsPdfKitDocumentFragment private constructor(
             .enableMagnifier(true)
             .excludedAnnotationTypes(emptyList())
             .firstPageAlwaysSingle(false)
-            .fitMode(settings.fit?.fitMode ?: PageFitMode.FIT_TO_SCREEN)
-            .layoutMode(PageLayoutMode.SINGLE)
+            .fitMode(settings.fit.value.fitMode)
+            .layoutMode(settings.spread.value.pageLayout)
 //            .loadingProgressDrawable(null)
 //            .maxZoomScale()
             .pagePadding(0)
             .restoreLastViewedPage(false)
-            .scrollDirection(settings.readingProgression.scrollDirection ?: PageScrollDirection.HORIZONTAL)
-            .scrollMode(settings.overflow.scrollMode ?: PageScrollMode.CONTINUOUS)
+            .scrollDirection(
+                if (!settings.scroll.value) PageScrollDirection.HORIZONTAL
+                else settings.scrollAxis.value.scrollDirection
+            )
+            .scrollMode(settings.scroll.value.scrollMode)
             .scrollOnEdgeTapEnabled(false)
             .scrollOnEdgeTapMargin(50)
             .scrollbarsEnabled(true)
@@ -203,11 +183,10 @@ class PsPdfKitDocumentFragment private constructor(
     }
 }
 
-private val Presentation.Overflow.scrollMode: PageScrollMode?
+private val Boolean.scrollMode: PageScrollMode
     get() = when (this) {
-        Presentation.Overflow.AUTO -> null
-        Presentation.Overflow.PAGINATED -> PageScrollMode.PER_PAGE
-        Presentation.Overflow.SCROLLED -> PageScrollMode.CONTINUOUS
+        false -> PageScrollMode.PER_PAGE
+        true -> PageScrollMode.CONTINUOUS
     }
 
 private val Presentation.Fit.fitMode: PageFitMode
@@ -216,16 +195,22 @@ private val Presentation.Fit.fitMode: PageFitMode
         else -> PageFitMode.FIT_TO_SCREEN
     }
 
-private val ReadingProgression.scrollDirection: PageScrollDirection?
+@OptIn(ExperimentalReadiumApi::class)
+private val ScrollAxis.scrollDirection: PageScrollDirection
     get() = when (this) {
-        ReadingProgression.AUTO -> null
-        ReadingProgression.RTL, ReadingProgression.LTR -> PageScrollDirection.HORIZONTAL
-        ReadingProgression.TTB, ReadingProgression.BTT -> PageScrollDirection.VERTICAL
+        ScrollAxis.VERTICAL -> PageScrollDirection.VERTICAL
+        ScrollAxis.HORIZONTAL -> PageScrollDirection.HORIZONTAL
     }
 
-private val ReadingProgression.pageBinding: PageBinding?
+private val ReadingProgression.pageBinding: PageBinding
     get() = when (this) {
-        ReadingProgression.AUTO -> null
-        ReadingProgression.LTR, ReadingProgression.TTB -> PageBinding.LEFT_EDGE
-        ReadingProgression.RTL, ReadingProgression.BTT -> PageBinding.RIGHT_EDGE
+        ReadingProgression.RTL -> PageBinding.RIGHT_EDGE
+        else -> PageBinding.LEFT_EDGE
     }
+
+private val Presentation.Spread.pageLayout: PageLayoutMode
+    get() = when (this) {
+        Presentation.Spread.AUTO -> PageLayoutMode.AUTO
+        Presentation.Spread.BOTH -> PageLayoutMode.DOUBLE
+        else -> PageLayoutMode.SINGLE
+}

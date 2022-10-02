@@ -16,7 +16,6 @@ import com.pspdfkit.document.PageBinding
 import com.pspdfkit.document.PdfDocumentLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.pdf.PdfDocument
@@ -26,7 +25,6 @@ import java.io.File
 import kotlin.reflect.KClass
 import com.pspdfkit.document.PdfDocument as _PsPdfKitDocument
 
-@PdfSupport
 class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPdfKitDocument> {
     private val context = context.applicationContext
 
@@ -44,7 +42,6 @@ class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPdfKitDoc
         }
 }
 
-@PdfSupport
 class PsPdfKitDocument(
     val document: _PsPdfKitDocument
 ) : PdfDocument {
@@ -94,11 +91,9 @@ class PsPdfKitDocument(
     override suspend fun close() {}
 }
 
-@PdfSupport
 private fun List<OutlineElement>.toOutlineNodes(): List<PdfDocument.OutlineNode> =
     map { it.toOutlineNode() }
 
-@PdfSupport
 private fun OutlineElement.toOutlineNode(): PdfDocument.OutlineNode =
     PdfDocument.OutlineNode(
         title = title,

@@ -80,8 +80,11 @@ enum class ImageFilter {
  *
  * When not available, the Navigator should use [alternate] as a fallback.
  */
+@JvmInline
 @ExperimentalReadiumApi
-data class FontFamily(val name: String, val alternate: FontFamily? = null) {
+@Serializable
+value class FontFamily(val name: String) {
+
     companion object {
         // Generic font families
         // See https://www.w3.org/TR/css-fonts-4/#generic-font-families
@@ -95,80 +98,41 @@ data class FontFamily(val name: String, val alternate: FontFamily? = null) {
         // See https://readium.org/readium-css/docs/CSS10-libre_fonts
 
         // Serif
-        val CHARIS_SIL = FontFamily("Charis SIL", alternate = SERIF)
-        val FAUSTINA = FontFamily("Faustina", alternate = SERIF)
-        val IBM_PLEX_SERIF = FontFamily("IBM Plex Serif", alternate = SERIF)
-        val LITERATA = FontFamily("Literata", alternate = SERIF)
-        val MERRIWEATHER = FontFamily("Merriweather", alternate = SERIF)
-        val PT_SERIF = FontFamily("PT Serif", alternate = SERIF)
-        val VOLLKORN = FontFamily("Vollkorn", alternate = SERIF)
+        val CHARIS_SIL = FontFamily("Charis SIL")
+        val FAUSTINA = FontFamily("Faustina")
+        val IBM_PLEX_SERIF = FontFamily("IBM Plex Serif")
+        val LITERATA = FontFamily("Literata")
+        val MERRIWEATHER = FontFamily("Merriweather")
+        val PT_SERIF = FontFamily("PT Serif")
+        val VOLLKORN = FontFamily("Vollkorn")
 
         // Sans-serif
-        val CLEAR_SANS = FontFamily("Clear Sans", alternate = SANS_SERIF)
-        val FIRA_SANS = FontFamily("Fira Sans", alternate = SANS_SERIF)
-        val LIBRE_FRANKLIN = FontFamily("Libre Franklin", alternate = SANS_SERIF)
-        val MERRIWEATHER_SANS = FontFamily("Merriweather Sans", alternate = SANS_SERIF)
-        val PT_SANS = FontFamily("PT Sans", alternate = SANS_SERIF)
-        val SOURCE_SANS_PRO = FontFamily("Source Sans Pro", alternate = SANS_SERIF)
+        val CLEAR_SANS = FontFamily("Clear Sans")
+        val FIRA_SANS = FontFamily("Fira Sans")
+        val LIBRE_FRANKLIN = FontFamily("Libre Franklin")
+        val MERRIWEATHER_SANS = FontFamily("Merriweather Sans")
+        val PT_SANS = FontFamily("PT Sans")
+        val SOURCE_SANS_PRO = FontFamily("Source Sans Pro")
 
         // Accessibility
         val ACCESSIBLE_DFA = FontFamily("AccessibleDfA")
-        val IA_WRITER_DUOSPACE = FontFamily("IA Writer Duospace", alternate = MONOSPACE)
+        val IA_WRITER_DUOSPACE = FontFamily("IA Writer Duospace")
         val OPEN_DYSLEXIC = FontFamily("OpenDyslexic")
 
         // System
-        val ROBOTO = FontFamily("Roboto", alternate = SANS_SERIF)
-    }
-
-    class Coder(private val families: List<FontFamily> = emptyList()) : SettingCoder<FontFamily?> {
-        override fun decode(json: JsonElement): FontFamily? =
-            (json as? JsonPrimitive)
-                ?.contentOrNull
-                ?.let { name ->
-                    families.firstOrNull { it.name == name }
-                }
-
-        override fun encode(value: FontFamily?): JsonElement =
-            value
-                ?.let { JsonPrimitive(it.name) }
-                ?: JsonNull
+        val ROBOTO = FontFamily("Roboto")
     }
 }
 
 @ExperimentalReadiumApi
-sealed class Color {
+@Serializable
+@JvmInline
+value class Color(@ColorInt val int: Int)
 
-    object Undefined : Color()
-
-    data class PackedInt(@ColorInt val int: Int) : Color()
-
-    data class Name(val name: String) : Color()
-
-    companion object {
-
-        val AUTO = Undefined
-    }
-
-    class Coder : SettingCoder<Color> {
-        override fun decode(json: JsonElement): Color {
-            if (json !is JsonPrimitive) {
-                return AUTO
-            }
-
-            json.intOrNull
-                ?.let { return PackedInt(it) }
-
-            json.contentOrNull
-                ?.let { return Name(it) }
-
-            return AUTO
-        }
-
-        override fun encode(value: Color): JsonElement =
-            when (value) {
-                Undefined -> JsonNull
-                is PackedInt -> JsonPrimitive(value.int)
-                is Name -> JsonPrimitive(value.name)
-            }
-    }
+@ExperimentalReadiumApi
+@Serializable
+enum class ScrollAxis(val value: String) {
+    @SerialName("horizontal") HORIZONTAL("horizontal"),
+    @SerialName("vertical") VERTICAL("vertical");
 }
+

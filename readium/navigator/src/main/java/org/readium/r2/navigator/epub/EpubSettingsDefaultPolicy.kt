@@ -18,30 +18,34 @@ internal object EpubSettingsDefaultPolicy : EpubSettingsPolicy {
         val verticalPref = preferences[EpubSettings.VERTICAL_TEXT]
         val verticalText = resolveVerticalText(verticalPref, language, readingProgression)
 
+        val theme = preferences[EpubSettings.THEME] ?: Theme.LIGHT
+        val backgroundColor = preferences[EpubSettings.BACKGROUND_COLOR] ?: Color(theme.backgroundColor)
+        val textColor = preferences[EpubSettings.TEXT_COLOR] ?: Color(theme.contentColor)
+
         return EpubSettingsValues.Reflowable(
             language = language,
             readingProgression = readingProgression,
-            backgroundColor = Color.AUTO,
-            columnCount = ColumnCount.AUTO,
-            fontFamily = null,
-            fontSize = 1.0,
-            hyphens = true,
-            imageFilter = ImageFilter.NONE,
-            letterSpacing = 0.0,
-            ligatures = true,
-            lineHeight = 1.2,
-            pageMargins = 1.0,
-            paragraphIndent = 0.0,
-            paragraphSpacing = 0.0,
-            publisherStyles = true,
-            scroll = false,
-            textAlign = TextAlign.START,
-            textColor = Color.AUTO,
-            textNormalization = TextNormalization.NONE,
-            theme =  Theme.LIGHT,
-            typeScale = 1.2,
             verticalText = verticalText,
-            wordSpacing = 0.0,
+            theme = theme,
+            backgroundColor = backgroundColor,
+            textColor = textColor,
+            columnCount = preferences[EpubSettings.COLUMN_COUNT] ?: ColumnCount.AUTO,
+            fontFamily = preferences[EpubSettings.FONT_FAMILY],
+            fontSize = preferences[EpubSettings.FONT_SIZE] ?: 1.0,
+            hyphens = preferences[EpubSettings.HYPHENS] ?: true,
+            imageFilter = preferences[EpubSettings.IMAGE_FILTER] ?: ImageFilter.NONE,
+            letterSpacing = preferences[EpubSettings.LETTER_SPACING] ?: 0.0,
+            ligatures = preferences[EpubSettings.LIGATURES] ?: true,
+            lineHeight = preferences[EpubSettings.LINE_HEIGHT] ?: 1.2,
+            pageMargins = preferences[EpubSettings.PAGE_MARGINS] ?: 1.0,
+            paragraphIndent = preferences[EpubSettings.PARAGRAPH_INDENT] ?: 0.0,
+            paragraphSpacing = preferences[EpubSettings.PARAGRAPH_SPACING] ?: 0.0,
+            publisherStyles = preferences[EpubSettings.PUBLISHER_STYLES] ?: true,
+            scroll = preferences[EpubSettings.SCROLL] ?: false,
+            textAlign = preferences[EpubSettings.TEXT_ALIGN] ?: TextAlign.START,
+            textNormalization = preferences[EpubSettings.TEXT_NORMALIZATION] ?: TextNormalization.NONE,
+            typeScale = preferences[EpubSettings.TYPE_SCALE] ?: 1.2,
+            wordSpacing = preferences[EpubSettings.WORD_SPACING] ?: 0.0,
         )
     }
 

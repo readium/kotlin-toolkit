@@ -61,7 +61,7 @@ internal class EpubSettingsFactory(
             typeScale = typeScaleSetting(values.typeScale),
             verticalText = verticalTextSetting(values.verticalText),
             wordSpacing = wordSpacingSetting(values.wordSpacing),
-            layout = Layout()
+            layout = Layout.from(values)
         )
     }
 

@@ -95,7 +95,7 @@ internal class EpubNavigatorViewModel(
             rsProperties = config.readiumCssRsProperties,
             fontFamilies = config.fontFamilies,
             assetsBaseHref = WebViewServer.assetsBaseHref
-        ).update(settings.value, config.namedColors)
+        ).update(settings.value, config.fontFamilies)
     )
 
     init {
@@ -207,17 +207,13 @@ internal class EpubNavigatorViewModel(
         val oldFixedSettings = (settings.value as? EpubSettings.FixedLayout)
         val oldReadingProgression = readingProgression
 
-        val newSettings =
-            EpubSettingsFactory(
-                publication.metadata,
-                config.fontFamilies.map { it.fontFamily },
-                config.settingsPolicy,
-            ).createSettings(preferences)
+        val newSettings = settingsFactory.createSettings(preferences)
+        _settings.value = newSettings
 
         val newReflowSettings = (newSettings as? EpubSettings.Reflowable)
         val newFixedSettings = (newSettings as? EpubSettings.FixedLayout)
 
-        css.update { it.update(newSettings, config.namedColors) }
+        css.update { it.update(newSettings, config.fontFamilies) }
 
         val needsInvalidation: Boolean = (
             oldReadingProgression != readingProgression ||

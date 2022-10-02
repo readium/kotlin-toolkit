@@ -15,7 +15,8 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 @ExperimentalReadiumApi
 data class FontFamilyDeclaration(
     val fontFamily: FontFamily,
-    val source: FontFamilySource
+    val source: FontFamilySource,
+    val alternate: FontFamilyDeclaration? = null,
 )
 
 /**
@@ -50,8 +51,9 @@ sealed class FontFamilySource {
 }
 
 /**
- * Creates a font family declaration for the [FontFamily] receiver from the given [source].
+ * Creates a font family declaration for the [FontFamily] receiver from the given [source]
+ * and [alternate] declaration if any.q
  */
 @ExperimentalReadiumApi
-fun FontFamily.from(source: FontFamilySource): FontFamilyDeclaration =
-    FontFamilyDeclaration(this, source)
+fun FontFamily.from(source: FontFamilySource, alternate: FontFamilyDeclaration? = null): FontFamilyDeclaration =
+    FontFamilyDeclaration(fontFamily = this, source = source, alternate = alternate)

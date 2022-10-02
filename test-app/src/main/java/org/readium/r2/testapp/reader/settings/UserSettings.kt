@@ -19,13 +19,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitSettings
 import org.readium.r2.navigator.epub.EpubSettings
-import org.readium.adapters.pdfium.navigator.PdfiumSettings
 import org.readium.r2.navigator.settings.*
-import org.readium.r2.navigator.settings.Setting.ScrollAxis
+import org.readium.r2.navigator.settings.ScrollAxis
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.ReadingProgression
@@ -53,20 +54,22 @@ fun UserSettings(model: UserSettingsViewModel) {
     UserSettings(
         settings = model.settings.collectAsState().value ?: return,
         preferences = model.preferences.collectAsState().value,
-        edit = model::edit
+        editNavigator = model::editNavigatorPreferences,
+        editPublication = model::editPublicationPreferences
     )
 }
 
 /**
  * Stateless user settings component displaying the given [settings] and setting user [preferences],
- * using the [edit] closure.
+ * using the [editNavigator] and [editPublication] closures.
  */
 @OptIn(PdfSupport::class)
 @Composable
 fun UserSettings(
     settings: Configurable.Settings,
     preferences: Preferences,
-    edit: EditPreferences
+    editNavigator: EditPreferences,
+    editPublication: EditPreferences
 ) {
     Column(
         modifier = Modifier.padding(vertical = 24.dp)
@@ -85,10 +88,13 @@ fun UserSettings(
                 .align(Alignment.End),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            PresetsMenuButton(edit = edit, presets = settings.presets())
+            PresetsMenuButton(edit = editPublication, presets = settings.presets())
 
             Button(
-                onClick = { edit { clear() } },
+                onClick = {
+                    editPublication { clear() }
+                    editNavigator { clear() }
+                },
             ) {
                 Text("Reset")
             }
@@ -100,7 +106,8 @@ fun UserSettings(
             is EpubSettings.FixedLayout ->
                 FixedLayoutUserSettings(
                     preferences = preferences,
-                    edit = edit,
+                    editNavigator = editNavigator,
+                    editPublication = editPublication,
                     language = settings.language,
                     readingProgression = settings.readingProgression,
                     spread = settings.spread,
@@ -109,13 +116,14 @@ fun UserSettings(
                     scrollAxis = null
                 )
 
-            is PdfiumSettings ->
+            is PsPdfKitSettings ->
                 FixedLayoutUserSettings(
                     preferences = preferences,
-                    edit = edit,
+                    editNavigator = editNavigator,
+                    editPublication = editPublication,
                     language = null,
                     readingProgression = settings.readingProgression,
-                    spread = null,
+                    spread = settings.spread,
                     scroll = settings.scroll,
                     scrollAxis = settings.scrollAxis,
                     fit = settings.fit
@@ -124,7 +132,8 @@ fun UserSettings(
             is EpubSettings.Reflowable ->
                 ReflowableUserSettings(
                     preferences = preferences,
-                    edit = edit,
+                    editNavigator = editNavigator,
+                    editPublication = editPublication,
                     backgroundColor = settings.backgroundColor,
                     columnCount = settings.columnCount,
                     fontFamily = settings.fontFamily,
@@ -159,7 +168,8 @@ fun UserSettings(
 @Composable
 private fun ColumnScope.FixedLayoutUserSettings(
     preferences: Preferences,
-    edit: EditPreferences,
+    editNavigator: EditPreferences,
+    editPublication: EditPreferences,
     spread: EnumSetting<Spread>? = null,
     fit: EnumSetting<Fit>? = null,
     language: Setting<Language?>? = null,
@@ -169,18 +179,18 @@ private fun ColumnScope.FixedLayoutUserSettings(
 ) {
     if (language != null || readingProgression != null) {
         fun reset() {
-            edit {
+            editPublication {
                 remove(language)
                 remove(readingProgression)
             }
         }
 
         if (language != null) {
-            LanguageItem(language, preferences, edit)
+            LanguageItem(language, preferences, editPublication)
         }
 
         if (readingProgression != null) {
-            ButtonGroupItem(title = "Reading progression", readingProgression, preferences , edit) { value ->
+            ButtonGroupItem(title = "Reading progression", readingProgression, preferences , editPublication) { value ->
                 when (value) {
                     ReadingProgression.AUTO -> "Auto"
                     else -> value.name
@@ -205,11 +215,11 @@ private fun ColumnScope.FixedLayoutUserSettings(
     }
 
     if (scroll != null) {
-        SwitchItem(title = "Scroll", scroll, preferences, edit)
+        SwitchItem(title = "Scroll", scroll, preferences, editNavigator)
     }
 
     if (scrollAxis != null) {
-        ButtonGroupItem("Scroll axis", scrollAxis, preferences, edit) { value ->
+        ButtonGroupItem("Scroll axis", scrollAxis, preferences, editNavigator) { value ->
             when (value) {
                 ScrollAxis.HORIZONTAL-> "Horizontal"
                 ScrollAxis.VERTICAL -> "Vertical"
@@ -218,7 +228,7 @@ private fun ColumnScope.FixedLayoutUserSettings(
     }
 
     if (spread != null) {
-        ButtonGroupItem("Spread", spread, preferences, edit) { value ->
+        ButtonGroupItem("Spread", spread, preferences, editNavigator) { value ->
             when (value) {
                 Spread.AUTO -> "Auto"
                 Spread.BOTH -> "Both"
@@ -229,7 +239,7 @@ private fun ColumnScope.FixedLayoutUserSettings(
     }
 
     if (fit != null) {
-        ButtonGroupItem("Fit", fit, preferences, edit) { value ->
+        ButtonGroupItem("Fit", fit, preferences, editNavigator) { value ->
             when (value) {
                 Fit.CONTAIN-> "Contain"
                 Fit.COVER -> "Cover"
@@ -247,7 +257,8 @@ private fun ColumnScope.FixedLayoutUserSettings(
 @Composable
 private fun ColumnScope.ReflowableUserSettings(
     preferences: Preferences,
-    edit: EditPreferences,
+    editNavigator: EditPreferences,
+    editPublication: EditPreferences,
     backgroundColor: ColorSetting? = null,
     columnCount: EnumSetting<ColumnCount>? = null,
     fontFamily: EnumSetting<FontFamily?>? = null,
@@ -274,7 +285,7 @@ private fun ColumnScope.ReflowableUserSettings(
 ) {
     if (language != null || readingProgression != null || verticalText != null) {
         fun reset() {
-            edit {
+            editPublication {
                 remove(language)
                 remove(readingProgression)
                 remove(verticalText)
@@ -282,17 +293,17 @@ private fun ColumnScope.ReflowableUserSettings(
         }
 
         if (language != null) {
-            LanguageItem(language, preferences, edit)
+            LanguageItem(language, preferences, editPublication)
         }
 
         if (readingProgression != null) {
-            ButtonGroupItem(title = "Reading progression", readingProgression, preferences , edit) { value ->
+            ButtonGroupItem(title = "Reading progression", readingProgression, preferences , editPublication) { value ->
                 value.name
             }
         }
 
         if (verticalText != null) {
-            SwitchItem(title = "Vertical text", verticalText, preferences, edit)
+            SwitchItem(title = "Vertical text", verticalText, preferences, editPublication)
         }
 
         // The language settings are specific to a publication. This button resets only the
@@ -313,11 +324,11 @@ private fun ColumnScope.ReflowableUserSettings(
 
     if (scroll != null || columnCount != null || pageMargins != null) {
         if (scroll != null) {
-            SwitchItem(title = "Scroll", scroll, preferences, edit)
+            SwitchItem(title = "Scroll", scroll, preferences, editNavigator)
         }
 
         if (columnCount != null) {
-            ButtonGroupItem("Columns", columnCount, preferences, edit) { value ->
+            ButtonGroupItem("Columns", columnCount, preferences, editNavigator) { value ->
                 when (value) {
                     ColumnCount.AUTO -> "Auto"
                     ColumnCount.ONE -> "1"
@@ -327,7 +338,7 @@ private fun ColumnScope.ReflowableUserSettings(
         }
 
         if (pageMargins != null) {
-            StepperItem("Page margins", pageMargins, preferences, edit)
+            StepperItem("Page margins", pageMargins, preferences, editNavigator)
         }
 
         Divider()
@@ -335,7 +346,7 @@ private fun ColumnScope.ReflowableUserSettings(
 
     if (theme != null || textColor != null || imageFilter != null) {
         if (theme != null) {
-            ButtonGroupItem("Theme", theme, preferences, edit) { value ->
+            ButtonGroupItem("Theme", theme, preferences, editNavigator) { value ->
                 when (value) {
                     Theme.LIGHT -> "Light"
                     Theme.DARK -> "Dark"
@@ -345,7 +356,7 @@ private fun ColumnScope.ReflowableUserSettings(
         }
 
         if (imageFilter != null) {
-            ButtonGroupItem("Image filter", imageFilter, preferences, edit) { value ->
+            ButtonGroupItem("Image filter", imageFilter, preferences, editNavigator) { value ->
                 when (value) {
                     ImageFilter.NONE -> "None"
                     ImageFilter.DARKEN -> "Darken"
@@ -355,11 +366,11 @@ private fun ColumnScope.ReflowableUserSettings(
         }
 
         if (textColor != null) {
-            ColorItem("Text color", textColor, preferences, edit)
+            ColorItem("Text color", textColor, preferences, editNavigator)
         }
 
         if (backgroundColor != null) {
-            ColorItem("Background color", backgroundColor, preferences, edit)
+            ColorItem("Background color", backgroundColor, preferences, editNavigator)
         }
 
         Divider()
@@ -367,17 +378,17 @@ private fun ColumnScope.ReflowableUserSettings(
 
     if (fontFamily != null || fontSize != null || textNormalization != null) {
         if (fontFamily != null) {
-            MenuItem("Typeface", fontFamily, preferences, edit) { value ->
+            MenuItem("Typeface", fontFamily, preferences, editNavigator) { value ->
                 value?.name ?: "Original"
             }
         }
 
         if (fontSize != null) {
-            StepperItem("Font size", fontSize, preferences, edit)
+            StepperItem("Font size", fontSize, preferences, editNavigator)
         }
 
         if (textNormalization != null) {
-            ButtonGroupItem("Text normalization", textNormalization, preferences, edit) { value ->
+            ButtonGroupItem("Text normalization", textNormalization, preferences, editNavigator) { value ->
                 when (value) {
                     TextNormalization.NONE -> "None"
                     TextNormalization.BOLD -> "Bold"
@@ -390,11 +401,11 @@ private fun ColumnScope.ReflowableUserSettings(
     }
 
     if (publisherStyles != null) {
-        SwitchItem("Publisher styles", publisherStyles, preferences, edit)
+        SwitchItem("Publisher styles", publisherStyles, preferences, editNavigator)
     }
 
     if (textAlign != null) {
-        ButtonGroupItem("Alignment", textAlign, preferences, edit) { value ->
+        ButtonGroupItem("Alignment", textAlign, preferences, editNavigator) { value ->
             when (value) {
                 ReadiumTextAlign.CENTER -> "Center"
                 ReadiumTextAlign.JUSTIFY -> "Justify"
@@ -407,35 +418,35 @@ private fun ColumnScope.ReflowableUserSettings(
     }
 
     if (typeScale != null) {
-        StepperItem("Type scale", typeScale, preferences, edit)
+        StepperItem("Type scale", typeScale, preferences, editNavigator)
     }
 
     if (lineHeight != null) {
-        StepperItem("Line height", lineHeight, preferences, edit)
+        StepperItem("Line height", lineHeight, preferences, editNavigator)
     }
 
     if (paragraphIndent != null) {
-        StepperItem("Paragraph indent", paragraphIndent, preferences, edit)
+        StepperItem("Paragraph indent", paragraphIndent, preferences, editNavigator)
     }
 
     if (paragraphSpacing != null) {
-        StepperItem("Paragraph spacing", paragraphSpacing, preferences, edit)
+        StepperItem("Paragraph spacing", paragraphSpacing, preferences, editNavigator)
     }
 
     if (wordSpacing != null) {
-        StepperItem("Word spacing", wordSpacing, preferences, edit)
+        StepperItem("Word spacing", wordSpacing, preferences, editNavigator)
     }
 
     if (letterSpacing != null) {
-        StepperItem("Letter spacing", letterSpacing, preferences, edit)
+        StepperItem("Letter spacing", letterSpacing, preferences, editNavigator)
     }
 
     if (hyphens != null) {
-        SwitchItem("Hyphens", hyphens, preferences, edit)
+        SwitchItem("Hyphens", hyphens, preferences, editNavigator)
     }
 
     if (ligatures != null) {
-        SwitchItem("Ligatures", ligatures, preferences, edit)
+        SwitchItem("Ligatures", ligatures, preferences, editNavigator)
     }
 }
 
@@ -604,19 +615,24 @@ private fun ColorItem(
     edit: EditPreferences
 ) {
     var isPicking by remember { mutableStateOf(false) }
-    val color = remember(setting.value) { Color(setting.value.int) }
 
     Item(
         title = title,
         isActive = preferences.isActive(setting),
         onClick = { isPicking = true }
     ) {
+        val color = Color(preferences[setting]?.int ?: setting.value.int)
+
         OutlinedButton(
             onClick = { isPicking = true },
             colors = ButtonDefaults.buttonColors(backgroundColor = color)
         ) {
-            if (setting.value == ReadiumColor.AUTO) {
-                Icon(imageVector = Icons.Default.Palette, contentDescription = "Change color")
+            if (preferences[setting] == null) {
+                Icon(
+                    imageVector = Icons.Default.Palette,
+                    contentDescription = "Change color",
+                    tint = if (color.luminance() > 0.5) Color.Black else Color.White
+                )
             }
         }
 

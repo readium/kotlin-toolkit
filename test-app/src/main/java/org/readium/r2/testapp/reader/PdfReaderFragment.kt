@@ -12,16 +12,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.commitNow
-import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitEngineProvider
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.testapp.R
 
-@OptIn(PdfSupport::class, ExperimentalReadiumApi::class)
+@OptIn(ExperimentalReadiumApi::class)
 class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener {
 
     override lateinit var navigator: Navigator
@@ -33,8 +32,9 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
             PdfNavigatorFragment.createFactory(
                 publication = publication,
                 initialLocator = readerData.initialLocation,
+                preferences = model.settings.preferences.value,
                 listener = NavigatorListener(),
-                pdfEngineProvider = PdfiumEngineProvider()
+                pdfEngineProvider = PsPdfKitEngineProvider(requireContext().applicationContext)
             )
 
         super.onCreate(savedInstanceState)

@@ -140,21 +140,10 @@ sealed class EpubSettings : Configurable.Settings {
         val TYPE_SCALE = Setting.Key<Double>("typeScale")
         val VERTICAL_TEXT = Setting.Key<Boolean>("verticalText")
         val WORD_SPACING = Setting.Key<Double>("wordSpacing")
-
-        /**
-         * Keys of settings that are tied to a single publication and should not be shared between
-         * several publications.
-         */
-        @ExperimentalReadiumApi
-        val PUBLICATION_SETTINGS = listOf(
-            LANGUAGE,
-            READING_PROGRESSION,
-            VERTICAL_TEXT
-        ).toTypedArray()
     }
 }
 
-internal fun ReadiumCss.update(settings: EpubSettings, namedColors: Map<String, Int>): ReadiumCss {
+internal fun ReadiumCss.update(settings: EpubSettings, fontFamilies: List<FontFamilyDeclaration>): ReadiumCss {
     if (settings !is Reflowable) return this
 
     return with(settings) {
@@ -178,10 +167,10 @@ internal fun ReadiumCss.update(settings: EpubSettings, namedColors: Map<String, 
                 },
                 darkenImages = imageFilter.value == ImageFilter.DARKEN,
                 invertImages = imageFilter.value == ImageFilter.INVERT,
-                textColor = textColor.value.toCSS(namedColors),
-                backgroundColor = backgroundColor.value.toCSS(namedColors),
+                textColor = textColor.value.toCss(),
+                backgroundColor = backgroundColor.value.toCss(),
                 fontOverride = (fontFamily.value != null || (textNormalization.value == TextNormalization.ACCESSIBILITY)),
-                fontFamily = fontFamily.value?.toCss(),
+                fontFamily = fontFamily.value?.toCss(fontFamilies),
                 // Font size is handled natively with WebSettings.textZoom.
                 // See https://github.com/readium/mobile/issues/1#issuecomment-652431984
 //                fontSize = fontSize.value
@@ -210,21 +199,16 @@ internal fun ReadiumCss.update(settings: EpubSettings, namedColors: Map<String, 
     }
 }
 
-private fun FontFamily.toCss(): List<String> = buildList {
+private fun FontFamily.toCss(declarations: List<FontFamilyDeclaration>): List<String> = buildList {
+    val declaration = declarations.firstOrNull { it.fontFamily == this@toCss }
+    checkNotNull(declaration) { "Cannot resolve font name."}
     add(name)
-    alternate?.let { addAll(it.toCss()) }
+    val alternateChain = declaration.alternate?.fontFamily?.toCss(declarations)
+    alternateChain?.let {  addAll(it) }
 }
 
-private fun Color.toCSS(namedColors: Map<String, Int>): CssColor? = when (this) {
-    is Color.Undefined ->
-        null
-    is Color.PackedInt ->
-        CssColor.Int(int)
-    is Color.Name -> {
-        val int = requireNotNull(namedColors[name]) { "Cannot resolve color name: $name." }
-        CssColor.Int(int)
-    }
-}
+private fun Color.toCss(): CssColor =
+    CssColor.Int(int)
 
 /**
  * Loads the preferences from the legacy EPUB settings stored in the [SharedPreferences] with

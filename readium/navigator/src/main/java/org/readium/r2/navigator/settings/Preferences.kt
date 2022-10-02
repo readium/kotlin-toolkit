@@ -111,7 +111,7 @@ open class Preferences(
         get(setting.key)
 
     /**
-     * Gets the preference for the given [setting] key, if set.
+     * Gets the preference for the given [key], if set.
      *
      * The value will be decoded using [coder].
      */

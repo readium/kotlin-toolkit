@@ -4,7 +4,7 @@ import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 
-@OptIn(ExperimentalReadiumApi::class)
+@ExperimentalReadiumApi
 interface EpubSettingsPolicy {
 
     @ExperimentalReadiumApi
