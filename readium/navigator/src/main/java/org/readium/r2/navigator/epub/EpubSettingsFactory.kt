@@ -15,7 +15,7 @@ import org.readium.r2.shared.util.Language
 internal class EpubSettingsFactory(
     private val metadata: Metadata = Metadata(localizedTitle = LocalizedString("")),
     private val fontFamilies: List<FontFamily> = emptyList(),
-    private val settingsPolicy: EpubSettingsPolicy = EpubSettingsDefaultPolicy,
+    private val settingsPolicy: EpubSettingsPolicy = EpubSettingsPolicy(),
 ) {
 
     fun createSettings(preferences: Preferences): EpubSettings =

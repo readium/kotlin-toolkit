@@ -101,7 +101,7 @@ class EpubNavigatorFragment private constructor(
          * Policy which computes settings values from metadata and preferences.
          */
         @ExperimentalReadiumApi
-        val settingsPolicy: EpubSettingsPolicy = EpubSettingsDefaultPolicy,
+        val settingsPolicy: EpubSettingsPolicy = EpubSettingsPolicy(),
 
         /**
          * Patterns for asset paths which will be available to EPUB resources under
