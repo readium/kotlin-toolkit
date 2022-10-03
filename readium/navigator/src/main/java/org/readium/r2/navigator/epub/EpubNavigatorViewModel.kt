@@ -217,6 +217,7 @@ internal class EpubNavigatorViewModel(
 
         val needsInvalidation: Boolean = (
             oldReadingProgression != readingProgression ||
+            oldReflowSettings?.language?.value != newReflowSettings?.language?.value ||
             oldReflowSettings?.verticalText?.value != newReflowSettings?.verticalText?.value ||
             oldFixedSettings?.spread?.value != newFixedSettings?.spread?.value
         )
