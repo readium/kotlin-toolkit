@@ -18,7 +18,6 @@ import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
 import org.readium.r2.navigator.settings.ScrollAxis
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
@@ -27,7 +26,6 @@ import org.readium.r2.shared.publication.presentation.Presentation
 import timber.log.Timber
 
 @OptIn(ExperimentalReadiumApi::class)
-@PdfSupport
 class PdfiumDocumentFragment internal constructor(
     private val publication: Publication,
     private val link: Link,

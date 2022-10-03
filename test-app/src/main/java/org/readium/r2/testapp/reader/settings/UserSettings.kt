@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitSettings
+import org.readium.adapters.pdfium.navigator.PdfiumSettings
 import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.settings.ScrollAxis
@@ -116,15 +116,13 @@ fun UserSettings(
                     scrollAxis = null
                 )
 
-            is PsPdfKitSettings ->
+            is PdfiumSettings ->
                 FixedLayoutUserSettings(
                     preferences = preferences,
                     editNavigator = editNavigator,
                     editPublication = editPublication,
                     language = null,
                     readingProgression = settings.readingProgression,
-                    spread = settings.spread,
-                    scroll = settings.scroll,
                     scrollAxis = settings.scrollAxis,
                     fit = settings.fit
                 )

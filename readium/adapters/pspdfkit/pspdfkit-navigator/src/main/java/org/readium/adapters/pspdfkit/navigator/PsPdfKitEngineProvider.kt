@@ -40,8 +40,6 @@ class PsPdfKitEngineProvider(
         )
     }
 
-    override fun createSettings(metadata: Metadata, preferences: Preferences): PsPdfKitSettings {
-        val policy = settingsPolicy ?:  PsPdfKitSettingsPolicy()
-        return PsPdfKitSettingsFactory(metadata, policy).createSettings(preferences)
-    }
+    override fun createSettings(metadata: Metadata, preferences: Preferences): PsPdfKitSettings =
+        PsPdfKitSettingsFactory(metadata, settingsPolicy).createSettings(preferences)
 }

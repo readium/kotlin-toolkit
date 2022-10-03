@@ -12,7 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.commitNow
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitEngineProvider
+import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.navigator.pdf.PdfSettings
@@ -39,7 +39,7 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
                 initialLocator = readerData.initialLocation,
                 preferences = model.settings.preferences.value,
                 listener = this,
-                pdfEngineProvider = PsPdfKitEngineProvider(requireContext().applicationContext)
+                pdfEngineProvider = PdfiumEngineProvider()
             )
 
         super.onCreate(savedInstanceState)

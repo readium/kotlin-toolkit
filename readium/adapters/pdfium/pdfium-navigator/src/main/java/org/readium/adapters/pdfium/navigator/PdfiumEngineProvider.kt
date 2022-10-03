@@ -2,13 +2,15 @@ package org.readium.adapters.pdfium.navigator
 
 import org.readium.r2.navigator.pdf.PdfDocumentFragmentInput
 import org.readium.r2.navigator.pdf.PdfEngineProvider
+import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.PdfSupport
+import org.readium.r2.shared.publication.Metadata
 
-@PdfSupport
 @ExperimentalReadiumApi
 class PdfiumEngineProvider(
-    private val listener: PdfiumDocumentFragment.Listener? = null
+    private val listener: PdfiumDocumentFragment.Listener? = null,
+    private val settingsPolicy: PdfiumSettingsPolicy = PdfiumSettingsPolicy()
 ) : PdfEngineProvider<PdfiumSettings> {
 
     override suspend fun createDocumentFragment(input: PdfDocumentFragmentInput<PdfiumSettings>) =
@@ -21,6 +23,6 @@ class PdfiumEngineProvider(
             navigatorListener = input.listener
         )
 
-    override fun createDefaultSettings(): PdfiumSettings =
-        PdfiumSettings()
+    override fun createSettings(metadata: Metadata, preferences: Preferences): PdfiumSettings =
+        PdfiumSettingsFactory(metadata, settingsPolicy).createSettings(preferences)
 }

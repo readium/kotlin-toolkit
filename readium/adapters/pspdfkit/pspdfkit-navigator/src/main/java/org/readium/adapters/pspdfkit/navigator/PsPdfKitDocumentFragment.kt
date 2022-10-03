@@ -39,7 +39,7 @@ import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.services.isProtected
 
 @ExperimentalReadiumApi
-class PsPdfKitDocumentFragment internal constructor(
+internal class PsPdfKitDocumentFragment internal constructor(
     private val publication: Publication,
     private val document: PsPdfKitDocument,
     private val initialPageIndex: Int,
