@@ -59,6 +59,7 @@ import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.launchWebBrowser
 import org.readium.r2.shared.util.mediatype.MediaType
+import timber.log.Timber
 import kotlin.math.ceil
 import kotlin.reflect.KClass
 
@@ -676,6 +677,14 @@ class EpubNavigatorFragment private constructor(
 
         override val selectionActionModeCallback: ActionMode.Callback?
             get() = config.selectionActionModeCallback
+
+        override fun viewportWidth(): Int {
+            val width = view?.width ?: 0
+            if (width == 0) {
+                Timber.w("Null EpubNavigatorFragment.viewportWidth")
+            }
+            return width
+        }
 
         /**
          * Prevents opening external links in the web view and handles internal links.
