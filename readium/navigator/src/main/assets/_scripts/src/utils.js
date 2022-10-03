@@ -20,14 +20,10 @@ window.addEventListener(
   function () {
     const observer = new ResizeObserver(() => {
       appendVirtualColumnIfNeeded();
-    });
-    observer.observe(document.body);
-
-    window.addEventListener("orientationchange", function () {
       onViewportWidthChanged();
       snapCurrentOffset();
     });
-    onViewportWidthChanged();
+    observer.observe(document.body);
   },
   false
 );
