@@ -20,6 +20,8 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.collection.forEach
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.*
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -257,9 +259,6 @@ class EpubNavigatorFragment private constructor(
         positions = positionsByReadingOrder.flatten()
         publicationIdentifier = publication.metadata.identifier ?: publication.metadata.title
 
-        resourcePager = binding.resourcePager
-        resourcePager.type = Publication.TYPE.EPUB
-
         when (publication.metadata.presentation.layout) {
             EpubLayout.REFLOWABLE, null -> {
                 resourcesSingle = publication.readingOrder.mapIndexed { index, link ->
@@ -269,8 +268,6 @@ class EpubNavigatorFragment private constructor(
                         positionCount = positionsByReadingOrder.getOrNull(index)?.size ?: 0
                     )
                 }
-
-                resourcePager.type = Publication.TYPE.EPUB
             }
 
             EpubLayout.FIXED -> {
@@ -313,12 +310,11 @@ class EpubNavigatorFragment private constructor(
 
                 this.resourcesSingle = resourcesSingle
                 this.resourcesDouble = resourcesDouble
-
-                resourcePager.type = Publication.TYPE.FXL
             }
         }
 
-        resetAdapter()
+        resourcePager = binding.resourcePager
+        resetResourcePager()
 
         @Suppress("DEPRECATION")
         if (viewModel.useLegacySettings && publication.cssStyle == ReadingProgression.RTL.value) {
@@ -360,7 +356,24 @@ class EpubNavigatorFragment private constructor(
         return view
     }
 
-    private fun resetAdapter() {
+    private fun resetResourcePager() {
+        val parent = requireNotNull(resourcePager.parent as? ConstraintLayout) {
+            "The parent view of the EPUB `resourcePager` must be a ConstraintLayout"
+        }
+        parent.removeView(resourcePager)
+
+        resourcePager = R2ViewPager(requireContext())
+        resourcePager.id = R.id.resourcePager
+        resourcePager.type = when (publication.metadata.presentation.layout) {
+            EpubLayout.REFLOWABLE, null -> Publication.TYPE.EPUB
+            EpubLayout.FIXED -> Publication.TYPE.FXL
+        }
+        parent.addView(resourcePager)
+
+        resetResourcePagerAdapter()
+    }
+
+    private fun resetResourcePagerAdapter() {
         adapter = when (publication.metadata.presentation.layout) {
             EpubLayout.REFLOWABLE, null -> {
                 R2PagerAdapter(childFragmentManager, resourcesSingle)
@@ -437,8 +450,7 @@ class EpubNavigatorFragment private constructor(
 
     private fun invalidateResourcePager() {
         val locator = currentLocator.value
-        resetAdapter()
-        resourcePager.invalidate()
+        resetResourcePager()
         go(locator)
     }
 
