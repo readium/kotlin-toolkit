@@ -139,9 +139,11 @@ interface PdfDocument : SuspendingCloseable {
  * @param documentHref HREF of the PDF document in the [Publication] to which the links are
  *        relative to.
  */
+@ExperimentalReadiumApi
 fun List<PdfDocument.OutlineNode>.toLinks(documentHref: String): List<Link> =
     map { it.toLink(documentHref) }
 
+@ExperimentalReadiumApi
 fun PdfDocument.OutlineNode.toLink(documentHref: String): Link =
     Link(
         href = "$documentHref#page=$pageNumber",

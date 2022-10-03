@@ -15,6 +15,12 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.util.Language
 
+/**
+ * A policy which computes EPUB settings values from sets of metadata and preferences.
+ *
+ * If you implement a custom [EpubSettingsPolicy], be sure that all values from settings
+ * that will be active at the same time are compatible.
+ */
 @ExperimentalReadiumApi
 interface EpubSettingsPolicy {
 

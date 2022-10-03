@@ -12,6 +12,11 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.util.Language
 
+/**
+ * EPUB navigator settings values.
+ *
+ * There are two implementations, depending on the type of publications: [Reflowable] and [FixedLayout].
+ */
 @ExperimentalReadiumApi
 sealed class EpubSettingsValues {
     /** Language of the publication content. */
@@ -22,7 +27,7 @@ sealed class EpubSettingsValues {
     abstract val readingProgression: ReadingProgression
 
     /**
-     * EPUB navigator settings for fixed-layout publications.
+     * EPUB navigator settings values for fixed-layout publications.
      *
      * @param language Language of the publication content.
      * @param readingProgression Direction of the reading progression across resources.
@@ -37,7 +42,7 @@ sealed class EpubSettingsValues {
     ) : EpubSettingsValues()
 
     /**
-     * EPUB navigator settings for reflowable publications.
+     * EPUB navigator settings values for reflowable publications.
      *
      * @param backgroundColor Default page background color.
      * @param columnCount Number of columns to display (one-page view or two-page spread).

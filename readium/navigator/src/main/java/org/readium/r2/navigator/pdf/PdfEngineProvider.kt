@@ -17,22 +17,29 @@ import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 
-
-/** A [PdfEngineProvider] renders a single PDF resource.
-*
-* To be implemented by third-party PDF engines which can be used with [PdfNavigatorFragment].
-*/
+/**
+ * To be implemented by adapters for third-party PDF engines which can be used with [PdfNavigatorFragment].
+ */
 @ExperimentalReadiumApi
 interface PdfEngineProvider<S: PdfSettings> {
 
+    /**
+     * Creates a [PdfDocumentFragment] for [input].
+     */
     suspend fun createDocumentFragment(input: PdfDocumentFragmentInput<S>): PdfDocumentFragment<S>
 
+    /**
+     * Create [PdfSettings] for [metadata] and [preferences].
+     */
     fun createSettings(metadata: Metadata, preferences: Preferences): S
 }
 
 @ExperimentalReadiumApi
 typealias PdfDocumentFragmentFactory<S> = suspend (PdfDocumentFragmentInput<S>) -> PdfDocumentFragment<S>
 
+/**
+ * A [PdfDocumentFragment] renders a single PDF resource.
+ */
 @ExperimentalReadiumApi
 abstract class PdfDocumentFragment<S: PdfSettings> : Fragment() {
 
@@ -67,7 +74,7 @@ abstract class PdfDocumentFragment<S: PdfSettings> : Fragment() {
     abstract fun goToPageIndex(index: Int, animated: Boolean): Boolean
 
     /**
-     * Current presentation settings for the PDF document.
+     * Current settings for the PDF document.
      */
     abstract var settings: S
 }
@@ -80,6 +87,7 @@ data class PdfDocumentFragmentInput<S: PdfSettings>(
     val settings: S,
     val listener: PdfDocumentFragment.Listener?
 )
+
 
 @ExperimentalReadiumApi
 interface PdfSettings : Configurable.Settings {
