@@ -111,7 +111,7 @@ class PdfNavigatorFragment<S: PdfSettings> private constructor(
             publication,
             initialLocator,
             preferences = preferences,
-            settingsFactory = pdfEngineProvider::createPdfSettings
+            settingsFactory = pdfEngineProvider::createSettings
         )
     }
 

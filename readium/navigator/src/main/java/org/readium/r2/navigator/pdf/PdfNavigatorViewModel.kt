@@ -48,18 +48,7 @@ internal class PdfNavigatorViewModel(
     val settings: StateFlow<Configurable.Settings> = _settings.asStateFlow()
 
     fun submitPreferences(preferences: Preferences) = viewModelScope.launch {
-        val oldSettings = settings.value
-
         _settings.value = settingsFactory(publication.metadata, preferences)
-        /*val needsInvalidation: Boolean = (
-            oldReadingProgression != readingProgression ||
-                oldReflowSettings?.verticalText?.value != newReflowSettings?.verticalText?.value ||
-                oldFixedSettings?.spread?.value != newFixedSettings?.spread?.value
-            )
-
-        if (needsInvalidation) {
-            _events.send(EpubNavigatorViewModel.Event.InvalidateViewPager)
-        }*/
     }
 
     fun onPageChanged(pageIndex: Int) = viewModelScope.launch {

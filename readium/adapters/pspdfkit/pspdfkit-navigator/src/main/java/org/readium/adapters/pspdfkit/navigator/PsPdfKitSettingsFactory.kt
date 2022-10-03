@@ -16,11 +16,11 @@ import org.readium.r2.shared.publication.presentation.Presentation
 @ExperimentalReadiumApi
 internal class PsPdfKitSettingsFactory(
     private val metadata: Metadata,
-    private val settingsPolicy: (Metadata, Preferences) -> PsPdfKitSettingsValues
+    private val settingsPolicy: PsPdfKitSettingsPolicy
 ) {
 
     fun createSettings(preferences: Preferences): PsPdfKitSettings {
-        val values = settingsPolicy(metadata, preferences)
+        val values = settingsPolicy.settings(metadata, preferences)
 
         return PsPdfKitSettings(
             readingProgression = readingProgressionSetting(values.readingProgression),
@@ -69,11 +69,11 @@ internal class PsPdfKitSettingsFactory(
 
     private fun requiresScroll(scroll: Boolean) =
         RequirePreferenceSettingActivator(key = EpubSettings.SCROLL, value = scroll) { preferences ->
-            settingsPolicy(metadata, preferences).scroll
+            settingsPolicy.settings(metadata, preferences).scroll
         }
 
     private fun forcesScroll(scroll: Boolean) =
         ForcePreferenceSettingActivator(key = EpubSettings.SCROLL, value = scroll) { preferences ->
-            settingsPolicy(metadata, preferences).scroll
+            settingsPolicy.settings(metadata, preferences).scroll
         }
 }

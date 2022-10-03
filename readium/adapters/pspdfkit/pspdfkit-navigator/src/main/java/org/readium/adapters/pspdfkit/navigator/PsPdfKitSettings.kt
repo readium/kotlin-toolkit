@@ -7,6 +7,7 @@
 package org.readium.adapters.pspdfkit.navigator
 
 import org.readium.r2.navigator.pdf.PdfSettings
+import org.readium.r2.navigator.pdf.PdfSettingsValues
 import org.readium.r2.navigator.settings.EnumSetting
 import org.readium.r2.navigator.settings.ScrollAxis
 import org.readium.r2.navigator.settings.Setting
@@ -54,4 +55,4 @@ data class PsPdfKitSettingsValues(
     val scrollAxis: ScrollAxis,
     val fit: Presentation.Fit,
     val spread: Presentation.Spread
-)
+) : PdfSettingsValues

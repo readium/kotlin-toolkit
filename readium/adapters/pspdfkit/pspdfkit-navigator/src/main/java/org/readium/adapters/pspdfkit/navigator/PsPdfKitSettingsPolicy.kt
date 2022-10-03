@@ -14,9 +14,9 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation
 
 @ExperimentalReadiumApi
-internal object PsPdfKitSettingsPolicy {
+interface PsPdfKitSettingsPolicy {
 
-    fun settingsValues(metadata: Metadata, preferences: Preferences): PsPdfKitSettingsValues {
+    fun settings(metadata: Metadata, preferences: Preferences): PsPdfKitSettingsValues {
         val readingProgression: ReadingProgression =
             preferences[PsPdfKitSettings.READING_PROGRESSION]
                 ?: metadata.readingProgression.takeIf { it.isHorizontal == true }
@@ -46,5 +46,11 @@ internal object PsPdfKitSettingsPolicy {
             fit = fit,
             spread = spread,
         )
+    }
+
+    companion object {
+
+        internal operator fun invoke(): PsPdfKitSettingsPolicy =
+            object : PsPdfKitSettingsPolicy {}
     }
 }

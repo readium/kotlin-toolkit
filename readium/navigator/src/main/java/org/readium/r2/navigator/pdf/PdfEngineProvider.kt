@@ -23,18 +23,18 @@ import org.readium.r2.shared.publication.ReadingProgression
 * To be implemented by third-party PDF engines which can be used with [PdfNavigatorFragment].
 */
 @ExperimentalReadiumApi
-interface PdfEngineProvider<S: Configurable.Settings> {
+interface PdfEngineProvider<S: PdfSettings> {
 
     suspend fun createDocumentFragment(input: PdfDocumentFragmentInput<S>): PdfDocumentFragment<S>
 
-    fun createPdfSettings(metadata: Metadata, preferences: Preferences): S
+    fun createSettings(metadata: Metadata, preferences: Preferences): S
 }
 
 @ExperimentalReadiumApi
 typealias PdfDocumentFragmentFactory<S> = suspend (PdfDocumentFragmentInput<S>) -> PdfDocumentFragment<S>
 
 @ExperimentalReadiumApi
-abstract class PdfDocumentFragment<S: Configurable.Settings> : Fragment() {
+abstract class PdfDocumentFragment<S: PdfSettings> : Fragment() {
 
     interface Listener {
         /**
@@ -73,7 +73,7 @@ abstract class PdfDocumentFragment<S: Configurable.Settings> : Fragment() {
 }
 
 @ExperimentalReadiumApi
-data class PdfDocumentFragmentInput<S: Configurable.Settings>(
+data class PdfDocumentFragmentInput<S: PdfSettings>(
     val publication: Publication,
     val link: Link,
     val initialPageIndex: Int,
@@ -88,3 +88,6 @@ interface PdfSettings : Configurable.Settings {
 
     val scrollValue: Boolean
 }
+
+@ExperimentalReadiumApi
+interface PdfSettingsValues
