@@ -37,9 +37,7 @@ data class PdfiumSettings(
 
         val FIT = Setting.Key<Presentation.Fit>("fit")
         val READING_PROGRESSION = Setting.Key<ReadingProgression>("readingProgression")
-        val SCROLL = Setting.Key<Boolean>("scroll")
         val SCROLL_AXIS = Setting.Key<ScrollAxis>("scrollAxis")
-        val SPREAD = Setting.Key<Presentation.Spread>("spread")
     }
 }
 
