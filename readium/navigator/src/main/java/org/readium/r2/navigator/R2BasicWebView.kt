@@ -85,9 +85,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
         @InternalReadiumApi
         fun resourceAtUrl(url: String): Resource?
-
-        @InternalReadiumApi
-        fun viewportWidth(): Int = 0
     }
 
     lateinit var listener: Listener
@@ -473,7 +470,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     @android.webkit.JavascriptInterface
-    fun getViewportWidth(): Int = listener.viewportWidth()
+    fun getViewportWidth(): Int = width
 
     @android.webkit.JavascriptInterface
     fun logError(message: String, filename: String, line: Int) {
