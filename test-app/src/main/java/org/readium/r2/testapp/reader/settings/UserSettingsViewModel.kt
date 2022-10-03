@@ -53,7 +53,6 @@ class UserSettingsViewModel(
         }
         .stateIn(scope, SharingStarted.Eagerly, initialValue = Preferences())
 
-
     /**
      * Current [Navigator] settings.
      */

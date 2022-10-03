@@ -15,6 +15,7 @@ import androidx.fragment.app.commitNow
 import org.readium.adapters.pspdfkit.navigator.PsPdfKitEngineProvider
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
+import org.readium.r2.navigator.pdf.PdfSettings
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
@@ -24,6 +25,10 @@ import org.readium.r2.testapp.R
 class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener {
 
     override lateinit var navigator: Navigator
+    private lateinit var pdfNavigatorFragment: PdfNavigatorFragment<PdfSettings>
+
+    override fun isTapNavigationRelevant(): Boolean =
+        !pdfNavigatorFragment.settings.value.scrollValue
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val readerData = model.readerInitData as VisualReaderInitData
@@ -33,7 +38,7 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
                 publication = publication,
                 initialLocator = readerData.initialLocation,
                 preferences = model.settings.preferences.value,
-                listener = NavigatorListener(),
+                listener = this,
                 pdfEngineProvider = PsPdfKitEngineProvider(requireContext().applicationContext)
             )
 
@@ -48,20 +53,20 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
             }
         }
         navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!! as Navigator
+        @Suppress("Unchecked_cast")
+        pdfNavigatorFragment = navigator as PdfNavigatorFragment<PdfSettings>
         return view
     }
 
-    private inner class NavigatorListener: PdfNavigatorFragment.Listener {
-        override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
-            val message = when (error) {
-                is Resource.Exception.OutOfMemory -> "The PDF is too large to be rendered on this device"
-                else -> "Failed to render this PDF"
-            }
-            Toast.makeText(requireActivity(), message, Toast.LENGTH_LONG).show()
-
-            // There's nothing we can do to recover, so we quit the Activity.
-            requireActivity().finish()
+    override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
+        val message = when (error) {
+            is Resource.Exception.OutOfMemory -> "The PDF is too large to be rendered on this device"
+            else -> "Failed to render this PDF"
         }
+        Toast.makeText(requireActivity(), message, Toast.LENGTH_LONG).show()
+
+        // There's nothing we can do to recover, so we quit the Activity.
+        requireActivity().finish()
     }
 
     companion object {

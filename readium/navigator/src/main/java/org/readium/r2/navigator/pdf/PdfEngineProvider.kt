@@ -85,4 +85,6 @@ data class PdfDocumentFragmentInput<S: Configurable.Settings>(
 interface PdfSettings : Configurable.Settings {
 
     val readingProgressionValue: ReadingProgression
+
+    val scrollValue: Boolean
 }

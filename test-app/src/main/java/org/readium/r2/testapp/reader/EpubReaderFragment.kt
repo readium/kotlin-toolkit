@@ -43,6 +43,8 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 
     private var isSearchViewIconified = true
 
+    override fun isTapNavigationRelevant(): Boolean = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         if (savedInstanceState != null) {
             isSearchViewIconified = savedInstanceState.getBoolean(IS_SEARCH_VIEW_ICONIFIED)

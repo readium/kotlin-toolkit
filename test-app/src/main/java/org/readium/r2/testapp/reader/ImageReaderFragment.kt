@@ -19,6 +19,8 @@ class ImageReaderFragment : VisualReaderFragment(), ImageNavigatorFragment.Liste
 
     override lateinit var navigator: Navigator
 
+    override fun isTapNavigationRelevant(): Boolean = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val readerData = model.readerInitData as VisualReaderInitData
 

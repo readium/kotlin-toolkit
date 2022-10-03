@@ -44,7 +44,7 @@ import timber.log.Timber
  * To use this [Fragment], create a factory with [PdfNavigatorFragment.createFactory].
  */
 @ExperimentalReadiumApi
-class PdfNavigatorFragment<S: PdfSettings>  private constructor(
+class PdfNavigatorFragment<S: PdfSettings> private constructor(
     override val publication: Publication,
     initialLocator: Locator? = null,
     val preferences: Preferences = Preferences(),

@@ -34,6 +34,9 @@ data class PsPdfKitSettings internal constructor(
     override val readingProgressionValue: ReadingProgression
         get() = readingProgression.value
 
+    override val scrollValue: Boolean
+        get() = scroll.value
+
     companion object {
 
         val FIT = Setting.Key<Presentation.Fit>("fit")

@@ -66,6 +66,8 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
     private lateinit var navigatorFragment: Fragment
 
+    abstract fun isTapNavigationRelevant(): Boolean
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -509,7 +511,12 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
     // VisualNavigator.Listener
 
     override fun onTap(point: PointF): Boolean {
-        val navigated = edgeTapNavigation.onTap(point, requireView())
+        val navigated =
+            if (isTapNavigationRelevant()) {
+                edgeTapNavigation.onTap(point, requireView())
+            } else
+                false
+
         if (!navigated) {
             requireActivity().toggleSystemUi()
         }
