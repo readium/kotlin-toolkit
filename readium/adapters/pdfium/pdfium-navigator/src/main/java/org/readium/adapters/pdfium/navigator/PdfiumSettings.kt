@@ -21,7 +21,7 @@ import org.readium.r2.shared.publication.presentation.Presentation
  * @param fit
  */
 @ExperimentalReadiumApi
-data class PdfiumSettings(
+data class PdfiumSettings internal constructor(
     val readingProgression: EnumSetting<ReadingProgression>,
     val scrollAxis: EnumSetting<ScrollAxis>,
     val fit: EnumSetting<Presentation.Fit>

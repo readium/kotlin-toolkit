@@ -8,10 +8,6 @@
 
 package org.readium.r2.navigator.settings
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import org.readium.r2.shared.ExperimentalReadiumApi
 import java.text.NumberFormat
@@ -64,16 +60,6 @@ open class Setting<V>(
      * JSON raw representation for the current value.
      */
     private val jsonValue: JsonElement = key.coder.encode(value)
-
-    /**
-     * Returns the first valid value taken from the given [Preferences] objects, in order.
-     *
-     * Each preference is verified using the setting [validator].
-     */
-    fun firstValidValue(vararg candidates: Preferences): V? =
-        candidates
-            .mapNotNull { candidate -> candidate[this] }
-            .firstNotNullOfOrNull(::validate)
 
     override fun equals(other: Any?): Boolean {
         val otherSetting = (other as? Setting<*>) ?: return false

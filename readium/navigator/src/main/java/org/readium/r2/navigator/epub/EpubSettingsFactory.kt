@@ -175,20 +175,20 @@ internal class EpubSettingsFactory(
 
     /** Leading line height. */
     private fun lineHeightSetting(
-        value: Double? = null
+        value: Double
     ): RangeSetting<Double> = RangeSetting(
         key = EpubSettings.LINE_HEIGHT,
-        value = value ?: 1.2,
+        value = value,
         range = 1.0..2.0,
         activator = requiresPublisherStylesDisabled
     )
 
     /** Factor applied to horizontal margins. */
     private fun pageMarginsSetting(
-        value: Double? = null
+        value: Double
     ): RangeSetting<Double> = RangeSetting(
         key = EpubSettings.PAGE_MARGINS,
-        value = value ?: 1.0,
+        value = value,
         range = 0.5..4.0,
         activator = requiresScroll(false),
     )
@@ -198,7 +198,7 @@ internal class EpubSettingsFactory(
         value: Double
     ): PercentSetting = PercentSetting(
         key = EpubSettings.PARAGRAPH_INDENT,
-        value = value ?: 0.0,
+        value = value,
         range = 0.0..3.0,
         suggestedIncrement = 0.2,
         activator = requiresPublisherStylesDisabled
