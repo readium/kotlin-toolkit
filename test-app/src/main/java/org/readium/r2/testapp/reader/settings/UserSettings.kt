@@ -26,12 +26,10 @@ import androidx.compose.ui.window.Dialog
 import org.readium.adapters.pdfium.navigator.PdfiumSettings
 import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.*
-import org.readium.r2.navigator.settings.ScrollAxis
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation.Spread
 import org.readium.r2.shared.publication.presentation.Presentation.Fit
+import org.readium.r2.shared.publication.presentation.Presentation.Spread
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.ColorPicker
@@ -63,7 +61,6 @@ fun UserSettings(model: UserSettingsViewModel) {
  * Stateless user settings component displaying the given [settings] and setting user [preferences],
  * using the [editNavigator] and [editPublication] closures.
  */
-@OptIn(PdfSupport::class)
 @Composable
 fun UserSettings(
     settings: Configurable.Settings,
@@ -172,7 +169,7 @@ private fun ColumnScope.FixedLayoutUserSettings(
     fit: EnumSetting<Fit>? = null,
     language: Setting<Language?>? = null,
     readingProgression: EnumSetting<ReadingProgression>? = null,
-    scroll: ToggleSetting? = null,
+    scroll: Setting<Boolean>? = null,
     scrollAxis: EnumSetting<ScrollAxis>? = null
 ) {
     if (language != null || readingProgression != null) {
@@ -261,24 +258,24 @@ private fun ColumnScope.ReflowableUserSettings(
     columnCount: EnumSetting<ColumnCount>? = null,
     fontFamily: EnumSetting<FontFamily?>? = null,
     fontSize: PercentSetting? = null,
-    hyphens: ToggleSetting? = null,
+    hyphens: Setting<Boolean>? = null,
     imageFilter: EnumSetting<ImageFilter>? = null,
     language: Setting<Language?>? = null,
     letterSpacing: PercentSetting? = null,
-    ligatures: ToggleSetting? = null,
+    ligatures: Setting<Boolean>? = null,
     lineHeight: RangeSetting<Double>? = null,
     pageMargins: RangeSetting<Double>? = null,
     paragraphIndent: PercentSetting? = null,
     paragraphSpacing: PercentSetting? = null,
-    publisherStyles: ToggleSetting? = null,
+    publisherStyles: Setting<Boolean>? = null,
     readingProgression: EnumSetting<ReadingProgression>? = null,
-    scroll: ToggleSetting? = null,
+    scroll: Setting<Boolean>? = null,
     textAlign: EnumSetting<ReadiumTextAlign>? = null,
     textColor: Setting<ReadiumColor>? = null,
     textNormalization: EnumSetting<TextNormalization>? = null,
     theme: EnumSetting<Theme>? = null,
     typeScale: RangeSetting<Double>? = null,
-    verticalText: ToggleSetting? = null,
+    verticalText: Setting<Boolean>? = null,
     wordSpacing: PercentSetting? = null,
 ) {
     if (language != null || readingProgression != null || verticalText != null) {
@@ -579,12 +576,12 @@ private fun StepperItem(
 }
 
 /**
- * Component for a switchable [ToggleSetting].
+ * Component for a switchable [Setting<Boolean>].
  */
 @Composable
 private fun SwitchItem(
     title: String,
-    setting: ToggleSetting,
+    setting: Setting<Boolean>,
     preferences: Preferences,
     edit: EditPreferences
 ) {

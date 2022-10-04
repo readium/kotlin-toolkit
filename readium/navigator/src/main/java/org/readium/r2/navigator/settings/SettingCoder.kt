@@ -16,6 +16,7 @@ import org.readium.r2.shared.extensions.tryOrLog
 /**
  * JSON serializer for a [Setting].
  */
+@InternalReadiumApi
 interface SettingCoder<V> {
     fun decode(json: JsonElement): V?
     fun encode(value: V): JsonElement

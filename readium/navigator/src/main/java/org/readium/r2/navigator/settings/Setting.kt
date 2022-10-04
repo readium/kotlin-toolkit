@@ -31,8 +31,8 @@ open class Setting<V>(
 
     class Key<V> @InternalReadiumApi constructor(
         val id: String,
-        private val coder: SettingCoder<V>
-    ) : SettingCoder<V> by coder {
+        @InternalReadiumApi val coder: SettingCoder<V>
+    ) {
 
         companion object {
 
@@ -47,7 +47,7 @@ open class Setting<V>(
     /**
      * JSON raw representation for the current value.
      */
-    private val jsonValue: JsonElement = key.encode(value)
+    private val jsonValue: JsonElement = key.coder.encode(value)
 
     override fun equals(other: Any?): Boolean {
         val otherSetting = (other as? Setting<*>) ?: return false
@@ -68,7 +68,7 @@ open class Setting<V>(
  * A boolean [Setting].
  */
 @ExperimentalReadiumApi
-typealias ToggleSetting = Setting<Boolean>
+internal typealias ToggleSetting = Setting<Boolean>
 
 /**
  * A [Setting] whose value is constrained to a range.
