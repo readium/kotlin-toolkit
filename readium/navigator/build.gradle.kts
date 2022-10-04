@@ -46,7 +46,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.2.0-rc02"
+        kotlinCompilerExtensionVersion = "1.3.1"
     }
 }
 
@@ -93,11 +93,11 @@ dependencies {
     implementation("com.github.chrisbanes:PhotoView:2.3.0")
     implementation("dev.chrisbanes.snapper:snapper:0.1.2")
 
-    implementation("androidx.compose.ui:ui:1.1.1")
-    implementation("androidx.compose.ui:ui-util:1.1.1")
-    implementation("androidx.compose.material:material:1.1.1")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.1.1")
-    debugImplementation("androidx.compose.ui:ui-tooling:1.1.1")
+    implementation("androidx.compose.ui:ui:1.3.0-beta03")
+    implementation("androidx.compose.ui:ui-util:1.3.0-beta03")
+    implementation("androidx.compose.material:material:1.3.0-beta03")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.3.0-beta03")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.3.0-beta03")
 
     implementation("androidx.media2:media2-session:1.2.1")
     implementation("androidx.media2:media2-player:1.2.1")

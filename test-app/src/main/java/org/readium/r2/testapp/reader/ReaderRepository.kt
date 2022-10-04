@@ -144,6 +144,9 @@ class ReaderRepository(
             is VisualReaderInitData -> {
                 initData.publication.close()
             }
+            is ComposeVisualReaderInitData -> {
+                initData.publication.close()
+            }
             null, is DummyReaderInitData -> {
                 // Do nothing
             }

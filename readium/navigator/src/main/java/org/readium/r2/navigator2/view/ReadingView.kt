@@ -86,7 +86,7 @@ internal class ReadingView(context: Context, attributes: AttributeSet? = null)
         return firstVisible
     }
 
-    override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
+    override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         return gestureDetector.onTouchEvent(ev)
     }
 }
