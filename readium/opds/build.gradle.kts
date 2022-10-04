@@ -41,17 +41,16 @@ android {
     }
 }
 
-afterEvaluate {
-    if(rootProject.name == "Readium"){
-        publishing {
-            publications {
-                create<MavenPublication>("release") {
-                    from(components.getByName("release"))
-                    groupId = "com.github.readium"
-                    artifactId = "readium-opds"
-                    artifact(tasks.findByName("sourcesJar"))
-                    artifact(tasks.findByName("javadocsJar"))
-                }
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            groupId = "com.github.readium"
+            artifactId = "readium-opds"
+            artifact(tasks.findByName("sourcesJar"))
+            artifact(tasks.findByName("javadocsJar"))
+
+            afterEvaluate {
+                from(components.getByName("release"))
             }
         }
     }
