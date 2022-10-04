@@ -12,7 +12,6 @@ plugins {
 }
 
 android {
-
     compileSdk = 33
     defaultConfig {
         minSdk = 21
@@ -37,7 +36,7 @@ android {
         freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.2.0-rc02"
+        kotlinCompilerExtensionVersion = "1.3.1"
     }
     buildFeatures {
         viewBinding = true
@@ -64,7 +63,7 @@ android {
 
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.10")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.20")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
 
     implementation(project(":readium:shared"))
@@ -76,28 +75,31 @@ dependencies {
     // Only required if you want to support PDF files using PDFium.
     implementation(project(":readium:adapters:pdfium"))
 
-    implementation("androidx.activity:activity-compose:1.5.0")
-    implementation("androidx.activity:activity-ktx:1.5.0")
-    implementation("androidx.appcompat:appcompat:1.4.2")
+    implementation("androidx.activity:activity-compose:1.6.0")
+    implementation("androidx.activity:activity-ktx:1.6.0")
+    implementation("androidx.appcompat:appcompat:1.5.1")
     implementation("androidx.browser:browser:1.4.0")
     implementation("androidx.cardview:cardview:1.0.0")
-    implementation("androidx.compose.animation:animation:1.1.1")
-    implementation("androidx.compose.foundation:foundation:1.2.0-rc02")
-    implementation("androidx.compose.material:material-icons-extended:1.1.1")
-    implementation("androidx.compose.material:material:1.1.1")
+    implementation("androidx.compose.animation:animation:1.3.0-beta03")
+    implementation("androidx.compose.foundation:foundation:1.3.0-beta03")
+    implementation("androidx.compose.material:material-icons-extended:1.3.0-beta03")
+    implementation("androidx.compose.material:material:1.3.0-beta03")
+    implementation("com.google.android.material:compose-theme-adapter:1.1.19")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.core:core-ktx:1.8.0")
-    implementation("androidx.fragment:fragment-ktx:1.5.0")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.5.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0")
-    implementation("androidx.navigation:navigation-fragment-ktx:2.5.0")
-    implementation("androidx.navigation:navigation-ui-ktx:2.5.0")
+    implementation("androidx.core:core-ktx:1.9.0")
+    implementation ("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("androidx.fragment:fragment-ktx:1.5.3")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.5.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
+    implementation("androidx.lifecycle:lifecycle-common-java8:2.5.1")
+    implementation("androidx.navigation:navigation-fragment-ktx:2.5.2")
+    implementation("androidx.navigation:navigation-ui-ktx:2.5.2")
     implementation("androidx.paging:paging-runtime-ktx:3.1.1")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
-    implementation("androidx.webkit:webkit:1.4.0")
+    implementation("androidx.webkit:webkit:1.5.0")
     implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
         exclude(group = "org.parboiled")
     }
@@ -109,7 +111,7 @@ dependencies {
     // AM NOTE: needs to stay this version for now (June 24,2020)
     implementation("com.squareup.picasso:picasso:2.71828")
     implementation("joda-time:joda-time:2.10.14")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     // AM NOTE: needs to stay this version for now (June 24,2020)
     implementation("org.jsoup:jsoup:1.15.2")
 
@@ -117,16 +119,14 @@ dependencies {
     implementation("androidx.media2:media2-player:1.2.1")
 
     // Room database
-    val roomVersion = "2.4.2"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    kapt("androidx.room:room-compiler:$roomVersion")
+    implementation("androidx.room:room-runtime:2.4.3")
+    implementation("androidx.room:room-ktx:2.4.3")
+    kapt("androidx.room:room-compiler:2.4.3")
 
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
-    kapt("androidx.lifecycle:lifecycle-compiler:2.5.0")
 
-    debugImplementation("androidx.compose.ui:ui-tooling:1.1.1")
-    implementation("androidx.compose.ui:ui-tooling-preview:1.1.1")
+    debugImplementation("androidx.compose.ui:ui-tooling:1.2.1")
+    implementation("androidx.compose.ui:ui-tooling-preview:1.2.1")
 
     // Tests
     testImplementation("junit:junit:4.13.2")

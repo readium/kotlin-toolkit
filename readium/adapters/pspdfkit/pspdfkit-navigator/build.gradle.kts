@@ -67,11 +67,11 @@ dependencies {
     api(project(":readium:navigator"))
     api(project(":readium:adapters:pspdfkit:pspdfkit-document"))
 
-    implementation("androidx.fragment:fragment-ktx:1.5.0")
+    implementation("androidx.fragment:fragment-ktx:1.5.3")
     implementation("com.jakewharton.timber:timber:5.0.1")
     implementation("com.pspdfkit:pspdfkit:8.2.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
     testImplementation("junit:junit:4.13.2")
 
