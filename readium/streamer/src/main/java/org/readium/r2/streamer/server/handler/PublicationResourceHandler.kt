@@ -20,7 +20,6 @@ import org.nanohttpd.protocols.http.response.Status
 import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceInputStream
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.server.ServingFetcher
 import timber.log.Timber

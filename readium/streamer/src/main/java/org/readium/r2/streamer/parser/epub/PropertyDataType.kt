@@ -1,15 +1,10 @@
 /*
- * Module: r2-streamer-kotlin
- * Developers: Quentin Gliosca
- *
- * Copyright (c) 2018. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.streamer.parser.epub
-
-import timber.log.Timber
 
 internal val PACKAGE_RESERVED_PREFIXES = mapOf(
     "dcterms" to Vocabularies.DCTERMS,

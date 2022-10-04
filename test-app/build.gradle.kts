@@ -13,10 +13,10 @@ plugins {
 
 android {
 
-    compileSdk = 32
+    compileSdk = 33
     defaultConfig {
         minSdk = 21
-        targetSdk = 32
+        targetSdk = 33
 
         applicationId = "org.readium.r2reader"
 
@@ -121,7 +121,6 @@ dependencies {
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     kapt("androidx.room:room-compiler:$roomVersion")
-    kapt("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.5.0")
 
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
     kapt("androidx.lifecycle:lifecycle-compiler:2.5.0")

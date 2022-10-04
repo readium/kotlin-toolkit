@@ -10,17 +10,18 @@ plugins {
     id("kotlin-parcelize")
     id("maven-publish")
     id("org.jetbrains.dokka")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
     // FIXME: This doesn't pass the lint because some resources don't start with readium_ yet. We need to rename all resources for the next major version.
 //    resourcePrefix "readium_"
 
-    compileSdk = 32
+    compileSdk = 33
 
     defaultConfig {
         minSdk = 21
-        targetSdk = 32
+        targetSdk = 33
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -102,12 +103,16 @@ dependencies {
     implementation("joda-time:joda-time:2.10.14")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
-    // AM NOTE: needs to stay this version for now (June 24,2020)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0-RC")    
+// AM NOTE: needs to stay this version for now (June 24,2020)
     //noinspection GradleDependency
     implementation("org.jsoup:jsoup:1.15.2")
 
     // Tests
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.6.21")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.2")
+    testImplementation("org.robolectric:robolectric:4.8.1")
     androidTestImplementation("androidx.test.ext:junit:1.1.3")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
 }

@@ -10,13 +10,14 @@ plugins {
     id("kotlin-parcelize")
     id("maven-publish")
     id("org.jetbrains.dokka")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
-    compileSdk = 32
+    compileSdk = 33
     defaultConfig {
         minSdk = 21
-        targetSdk = 32
+        targetSdk = 33
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
@@ -74,6 +75,7 @@ dependencies {
     implementation("nl.komponents.kovenant:kovenant:3.3.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.7.10")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0-RC")
     implementation("org.jsoup:jsoup:1.15.2")
 
     // Tests

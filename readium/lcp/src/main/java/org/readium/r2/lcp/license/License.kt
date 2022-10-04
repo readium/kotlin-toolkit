@@ -192,7 +192,7 @@ internal class License(
                 license.url(LicenseDocument.Rel.status, preferredType = MediaType.LCP_STATUS_DOCUMENT)
             } ?: throw LcpException.LicenseInteractionNotAvailable
 
-            return network.fetch(statusURL.toString()).getOrThrow()
+            return network.fetch(statusURL.toString(), headers = mapOf("Accept" to MediaType.LCP_STATUS_DOCUMENT.toString())).getOrThrow()
         }
 
         try {

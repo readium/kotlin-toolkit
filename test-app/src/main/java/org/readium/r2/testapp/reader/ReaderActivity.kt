@@ -109,20 +109,13 @@ open class ReaderActivity : AppCompatActivity() {
         }
     }
 
-    @OptIn(ExperimentalMedia2::class)
     private fun createReaderFragment(readerData: ReaderInitData): BaseReaderFragment? {
-        val readerClass: Class<out Fragment>? = when {
-            readerData is MediaReaderInitData ->
-                AudioReaderFragment::class.java
-            readerData.publication.conformsTo(Publication.Profile.EPUB) ->
-                EpubReaderFragment::class.java
-            readerData.publication.conformsTo(Publication.Profile.PDF) ->
-                PdfReaderFragment::class.java
-            readerData.publication.conformsTo(Publication.Profile.DIVINA) ->
-                ImageReaderFragment::class.java
-            else ->
-                // The Activity should stop as soon as possible because readerData are fake.
-                null
+        val readerClass: Class<out Fragment>? = when (readerData.navigatorKind) {
+            NavigatorKind.EPUB -> EpubReaderFragment::class.java
+            NavigatorKind.PDF -> PdfReaderFragment::class.java
+            NavigatorKind.AUDIO -> AudioReaderFragment::class.java
+            NavigatorKind.IMAGE -> ImageReaderFragment::class.java
+            null -> null
         }
 
         readerClass?.let { it ->

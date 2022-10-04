@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file. Take a look
 #### Shared
 
 * Extract the raw content (text, images, etc.) of a publication. [Take a look at the user guide](docs/guides/content.md).
+* Add support for unsafe HTTP redirections with `HttpDefaultClient`.
+    * You will need to opt-in explicitly by implementing `HttpDefaultClient.Callback.onFollowUnsafeRedirect`.
 
 #### Navigator
 
@@ -39,14 +41,37 @@ All notable changes to this project will be documented in this file. Take a look
         val result = navigator.evaluateJavascript("customInterface.api('argument')")
         ```
 * New [PSPDFKit](readium/adapters/pspdfkit) adapter for rendering PDF documents. [Take a look at the user guide](docs/guides/pdf.md).
-* A brand new text-to-speech implementation. [Take a look at the user guide](docs/guides/tts.md).
+* [A brand new text-to-speech implementation](docs/guides/tts.md).
+* [Support for custom fonts with the EPUB navigator](docs/guides/epub-custom-fonts.md).
+* New EPUB user settings, as part of [the revamped Settings API](docs/guides/navigator-settings.md):
+    * `backgroundColor` - Default page background color.
+    * `textColor` - Default page text color.
+    * `textNormalization` - Normalize font style, weight and variants using a specific strategy (force bold, accessibility).
+    * `imageFilter` - Filter applied to images in dark theme (darken, invert colors)
+    * `language` - Language of the publication content.
+    * `readingProgression` - Direction of the reading progression across resources, e.g. RTL.
+    * `typeScale` - Scale applied to all element font sizes.
+    * `paragraphIndent` - Text indentation for paragraphs.
+    * `paragraphSpacing` - Vertical margins for paragraphs.
+    * `hyphens` - Enable hyphenation.
+    * `ligatures` - Enable ligatures in Arabic.
 
 ### Changed
 
 #### Shared
 
 * `TransformingResource` now caches its content by default, as it is the correct behavior in most cases. Set `cacheBytes = false` explicitly to revert to the previous behavior.
-* The previous PDF navigator was extracted in its own package to support third-party PDF engines. **This is a breaking change** if your app supported PDF, take a look at [the migration guide](docs/migration-guide.md).
+* The previous PDF navigator was extracted in its own package to support third-party PDF engines. **This is a breaking change** if your app supported PDF, take a look at [the migration guide](docs/migration-guide.md#230).
+
+#### Navigator
+
+* The EPUB user settings API got revamped. [Take a look at the user guide](docs/guides/navigator-settings.md) and the [migration guide](docs/migration-guide.md#230) to learn how to use it.
+
+### Deprecated
+
+#### Streamer
+
+* The local HTTP server is not needed anymore to render EPUB publications. [Take a look at the migration guide](docs/migration-guide.md#230).
 
 ### Fixed
 
@@ -59,6 +84,9 @@ All notable changes to this project will be documented in this file. Take a look
 * [swift-toolkit#61](https://github.com/readium/swift-toolkit/issues/61) Fixed serving EPUB resources when the HREF contains an anchor or query parameters.
 * Fixed emitting `currentLocator` with fixed layout EPUBs.
 * Prevent refreshing an already loaded EPUB resource when jumping to a `Locator` in it.
+* [#86](https://github.com/readium/kotlin-toolkit/issues/86) Fixed page swipes while selecting text in an EPUB resource.
+* The `onTap` event is not sent when an EPUB text selection is active anymore, to prevent showing the app bar while dismissing a selection.
+* [#76](https://github.com/readium/kotlin-toolkit/issues/76) Fixed EPUB fixed layout font size affected by device settings.
 
 
 ## [2.2.0]

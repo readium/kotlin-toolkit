@@ -44,7 +44,9 @@ markdown_extensions:
 nav:
   - Migration Guide: migration-guide.md
   - User Guides:
-    - PDF Support: guides/pdf.md
+    - Navigator settings: guides/navigator-settings.md
+      - Adding custom fonts: guides/epub-custom-fonts.md
+    - PDF support: guides/pdf.md
     - Text-to-speech: guides/tts.md
     - Extracting the content of a publication: guides/content.md
   - API Reference:

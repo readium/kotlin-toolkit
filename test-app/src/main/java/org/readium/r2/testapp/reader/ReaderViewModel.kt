@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.r2.testapp.reader
 
 import android.graphics.Color
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
@@ -30,6 +33,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.domain.model.Highlight
+import org.readium.r2.testapp.reader.settings.UserSettingsViewModel
 import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
@@ -54,8 +58,18 @@ class ReaderViewModel(
     val fragmentChannel: EventChannel<FeedbackEvent> =
         EventChannel(Channel(Channel.BUFFERED), viewModelScope)
 
-    val tts: TtsViewModel? =
-        TtsViewModel(application, readerInitData.publication, viewModelScope)
+    val tts: TtsViewModel? = TtsViewModel(
+        context = application,
+        publication = readerInitData.publication,
+        scope = viewModelScope
+    )
+
+    val settings: UserSettingsViewModel = UserSettingsViewModel(
+        application = application,
+        bookId = readerInitData.bookId,
+        kind = readerInitData.navigatorKind,
+        scope = viewModelScope
+    )
 
     override fun onCleared() {
         super.onCleared()

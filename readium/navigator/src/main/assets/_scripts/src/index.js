@@ -17,6 +17,7 @@ import {
   scrollToStart,
   scrollToText,
   setProperty,
+  setCSSProperties,
 } from "./utils";
 import {
   createAnnotation,
@@ -41,6 +42,7 @@ window.readium = {
   scrollRight: scrollRight,
   scrollToStart: scrollToStart,
   scrollToEnd: scrollToEnd,
+  setCSSProperties: setCSSProperties,
   setProperty: setProperty,
   removeProperty: removeProperty,
 

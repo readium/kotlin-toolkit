@@ -1,10 +1,7 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann, Mickaël Menu
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.shared.publication
@@ -41,6 +38,7 @@ data class Metadata(
     val localizedSortAs: LocalizedString? = null,
     val modified: Date? = null,
     val published: Date? = null,
+    val accessibility: Accessibility? = null,
     val languages: List<String> = emptyList(), // BCP 47 tag
     val subjects: List<Subject> = emptyList(),
     val authors: List<Contributor> = emptyList(),
@@ -73,6 +71,7 @@ data class Metadata(
         localizedSortAs: LocalizedString? = null,
         modified: Date? = null,
         published: Date? = null,
+        accessibility: Accessibility? = null,
         languages: List<String> = emptyList(), // BCP 47 tag
         subjects: List<Subject> = emptyList(),
         authors: List<Contributor> = emptyList(),
@@ -105,6 +104,7 @@ data class Metadata(
         localizedSortAs = localizedSortAs,
         modified = modified,
         published = published,
+        accessibility = accessibility,
         languages = languages,
         subjects = subjects,
         authors = authors,
@@ -155,7 +155,7 @@ data class Metadata(
         belongsTo["series"] ?: emptyList()
 
     /**
-     * Returns the [Language] resolved from the first declared BCP 47 language.
+     * Returns the [Language] resolved from the declared BCP 47 primary language.
      */
     @IgnoredOnParcel
     val language: Language? by lazy {
@@ -168,6 +168,7 @@ data class Metadata(
      *
      * See this issue for more details: https://github.com/readium/architecture/issues/113
      */
+    @Deprecated("You should resolve [ReadingProgression.AUTO] by yourself.", level = DeprecationLevel.WARNING)
     @IgnoredOnParcel
     val effectiveReadingProgression: ReadingProgression get() {
         if (readingProgression != ReadingProgression.AUTO) {
@@ -204,6 +205,7 @@ data class Metadata(
         putIfNotEmpty("subtitle", localizedSubtitle)
         put("modified", modified?.toIso8601String())
         put("published", published?.toIso8601String())
+        put("accessibility", accessibility?.toJSON())
         putIfNotEmpty("language", languages)
         putIfNotEmpty("sortAs", localizedSortAs)
         putIfNotEmpty("subject", subjects)
@@ -260,6 +262,7 @@ data class Metadata(
             val localizedSubtitle = LocalizedString.fromJSON(json.remove("subtitle"), warnings)
             val modified = (json.remove("modified") as? String)?.iso8601ToDate()
             val published = (json.remove("published") as? String)?.iso8601ToDate()
+            val accessibility = Accessibility.fromJSON(json.remove("accessibility"))
             val languages = json.optStringsFromArrayOrSingle("language", remove = true)
             val localizedSortAs = LocalizedString.fromJSON(json.remove("sortAs"), warnings)
             val subjects = Subject.fromJSONArray(json.remove("subject"), normalizeHref, warnings)
@@ -304,6 +307,7 @@ data class Metadata(
                 localizedSortAs = localizedSortAs,
                 modified = modified,
                 published = published,
+                accessibility = accessibility,
                 languages = languages,
                 subjects = subjects,
                 authors = authors,

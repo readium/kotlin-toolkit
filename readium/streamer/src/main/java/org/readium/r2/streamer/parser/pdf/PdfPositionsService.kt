@@ -9,11 +9,11 @@
 
 package org.readium.r2.streamer.parser.pdf
 
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PositionsService
+import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
 /**

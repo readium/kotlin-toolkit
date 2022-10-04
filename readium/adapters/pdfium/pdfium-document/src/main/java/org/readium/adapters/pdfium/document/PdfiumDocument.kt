@@ -14,7 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.extensions.md5
-import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.util.pdf.PdfDocument

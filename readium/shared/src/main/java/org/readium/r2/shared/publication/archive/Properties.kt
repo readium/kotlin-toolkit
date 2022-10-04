@@ -12,10 +12,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optNullableBoolean
 import org.readium.r2.shared.extensions.optNullableLong
-import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.publication.encryption.Encryption
-import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 

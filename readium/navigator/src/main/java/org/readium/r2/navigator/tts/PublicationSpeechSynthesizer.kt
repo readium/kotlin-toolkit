@@ -17,7 +17,10 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.services.content.*
+import org.readium.r2.shared.publication.services.content.Content
+import org.readium.r2.shared.publication.services.content.ContentTokenizer
+import org.readium.r2.shared.publication.services.content.TextContentTokenizer
+import org.readium.r2.shared.publication.services.content.content
 import org.readium.r2.shared.util.*
 import org.readium.r2.shared.util.tokenizer.TextUnit
 import java.util.*
@@ -419,13 +422,11 @@ class PublicationSpeechSynthesizer<E : TtsEngine> private constructor(
             ?.let { voiceWithId(it) }
             ?.takeIf { language == null || it.language.removeRegion() == language.removeRegion() }
 
-        return (
-            if (voice != null) Either.Left(voice)
-            else Either.Right(language
-                ?: config.value.defaultLanguage
-                ?: publication.metadata.language
-                ?: Language(Locale.getDefault())
-            )
+        return Either(voice
+            ?: language
+            ?: config.value.defaultLanguage
+            ?: publication.metadata.language
+            ?: Language(Locale.getDefault())
         )
     }
 

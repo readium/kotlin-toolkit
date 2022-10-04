@@ -127,6 +127,10 @@ class R2FXLPageFragment : Fragment() {
         webView.settings.setSupportZoom(true)
         webView.settings.builtInZoomControls = true
         webView.settings.displayZoomControls = false
+        // If we don't explicitly override the [textZoom], it will be set by Android's
+        // accessibility font size system setting which breaks the layout of some fixed layouts.
+        // See https://github.com/readium/kotlin-toolkit/issues/76
+        webView.settings.textZoom = 100
 
         webView.setInitialScale(1)
 
@@ -139,16 +143,8 @@ class R2FXLPageFragment : Fragment() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean =
                 (webView as? R2BasicWebView)?.shouldOverrideUrlLoading(request) ?: false
 
-            // prevent favicon.ico to be loaded, this was causing NullPointerException in NanoHttp
-            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
-                if (!request.isForMainFrame && request.url.path?.endsWith("/favicon.ico") == true) {
-                    try {
-                        return WebResourceResponse("image/png", null, null)
-                    } catch (e: Exception) {
-                    }
-                }
-                return null
-            }
+            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
+                (webView as? R2BasicWebView)?.shouldInterceptRequest(view, request)
 
         }
         webView.isHapticFeedbackEnabled = false
@@ -162,7 +158,7 @@ class R2FXLPageFragment : Fragment() {
 
     companion object {
 
-        fun newInstance(url: String, url2: String? = null): R2FXLPageFragment =
+        fun newInstance(url: String?, url2: String? = null): R2FXLPageFragment =
             R2FXLPageFragment().apply {
                 arguments = Bundle().apply {
                     putString("firstUrl", url)

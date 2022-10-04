@@ -26,6 +26,7 @@ pluginManagement {
         id("com.android.library") version ("7.2.1")
         id("org.jetbrains.kotlin.android") version ("1.7.10")
         id("org.jetbrains.dokka") version ("1.7.0")
+        id("org.jetbrains.kotlin.plugin.serialization") version ("1.6.21")
     }
 }
 dependencyResolutionManagement {
