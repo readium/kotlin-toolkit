@@ -44,15 +44,16 @@ android {
     }
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            groupId = "com.github.readium"
+            artifactId = "readium-adapter-pdfium-document"
+            artifact(tasks.findByName("sourcesJar"))
+            artifact(tasks.findByName("javadocsJar"))
+
+            afterEvaluate {
                 from(components.getByName("release"))
-                groupId = "com.github.readium"
-                artifactId = "readium-adapter-pdfium-document"
-                artifact(tasks.findByName("sourcesJar"))
-                artifact(tasks.findByName("javadocsJar"))
             }
         }
     }
@@ -63,11 +64,11 @@ dependencies {
 
     api(project(":readium:shared"))
 
-    implementation("androidx.core:core-ktx:1.8.0")
+    implementation("androidx.core:core-ktx:1.9.0")
     implementation("com.github.barteksc:pdfium-android:1.8.2")
     implementation("com.jakewharton.timber:timber:5.0.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
     testImplementation("junit:junit:4.13.2")
 

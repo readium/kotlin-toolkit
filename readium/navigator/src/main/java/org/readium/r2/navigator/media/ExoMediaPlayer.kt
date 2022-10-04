@@ -78,7 +78,7 @@ class ExoMediaPlayer(
         .setSeekForwardIncrementMs(30.seconds.inWholeMilliseconds)
         .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
         .setAudioAttributes(AudioAttributes.Builder()
-            .setContentType(C.CONTENT_TYPE_MUSIC)
+            .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
             .setUsage(C.USAGE_MEDIA)
             .build(),
             true
