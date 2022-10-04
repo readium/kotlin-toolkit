@@ -61,6 +61,7 @@ open class Setting<V>(
         const val PUBLISHER_STYLES = "publisherStyles"
         const val READING_PROGRESSION = "readingProgression"
         const val SCROLL = "scroll"
+        const val SCROLL_AXIS = "scrollAxis"
         const val SPREAD = "spread"
         const val TEXT_ALIGN = "textAlign"
         const val TEXT_COLOR = "textColor"

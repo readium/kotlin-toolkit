@@ -10,6 +10,7 @@ import androidx.annotation.ColorInt
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Either
 import java.text.NumberFormat
+import java.util.*
 
 /**
  * Holds a set of Readium CSS properties applied together.
@@ -571,7 +572,7 @@ private fun String.toCss(): String =
  * Converts a [Double] to a string literal with the given [unit].
  */
 private fun Double.toCss(unit: String): String =
-    NumberFormat.getNumberInstance().run {
+    NumberFormat.getNumberInstance(Locale.ROOT).run {
         maximumFractionDigits = 2
         format(this@toCss)
     } + unit

@@ -174,8 +174,8 @@ sealed class EpubSettings : Configurable.Settings {
             defaults: Preferences,
             preferences: Preferences,
         ): Reflowable {
-            val layoutResolver = createLayoutResolver(metadata, defaults)
-            val layout = layoutResolver(preferences)
+            val layoutResolver = LayoutResolver(metadata, defaults)
+            val layout = layoutResolver.resolve(preferences)
 
             return Reflowable(
                 backgroundColor = backgroundColorSetting(
@@ -183,7 +183,7 @@ sealed class EpubSettings : Configurable.Settings {
                     namedColors = namedColors
                 ),
                 columnCount = columnCountSetting(
-                    layoutResolver = layoutResolver,
+                    layoutResolver = layoutResolver::resolve,
                     value = columnCount.firstValidValue(preferences, defaults),
                 ),
                 fontFamily = fontFamilySetting(
@@ -194,32 +194,32 @@ sealed class EpubSettings : Configurable.Settings {
                     value = fontSize.firstValidValue(preferences, defaults),
                 ),
                 hyphens = hyphensSetting(
-                    layoutResolver = layoutResolver,
+                    layoutResolver = layoutResolver::resolve,
                     value = hyphens.firstValidValue(preferences, defaults),
                 ),
                 imageFilter = imageFilterSetting(
                     value = imageFilter.firstValidValue(preferences, defaults),
                 ),
                 language = languageSetting(
-                    value = language.firstValidValue(preferences, defaults) ?: metadata.language,
+                    value = layout.language
                 ),
                 letterSpacing = letterSpacingSetting(
-                    layoutResolver = layoutResolver,
+                    layoutResolver = layoutResolver::resolve,
                     value = letterSpacing.firstValidValue(preferences, defaults),
                 ),
                 ligatures = ligaturesSetting(
-                    layoutResolver = layoutResolver,
+                    layoutResolver = layoutResolver::resolve,
                     value = ligatures.firstValidValue(preferences, defaults),
                 ),
                 lineHeight = lineHeightSetting(
                     value = lineHeight.firstValidValue(preferences, defaults),
                 ),
                 pageMargins = pageMarginsSetting(
-                    layoutResolver = layoutResolver,
+                    layoutResolver = layoutResolver::resolve,
                     value = pageMargins.firstValidValue(preferences, defaults),
                 ),
                 paragraphIndent = paragraphIndentSetting(
-                    layoutResolver = layoutResolver,
+                    layoutResolver = layoutResolver::resolve,
                     value = paragraphIndent.firstValidValue(preferences, defaults),
                 ),
                 paragraphSpacing = paragraphSpacingSetting(
@@ -232,11 +232,11 @@ sealed class EpubSettings : Configurable.Settings {
                     value = layout.readingProgression
                 ),
                 scroll = scrollSetting(
-                    layoutResolver = layoutResolver,
+                    layoutResolver = layoutResolver::resolve,
                     value = scroll.firstValidValue(preferences, defaults),
                 ),
                 textAlign = textAlignSetting(
-                    layoutResolver = layoutResolver,
+                    layoutResolver = layoutResolver::resolve,
                     value = textAlign.firstValidValue(preferences, defaults),
                 ),
                 textColor = textColorSetting(
@@ -256,7 +256,7 @@ sealed class EpubSettings : Configurable.Settings {
                     value = layout.stylesheets == Stylesheets.CjkVertical
                 ),
                 wordSpacing = wordSpacingSetting(
-                    layoutResolver = layoutResolver,
+                    layoutResolver = layoutResolver::resolve,
                     value = wordSpacing.firstValidValue(preferences, defaults),
                 ),
                 layout = layout
@@ -349,7 +349,7 @@ sealed class EpubSettings : Configurable.Settings {
             )
 
             /** Language of the publication content. */
-            private fun languageSetting(
+            internal fun languageSetting(
                 value: Language? = null
             ): Setting<Language?> = Setting(
                 key = Setting.LANGUAGE,
@@ -435,7 +435,7 @@ sealed class EpubSettings : Configurable.Settings {
             )
 
             /** Direction of the reading progression across resources. */
-            private fun readingProgressionSetting(
+            internal fun readingProgressionSetting(
                 value: ReadingProgression? = null
             ): EnumSetting<ReadingProgression> = EnumSetting(
                 key = Setting.READING_PROGRESSION,
@@ -521,7 +521,7 @@ sealed class EpubSettings : Configurable.Settings {
              *
              * This setting is automatically derived from the language if no preference is given.
              */
-            private fun verticalTextSetting(
+            internal fun verticalTextSetting(
                 value: Boolean? = null
             ): ToggleSetting = ToggleSetting(
                 key = Setting.VERTICAL_TEXT,
@@ -583,27 +583,11 @@ sealed class EpubSettings : Configurable.Settings {
                     // Cannot activate automatically.
                 }
             }
-
-            private fun createLayoutResolver(metadata: Metadata, defaults: Preferences): (Preferences) -> Layout =
-                { preferences ->
-                    val language = languageSetting().firstValidValue(preferences, defaults) ?: metadata.language
-                    val readingProgression = readingProgressionSetting()
-
-                    Layout.from(
-                        language = language,
-                        hasMultipleLanguages = if (language == null) metadata.languages.size > 1 else false,
-                        readingProgression = readingProgression.firstValidValue(preferences, defaults)
-                            ?: readingProgression.validate(metadata.readingProgression)
-                            ?: ReadingProgression.AUTO,
-                        verticalText = verticalTextSetting().firstValidValue(preferences, defaults)
-                    )
-                }
         }
     }
 }
 
-@ExperimentalReadiumApi
-fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
+internal fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
     if (settings !is EpubSettings.Reflowable) return this
 
     return with(settings) {

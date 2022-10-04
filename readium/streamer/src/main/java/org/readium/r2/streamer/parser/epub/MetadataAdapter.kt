@@ -46,7 +46,7 @@ internal class MetadataAdapter(
             .adapt(DurationAdapter()::adapt)
 
         val languages: List<String> = globalItemsHolder
-            .adapt(LanguageAdapter(readingProgression)::adapt)
+            .adapt(LanguageAdapter()::adapt)
 
         val identifier: String? = globalItemsHolder
             .adapt(IdentifierAdapter(uniqueIdentifierId)::adapt)
@@ -180,32 +180,11 @@ private class IdentifierAdapter(private val uniqueIdentifierId: String?) {
     }
 }
 
-private class LanguageAdapter(private val readingProgression: ReadingProgression) {
+private class LanguageAdapter {
 
     fun adapt(items: List<MetadataItem>): Pair<List<String>, List<MetadataItem>> = items
         .takeAllWithProperty(Vocabularies.DCTERMS + "language")
         .mapFirst { it.map(MetadataItem.Meta::value) }
-        .mapFirst { forceRtlPrimaryLangIfNeeded(it) }
-
-    private fun forceRtlPrimaryLangIfNeeded(langs: List<String>): List<String> {
-        // https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#multiple-language-items
-
-        if (langs.size > 1 && readingProgression == ReadingProgression.RTL) {
-            val rtlLanguages = listOf("ar", "fa", "he", "zh", "zh-hant", "zh-tw", "zh-hk", "ko", "ja")
-            val primaryLangIndex = langs.indexOfFirst { it in rtlLanguages }
-            if (primaryLangIndex > 0) {
-                return langs
-                    .toMutableList()
-                    .apply {
-                        val primaryLang = removeAt(primaryLangIndex)
-                        add(0, primaryLang)
-                    }
-                    .toList()
-            }
-        }
-
-        return langs
-    }
 }
 
 private class TitleAdapter(private val fallbackTitle: String) {

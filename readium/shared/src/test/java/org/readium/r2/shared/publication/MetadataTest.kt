@@ -298,45 +298,6 @@ class MetadataTest {
         )
     }
 
-    @Test
-    fun `effectiveReadingProgression falls back on LTR`() {
-        val metadata = createMetadata(languages = emptyList(), readingProgression = ReadingProgression.AUTO)
-        assertEquals(ReadingProgression.LTR, metadata.effectiveReadingProgression)
-    }
-
-    @Test
-    fun `effectiveReadingProgression falls back on priveded reading progression`() {
-        val metadata = createMetadata(languages = emptyList(), readingProgression = ReadingProgression.RTL)
-        assertEquals(ReadingProgression.RTL, metadata.effectiveReadingProgression)
-    }
-
-    @Test
-    fun `effectiveReadingProgression with RTL languages`() {
-        assertEquals(ReadingProgression.RTL, createMetadata(languages = listOf("zh-Hant"), readingProgression = ReadingProgression.AUTO).effectiveReadingProgression)
-        assertEquals(ReadingProgression.RTL, createMetadata(languages = listOf("zh-TW"), readingProgression = ReadingProgression.AUTO).effectiveReadingProgression)
-        assertEquals(ReadingProgression.RTL, createMetadata(languages = listOf("ar"), readingProgression = ReadingProgression.AUTO).effectiveReadingProgression)
-        assertEquals(ReadingProgression.RTL, createMetadata(languages = listOf("fa"), readingProgression = ReadingProgression.AUTO).effectiveReadingProgression)
-        assertEquals(ReadingProgression.RTL, createMetadata(languages = listOf("he"), readingProgression = ReadingProgression.AUTO).effectiveReadingProgression)
-        assertEquals(ReadingProgression.LTR, createMetadata(languages = listOf("he"), readingProgression = ReadingProgression.LTR).effectiveReadingProgression)
-    }
-
-    @Test
-    fun `effectiveReadingProgression ignores multiple languages`() {
-        assertEquals(ReadingProgression.LTR, createMetadata(languages = listOf("ar", "fa"), readingProgression = ReadingProgression.AUTO).effectiveReadingProgression)
-    }
-
-    @Test
-    fun `effectiveReadingProgression ignores language case`() {
-        assertEquals(ReadingProgression.RTL, createMetadata(languages = listOf("AR"), readingProgression = ReadingProgression.AUTO).effectiveReadingProgression)
-    }
-
-    @Test
-    fun `effectiveReadingProgression ignores language region, except for Chinese`() {
-        assertEquals(ReadingProgression.RTL, createMetadata(languages = listOf("ar-foo"), readingProgression = ReadingProgression.AUTO).effectiveReadingProgression)
-        // But not for ZH
-        assertEquals(ReadingProgression.LTR, createMetadata(languages = listOf("zh-foo"), readingProgression = ReadingProgression.AUTO).effectiveReadingProgression)
-    }
-
     @Test fun `get primary language with no language`() {
         assertNull(createMetadata(languages = listOf(), readingProgression = ReadingProgression.AUTO).language)
         assertNull(createMetadata(languages = listOf(), readingProgression = ReadingProgression.LTR).language)
