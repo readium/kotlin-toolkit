@@ -200,7 +200,7 @@ internal class EpubSettingsFactory(
         key = EpubSettings.PARAGRAPH_INDENT,
         value = value,
         range = 0.0..3.0,
-        suggestedIncrement = 0.2,
+        suggestedProgression = DoubleIncrement(0.2),
         activator = requiresPublisherStylesDisabled
             + requiresStylesheet { it == Layout.Stylesheets.Default || it == Layout.Stylesheets.Rtl }
     )
@@ -295,7 +295,7 @@ internal class EpubSettingsFactory(
         key = EpubSettings.TYPE_SCALE,
         value = value,
         range = 1.0..2.0,
-        suggestedSteps = listOf(1.0, 1.067, 1.125, 1.2, 1.25, 1.333, 1.414, 1.5, 1.618),
+        suggestedProgression = StepsProgression(1.0, 1.067, 1.125, 1.2, 1.25, 1.333, 1.414, 1.5, 1.618),
         activator = requiresPublisherStylesDisabled
     )
 

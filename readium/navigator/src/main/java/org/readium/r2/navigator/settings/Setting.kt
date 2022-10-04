@@ -74,10 +74,7 @@ typealias ToggleSetting = Setting<Boolean>
  * A [Setting] whose value is constrained to a range.
  *
  * @param range The valid range for the setting value.
- * @param suggestedSteps Value steps which can be used to decrement or increment the setting. It
- * MUST be sorted in increasing order.
- * @param suggestedIncrement Suggested value increment which can be used to decrement or increment
- * the setting.
+ * @param suggestedProgression Suggested progression strategy.
  * @param formatValue Returns a user-facing description for the given value. This can be used to
  * format the value unit.
  */
@@ -86,8 +83,7 @@ open class RangeSetting<V : Comparable<V>>(
     key: Key<V>,
     value: V,
     val range: ClosedRange<V>,
-    val suggestedSteps: List<V>? = null,
-    val suggestedIncrement: V? = null,
+    val suggestedProgression: ProgressionStrategy<V>? = null,
     val formatValue: (V) -> String = { v ->
         when (v) {
             is Number -> NumberFormat.getNumberInstance().run {
@@ -108,18 +104,14 @@ open class RangeSetting<V : Comparable<V>>(
  * A [RangeSetting] representing a percentage from 0.0 to 1.0.
  *
  * @param range The valid range for the setting value.
- * @param suggestedSteps Value steps which can be used to decrement or increment the setting. It
- * @param suggestedIncrement Suggested value increment which can be used to decrement or increment
- * the setting.
- * MUST be sorted in increasing order.
+ * @param suggestedProgression Suggested progression strategy.
  */
 @ExperimentalReadiumApi
 open class PercentSetting(
     key: Key<Double>,
     value: Double,
     range: ClosedRange<Double> = 0.0..1.0,
-    suggestedSteps: List<Double>? = null,
-    suggestedIncrement: Double? = 0.1,
+    suggestedProgression: ProgressionStrategy<Double> = DoubleIncrement(0.1),
     formatValue: (Double) -> String = { v ->
         NumberFormat.getPercentInstance().run {
             maximumFractionDigits = 0
@@ -129,7 +121,7 @@ open class PercentSetting(
     activator: SettingActivator = NullSettingActivator
 ) : RangeSetting<Double>(
     key, value, range,
-    suggestedSteps, suggestedIncrement, formatValue, activator
+    suggestedProgression, formatValue, activator
 )
 
 /**

@@ -300,65 +300,59 @@ fun <E> MutablePreferences.toggle(setting: EnumSetting<E>, preference: E, activa
 /**
  * Increments the preference for the given [setting] to the next step.
  *
- * If the [setting] doesn't have any suggested steps, the [next] function will be used instead
+ * If the [setting] doesn't have any suggested progression, the [next] function will be used instead
  * to determine the next step.
  *
  * @param activate Indicates whether the setting will be force activated if needed.
  */
 @ExperimentalReadiumApi
 fun <V : Comparable<V>> MutablePreferences.increment(setting: RangeSetting<V>, activate: Boolean = true, next: (V) -> V) {
-    val steps = setting.suggestedSteps
-    if (steps == null) {
-        update(setting, activate, next)
-    } else {
-        val index = steps.indexOfLast { it <= setting.prefOrValue }.takeIf { it != -1 } ?: return
-        val nextValue = steps.getOrNull(index + 1) ?: return
-        set(setting, nextValue, activate)
-    }
+    update(setting, activate) { value -> setting.suggestedProgression?.increment(value) ?: next(value) }
 }
 
 /**
  * Decrements the preference for the given [setting] to the previous step.
  *
- * If the [setting] doesn't have any suggested steps, the [previous] function will be used instead
+ * If the [setting] doesn't have any suggested progression, the [previous] function will be used instead
  * to determine the previous step.
  *
  * @param activate Indicates whether the setting will be force activated if needed.
  */
 @ExperimentalReadiumApi
 fun <V : Comparable<V>> MutablePreferences.decrement(setting: RangeSetting<V>, activate: Boolean = true, previous: (V) -> V) {
-    val steps = setting.suggestedSteps
-    if (steps == null) {
-        update(setting, activate, previous)
-    } else {
-        val index = steps.indexOfFirst { it >= setting.prefOrValue }.takeIf { it != -1 } ?: return
-        val previousValue = steps.getOrNull(index - 1) ?: return
-        set(setting, previousValue, activate)
-    }
+    update(setting, activate) { value -> setting.suggestedProgression?.decrement(value) ?: previous(value) }
 }
 
 /**
  * Increments the preference for the given [setting] to the next step.
  *
- * @param amount Amount to increment, when the [setting] doesn't have any suggested steps or
- * increment.
+ * @param amount Amount to increment, fall backs to the suggested progression or 1.
  * @param activate Indicates whether the setting will be force activated if needed.
  */
 @ExperimentalReadiumApi
-fun MutablePreferences.increment(setting: RangeSetting<Int>, amount: Int = setting.suggestedIncrement ?: 1, activate: Boolean = true) {
-    increment(setting, activate) { it + amount }
+fun MutablePreferences.increment(setting: RangeSetting<Int>, amount: Int? = null, activate: Boolean = true) {
+    val updater = when {
+        amount != null -> { value: Int ->  value + amount }
+        setting.suggestedProgression != null -> setting.suggestedProgression::increment
+        else -> { value: Int -> value + 1 }
+    }
+    update(setting, activate, updater)
 }
 
 /**
  * Decrements the preference for the given [setting] to the previous step.
  *
- * @param amount Amount to decrement, when the [setting] doesn't have any suggested steps or
- * increment.
+ * @param amount Amount to decrement, fall backs to the suggested progression or 1.
  * @param activate Indicates whether the setting will be force activated if needed.
  */
 @ExperimentalReadiumApi
-fun MutablePreferences.decrement(setting: RangeSetting<Int>, amount: Int = setting.suggestedIncrement ?: 1, activate: Boolean = true) {
-    decrement(setting, activate) { it - amount }
+fun MutablePreferences.decrement(setting: RangeSetting<Int>, amount: Int? = null, activate: Boolean = true) {
+    val updater = when {
+        amount != null -> { value: Int ->  value - amount }
+        setting.suggestedProgression != null -> setting.suggestedProgression::decrement
+        else -> { value: Int -> value - 1 }
+    }
+    update(setting, activate, updater)
 }
 
 /**
@@ -375,25 +369,33 @@ fun MutablePreferences.adjustBy(setting: RangeSetting<Int>, amount: Int, activat
 /**
  * Increments the preference for the given [setting] to the next step.
  *
- * @param amount Amount to increment, when the [setting] doesn't have any suggested steps or
- * increment.
+ * @param amount Amount to increment, fall backs to the suggested progression or 0.1.
  * @param activate Indicates whether the setting will be force activated if needed.
  */
 @ExperimentalReadiumApi
-fun MutablePreferences.increment(setting: RangeSetting<Double>, amount: Double = setting.suggestedIncrement ?: 0.1, activate: Boolean = true) {
-    increment(setting, activate) { it + amount }
+fun MutablePreferences.increment(setting: RangeSetting<Double>, amount: Double? = null, activate: Boolean = true) {
+    val updater = when {
+        amount != null -> { value: Double ->  value + amount }
+        setting.suggestedProgression != null -> setting.suggestedProgression::increment
+        else -> { value: Double -> value + 0.1 }
+    }
+    update(setting, activate, updater)
 }
 
 /**
  * Decrements the preference for the given [setting] to the previous step.
  *
- * @param amount Amount to decrement, when the [setting] doesn't have any suggested steps or
- * increment.
+ * @param amount Amount to decrement, falls back to the suggested progression or 0.1.
  * @param activate Indicates whether the setting will be force activated if needed.
  */
 @ExperimentalReadiumApi
-fun MutablePreferences.decrement(setting: RangeSetting<Double>, amount: Double = setting.suggestedIncrement ?: 0.1, activate: Boolean = true) {
-    decrement(setting, activate) { it - amount }
+fun MutablePreferences.decrement(setting: RangeSetting<Double>, amount: Double? = null, activate: Boolean = true) {
+    val updater = when {
+        amount != null -> { value: Double ->  value - amount }
+        setting.suggestedProgression != null -> setting.suggestedProgression::decrement
+        else -> { value: Double -> value - 0.1 }
+    }
+    update(setting, activate, updater)
 }
 
 /**
