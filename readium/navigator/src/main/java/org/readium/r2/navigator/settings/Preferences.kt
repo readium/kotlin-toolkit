@@ -112,11 +112,9 @@ open class Preferences(
 
     /**
      * Gets the preference for the given [key], if set.
-     *
-     * The value will be decoded using [coder].
      */
     operator fun <V> get(key: Setting.Key<V>): V? =
-        values[key.id]?.let { key.coder.decode(it) }
+        values[key.id]?.let { key.decode(it) }
 
     /**
      * Serializes this [Preferences] to a JSON object.
@@ -184,7 +182,7 @@ class MutablePreferences(
         if (preference == null) {
             values.remove(key.id)
         } else {
-            values[key.id] = key.coder.encode(preference)
+            values[key.id] = key.encode(preference)
         }
     }
 

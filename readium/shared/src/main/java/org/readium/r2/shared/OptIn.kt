@@ -14,7 +14,7 @@ package org.readium.r2.shared
     message = "This is an internal API that should not be used outside of Readium modules. No compatibility guarantees are provided."
 )
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY, AnnotationTarget.CONSTRUCTOR)
 annotation class InternalReadiumApi
 
 @RequiresOptIn(

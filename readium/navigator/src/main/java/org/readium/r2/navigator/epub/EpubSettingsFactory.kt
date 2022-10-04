@@ -98,7 +98,7 @@ internal class EpubSettingsFactory(
     /** Default page background color. */
     private fun backgroundColorSetting(
         value: Color,
-    ): ColorSetting = ColorSetting(
+    ): Setting<Color> = Setting(
         key = EpubSettings.BACKGROUND_COLOR,
         value = value
     )
@@ -257,7 +257,7 @@ internal class EpubSettingsFactory(
     /** Default page text color. */
     private fun textColorSetting(
         value: Color,
-    ): ColorSetting = ColorSetting(
+    ): Setting<Color> = Setting(
         key = EpubSettings.TEXT_COLOR,
         value = value,
     )
@@ -340,11 +340,11 @@ internal class EpubSettingsFactory(
         value = scroll
     ) { preferences -> settingsPolicy.reflowableSettings(metadata, preferences).scroll  }
 
-    /** [SettingActivator] for settings active only with the given layout [stylesheet]. */
-    private fun requiresStylesheet(value: Layout.Stylesheets) =
+    /** [SettingActivator] for settings active only with the given layout [stylesheets]. */
+    private fun requiresStylesheet(stylesheets: Layout.Stylesheets) =
         MatchLayoutSettingActivator(
             { preferences -> Layout.from(settingsPolicy.reflowableSettings(metadata, preferences)) },
-            { layout -> layout.stylesheets == value }
+            { layout -> layout.stylesheets == stylesheets }
         )
 
     /**

@@ -84,7 +84,7 @@ sealed class EpubSettings : Configurable.Settings {
      */
     @ExperimentalReadiumApi
     data class Reflowable internal constructor(
-        val backgroundColor: ColorSetting,
+        val backgroundColor: Setting<Color>,
         val columnCount: EnumSetting<ColumnCount>,
         val fontFamily: EnumSetting<FontFamily?>,
         val fontSize: PercentSetting,
@@ -101,7 +101,7 @@ sealed class EpubSettings : Configurable.Settings {
         override val readingProgression: EnumSetting<ReadingProgression>,
         val scroll: ToggleSetting,
         val textAlign: EnumSetting<TextAlign>,
-        val textColor: ColorSetting,
+        val textColor: Setting<Color>,
         val textNormalization: EnumSetting<TextNormalization>,
         val theme: EnumSetting<Theme>,
         val typeScale: RangeSetting<Double>,

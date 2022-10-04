@@ -257,7 +257,7 @@ private fun ColumnScope.ReflowableUserSettings(
     preferences: Preferences,
     editNavigator: EditPreferences,
     editPublication: EditPreferences,
-    backgroundColor: ColorSetting? = null,
+    backgroundColor: Setting<ReadiumColor>? = null,
     columnCount: EnumSetting<ColumnCount>? = null,
     fontFamily: EnumSetting<FontFamily?>? = null,
     fontSize: PercentSetting? = null,
@@ -274,7 +274,7 @@ private fun ColumnScope.ReflowableUserSettings(
     readingProgression: EnumSetting<ReadingProgression>? = null,
     scroll: ToggleSetting? = null,
     textAlign: EnumSetting<ReadiumTextAlign>? = null,
-    textColor: ColorSetting? = null,
+    textColor: Setting<ReadiumColor>? = null,
     textNormalization: EnumSetting<TextNormalization>? = null,
     theme: EnumSetting<Theme>? = null,
     typeScale: RangeSetting<Double>? = null,
@@ -603,12 +603,12 @@ private fun SwitchItem(
 }
 
 /**
- * Component for a [ColorSetting].
+ * Component for a [Setting<ReadiumColor>].
  */
 @Composable
 private fun ColorItem(
     title: String,
-    setting: ColorSetting,
+    setting: Setting<ReadiumColor>,
     preferences: Preferences,
     edit: EditPreferences
 ) {
