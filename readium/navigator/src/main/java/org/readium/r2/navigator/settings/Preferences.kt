@@ -277,8 +277,8 @@ fun <T> MutablePreferences.update(setting: Setting<T>, activate: Boolean = true,
  * @param activate Indicates whether the setting will be force activated if needed.
  */
 @ExperimentalReadiumApi
-fun MutablePreferences.toggle(setting: ToggleSetting, activate: Boolean = true) {
-    set(setting, !setting.prefOrValue, activate = activate)
+fun MutablePreferences.toggle(setting: Setting<Boolean>, activate: Boolean = true) {
+    update(setting, activate = activate) { value: Boolean -> !value}
 }
 
 /**
