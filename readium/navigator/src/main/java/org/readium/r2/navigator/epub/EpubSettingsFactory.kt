@@ -136,7 +136,7 @@ internal class EpubSettingsFactory(
     /** Enable hyphenation. */
     private fun hyphensSetting(
         value: Boolean
-    ): ToggleSetting = ToggleSetting(
+    ): Setting<Boolean> = Setting<Boolean>(
         key = EpubSettings.HYPHENS,
         value = value,
         activator = requiresPublisherStylesDisabled
@@ -166,7 +166,7 @@ internal class EpubSettingsFactory(
     /** Enable ligatures in Arabic. */
     private fun ligaturesSetting(
         value: Boolean
-    ): ToggleSetting = ToggleSetting(
+    ): Setting<Boolean> = Setting<Boolean>(
         key = EpubSettings.LIGATURES,
         value = value,
         activator = requiresPublisherStylesDisabled
@@ -222,7 +222,7 @@ internal class EpubSettingsFactory(
      */
     private fun publisherStylesSetting(
         value: Boolean
-    ): ToggleSetting = ToggleSetting(
+    ): Setting<Boolean> = Setting<Boolean>(
         key = EpubSettings.PUBLISHER_STYLES,
         value = value
     )
@@ -233,7 +233,7 @@ internal class EpubSettingsFactory(
      */
     private fun scrollSetting(
         value: Boolean
-    ): ToggleSetting = ToggleSetting(
+    ): Setting<Boolean> = Setting<Boolean>(
         key = EpubSettings.SCROLL,
         value = value
     )
@@ -307,7 +307,7 @@ internal class EpubSettingsFactory(
      */
     private fun verticalTextSetting(
         value: Boolean
-    ): ToggleSetting = ToggleSetting(
+    ): Setting<Boolean> = Setting<Boolean>(
         key = EpubSettings.VERTICAL_TEXT,
         value = value,
     )

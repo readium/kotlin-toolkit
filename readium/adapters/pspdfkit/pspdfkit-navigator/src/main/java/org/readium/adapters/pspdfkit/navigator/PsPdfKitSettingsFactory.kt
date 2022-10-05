@@ -38,8 +38,8 @@ internal class PsPdfKitSettingsFactory(
             values = listOf(ReadingProgression.LTR, ReadingProgression.RTL)
         )
 
-    private fun scrollSetting(value: Boolean): ToggleSetting =
-        ToggleSetting(
+    private fun scrollSetting(value: Boolean): Setting<Boolean> =
+        Setting(
             key = PsPdfKitSettings.SCROLL,
             value = value
         )

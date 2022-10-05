@@ -65,12 +65,6 @@ open class Setting<V>(
 }
 
 /**
- * A boolean [Setting].
- */
-@ExperimentalReadiumApi
-internal typealias ToggleSetting = Setting<Boolean>
-
-/**
  * A [Setting] whose value is constrained to a range.
  *
  * @param range The valid range for the setting value.
