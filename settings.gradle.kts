@@ -4,9 +4,6 @@
  * available in the top-level LICENSE file of the project.
  */
 
-// FIXME: Android Studio doesn't support the gradle/libs.versions.toml2 well yet.
-//enableFeaturePreview("VERSION_CATALOGS")
-
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -22,8 +19,8 @@ pluginManagement {
     // it to integrate Readium in submodules.
     // See https://github.com/readium/kotlin-toolkit/pull/97
     plugins {
-        id("com.android.application") version ("7.2.2")
-        id("com.android.library") version ("7.2.2")
+        id("com.android.application") version ("7.3.0")
+        id("com.android.library") version ("7.3.0")
         id("org.jetbrains.kotlin.android") version ("1.7.10")
         id("org.jetbrains.dokka") version ("1.7.10")
         id("org.jetbrains.kotlin.plugin.serialization") version ("1.7.10")

@@ -39,6 +39,7 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
     }
+    namespace = "org.readium.r2.streamer"
 }
 
 publishing {
@@ -62,9 +63,9 @@ dependencies {
 
     api(project(":readium:shared"))
 
-    implementation("androidx.appcompat:appcompat:1.5.1")
+    implementation(libs.appcompat)
     @Suppress("GradleDependency")
-    implementation("com.jakewharton.timber:timber:5.0.1")
+    implementation(libs.timber)
     implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
         exclude(group = "org.parboiled")
     }
@@ -79,13 +80,14 @@ dependencies {
     implementation("com.mcxiaoke.koi:async:0.5.5") {
         exclude(module = "support-v4")
     }
-    implementation("joda-time:joda-time:2.10.14")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation(libs.joda.time)
+    implementation(libs.coroutines.core)
 
     // Tests
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.assertj:assertj-core:3.23.1")
-    testImplementation("org.robolectric:robolectric:4.8.1")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    testImplementation(libs.junit)
+
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.expresso.core)
+    testImplementation(libs.assertj)
+    testImplementation(libs.robolectric)
 }

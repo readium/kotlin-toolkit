@@ -42,6 +42,7 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    namespace = "org.readium.adapters.pdfium.navigator"
 }
 
 publishing {
@@ -66,14 +67,13 @@ dependencies {
     api(project(":readium:navigator"))
     api(project(":readium:adapters:pdfium:pdfium-document"))
 
-    api("com.github.barteksc:android-pdf-viewer:2.8.2")
-    implementation("androidx.fragment:fragment-ktx:1.5.3")
-    implementation("com.jakewharton.timber:timber:5.0.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    api(libs.pdf.viewer)
+    implementation(libs.fragment.ktx)
+    implementation(libs.timber)
+    implementation(libs.bundles.coroutines)
 
-    testImplementation("junit:junit:4.13.2")
+    testImplementation(libs.junit)
 
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.expresso.core)
 }
