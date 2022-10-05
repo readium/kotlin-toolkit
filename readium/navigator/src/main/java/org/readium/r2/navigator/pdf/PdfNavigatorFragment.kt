@@ -153,8 +153,6 @@ class PdfNavigatorFragment<S: PdfSettings> private constructor(
                     .launchIn(this)
 
                 settings
-                    .map { it }
-                    .distinctUntilChanged()
                     .onEach { settings ->
                         documentFragment.value?.settings = settings
                     }

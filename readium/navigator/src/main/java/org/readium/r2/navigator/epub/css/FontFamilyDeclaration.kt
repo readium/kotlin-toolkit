@@ -52,7 +52,7 @@ sealed class FontFamilySource {
 
 /**
  * Creates a font family declaration for the [FontFamily] receiver from the given [source]
- * and [alternate] declaration if any.q
+ * and [alternate] declaration if any.
  */
 @ExperimentalReadiumApi
 fun FontFamily.from(source: FontFamilySource, alternate: FontFamilyDeclaration? = null): FontFamilyDeclaration =

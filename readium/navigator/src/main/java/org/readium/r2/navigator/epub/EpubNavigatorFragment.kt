@@ -21,15 +21,23 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.collection.forEach
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.ConstraintSet
-import androidx.fragment.app.*
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentFactory
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.whenStarted
 import androidx.viewpager.widget.ViewPager
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
@@ -45,7 +53,9 @@ import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2PagerAdapter.PageResource
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.navigator.settings.*
+import org.readium.r2.navigator.settings.Configurable
+import org.readium.r2.navigator.settings.FontFamily
+import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
@@ -66,7 +76,7 @@ import kotlin.reflect.KClass
 /**
  * Factory for a [JavascriptInterface] which will be injected in the web views.
  *
- * Return `null` if you don't want to inject the interface for the given [resource].
+ * Return `null` if you don't want to inject the interface for the given resource.
  */
 typealias JavascriptInterfaceFactory = (resource: Link) -> Any?
 
@@ -159,9 +169,11 @@ class EpubNavigatorFragment private constructor(
         }
 
         companion object {
-            private val SERIF = FontFamily("serif").from(System)
-            private val SANS_SERIF = FontFamily("sans-serif").from(System)
-            private val MONOSPACE = FontFamily("monospace").from(System)
+            // Generic font families
+            // See https://www.w3.org/TR/css-fonts-4/#generic-font-families
+            private val SERIF = FontFamily.SERIF.from(System)
+            private val SANS_SERIF = FontFamily.SANS_SERIF.from(System)
+            private val MONOSPACE = FontFamily.MONOSPACE.from(System)
 
             /**
              * Default font family declarations.
@@ -169,12 +181,6 @@ class EpubNavigatorFragment private constructor(
              * Warning: Most of them require an Internet connection (Google Fonts).
              */
             val DEFAULT_FONT_FAMILIES: List<FontFamilyDeclaration> = listOf(
-                // Generic font families
-                // See https://www.w3.org/TR/css-fonts-4/#generic-font-families
-                SERIF,
-                SANS_SERIF,
-                MONOSPACE,
-
                 // Serif
                 FontFamily.LITERATA.from(GoogleFonts, alternate = SERIF),
                 FontFamily.PT_SERIF.from(GoogleFonts, alternate = SERIF),

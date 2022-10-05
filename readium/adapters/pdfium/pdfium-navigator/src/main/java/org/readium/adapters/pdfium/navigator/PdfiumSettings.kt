@@ -8,10 +8,10 @@ package org.readium.adapters.pdfium.navigator
 
 import org.readium.r2.navigator.pdf.PdfSettings
 import org.readium.r2.navigator.pdf.PdfSettingsValues
-import org.readium.r2.navigator.settings.*
+import org.readium.r2.navigator.settings.EnumSetting
+import org.readium.r2.navigator.settings.ScrollAxis
+import org.readium.r2.navigator.settings.Setting
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.PdfSupport
-import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation
 
