@@ -137,9 +137,10 @@ timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "tim
 
 
 [bundles]
-exoplayer = ["google-exoplayer-core", "google-exoplayer-ui", "google-exoplayer-mediasession", "google-exoplayer-workmanager", "google-exoplayer-extension-media2"]
+compose = ["androidx-compose-activity", "androidx-compose-animation", "androidx-compose-foundation", "androidx-compose-material", "androidx-compose-material3", "androidx-compose-material-icons", "androidx-compose-theme-adapter", "androidx-compose-ui", "androidx-compose-ui-tooling"]
 coroutines = ["kotlinx-coroutines-core", "kotlinx-coroutines-android"]
-lifecycle = ["androidx-lifecycle-livedata", "androidx-lifecycle-runtime", "androidx-lifecycle-viewmodel", "androidx-lifecycle-vmsavedstate"]
+exoplayer = ["google-exoplayer-core", "google-exoplayer-ui", "google-exoplayer-mediasession", "google-exoplayer-workmanager", "google-exoplayer-extension-media2"]
+lifecycle = ["androidx-lifecycle-common", "androidx-lifecycle-extensions", "androidx-lifecycle-livedata", "androidx-lifecycle-runtime", "androidx-lifecycle-viewmodel", "androidx-lifecycle-vmsavedstate", "androidx-lifecycle-viewmodel-compose"]
 media2 = ["androidx-media2-session", "androidx-media2-player"]
 navigation = ["androidx-navigation-fragment", "androidx-navigation-ui"]
 room = ["androidx-room-runtime", "androidx-room-ktx"]

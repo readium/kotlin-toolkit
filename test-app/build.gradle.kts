@@ -59,6 +59,7 @@ android {
             assets.srcDirs("src/main/assets")
         }
     }
+    namespace = "org.readium.r2.testapp"
 }
 
 dependencies {
@@ -80,20 +81,15 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.browser)
     implementation(libs.androidx.cardview)
-    implementation(libs.androidx.compose.animation)
-    implementation(libs.androidx.compose.foundation)
-    implementation(libs.androidx.compose.material.icons)
-    implementation(libs.androidx.compose.material)
-    implementation(libs.androidx.compose.theme.adapter)
+
+    implementation(libs.bundles.compose)
+//    debugImplementation(libs.androidx.compose.ui)
+
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core)
     implementation (libs.androidx.datastore.preferences)
     implementation(libs.androidx.fragment.ktx)
-    implementation(libs.androidx.lifecycle.livedata)
-    implementation(libs.androidx.lifecycle.runtime)
-    implementation(libs.androidx.lifecycle.viewmodel)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.lifecycle.common)
+    implementation(libs.bundles.lifecycle)
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.androidx.navigation.ui)
     implementation(libs.androidx.paging)
@@ -120,11 +116,6 @@ dependencies {
     // Room database
     implementation(libs.bundles.room)
     kapt(libs.androidx.room.compiler)
-
-    implementation(libs.androidx.lifecycle.extensions)
-
-    debugImplementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.tooling)
 
     // Tests
     testImplementation(libs.junit)
