@@ -336,7 +336,6 @@ internal class EpubSettingsFactory(
 
     /** [SettingActivator] for settings active when the scroll is enabled or disabled. */
     private fun requiresScroll(scroll: Boolean) = RequirePreferenceSettingActivator(
-        key = EpubSettings.SCROLL,
         value = scroll
     ) { preferences -> settingsPolicy.reflowableSettings(metadata, preferences).scroll  }
 

@@ -65,7 +65,6 @@ class ForcePreferenceSettingActivator<V>(
 @InternalReadiumApi
 @OptIn(ExperimentalReadiumApi::class)
 class RequirePreferenceSettingActivator<V>(
-    val key: Setting.Key<V>,
     val value: V,
     val valueFromPreferences: (Preferences) -> V
 ) : SettingActivator {

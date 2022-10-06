@@ -68,7 +68,7 @@ internal class PsPdfKitSettingsFactory(
         )
 
     private fun requiresScroll(scroll: Boolean) =
-        RequirePreferenceSettingActivator(key = EpubSettings.SCROLL, value = scroll) { preferences ->
+        RequirePreferenceSettingActivator(value = scroll) { preferences ->
             settingsPolicy.settings(metadata, preferences).scroll
         }
 
