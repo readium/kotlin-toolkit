@@ -63,7 +63,7 @@ dependencies {
 
     api(project(":readium:shared"))
 
-    implementation(libs.appcompat)
+    implementation(libs.androidx.appcompat)
     @Suppress("GradleDependency")
     implementation(libs.timber)
     implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
@@ -81,13 +81,13 @@ dependencies {
         exclude(module = "support-v4")
     }
     implementation(libs.joda.time)
-    implementation(libs.coroutines.core)
+    implementation(libs.kotlinx.coroutines.core)
 
     // Tests
     testImplementation(libs.junit)
 
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.expresso.core)
+    androidTestImplementation(libs.androidx.ext.junit)
+    androidTestImplementation(libs.androidx.expresso.core)
     testImplementation(libs.assertj)
     testImplementation(libs.robolectric)
 }

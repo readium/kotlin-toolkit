@@ -73,11 +73,11 @@ dependencies {
 
     implementation(libs.bundles.media2)
 
-    implementation(libs.exoplayer.core)
-    implementation(libs.exoplayer.extension.media2)
+    implementation(libs.google.exoplayer.core)
+    implementation(libs.google.exoplayer.extension.media2)
 
     testImplementation(libs.junit)
 
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.expresso.core)
+    androidTestImplementation(libs.androidx.ext.junit)
+    androidTestImplementation(libs.androidx.expresso.core)
 }

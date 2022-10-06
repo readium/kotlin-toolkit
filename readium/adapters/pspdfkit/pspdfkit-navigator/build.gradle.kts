@@ -67,13 +67,13 @@ dependencies {
     api(project(":readium:navigator"))
     api(project(":readium:adapters:pspdfkit:pspdfkit-document"))
 
-    implementation(libs.fragment.ktx)
+    implementation(libs.androidx.fragment.ktx)
     implementation(libs.timber)
     implementation(libs.pspdfkit)
     implementation(libs.bundles.coroutines)
 
     testImplementation(libs.junit)
 
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.expresso.core)
+    androidTestImplementation(libs.androidx.ext.junit)
+    androidTestImplementation(libs.androidx.expresso.core)
 }

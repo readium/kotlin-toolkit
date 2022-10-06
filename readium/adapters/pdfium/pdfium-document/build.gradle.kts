@@ -65,13 +65,13 @@ dependencies {
 
     api(project(":readium:shared"))
 
-    implementation(libs.core)
+    implementation(libs.androidx.core)
     implementation(libs.pdfium)
     implementation(libs.timber)
     implementation(libs.bundles.coroutines)
 
     testImplementation(libs.junit)
 
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.expresso.core)
+    androidTestImplementation(libs.androidx.ext.junit)
+    androidTestImplementation(libs.androidx.expresso.core)
 }

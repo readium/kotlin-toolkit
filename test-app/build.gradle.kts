@@ -36,7 +36,7 @@ android {
         freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
+        kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
     }
     buildFeatures {
         viewBinding = true
@@ -64,7 +64,7 @@ android {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation(libs.kotlin.stdlib)
-    implementation(libs.legacy.v4)
+    implementation(libs.androidx.legacy.v4)
 
     implementation(project(":readium:shared"))
     implementation(project(":readium:streamer"))
@@ -75,43 +75,43 @@ dependencies {
     // Only required if you want to support PDF files using PDFium.
     implementation(project(":readium:adapters:pdfium"))
 
-    implementation(libs.compose.activity)
-    implementation(libs.activity.ktx)
-    implementation(libs.appcompat)
-    implementation(libs.browser)
-    implementation(libs.cardview)
-    implementation(libs.compose.animation)
-    implementation(libs.compose.foundation)
-    implementation(libs.compose.material.icons)
-    implementation(libs.compose.material)
-    implementation(libs.compose.theme.adapter)
-    implementation(libs.constraint.layout)
-    implementation(libs.core)
-    implementation (libs.datastore.preferences)
-    implementation(libs.fragment.ktx)
-    implementation(libs.lifecycle.livedata)
-    implementation(libs.lifecycle.runtime)
-    implementation(libs.lifecycle.viewmodel)
-    implementation(libs.lifecycle.viewmodel.compose)
-    implementation(libs.lifecycle.common)
-    implementation(libs.navigation.fragment)
-    implementation(libs.navigation.ui)
-    implementation(libs.paging)
-    implementation(libs.recyclerview)
-    implementation(libs.viewpager2)
-    implementation(libs.webkit)
+    implementation(libs.androidx.compose.activity)
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.browser)
+    implementation(libs.androidx.cardview)
+    implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.compose.material.icons)
+    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.theme.adapter)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.core)
+    implementation (libs.androidx.datastore.preferences)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.lifecycle.livedata)
+    implementation(libs.androidx.lifecycle.runtime)
+    implementation(libs.androidx.lifecycle.viewmodel)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.common)
+    implementation(libs.androidx.navigation.fragment)
+    implementation(libs.androidx.navigation.ui)
+    implementation(libs.androidx.paging)
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.viewpager2)
+    implementation(libs.androidx.webkit)
     implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
         exclude(group = "org.parboiled")
     }
     implementation("com.github.edrlab.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
         exclude(group = "org.parboiled")
     }
-    implementation(libs.material)
+    implementation(libs.google.material)
     implementation(libs.timber)
     // AM NOTE: needs to stay this version for now (June 24,2020)
     implementation(libs.picasso)
     implementation(libs.joda.time)
-    implementation(libs.coroutines.core)
+    implementation(libs.kotlinx.coroutines.core)
     // AM NOTE: needs to stay this version for now (June 24,2020)
     implementation(libs.jsoup)
 
@@ -119,16 +119,16 @@ dependencies {
 
     // Room database
     implementation(libs.bundles.room)
-    kapt(libs.room.compiler)
+    kapt(libs.androidx.room.compiler)
 
-    implementation(libs.lifecycle.extensions)
+    implementation(libs.androidx.lifecycle.extensions)
 
-    debugImplementation(libs.compose.ui)
-    implementation(libs.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.tooling)
 
     // Tests
     testImplementation(libs.junit)
 
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.expresso.core)
+    androidTestImplementation(libs.androidx.ext.junit)
+    androidTestImplementation(libs.androidx.expresso.core)
 }

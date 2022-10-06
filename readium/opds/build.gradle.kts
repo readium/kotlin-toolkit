@@ -62,17 +62,17 @@ dependencies {
 
     api(project(":readium:shared"))
 
-    implementation(libs.appcompat)
+    implementation(libs.androidx.appcompat)
     implementation(libs.timber)
     implementation(libs.joda.time)
     implementation("nl.komponents.kovenant:kovenant:3.3.0")
-    implementation(libs.coroutines.core)
+    implementation(libs.kotlinx.coroutines.core)
 
     // Tests
     testImplementation(libs.junit)
 
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.expresso.core)
+    androidTestImplementation(libs.androidx.ext.junit)
+    androidTestImplementation(libs.androidx.expresso.core)
 
     testImplementation(libs.robolectric)
 }

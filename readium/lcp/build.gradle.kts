@@ -60,13 +60,13 @@ publishing {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    implementation(libs.coroutines.core)
+    implementation(libs.kotlinx.coroutines.core)
 
     api(project(":readium:shared"))
 
-    implementation(libs.constraint.layout)
-    implementation(libs.core)
-    implementation(libs.material)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.core)
+    implementation(libs.google.material)
     implementation(libs.timber)
     implementation("com.mcxiaoke.koi:async:0.5.5") {
         exclude(module = "support-v4")
@@ -76,15 +76,15 @@ dependencies {
     }
     implementation(libs.joda.time)
     implementation("org.zeroturnaround:zt-zip:1.15")
-    implementation(libs.browser)
+    implementation(libs.androidx.browser)
 
     implementation(libs.bundles.room)
-    kapt(libs.room.compiler)
+    kapt(libs.androidx.room.compiler)
     kapt("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.5.0")
 
     // Tests
     testImplementation(libs.junit)
 
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.expresso.core)
+    androidTestImplementation(libs.androidx.ext.junit)
+    androidTestImplementation(libs.androidx.expresso.core)
 }
