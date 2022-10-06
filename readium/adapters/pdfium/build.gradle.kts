@@ -39,6 +39,7 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
     }
+    namespace = "org.readium.adapters.pdfium"
 }
 
 publishing {
