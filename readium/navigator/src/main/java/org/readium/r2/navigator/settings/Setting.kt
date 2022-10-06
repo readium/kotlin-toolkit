@@ -17,7 +17,6 @@ import java.text.NumberFormat
  *
  * @param key Serializable unique identifier used to serialize [Preferences] to JSON.
  * @param value Current value for this setting.
- * @param validator Ensures the validity of a [V] value.
  * @param activator Ensures that the condition required for this setting to be active are met in the
  * given [Preferences] – e.g. another setting having a certain preference.
  */
@@ -25,9 +24,8 @@ import java.text.NumberFormat
 open class Setting<V>(
     val key: Key<V>,
     val value: V,
-    private val validator: SettingValidator<V> = IdentitySettingValidator(),
     private val activator: SettingActivator = NullSettingActivator
-) : SettingValidator<V> by validator, SettingActivator by activator {
+) : SettingActivator by activator {
 
     class Key<V> @InternalReadiumApi constructor(
         val id: String,
@@ -89,10 +87,12 @@ open class RangeSetting<V : Comparable<V>>(
     },
     activator: SettingActivator = NullSettingActivator
 ) : Setting<V>(
-    key, value,
-    validator = RangeSettingValidator(range),
-    activator = activator
-)
+    key, value, activator
+) {
+    init {
+        require(value in range)
+    }
+}
 
 /**
  * A [RangeSetting] representing a percentage from 0.0 to 1.0.
@@ -133,7 +133,9 @@ open class EnumSetting<E>(
     val formatValue: (E) -> String? = { null },
     activator: SettingActivator = NullSettingActivator
 ) : Setting<E>(
-    key, value,
-    validator = AllowlistSettingValidator(values),
-    activator = activator
-)
+    key, value, activator
+) {
+    init {
+        values?.let { allowedValues -> value in allowedValues }
+    }
+}

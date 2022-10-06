@@ -192,11 +192,9 @@ class MutablePreferences(
      * @param activate Indicates whether the setting will be force activated if needed.
      */
     fun <V> set(setting: Setting<V>, preference: V?, activate: Boolean = true) {
-        val value = preference?.let { setting.validate(it) }
+        set(key = setting.key, preference = preference)
 
-        set(key = setting.key, preference = value)
-
-        if (value != null && activate) {
+        if (preference != null && activate) {
             activate(setting)
         }
     }
@@ -278,7 +276,7 @@ fun <T> MutablePreferences.update(setting: Setting<T>, activate: Boolean = true,
  */
 @ExperimentalReadiumApi
 fun MutablePreferences.toggle(setting: Setting<Boolean>, activate: Boolean = true) {
-    update(setting, activate = activate) { value: Boolean -> !value}
+    update(setting, activate = activate) { value -> !value}
 }
 
 /**
@@ -307,7 +305,10 @@ fun <E> MutablePreferences.toggle(setting: EnumSetting<E>, preference: E, activa
  */
 @ExperimentalReadiumApi
 fun <V : Comparable<V>> MutablePreferences.increment(setting: RangeSetting<V>, activate: Boolean = true, next: (V) -> V) {
-    update(setting, activate) { value -> setting.suggestedProgression?.increment(value) ?: next(value) }
+    update(setting, activate) { value ->
+        val newValue = setting.suggestedProgression?.increment(value) ?: next(value)
+        newValue.coerceIn(setting.range)
+    }
 }
 
 /**
@@ -320,7 +321,10 @@ fun <V : Comparable<V>> MutablePreferences.increment(setting: RangeSetting<V>, a
  */
 @ExperimentalReadiumApi
 fun <V : Comparable<V>> MutablePreferences.decrement(setting: RangeSetting<V>, activate: Boolean = true, previous: (V) -> V) {
-    update(setting, activate) { value -> setting.suggestedProgression?.decrement(value) ?: previous(value) }
+    update(setting, activate) { value ->
+        val newValue = setting.suggestedProgression?.decrement(value) ?: previous(value)
+        newValue.coerceIn(setting.range)
+    }
 }
 
 /**
@@ -331,12 +335,14 @@ fun <V : Comparable<V>> MutablePreferences.decrement(setting: RangeSetting<V>, a
  */
 @ExperimentalReadiumApi
 fun MutablePreferences.increment(setting: RangeSetting<Int>, amount: Int? = null, activate: Boolean = true) {
-    val updater = when {
-        amount != null -> { value: Int ->  value + amount }
-        setting.suggestedProgression != null -> setting.suggestedProgression::increment
-        else -> { value: Int -> value + 1 }
+    update(setting, activate) { value ->
+        val newValue = when {
+            amount != null -> value + amount
+            setting.suggestedProgression != null -> setting.suggestedProgression.increment(value)
+            else -> value + 1
+        }
+        newValue.coerceIn(setting.range)
     }
-    update(setting, activate, updater)
 }
 
 /**
@@ -347,12 +353,14 @@ fun MutablePreferences.increment(setting: RangeSetting<Int>, amount: Int? = null
  */
 @ExperimentalReadiumApi
 fun MutablePreferences.decrement(setting: RangeSetting<Int>, amount: Int? = null, activate: Boolean = true) {
-    val updater = when {
-        amount != null -> { value: Int ->  value - amount }
-        setting.suggestedProgression != null -> setting.suggestedProgression::decrement
-        else -> { value: Int -> value - 1 }
+    update(setting, activate) { value ->
+        val newValue = when {
+            amount != null -> value - amount
+            setting.suggestedProgression != null -> setting.suggestedProgression.decrement(value)
+            else -> value - 1
+        }
+        newValue.coerceIn(setting.range)
     }
-    update(setting, activate, updater)
 }
 
 /**
@@ -363,7 +371,7 @@ fun MutablePreferences.decrement(setting: RangeSetting<Int>, amount: Int? = null
  */
 @ExperimentalReadiumApi
 fun MutablePreferences.adjustBy(setting: RangeSetting<Int>, amount: Int, activate: Boolean = true) {
-    update(setting, activate) { it + amount }
+    update(setting, activate) { value -> (value + amount).coerceIn(setting.range) }
 }
 
 /**
@@ -374,12 +382,14 @@ fun MutablePreferences.adjustBy(setting: RangeSetting<Int>, amount: Int, activat
  */
 @ExperimentalReadiumApi
 fun MutablePreferences.increment(setting: RangeSetting<Double>, amount: Double? = null, activate: Boolean = true) {
-    val updater = when {
-        amount != null -> { value: Double ->  value + amount }
-        setting.suggestedProgression != null -> setting.suggestedProgression::increment
-        else -> { value: Double -> value + 0.1 }
+    update(setting, activate) { value ->
+        val newValue = when {
+            amount != null -> value + amount
+            setting.suggestedProgression != null -> setting.suggestedProgression.increment(value)
+            else -> value + 0.1
+        }
+        newValue.coerceIn(setting.range)
     }
-    update(setting, activate, updater)
 }
 
 /**
@@ -390,12 +400,14 @@ fun MutablePreferences.increment(setting: RangeSetting<Double>, amount: Double? 
  */
 @ExperimentalReadiumApi
 fun MutablePreferences.decrement(setting: RangeSetting<Double>, amount: Double? = null, activate: Boolean = true) {
-    val updater = when {
-        amount != null -> { value: Double ->  value - amount }
-        setting.suggestedProgression != null -> setting.suggestedProgression::decrement
-        else -> { value: Double -> value - 0.1 }
+    update(setting, activate) { value ->
+        val newValue = when {
+            amount != null -> value - amount
+            setting.suggestedProgression != null -> setting.suggestedProgression.decrement(value)
+            else -> value - 0.1
+        }
+        newValue.coerceIn(setting.range)
     }
-    update(setting, activate, updater)
 }
 
 /**
@@ -406,5 +418,5 @@ fun MutablePreferences.decrement(setting: RangeSetting<Double>, amount: Double? 
  */
 @ExperimentalReadiumApi
 fun MutablePreferences.adjustBy(setting: RangeSetting<Double>, amount: Double, activate: Boolean = true) {
-    update(setting, activate) { it + amount }
+    update(setting, activate) { value -> (value + amount).coerceIn(setting.range) }
 }
