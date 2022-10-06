@@ -6,9 +6,9 @@
 
 plugins {
     id("com.android.application")
-    id("kotlin-android")
-    id("kotlin-kapt")
-    id("kotlin-parcelize")
+    kotlin("android")
+    kotlin("kapt")
+    kotlin("plugin.parcelize")
 }
 
 android {

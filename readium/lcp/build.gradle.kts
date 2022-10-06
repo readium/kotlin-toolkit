@@ -6,9 +6,9 @@
 
 plugins {
     id("com.android.library")
-    id("kotlin-android")
-    id("kotlin-parcelize")
-    id("kotlin-kapt")
+    kotlin("android")
+    kotlin("plugin.parcelize")
+    kotlin("kapt")
     id("maven-publish")
     id("org.jetbrains.dokka")
 }
