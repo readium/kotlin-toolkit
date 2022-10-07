@@ -9,6 +9,7 @@
 package org.readium.r2.testapp.reader
 
 import android.graphics.Color
+import android.os.Bundle
 import androidx.annotation.ColorInt
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,8 +18,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -130,11 +129,11 @@ class ReaderViewModel(
             id = "$id-$idSuffix",
             locator = locator,
             style = style,
-            extras = buildJsonObject {
+            extras = mapOf(
                 // We store the highlight's database ID in the extras bundle, for easy retrieval
                 // later. You can store arbitrary information in the bundle.
-                put("id", id)
-            }
+                "id" to id
+            )
         )
 
         return listOfNotNull(

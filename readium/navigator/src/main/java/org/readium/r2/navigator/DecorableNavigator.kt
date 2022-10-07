@@ -16,10 +16,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
-import kotlinx.serialization.json.JsonObject
 import org.json.JSONObject
-import org.readium.r2.navigator.util.JsonParceler
 import org.readium.r2.shared.JSONable
+import org.readium.r2.shared.extensions.JSONParceler
 import org.readium.r2.shared.publication.Locator
 import kotlin.reflect.KClass
 
@@ -103,7 +102,7 @@ data class Decoration(
     val id: DecorationId,
     val locator: Locator,
     val style: Style,
-    val extras: @WriteWith<JsonParceler> JsonObject = JsonObject(emptyMap()),
+    val extras: @WriteWith<JSONParceler> Map<String, Any> = mapOf()
 ) : JSONable, Parcelable {
 
     /**

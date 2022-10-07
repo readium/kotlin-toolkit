@@ -6,7 +6,9 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.PublicationCollection
 import org.readium.r2.shared.publication.encryption.Encryption
 
 /**

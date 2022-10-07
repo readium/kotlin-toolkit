@@ -39,9 +39,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.long
-import kotlinx.serialization.json.longOrNull
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.navigator.util.EdgeTapNavigation
@@ -286,8 +283,8 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
             val decoration = event.decoration
             // We stored the highlight's database ID in the `Decoration.extras` bundle, for
             // easy retrieval. You can store arbitrary information in the bundle.
-            val id = decoration.extras["id"]?.jsonPrimitive?.long
-                ?.takeIf { it > 0 } ?: return false
+            val id = (decoration.extras["id"] as Long)
+                .takeIf { it > 0 } ?: return false
 
             // This listener will be called when tapping on any of the decorations in the
             // "highlights" group. To differentiate between the page margin icon and the
