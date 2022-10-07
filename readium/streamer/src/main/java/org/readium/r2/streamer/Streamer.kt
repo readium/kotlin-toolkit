@@ -136,9 +136,7 @@ class Streamer constructor(
         // Transform provided by the reading app in `Streamer.open()`.
         builder.apply(onCreatePublication)
 
-        val publication = builder
-            .apply(onCreatePublication)
-            .build()
+        val publication = builder.build()
             .apply { addLegacyProperties(asset.mediaType()) }
 
         Try.success(publication)

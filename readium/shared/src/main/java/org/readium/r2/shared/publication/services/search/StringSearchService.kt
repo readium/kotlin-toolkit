@@ -17,7 +17,10 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.fetcher.DefaultResourceContentExtractorFactory
 import org.readium.r2.shared.fetcher.ResourceContentExtractor
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.LocatorCollection
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.publication.services.search.SearchService.Options
 import org.readium.r2.shared.util.Ref

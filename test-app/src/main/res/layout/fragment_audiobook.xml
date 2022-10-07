@@ -16,7 +16,6 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimaryDark"
         android:orientation="horizontal"
         android:paddingBottom="8dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -31,7 +30,6 @@
             android:layout_marginStart="16dp"
             android:minWidth="40dp"
             android:text="@string/zero"
-            android:textColor="@android:color/white"
             app:layout_constraintBottom_toBottomOf="@+id/publicationTitle"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/publicationTitle"
@@ -48,7 +46,6 @@
             android:gravity="center"
             android:maxLines="1"
             android:scrollHorizontally="true"
-            android:textColor="@android:color/white"
             android:textSize="18sp"
             app:layout_constraintEnd_toStartOf="@+id/timelineDuration"
             app:layout_constraintStart_toEndOf="@+id/timelinePosition"
@@ -63,7 +60,6 @@
             android:layout_marginEnd="16dp"
             android:minWidth="40dp"
             android:text="@string/zero"
-            android:textColor="@android:color/white"
             app:layout_constraintBottom_toBottomOf="@+id/publicationTitle"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/publicationTitle"
@@ -77,10 +73,6 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:contentDescription="@string/seek_bar"
-            android:foregroundTint="@android:color/white"
-            android:progressTint="@android:color/white"
-            android:secondaryProgressTint="@android:color/darker_gray"
-            android:thumbTint="@android:color/white"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/publicationTitle"
@@ -94,7 +86,6 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:adjustViewBounds="true"
-        android:background="@color/colorPrimaryDark"
         android:contentDescription="@string/cover_image"
         android:cropToPadding="true"
         android:scaleType="fitCenter"
@@ -104,7 +95,6 @@
         android:id="@+id/controls"
         android:layout_width="match_parent"
         android:layout_height="70dp"
-        android:background="@color/colorPrimaryDark"
         android:gravity="center_vertical|center_horizontal"
         android:orientation="horizontal"
         android:weightSum="5"
@@ -121,8 +111,7 @@
             android:background="@android:color/transparent"
             android:contentDescription="@string/go_backward_30_seconds"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_rewind_30"
-            app:tint="@color/white" />
+            android:src="@drawable/outline_replay_30_24" />
 
         <ImageButton
             android:id="@+id/playPause"
@@ -132,8 +121,7 @@
             android:background="@android:color/transparent"
             android:contentDescription="@string/play_or_pause"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_baseline_pause_24"
-            app:tint="@color/white" />
+            android:src="@drawable/ic_baseline_pause_24" />
 
         <ImageButton
             android:id="@+id/skipForward"
@@ -143,8 +131,7 @@
             android:background="@android:color/transparent"
             android:contentDescription="@string/go_forward_30_seconds"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_fastforward_30"
-            app:tint="@color/white" />
+            android:src="@drawable/outline_forward_30_24" />
 
     </LinearLayout>
 

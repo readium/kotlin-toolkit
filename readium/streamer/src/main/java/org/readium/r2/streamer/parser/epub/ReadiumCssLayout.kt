@@ -29,6 +29,7 @@ internal enum class ReadiumCssLayout(val cssId: String) {
     companion object {
 
         operator fun invoke(metadata: Metadata): ReadiumCssLayout =
+            @Suppress("Deprecation")
             invoke(languages = metadata.languages, readingProgression = metadata.effectiveReadingProgression)
 
         /**

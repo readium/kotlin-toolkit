@@ -10,7 +10,7 @@ repo_name: kotlin-toolkit
 repo_url: https://github.com/readium/kotlin-toolkit
 
 # Copyright (shown at the footer)
-copyright: 'Copyright &copy; 2021 Readium Foundation'
+copyright: 'Copyright &copy; 2022 Readium Foundation'
 
 # Material theme
 theme:
@@ -30,13 +30,13 @@ markdown_extensions:
   - def_list
   - toc:
       permalink: true
-#  - pymdownx.betterem:
-#      smart_enable: all
-#  - pymdownx.caret
-#  - pymdownx.inlinehilite
-#  - pymdownx.magiclink
-#  - pymdownx.smartsymbols
-#  - pymdownx.superfences
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
 
 # Dev server binding
 #dev_addr: 127.0.0.1:3001
@@ -44,7 +44,11 @@ markdown_extensions:
 nav:
   - Migration Guide: migration-guide.md
   - User Guides:
-    - PDF Support: guides/pdf.md
+    - Navigator settings: guides/navigator-settings.md
+      - Adding custom fonts: guides/epub-custom-fonts.md
+    - PDF support: guides/pdf.md
+    - Text-to-speech: guides/tts.md
+    - Extracting the content of a publication: guides/content.md
   - API Reference:
       - Shared: readium/shared/index.md
       - Streamer: readium/streamer/index.md

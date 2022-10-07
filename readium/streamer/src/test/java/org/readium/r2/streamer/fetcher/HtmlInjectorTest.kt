@@ -1,10 +1,10 @@
 package org.readium.r2.streamer.fetcher
 
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.*
-import org.junit.Assert.assertEquals
 
 class HtmlInjectorTest {
 

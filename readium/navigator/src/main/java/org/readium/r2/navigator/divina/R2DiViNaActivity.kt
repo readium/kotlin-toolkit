@@ -21,9 +21,10 @@ import androidx.webkit.WebViewClientCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.*
+import org.readium.r2.navigator.IR2Activity
+import org.readium.r2.navigator.R2BasicWebView
+import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.databinding.ActivityR2DivinaBinding
-import org.readium.r2.shared.extensions.destroyPublication
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Publication
 import kotlin.coroutines.CoroutineContext

@@ -13,9 +13,8 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.extensions.optNullableString
-import org.readium.r2.shared.util.logging.JsonWarning
+import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import java.util.*
 

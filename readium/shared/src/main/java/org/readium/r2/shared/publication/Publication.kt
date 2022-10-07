@@ -4,6 +4,9 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(InternalReadiumApi::class)
+@file:Suppress("DEPRECATION")
+
 package org.readium.r2.shared.publication
 
 import android.net.Uri
@@ -24,12 +27,11 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.*
+import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Closeable
-import org.readium.r2.shared.util.MemoryObserver
 import org.readium.r2.shared.util.Ref
 import org.readium.r2.shared.util.mediatype.MediaType
-import timber.log.Timber
 import java.net.URL
 import java.net.URLEncoder
 import kotlin.reflect.KClass
@@ -61,7 +63,9 @@ class Publication(
     private val fetcher: Fetcher = EmptyFetcher(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
     // FIXME: To refactor after specifying the User and Rendition Settings API
+    @Deprecated("Migrate to the new Settings API (see migration guide)")
     var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(),
+    @Deprecated("Migrate to the new Settings API (see migration guide)")
     var cssStyle: String? = null,
 ) : PublicationServicesHolder {
 
@@ -132,7 +136,7 @@ class Publication(
      * Searches through (in order) [readingOrder], [resources] and [links] recursively following
      * [alternate] and [children] links.
      *
-     * If there's no match, try again after removing any query parameter and anchor from the
+     * If there's no match, tries again after removing any query parameter and anchor from the
      * given [href].
      */
     fun linkWithHref(href: String): Link? = _manifest.linkWithHref(href)
@@ -171,10 +175,8 @@ class Publication(
     //TODO Change this to be a suspend function
     override fun close() {
         GlobalScope.launch {
-            try {
+            tryOrLog {
                 fetcher.close()
-            } catch (e: Exception) {
-                Timber.e(e)
             }
 
             services.close()
@@ -235,6 +237,7 @@ class Publication(
          * Server, and set in the self [Link]. Unfortunately, the self [Link] is not available
          * in the navigator at the moment without changing the code in reading apps.
          */
+        @Deprecated("The HTTP server is not needed anymore (see migration guide)")
         fun localBaseUrlOf(filename: String, port: Int): String {
             val sanitizedFilename = filename
                 .removePrefix("/")
@@ -247,6 +250,7 @@ class Publication(
         /**
          * Gets the absolute URL of a resource locally served through HTTP.
          */
+        @Deprecated("The HTTP server is not needed anymore (see migration guide)")
         fun localUrlOf(filename: String, port: Int, href: String): String =
             localBaseUrlOf(filename, port) + href
 
@@ -352,10 +356,11 @@ class Publication(
      */
     class ServicesBuilder private constructor(private val serviceFactories: MutableMap<String, ServiceFactory>) {
 
-        @OptIn(Search::class)
+        @OptIn(Search::class, ExperimentalReadiumApi::class)
         @Suppress("UNCHECKED_CAST")
         constructor(
             cache: ServiceFactory? = null,
+            content: ServiceFactory? = null,
             contentProtection: ServiceFactory? = null,
             cover: ServiceFactory? = null,
             locator: ServiceFactory? = { DefaultLocatorService(it.manifest.readingOrder, it.services) },
@@ -363,6 +368,7 @@ class Publication(
             search: ServiceFactory? = null,
         ) : this(mapOf(
             CacheService::class.java.simpleName to cache,
+            ContentService::class.java.simpleName to content,
             ContentProtectionService::class.java.simpleName to contentProtection,
             CoverService::class.java.simpleName to cover,
             LocatorService::class.java.simpleName to locator,

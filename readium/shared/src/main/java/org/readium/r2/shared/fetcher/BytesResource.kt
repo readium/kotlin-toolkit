@@ -22,18 +22,23 @@ sealed class BaseBytesResource(val link: Link, val bytes: suspend () -> ByteArra
     override suspend fun link(): Link = link
 
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
-        if (!::_bytes.isInitialized)
-            _bytes = bytes()
+        try {
+            if (!::_bytes.isInitialized)
+                _bytes = bytes()
 
-        if (range == null)
-            return Try.success(_bytes)
+            if (range == null)
+                return Try.success(_bytes)
 
-        @Suppress("NAME_SHADOWING")
-        val range = range
-            .coerceIn(0L until _bytes.size)
-            .requireLengthFitInt()
+            @Suppress("NAME_SHADOWING")
+            val range = range
+                .coerceIn(0L until _bytes.size)
+                .requireLengthFitInt()
 
-        return Try.success(_bytes.sliceArray(range.map(Long::toInt)))
+            return Try.success(_bytes.sliceArray(range.map(Long::toInt)))
+
+        } catch (e: Exception) {
+            return Try.failure(Resource.Exception.wrap(e))
+        }
     }
 
     override suspend fun length(): ResourceTry<Long> =

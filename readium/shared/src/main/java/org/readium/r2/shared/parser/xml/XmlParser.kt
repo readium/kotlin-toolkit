@@ -14,8 +14,7 @@ import org.xmlpull.v1.XmlPullParserException
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.IOException
 import java.io.InputStream
-import java.util.Locale
-import java.util.Stack
+import java.util.*
 import javax.xml.XMLConstants
 
 /** XML Parser with support for namespaces, mixed content and lang inheritance

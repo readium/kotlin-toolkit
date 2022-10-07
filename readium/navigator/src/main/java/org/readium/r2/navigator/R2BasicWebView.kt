@@ -11,23 +11,24 @@ import android.content.SharedPreferences
 import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
-import android.net.Uri
 import android.os.Build
 import android.text.Html
 import android.util.AttributeSet
 import android.view.*
-import android.view.Gravity
-import android.view.LayoutInflater
 import android.webkit.URLUtil
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.widget.ImageButton
 import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.annotation.RequiresApi
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.safety.Safelist
@@ -36,8 +37,12 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.use
 import timber.log.Timber
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -64,18 +69,22 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
         fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
 
-        @InternalReadiumApi
-        fun javascriptInterfacesForResource(link: Link): Map<String, Any?> = emptyMap()
-
         /**
          * Returns the custom [ActionMode.Callback] to be used with the text selection menu.
          */
         val selectionActionModeCallback: ActionMode.Callback? get() = null
 
-        /**
-         * Offers an opportunity to override a request loaded by the given web view.
-         */
+        @InternalReadiumApi
+        fun javascriptInterfacesForResource(link: Link): Map<String, Any?> = emptyMap()
+
+        @InternalReadiumApi
         fun shouldOverrideUrlLoading(webView: WebView, request: WebResourceRequest): Boolean = false
+
+        @InternalReadiumApi
+        fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? = null
+
+        @InternalReadiumApi
+        fun resourceAtUrl(url: String): Resource?
     }
 
     lateinit var listener: Listener
@@ -84,6 +93,9 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     var resourceUrl: String? = null
 
     internal val scrollModeFlow = MutableStateFlow(false)
+    
+    /** Indicates that a user text selection is active. */
+    internal var isSelecting = false
 
     val scrollMode: Boolean get() = scrollModeFlow.value
 
@@ -224,6 +236,11 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
      */
     @android.webkit.JavascriptInterface
     fun onTap(eventJson: String): Boolean {
+        // If there's an on-going selection, the tap will dismiss it so we don't forward it.
+        if (isSelecting) {
+            return false
+        }
+
         val event = TapEvent.fromJSON(eventJson) ?: return false
 
         // The script prevented the default behavior.
@@ -318,10 +335,18 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         val absoluteUrl = Href(href, baseHref = resourceUrl).percentEncodedString
             .substringBefore("#")
 
-        val aside = tryOrNull { Jsoup.connect(absoluteUrl).get() }
-            ?.select("#$id")
-            ?.first()?.html()
-            ?: return false
+        val aside = runBlocking {
+            tryOrLog {
+                listener.resourceAtUrl(absoluteUrl)
+                    ?.use { res ->
+                        res.readAsString()
+                            .map { Jsoup.parse(it) }
+                            .getOrThrow()
+                    }
+                    ?.select("#$id")
+                    ?.first()?.html()
+            }
+        } ?: return false
 
         val safe = Jsoup.clean(aside, Safelist.relaxed())
 
@@ -391,6 +416,16 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             ?: return false
 
         return runBlocking(uiScope.coroutineContext) { listener.onDragEnd(event) }
+    }
+
+    @android.webkit.JavascriptInterface
+    fun onSelectionStart() {
+        isSelecting = true
+    }
+
+    @android.webkit.JavascriptInterface
+    fun onSelectionEnd() {
+        isSelecting = false
     }
 
     /** Produced by gestures.js */
@@ -505,6 +540,11 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         runJavaScript("getSelectionRect();", callback)
     }
 
+    internal suspend fun findFirstVisibleLocator(): Locator? =
+        runJavaScriptSuspend("readium.findFirstVisibleLocator();")
+            .let { tryOrNull { JSONObject(it) } }
+            ?.let { Locator.fromJSON(it) }
+
     fun createHighlight(locator: String?, color: String?, callback: (String) -> Unit) {
         uiScope.launch {
             runJavaScript("createHighlight($locator, $color, true);", callback)
@@ -550,6 +590,17 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         if (resourceUrl == request.url?.toString()) return false
 
         return listener.shouldOverrideUrlLoading(this, request)
+    }
+
+    internal fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? {
+        // Prevent favicon.ico to be loaded, this was causing a NullPointerException in NanoHttp
+        if (!request.isForMainFrame && request.url.path?.endsWith("/favicon.ico") == true) {
+            tryOrLog<Unit> {
+                return WebResourceResponse("image/png", null, null)
+            }
+        }
+
+        return listener.shouldInterceptRequest(webView, request)
     }
 
     // Text selection ActionMode overrides

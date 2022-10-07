@@ -1,15 +1,12 @@
 package org.readium.r2.testapp.utils
 
+import android.content.Intent
+import android.os.IBinder
+import androidx.annotation.CallSuper
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ServiceLifecycleDispatcher
 import androidx.media2.session.MediaSessionService
-import androidx.lifecycle.Lifecycle
-
-import androidx.annotation.CallSuper
-
-import android.content.Intent
-
-import android.os.IBinder
-import androidx.lifecycle.LifecycleOwner
 
 /*
  * Borrowed from
