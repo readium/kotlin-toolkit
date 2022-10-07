@@ -8,6 +8,7 @@ package org.readium.r2.navigator.pdf
 
 import android.graphics.PointF
 import androidx.fragment.app.Fragment
+import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.settings.Configurable
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -15,13 +16,12 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
 
 /**
  * To be implemented by adapters for third-party PDF engines which can be used with [PdfNavigatorFragment].
  */
 @ExperimentalReadiumApi
-interface PdfEngineProvider<S: PdfSettings> {
+interface PdfEngineProvider<S: Configurable.Settings> {
 
     /**
      * Creates a [PdfDocumentFragment] for [input].
@@ -29,9 +29,14 @@ interface PdfEngineProvider<S: PdfSettings> {
     suspend fun createDocumentFragment(input: PdfDocumentFragmentInput<S>): PdfDocumentFragment<S>
 
     /**
-     * Create [PdfSettings] for [metadata] and [preferences].
+     * Creates [Configurable.Settings] for [metadata] and [preferences].
      */
     fun createSettings(metadata: Metadata, preferences: Preferences): S
+
+    /**
+     * Infers a [VisualNavigator.Presentation] from settings.
+     */
+    fun createPresentation(settings: S): VisualNavigator.Presentation
 }
 
 @ExperimentalReadiumApi
@@ -41,7 +46,7 @@ typealias PdfDocumentFragmentFactory<S> = suspend (PdfDocumentFragmentInput<S>) 
  * A [PdfDocumentFragment] renders a single PDF resource.
  */
 @ExperimentalReadiumApi
-abstract class PdfDocumentFragment<S: PdfSettings> : Fragment() {
+abstract class PdfDocumentFragment<S: Configurable.Settings> : Fragment() {
 
     interface Listener {
         /**
@@ -80,22 +85,13 @@ abstract class PdfDocumentFragment<S: PdfSettings> : Fragment() {
 }
 
 @ExperimentalReadiumApi
-data class PdfDocumentFragmentInput<S: PdfSettings>(
+data class PdfDocumentFragmentInput<S: Configurable.Settings>(
     val publication: Publication,
     val link: Link,
     val initialPageIndex: Int,
     val settings: S,
     val listener: PdfDocumentFragment.Listener?
 )
-
-
-@ExperimentalReadiumApi
-interface PdfSettings : Configurable.Settings {
-
-    val readingProgressionValue: ReadingProgression
-
-    val scrollValue: Boolean
-}
 
 @ExperimentalReadiumApi
 interface PdfSettingsValues

@@ -16,7 +16,7 @@ import com.github.barteksc.pdfviewer.PDFView
 import kotlinx.coroutines.launch
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
-import org.readium.r2.navigator.settings.ScrollAxis
+import org.readium.r2.navigator.settings.Axis
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
@@ -94,7 +94,7 @@ class PdfiumDocumentFragment internal constructor(
                             pages(*((pageCount - 1) downTo 0).toList().toIntArray())
                         }
                     }
-                    .swipeHorizontal(settings.scrollAxis.value == ScrollAxis.HORIZONTAL)
+                    .swipeHorizontal(settings.scrollAxis.value == Axis.HORIZONTAL)
                     .spacing(10)
                     // Customization of [PDFView] is done before setting the listeners,
                     // to avoid overriding them in reading apps, which would break the
@@ -175,6 +175,6 @@ class PdfiumDocumentFragment internal constructor(
      * right-to-left reading progressions.
      */
     private val isPagesOrderReversed: Boolean get() =
-        settings.scrollAxis.value == ScrollAxis.HORIZONTAL &&
+        settings.scrollAxis.value == Axis.HORIZONTAL &&
             settings.readingProgression.value == ReadingProgression.RTL
 }

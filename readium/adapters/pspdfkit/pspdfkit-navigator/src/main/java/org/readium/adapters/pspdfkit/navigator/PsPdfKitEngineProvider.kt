@@ -8,9 +8,12 @@ package org.readium.adapters.pspdfkit.navigator
 
 import android.content.Context
 import org.readium.adapters.pspdfkit.document.PsPdfKitDocumentFactory
+import org.readium.r2.navigator.SimplePresentation
+import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
 import org.readium.r2.navigator.pdf.PdfDocumentFragmentInput
 import org.readium.r2.navigator.pdf.PdfEngineProvider
+import org.readium.r2.navigator.settings.Axis
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
@@ -42,4 +45,11 @@ class PsPdfKitEngineProvider(
 
     override fun createSettings(metadata: Metadata, preferences: Preferences): PsPdfKitSettings =
         PsPdfKitSettingsFactory(metadata, settingsPolicy).createSettings(preferences)
+
+    override fun createPresentation(settings: PsPdfKitSettings): VisualNavigator.Presentation =
+        SimplePresentation(
+            readingProgression = settings.readingProgression.value,
+            scroll = settings.scroll.value,
+            axis =  if (settings.scroll.value) settings.scrollAxis.value else Axis.HORIZONTAL
+        )
 }

@@ -170,7 +170,7 @@ private fun ColumnScope.FixedLayoutUserSettings(
     language: Setting<Language?>? = null,
     readingProgression: EnumSetting<ReadingProgression>? = null,
     scroll: Setting<Boolean>? = null,
-    scrollAxis: EnumSetting<ScrollAxis>? = null
+    scrollAxis: EnumSetting<Axis>? = null
 ) {
     if (language != null || readingProgression != null) {
         fun reset() {
@@ -216,8 +216,8 @@ private fun ColumnScope.FixedLayoutUserSettings(
     if (scrollAxis != null) {
         ButtonGroupItem("Scroll axis", scrollAxis, preferences, editNavigator) { value ->
             when (value) {
-                ScrollAxis.HORIZONTAL-> "Horizontal"
-                ScrollAxis.VERTICAL -> "Vertical"
+                Axis.HORIZONTAL-> "Horizontal"
+                Axis.VERTICAL -> "Vertical"
             }
         }
     }

@@ -15,7 +15,7 @@ import androidx.fragment.app.commitNow
 import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
-import org.readium.r2.navigator.pdf.PdfSettings
+import org.readium.r2.navigator.settings.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
@@ -25,10 +25,7 @@ import org.readium.r2.testapp.R
 class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener {
 
     override lateinit var navigator: Navigator
-    private lateinit var pdfNavigatorFragment: PdfNavigatorFragment<PdfSettings>
-
-    override fun isTapNavigationRelevant(): Boolean =
-        !pdfNavigatorFragment.settings.value.scrollValue
+    private lateinit var pdfNavigatorFragment: PdfNavigatorFragment<Configurable.Settings>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val readerData = model.readerInitData as VisualReaderInitData
@@ -54,7 +51,7 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
         }
         navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!! as Navigator
         @Suppress("Unchecked_cast")
-        pdfNavigatorFragment = navigator as PdfNavigatorFragment<PdfSettings>
+        pdfNavigatorFragment = navigator as PdfNavigatorFragment<Configurable.Settings>
         return view
     }
 

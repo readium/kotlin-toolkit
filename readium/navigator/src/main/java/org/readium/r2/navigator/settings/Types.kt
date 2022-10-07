@@ -131,7 +131,7 @@ value class Color(@ColorInt val int: Int)
 
 @ExperimentalReadiumApi
 @Serializable
-enum class ScrollAxis(val value: String) {
+enum class Axis(val value: String) {
     @SerialName("horizontal") HORIZONTAL("horizontal"),
     @SerialName("vertical") VERTICAL("vertical");
 }

@@ -44,13 +44,13 @@ import timber.log.Timber
  * To use this [Fragment], create a factory with [PdfNavigatorFragment.createFactory].
  */
 @ExperimentalReadiumApi
-class PdfNavigatorFragment<S: PdfSettings> private constructor(
+class PdfNavigatorFragment<S: Configurable.Settings> private constructor(
     override val publication: Publication,
     initialLocator: Locator? = null,
     val preferences: Preferences = Preferences(),
     private val listener: Listener?,
     private val pdfEngineProvider: PdfEngineProvider<S>
-) : Fragment(), VisualNavigator, Configurable<S> {
+) : Fragment(), VisualNavigator, Configurable<Configurable.Settings> {
 
     interface Listener : VisualNavigator.Listener {
 
@@ -73,7 +73,7 @@ class PdfNavigatorFragment<S: PdfSettings> private constructor(
          * @param pdfEngineProvider provider for third-party PDF engine adapter.
          */
         @ExperimentalReadiumApi
-        fun <S: PdfSettings> createFactory(
+        fun <S: Configurable.Settings> createFactory(
             publication: Publication,
             initialLocator: Locator? = null,
             preferences: Preferences = Preferences(),
@@ -111,7 +111,7 @@ class PdfNavigatorFragment<S: PdfSettings> private constructor(
             publication,
             initialLocator,
             preferences = preferences,
-            settingsFactory = pdfEngineProvider::createSettings
+            pdfEngineProvider = pdfEngineProvider,
         )
     }
 
@@ -194,8 +194,14 @@ class PdfNavigatorFragment<S: PdfSettings> private constructor(
         }
     }
 
+    @ExperimentalReadiumApi
+    override val presentation: StateFlow<VisualNavigator.Presentation>
+        get() = settings.mapStateIn(lifecycleScope) { settings ->
+            pdfEngineProvider.createPresentation(settings)
+        }
+
     override val readingProgression: ReadingProgression
-        get() = settings.value.readingProgressionValue
+        get() = presentation.value.readingProgression
 
     override val currentLocator: StateFlow<Locator>
         get() = viewModel.state

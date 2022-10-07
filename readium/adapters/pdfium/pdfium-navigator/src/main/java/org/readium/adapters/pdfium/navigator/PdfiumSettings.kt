@@ -6,10 +6,10 @@
 
 package org.readium.adapters.pdfium.navigator
 
-import org.readium.r2.navigator.pdf.PdfSettings
 import org.readium.r2.navigator.pdf.PdfSettingsValues
 import org.readium.r2.navigator.settings.EnumSetting
-import org.readium.r2.navigator.settings.ScrollAxis
+import org.readium.r2.navigator.settings.Axis
+import org.readium.r2.navigator.settings.Configurable
 import org.readium.r2.navigator.settings.Setting
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
@@ -23,27 +23,21 @@ import org.readium.r2.shared.publication.presentation.Presentation
 @ExperimentalReadiumApi
 data class PdfiumSettings internal constructor(
     val readingProgression: EnumSetting<ReadingProgression>,
-    val scrollAxis: EnumSetting<ScrollAxis>,
+    val scrollAxis: EnumSetting<Axis>,
     val fit: EnumSetting<Presentation.Fit>
-) : PdfSettings {
-
-    override val readingProgressionValue: ReadingProgression
-        get() = readingProgression.value
-
-    override val scrollValue: Boolean
-        get() = true
+) : Configurable.Settings {
 
     companion object {
 
         val FIT = Setting.Key<Presentation.Fit>("fit")
         val READING_PROGRESSION = Setting.Key<ReadingProgression>("readingProgression")
-        val SCROLL_AXIS = Setting.Key<ScrollAxis>("scrollAxis")
+        val SCROLL_AXIS = Setting.Key<Axis>("scrollAxis")
     }
 }
 
 @ExperimentalReadiumApi
 data class PdfiumSettingsValues(
     val readingProgression: ReadingProgression,
-    val scrollAxis: ScrollAxis,
+    val scrollAxis: Axis,
     val fit: Presentation.Fit
 ) : PdfSettingsValues

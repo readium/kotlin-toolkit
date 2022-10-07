@@ -6,11 +6,12 @@
 
 package org.readium.adapters.pdfium.navigator
 
+import org.readium.r2.navigator.SimplePresentation
+import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.pdf.PdfDocumentFragmentInput
 import org.readium.r2.navigator.pdf.PdfEngineProvider
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Metadata
 
 @ExperimentalReadiumApi
@@ -31,4 +32,11 @@ class PdfiumEngineProvider(
 
     override fun createSettings(metadata: Metadata, preferences: Preferences): PdfiumSettings =
         PdfiumSettingsFactory(metadata, settingsPolicy).createSettings(preferences)
+
+    override fun createPresentation(settings: PdfiumSettings): VisualNavigator.Presentation =
+        SimplePresentation(
+            readingProgression = settings.readingProgression.value,
+            scroll = true,
+            axis = settings.scrollAxis.value
+        )
 }

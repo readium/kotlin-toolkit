@@ -31,7 +31,7 @@ import com.pspdfkit.ui.PdfFragment
 import com.pspdfkit.ui.toolbar.popup.PdfTextSelectionPopupToolbar
 import org.readium.adapters.pspdfkit.document.PsPdfKitDocument
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
-import org.readium.r2.navigator.settings.ScrollAxis
+import org.readium.r2.navigator.settings.Axis
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
@@ -196,10 +196,10 @@ private val Presentation.Fit.fitMode: PageFitMode
     }
 
 @OptIn(ExperimentalReadiumApi::class)
-private val ScrollAxis.scrollDirection: PageScrollDirection
+private val Axis.scrollDirection: PageScrollDirection
     get() = when (this) {
-        ScrollAxis.VERTICAL -> PageScrollDirection.VERTICAL
-        ScrollAxis.HORIZONTAL -> PageScrollDirection.HORIZONTAL
+        Axis.VERTICAL -> PageScrollDirection.VERTICAL
+        Axis.HORIZONTAL -> PageScrollDirection.HORIZONTAL
     }
 
 private val ReadingProgression.pageBinding: PageBinding

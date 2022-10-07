@@ -9,14 +9,16 @@ package org.readium.r2.navigator.pdf
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.settings.Configurable
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.positions
 
@@ -26,7 +28,8 @@ internal class PdfNavigatorViewModel(
     private val publication: Publication,
     initialLocator: Locator,
     preferences: Preferences,
-    private val settingsFactory: (Metadata, Preferences) -> PdfSettings
+    private val pdfEngineProvider: PdfEngineProvider<*>
+
 ) : AndroidViewModel(application) {
 
     data class State(
@@ -41,14 +44,14 @@ internal class PdfNavigatorViewModel(
 
     val state: StateFlow<State> = _state.asStateFlow()
 
-    private val _settings: MutableStateFlow<PdfSettings> = MutableStateFlow(
-        settingsFactory(publication.metadata, preferences)
+    private val _settings: MutableStateFlow<Configurable.Settings> = MutableStateFlow(
+        pdfEngineProvider.createSettings(publication.metadata, preferences)
     )
 
     val settings: StateFlow<Configurable.Settings> = _settings.asStateFlow()
 
     fun submitPreferences(preferences: Preferences) = viewModelScope.launch {
-        _settings.value = settingsFactory(publication.metadata, preferences)
+        _settings.value = pdfEngineProvider.createSettings(publication.metadata, preferences)
     }
 
     fun onPageChanged(pageIndex: Int) = viewModelScope.launch {
@@ -65,7 +68,7 @@ internal class PdfNavigatorViewModel(
             publication: Publication,
             initialLocator: Locator?,
             preferences: Preferences,
-            settingsFactory: (Metadata, Preferences) -> PdfSettings
+            pdfEngineProvider: PdfEngineProvider<*>
         ) = createViewModelFactory {
             PdfNavigatorViewModel(
                 application = application,
@@ -73,7 +76,7 @@ internal class PdfNavigatorViewModel(
                 initialLocator = initialLocator
                     ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first())),
                 preferences = preferences,
-                settingsFactory = settingsFactory
+                pdfEngineProvider = pdfEngineProvider
             )
         }
     }

@@ -10,6 +10,7 @@ import android.graphics.PointF
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.media.MediaPlayback
+import org.readium.r2.navigator.settings.Axis
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -109,12 +110,24 @@ interface VisualNavigator : Navigator {
      */
     val readingProgression: ReadingProgression
 
+    @ExperimentalReadiumApi
+    val presentation: StateFlow<Presentation>
+
     /**
      * Returns the [Locator] to the first content element that begins on the current screen.
      */
     @ExperimentalReadiumApi
     suspend fun firstVisibleElementLocator(): Locator? =
         currentLocator.value
+
+    @ExperimentalReadiumApi
+    interface Presentation {
+        val readingProgression: ReadingProgression
+
+        val scroll: Boolean
+
+        val axis: Axis
+    }
 
     interface Listener : Navigator.Listener {
         /**

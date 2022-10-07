@@ -22,13 +22,16 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.navigator.SimplePresentation
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2CbzPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
+import org.readium.r2.navigator.settings.Axis
 import org.readium.r2.navigator.util.createFragmentFactory
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positions
@@ -36,6 +39,7 @@ import org.readium.r2.shared.publication.services.positions
 /**
  * Navigator for bitmap-based publications, such as CBZ.
  */
+@OptIn(ExperimentalReadiumApi::class)
 class ImageNavigatorFragment private constructor(
     override val publication: Publication,
     private val initialLocator: Locator? = null,
@@ -67,6 +71,19 @@ class ImageNavigatorFragment private constructor(
     private var _binding: ActivityR2ViewpagerBinding? = null
     private val binding get() = _binding!!
 
+    @ExperimentalReadiumApi
+    override val presentation: StateFlow<VisualNavigator.Presentation> =
+        MutableStateFlow(
+            SimplePresentation(
+                readingProgression = publication.metadata.effectiveReadingProgression,
+                scroll = false,
+                axis = Axis.HORIZONTAL
+            )
+        )
+
+    override val readingProgression: ReadingProgression
+        get() = presentation.value.readingProgression
+
     override fun onCreate(savedInstanceState: Bundle?) {
         childFragmentManager.fragmentFactory = createFragmentFactory {
             R2CbzPageFragment(publication) { x, y -> this.listener?.onTap(PointF(x, y)) }
@@ -74,7 +91,7 @@ class ImageNavigatorFragment private constructor(
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         currentActivity = requireActivity()
         _binding = ActivityR2ViewpagerBinding.inflate(inflater, container, false)
         val view = binding.root
@@ -148,9 +165,6 @@ class ImageNavigatorFragment private constructor(
         }
         _currentLocator.value = locator
     }
-
-    override val readingProgression: ReadingProgression
-        get() = publication.metadata.effectiveReadingProgression
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)

@@ -209,6 +209,8 @@ class EpubNavigatorFragment private constructor(
         require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection."}
     }
 
+    override val presentation: StateFlow<VisualNavigator.Presentation> get() = viewModel.presentation
+
     // Configurable
 
     override val settings: StateFlow<EpubSettings> get() = viewModel.settings

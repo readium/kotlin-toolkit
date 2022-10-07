@@ -23,6 +23,7 @@ import org.readium.r2.navigator.*
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.navigator.epub.extensions.javascriptForGroup
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
+import org.readium.r2.navigator.settings.Axis
 import org.readium.r2.navigator.settings.ColumnCount
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createViewModelFactory
@@ -30,6 +31,7 @@ import org.readium.r2.shared.COLUMN_COUNT_REF
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.addPrefix
+import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
@@ -89,6 +91,24 @@ internal class EpubNavigatorViewModel(
         MutableStateFlow(settingsFactory.createSettings(config.preferences))
 
     val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
+
+    val presentation: StateFlow<VisualNavigator.Presentation> = _settings
+        .mapStateIn(viewModelScope) { settings ->
+            when (settings) {
+                is EpubSettings.Reflowable ->
+                    SimplePresentation(
+                        readingProgression = settings.readingProgression.value,
+                        scroll = settings.scroll.value,
+                        axis = if (settings.scroll.value) Axis.VERTICAL else Axis.HORIZONTAL
+                    )
+                is EpubSettings.FixedLayout ->
+                    SimplePresentation(
+                        readingProgression = settings.readingProgression.value,
+                        scroll = false,
+                        axis = Axis.HORIZONTAL
+                    )
+            }
+        }
 
     private val css = MutableStateFlow(
         ReadiumCss(

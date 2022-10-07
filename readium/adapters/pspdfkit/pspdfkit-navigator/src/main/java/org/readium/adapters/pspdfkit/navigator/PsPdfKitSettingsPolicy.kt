@@ -7,7 +7,7 @@
 package org.readium.adapters.pspdfkit.navigator
 
 import org.readium.r2.navigator.settings.Preferences
-import org.readium.r2.navigator.settings.ScrollAxis
+import org.readium.r2.navigator.settings.Axis
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
@@ -25,13 +25,13 @@ interface PsPdfKitSettingsPolicy {
         val scroll: Boolean =
             preferences[PsPdfKitSettings.SCROLL] ?: false
 
-        val scrollAxis: ScrollAxis =
+        val scrollAxis: Axis =
             preferences[PsPdfKitSettings.SCROLL_AXIS]
-                ?: ScrollAxis.VERTICAL
+                ?: Axis.VERTICAL
 
         val fit: Presentation.Fit =
             preferences[PsPdfKitSettings.FIT] ?: when {
-                !scroll || scrollAxis == ScrollAxis.HORIZONTAL -> Presentation.Fit.CONTAIN
+                !scroll || scrollAxis == Axis.HORIZONTAL -> Presentation.Fit.CONTAIN
                 else -> Presentation.Fit.WIDTH
             }
 

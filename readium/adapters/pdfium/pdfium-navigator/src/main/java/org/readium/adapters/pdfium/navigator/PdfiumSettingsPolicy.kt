@@ -7,7 +7,7 @@
 package org.readium.adapters.pdfium.navigator
 
 import org.readium.r2.navigator.settings.Preferences
-import org.readium.r2.navigator.settings.ScrollAxis
+import org.readium.r2.navigator.settings.Axis
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
@@ -22,13 +22,13 @@ interface PdfiumSettingsPolicy {
                 ?: metadata.readingProgression.takeIf { it.isHorizontal == true }
                 ?: ReadingProgression.LTR
 
-        val scrollAxis: ScrollAxis =
+        val scrollAxis: Axis =
             preferences[PdfiumSettings.SCROLL_AXIS]
-                ?: ScrollAxis.VERTICAL
+                ?: Axis.VERTICAL
 
         val fit: Presentation.Fit =
             preferences[PdfiumSettings.FIT] ?: when (scrollAxis) {
-                ScrollAxis.HORIZONTAL -> Presentation.Fit.CONTAIN
+                Axis.HORIZONTAL -> Presentation.Fit.CONTAIN
                 else -> Presentation.Fit.WIDTH
             }
 

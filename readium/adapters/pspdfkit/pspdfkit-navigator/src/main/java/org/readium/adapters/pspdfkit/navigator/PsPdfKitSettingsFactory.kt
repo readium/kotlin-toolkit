@@ -44,11 +44,11 @@ internal class PsPdfKitSettingsFactory(
             value = value
         )
 
-    private fun scrollAxisSetting(value: ScrollAxis): EnumSetting<ScrollAxis> =
+    private fun scrollAxisSetting(value: Axis): EnumSetting<Axis> =
         EnumSetting(
             key = PsPdfKitSettings.SCROLL_AXIS,
             value = value,
-            values = ScrollAxis.values().toList(),
+            values = Axis.values().toList(),
             activator = forcesScroll(true)
         )
 

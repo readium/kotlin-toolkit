@@ -29,6 +29,7 @@ import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.util.CompositeFragmentFactory
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -152,6 +153,10 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
 
     override val readingProgression: ReadingProgression
         get() = navigatorFragment().readingProgression
+
+    @ExperimentalReadiumApi
+    override val presentation: StateFlow<VisualNavigator.Presentation>
+        get() = navigatorFragment().presentation
 
     @Suppress("DEPRECATION")
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
