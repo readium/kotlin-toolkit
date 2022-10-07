@@ -6,12 +6,12 @@
 
 package org.readium.adapters.pdfium.navigator
 
-import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.settings.Axis
+import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation
 
 @ExperimentalReadiumApi
 interface PdfiumSettingsPolicy {
@@ -26,10 +26,10 @@ interface PdfiumSettingsPolicy {
             preferences[PdfiumSettings.SCROLL_AXIS]
                 ?: Axis.VERTICAL
 
-        val fit: Presentation.Fit =
+        val fit: Fit =
             preferences[PdfiumSettings.FIT] ?: when (scrollAxis) {
-                Axis.HORIZONTAL -> Presentation.Fit.CONTAIN
-                else -> Presentation.Fit.WIDTH
+                Axis.HORIZONTAL -> Fit.CONTAIN
+                else -> Fit.WIDTH
             }
 
         return PdfiumSettingsValues(

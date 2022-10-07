@@ -8,6 +8,7 @@ package org.readium.r2.navigator.epub
 
 import android.app.Application
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.PointF
 import android.graphics.RectF
 import android.net.Uri
@@ -26,6 +27,7 @@ import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.settings.Axis
 import org.readium.r2.navigator.settings.ColumnCount
 import org.readium.r2.navigator.settings.Preferences
+import org.readium.r2.navigator.settings.Spread
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.COLUMN_COUNT_REF
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -35,7 +37,6 @@ import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.util.Href
 import kotlin.reflect.KClass
 
@@ -54,7 +55,8 @@ internal class EpubNavigatorViewModel(
 
     val useLegacySettings: Boolean = (server == null)
 
-    val preferences = application.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
+    val preferences: SharedPreferences =
+        application.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
     // Make a copy to prevent new decoration templates from being registered after initializing
     // the navigator.
@@ -271,13 +273,12 @@ internal class EpubNavigatorViewModel(
         } else {
             when (val settings = settings.value) {
                 is EpubSettings.FixedLayout -> when (settings.spread.value) {
-                    Presentation.Spread.AUTO -> DualPage.AUTO
-                    Presentation.Spread.BOTH -> DualPage.ON
-                    Presentation.Spread.NONE -> DualPage.OFF
-                    Presentation.Spread.LANDSCAPE -> DualPage.AUTO
+                    Spread.AUTO -> DualPage.AUTO
+                    Spread.PREFERRED -> DualPage.ON
+                    Spread.NEVER -> DualPage.OFF
                 }
                 is EpubSettings.Reflowable -> when (settings.columnCount.value) {
-                    ColumnCount.ONE, null -> DualPage.OFF
+                    ColumnCount.ONE -> DualPage.OFF
                     ColumnCount.TWO -> DualPage.ON
                     ColumnCount.AUTO -> DualPage.AUTO
                 }

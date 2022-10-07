@@ -9,9 +9,9 @@ package org.readium.adapters.pspdfkit.navigator
 import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation
 
 @ExperimentalReadiumApi
 internal class PsPdfKitSettingsFactory(
@@ -27,7 +27,9 @@ internal class PsPdfKitSettingsFactory(
             scroll = scrollSetting(values.scroll),
             scrollAxis = scrollAxisSetting(values.scrollAxis),
             fit = fitSetting(values.fit),
-            spread = spreadSetting(values.spread)
+            spread = spreadSetting(values.spread),
+            pageSpacing = pageSpacingSetting(values.pageSpacing),
+            offset = offsetSetting(values.offset)
         )
     }
 
@@ -48,24 +50,51 @@ internal class PsPdfKitSettingsFactory(
         EnumSetting(
             key = PsPdfKitSettings.SCROLL_AXIS,
             value = value,
-            values = Axis.values().toList(),
+            values = listOf(Axis.VERTICAL, Axis.HORIZONTAL),
             activator = forcesScroll(true)
         )
 
-    private fun fitSetting(value: Presentation.Fit, ): EnumSetting<Presentation.Fit> =
+    private fun fitSetting(value: Fit, ): EnumSetting<Fit> =
         EnumSetting(
             key = PsPdfKitSettings.FIT,
             value = value,
-            values = listOf(Presentation.Fit.CONTAIN, Presentation.Fit.WIDTH)
+            values = listOf(Fit.CONTAIN, Fit.WIDTH)
         )
 
-    private fun spreadSetting(value: Presentation.Spread): EnumSetting<Presentation.Spread> =
+    private fun spreadSetting(value: Spread): EnumSetting<Spread> =
         EnumSetting(
             key = PsPdfKitSettings.SPREAD,
             value = value,
-            values = listOf(Presentation.Spread.NONE, Presentation.Spread.AUTO, Presentation.Spread.BOTH),
+            values = listOf(Spread.AUTO, Spread.NEVER, Spread.PREFERRED),
             activator = requiresScroll(false)
         )
+
+    private fun offsetSetting(value: Boolean): Setting<Boolean> =
+        Setting(
+            key = PsPdfKitSettings.OFFSET,
+            value = value,
+            activator = requiresSpreadPossible()
+        )
+
+    private fun pageSpacingSetting(value: Double): RangeSetting<Double> =
+        RangeSetting(
+            key = PsPdfKitSettings.PAGE_SPACING,
+            value = value,
+            range = 0.0..50.0,
+            suggestedProgression = DoubleIncrement(5.0)
+        )
+
+    private fun requiresSpreadPossible() = object : SettingActivator {
+
+            override fun isActiveWithPreferences(preferences: Preferences): Boolean {
+                val value = settingsPolicy.settings(metadata, preferences).spread
+                return value in listOf(Spread.AUTO, Spread.PREFERRED)
+            }
+
+            override fun activateInPreferences(preferences: MutablePreferences) {
+                // Do nothing
+            }
+        }
 
     private fun requiresScroll(scroll: Boolean) =
         RequirePreferenceSettingActivator(value = scroll) { preferences ->

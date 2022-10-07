@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.adapters.pspdfkit.navigator
 
 import android.graphics.PointF
@@ -32,11 +34,13 @@ import com.pspdfkit.ui.toolbar.popup.PdfTextSelectionPopupToolbar
 import org.readium.adapters.pspdfkit.document.PsPdfKitDocument
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
 import org.readium.r2.navigator.settings.Axis
+import org.readium.r2.navigator.settings.Spread
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.services.isProtected
+import kotlin.math.roundToInt
 
 @ExperimentalReadiumApi
 internal class PsPdfKitDocumentFragment internal constructor(
@@ -98,7 +102,8 @@ internal class PsPdfKitDocumentFragment internal constructor(
             .layoutMode(settings.spread.value.pageLayout)
 //            .loadingProgressDrawable(null)
 //            .maxZoomScale()
-            .pagePadding(0)
+            .firstPageAlwaysSingle(settings.offset.value)
+            .pagePadding(settings.pageSpacing.value.roundToInt())
             .restoreLastViewedPage(false)
             .scrollDirection(
                 if (!settings.scroll.value) PageScrollDirection.HORIZONTAL
@@ -189,13 +194,12 @@ private val Boolean.scrollMode: PageScrollMode
         true -> PageScrollMode.CONTINUOUS
     }
 
-private val Presentation.Fit.fitMode: PageFitMode
+private val Fit.fitMode: PageFitMode
     get() = when (this) {
-        Presentation.Fit.WIDTH -> PageFitMode.FIT_TO_WIDTH
+        Fit.WIDTH -> PageFitMode.FIT_TO_WIDTH
         else -> PageFitMode.FIT_TO_SCREEN
     }
 
-@OptIn(ExperimentalReadiumApi::class)
 private val Axis.scrollDirection: PageScrollDirection
     get() = when (this) {
         Axis.VERTICAL -> PageScrollDirection.VERTICAL
@@ -208,9 +212,9 @@ private val ReadingProgression.pageBinding: PageBinding
         else -> PageBinding.LEFT_EDGE
     }
 
-private val Presentation.Spread.pageLayout: PageLayoutMode
+private val Spread.pageLayout: PageLayoutMode
     get() = when (this) {
-        Presentation.Spread.AUTO -> PageLayoutMode.AUTO
-        Presentation.Spread.BOTH -> PageLayoutMode.DOUBLE
-        else -> PageLayoutMode.SINGLE
+        Spread.AUTO -> PageLayoutMode.AUTO
+        Spread.PREFERRED-> PageLayoutMode.DOUBLE
+        Spread.NEVER -> PageLayoutMode.SINGLE
 }

@@ -13,7 +13,6 @@ import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.Language
 
@@ -87,12 +86,12 @@ internal class EpubSettingsFactory(
     )
 
     private fun spreadSetting(
-        value: Presentation.Spread
-    ): EnumSetting<Presentation.Spread> = EnumSetting(
+        value: Spread
+    ): EnumSetting<Spread> = EnumSetting(
         key = EpubSettings.SPREAD,
         value = value,
-        // FIXME: Support Spread.AUTO and Spread.LANDSCAPE.
-        values = listOf(Presentation.Spread.NONE, Presentation.Spread.BOTH),
+        // FIXME: Support Spread.AUTO.
+        values = listOf(Spread.PREFERRED, Spread.NEVER),
     )
 
     /** Default page background color. */

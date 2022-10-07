@@ -8,10 +8,11 @@ package org.readium.adapters.pspdfkit.navigator
 
 import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.settings.Axis
+import org.readium.r2.navigator.settings.Spread
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation
 
 @ExperimentalReadiumApi
 interface PsPdfKitSettingsPolicy {
@@ -29,15 +30,23 @@ interface PsPdfKitSettingsPolicy {
             preferences[PsPdfKitSettings.SCROLL_AXIS]
                 ?: Axis.VERTICAL
 
-        val fit: Presentation.Fit =
+        val fit: Fit =
             preferences[PsPdfKitSettings.FIT] ?: when {
-                !scroll || scrollAxis == Axis.HORIZONTAL -> Presentation.Fit.CONTAIN
-                else -> Presentation.Fit.WIDTH
+                !scroll || scrollAxis == Axis.HORIZONTAL -> Fit.CONTAIN
+                else -> Fit.WIDTH
             }
 
-        val spread: Presentation.Spread =
+        val spread: Spread =
             preferences[PsPdfKitSettings.SPREAD]
-                ?: Presentation.Spread.AUTO
+                ?: Spread.AUTO
+
+        val offset: Boolean =
+            preferences[PsPdfKitSettings.OFFSET]
+                ?: true
+
+        val pageSpacing: Double =
+            preferences[PsPdfKitSettings.PAGE_SPACING]
+                ?: 16.0
 
         return PsPdfKitSettingsValues(
             readingProgression = readingProgression,
@@ -45,6 +54,8 @@ interface PsPdfKitSettingsPolicy {
             scrollAxis = scrollAxis,
             fit = fit,
             spread = spread,
+            pageSpacing = pageSpacing ,
+            offset = offset
         )
     }
 

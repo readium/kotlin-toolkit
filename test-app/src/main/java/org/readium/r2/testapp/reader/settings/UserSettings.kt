@@ -27,9 +27,8 @@ import org.readium.adapters.pdfium.navigator.PdfiumSettings
 import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation.Fit
-import org.readium.r2.shared.publication.presentation.Presentation.Spread
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.ColorPicker
@@ -108,9 +107,6 @@ fun UserSettings(
                     language = settings.language,
                     readingProgression = settings.readingProgression,
                     spread = settings.spread,
-                    fit = null,
-                    scroll = null,
-                    scrollAxis = null
                 )
 
             is PdfiumSettings ->
@@ -118,7 +114,6 @@ fun UserSettings(
                     preferences = preferences,
                     editNavigator = editNavigator,
                     editPublication = editPublication,
-                    language = null,
                     readingProgression = settings.readingProgression,
                     scrollAxis = settings.scrollAxis,
                     fit = settings.fit
@@ -166,11 +161,13 @@ private fun ColumnScope.FixedLayoutUserSettings(
     editNavigator: EditPreferences,
     editPublication: EditPreferences,
     spread: EnumSetting<Spread>? = null,
+    offset: Setting<Boolean>? = null,
     fit: EnumSetting<Fit>? = null,
     language: Setting<Language?>? = null,
     readingProgression: EnumSetting<ReadingProgression>? = null,
     scroll: Setting<Boolean>? = null,
-    scrollAxis: EnumSetting<Axis>? = null
+    scrollAxis: EnumSetting<Axis>? = null,
+    pageSpacing: RangeSetting<Double>? = null
 ) {
     if (language != null || readingProgression != null) {
         fun reset() {
@@ -226,10 +223,13 @@ private fun ColumnScope.FixedLayoutUserSettings(
         ButtonGroupItem("Spread", spread, preferences, editNavigator) { value ->
             when (value) {
                 Spread.AUTO -> "Auto"
-                Spread.BOTH -> "Both"
-                Spread.NONE -> "None"
-                Spread.LANDSCAPE -> "Landscape"
+                Spread.NEVER -> "Never"
+                Spread.PREFERRED -> "Preferred"
             }
+        }
+
+        if (offset != null) {
+            SwitchItem("Offset", offset, preferences, editPublication)
         }
     }
 
@@ -242,6 +242,10 @@ private fun ColumnScope.FixedLayoutUserSettings(
                 Fit.HEIGHT -> "Height"
             }
         }
+    }
+
+    if (pageSpacing != null) {
+        StepperItem("Page spacing", pageSpacing, preferences, editNavigator)
     }
 }
 

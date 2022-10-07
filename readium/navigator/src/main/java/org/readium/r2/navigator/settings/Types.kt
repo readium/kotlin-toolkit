@@ -136,3 +136,10 @@ enum class Axis(val value: String) {
     @SerialName("vertical") VERTICAL("vertical");
 }
 
+@ExperimentalReadiumApi
+@Serializable
+enum class Spread(val value: String) {
+    @SerialName("auto") AUTO("auto"),
+    @SerialName("never") NEVER("never"),
+    @SerialName("always") PREFERRED("preferred");
+}

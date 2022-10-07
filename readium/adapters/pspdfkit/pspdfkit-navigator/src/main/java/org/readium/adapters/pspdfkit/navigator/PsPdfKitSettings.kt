@@ -7,13 +7,10 @@
 package org.readium.adapters.pspdfkit.navigator
 
 import org.readium.r2.navigator.pdf.PdfSettingsValues
-import org.readium.r2.navigator.settings.EnumSetting
-import org.readium.r2.navigator.settings.Axis
-import org.readium.r2.navigator.settings.Configurable
-import org.readium.r2.navigator.settings.Setting
+import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation
 
 /**
  * @param readingProgression
@@ -21,23 +18,29 @@ import org.readium.r2.shared.publication.presentation.Presentation
  * @param scrollAxis
  * @param fit
  * @param spread
+ * @param pageSpacing
+ * @param offset
  */
 @ExperimentalReadiumApi
 data class PsPdfKitSettings internal constructor(
     val readingProgression: EnumSetting<ReadingProgression>,
     val scroll: Setting<Boolean>,
     val scrollAxis: EnumSetting<Axis>,
-    val fit: EnumSetting<Presentation.Fit>,
-    val spread: EnumSetting<Presentation.Spread>
+    val fit: EnumSetting<Fit>,
+    val spread: EnumSetting<Spread>,
+    val pageSpacing: RangeSetting<Double>,
+    val offset: Setting<Boolean>
 ) : Configurable.Settings {
 
     companion object {
 
-        val FIT = Setting.Key<Presentation.Fit>("fit")
+        val FIT = Setting.Key<Fit>("fit")
         val READING_PROGRESSION = Setting.Key<ReadingProgression>("readingProgression")
         val SCROLL = Setting.Key<Boolean>("scroll")
         val SCROLL_AXIS = Setting.Key<Axis>("scrollAxis")
-        val SPREAD = Setting.Key<Presentation.Spread>("spread")
+        val SPREAD = Setting.Key<Spread>("spread")
+        val PAGE_SPACING = Setting.Key<Double>("pageSpacing")
+        val OFFSET = Setting.Key<Boolean>("offset")
     }
 }
 
@@ -46,6 +49,8 @@ data class PsPdfKitSettingsValues(
     val readingProgression: ReadingProgression,
     val scroll: Boolean,
     val scrollAxis: Axis,
-    val fit: Presentation.Fit,
-    val spread: Presentation.Spread
+    val fit: Fit,
+    val spread: Spread,
+    val pageSpacing: Double,
+    val offset: Boolean
 ) : PdfSettingsValues

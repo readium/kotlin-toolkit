@@ -9,7 +9,6 @@ package org.readium.r2.navigator.epub
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.util.Language
 
 /**
@@ -31,14 +30,14 @@ sealed class EpubSettingsValues {
      *
      * @param language Language of the publication content.
      * @param readingProgression Direction of the reading progression across resources.
-     * @param spread Indicates the condition to be met for the publication to be rendered with a
+     * @param spread Indicates if the publication should be rendered with a
      * synthetic spread (dual-page).
      */
     @ExperimentalReadiumApi
     data class FixedLayout internal constructor(
         override val language: Language?,
         override val readingProgression: ReadingProgression,
-        val spread: Presentation.Spread,
+        val spread: Spread,
     ) : EpubSettingsValues()
 
     /**

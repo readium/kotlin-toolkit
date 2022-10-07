@@ -12,7 +12,6 @@ import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.util.Language
 
 /**
@@ -67,7 +66,7 @@ interface EpubSettingsPolicy {
         return EpubSettingsValues.FixedLayout(
             language = language,
             readingProgression = readingProgression,
-            spread = Presentation.Spread.NONE
+            spread = preferences[EpubSettings.SPREAD] ?: Spread.NEVER
         )
     }
 

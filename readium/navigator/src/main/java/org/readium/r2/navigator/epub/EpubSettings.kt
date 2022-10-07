@@ -16,8 +16,6 @@ import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.settings.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation.Fit
-import org.readium.r2.shared.publication.presentation.Presentation.Spread
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Language
 import org.readium.r2.navigator.epub.css.Color as CssColor
@@ -41,7 +39,7 @@ sealed class EpubSettings : Configurable.Settings {
      *
      * @param language Language of the publication content.
      * @param readingProgression Direction of the reading progression across resources.
-     * @param spread Indicates the condition to be met for the publication to be rendered with a
+     * @param spread Indicates if the publication should be rendered with a
      * synthetic spread (dual-page).
      */
     @ExperimentalReadiumApi
@@ -115,7 +113,6 @@ sealed class EpubSettings : Configurable.Settings {
 
         val BACKGROUND_COLOR = Setting.Key<Color>("backgroundColor")
         val COLUMN_COUNT = Setting.Key<ColumnCount>("columnCount")
-        val FIT = Setting.Key<Fit>("fit")
         val FONT_FAMILY = Setting.Key<FontFamily?>("fontFamily")
         val FONT_SIZE = Setting.Key<Double>("fontSize")
         val HYPHENS = Setting.Key<Boolean>("hyphens")

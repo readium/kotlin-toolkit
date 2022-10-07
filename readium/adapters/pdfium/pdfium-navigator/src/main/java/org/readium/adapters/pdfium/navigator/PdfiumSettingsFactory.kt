@@ -6,13 +6,13 @@
 
 package org.readium.adapters.pdfium.navigator
 
+import org.readium.r2.navigator.settings.Axis
 import org.readium.r2.navigator.settings.EnumSetting
 import org.readium.r2.navigator.settings.Preferences
-import org.readium.r2.navigator.settings.Axis
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation
 
 @ExperimentalReadiumApi
 internal class PdfiumSettingsFactory(
@@ -40,13 +40,13 @@ internal class PdfiumSettingsFactory(
         EnumSetting(
             key = PdfiumSettings.SCROLL_AXIS,
             value = value,
-            values = Axis.values().toList()
+            values = listOf(Axis.VERTICAL, Axis.HORIZONTAL)
         )
 
-    private fun fitSetting(value: Presentation.Fit): EnumSetting<Presentation.Fit> =
+    private fun fitSetting(value: Fit): EnumSetting<Fit> =
         EnumSetting(
             key = PdfiumSettings.FIT,
             value = value,
-            values = listOf(Presentation.Fit.CONTAIN, Presentation.Fit.WIDTH)
+            values = listOf(Fit.CONTAIN, Fit.WIDTH)
         )
 }
