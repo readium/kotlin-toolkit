@@ -66,25 +66,20 @@ All notable changes to this project will be documented in this file. Take a look
 #### Navigator
 
 * The EPUB user settings API got revamped. [Take a look at the user guide](docs/guides/navigator-settings.md) and the [migration guide](docs/migration-guide.md#230) to learn how to use it.
+* `Decoration.extras` is now a `Map<String, Any>` instead of `Bundle`. You will need to update your app if you were storing custom data in `extras`, for example:
+    ```kotlin
+    val decoration = Decoration(...,
+        extras = mapOf("id" to id)
+    )
+
+    val id = decoration.extras["id"] as? Long
+    ```
 
 ### Deprecated
 
 #### Streamer
 
 * The local HTTP server is not needed anymore to render EPUB publications. [Take a look at the migration guide](docs/migration-guide.md#230).
-
-#### Navigator
-
-* `Decoration.extras` is now a `JsonObject` instead of `Bundle`. You will need to update your app if you were storing custom data in `extras`, for example:
-    ```kotlin
-    val decoration = Decoration(...,
-        extras = buildJsonObject {
-            put("id", id)
-        }
-    )
-
-    val id = decoration.extras["id"]?.jsonPrimitive?.long
-    ```
 
 ### Fixed
 
