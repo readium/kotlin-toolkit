@@ -15,16 +15,19 @@ import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
 
 @ExperimentalReadiumApi
-interface PsPdfKitSettingsPolicy {
+internal class PsPdfKitSettingsPolicy(
+    private val defaults: PsPdfKitSettingsDefaults
+) {
 
     fun settings(metadata: Metadata, preferences: Preferences): PsPdfKitSettingsValues {
         val readingProgression: ReadingProgression =
             preferences[PsPdfKitSettings.READING_PROGRESSION]
                 ?: metadata.readingProgression.takeIf { it.isHorizontal == true }
-                ?: ReadingProgression.LTR
+                ?: defaults.readingProgression
 
         val scroll: Boolean =
-            preferences[PsPdfKitSettings.SCROLL] ?: false
+            preferences[PsPdfKitSettings.SCROLL]
+                ?: defaults.scroll
 
         val scrollAxis: Axis =
             preferences[PsPdfKitSettings.SCROLL_AXIS]
@@ -38,15 +41,15 @@ interface PsPdfKitSettingsPolicy {
 
         val spread: Spread =
             preferences[PsPdfKitSettings.SPREAD]
-                ?: Spread.AUTO
+                ?: defaults.spread
 
         val offset: Boolean =
             preferences[PsPdfKitSettings.OFFSET]
-                ?: true
+                ?: defaults.offset
 
         val pageSpacing: Double =
             preferences[PsPdfKitSettings.PAGE_SPACING]
-                ?: 16.0
+                ?: defaults.pageSpacing
 
         return PsPdfKitSettingsValues(
             readingProgression = readingProgression,
@@ -54,14 +57,8 @@ interface PsPdfKitSettingsPolicy {
             scrollAxis = scrollAxis,
             fit = fit,
             spread = spread,
-            pageSpacing = pageSpacing ,
+            pageSpacing = pageSpacing,
             offset = offset
         )
-    }
-
-    companion object {
-
-        internal operator fun invoke(): PsPdfKitSettingsPolicy =
-            object : PsPdfKitSettingsPolicy {}
     }
 }

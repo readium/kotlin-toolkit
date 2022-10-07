@@ -17,8 +17,10 @@ import org.readium.r2.shared.publication.Metadata
 @ExperimentalReadiumApi
 class PdfiumEngineProvider(
     private val listener: PdfiumDocumentFragment.Listener? = null,
-    private val settingsPolicy: PdfiumSettingsPolicy = PdfiumSettingsPolicy()
+    defaults: PdfiumSettingsDefaults = PdfiumSettingsDefaults()
 ) : PdfEngineProvider<PdfiumSettings> {
+
+    private val settingsPolicy: PdfiumSettingsPolicy = PdfiumSettingsPolicy(defaults)
 
     override suspend fun createDocumentFragment(input: PdfDocumentFragmentInput<PdfiumSettings>) =
         PdfiumDocumentFragment(

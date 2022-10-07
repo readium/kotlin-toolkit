@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.adapters.pdfium.navigator
 
 import org.readium.r2.navigator.pdf.PdfSettingsValues
@@ -35,8 +37,15 @@ data class PdfiumSettings internal constructor(
     }
 }
 
+/**
+ * @param readingProgression
+ */
 @ExperimentalReadiumApi
-data class PdfiumSettingsValues(
+data class PdfiumSettingsDefaults(
+    val readingProgression: ReadingProgression = ReadingProgression.LTR,
+)
+
+internal data class PdfiumSettingsValues(
     val readingProgression: ReadingProgression,
     val scrollAxis: Axis,
     val fit: Fit

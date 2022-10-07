@@ -86,7 +86,6 @@ internal class EpubNavigatorViewModel(
         EpubSettingsFactory(
             publication.metadata,
             config.fontFamilies.map { it.fontFamily },
-            config.settingsPolicy,
         )
 
     private val _settings: MutableStateFlow<EpubSettings> =
@@ -101,7 +100,8 @@ internal class EpubNavigatorViewModel(
                     SimplePresentation(
                         readingProgression = settings.readingProgression.value,
                         scroll = settings.scroll.value,
-                        axis = if (settings.scroll.value) Axis.VERTICAL else Axis.HORIZONTAL
+                        axis = if (settings.scroll.value && !settings.verticalText.value) Axis.VERTICAL
+                        else Axis.HORIZONTAL
                     )
                 is EpubSettings.FixedLayout ->
                     SimplePresentation(

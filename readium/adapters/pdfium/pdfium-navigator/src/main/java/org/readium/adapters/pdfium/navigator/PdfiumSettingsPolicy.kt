@@ -14,13 +14,15 @@ import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
 
 @ExperimentalReadiumApi
-interface PdfiumSettingsPolicy {
+internal class PdfiumSettingsPolicy(
+    private val defaults: PdfiumSettingsDefaults
+) {
 
     fun settings(metadata: Metadata, preferences: Preferences): PdfiumSettingsValues {
         val readingProgression: ReadingProgression =
             preferences[PdfiumSettings.READING_PROGRESSION]
                 ?: metadata.readingProgression.takeIf { it.isHorizontal == true }
-                ?: ReadingProgression.LTR
+                ?: defaults.readingProgression
 
         val scrollAxis: Axis =
             preferences[PdfiumSettings.SCROLL_AXIS]
@@ -37,12 +39,5 @@ interface PdfiumSettingsPolicy {
             scrollAxis = scrollAxis,
             fit = fit
         )
-    }
-
-
-    companion object {
-
-        operator fun invoke() : PdfiumSettingsPolicy =
-            object : PdfiumSettingsPolicy {}
     }
 }

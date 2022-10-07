@@ -16,8 +16,7 @@ import org.readium.r2.shared.util.Language
  *
  * There are two implementations, depending on the type of publications: [Reflowable] and [FixedLayout].
  */
-@ExperimentalReadiumApi
-sealed class EpubSettingsValues {
+internal sealed class EpubSettingsValues {
     /** Language of the publication content. */
 
     abstract val language: Language?

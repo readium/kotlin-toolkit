@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.adapters.pspdfkit.navigator
 
 import org.readium.r2.navigator.pdf.PdfSettingsValues
@@ -44,8 +46,16 @@ data class PsPdfKitSettings internal constructor(
     }
 }
 
-@ExperimentalReadiumApi
-data class PsPdfKitSettingsValues(
+data class PsPdfKitSettingsDefaults(
+    val pageSpacing: Double = 16.0,
+    val pageSpacingRange: ClosedRange<Double> = 0.0..50.0,
+    val readingProgression: ReadingProgression = ReadingProgression.LTR,
+    val scroll: Boolean = false,
+    val spread: Spread = Spread.AUTO,
+    val offset: Boolean = true
+)
+
+internal data class PsPdfKitSettingsValues(
     val readingProgression: ReadingProgression,
     val scroll: Boolean,
     val scrollAxis: Axis,

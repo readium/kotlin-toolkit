@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.r2.navigator.epub
 
 import org.readium.r2.navigator.epub.extensions.isCjk
@@ -20,8 +22,7 @@ import org.readium.r2.shared.util.Language
  * If you implement a custom [EpubSettingsPolicy], be sure that all values from settings
  * that will be active at the same time are compatible.
  */
-@ExperimentalReadiumApi
-interface EpubSettingsPolicy {
+internal class EpubSettingsPolicy {
 
     fun reflowableSettings(metadata: Metadata, preferences: Preferences): EpubSettingsValues.Reflowable {
         val (language, readingProgression) = resolveReadingProgression(metadata, preferences)
@@ -108,10 +109,4 @@ interface EpubSettingsPolicy {
             language != null -> language.isCjk && readingProgression == ReadingProgression.RTL
             else -> false
         }
-
-    companion object {
-
-        internal operator fun invoke(): EpubSettingsPolicy =
-            object  : EpubSettingsPolicy {}
-    }
 }
