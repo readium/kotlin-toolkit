@@ -17,10 +17,8 @@ import org.readium.r2.shared.publication.Metadata
 @ExperimentalReadiumApi
 class PdfiumEngineProvider(
     private val listener: PdfiumDocumentFragment.Listener? = null,
-    defaults: PdfiumSettingsDefaults = PdfiumSettingsDefaults()
+    private val defaults: PdfiumSettingsDefaults = PdfiumSettingsDefaults()
 ) : PdfEngineProvider<PdfiumSettings> {
-
-    private val settingsPolicy: PdfiumSettingsPolicy = PdfiumSettingsPolicy(defaults)
 
     override suspend fun createDocumentFragment(input: PdfDocumentFragmentInput<PdfiumSettings>) =
         PdfiumDocumentFragment(
@@ -32,8 +30,10 @@ class PdfiumEngineProvider(
             navigatorListener = input.listener
         )
 
-    override fun createSettings(metadata: Metadata, preferences: Preferences): PdfiumSettings =
-        PdfiumSettingsFactory(metadata, settingsPolicy).createSettings(preferences)
+    override fun createSettings(metadata: Metadata, preferences: Preferences): PdfiumSettings {
+        val settingsPolicy = PdfiumSettingsPolicy(defaults)
+        return PdfiumSettingsFactory(metadata, settingsPolicy).createSettings(preferences)
+    }
 
     override fun createPresentation(settings: PdfiumSettings): VisualNavigator.Presentation =
         SimplePresentation(

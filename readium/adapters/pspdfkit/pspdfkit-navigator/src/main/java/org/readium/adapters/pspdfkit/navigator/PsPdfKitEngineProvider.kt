@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.pdf.cachedIn
 @ExperimentalReadiumApi
 class PsPdfKitEngineProvider(
     private val context: Context,
-    private val settingsPolicy : PsPdfKitSettingsPolicy = PsPdfKitSettingsPolicy()
+    private val defaults: PsPdfKitSettingsDefaults = PsPdfKitSettingsDefaults()
 ) : PdfEngineProvider<PsPdfKitSettings> {
 
     override suspend fun createDocumentFragment(
@@ -43,8 +43,10 @@ class PsPdfKitEngineProvider(
         )
     }
 
-    override fun createSettings(metadata: Metadata, preferences: Preferences): PsPdfKitSettings =
-        PsPdfKitSettingsFactory(metadata, settingsPolicy).createSettings(preferences)
+    override fun createSettings(metadata: Metadata, preferences: Preferences): PsPdfKitSettings {
+        val settingsPolicy = PsPdfKitSettingsPolicy(defaults)
+        return PsPdfKitSettingsFactory(metadata, settingsPolicy).createSettings(preferences)
+    }
 
     override fun createPresentation(settings: PsPdfKitSettings): VisualNavigator.Presentation =
         SimplePresentation(
