@@ -15,6 +15,7 @@ import org.readium.r2.navigator.epub.css.*
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.settings.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Language
@@ -46,8 +47,15 @@ sealed class EpubSettings : Configurable.Settings {
     data class FixedLayout internal constructor(
         override val language: Setting<Language?>,
         override val readingProgression: EnumSetting<ReadingProgression>,
-        val spread: EnumSetting<Spread>,
-    ) : EpubSettings()
+        override val spread: EnumSetting<Spread>,
+    ) : EpubSettings(), FixedLayoutSettings {
+
+        override val offset: Setting<Boolean>? = null
+        override val fit: EnumSetting<Fit>? = null
+        override val scroll: Setting<Boolean>? = null
+        override val scrollAxis: EnumSetting<Axis>? = null
+        override val pageSpacing: RangeSetting<Double>? = null
+    }
 
     /**
      * EPUB navigator settings for reflowable publications.
@@ -82,32 +90,32 @@ sealed class EpubSettings : Configurable.Settings {
      */
     @ExperimentalReadiumApi
     data class Reflowable internal constructor(
-        val backgroundColor: Setting<Color>,
-        val columnCount: EnumSetting<ColumnCount>,
-        val fontFamily: EnumSetting<FontFamily?>,
-        val fontSize: PercentSetting,
-        val hyphens: Setting<Boolean>,
-        val imageFilter: EnumSetting<ImageFilter>,
+        override val backgroundColor: Setting<Color>,
+        override val columnCount: EnumSetting<ColumnCount>,
+        override val fontFamily: EnumSetting<FontFamily?>,
+        override val fontSize: PercentSetting,
+        override val hyphens: Setting<Boolean>,
+        override val imageFilter: EnumSetting<ImageFilter>,
         override val language: Setting<Language?>,
-        val letterSpacing: PercentSetting,
-        val ligatures: Setting<Boolean>,
-        val lineHeight: RangeSetting<Double>,
-        val pageMargins: RangeSetting<Double>,
-        val paragraphIndent: PercentSetting,
-        val paragraphSpacing: PercentSetting,
-        val publisherStyles: Setting<Boolean>,
+        override val letterSpacing: PercentSetting,
+        override val ligatures: Setting<Boolean>,
+        override val lineHeight: RangeSetting<Double>,
+        override val pageMargins: RangeSetting<Double>,
+        override val paragraphIndent: PercentSetting,
+        override val paragraphSpacing: PercentSetting,
+        override val publisherStyles: Setting<Boolean>,
         override val readingProgression: EnumSetting<ReadingProgression>,
-        val scroll: Setting<Boolean>,
-        val textAlign: EnumSetting<TextAlign>,
-        val textColor: Setting<Color>,
-        val textNormalization: EnumSetting<TextNormalization>,
-        val theme: EnumSetting<Theme>,
-        val typeScale: RangeSetting<Double>,
-        val verticalText: Setting<Boolean>,
-        val wordSpacing: PercentSetting,
+        override val scroll: Setting<Boolean>,
+        override val textAlign: EnumSetting<TextAlign>,
+        override val textColor: Setting<Color>,
+        override val textNormalization: EnumSetting<TextNormalization>,
+        override val theme: EnumSetting<Theme>,
+        override val typeScale: RangeSetting<Double>,
+        override val verticalText: Setting<Boolean>,
+        override val wordSpacing: PercentSetting,
 
         internal val layout: Layout
-    ) : EpubSettings()
+    ) : EpubSettings(), ReflowaleSettings
 
     companion object {
 

@@ -23,7 +23,6 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import org.readium.adapters.pdfium.navigator.PdfiumSettings
 import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -99,54 +98,20 @@ fun UserSettings(
         Divider()
 
         when (settings) {
-            is EpubSettings.FixedLayout ->
+            is FixedLayoutSettings ->
                 FixedLayoutUserSettings(
                     preferences = preferences,
                     editNavigator = editNavigator,
                     editPublication = editPublication,
-                    language = settings.language,
-                    readingProgression = settings.readingProgression,
-                    spread = settings.spread,
+                    settings = settings
                 )
 
-            is PdfiumSettings ->
-                FixedLayoutUserSettings(
-                    preferences = preferences,
-                    editNavigator = editNavigator,
-                    editPublication = editPublication,
-                    readingProgression = settings.readingProgression,
-                    scrollAxis = settings.scrollAxis,
-                    fit = settings.fit
-                )
-
-            is EpubSettings.Reflowable ->
+            is ReflowaleSettings ->
                 ReflowableUserSettings(
                     preferences = preferences,
                     editNavigator = editNavigator,
                     editPublication = editPublication,
-                    backgroundColor = settings.backgroundColor,
-                    columnCount = settings.columnCount,
-                    fontFamily = settings.fontFamily,
-                    fontSize = settings.fontSize,
-                    hyphens = settings.hyphens,
-                    imageFilter = settings.imageFilter,
-                    language = settings.language,
-                    letterSpacing = settings.letterSpacing,
-                    ligatures = settings.ligatures,
-                    lineHeight = settings.lineHeight,
-                    pageMargins = settings.pageMargins,
-                    paragraphIndent = settings.paragraphIndent,
-                    paragraphSpacing = settings.paragraphSpacing,
-                    publisherStyles = settings.publisherStyles,
-                    readingProgression = settings.readingProgression,
-                    scroll = settings.scroll,
-                    textAlign = settings.textAlign,
-                    textColor = settings.textColor,
-                    textNormalization = settings.textNormalization,
-                    theme = settings.theme,
-                    typeScale = settings.typeScale,
-                    verticalText = settings.verticalText,
-                    wordSpacing = settings.wordSpacing,
+                    settings = settings
                 )
         }
     }
@@ -160,15 +125,8 @@ private fun ColumnScope.FixedLayoutUserSettings(
     preferences: Preferences,
     editNavigator: EditPreferences,
     editPublication: EditPreferences,
-    spread: EnumSetting<Spread>? = null,
-    offset: Setting<Boolean>? = null,
-    fit: EnumSetting<Fit>? = null,
-    language: Setting<Language?>? = null,
-    readingProgression: EnumSetting<ReadingProgression>? = null,
-    scroll: Setting<Boolean>? = null,
-    scrollAxis: EnumSetting<Axis>? = null,
-    pageSpacing: RangeSetting<Double>? = null
-) {
+    settings: FixedLayoutSettings
+) = with(settings) {
     if (language != null || readingProgression != null) {
         fun reset() {
             editPublication {
@@ -177,12 +135,10 @@ private fun ColumnScope.FixedLayoutUserSettings(
             }
         }
 
-        if (language != null) {
-            LanguageItem(language, preferences, editPublication)
-        }
+        language?.let { LanguageItem(it, preferences, editPublication) }
 
-        if (readingProgression != null) {
-            ButtonGroupItem(title = "Reading progression", readingProgression, preferences , editPublication) { value ->
+        readingProgression?.let {
+            ButtonGroupItem(title = "Reading progression", it, preferences , editPublication) { value ->
                 when (value) {
                     ReadingProgression.AUTO -> "Auto"
                     else -> value.name
@@ -206,12 +162,10 @@ private fun ColumnScope.FixedLayoutUserSettings(
         Divider()
     }
 
-    if (scroll != null) {
-        SwitchItem(title = "Scroll", scroll, preferences, editNavigator)
-    }
+    scroll?.let {  SwitchItem(title = "Scroll", it, preferences, editNavigator) }
 
-    if (scrollAxis != null) {
-        ButtonGroupItem("Scroll axis", scrollAxis, preferences, editNavigator) { value ->
+    scrollAxis?.let {
+        ButtonGroupItem("Scroll axis", it, preferences, editNavigator) { value ->
             when (value) {
                 Axis.HORIZONTAL-> "Horizontal"
                 Axis.VERTICAL -> "Vertical"
@@ -219,8 +173,8 @@ private fun ColumnScope.FixedLayoutUserSettings(
         }
     }
 
-    if (spread != null) {
-        ButtonGroupItem("Spread", spread, preferences, editNavigator) { value ->
+    spread?.let {
+        ButtonGroupItem("Spread", it, preferences, editNavigator) { value ->
             when (value) {
                 Spread.AUTO -> "Auto"
                 Spread.NEVER -> "Never"
@@ -228,13 +182,13 @@ private fun ColumnScope.FixedLayoutUserSettings(
             }
         }
 
-        if (offset != null) {
-            SwitchItem("Offset", offset, preferences, editPublication)
+        offset?.let {
+            SwitchItem("Offset", it, preferences, editPublication)
         }
     }
 
-    if (fit != null) {
-        ButtonGroupItem("Fit", fit, preferences, editNavigator) { value ->
+    fit?.let {
+        ButtonGroupItem("Fit", it, preferences, editNavigator) { value ->
             when (value) {
                 Fit.CONTAIN-> "Contain"
                 Fit.COVER -> "Cover"
@@ -244,8 +198,8 @@ private fun ColumnScope.FixedLayoutUserSettings(
         }
     }
 
-    if (pageSpacing != null) {
-        StepperItem("Page spacing", pageSpacing, preferences, editNavigator)
+    pageSpacing?.let {
+        StepperItem("Page spacing", it, preferences, editNavigator)
     }
 }
 
@@ -258,30 +212,8 @@ private fun ColumnScope.ReflowableUserSettings(
     preferences: Preferences,
     editNavigator: EditPreferences,
     editPublication: EditPreferences,
-    backgroundColor: Setting<ReadiumColor>? = null,
-    columnCount: EnumSetting<ColumnCount>? = null,
-    fontFamily: EnumSetting<FontFamily?>? = null,
-    fontSize: PercentSetting? = null,
-    hyphens: Setting<Boolean>? = null,
-    imageFilter: EnumSetting<ImageFilter>? = null,
-    language: Setting<Language?>? = null,
-    letterSpacing: PercentSetting? = null,
-    ligatures: Setting<Boolean>? = null,
-    lineHeight: RangeSetting<Double>? = null,
-    pageMargins: RangeSetting<Double>? = null,
-    paragraphIndent: PercentSetting? = null,
-    paragraphSpacing: PercentSetting? = null,
-    publisherStyles: Setting<Boolean>? = null,
-    readingProgression: EnumSetting<ReadingProgression>? = null,
-    scroll: Setting<Boolean>? = null,
-    textAlign: EnumSetting<ReadiumTextAlign>? = null,
-    textColor: Setting<ReadiumColor>? = null,
-    textNormalization: EnumSetting<TextNormalization>? = null,
-    theme: EnumSetting<Theme>? = null,
-    typeScale: RangeSetting<Double>? = null,
-    verticalText: Setting<Boolean>? = null,
-    wordSpacing: PercentSetting? = null,
-) {
+    settings: ReflowaleSettings
+) = with (settings) {
     if (language != null || readingProgression != null || verticalText != null) {
         fun reset() {
             editPublication {
@@ -291,18 +223,16 @@ private fun ColumnScope.ReflowableUserSettings(
             }
         }
 
-        if (language != null) {
-            LanguageItem(language, preferences, editPublication)
-        }
+        language?.let { LanguageItem(it, preferences, editPublication) }
 
-        if (readingProgression != null) {
-            ButtonGroupItem(title = "Reading progression", readingProgression, preferences , editPublication) { value ->
+        readingProgression?.let {
+            ButtonGroupItem(title = "Reading progression", it, preferences , editPublication) { value ->
                 value.name
             }
         }
 
-        if (verticalText != null) {
-            SwitchItem(title = "Vertical text", verticalText, preferences, editPublication)
+        verticalText?.let {
+            SwitchItem(title = "Vertical text", it, preferences, editPublication)
         }
 
         // The language settings are specific to a publication. This button resets only the
@@ -322,12 +252,12 @@ private fun ColumnScope.ReflowableUserSettings(
     }
 
     if (scroll != null || columnCount != null || pageMargins != null) {
-        if (scroll != null) {
-            SwitchItem(title = "Scroll", scroll, preferences, editNavigator)
+        scroll?.let {
+            SwitchItem(title = "Scroll", it, preferences, editNavigator)
         }
 
-        if (columnCount != null) {
-            ButtonGroupItem("Columns", columnCount, preferences, editNavigator) { value ->
+        columnCount?.let {
+            ButtonGroupItem("Columns", it, preferences, editNavigator) { value ->
                 when (value) {
                     ColumnCount.AUTO -> "Auto"
                     ColumnCount.ONE -> "1"
@@ -336,16 +266,16 @@ private fun ColumnScope.ReflowableUserSettings(
             }
         }
 
-        if (pageMargins != null) {
-            StepperItem("Page margins", pageMargins, preferences, editNavigator)
+        pageMargins?.let {
+            StepperItem("Page margins", it, preferences, editNavigator)
         }
 
         Divider()
     }
 
     if (theme != null || textColor != null || imageFilter != null) {
-        if (theme != null) {
-            ButtonGroupItem("Theme", theme, preferences, editNavigator) { value ->
+        theme?.let {
+            ButtonGroupItem("Theme", it, preferences, editNavigator) { value ->
                 when (value) {
                     Theme.LIGHT -> "Light"
                     Theme.DARK -> "Dark"
@@ -354,8 +284,8 @@ private fun ColumnScope.ReflowableUserSettings(
             }
         }
 
-        if (imageFilter != null) {
-            ButtonGroupItem("Image filter", imageFilter, preferences, editNavigator) { value ->
+        imageFilter?.let {
+            ButtonGroupItem("Image filter", it, preferences, editNavigator) { value ->
                 when (value) {
                     ImageFilter.NONE -> "None"
                     ImageFilter.DARKEN -> "Darken"
@@ -364,30 +294,30 @@ private fun ColumnScope.ReflowableUserSettings(
             }
         }
 
-        if (textColor != null) {
-            ColorItem("Text color", textColor, preferences, editNavigator)
+        textColor?.let {
+            ColorItem("Text color", it, preferences, editNavigator)
         }
 
-        if (backgroundColor != null) {
-            ColorItem("Background color", backgroundColor, preferences, editNavigator)
+        backgroundColor?.let {
+            ColorItem("Background color", it, preferences, editNavigator)
         }
 
         Divider()
     }
 
     if (fontFamily != null || fontSize != null || textNormalization != null) {
-        if (fontFamily != null) {
-            MenuItem("Typeface", fontFamily, preferences, editNavigator) { value ->
+        fontFamily?.let {
+            MenuItem("Typeface", it, preferences, editNavigator) { value ->
                 value?.name ?: "Original"
             }
         }
 
-        if (fontSize != null) {
-            StepperItem("Font size", fontSize, preferences, editNavigator)
+        fontSize?.let {
+            StepperItem("Font size", it, preferences, editNavigator)
         }
 
-        if (textNormalization != null) {
-            ButtonGroupItem("Text normalization", textNormalization, preferences, editNavigator) { value ->
+        textNormalization?.let {
+            ButtonGroupItem("Text normalization", it, preferences, editNavigator) { value ->
                 when (value) {
                     TextNormalization.NONE -> "None"
                     TextNormalization.BOLD -> "Bold"
@@ -399,12 +329,12 @@ private fun ColumnScope.ReflowableUserSettings(
         Divider()
     }
 
-    if (publisherStyles != null) {
-        SwitchItem("Publisher styles", publisherStyles, preferences, editNavigator)
+    publisherStyles?.let {
+        SwitchItem("Publisher styles", it, preferences, editNavigator)
     }
 
-    if (textAlign != null) {
-        ButtonGroupItem("Alignment", textAlign, preferences, editNavigator) { value ->
+    textAlign?.let {
+        ButtonGroupItem("Alignment", it, preferences, editNavigator) { value ->
             when (value) {
                 ReadiumTextAlign.CENTER -> "Center"
                 ReadiumTextAlign.JUSTIFY -> "Justify"
@@ -416,36 +346,36 @@ private fun ColumnScope.ReflowableUserSettings(
         }
     }
 
-    if (typeScale != null) {
-        StepperItem("Type scale", typeScale, preferences, editNavigator)
+    typeScale?.let {
+        StepperItem("Type scale", it, preferences, editNavigator)
     }
 
-    if (lineHeight != null) {
-        StepperItem("Line height", lineHeight, preferences, editNavigator)
+    lineHeight?.let {
+        StepperItem("Line height", it, preferences, editNavigator)
     }
 
-    if (paragraphIndent != null) {
-        StepperItem("Paragraph indent", paragraphIndent, preferences, editNavigator)
+    paragraphIndent?.let {
+        StepperItem("Paragraph indent", it, preferences, editNavigator)
     }
 
-    if (paragraphSpacing != null) {
-        StepperItem("Paragraph spacing", paragraphSpacing, preferences, editNavigator)
+    paragraphSpacing?.let {
+        StepperItem("Paragraph spacing", it, preferences, editNavigator)
     }
 
-    if (wordSpacing != null) {
-        StepperItem("Word spacing", wordSpacing, preferences, editNavigator)
+    wordSpacing?.let {
+        StepperItem("Word spacing", it, preferences, editNavigator)
     }
 
-    if (letterSpacing != null) {
-        StepperItem("Letter spacing", letterSpacing, preferences, editNavigator)
+    letterSpacing?.let {
+        StepperItem("Letter spacing", it, preferences, editNavigator)
     }
 
-    if (hyphens != null) {
-        SwitchItem("Hyphens", hyphens, preferences, editNavigator)
+    hyphens?.let {
+        SwitchItem("Hyphens", it, preferences, editNavigator)
     }
 
-    if (ligatures != null) {
-        SwitchItem("Ligatures", ligatures, preferences, editNavigator)
+    ligatures?.let {
+        SwitchItem("Ligatures", it, preferences, editNavigator)
     }
 }
 

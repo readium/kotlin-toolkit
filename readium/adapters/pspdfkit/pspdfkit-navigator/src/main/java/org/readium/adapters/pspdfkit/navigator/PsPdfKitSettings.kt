@@ -13,6 +13,7 @@ import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.util.Language
 
 /**
  * @param readingProgression
@@ -25,14 +26,16 @@ import org.readium.r2.shared.publication.ReadingProgression
  */
 @ExperimentalReadiumApi
 data class PsPdfKitSettings internal constructor(
-    val readingProgression: EnumSetting<ReadingProgression>,
-    val scroll: Setting<Boolean>,
-    val scrollAxis: EnumSetting<Axis>,
-    val fit: EnumSetting<Fit>,
-    val spread: EnumSetting<Spread>,
-    val pageSpacing: RangeSetting<Double>,
-    val offset: Setting<Boolean>
-) : Configurable.Settings {
+    override val readingProgression: EnumSetting<ReadingProgression>,
+    override val scroll: Setting<Boolean>,
+    override val scrollAxis: EnumSetting<Axis>,
+    override val fit: EnumSetting<Fit>,
+    override val spread: EnumSetting<Spread>,
+    override val pageSpacing: RangeSetting<Double>,
+    override val offset: Setting<Boolean>
+) : Configurable.Settings, FixedLayoutSettings {
+
+    override val language: Setting<Language?>? = null
 
     companion object {
 
