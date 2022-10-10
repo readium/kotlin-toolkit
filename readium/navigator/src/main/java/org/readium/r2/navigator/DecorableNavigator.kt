@@ -8,7 +8,6 @@ package org.readium.r2.navigator
 
 import android.graphics.PointF
 import android.graphics.RectF
-import android.os.Bundle
 import android.os.Parcelable
 import androidx.annotation.ColorInt
 import androidx.recyclerview.widget.DiffUtil
@@ -16,8 +15,10 @@ import androidx.recyclerview.widget.ListUpdateCallback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.WriteWith
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
+import org.readium.r2.shared.extensions.JSONParceler
 import org.readium.r2.shared.publication.Locator
 import kotlin.reflect.KClass
 
@@ -101,7 +102,7 @@ data class Decoration(
     val id: DecorationId,
     val locator: Locator,
     val style: Style,
-    val extras: Bundle = Bundle(),
+    val extras: @WriteWith<JSONParceler> Map<String, Any> = mapOf()
 ) : JSONable, Parcelable {
 
     /**
