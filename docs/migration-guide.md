@@ -6,16 +6,14 @@ All migration steps necessary in reading apps to upgrade to major versions of th
 
 ### `Decoration.extras`
 
-`Decoration.extras` is now a `JsonObject` instead of `Bundle`. You will need to update your app if you were storing custom data in `extras`, for example:
+`Decoration.extras` is now a `Map<String, Any>` instead of `Bundle`. You will need to update your app if you were storing custom data in `extras`, for example:
 
 ```kotlin
 val decoration = Decoration(...,
-    extras = buildJsonObject {
-        put("id", id)
-    }
+    extras = mapOf("id" to id)
 )
 
-val id = decoration.extras["id"]?.jsonPrimitive?.long
+val id = decoration.extras["id"] as? Long
 ```
 
 ### PDF support
