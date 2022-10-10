@@ -281,8 +281,8 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
     inner class DecorationListener : DecorableNavigator.Listener {
         override fun onDecorationActivated(event: DecorableNavigator.OnActivatedEvent): Boolean {
             val decoration = event.decoration
-            // We stored the highlight's database ID in the `Decoration.extras` bundle, for
-            // easy retrieval. You can store arbitrary information in the bundle.
+            // We stored the highlight's database ID in the `Decoration.extras` map, for
+            // easy retrieval. You can store arbitrary information in the map.
             val id = (decoration.extras["id"] as Long)
                 .takeIf { it > 0 } ?: return false
 
