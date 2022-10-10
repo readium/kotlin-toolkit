@@ -35,6 +35,9 @@ android {
             "-opt-in=org.readium.r2.shared.InternalReadiumApi"
         )
     }
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false

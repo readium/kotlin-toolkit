@@ -15,7 +15,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import timber.log.Timber
-import kotlin.reflect.KClass
 
 /**
  * Unwraps recursively the [JSONObject] to a [Map<String, Any>].
