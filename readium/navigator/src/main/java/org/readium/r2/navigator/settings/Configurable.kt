@@ -8,18 +8,21 @@ package org.readium.r2.navigator.settings
 
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.settings.Configurable.Settings
+import org.readium.r2.navigator.settings.Configurable.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * A [Configurable] is a component with a set of configurable [Settings].
  */
 @ExperimentalReadiumApi
-interface Configurable<T : Settings> {
+interface Configurable<T : Settings, P: Preferences> {
 
     /**
      * Marker interface for the [Setting] properties holder.
      */
     interface Settings
+
+    interface Preferences
 
     /**
      * Current [Settings] values.
@@ -34,5 +37,6 @@ interface Configurable<T : Settings> {
      * Note that the [Configurable] might not update its [settings] right away, or might even ignore
      * some of the provided preferences. They are only used as hints to compute the new settings.
      */
-    fun submitPreferences(preferences: Preferences)
+
+    fun submitPreferences(preferences: P)
 }

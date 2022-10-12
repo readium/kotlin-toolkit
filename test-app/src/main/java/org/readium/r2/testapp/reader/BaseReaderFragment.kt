@@ -55,7 +55,6 @@ abstract class BaseReaderFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         model.settings.bind(navigator, viewLifecycleOwner)
     }
 
@@ -69,7 +68,7 @@ abstract class BaseReaderFragment : Fragment() {
         menuInflater.inflate(R.menu.menu_reader, menu)
 
         menu.findItem(R.id.settings).isVisible =
-            navigator is Configurable<*>
+            navigator is Configurable<*, *>
 
         menu.findItem(R.id.drm).isVisible =
             model.publication.lcpLicense != null

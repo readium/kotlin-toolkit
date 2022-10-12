@@ -12,14 +12,19 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferences
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesEditor
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitSettingsValues
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.Configurable
-import org.readium.r2.navigator.settings.MutablePreferences
-import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.settings.Theme
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.testapp.reader.NavigatorDefaults
 import org.readium.r2.testapp.reader.NavigatorKind
+import kotlin.reflect.KClass
 
 /**
  * Manages user settings.
@@ -32,26 +37,28 @@ import org.readium.r2.testapp.reader.NavigatorKind
 @OptIn(ExperimentalReadiumApi::class)
 class UserSettingsViewModel(
     application: Application,
-    private val bookId: Long,
-    private val kind: NavigatorKind?,
-    scope: CoroutineScope
+    val bookId: Long,
+    val publication: Publication,
+    val kind: NavigatorKind?,
+    val scope: CoroutineScope,
+    initialPreferences: Configurable.Preferences?
 ) {
-    private val store = PreferencesStore(application, scope)
+    private val preferencesMixer: PreferencesMixer =
+        PreferencesMixer(application)
 
-    private val publicationPreferences: StateFlow<Preferences> = store[bookId]
-        .stateIn(scope, SharingStarted.Eagerly, initialValue = Preferences())
+    val preferences: StateFlow<Configurable.Preferences>? =
+        (if (kind != null && initialPreferences != null) {
+            preferencesMixer.getPreferences(bookId, kind)
+        } else {
+            null
+        })?.stateIn(scope, SharingStarted.Eagerly, initialPreferences!!)
 
-    private val navigatorPreferences: StateFlow<Preferences> = store[kind]
-        .stateIn(scope, SharingStarted.Eagerly, initialValue = Preferences())
+    fun <P: Configurable.Preferences> getPreferences(preferencesClass: KClass<P>) =
+        preferencesMixer.getPreferences(bookId, preferencesClass)
 
     /**
      * Current user preferences saved in the store.
      */
-    val preferences: StateFlow<Preferences> =
-        combine(publicationPreferences, navigatorPreferences) { publicationPrefs, navigatorPrefs ->
-            navigatorPrefs + publicationPrefs
-        }
-        .stateIn(scope, SharingStarted.Eagerly, initialValue = Preferences())
 
     /**
      * Current [Navigator] settings.
@@ -68,11 +75,11 @@ class UserSettingsViewModel(
         .stateIn(scope, SharingStarted.Lazily, initialValue = Theme.LIGHT)
 
     fun bind(navigator: Navigator, lifecycleOwner: LifecycleOwner) {
-        val configurable = (navigator as? Configurable<*>) ?: return
+        val configurable = (navigator as? Configurable<*, *>) ?: return
         bind(configurable, lifecycleOwner)
     }
 
-    fun bind(configurable: Configurable<*>, lifecycleOwner: LifecycleOwner) {
+    fun bind(configurable: Configurable<*, *>, lifecycleOwner: LifecycleOwner) {
         with(lifecycleOwner) {
             configurable.settings
                 .flowWithLifecycle(lifecycle)
@@ -80,25 +87,28 @@ class UserSettingsViewModel(
                     _settings.value = it
                 }
                 .launchIn(lifecycleScope)
-
-            preferences
-                .flowWithLifecycle(lifecycle)
-                .onEach { configurable.submitPreferences(it) }
-                .launchIn(lifecycleScope)
         }
     }
 
-    /**
-     * Edits and saves the user preferences.
-     */
-    fun editNavigatorPreferences(changes: MutablePreferences.() -> Unit) {
-        store[kind] = navigatorPreferences.value.copy(changes)
+    fun <P: Configurable.Preferences> submitPreferences(preferences: P) = scope.launch {
+        preferencesMixer.setPreferences(bookId, preferences)
     }
 
-    /**
-     * Edits and saves the user preferences.
-     */
-    fun editPublicationPreferences(changes: MutablePreferences.() -> Unit) {
-        store[bookId] = publicationPreferences.value.copy(changes)
+    fun <P: Configurable.Preferences> clearPreferences() = scope.launch {
+        preferencesMixer.setPreferences(bookId, null)
     }
+
+    fun createEditor(settings: Configurable.Settings, preferences: Configurable.Preferences): Any? =
+        when {
+            settings is PsPdfKitSettingsValues && preferences is PsPdfKitPreferences -> {
+                PsPdfKitPreferencesEditor(
+                    currentSettings = settings,
+                    initialPreferences = preferences,
+                    pubMetadata = publication.metadata,
+                    defaults = NavigatorDefaults.pdfDefaults,
+                    onPreferencesEdited = ::submitPreferences
+                )
+            }
+            else -> null
+        }
 }

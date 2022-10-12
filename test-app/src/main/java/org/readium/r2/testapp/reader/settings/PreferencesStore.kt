@@ -11,76 +11,66 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
-import org.readium.r2.navigator.settings.Preferences
-import org.readium.r2.shared.ExperimentalReadiumApi
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.readium.r2.testapp.reader.NavigatorKind
 import androidx.datastore.preferences.core.Preferences as JetpackPreferences
 
 /**
  * Persists the navigator preferences using Jetpack [DataStore].
- *
- * The [Preferences] are split between:
- *   - the preferences related to a single book (e.g. language, reading progression)
- *   - the preferences shared between all the books of the same publication profile (e.g. EPUB)
  */
-@OptIn(ExperimentalReadiumApi::class)
-class PreferencesStore(
-    context: Context,
-    private val scope: CoroutineScope
-) {
-    /**
-     * Observes the [Preferences] for the publication with the given [bookId].
-     */
-    operator fun get(bookId: Long): Flow<Preferences> =
-        store.data.map { data -> getPreferences(key(bookId), data) }
 
-    /**
-     * Observes the [Preferences] for the navigator [kind].
-     */
-    operator fun get(kind: NavigatorKind?): Flow<Preferences> =
-        store.data.map { data -> getPreferences(key(kind), data) }
+/**
+ * Observes the [Preferences] for the publication with the given [bookId].
+ */
+inline operator fun <reified P> DataStore<JetpackPreferences>.get(bookId: Long): Flow<P?> =
+    data.map { data -> getPreferences(key(bookId), data) }
 
-    private fun getPreferences(key: JetpackPreferences.Key<String>, data: JetpackPreferences) =
-        data[key]?.let { Preferences.fromJson (it) } ?: Preferences()
+/**
+ * Observes the [Preferences] for the navigator [kind].
+ */
+inline operator fun <reified P> DataStore<JetpackPreferences>.get(kind: NavigatorKind?): Flow<P?> =
+    data.map { data -> getPreferences(key(kind), data) }
 
-    /**
-     * Sets the [preferences] for the publication with the given [bookId].
-     */
-    operator fun set(bookId: Long, preferences: Preferences) {
-        scope.launch {
-            store.edit { data ->
-                data[key(bookId)] = preferences.toJsonString()
-            }
+inline fun<reified P> getPreferences(key: JetpackPreferences.Key<String>, data: JetpackPreferences) =
+    data[key]?.let { Json.decodeFromString<P>(it) }
+
+/**
+ * Sets the [preferences] for the publication with the given [bookId].
+ */
+suspend inline fun<reified P> DataStore<JetpackPreferences>.set(bookId: Long, preferences: P?) {
+    edit { data ->
+        val key = key(bookId)
+        if (preferences == null) {
+            data.remove(key)
+        } else {
+            data[key] = Json.encodeToString(preferences)
         }
     }
-
-    /**
-     * Sets the [preferences] for navigator [kind].
-     */
-    operator fun set(kind: NavigatorKind?, preferences: Preferences) {
-        scope.launch {
-            store.edit { data ->
-                data[key(kind)] = preferences.toJsonString()
-            }
-        }
-    }
-
-    private val store = context.preferences
-
-    /** [DataStore] key for the given [bookId]. */
-    private fun key(bookId: Long): JetpackPreferences.Key<String> =
-        stringPreferencesKey("book-$bookId")
-
-    /** [DataStore] key for the given navigator [kind]. */
-    private fun key(kind: NavigatorKind?): JetpackPreferences.Key<String> =
-        if (kind != null) stringPreferencesKey("kind-${kind.name}")
-        else stringPreferencesKey("default")
-
 }
 
-private val Context.preferences: DataStore<JetpackPreferences>
-    by preferencesDataStore(name = "navigator-preferences")
+/**
+ * Sets the [preferences] for navigator [kind].
+ */
+suspend inline fun <reified P> DataStore<JetpackPreferences>.set(kind: NavigatorKind?, preferences: P?) {
+    edit { data ->
+        val key = key(kind)
+        if (preferences == null) {
+            data.remove(key)
+        } else {
+            data[key] = Json.encodeToString(preferences)
+        }
+    }
+}
+
+/** [DataStore] key for the given [bookId]. */
+fun key(bookId: Long): JetpackPreferences.Key<String> =
+    stringPreferencesKey("book-$bookId")
+
+/** [DataStore] key for the given navigator [kind]. */
+fun key(kind: NavigatorKind?): JetpackPreferences.Key<String> =
+    if (kind != null) stringPreferencesKey("kind-${kind.name}")
+    else stringPreferencesKey("default")

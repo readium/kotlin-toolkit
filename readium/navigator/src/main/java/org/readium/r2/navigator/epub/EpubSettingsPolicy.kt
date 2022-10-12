@@ -24,15 +24,21 @@ import org.readium.r2.shared.util.Language
  */
 internal class EpubSettingsPolicy {
 
-    fun reflowableSettings(metadata: Metadata, preferences: Preferences): EpubSettingsValues.Reflowable {
+    fun createSettings(metadata: Metadata, preferences: EpubPreferences): EpubSettingsValues =
+        when (preferences) {
+            is EpubPreferences.Reflowable -> reflowableSettings(metadata, preferences)
+            is EpubPreferences.FixedLayout -> fixedLayoutSettings(metadata, preferences)
+        }
+
+    fun reflowableSettings(metadata: Metadata, preferences: EpubPreferences.Reflowable): EpubSettingsValues.Reflowable {
         val (language, readingProgression) = resolveReadingProgression(metadata, preferences)
 
-        val verticalPref = preferences[EpubSettings.VERTICAL_TEXT]
+        val verticalPref = preferences.verticalText
         val verticalText = resolveVerticalText(verticalPref, language, readingProgression)
 
-        val theme = preferences[EpubSettings.THEME] ?: Theme.LIGHT
-        val backgroundColor = preferences[EpubSettings.BACKGROUND_COLOR] ?: Color(theme.backgroundColor)
-        val textColor = preferences[EpubSettings.TEXT_COLOR] ?: Color(theme.contentColor)
+        val theme = preferences.theme ?: Theme.LIGHT
+        val backgroundColor = preferences.backgroundColor ?: Color(theme.backgroundColor)
+        val textColor = preferences.textColor ?: Color(theme.contentColor)
 
         return EpubSettingsValues.Reflowable(
             language = language,
@@ -41,39 +47,39 @@ internal class EpubSettingsPolicy {
             theme = theme,
             backgroundColor = backgroundColor,
             textColor = textColor,
-            columnCount = preferences[EpubSettings.COLUMN_COUNT] ?: ColumnCount.AUTO,
-            fontFamily = preferences[EpubSettings.FONT_FAMILY],
-            fontSize = preferences[EpubSettings.FONT_SIZE] ?: 1.0,
-            hyphens = preferences[EpubSettings.HYPHENS] ?: true,
-            imageFilter = preferences[EpubSettings.IMAGE_FILTER] ?: ImageFilter.NONE,
-            letterSpacing = preferences[EpubSettings.LETTER_SPACING] ?: 0.0,
-            ligatures = preferences[EpubSettings.LIGATURES] ?: true,
-            lineHeight = preferences[EpubSettings.LINE_HEIGHT] ?: 1.2,
-            pageMargins = preferences[EpubSettings.PAGE_MARGINS] ?: 1.0,
-            paragraphIndent = preferences[EpubSettings.PARAGRAPH_INDENT] ?: 0.0,
-            paragraphSpacing = preferences[EpubSettings.PARAGRAPH_SPACING] ?: 0.0,
-            publisherStyles = preferences[EpubSettings.PUBLISHER_STYLES] ?: true,
-            scroll = preferences[EpubSettings.SCROLL] ?: false,
-            textAlign = preferences[EpubSettings.TEXT_ALIGN] ?: TextAlign.START,
-            textNormalization = preferences[EpubSettings.TEXT_NORMALIZATION] ?: TextNormalization.NONE,
-            typeScale = preferences[EpubSettings.TYPE_SCALE] ?: 1.2,
-            wordSpacing = preferences[EpubSettings.WORD_SPACING] ?: 0.0,
+            columnCount = preferences.columnCount ?: ColumnCount.AUTO,
+            fontFamily = preferences.fontFamily,
+            fontSize = preferences.fontSize ?: 1.0,
+            hyphens = preferences.hyphens ?: true,
+            imageFilter = preferences.imageFilter ?: ImageFilter.NONE,
+            letterSpacing = preferences.letterSpacing ?: 0.0,
+            ligatures = preferences.ligatures ?: true,
+            lineHeight = preferences.lineHeight ?: 1.2,
+            pageMargins = preferences.pageMargins ?: 1.0,
+            paragraphIndent = preferences.paragraphIndent ?: 0.0,
+            paragraphSpacing = preferences.paragraphSpacing ?: 0.0,
+            publisherStyles = preferences.publisherStyles ?: true,
+            scroll = preferences.scroll ?: false,
+            textAlign = preferences.textAlign ?: TextAlign.START,
+            textNormalization = preferences.textNormalization ?: TextNormalization.NONE,
+            typeScale = preferences.typeScale ?: 1.2,
+            wordSpacing = preferences.wordSpacing ?: 0.0,
         )
     }
 
-    fun fixedLayoutSettings(metadata: Metadata, preferences: Preferences): EpubSettingsValues.FixedLayout {
+    fun fixedLayoutSettings(metadata: Metadata, preferences: EpubPreferences.FixedLayout): EpubSettingsValues.FixedLayout {
         val (language, readingProgression) = resolveReadingProgression(metadata, preferences)
 
         return EpubSettingsValues.FixedLayout(
             language = language,
             readingProgression = readingProgression,
-            spread = preferences[EpubSettings.SPREAD] ?: Spread.NEVER
+            spread = preferences.spread ?: Spread.NEVER
         )
     }
 
-    private fun resolveReadingProgression(metadata: Metadata, preferences: Preferences): Pair<Language?, ReadingProgression> {
-        val rpPref = preferences[EpubSettings.READING_PROGRESSION]
-        val langPref = preferences[EpubSettings.LANGUAGE]
+    private fun resolveReadingProgression(metadata: Metadata, preferences: EpubPreferences): Pair<Language?, ReadingProgression> {
+        val rpPref = preferences.readingProgression
+        val langPref = preferences.language
         val metadataLanguage = metadata.language
 
         // Compute language according to the following rule:

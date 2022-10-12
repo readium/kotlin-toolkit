@@ -58,7 +58,7 @@ data class PsPdfKitSettingsDefaults(
     val offset: Boolean = true
 )
 
-internal data class PsPdfKitSettingsValues(
+data class PsPdfKitSettingsValues(
     val readingProgression: ReadingProgression,
     val scroll: Boolean,
     val scrollAxis: Axis,

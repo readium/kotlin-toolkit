@@ -6,12 +6,16 @@
 
 package org.readium.r2.testapp.reader
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.StateFlow
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
+import org.readium.r2.navigator.settings.Configurable
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.*
 
 enum class NavigatorKind {
-    EPUB, PDF, AUDIO, IMAGE
+    EPUB_REFLOWABLE, EPUB_FIXEDLAYOUT, PDF, AUDIO, IMAGE
 }
 
 sealed class ReaderInitData {
@@ -20,21 +24,18 @@ sealed class ReaderInitData {
     abstract val navigatorKind: NavigatorKind?
 }
 
-data class VisualReaderInitData(
+@OptIn(ExperimentalReadiumApi::class)
+class VisualReaderInitData(
     override val bookId: Long,
     override val publication: Publication,
-    val initialLocation: Locator? = null
-) : ReaderInitData() {
-    override val navigatorKind: NavigatorKind? = when {
-        publication.conformsTo(Publication.Profile.EPUB) -> NavigatorKind.EPUB
-        publication.conformsTo(Publication.Profile.PDF) -> NavigatorKind.PDF
-        publication.conformsTo(Publication.Profile.DIVINA) -> NavigatorKind.IMAGE
-        else -> null
-    }
-}
+    override val navigatorKind: NavigatorKind?,
+    val coroutineScope: CoroutineScope,
+    val initialLocation: Locator?,
+    val preferences: StateFlow<Configurable.Preferences>?,
+) : ReaderInitData()
 
 @ExperimentalMedia2
-data class MediaReaderInitData(
+class MediaReaderInitData(
     override val bookId: Long,
     override val publication: Publication,
     val mediaNavigator: MediaNavigator,
@@ -42,7 +43,7 @@ data class MediaReaderInitData(
     override val navigatorKind: NavigatorKind = NavigatorKind.AUDIO
 }
 
-data class DummyReaderInitData(
+class DummyReaderInitData(
     override val bookId: Long,
 ) : ReaderInitData() {
     override val publication: Publication = Publication(Manifest(

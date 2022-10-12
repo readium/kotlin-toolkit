@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitSettingsValues
 import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -35,23 +36,19 @@ import org.readium.r2.testapp.utils.compose.DropdownMenuButton
 import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
 import java.util.*
 import org.readium.r2.navigator.settings.Color as ReadiumColor
-import org.readium.r2.navigator.settings.TextAlign as ReadiumTextAlign
-
-/**
- * Closure which updates and applies a set of [Preferences].
- */
-typealias EditPreferences = (MutablePreferences.() -> Unit) -> Unit
 
 /**
  * Stateful user settings component paired with a [ReaderViewModel].
  */
 @Composable
 fun UserSettings(model: UserSettingsViewModel) {
+    val settings = model.settings.collectAsState().value ?: return
+    val preferences = model.preferences!!.collectAsState().value
+    val editor = model.createEditor(settings, preferences) ?: return
+
     UserSettings(
-        settings = model.settings.collectAsState().value ?: return,
-        preferences = model.preferences.collectAsState().value,
-        editNavigator = model::editNavigatorPreferences,
-        editPublication = model::editPublicationPreferences
+        settings = settings,
+        preferencesEditor = editor
     )
 }
 
@@ -61,10 +58,8 @@ fun UserSettings(model: UserSettingsViewModel) {
  */
 @Composable
 fun UserSettings(
-    settings: Configurable.Settings,
-    preferences: Preferences,
-    editNavigator: EditPreferences,
-    editPublication: EditPreferences
+    settings: Any,
+    preferencesEditor: Any,
 ) {
     Column(
         modifier = Modifier.padding(vertical = 24.dp)
@@ -83,38 +78,56 @@ fun UserSettings(
                 .align(Alignment.End),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            PresetsMenuButton(edit = editPublication, presets = settings.presets())
+            //PresetsMenuButton(edit = editPublication, presets = settings.presets())
 
-            Button(
-                onClick = {
-                    editPublication { clear() }
-                    editNavigator { clear() }
-                },
+            /*Button(
+                onClick = clearPreferences
             ) {
                 Text("Reset")
-            }
+            }*/
         }
 
         Divider()
 
         when (settings) {
-            is FixedLayoutSettings ->
+            is PsPdfKitSettingsValues ->
                 FixedLayoutUserSettings(
-                    preferences = preferences,
-                    editNavigator = editNavigator,
-                    editPublication = editPublication,
-                    settings = settings
+                    effectiveLanguage = null,
+                    languageEditor = null,
+                    effectiveReadingProgression = settings.readingProgression,
+                    readingProgressionEditor = preferencesEditor as? ReadingProgressionEditor,
+                    effectiveOffset = settings.offset,
+                    offsetEditor = preferencesEditor as? OffsetEditor,
+                    effectiveScroll = settings.scroll,
+                    scrollEditor = preferencesEditor as? ScrollEditor,
+                    effectiveScrollAxis = settings.scrollAxis,
+                    scrollAxisEditor = preferencesEditor as? ScrollAxisEditor,
+                    effectiveFit = settings.fit,
+                    fitEditor = preferencesEditor as? FitEditor,
+                    effectiveSpread = settings.spread,
+                    spreadEditor = preferencesEditor as? SpreadEditor,
+                    effectivePageSpacing = settings.pageSpacing,
+                    pageSpacingEditor = preferencesEditor as? PageSpacingEditor
                 )
 
-            is ReflowaleSettings ->
+            }
+
+            /*is EpubSettings.FixedLayout ->
+                FixedLayoutUserSettings(
+                    preferences = preferences,
+                    navPrefsEditor = EpubFixedLayoutPreferencesEditor(editNavigator, settings),
+                    pubPrefsEditor = EpubFixedLayoutPreferencesEditor(editPublication, settings),
+                    settings = settings
+                )*/
+
+            /*is EpubSettings.Reflowable ->
                 ReflowableUserSettings(
                     preferences = preferences,
                     editNavigator = editNavigator,
                     editPublication = editPublication,
                     settings = settings
-                )
+                )*/
         }
-    }
 }
 
 /**
@@ -122,23 +135,48 @@ fun UserSettings(
  */
 @Composable
 private fun ColumnScope.FixedLayoutUserSettings(
-    preferences: Preferences,
-    editNavigator: EditPreferences,
-    editPublication: EditPreferences,
-    settings: FixedLayoutSettings
-) = with(settings) {
-    if (language != null || readingProgression != null) {
+    effectiveReadingProgression: ReadingProgression?,
+    readingProgressionEditor: ReadingProgressionEditor?,
+    effectiveLanguage: Language?,
+    languageEditor: LanguageEditor?,
+    effectiveScroll: Boolean?,
+    scrollEditor: ScrollEditor?,
+    effectiveScrollAxis: Axis?,
+    scrollAxisEditor: ScrollAxisEditor?,
+    effectiveSpread: Spread?,
+    spreadEditor: SpreadEditor?,
+    effectiveOffset: Boolean?,
+    offsetEditor: OffsetEditor?,
+    effectivePageSpacing: Double?,
+    pageSpacingEditor: PageSpacingEditor?,
+    effectiveFit: Fit?,
+    fitEditor: FitEditor?,
+) {
+    if (languageEditor != null || readingProgressionEditor != null) {
         fun reset() {
-            editPublication {
-                remove(language)
-                remove(readingProgression)
+            languageEditor?.language = null
+            readingProgressionEditor?.readingProgression = null
+        }
+
+        if (languageEditor != null) {
+            LanguageItem(
+                value = languageEditor.language ?: effectiveLanguage,
+                isActive = languageEditor.isLanguagePreferenceActive
+            ) { value ->
+                languageEditor.language = value
+
             }
         }
 
-        language?.let { LanguageItem(it, preferences, editPublication) }
-
-        readingProgression?.let {
-            ButtonGroupItem(title = "Reading progression", it, preferences , editPublication) { value ->
+        if (readingProgressionEditor != null && effectiveReadingProgression != null) {
+            ButtonGroupItem(
+                title = "Reading progression",
+                options = readingProgressionEditor.supportedReadingProgressionValues,
+                activeOption = effectiveReadingProgression,
+                isActive = readingProgressionEditor.isReadingProgressionPreferenceActive,
+                selectedOption = readingProgressionEditor.readingProgression,
+                onOptionChanged = { value -> readingProgressionEditor.readingProgression = value }
+            ) { value ->
                 when (value) {
                     ReadingProgression.AUTO -> "Auto"
                     else -> value.name
@@ -146,7 +184,7 @@ private fun ColumnScope.FixedLayoutUserSettings(
             }
         }
 
-        // The language settings are specific to a publication. This button resets only the
+        // The language preferences are specific to a publication. This button resets only the
         // language preferences to the publication's default metadata for convenience.
         Row(
             modifier = Modifier
@@ -162,10 +200,25 @@ private fun ColumnScope.FixedLayoutUserSettings(
         Divider()
     }
 
-    scroll?.let {  SwitchItem(title = "Scroll", it, preferences, editNavigator) }
+    if (scrollEditor != null && effectiveScroll != null) {
+        SwitchItem(
+            title = "Scroll",
+            value = scrollEditor.scroll ?: effectiveScroll,
+            isActive = scrollEditor.isScrollPreferenceActive,
+            onCheckedChange = { value -> scrollEditor.scroll = value },
+            onToggle =  {  }
+        )
+    }
 
-    scrollAxis?.let {
-        ButtonGroupItem("Scroll axis", it, preferences, editNavigator) { value ->
+    if (scrollAxisEditor != null && effectiveScrollAxis != null) {
+        ButtonGroupItem(
+            title = "Scroll axis",
+            options = scrollAxisEditor.supportedScrollAxes,
+            isActive = scrollAxisEditor.isScrollAxisPreferenceActive,
+            activeOption = effectiveScrollAxis,
+            selectedOption = scrollAxisEditor.scrollAxis,
+            onOptionChanged = { scrollAxisEditor.scrollAxis = it }
+        ) { value ->
             when (value) {
                 Axis.HORIZONTAL-> "Horizontal"
                 Axis.VERTICAL -> "Vertical"
@@ -173,8 +226,15 @@ private fun ColumnScope.FixedLayoutUserSettings(
         }
     }
 
-    spread?.let {
-        ButtonGroupItem("Spread", it, preferences, editNavigator) { value ->
+    if (spreadEditor != null && effectiveSpread != null) {
+        ButtonGroupItem(
+            title = "Spread",
+            options = spreadEditor.supportedSpreadValues,
+            isActive = spreadEditor.isSpreadPreferenceActive,
+            activeOption = effectiveSpread,
+            selectedOption = spreadEditor.spread,
+            onOptionChanged = { spreadEditor.spread = it }
+        ) { value ->
             when (value) {
                 Spread.AUTO -> "Auto"
                 Spread.NEVER -> "Never"
@@ -182,13 +242,26 @@ private fun ColumnScope.FixedLayoutUserSettings(
             }
         }
 
-        offset?.let {
-            SwitchItem("Offset", it, preferences, editPublication)
+        if (offsetEditor != null && effectiveOffset != null) {
+            SwitchItem(
+                title = "Offset",
+                value = effectiveOffset,
+                isActive = offsetEditor.isOffsetPreferenceActive,
+                onCheckedChange = { offsetEditor.offset = it },
+                onToggle = { offsetEditor.toggleOffset() }
+            )
         }
     }
 
-    fit?.let {
-        ButtonGroupItem("Fit", it, preferences, editNavigator) { value ->
+    if (fitEditor != null && effectiveFit != null) {
+        ButtonGroupItem(
+            title = "Fit",
+            options = fitEditor.supportedFitValues,
+            isActive = fitEditor.isFitPreferenceActive,
+            activeOption = effectiveFit,
+            selectedOption = fitEditor.fit,
+            onOptionChanged = { fitEditor.fit = it }
+        ) { value ->
             when (value) {
                 Fit.CONTAIN-> "Contain"
                 Fit.COVER -> "Cover"
@@ -198,11 +271,18 @@ private fun ColumnScope.FixedLayoutUserSettings(
         }
     }
 
-    pageSpacing?.let {
-        StepperItem("Page spacing", it, preferences, editNavigator)
+    if (pageSpacingEditor != null && effectivePageSpacing != null) {
+        StepperItem(
+            title = "Page spacing",
+            isActive = pageSpacingEditor.isPageSpacingPreferenceActive,
+            value = pageSpacingEditor.pageSpacing ?: effectivePageSpacing,
+            decrement = pageSpacingEditor::decrementPageSpacing,
+            increment = pageSpacingEditor::incrementPageSpacing,
+            formatValue = pageSpacingEditor::formatPageSpacing
+        )
     }
 }
-
+/*
 /**
  * User settings for a publication with adjustable fonts and dimensions, such as
  * a reflowable EPUB, HTML document or PDF with reflow mode enabled.
@@ -378,6 +458,7 @@ private fun ColumnScope.ReflowableUserSettings(
         SwitchItem("Ligatures", it, preferences, editNavigator)
     }
 }
+*/
 
 /**
  * Component for an [EnumSetting] displayed as a group of mutually exclusive buttons.
@@ -386,20 +467,19 @@ private fun ColumnScope.ReflowableUserSettings(
 @Composable
 private fun <T> ButtonGroupItem(
     title: String,
-    setting: EnumSetting<T>,
-    preferences: Preferences,
-    edit: EditPreferences,
+    options: List<T>? = null,
+    isActive: Boolean,
+    activeOption: T,
+    selectedOption: T?,
+    onOptionChanged: (T) -> Unit,
     formatValue: (T) -> String
 ) {
-    Item(title, isActive = preferences.isActive(setting)) {
+    Item(title, isActive = isActive) {
         ToggleButtonGroup(
-            options = setting.values ?: emptyList(),
-            activeOption = setting.value,
-            selectedOption = preferences[setting],
-            onSelectOption = { option ->
-                edit {
-                    toggle(setting, option)
-                }
+            options = options ?: emptyList(),
+            activeOption = activeOption,
+            selectedOption = selectedOption,
+            onSelectOption = { option -> onOptionChanged(option)
             }
         ) { option ->
             Text(
@@ -411,40 +491,22 @@ private fun <T> ButtonGroupItem(
 }
 
 /**
- * Component for an [EnumSetting] displayed as a dropdown menu.
- */
-@Composable
-private fun <T> MenuItem(
-    title: String,
-    setting: EnumSetting<T>,
-    preferences: Preferences,
-    edit: EditPreferences,
-    formatValue: (T) -> String
-) {
-    MenuItem(
-        title = title, setting, preferences, edit,
-        values = setting.values ?: emptyList(),
-        formatValue = formatValue
-    )
-}
-
-/**
  * Component displayed as a dropdown menu.
  */
 @Composable
 private fun <T> MenuItem(
     title: String,
-    setting: Setting<T>,
-    preferences: Preferences,
-    edit: EditPreferences,
+    value: T,
     values: List<T>,
+    isActive: Boolean,
+    edit: (T) -> Unit,
     formatValue: (T) -> String
 ) {
-    Item(title, isActive = preferences.isActive(setting)) {
+    Item(title, isActive = isActive) {
         DropdownMenuButton(
             text = {
                 Text(
-                    text = formatValue(preferences[setting] ?: setting.value),
+                    text = formatValue(value),
                     style = MaterialTheme.typography.caption
                 )
             }
@@ -453,7 +515,7 @@ private fun <T> MenuItem(
                 DropdownMenuItem(
                     onClick = {
                         dismiss()
-                        edit { set(setting, value) }
+                        edit(value)
                     }
                 ) {
                     Text(formatValue(value))
@@ -469,38 +531,32 @@ private fun <T> MenuItem(
 @Composable
 private fun StepperItem(
     title: String,
-    setting: RangeSetting<Double>,
-    preferences: Preferences,
-    edit: EditPreferences,
+    isActive: Boolean,
+    value: Double,
+    decrement: () -> Unit,
+    increment: () -> Unit,
+    formatValue: (Double) -> String
 ) {
-    Item(title, isActive = preferences.isActive(setting)) {
+    Item(title, isActive = isActive) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             IconButton(
-                onClick = {
-                    edit {
-                        decrement(setting)
-                    }
-                },
+                onClick = decrement,
                 content = {
                     Icon(Icons.Default.Remove, contentDescription = "Less")
                 }
             )
 
             Text(
-                text = setting.formatValue((preferences[setting] ?: setting.value)),
+                text = formatValue(value),
                 modifier = Modifier.widthIn(min = 30.dp),
                 textAlign = TextAlign.Center
             )
 
             IconButton(
-                onClick = {
-                    edit {
-                        increment(setting)
-                    }
-                },
+                onClick = increment,
                 content = {
                     Icon(Icons.Default.Add, contentDescription = "More")
                 }
@@ -515,20 +571,19 @@ private fun StepperItem(
 @Composable
 private fun SwitchItem(
     title: String,
-    setting: Setting<Boolean>,
-    preferences: Preferences,
-    edit: EditPreferences
+    value: Boolean,
+    isActive: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    onToggle: () -> Unit,
 ) {
     Item(
         title = title,
-        isActive = preferences.isActive(setting),
-        onClick = { edit { toggle(setting)} }
+        isActive = isActive,
+        onClick = onToggle
     ) {
         Switch(
-            checked = preferences[setting] ?: setting.value,
-            onCheckedChange = { value ->
-                edit { set(setting, value) }
-            }
+            checked = value,
+            onCheckedChange = onCheckedChange
         )
     }
 }
@@ -539,24 +594,25 @@ private fun SwitchItem(
 @Composable
 private fun ColorItem(
     title: String,
-    setting: Setting<ReadiumColor>,
-    preferences: Preferences,
-    edit: EditPreferences
+    isActive: Boolean,
+    value: ReadiumColor,
+    valueHasBeenSelected: Boolean,
+    onColorChanged: (ReadiumColor?) -> Unit
 ) {
     var isPicking by remember { mutableStateOf(false) }
 
     Item(
         title = title,
-        isActive = preferences.isActive(setting),
+        isActive = isActive,
         onClick = { isPicking = true }
     ) {
-        val color = Color(preferences[setting]?.int ?: setting.value.int)
+        val color = Color(value.int)
 
         OutlinedButton(
             onClick = { isPicking = true },
             colors = ButtonDefaults.buttonColors(backgroundColor = color)
         ) {
-            if (preferences[setting] == null) {
+            if (valueHasBeenSelected) {
                 Icon(
                     imageVector = Icons.Default.Palette,
                     contentDescription = "Change color",
@@ -574,16 +630,12 @@ private fun ColorItem(
                 ) {
                     ColorPicker { color ->
                         isPicking = false
-                        edit {
-                            set(setting, ReadiumColor(color))
-                        }
+                        onColorChanged(ReadiumColor(color))
                     }
                     Button(
                         onClick = {
                             isPicking = false
-                            edit {
-                                remove(setting)
-                            }
+                            onColorChanged(null)
                         }
                     ) {
                         Text("Clear")
@@ -599,9 +651,9 @@ private fun ColorItem(
  */
 @Composable
 fun LanguageItem(
-     setting: Setting<Language?>,
-     preferences: Preferences,
-     edit: EditPreferences
+    value: Language?,
+    isActive: Boolean,
+    edit: (Language?) -> Unit
 ) {
     val languages = remember {
         Locale.getAvailableLocales()
@@ -611,8 +663,11 @@ fun LanguageItem(
     }
 
     MenuItem(
-        title = "Language", setting, preferences, edit,
+        title = "Language",
+        isActive = isActive,
+        value = value,
         values = listOf(null) + languages,
+        edit = edit,
         formatValue = { it?.locale?.displayName ?: "Default" }
     )
 }
@@ -672,6 +727,7 @@ private fun Configurable.Settings.presets(): List<Preset> =
         else -> emptyList()
     }
 
+/*
 @Composable
 private fun PresetsMenuButton(edit: EditPreferences, presets: List<Preset>) {
     if (presets.isEmpty()) return
@@ -695,3 +751,4 @@ private fun PresetsMenuButton(edit: EditPreferences, presets: List<Preset>) {
         }
     }
 }
+*/

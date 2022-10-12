@@ -8,12 +8,25 @@ package org.readium.r2.testapp.reader
 
 import android.app.Activity
 import android.app.Application
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.*
 import org.json.JSONObject
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
+import org.readium.r2.navigator.epub.EpubPreferences
+import org.readium.r2.navigator.pdf.PdfEngineProvider
+import org.readium.r2.navigator.settings.Configurable
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
+import org.readium.r2.shared.publication.epub.EpubLayout
+import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.protectionError
 import org.readium.r2.shared.util.Try
@@ -21,6 +34,7 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.testapp.MediaService
 import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.bookshelf.BookRepository
+import org.readium.r2.testapp.reader.settings.PreferencesMixer
 import java.io.File
 
 /**
@@ -30,12 +44,13 @@ import java.io.File
  * Pass the method result to the activity to enable it to know which current publication it must
  * retrieve from this repository - media or visual.
  */
-@OptIn(ExperimentalMedia2::class)
+@OptIn(ExperimentalMedia2::class, ExperimentalReadiumApi::class)
 class ReaderRepository(
     private val application: Application,
     private val readium: Readium,
     private val mediaBinder: MediaService.Binder,
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
+    private val pdfEngineProvider: PdfEngineProvider<*, *>
 ) {
     object CancellationException : Exception()
 
@@ -87,12 +102,42 @@ class ReaderRepository(
         repository[bookId] = readerInitData
     }
 
-    private fun openVisual(
+    private suspend fun openVisual(
         bookId: Long,
         publication: Publication,
         initialLocator: Locator?
     ): VisualReaderInitData {
-        return VisualReaderInitData(bookId, publication, initialLocator)
+        val navigatorKind = when {
+            publication.conformsTo(Publication.Profile.EPUB) ->
+                if (publication.metadata.presentation.layout == EpubLayout.FIXED)
+                    NavigatorKind.EPUB_FIXEDLAYOUT
+                else
+                    NavigatorKind.EPUB_REFLOWABLE
+            publication.conformsTo(Publication.Profile.PDF) ->
+                NavigatorKind.PDF
+            publication.conformsTo(Publication.Profile.DIVINA) ->
+                NavigatorKind.IMAGE
+            else -> null
+        }
+
+        val coroutineScope = CoroutineScope(Dispatchers.IO)
+
+        suspend fun<P> Flow<P>.stateInFirst(scope: CoroutineScope, sharingStarted: SharingStarted) =
+            stateIn(scope, sharingStarted, first())
+
+        val preferences = when (navigatorKind) {
+            NavigatorKind.EPUB_REFLOWABLE, NavigatorKind.EPUB_FIXEDLAYOUT -> {
+                PreferencesMixer(application, pdfEngineProvider)
+                    .getPreferences(bookId, navigatorKind)
+                    ?.stateInFirst(coroutineScope, SharingStarted.Eagerly)
+                }
+            else -> null
+        }
+
+        return VisualReaderInitData(
+            bookId = bookId, publication = publication, navigatorKind = navigatorKind,
+            coroutineScope = coroutineScope, initialLocation = initialLocator, preferences = preferences
+        )
     }
 
     @OptIn(ExperimentalMedia2::class)
@@ -118,6 +163,7 @@ class ReaderRepository(
             }
             is VisualReaderInitData -> {
                 initData.publication.close()
+                initData.coroutineScope.cancel()
             }
             null, is DummyReaderInitData -> {
                 // Do nothing

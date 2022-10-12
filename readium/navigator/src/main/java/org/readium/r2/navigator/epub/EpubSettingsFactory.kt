@@ -16,6 +16,7 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.Language
 
+/*
 @ExperimentalReadiumApi
 internal class EpubSettingsFactory(
     private val metadata: Metadata = Metadata(localizedTitle = LocalizedString("")),
@@ -94,7 +95,9 @@ internal class EpubSettingsFactory(
         values = listOf(Spread.PREFERRED, Spread.NEVER),
     )
 
-    /** Default page background color. */
+    */
+/** Default page background color. *//*
+
     private fun backgroundColorSetting(
         value: Color,
     ): Setting<Color> = Setting(
@@ -102,7 +105,9 @@ internal class EpubSettingsFactory(
         value = value
     )
 
-    /** Number of columns to display (one-page view or two-page spread). */
+    */
+/** Number of columns to display (one-page view or two-page spread). *//*
+
     private fun columnCountSetting(
         value: ColumnCount
     ): EnumSetting<ColumnCount> = EnumSetting(
@@ -112,7 +117,9 @@ internal class EpubSettingsFactory(
         activator = requiresScroll(false),
     )
 
-    /** Default typeface for the text. */
+    */
+/** Default typeface for the text. *//*
+
     private fun fontFamilySetting(
         value: FontFamily?,
         fontFamilies: List<FontFamily> = emptyList()
@@ -123,7 +130,9 @@ internal class EpubSettingsFactory(
         formatValue = { it?.name }
     )
 
-    /** Base text font size. */
+    */
+/** Base text font size. *//*
+
     private fun fontSizeSetting(
         value: Double
     ): PercentSetting = PercentSetting(
@@ -132,7 +141,9 @@ internal class EpubSettingsFactory(
         range = 0.4..5.0
     )
 
-    /** Enable hyphenation. */
+    */
+/** Enable hyphenation. *//*
+
     private fun hyphensSetting(
         value: Boolean
     ): Setting<Boolean> = Setting(
@@ -142,7 +153,9 @@ internal class EpubSettingsFactory(
             + requiresStylesheet(Layout.Stylesheets.Default)
     )
 
-    /** Filter applied to images in dark theme. */
+    */
+/** Filter applied to images in dark theme. *//*
+
     private fun imageFilterSetting(
         value: ImageFilter
     ): EnumSetting<ImageFilter> = EnumSetting(
@@ -152,7 +165,9 @@ internal class EpubSettingsFactory(
         activator = requiresTheme(Theme.DARK)
     )
 
-    /** Space between letters. */
+    */
+/** Space between letters. *//*
+
     private fun letterSpacingSetting(
         value: Double
     ): PercentSetting = PercentSetting(
@@ -162,7 +177,9 @@ internal class EpubSettingsFactory(
             + requiresStylesheet(Layout.Stylesheets.Default)
     )
 
-    /** Enable ligatures in Arabic. */
+    */
+/** Enable ligatures in Arabic. *//*
+
     private fun ligaturesSetting(
         value: Boolean
     ): Setting<Boolean> = Setting<Boolean>(
@@ -172,7 +189,9 @@ internal class EpubSettingsFactory(
             + requiresStylesheet(Layout.Stylesheets.Rtl)
     )
 
-    /** Leading line height. */
+    */
+/** Leading line height. *//*
+
     private fun lineHeightSetting(
         value: Double
     ): RangeSetting<Double> = RangeSetting(
@@ -182,7 +201,9 @@ internal class EpubSettingsFactory(
         activator = requiresPublisherStylesDisabled
     )
 
-    /** Factor applied to horizontal margins. */
+    */
+/** Factor applied to horizontal margins. *//*
+
     private fun pageMarginsSetting(
         value: Double
     ): RangeSetting<Double> = RangeSetting(
@@ -192,7 +213,9 @@ internal class EpubSettingsFactory(
         activator = requiresScroll(false),
     )
 
-    /** Text indentation for paragraphs. */
+    */
+/** Text indentation for paragraphs. *//*
+
     private fun paragraphIndentSetting(
         value: Double
     ): PercentSetting = PercentSetting(
@@ -204,7 +227,9 @@ internal class EpubSettingsFactory(
             + requiresStylesheet { it == Layout.Stylesheets.Default || it == Layout.Stylesheets.Rtl }
     )
 
-    /** Vertical margins for paragraphs. */
+    */
+/** Vertical margins for paragraphs. *//*
+
     private fun paragraphSpacingSetting(
         value: Double
     ): PercentSetting = PercentSetting(
@@ -214,11 +239,13 @@ internal class EpubSettingsFactory(
         activator = requiresPublisherStylesDisabled
     )
 
-    /**
+    */
+/**
      * Indicates whether the original publisher styles should be observed.
      *
      * Many settings require this to be off.
-     */
+     *//*
+
     private fun publisherStylesSetting(
         value: Boolean
     ): Setting<Boolean> = Setting(
@@ -226,10 +253,12 @@ internal class EpubSettingsFactory(
         value = value
     )
 
-    /**
+    */
+/**
      * Indicates if the overflow of resources should be handled using scrolling instead
      * of synthetic pagination.
-     */
+     *//*
+
     private fun scrollSetting(
         value: Boolean
     ): Setting<Boolean> = Setting(
@@ -237,7 +266,9 @@ internal class EpubSettingsFactory(
         value = value
     )
 
-    /** Page text alignment. */
+    */
+/** Page text alignment. *//*
+
     private fun textAlignSetting(
         value: TextAlign
     ): EnumSetting<TextAlign> = EnumSetting(
@@ -253,7 +284,9 @@ internal class EpubSettingsFactory(
             + requiresStylesheet { it == Layout.Stylesheets.Default || it == Layout.Stylesheets.Rtl }
     )
 
-    /** Default page text color. */
+    */
+/** Default page text color. *//*
+
     private fun textColorSetting(
         value: Color,
     ): Setting<Color> = Setting(
@@ -261,7 +294,9 @@ internal class EpubSettingsFactory(
         value = value,
     )
 
-    /** Normalize font style, weight and variants using a specific strategy. */
+    */
+/** Normalize font style, weight and variants using a specific strategy. *//*
+
     private fun textNormalizationSetting(
         value: TextNormalization
     ): EnumSetting<TextNormalization> = EnumSetting(
@@ -274,7 +309,9 @@ internal class EpubSettingsFactory(
         )
     )
 
-    /** Reader theme. */
+    */
+/** Reader theme. *//*
+
     private fun themeSetting(
         value: Theme
     ): EnumSetting<Theme> = EnumSetting(
@@ -283,11 +320,13 @@ internal class EpubSettingsFactory(
         values = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
     )
 
-    /**
+    */
+/**
      * Scale applied to all element font sizes.
      *
      * See https://readium.org/readium-css/docs/CSS19-api.html#typography
-     */
+     *//*
+
     private fun typeScaleSetting(
         value: Double
     ): RangeSetting<Double> = RangeSetting(
@@ -298,12 +337,14 @@ internal class EpubSettingsFactory(
         activator = requiresPublisherStylesDisabled
     )
 
-    /**
+    */
+/**
      * Indicates whether the text should be laid out vertically. This is used for example
      * with CJK languages.
      *
      * This setting is automatically derived from the language if no preference is given.
-     */
+     *//*
+
     private fun verticalTextSetting(
         value: Boolean
     ): Setting<Boolean> = Setting<Boolean>(
@@ -311,7 +352,9 @@ internal class EpubSettingsFactory(
         value = value,
     )
 
-    /** Space between words. */
+    */
+/** Space between words. *//*
+
     private fun wordSpacingSetting(
         value: Double
     ): PercentSetting = PercentSetting(
@@ -321,34 +364,45 @@ internal class EpubSettingsFactory(
             + requiresStylesheet(Layout.Stylesheets.Default)
     )
 
-    /** [SettingActivator] for settings requiring the publisher styles to be disabled. */
+
+    */
+/** [SettingActivator] for settings requiring the publisher styles to be disabled. *//*
+
     private val requiresPublisherStylesDisabled = ForcePreferenceSettingActivator(
         key = EpubSettings.PUBLISHER_STYLES,
         value = false
     ) { preferences -> settingsPolicy.reflowableSettings(metadata, preferences).publisherStyles }
 
-    /** [SettingActivator] for settings active only with the given [theme]. */
+    */
+/** [SettingActivator] for settings active only with the given [theme]. *//*
+
     private fun requiresTheme(theme: Theme) = ForcePreferenceSettingActivator(
         key = EpubSettings.THEME,
         value = theme
     ) { preferences -> settingsPolicy.reflowableSettings(metadata, preferences).theme }
 
-    /** [SettingActivator] for settings active when the scroll is enabled or disabled. */
+    */
+/** [SettingActivator] for settings active when the scroll is enabled or disabled. *//*
+
     private fun requiresScroll(scroll: Boolean) = RequirePreferenceSettingActivator(
         value = scroll
     ) { preferences -> settingsPolicy.reflowableSettings(metadata, preferences).scroll  }
 
-    /** [SettingActivator] for settings active only with the given layout [stylesheets]. */
+    */
+/** [SettingActivator] for settings active only with the given layout [stylesheets]. *//*
+
     private fun requiresStylesheet(stylesheets: Layout.Stylesheets) =
         MatchLayoutSettingActivator(
             { preferences -> Layout.from(settingsPolicy.reflowableSettings(metadata, preferences)) },
             { layout -> layout.stylesheets == stylesheets }
         )
 
-    /**
+    */
+/**
      * [SettingActivator] for settings active when the layout stylesheet matches the given
      * condition.
-     */
+     *//*
+
     private fun requiresStylesheet(
         matches: (Layout.Stylesheets) -> Boolean
     ) = MatchLayoutSettingActivator(
@@ -368,4 +422,4 @@ internal class EpubSettingsFactory(
             // Cannot activate automatically.
         }
     }
-}
+}*/

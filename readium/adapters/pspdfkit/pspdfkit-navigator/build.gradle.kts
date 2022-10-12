@@ -10,6 +10,7 @@ plugins {
     id("kotlin-parcelize")
     id("maven-publish")
     id("org.jetbrains.dokka")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -71,6 +72,7 @@ dependencies {
     implementation("com.pspdfkit:pspdfkit:8.2.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
 
     testImplementation("junit:junit:4.13.2")
 

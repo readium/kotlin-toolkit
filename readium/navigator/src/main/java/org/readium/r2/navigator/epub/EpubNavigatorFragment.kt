@@ -55,7 +55,6 @@ import org.readium.r2.navigator.pager.R2PagerAdapter.PageResource
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.settings.Configurable
 import org.readium.r2.navigator.settings.FontFamily
-import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
@@ -90,10 +89,11 @@ class EpubNavigatorFragment private constructor(
     override val publication: Publication,
     private val baseUrl: String?,
     private val initialLocator: Locator?,
+    private val initialPreferences: EpubPreferences?,
     internal val listener: Listener?,
     internal val paginationListener: PaginationListener?,
     config: Configuration,
-) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable<EpubSettings> {
+) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable<EpubSettingsValues, EpubPreferences> {
 
     // Make a copy to prevent the user from modifying the configuration after initialization.
     internal val config: Configuration = config.copy(
@@ -101,11 +101,6 @@ class EpubNavigatorFragment private constructor(
     )
 
     data class Configuration(
-        /**
-         * Initial set of setting preferences.
-         */
-        @ExperimentalReadiumApi
-        val preferences: Preferences = Preferences(),
 
         /**
          * Patterns for asset paths which will be available to EPUB resources under
@@ -207,9 +202,9 @@ class EpubNavigatorFragment private constructor(
 
     // Configurable
 
-    override val settings: StateFlow<EpubSettings> get() = viewModel.settings
+    override val settings: StateFlow<EpubSettingsValues> get() = viewModel.settings
 
-    override fun submitPreferences(preferences: Preferences) {
+    override fun submitPreferences(preferences: EpubPreferences) {
         viewModel.submitPreferences(preferences)
     }
 
@@ -226,7 +221,11 @@ class EpubNavigatorFragment private constructor(
     }
 
     private val viewModel: EpubNavigatorViewModel by viewModels {
-        EpubNavigatorViewModel.createFactory(requireActivity().application, publication, baseUrl = baseUrl, this.config)
+        EpubNavigatorViewModel.createFactory(
+            requireActivity().application, publication,
+            baseUrl = baseUrl, config = this.config,
+            initialPreferences = initialPreferences
+        )
     }
 
     internal lateinit var positionsByReadingOrder: List<List<Locator>>
@@ -456,11 +455,11 @@ class EpubNavigatorFragment private constructor(
         go(locator)
     }
 
-    private fun onSettingsChange(previous: EpubSettings, new: EpubSettings) {
-        if (new !is EpubSettings.Reflowable) return
+    private fun onSettingsChange(previous: EpubSettingsValues, new: EpubSettingsValues) {
+        if (new !is EpubSettingsValues.Reflowable) return
 
-        if ((previous as? EpubSettings.Reflowable)?.fontSize?.value != new.fontSize.value) {
-            r2PagerAdapter?.setFontSize(new.fontSize.value)
+        if ((previous as? EpubSettingsValues.Reflowable)?.fontSize != new.fontSize) {
+            r2PagerAdapter?.setFontSize(new.fontSize)
         }
     }
 
@@ -472,8 +471,8 @@ class EpubNavigatorFragment private constructor(
 
     private inner class PagerAdapterListener : R2PagerAdapter.Listener {
         override fun onCreatePageFragment(fragment: Fragment) {
-            val settings = settings.value as? EpubSettings.Reflowable ?: return
-            (fragment as? R2EpubPageFragment)?.setFontSize(settings.fontSize.value)
+            val settings = settings.value as? EpubSettingsValues.Reflowable ?: return
+            (fragment as? R2EpubPageFragment)?.setFontSize(settings.fontSize)
         }
     }
 
@@ -953,8 +952,15 @@ class EpubNavigatorFragment private constructor(
             listener: Listener? = null,
             paginationListener: PaginationListener? = null,
             config: Configuration = Configuration(),
+            initialPreferences: EpubPreferences? = null,
         ): FragmentFactory =
-            createFragmentFactory { EpubNavigatorFragment(publication, baseUrl, initialLocator, listener, paginationListener, config) }
+            createFragmentFactory {
+                EpubNavigatorFragment(
+                    publication, baseUrl, initialLocator,
+                    initialPreferences,
+                    listener, paginationListener, config,
+                )
+            }
 
         /**
          * Returns a URL to the application asset at [path], served in the web views.

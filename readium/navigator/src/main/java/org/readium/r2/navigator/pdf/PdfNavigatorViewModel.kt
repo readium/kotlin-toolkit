@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.settings.Configurable
-import org.readium.r2.navigator.settings.Preferences
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
@@ -27,8 +26,8 @@ internal class PdfNavigatorViewModel(
     application: Application,
     private val publication: Publication,
     initialLocator: Locator,
-    preferences: Preferences,
-    private val pdfEngineProvider: PdfEngineProvider<*>
+    initialPreferences: Any,
+    private val pdfEngineProvider: PdfEngineProvider<*, *>
 
 ) : AndroidViewModel(application) {
 
@@ -45,12 +44,12 @@ internal class PdfNavigatorViewModel(
     val state: StateFlow<State> = _state.asStateFlow()
 
     private val _settings: MutableStateFlow<Configurable.Settings> = MutableStateFlow(
-        pdfEngineProvider.createSettings(publication.metadata, preferences)
+        pdfEngineProvider.createSettings(publication.metadata, initialPreferences)
     )
 
     val settings: StateFlow<Configurable.Settings> = _settings.asStateFlow()
 
-    fun submitPreferences(preferences: Preferences) = viewModelScope.launch {
+    fun submitPreferences(preferences: Any) = viewModelScope.launch {
         _settings.value = pdfEngineProvider.createSettings(publication.metadata, preferences)
     }
 
@@ -67,15 +66,15 @@ internal class PdfNavigatorViewModel(
             application: Application,
             publication: Publication,
             initialLocator: Locator?,
-            preferences: Preferences,
-            pdfEngineProvider: PdfEngineProvider<*>
+            initialPreferences: Any,
+            pdfEngineProvider: PdfEngineProvider<*, *>
         ) = createViewModelFactory {
             PdfNavigatorViewModel(
                 application = application,
                 publication = publication,
                 initialLocator = initialLocator
                     ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first())),
-                preferences = preferences,
+                initialPreferences = initialPreferences,
                 pdfEngineProvider = pdfEngineProvider
             )
         }

@@ -44,13 +44,13 @@ import timber.log.Timber
  * To use this [Fragment], create a factory with [PdfNavigatorFragment.createFactory].
  */
 @ExperimentalReadiumApi
-class PdfNavigatorFragment<S: Configurable.Settings> private constructor(
+class PdfNavigatorFragment<S: Configurable.Settings, P: Configurable.Preferences, E: Configurable.Editor> private constructor(
     override val publication: Publication,
     initialLocator: Locator? = null,
-    val preferences: Preferences = Preferences(),
+    initialPreferences: P? = null,
     private val listener: Listener?,
-    private val pdfEngineProvider: PdfEngineProvider<S>
-) : Fragment(), VisualNavigator, Configurable<Configurable.Settings> {
+    private val pdfEngineProvider: PdfEngineProvider<S, P>
+) : Fragment(), VisualNavigator, Configurable<S, P, E> {
 
     interface Listener : VisualNavigator.Listener {
 
@@ -73,12 +73,12 @@ class PdfNavigatorFragment<S: Configurable.Settings> private constructor(
          * @param pdfEngineProvider provider for third-party PDF engine adapter.
          */
         @ExperimentalReadiumApi
-        fun <S: Configurable.Settings> createFactory(
+        fun <S: Configurable.Settings, P: Any> createFactory(
             publication: Publication,
             initialLocator: Locator? = null,
-            preferences: Preferences = Preferences(),
+            preferences: P? = null,
             listener: Listener? = null,
-            pdfEngineProvider: PdfEngineProvider<S>,
+            pdfEngineProvider: PdfEngineProvider<S, P>,
         ): FragmentFactory = createFragmentFactory {
             PdfNavigatorFragment(
                 publication, initialLocator,
@@ -101,8 +101,9 @@ class PdfNavigatorFragment<S: Configurable.Settings> private constructor(
     @Suppress("Unchecked_cast")
     override val settings: StateFlow<S> get() = viewModel.settings as StateFlow<S>
 
-    override fun submitPreferences(preferences: Preferences) {
-        viewModel.submitPreferences(preferences)
+    override fun editPreferences(changes: E.() -> P) {
+        val editor = pdfEngineProvider.createPreferenceEditor()
+        editor.changes()
     }
 
     private val viewModel: PdfNavigatorViewModel by viewModels {
@@ -110,7 +111,7 @@ class PdfNavigatorFragment<S: Configurable.Settings> private constructor(
             requireActivity().application,
             publication,
             initialLocator,
-            preferences = preferences,
+            initialPreferences = initialPreferences,
             pdfEngineProvider = pdfEngineProvider,
         )
     }

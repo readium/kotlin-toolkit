@@ -17,14 +17,12 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import androidx.lifecycle.*
+import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
+import org.readium.r2.navigator.epub.EpubPreferences
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
 import org.readium.r2.navigator.html.toCss
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -55,8 +53,8 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                 publication = publication,
                 initialLocator = readerData.initialLocation,
                 listener = this,
+                initialPreferences = readerData.preferences?.value as EpubPreferences,
                 config = EpubNavigatorFragment.Configuration(
-                    preferences = model.settings.preferences.value,
                     // App assets which will be accessible from the EPUB resources.
                     // You can use simple glob patterns, such as "images/.*" to allow several
                     // assets in one go.
@@ -104,6 +102,12 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val readerData = model.readerInitData as VisualReaderInitData
+        readerData.preferences?.value
+            ?.let { model.settings.getPreferences(readerData.preferences.value::class) as Flow<EpubPreferences> }
+            ?.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            ?.onEach { navigatorFragment.submitPreferences(it) }
+            ?.launchIn(lifecycleScope)
 
        // This is a hack to draw the right background color on top and bottom blank spaces
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {

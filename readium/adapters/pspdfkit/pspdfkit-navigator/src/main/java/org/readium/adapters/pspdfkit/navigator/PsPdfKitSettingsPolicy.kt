@@ -19,36 +19,36 @@ internal class PsPdfKitSettingsPolicy(
     private val defaults: PsPdfKitSettingsDefaults
 ) {
 
-    fun settings(metadata: Metadata, preferences: Preferences): PsPdfKitSettingsValues {
+    fun settings(metadata: Metadata, preferences: PsPdfKitPreferences): PsPdfKitSettingsValues {
         val readingProgression: ReadingProgression =
-            preferences[PsPdfKitSettings.READING_PROGRESSION]
+            preferences.readingProgression
                 ?: metadata.readingProgression.takeIf { it.isHorizontal == true }
                 ?: defaults.readingProgression
 
         val scroll: Boolean =
-            preferences[PsPdfKitSettings.SCROLL]
+            preferences.scroll
                 ?: defaults.scroll
 
         val scrollAxis: Axis =
-            preferences[PsPdfKitSettings.SCROLL_AXIS]
+            preferences.scrollAxis
                 ?: Axis.VERTICAL
 
         val fit: Fit =
-            preferences[PsPdfKitSettings.FIT] ?: when {
+            preferences.fit ?: when {
                 !scroll || scrollAxis == Axis.HORIZONTAL -> Fit.CONTAIN
                 else -> Fit.WIDTH
             }
 
         val spread: Spread =
-            preferences[PsPdfKitSettings.SPREAD]
+            preferences.spread
                 ?: defaults.spread
 
         val offset: Boolean =
-            preferences[PsPdfKitSettings.OFFSET]
+            preferences.offset
                 ?: defaults.offset
 
         val pageSpacing: Double =
-            preferences[PsPdfKitSettings.PAGE_SPACING]
+            preferences.pageSpacing
                 ?: defaults.pageSpacing
 
         return PsPdfKitSettingsValues(

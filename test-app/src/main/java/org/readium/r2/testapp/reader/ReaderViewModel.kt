@@ -67,8 +67,10 @@ class ReaderViewModel(
     val settings: UserSettingsViewModel = UserSettingsViewModel(
         application = application,
         bookId = readerInitData.bookId,
+        publication = readerInitData.publication,
         kind = readerInitData.navigatorKind,
-        scope = viewModelScope
+        scope = viewModelScope,
+        initialPreferences = (readerInitData as? VisualReaderInitData)?.preferences?.value
     )
 
     override fun onCleared() {

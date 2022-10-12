@@ -10,6 +10,7 @@ import android.content.*
 import android.os.IBinder
 import com.google.android.material.color.DynamicColors
 import kotlinx.coroutines.*
+import org.readium.r2.navigator.pdf.PdfEngineProvider
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
@@ -29,6 +30,9 @@ class Application : android.app.Application() {
         private set
 
     lateinit var readerRepository: Deferred<ReaderRepository>
+        private set
+
+    lateinit var pdfEngineProvider: PdfEngineProvider<*, *>
         private set
 
     private val coroutineScope: CoroutineScope =
@@ -88,7 +92,8 @@ class Application : android.app.Application() {
                     this@Application,
                     readium,
                     mediaServiceBinder.await(),
-                    bookRepository
+                    bookRepository,
+                    pdfEngineProvider
                 )
             }
 

@@ -30,3 +30,25 @@ interface FixedLayoutSettings {
 
     val pageSpacing: RangeSetting<Double>?
 }
+
+@ExperimentalReadiumApi
+interface FixedLayoutPreferencesEditor {
+
+    fun setReadingProgression(readingProgression: ReadingProgression?) {}
+
+    fun setScroll(scroll: Boolean) {}
+
+    fun setScrollAxis(axis: Axis) {}
+
+    fun setSpread(spread: Spread) {}
+
+    fun setOffset(offset: Boolean) {}
+
+    fun setLanguage(language: Language?) {}
+
+    fun setFit(fit: Fit) {}
+
+    fun increasePageSpacing() {}
+
+    fun decreasePageSpacing() {}
+}

@@ -148,56 +148,56 @@ sealed class EpubSettings : Configurable.Settings {
     }
 }
 
-internal fun ReadiumCss.update(settings: EpubSettings, fontFamilies: List<FontFamilyDeclaration>): ReadiumCss {
-    if (settings !is Reflowable) return this
+internal fun ReadiumCss.update(settings: EpubSettingsValues, fontFamilies: List<FontFamilyDeclaration>): ReadiumCss {
+    if (settings !is EpubSettingsValues.Reflowable) return this
 
     return with(settings) {
         copy(
-            layout = settings.layout,
+            layout = Layout.from(settings),
             userProperties = userProperties.copy(
-                view = when (scroll.value) {
+                view = when (scroll) {
                     false -> View.PAGED
                     true -> View.SCROLL
                 },
-                colCount = when (columnCount.value) {
+                colCount = when (columnCount) {
                     ColumnCount.ONE -> ColCount.ONE
                     ColumnCount.TWO -> ColCount.TWO
                     else -> ColCount.AUTO
                 },
-                pageMargins = pageMargins.value,
-                appearance = when (theme.value) {
+                pageMargins = pageMargins,
+                appearance = when (theme) {
                     Theme.LIGHT -> null
                     Theme.DARK -> Appearance.NIGHT
                     Theme.SEPIA -> Appearance.SEPIA
                 },
-                darkenImages = imageFilter.value == ImageFilter.DARKEN,
-                invertImages = imageFilter.value == ImageFilter.INVERT,
-                textColor = textColor.value.toCss(),
-                backgroundColor = backgroundColor.value.toCss(),
-                fontOverride = (fontFamily.value != null || (textNormalization.value == TextNormalization.ACCESSIBILITY)),
-                fontFamily = fontFamily.value?.toCss(fontFamilies),
+                darkenImages = imageFilter == ImageFilter.DARKEN,
+                invertImages = imageFilter == ImageFilter.INVERT,
+                textColor = textColor.toCss(),
+                backgroundColor = backgroundColor.toCss(),
+                fontOverride = (fontFamily != null || (textNormalization == TextNormalization.ACCESSIBILITY)),
+                fontFamily = fontFamily?.toCss(fontFamilies),
                 // Font size is handled natively with WebSettings.textZoom.
                 // See https://github.com/readium/mobile/issues/1#issuecomment-652431984
 //                fontSize = fontSize.value
 //                    ?.let { Length.Percent(it) },
-                advancedSettings = !publisherStyles.value,
-                typeScale = typeScale.value,
-                textAlign = when (textAlign.value) {
+                advancedSettings = !publisherStyles,
+                typeScale = typeScale,
+                textAlign = when (textAlign) {
                     TextAlign.JUSTIFY -> CssTextAlign.JUSTIFY
                     TextAlign.LEFT -> CssTextAlign.LEFT
                     TextAlign.RIGHT -> CssTextAlign.RIGHT
                     TextAlign.START, TextAlign.CENTER, TextAlign.END -> CssTextAlign.START
                 },
-                lineHeight = Either(lineHeight.value),
-                paraSpacing = Length.Rem(paragraphSpacing.value),
-                paraIndent = Length.Rem(paragraphIndent.value),
-                wordSpacing = Length.Rem(wordSpacing.value),
-                letterSpacing = Length.Rem(letterSpacing.value / 2),
-                bodyHyphens = if (hyphens.value) Hyphens.AUTO else Hyphens.NONE,
-                ligatures = if (ligatures.value) Ligatures.COMMON else Ligatures.NONE,
-                a11yNormalize = textNormalization.value == TextNormalization.ACCESSIBILITY,
+                lineHeight = Either(lineHeight),
+                paraSpacing = Length.Rem(paragraphSpacing),
+                paraIndent = Length.Rem(paragraphIndent),
+                wordSpacing = Length.Rem(wordSpacing),
+                letterSpacing = Length.Rem(letterSpacing / 2),
+                bodyHyphens = if (hyphens) Hyphens.AUTO else Hyphens.NONE,
+                ligatures = if (ligatures) Ligatures.COMMON else Ligatures.NONE,
+                a11yNormalize = textNormalization == TextNormalization.ACCESSIBILITY,
                 overrides = mapOf(
-                    "font-weight" to if (textNormalization.value == TextNormalization.BOLD) "bold" else null
+                    "font-weight" to if (textNormalization == TextNormalization.BOLD) "bold" else null
                 )
             )
         )

@@ -9,6 +9,7 @@ plugins {
     id("kotlin-android")
     id("kotlin-kapt")
     id("kotlin-parcelize")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -73,7 +74,7 @@ dependencies {
     implementation(project(":readium:opds"))
     implementation(project(":readium:lcp"))
     // Only required if you want to support PDF files using PDFium.
-    implementation(project(":readium:adapters:pdfium"))
+    implementation(project(":readium:adapters:pspdfkit"))
 
     implementation("androidx.activity:activity-compose:1.6.0")
     implementation("androidx.activity:activity-ktx:1.6.0")
@@ -127,6 +128,8 @@ dependencies {
 
     debugImplementation("androidx.compose.ui:ui-tooling:1.2.1")
     implementation("androidx.compose.ui:ui-tooling-preview:1.2.1")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
 
     // Tests
     testImplementation("junit:junit:4.13.2")
