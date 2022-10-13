@@ -19,17 +19,8 @@ class PreferencesMixer(
     //private val pdfEngineProvider: PdfEngineProvider<*, *>
 ) {
 
-    private val Context.preferences: DataStore<Preferences>
-        by preferencesDataStore(name = "navigator-preferences")
-
-    fun <P: Configurable.Preferences> getPreferences(bookId: Long, preferencesClass: KClass<P>): Flow<P>? =
-        when (preferencesClass) {
-            EpubPreferences.Reflowable::class ->
-                getEpubReflowablePreferences(bookId) as Flow<P>
-            EpubPreferences.FixedLayout::class ->
-                getEpubReflowablePreferences(bookId) as Flow<P>
-            else -> null
-        }
+    fun <P: Configurable.Preferences> mixPreferences(publication: P, navigator: P) =
+        when ()
 
 
     fun getPreferences(bookId: Long, navigatorKind: NavigatorKind): Flow<Configurable.Preferences>? =

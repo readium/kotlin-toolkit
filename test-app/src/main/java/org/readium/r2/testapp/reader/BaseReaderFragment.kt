@@ -55,7 +55,7 @@ abstract class BaseReaderFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        model.settings.bind(navigator, viewLifecycleOwner)
+        model.settings?.bind(navigator, viewLifecycleOwner)
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
