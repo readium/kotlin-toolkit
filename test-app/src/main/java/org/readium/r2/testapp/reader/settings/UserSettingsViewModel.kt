@@ -18,10 +18,10 @@ import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesEditor
 import org.readium.adapters.pspdfkit.navigator.PsPdfKitSettingsValues
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.EpubSettings
-import org.readium.r2.navigator.settings.Configurable
-import org.readium.r2.navigator.settings.Theme
+import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.testapp.reader.NavigatorDefaults
 import org.readium.r2.testapp.reader.NavigatorKind
 import kotlin.reflect.KClass
@@ -37,21 +37,23 @@ import kotlin.reflect.KClass
 @OptIn(ExperimentalReadiumApi::class)
 class UserSettingsViewModel(
     application: Application,
-    val bookId: Long,
-    val publication: Publication,
-    val kind: NavigatorKind?,
-    val scope: CoroutineScope,
+    private val bookId: Long,
+    private val publication: Publication,
+    private val kind: NavigatorKind?,
+    private val scope: CoroutineScope,
     initialPreferences: Configurable.Preferences?
 ) {
     private val preferencesMixer: PreferencesMixer =
         PreferencesMixer(application)
 
-    val preferences: StateFlow<Configurable.Preferences>? =
-        (if (kind != null && initialPreferences != null) {
-            preferencesMixer.getPreferences(bookId, kind)
-        } else {
-            null
-        })?.stateIn(scope, SharingStarted.Eagerly, initialPreferences!!)
+    private val _preferences: StateFlow<Configurable.Preferences?> =
+        when {
+            kind != null && initialPreferences != null ->
+                preferencesMixer.getPreferences(bookId, kind)!!
+                    .stateIn(scope, SharingStarted.Eagerly, initialPreferences)
+            else ->
+                MutableStateFlow<Configurable.Preferences?>(null)
+        }
 
     fun <P: Configurable.Preferences> getPreferences(preferencesClass: KClass<P>) =
         preferencesMixer.getPreferences(bookId, preferencesClass)
@@ -64,7 +66,7 @@ class UserSettingsViewModel(
      * Current [Navigator] settings.
      */
     private val _settings = MutableStateFlow<Configurable.Settings?>(null)
-    val settings: StateFlow<Configurable.Settings?> = _settings.asStateFlow()
+    val settings = _settings.asStateFlow()
 
     /**
      * Current reader theme.
@@ -90,25 +92,60 @@ class UserSettingsViewModel(
         }
     }
 
-    fun <P: Configurable.Preferences> submitPreferences(preferences: P) = scope.launch {
-        preferencesMixer.setPreferences(bookId, preferences)
-    }
-
-    fun <P: Configurable.Preferences> clearPreferences() = scope.launch {
-        preferencesMixer.setPreferences(bookId, null)
-    }
-
-    fun createEditor(settings: Configurable.Settings, preferences: Configurable.Preferences): Any? =
+    val editor: StateFlow<PreferencesEditor?> = combine(scope, _settings, _preferences) { settings, preferences ->
         when {
             settings is PsPdfKitSettingsValues && preferences is PsPdfKitPreferences -> {
                 PsPdfKitPreferencesEditor(
                     currentSettings = settings,
                     initialPreferences = preferences,
-                    pubMetadata = publication.metadata,
+                    publicationMetadata = publication.metadata,
                     defaults = NavigatorDefaults.pdfDefaults,
                     onPreferencesEdited = ::submitPreferences
                 )
             }
             else -> null
+        }
+    }
+
+    private fun<T1, T2, R> combine(scope: CoroutineScope, flow: StateFlow<T1>, flow2: StateFlow<T2>, transform: (T1, T2) -> R): StateFlow<R> {
+        val initialValue =  transform(flow.value, flow2.value)
+        return combine(flow, flow2, transform).stateIn(scope, SharingStarted.Eagerly, initialValue)
+    }
+
+    private fun <P: Configurable.Preferences> submitPreferences(preferences: P) = scope.launch {
+        preferencesMixer.setPreferences(bookId, preferences)
+    }
+
+    /**
+     * A preset is a named group of settings applied together.
+     */
+    class Preset(
+        val title: String,
+        val changes: PreferencesEditor.() -> Unit
+    )
+
+    /**
+     * Returns the presets associated with the [Configurable.Settings] receiver.
+     */
+    val presets: List<Preset> =
+        when (kind) {
+            NavigatorKind.EPUB_REFLOWABLE -> listOf(
+                Preset("Increase legibility") {
+                    (this as? WordSpacingEditor)?.wordSpacing = 0.6
+                    (this as? FontSizeEditor)?.fontSize = 1.4
+                    (this as? TextNormalizationEditor)?.textNormalization = TextNormalization.ACCESSIBILITY
+                },
+                Preset("Document") {
+                    (this as? ScrollEditor)?.scroll = true
+                },
+                Preset("Ebook") {
+                    (this as? ScrollEditor)?.scroll = false
+                },
+                Preset("Manga") {
+                    (this as? ScrollEditor)?.scroll = false
+                    (this as? ReadingProgressionEditor)?.readingProgression = ReadingProgression.RTL
+                }
+            )
+            else -> emptyList()
         }
 }

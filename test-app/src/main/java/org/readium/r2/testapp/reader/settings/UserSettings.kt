@@ -24,7 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import org.readium.adapters.pspdfkit.navigator.PsPdfKitSettingsValues
-import org.readium.r2.navigator.epub.EpubSettings
+import org.readium.r2.navigator.epub.EpubSettingsValues
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Fit
@@ -43,12 +43,12 @@ import org.readium.r2.navigator.settings.Color as ReadiumColor
 @Composable
 fun UserSettings(model: UserSettingsViewModel) {
     val settings = model.settings.collectAsState().value ?: return
-    val preferences = model.preferences!!.collectAsState().value
-    val editor = model.createEditor(settings, preferences) ?: return
+    val editor = model.editor.collectAsState().value ?: return
 
     UserSettings(
         settings = settings,
-        preferencesEditor = editor
+        editor = editor,
+        presets = model.presets
     )
 }
 
@@ -58,8 +58,9 @@ fun UserSettings(model: UserSettingsViewModel) {
  */
 @Composable
 fun UserSettings(
-    settings: Any,
-    preferencesEditor: Any,
+    settings: Configurable.Settings,
+    editor: PreferencesEditor,
+    presets: List<UserSettingsViewModel.Preset>
 ) {
     Column(
         modifier = Modifier.padding(vertical = 24.dp)
@@ -78,13 +79,13 @@ fun UserSettings(
                 .align(Alignment.End),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            //PresetsMenuButton(edit = editPublication, presets = settings.presets())
+            PresetsMenuButton(editor = editor, presets = presets)
 
-            /*Button(
-                onClick = clearPreferences
+            Button(
+                onClick = editor::clearPreferences
             ) {
                 Text("Reset")
-            }*/
+            }
         }
 
         Divider()
@@ -95,32 +96,33 @@ fun UserSettings(
                     effectiveLanguage = null,
                     languageEditor = null,
                     effectiveReadingProgression = settings.readingProgression,
-                    readingProgressionEditor = preferencesEditor as? ReadingProgressionEditor,
+                    readingProgressionEditor = editor as? ReadingProgressionEditor,
                     effectiveOffset = settings.offset,
-                    offsetEditor = preferencesEditor as? OffsetEditor,
+                    offsetEditor = editor as? OffsetEditor,
                     effectiveScroll = settings.scroll,
-                    scrollEditor = preferencesEditor as? ScrollEditor,
+                    scrollEditor = editor as? ScrollEditor,
                     effectiveScrollAxis = settings.scrollAxis,
-                    scrollAxisEditor = preferencesEditor as? ScrollAxisEditor,
+                    scrollAxisEditor = editor as? ScrollAxisEditor,
                     effectiveFit = settings.fit,
-                    fitEditor = preferencesEditor as? FitEditor,
+                    fitEditor = editor as? FitEditor,
                     effectiveSpread = settings.spread,
-                    spreadEditor = preferencesEditor as? SpreadEditor,
+                    spreadEditor = editor as? SpreadEditor,
                     effectivePageSpacing = settings.pageSpacing,
-                    pageSpacingEditor = preferencesEditor as? PageSpacingEditor
+                    pageSpacingEditor = editor as? PageSpacingEditor
                 )
 
-            }
-
-            /*is EpubSettings.FixedLayout ->
+            is EpubSettingsValues.FixedLayout ->
                 FixedLayoutUserSettings(
-                    preferences = preferences,
-                    navPrefsEditor = EpubFixedLayoutPreferencesEditor(editNavigator, settings),
-                    pubPrefsEditor = EpubFixedLayoutPreferencesEditor(editPublication, settings),
-                    settings = settings
-                )*/
+                    effectiveLanguage = settings.language,
+                    languageEditor = editor as? LanguageEditor,
+                    effectiveReadingProgression = settings.readingProgression,
+                    readingProgressionEditor = editor as? ReadingProgressionEditor,
+                    fitEditor = editor as? FitEditor,
+                    effectiveSpread = settings.spread,
+                    spreadEditor = editor as? SpreadEditor,
+                )
 
-            /*is EpubSettings.Reflowable ->
+            /*is EpubSettingsValues.Reflowable ->
                 ReflowableUserSettings(
                     preferences = preferences,
                     editNavigator = editNavigator,
@@ -128,6 +130,7 @@ fun UserSettings(
                     settings = settings
                 )*/
         }
+    }
 }
 
 /**
@@ -135,22 +138,22 @@ fun UserSettings(
  */
 @Composable
 private fun ColumnScope.FixedLayoutUserSettings(
-    effectiveReadingProgression: ReadingProgression?,
-    readingProgressionEditor: ReadingProgressionEditor?,
-    effectiveLanguage: Language?,
-    languageEditor: LanguageEditor?,
-    effectiveScroll: Boolean?,
-    scrollEditor: ScrollEditor?,
-    effectiveScrollAxis: Axis?,
-    scrollAxisEditor: ScrollAxisEditor?,
-    effectiveSpread: Spread?,
-    spreadEditor: SpreadEditor?,
-    effectiveOffset: Boolean?,
-    offsetEditor: OffsetEditor?,
-    effectivePageSpacing: Double?,
-    pageSpacingEditor: PageSpacingEditor?,
-    effectiveFit: Fit?,
-    fitEditor: FitEditor?,
+    effectiveReadingProgression: ReadingProgression? = null,
+    readingProgressionEditor: ReadingProgressionEditor? = null,
+    effectiveLanguage: Language? = null,
+    languageEditor: LanguageEditor? = null,
+    effectiveScroll: Boolean? = null,
+    scrollEditor: ScrollEditor? = null,
+    effectiveScrollAxis: Axis? = null,
+    scrollAxisEditor: ScrollAxisEditor? = null,
+    effectiveSpread: Spread? = null,
+    spreadEditor: SpreadEditor? = null,
+    effectiveOffset: Boolean? = null,
+    offsetEditor: OffsetEditor? = null,
+    effectivePageSpacing: Double? = null,
+    pageSpacingEditor: PageSpacingEditor? = null,
+    effectiveFit: Fit? = null,
+    fitEditor: FitEditor? = null,
 ) {
     if (languageEditor != null || readingProgressionEditor != null) {
         fun reset() {
@@ -694,42 +697,8 @@ private fun Divider() {
     Divider(modifier = Modifier.padding(vertical = 16.dp))
 }
 
-/**
- * A preset is a named group of settings applied together.
- */
-private class Preset(
-    val title: String,
-    val changes: MutablePreferences.() -> Unit
-)
-
-/**
- * Returns the presets associated with the [Configurable.Settings] receiver.
- */
-private fun Configurable.Settings.presets(): List<Preset> =
-    when (val settings = this) {
-        is EpubSettings.Reflowable -> listOf(
-            Preset("Increase legibility") {
-                set(settings.wordSpacing, 0.6)
-                set(settings.fontSize, 1.4)
-                set(settings.textNormalization, TextNormalization.ACCESSIBILITY)
-            },
-            Preset("Document") {
-                set(settings.scroll, true)
-            },
-            Preset("Ebook") {
-                set(settings.scroll, false)
-            },
-            Preset("Manga") {
-                set(settings.scroll, false)
-                set(settings.readingProgression, ReadingProgression.RTL)
-            }
-        )
-        else -> emptyList()
-    }
-
-/*
 @Composable
-private fun PresetsMenuButton(edit: EditPreferences, presets: List<Preset>) {
+private fun PresetsMenuButton(editor: PreferencesEditor, presets: List<UserSettingsViewModel.Preset>) {
     if (presets.isEmpty()) return
 
     DropdownMenuButton(
@@ -740,10 +709,8 @@ private fun PresetsMenuButton(edit: EditPreferences, presets: List<Preset>) {
             DropdownMenuItem(
                 onClick = {
                     dismiss()
-                    edit {
-                        clear()
-                        preset.changes(this)
-                    }
+                    editor.clearPreferences()
+                    preset.changes(editor)
                 }
             ) {
                 Text(preset.title)
@@ -751,4 +718,4 @@ private fun PresetsMenuButton(edit: EditPreferences, presets: List<Preset>) {
         }
     }
 }
-*/
+

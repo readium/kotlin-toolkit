@@ -13,19 +13,28 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Language
 
 @ExperimentalReadiumApi
-sealed class EpubPreferencesEditor: ReadingProgressionEditor {
+sealed class EpubPreferencesEditor : PreferencesEditor, ReadingProgressionEditor {
 
     class Reflowable(
         private val currentSettings: EpubSettingsValues.Reflowable,
-        initialPreferences: EpubPreferences.Reflowable
+        initialPreferences: EpubPreferences.Reflowable,
+        private val onPreferencesChanged: (EpubPreferences) -> Unit
     ) : EpubPreferencesEditor() {
 
-        private val newProperties = initialPreferences.copy()
+        private var newProperties = initialPreferences.copy()
+            set(value) {
+                field = value
+                onPreferencesChanged(value)
+            }
+
+        override fun clearPreferences() {
+            newProperties = EpubPreferences.Reflowable()
+        }
 
         override var readingProgression: ReadingProgression?
             get() = newProperties.readingProgression
             set(value) {
-                newProperties.readingProgression = value
+                newProperties = newProperties.copy(readingProgression = value)
             }
 
         override val isReadingProgressionPreferenceActive: Boolean =
@@ -38,15 +47,24 @@ sealed class EpubPreferencesEditor: ReadingProgressionEditor {
 
     class FixedLayout(
         private val currentSettings: EpubSettingsValues.FixedLayout,
-        initialPreferences: EpubPreferences.FixedLayout
+        initialPreferences: EpubPreferences.FixedLayout,
+        private val onPreferencesChanged: (EpubPreferences) -> Unit
     ): EpubPreferencesEditor() {
 
-        private val newProperties = initialPreferences.copy()
+        private var newProperties = initialPreferences.copy()
+            set(value) {
+                field = value
+                onPreferencesChanged(value)
+            }
+
+        override fun clearPreferences() {
+            newProperties = EpubPreferences.FixedLayout()
+        }
 
         override var readingProgression: ReadingProgression?
             get() = newProperties.readingProgression
             set(value) {
-                newProperties.readingProgression = value
+                newProperties = newProperties.copy(readingProgression = value)
             }
 
         override val isReadingProgressionPreferenceActive: Boolean =
@@ -62,33 +80,33 @@ sealed class EpubPreferencesEditor: ReadingProgressionEditor {
 @Serializable
 sealed class EpubPreferences: Configurable.Preferences {
 
-    abstract var readingProgression: ReadingProgression?
-    abstract var language: Language?
+    abstract val readingProgression: ReadingProgression?
+    abstract val language: Language?
 
     data class Reflowable(
-        var backgroundColor: Color? = null,
-        var columnCount: ColumnCount? = null,
-        var fontFamily: FontFamily? = null,
-        var fontSize: Double? = null,
-        var hyphens: Boolean? = null,
-        var imageFilter: ImageFilter? = null,
-        override var language: Language? = null,
-        var letterSpacing: Double? = null,
-        var ligatures: Boolean? = null,
-        var lineHeight: Double? = null,
-        var pageMargins: Double? = null,
-        var paragraphIndent: Double? = null,
-        var paragraphSpacing: Double? = null,
-        var publisherStyles: Boolean? = null,
-        override var readingProgression: ReadingProgression? = null,
-        var scroll: Boolean? = null,
-        var textAlign: TextAlign? = null,
-        var textColor: Color? = null,
-        var textNormalization: TextNormalization? = null,
-        var theme: Theme? = null,
-        var typeScale: Double? = null,
-        var verticalText: Boolean? = null,
-        var wordSpacing: Double? = null
+        val backgroundColor: Color? = null,
+        val columnCount: ColumnCount? = null,
+        val fontFamily: FontFamily? = null,
+        val fontSize: Double? = null,
+        val hyphens: Boolean? = null,
+        val imageFilter: ImageFilter? = null,
+        override val language: Language? = null,
+        val letterSpacing: Double? = null,
+        val ligatures: Boolean? = null,
+        val lineHeight: Double? = null,
+        val pageMargins: Double? = null,
+        val paragraphIndent: Double? = null,
+        val paragraphSpacing: Double? = null,
+        val publisherStyles: Boolean? = null,
+        override val readingProgression: ReadingProgression? = null,
+        val scroll: Boolean? = null,
+        val textAlign: TextAlign? = null,
+        val textColor: Color? = null,
+        val textNormalization: TextNormalization? = null,
+        val theme: Theme? = null,
+        val typeScale: Double? = null,
+        val verticalText: Boolean? = null,
+        val wordSpacing: Double? = null
     ) : EpubPreferences() {
 
         fun filterNavigatorPreferences() =
@@ -137,8 +155,8 @@ sealed class EpubPreferences: Configurable.Preferences {
     }
 
     data class FixedLayout(
-        override var language: Language? = null,
-        override var readingProgression: ReadingProgression? = null,
+        override val language: Language? = null,
+        override val readingProgression: ReadingProgression? = null,
         val spread: Spread? = null
     ) : EpubPreferences() {
 

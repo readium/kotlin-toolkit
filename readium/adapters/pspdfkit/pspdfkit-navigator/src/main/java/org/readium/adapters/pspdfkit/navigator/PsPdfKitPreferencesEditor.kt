@@ -18,26 +18,33 @@ import java.text.NumberFormat
 class PsPdfKitPreferencesEditor(
     private val currentSettings: PsPdfKitSettingsValues,
     initialPreferences: PsPdfKitPreferences,
-    private val pubMetadata: Metadata,
+    private val publicationMetadata: Metadata,
     defaults: PsPdfKitSettingsDefaults,
     override val pageSpacingRange: ClosedRange<Double> = 0.0..50.0,
     private val pageSpacingProgression: ProgressionStrategy<Double> = DoubleIncrement(5.0),
 
     private val onPreferencesEdited: (PsPdfKitPreferences) -> Unit,
-) : ReadingProgressionEditor, ScrollEditor, ScrollAxisEditor,
+) : PreferencesEditor, ReadingProgressionEditor, ScrollEditor, ScrollAxisEditor,
     SpreadEditor, OffsetEditor, FitEditor, PageSpacingEditor {
 
     private val settingsPolicy: PsPdfKitSettingsPolicy =
         PsPdfKitSettingsPolicy(defaults)
 
-    private val newPreferences: PsPdfKitPreferences =
-        initialPreferences.copy()
+    private var newPreferences: PsPdfKitPreferences = initialPreferences.copy()
+        set(value) {
+            field = value
+            onPreferencesEdited(value)
+        }
+
+    override fun clearPreferences() {
+        newPreferences = PsPdfKitPreferences()
+    }
 
     override var readingProgression: ReadingProgression?
         get() = newPreferences.readingProgression
         set(value) {
             require(readingProgression in supportedReadingProgressionValues)
-            newPreferences.readingProgression = value
+            newPreferences = newPreferences.copy(readingProgression = value)
         }
 
     override val isReadingProgressionPreferenceActive: Boolean =
@@ -49,7 +56,7 @@ class PsPdfKitPreferencesEditor(
     override var scroll: Boolean?
         get() = newPreferences.scroll
         set(value) {
-            newPreferences.scroll = value
+            newPreferences = newPreferences.copy(scroll = value)
         }
 
     override val isScrollPreferenceActive: Boolean =
@@ -62,11 +69,11 @@ class PsPdfKitPreferencesEditor(
     override var scrollAxis: Axis?
         get() = newPreferences.scrollAxis
         set(value) {
-            newPreferences.scrollAxis = value
+            newPreferences = newPreferences.copy(scrollAxis = value)
         }
 
     override val isScrollAxisPreferenceActive: Boolean
-       get() = settingsPolicy.settings(pubMetadata, newPreferences).scroll
+       get() = settingsPolicy.settings(publicationMetadata, newPreferences).scroll
 
     override val supportedScrollAxes: List<Axis> =
         listOf(Axis.VERTICAL, Axis.HORIZONTAL)
@@ -74,7 +81,7 @@ class PsPdfKitPreferencesEditor(
     override var spread: Spread?
         get() = newPreferences.spread
         set(value) {
-            newPreferences.spread = value
+            newPreferences = newPreferences.copy(spread = value)
         }
 
     override val isSpreadPreferenceActive: Boolean =
@@ -99,35 +106,37 @@ class PsPdfKitPreferencesEditor(
     override var offset: Boolean?
         get() = newPreferences.offset
         set(value) {
-            newPreferences.offset = value
+            newPreferences = newPreferences.copy(offset = value)
         }
 
     override val isOffsetPreferenceActive: Boolean
-        get() = settingsPolicy.settings(pubMetadata, newPreferences).spread != Spread.NEVER
+        get() = settingsPolicy.settings(publicationMetadata, newPreferences).spread != Spread.NEVER
 
     override fun toggleOffset() {
-        newPreferences.offset = newPreferences.offset ?: currentSettings.offset
+        newPreferences = newPreferences.copy(offset = newPreferences.offset ?: currentSettings.offset)
     }
 
     override var pageSpacing: Double?
         get() = newPreferences.pageSpacing
         set(value) {
-            newPreferences.pageSpacing = value
+            newPreferences = newPreferences.copy(pageSpacing = value)
         }
 
     override val isPageSpacingPreferenceActive: Boolean
-        get() = settingsPolicy.settings(pubMetadata, newPreferences).scroll
+        get() = settingsPolicy.settings(publicationMetadata, newPreferences).scroll
 
     override fun incrementPageSpacing() {
-        newPreferences.pageSpacing = pageSpacingProgression
+        val pageSpacing = pageSpacingProgression
             .increment(newPreferences.pageSpacing ?: currentSettings.pageSpacing)
             .coerceIn(pageSpacingRange)
+        newPreferences = newPreferences.copy(pageSpacing = pageSpacing)
     }
 
     override fun decrementPageSpacing() {
-        newPreferences.pageSpacing = pageSpacingProgression
+        val pageSpacing = pageSpacingProgression
             .decrement(newPreferences.pageSpacing ?: currentSettings.pageSpacing)
             .coerceIn(pageSpacingRange)
+        newPreferences = newPreferences.copy(pageSpacing = pageSpacing)
     }
 
     override fun formatPageSpacing(value: Double): String =
@@ -135,21 +144,18 @@ class PsPdfKitPreferencesEditor(
             maximumFractionDigits = 1
             format(value)
         }
-
-    fun toPreferences(): PsPdfKitPreferences =
-        newPreferences
 }
 
 @ExperimentalReadiumApi
 @Serializable
 data class PsPdfKitPreferences(
-    var readingProgression: ReadingProgression? = null,
-    var scroll: Boolean? = null,
-    var scrollAxis: Axis? = null,
-    var fit: Fit? = null,
-    var spread: Spread? = null,
-    var pageSpacing: Double? = null,
-    var offset: Boolean?
+    val readingProgression: ReadingProgression? = null,
+    val scroll: Boolean? = null,
+    val scrollAxis: Axis? = null,
+    val fit: Fit? = null,
+    val spread: Spread? = null,
+    val pageSpacing: Double? = null,
+    val offset: Boolean? = null
 ) : Configurable.Preferences {
 
     fun filterPublicationPreferences(): PsPdfKitPreferences =

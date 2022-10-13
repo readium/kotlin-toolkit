@@ -13,6 +13,18 @@ import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Language
 
+interface PreferencesEditor {
+
+    fun clearPreferences()
+}
+
+interface LanguageEditor {
+
+    var language: Language?
+
+    val isLanguagePreferenceActive: Boolean
+}
+
 interface ReadingProgressionEditor {
 
     var readingProgression: ReadingProgression?
@@ -30,6 +42,8 @@ interface ScrollEditor {
 
     fun toggleScroll()
 }
+
+// Fixed layout
 
 interface ScrollAxisEditor {
 
@@ -69,13 +83,6 @@ interface OffsetEditor {
     fun toggleOffset()
 }
 
-interface LanguageEditor {
-
-    var language: Language?
-
-    val isLanguagePreferenceActive: Boolean
-}
-
 interface PageSpacingEditor {
 
     var pageSpacing: Double?
@@ -89,4 +96,21 @@ interface PageSpacingEditor {
    fun decrementPageSpacing()
 
    fun formatPageSpacing(value: Double): String
+}
+
+// Reflowable
+
+interface WordSpacingEditor {
+
+    var wordSpacing: Double?
+}
+
+interface FontSizeEditor {
+
+    var fontSize: Double?
+}
+
+interface TextNormalizationEditor {
+
+    var textNormalization: TextNormalization?
 }
