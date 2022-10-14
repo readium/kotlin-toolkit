@@ -14,7 +14,7 @@ import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
 
 @ExperimentalReadiumApi
-internal class PsPdfKitSettingsPolicy(
+internal class PsPdfKitSettingsResolver(
     private val defaults: PsPdfKitDefaults,
     private val metadata: Metadata
 ) {

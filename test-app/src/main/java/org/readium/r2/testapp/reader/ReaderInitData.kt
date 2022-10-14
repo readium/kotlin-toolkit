@@ -8,14 +8,21 @@ package org.readium.r2.testapp.reader
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferences
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesFilter
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
-import org.readium.r2.navigator.preferences.Configurable
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitNavigatorFactory
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesSerializer
+import org.readium.r2.navigator.epub.EpubNavigatorFactory
+import org.readium.r2.navigator.epub.EpubPreferences
+import org.readium.r2.navigator.epub.EpubPreferencesFilter
+import org.readium.r2.navigator.epub.EpubPreferencesSerializer
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.*
 
 enum class NavigatorKind {
-    EPUB_REFLOWABLE, EPUB_FIXEDLAYOUT, PDF, AUDIO, IMAGE
+    EPUB, PDF, AUDIO, IMAGE
 }
 
 sealed class ReaderInitData {
@@ -24,15 +31,47 @@ sealed class ReaderInitData {
     abstract val navigatorKind: NavigatorKind?
 }
 
-@OptIn(ExperimentalReadiumApi::class)
-class VisualReaderInitData(
+sealed class VisualReaderInitData(
     override val bookId: Long,
     override val publication: Publication,
-    override val navigatorKind: NavigatorKind?,
-    val coroutineScope: CoroutineScope,
     val initialLocation: Locator?,
-    val preferences: StateFlow<Configurable.Preferences>?,
 ) : ReaderInitData()
+
+class ImageReaderInitData(
+    bookId: Long,
+    publication: Publication,
+    initialLocation: Locator?
+) : VisualReaderInitData(bookId, publication, initialLocation) {
+    override val navigatorKind: NavigatorKind = NavigatorKind.IMAGE
+}
+
+@OptIn(ExperimentalReadiumApi::class)
+class EpubReaderInitData(
+    bookId: Long,
+    publication: Publication,
+    initialLocation: Locator?,
+    val coroutineScope: CoroutineScope,
+    val preferencesFlow: StateFlow<EpubPreferences>,
+    val preferencesFilter: EpubPreferencesFilter,
+    val preferencesSerializer: EpubPreferencesSerializer,
+    val navigatorFactory: EpubNavigatorFactory
+) : VisualReaderInitData(bookId, publication, initialLocation) {
+    override val navigatorKind: NavigatorKind = NavigatorKind.EPUB
+}
+
+@OptIn(ExperimentalReadiumApi::class)
+class PdfReaderInitData(
+    bookId: Long,
+    publication: Publication,
+    initialLocation: Locator?,
+    val coroutineScope: CoroutineScope,
+    val preferencesFlow: StateFlow<PsPdfKitPreferences>,
+    val preferencesFilter: PsPdfKitPreferencesFilter,
+    val preferencesSerializer: PsPdfKitPreferencesSerializer,
+    val navigatorFactory: PsPdfKitNavigatorFactory
+) : VisualReaderInitData(bookId, publication, initialLocation) {
+    override val navigatorKind: NavigatorKind = NavigatorKind.PDF
+}
 
 @ExperimentalMedia2
 class MediaReaderInitData(

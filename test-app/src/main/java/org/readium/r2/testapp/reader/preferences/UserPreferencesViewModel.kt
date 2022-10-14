@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.r2.testapp.reader.preferences
 
 import androidx.lifecycle.LifecycleOwner
@@ -13,17 +15,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.adapters.pspdfkit.navigator.*
+import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.r2.navigator.Navigator
-import org.readium.r2.navigator.epub.EpubPreferences
-import org.readium.r2.navigator.epub.EpubPreferencesDemux
-import org.readium.r2.navigator.epub.EpubPreferencesEditor
-import org.readium.r2.navigator.epub.EpubSettings
+import org.readium.r2.navigator.epub.*
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.testapp.reader.NavigatorKind
+import org.readium.r2.testapp.reader.*
+import org.readium.r2.testapp.utils.extensions.combine
+import kotlin.reflect.KClass
 
 /**
  * Manages user settings.
@@ -33,20 +35,50 @@ import org.readium.r2.testapp.reader.NavigatorKind
  * @param bookId Database ID for the book.
  * @param kind Navigator kind (e.g. EPUB, PDF, audiobook).
  */
-@OptIn(ExperimentalReadiumApi::class)
-class UserPreferencesViewModel(
+sealed class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.Preferences, E: PreferencesEditor<P>>(
     private val bookId: Long,
     private val publication: Publication,
-    private val kind: NavigatorKind?,
-    private val scope: CoroutineScope,
-    private val preferences: StateFlow<Configurable.Preferences>,
-    private val preferencesStore: PreferencesStore
+    private val viewModelScope: CoroutineScope,
+    private val preferences: StateFlow<P>,
+    private val preferencesClass: KClass<P>,
+    private val preferencesStore: PreferencesStore,
+    private val preferencesFilter: PreferencesFilter<P>,
+    private val preferencesSerializer: PreferencesSerializer<P>,
+    private val navigatorFactory: NavigatorFactory<S, P, E>
 ) {
+
+    companion object {
+
+        @OptIn(ExperimentalMedia2::class)
+        operator fun invoke(
+            viewModelScope: CoroutineScope,
+            preferencesStore: PreferencesStore,
+            readerInitData: ReaderInitData
+        ): UserPreferencesViewModel<*, *, *>? =
+            when (readerInitData) {
+                is EpubReaderInitData -> with (readerInitData) {
+                    EpubPreferencesViewModel(
+                        bookId, publication, viewModelScope,
+                        preferencesFlow, preferencesStore,
+                        preferencesFilter, preferencesSerializer, navigatorFactory
+                    )
+                }
+                is PdfReaderInitData -> with (readerInitData) {
+                    PsPdfKitPreferencesViewModel(
+                        bookId, publication, viewModelScope,
+                        preferencesFlow, preferencesStore,
+                        preferencesFilter, preferencesSerializer, navigatorFactory
+                    )
+                }
+                is DummyReaderInitData, is MediaReaderInitData, is ImageReaderInitData ->
+                    null
+            }
+    }
 
     /**
      * Current [Navigator] settings.
      */
-    private val _settings = MutableStateFlow<Configurable.Settings?>(null)
+    private val _settings = MutableStateFlow<S?>(null)
 
     /**
      * Current reader theme.
@@ -54,14 +86,10 @@ class UserPreferencesViewModel(
     val theme: StateFlow<Theme> = _settings
         .filterIsInstance<EpubSettings>()
         .map { it.theme }
-        .stateIn(scope, SharingStarted.Lazily, initialValue = Theme.LIGHT)
+        .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = Theme.LIGHT)
 
-    fun bind(navigator: Navigator, lifecycleOwner: LifecycleOwner) {
-        val configurable = (navigator as? Configurable<*, *>) ?: return
-        bind(configurable, lifecycleOwner)
-    }
 
-    fun bind(configurable: Configurable<*, *>, lifecycleOwner: LifecycleOwner) {
+    fun bind(configurable: Configurable<S, P>, lifecycleOwner: LifecycleOwner) {
         with(lifecycleOwner) {
             configurable.settings
                 .flowWithLifecycle(lifecycle)
@@ -72,53 +100,19 @@ class UserPreferencesViewModel(
         }
     }
 
-    val editor: StateFlow<PreferencesEditor<*>?> =
-        combine(scope, _settings, preferences) { settings, preferences ->
-            when {
-                settings is PsPdfKitSettings && preferences is PsPdfKitPreferences -> {
-                    PsPdfKitPreferencesEditor(
-                        currentSettings = settings,
-                        initialPreferences = preferences,
-                        publicationMetadata = publication.metadata,
-                        defaults = PsPdfKitDefaults(),
-                        configuration = PsPdfKitPreferencesEditor.Configuration()
-                    )
-                }
-                settings is EpubSettings && preferences is EpubPreferences -> {
-                    EpubPreferencesEditor(
-                        currentSettings = settings,
-                        initialPreferences = preferences,
-                        publicationMetadata = publication.metadata,
-                    )
-                }
-                else -> null
+    open val editor: StateFlow<E?> =
+        combine(viewModelScope, SharingStarted.Eagerly, _settings, preferences) { settings, preferences ->
+            settings?.let { settingsNotNull ->
+                navigatorFactory.createPreferencesEditor(settingsNotNull, preferences)
             }
         }
 
-    private fun<T1, T2, R> combine(
-        scope: CoroutineScope,
-        flow: StateFlow<T1>,
-        flow2: StateFlow<T2>,
-        transform: (T1, T2) -> R
-    ): StateFlow<R> {
-        val initialValue = transform(flow.value, flow2.value)
-        return combine(flow, flow2, transform).stateIn(scope, SharingStarted.Eagerly, initialValue)
-    }
-
-    fun <T: Configurable.Preferences> submitPreferences(preferences: T) =
-        scope.launch {
-            when (preferences) {
-                is PsPdfKitPreferences -> {
-                    val (sharedPrefs, pubPrefs) = PsPdfKitPreferencesDemux().demux(preferences)
-                    preferencesStore.set(pubPrefs, PsPdfKitPreferences::class, bookId)
-                    preferencesStore.set(sharedPrefs, PsPdfKitPreferences::class)
-                }
-                is EpubPreferences -> {
-                    val (sharedPrefs, pubPrefs) = EpubPreferencesDemux().demux(preferences)
-                    preferencesStore.set(pubPrefs, EpubPreferences::class, bookId)
-                    preferencesStore.set(sharedPrefs, EpubPreferences::class)
-                }
-            }
+    fun submitPreferences(preferences: P) = viewModelScope.launch {
+            val serializer = navigatorFactory.createPreferencesSerializer()
+            val sharedPreferences = preferencesFilter.filterSharedPreferences(preferences)
+            val publicationPreferences = preferencesFilter.filterPublicationPreferences(preferences)
+            preferencesStore.set(serializer.serialize(sharedPreferences), preferencesClass)
+            preferencesStore.set(serializer.serialize(publicationPreferences), preferencesClass, bookId)
         }
 
     /**
@@ -159,3 +153,47 @@ class UserPreferencesViewModel(
                 emptyList()
         }
 }
+
+// Create concrete classes to workaround the inability to switch over type parameter due to type erasure.
+
+class EpubPreferencesViewModel(
+    bookId: Long,
+    publication: Publication,
+    viewModelScope: CoroutineScope,
+    preferences: StateFlow<EpubPreferences>,
+    preferencesStore: PreferencesStore,
+    preferencesFilter: EpubPreferencesFilter,
+    preferencesSerializer: EpubPreferencesSerializer,
+    navigatorFactory: EpubNavigatorFactory
+) : UserPreferencesViewModel<EpubSettings, EpubPreferences, EpubPreferencesEditor>(
+    bookId = bookId,
+    publication = publication,
+    viewModelScope = viewModelScope,
+    preferences = preferences,
+    preferencesClass = EpubPreferences::class,
+    preferencesStore = preferencesStore,
+    preferencesFilter = preferencesFilter,
+    preferencesSerializer = preferencesSerializer,
+    navigatorFactory = navigatorFactory
+)
+
+class PsPdfKitPreferencesViewModel(
+    bookId: Long,
+    publication: Publication,
+    viewModelScope: CoroutineScope,
+    preferences: StateFlow<PsPdfKitPreferences>,
+    preferencesStore: PreferencesStore,
+    preferencesFilter: PsPdfKitPreferencesFilter,
+    preferencesSerializer: PsPdfKitPreferencesSerializer,
+    navigatorFactory: PsPdfKitNavigatorFactory
+) : UserPreferencesViewModel<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>(
+    bookId = bookId,
+    publication = publication,
+    viewModelScope = viewModelScope,
+    preferences = preferences,
+    preferencesStore = preferencesStore,
+    preferencesClass = PsPdfKitPreferences::class,
+    preferencesFilter = preferencesFilter,
+    preferencesSerializer = preferencesSerializer,
+    navigatorFactory = navigatorFactory
+)

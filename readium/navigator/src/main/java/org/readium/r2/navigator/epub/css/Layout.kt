@@ -48,7 +48,7 @@ internal data class Layout(
     @ExperimentalReadiumApi
     companion object {
 
-        fun from(settingsValues: EpubSettings.Reflowable): Layout {
+        fun from(settingsValues: EpubSettings): Layout {
             val stylesheets = when {
                 settingsValues.verticalText -> Stylesheets.CjkVertical
                 settingsValues.language?.isCjk == true -> Stylesheets.CjkHorizontal

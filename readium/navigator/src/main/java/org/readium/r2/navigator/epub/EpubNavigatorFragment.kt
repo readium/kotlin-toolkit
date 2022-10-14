@@ -85,19 +85,20 @@ typealias JavascriptInterfaceFactory = (resource: Link) -> Any?
  * To use this [Fragment], create a factory with `EpubNavigatorFragment.createFactory()`.
  */
 @OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class)
-class EpubNavigatorFragment private constructor(
+class EpubNavigatorFragment internal constructor(
     override val publication: Publication,
     private val baseUrl: String?,
     private val initialLocator: Locator?,
     private val initialPreferences: EpubPreferences,
     internal val listener: Listener?,
     internal val paginationListener: PaginationListener?,
-    config: Configuration,
+    epubLayout: EpubLayout,
+    configuration: Configuration,
 ) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable<EpubSettings, EpubPreferences> {
 
     // Make a copy to prevent the user from modifying the configuration after initialization.
-    internal val config: Configuration = config.copy(
-        servedAssets = config.servedAssets + "readium/.*"
+    internal val config: Configuration = configuration.copy(
+        servedAssets = configuration.servedAssets + "readium/.*"
     )
 
     data class Configuration(
@@ -224,7 +225,8 @@ class EpubNavigatorFragment private constructor(
         EpubNavigatorViewModel.createFactory(
             requireActivity().application, publication,
             baseUrl = baseUrl, config = this.config,
-            initialPreferences = initialPreferences
+            initialPreferences = initialPreferences,
+            layout = epubLayout
         )
     }
 
@@ -329,7 +331,7 @@ class EpubNavigatorFragment private constructor(
 //                    resourcePager.disableTouchEvents = true
 //                }
                 currentReflowablePageFragment?.webView?.let { webView ->
-                    if (viewModel.isScrollEnabled) {
+                    if (viewModel.isScrollEnabled.value) {
                         if (currentPagerPosition < position) {
                             // handle swipe LEFT
                             webView.scrollToStart()
@@ -959,9 +961,10 @@ class EpubNavigatorFragment private constructor(
         ): FragmentFactory =
             createFragmentFactory {
                 EpubNavigatorFragment(
-                    publication, baseUrl, initialLocator,
-                    initialPreferences,
-                    listener, paginationListener, config,
+                    publication, baseUrl, initialLocator, initialPreferences,
+                    listener, paginationListener,
+                    epubLayout = publication.metadata.presentation.layout ?: EpubLayout.REFLOWABLE,
+                    configuration = config,
                 )
             }
 

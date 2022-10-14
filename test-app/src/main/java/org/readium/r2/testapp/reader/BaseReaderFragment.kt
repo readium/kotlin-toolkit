@@ -22,7 +22,7 @@ import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.reader.preferences.UserSettingsBottomSheetDialogFragment
+import org.readium.r2.testapp.reader.preferences.UserPreferencesBottomSheetDialogFragment
 
 /*
  * Base reader fragment class
@@ -83,7 +83,7 @@ abstract class BaseReaderFragment : Fragment() {
                 model.insertBookmark(navigator.currentLocator.value)
             }
             R.id.settings -> {
-                UserSettingsBottomSheetDialogFragment().show(childFragmentManager, "Settings")
+                UserPreferencesBottomSheetDialogFragment().show(childFragmentManager, "Settings")
             }
             R.id.drm -> {
                 model.activityChannel.send(ReaderViewModel.Event.OpenDrmManagementRequested)

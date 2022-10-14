@@ -27,8 +27,8 @@ class PsPdfKitPreferencesEditor(
         val pageSpacingProgression: ProgressionStrategy<Double> = DoubleIncrement(5.0),
     )
 
-    private val settingsPolicy: PsPdfKitSettingsPolicy =
-        PsPdfKitSettingsPolicy(defaults, publicationMetadata)
+    private val settingsResolver: PsPdfKitSettingsResolver =
+        PsPdfKitSettingsResolver(defaults, publicationMetadata)
 
     override var preferences: PsPdfKitPreferences = initialPreferences
         private set
@@ -73,7 +73,7 @@ class PsPdfKitPreferencesEditor(
             }
 
             override val isActive: Boolean
-                get() = settingsPolicy.settings(preferences).scroll
+                get() = settingsResolver.settings(preferences).scroll
         }
 
     val spread: EnumPreference<Spread> =
@@ -88,7 +88,7 @@ class PsPdfKitPreferencesEditor(
             }
 
             override val isActive: Boolean
-                get() = !settingsPolicy.settings(preferences).scroll
+                get() = !settingsResolver.settings(preferences).scroll
         }
 
     val offset: SwitchPreference =
@@ -100,7 +100,7 @@ class PsPdfKitPreferencesEditor(
                 set(value) { preferences = preferences.copy(offset = value) }
 
             override val isActive: Boolean
-                get() = settingsPolicy.settings(preferences).spread != Spread.NEVER
+                get() = settingsResolver.settings(preferences).spread != Spread.NEVER
         }
 
     val fit: EnumPreference<Fit> =
@@ -126,7 +126,7 @@ class PsPdfKitPreferencesEditor(
             override fun set(value: Double?) { preferences = preferences.copy(pageSpacing = value) }
 
             override val isActive: Boolean
-                get() = settingsPolicy.settings(preferences).scroll
+                get() = settingsResolver.settings(preferences).scroll
 
             override fun formatValue(value: Double): String =
                 NumberFormat.getNumberInstance().run {

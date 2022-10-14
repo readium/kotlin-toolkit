@@ -33,7 +33,6 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.domain.model.Highlight
-import org.readium.r2.testapp.reader.preferences.PreferencesStore
 import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.search.SearchPagingSource
@@ -65,16 +64,11 @@ class ReaderViewModel(
         scope = viewModelScope
     )
 
-    val settings: UserPreferencesViewModel? = (readerInitData as? VisualReaderInitData)?.preferences
-        ?.let { preferences -> UserPreferencesViewModel(
-                bookId = readerInitData.bookId,
-                publication = readerInitData.publication,
-                kind = readerInitData.navigatorKind,
-                scope = viewModelScope,
-                preferences = preferences,
-                preferencesStore = PreferencesStore(application)
-            )
-        }
+    val settings: UserPreferencesViewModel<*, *, *>? = UserPreferencesViewModel(
+        viewModelScope = viewModelScope,
+        preferencesStore = application.preferencesStore,
+        readerInitData = readerInitData
+    )
 
     override fun onCleared() {
         super.onCleared()

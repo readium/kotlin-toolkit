@@ -7,17 +7,21 @@
 package org.readium.r2.testapp
 
 import android.content.Context
-import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
+import org.readium.adapters.pspdfkit.document.PsPdfKitDocumentFactory
 import org.readium.r2.lcp.LcpService
-import org.readium.r2.navigator.epub.EpubNavigatorFragment
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitDefaults
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitNavigatorFactory
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesEditor
+import org.readium.r2.navigator.epub.EpubNavigatorFactory
+import org.readium.r2.navigator.epub.EpubPreferencesEditor
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Try
 import org.readium.r2.streamer.Streamer
-import org.readium.r2.testapp.reader.DecorationStyleAnnotationMark
-import org.readium.r2.testapp.reader.annotationMarkTemplate
 
 /**
  * Holds the shared Readium objects and services used by the app.
  */
+@OptIn(ExperimentalReadiumApi::class)
 class Readium(context: Context) {
 
     /**
@@ -37,6 +41,17 @@ class Readium(context: Context) {
             lcpService.getOrNull()?.contentProtection()
         ),
         // Only required if you want to support PDF files using the PDFium adapter.
-        pdfFactory = PdfiumDocumentFactory(context)
+        pdfFactory = PsPdfKitDocumentFactory(context)
     )
+
+    val epubNavigatorConfig: EpubNavigatorFactory.Configuration =
+        EpubNavigatorFactory.Configuration(
+            editorConfiguration = EpubPreferencesEditor.Configuration(4)
+        )
+
+    val psPdfKitNavigatorConfig: PsPdfKitNavigatorFactory.Configuration =
+        PsPdfKitNavigatorFactory.Configuration(
+            navigatorDefaults = PsPdfKitDefaults(),
+            editorConfiguration = PsPdfKitPreferencesEditor.Configuration()
+        )
 }

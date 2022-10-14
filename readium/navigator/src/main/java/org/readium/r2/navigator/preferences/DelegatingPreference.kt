@@ -12,28 +12,55 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 
 @InternalReadiumApi
-open class PreferenceImpl<T>(
-    override var value: T?,
-    override val effectiveValue: T,
-    private val isActiveDelegate: () -> Boolean,
-    private val activateDelegate: () -> Unit,
-) : Preference<T> {
+fun interface IsActive {
 
-    override val isActive: Boolean
-        get() = isActiveDelegate()
+    fun isActive(): Boolean
 
-    fun activate() =
-        activateDelegate()
+    operator fun plus(other: IsActive): IsActive = IsActive {
+        isActive() && other.isActive()
+    }
 }
 
 @InternalReadiumApi
-class EnumPreferenceImpl<T>(
+fun interface Activate {
+
+    fun activate()
+
+    operator fun plus(other: Activate) = Activate {
+        activate()
+        other.activate()
+    }
+}
+
+@InternalReadiumApi
+fun interface Formatter<T> {
+
+    fun format(value: T): String
+}
+
+@InternalReadiumApi
+open class DelegatingPreference<T>(
+    override var value: T?,
+    override val effectiveValue: T,
+    private val isActiveImpl: IsActive,
+    private val activateImpl: Activate,
+) : Preference<T> {
+
+    override val isActive: Boolean
+        get() = isActiveImpl.isActive()
+
+    fun activate() =
+        activateImpl.activate()
+}
+
+@InternalReadiumApi
+class DelegatingEnumPreference<T>(
     value: T?,
     effectiveValue: T,
-    isActiveDelegate: () -> Boolean,
-    activateDelegate: () -> Unit,
+    isActiveImpl: IsActive,
+    activateImpl: Activate,
     override val supportedValues: List<T>
-) : PreferenceImpl<T>(value, effectiveValue, isActiveDelegate, activateDelegate),
+) : DelegatingPreference<T>(value, effectiveValue, isActiveImpl, activateImpl),
     EnumPreference<T> {
 
     override var value: T? = value
@@ -44,12 +71,12 @@ class EnumPreferenceImpl<T>(
     }
 
 @InternalReadiumApi
-class SwitchPreferenceImpl(
+class DelegatingSwitchPreference(
     value: Boolean?,
     effectiveValue: Boolean,
-    isActiveDelegate: () -> Boolean,
-    activateDelegate: () -> Unit,
-) : PreferenceImpl<Boolean>(value, effectiveValue, isActiveDelegate, activateDelegate),
+    isActiveImpl: IsActive,
+    activateImpl: Activate,
+) : DelegatingPreference<Boolean>(value, effectiveValue, isActiveImpl, activateImpl),
     SwitchPreference {
 
     override fun toggle() {
@@ -59,15 +86,15 @@ class SwitchPreferenceImpl(
 }
 
 @InternalReadiumApi
-class RangePreferenceImpl<T: Comparable<T>>(
+class DelegatingRangePreference<T: Comparable<T>>(
     value: T?,
     effectiveValue: T,
-    isActiveDelegate: () -> Boolean,
-    activateDelegate: () -> Unit,
-    private val formatValueDelegate: (T) -> String,
+    isActiveImpl: IsActive,
+    activateImpl: Activate,
+    private val formatValueImpl: Formatter<T>,
     override val supportedRange: ClosedRange<T>,
     private val progressionStrategy: ProgressionStrategy<T>
-) : PreferenceImpl<T>(value, effectiveValue, isActiveDelegate, activateDelegate),
+) : DelegatingPreference<T>(value, effectiveValue, isActiveImpl, activateImpl),
     RangePreference<T> {
 
     override var value: T? = value
@@ -88,5 +115,5 @@ class RangePreferenceImpl<T: Comparable<T>>(
             .coerceIn(supportedRange)
     }
     override fun formatValue(value: T): String =
-        formatValueDelegate(value)
+        formatValueImpl.format(value)
 }

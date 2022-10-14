@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesEditor
+import org.readium.r2.navigator.epub.EpubPreferences
 import org.readium.r2.navigator.epub.EpubPreferencesEditor
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -43,28 +44,118 @@ import org.readium.r2.navigator.preferences.TextAlign as ReadiumTextAlign
  * Stateful user settings component paired with a [ReaderViewModel].
  */
 @Composable
-fun UserPreferences(model: UserPreferencesViewModel) {
+fun UserPreferences(model: UserPreferencesViewModel<*, *, *>) =
+    when (model) {
+        is PsPdfKitPreferencesViewModel ->
+            UserPreferences(model)
+        is EpubPreferencesViewModel ->
+            UserPreferences(model)
+    }
+
+@Composable
+private fun UserPreferences(model: PsPdfKitPreferencesViewModel) {
     val editor = model.editor.collectAsState().value ?: return
 
-    UserSettings(
+    PsPdfKitUserPreferences(
         editor = editor,
-        submit = model::submitPreferences,
-        presets = model.presets
+        presets = model.presets,
+        commit = { model.submitPreferences(editor.preferences) }
     )
 }
 
-/**
- * Stateless user settings component displaying and setting user [preferences],
- * using the given preferences [editor] and [presets].
- */
 @Composable
-fun <P: Configurable.Preferences> UserSettings(
+private fun UserPreferences(model: EpubPreferencesViewModel) {
+    val editor = model.editor.collectAsState().value ?: return
+
+    EpubUserPreferences(
+        editor = editor,
+        presets = model.presets,
+        commit = { model.submitPreferences(editor.preferences) }
+    )
+}
+
+@Composable
+fun PsPdfKitUserPreferences(
+    editor: PsPdfKitPreferencesEditor,
+    presets: List<UserPreferencesViewModel.Preset>,
+    commit: () -> Unit
+) {
+    UserPreferencesScaffold(
+        editor = editor,
+        presets = presets,
+        commit = commit
+    ) {
+        FixedLayoutUserPreferences(
+            commit = commit,
+            readingProgression = editor.readingProgression,
+            scroll = editor.scroll,
+            scrollAxis = editor.scrollAxis,
+            fit = editor.fit,
+            spread = editor.spread,
+            offset = editor.offset,
+            pageSpacing = editor.pageSpacing
+        )
+    }
+}
+
+@Composable
+fun EpubUserPreferences(
+    editor: EpubPreferencesEditor
+    presets: List<UserPreferencesViewModel.Preset>,
+    commit: () -> Unit
+) {
+    UserPreferencesScaffold(
+        editor = editor,
+        presets = presets,
+        commit = commit
+    ) {
+        when (editor.layout) {
+            EpubLayout.REFLOWABLE ->
+                ReflowableUserPreferences<EpubPreferences>(
+                    commit = commit,
+                    backgroundColor = editor.backgroundColor,
+                    columnCount = editor.columnCount,
+                    fontFamily = editor.fontFamily,
+                    fontSize = editor.fontSize,
+                    hyphens = editor.hyphens,
+                    imageFilter = editor.imageFilter,
+                    language = editor.language,
+                    letterSpacing = editor.letterSpacing,
+                    ligatures = editor.ligatures,
+                    lineHeight = editor.lineHeight,
+                    pageMargins = editor.pageMargins,
+                    paragraphIndent = editor.paragraphIndent,
+                    paragraphSpacing = editor.paragraphSpacing,
+                    publisherStyles = editor.publisherStyles,
+                    readingProgression = editor.readingProgression,
+                    scroll = editor.scroll,
+                    textAlign = editor.textAlign,
+                    textColor = editor.textColor,
+                    textNormalization = editor.textNormalization,
+                    theme = editor.theme,
+                    typeScale = editor.typeScale,
+                    verticalText = editor.verticalText,
+                    wordSpacing = editor.wordSpacing,
+                )
+            EpubLayout.FIXED -> {
+                FixedLayoutUserPreferences(
+                    commit = commit,
+                    language = editor.language,
+                    readingProgression = editor.readingProgression,
+                    spread = editor.spread,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun <P: Configurable.Preferences> UserPreferencesScaffold(
     editor: PreferencesEditor<P>,
     presets: List<UserPreferencesViewModel.Preset>,
-    submit: (P) -> Unit
+    commit: () -> Unit,
+    body: @Composable ColumnScope.() -> Unit
 ) {
-    val commit = { submit(editor.preferences) }
-
     Column(
         modifier = Modifier.padding(vertical = 24.dp)
     ) {
@@ -82,7 +173,7 @@ fun <P: Configurable.Preferences> UserSettings(
                 .align(Alignment.End),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            PresetsMenuButton(editor = editor, presets = presets, submit = submit)
+            PresetsMenuButton(editor = editor, presets = presets, commit = commit)
 
             Button(
                 onClick = { editor.clear(); commit() }
@@ -93,60 +184,9 @@ fun <P: Configurable.Preferences> UserSettings(
 
         Divider()
 
-        @Suppress("Unchecked_cast")
-        when (editor) {
-            is PsPdfKitPreferencesEditor ->
-                FixedLayoutUserPreferences(
-                    commit = commit,
-                    readingProgression = editor.readingProgression,
-                    scroll = editor.scroll,
-                    scrollAxis = editor.scrollAxis,
-                    fit = editor.fit,
-                    spread = editor.spread,
-                    offset = editor.offset,
-                    pageSpacing = editor.pageSpacing
-                )
+        Divider()
 
-            is EpubPreferencesEditor ->
-                when (editor.layout) {
-                    EpubLayout.REFLOWABLE -> {
-                        ReflowableUserPreferences(
-                            commit = commit,
-                            backgroundColor = editor.backgroundColor,
-                            columnCount = editor.columnCount,
-                            fontFamily = editor.fontFamily,
-                            fontSize = editor.fontSize,
-                            hyphens = editor.hyphens,
-                            imageFilter = editor.imageFilter,
-                            language = editor.language,
-                            letterSpacing = editor.letterSpacing,
-                            ligatures = editor.ligatures,
-                            lineHeight = editor.lineHeight,
-                            pageMargins = editor.pageMargins,
-                            paragraphIndent = editor.paragraphIndent,
-                            paragraphSpacing = editor.paragraphSpacing,
-                            publisherStyles = editor.publisherStyles,
-                            readingProgression = editor.readingProgression,
-                            scroll = editor.scroll,
-                            textAlign = editor.textAlign,
-                            textColor = editor.textColor,
-                            textNormalization = editor.textNormalization,
-                            theme = editor.theme,
-                            typeScale = editor.typeScale,
-                            verticalText = editor.verticalText,
-                            wordSpacing = editor.wordSpacing,
-                        )
-                    }
-                    EpubLayout.FIXED -> {
-                        FixedLayoutUserPreferences(
-                            commit = commit,
-                            language = editor.language,
-                            readingProgression = editor.readingProgression,
-                            spread = editor.spread,
-                        )
-                    }
-                }
-        }
+        body()
     }
 }
 
@@ -897,8 +937,8 @@ private fun Divider() {
 @Composable
 private fun <P: Configurable.Preferences> PresetsMenuButton(
     editor: PreferencesEditor<P>,
-    submit: (P) -> Unit,
-    presets: List<UserPreferencesViewModel.Preset<P>>
+    commit: () -> Unit,
+    presets: List<UserPreferencesViewModel.Preset>
 ) {
     if (presets.isEmpty()) return
 
@@ -911,8 +951,8 @@ private fun <P: Configurable.Preferences> PresetsMenuButton(
                 onClick = {
                     dismiss()
                     editor.clear()
-                    preset.changes(editor)
-                    submit(editor.preferences)
+                    preset.apply()
+                    commit()
                 }
             ) {
                 Text(preset.title)

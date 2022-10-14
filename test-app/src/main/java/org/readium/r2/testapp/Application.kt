@@ -10,11 +10,11 @@ import android.content.*
 import android.os.IBinder
 import com.google.android.material.color.DynamicColors
 import kotlinx.coroutines.*
-import org.readium.r2.navigator.pdf.PdfEngineProvider
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.reader.ReaderRepository
+import org.readium.r2.testapp.reader.preferences.PreferencesStore
 import timber.log.Timber
 import java.io.File
 import java.util.*
@@ -25,6 +25,9 @@ class Application : android.app.Application() {
         private set
 
     lateinit var storageDir: File
+
+    lateinit var preferencesStore: PreferencesStore
+        private set
 
     lateinit var bookRepository: BookRepository
         private set
@@ -75,6 +78,8 @@ class Application : android.app.Application() {
         startService(intent)
         bindService(intent, mediaServiceConnection, 0)
 
+        preferencesStore =
+            PreferencesStore(this)
 
         /*
          * Initializing repositories
@@ -90,6 +95,7 @@ class Application : android.app.Application() {
                     readium,
                     mediaServiceBinder.await(),
                     bookRepository,
+                    preferencesStore
                 )
             }
 

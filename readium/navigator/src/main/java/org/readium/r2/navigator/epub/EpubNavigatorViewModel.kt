@@ -37,7 +37,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.Href
 import kotlin.reflect.KClass
 
@@ -51,14 +50,12 @@ internal class EpubNavigatorViewModel(
     val publication: Publication,
     val config: EpubNavigatorFragment.Configuration,
     initialPreferences: EpubPreferences,
+    val layout: EpubLayout,
     baseUrl: String?,
     private val server: WebViewServer?,
 ) : AndroidViewModel(application) {
 
     val useLegacySettings: Boolean = (server == null)
-
-    val layout: EpubLayout =
-        publication.metadata.presentation.layout ?: EpubLayout.REFLOWABLE
 
     val preferences: SharedPreferences =
         application.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
@@ -87,8 +84,8 @@ internal class EpubNavigatorViewModel(
     private val _events = Channel<Event>(Channel.BUFFERED)
     val events: Flow<Event> get() = _events.receiveAsFlow()
 
-    private val settingsPolicy: EpubSettingsPolicy =
-        EpubSettingsPolicy(publication.metadata)
+    private val settingsPolicy: EpubSettingsResolver =
+        EpubSettingsResolver(publication.metadata)
 
     private val _settings: MutableStateFlow<EpubSettings> =
         MutableStateFlow(settingsPolicy.settings(initialPreferences))
@@ -273,14 +270,16 @@ internal class EpubNavigatorViewModel(
     /**
      * Indicates whether the navigator is scrollable instead of paginated.
      */
-    val isScrollEnabled: Boolean get() =
+    val isScrollEnabled: StateFlow<Boolean> get() =
         if (useLegacySettings) {
             @Suppress("DEPRECATION")
-            preferences.getBoolean(SCROLL_REF, false)
+            val scroll = preferences.getBoolean(SCROLL_REF, false)
+            MutableStateFlow(scroll)
         } else {
-            settings.value.scroll
-                .takeIf { layout == EpubLayout.REFLOWABLE }
-                ?: false
+            settings.mapStateIn(viewModelScope) {
+                if (layout == EpubLayout.REFLOWABLE) it.scroll else false
+            }
+
         }
 
     // Selection
@@ -362,10 +361,10 @@ internal class EpubNavigatorViewModel(
 
         fun createFactory(
             application: Application, publication: Publication, baseUrl: String?,
-            config: EpubNavigatorFragment.Configuration,
+            layout: EpubLayout, config: EpubNavigatorFragment.Configuration,
             initialPreferences: EpubPreferences
         ) = createViewModelFactory {
-            EpubNavigatorViewModel(application, publication, config, initialPreferences,
+            EpubNavigatorViewModel(application, publication, config, initialPreferences, layout,
                 baseUrl = baseUrl,
                 server = if (baseUrl != null) null
                     else WebViewServer(application, publication, servedAssets = config.servedAssets)

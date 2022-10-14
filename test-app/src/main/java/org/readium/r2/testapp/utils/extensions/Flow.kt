@@ -12,6 +12,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.flowWithLifecycle
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlin.time.Duration
@@ -66,3 +67,16 @@ fun <T> Flow<T>.throttleLatest(period: Duration): Flow<T> =
             delay(period)
         }
     }
+
+suspend fun<P> Flow<P>.stateInFirst(scope: CoroutineScope, sharingStarted: SharingStarted) =
+    stateIn(scope, sharingStarted, first())
+
+fun<T1, T2, R> combine(
+    scope: CoroutineScope,
+    sharingStarted: SharingStarted,
+    flow: StateFlow<T1>,
+    flow2: StateFlow<T2>,
+    transform: (T1, T2) -> R
+): StateFlow<R> =
+    combine(flow, flow2, transform)
+        .stateIn(scope, sharingStarted, transform(flow.value, flow2.value))

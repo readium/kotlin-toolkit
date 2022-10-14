@@ -19,11 +19,16 @@ class EpubPreferencesEditor(
     currentSettings: EpubSettings,
     initialPreferences: EpubPreferences,
     publicationMetadata: Metadata,
-    epubLayout: EpubLayout
+    epubLayout: EpubLayout,
+    configuration: Configuration
 ): PreferencesEditor<EpubPreferences> {
 
-    private val settingsPolicy: EpubSettingsPolicy =
-        EpubSettingsPolicy(publicationMetadata)
+    data class Configuration(
+        val dumb: Any
+    )
+
+    private val settingsResolver: EpubSettingsResolver =
+        EpubSettingsResolver(publicationMetadata)
 
     val layout: EpubLayout = epubLayout
 
@@ -41,65 +46,83 @@ class EpubPreferencesEditor(
     }
 
     val readingProgression: EnumPreference<ReadingProgression> =
-        EnumPreferenceImpl(
+        DelegatingEnumPreference(
             value = initialPreferences.readingProgression,
             effectiveValue = currentSettings.readingProgression,
             supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL),
-            isActiveDelegate = { true },
-            activateDelegate = {}
+            isActiveImpl = { true },
+            activateImpl = {}
         )
 
     val scroll: SwitchPreference =
-        SwitchPreferenceImpl(
+        DelegatingSwitchPreference(
             value = initialPreferences.scroll,
             effectiveValue = currentSettings.scroll,
-            isActiveDelegate = { true },
-            activateDelegate = {}
+            isActiveImpl = { true },
+            activateImpl = {}
         )
 
     val spread: EnumPreference<Spread> =
-        EnumPreferenceImpl(
+        DelegatingEnumPreference(
             value = initialPreferences.spread,
             effectiveValue = currentSettings.spread,
             supportedValues = listOf(Spread.AUTO, Spread.NEVER, Spread.PREFERRED),
-            isActiveDelegate = { !settingsPolicy.settings(preferences).scroll },
-            activateDelegate = { scroll.value = true }
+            isActiveImpl = requireScroll(false),
+            activateImpl = { scroll.value = false }
         )
 
     val wordSpacing: RangePreference<Double> =
-        RangePreferenceImpl(
+        DelegatingRangePreference(
             value = initialPreferences.wordSpacing,
             effectiveValue = currentSettings.wordSpacing,
             supportedRange = 0.0..1.0,
             progressionStrategy = DoubleIncrement(0.1),
-            isActiveDelegate = {
-                val settings = settingsPolicy.settings(preferences)
-                val stylesheets = Layout.from(settings).stylesheets
-                !settings.publisherStyles &&  stylesheets == Layout.Stylesheets.Default
-            },
-            activateDelegate = {},
-            formatValueDelegate = { it.format(maximumFractionDigits = 0) }
+            formatValueImpl = percentFormatter(),
+            isActiveImpl = requireStylesheets(Layout.Stylesheets.Default) +
+                requirePublisherDefaults(false),
+            activateImpl = {},
         )
 
     val fontSize: RangePreference<Double> =
-        RangePreferenceImpl(
+        DelegatingRangePreference(
             value = initialPreferences.fontSize,
             effectiveValue = currentSettings.fontSize,
             supportedRange = 0.4..5.0,
-            isActiveDelegate = { layout == EpubLayout.REFLOWABLE },
-            activateDelegate = {},
-            formatValueDelegate = { it.format(maximumFractionDigits = 0) },
-            progressionStrategy = DoubleIncrement(0.1)
+            progressionStrategy = DoubleIncrement(0.1),
+            formatValueImpl = percentFormatter(),
+            isActiveImpl = requireEpubLayout(EpubLayout.REFLOWABLE),
+            activateImpl = {},
         )
 
     val textNormalization: EnumPreference<TextNormalization> =
-        EnumPreferenceImpl(
+        DelegatingEnumPreference(
             value = initialPreferences.textNormalization,
             effectiveValue = currentSettings.textNormalization,
             supportedValues = listOf(TextNormalization.NONE, TextNormalization.BOLD,
                 TextNormalization.ACCESSIBILITY),
-            isActiveDelegate = { layout == EpubLayout.REFLOWABLE },
-            activateDelegate = {}
+            isActiveImpl = requireEpubLayout(EpubLayout.REFLOWABLE),
+            activateImpl = {}
         )
-}
 
+    private fun requireStylesheets(stylesheets: Layout.Stylesheets) = IsActive {
+        val settings = settingsResolver.settings(preferences)
+        Layout.from(settings).stylesheets == stylesheets
+    }
+
+    private fun requirePublisherDefaults(value: Boolean) = IsActive {
+        val settings = settingsResolver.settings(preferences)
+        settings.publisherStyles == value
+    }
+
+    private fun requireEpubLayout(layout: EpubLayout) = IsActive {
+        layout == EpubLayout.REFLOWABLE
+    }
+
+    private fun requireScroll(scroll: Boolean) = IsActive {
+        settingsResolver.settings(preferences).scroll && scroll
+    }
+
+    private fun percentFormatter(): Formatter<Double> = Formatter {
+        it.format(maximumFractionDigits = 0)
+    }
+}

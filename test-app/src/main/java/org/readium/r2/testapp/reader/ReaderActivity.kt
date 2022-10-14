@@ -20,6 +20,7 @@ import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.ViewModelProvider
+import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.testapp.Application
@@ -107,13 +108,14 @@ open class ReaderActivity : AppCompatActivity() {
         }
     }
 
+    @OptIn(ExperimentalMedia2::class)
     private fun createReaderFragment(readerData: ReaderInitData): BaseReaderFragment? {
-        val readerClass: Class<out Fragment>? = when (readerData.navigatorKind) {
-            NavigatorKind.EPUB_REFLOWABLE, NavigatorKind.EPUB_FIXEDLAYOUT-> EpubReaderFragment::class.java
-            NavigatorKind.PDF -> PdfReaderFragment::class.java
-            NavigatorKind.AUDIO -> AudioReaderFragment::class.java
-            NavigatorKind.IMAGE -> ImageReaderFragment::class.java
-            null -> null
+        val readerClass: Class<out Fragment>? = when (readerData) {
+            is EpubReaderInitData -> EpubReaderFragment::class.java
+            is ImageReaderInitData -> ImageReaderFragment::class.java
+            is MediaReaderInitData -> AudioReaderFragment::class.java
+            is PdfReaderInitData -> PdfReaderFragment::class.java
+            else -> null
         }
 
         readerClass?.let { it ->

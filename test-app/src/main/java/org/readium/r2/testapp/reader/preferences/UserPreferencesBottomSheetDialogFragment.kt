@@ -14,7 +14,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.ComposeBottomSheetDialogFragment
 
-class UserSettingsBottomSheetDialogFragment : ComposeBottomSheetDialogFragment(
+class UserPreferencesBottomSheetDialogFragment : ComposeBottomSheetDialogFragment(
     isScrollable = true
 ) {
     private val model: ReaderViewModel by activityViewModels()
@@ -32,6 +32,7 @@ class UserSettingsBottomSheetDialogFragment : ComposeBottomSheetDialogFragment(
 
     @Composable
     override fun Content() {
-        UserSettings(model.settings)
+        val settingsModel = model.settings ?: return
+        UserPreferences(settingsModel)
     }
 }

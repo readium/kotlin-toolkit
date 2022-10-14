@@ -8,28 +8,38 @@ package org.readium.r2.testapp.reader
 
 import android.app.Activity
 import android.app.Application
+import kotlin.reflect.KClass
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.*
 import org.json.JSONObject
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferences
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesFilter
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitNavigatorFactory
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesSerializer
+import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.epub.EpubPreferences
+import org.readium.r2.navigator.epub.EpubPreferencesFilter
+import org.readium.r2.navigator.epub.EpubPreferencesSerializer
+import org.readium.r2.navigator.preferences.Configurable
+import org.readium.r2.navigator.preferences.PreferencesSerializer
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
-import org.readium.r2.shared.publication.epub.EpubLayout
-import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.protectionError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.testapp.MediaService
+import org.readium.r2.testapp.utils.extensions.stateInFirst
 import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.reader.preferences.PreferencesStore
+import org.readium.r2.testapp.utils.extensions.combine
 import java.io.File
 
 /**
@@ -37,7 +47,7 @@ import java.io.File
  *
  * Ensure you call [open] before any attempt to start a [ReaderActivity].
  * Pass the method result to the activity to enable it to know which current publication it must
- * retrieve from this repository - media or visual.
+ * retrieve from this rep+ository - media or visual.
  */
 @OptIn(ExperimentalMedia2::class, ExperimentalReadiumApi::class)
 class ReaderRepository(
@@ -90,55 +100,19 @@ class ReaderRepository(
         val readerInitData = when {
             publication.conformsTo(Publication.Profile.AUDIOBOOK) ->
                 openAudio(bookId, publication, initialLocator)
+            publication.conformsTo(Publication.Profile.EPUB) ->
+                openEpub(bookId, publication, initialLocator)
+            publication.conformsTo(Publication.Profile.PDF) ->
+                openPdf(bookId, publication, initialLocator)
+            publication.conformsTo(Publication.Profile.DIVINA) ->
+                openImage(bookId, publication, initialLocator)
             else ->
-                openVisual(bookId, publication, initialLocator)
+                throw Exception("Publication is not supported.")
         }
 
         repository[bookId] = readerInitData
     }
 
-    private suspend fun openVisual(
-        bookId: Long,
-        publication: Publication,
-        initialLocator: Locator?
-    ): VisualReaderInitData {
-        val navigatorKind = when {
-            publication.conformsTo(Publication.Profile.EPUB) ->
-                if (publication.metadata.presentation.layout == EpubLayout.FIXED)
-                    NavigatorKind.EPUB_FIXEDLAYOUT
-                else
-                    NavigatorKind.EPUB_REFLOWABLE
-            publication.conformsTo(Publication.Profile.PDF) ->
-                NavigatorKind.PDF
-            publication.conformsTo(Publication.Profile.DIVINA) ->
-                NavigatorKind.IMAGE
-            else -> null
-        }
-
-        val coroutineScope = CoroutineScope(Dispatchers.IO)
-
-        suspend fun<P> Flow<P>.stateInFirst(scope: CoroutineScope, sharingStarted: SharingStarted) =
-            stateIn(scope, sharingStarted, first())
-
-        val preferences = when (navigatorKind) {
-            NavigatorKind.EPUB_REFLOWABLE -> {
-                val pubPrefs = preferencesStore.get(EpubPreferences.Reflowable::class, bookId)
-                val navigatorPrefs = preferencesStore.get(EpubPreferences.Reflowable::class)
-                EpubPreferencesMux.join(pubPrefs, navigatorPrefs)
-            }
-            NavigatorKind.EPUB_FIXEDLAYOUT -> {
-                val pubPrefs = preferencesStore.get(EpubPreferences.FixedLayout::class, bookId)
-                val navigatorPrefs = preferencesStore.get(EpubPreferences.FixedLayout::class)
-                EpubPreferencesMux.join(pubPrefs, navigatorPrefs)
-            }
-            else -> null
-        }?.stateInFirst(coroutineScope, SharingStarted.Eagerly)
-
-        return VisualReaderInitData(
-            bookId = bookId, publication = publication, navigatorKind = navigatorKind,
-            coroutineScope = coroutineScope, initialLocation = initialLocator, preferences = preferences
-        )
-    }
 
     @OptIn(ExperimentalMedia2::class)
     private suspend fun openAudio(
@@ -156,14 +130,94 @@ class ReaderRepository(
         return MediaReaderInitData(bookId, publication, navigator)
     }
 
+    private suspend fun openEpub(
+        bookId: Long,
+        publication: Publication,
+        initialLocator: Locator?
+    ): EpubReaderInitData {
+        val coroutineScope = CoroutineScope(Dispatchers.IO)
+        val serializer = EpubPreferencesSerializer()
+        val preferences = getPreferences(
+            EpubPreferences::class, bookId, serializer,
+            coroutineScope, { EpubPreferences() }, EpubPreferences::plus
+        )
+
+        return EpubReaderInitData(
+            bookId, publication, initialLocator,
+            coroutineScope, preferences,
+            EpubPreferencesFilter(),
+            serializer,
+            EpubNavigatorFactory(publication, readium.epubNavigatorConfig)
+        )
+    }
+
+    private suspend fun openPdf(
+        bookId: Long,
+        publication: Publication,
+        initialLocator: Locator?
+    ): PdfReaderInitData {
+        val coroutineScope = CoroutineScope(Dispatchers.IO)
+        val serializer = PsPdfKitPreferencesSerializer()
+        val preferences = getPreferences(
+            PsPdfKitPreferences::class, bookId, serializer,
+            coroutineScope, { PsPdfKitPreferences() }, PsPdfKitPreferences::plus
+        )
+
+        return PdfReaderInitData(
+            bookId, publication, initialLocator,
+            coroutineScope, preferences,
+            PsPdfKitPreferencesFilter(),
+            serializer,
+            PsPdfKitNavigatorFactory(publication, readium.psPdfKitNavigatorConfig)
+        )
+    }
+
+    private suspend fun <P: Configurable.Preferences> getPreferences(
+        klass: KClass<P>,
+        bookId: Long,
+        serializer: PreferencesSerializer<P>,
+        publicationScope: CoroutineScope,
+        default: () -> P,
+        plus: (P).(P) -> P
+    ): StateFlow<P> {
+        val pubPrefs = preferencesStore[klass, bookId]
+            .map { json -> json?.let { serializer.deserialize(it) } ?: default() }
+            .stateInFirst(publicationScope, SharingStarted.Eagerly)
+
+        val sharedPrefs = preferencesStore[EpubPreferences::class]
+            .map { json -> json?.let { serializer.deserialize(it) } ?: default() }
+            .stateInFirst(publicationScope, SharingStarted.Eagerly)
+
+        return combine(publicationScope, SharingStarted.Eagerly, sharedPrefs, pubPrefs, plus)
+    }
+
+    private fun openImage(
+        bookId: Long,
+        publication: Publication,
+        initialLocator: Locator?
+    ): ImageReaderInitData {
+        return ImageReaderInitData(
+            bookId = bookId,
+            publication = publication,
+            initialLocation = initialLocator
+        )
+    }
+
     fun close(bookId: Long) {
         when (val initData = repository.remove(bookId)) {
             is MediaReaderInitData -> {
                 mediaBinder.closeNavigator()
             }
-            is VisualReaderInitData -> {
+            is EpubReaderInitData -> {
                 initData.publication.close()
                 initData.coroutineScope.cancel()
+            }
+            is PdfReaderInitData -> {
+                initData.publication.close()
+                initData.coroutineScope.cancel()
+            }
+            is VisualReaderInitData -> {
+                initData.publication.close()
             }
             null, is DummyReaderInitData -> {
                 // Do nothing

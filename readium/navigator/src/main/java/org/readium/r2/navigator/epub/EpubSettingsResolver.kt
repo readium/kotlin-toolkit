@@ -18,11 +18,8 @@ import org.readium.r2.shared.util.Language
 
 /**
  * A policy which computes EPUB settings values from sets of metadata and preferences.
- *
- * If you implement a custom [EpubSettingsPolicy], be sure that all values from settings
- * that will be active at the same time are compatible.
  */
-internal class EpubSettingsPolicy(
+internal class EpubSettingsResolver(
     private val metadata: Metadata
 ) {
 
