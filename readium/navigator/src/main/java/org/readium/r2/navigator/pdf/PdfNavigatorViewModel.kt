@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.settings.Configurable
+import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator

@@ -9,9 +9,8 @@
 package org.readium.r2.navigator.epub.css
 
 import org.junit.Test
-import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.epub.css.Layout.Stylesheets
-import org.readium.r2.navigator.settings.MutablePreferences
+import org.readium.r2.navigator.preferences.MutablePreferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Metadata

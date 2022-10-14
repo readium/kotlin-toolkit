@@ -16,7 +16,7 @@ import com.github.barteksc.pdfviewer.PDFView
 import kotlinx.coroutines.launch
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
-import org.readium.r2.navigator.settings.Axis
+import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Fit

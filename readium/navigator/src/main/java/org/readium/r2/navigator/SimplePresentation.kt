@@ -6,7 +6,7 @@
 
 package org.readium.r2.navigator
 
-import org.readium.r2.navigator.settings.Axis
+import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression

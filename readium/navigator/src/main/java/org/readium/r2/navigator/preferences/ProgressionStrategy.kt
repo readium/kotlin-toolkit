@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.settings
+package org.readium.r2.navigator.preferences
 
 /**
  * A strategy to increment or decrement a setting.

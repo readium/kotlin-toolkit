@@ -6,9 +6,8 @@
 
 package org.readium.adapters.pspdfkit.navigator
 
-import org.readium.r2.navigator.settings.Preferences
-import org.readium.r2.navigator.settings.Axis
-import org.readium.r2.navigator.settings.Spread
+import org.readium.r2.navigator.preferences.Axis
+import org.readium.r2.navigator.preferences.Spread
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.Metadata
@@ -16,10 +15,11 @@ import org.readium.r2.shared.publication.ReadingProgression
 
 @ExperimentalReadiumApi
 internal class PsPdfKitSettingsPolicy(
-    private val defaults: PsPdfKitSettingsDefaults
+    private val defaults: PsPdfKitDefaults,
+    private val metadata: Metadata
 ) {
 
-    fun settings(metadata: Metadata, preferences: PsPdfKitPreferences): PsPdfKitSettingsValues {
+    fun settings(preferences: PsPdfKitPreferences): PsPdfKitSettings {
         val readingProgression: ReadingProgression =
             preferences.readingProgression
                 ?: metadata.readingProgression.takeIf { it.isHorizontal == true }
@@ -51,7 +51,7 @@ internal class PsPdfKitSettingsPolicy(
             preferences.pageSpacing
                 ?: defaults.pageSpacing
 
-        return PsPdfKitSettingsValues(
+        return PsPdfKitSettings(
             readingProgression = readingProgression,
             scroll = scroll,
             scrollAxis = scrollAxis,

@@ -6,7 +6,7 @@
 
 package org.readium.r2.navigator.epub.css
 
-import org.readium.r2.navigator.epub.EpubSettingsValues
+import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.epub.extensions.isCjk
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
@@ -48,7 +48,7 @@ internal data class Layout(
     @ExperimentalReadiumApi
     companion object {
 
-        fun from(settingsValues: EpubSettingsValues.Reflowable): Layout {
+        fun from(settingsValues: EpubSettings.Reflowable): Layout {
             val stylesheets = when {
                 settingsValues.verticalText -> Stylesheets.CjkVertical
                 settingsValues.language?.isCjk == true -> Stylesheets.CjkHorizontal

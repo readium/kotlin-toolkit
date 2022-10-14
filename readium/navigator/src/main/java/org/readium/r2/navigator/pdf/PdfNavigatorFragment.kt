@@ -20,8 +20,7 @@ import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
-import org.readium.r2.navigator.settings.Configurable
-import org.readium.r2.navigator.settings.Preferences
+import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.mapStateIn

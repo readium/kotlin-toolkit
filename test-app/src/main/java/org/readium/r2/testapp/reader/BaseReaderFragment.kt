@@ -16,13 +16,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.navigator.Navigator
-import org.readium.r2.navigator.settings.Configurable
+import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.reader.settings.UserSettingsBottomSheetDialogFragment
+import org.readium.r2.testapp.reader.preferences.UserSettingsBottomSheetDialogFragment
 
 /*
  * Base reader fragment class

@@ -10,7 +10,7 @@ import android.net.Uri
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import org.readium.r2.navigator.settings.FontFamily
+import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
 

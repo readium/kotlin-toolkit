@@ -35,7 +35,6 @@ import org.readium.r2.navigator.R2WebView
 import org.readium.r2.navigator.databinding.ViewpagerFragmentEpubBinding
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel
-import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.extensions.htmlId
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi

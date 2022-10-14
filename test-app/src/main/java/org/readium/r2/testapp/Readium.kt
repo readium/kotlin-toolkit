@@ -9,8 +9,11 @@ package org.readium.r2.testapp
 import android.content.Context
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.lcp.LcpService
+import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.shared.util.Try
 import org.readium.r2.streamer.Streamer
+import org.readium.r2.testapp.reader.DecorationStyleAnnotationMark
+import org.readium.r2.testapp.reader.annotationMarkTemplate
 
 /**
  * Holds the shared Readium objects and services used by the app.

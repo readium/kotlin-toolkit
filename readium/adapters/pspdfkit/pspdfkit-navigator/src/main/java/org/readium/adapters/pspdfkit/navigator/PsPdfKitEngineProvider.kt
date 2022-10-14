@@ -13,8 +13,8 @@ import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
 import org.readium.r2.navigator.pdf.PdfDocumentFragmentInput
 import org.readium.r2.navigator.pdf.PdfEngineProvider
-import org.readium.r2.navigator.settings.Axis
-import org.readium.r2.navigator.settings.Preferences
+import org.readium.r2.navigator.preferences.Axis
+import org.readium.r2.navigator.preferences.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.util.pdf.cachedIn
@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.pdf.cachedIn
 @ExperimentalReadiumApi
 class PsPdfKitEngineProvider(
     private val context: Context,
-    private val defaults: PsPdfKitSettingsDefaults = PsPdfKitSettingsDefaults()
+    private val defaults: PsPdfKitDefaults = PsPdfKitDefaults()
 ) : PdfEngineProvider<PsPdfKitSettings> {
 
     override suspend fun createDocumentFragment(

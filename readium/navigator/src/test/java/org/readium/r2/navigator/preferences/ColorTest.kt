@@ -6,7 +6,7 @@
 
 @file:OptIn(ExperimentalReadiumApi::class)
 
-package org.readium.r2.navigator.settings
+package org.readium.r2.navigator.preferences
 
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive

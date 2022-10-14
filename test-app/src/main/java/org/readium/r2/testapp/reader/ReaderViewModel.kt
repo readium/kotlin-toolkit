@@ -33,8 +33,8 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.domain.model.Highlight
-import org.readium.r2.testapp.reader.settings.PreferencesStore
-import org.readium.r2.testapp.reader.settings.UserSettingsViewModel
+import org.readium.r2.testapp.reader.preferences.PreferencesStore
+import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
@@ -65,8 +65,8 @@ class ReaderViewModel(
         scope = viewModelScope
     )
 
-    val settings: UserSettingsViewModel? = (readerInitData as? VisualReaderInitData)?.preferences
-        ?.let { preferences -> UserSettingsViewModel(
+    val settings: UserPreferencesViewModel? = (readerInitData as? VisualReaderInitData)?.preferences
+        ?.let { preferences -> UserPreferencesViewModel(
                 bookId = readerInitData.bookId,
                 publication = readerInitData.publication,
                 kind = readerInitData.navigatorKind,

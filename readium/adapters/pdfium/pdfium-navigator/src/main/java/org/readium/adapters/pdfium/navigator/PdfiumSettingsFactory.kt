@@ -6,9 +6,9 @@
 
 package org.readium.adapters.pdfium.navigator
 
-import org.readium.r2.navigator.settings.Axis
-import org.readium.r2.navigator.settings.EnumSetting
-import org.readium.r2.navigator.settings.Preferences
+import org.readium.r2.navigator.preferences.Axis
+import org.readium.r2.navigator.preferences.EnumSetting
+import org.readium.r2.navigator.preferences.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.Metadata

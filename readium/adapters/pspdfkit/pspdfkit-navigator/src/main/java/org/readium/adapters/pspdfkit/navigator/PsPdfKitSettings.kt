@@ -4,61 +4,16 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
-
 package org.readium.adapters.pspdfkit.navigator
 
 import org.readium.r2.navigator.pdf.PdfSettingsValues
-import org.readium.r2.navigator.settings.*
+import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.util.Language
 
-/**
- * @param readingProgression
- * @param scroll
- * @param scrollAxis
- * @param fit
- * @param spread
- * @param pageSpacing
- * @param offset
- */
 @ExperimentalReadiumApi
-data class PsPdfKitSettings internal constructor(
-    override val readingProgression: EnumSetting<ReadingProgression>,
-    override val scroll: Setting<Boolean>,
-    override val scrollAxis: EnumSetting<Axis>,
-    override val fit: EnumSetting<Fit>,
-    override val spread: EnumSetting<Spread>,
-    override val pageSpacing: RangeSetting<Double>,
-    override val offset: Setting<Boolean>
-) : Configurable.Settings, FixedLayoutSettings {
-
-    override val language: Setting<Language?>? = null
-
-    companion object {
-
-        val FIT = Setting.Key<Fit>("fit")
-        val READING_PROGRESSION = Setting.Key<ReadingProgression>("readingProgression")
-        val SCROLL = Setting.Key<Boolean>("scroll")
-        val SCROLL_AXIS = Setting.Key<Axis>("scrollAxis")
-        val SPREAD = Setting.Key<Spread>("spread")
-        val PAGE_SPACING = Setting.Key<Double>("pageSpacing")
-        val OFFSET = Setting.Key<Boolean>("offset")
-    }
-}
-
-data class PsPdfKitSettingsDefaults(
-    val pageSpacing: Double = 16.0,
-    val pageSpacingRange: ClosedRange<Double> = 0.0..50.0,
-    val readingProgression: ReadingProgression = ReadingProgression.LTR,
-    val scroll: Boolean = false,
-    val spread: Spread = Spread.AUTO,
-    val offset: Boolean = true
-)
-
-data class PsPdfKitSettingsValues(
+data class PsPdfKitSettings(
     val readingProgression: ReadingProgression,
     val scroll: Boolean,
     val scrollAxis: Axis,

@@ -32,9 +32,6 @@ class Application : android.app.Application() {
     lateinit var readerRepository: Deferred<ReaderRepository>
         private set
 
-    lateinit var pdfEngineProvider: PdfEngineProvider<*, *>
-        private set
-
     private val coroutineScope: CoroutineScope =
         MainScope()
 
@@ -93,7 +90,6 @@ class Application : android.app.Application() {
                     readium,
                     mediaServiceBinder.await(),
                     bookRepository,
-                    pdfEngineProvider
                 )
             }
 

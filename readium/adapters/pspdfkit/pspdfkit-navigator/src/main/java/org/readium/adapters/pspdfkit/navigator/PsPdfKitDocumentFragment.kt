@@ -4,8 +4,6 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
-
 package org.readium.adapters.pspdfkit.navigator
 
 import android.graphics.PointF
@@ -33,8 +31,8 @@ import com.pspdfkit.ui.PdfFragment
 import com.pspdfkit.ui.toolbar.popup.PdfTextSelectionPopupToolbar
 import org.readium.adapters.pspdfkit.document.PsPdfKitDocument
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
-import org.readium.r2.navigator.settings.Axis
-import org.readium.r2.navigator.settings.Spread
+import org.readium.r2.navigator.preferences.Axis
+import org.readium.r2.navigator.preferences.Spread
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.Publication
@@ -43,7 +41,7 @@ import org.readium.r2.shared.publication.services.isProtected
 import kotlin.math.roundToInt
 
 @ExperimentalReadiumApi
-internal class PsPdfKitDocumentFragment internal constructor(
+internal class PsPdfKitDocumentFragment(
     private val publication: Publication,
     private val document: PsPdfKitDocument,
     private val initialPageIndex: Int,
@@ -83,7 +81,7 @@ internal class PsPdfKitDocumentFragment internal constructor(
     }
 
     private fun createPdfFragment(): PdfFragment {
-        document.document.pageBinding = settings.readingProgression.value.pageBinding
+        document.document.pageBinding = settings.readingProgression.pageBinding
 
         val config = PdfConfiguration.Builder()
             .animateScrollOnEdgeTaps(false)
@@ -98,18 +96,18 @@ internal class PsPdfKitDocumentFragment internal constructor(
             .enableMagnifier(true)
             .excludedAnnotationTypes(emptyList())
             .firstPageAlwaysSingle(false)
-            .fitMode(settings.fit.value.fitMode)
-            .layoutMode(settings.spread.value.pageLayout)
+            .fitMode(settings.fit.fitMode)
+            .layoutMode(settings.spread.pageLayout)
 //            .loadingProgressDrawable(null)
 //            .maxZoomScale()
-            .firstPageAlwaysSingle(settings.offset.value)
-            .pagePadding(settings.pageSpacing.value.roundToInt())
+            .firstPageAlwaysSingle(settings.offset)
+            .pagePadding(settings.pageSpacing.roundToInt())
             .restoreLastViewedPage(false)
             .scrollDirection(
-                if (!settings.scroll.value) PageScrollDirection.HORIZONTAL
-                else settings.scrollAxis.value.scrollDirection
+                if (!settings.scroll) PageScrollDirection.HORIZONTAL
+                else settings.scrollAxis.scrollDirection
             )
-            .scrollMode(settings.scroll.value.scrollMode)
+            .scrollMode(settings.scroll.scrollMode)
             .scrollOnEdgeTapEnabled(false)
             .scrollOnEdgeTapMargin(50)
             .scrollbarsEnabled(true)
@@ -162,12 +160,8 @@ internal class PsPdfKitDocumentFragment internal constructor(
 
         override fun onPageClick(document: PdfDocument, pageIndex: Int, event: MotionEvent?, pagePosition: PointF?, clickedAnnotation: Annotation?): Boolean {
             if (
-                pagePosition == null ||
-                clickedAnnotation is LinkAnnotation ||
-                clickedAnnotation is MediaAnnotation ||
-                clickedAnnotation is ScreenAnnotation ||
-                clickedAnnotation is SoundAnnotation ||
-                clickedAnnotation is WidgetAnnotation
+                pagePosition == null || clickedAnnotation is LinkAnnotation ||
+                clickedAnnotation is SoundAnnotation
             ) return false
 
             pdfFragment.viewProjection.toViewPoint(pagePosition, pageIndex)
@@ -186,35 +180,35 @@ internal class PsPdfKitDocumentFragment internal constructor(
                 .filter { allowedTextSelectionItems.contains(it.id) }
         }
     }
-}
 
-private val Boolean.scrollMode: PageScrollMode
-    get() = when (this) {
-        false -> PageScrollMode.PER_PAGE
-        true -> PageScrollMode.CONTINUOUS
-    }
+    private val Boolean.scrollMode: PageScrollMode
+        get() = when (this) {
+            false -> PageScrollMode.PER_PAGE
+            true -> PageScrollMode.CONTINUOUS
+        }
 
-private val Fit.fitMode: PageFitMode
-    get() = when (this) {
-        Fit.WIDTH -> PageFitMode.FIT_TO_WIDTH
-        else -> PageFitMode.FIT_TO_SCREEN
-    }
+    private val Fit.fitMode: PageFitMode
+        get() = when (this) {
+            Fit.WIDTH -> PageFitMode.FIT_TO_WIDTH
+            else -> PageFitMode.FIT_TO_SCREEN
+        }
 
-private val Axis.scrollDirection: PageScrollDirection
-    get() = when (this) {
-        Axis.VERTICAL -> PageScrollDirection.VERTICAL
-        Axis.HORIZONTAL -> PageScrollDirection.HORIZONTAL
-    }
+    private val Axis.scrollDirection: PageScrollDirection
+        get() = when (this) {
+            Axis.VERTICAL -> PageScrollDirection.VERTICAL
+            Axis.HORIZONTAL -> PageScrollDirection.HORIZONTAL
+        }
 
-private val ReadingProgression.pageBinding: PageBinding
-    get() = when (this) {
-        ReadingProgression.RTL -> PageBinding.RIGHT_EDGE
-        else -> PageBinding.LEFT_EDGE
-    }
+    private val ReadingProgression.pageBinding: PageBinding
+        get() = when (this) {
+            ReadingProgression.RTL -> PageBinding.RIGHT_EDGE
+            else -> PageBinding.LEFT_EDGE
+        }
 
-private val Spread.pageLayout: PageLayoutMode
-    get() = when (this) {
-        Spread.AUTO -> PageLayoutMode.AUTO
-        Spread.PREFERRED-> PageLayoutMode.DOUBLE
-        Spread.NEVER -> PageLayoutMode.SINGLE
+    private val Spread.pageLayout: PageLayoutMode
+        get() = when (this) {
+            Spread.AUTO -> PageLayoutMode.AUTO
+            Spread.PREFERRED-> PageLayoutMode.DOUBLE
+            Spread.NEVER -> PageLayoutMode.SINGLE
+        }
 }

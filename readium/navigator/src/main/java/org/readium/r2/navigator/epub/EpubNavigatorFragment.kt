@@ -53,8 +53,8 @@ import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2PagerAdapter.PageResource
 import org.readium.r2.navigator.pager.R2ViewPager
-import org.readium.r2.navigator.settings.Configurable
-import org.readium.r2.navigator.settings.FontFamily
+import org.readium.r2.navigator.preferences.Configurable
+import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
@@ -89,11 +89,11 @@ class EpubNavigatorFragment private constructor(
     override val publication: Publication,
     private val baseUrl: String?,
     private val initialLocator: Locator?,
-    private val initialPreferences: EpubPreferences?,
+    private val initialPreferences: EpubPreferences,
     internal val listener: Listener?,
     internal val paginationListener: PaginationListener?,
     config: Configuration,
-) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable<EpubSettingsValues, EpubPreferences> {
+) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable<EpubSettings, EpubPreferences> {
 
     // Make a copy to prevent the user from modifying the configuration after initialization.
     internal val config: Configuration = config.copy(
@@ -202,7 +202,7 @@ class EpubNavigatorFragment private constructor(
 
     // Configurable
 
-    override val settings: StateFlow<EpubSettingsValues> get() = viewModel.settings
+    override val settings: StateFlow<EpubSettings> get() = viewModel.settings
 
     override fun submitPreferences(preferences: EpubPreferences) {
         viewModel.submitPreferences(preferences)
@@ -260,8 +260,8 @@ class EpubNavigatorFragment private constructor(
         positions = positionsByReadingOrder.flatten()
         publicationIdentifier = publication.metadata.identifier ?: publication.metadata.title
 
-        when (publication.metadata.presentation.layout) {
-            EpubLayout.REFLOWABLE, null -> {
+        when (viewModel.layout) {
+            EpubLayout.REFLOWABLE -> {
                 resourcesSingle = publication.readingOrder.mapIndexed { index, link ->
                     PageResource.EpubReflowable(
                         link = link,
@@ -325,7 +325,7 @@ class EpubNavigatorFragment private constructor(
         resourcePager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
 
             override fun onPageSelected(position: Int) {
-//                if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
+//                if (viewModel.layout == EpubLayout.REFLOWABLE) {
 //                    resourcePager.disableTouchEvents = true
 //                }
                 currentReflowablePageFragment?.webView?.let { webView ->
@@ -455,10 +455,10 @@ class EpubNavigatorFragment private constructor(
         go(locator)
     }
 
-    private fun onSettingsChange(previous: EpubSettingsValues, new: EpubSettingsValues) {
-        if (new !is EpubSettingsValues.Reflowable) return
+    private fun onSettingsChange(previous: EpubSettings, new: EpubSettings) {
+        if (viewModel.layout == EpubLayout.FIXED) return
 
-        if ((previous as? EpubSettingsValues.Reflowable)?.fontSize != new.fontSize) {
+        if (previous.fontSize != new.fontSize) {
             r2PagerAdapter?.setFontSize(new.fontSize)
         }
     }
@@ -471,8 +471,11 @@ class EpubNavigatorFragment private constructor(
 
     private inner class PagerAdapterListener : R2PagerAdapter.Listener {
         override fun onCreatePageFragment(fragment: Fragment) {
-            val settings = settings.value as? EpubSettingsValues.Reflowable ?: return
-            (fragment as? R2EpubPageFragment)?.setFontSize(settings.fontSize)
+            if (viewModel.layout == EpubLayout.FIXED) {
+                return
+            }
+
+            (fragment as? R2EpubPageFragment)?.setFontSize(settings.value.fontSize)
         }
     }
 
@@ -952,7 +955,7 @@ class EpubNavigatorFragment private constructor(
             listener: Listener? = null,
             paginationListener: PaginationListener? = null,
             config: Configuration = Configuration(),
-            initialPreferences: EpubPreferences? = null,
+            initialPreferences: EpubPreferences = EpubPreferences()
         ): FragmentFactory =
             createFragmentFactory {
                 EpubNavigatorFragment(

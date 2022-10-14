@@ -4,11 +4,11 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.settings
+package org.readium.r2.navigator.preferences
 
 import kotlinx.coroutines.flow.StateFlow
-import org.readium.r2.navigator.settings.Configurable.Settings
-import org.readium.r2.navigator.settings.Configurable.Preferences
+import org.readium.r2.navigator.preferences.Configurable.Settings
+import org.readium.r2.navigator.preferences.Configurable.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**

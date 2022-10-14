@@ -9,7 +9,7 @@ package org.readium.r2.navigator.pdf
 import android.graphics.PointF
 import androidx.fragment.app.Fragment
 import org.readium.r2.navigator.VisualNavigator
-import org.readium.r2.navigator.settings.Configurable
+import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link

@@ -10,7 +10,7 @@ package org.readium.r2.navigator.epub
 
 import org.readium.r2.navigator.epub.extensions.isCjk
 import org.readium.r2.navigator.epub.extensions.isRtl
-import org.readium.r2.navigator.settings.*
+import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
@@ -22,15 +22,11 @@ import org.readium.r2.shared.util.Language
  * If you implement a custom [EpubSettingsPolicy], be sure that all values from settings
  * that will be active at the same time are compatible.
  */
-internal class EpubSettingsPolicy {
+internal class EpubSettingsPolicy(
+    private val metadata: Metadata
+) {
 
-    fun createSettings(metadata: Metadata, preferences: EpubPreferences): EpubSettingsValues =
-        when (preferences) {
-            is EpubPreferences.Reflowable -> reflowableSettings(metadata, preferences)
-            is EpubPreferences.FixedLayout -> fixedLayoutSettings(metadata, preferences)
-        }
-
-    fun reflowableSettings(metadata: Metadata, preferences: EpubPreferences.Reflowable): EpubSettingsValues.Reflowable {
+    fun settings(preferences: EpubPreferences): EpubSettings {
         val (language, readingProgression) = resolveReadingProgression(metadata, preferences)
 
         val verticalPref = preferences.verticalText
@@ -40,9 +36,10 @@ internal class EpubSettingsPolicy {
         val backgroundColor = preferences.backgroundColor ?: Color(theme.backgroundColor)
         val textColor = preferences.textColor ?: Color(theme.contentColor)
 
-        return EpubSettingsValues.Reflowable(
+        return EpubSettings(
             language = language,
             readingProgression = readingProgression,
+            spread = preferences.spread ?: Spread.NEVER,
             verticalText = verticalText,
             theme = theme,
             backgroundColor = backgroundColor,
@@ -64,16 +61,6 @@ internal class EpubSettingsPolicy {
             textNormalization = preferences.textNormalization ?: TextNormalization.NONE,
             typeScale = preferences.typeScale ?: 1.2,
             wordSpacing = preferences.wordSpacing ?: 0.0,
-        )
-    }
-
-    fun fixedLayoutSettings(metadata: Metadata, preferences: EpubPreferences.FixedLayout): EpubSettingsValues.FixedLayout {
-        val (language, readingProgression) = resolveReadingProgression(metadata, preferences)
-
-        return EpubSettingsValues.FixedLayout(
-            language = language,
-            readingProgression = readingProgression,
-            spread = preferences.spread ?: Spread.NEVER
         )
     }
 

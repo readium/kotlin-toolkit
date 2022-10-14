@@ -102,21 +102,15 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val readerData = model.readerInitData as VisualReaderInitData
-        readerData.preferences?.value
-            ?.let { model.settings.getPreferences(readerData.preferences.value::class) as Flow<EpubPreferences> }
-            ?.flowWithLifecycle(viewLifecycleOwner.lifecycle)
-            ?.onEach { navigatorFragment.submitPreferences(it) }
-            ?.launchIn(lifecycleScope)
 
        // This is a hack to draw the right background color on top and bottom blank spaces
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                model.settings.theme
-                    .onEach { theme ->
+                model.settings?.theme
+                    ?.onEach { theme ->
                         navigatorFragment.resourcePager.setBackgroundColor(theme.backgroundColor)
                     }
-                    .launchIn(this)
+                    ?.launchIn(this)
             }
         }
     }

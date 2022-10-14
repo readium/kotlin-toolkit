@@ -6,7 +6,7 @@
 
 package org.readium.adapters.pdfium.navigator
 
-import org.readium.r2.navigator.settings.*
+import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.ReadingProgression

@@ -16,7 +16,6 @@ import org.json.JSONObject
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.navigator.epub.EpubPreferences
-import org.readium.r2.navigator.pdf.PdfEngineProvider
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -30,8 +29,7 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.testapp.MediaService
 import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.bookshelf.BookRepository
-import org.readium.r2.testapp.reader.settings.PreferencesMixer
-import org.readium.r2.testapp.reader.settings.PreferencesStore
+import org.readium.r2.testapp.reader.preferences.PreferencesStore
 import java.io.File
 
 /**
@@ -48,7 +46,6 @@ class ReaderRepository(
     private val mediaBinder: MediaService.Binder,
     private val bookRepository: BookRepository,
     private val preferencesStore: PreferencesStore,
-    private val pdfEngineProvider: PdfEngineProvider<*, *>
 ) {
     object CancellationException : Exception()
 

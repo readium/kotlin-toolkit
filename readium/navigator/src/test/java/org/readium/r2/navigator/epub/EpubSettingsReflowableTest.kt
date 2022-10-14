@@ -13,9 +13,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.navigator.epub.EpubSettings.Reflowable
 import org.readium.r2.navigator.epub.css.*
-import org.readium.r2.navigator.settings.*
-import org.readium.r2.navigator.settings.Color
-import org.readium.r2.navigator.settings.TextAlign
+import org.readium.r2.navigator.preferences.*
+import org.readium.r2.navigator.preferences.Color
+import org.readium.r2.navigator.preferences.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Metadata

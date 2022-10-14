@@ -10,7 +10,7 @@ import org.readium.r2.navigator.SimplePresentation
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.pdf.PdfDocumentFragmentInput
 import org.readium.r2.navigator.pdf.PdfEngineProvider
-import org.readium.r2.navigator.settings.Preferences
+import org.readium.r2.navigator.preferences.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 

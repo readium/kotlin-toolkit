@@ -10,10 +10,8 @@ package org.readium.r2.navigator.epub
 
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.navigator.settings.Preferences
+import org.readium.r2.navigator.preferences.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.LocalizedString
-import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.presentation.Presentation.Spread
 import org.readium.r2.shared.util.Language

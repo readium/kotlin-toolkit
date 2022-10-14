@@ -15,7 +15,7 @@ import androidx.fragment.app.commitNow
 import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
-import org.readium.r2.navigator.settings.Configurable
+import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link

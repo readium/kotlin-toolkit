@@ -2,7 +2,7 @@ package org.readium.r2.navigator.epub.css
 
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.navigator.settings.FontFamily
+import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Language

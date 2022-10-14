@@ -3,7 +3,7 @@ package org.readium.r2.navigator.util
 import android.graphics.PointF
 import android.view.View
 import org.readium.r2.navigator.VisualNavigator
-import org.readium.r2.navigator.settings.Axis
+import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.ReadingProgression
 

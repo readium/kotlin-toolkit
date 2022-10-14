@@ -6,8 +6,7 @@
 
 package org.readium.adapters.pspdfkit.navigator
 
-import kotlinx.serialization.Serializable
-import org.readium.r2.navigator.settings.*
+import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Fit
@@ -16,165 +15,123 @@ import java.text.NumberFormat
 
 @ExperimentalReadiumApi
 class PsPdfKitPreferencesEditor(
-    private val currentSettings: PsPdfKitSettingsValues,
+    currentSettings: PsPdfKitSettings,
     initialPreferences: PsPdfKitPreferences,
-    private val publicationMetadata: Metadata,
-    defaults: PsPdfKitSettingsDefaults,
-    override val pageSpacingRange: ClosedRange<Double> = 0.0..50.0,
-    private val pageSpacingProgression: ProgressionStrategy<Double> = DoubleIncrement(5.0),
+    publicationMetadata: Metadata,
+    defaults: PsPdfKitDefaults,
+    configuration: Configuration
+) : PreferencesEditor<PsPdfKitPreferences> {
 
-    private val onPreferencesEdited: (PsPdfKitPreferences) -> Unit,
-) : PreferencesEditor, ReadingProgressionEditor, ScrollEditor, ScrollAxisEditor,
-    SpreadEditor, OffsetEditor, FitEditor, PageSpacingEditor {
+    data class Configuration(
+        val pageSpacingRange: ClosedRange<Double> = 0.0..50.0,
+        val pageSpacingProgression: ProgressionStrategy<Double> = DoubleIncrement(5.0),
+    )
 
     private val settingsPolicy: PsPdfKitSettingsPolicy =
-        PsPdfKitSettingsPolicy(defaults)
+        PsPdfKitSettingsPolicy(defaults, publicationMetadata)
 
-    private var newPreferences: PsPdfKitPreferences = initialPreferences.copy()
-        set(value) {
-            field = value
-            onPreferencesEdited(value)
-        }
+    override var preferences: PsPdfKitPreferences = initialPreferences
+        private set
 
-    override fun clearPreferences() {
-        newPreferences = PsPdfKitPreferences()
+    override fun clear() {
+        preferences = PsPdfKitPreferences()
     }
 
-    override var readingProgression: ReadingProgression?
-        get() = newPreferences.readingProgression
-        set(value) {
-            require(readingProgression in supportedReadingProgressionValues)
-            newPreferences = newPreferences.copy(readingProgression = value)
+    val readingProgression: EnumPreference<ReadingProgression> =
+        object : AbstractEnumPreference<ReadingProgression>(
+            currentSettings.readingProgression,
+            listOf(ReadingProgression.LTR, ReadingProgression.RTL)
+        ) {
+            override fun get(): ReadingProgression? = preferences.readingProgression
+
+            override fun set(value: ReadingProgression?) {
+                preferences = preferences.copy(readingProgression = value) }
+
+            override val isActive: Boolean = true
         }
 
-    override val isReadingProgressionPreferenceActive: Boolean =
-        true
+    val scroll: SwitchPreference =
+        object : AbstractSwitchPreference(
+            currentSettings.scroll
+        ) {
+            override var value: Boolean?
+                get() = preferences.scroll
+                set(value) { preferences = preferences.copy(scroll = value) }
 
-    override val supportedReadingProgressionValues: List<ReadingProgression> =
-        listOf(ReadingProgression.LTR, ReadingProgression.RTL)
-
-    override var scroll: Boolean?
-        get() = newPreferences.scroll
-        set(value) {
-            newPreferences = newPreferences.copy(scroll = value)
+            override val isActive: Boolean = true
         }
 
-    override val isScrollPreferenceActive: Boolean =
-        true
+    val scrollAxis: EnumPreference<Axis> =
+        object : AbstractEnumPreference<Axis>(
+            currentSettings.scrollAxis,
+            listOf(Axis.VERTICAL, Axis.HORIZONTAL),
+        ) {
+            override fun get(): Axis? = preferences.scrollAxis
 
-    override fun toggleScroll() {
-        scroll = !(scroll ?: currentSettings.scroll)
-    }
+            override fun set(value: Axis?) {
+                preferences = preferences.copy(scrollAxis = value)
+            }
 
-    override var scrollAxis: Axis?
-        get() = newPreferences.scrollAxis
-        set(value) {
-            newPreferences = newPreferences.copy(scrollAxis = value)
+            override val isActive: Boolean
+                get() = settingsPolicy.settings(preferences).scroll
         }
 
-    override val isScrollAxisPreferenceActive: Boolean
-       get() = settingsPolicy.settings(publicationMetadata, newPreferences).scroll
+    val spread: EnumPreference<Spread> =
+        object : AbstractEnumPreference<Spread>(
+            currentSettings.spread,
+            listOf(Spread.AUTO, Spread.NEVER, Spread.PREFERRED),
+        ) {
+            override fun get(): Spread? = preferences.spread
 
-    override val supportedScrollAxes: List<Axis> =
-        listOf(Axis.VERTICAL, Axis.HORIZONTAL)
+            override fun set(value: Spread?) {
+                preferences = preferences.copy(spread = value)
+            }
 
-    override var spread: Spread?
-        get() = newPreferences.spread
-        set(value) {
-            newPreferences = newPreferences.copy(spread = value)
+            override val isActive: Boolean
+                get() = !settingsPolicy.settings(preferences).scroll
         }
 
-    override val isSpreadPreferenceActive: Boolean =
-        true
+    val offset: SwitchPreference =
+        object : AbstractSwitchPreference(
+            currentSettings.offset
+        ) {
+            override var value: Boolean?
+                get() = preferences.offset
+                set(value) { preferences = preferences.copy(offset = value) }
 
-    override val supportedSpreadValues: List<Spread> =
-        listOf(Spread.AUTO, Spread.NEVER, Spread.PREFERRED)
-
-    override var fit: Fit?
-        get() = newPreferences.fit
-        set(value) {
-            require(value in supportedFitValues)
-            newPreferences.fit
+            override val isActive: Boolean
+                get() = settingsPolicy.settings(preferences).spread != Spread.NEVER
         }
 
-    override val isFitPreferenceActive: Boolean =
-        true
+    val fit: EnumPreference<Fit> =
+        object : AbstractEnumPreference<Fit>(
+            currentSettings.fit,
+            listOf(Fit.CONTAIN, Fit.WIDTH),
+        ) {
+            override fun get(): Fit? = preferences.fit
 
-    override val supportedFitValues: List<Fit> =
-        listOf(Fit.CONTAIN, Fit.WIDTH)
+            override fun set(value: Fit?) { preferences = preferences.copy(fit = value) }
 
-    override var offset: Boolean?
-        get() = newPreferences.offset
-        set(value) {
-            newPreferences = newPreferences.copy(offset = value)
+            override val isActive: Boolean = true
         }
 
-    override val isOffsetPreferenceActive: Boolean
-        get() = settingsPolicy.settings(publicationMetadata, newPreferences).spread != Spread.NEVER
+    val pageSpacing: RangePreference<Double> =
+        object : AbstractRangePreference<Double>(
+            currentSettings.pageSpacing,
+            configuration.pageSpacingRange,
+            configuration.pageSpacingProgression,
+        ) {
+            override fun get(): Double? = preferences.pageSpacing
 
-    override fun toggleOffset() {
-        newPreferences = newPreferences.copy(offset = newPreferences.offset ?: currentSettings.offset)
-    }
+            override fun set(value: Double?) { preferences = preferences.copy(pageSpacing = value) }
 
-    override var pageSpacing: Double?
-        get() = newPreferences.pageSpacing
-        set(value) {
-            newPreferences = newPreferences.copy(pageSpacing = value)
+            override val isActive: Boolean
+                get() = settingsPolicy.settings(preferences).scroll
+
+            override fun formatValue(value: Double): String =
+                NumberFormat.getNumberInstance().run {
+                    maximumFractionDigits = 1
+                    format(value)
+                }
         }
-
-    override val isPageSpacingPreferenceActive: Boolean
-        get() = settingsPolicy.settings(publicationMetadata, newPreferences).scroll
-
-    override fun incrementPageSpacing() {
-        val pageSpacing = pageSpacingProgression
-            .increment(newPreferences.pageSpacing ?: currentSettings.pageSpacing)
-            .coerceIn(pageSpacingRange)
-        newPreferences = newPreferences.copy(pageSpacing = pageSpacing)
-    }
-
-    override fun decrementPageSpacing() {
-        val pageSpacing = pageSpacingProgression
-            .decrement(newPreferences.pageSpacing ?: currentSettings.pageSpacing)
-            .coerceIn(pageSpacingRange)
-        newPreferences = newPreferences.copy(pageSpacing = pageSpacing)
-    }
-
-    override fun formatPageSpacing(value: Double): String =
-        NumberFormat.getNumberInstance().run {
-            maximumFractionDigits = 1
-            format(value)
-        }
-}
-
-@ExperimentalReadiumApi
-@Serializable
-data class PsPdfKitPreferences(
-    val readingProgression: ReadingProgression? = null,
-    val scroll: Boolean? = null,
-    val scrollAxis: Axis? = null,
-    val fit: Fit? = null,
-    val spread: Spread? = null,
-    val pageSpacing: Double? = null,
-    val offset: Boolean? = null
-) : Configurable.Preferences {
-
-    fun filterPublicationPreferences(): PsPdfKitPreferences =
-        copy(scroll = null, fit = null, spread = null, pageSpacing = null)
-
-    fun filterNavigatorPreferences(): PsPdfKitPreferences =
-        copy(readingProgression = null, scrollAxis = null, offset = null)
-
-    companion object {
-
-        fun merge(vararg preferences: PsPdfKitPreferences): PsPdfKitPreferences =
-            PsPdfKitPreferences(
-                readingProgression = preferences.firstNotNullOfOrNull { it.readingProgression },
-                scroll = preferences.firstNotNullOfOrNull { it.scroll },
-                scrollAxis = preferences.firstNotNullOfOrNull { it.scrollAxis },
-                fit = preferences.firstNotNullOfOrNull { it.fit },
-                spread = preferences.firstNotNullOfOrNull { it.spread },
-                pageSpacing = preferences.firstNotNullOfOrNull { it.pageSpacing },
-                offset = preferences.firstNotNullOfOrNull { it.offset }
-            )
-    }
 }

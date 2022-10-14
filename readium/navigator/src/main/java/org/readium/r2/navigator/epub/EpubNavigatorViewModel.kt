@@ -24,9 +24,9 @@ import org.readium.r2.navigator.*
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.navigator.epub.extensions.javascriptForGroup
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
-import org.readium.r2.navigator.settings.Axis
-import org.readium.r2.navigator.settings.ColumnCount
-import org.readium.r2.navigator.settings.Spread
+import org.readium.r2.navigator.preferences.Axis
+import org.readium.r2.navigator.preferences.ColumnCount
+import org.readium.r2.navigator.preferences.Spread
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.COLUMN_COUNT_REF
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -50,12 +50,15 @@ internal class EpubNavigatorViewModel(
     application: Application,
     val publication: Publication,
     val config: EpubNavigatorFragment.Configuration,
-    initialPreferences: EpubPreferences?,
+    initialPreferences: EpubPreferences,
     baseUrl: String?,
     private val server: WebViewServer?,
 ) : AndroidViewModel(application) {
 
     val useLegacySettings: Boolean = (server == null)
+
+    val layout: EpubLayout =
+        publication.metadata.presentation.layout ?: EpubLayout.REFLOWABLE
 
     val preferences: SharedPreferences =
         application.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
@@ -85,38 +88,21 @@ internal class EpubNavigatorViewModel(
     val events: Flow<Event> get() = _events.receiveAsFlow()
 
     private val settingsPolicy: EpubSettingsPolicy =
-        EpubSettingsPolicy()
+        EpubSettingsPolicy(publication.metadata)
 
-    private val initialPreferences: EpubPreferences =
-        when (publication.metadata.presentation.layout) {
-            EpubLayout.FIXED ->
-                (initialPreferences as? EpubPreferences.FixedLayout) ?: EpubPreferences.FixedLayout()
-            EpubLayout.REFLOWABLE, null ->
-                (initialPreferences as? EpubPreferences.Reflowable) ?: EpubPreferences.Reflowable()
-        }
+    private val _settings: MutableStateFlow<EpubSettings> =
+        MutableStateFlow(settingsPolicy.settings(initialPreferences))
 
-    private val _settings: MutableStateFlow<EpubSettingsValues> =
-        MutableStateFlow(settingsPolicy.createSettings(publication.metadata, this.initialPreferences))
-
-    val settings: StateFlow<EpubSettingsValues> = _settings.asStateFlow()
+    val settings: StateFlow<EpubSettings> = _settings.asStateFlow()
 
     val presentation: StateFlow<VisualNavigator.Presentation> = _settings
         .mapStateIn(viewModelScope) { settings ->
-            when (settings) {
-                is EpubSettingsValues.Reflowable ->
-                    SimplePresentation(
-                        readingProgression = settings.readingProgression,
-                        scroll = settings.scroll,
-                        axis = if (settings.scroll && !settings.verticalText) Axis.VERTICAL
-                        else Axis.HORIZONTAL
-                    )
-                is EpubSettingsValues.FixedLayout ->
-                    SimplePresentation(
-                        readingProgression = settings.readingProgression,
-                        scroll = false,
-                        axis = Axis.HORIZONTAL
-                    )
-            }
+            SimplePresentation(
+                readingProgression = settings.readingProgression,
+                scroll = settings.scroll,
+                axis = if (settings.scroll && !settings.verticalText) Axis.VERTICAL
+                else Axis.HORIZONTAL
+            )
         }
 
     private val css = MutableStateFlow(
@@ -230,23 +216,17 @@ internal class EpubNavigatorViewModel(
         server?.shouldInterceptRequest(request, css.value)
 
     fun submitPreferences(preferences: EpubPreferences) = viewModelScope.launch {
-        val oldReflowSettings = (settings.value as? EpubSettingsValues.Reflowable)
-        val oldFixedSettings = (settings.value as? EpubSettingsValues.FixedLayout)
-        val oldReadingProgression = readingProgression
+        val oldSettings = settings.value
 
-        val newSettings = settingsPolicy.createSettings(publication.metadata, preferences)
+        val newSettings = settingsPolicy.settings(preferences)
         _settings.value = newSettings
-
-        val newReflowSettings = (newSettings as? EpubSettingsValues.Reflowable)
-        val newFixedSettings = (newSettings as? EpubSettingsValues.FixedLayout)
-
         css.update { it.update(newSettings, config.fontFamilies) }
 
         val needsInvalidation: Boolean = (
-            oldReadingProgression != readingProgression ||
-                oldReflowSettings?.language != newReflowSettings?.language ||
-                oldReflowSettings?.verticalText != newReflowSettings?.verticalText ||
-                oldFixedSettings?.spread != newFixedSettings?.spread
+            oldSettings.readingProgression != newSettings.readingProgression||
+                oldSettings.language != newSettings.language ||
+                oldSettings.verticalText != newSettings.verticalText ||
+                oldSettings.spread != newSettings.spread
             )
 
         if (needsInvalidation) {
@@ -276,13 +256,13 @@ internal class EpubNavigatorViewModel(
                 else -> DualPage.AUTO
             }
         } else {
-            when (val settings = settings.value) {
-                is EpubSettingsValues.FixedLayout -> when (settings.spread) {
+            when (layout) {
+                EpubLayout.FIXED -> when (settings.value.spread) {
                     Spread.AUTO -> DualPage.AUTO
                     Spread.PREFERRED -> DualPage.ON
                     Spread.NEVER -> DualPage.OFF
                 }
-                is EpubSettingsValues.Reflowable -> when (settings.columnCount) {
+                EpubLayout.REFLOWABLE -> when (settings.value.columnCount) {
                     ColumnCount.ONE -> DualPage.OFF
                     ColumnCount.TWO -> DualPage.ON
                     ColumnCount.AUTO -> DualPage.AUTO
@@ -298,7 +278,9 @@ internal class EpubNavigatorViewModel(
             @Suppress("DEPRECATION")
             preferences.getBoolean(SCROLL_REF, false)
         } else {
-            (settings.value as? EpubSettings.Reflowable)?.scroll?.value ?: true
+            settings.value.scroll
+                .takeIf { layout == EpubLayout.REFLOWABLE }
+                ?: false
         }
 
     // Selection
@@ -377,10 +359,11 @@ internal class EpubNavigatorViewModel(
     }
 
     companion object {
+
         fun createFactory(
             application: Application, publication: Publication, baseUrl: String?,
             config: EpubNavigatorFragment.Configuration,
-            initialPreferences: EpubPreferences?
+            initialPreferences: EpubPreferences
         ) = createViewModelFactory {
             EpubNavigatorViewModel(application, publication, config, initialPreferences,
                 baseUrl = baseUrl,

@@ -6,7 +6,7 @@
 
 package org.readium.r2.navigator.epub.css
 
-import org.readium.r2.navigator.settings.FontFamily
+import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**

@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.testapp.reader.settings
+package org.readium.r2.testapp.reader.preferences
 
 import android.app.Application
 import android.content.Context

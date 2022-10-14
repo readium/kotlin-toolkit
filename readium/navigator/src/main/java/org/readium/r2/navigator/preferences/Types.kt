@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.settings
+package org.readium.r2.navigator.preferences
 
 import androidx.annotation.ColorInt
 import kotlinx.serialization.SerialName
@@ -141,5 +141,5 @@ enum class Axis(val value: String) {
 enum class Spread(val value: String) {
     @SerialName("auto") AUTO("auto"),
     @SerialName("never") NEVER("never"),
-    @SerialName("always") PREFERRED("preferred");
+    @SerialName("preferred") PREFERRED("preferred");
 }
