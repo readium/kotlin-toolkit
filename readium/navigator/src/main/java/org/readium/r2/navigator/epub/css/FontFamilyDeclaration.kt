@@ -13,7 +13,10 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * Declares an additional font available with Readium CSS.
  */
 @ExperimentalReadiumApi
-sealed interface FontFamilyDeclaration
+sealed class FontFamilyDeclaration {
+
+    abstract val name: String
+}
 
 /**
  * A typeface embedded in the app assets.
@@ -21,7 +24,7 @@ sealed interface FontFamilyDeclaration
  * @param path Path to the font file, relative to the assets folder.
  */
 @ExperimentalReadiumApi
-data class FontAsset(val name: String, val path: String) : FontFamilyDeclaration
+data class FontAsset(override val name: String, val path: String) : FontFamilyDeclaration()
 
 /**
  * A typeface hosted by Google Fonts.
@@ -31,7 +34,7 @@ data class FontAsset(val name: String, val path: String) : FontFamilyDeclaration
  * See https://fonts.google.com/ for the list of available fonts.
  */
 @ExperimentalReadiumApi
-data class GoogleFont(val name: String) : FontFamilyDeclaration
+data class GoogleFont(override val name: String) : FontFamilyDeclaration()
 
 @ExperimentalReadiumApi
 val FontFamily.fromGoogleFonts: FontFamilyDeclaration

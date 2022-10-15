@@ -20,16 +20,20 @@ class EpubPreferencesEditor(
     initialPreferences: EpubPreferences,
     publicationMetadata: Metadata,
     epubLayout: EpubLayout,
+    defaults: EpubNavigatorDefaults,
     configuration: Configuration
 ): PreferencesEditor<EpubPreferences> {
 
     data class Configuration(
-        val fontFamilies: List<FontFamily> = DEFAULT_FONT_FAMILIES
+        val ignoreDefaultFontFamilies: Boolean = false,
+        val additionalFontFamilies: List<FontFamily> = emptyList()
     )
 
-    companion object {
+    private val settingsResolver: EpubSettingsResolver =
+        EpubSettingsResolver(publicationMetadata, defaults)
 
-        val DEFAULT_FONT_FAMILIES: List<FontFamily> = listOf(
+    private val defaultFontFamilies: List<FontFamily> =
+        listOf(
             FontFamily.LITERATA,
             FontFamily.PT_SERIF,
             FontFamily.ROBOTO,
@@ -39,10 +43,13 @@ class EpubPreferencesEditor(
             FontFamily.IA_WRITER_DUOSPACE,
             FontFamily.OPEN_DYSLEXIC
         )
-    }
 
-    private val settingsResolver: EpubSettingsResolver =
-        EpubSettingsResolver(publicationMetadata)
+    private val fontFamilies: List<FontFamily> =
+        defaultFontFamilies
+            .takeUnless { configuration.ignoreDefaultFontFamilies }
+            .orEmpty()
+            .plus(configuration.additionalFontFamilies)
+
 
     val layout: EpubLayout = epubLayout
 

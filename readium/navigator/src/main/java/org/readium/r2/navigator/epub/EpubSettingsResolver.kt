@@ -20,7 +20,8 @@ import org.readium.r2.shared.util.Language
  * A policy which computes EPUB settings values from sets of metadata and preferences.
  */
 internal class EpubSettingsResolver(
-    private val metadata: Metadata
+    private val metadata: Metadata,
+    private val defaults: EpubNavigatorDefaults
 ) {
 
     fun settings(preferences: EpubPreferences): EpubSettings {
@@ -36,24 +37,24 @@ internal class EpubSettingsResolver(
         return EpubSettings(
             language = language,
             readingProgression = readingProgression,
-            spread = preferences.spread ?: Spread.NEVER,
+            spread = preferences.spread ?: defaults.spread,
             verticalText = verticalText,
             theme = theme,
             backgroundColor = backgroundColor,
             textColor = textColor,
-            columnCount = preferences.columnCount ?: ColumnCount.AUTO,
+            columnCount = preferences.columnCount ?: defaults.columnCount,
             fontFamily = preferences.fontFamily,
-            fontSize = preferences.fontSize ?: 1.0,
+            fontSize = preferences.fontSize ?: defaults.fontSize,
             hyphens = preferences.hyphens ?: true,
             imageFilter = preferences.imageFilter ?: ImageFilter.NONE,
             letterSpacing = preferences.letterSpacing ?: 0.0,
             ligatures = preferences.ligatures ?: true,
-            lineHeight = preferences.lineHeight ?: 1.2,
+            lineHeight = preferences.lineHeight ?: defaults.lineHeight,
             pageMargins = preferences.pageMargins ?: 1.0,
             paragraphIndent = preferences.paragraphIndent ?: 0.0,
             paragraphSpacing = preferences.paragraphSpacing ?: 0.0,
             publisherStyles = preferences.publisherStyles ?: true,
-            scroll = preferences.scroll ?: false,
+            scroll = preferences.scroll ?: defaults.scroll,
             textAlign = preferences.textAlign ?: TextAlign.START,
             textNormalization = preferences.textNormalization ?: TextNormalization.NONE,
             typeScale = preferences.typeScale ?: 1.2,
@@ -70,6 +71,7 @@ internal class EpubSettingsResolver(
         // preference value > metadata value > default value > null
         val language = langPref
             ?: metadataLanguage
+            ?: defaults.language
 
         // Compute readingProgression according to the following rule:
         // preference value > value inferred from language preference > metadata value
@@ -84,6 +86,10 @@ internal class EpubSettingsResolver(
                 metadata.readingProgression
             metadataLanguage != null ->
                 if (metadataLanguage.isRtl) ReadingProgression.RTL else ReadingProgression.LTR
+            defaults.readingProgression != null ->
+                defaults.readingProgression
+            defaults.language != null ->
+                if (defaults.language.isRtl) ReadingProgression.RTL else ReadingProgression.LTR
             else ->
                 ReadingProgression.LTR
         }

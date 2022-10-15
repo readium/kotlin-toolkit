@@ -44,6 +44,8 @@ import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel.RunScriptCommand
 import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
 import org.readium.r2.navigator.epub.css.RsProperties
+import org.readium.r2.navigator.epub.css.fromAsset
+import org.readium.r2.navigator.epub.css.fromGoogleFonts
 import org.readium.r2.navigator.extensions.optRectF
 import org.readium.r2.navigator.extensions.positionsByResource
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
@@ -52,6 +54,7 @@ import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2PagerAdapter.PageResource
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.preferences.Configurable
+import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
@@ -90,7 +93,8 @@ class EpubNavigatorFragment internal constructor(
     internal val listener: Listener?,
     internal val paginationListener: PaginationListener?,
     epubLayout: EpubLayout,
-    private val fontFamilyDeclarations: List<FontFamilyDeclaration> = emptyList(),
+    private val fontFamilyDeclarations: List<FontFamilyDeclaration>,
+    private val defaults: EpubNavigatorDefaults,
     configuration: Configuration,
 ) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable<EpubSettings, EpubPreferences> {
 
@@ -190,7 +194,8 @@ class EpubNavigatorFragment internal constructor(
             baseUrl = baseUrl, config = this.config,
             initialPreferences = initialPreferences,
             layout = epubLayout,
-            fontFamilyDeclarations = fontFamilyDeclarations
+            fontFamilyDeclarations = fontFamilyDeclarations,
+            defaults = defaults
         )
     }
 
@@ -928,6 +933,8 @@ class EpubNavigatorFragment internal constructor(
                     publication, baseUrl, initialLocator, initialPreferences,
                     listener, paginationListener,
                     epubLayout = publication.metadata.presentation.layout ?: EpubLayout.REFLOWABLE,
+                    fontFamilyDeclarations = DEFAULT_FONT_DECLARATIONS,
+                    defaults = EpubNavigatorDefaults(),
                     configuration = config,
                 )
             }
@@ -937,6 +944,15 @@ class EpubNavigatorFragment internal constructor(
          */
         fun assetUrl(path: String): String =
             WebViewServer.assetUrl(path)
+
+        internal val DEFAULT_FONT_DECLARATIONS: List<FontFamilyDeclaration> = listOf(
+            FontFamily.LITERATA.fromGoogleFonts,
+            FontFamily.PT_SERIF.fromGoogleFonts,
+            FontFamily.VOLLKORN.fromGoogleFonts,
+            FontFamily.ROBOTO.fromGoogleFonts,
+            FontFamily.SOURCE_SANS_PRO.fromGoogleFonts,
+            FontFamily.OPEN_DYSLEXIC.fromAsset("readium/fonts/OpenDyslexic-Regular.otf")
+        )
     }
 
 }

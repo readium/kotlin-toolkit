@@ -6,8 +6,7 @@
 
 package org.readium.r2.navigator.epub
 
-import org.readium.r2.navigator.epub.css.*
-import org.readium.r2.navigator.preferences.FontFamily
+import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
 import org.readium.r2.navigator.preferences.NavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
@@ -22,12 +21,20 @@ class EpubNavigatorFactory(
 ) : NavigatorFactory<EpubSettings, EpubPreferences, EpubPreferencesEditor> {
 
     data class Configuration(
+        val navigatorDefaults: EpubNavigatorDefaults = EpubNavigatorDefaults(),
         val editorConfiguration: EpubPreferencesEditor.Configuration = EpubPreferencesEditor.Configuration(),
-        val fontFamilyDeclarations: List<FontFamilyDeclaration> = DEFAULT_FONT_DECLARATIONS
+        val ignoreDefaultFontDeclarations: Boolean = false,
+        val additionalFontDeclarations:  List<FontFamilyDeclaration> = emptyList()
     )
 
     private val epubLayout: EpubLayout =
         publication.metadata.presentation.layout ?: EpubLayout.REFLOWABLE
+
+    private val fontDeclarations: List<FontFamilyDeclaration> =
+        EpubNavigatorFragment.DEFAULT_FONT_DECLARATIONS
+            .takeUnless { configuration.ignoreDefaultFontDeclarations }
+            .orEmpty()
+            .plus(configuration.additionalFontDeclarations)
 
     fun createFragmentFactory(
         initialLocator: Locator?,
@@ -44,7 +51,8 @@ class EpubNavigatorFactory(
                 listener = listener,
                 paginationListener = paginationListener,
                 epubLayout = epubLayout,
-                fontFamilyDeclarations = this.configuration.fontFamilyDeclarations,
+                fontFamilyDeclarations = fontDeclarations,
+                defaults = this.configuration.navigatorDefaults,
                 configuration = configuration
             )
         }
@@ -57,18 +65,7 @@ class EpubNavigatorFactory(
             initialPreferences = currentPreferences,
             publicationMetadata = publication.metadata,
             epubLayout = epubLayout,
+            defaults = configuration.navigatorDefaults,
             configuration = configuration.editorConfiguration
         )
-
-    companion object {
-
-        val DEFAULT_FONT_DECLARATIONS: List<FontFamilyDeclaration> = listOf(
-            FontFamily.LITERATA.fromGoogleFonts,
-            FontFamily.PT_SERIF.fromGoogleFonts,
-            FontFamily.VOLLKORN.fromGoogleFonts,
-            FontFamily.ROBOTO.fromGoogleFonts,
-            FontFamily.SOURCE_SANS_PRO.fromGoogleFonts,
-            FontFamily.OPEN_DYSLEXIC.fromAsset("readium/fonts/OpenDyslexic-Regular.otf")
-        )
-    }
 }

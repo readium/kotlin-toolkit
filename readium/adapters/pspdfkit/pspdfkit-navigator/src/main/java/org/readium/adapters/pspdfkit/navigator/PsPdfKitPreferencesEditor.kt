@@ -28,7 +28,7 @@ class PsPdfKitPreferencesEditor(
     )
 
     private val settingsResolver: PsPdfKitSettingsResolver =
-        PsPdfKitSettingsResolver(defaults, publicationMetadata)
+        PsPdfKitSettingsResolver(publicationMetadata, defaults)
 
     override var preferences: PsPdfKitPreferences = initialPreferences
         private set

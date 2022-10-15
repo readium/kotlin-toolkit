@@ -53,6 +53,7 @@ internal class EpubNavigatorViewModel(
     initialPreferences: EpubPreferences,
     val layout: EpubLayout,
     private val fontFamilyDeclarations: List<FontFamilyDeclaration>,
+    private val defaults: EpubNavigatorDefaults,
     baseUrl: String?,
     private val server: WebViewServer?,
 ) : AndroidViewModel(application) {
@@ -87,7 +88,7 @@ internal class EpubNavigatorViewModel(
     val events: Flow<Event> get() = _events.receiveAsFlow()
 
     private val settingsPolicy: EpubSettingsResolver =
-        EpubSettingsResolver(publication.metadata)
+        EpubSettingsResolver(publication.metadata, defaults)
 
     private val _settings: MutableStateFlow<EpubSettings> =
         MutableStateFlow(settingsPolicy.settings(initialPreferences))
@@ -364,11 +365,12 @@ internal class EpubNavigatorViewModel(
         fun createFactory(
             application: Application, publication: Publication, baseUrl: String?,
             layout: EpubLayout, fontFamilyDeclarations: List<FontFamilyDeclaration>,
-            config: EpubNavigatorFragment.Configuration,
+            defaults: EpubNavigatorDefaults, config: EpubNavigatorFragment.Configuration,
             initialPreferences: EpubPreferences
         ) = createViewModelFactory {
             EpubNavigatorViewModel(application, publication, config, initialPreferences, layout,
                 fontFamilyDeclarations = fontFamilyDeclarations,
+                defaults = defaults,
                 baseUrl = baseUrl,
                 server = if (baseUrl != null) null
                     else WebViewServer(application, publication, servedAssets = config.servedAssets)
