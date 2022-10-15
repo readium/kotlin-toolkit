@@ -100,7 +100,7 @@ sealed class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.
         }
     }
 
-    open val editor: StateFlow<E?> =
+    val editor: StateFlow<E?> =
         combine(viewModelScope, SharingStarted.Eagerly, _settings, preferences) { settings, preferences ->
             settings?.let { settingsNotNull ->
                 navigatorFactory.createPreferencesEditor(settingsNotNull, preferences)
@@ -108,11 +108,14 @@ sealed class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.
         }
 
     fun submitPreferences(preferences: P) = viewModelScope.launch {
-            val serializer = navigatorFactory.createPreferencesSerializer()
-            val sharedPreferences = preferencesFilter.filterSharedPreferences(preferences)
-            val publicationPreferences = preferencesFilter.filterPublicationPreferences(preferences)
-            preferencesStore.set(serializer.serialize(sharedPreferences), preferencesClass)
-            preferencesStore.set(serializer.serialize(publicationPreferences), preferencesClass, bookId)
+            val sharedPreferences = preferencesFilter
+                .filterSharedPreferences(preferences)
+                .let { preferencesSerializer.serialize(it) }
+            val publicationPreferences = preferencesFilter
+                .filterPublicationPreferences(preferences)
+                .let { preferencesSerializer.serialize(it) }
+            preferencesStore.set(sharedPreferences, preferencesClass)
+            preferencesStore.set(publicationPreferences, preferencesClass, bookId)
         }
 
     /**
