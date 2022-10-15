@@ -10,6 +10,8 @@ import androidx.annotation.ColorInt
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
+import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
+import org.readium.r2.navigator.epub.css.GoogleFont
 import org.readium.r2.shared.ExperimentalReadiumApi
 import android.graphics.Color as AndroidColor
 
@@ -80,10 +82,9 @@ enum class ImageFilter {
  *
  * When not available, the Navigator should use [alternate] as a fallback.
  */
-@JvmInline
 @ExperimentalReadiumApi
 @Serializable
-value class FontFamily(val name: String) {
+data class FontFamily(val name: String, val alternate: FontFamily? = null) {
 
     companion object {
         // Generic font families
@@ -98,29 +99,29 @@ value class FontFamily(val name: String) {
         // See https://readium.org/readium-css/docs/CSS10-libre_fonts
 
         // Serif
-        val CHARIS_SIL = FontFamily("Charis SIL")
-        val FAUSTINA = FontFamily("Faustina")
-        val IBM_PLEX_SERIF = FontFamily("IBM Plex Serif")
-        val LITERATA = FontFamily("Literata")
-        val MERRIWEATHER = FontFamily("Merriweather")
-        val PT_SERIF = FontFamily("PT Serif")
-        val VOLLKORN = FontFamily("Vollkorn")
+        val CHARIS_SIL = FontFamily("Charis SIL", alternate = SERIF)
+        val FAUSTINA = FontFamily("Faustina", alternate = SERIF)
+        val IBM_PLEX_SERIF = FontFamily("IBM Plex Serif", alternate = SERIF)
+        val LITERATA = FontFamily("Literata", alternate = SERIF)
+        val MERRIWEATHER = FontFamily("Merriweather", alternate = SERIF)
+        val PT_SERIF = FontFamily("PT Serif", alternate = SERIF)
+        val VOLLKORN = FontFamily("Vollkorn", alternate = SERIF)
 
         // Sans-serif
-        val CLEAR_SANS = FontFamily("Clear Sans")
-        val FIRA_SANS = FontFamily("Fira Sans")
-        val LIBRE_FRANKLIN = FontFamily("Libre Franklin")
-        val MERRIWEATHER_SANS = FontFamily("Merriweather Sans")
-        val PT_SANS = FontFamily("PT Sans")
-        val SOURCE_SANS_PRO = FontFamily("Source Sans Pro")
+        val CLEAR_SANS = FontFamily("Clear Sans", alternate = SANS_SERIF)
+        val FIRA_SANS = FontFamily("Fira Sans", alternate = SANS_SERIF)
+        val LIBRE_FRANKLIN = FontFamily("Libre Franklin", alternate = SANS_SERIF)
+        val MERRIWEATHER_SANS = FontFamily("Merriweather Sans", alternate = SANS_SERIF)
+        val PT_SANS = FontFamily("PT Sans", alternate = SANS_SERIF)
+        val SOURCE_SANS_PRO = FontFamily("Source Sans Pro", alternate = SANS_SERIF)
 
         // Accessibility
         val ACCESSIBLE_DFA = FontFamily("AccessibleDfA")
-        val IA_WRITER_DUOSPACE = FontFamily("IA Writer Duospace")
+        val IA_WRITER_DUOSPACE = FontFamily("IA Writer Duospace", alternate = MONOSPACE)
         val OPEN_DYSLEXIC = FontFamily("OpenDyslexic")
 
         // System
-        val ROBOTO = FontFamily("Roboto")
+        val ROBOTO = FontFamily("Roboto", alternate = SANS_SERIF)
     }
 }
 

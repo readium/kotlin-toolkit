@@ -43,9 +43,7 @@ import org.readium.r2.navigator.*
 import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel.RunScriptCommand
 import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
-import org.readium.r2.navigator.epub.css.FontFamilySource.*
 import org.readium.r2.navigator.epub.css.RsProperties
-import org.readium.r2.navigator.epub.css.from
 import org.readium.r2.navigator.extensions.optRectF
 import org.readium.r2.navigator.extensions.positionsByResource
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
@@ -54,7 +52,6 @@ import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2PagerAdapter.PageResource
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.preferences.Configurable
-import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
@@ -93,6 +90,7 @@ class EpubNavigatorFragment internal constructor(
     internal val listener: Listener?,
     internal val paginationListener: PaginationListener?,
     epubLayout: EpubLayout,
+    private val fontFamilyDeclarations: List<FontFamilyDeclaration> = emptyList(),
     configuration: Configuration,
 ) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable<EpubSettings, EpubPreferences> {
 
@@ -114,12 +112,6 @@ class EpubNavigatorFragment internal constructor(
          */
         @ExperimentalReadiumApi
         val servedAssets: List<String> = emptyList(),
-
-        /**
-         * Font families available in reflowable resources.
-         */
-        @ExperimentalReadiumApi
-        val fontFamilies: List<FontFamilyDeclaration> = DEFAULT_FONT_FAMILIES,
 
         /**
          * Readium CSS reading system settings.
@@ -156,35 +148,6 @@ class EpubNavigatorFragment internal constructor(
          */
         fun registerJavascriptInterface(name: String, factory: JavascriptInterfaceFactory) {
             javascriptInterfaces[name] = factory
-        }
-
-        companion object {
-            // Generic font families
-            // See https://www.w3.org/TR/css-fonts-4/#generic-font-families
-            private val SERIF = FontFamily.SERIF.from(System)
-            private val SANS_SERIF = FontFamily.SANS_SERIF.from(System)
-            private val MONOSPACE = FontFamily.MONOSPACE.from(System)
-
-            /**
-             * Default font family declarations.
-             *
-             * Warning: Most of them require an Internet connection (Google Fonts).
-             */
-            val DEFAULT_FONT_FAMILIES: List<FontFamilyDeclaration> = listOf(
-                // Serif
-                FontFamily.LITERATA.from(GoogleFonts, alternate = SERIF),
-                FontFamily.PT_SERIF.from(GoogleFonts, alternate = SERIF),
-                FontFamily.VOLLKORN.from(GoogleFonts, alternate = SERIF),
-
-                // Sans-serif
-                FontFamily.ROBOTO.from(GoogleFonts, alternate = SANS_SERIF),
-                FontFamily.SOURCE_SANS_PRO.from(GoogleFonts, alternate = SANS_SERIF),
-
-                // Accessibility
-                FontFamily.ACCESSIBLE_DFA.from(ReadiumCss),
-                FontFamily.IA_WRITER_DUOSPACE.from(ReadiumCss, alternate = MONOSPACE),
-                FontFamily.OPEN_DYSLEXIC.from(Assets("readium/fonts/OpenDyslexic-Regular.otf")),
-            )
         }
     }
 
@@ -226,7 +189,8 @@ class EpubNavigatorFragment internal constructor(
             requireActivity().application, publication,
             baseUrl = baseUrl, config = this.config,
             initialPreferences = initialPreferences,
-            layout = epubLayout
+            layout = epubLayout,
+            fontFamilyDeclarations = fontFamilyDeclarations
         )
     }
 

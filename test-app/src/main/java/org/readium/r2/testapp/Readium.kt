@@ -47,7 +47,7 @@ class Readium(context: Context) {
 
     val epubNavigatorConfig: EpubNavigatorFactory.Configuration =
         EpubNavigatorFactory.Configuration(
-            editorConfiguration = EpubPreferencesEditor.Configuration(4)
+            editorConfiguration = EpubPreferencesEditor.Configuration()
         )
 
     val psPdfKitConfig: PsPdfKitNavigatorFactory.Configuration =

@@ -24,8 +24,22 @@ class EpubPreferencesEditor(
 ): PreferencesEditor<EpubPreferences> {
 
     data class Configuration(
-        val dumb: Any
+        val fontFamilies: List<FontFamily> = DEFAULT_FONT_FAMILIES
     )
+
+    companion object {
+
+        val DEFAULT_FONT_FAMILIES: List<FontFamily> = listOf(
+            FontFamily.LITERATA,
+            FontFamily.PT_SERIF,
+            FontFamily.ROBOTO,
+            FontFamily.SOURCE_SANS_PRO,
+            FontFamily.VOLLKORN,
+            FontFamily.ACCESSIBLE_DFA,
+            FontFamily.IA_WRITER_DUOSPACE,
+            FontFamily.OPEN_DYSLEXIC
+        )
+    }
 
     private val settingsResolver: EpubSettingsResolver =
         EpubSettingsResolver(publicationMetadata)

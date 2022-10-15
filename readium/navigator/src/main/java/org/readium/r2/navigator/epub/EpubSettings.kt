@@ -8,8 +8,6 @@
 
 package org.readium.r2.navigator.epub
 
-import android.content.Context
-import android.content.SharedPreferences
 import org.readium.r2.navigator.epub.css.*
 import org.readium.r2.navigator.epub.css.Layout
 import org.readium.r2.navigator.epub.css.ReadiumCss
@@ -84,7 +82,7 @@ data class EpubSettings(
     val wordSpacing: Double
 ) : Configurable.Settings
 
-internal fun ReadiumCss.update(settings: EpubSettings, fontFamilies: List<FontFamilyDeclaration>): ReadiumCss {
+internal fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
     return with (settings) {
         copy(
             layout = Layout.from(settings),
@@ -109,7 +107,7 @@ internal fun ReadiumCss.update(settings: EpubSettings, fontFamilies: List<FontFa
                 textColor = textColor.toCss(),
                 backgroundColor = backgroundColor.toCss(),
                 fontOverride = (fontFamily != null || (textNormalization == TextNormalization.ACCESSIBILITY)),
-                fontFamily = fontFamily?.toCss(fontFamilies),
+                fontFamily = fontFamily?.toCss(),
                 // Font size is handled natively with WebSettings.textZoom.
                 // See https://github.com/readium/mobile/issues/1#issuecomment-652431984
 //                fontSize = fontSize.value
@@ -138,11 +136,9 @@ internal fun ReadiumCss.update(settings: EpubSettings, fontFamilies: List<FontFa
     }
 }
 
-private fun FontFamily.toCss(declarations: List<FontFamilyDeclaration>): List<String> = buildList {
-    val declaration = declarations.firstOrNull { it.fontFamily == this@toCss }
-    checkNotNull(declaration) { "Cannot resolve font name."}
+private fun FontFamily.toCss(): List<String> = buildList {
     add(name)
-    val alternateChain = declaration.alternate?.fontFamily?.toCss(declarations)
+    val alternateChain = alternate?.toCss()
     alternateChain?.let {  addAll(it) }
 }
 

@@ -540,14 +540,14 @@ class HtmlInjectionTest {
     fun `Inject font declarations`() {
         val sut = ReadiumCss(
             fontFamilies = listOf(
-                FontFamily.SANS_SERIF.from(FontFamilySource.System),
-                FontFamily.ROBOTO.from(FontFamilySource.GoogleFonts),
-                FontFamily.LITERATA.from(FontFamilySource.GoogleFonts),
-                FontFamily.LIBRE_FRANKLIN.from(FontFamilySource.Assets("fonts/LibreFranklin.otf")),
-                FontFamily.ACCESSIBLE_DFA.from(FontFamilySource.ReadiumCss),
-                FontFamily.PT_SERIF.from(FontFamilySource.GoogleFonts),
-                FontFamily.IA_WRITER_DUOSPACE.from(FontFamilySource.ReadiumCss),
-                FontFamily.OPEN_DYSLEXIC.from(FontFamilySource.Assets("fonts/OpenDyslexic.otf")),
+                FontFamily.SANS_SERIF.from(FontFamilyDeclaration.System),
+                FontFamily.ROBOTO.from(FontFamilyDeclaration.GoogleFont),
+                FontFamily.LITERATA.from(FontFamilyDeclaration.GoogleFont),
+                FontFamily.LIBRE_FRANKLIN.from(FontFamilyDeclaration.Assets("fonts/LibreFranklin.otf")),
+                FontFamily.ACCESSIBLE_DFA.from(FontFamilyDeclaration.ReadiumCss),
+                FontFamily.PT_SERIF.from(FontFamilyDeclaration.GoogleFont),
+                FontFamily.IA_WRITER_DUOSPACE.from(FontFamilyDeclaration.ReadiumCss),
+                FontFamily.OPEN_DYSLEXIC.from(FontFamilyDeclaration.Assets("fonts/OpenDyslexic.otf")),
             ),
             assetsBaseHref = "/assets/"
         )

@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.navigator.epub.extensions.javascriptForGroup
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
@@ -51,6 +52,7 @@ internal class EpubNavigatorViewModel(
     val config: EpubNavigatorFragment.Configuration,
     initialPreferences: EpubPreferences,
     val layout: EpubLayout,
+    private val fontFamilyDeclarations: List<FontFamilyDeclaration>,
     baseUrl: String?,
     private val server: WebViewServer?,
 ) : AndroidViewModel(application) {
@@ -105,9 +107,9 @@ internal class EpubNavigatorViewModel(
     private val css = MutableStateFlow(
         ReadiumCss(
             rsProperties = config.readiumCssRsProperties,
-            fontFamilies = config.fontFamilies,
+            fontFamilies = fontFamilyDeclarations,
             assetsBaseHref = WebViewServer.assetsBaseHref
-        ).update(settings.value, config.fontFamilies)
+        ).update(settings.value)
     )
 
     init {
@@ -217,7 +219,7 @@ internal class EpubNavigatorViewModel(
 
         val newSettings = settingsPolicy.settings(preferences)
         _settings.value = newSettings
-        css.update { it.update(newSettings, config.fontFamilies) }
+        css.update { it.update(newSettings) }
 
         val needsInvalidation: Boolean = (
             oldSettings.readingProgression != newSettings.readingProgression||
@@ -361,10 +363,12 @@ internal class EpubNavigatorViewModel(
 
         fun createFactory(
             application: Application, publication: Publication, baseUrl: String?,
-            layout: EpubLayout, config: EpubNavigatorFragment.Configuration,
+            layout: EpubLayout, fontFamilyDeclarations: List<FontFamilyDeclaration>,
+            config: EpubNavigatorFragment.Configuration,
             initialPreferences: EpubPreferences
         ) = createViewModelFactory {
             EpubNavigatorViewModel(application, publication, config, initialPreferences, layout,
+                fontFamilyDeclarations = fontFamilyDeclarations,
                 baseUrl = baseUrl,
                 server = if (baseUrl != null) null
                     else WebViewServer(application, publication, servedAssets = config.servedAssets)
