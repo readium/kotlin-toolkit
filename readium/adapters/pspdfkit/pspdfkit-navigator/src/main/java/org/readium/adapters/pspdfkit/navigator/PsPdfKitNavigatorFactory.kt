@@ -17,8 +17,8 @@ class PsPdfKitNavigatorFactory(
 ) : NavigatorFactory<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor> {
 
     data class Configuration(
-        val navigatorDefaults: PsPdfKitDefaults,
-        val editorConfiguration: PsPdfKitPreferencesEditor.Configuration
+        val navigatorDefaults: PsPdfKitDefaults = PsPdfKitDefaults(),
+        val editorConfiguration: PsPdfKitPreferencesEditor.Configuration = PsPdfKitPreferencesEditor.Configuration()
     )
 
     override fun createPreferencesEditor(

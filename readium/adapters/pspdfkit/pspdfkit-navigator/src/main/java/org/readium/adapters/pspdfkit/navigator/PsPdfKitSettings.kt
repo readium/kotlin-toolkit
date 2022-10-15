@@ -6,7 +6,6 @@
 
 package org.readium.adapters.pspdfkit.navigator
 
-import org.readium.r2.navigator.pdf.PdfSettingsValues
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Fit
@@ -21,4 +20,4 @@ data class PsPdfKitSettings(
     val spread: Spread,
     val pageSpacing: Double,
     val offset: Boolean
-) : PdfSettingsValues
+) : Configurable.Settings

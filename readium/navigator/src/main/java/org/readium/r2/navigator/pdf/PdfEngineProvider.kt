@@ -10,6 +10,7 @@ import android.graphics.PointF
 import androidx.fragment.app.Fragment
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.preferences.Configurable
+import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
@@ -20,7 +21,7 @@ import org.readium.r2.shared.publication.Publication
  * To be implemented by adapters for third-party PDF engines which can be used with [PdfNavigatorFragment].
  */
 @ExperimentalReadiumApi
-interface PdfEngineProvider<S: Configurable.Settings, P: Configurable.Preferences> {
+interface PdfEngineProvider<S: Configurable.Settings, P: Configurable.Preferences, E: PreferencesEditor<P>> {
 
     /**
      * Creates a [PdfDocumentFragment] for [input].
@@ -30,15 +31,17 @@ interface PdfEngineProvider<S: Configurable.Settings, P: Configurable.Preference
     /**
      * Creates [Configurable.Settings] for [metadata] and [preferences].
      */
-    fun createSettings(metadata: Metadata, preferences: P): S
+    fun computeSettings(metadata: Metadata, preferences: P): S
 
-
-    fun createPreferenceEditor(metadata)
 
     /**
      * Infers a [VisualNavigator.Presentation] from settings.
      */
-    fun createPresentation(settings: S): VisualNavigator.Presentation
+    fun computePresentation(settings: S): VisualNavigator.Presentation
+
+    fun createPreferenceEditor(publication: Publication, currentSettings: S, currentPreferences: P): E
+
+    fun createEmptyPreferences(): P
 }
 
 @ExperimentalReadiumApi
@@ -94,6 +97,3 @@ data class PdfDocumentFragmentInput<S: Configurable.Settings>(
     val settings: S,
     val listener: PdfDocumentFragment.Listener?
 )
-
-@ExperimentalReadiumApi
-interface PdfSettingsValues : Configurable.Settings

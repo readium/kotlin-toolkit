@@ -8,8 +8,8 @@ package org.readium.r2.navigator.epub.extensions
 
 import java.text.NumberFormat
 
-fun Number.format(maximumFractionDigits: Int) =
-    NumberFormat.getPercentInstance().run {
-        this.maximumFractionDigits = 0
-        format(this)
-    }
+fun Number.format(maximumFractionDigits: Int): String {
+    val format = NumberFormat.getNumberInstance()
+    format.maximumFractionDigits = maximumFractionDigits
+    return format.format(this)
+}

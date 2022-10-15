@@ -18,8 +18,13 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferences
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesEditor
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitSettings
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
+import org.readium.r2.navigator.pdf.PdfEngineProvider
+import org.readium.r2.navigator.preferences.NavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
@@ -69,6 +74,9 @@ class ReaderViewModel(
         preferencesStore = application.preferencesStore,
         readerInitData = readerInitData
     )
+
+    val pdfEngineProvider: PdfEngineProvider<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor> =
+        application.readium.pdfEngineProvider
 
     override fun onCleared() {
         super.onCleared()

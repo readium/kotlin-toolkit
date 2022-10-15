@@ -100,7 +100,7 @@ fun PsPdfKitUserPreferences(
 
 @Composable
 fun EpubUserPreferences(
-    editor: EpubPreferencesEditor
+    editor: EpubPreferencesEditor,
     presets: List<UserPreferencesViewModel.Preset>,
     commit: () -> Unit
 ) {
@@ -113,7 +113,7 @@ fun EpubUserPreferences(
             EpubLayout.REFLOWABLE ->
                 ReflowableUserPreferences<EpubPreferences>(
                     commit = commit,
-                    backgroundColor = editor.backgroundColor,
+                    /*backgroundColor = editor.backgroundColor,
                     columnCount = editor.columnCount,
                     fontFamily = editor.fontFamily,
                     fontSize = editor.fontSize,
@@ -126,21 +126,21 @@ fun EpubUserPreferences(
                     pageMargins = editor.pageMargins,
                     paragraphIndent = editor.paragraphIndent,
                     paragraphSpacing = editor.paragraphSpacing,
-                    publisherStyles = editor.publisherStyles,
+                    publisherStyles = editor.publisherStyles,*/
                     readingProgression = editor.readingProgression,
                     scroll = editor.scroll,
-                    textAlign = editor.textAlign,
-                    textColor = editor.textColor,
+                    /*textAlign = editor.textAlign,
+                    textColor = editor.textColor,*/
                     textNormalization = editor.textNormalization,
-                    theme = editor.theme,
+                    /*theme = editor.theme,
                     typeScale = editor.typeScale,
-                    verticalText = editor.verticalText,
+                    verticalText = editor.verticalText,*/
                     wordSpacing = editor.wordSpacing,
                 )
             EpubLayout.FIXED -> {
                 FixedLayoutUserPreferences(
                     commit = commit,
-                    language = editor.language,
+                    //language = editor.language,
                     readingProgression = editor.readingProgression,
                     spread = editor.spread,
                 )
@@ -613,6 +613,7 @@ private fun <T> ButtonGroupItem(
 ) {
     ButtonGroupItem(
         title = title,
+        options = preference.supportedValues,
         isActive = preference.isActive,
         activeOption = preference.effectiveValue,
         selectedOption = preference.value,
@@ -629,7 +630,7 @@ private fun <T> ButtonGroupItem(
 @Composable
 private fun <T> ButtonGroupItem(
     title: String,
-    options: List<T>? = null,
+    options: List<T>,
     isActive: Boolean,
     activeOption: T,
     selectedOption: T?,

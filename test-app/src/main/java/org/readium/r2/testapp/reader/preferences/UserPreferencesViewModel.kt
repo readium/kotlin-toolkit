@@ -18,6 +18,7 @@ import org.readium.adapters.pspdfkit.navigator.*
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.*
+import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
@@ -96,6 +97,11 @@ sealed class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.
                 .onEach {
                     _settings.value = it
                 }
+                .launchIn(lifecycleScope)
+
+            preferences
+                .flowWithLifecycle(lifecycle)
+                .onEach { configurable.submitPreferences(it) }
                 .launchIn(lifecycleScope)
         }
     }
@@ -188,7 +194,7 @@ class PsPdfKitPreferencesViewModel(
     preferencesStore: PreferencesStore,
     preferencesFilter: PsPdfKitPreferencesFilter,
     preferencesSerializer: PsPdfKitPreferencesSerializer,
-    navigatorFactory: PsPdfKitNavigatorFactory
+    navigatorFactory: PdfNavigatorFactory<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>
 ) : UserPreferencesViewModel<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>(
     bookId = bookId,
     publication = publication,

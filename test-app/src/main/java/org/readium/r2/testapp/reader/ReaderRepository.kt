@@ -24,6 +24,8 @@ import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.epub.EpubPreferences
 import org.readium.r2.navigator.epub.EpubPreferencesFilter
 import org.readium.r2.navigator.epub.EpubPreferencesSerializer
+import org.readium.r2.navigator.pdf.PdfNavigatorFactory
+import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesSerializer
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -162,13 +164,14 @@ class ReaderRepository(
             PsPdfKitPreferences::class, bookId, serializer,
             coroutineScope, { PsPdfKitPreferences() }, PsPdfKitPreferences::plus
         )
+        val navigatorFactory = PdfNavigatorFactory(publication, readium.pdfEngineProvider)
 
         return PdfReaderInitData(
             bookId, publication, initialLocator,
             coroutineScope, preferences,
             PsPdfKitPreferencesFilter(),
             serializer,
-            PsPdfKitNavigatorFactory(publication, readium.psPdfKitNavigatorConfig)
+            navigatorFactory
         )
     }
 

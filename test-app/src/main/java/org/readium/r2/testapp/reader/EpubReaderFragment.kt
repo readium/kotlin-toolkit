@@ -50,12 +50,11 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         val readerData = model.readerInitData as EpubReaderInitData
 
         childFragmentManager.fragmentFactory =
-            EpubNavigatorFragment.createFactory(
-                publication = publication,
+            readerData.navigatorFactory.createFragmentFactory(
                 initialLocator = readerData.initialLocation,
                 listener = this,
                 initialPreferences = readerData.preferencesFlow.value,
-                config = EpubNavigatorFragment.Configuration(
+                configuration = EpubNavigatorFragment.Configuration(
                     // App assets which will be accessible from the EPUB resources.
                     // You can use simple glob patterns, such as "images/.*" to allow several
                     // assets in one go.

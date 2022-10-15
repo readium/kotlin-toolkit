@@ -12,9 +12,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.commitNow
-import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferences
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesEditor
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitSettings
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
-import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
@@ -24,18 +25,15 @@ import org.readium.r2.testapp.reader.preferences.PsPdfKitPreferencesViewModel
 @OptIn(ExperimentalReadiumApi::class)
 class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener {
 
-    override lateinit var navigator: PdfNavigatorFragment<Configurable.Settings>
+    override lateinit var navigator: PdfNavigatorFragment<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val readerData = model.readerInitData as PdfReaderInitData
 
         childFragmentManager.fragmentFactory =
-            PdfNavigatorFragment.createFactory(
-                publication = publication,
+            readerData.navigatorFactory.createFragmentFactory(
                 initialLocator = readerData.initialLocation,
-                preferences = readerData.preferencesFlow.value,
                 listener = this,
-                pdfEngineProvider = PdfiumEngineProvider()
             )
 
         super.onCreate(savedInstanceState)
@@ -48,7 +46,8 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
                 replace(R.id.fragment_reader_container, PdfNavigatorFragment::class.java, Bundle(), NAVIGATOR_FRAGMENT_TAG)
             }
         }
-        navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!! as PdfNavigatorFragment<Configurable.Settings>
+        navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!!
+                as PdfNavigatorFragment<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>
         @Suppress("Unchecked_cast")
         return view
     }

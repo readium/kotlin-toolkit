@@ -8,7 +8,7 @@
 
 package org.readium.adapters.pdfium.navigator
 
-import org.readium.r2.navigator.pdf.PdfSettingsValues
+import org.readium.r2.navigator.pdf.PdfSettings
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Fit
@@ -54,4 +54,4 @@ internal data class PdfiumSettingsValues(
     val readingProgression: ReadingProgression,
     val scrollAxis: Axis,
     val fit: Fit
-) : PdfSettingsValues
+) : PdfSettings

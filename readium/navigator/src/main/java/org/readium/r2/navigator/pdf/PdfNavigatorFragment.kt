@@ -21,6 +21,7 @@ import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
 import org.readium.r2.navigator.preferences.Configurable
+import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.mapStateIn
@@ -40,16 +41,16 @@ import timber.log.Timber
  * PSPDFKit. You must use an implementation of [PdfDocumentFragmentFactory] provided by the PDF
  * engine of your choice.
  *
- * To use this [Fragment], create a factory with [PdfNavigatorFragment.createFactory].
+ * To use this [Fragment], create a factory with [PdfNavigatorFactory.createFragmentFactory].
  */
 @ExperimentalReadiumApi
-class PdfNavigatorFragment<S: Configurable.Settings, P: Configurable.Preferences, E: Configurable.Editor> private constructor(
+class PdfNavigatorFragment<S: Configurable.Settings, P: Configurable.Preferences, E: PreferencesEditor<P>> internal constructor(
     override val publication: Publication,
     initialLocator: Locator? = null,
-    initialPreferences: P? = null,
+    initialPreferences: P,
     private val listener: Listener?,
-    private val pdfEngineProvider: PdfEngineProvider<S, P>
-) : Fragment(), VisualNavigator, Configurable<S, P, E> {
+    private val pdfEngineProvider: PdfEngineProvider<S, P, E>
+) : Fragment(), VisualNavigator, Configurable<S, P> {
 
     interface Listener : VisualNavigator.Listener {
 
@@ -72,16 +73,17 @@ class PdfNavigatorFragment<S: Configurable.Settings, P: Configurable.Preferences
          * @param pdfEngineProvider provider for third-party PDF engine adapter.
          */
         @ExperimentalReadiumApi
-        fun <S: Configurable.Settings, P: Any> createFactory(
+        fun <S: Configurable.Settings, P: Configurable.Preferences, E: PreferencesEditor<P>> createFactory(
             publication: Publication,
             initialLocator: Locator? = null,
             preferences: P? = null,
             listener: Listener? = null,
-            pdfEngineProvider: PdfEngineProvider<S, P>,
+            pdfEngineProvider: PdfEngineProvider<S, P, E>
         ): FragmentFactory = createFragmentFactory {
             PdfNavigatorFragment(
                 publication, initialLocator,
-                preferences, listener, pdfEngineProvider
+                preferences ?: pdfEngineProvider.createEmptyPreferences(),
+                listener, pdfEngineProvider
             )
         }
     }
@@ -100,12 +102,11 @@ class PdfNavigatorFragment<S: Configurable.Settings, P: Configurable.Preferences
     @Suppress("Unchecked_cast")
     override val settings: StateFlow<S> get() = viewModel.settings as StateFlow<S>
 
-    override fun editPreferences(changes: E.() -> P) {
-        val editor = pdfEngineProvider.createPreferenceEditor()
-        editor.changes()
+    override fun submitPreferences(preferences: P) {
+        viewModel.submitPreferences(preferences)
     }
 
-    private val viewModel: PdfNavigatorViewModel by viewModels {
+    private val viewModel: PdfNavigatorViewModel<S, P, E> by viewModels {
         PdfNavigatorViewModel.createFactory(
             requireActivity().application,
             publication,
@@ -132,12 +133,12 @@ class PdfNavigatorFragment<S: Configurable.Settings, P: Configurable.Preferences
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        documentFragment = viewModel.state
+        documentFragment = viewModel.currentLocator
             .distinctUntilChanged { old, new ->
-                old.locator.href == new.locator.href
+                old.href == new.href
             }
-            .map { state ->
-                createPdfDocumentFragment(state.locator, settings.value)
+            .map { locator ->
+                createPdfDocumentFragment(locator, settings.value)
             }
             .stateIn(viewLifecycleOwner.lifecycleScope, started = SharingStarted.Eagerly, null)
 
@@ -197,15 +198,14 @@ class PdfNavigatorFragment<S: Configurable.Settings, P: Configurable.Preferences
     @ExperimentalReadiumApi
     override val presentation: StateFlow<VisualNavigator.Presentation>
         get() = settings.mapStateIn(lifecycleScope) { settings ->
-            pdfEngineProvider.createPresentation(settings)
+            pdfEngineProvider.computePresentation(settings)
         }
 
     override val readingProgression: ReadingProgression
         get() = presentation.value.readingProgression
 
     override val currentLocator: StateFlow<Locator>
-        get() = viewModel.state
-            .mapStateIn(lifecycleScope) { it.locator }
+        get() = viewModel.currentLocator
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         listener?.onJumpToLocator(locator)

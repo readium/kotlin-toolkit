@@ -8,16 +8,14 @@ package org.readium.r2.testapp.reader
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferences
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesFilter
+import org.readium.adapters.pspdfkit.navigator.*
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitNavigatorFactory
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesSerializer
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.epub.EpubPreferences
 import org.readium.r2.navigator.epub.EpubPreferencesFilter
 import org.readium.r2.navigator.epub.EpubPreferencesSerializer
+import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.*
 
@@ -59,7 +57,7 @@ class PdfReaderInitData(
     val preferencesFlow: StateFlow<PsPdfKitPreferences>,
     val preferencesFilter: PsPdfKitPreferencesFilter,
     val preferencesSerializer: PsPdfKitPreferencesSerializer,
-    val navigatorFactory: PsPdfKitNavigatorFactory
+    val navigatorFactory: PdfNavigatorFactory<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>
 ) : VisualReaderInitData(bookId, publication, initialLocation)
 
 @ExperimentalMedia2

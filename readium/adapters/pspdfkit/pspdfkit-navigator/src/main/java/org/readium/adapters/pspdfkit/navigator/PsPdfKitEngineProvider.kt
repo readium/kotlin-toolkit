@@ -14,16 +14,17 @@ import org.readium.r2.navigator.pdf.PdfDocumentFragment
 import org.readium.r2.navigator.pdf.PdfDocumentFragmentInput
 import org.readium.r2.navigator.pdf.PdfEngineProvider
 import org.readium.r2.navigator.preferences.Axis
-import org.readium.r2.navigator.preferences.Preferences
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.pdf.cachedIn
 
 @ExperimentalReadiumApi
 class PsPdfKitEngineProvider(
     private val context: Context,
-    private val defaults: PsPdfKitDefaults = PsPdfKitDefaults()
-) : PdfEngineProvider<PsPdfKitSettings> {
+    private val defaults: PsPdfKitDefaults = PsPdfKitDefaults(),
+    private val editorConfiguration: PsPdfKitPreferencesEditor.Configuration = PsPdfKitPreferencesEditor.Configuration()
+) : PdfEngineProvider<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor> {
 
     override suspend fun createDocumentFragment(
         input: PdfDocumentFragmentInput<PsPdfKitSettings>
@@ -43,15 +44,31 @@ class PsPdfKitEngineProvider(
         )
     }
 
-    override fun createSettings(metadata: Metadata, preferences: Preferences): PsPdfKitSettings {
-        val settingsPolicy = PsPdfKitSettingsResolver(defaults)
-        return PsPdfKitSettingsFactory(metadata, settingsPolicy).createSettings(preferences)
+    override fun computeSettings(metadata: Metadata, preferences: PsPdfKitPreferences): PsPdfKitSettings {
+        val settingsPolicy = PsPdfKitSettingsResolver(defaults, metadata)
+        return settingsPolicy.settings(preferences)
     }
 
-    override fun createPresentation(settings: PsPdfKitSettings): VisualNavigator.Presentation =
+    override fun computePresentation(settings: PsPdfKitSettings): VisualNavigator.Presentation =
         SimplePresentation(
-            readingProgression = settings.readingProgression.value,
-            scroll = settings.scroll.value,
-            axis =  if (settings.scroll.value) settings.scrollAxis.value else Axis.HORIZONTAL
+            readingProgression = settings.readingProgression,
+            scroll = settings.scroll,
+            axis =  if (settings.scroll) settings.scrollAxis else Axis.HORIZONTAL
         )
+
+    override fun createPreferenceEditor(
+        publication: Publication,
+        currentSettings: PsPdfKitSettings,
+        currentPreferences: PsPdfKitPreferences
+    ): PsPdfKitPreferencesEditor =
+        PsPdfKitPreferencesEditor(
+            currentSettings = currentSettings,
+            initialPreferences = currentPreferences,
+            publicationMetadata = publication.metadata,
+            defaults = defaults,
+            configuration = editorConfiguration
+        )
+
+    override fun createEmptyPreferences(): PsPdfKitPreferences =
+        PsPdfKitPreferences()
 }
