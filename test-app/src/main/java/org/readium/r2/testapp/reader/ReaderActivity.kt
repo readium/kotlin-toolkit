@@ -115,7 +115,7 @@ open class ReaderActivity : AppCompatActivity() {
             is ImageReaderInitData -> ImageReaderFragment::class.java
             is MediaReaderInitData -> AudioReaderFragment::class.java
             is PdfReaderInitData -> PdfReaderFragment::class.java
-            else -> null
+            is DummyReaderInitData -> null
         }
 
         readerClass?.let { it ->

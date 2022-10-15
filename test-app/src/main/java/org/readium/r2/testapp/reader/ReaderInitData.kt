@@ -21,14 +21,9 @@ import org.readium.r2.navigator.epub.EpubPreferencesSerializer
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.*
 
-enum class NavigatorKind {
-    EPUB, PDF, AUDIO, IMAGE
-}
-
 sealed class ReaderInitData {
     abstract val bookId: Long
     abstract val publication: Publication
-    abstract val navigatorKind: NavigatorKind?
 }
 
 sealed class VisualReaderInitData(
@@ -41,9 +36,7 @@ class ImageReaderInitData(
     bookId: Long,
     publication: Publication,
     initialLocation: Locator?
-) : VisualReaderInitData(bookId, publication, initialLocation) {
-    override val navigatorKind: NavigatorKind = NavigatorKind.IMAGE
-}
+) : VisualReaderInitData(bookId, publication, initialLocation)
 
 @OptIn(ExperimentalReadiumApi::class)
 class EpubReaderInitData(
@@ -55,9 +48,7 @@ class EpubReaderInitData(
     val preferencesFilter: EpubPreferencesFilter,
     val preferencesSerializer: EpubPreferencesSerializer,
     val navigatorFactory: EpubNavigatorFactory
-) : VisualReaderInitData(bookId, publication, initialLocation) {
-    override val navigatorKind: NavigatorKind = NavigatorKind.EPUB
-}
+) : VisualReaderInitData(bookId, publication, initialLocation)
 
 @OptIn(ExperimentalReadiumApi::class)
 class PdfReaderInitData(
@@ -69,25 +60,21 @@ class PdfReaderInitData(
     val preferencesFilter: PsPdfKitPreferencesFilter,
     val preferencesSerializer: PsPdfKitPreferencesSerializer,
     val navigatorFactory: PsPdfKitNavigatorFactory
-) : VisualReaderInitData(bookId, publication, initialLocation) {
-    override val navigatorKind: NavigatorKind = NavigatorKind.PDF
-}
+) : VisualReaderInitData(bookId, publication, initialLocation)
 
 @ExperimentalMedia2
 class MediaReaderInitData(
     override val bookId: Long,
     override val publication: Publication,
     val mediaNavigator: MediaNavigator,
-) : ReaderInitData() {
-    override val navigatorKind: NavigatorKind = NavigatorKind.AUDIO
-}
+) : ReaderInitData()
 
 class DummyReaderInitData(
     override val bookId: Long,
 ) : ReaderInitData() {
-    override val publication: Publication = Publication(Manifest(
-        metadata = Metadata(identifier = "dummy", localizedTitle = LocalizedString(""))
-    ))
-
-    override val navigatorKind: NavigatorKind? = null
+    override val publication: Publication = Publication(
+        Manifest(
+            metadata = Metadata(identifier = "dummy", localizedTitle = LocalizedString(""))
+        )
+    )
 }

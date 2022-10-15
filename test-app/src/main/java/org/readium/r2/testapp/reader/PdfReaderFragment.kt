@@ -13,28 +13,27 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.commitNow
 import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider
-import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.reader.preferences.PsPdfKitPreferencesViewModel
 
 @OptIn(ExperimentalReadiumApi::class)
 class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener {
 
-    override lateinit var navigator: Navigator
-    private lateinit var pdfNavigatorFragment: PdfNavigatorFragment<Configurable.Settings>
+    override lateinit var navigator: PdfNavigatorFragment<Configurable.Settings>
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val readerData = model.readerInitData as VisualReaderInitData
+        val readerData = model.readerInitData as PdfReaderInitData
 
         childFragmentManager.fragmentFactory =
             PdfNavigatorFragment.createFactory(
                 publication = publication,
                 initialLocator = readerData.initialLocation,
-                preferences = model.settings.preferences.value,
+                preferences = readerData.preferencesFlow.value,
                 listener = this,
                 pdfEngineProvider = PdfiumEngineProvider()
             )
@@ -49,10 +48,15 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
                 replace(R.id.fragment_reader_container, PdfNavigatorFragment::class.java, Bundle(), NAVIGATOR_FRAGMENT_TAG)
             }
         }
-        navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!! as Navigator
+        navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!! as PdfNavigatorFragment<Configurable.Settings>
         @Suppress("Unchecked_cast")
-        pdfNavigatorFragment = navigator as PdfNavigatorFragment<Configurable.Settings>
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        (model.settings as PsPdfKitPreferencesViewModel).bind(navigator, viewLifecycleOwner)
     }
 
     override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
