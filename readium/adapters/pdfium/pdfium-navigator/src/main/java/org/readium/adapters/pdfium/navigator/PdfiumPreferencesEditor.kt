@@ -8,28 +8,21 @@ package org.readium.adapters.pdfium.navigator
 
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Fit
-import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.Metadata
 
 @OptIn(ExperimentalReadiumApi::class)
 class PdfiumPreferencesEditor(
-    private val edit: ((MutablePreferences).() -> Unit) -> Unit,
-    private val settings: PdfiumSettings,
-    private val preferences: Preferences
-) : FixedLayoutPreferencesEditor {
+    private val currentSettings: PdfiumSettings,
+    private val initialPreferences: PdfiumPreferences,
+    private val publicationMetadata: Metadata
+) : PreferencesEditor<PdfiumPreferences> {
 
-    override fun setReadingProgression(readingProgression: ReadingProgression?) = edit {
-        set(settings.readingProgression, readingProgression)
+    override val preferences: PdfiumPreferences
+        get() = TODO("Not yet implemented")
+
+    override fun clear() {
+        TODO("Not yet implemented")
     }
 
-    override fun setScrollAxis(axis: Axis) = edit {
-        set(settings.scrollAxis, axis)
-    }
 
-    override fun setFit(fit: Fit) = edit {
-        set(settings.fit, fit)
-    }
-
-    private val <V> Setting<V>.prefOrValue: V get() =
-        preferences[this] ?: value
 }

@@ -12,12 +12,13 @@ import org.readium.r2.navigator.pdf.PdfDocumentFragmentInput
 import org.readium.r2.navigator.pdf.PdfEngineProvider
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.Publication
 
 @ExperimentalReadiumApi
 class PdfiumEngineProvider(
     private val listener: PdfiumDocumentFragment.Listener? = null,
     private val defaults: PdfiumSettingsDefaults = PdfiumSettingsDefaults()
-) : PdfEngineProvider<PdfiumSettings> {
+) : PdfEngineProvider<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor> {
 
     override suspend fun createDocumentFragment(input: PdfDocumentFragmentInput<PdfiumSettings>) =
         PdfiumDocumentFragment(
@@ -29,15 +30,29 @@ class PdfiumEngineProvider(
             navigatorListener = input.listener
         )
 
-    override fun createSettings(metadata: Metadata, preferences: Preferences): PdfiumSettings {
-        val settingsPolicy = PdfiumSettingsPolicy(defaults)
+    override fun computeSettings(metadata: Metadata, preferences: PdfiumPreferences): PdfiumSettings {
+        val settingsPolicy = PdfiumSettingsResolver(metadata, defaults)
         return PdfiumSettingsFactory(metadata, settingsPolicy).createSettings(preferences)
     }
 
-    override fun createPresentation(settings: PdfiumSettings): VisualNavigator.Presentation =
+    override fun computePresentation(settings: PdfiumSettings): VisualNavigator.Presentation =
         SimplePresentation(
             readingProgression = settings.readingProgression.value,
             scroll = true,
             axis = settings.scrollAxis.value
         )
+
+    override fun createPreferenceEditor(
+        publication: Publication,
+        currentSettings: PdfiumSettings,
+        currentPreferences: PdfiumPreferences
+    ): PdfiumPreferencesEditor =
+        PdfiumPreferencesEditor(
+            currentSettings,
+            currentPreferences,
+            publication.metadata
+        )
+
+    override fun createEmptyPreferences(): PdfiumPreferences =
+        PdfiumPreferences()
 }

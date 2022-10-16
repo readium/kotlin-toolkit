@@ -45,7 +45,7 @@ class PsPdfKitEngineProvider(
     }
 
     override fun computeSettings(metadata: Metadata, preferences: PsPdfKitPreferences): PsPdfKitSettings {
-        val settingsPolicy = PsPdfKitSettingsResolver(defaults, metadata)
+        val settingsPolicy = PsPdfKitSettingsResolver(metadata, defaults)
         return settingsPolicy.settings(preferences)
     }
 
