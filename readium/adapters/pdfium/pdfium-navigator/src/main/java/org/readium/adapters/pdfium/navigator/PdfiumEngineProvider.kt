@@ -32,14 +32,14 @@ class PdfiumEngineProvider(
 
     override fun computeSettings(metadata: Metadata, preferences: PdfiumPreferences): PdfiumSettings {
         val settingsPolicy = PdfiumSettingsResolver(metadata, defaults)
-        return PdfiumSettingsFactory(metadata, settingsPolicy).createSettings(preferences)
+        return settingsPolicy.settings(preferences)
     }
 
     override fun computePresentation(settings: PdfiumSettings): VisualNavigator.Presentation =
         SimplePresentation(
-            readingProgression = settings.readingProgression.value,
+            readingProgression = settings.readingProgression,
             scroll = true,
-            axis = settings.scrollAxis.value
+            axis = settings.scrollAxis
         )
 
     override fun createPreferenceEditor(

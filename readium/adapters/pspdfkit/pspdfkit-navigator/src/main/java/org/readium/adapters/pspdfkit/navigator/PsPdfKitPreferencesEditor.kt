@@ -79,7 +79,7 @@ class PsPdfKitPreferencesEditor(
     val spread: EnumPreference<Spread> =
         object : AbstractEnumPreference<Spread>(
             currentSettings.spread,
-            listOf(Spread.AUTO, Spread.NEVER, Spread.PREFERRED),
+            listOf(Spread.AUTO, Spread.NEVER, Spread.ALWAYS),
         ) {
             override fun get(): Spread? = preferences.spread
 

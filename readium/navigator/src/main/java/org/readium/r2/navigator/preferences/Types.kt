@@ -9,9 +9,6 @@ package org.readium.r2.navigator.preferences
 import androidx.annotation.ColorInt
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.*
-import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
-import org.readium.r2.navigator.epub.css.GoogleFont
 import org.readium.r2.shared.ExperimentalReadiumApi
 import android.graphics.Color as AndroidColor
 
@@ -142,5 +139,5 @@ enum class Axis(val value: String) {
 enum class Spread(val value: String) {
     @SerialName("auto") AUTO("auto"),
     @SerialName("never") NEVER("never"),
-    @SerialName("preferred") PREFERRED("preferred");
+    @SerialName("preferred") ALWAYS("preferred");
 }

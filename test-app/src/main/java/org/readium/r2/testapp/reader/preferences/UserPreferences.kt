@@ -273,7 +273,7 @@ private fun ColumnScope.FixedLayoutUserPreferences(
             when (value) {
                 Spread.AUTO -> "Auto"
                 Spread.NEVER -> "Never"
-                Spread.PREFERRED -> "Preferred"
+                Spread.ALWAYS -> "Preferred"
             }
         }
 

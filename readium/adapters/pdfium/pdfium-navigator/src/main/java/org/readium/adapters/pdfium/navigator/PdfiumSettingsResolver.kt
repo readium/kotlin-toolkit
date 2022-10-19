@@ -18,7 +18,7 @@ internal class PdfiumSettingsResolver(
     private val defaults: PdfiumSettingsDefaults
 ) {
 
-    fun settings(preferences: PdfiumPreferences): PdfiumSettingsValues {
+    fun settings(preferences: PdfiumPreferences): PdfiumSettings {
         val readingProgression: ReadingProgression =
             preferences.readingProgression
                 ?: metadata.readingProgression.takeIf { it.isHorizontal == true }
@@ -34,7 +34,7 @@ internal class PdfiumSettingsResolver(
                 else -> Fit.WIDTH
             }
 
-        return PdfiumSettingsValues(
+        return PdfiumSettings(
             readingProgression = readingProgression,
             scrollAxis = scrollAxis,
             fit = fit

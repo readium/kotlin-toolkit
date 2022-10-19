@@ -259,7 +259,7 @@ internal class EpubNavigatorViewModel(
             when (layout) {
                 EpubLayout.FIXED -> when (settings.value.spread) {
                     Spread.AUTO -> DualPage.AUTO
-                    Spread.PREFERRED -> DualPage.ON
+                    Spread.ALWAYS -> DualPage.ON
                     Spread.NEVER -> DualPage.OFF
                 }
                 EpubLayout.REFLOWABLE -> when (settings.value.columnCount) {

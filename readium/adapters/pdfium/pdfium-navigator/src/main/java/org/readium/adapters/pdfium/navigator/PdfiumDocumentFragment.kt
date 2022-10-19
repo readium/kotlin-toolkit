@@ -94,7 +94,7 @@ class PdfiumDocumentFragment internal constructor(
                             pages(*((pageCount - 1) downTo 0).toList().toIntArray())
                         }
                     }
-                    .swipeHorizontal(settings.scrollAxis.value == Axis.HORIZONTAL)
+                    .swipeHorizontal(settings.scrollAxis == Axis.HORIZONTAL)
                     .spacing(10)
                     // Customization of [PDFView] is done before setting the listeners,
                     // to avoid overriding them in reading apps, which would break the
@@ -102,7 +102,7 @@ class PdfiumDocumentFragment internal constructor(
                     .apply { appListener?.onConfigurePdfView(this) }
                     .defaultPage(page)
                     .onRender { _, _, _ ->
-                        if (settings.fit.value == Fit.WIDTH) {
+                        if (settings.fit == Fit.WIDTH) {
                             pdfView.fitToWidth()
                             // Using `fitToWidth` often breaks the use of `defaultPage`, so we
                             // need to jump manually to the target page.
@@ -175,6 +175,6 @@ class PdfiumDocumentFragment internal constructor(
      * right-to-left reading progressions.
      */
     private val isPagesOrderReversed: Boolean get() =
-        settings.scrollAxis.value == Axis.HORIZONTAL &&
-            settings.readingProgression.value == ReadingProgression.RTL
+        settings.scrollAxis == Axis.HORIZONTAL &&
+            settings.readingProgression == ReadingProgression.RTL
 }

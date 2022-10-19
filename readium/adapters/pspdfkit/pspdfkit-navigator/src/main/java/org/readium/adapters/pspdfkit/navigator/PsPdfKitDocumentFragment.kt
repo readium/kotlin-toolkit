@@ -208,7 +208,7 @@ internal class PsPdfKitDocumentFragment(
     private val Spread.pageLayout: PageLayoutMode
         get() = when (this) {
             Spread.AUTO -> PageLayoutMode.AUTO
-            Spread.PREFERRED-> PageLayoutMode.DOUBLE
+            Spread.ALWAYS-> PageLayoutMode.DOUBLE
             Spread.NEVER -> PageLayoutMode.SINGLE
         }
 }
