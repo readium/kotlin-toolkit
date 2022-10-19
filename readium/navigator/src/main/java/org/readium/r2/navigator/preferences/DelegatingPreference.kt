@@ -19,6 +19,10 @@ fun interface IsActive {
     operator fun plus(other: IsActive): IsActive = IsActive {
         isActive() && other.isActive()
     }
+
+    fun or(other: IsActive): IsActive = IsActive {
+        isActive() || other.isActive()
+    }
 }
 
 @InternalReadiumApi

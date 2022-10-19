@@ -24,7 +24,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesEditor
-import org.readium.r2.navigator.epub.EpubPreferences
 import org.readium.r2.navigator.epub.EpubPreferencesEditor
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -111,9 +110,9 @@ fun EpubUserPreferences(
     ) {
         when (editor.layout) {
             EpubLayout.REFLOWABLE ->
-                ReflowableUserPreferences<EpubPreferences>(
+                ReflowableUserPreferences(
                     commit = commit,
-                    /*backgroundColor = editor.backgroundColor,
+                    backgroundColor = editor.backgroundColor,
                     columnCount = editor.columnCount,
                     fontFamily = editor.fontFamily,
                     fontSize = editor.fontSize,
@@ -126,21 +125,21 @@ fun EpubUserPreferences(
                     pageMargins = editor.pageMargins,
                     paragraphIndent = editor.paragraphIndent,
                     paragraphSpacing = editor.paragraphSpacing,
-                    publisherStyles = editor.publisherStyles,*/
+                    publisherStyles = editor.publisherStyles,
                     readingProgression = editor.readingProgression,
                     scroll = editor.scroll,
-                    /*textAlign = editor.textAlign,
-                    textColor = editor.textColor,*/
+                    textAlign = editor.textAlign,
+                    textColor = editor.textColor,
                     textNormalization = editor.textNormalization,
-                    /*theme = editor.theme,
+                    theme = editor.theme,
                     typeScale = editor.typeScale,
-                    verticalText = editor.verticalText,*/
+                    verticalText = editor.verticalText,
                     wordSpacing = editor.wordSpacing,
                 )
             EpubLayout.FIXED -> {
                 FixedLayoutUserPreferences(
                     commit = commit,
-                    //language = editor.language,
+                    language = editor.language,
                     readingProgression = editor.readingProgression,
                     spread = editor.spread,
                 )
@@ -316,7 +315,7 @@ private fun ColumnScope.FixedLayoutUserPreferences(
  * a reflowable EPUB, HTML document or PDF with reflow mode enabled.
  */
 @Composable
-private fun <P: Configurable.Preferences> ColumnScope.ReflowableUserPreferences(
+private fun ColumnScope.ReflowableUserPreferences(
     commit: () -> Unit,
     backgroundColor: Preference<ReadiumColor>? = null,
     columnCount: EnumPreference<ColumnCount>? = null,

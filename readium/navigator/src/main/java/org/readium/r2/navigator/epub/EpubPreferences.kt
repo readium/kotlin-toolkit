@@ -17,15 +17,13 @@ import org.readium.r2.shared.util.Language
 @ExperimentalReadiumApi
 @Serializable
 data class EpubPreferences(
-    val readingProgression: ReadingProgression? = null,
-    val language: Language? = null,
-    val spread: Spread? = null,
     val backgroundColor: Color? = null,
     val columnCount: ColumnCount? = null,
     val fontFamily: FontFamily? = null,
     val fontSize: Double? = null,
     val hyphens: Boolean? = null,
     val imageFilter: ImageFilter? = null,
+    val language: Language? = null,
     val letterSpacing: Double? = null,
     val ligatures: Boolean? = null,
     val lineHeight: Double? = null,
@@ -33,7 +31,9 @@ data class EpubPreferences(
     val paragraphIndent: Double? = null,
     val paragraphSpacing: Double? = null,
     val publisherStyles: Boolean? = null,
+    val readingProgression: ReadingProgression? = null,
     val scroll: Boolean? = null,
+    val spread: Spread? = null,
     val textAlign: TextAlign? = null,
     val textColor: Color? = null,
     val textNormalization: TextNormalization? = null,

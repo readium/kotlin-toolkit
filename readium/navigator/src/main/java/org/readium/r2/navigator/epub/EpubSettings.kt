@@ -56,15 +56,13 @@ import org.readium.r2.shared.util.Language
  */
 @ExperimentalReadiumApi
 data class EpubSettings(
-    val language: Language?,
-    val readingProgression: ReadingProgression,
-    val spread: Spread,
     val backgroundColor: Color,
     val columnCount: ColumnCount,
     val fontFamily: FontFamily?,
     val fontSize: Double,
     val hyphens: Boolean,
     val imageFilter: ImageFilter,
+    val language: Language?,
     val letterSpacing: Double,
     val ligatures: Boolean,
     val lineHeight: Double,
@@ -72,7 +70,9 @@ data class EpubSettings(
     val paragraphIndent: Double,
     val paragraphSpacing: Double,
     val publisherStyles: Boolean,
+    val readingProgression: ReadingProgression,
     val scroll: Boolean,
+    val spread: Spread,
     val textAlign: TextAlign,
     val textColor: Color,
     val textNormalization: TextNormalization,
