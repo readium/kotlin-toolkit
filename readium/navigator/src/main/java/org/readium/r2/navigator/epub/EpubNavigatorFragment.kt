@@ -46,7 +46,6 @@ import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.settings.*
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link

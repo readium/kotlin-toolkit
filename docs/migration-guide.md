@@ -4,6 +4,18 @@ All migration steps necessary in reading apps to upgrade to major versions of th
 
 ## 2.3.0
 
+### `Decoration.extras`
+
+`Decoration.extras` is now a `Map<String, Any>` instead of `Bundle`. You will need to update your app if you were storing custom data in `extras`, for example:
+
+```kotlin
+val decoration = Decoration(...,
+    extras = mapOf("id" to id)
+)
+
+val id = decoration.extras["id"] as? Long
+```
+
 ### PDF support
 
 The PDF navigator got refactored to support arbitrary third-party PDF engines. As a consequence, [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) (the open source PDF renderer we previously used) was extracted into its own adapter package. **This is a breaking change** if you were supporting PDF in your application.
