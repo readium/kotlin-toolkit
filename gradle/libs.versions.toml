@@ -1,6 +1,6 @@
 [versions]
 
-android-gradle-plugin = "7.3.0"
+android-gradle-plugin = "7.3.1"
 
 androidx-activity = "1.6.0"
 androidx-appcompat = "1.5.1"
@@ -37,16 +37,16 @@ assertj = "3.23.1"
 dokka = "1.7.10"
 
 google-exoplayer = "2.18.1"
-google-material = "1.6.1"
+google-material = "1.7.0"
 
-joda-time = "2.11.2"
+joda-time = "2.12.0"
 jsoup = "1.15.3"
 junit = "4.13.2"
 
 kotlin = "1.7.20"
 kotlinx-coroutines = "1.6.4"
 kotlinx-coroutines-test = "1.6.4"
-kotlinx-serialization-json = "1.4.0"
+kotlinx-serialization-json = "1.4.1"
 
 pdfium = "1.8.2"
 pdf-viewer = "2.8.2"

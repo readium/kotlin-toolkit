@@ -8,9 +8,9 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         google()
-        jcenter()
         mavenLocal()
         mavenCentral()
+        maven(url = "https://jcenter.bintray.com")
         maven(url = "https://jitpack.io")
         maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
     }
@@ -19,8 +19,8 @@ pluginManagement {
     // it to integrate Readium in submodules.
     // See https://github.com/readium/kotlin-toolkit/pull/97
     plugins {
-        id("com.android.application") version ("7.3.0")
-        id("com.android.library") version ("7.3.0")
+        id("com.android.application") version ("7.3.1")
+        id("com.android.library") version ("7.3.1")
         id("org.jetbrains.kotlin.android") version ("1.7.20")
         id("org.jetbrains.dokka") version ("1.7.10")
         id("org.jetbrains.kotlin.plugin.serialization") version ("1.7.10")
@@ -30,9 +30,9 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
-        jcenter()
         mavenLocal()
         mavenCentral()
+        maven(url = "https://jcenter.bintray.com")
         maven(url = "https://jitpack.io")
         maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
         maven(url = "https://customers.pspdfkit.com/maven")
