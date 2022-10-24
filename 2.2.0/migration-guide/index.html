@@ -250,6 +250,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#221" class="md-nav__link">
+    2.2.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#210" class="md-nav__link">
     2.1.0
   </a>
@@ -415,6 +422,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#221" class="md-nav__link">
+    2.2.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#210" class="md-nav__link">
     2.1.0
   </a>
@@ -461,6 +475,18 @@
 
 <h1 id="migration-guide">Migration Guide<a class="headerlink" href="#migration-guide" title="Permanent link">&para;</a></h1>
 <p>All migration steps necessary in reading apps to upgrade to major versions of the Kotlin Readium toolkit will be documented in this file.</p>
+<h2 id="221">2.2.1<a class="headerlink" href="#221" title="Permanent link">&para;</a></h2>
+<p>This hotfix release fixes an issue <a href="https://github.com/readium/kotlin-toolkit/issues/286">pulling a third-party dependency (NanoHTTPD) from JitPack</a>.</p>
+<p>After upgrading, make sure to remove the dependency to NanoHTTPD from your app's <code>build.gradle</code> file before building:</p>
+<div class="codehilite"><pre><span></span><code><span class="gd">-implementation(&quot;com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT&quot;) {</span><span class="w"></span>
+<span class="gd">-    exclude(group = &quot;org.parboiled&quot;)</span><span class="w"></span>
+<span class="gd">-}</span><span class="w"></span>
+<span class="gd">-implementation(&quot;com.github.edrlab.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT&quot;) {</span><span class="w"></span>
+<span class="gd">-    exclude(group = &quot;org.parboiled&quot;)</span><span class="w"></span>
+<span class="gd">-}</span><span class="w"></span>
+</code></pre></div>
+
+<p>:point_up: If you are stuck with an older version of Readium, you can <a href="https://github.com/readium/kotlin-toolkit/issues/286#issuecomment-1283408861">use this workaround in your root <code>build.gradle</code></a>, as an alternative.</p>
 <h2 id="210">2.1.0<a class="headerlink" href="#210" title="Permanent link">&para;</a></h2>
 <p>With this new release, we migrated all the <a href="https://github.com/readium/?q=r2-kotlin"><code>r2-*-kotlin</code></a> repositories to <a href="https://github.com/readium/r2-testapp-kotlin/issues/461">a single <code>kotlin-toolkit</code> repository</a>.</p>
 <h3 id="using-jitpack">Using JitPack<a class="headerlink" href="#using-jitpack" title="Permanent link">&para;</a></h3>
