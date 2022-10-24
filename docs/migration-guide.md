@@ -2,6 +2,23 @@
 
 All migration steps necessary in reading apps to upgrade to major versions of the Kotlin Readium toolkit will be documented in this file.
 
+## 2.2.1
+
+This hotfix release fixes an issue [pulling a third-party dependency (NanoHTTPD) from JitPack](https://github.com/readium/kotlin-toolkit/issues/286).
+
+After upgrading, make sure to remove the dependency to NanoHTTPD from your app's `build.gradle` file before building:
+
+```diff
+-implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
+-    exclude(group = "org.parboiled")
+-}
+-implementation("com.github.edrlab.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
+-    exclude(group = "org.parboiled")
+-}
+```
+
+:point_up: If you are stuck with an older version of Readium, you can [use this workaround in your root `build.gradle`](https://github.com/readium/kotlin-toolkit/issues/286#issuecomment-1283408861), as an alternative.
+
 ## 2.1.0
 
 With this new release, we migrated all the [`r2-*-kotlin`](https://github.com/readium/?q=r2-kotlin) repositories to [a single `kotlin-toolkit` repository](https://github.com/readium/r2-testapp-kotlin/issues/461).
