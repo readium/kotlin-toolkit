@@ -100,10 +100,10 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.2.1")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
     implementation("androidx.webkit:webkit:1.5.0")
-    implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
+    implementation("com.github.readium.nanohttpd:nanohttpd:master-SNAPSHOT") {
         exclude(group = "org.parboiled")
     }
-    implementation("com.github.edrlab.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
+    implementation("com.github.readium.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
         exclude(group = "org.parboiled")
     }
     implementation("com.google.android.material:material:1.6.1")
