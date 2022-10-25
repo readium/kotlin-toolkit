@@ -66,10 +66,10 @@ dependencies {
     implementation(libs.androidx.appcompat)
     @Suppress("GradleDependency")
     implementation(libs.timber)
-    implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
+    api("com.github.readium.nanohttpd:nanohttpd:master-SNAPSHOT") {
         exclude(group = "org.parboiled")
     }
-    implementation("com.github.edrlab.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
+    api("com.github.readium.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
         exclude(group = "org.parboiled")
     }
     //AM NOTE: conflicting support libraries, excluding these

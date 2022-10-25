@@ -19,7 +19,7 @@ android {
 
         applicationId = "org.readium.r2reader"
 
-        versionName = "2.2.0"
+        versionName = "2.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk.abiFilters.add("armeabi-v7a")
@@ -96,12 +96,6 @@ dependencies {
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.webkit)
-    implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
-        exclude(group = "org.parboiled")
-    }
-    implementation("com.github.edrlab.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
-        exclude(group = "org.parboiled")
-    }
     implementation(libs.google.material)
     implementation(libs.timber)
     // AM NOTE: needs to stay this version for now (June 24,2020)

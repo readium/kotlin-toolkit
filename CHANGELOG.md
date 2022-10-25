@@ -98,6 +98,15 @@ All notable changes to this project will be documented in this file. Take a look
 * `Decoration` objects are now properly comparable with `equals()`.
 
 
+## [2.2.1]
+
+### Fixed
+
+#### Streamer
+
+* [#286](https://github.com/readium/kotlin-toolkit/issues/286) Fixed broken dependency to NanoHTTPD.
+
+
 ## [2.2.0]
 
 ### Added
@@ -622,4 +631,5 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [2.1.0]: https://github.com/readium/kotlin-toolkit/compare/2.0.0...2.1.0
 [2.1.1]: https://github.com/readium/kotlin-toolkit/compare/2.1.0...2.1.1
 [2.2.0]: https://github.com/readium/kotlin-toolkit/compare/2.1.1...2.2.0
+[2.2.1]: https://github.com/readium/kotlin-toolkit/compare/2.2.0...2.2.1
 
