@@ -14,11 +14,10 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.publication.Accessibility.AccessMode.Companion.toJSONArray
-import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode.Companion.toJSONArray
 import org.readium.r2.shared.publication.Accessibility.Feature.Companion.toJSONArray
 import org.readium.r2.shared.publication.Accessibility.Hazard.Companion.toJSONArray
+import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode.Companion.toJSONArray
 import org.readium.r2.shared.publication.Accessibility.Profile.Companion.toJSONArray
 import org.readium.r2.shared.util.MapCompanion
 import org.readium.r2.shared.util.logging.WarningLogger

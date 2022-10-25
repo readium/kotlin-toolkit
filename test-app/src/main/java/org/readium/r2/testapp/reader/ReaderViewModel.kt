@@ -136,11 +136,11 @@ class ReaderViewModel(
             id = "$id-$idSuffix",
             locator = locator,
             style = style,
-            extras = Bundle().apply {
-                // We store the highlight's database ID in the extras bundle, for easy retrieval
-                // later. You can store arbitrary information in the bundle.
-                putLong("id", id)
-            }
+            extras = mapOf(
+                // We store the highlight's database ID in the extras map, for easy retrieval
+                // later. You can store arbitrary information in the map.
+                "id" to id
+            )
         )
 
         return listOfNotNull(

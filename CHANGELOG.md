@@ -66,6 +66,14 @@ All notable changes to this project will be documented in this file. Take a look
 #### Navigator
 
 * The EPUB user settings API got revamped. [Take a look at the user guide](docs/guides/navigator-settings.md) and the [migration guide](docs/migration-guide.md#230) to learn how to use it.
+* `Decoration.extras` is now a `Map<String, Any>` instead of `Bundle`. You will need to update your app if you were storing custom data in `extras`, for example:
+    ```kotlin
+    val decoration = Decoration(...,
+        extras = mapOf("id" to id)
+    )
+
+    val id = decoration.extras["id"] as? Long
+    ```
 
 ### Deprecated
 
@@ -87,6 +95,16 @@ All notable changes to this project will be documented in this file. Take a look
 * [#86](https://github.com/readium/kotlin-toolkit/issues/86) Fixed page swipes while selecting text in an EPUB resource.
 * The `onTap` event is not sent when an EPUB text selection is active anymore, to prevent showing the app bar while dismissing a selection.
 * [#76](https://github.com/readium/kotlin-toolkit/issues/76) Fixed EPUB fixed layout font size affected by device settings.
+* `Decoration` objects are now properly comparable with `equals()`.
+
+
+## [2.2.1]
+
+### Fixed
+
+#### Streamer
+
+* [#286](https://github.com/readium/kotlin-toolkit/issues/286) Fixed broken dependency to NanoHTTPD.
 
 
 ## [2.2.0]
@@ -613,4 +631,5 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [2.1.0]: https://github.com/readium/kotlin-toolkit/compare/2.0.0...2.1.0
 [2.1.1]: https://github.com/readium/kotlin-toolkit/compare/2.1.0...2.1.1
 [2.2.0]: https://github.com/readium/kotlin-toolkit/compare/2.1.1...2.2.0
+[2.2.1]: https://github.com/readium/kotlin-toolkit/compare/2.2.0...2.2.1
 

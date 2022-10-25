@@ -4,6 +4,18 @@ All migration steps necessary in reading apps to upgrade to major versions of th
 
 ## 2.3.0
 
+### `Decoration.extras`
+
+`Decoration.extras` is now a `Map<String, Any>` instead of `Bundle`. You will need to update your app if you were storing custom data in `extras`, for example:
+
+```kotlin
+val decoration = Decoration(...,
+    extras = mapOf("id" to id)
+)
+
+val id = decoration.extras["id"] as? Long
+```
+
 ### PDF support
 
 The PDF navigator got refactored to support arbitrary third-party PDF engines. As a consequence, [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) (the open source PDF renderer we previously used) was extracted into its own adapter package. **This is a breaking change** if you were supporting PDF in your application.
@@ -116,6 +128,24 @@ Refer to the following table for the correspondence between legacy settings and 
 | N/A                     | `textNormalization` (force bold, accessibility)        |
 | N/A                     | `hyphens`                                              |
 | N/A                     | `ligatures` (arabic)                                   |
+
+
+## 2.2.1
+
+This hotfix release fixes an issue [pulling a third-party dependency (NanoHTTPD) from JitPack](https://github.com/readium/kotlin-toolkit/issues/286).
+
+After upgrading, make sure to remove the dependency to NanoHTTPD from your app's `build.gradle` file before building:
+
+```diff
+-implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
+-    exclude(group = "org.parboiled")
+-}
+-implementation("com.github.edrlab.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
+-    exclude(group = "org.parboiled")
+-}
+```
+
+:point_up: If you are stuck with an older version of Readium, you can [use this workaround in your root `build.gradle`](https://github.com/readium/kotlin-toolkit/issues/286#issuecomment-1283408861), as an alternative.
 
 
 ## 2.1.0
