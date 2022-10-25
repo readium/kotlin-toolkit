@@ -57,13 +57,13 @@ open class PreferenceImpl<T>(
     private val enforceableRequirement: EnforceableRequirement? = null,
 ) : Preference<T> {
 
-    override val isActive: Boolean
-        get() = (nonEnforceableRequirement?.isSatisfied?.invoke() ?: true) ||
+    override val isEffective: Boolean
+        get() = (nonEnforceableRequirement?.isSatisfied?.invoke() ?: true) &&
             (enforceableRequirement?.isSatisfied?.invoke() ?: true )
 
-    override val activator: Activator? =
+    /* override val activator: Activator? =
         Activator { enforceableRequirement?.enforce?.invoke() }
-            .takeIf { nonEnforceableRequirement == null }
+            .takeIf { nonEnforceableRequirement == null } */
 }
 
 @InternalReadiumApi
@@ -78,7 +78,7 @@ class EnumPreferenceImpl<T>(
 
     override var value: T? = value
         set(value) {
-            require(value in supportedValues)
+            require(value == null || value in supportedValues)
             field = value
         }
     }

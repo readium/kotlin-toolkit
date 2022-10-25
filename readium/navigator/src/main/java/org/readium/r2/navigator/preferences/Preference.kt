@@ -23,9 +23,7 @@ interface Preference<T> {
 
     val effectiveValue: T
 
-    val isActive: Boolean
-
-    val activator: Activator?
+    val isEffective: Boolean
 }
 
 @ExperimentalReadiumApi

@@ -7,7 +7,7 @@
 package org.readium.r2.navigator.epub
 
 import org.readium.r2.navigator.epub.css.Layout
-import org.readium.r2.navigator.epub.extensions.format
+import org.readium.r2.navigator.extensions.format
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
@@ -65,7 +65,7 @@ class EpubPreferencesEditor(
     )
 
     private val percentFormatter: Formatter<Double> =
-        Formatter { it.format(maximumFractionDigits = 0) }
+        Formatter { it.format(maximumFractionDigits = 0, percent = true) }
 
     private val percentProgression: ProgressionStrategy<Double> =
         DoubleIncrement(0.1)
@@ -296,7 +296,8 @@ class EpubPreferencesEditor(
             effectiveValue = currentSettings.textAlign,
             supportedValues = listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY),
             nonEnforceableRequirement = requireReflowable +
-                requireStylesheets(Layout.Stylesheets.Default).or(requireStylesheets(Layout.Stylesheets.Rtl))
+                requireStylesheets(Layout.Stylesheets.Default).or(requireStylesheets(Layout.Stylesheets.Rtl)),
+            enforceableRequirement = requirePublisherStylesDisabled
         )
 
     val textColor: Preference<Color> =
@@ -320,7 +321,6 @@ class EpubPreferencesEditor(
             effectiveValue = currentSettings.theme,
             supportedValues = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA),
             nonEnforceableRequirement = requireReflowable,
-            enforceableRequirement = requireTheme(Theme.DARK)
         )
 
     val typeScale: RangePreference<Double> =

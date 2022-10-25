@@ -613,7 +613,7 @@ private fun <T> ButtonGroupItem(
     ButtonGroupItem(
         title = title,
         options = preference.supportedValues,
-        isActive = preference.isActive,
+        isActive = preference.isEffective,
         activeOption = preference.effectiveValue,
         selectedOption = preference.value,
         formatValue = formatValue
@@ -666,7 +666,7 @@ private fun <T> MenuItem(
         title = title,
         value = preference.value ?: preference.effectiveValue,
         values = preference.supportedValues,
-        isActive = preference.isActive,
+        isActive = preference.isEffective,
         formatValue = formatValue
     ) {
         preference.value = it
@@ -720,7 +720,7 @@ private fun <T: Comparable<T>> StepperItem(
 ) {
     StepperItem(
         title = title,
-        isActive = preference.isActive,
+        isActive = preference.isEffective,
         value = preference.value ?: preference.effectiveValue,
         formatValue = preference::formatValue,
         onDecrement = { preference.decrement(); commit() },
@@ -780,7 +780,7 @@ private fun SwitchItem(
     SwitchItem(
         title = title,
         value = preference.value ?: preference.effectiveValue,
-        isActive = preference.isActive,
+        isActive = preference.isEffective,
         onCheckedChange = { preference.value = it; commit() },
         onToggle = { preference.toggle(); commit() }
     )
@@ -820,9 +820,9 @@ private fun ColorItem(
 ) {
     ColorItem(
         title = title,
-        isActive = preference.isActive,
+        isActive = preference.isEffective,
         value = preference.value ?: preference.effectiveValue,
-        valueHasBeenSelected = preference.value != null,
+        noValueSelected = preference.value == null,
         onColorChanged = { preference.value = it; commit() }
     )
 }
@@ -835,7 +835,7 @@ private fun ColorItem(
     title: String,
     isActive: Boolean,
     value: ReadiumColor,
-    valueHasBeenSelected: Boolean,
+    noValueSelected: Boolean,
     onColorChanged: (ReadiumColor?) -> Unit
 ) {
     var isPicking by remember { mutableStateOf(false) }
@@ -851,7 +851,7 @@ private fun ColorItem(
             onClick = { isPicking = true },
             colors = ButtonDefaults.buttonColors(backgroundColor = color)
         ) {
-            if (valueHasBeenSelected) {
+            if (noValueSelected) {
                 Icon(
                     imageVector = Icons.Default.Palette,
                     contentDescription = "Change color",
@@ -902,7 +902,7 @@ fun LanguageItem(
 
     MenuItem(
         title = "Language",
-        isActive = preference.isActive,
+        isActive = preference.isEffective,
         value = preference.value ?: preference.effectiveValue,
         values = listOf(null) + languages,
         formatValue = { it?.locale?.displayName ?: "Default" }

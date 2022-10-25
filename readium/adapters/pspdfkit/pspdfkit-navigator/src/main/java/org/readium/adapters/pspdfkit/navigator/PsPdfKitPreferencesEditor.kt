@@ -47,7 +47,7 @@ class PsPdfKitPreferencesEditor(
             override fun set(value: ReadingProgression?) {
                 preferences = preferences.copy(readingProgression = value) }
 
-            override val isActive: Boolean = true
+            override val isEffective: Boolean = true
         }
 
     val scroll: SwitchPreference =
@@ -58,7 +58,7 @@ class PsPdfKitPreferencesEditor(
                 get() = preferences.scroll
                 set(value) { preferences = preferences.copy(scroll = value) }
 
-            override val isActive: Boolean = true
+            override val isEffective: Boolean = true
         }
 
     val scrollAxis: EnumPreference<Axis> =
@@ -72,7 +72,7 @@ class PsPdfKitPreferencesEditor(
                 preferences = preferences.copy(scrollAxis = value)
             }
 
-            override val isActive: Boolean
+            override val isEffective: Boolean
                 get() = settingsResolver.settings(preferences).scroll
         }
 
@@ -87,7 +87,7 @@ class PsPdfKitPreferencesEditor(
                 preferences = preferences.copy(spread = value)
             }
 
-            override val isActive: Boolean
+            override val isEffective: Boolean
                 get() = !settingsResolver.settings(preferences).scroll
         }
 
@@ -99,7 +99,7 @@ class PsPdfKitPreferencesEditor(
                 get() = preferences.offset
                 set(value) { preferences = preferences.copy(offset = value) }
 
-            override val isActive: Boolean
+            override val isEffective: Boolean
                 get() = settingsResolver.settings(preferences).spread != Spread.NEVER
         }
 
@@ -112,7 +112,7 @@ class PsPdfKitPreferencesEditor(
 
             override fun set(value: Fit?) { preferences = preferences.copy(fit = value) }
 
-            override val isActive: Boolean = true
+            override val isEffective: Boolean = true
         }
 
     val pageSpacing: RangePreference<Double> =
@@ -125,7 +125,7 @@ class PsPdfKitPreferencesEditor(
 
             override fun set(value: Double?) { preferences = preferences.copy(pageSpacing = value) }
 
-            override val isActive: Boolean
+            override val isEffective: Boolean
                 get() = settingsResolver.settings(preferences).scroll
 
             override fun formatValue(value: Double): String =

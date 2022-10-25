@@ -14,11 +14,11 @@ import org.readium.r2.shared.util.Language
 
 @ExperimentalReadiumApi
 data class EpubNavigatorDefaults(
-    val readingProgression: ReadingProgression? = ReadingProgression.LTR,
+    val readingProgression: ReadingProgression? = null,
     val language: Language? = null,
-    val scroll: Boolean = false,
-    val spread: Spread = Spread.NEVER,
-    val columnCount: ColumnCount = ColumnCount.AUTO,
-    val fontSize: Double = 1.0,
-    val lineHeight: Double = 1.2
+    val scroll: Boolean? = null,
+    val spread: Spread? = null,
+    val columnCount: ColumnCount? = null,
+    val fontSize: Double? = null,
+    val lineHeight: Double? = null
 )

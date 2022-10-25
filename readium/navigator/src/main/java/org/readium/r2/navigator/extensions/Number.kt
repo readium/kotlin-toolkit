@@ -4,12 +4,12 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.epub.extensions
+package org.readium.r2.navigator.extensions
 
 import java.text.NumberFormat
 
-fun Number.format(maximumFractionDigits: Int): String {
-    val format = NumberFormat.getNumberInstance()
+fun Number.format(maximumFractionDigits: Int, percent: Boolean = false): String {
+    val format = if (percent) NumberFormat.getPercentInstance() else NumberFormat.getNumberInstance()
     format.maximumFractionDigits = maximumFractionDigits
     return format.format(this)
 }
