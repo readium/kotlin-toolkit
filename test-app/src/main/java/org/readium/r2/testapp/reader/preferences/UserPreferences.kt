@@ -617,8 +617,8 @@ private fun <T> ButtonGroupItem(
         activeOption = preference.effectiveValue,
         selectedOption = preference.value,
         formatValue = formatValue
-    ) {
-        preference.value = it
+    ) { value ->
+        preference.value = value.takeUnless { it == preference.value }
         commit()
     }
 }
@@ -638,7 +638,7 @@ private fun <T> ButtonGroupItem(
 ) {
     Item(title, isActive = isActive) {
         ToggleButtonGroup(
-            options = options ?: emptyList(),
+            options = options,
             activeOption = activeOption,
             selectedOption = selectedOption,
             onSelectOption = { option -> onSelectedOptionChanged(option)
