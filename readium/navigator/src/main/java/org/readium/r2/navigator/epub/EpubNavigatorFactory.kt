@@ -73,7 +73,7 @@ class EpubNavigatorFactory(
             defaultReadiumCssFonts.takeUnless { configuration.ignoreDefaultFontFamilies }.orEmpty()
 
         val editorConfiguration = configuration.preferencesEditorConfiguration
-            .copy(fontFamilies = fontFamilies))
+            .copy(fontFamilies = fontFamilies)
 
         return EpubPreferencesEditor(
             currentSettings = currentSettings,
