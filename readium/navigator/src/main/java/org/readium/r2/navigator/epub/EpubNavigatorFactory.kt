@@ -6,8 +6,9 @@
 
 package org.readium.r2.navigator.epub
 
-import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
 import org.readium.r2.navigator.NavigatorFactory
+import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
+import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -24,7 +25,7 @@ class EpubNavigatorFactory(
         val defaults: EpubDefaults = EpubDefaults(),
         val preferencesEditorConfiguration: EpubPreferencesEditor.Configuration = EpubPreferencesEditor.Configuration(),
         val fontDeclarations:  List<FontFamilyDeclaration> = emptyList(),
-        val ignoreDefaultFontDeclarations: Boolean = false,
+        val ignoreDefaultFontFamilies: Boolean = false,
     )
 
     private val epubLayout: EpubLayout =
@@ -32,9 +33,15 @@ class EpubNavigatorFactory(
 
     private val fontDeclarations: List<FontFamilyDeclaration> =
         EpubNavigatorFragment.DEFAULT_FONT_DECLARATIONS
-            .takeUnless { configuration.ignoreDefaultFontDeclarations }
+            .takeUnless { configuration.ignoreDefaultFontFamilies }
             .orEmpty()
             .plus(configuration.fontDeclarations)
+
+
+    private val defaultReadiumCssFonts: List<FontFamily> = listOf(
+        FontFamily.ACCESSIBLE_DFA,
+        FontFamily.IA_WRITER_DUOSPACE,
+    )
 
     fun createFragmentFactory(
         initialLocator: Locator?,
@@ -60,12 +67,20 @@ class EpubNavigatorFactory(
     override fun createPreferencesEditor(
         currentSettings: EpubSettings,
         currentPreferences: EpubPreferences,
-    ): EpubPreferencesEditor = EpubPreferencesEditor(
+    ): EpubPreferencesEditor {
+        val fontFamilies = fontDeclarations.map { it.fontFamily } +
+            defaultReadiumCssFonts.takeUnless { configuration.ignoreDefaultFontFamilies }.orEmpty()
+
+        val editorConfiguration = configuration.preferencesEditorConfiguration
+            .copy(fontFamilies = fontFamilies)
+
+        return EpubPreferencesEditor(
             currentSettings = currentSettings,
             initialPreferences = currentPreferences,
             publicationMetadata = publication.metadata,
             epubLayout = epubLayout,
             defaults = configuration.defaults,
-            configuration = configuration.preferencesEditorConfiguration
+            configuration = editorConfiguration,
         )
+    }
 }

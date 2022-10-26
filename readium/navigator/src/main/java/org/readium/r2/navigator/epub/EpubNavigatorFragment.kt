@@ -42,10 +42,7 @@ import org.json.JSONObject
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel.RunScriptCommand
-import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
-import org.readium.r2.navigator.epub.css.RsProperties
-import org.readium.r2.navigator.epub.css.fromAsset
-import org.readium.r2.navigator.epub.css.fromGoogleFonts
+import org.readium.r2.navigator.epub.css.*
 import org.readium.r2.navigator.extensions.optRectF
 import org.readium.r2.navigator.extensions.positionsByResource
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
@@ -946,12 +943,12 @@ class EpubNavigatorFragment internal constructor(
             WebViewServer.assetUrl(path)
 
         internal val DEFAULT_FONT_DECLARATIONS: List<FontFamilyDeclaration> = listOf(
-            FontFamily.LITERATA.fromGoogleFonts,
-            FontFamily.PT_SERIF.fromGoogleFonts,
-            FontFamily.VOLLKORN.fromGoogleFonts,
-            FontFamily.ROBOTO.fromGoogleFonts,
-            FontFamily.SOURCE_SANS_PRO.fromGoogleFonts,
-            FontFamily.OPEN_DYSLEXIC.fromAsset("readium/fonts/OpenDyslexic-Regular.otf")
+            GoogleFont(FontFamily.LITERATA),
+            GoogleFont(FontFamily.PT_SERIF),
+            GoogleFont(FontFamily.VOLLKORN),
+            GoogleFont(FontFamily.ROBOTO),
+            GoogleFont(FontFamily.SOURCE_SANS_PRO),
+            FontAsset(FontFamily.OPEN_DYSLEXIC, "readium/fonts/OpenDyslexic-Regular.otf")
         )
     }
 

@@ -15,7 +15,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 @ExperimentalReadiumApi
 sealed class FontFamilyDeclaration {
 
-    abstract val name: String
+    abstract val fontFamily: FontFamily
 }
 
 /**
@@ -24,7 +24,7 @@ sealed class FontFamilyDeclaration {
  * @param path Path to the font file, relative to the assets folder.
  */
 @ExperimentalReadiumApi
-data class FontAsset(override val name: String, val path: String) : FontFamilyDeclaration()
+data class FontAsset(override val fontFamily: FontFamily, val path: String) : FontFamilyDeclaration()
 
 /**
  * A typeface hosted by Google Fonts.
@@ -34,12 +34,4 @@ data class FontAsset(override val name: String, val path: String) : FontFamilyDe
  * See https://fonts.google.com/ for the list of available fonts.
  */
 @ExperimentalReadiumApi
-data class GoogleFont(override val name: String) : FontFamilyDeclaration()
-
-@ExperimentalReadiumApi
-val FontFamily.fromGoogleFonts: FontFamilyDeclaration
-    get() = GoogleFont(name)
-
-@ExperimentalReadiumApi
-fun FontFamily.fromAsset(path: String): FontFamilyDeclaration =
-    FontAsset(name, path)
+data class GoogleFont(override val fontFamily: FontFamily) : FontFamilyDeclaration()

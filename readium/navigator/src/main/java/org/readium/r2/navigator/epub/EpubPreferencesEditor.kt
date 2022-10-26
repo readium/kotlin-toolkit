@@ -27,31 +27,12 @@ class EpubPreferencesEditor(
 
     data class Configuration(
         val fontFamilies: List<FontFamily> = emptyList(),
-        val ignoreDefaultFontFamilies: Boolean = false,
         val pageMarginsRange: ClosedRange<Double> = 0.5..4.0,
         val pageMarginsProgression: ProgressionStrategy<Double> = DoubleIncrement(0.3)
     )
 
     private val settingsResolver: EpubSettingsResolver =
         EpubSettingsResolver(publicationMetadata, defaults)
-
-    private val defaultFontFamilies: List<FontFamily> =
-        listOf(
-            FontFamily.LITERATA,
-            FontFamily.PT_SERIF,
-            FontFamily.ROBOTO,
-            FontFamily.SOURCE_SANS_PRO,
-            FontFamily.VOLLKORN,
-            FontFamily.ACCESSIBLE_DFA,
-            FontFamily.IA_WRITER_DUOSPACE,
-            FontFamily.OPEN_DYSLEXIC
-        )
-
-    private val fontFamilies: List<FontFamily> =
-        defaultFontFamilies
-            .takeUnless { configuration.ignoreDefaultFontFamilies }
-            .orEmpty()
-            .plus(configuration.fontFamilies)
 
     private val requireReflowable: NonEnforceableRequirement =
         NonEnforceableRequirement { layout == EpubLayout.REFLOWABLE }
@@ -162,7 +143,7 @@ class EpubPreferencesEditor(
         EnumPreferenceImpl(
             value = initialPreferences.fontFamily,
             effectiveValue = currentSettings.fontFamily,
-            supportedValues = fontFamilies,
+            supportedValues = configuration.fontFamilies,
             nonEnforceableRequirement = requireReflowable,
         )
 
