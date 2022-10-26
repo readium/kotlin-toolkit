@@ -21,13 +21,13 @@ class EpubPreferencesEditor(
     initialPreferences: EpubPreferences,
     publicationMetadata: Metadata,
     epubLayout: EpubLayout,
-    defaults: EpubNavigatorDefaults,
+    defaults: EpubDefaults,
     configuration: Configuration
 ): PreferencesEditor<EpubPreferences> {
 
     data class Configuration(
+        val fontFamilies: List<FontFamily> = emptyList(),
         val ignoreDefaultFontFamilies: Boolean = false,
-        val additionalFontFamilies: List<FontFamily> = emptyList(),
         val pageMarginsRange: ClosedRange<Double> = 0.5..4.0,
         val pageMarginsProgression: ProgressionStrategy<Double> = DoubleIncrement(0.3)
     )
@@ -51,7 +51,7 @@ class EpubPreferencesEditor(
         defaultFontFamilies
             .takeUnless { configuration.ignoreDefaultFontFamilies }
             .orEmpty()
-            .plus(configuration.additionalFontFamilies)
+            .plus(configuration.fontFamilies)
 
     private val requireReflowable: NonEnforceableRequirement =
         NonEnforceableRequirement { layout == EpubLayout.REFLOWABLE }

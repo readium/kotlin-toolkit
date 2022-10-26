@@ -13,7 +13,7 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Language
 
 @ExperimentalReadiumApi
-data class EpubNavigatorDefaults(
+data class EpubDefaults(
     val readingProgression: ReadingProgression? = null,
     val language: Language? = null,
     val scroll: Boolean? = null,

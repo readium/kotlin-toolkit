@@ -21,7 +21,7 @@ import org.readium.r2.shared.util.Language
  */
 internal class EpubSettingsResolver(
     private val metadata: Metadata,
-    private val defaults: EpubNavigatorDefaults
+    private val defaults: EpubDefaults
 ) {
 
     fun settings(preferences: EpubPreferences): EpubSettings {

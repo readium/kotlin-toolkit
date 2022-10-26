@@ -40,3 +40,26 @@ interface Configurable<T : Settings, P: Preferences> {
 
     fun submitPreferences(preferences: P)
 }
+
+@ExperimentalReadiumApi
+interface PreferencesSerializer<P: Preferences> {
+
+    fun serialize(preferences: P): String
+
+    fun deserialize(preferences: String): P
+}
+
+@ExperimentalReadiumApi
+interface PreferencesEditor<P: Preferences> {
+
+    val preferences: P
+
+    fun clear()
+}
+
+@ExperimentalReadiumApi
+fun interface PreferencesFilter<T: Preferences> {
+
+    fun filter(preferences: T): T
+}
+

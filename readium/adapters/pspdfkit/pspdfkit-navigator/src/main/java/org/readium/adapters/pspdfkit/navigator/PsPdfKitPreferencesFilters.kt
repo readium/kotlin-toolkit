@@ -10,18 +10,21 @@ import org.readium.r2.navigator.preferences.PreferencesFilter
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
-class PsPdfKitPreferencesFilter : PreferencesFilter<PsPdfKitPreferences> {
+object PsPdfKitSharedPreferencesFilter : PreferencesFilter<PsPdfKitPreferences> {
 
-    override fun filterSharedPreferences(preferences: PsPdfKitPreferences): PsPdfKitPreferences =
+    override fun filter(preferences: PsPdfKitPreferences): PsPdfKitPreferences =
         preferences.copy(
             readingProgression = null,
             offset = null
         )
 
-    override fun filterPublicationPreferences(preferences: PsPdfKitPreferences): PsPdfKitPreferences =
+}
+
+@ExperimentalReadiumApi
+object PsPdfKitPublicationPreferencesFilter : PreferencesFilter<PsPdfKitPreferences> {
+    override fun filter(preferences: PsPdfKitPreferences): PsPdfKitPreferences =
         PsPdfKitPreferences(
             readingProgression = preferences.readingProgression,
             offset = preferences.offset
         )
 }
-

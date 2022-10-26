@@ -7,7 +7,7 @@
 package org.readium.r2.navigator.epub
 
 import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
-import org.readium.r2.navigator.preferences.NavigatorFactory
+import org.readium.r2.navigator.NavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -21,10 +21,10 @@ class EpubNavigatorFactory(
 ) : NavigatorFactory<EpubSettings, EpubPreferences, EpubPreferencesEditor> {
 
     data class Configuration(
-        val navigatorDefaults: EpubNavigatorDefaults = EpubNavigatorDefaults(),
-        val editorConfiguration: EpubPreferencesEditor.Configuration = EpubPreferencesEditor.Configuration(),
+        val defaults: EpubDefaults = EpubDefaults(),
+        val preferencesEditorConfiguration: EpubPreferencesEditor.Configuration = EpubPreferencesEditor.Configuration(),
+        val fontDeclarations:  List<FontFamilyDeclaration> = emptyList(),
         val ignoreDefaultFontDeclarations: Boolean = false,
-        val additionalFontDeclarations:  List<FontFamilyDeclaration> = emptyList()
     )
 
     private val epubLayout: EpubLayout =
@@ -34,7 +34,7 @@ class EpubNavigatorFactory(
         EpubNavigatorFragment.DEFAULT_FONT_DECLARATIONS
             .takeUnless { configuration.ignoreDefaultFontDeclarations }
             .orEmpty()
-            .plus(configuration.additionalFontDeclarations)
+            .plus(configuration.fontDeclarations)
 
     fun createFragmentFactory(
         initialLocator: Locator?,
@@ -52,7 +52,7 @@ class EpubNavigatorFactory(
                 paginationListener = paginationListener,
                 epubLayout = epubLayout,
                 fontFamilyDeclarations = fontDeclarations,
-                defaults = this.configuration.navigatorDefaults,
+                defaults = this.configuration.defaults,
                 configuration = configuration
             )
         }
@@ -65,7 +65,7 @@ class EpubNavigatorFactory(
             initialPreferences = currentPreferences,
             publicationMetadata = publication.metadata,
             epubLayout = epubLayout,
-            defaults = configuration.navigatorDefaults,
-            configuration = configuration.editorConfiguration
+            defaults = configuration.defaults,
+            configuration = configuration.preferencesEditorConfiguration
         )
 }

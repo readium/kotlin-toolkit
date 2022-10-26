@@ -53,7 +53,7 @@ internal class EpubNavigatorViewModel(
     initialPreferences: EpubPreferences,
     val layout: EpubLayout,
     private val fontFamilyDeclarations: List<FontFamilyDeclaration>,
-    private val defaults: EpubNavigatorDefaults,
+    private val defaults: EpubDefaults,
     baseUrl: String?,
     private val server: WebViewServer?,
 ) : AndroidViewModel(application) {
@@ -365,7 +365,7 @@ internal class EpubNavigatorViewModel(
         fun createFactory(
             application: Application, publication: Publication, baseUrl: String?,
             layout: EpubLayout, fontFamilyDeclarations: List<FontFamilyDeclaration>,
-            defaults: EpubNavigatorDefaults, config: EpubNavigatorFragment.Configuration,
+            defaults: EpubDefaults, config: EpubNavigatorFragment.Configuration,
             initialPreferences: EpubPreferences
         ) = createViewModelFactory {
             EpubNavigatorViewModel(application, publication, config, initialPreferences, layout,

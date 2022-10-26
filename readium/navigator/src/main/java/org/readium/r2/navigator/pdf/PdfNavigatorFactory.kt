@@ -8,7 +8,7 @@ package org.readium.r2.navigator.pdf
 
 import androidx.fragment.app.FragmentFactory
 import org.readium.r2.navigator.preferences.Configurable
-import org.readium.r2.navigator.preferences.NavigatorFactory
+import org.readium.r2.navigator.NavigatorFactory
 import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi

@@ -24,10 +24,10 @@ import org.readium.r2.shared.util.Language
  *
  * @param language Language of the publication content.
  * @param readingProgression Direction of the reading progression across resources.
- * @param spread Indicates if the publication should be rendered with a
+ * @param spread Indicates if the fixed-layout publication should be rendered with a
  * synthetic spread (dual-page).
  * @param backgroundColor Default page background color.
- * @param columnCount Number of columns to display (one-page view or two-page spread).
+ * @param columnCount Number of reflowable columns to display (one-page view or two-page spread).
  * @param fontFamily Default typeface for the text.
  * @param fontSize Base text font size.
  * @param hyphens Enable hyphenation.

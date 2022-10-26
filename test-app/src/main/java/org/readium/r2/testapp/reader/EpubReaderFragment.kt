@@ -53,7 +53,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             readerData.navigatorFactory.createFragmentFactory(
                 initialLocator = readerData.initialLocation,
                 listener = this,
-                initialPreferences = readerData.preferencesFlow.value,
+                initialPreferences = readerData.preferencesManager.preferences.value,
                 configuration = EpubNavigatorFragment.Configuration(
                     // App assets which will be accessible from the EPUB resources.
                     // You can use simple glob patterns, such as "images/.*" to allow several

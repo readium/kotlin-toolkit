@@ -8,26 +8,12 @@ package org.readium.r2.testapp.reader
 
 import android.app.Activity
 import android.app.Application
-import kotlin.reflect.KClass
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.*
+import androidx.datastore.core.DataStore
 import org.json.JSONObject
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferences
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesFilter
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitNavigatorFactory
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesSerializer
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
-import org.readium.r2.navigator.epub.EpubPreferences
-import org.readium.r2.navigator.epub.EpubPreferencesFilter
-import org.readium.r2.navigator.epub.EpubPreferencesSerializer
 import org.readium.r2.navigator.pdf.PdfNavigatorFactory
-import org.readium.r2.navigator.pdf.PdfNavigatorFragment
-import org.readium.r2.navigator.preferences.Configurable
-import org.readium.r2.navigator.preferences.PreferencesSerializer
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -37,12 +23,12 @@ import org.readium.r2.shared.publication.services.protectionError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.testapp.MediaService
-import org.readium.r2.testapp.utils.extensions.stateInFirst
 import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.bookshelf.BookRepository
-import org.readium.r2.testapp.reader.preferences.PreferencesStore
-import org.readium.r2.testapp.utils.extensions.combine
+import org.readium.r2.testapp.reader.preferences.EpubPreferencesManagerFactory
+import org.readium.r2.testapp.reader.preferences.PsPdfKitPreferencesManagerFactory
 import java.io.File
+import androidx.datastore.preferences.core.Preferences as JetpackPreferences
 
 /**
  * Open and store publications in order for them to be listened or read.
@@ -57,7 +43,7 @@ class ReaderRepository(
     private val readium: Readium,
     private val mediaBinder: MediaService.Binder,
     private val bookRepository: BookRepository,
-    private val preferencesStore: PreferencesStore,
+    private val preferencesDataStore: DataStore<JetpackPreferences>,
 ) {
     object CancellationException : Exception()
 
@@ -137,19 +123,14 @@ class ReaderRepository(
         publication: Publication,
         initialLocator: Locator?
     ): EpubReaderInitData {
-        val coroutineScope = CoroutineScope(Dispatchers.IO)
-        val serializer = EpubPreferencesSerializer()
-        val preferences = getPreferences(
-            EpubPreferences::class, bookId, serializer,
-            coroutineScope, { EpubPreferences() }, EpubPreferences::plus
-        )
+
+        val preferencesManager = EpubPreferencesManagerFactory(preferencesDataStore)
+            .createPreferenceManager(bookId)
+        val navigatorFactory = EpubNavigatorFactory(publication, readium.epubNavigatorConfig)
 
         return EpubReaderInitData(
             bookId, publication, initialLocator,
-            coroutineScope, preferences,
-            EpubPreferencesFilter(),
-            serializer,
-            EpubNavigatorFactory(publication, readium.epubNavigatorConfig)
+            preferencesManager, navigatorFactory
         )
     }
 
@@ -158,40 +139,15 @@ class ReaderRepository(
         publication: Publication,
         initialLocator: Locator?
     ): PdfReaderInitData {
-        val coroutineScope = CoroutineScope(Dispatchers.IO)
-        val serializer = PsPdfKitPreferencesSerializer()
-        val preferences = getPreferences(
-            PsPdfKitPreferences::class, bookId, serializer,
-            coroutineScope, { PsPdfKitPreferences() }, PsPdfKitPreferences::plus
-        )
+
+        val preferencesManager = PsPdfKitPreferencesManagerFactory(preferencesDataStore)
+            .createPreferenceManager(bookId)
         val navigatorFactory = PdfNavigatorFactory(publication, readium.pdfEngineProvider)
 
         return PdfReaderInitData(
             bookId, publication, initialLocator,
-            coroutineScope, preferences,
-            PsPdfKitPreferencesFilter(),
-            serializer,
-            navigatorFactory
+            preferencesManager, navigatorFactory
         )
-    }
-
-    private suspend fun <P: Configurable.Preferences> getPreferences(
-        klass: KClass<P>,
-        bookId: Long,
-        serializer: PreferencesSerializer<P>,
-        publicationScope: CoroutineScope,
-        default: () -> P,
-        plus: (P).(P) -> P
-    ): StateFlow<P> {
-        val pubPrefs = preferencesStore[klass, bookId]
-            .map { json -> json?.let { serializer.deserialize(it) } ?: default() }
-            .stateInFirst(publicationScope, SharingStarted.Eagerly)
-
-        val sharedPrefs = preferencesStore[EpubPreferences::class]
-            .map { json -> json?.let { serializer.deserialize(it) } ?: default() }
-            .stateInFirst(publicationScope, SharingStarted.Eagerly)
-
-        return combine(publicationScope, SharingStarted.Eagerly, sharedPrefs, pubPrefs, plus)
     }
 
     private fun openImage(
@@ -210,14 +166,6 @@ class ReaderRepository(
         when (val initData = repository.remove(bookId)) {
             is MediaReaderInitData -> {
                 mediaBinder.closeNavigator()
-            }
-            is EpubReaderInitData -> {
-                initData.publication.close()
-                initData.coroutineScope.cancel()
-            }
-            is PdfReaderInitData -> {
-                initData.publication.close()
-                initData.coroutineScope.cancel()
             }
             is VisualReaderInitData -> {
                 initData.publication.close()

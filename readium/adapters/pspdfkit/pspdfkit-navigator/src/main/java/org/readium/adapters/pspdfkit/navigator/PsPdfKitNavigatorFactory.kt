@@ -6,7 +6,7 @@
 
 package org.readium.adapters.pspdfkit.navigator
 
-import org.readium.r2.navigator.preferences.NavigatorFactory
+import org.readium.r2.navigator.NavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
 

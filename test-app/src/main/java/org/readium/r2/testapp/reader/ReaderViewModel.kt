@@ -9,7 +9,6 @@
 package org.readium.r2.testapp.reader
 
 import android.graphics.Color
-import android.os.Bundle
 import androidx.annotation.ColorInt
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -24,7 +23,6 @@ import org.readium.adapters.pspdfkit.navigator.PsPdfKitSettings
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.pdf.PdfEngineProvider
-import org.readium.r2.navigator.preferences.NavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
@@ -71,7 +69,6 @@ class ReaderViewModel(
 
     val settings: UserPreferencesViewModel<*, *, *>? = UserPreferencesViewModel(
         viewModelScope = viewModelScope,
-        preferencesStore = application.preferencesStore,
         readerInitData = readerInitData
     )
 

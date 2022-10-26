@@ -183,8 +183,6 @@ fun <P: Configurable.Preferences> UserPreferencesScaffold(
 
         Divider()
 
-        Divider()
-
         body()
     }
 }
@@ -273,7 +271,7 @@ private fun ColumnScope.FixedLayoutUserPreferences(
             when (value) {
                 Spread.AUTO -> "Auto"
                 Spread.NEVER -> "Never"
-                Spread.ALWAYS -> "Preferred"
+                Spread.ALWAYS -> "Always"
             }
         }
 
@@ -641,8 +639,7 @@ private fun <T> ButtonGroupItem(
             options = options,
             activeOption = activeOption,
             selectedOption = selectedOption,
-            onSelectOption = { option -> onSelectedOptionChanged(option)
-            }
+            onSelectOption = { option -> onSelectedOptionChanged(option) }
         ) { option ->
             Text(
                 text = formatValue(option),

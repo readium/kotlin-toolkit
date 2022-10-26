@@ -45,10 +45,9 @@ internal data class Layout(
         Unspecified, Ltr, Rtl;
     }
 
-    @ExperimentalReadiumApi
     companion object {
 
-        fun from(settingsValues: EpubSettings): Layout {
+        internal fun from(settingsValues: EpubSettings): Layout {
             val stylesheets = when {
                 settingsValues.verticalText -> Stylesheets.CjkVertical
                 settingsValues.language?.isCjk == true -> Stylesheets.CjkHorizontal

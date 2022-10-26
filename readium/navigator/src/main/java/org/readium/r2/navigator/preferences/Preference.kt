@@ -10,11 +10,10 @@ package org.readium.r2.navigator.preferences
 
 import org.readium.r2.shared.ExperimentalReadiumApi
 
-@ExperimentalReadiumApi
-fun interface Activator {
+/*fun interface Activator {
 
     fun activate()
-}
+}*/
 
 @ExperimentalReadiumApi
 interface Preference<T> {

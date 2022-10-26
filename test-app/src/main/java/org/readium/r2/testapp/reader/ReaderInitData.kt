@@ -4,20 +4,21 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.r2.testapp.reader
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.StateFlow
-import org.readium.adapters.pspdfkit.navigator.*
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferences
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesEditor
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitSettings
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.epub.EpubPreferences
-import org.readium.r2.navigator.epub.EpubPreferencesFilter
-import org.readium.r2.navigator.epub.EpubPreferencesSerializer
 import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.*
+import org.readium.r2.testapp.reader.preferences.PreferencesManager
 
 sealed class ReaderInitData {
     abstract val bookId: Long
@@ -36,27 +37,19 @@ class ImageReaderInitData(
     initialLocation: Locator?
 ) : VisualReaderInitData(bookId, publication, initialLocation)
 
-@OptIn(ExperimentalReadiumApi::class)
 class EpubReaderInitData(
     bookId: Long,
     publication: Publication,
     initialLocation: Locator?,
-    val coroutineScope: CoroutineScope,
-    val preferencesFlow: StateFlow<EpubPreferences>,
-    val preferencesFilter: EpubPreferencesFilter,
-    val preferencesSerializer: EpubPreferencesSerializer,
+    val preferencesManager: PreferencesManager<EpubPreferences>,
     val navigatorFactory: EpubNavigatorFactory
 ) : VisualReaderInitData(bookId, publication, initialLocation)
 
-@OptIn(ExperimentalReadiumApi::class)
 class PdfReaderInitData(
     bookId: Long,
     publication: Publication,
     initialLocation: Locator?,
-    val coroutineScope: CoroutineScope,
-    val preferencesFlow: StateFlow<PsPdfKitPreferences>,
-    val preferencesFilter: PsPdfKitPreferencesFilter,
-    val preferencesSerializer: PsPdfKitPreferencesSerializer,
+    val preferencesManager: PreferencesManager<PsPdfKitPreferences>,
     val navigatorFactory: PdfNavigatorFactory<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>
 ) : VisualReaderInitData(bookId, publication, initialLocation)
 

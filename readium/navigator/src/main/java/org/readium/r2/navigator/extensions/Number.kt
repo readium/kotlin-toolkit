@@ -6,8 +6,10 @@
 
 package org.readium.r2.navigator.extensions
 
+import org.readium.r2.shared.InternalReadiumApi
 import java.text.NumberFormat
 
+@InternalReadiumApi
 fun Number.format(maximumFractionDigits: Int, percent: Boolean = false): String {
     val format = if (percent) NumberFormat.getPercentInstance() else NumberFormat.getNumberInstance()
     format.maximumFractionDigits = maximumFractionDigits

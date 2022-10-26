@@ -94,7 +94,7 @@ class EpubNavigatorFragment internal constructor(
     internal val paginationListener: PaginationListener?,
     epubLayout: EpubLayout,
     private val fontFamilyDeclarations: List<FontFamilyDeclaration>,
-    private val defaults: EpubNavigatorDefaults,
+    private val defaults: EpubDefaults,
     configuration: Configuration,
 ) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable<EpubSettings, EpubPreferences> {
 
@@ -934,7 +934,7 @@ class EpubNavigatorFragment internal constructor(
                     listener, paginationListener,
                     epubLayout = publication.metadata.presentation.layout ?: EpubLayout.REFLOWABLE,
                     fontFamilyDeclarations = DEFAULT_FONT_DECLARATIONS,
-                    defaults = EpubNavigatorDefaults(),
+                    defaults = EpubDefaults(),
                     configuration = config,
                 )
             }

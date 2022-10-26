@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import org.readium.adapters.pspdfkit.navigator.*
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.r2.navigator.Navigator
+import org.readium.r2.navigator.NavigatorFactory
 import org.readium.r2.navigator.epub.*
 import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.navigator.preferences.*
@@ -26,7 +27,6 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.testapp.reader.*
 import org.readium.r2.testapp.utils.extensions.combine
-import kotlin.reflect.KClass
 
 /**
  * Manages user settings.
@@ -34,17 +34,12 @@ import kotlin.reflect.KClass
  * Note: This is not an Android [ViewModel], but it is a component of [ReaderViewModel].
  *
  * @param bookId Database ID for the book.
- * @param kind Navigator kind (e.g. EPUB, PDF, audiobook).
  */
 sealed class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.Preferences, E: PreferencesEditor<P>>(
     private val bookId: Long,
     private val publication: Publication,
     private val viewModelScope: CoroutineScope,
-    private val preferences: StateFlow<P>,
-    private val preferencesClass: KClass<P>,
-    private val preferencesStore: PreferencesStore,
-    private val preferencesFilter: PreferencesFilter<P>,
-    private val preferencesSerializer: PreferencesSerializer<P>,
+    private val preferencesManager: PreferencesManager<P>,
     private val navigatorFactory: NavigatorFactory<S, P, E>
 ) {
 
@@ -53,22 +48,19 @@ sealed class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.
         @OptIn(ExperimentalMedia2::class)
         operator fun invoke(
             viewModelScope: CoroutineScope,
-            preferencesStore: PreferencesStore,
             readerInitData: ReaderInitData
         ): UserPreferencesViewModel<*, *, *>? =
             when (readerInitData) {
                 is EpubReaderInitData -> with (readerInitData) {
                     EpubPreferencesViewModel(
                         bookId, publication, viewModelScope,
-                        preferencesFlow, preferencesStore,
-                        preferencesFilter, preferencesSerializer, navigatorFactory
+                        preferencesManager, navigatorFactory
                     )
                 }
                 is PdfReaderInitData -> with (readerInitData) {
                     PsPdfKitPreferencesViewModel(
                         bookId, publication, viewModelScope,
-                        preferencesFlow, preferencesStore,
-                        preferencesFilter, preferencesSerializer, navigatorFactory
+                        preferencesManager, navigatorFactory
                     )
                 }
                 is DummyReaderInitData, is MediaReaderInitData, is ImageReaderInitData ->
@@ -99,7 +91,7 @@ sealed class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.
                 }
                 .launchIn(lifecycleScope)
 
-            preferences
+            preferencesManager.preferences
                 .flowWithLifecycle(lifecycle)
                 .onEach { configurable.submitPreferences(it) }
                 .launchIn(lifecycleScope)
@@ -107,21 +99,14 @@ sealed class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.
     }
 
     val editor: StateFlow<E?> =
-        combine(viewModelScope, SharingStarted.Eagerly, _settings, preferences) { settings, preferences ->
+        combine(viewModelScope, SharingStarted.Eagerly, _settings, preferencesManager.preferences) { settings, preferences ->
             settings?.let { settingsNotNull ->
                 navigatorFactory.createPreferencesEditor(settingsNotNull, preferences)
             }
         }
 
     fun submitPreferences(preferences: P) = viewModelScope.launch {
-            val sharedPreferences = preferencesFilter
-                .filterSharedPreferences(preferences)
-                .let { preferencesSerializer.serialize(it) }
-            val publicationPreferences = preferencesFilter
-                .filterPublicationPreferences(preferences)
-                .let { preferencesSerializer.serialize(it) }
-            preferencesStore.set(sharedPreferences, preferencesClass)
-            preferencesStore.set(publicationPreferences, preferencesClass, bookId)
+            preferencesManager.setPreferences(preferences)
         }
 
     /**
@@ -169,20 +154,13 @@ class EpubPreferencesViewModel(
     bookId: Long,
     publication: Publication,
     viewModelScope: CoroutineScope,
-    preferences: StateFlow<EpubPreferences>,
-    preferencesStore: PreferencesStore,
-    preferencesFilter: EpubPreferencesFilter,
-    preferencesSerializer: EpubPreferencesSerializer,
+    preferencesManager: PreferencesManager<EpubPreferences>,
     navigatorFactory: EpubNavigatorFactory
 ) : UserPreferencesViewModel<EpubSettings, EpubPreferences, EpubPreferencesEditor>(
     bookId = bookId,
     publication = publication,
     viewModelScope = viewModelScope,
-    preferences = preferences,
-    preferencesClass = EpubPreferences::class,
-    preferencesStore = preferencesStore,
-    preferencesFilter = preferencesFilter,
-    preferencesSerializer = preferencesSerializer,
+    preferencesManager = preferencesManager,
     navigatorFactory = navigatorFactory
 )
 
@@ -190,19 +168,12 @@ class PsPdfKitPreferencesViewModel(
     bookId: Long,
     publication: Publication,
     viewModelScope: CoroutineScope,
-    preferences: StateFlow<PsPdfKitPreferences>,
-    preferencesStore: PreferencesStore,
-    preferencesFilter: PsPdfKitPreferencesFilter,
-    preferencesSerializer: PsPdfKitPreferencesSerializer,
+    preferencesManager: PreferencesManager<PsPdfKitPreferences>,
     navigatorFactory: PdfNavigatorFactory<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>
 ) : UserPreferencesViewModel<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>(
     bookId = bookId,
     publication = publication,
     viewModelScope = viewModelScope,
-    preferences = preferences,
-    preferencesStore = preferencesStore,
-    preferencesClass = PsPdfKitPreferences::class,
-    preferencesFilter = preferencesFilter,
-    preferencesSerializer = preferencesSerializer,
+    preferencesManager = preferencesManager,
     navigatorFactory = navigatorFactory
 )
