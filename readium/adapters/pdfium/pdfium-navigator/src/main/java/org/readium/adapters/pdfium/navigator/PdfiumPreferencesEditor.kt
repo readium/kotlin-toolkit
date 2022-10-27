@@ -8,21 +8,49 @@ package org.readium.adapters.pdfium.navigator
 
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.ReadingProgression
 
 @OptIn(ExperimentalReadiumApi::class)
 class PdfiumPreferencesEditor(
-    private val currentSettings: PdfiumSettings,
-    private val initialPreferences: PdfiumPreferences,
-    private val publicationMetadata: Metadata
+    currentSettings: PdfiumSettings,
+    initialPreferences: PdfiumPreferences,
+    publicationMetadata: Metadata,
+    defaults: PdfiumDefaults,
 ) : PreferencesEditor<PdfiumPreferences> {
 
     override val preferences: PdfiumPreferences
-        get() = TODO("Not yet implemented")
+        get() = PdfiumPreferences(
+            readingProgression = readingProgression.value,
+            scrollAxis = scrollAxis.value,
+            fit = fit.value
+        )
 
     override fun clear() {
-        TODO("Not yet implemented")
+        readingProgression.value = null
+        scrollAxis.value = null
+        fit.value = null
     }
 
+    val fit: EnumPreference<Fit> =
+        EnumPreferenceImpl(
+            value = initialPreferences.fit,
+            effectiveValue = currentSettings.fit,
+            supportedValues = listOf(Fit.CONTAIN, Fit.WIDTH),
+        )
 
+    val readingProgression: EnumPreference<ReadingProgression> =
+        EnumPreferenceImpl(
+            value = initialPreferences.readingProgression,
+            effectiveValue = currentSettings.readingProgression,
+            supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL),
+        )
+
+    val scrollAxis: EnumPreference<Axis> =
+        EnumPreferenceImpl(
+            value = initialPreferences.scrollAxis,
+            effectiveValue = currentSettings.scrollAxis,
+            supportedValues = listOf(Axis.VERTICAL, Axis.HORIZONTAL),
+        )
 }

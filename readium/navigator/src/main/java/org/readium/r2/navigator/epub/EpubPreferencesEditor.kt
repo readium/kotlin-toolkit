@@ -27,6 +27,8 @@ class EpubPreferencesEditor(
 
     data class Configuration(
         val fontFamilies: List<FontFamily> = emptyList(),
+        val fontSizeRange: ClosedRange<Double> = 0.4..5.0,
+        val fontSizeProgression: ProgressionStrategy<Double> = DoubleIncrement(0.1),
         val pageMarginsRange: ClosedRange<Double> = 0.5..4.0,
         val pageMarginsProgression: ProgressionStrategy<Double> = DoubleIncrement(0.3)
     )
@@ -47,9 +49,6 @@ class EpubPreferencesEditor(
 
     private val percentFormatter: Formatter<Double> =
         Formatter { it.format(maximumFractionDigits = 0, percent = true) }
-
-    private val percentProgression: ProgressionStrategy<Double> =
-        DoubleIncrement(0.1)
 
     private fun requireStylesheets(stylesheets: Layout.Stylesheets) = NonEnforceableRequirement {
         val settings = settingsResolver.settings(preferences)
@@ -151,8 +150,8 @@ class EpubPreferencesEditor(
         RangePreferenceImpl(
             value = initialPreferences.fontSize,
             effectiveValue = currentSettings.fontSize,
-            supportedRange = 0.4..5.0,
-            progressionStrategy = percentProgression,
+            supportedRange = configuration.fontSizeRange,
+            progressionStrategy = configuration.fontSizeProgression,
             valueFormatter = percentFormatter,
             nonEnforceableRequirement = requireReflowable,
         )
@@ -184,7 +183,7 @@ class EpubPreferencesEditor(
             value = initialPreferences.letterSpacing,
             effectiveValue = currentSettings.letterSpacing,
             supportedRange = 0.0..1.0,
-            progressionStrategy = percentProgression,
+            progressionStrategy = DoubleIncrement(0.1),
             valueFormatter = percentFormatter,
             nonEnforceableRequirement = requireReflowable + requireStylesheets(Layout.Stylesheets.Default),
             enforceableRequirement = requirePublisherStylesDisabled
@@ -237,7 +236,7 @@ class EpubPreferencesEditor(
             value = initialPreferences.paragraphSpacing,
             effectiveValue = currentSettings.paragraphSpacing,
             supportedRange = 0.0..2.0,
-            progressionStrategy = percentProgression,
+            progressionStrategy = DoubleIncrement(0.1),
             valueFormatter = percentFormatter,
             nonEnforceableRequirement = requireReflowable,
             enforceableRequirement = requirePublisherStylesDisabled
@@ -328,7 +327,7 @@ class EpubPreferencesEditor(
             value = initialPreferences.wordSpacing,
             effectiveValue = currentSettings.wordSpacing,
             supportedRange = 0.0..1.0,
-            progressionStrategy = percentProgression,
+            progressionStrategy = DoubleIncrement(0.1),
             valueFormatter = percentFormatter,
             nonEnforceableRequirement = requireReflowable + requireStylesheets(Layout.Stylesheets.Default),
             enforceableRequirement = requirePublisherStylesDisabled

@@ -17,7 +17,7 @@ import org.readium.r2.shared.publication.Publication
 @ExperimentalReadiumApi
 class PdfiumEngineProvider(
     private val listener: PdfiumDocumentFragment.Listener? = null,
-    private val defaults: PdfiumSettingsDefaults = PdfiumSettingsDefaults()
+    private val defaults: PdfiumDefaults = PdfiumDefaults()
 ) : PdfEngineProvider<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor> {
 
     override suspend fun createDocumentFragment(input: PdfDocumentFragmentInput<PdfiumSettings>) =
@@ -50,7 +50,8 @@ class PdfiumEngineProvider(
         PdfiumPreferencesEditor(
             currentSettings,
             currentPreferences,
-            publication.metadata
+            publication.metadata,
+            defaults
         )
 
     override fun createEmptyPreferences(): PdfiumPreferences =

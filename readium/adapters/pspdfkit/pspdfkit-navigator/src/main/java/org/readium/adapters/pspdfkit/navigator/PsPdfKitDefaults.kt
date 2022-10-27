@@ -12,10 +12,9 @@ import org.readium.r2.shared.publication.ReadingProgression
 
 @ExperimentalReadiumApi
 data class PsPdfKitDefaults(
-    val pageSpacing: Double = 16.0,
-    val pageSpacingRange: ClosedRange<Double> = 0.0..50.0,
-    val readingProgression: ReadingProgression = ReadingProgression.LTR,
-    val scroll: Boolean = false,
-    val spread: Spread = Spread.AUTO,
-    val offset: Boolean = true
+    val pageSpacing: Double? = null,
+    val readingProgression: ReadingProgression? = null,
+    val scroll: Boolean? = null,
+    val spread: Spread? = null,
+    val offset: Boolean? = null
 )

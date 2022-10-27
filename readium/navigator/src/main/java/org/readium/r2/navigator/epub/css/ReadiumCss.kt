@@ -92,13 +92,13 @@ internal data class ReadiumCss(
 
                     is FontAsset -> {
                         val href = assetsBaseHref + "/" + declaration.path.removePrefix("/")
-                        add("""@font-face { font-family: "${declaration.name}"; src: url("$href"); }""")
+                        add("""@font-face { font-family: "${declaration.fontFamily}"; src: url("$href"); }""")
                     }
                 }
             }
 
             if (googleFonts.isNotEmpty()) {
-                val families = googleFonts.joinToString("|") { it.name }
+                val families = googleFonts.joinToString("|") { it.fontFamily.name }
 
                 val uri = Uri.parse("https://fonts.googleapis.com/css")
                     .buildUpon()

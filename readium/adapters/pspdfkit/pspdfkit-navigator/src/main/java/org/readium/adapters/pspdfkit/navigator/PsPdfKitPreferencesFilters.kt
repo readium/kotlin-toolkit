@@ -22,6 +22,7 @@ object PsPdfKitSharedPreferencesFilter : PreferencesFilter<PsPdfKitPreferences> 
 
 @ExperimentalReadiumApi
 object PsPdfKitPublicationPreferencesFilter : PreferencesFilter<PsPdfKitPreferences> {
+
     override fun filter(preferences: PsPdfKitPreferences): PsPdfKitPreferences =
         PsPdfKitPreferences(
             readingProgression = preferences.readingProgression,

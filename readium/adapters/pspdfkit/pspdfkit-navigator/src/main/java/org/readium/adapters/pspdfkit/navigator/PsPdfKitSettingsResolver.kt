@@ -24,10 +24,12 @@ internal class PsPdfKitSettingsResolver(
             preferences.readingProgression
                 ?: metadata.readingProgression.takeIf { it.isHorizontal == true }
                 ?: defaults.readingProgression
+                ?: ReadingProgression.LTR
 
         val scroll: Boolean =
             preferences.scroll
                 ?: defaults.scroll
+                ?: false
 
         val scrollAxis: Axis =
             preferences.scrollAxis
@@ -42,14 +44,17 @@ internal class PsPdfKitSettingsResolver(
         val spread: Spread =
             preferences.spread
                 ?: defaults.spread
+                ?: Spread.AUTO
 
         val offset: Boolean =
             preferences.offset
                 ?: defaults.offset
+                ?: true
 
         val pageSpacing: Double =
             preferences.pageSpacing
                 ?: defaults.pageSpacing
+                ?: 16.0
 
         return PsPdfKitSettings(
             readingProgression = readingProgression,

@@ -81,8 +81,8 @@ class EdgeTapNavigation(
             }
 
         val isReverse = when (presentation.readingProgression) {
-            ReadingProgression.RTL -> false
-            else -> true
+            ReadingProgression.RTL -> true
+            else -> false
         }
 
         if (isReverse) {

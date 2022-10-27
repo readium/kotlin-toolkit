@@ -15,7 +15,7 @@ import org.readium.r2.shared.publication.ReadingProgression
 @ExperimentalReadiumApi
 internal class PdfiumSettingsResolver(
     private val metadata: Metadata,
-    private val defaults: PdfiumSettingsDefaults
+    private val defaults: PdfiumDefaults
 ) {
 
     fun settings(preferences: PdfiumPreferences): PdfiumSettings {
@@ -23,6 +23,7 @@ internal class PdfiumSettingsResolver(
             preferences.readingProgression
                 ?: metadata.readingProgression.takeIf { it.isHorizontal == true }
                 ?: defaults.readingProgression
+                ?: ReadingProgression.LTR
 
         val scrollAxis: Axis =
             preferences.scrollAxis
