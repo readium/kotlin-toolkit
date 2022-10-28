@@ -62,9 +62,9 @@ publishing {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    api(project(":readium:shared"))
-    api(project(":readium:navigator"))
-    api(project(":readium:adapters:pdfium:pdfium-document"))
+    api("com.github.readium.kotlin-toolkit:readium-shared")
+    api("com.github.readium.kotlin-toolkit:readium-navigator")
+    api("com.github.readium.kotlin-toolkit:readium-adapter-pdfium-document")
 
     api("com.github.barteksc:android-pdf-viewer:2.8.2")
     implementation("androidx.fragment:fragment-ktx:1.5.3")

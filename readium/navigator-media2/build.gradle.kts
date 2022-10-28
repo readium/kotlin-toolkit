@@ -63,8 +63,8 @@ publishing {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    api(project(":readium:shared"))
-    api(project(":readium:navigator"))
+    api("com.github.readium.kotlin-toolkit:readium-shared")
+    api("com.github.readium.kotlin-toolkit:readium-navigator")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")

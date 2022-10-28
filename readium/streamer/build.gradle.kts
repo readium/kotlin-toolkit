@@ -60,7 +60,7 @@ publishing {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    api(project(":readium:shared"))
+    api("com.github.readium.kotlin-toolkit:readium-shared")
 
     implementation("androidx.appcompat:appcompat:1.5.1")
     @Suppress("GradleDependency")

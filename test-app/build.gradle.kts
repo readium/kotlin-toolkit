@@ -66,14 +66,15 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.20")
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
 
-    implementation(project(":readium:shared"))
-    implementation(project(":readium:streamer"))
-    implementation(project(":readium:navigator"))
-    implementation(project(":readium:navigator-media2"))
-    implementation(project(":readium:opds"))
-    implementation(project(":readium:lcp"))
+    implementation("com.github.readium.kotlin-toolkit:readium-shared")
+    implementation("com.github.readium.kotlin-toolkit:readium-streamer")
+    implementation("com.github.readium.kotlin-toolkit:readium-navigator")
+    implementation("com.github.readium.kotlin-toolkit:readium-navigator-media2")
+    implementation("com.github.readium.kotlin-toolkit:readium-opds")
+    implementation("com.github.readium.kotlin-toolkit:readium-lcp")
     // Only required if you want to support PDF files using PDFium.
-    implementation(project(":readium:adapters:pdfium"))
+    implementation("com.github.readium.kotlin-toolkit:readium-adapter-pdfium-document")
+    implementation("com.github.readium.kotlin-toolkit:readium-adapter-pdfium-navigator")
 
     implementation("androidx.activity:activity-compose:1.6.0")
     implementation("androidx.activity:activity-ktx:1.6.0")
