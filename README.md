@@ -27,7 +27,7 @@ Make sure that you have the `$readium_version` property set in your root `build.
 
 ```groovy
 buildscript {
-    ext.readium_version = '2.2.0'
+    ext.readium_version = '2.2.1'
 }
 
 allprojects {
