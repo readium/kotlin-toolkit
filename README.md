@@ -15,15 +15,11 @@ This toolkit is a modular project, which follows the [Readium Architecture](http
 
 A [Test App](test-app) demonstrates how to integrate the Readium Kotlin toolkit in your own reading app.
 
-## Using Readium
-
 :question: **Find documentation and API reference at [readium.org/kotlin-toolkit](https://readium.org/kotlin-toolkit)**.
 
-Readium modules are distributed through [JitPack](https://jitpack.io/#readium/kotlin-toolkit). It's also possible to clone the repository (or a fork) and depend on the modules locally.
+## Setting Up Readium
 
-### From the JitPack Maven repository
-
-Make sure that you have the `$readium_version` property set in your root `build.gradle` and add the JitPack repository.
+Readium modules are distributed through [JitPack](https://jitpack.io/#readium/kotlin-toolkit). Make sure that you have the `$readium_version` property set in your root `build.gradle`, then add the JitPack and JCenter repositories.
 
 ```groovy
 buildscript {
@@ -32,6 +28,7 @@ buildscript {
 
 allprojects {
     repositories {
+        jcenter()
         maven { url 'https://jitpack.io' }
     }
 }
@@ -49,7 +46,7 @@ dependencies {
 }
 ```
 
-### From a local Git clone
+### Using a local Git clone
 
 You may prefer to use a local Git clone if you want to contribute to Readium, or if you are using your own fork.
 
@@ -65,36 +62,14 @@ Make sure you have Jetifier enabled in your `gradle.properties` file:
 android.enableJetifier=true
 ```
 
-Then, add the following to your project's `settings.gradle` file, altering the paths if needed. Keep only the modules you want to use.
+Then, include the Readium build to your project's `settings.gradle` file. The Readium dependencies will automatically build against the local sources.
 
 ```groovy
-include ':readium:shared'
-project(':readium:shared').projectDir = file('kotlin-toolkit/readium/shared')
-
-include ':readium:streamer'
-project(':readium:streamer').projectDir = file('kotlin-toolkit/readium/streamer')
-
-include ':readium:navigator'
-project(':readium:navigator').projectDir = file('kotlin-toolkit/readium/navigator')
-
-include ':readium:opds'
-project(':readium:opds').projectDir = file('kotlin-toolkit/readium/opds')
-
-include ':readium:lcp'
-project(':readium:lcp').projectDir = file('kotlin-toolkit/readium/lcp')
+// Provide the path to the Git submodule.
+includeBuild 'kotlin-toolkit'
 ```
 
-You should now see the Readium modules appear as part of your project. You can depend on them as you would on any other local module:
-
-```
-dependencies {
-    implementation project(':readium:shared')
-    implementation project(':readium:streamer')
-    implementation project(':readium:navigator')
-    implementation project(':readium:opds')
-    implementation project(':readium:lcp')
-}
-```
+:warning: When importing Readium locally, you will need to use the same version of the Android Gradle Plugin in your project.
 
 ### Building with Readium LCP
 
