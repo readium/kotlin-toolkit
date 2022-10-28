@@ -17,6 +17,12 @@ A [Test App](test-app) demonstrates how to integrate the Readium Kotlin toolkit 
 
 :question: **Find documentation and API reference at [readium.org/kotlin-toolkit](https://readium.org/kotlin-toolkit)**.
 
+## Minimum Requirements
+
+| Readium | Android min SDK | Android compile SDK | Kotlin compiler | Gradle |
+|---------|-----------------|---------------------|-----------------|--------|
+| latest  | 21              | 33                  | 1.7.10          | 6.9.3  |
+
 ## Setting Up Readium
 
 Readium modules are distributed through [JitPack](https://jitpack.io/#readium/kotlin-toolkit). Make sure that you have the `$readium_version` property set in your root `build.gradle`, then add the JitPack and JCenter repositories.
