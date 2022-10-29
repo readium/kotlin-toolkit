@@ -57,6 +57,6 @@ publishing {
 }
 
 dependencies {
-    api("com.github.readium.kotlin-toolkit:readium-adapter-pdfium-document")
-    api("com.github.readium.kotlin-toolkit:readium-adapter-pdfium-navigator")
+    api(project(":readium:adapters:pdfium:readium-adapter-pdfium-document"))
+    api(project(":readium:adapters:pdfium:readium-adapter-pdfium-navigator"))
 }
