@@ -2,7 +2,7 @@
 
 android-gradle-plugin = "7.3.1"
 
-androidx-activity = "1.6.0"
+androidx-activity = "1.6.1"
 androidx-appcompat = "1.5.1"
 androidx-browser = "1.4.0"
 androidx-cardview = "1.0.0"
@@ -19,7 +19,7 @@ androidx-core = "1.9.0"
 androidx-datastore = "1.0.0"
 androidx-expresso-core = "3.4.0"
 androidx-ext-junit = "1.1.3"
-androidx-fragment-ktx = "1.5.3"
+androidx-fragment-ktx = "1.5.4"
 androidx-legacy = "1.0.0"
 androidx-lifecycle = "2.5.1"
 androidx-lifecycle-extensions = "2.2.0"
@@ -39,7 +39,7 @@ dokka = "1.7.10"
 google-exoplayer = "2.18.1"
 google-material = "1.7.0"
 
-joda-time = "2.12.0"
+joda-time = "2.12.1"
 jsoup = "1.15.3"
 junit = "4.13.2"
 
