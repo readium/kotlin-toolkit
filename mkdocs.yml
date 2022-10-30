@@ -42,19 +42,25 @@ markdown_extensions:
 #dev_addr: 127.0.0.1:3001
 
 nav:
+  - Home: index.md
   - Migration Guide: migration-guide.md
   - User Guides:
-    - Navigator settings: guides/navigator-settings.md
+      - Navigator settings: guides/navigator-settings.md
       - Adding custom fonts: guides/epub-custom-fonts.md
-    - PDF support: guides/pdf.md
-    - Text-to-speech: guides/tts.md
-    - Extracting the content of a publication: guides/content.md
+      - PDF support: guides/pdf.md
+      - Text-to-speech: guides/tts.md
+      - Extracting the content of a publication: guides/content.md
   - API Reference:
       - Shared: readium/shared/index.md
       - Streamer: readium/streamer/index.md
       - Navigator: readium/navigator/index.md
       - OPDS: readium/opds/index.md
       - LCP: readium/lcp/index.md
+      - Navigator media2: readium/navigator-media2/index.md
+      - PDFium Document: readium/adapters/pdfium/pdfium-document/index.md
+      - PDFium Navigator: readium/adapters/pdfium/pdfium-navigator/index.md
+      - Pspdfkit Document: readium/adapters/pspdfkit/pspdfkit-document/index.md
+      - Pspdfkit Navigator: readium/adapters/pspdfkit/pspdfkit-navigator/index.md
 
 extra_css:
   - readium_colors.css
