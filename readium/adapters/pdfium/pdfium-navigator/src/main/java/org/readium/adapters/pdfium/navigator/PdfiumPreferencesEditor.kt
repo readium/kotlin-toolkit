@@ -13,44 +13,55 @@ import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
 
 @OptIn(ExperimentalReadiumApi::class)
-class PdfiumPreferencesEditor(
-    currentSettings: PdfiumSettings,
+class PdfiumPreferencesEditor internal constructor(
     initialPreferences: PdfiumPreferences,
     publicationMetadata: Metadata,
     defaults: PdfiumDefaults,
 ) : PreferencesEditor<PdfiumPreferences> {
 
-    override val preferences: PdfiumPreferences
-        get() = PdfiumPreferences(
-            readingProgression = readingProgression.value,
-            scrollAxis = scrollAxis.value,
-            fit = fit.value
-        )
+    private val settingsResolver: PdfiumSettingsResolver =
+        PdfiumSettingsResolver(publicationMetadata, defaults)
+
+    private var settings: PdfiumSettings =
+        settingsResolver.settings(initialPreferences)
+
+    override var preferences: PdfiumPreferences =
+        initialPreferences
+        private set
 
     override fun clear() {
-        readingProgression.value = null
-        scrollAxis.value = null
-        fit.value = null
+        updateValues { PdfiumPreferences() }
     }
 
     val fit: EnumPreference<Fit> =
-        EnumPreferenceImpl(
-            value = initialPreferences.fit,
-            effectiveValue = currentSettings.fit,
+        EnumPreferenceDelegate(
+            getValue = { preferences.fit },
+            getEffectiveValue = { settings.fit },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(fit = value) } },
             supportedValues = listOf(Fit.CONTAIN, Fit.WIDTH),
         )
 
     val readingProgression: EnumPreference<ReadingProgression> =
-        EnumPreferenceImpl(
-            value = initialPreferences.readingProgression,
-            effectiveValue = currentSettings.readingProgression,
+        EnumPreferenceDelegate(
+            getValue = { preferences.readingProgression },
+            getEffectiveValue = { settings.readingProgression },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(readingProgression = value) } },
             supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL),
         )
 
     val scrollAxis: EnumPreference<Axis> =
-        EnumPreferenceImpl(
-            value = initialPreferences.scrollAxis,
-            effectiveValue = currentSettings.scrollAxis,
+        EnumPreferenceDelegate(
+            getValue = { preferences.scrollAxis},
+            getEffectiveValue = { settings.scrollAxis },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(scrollAxis = value) } },
             supportedValues = listOf(Axis.VERTICAL, Axis.HORIZONTAL),
         )
+
+    private fun updateValues(updater: (PdfiumPreferences) -> PdfiumPreferences) {
+        preferences = updater(preferences)
+        settings = settingsResolver.settings(preferences)
+    }
 }

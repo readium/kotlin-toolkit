@@ -95,7 +95,6 @@ internal class PsPdfKitDocumentFragment(
             .disableFormEditing()
             .enableMagnifier(true)
             .excludedAnnotationTypes(emptyList())
-            .firstPageAlwaysSingle(false)
             .fitMode(settings.fit.fitMode)
             .layoutMode(settings.spread.pageLayout)
 //            .loadingProgressDrawable(null)

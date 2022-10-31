@@ -39,7 +39,7 @@ interface PdfEngineProvider<S: Configurable.Settings, P: Configurable.Preference
      */
     fun computePresentation(settings: S): VisualNavigator.Presentation
 
-    fun createPreferenceEditor(publication: Publication, currentSettings: S, currentPreferences: P): E
+    fun createPreferenceEditor(publication: Publication, currentPreferences: P): E
 
     fun createEmptyPreferences(): P
 }

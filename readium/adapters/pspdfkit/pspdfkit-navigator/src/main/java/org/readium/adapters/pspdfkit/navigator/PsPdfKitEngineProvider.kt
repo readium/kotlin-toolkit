@@ -58,11 +58,9 @@ class PsPdfKitEngineProvider(
 
     override fun createPreferenceEditor(
         publication: Publication,
-        currentSettings: PsPdfKitSettings,
         currentPreferences: PsPdfKitPreferences
     ): PsPdfKitPreferencesEditor =
         PsPdfKitPreferencesEditor(
-            currentSettings = currentSettings,
             initialPreferences = currentPreferences,
             publicationMetadata = publication.metadata,
             defaults = defaults,

@@ -44,11 +44,9 @@ class PdfiumEngineProvider(
 
     override fun createPreferenceEditor(
         publication: Publication,
-        currentSettings: PdfiumSettings,
         currentPreferences: PdfiumPreferences
     ): PdfiumPreferencesEditor =
         PdfiumPreferencesEditor(
-            currentSettings,
             currentPreferences,
             publication.metadata,
             defaults

@@ -49,12 +49,10 @@ class PdfNavigatorFactory<S: Configurable.Settings, P: Configurable.Preferences,
     }
 
     override fun createPreferencesEditor(
-        currentSettings: S,
         currentPreferences: P
     ): E =
        pdfEngineProvider.createPreferenceEditor(
            publication,
-           currentSettings,
            currentPreferences
        )
 }

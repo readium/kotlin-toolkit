@@ -16,8 +16,7 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Language
 
 @ExperimentalReadiumApi
-class EpubPreferencesEditor(
-    currentSettings: EpubSettings,
+class EpubPreferencesEditor internal constructor(
     initialPreferences: EpubPreferences,
     publicationMetadata: Metadata,
     epubLayout: EpubLayout,
@@ -36,300 +35,277 @@ class EpubPreferencesEditor(
     private val settingsResolver: EpubSettingsResolver =
         EpubSettingsResolver(publicationMetadata, defaults)
 
-    private val requireReflowable: NonEnforceableRequirement =
-        NonEnforceableRequirement { layout == EpubLayout.REFLOWABLE }
+    private var settings: EpubSettings =
+        settingsResolver.settings(initialPreferences)
 
-    private val requireFixedLayout: NonEnforceableRequirement =
-        NonEnforceableRequirement { layout == EpubLayout.FIXED }
-
-    private val requirePublisherStylesDisabled = EnforceableRequirement(
-        isSatisfied = { !settingsResolver.settings(preferences).publisherStyles },
-        enforce = { publisherStyles.value = false }
-    )
-
-    private val percentFormatter: Formatter<Double> =
-        Formatter { it.format(maximumFractionDigits = 0, percent = true) }
-
-    private fun requireStylesheets(stylesheets: Layout.Stylesheets) = NonEnforceableRequirement {
-        val settings = settingsResolver.settings(preferences)
-        Layout.from(settings).stylesheets == stylesheets
-    }
-
-    private fun requireScroll(value: Boolean) = EnforceableRequirement(
-        isSatisfied = { settingsResolver.settings(preferences).scroll == value },
-        enforce = { scroll.value = value }
-    )
-
-    private fun requireTheme(value: Theme) = EnforceableRequirement(
-        isSatisfied = { settingsResolver.settings(preferences).theme == value },
-        enforce = { theme.value = value }
-    )
+    private var readiumCssLayout: Layout =
+        Layout.from(settings)
 
     val layout: EpubLayout = epubLayout
 
-    override val preferences: EpubPreferences
-        get() = EpubPreferences(
-            backgroundColor = backgroundColor.value,
-            columnCount = columnCount.value,
-            fontFamily = fontFamily.value,
-            fontSize = fontSize.value,
-            hyphens =  hyphens.value,
-            imageFilter = imageFilter.value,
-            language = language.value,
-            letterSpacing = letterSpacing.value,
-            ligatures = ligatures.value,
-            lineHeight = lineHeight.value,
-            pageMargins = pageMargins.value,
-            paragraphIndent = paragraphIndent.value,
-            paragraphSpacing = paragraphSpacing.value,
-            publisherStyles = publisherStyles.value,
-            readingProgression = readingProgression.value,
-            scroll = scroll.value,
-            spread = spread.value,
-            textAlign = textAlign.value,
-            textColor = textColor.value,
-            textNormalization = textNormalization.value,
-            theme = theme.value,
-            typeScale = typeScale.value,
-            verticalText = verticalText.value,
-            wordSpacing = wordSpacing.value
-        )
+    override var preferences: EpubPreferences =
+        initialPreferences
+        private set
 
     override fun clear() {
-        backgroundColor.value = null
-        columnCount.value = null
-        fontFamily.value = null
-        fontSize.value = null
-        hyphens.value = null
-        imageFilter.value = null
-        language.value = null
-        letterSpacing.value = null
-        ligatures.value = null
-        lineHeight.value = null
-        pageMargins.value = null
-        paragraphIndent.value = null
-        paragraphSpacing.value = null
-        publisherStyles.value = null
-        readingProgression.value = null
-        scroll.value = null
-        spread.value = null
-        textAlign.value = null
-        textColor.value = null
-        textNormalization.value = null
-        theme.value = null
-        typeScale.value = null
-        verticalText.value = null
-        wordSpacing.value = null
+       updateValues { EpubPreferences() }
     }
 
     val backgroundColor: Preference<Color> =
-        PreferenceImpl(
-            value = initialPreferences.backgroundColor,
-            effectiveValue = currentSettings.backgroundColor,
-            nonEnforceableRequirement = requireReflowable,
+        PreferenceDelegate(
+            getValue = { preferences.backgroundColor },
+            getEffectiveValue = { settings.backgroundColor },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            updateValue = { value -> updateValues { it.copy(backgroundColor = value) } },
         )
-
+    
     val columnCount: EnumPreference<ColumnCount> =
-        EnumPreferenceImpl(
-            value = initialPreferences.columnCount,
-            effectiveValue = currentSettings.columnCount,
+        EnumPreferenceDelegate(
+            getValue = { preferences.columnCount },
+            getEffectiveValue = { settings.columnCount },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && !settings.scroll },
+            updateValue = { value -> updateValues { it.copy(columnCount = value) } },
             supportedValues = listOf(ColumnCount.AUTO, ColumnCount.ONE, ColumnCount.TWO),
-            nonEnforceableRequirement = requireReflowable,
-            enforceableRequirement = requireScroll(false),
         )
 
     val fontFamily: EnumPreference<FontFamily?> =
-        EnumPreferenceImpl(
-            value = initialPreferences.fontFamily,
-            effectiveValue = currentSettings.fontFamily,
+        EnumPreferenceDelegate(
+            getValue = { preferences.fontFamily },
+            getEffectiveValue = { settings.fontFamily },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            updateValue = { value -> updateValues { it.copy(fontFamily = value) } },
             supportedValues = configuration.fontFamilies,
-            nonEnforceableRequirement = requireReflowable,
         )
 
     val fontSize: RangePreference<Double> =
-        RangePreferenceImpl(
-            value = initialPreferences.fontSize,
-            effectiveValue = currentSettings.fontSize,
+        RangePreferenceDelegate(
+            getValue = { preferences.fontSize },
+            getEffectiveValue = { settings.fontSize },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            updateValue = { value -> updateValues { it.copy(fontSize = value) } },
             supportedRange = configuration.fontSizeRange,
             progressionStrategy = configuration.fontSizeProgression,
-            valueFormatter = percentFormatter,
-            nonEnforceableRequirement = requireReflowable,
+            valueFormatter = percentFormatter(),
         )
 
     val hyphens: SwitchPreference =
-        SwitchPreferenceImpl(
-            value = initialPreferences.hyphens,
-            effectiveValue = currentSettings.hyphens,
-            nonEnforceableRequirement = requireReflowable + requireStylesheets(Layout.Stylesheets.Default),
-            enforceableRequirement = requirePublisherStylesDisabled
+        SwitchPreferenceDelegate(
+            getValue = { preferences.hyphens },
+            getEffectiveValue = { settings.hyphens },
+            getIsEffective = { isHyphensEffective() },
+            updateValue = { value -> updateValues { it.copy(hyphens = value) }},
         )
 
     val imageFilter: EnumPreference<ImageFilter> =
-        EnumPreferenceImpl(
-            value = initialPreferences.imageFilter,
-            effectiveValue = currentSettings.imageFilter,
+        EnumPreferenceDelegate(
+            getValue = { preferences.imageFilter },
+            getEffectiveValue = { settings.imageFilter },
+            getIsEffective = { settings.theme == Theme.DARK },
+            updateValue = { value -> updateValues { it.copy(imageFilter = value) } },
             supportedValues = listOf(ImageFilter.NONE, ImageFilter.DARKEN, ImageFilter.INVERT),
-            enforceableRequirement = requireTheme(Theme.DARK),
         )
 
     val language: Preference<Language?> =
-        PreferenceImpl(
-            value = initialPreferences.language,
-            effectiveValue = currentSettings.language
+        PreferenceDelegate(
+            getValue = { preferences.language },
+            getEffectiveValue = { settings.language },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(language = value) } },
         )
 
     val letterSpacing: RangePreference<Double> =
-        RangePreferenceImpl(
-            value = initialPreferences.letterSpacing,
-            effectiveValue = currentSettings.letterSpacing,
+        RangePreferenceDelegate(
+            getValue = { preferences.letterSpacing },
+            getEffectiveValue = { settings.letterSpacing },
+            getIsEffective = { isLetterSpacing() },
+            updateValue = { value -> updateValues { it.copy(letterSpacing = value) } },
             supportedRange = 0.0..1.0,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = percentFormatter,
-            nonEnforceableRequirement = requireReflowable + requireStylesheets(Layout.Stylesheets.Default),
-            enforceableRequirement = requirePublisherStylesDisabled
+            valueFormatter = percentFormatter(),
         )
 
     val ligatures: SwitchPreference =
-        SwitchPreferenceImpl(
-            value = initialPreferences.ligatures,
-            effectiveValue = currentSettings.ligatures,
-            nonEnforceableRequirement = requireReflowable + requireStylesheets(Layout.Stylesheets.Rtl),
-            enforceableRequirement = requirePublisherStylesDisabled
+        SwitchPreferenceDelegate(
+            getValue = { preferences.ligatures },
+            getEffectiveValue = { settings.ligatures },
+            getIsEffective = { isLigaturesSpacing() },
+            updateValue = { value -> updateValues { it.copy(ligatures = value) } },
         )
 
     val lineHeight: RangePreference<Double> =
-        RangePreferenceImpl(
-            value = initialPreferences.lineHeight,
-            effectiveValue = currentSettings.lineHeight,
+        RangePreferenceDelegate(
+            getValue = { preferences.lineHeight },
+            getEffectiveValue = { settings.lineHeight },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && !settings.publisherStyles },
+            updateValue = { value -> updateValues { it.copy(lineHeight = value) } },
             supportedRange = 1.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
             valueFormatter = { it.format(5) },
-            nonEnforceableRequirement = requireReflowable,
-            enforceableRequirement = requirePublisherStylesDisabled
         )
 
     val pageMargins: RangePreference<Double> =
-        RangePreferenceImpl(
-            value = initialPreferences.pageMargins,
-            effectiveValue = currentSettings.pageMargins,
+        RangePreferenceDelegate(
+            getValue = { preferences.pageMargins },
+            getEffectiveValue = { settings.pageMargins },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && !settings.scroll },
+            updateValue = { value -> updateValues { it.copy(pageMargins = value) } },
             supportedRange = configuration.pageMarginsRange,
             progressionStrategy = configuration.pageMarginsProgression,
             valueFormatter = { it.format(5) },
-            nonEnforceableRequirement = requireReflowable,
-            enforceableRequirement = requireScroll(false)
         )
 
     val paragraphIndent: RangePreference<Double> =
-        RangePreferenceImpl(
-            value = initialPreferences.paragraphIndent,
-            effectiveValue = currentSettings.paragraphIndent,
+        RangePreferenceDelegate(
+            getValue = { preferences.paragraphIndent },
+            getEffectiveValue = { settings.paragraphIndent },
+            getIsEffective = { isParagraphIndentEffective() },
+            updateValue = { value -> updateValues { it.copy(paragraphIndent = value) } },
             supportedRange = 0.0..3.0,
             progressionStrategy = DoubleIncrement(0.2),
-            valueFormatter = percentFormatter,
-            nonEnforceableRequirement = requireReflowable +
-                requireStylesheets(Layout.Stylesheets.Default).or(requireStylesheets(Layout.Stylesheets.Rtl)),
-            enforceableRequirement = requirePublisherStylesDisabled
+            valueFormatter = percentFormatter(),
         )
 
     val paragraphSpacing: RangePreference<Double> =
-        RangePreferenceImpl(
-            value = initialPreferences.paragraphSpacing,
-            effectiveValue = currentSettings.paragraphSpacing,
+        RangePreferenceDelegate(
+            getValue = { preferences.paragraphSpacing },
+            getEffectiveValue = { settings.paragraphSpacing },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && !settings.publisherStyles },
+            updateValue = { value -> updateValues { it.copy(paragraphSpacing = value) } },
             supportedRange = 0.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = percentFormatter,
-            nonEnforceableRequirement = requireReflowable,
-            enforceableRequirement = requirePublisherStylesDisabled
+            valueFormatter = percentFormatter(),
         )
 
     val publisherStyles: SwitchPreference =
-        SwitchPreferenceImpl(
-            value = initialPreferences.publisherStyles,
-            effectiveValue = currentSettings.publisherStyles,
-            nonEnforceableRequirement = requireReflowable,
+        SwitchPreferenceDelegate(
+            getValue = { preferences.publisherStyles },
+            getEffectiveValue = { settings.publisherStyles },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            updateValue = { value -> updateValues { it.copy(publisherStyles = value) }},
         )
 
     val readingProgression: EnumPreference<ReadingProgression> =
-        EnumPreferenceImpl(
-            value = initialPreferences.readingProgression,
-            effectiveValue = currentSettings.readingProgression,
+        EnumPreferenceDelegate(
+            getValue = { preferences.readingProgression },
+            getEffectiveValue = { settings.readingProgression },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(readingProgression = value) } },
             supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL),
         )
 
     val scroll: SwitchPreference =
-        SwitchPreferenceImpl(
-            value = initialPreferences.scroll,
-            effectiveValue = currentSettings.scroll,
+        SwitchPreferenceDelegate(
+            getValue = { preferences.scroll },
+            getEffectiveValue = { settings.scroll },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            updateValue = { value -> updateValues { it.copy(scroll = value) } },
         )
 
     val spread: EnumPreference<Spread> =
-        EnumPreferenceImpl(
-            value = initialPreferences.spread,
-            effectiveValue = currentSettings.spread,
+        EnumPreferenceDelegate(
+            getValue = { preferences.spread },
+            getEffectiveValue = { settings.spread },
+            getIsEffective = { layout == EpubLayout.FIXED },
+            updateValue = { value -> updateValues { it.copy(spread = value) } },
             supportedValues = listOf(Spread.AUTO, Spread.NEVER, Spread.ALWAYS),
-            nonEnforceableRequirement = requireFixedLayout,
         )
 
     val textAlign: EnumPreference<TextAlign> =
-        EnumPreferenceImpl(
-            value = initialPreferences.textAlign,
-            effectiveValue = currentSettings.textAlign,
+        EnumPreferenceDelegate(
+            getValue = { preferences.textAlign },
+            getEffectiveValue = { settings.textAlign },
+            getIsEffective = { isTextAlignEffective() },
+            updateValue = { value -> updateValues { it.copy(textAlign = value) } },
             supportedValues = listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY),
-            nonEnforceableRequirement = requireReflowable +
-                requireStylesheets(Layout.Stylesheets.Default).or(requireStylesheets(Layout.Stylesheets.Rtl)),
-            enforceableRequirement = requirePublisherStylesDisabled
         )
 
     val textColor: Preference<Color> =
-        PreferenceImpl(
-            value = initialPreferences.textColor,
-            effectiveValue = currentSettings.textColor,
-            nonEnforceableRequirement = requireReflowable,
+        PreferenceDelegate(
+            getValue = { preferences.textColor },
+            getEffectiveValue = { settings.textColor },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            updateValue = { value -> updateValues { it.copy(textColor = value) } }
         )
 
     val textNormalization: EnumPreference<TextNormalization> =
-        EnumPreferenceImpl(
-            value = initialPreferences.textNormalization,
-            effectiveValue = currentSettings.textNormalization,
+        EnumPreferenceDelegate(
+            getValue = { preferences.textNormalization },
+            getEffectiveValue = { settings.textNormalization },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            updateValue = { value -> updateValues { it.copy(textNormalization = value) } },
             supportedValues = listOf(TextNormalization.NONE, TextNormalization.BOLD, TextNormalization.ACCESSIBILITY),
-            nonEnforceableRequirement = requireReflowable,
         )
 
     val theme: EnumPreference<Theme> =
-        EnumPreferenceImpl(
-            value = initialPreferences.theme,
-            effectiveValue = currentSettings.theme,
+        EnumPreferenceDelegate(
+            getValue = { preferences.theme },
+            getEffectiveValue = { settings.theme },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            updateValue = { value -> updateValues { it.copy(theme = value) } },
             supportedValues = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA),
-            nonEnforceableRequirement = requireReflowable,
         )
 
     val typeScale: RangePreference<Double> =
-        RangePreferenceImpl(
-            value = initialPreferences.typeScale,
-            effectiveValue = currentSettings.typeScale,
+        RangePreferenceDelegate(
+            getValue = { preferences.typeScale },
+            getEffectiveValue = { settings.typeScale },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && !settings.publisherStyles },
+            updateValue = { value -> updateValues { it.copy(typeScale = value) } },
             valueFormatter = { it.format(5) },
             supportedRange = 1.0..2.0,
             progressionStrategy = StepsProgression(1.0, 1.067, 1.125, 1.2, 1.25, 1.333, 1.414, 1.5, 1.618),
-            nonEnforceableRequirement = requireReflowable,
-            enforceableRequirement = requirePublisherStylesDisabled
-
         )
 
     val verticalText: SwitchPreference =
-        SwitchPreferenceImpl(
-            value = initialPreferences.verticalText,
-            effectiveValue = currentSettings.verticalText,
-            nonEnforceableRequirement = requireReflowable,
+        SwitchPreferenceDelegate(
+            getValue = { preferences.verticalText },
+            getEffectiveValue = { settings.verticalText },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            updateValue = { value -> updateValues { it.copy(verticalText = value) } },
         )
 
     val wordSpacing: RangePreference<Double> =
-        RangePreferenceImpl(
-            value = initialPreferences.wordSpacing,
-            effectiveValue = currentSettings.wordSpacing,
+        RangePreferenceDelegate(
+            getValue = { preferences.wordSpacing },
+            getEffectiveValue = { settings.wordSpacing },
+            getIsEffective = { isWordSpacingEffective() },
+            updateValue = { value -> updateValues { it.copy(wordSpacing = value) } },
             supportedRange = 0.0..1.0,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = percentFormatter,
-            nonEnforceableRequirement = requireReflowable + requireStylesheets(Layout.Stylesheets.Default),
-            enforceableRequirement = requirePublisherStylesDisabled
+            valueFormatter = percentFormatter(),
         )
+
+    private fun percentFormatter(): (Double) -> String =
+        { it.format(maximumFractionDigits = 0, percent = true) }
+
+    private fun updateValues(updater: (EpubPreferences) -> EpubPreferences) {
+        preferences = updater(preferences)
+        settings = settingsResolver.settings(preferences)
+        readiumCssLayout = Layout.from(settings)
+    }
+
+    private fun isHyphensEffective() = layout == EpubLayout.REFLOWABLE &&
+        readiumCssLayout.stylesheets == Layout.Stylesheets.Default &&
+        !settings.publisherStyles
+
+
+    private fun isLetterSpacing() = layout == EpubLayout.REFLOWABLE &&
+        readiumCssLayout.stylesheets == Layout.Stylesheets.Default &&
+        !settings.publisherStyles
+
+    private fun isLigaturesSpacing() = layout == EpubLayout.REFLOWABLE &&
+        readiumCssLayout.stylesheets == Layout.Stylesheets.Rtl &&
+        !settings.publisherStyles
+
+    private fun isParagraphIndentEffective() = layout == EpubLayout.REFLOWABLE &&
+        readiumCssLayout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl) &&
+        !settings.publisherStyles
+
+    private fun isTextAlignEffective() = layout == EpubLayout.REFLOWABLE &&
+        readiumCssLayout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl) &&
+        !settings.publisherStyles
+
+    private fun isWordSpacingEffective(): Boolean = layout == EpubLayout.REFLOWABLE &&
+        readiumCssLayout.stylesheets == Layout.Stylesheets.Default &&
+        !settings.publisherStyles
 }

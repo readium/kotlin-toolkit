@@ -24,12 +24,15 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
+import org.readium.r2.navigator.epub.EpubPreferences
+import org.readium.r2.navigator.epub.EpubPreferencesEditor
+import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
 import org.readium.r2.navigator.html.toCss
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.reader.preferences.EpubPreferencesViewModel
+import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 import org.readium.r2.testapp.search.SearchFragment
 
 @OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
@@ -102,7 +105,9 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        (model.settings as EpubPreferencesViewModel).bind(navigator, viewLifecycleOwner)
+        @Suppress("Unchecked_cast")
+        (model.settings as UserPreferencesViewModel<EpubSettings, EpubPreferences, EpubPreferencesEditor>)
+            .bind(navigator, viewLifecycleOwner)
 
        // This is a hack to draw the right background color on top and bottom blank spaces
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {

@@ -65,7 +65,6 @@ class EpubNavigatorFactory(
         }
 
     override fun createPreferencesEditor(
-        currentSettings: EpubSettings,
         currentPreferences: EpubPreferences,
     ): EpubPreferencesEditor {
         val fontFamilies = configuration.preferencesEditorConfiguration.fontFamilies +
@@ -76,7 +75,6 @@ class EpubNavigatorFactory(
             .copy(fontFamilies = fontFamilies)
 
         return EpubPreferencesEditor(
-            currentSettings = currentSettings,
             initialPreferences = currentPreferences,
             publicationMetadata = publication.metadata,
             epubLayout = epubLayout,

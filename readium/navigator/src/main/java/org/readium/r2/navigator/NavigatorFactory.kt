@@ -13,5 +13,5 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 @ExperimentalReadiumApi
 interface NavigatorFactory<S: Configurable.Settings, P: Configurable.Preferences, E: PreferencesEditor<P>> {
 
-    fun createPreferencesEditor(currentSettings: S, currentPreferences: P): E
+    fun createPreferencesEditor(currentPreferences: P): E
 }

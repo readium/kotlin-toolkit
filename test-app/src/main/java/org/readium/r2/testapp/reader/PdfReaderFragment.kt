@@ -20,7 +20,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.reader.preferences.PsPdfKitPreferencesViewModel
+import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 
 @OptIn(ExperimentalReadiumApi::class)
 class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener {
@@ -55,7 +55,9 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        (model.settings as PsPdfKitPreferencesViewModel).bind(navigator, viewLifecycleOwner)
+        @Suppress("Unchecked_cast")
+        (model.settings as UserPreferencesViewModel<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>)
+            .bind(navigator, viewLifecycleOwner)
     }
 
     override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {

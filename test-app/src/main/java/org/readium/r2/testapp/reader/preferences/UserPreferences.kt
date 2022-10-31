@@ -43,117 +43,20 @@ import org.readium.r2.navigator.preferences.TextAlign as ReadiumTextAlign
  * Stateful user settings component paired with a [ReaderViewModel].
  */
 @Composable
-fun UserPreferences(model: UserPreferencesViewModel<*, *, *>) =
-    when (model) {
-        is PsPdfKitPreferencesViewModel ->
-            UserPreferences(model)
-        is EpubPreferencesViewModel ->
-            UserPreferences(model)
-    }
+fun UserPreferences(model: UserPreferencesViewModel<*, *, *>) {
+    val editor = remember { mutableStateOf(model.editor, policy = neverEqualPolicy()) }
+    val commit: () -> Unit = { editor.value = editor.value ; model.commitPreferences() }
 
-@Composable
-private fun UserPreferences(model: PsPdfKitPreferencesViewModel) {
-    val editor = model.editor.collectAsState().value ?: return
-
-    PsPdfKitUserPreferences(
-        editor = editor,
-        presets = model.presets,
-        commit = { model.submitPreferences(editor.preferences) }
+    UserPreferences(
+        editor = editor.value,
+        commit = commit
     )
 }
 
 @Composable
-private fun UserPreferences(model: EpubPreferencesViewModel) {
-    val editor = model.editor.collectAsState().value ?: return
-
-    EpubUserPreferences(
-        editor = editor,
-        presets = model.presets,
-        commit = { model.submitPreferences(editor.preferences) }
-    )
-}
-
-@Composable
-fun PsPdfKitUserPreferences(
-    editor: PsPdfKitPreferencesEditor,
-    presets: List<UserPreferencesViewModel.Preset>,
+private fun <P: Configurable.Preferences, E: PreferencesEditor<P>> UserPreferences(
+    editor: E,
     commit: () -> Unit
-) {
-    UserPreferencesScaffold(
-        editor = editor,
-        presets = presets,
-        commit = commit
-    ) {
-        FixedLayoutUserPreferences(
-            commit = commit,
-            readingProgression = editor.readingProgression,
-            scroll = editor.scroll,
-            scrollAxis = editor.scrollAxis,
-            fit = editor.fit,
-            spread = editor.spread,
-            offset = editor.offset,
-            pageSpacing = editor.pageSpacing
-        )
-    }
-}
-
-@Composable
-fun EpubUserPreferences(
-    editor: EpubPreferencesEditor,
-    presets: List<UserPreferencesViewModel.Preset>,
-    commit: () -> Unit
-) {
-    UserPreferencesScaffold(
-        editor = editor,
-        presets = presets,
-        commit = commit
-    ) {
-        when (editor.layout) {
-            EpubLayout.REFLOWABLE ->
-                ReflowableUserPreferences(
-                    commit = commit,
-                    backgroundColor = editor.backgroundColor,
-                    columnCount = editor.columnCount,
-                    fontFamily = editor.fontFamily,
-                    fontSize = editor.fontSize,
-                    hyphens = editor.hyphens,
-                    imageFilter = editor.imageFilter,
-                    language = editor.language,
-                    letterSpacing = editor.letterSpacing,
-                    ligatures = editor.ligatures,
-                    lineHeight = editor.lineHeight,
-                    pageMargins = editor.pageMargins,
-                    paragraphIndent = editor.paragraphIndent,
-                    paragraphSpacing = editor.paragraphSpacing,
-                    publisherStyles = editor.publisherStyles,
-                    readingProgression = editor.readingProgression,
-                    scroll = editor.scroll,
-                    textAlign = editor.textAlign,
-                    textColor = editor.textColor,
-                    textNormalization = editor.textNormalization,
-                    theme = editor.theme,
-                    typeScale = editor.typeScale,
-                    verticalText = editor.verticalText,
-                    wordSpacing = editor.wordSpacing,
-                )
-            EpubLayout.FIXED -> {
-                FixedLayoutUserPreferences(
-                    commit = commit,
-                    language = editor.language,
-                    readingProgression = editor.readingProgression,
-                    spread = editor.spread,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun <P: Configurable.Preferences> UserPreferencesScaffold(
-    editor: PreferencesEditor<P>,
-    presets: List<UserPreferencesViewModel.Preset>,
-    commit: () -> Unit,
-    body: @Composable ColumnScope.() -> Unit
 ) {
     Column(
         modifier = Modifier.padding(vertical = 24.dp)
@@ -172,7 +75,7 @@ fun <P: Configurable.Preferences> UserPreferencesScaffold(
                 .align(Alignment.End),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            PresetsMenuButton(editor = editor, presets = presets, commit = commit)
+            PresetsMenuButton(presets = editor.presets, commit = commit, clear = editor::clear)
 
             Button(
                 onClick = { editor.clear(); commit() }
@@ -183,7 +86,57 @@ fun <P: Configurable.Preferences> UserPreferencesScaffold(
 
         Divider()
 
-        body()
+        when (editor) {
+            is PsPdfKitPreferencesEditor ->
+                FixedLayoutUserPreferences(
+                    commit = commit,
+                    readingProgression = editor.readingProgression,
+                    scroll = editor.scroll,
+                    scrollAxis = editor.scrollAxis,
+                    fit = editor.fit,
+                    spread = editor.spread,
+                    offset = editor.offset,
+                    pageSpacing = editor.pageSpacing
+                )
+
+            is EpubPreferencesEditor ->
+                when (editor.layout) {
+                    EpubLayout.REFLOWABLE ->
+                        ReflowableUserPreferences(
+                            commit = commit,
+                            backgroundColor = editor.backgroundColor,
+                            columnCount = editor.columnCount,
+                            fontFamily = editor.fontFamily,
+                            fontSize = editor.fontSize,
+                            hyphens = editor.hyphens,
+                            imageFilter = editor.imageFilter,
+                            language = editor.language,
+                            /*letterSpacing = editor.letterSpacing,
+                            ligatures = editor.ligatures,
+                            lineHeight = editor.lineHeight,
+                            pageMargins = editor.pageMargins,
+                            paragraphIndent = editor.paragraphIndent,
+                            paragraphSpacing = editor.paragraphSpacing,*/
+                            publisherStyles = editor.publisherStyles,
+                            readingProgression = editor.readingProgression,
+                            scroll = editor.scroll,
+                            textAlign = editor.textAlign,
+                            textColor = editor.textColor,
+                            textNormalization = editor.textNormalization,
+                            theme = editor.theme,
+                            typeScale = editor.typeScale,
+                            verticalText = editor.verticalText,
+                            wordSpacing = editor.wordSpacing,
+                        )
+                    EpubLayout.FIXED ->
+                        FixedLayoutUserPreferences(
+                            commit = commit,
+                            language = editor.language,
+                            readingProgression = editor.readingProgression,
+                            spread = editor.spread,
+                        )
+                }
+        }
     }
 }
 
@@ -204,8 +157,8 @@ private fun ColumnScope.FixedLayoutUserPreferences(
 ) {
     if (language != null || readingProgression != null) {
         fun reset() {
-            language?.value = null
-            readingProgression?.value = null
+            language?.set(null)
+            readingProgression?.set(null)
             commit()
         }
 
@@ -341,9 +294,9 @@ private fun ColumnScope.ReflowableUserPreferences(
 ) {
     if (language != null || readingProgression != null || verticalText != null) {
         fun reset() {
-            language?.value = null
-            readingProgression?.value = null
-            verticalText?.value = null
+            language?.set(null)
+            readingProgression?.set(null)
+            verticalText?.set(null)
             commit()
         }
 
@@ -616,7 +569,8 @@ private fun <T> ButtonGroupItem(
         selectedOption = preference.value,
         formatValue = formatValue
     ) { value ->
-        preference.value = value.takeUnless { it == preference.value }
+        val newValue = value.takeUnless { value == preference.value }
+        preference.set(newValue)
         commit()
     }
 }
@@ -665,8 +619,8 @@ private fun <T> MenuItem(
         values = preference.supportedValues,
         isActive = preference.isEffective,
         formatValue = formatValue
-    ) {
-        preference.value = it
+    ) { value ->
+        preference.set(value)
         commit()
       }
 }
@@ -778,7 +732,7 @@ private fun SwitchItem(
         title = title,
         value = preference.value ?: preference.effectiveValue,
         isActive = preference.isEffective,
-        onCheckedChange = { preference.value = it; commit() },
+        onCheckedChange = { preference.set(it); commit() },
         onToggle = { preference.toggle(); commit() }
     )
 }
@@ -820,7 +774,7 @@ private fun ColorItem(
         isActive = preference.isEffective,
         value = preference.value ?: preference.effectiveValue,
         noValueSelected = preference.value == null,
-        onColorChanged = { preference.value = it; commit() }
+        onColorChanged = { preference.set(it); commit() }
     )
 }
 
@@ -903,8 +857,8 @@ fun LanguageItem(
         value = preference.value ?: preference.effectiveValue,
         values = listOf(null) + languages,
         formatValue = { it?.locale?.displayName ?: "Default" }
-    ) {
-        preference.value = it
+    ) { value ->
+        preference.set(value)
         commit()
     }
 }
@@ -932,10 +886,10 @@ private fun Divider() {
 }
 
 @Composable
-private fun <P: Configurable.Preferences> PresetsMenuButton(
-    editor: PreferencesEditor<P>,
+private fun PresetsMenuButton(
+    presets: List<Preset>,
+    clear: () -> Unit,
     commit: () -> Unit,
-    presets: List<UserPreferencesViewModel.Preset>
 ) {
     if (presets.isEmpty()) return
 
@@ -947,7 +901,7 @@ private fun <P: Configurable.Preferences> PresetsMenuButton(
             DropdownMenuItem(
                 onClick = {
                     dismiss()
-                    editor.clear()
+                    clear()
                     preset.apply()
                     commit()
                 }
@@ -957,3 +911,45 @@ private fun <P: Configurable.Preferences> PresetsMenuButton(
         }
     }
 }
+
+/**
+ * A preset is a named group of settings applied together.
+ */
+
+/**
+ * A preset is a named group of settings applied together.
+ */
+class Preset(
+    val title: String,
+    val apply: () -> Unit
+)
+
+/**
+ * Returns the presets associated with the [Configurable.Settings] receiver.
+ */
+val <P: Configurable.Preferences> PreferencesEditor<P>.presets: List<Preset> get() =
+    when (this) {
+        is EpubPreferencesEditor ->
+            when (layout) {
+                EpubLayout.FIXED -> emptyList()
+                EpubLayout.REFLOWABLE -> listOf(
+                    Preset("Increase legibility") {
+                        wordSpacing.set(0.6)
+                        fontSize.set(1.4)
+                        textNormalization.set(TextNormalization.ACCESSIBILITY)
+                    },
+                    Preset("Document") {
+                        scroll.set(true)
+                    },
+                    Preset("Ebook") {
+                        scroll.set(false)
+                    },
+                    Preset("Manga") {
+                        scroll.set(false)
+                        readingProgression.set(ReadingProgression.RTL)
+                    }
+                )
+            }
+        else ->
+            emptyList()
+    }

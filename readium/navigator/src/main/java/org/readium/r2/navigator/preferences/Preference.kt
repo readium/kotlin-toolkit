@@ -10,19 +10,16 @@ package org.readium.r2.navigator.preferences
 
 import org.readium.r2.shared.ExperimentalReadiumApi
 
-/*fun interface Activator {
-
-    fun activate()
-}*/
-
 @ExperimentalReadiumApi
 interface Preference<T> {
 
-    var value: T?
+    val value: T?
 
     val effectiveValue: T
 
     val isEffective: Boolean
+
+    fun set(value: T?)
 }
 
 @ExperimentalReadiumApi

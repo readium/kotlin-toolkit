@@ -140,7 +140,7 @@ fun UserSettings(configurable: Configurable<*>) {
 }
 ```
 
-:point_up: A real application would hoist the state in a separate object (such as an Android `ViewModel`) to save and restore the user preferences and update itself when the Navigator is recreated (e.g. configuration change). Take a look at `UserPreferencesViewModel.kt` and `UserSettings.kt` in the Test App for a real example.
+:point_up: A real application would hoist the state in a separate object (such as an Android `ViewModel`) to save and restore the user preferences and update itself when the Navigator is recreated (e.g. configuration change). Take a look at `UserPreferencesViewModel.kt` and `UserPreferences.kt` in the Test App for a real example.
 
 The `edit` parameter is a closure with the declared type:
 
