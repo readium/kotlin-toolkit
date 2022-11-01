@@ -21,8 +21,8 @@ import android.view.animation.DecelerateInterpolator
 import android.view.animation.Interpolator
 import android.widget.FrameLayout
 import androidx.core.view.ViewCompat
-import com.shopgun.android.utils.NumberUtils
 import java.util.*
+import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
@@ -94,12 +94,15 @@ class R2FXLLayout : FrameLayout {
     private var mOnDoubleTapListeners: MutableList<OnDoubleTapListener>? = null
     private var onLongTapListeners: MutableList<OnLongTapListener>? = null
 
+    private fun Float.equalsDelta(other: Float, delta: Float = 0.001f) =
+        this == other || abs(this - other) < delta
+
     var scale: Float
         get() = getMatrixValue(scaleMatrix, Matrix.MSCALE_X)
         set(scale) = setScale(scale, true)
 
     val isScaled: Boolean
-        get() = !NumberUtils.isEqual(scale, 1.0f, 0.05f)
+        get() = !scale.equalsDelta(1.0f, 0.05f)
 
     private val translateDeltaBounds: RectF
         get() {
@@ -317,8 +320,8 @@ class R2FXLLayout : FrameLayout {
 
         override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
             val scale = scale
-            val newScale = NumberUtils.clamp(minScale, scale, maxScale)
-            if (NumberUtils.isEqual(newScale, scale)) {
+            val newScale = scale.coerceIn(minScale, maxScale)
+            if (newScale.equalsDelta(scale)) {
                 // only fling if no scale is needed - scale will happen on ACTION_UP
                 flingRunnable = FlingRunnable(context)
                 flingRunnable!!.fling(velocityX.toInt(), velocityY.toInt())
@@ -424,7 +427,7 @@ class R2FXLLayout : FrameLayout {
         }
         fixFocusPoint(focusX, focusY)
         if (!isAllowOverScale) {
-            newScale = NumberUtils.clamp(minScale, newScale, maxScale)
+            newScale = newScale.coerceIn(minScale, maxScale)
         }
         if (animate) {
             animatedZoomRunnable = AnimatedZoomRunnable()
@@ -443,12 +446,12 @@ class R2FXLLayout : FrameLayout {
         var tdy = dy
         if (clamp) {
             val bounds = translateDeltaBounds
-            tdx = NumberUtils.clamp(bounds.left, dx, bounds.right)
-            tdy = NumberUtils.clamp(bounds.top, dy, bounds.bottom)
+            tdx = dx.coerceIn(bounds.left, bounds.right)
+            tdy = dy.coerceIn(bounds.top, bounds.bottom)
         }
         val destPosX = tdx + posX
         val destPosY = tdy + posY
-        if (!NumberUtils.isEqual(destPosX, posX) || !NumberUtils.isEqual(destPosY, posY)) {
+        if (!destPosX.equalsDelta(posX) || !destPosY.equalsDelta(posY)) {
             translateMatrix.setTranslate(-destPosX, -destPosY)
             matrixUpdated()
             invalidate()
@@ -519,16 +522,16 @@ class R2FXLLayout : FrameLayout {
         private var mTargetY: Float = 0.toFloat()
 
         internal fun doScale(): Boolean {
-            return !NumberUtils.isEqual(mZoomStart, mZoomEnd)
+            return !mZoomStart.equalsDelta(mZoomEnd)
         }
 
         internal fun doTranslate(): Boolean {
-            return !NumberUtils.isEqual(mStartX, mTargetX) || !NumberUtils.isEqual(mStartY, mTargetY)
+            return !mStartX.equalsDelta(mTargetX) || !mStartY.equalsDelta(mTargetY)
         }
 
         internal fun runValidation(): Boolean {
             val scale = scale
-            val newScale = NumberUtils.clamp(minScale, scale, maxScale)
+            val newScale = scale.coerceIn(minScale, maxScale)
             scale(scale, newScale, focusX, focusY, true)
             if (animatedZoomRunnable!!.doScale() || animatedZoomRunnable!!.doTranslate()) {
                 ViewCompat.postOnAnimation(this@R2FXLLayout, animatedZoomRunnable!!)
