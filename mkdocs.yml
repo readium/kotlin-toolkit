@@ -60,8 +60,8 @@ nav:
           - Navigator media2: readium/navigator-media2/index.md
           - PDFium Document: readium/adapters/pdfium/pdfium-document/index.md
           - PDFium Navigator: readium/adapters/pdfium/pdfium-navigator/index.md
-          - Pspdfkit Document: readium/adapters/pspdfkit/pspdfkit-document/index.md
-          - Pspdfkit Navigator: readium/adapters/pspdfkit/pspdfkit-navigator/index.md
+          - PSPDFKit Document: readium/adapters/pspdfkit/pspdfkit-document/index.md
+          - PSPDFKit Navigator: readium/adapters/pspdfkit/pspdfkit-navigator/index.md
 
 extra_css:
   - readium_colors.css
