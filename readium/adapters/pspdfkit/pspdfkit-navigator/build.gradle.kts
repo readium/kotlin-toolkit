@@ -62,9 +62,9 @@ publishing {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    api(project(":readium:shared"))
-    api(project(":readium:navigator"))
-    api(project(":readium:adapters:pspdfkit:pspdfkit-document"))
+    api(project(":readium:readium-shared"))
+    api(project(":readium:readium-navigator"))
+    api(project(":readium:adapters:pspdfkit:readium-adapter-pspdfkit-document"))
 
     implementation("androidx.fragment:fragment-ktx:1.5.3")
     implementation("com.jakewharton.timber:timber:5.0.1")

@@ -62,7 +62,7 @@ publishing {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    api(project(":readium:shared"))
+    api(project(":readium:readium-shared"))
 
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("com.github.barteksc:pdfium-android:1.8.2")

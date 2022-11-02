@@ -67,7 +67,7 @@ publishing {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    api(project(":readium:shared"))
+    api(project(":readium:readium-shared"))
 
     implementation("androidx.activity:activity-ktx:1.6.0")
     implementation("androidx.appcompat:appcompat:1.5.1")
