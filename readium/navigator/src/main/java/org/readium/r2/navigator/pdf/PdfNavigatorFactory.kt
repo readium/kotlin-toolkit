@@ -38,7 +38,7 @@ class PdfNavigatorFactory<S: Configurable.Settings, P: Configurable.Preferences,
         initialLocator: Locator? = null,
         initialPreferences: P? = null,
         listener: PdfNavigatorFragment.Listener? = null,
-    ): FragmentFactory = createFragmentFactory<PdfNavigatorFragment<S, P, E>> {
+    ): FragmentFactory = createFragmentFactory {
         PdfNavigatorFragment(
             publication = publication,
             initialLocator = initialLocator,

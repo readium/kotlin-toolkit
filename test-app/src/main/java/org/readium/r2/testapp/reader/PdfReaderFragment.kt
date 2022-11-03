@@ -33,6 +33,7 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
         childFragmentManager.fragmentFactory =
             readerData.navigatorFactory.createFragmentFactory(
                 initialLocator = readerData.initialLocation,
+                initialPreferences = readerData.preferencesManager.preferences.value,
                 listener = this,
             )
 

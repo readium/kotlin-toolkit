@@ -13,9 +13,10 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentContainerView
-import androidx.fragment.app.commit
-import com.pspdfkit.annotations.*
+import androidx.fragment.app.commitNow
 import com.pspdfkit.annotations.Annotation
+import com.pspdfkit.annotations.LinkAnnotation
+import com.pspdfkit.annotations.SoundAnnotation
 import com.pspdfkit.configuration.PdfConfiguration
 import com.pspdfkit.configuration.annotations.AnnotationReplyFeatures
 import com.pspdfkit.configuration.page.PageFitMode
@@ -72,10 +73,10 @@ internal class PsPdfKitDocumentFragment(
     }
 
     private fun reloadDocumentAtPage(pageIndex: Int) {
-        pdfFragment = createPdfFragment().apply {
-            setPageIndex(pageIndex, false)
-        }
-        childFragmentManager.commit {
+        pdfFragment = createPdfFragment()
+        pdfFragment.setPageIndex(pageIndex, false)
+
+        childFragmentManager.commitNow {
             replace(R.id.readium_pspdfkit_fragment, pdfFragment, "com.pspdfkit.ui.PdfFragment")
         }
     }
@@ -130,12 +131,13 @@ internal class PsPdfKitDocumentFragment(
             }
     }
 
-    override val pageIndex: Int get() = pdfFragment.pageIndex
+    override var pageIndex: Int = initialPageIndex
 
     override fun goToPageIndex(index: Int, animated: Boolean): Boolean {
         if (!isValidPageIndex(index)) {
             return false
         }
+        pageIndex = index
         pdfFragment.setPageIndex(index, animated)
         return true
     }
@@ -147,6 +149,7 @@ internal class PsPdfKitDocumentFragment(
 
     private inner class PsPdfKitListener : DocumentListener, OnPreparePopupToolbarListener {
         override fun onPageChanged(document: PdfDocument, pageIndex: Int) {
+            this@PsPdfKitDocumentFragment.pageIndex = pageIndex
             listener?.onPageChanged(pageIndex)
         }
 
