@@ -62,7 +62,7 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.core)
 
-    api(project(":readium:shared"))
+    api(project(":readium:readium-shared"))
 
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core)

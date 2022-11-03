@@ -58,6 +58,6 @@ publishing {
 }
 
 dependencies {
-    api(project(":readium:adapters:pspdfkit:pspdfkit-document"))
-    api(project(":readium:adapters:pspdfkit:pspdfkit-navigator"))
+    api(project(":readium:adapters:pspdfkit:readium-adapter-pspdfkit-document"))
+    api(project(":readium:adapters:pspdfkit:readium-adapter-pspdfkit-navigator"))
 }

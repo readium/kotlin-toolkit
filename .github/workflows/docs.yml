@@ -39,6 +39,9 @@ jobs:
       - name: Run Dokka
         run: ./gradlew dokkaGfmMultiModule
 
+      - name: Copy README.md into docs to replace Dokka index.md
+        run: cp README.md index.md
+
       - name: Run MkDocs
         run: |
           git config --global user.name "${GITHUB_ACTOR}"

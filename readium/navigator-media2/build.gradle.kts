@@ -64,8 +64,8 @@ publishing {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    api(project(":readium:shared"))
-    api(project(":readium:navigator"))
+    api(project(":readium:readium-shared"))
+    api(project(":readium:readium-navigator"))
 
     implementation(libs.bundles.coroutines)
 
