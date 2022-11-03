@@ -4,13 +4,13 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
-
 package org.readium.r2.navigator.epub
 
 import org.readium.r2.navigator.epub.css.*
 import org.readium.r2.navigator.epub.css.Layout
 import org.readium.r2.navigator.epub.css.ReadiumCss
+import org.readium.r2.navigator.epub.css.TextAlign as CssTextAlign
+import org.readium.r2.navigator.epub.css.Color as CssColor
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.navigator.preferences.Color
 import org.readium.r2.navigator.preferences.TextAlign
@@ -82,7 +82,18 @@ data class EpubSettings(
     val wordSpacing: Double
 ) : Configurable.Settings
 
+@OptIn(ExperimentalReadiumApi::class)
 internal fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
+
+    fun FontFamily.toCss(): List<String> = buildList {
+        add(name)
+        val alternateChain = alternate?.toCss()
+        alternateChain?.let {  addAll(it) }
+    }
+
+    fun Color.toCss(): CssColor =
+        CssColor.Int(int)
+
     return with (settings) {
         copy(
             layout = Layout.from(settings),
@@ -115,10 +126,10 @@ internal fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
                 advancedSettings = !publisherStyles,
                 typeScale = typeScale,
                 textAlign = when (textAlign) {
-                    TextAlign.JUSTIFY -> org.readium.r2.navigator.epub.css.TextAlign.JUSTIFY
-                    TextAlign.LEFT -> org.readium.r2.navigator.epub.css.TextAlign.LEFT
-                    TextAlign.RIGHT -> org.readium.r2.navigator.epub.css.TextAlign.RIGHT
-                    TextAlign.START, TextAlign.CENTER, TextAlign.END -> org.readium.r2.navigator.epub.css.TextAlign.START
+                    TextAlign.JUSTIFY -> CssTextAlign.JUSTIFY
+                    TextAlign.LEFT -> CssTextAlign.LEFT
+                    TextAlign.RIGHT -> CssTextAlign.RIGHT
+                    TextAlign.START, TextAlign.CENTER, TextAlign.END -> CssTextAlign.START
                 },
                 lineHeight = Either(lineHeight),
                 paraSpacing = Length.Rem(paragraphSpacing),
@@ -135,12 +146,3 @@ internal fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
         )
     }
 }
-
-private fun FontFamily.toCss(): List<String> = buildList {
-    add(name)
-    val alternateChain = alternate?.toCss()
-    alternateChain?.let {  addAll(it) }
-}
-
-private fun Color.toCss(): org.readium.r2.navigator.epub.css.Color =
-    org.readium.r2.navigator.epub.css.Color.Int(int)

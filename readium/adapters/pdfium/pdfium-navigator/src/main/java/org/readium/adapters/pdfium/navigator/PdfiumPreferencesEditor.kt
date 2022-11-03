@@ -12,7 +12,7 @@ import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
 
-@OptIn(ExperimentalReadiumApi::class)
+@ExperimentalReadiumApi
 class PdfiumPreferencesEditor internal constructor(
     initialPreferences: PdfiumPreferences,
     publicationMetadata: Metadata,

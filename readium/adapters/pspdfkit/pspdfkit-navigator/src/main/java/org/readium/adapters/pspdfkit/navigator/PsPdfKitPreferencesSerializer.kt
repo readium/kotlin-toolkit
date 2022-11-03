@@ -4,7 +4,6 @@
  * available in the top-level LICENSE file of the project.
  */
 
-
 package org.readium.adapters.pspdfkit.navigator
 
 import kotlinx.serialization.decodeFromString

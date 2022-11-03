@@ -4,8 +4,6 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
-
 package org.readium.adapters.pdfium.navigator
 
 import org.readium.r2.navigator.preferences.*
@@ -13,7 +11,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.ReadingProgression
 
-@OptIn(ExperimentalReadiumApi::class)
+@ExperimentalReadiumApi
 data class PdfiumSettings(
     val readingProgression: ReadingProgression,
     val scrollAxis: Axis,

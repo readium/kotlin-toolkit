@@ -4,8 +4,6 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
-
 package org.readium.r2.navigator.epub
 
 import org.readium.r2.navigator.epub.extensions.isCjk
@@ -16,9 +14,7 @@ import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Language
 
-/**
- * A policy which computes EPUB settings values from sets of metadata and preferences.
- */
+@ExperimentalReadiumApi
 internal class EpubSettingsResolver(
     private val metadata: Metadata,
     private val defaults: EpubDefaults
@@ -62,7 +58,10 @@ internal class EpubSettingsResolver(
         )
     }
 
-    private fun resolveReadingProgression(metadata: Metadata, preferences: EpubPreferences): Pair<Language?, ReadingProgression> {
+    private fun resolveReadingProgression(
+        metadata: Metadata,
+        preferences: EpubPreferences
+    ): Pair<Language?, ReadingProgression> {
         val rpPref = preferences.readingProgression
         val langPref = preferences.language
         val metadataLanguage = metadata.language
@@ -76,7 +75,7 @@ internal class EpubSettingsResolver(
         // Compute readingProgression according to the following rule:
         // preference value > value inferred from language preference > metadata value
         // value inferred from metadata languages > default value >
-        // value inferred from language default > LTR
+        // value inferred from default language > LTR
         val readingProgression = when {
             rpPref != null ->
                 rpPref
@@ -98,9 +97,12 @@ internal class EpubSettingsResolver(
     }
 
     // Compute verticalText according to the following rule:
-    // preference value > value computed from language > false
-    private fun resolveVerticalText(verticalPreference: Boolean?, language: Language?, readingProgression: ReadingProgression) =
-        when {
+    // preference value > value computed from resolved language > false
+    private fun resolveVerticalText(
+        verticalPreference: Boolean?,
+        language: Language?,
+        readingProgression: ReadingProgression
+    ) = when {
             verticalPreference != null -> verticalPreference
             language != null -> language.isCjk && readingProgression == ReadingProgression.RTL
             else -> false

@@ -18,9 +18,6 @@ internal class PsPdfKitSettingsResolver(
     private val metadata: Metadata,
     private val defaults: PsPdfKitDefaults,
 ) {
-
-
-
     fun settings(preferences: PsPdfKitPreferences): PsPdfKitSettings {
         val readingProgression: ReadingProgression =
             preferences.readingProgression

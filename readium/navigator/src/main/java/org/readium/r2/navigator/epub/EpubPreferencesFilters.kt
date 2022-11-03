@@ -9,7 +9,6 @@ package org.readium.r2.navigator.epub
 import org.readium.r2.navigator.preferences.PreferencesFilter
 import org.readium.r2.shared.ExperimentalReadiumApi
 
-
 @ExperimentalReadiumApi
 object EpubSharedPreferencesFilter : PreferencesFilter<EpubPreferences> {
 

@@ -4,8 +4,6 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
-
 package org.readium.r2.testapp.reader.preferences
 
 import androidx.lifecycle.LifecycleOwner
@@ -29,6 +27,7 @@ import org.readium.r2.testapp.reader.*
  *
  * @param bookId Database ID for the book.
  */
+@OptIn(ExperimentalReadiumApi::class)
 class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.Preferences, E: PreferencesEditor<P>>(
     private val bookId: Long,
     private val viewModelScope: CoroutineScope,

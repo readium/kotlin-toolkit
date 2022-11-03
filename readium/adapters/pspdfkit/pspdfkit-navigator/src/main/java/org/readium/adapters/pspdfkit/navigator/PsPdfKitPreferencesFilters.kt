@@ -17,7 +17,6 @@ object PsPdfKitSharedPreferencesFilter : PreferencesFilter<PsPdfKitPreferences> 
             readingProgression = null,
             offset = null
         )
-
 }
 
 @ExperimentalReadiumApi

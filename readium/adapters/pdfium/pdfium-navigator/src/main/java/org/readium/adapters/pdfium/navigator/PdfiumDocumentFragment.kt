@@ -25,7 +25,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 import timber.log.Timber
 
-@OptIn(ExperimentalReadiumApi::class)
+@ExperimentalReadiumApi
 class PdfiumDocumentFragment internal constructor(
     private val publication: Publication,
     private val link: Link,
