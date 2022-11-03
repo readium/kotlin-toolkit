@@ -6,9 +6,9 @@
 
 package org.readium.adapters.pspdfkit.navigator
 
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.preferences.Spread
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.ReadingProgression
 
 @ExperimentalReadiumApi
 data class PsPdfKitDefaults(

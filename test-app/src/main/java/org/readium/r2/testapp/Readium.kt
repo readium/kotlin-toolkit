@@ -46,7 +46,4 @@ class Readium(context: Context) {
         EpubNavigatorFactory.Configuration(
             preferencesEditorConfiguration = EpubPreferencesEditor.Configuration()
         )
-
-    val pdfEngineProvider: PsPdfKitEngineProvider =
-        PsPdfKitEngineProvider(context)
 }

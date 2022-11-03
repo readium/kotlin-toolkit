@@ -33,11 +33,11 @@ import com.pspdfkit.ui.toolbar.popup.PdfTextSelectionPopupToolbar
 import org.readium.adapters.pspdfkit.document.PsPdfKitDocument
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
 import org.readium.r2.navigator.preferences.Axis
+import org.readium.r2.navigator.preferences.Fit
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.preferences.Spread
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.services.isProtected
 import kotlin.math.roundToInt
 
@@ -132,6 +132,7 @@ internal class PsPdfKitDocumentFragment(
     }
 
     override var pageIndex: Int = initialPageIndex
+        private set
 
     override fun goToPageIndex(index: Int, animated: Boolean): Boolean {
         if (!isValidPageIndex(index)) {
@@ -203,8 +204,8 @@ internal class PsPdfKitDocumentFragment(
 
     private val ReadingProgression.pageBinding: PageBinding
         get() = when (this) {
+            ReadingProgression.LTR -> PageBinding.LEFT_EDGE
             ReadingProgression.RTL -> PageBinding.RIGHT_EDGE
-            else -> PageBinding.LEFT_EDGE
         }
 
     private val Spread.pageLayout: PageLayoutMode

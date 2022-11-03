@@ -22,6 +22,9 @@ interface Preference<T> {
     fun set(value: T?)
 }
 
+fun<T> Preference<T>.clear() =
+    set(null)
+
 @ExperimentalReadiumApi
 interface EnumPreference<T> : Preference<T> {
 

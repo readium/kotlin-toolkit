@@ -7,11 +7,12 @@
 package org.readium.adapters.pspdfkit.navigator
 
 import org.readium.r2.navigator.preferences.Axis
+import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.navigator.preferences.Spread
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.Metadata
-import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 
 @ExperimentalReadiumApi
 internal class PsPdfKitSettingsResolver(
@@ -21,8 +22,11 @@ internal class PsPdfKitSettingsResolver(
     fun settings(preferences: PsPdfKitPreferences): PsPdfKitSettings {
         val readingProgression: ReadingProgression =
             preferences.readingProgression
-                ?: metadata.readingProgression.takeIf { it.isHorizontal == true }
-                ?: defaults.readingProgression
+                ?: when (metadata.readingProgression) {
+                    PublicationReadingProgression.LTR -> ReadingProgression.LTR
+                    PublicationReadingProgression.RTL -> ReadingProgression.RTL
+                    else -> null
+                } ?: defaults.readingProgression
                 ?: ReadingProgression.LTR
 
         val scroll: Boolean =

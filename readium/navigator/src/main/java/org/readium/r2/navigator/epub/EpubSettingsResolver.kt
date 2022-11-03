@@ -11,7 +11,7 @@ import org.readium.r2.navigator.epub.extensions.isRtl
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
-import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import org.readium.r2.shared.util.Language
 
 @ExperimentalReadiumApi
@@ -41,20 +41,20 @@ internal class EpubSettingsResolver(
             columnCount = preferences.columnCount ?: defaults.columnCount ?: ColumnCount.AUTO,
             fontFamily = preferences.fontFamily,
             fontSize = preferences.fontSize ?: defaults.fontSize ?: 1.0,
-            hyphens = preferences.hyphens ?: true,
-            imageFilter = preferences.imageFilter ?: ImageFilter.NONE,
-            letterSpacing = preferences.letterSpacing ?: 0.0,
-            ligatures = preferences.ligatures ?: true,
+            hyphens = preferences.hyphens ?: defaults.hyphens ?: true,
+            imageFilter = preferences.imageFilter ?: defaults.imageFilter ?: ImageFilter.NONE,
+            letterSpacing = preferences.letterSpacing ?: defaults.letterSpacing ?: 0.0,
+            ligatures = preferences.ligatures ?: defaults.ligatures ?: true,
             lineHeight = preferences.lineHeight ?: defaults.lineHeight ?: 1.2,
-            pageMargins = preferences.pageMargins ?: 1.0,
-            paragraphIndent = preferences.paragraphIndent ?: 0.0,
-            paragraphSpacing = preferences.paragraphSpacing ?: 0.0,
-            publisherStyles = preferences.publisherStyles ?: true,
+            pageMargins = preferences.pageMargins ?: defaults.pageMargins ?: 1.0,
+            paragraphIndent = preferences.paragraphIndent ?: defaults.paragraphIndent ?: 0.0,
+            paragraphSpacing = preferences.paragraphSpacing ?: defaults.paragraphSpacing ?:  0.0,
+            publisherStyles = preferences.publisherStyles ?: defaults.publisherStyles ?: true,
             scroll = preferences.scroll ?: defaults.scroll ?: false,
-            textAlign = preferences.textAlign ?: TextAlign.START,
-            textNormalization = preferences.textNormalization ?: TextNormalization.NONE,
-            typeScale = preferences.typeScale ?: 1.2,
-            wordSpacing = preferences.wordSpacing ?: 0.0,
+            textAlign = preferences.textAlign ?: defaults.textAlign ?: TextAlign.START,
+            textNormalization = preferences.textNormalization ?: defaults.textNormalization ?: TextNormalization.NONE,
+            typeScale = preferences.typeScale ?: defaults.typeScale ?: 1.2,
+            wordSpacing = preferences.wordSpacing ?: defaults.wordSpacing ?: 0.0,
         )
     }
 
@@ -82,7 +82,10 @@ internal class EpubSettingsResolver(
             langPref != null ->
                 if (langPref.isRtl) ReadingProgression.RTL else ReadingProgression.LTR
             metadata.readingProgression.isHorizontal == true ->
-                metadata.readingProgression
+                when (metadata.readingProgression) {
+                    PublicationReadingProgression.RTL -> ReadingProgression.RTL
+                    else -> ReadingProgression.LTR
+                }
             metadataLanguage != null ->
                 if (metadataLanguage.isRtl) ReadingProgression.RTL else ReadingProgression.LTR
             defaults.readingProgression != null ->

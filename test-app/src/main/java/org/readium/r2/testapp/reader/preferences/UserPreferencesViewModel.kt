@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.adapters.pspdfkit.navigator.*
 import org.readium.r2.navigator.Navigator
-import org.readium.r2.navigator.NavigatorFactory
 import org.readium.r2.navigator.epub.*
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -32,7 +31,7 @@ class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.Prefere
     private val bookId: Long,
     private val viewModelScope: CoroutineScope,
     private val preferencesManager: PreferencesManager<P>,
-    navigatorFactory: NavigatorFactory<S, P, E>
+    val preferencesEditor: PreferencesEditor<P>
 ) {
 
     companion object {
@@ -43,13 +42,19 @@ class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.Prefere
         ): UserPreferencesViewModel<*, *, *>? =
             when (readerInitData) {
                 is EpubReaderInitData -> with (readerInitData) {
-                    UserPreferencesViewModel(
-                        bookId, viewModelScope, preferencesManager, navigatorFactory
+                    val editor = navigatorFactory
+                        .createPreferencesEditor(preferencesManager.preferences.value)
+
+                    UserPreferencesViewModel<EpubSettings, EpubPreferences, EpubPreferencesEditor>(
+                        bookId, viewModelScope, preferencesManager, editor
                     )
                 }
                 is PdfReaderInitData -> with (readerInitData) {
-                    UserPreferencesViewModel(
-                        bookId, viewModelScope, preferencesManager, navigatorFactory
+                    val editor = navigatorFactory
+                        .createPreferencesEditor(preferencesManager.preferences.value)
+
+                    UserPreferencesViewModel<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>(
+                        bookId, viewModelScope, preferencesManager, editor
                     )
                 }
                 else -> null
@@ -86,10 +91,7 @@ class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.Prefere
         }
     }
 
-    val editor: E = navigatorFactory
-        .createPreferencesEditor(preferencesManager.preferences.value)
-
     fun commitPreferences() = viewModelScope.launch {
-            preferencesManager.setPreferences(editor.preferences)
+            preferencesManager.setPreferences(this@UserPreferencesViewModel.preferencesEditor.preferences)
         }
 }

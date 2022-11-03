@@ -27,8 +27,6 @@ import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesEditor
 import org.readium.r2.navigator.epub.EpubPreferencesEditor
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Fit
-import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.reader.ReaderViewModel
@@ -44,7 +42,7 @@ import org.readium.r2.navigator.preferences.TextAlign as ReadiumTextAlign
  */
 @Composable
 fun UserPreferences(model: UserPreferencesViewModel<*, *, *>) {
-    val editor = remember { mutableStateOf(model.editor, policy = neverEqualPolicy()) }
+    val editor = remember { mutableStateOf(model.preferencesEditor, policy = neverEqualPolicy()) }
     val commit: () -> Unit = { editor.value = editor.value ; model.commitPreferences() }
 
     UserPreferences(
@@ -157,8 +155,8 @@ private fun ColumnScope.FixedLayoutUserPreferences(
 ) {
     if (language != null || readingProgression != null) {
         fun reset() {
-            language?.set(null)
-            readingProgression?.set(null)
+            language?.clear()
+            readingProgression?.clear()
             commit()
         }
 
@@ -294,9 +292,9 @@ private fun ColumnScope.ReflowableUserPreferences(
 ) {
     if (language != null || readingProgression != null || verticalText != null) {
         fun reset() {
-            language?.set(null)
-            readingProgression?.set(null)
-            verticalText?.set(null)
+            language?.clear()
+            readingProgression?.clear()
+            verticalText?.clear()
             commit()
         }
 
@@ -568,9 +566,12 @@ private fun <T> ButtonGroupItem(
         activeOption = preference.effectiveValue,
         selectedOption = preference.value,
         formatValue = formatValue
-    ) { value ->
-        val newValue = value.takeUnless { value == preference.value }
-        preference.set(newValue)
+    ) { newValue ->
+        if (newValue == preference.value) {
+            preference.clear()
+        } else {
+            preference.set(newValue)
+        }
         commit()
     }
 }

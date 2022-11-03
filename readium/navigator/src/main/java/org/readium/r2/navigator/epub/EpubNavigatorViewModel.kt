@@ -28,6 +28,7 @@ import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.ColumnCount
 import org.readium.r2.navigator.preferences.Spread
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.COLUMN_COUNT_REF
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -36,7 +37,7 @@ import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Href
 import kotlin.reflect.KClass
@@ -237,11 +238,12 @@ internal class EpubNavigatorViewModel(
     /**
      * Effective reading progression.
      */
-    val readingProgression: ReadingProgression get() =
+    val readingProgression: PublicationReadingProgression get() =
         if (useLegacySettings) {
             publication.metadata.effectiveReadingProgression
-        } else {
-            settings.value.readingProgression
+        } else when (settings.value.readingProgression) {
+            ReadingProgression.LTR -> PublicationReadingProgression.LTR
+            ReadingProgression.RTL -> PublicationReadingProgression.RTL
         }
 
     /**

@@ -17,12 +17,12 @@ import kotlinx.coroutines.launch
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
 import org.readium.r2.navigator.preferences.Axis
+import org.readium.r2.navigator.preferences.Fit
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
 import timber.log.Timber
 
 @ExperimentalReadiumApi

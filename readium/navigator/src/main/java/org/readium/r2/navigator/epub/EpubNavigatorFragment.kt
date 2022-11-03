@@ -52,6 +52,7 @@ import org.readium.r2.navigator.pager.R2PagerAdapter.PageResource
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.FontFamily
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
@@ -59,7 +60,7 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
@@ -287,7 +288,7 @@ class EpubNavigatorFragment internal constructor(
 
         @Suppress("DEPRECATION")
         if (viewModel.useLegacySettings && publication.cssStyle == ReadingProgression.RTL.value) {
-            resourcePager.direction = ReadingProgression.RTL
+            resourcePager.direction = PublicationReadingProgression.RTL
         }
 
         resourcePager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
@@ -362,10 +363,9 @@ class EpubNavigatorFragment internal constructor(
         adapter.listener = PagerAdapterListener()
         resourcePager.adapter = adapter
         resourcePager.direction = readingProgression
-        resourcePager.layoutDirection = when (readingProgression) {
-            ReadingProgression.RTL, ReadingProgression.BTT -> LayoutDirection.RTL
-            ReadingProgression.LTR, ReadingProgression.AUTO -> LayoutDirection.LTR
-            ReadingProgression.TTB -> LayoutDirection.LTR
+        resourcePager.layoutDirection = when (settings.value.readingProgression) {
+            ReadingProgression.RTL -> LayoutDirection.RTL
+            ReadingProgression.LTR -> LayoutDirection.LTR
         }
     }
 
@@ -588,7 +588,7 @@ class EpubNavigatorFragment internal constructor(
     @OptIn(ExperimentalDragGesture::class)
     private inner class WebViewListener : R2BasicWebView.Listener {
 
-        override val readingProgression: ReadingProgression
+        override val readingProgression: PublicationReadingProgression
             get() = viewModel.readingProgression
 
         override fun onResourceLoaded(link: Link?, webView: R2BasicWebView, url: String?) {
@@ -699,11 +699,11 @@ class EpubNavigatorFragment internal constructor(
 
         val webView = currentReflowablePageFragment?.webView ?: return false
 
-        when (readingProgression) {
-            ReadingProgression.LTR, ReadingProgression.TTB, ReadingProgression.AUTO ->
+        when (settings.value.readingProgression) {
+            ReadingProgression.LTR ->
                 webView.scrollRight(animated)
 
-            ReadingProgression.RTL, ReadingProgression.BTT ->
+            ReadingProgression.RTL ->
                 webView.scrollLeft(animated)
         }
         lifecycleScope.launch { completion() }
@@ -717,11 +717,11 @@ class EpubNavigatorFragment internal constructor(
 
         val webView = currentReflowablePageFragment?.webView ?: return false
 
-        when (readingProgression) {
-            ReadingProgression.LTR, ReadingProgression.TTB, ReadingProgression.AUTO ->
+        when (settings.value.readingProgression) {
+            ReadingProgression.LTR ->
                 webView.scrollLeft(animated)
 
-            ReadingProgression.RTL, ReadingProgression.BTT ->
+            ReadingProgression.RTL ->
                 webView.scrollRight(animated)
         }
         lifecycleScope.launch { completion() }
@@ -737,7 +737,7 @@ class EpubNavigatorFragment internal constructor(
         resourcePager.setCurrentItem(resourcePager.currentItem + 1, animated)
 
         currentReflowablePageFragment?.webView?.let { webView ->
-            if (readingProgression == ReadingProgression.RTL) {
+            if (settings.value.readingProgression == ReadingProgression.RTL) {
                 webView.setCurrentItem(webView.numPages - 1, false)
             } else {
                 webView.setCurrentItem(0, false)
@@ -756,7 +756,7 @@ class EpubNavigatorFragment internal constructor(
         resourcePager.setCurrentItem(resourcePager.currentItem - 1, animated)
 
         currentReflowablePageFragment?.webView?.let { webView ->
-            if (readingProgression == ReadingProgression.RTL) {
+            if (settings.value.readingProgression == ReadingProgression.RTL) {
                 webView.setCurrentItem(0, false)
             } else {
                 webView.setCurrentItem(webView.numPages - 1, false)
@@ -796,7 +796,7 @@ class EpubNavigatorFragment internal constructor(
         return null
     }
 
-    override val readingProgression: ReadingProgression
+    override val readingProgression: PublicationReadingProgression
         get() = viewModel.readingProgression
 
     override val currentLocator: StateFlow<Locator> get() = _currentLocator

@@ -11,7 +11,6 @@ import org.readium.r2.navigator.extensions.format
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
-import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Language
 
@@ -31,21 +30,23 @@ class EpubPreferencesEditor internal constructor(
         val pageMarginsRange: ClosedRange<Double> = 0.5..4.0,
         val pageMarginsProgression: ProgressionStrategy<Double> = DoubleIncrement(0.3)
     )
-
+    
+    private data class State(
+        val preferences: EpubPreferences,
+        val settings: EpubSettings,
+        val layout: Layout
+    )
+    
     private val settingsResolver: EpubSettingsResolver =
         EpubSettingsResolver(publicationMetadata, defaults)
 
-    private var settings: EpubSettings =
-        settingsResolver.settings(initialPreferences)
-
-    private var readiumCssLayout: Layout =
-        Layout.from(settings)
+    private var state: State =
+      initialPreferences.toState()
 
     val layout: EpubLayout = epubLayout
 
-    override var preferences: EpubPreferences =
-        initialPreferences
-        private set
+    override val preferences: EpubPreferences
+        get() = state.preferences
 
     override fun clear() {
        updateValues { EpubPreferences() }
@@ -54,7 +55,7 @@ class EpubPreferencesEditor internal constructor(
     val backgroundColor: Preference<Color> =
         PreferenceDelegate(
             getValue = { preferences.backgroundColor },
-            getEffectiveValue = { settings.backgroundColor },
+            getEffectiveValue = { state.settings.backgroundColor },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(backgroundColor = value) } },
         )
@@ -62,8 +63,8 @@ class EpubPreferencesEditor internal constructor(
     val columnCount: EnumPreference<ColumnCount> =
         EnumPreferenceDelegate(
             getValue = { preferences.columnCount },
-            getEffectiveValue = { settings.columnCount },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !settings.scroll },
+            getEffectiveValue = { state.settings.columnCount },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.scroll },
             updateValue = { value -> updateValues { it.copy(columnCount = value) } },
             supportedValues = listOf(ColumnCount.AUTO, ColumnCount.ONE, ColumnCount.TWO),
         )
@@ -71,7 +72,7 @@ class EpubPreferencesEditor internal constructor(
     val fontFamily: EnumPreference<FontFamily?> =
         EnumPreferenceDelegate(
             getValue = { preferences.fontFamily },
-            getEffectiveValue = { settings.fontFamily },
+            getEffectiveValue = { state.settings.fontFamily },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(fontFamily = value) } },
             supportedValues = configuration.fontFamilies,
@@ -80,7 +81,7 @@ class EpubPreferencesEditor internal constructor(
     val fontSize: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.fontSize },
-            getEffectiveValue = { settings.fontSize },
+            getEffectiveValue = { state.settings.fontSize },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(fontSize = value) } },
             supportedRange = configuration.fontSizeRange,
@@ -91,7 +92,7 @@ class EpubPreferencesEditor internal constructor(
     val hyphens: SwitchPreference =
         SwitchPreferenceDelegate(
             getValue = { preferences.hyphens },
-            getEffectiveValue = { settings.hyphens },
+            getEffectiveValue = { state.settings.hyphens },
             getIsEffective = { isHyphensEffective() },
             updateValue = { value -> updateValues { it.copy(hyphens = value) }},
         )
@@ -99,8 +100,8 @@ class EpubPreferencesEditor internal constructor(
     val imageFilter: EnumPreference<ImageFilter> =
         EnumPreferenceDelegate(
             getValue = { preferences.imageFilter },
-            getEffectiveValue = { settings.imageFilter },
-            getIsEffective = { settings.theme == Theme.DARK },
+            getEffectiveValue = { state.settings.imageFilter },
+            getIsEffective = { state.settings.theme == Theme.DARK },
             updateValue = { value -> updateValues { it.copy(imageFilter = value) } },
             supportedValues = listOf(ImageFilter.NONE, ImageFilter.DARKEN, ImageFilter.INVERT),
         )
@@ -108,7 +109,7 @@ class EpubPreferencesEditor internal constructor(
     val language: Preference<Language?> =
         PreferenceDelegate(
             getValue = { preferences.language },
-            getEffectiveValue = { settings.language },
+            getEffectiveValue = { state.settings.language },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(language = value) } },
         )
@@ -116,7 +117,7 @@ class EpubPreferencesEditor internal constructor(
     val letterSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.letterSpacing },
-            getEffectiveValue = { settings.letterSpacing },
+            getEffectiveValue = { state.settings.letterSpacing },
             getIsEffective = { isLetterSpacing() },
             updateValue = { value -> updateValues { it.copy(letterSpacing = value) } },
             supportedRange = 0.0..1.0,
@@ -127,7 +128,7 @@ class EpubPreferencesEditor internal constructor(
     val ligatures: SwitchPreference =
         SwitchPreferenceDelegate(
             getValue = { preferences.ligatures },
-            getEffectiveValue = { settings.ligatures },
+            getEffectiveValue = { state.settings.ligatures },
             getIsEffective = { isLigaturesSpacing() },
             updateValue = { value -> updateValues { it.copy(ligatures = value) } },
         )
@@ -135,8 +136,8 @@ class EpubPreferencesEditor internal constructor(
     val lineHeight: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.lineHeight },
-            getEffectiveValue = { settings.lineHeight },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !settings.publisherStyles },
+            getEffectiveValue = { state.settings.lineHeight },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles },
             updateValue = { value -> updateValues { it.copy(lineHeight = value) } },
             supportedRange = 1.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -146,8 +147,8 @@ class EpubPreferencesEditor internal constructor(
     val pageMargins: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.pageMargins },
-            getEffectiveValue = { settings.pageMargins },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !settings.scroll },
+            getEffectiveValue = { state.settings.pageMargins },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.scroll },
             updateValue = { value -> updateValues { it.copy(pageMargins = value) } },
             supportedRange = configuration.pageMarginsRange,
             progressionStrategy = configuration.pageMarginsProgression,
@@ -157,7 +158,7 @@ class EpubPreferencesEditor internal constructor(
     val paragraphIndent: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.paragraphIndent },
-            getEffectiveValue = { settings.paragraphIndent },
+            getEffectiveValue = { state.settings.paragraphIndent },
             getIsEffective = { isParagraphIndentEffective() },
             updateValue = { value -> updateValues { it.copy(paragraphIndent = value) } },
             supportedRange = 0.0..3.0,
@@ -168,8 +169,8 @@ class EpubPreferencesEditor internal constructor(
     val paragraphSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.paragraphSpacing },
-            getEffectiveValue = { settings.paragraphSpacing },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !settings.publisherStyles },
+            getEffectiveValue = { state.settings.paragraphSpacing },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles },
             updateValue = { value -> updateValues { it.copy(paragraphSpacing = value) } },
             supportedRange = 0.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -179,7 +180,7 @@ class EpubPreferencesEditor internal constructor(
     val publisherStyles: SwitchPreference =
         SwitchPreferenceDelegate(
             getValue = { preferences.publisherStyles },
-            getEffectiveValue = { settings.publisherStyles },
+            getEffectiveValue = { state.settings.publisherStyles },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(publisherStyles = value) }},
         )
@@ -187,7 +188,7 @@ class EpubPreferencesEditor internal constructor(
     val readingProgression: EnumPreference<ReadingProgression> =
         EnumPreferenceDelegate(
             getValue = { preferences.readingProgression },
-            getEffectiveValue = { settings.readingProgression },
+            getEffectiveValue = { state.settings.readingProgression },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(readingProgression = value) } },
             supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL),
@@ -196,7 +197,7 @@ class EpubPreferencesEditor internal constructor(
     val scroll: SwitchPreference =
         SwitchPreferenceDelegate(
             getValue = { preferences.scroll },
-            getEffectiveValue = { settings.scroll },
+            getEffectiveValue = { state.settings.scroll },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(scroll = value) } },
         )
@@ -204,16 +205,16 @@ class EpubPreferencesEditor internal constructor(
     val spread: EnumPreference<Spread> =
         EnumPreferenceDelegate(
             getValue = { preferences.spread },
-            getEffectiveValue = { settings.spread },
+            getEffectiveValue = { state.settings.spread },
             getIsEffective = { layout == EpubLayout.FIXED },
             updateValue = { value -> updateValues { it.copy(spread = value) } },
-            supportedValues = listOf(Spread.AUTO, Spread.NEVER, Spread.ALWAYS),
+            supportedValues = listOf(Spread.NEVER, Spread.ALWAYS),
         )
 
     val textAlign: EnumPreference<TextAlign> =
         EnumPreferenceDelegate(
             getValue = { preferences.textAlign },
-            getEffectiveValue = { settings.textAlign },
+            getEffectiveValue = { state.settings.textAlign },
             getIsEffective = { isTextAlignEffective() },
             updateValue = { value -> updateValues { it.copy(textAlign = value) } },
             supportedValues = listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY),
@@ -222,7 +223,7 @@ class EpubPreferencesEditor internal constructor(
     val textColor: Preference<Color> =
         PreferenceDelegate(
             getValue = { preferences.textColor },
-            getEffectiveValue = { settings.textColor },
+            getEffectiveValue = { state.settings.textColor },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(textColor = value) } }
         )
@@ -230,7 +231,7 @@ class EpubPreferencesEditor internal constructor(
     val textNormalization: EnumPreference<TextNormalization> =
         EnumPreferenceDelegate(
             getValue = { preferences.textNormalization },
-            getEffectiveValue = { settings.textNormalization },
+            getEffectiveValue = { state.settings.textNormalization },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(textNormalization = value) } },
             supportedValues = listOf(TextNormalization.NONE, TextNormalization.BOLD, TextNormalization.ACCESSIBILITY),
@@ -239,7 +240,7 @@ class EpubPreferencesEditor internal constructor(
     val theme: EnumPreference<Theme> =
         EnumPreferenceDelegate(
             getValue = { preferences.theme },
-            getEffectiveValue = { settings.theme },
+            getEffectiveValue = { state.settings.theme },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(theme = value) } },
             supportedValues = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA),
@@ -248,8 +249,8 @@ class EpubPreferencesEditor internal constructor(
     val typeScale: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.typeScale },
-            getEffectiveValue = { settings.typeScale },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !settings.publisherStyles },
+            getEffectiveValue = { state.settings.typeScale },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles },
             updateValue = { value -> updateValues { it.copy(typeScale = value) } },
             valueFormatter = { it.format(5) },
             supportedRange = 1.0..2.0,
@@ -259,7 +260,7 @@ class EpubPreferencesEditor internal constructor(
     val verticalText: SwitchPreference =
         SwitchPreferenceDelegate(
             getValue = { preferences.verticalText },
-            getEffectiveValue = { settings.verticalText },
+            getEffectiveValue = { state.settings.verticalText },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(verticalText = value) } },
         )
@@ -267,7 +268,7 @@ class EpubPreferencesEditor internal constructor(
     val wordSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.wordSpacing },
-            getEffectiveValue = { settings.wordSpacing },
+            getEffectiveValue = { state.settings.wordSpacing },
             getIsEffective = { isWordSpacingEffective() },
             updateValue = { value -> updateValues { it.copy(wordSpacing = value) } },
             supportedRange = 0.0..1.0,
@@ -279,33 +280,43 @@ class EpubPreferencesEditor internal constructor(
         { it.format(maximumFractionDigits = 0, percent = true) }
 
     private fun updateValues(updater: (EpubPreferences) -> EpubPreferences) {
-        preferences = updater(preferences)
-        settings = settingsResolver.settings(preferences)
-        readiumCssLayout = Layout.from(settings)
+        val newPreferences = updater(preferences)
+        state = newPreferences.toState()
+    }
+
+    private fun EpubPreferences.toState(): State {
+        val settings = settingsResolver.settings(this)
+        val layout = Layout.from(settings)
+
+        return State(
+            preferences = this,
+            settings = settings,
+            layout = layout
+        )
     }
 
     private fun isHyphensEffective() = layout == EpubLayout.REFLOWABLE &&
-        readiumCssLayout.stylesheets == Layout.Stylesheets.Default &&
-        !settings.publisherStyles
+        state.layout.stylesheets == Layout.Stylesheets.Default &&
+        !state.settings.publisherStyles
 
 
     private fun isLetterSpacing() = layout == EpubLayout.REFLOWABLE &&
-        readiumCssLayout.stylesheets == Layout.Stylesheets.Default &&
-        !settings.publisherStyles
+        state.layout.stylesheets == Layout.Stylesheets.Default &&
+        !state.settings.publisherStyles
 
     private fun isLigaturesSpacing() = layout == EpubLayout.REFLOWABLE &&
-        readiumCssLayout.stylesheets == Layout.Stylesheets.Rtl &&
-        !settings.publisherStyles
+        state.layout.stylesheets == Layout.Stylesheets.Rtl &&
+        !state.settings.publisherStyles
 
     private fun isParagraphIndentEffective() = layout == EpubLayout.REFLOWABLE &&
-        readiumCssLayout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl) &&
-        !settings.publisherStyles
+        state.layout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl) &&
+        !state.settings.publisherStyles
 
     private fun isTextAlignEffective() = layout == EpubLayout.REFLOWABLE &&
-        readiumCssLayout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl) &&
-        !settings.publisherStyles
+        state.layout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl) &&
+        !state.settings.publisherStyles
 
     private fun isWordSpacingEffective(): Boolean = layout == EpubLayout.REFLOWABLE &&
-        readiumCssLayout.stylesheets == Layout.Stylesheets.Default &&
-        !settings.publisherStyles
+        state.layout.stylesheets == Layout.Stylesheets.Default &&
+        !state.settings.publisherStyles
 }

@@ -22,6 +22,7 @@ import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesEditor
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.mapStateIn
@@ -29,7 +30,7 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
@@ -201,8 +202,11 @@ class PdfNavigatorFragment<S: Configurable.Settings, P: Configurable.Preferences
             pdfEngineProvider.computePresentation(settings)
         }
 
-    override val readingProgression: ReadingProgression
-        get() = presentation.value.readingProgression
+    override val readingProgression: PublicationReadingProgression
+        get() = when (presentation.value.readingProgression) {
+            ReadingProgression.LTR -> PublicationReadingProgression.LTR
+            ReadingProgression.RTL -> PublicationReadingProgression.RTL
+        }
 
     override val currentLocator: StateFlow<Locator>
         get() = viewModel.currentLocator

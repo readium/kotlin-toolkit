@@ -8,8 +8,8 @@ package org.readium.r2.navigator.epub.css
 
 import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.epub.extensions.isCjk
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Language
 
 /**
@@ -17,6 +17,7 @@ import org.readium.r2.shared.util.Language
  *
  * See https://github.com/readium/readium-css/tree/master/css/dist
  */
+@ExperimentalReadiumApi
 internal data class Layout(
     val language: Language? = null,
     val stylesheets: Stylesheets = Stylesheets.Default,

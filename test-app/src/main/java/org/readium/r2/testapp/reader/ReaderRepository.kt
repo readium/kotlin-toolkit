@@ -10,6 +10,7 @@ import android.app.Activity
 import android.app.Application
 import androidx.datastore.core.DataStore
 import org.json.JSONObject
+import org.readium.adapters.pspdfkit.navigator.PsPdfKitEngineProvider
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
@@ -142,7 +143,8 @@ class ReaderRepository(
 
         val preferencesManager = PsPdfKitPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)
-        val navigatorFactory = PdfNavigatorFactory(publication, readium.pdfEngineProvider)
+        val pdfEngine = PsPdfKitEngineProvider(application)
+        val navigatorFactory = PdfNavigatorFactory(publication, pdfEngine)
 
         return PdfReaderInitData(
             bookId, publication, initialLocator,

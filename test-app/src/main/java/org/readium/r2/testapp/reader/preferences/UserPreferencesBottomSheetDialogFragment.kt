@@ -34,7 +34,7 @@ class UserPreferencesBottomSheetDialogFragment : ComposeBottomSheetDialogFragmen
 
     @Composable
     override fun Content() {
-        val settingsModel = model.settings ?: return
+        val settingsModel = checkNotNull(model.settings)
         UserPreferences(settingsModel)
     }
 }

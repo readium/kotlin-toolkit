@@ -15,7 +15,6 @@ import org.readium.r2.navigator.preferences.*
 import org.readium.r2.navigator.preferences.Color
 import org.readium.r2.navigator.preferences.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Language
 

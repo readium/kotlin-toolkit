@@ -6,7 +6,6 @@
 
 package org.readium.r2.navigator.epub
 
-import org.readium.r2.navigator.NavigatorFactory
 import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -19,7 +18,7 @@ import org.readium.r2.shared.publication.presentation.presentation
 class EpubNavigatorFactory(
     private val publication: Publication,
     private val configuration: Configuration
-) : NavigatorFactory<EpubSettings, EpubPreferences, EpubPreferencesEditor> {
+) {
 
     data class Configuration(
         val defaults: EpubDefaults = EpubDefaults(),
@@ -64,7 +63,7 @@ class EpubNavigatorFactory(
             )
         }
 
-    override fun createPreferencesEditor(
+    fun createPreferencesEditor(
         currentPreferences: EpubPreferences,
     ): EpubPreferencesEditor {
         val fontFamilies = configuration.preferencesEditorConfiguration.fontFamilies +

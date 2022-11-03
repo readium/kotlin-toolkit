@@ -8,9 +8,7 @@ package org.readium.adapters.pdfium.navigator
 
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Fit
 import org.readium.r2.shared.publication.Metadata
-import org.readium.r2.shared.publication.ReadingProgression
 
 @ExperimentalReadiumApi
 class PdfiumPreferencesEditor internal constructor(
@@ -19,15 +17,19 @@ class PdfiumPreferencesEditor internal constructor(
     defaults: PdfiumDefaults,
 ) : PreferencesEditor<PdfiumPreferences> {
 
+    private data class State(
+        val preferences: PdfiumPreferences,
+        val settings: PdfiumSettings
+    )
+
     private val settingsResolver: PdfiumSettingsResolver =
         PdfiumSettingsResolver(publicationMetadata, defaults)
 
-    private var settings: PdfiumSettings =
-        settingsResolver.settings(initialPreferences)
+    private var state: State =
+        initialPreferences.toState()
 
-    override var preferences: PdfiumPreferences =
-        initialPreferences
-        private set
+    override val preferences: PdfiumPreferences
+        get() = state.preferences
 
     override fun clear() {
         updateValues { PdfiumPreferences() }
@@ -36,7 +38,7 @@ class PdfiumPreferencesEditor internal constructor(
     val fit: EnumPreference<Fit> =
         EnumPreferenceDelegate(
             getValue = { preferences.fit },
-            getEffectiveValue = { settings.fit },
+            getEffectiveValue = { state.settings.fit },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(fit = value) } },
             supportedValues = listOf(Fit.CONTAIN, Fit.WIDTH),
@@ -45,7 +47,7 @@ class PdfiumPreferencesEditor internal constructor(
     val readingProgression: EnumPreference<ReadingProgression> =
         EnumPreferenceDelegate(
             getValue = { preferences.readingProgression },
-            getEffectiveValue = { settings.readingProgression },
+            getEffectiveValue = { state.settings.readingProgression },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(readingProgression = value) } },
             supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL),
@@ -54,14 +56,17 @@ class PdfiumPreferencesEditor internal constructor(
     val scrollAxis: EnumPreference<Axis> =
         EnumPreferenceDelegate(
             getValue = { preferences.scrollAxis},
-            getEffectiveValue = { settings.scrollAxis },
+            getEffectiveValue = { state.settings.scrollAxis },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(scrollAxis = value) } },
             supportedValues = listOf(Axis.VERTICAL, Axis.HORIZONTAL),
         )
 
     private fun updateValues(updater: (PdfiumPreferences) -> PdfiumPreferences) {
-        preferences = updater(preferences)
-        settings = settingsResolver.settings(preferences)
+        val newPreferences = updater(preferences)
+        state = newPreferences.toState()
     }
+
+    private fun PdfiumPreferences.toState() =
+        State(preferences = this, settings = settingsResolver.settings(this))
 }

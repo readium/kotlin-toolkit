@@ -8,8 +8,6 @@ package org.readium.adapters.pspdfkit.navigator
 
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Fit
-import org.readium.r2.shared.publication.ReadingProgression
 
 @ExperimentalReadiumApi
 data class PsPdfKitSettings(

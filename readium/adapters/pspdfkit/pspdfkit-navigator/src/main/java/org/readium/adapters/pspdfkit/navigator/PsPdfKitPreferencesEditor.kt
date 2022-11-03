@@ -10,8 +10,6 @@ import org.readium.r2.navigator.extensions.format
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
-import org.readium.r2.shared.publication.Fit
-import org.readium.r2.shared.publication.ReadingProgression
 
 @ExperimentalReadiumApi
 class PsPdfKitPreferencesEditor internal constructor(
@@ -25,16 +23,20 @@ class PsPdfKitPreferencesEditor internal constructor(
         val pageSpacingRange: ClosedRange<Double> = 0.0..50.0,
         val pageSpacingProgression: ProgressionStrategy<Double> = DoubleIncrement(5.0),
     )
+    
+    private data class State(
+        val preferences: PsPdfKitPreferences,
+        val settings: PsPdfKitSettings
+    )
 
     private val settingsResolver: PsPdfKitSettingsResolver =
         PsPdfKitSettingsResolver(publicationMetadata, defaults)
 
-    private var settings: PsPdfKitSettings =
-        settingsResolver.settings(initialPreferences)
+    private var state: State =
+        initialPreferences.toState()
 
-    override var preferences: PsPdfKitPreferences =
-        initialPreferences
-        private set
+    override val preferences: PsPdfKitPreferences
+        get() = state.preferences
 
     override fun clear() {
         updateValues { PsPdfKitPreferences() }
@@ -43,7 +45,7 @@ class PsPdfKitPreferencesEditor internal constructor(
     val readingProgression: EnumPreference<ReadingProgression> =
         EnumPreferenceDelegate(
             getValue = { preferences.readingProgression },
-            getEffectiveValue = { settings.readingProgression },
+            getEffectiveValue = { state.settings.readingProgression },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(readingProgression = value) } },
             supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL),
@@ -52,7 +54,7 @@ class PsPdfKitPreferencesEditor internal constructor(
     val scroll: SwitchPreference =
         SwitchPreferenceDelegate(
             getValue = { preferences.scroll },
-            getEffectiveValue = { settings.scroll },
+            getEffectiveValue = { state.settings.scroll },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(scroll = value) } },
         )
@@ -60,8 +62,8 @@ class PsPdfKitPreferencesEditor internal constructor(
     val scrollAxis: EnumPreference<Axis> =
         EnumPreferenceDelegate(
             getValue = { preferences.scrollAxis },
-            getEffectiveValue = { settings.scrollAxis },
-            getIsEffective = { settings.scroll },
+            getEffectiveValue = { state.settings.scrollAxis },
+            getIsEffective = { state.settings.scroll },
             updateValue = { value -> updateValues { it.copy(scrollAxis = value) } },
             supportedValues = listOf(Axis.VERTICAL, Axis.HORIZONTAL),
         )
@@ -69,8 +71,8 @@ class PsPdfKitPreferencesEditor internal constructor(
     val spread: EnumPreference<Spread> =
         EnumPreferenceDelegate(
             getValue = { preferences.spread },
-            getEffectiveValue = { settings.spread },
-            getIsEffective = { !settings.scroll },
+            getEffectiveValue = { state.settings.spread },
+            getIsEffective = { !state.settings.scroll },
             updateValue = { value -> updateValues { it.copy(spread = value) } },
             supportedValues = listOf(Spread.AUTO, Spread.NEVER, Spread.ALWAYS),
         )
@@ -78,15 +80,15 @@ class PsPdfKitPreferencesEditor internal constructor(
     val offset: SwitchPreference =
         SwitchPreferenceDelegate(
             getValue = { preferences.offset },
-            getEffectiveValue = { settings.offset },
-            getIsEffective = { settings.spread != Spread.NEVER},
+            getEffectiveValue = { state.settings.offset },
+            getIsEffective = { state.settings.spread != Spread.NEVER},
             updateValue = { value -> updateValues { it.copy(offset = value) } },
         )
 
     val fit: EnumPreference<Fit> =
         EnumPreferenceDelegate(
             getValue = { preferences.fit },
-            getEffectiveValue = { settings.fit },
+            getEffectiveValue = { state.settings.fit },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(fit = value) } },
             supportedValues = listOf(Fit.CONTAIN, Fit.WIDTH),
@@ -95,16 +97,19 @@ class PsPdfKitPreferencesEditor internal constructor(
     val pageSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.pageSpacing },
-            getEffectiveValue = { settings.pageSpacing },
+            getEffectiveValue = { state.settings.pageSpacing },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(pageSpacing = value) } },
             supportedRange = configuration.pageSpacingRange,
             progressionStrategy = configuration.pageSpacingProgression,
-            valueFormatter = { it.format(1) },
+            valueFormatter = { "${it.format(1)} dp" },
         )
 
     private fun updateValues(updater: (PsPdfKitPreferences) -> PsPdfKitPreferences) {
-        preferences = updater(preferences)
-        settings = settingsResolver.settings(preferences)
+        val newPreferences = updater(preferences)
+        state = newPreferences.toState()
     }
+    
+    private fun PsPdfKitPreferences.toState() =
+        State(preferences = this, settings = settingsResolver.settings(this))
 }

@@ -7,12 +7,8 @@
 package org.readium.adapters.pspdfkit.navigator
 
 import kotlinx.serialization.Serializable
-import org.readium.r2.navigator.preferences.Axis
-import org.readium.r2.navigator.preferences.Configurable
-import org.readium.r2.navigator.preferences.Spread
+import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Fit
-import org.readium.r2.shared.publication.ReadingProgression
 
 @ExperimentalReadiumApi
 @Serializable

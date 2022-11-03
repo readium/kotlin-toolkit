@@ -30,9 +30,14 @@ import org.readium.r2.navigator.pager.R2CbzPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.preferences.Axis
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.indexOfFirstWithHref
+import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positions
 
@@ -71,18 +76,21 @@ class ImageNavigatorFragment private constructor(
     private var _binding: ActivityR2ViewpagerBinding? = null
     private val binding get() = _binding!!
 
+    override val readingProgression: PublicationReadingProgression =
+        publication.metadata.effectiveReadingProgression
+
     @ExperimentalReadiumApi
     override val presentation: StateFlow<VisualNavigator.Presentation> =
         MutableStateFlow(
             SimplePresentation(
-                readingProgression = publication.metadata.effectiveReadingProgression,
+                readingProgression = when (readingProgression) {
+                    PublicationReadingProgression.RTL -> ReadingProgression.RTL
+                    else -> ReadingProgression.LTR
+                },
                 scroll = false,
                 axis = Axis.HORIZONTAL
             )
         )
-
-    override val readingProgression: ReadingProgression
-        get() = presentation.value.readingProgression
 
     override fun onCreate(savedInstanceState: Bundle?) {
         childFragmentManager.fragmentFactory = createFragmentFactory {

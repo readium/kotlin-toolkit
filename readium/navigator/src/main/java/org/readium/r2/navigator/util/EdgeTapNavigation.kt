@@ -4,8 +4,8 @@ import android.graphics.PointF
 import android.view.View
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.preferences.Axis
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.ReadingProgression
 
 /**
  * Convenience utility to handle page turns when tapping the edge of the screen.
@@ -80,12 +80,7 @@ class EdgeTapNavigation(
                 }
             }
 
-        val isReverse = when (presentation.readingProgression) {
-            ReadingProgression.RTL -> true
-            else -> false
-        }
-
-        if (isReverse) {
+        if (presentation.readingProgression == ReadingProgression.RTL) {
             transition = transition.reverse()
         }
 

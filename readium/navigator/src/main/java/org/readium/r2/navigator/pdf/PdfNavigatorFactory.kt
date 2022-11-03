@@ -8,7 +8,6 @@ package org.readium.r2.navigator.pdf
 
 import androidx.fragment.app.FragmentFactory
 import org.readium.r2.navigator.preferences.Configurable
-import org.readium.r2.navigator.NavigatorFactory
 import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -22,7 +21,7 @@ import org.readium.r2.shared.publication.Publication
 class PdfNavigatorFactory<S: Configurable.Settings, P: Configurable.Preferences, E: PreferencesEditor<P>>(
     private val publication: Publication,
     private val pdfEngineProvider: PdfEngineProvider<S, P, E>
-) : NavigatorFactory<S, P, E> {
+) {
 
     /**
      * Creates a factory for [PdfNavigatorFragment].
@@ -48,7 +47,7 @@ class PdfNavigatorFactory<S: Configurable.Settings, P: Configurable.Preferences,
         )
     }
 
-    override fun createPreferencesEditor(
+    fun createPreferencesEditor(
         currentPreferences: P
     ): E =
        pdfEngineProvider.createPreferenceEditor(

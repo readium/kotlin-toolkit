@@ -139,5 +139,24 @@ enum class Axis(val value: String) {
 enum class Spread(val value: String) {
     @SerialName("auto") AUTO("auto"),
     @SerialName("never") NEVER("never"),
-    @SerialName("preferred") ALWAYS("preferred");
+    @SerialName("always") ALWAYS("always");
+}
+
+@ExperimentalReadiumApi
+@Serializable
+enum class ReadingProgression(val value: String) {
+    @SerialName("ltr") LTR("ltr"),
+    @SerialName("rtl") RTL("rtl");
+}
+
+/**
+ * Suggested method for constraining a resource inside the viewport.
+ */
+@ExperimentalReadiumApi
+@Serializable
+enum class Fit(val value: String){
+    @SerialName("cover") COVER("cover"),
+    @SerialName("contain") CONTAIN("contain"),
+    @SerialName("width") WIDTH("width"),
+    @SerialName("height") HEIGHT("height");
 }

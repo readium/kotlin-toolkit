@@ -9,10 +9,9 @@ package org.readium.adapters.pdfium.navigator
 import kotlinx.serialization.Serializable
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.Configurable
-import org.readium.r2.navigator.preferences.Spread
+import org.readium.r2.navigator.preferences.Fit
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Fit
-import org.readium.r2.shared.publication.ReadingProgression
 
 @ExperimentalReadiumApi
 @Serializable

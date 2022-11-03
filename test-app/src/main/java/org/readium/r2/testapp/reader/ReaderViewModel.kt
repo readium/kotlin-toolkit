@@ -72,9 +72,6 @@ class ReaderViewModel(
         readerInitData = readerInitData
     )
 
-    val pdfEngineProvider: PdfEngineProvider<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor> =
-        application.readium.pdfEngineProvider
-
     override fun onCleared() {
         super.onCleared()
         tts?.onCleared()

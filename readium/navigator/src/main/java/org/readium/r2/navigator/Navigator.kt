@@ -15,7 +15,8 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
+import org.readium.r2.navigator.preferences.ReadingProgression
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
@@ -108,7 +109,7 @@ interface VisualNavigator : Navigator {
     /**
      * Current reading progression direction.
      */
-    val readingProgression: ReadingProgression
+    val readingProgression: PublicationReadingProgression
 
     @ExperimentalReadiumApi
     val presentation: StateFlow<Presentation>
@@ -173,12 +174,13 @@ interface VisualNavigator : Navigator {
 /**
  * Moves to the left content portion (eg. page) relative to the reading progression direction.
  */
+@OptIn(ExperimentalReadiumApi::class)
 fun VisualNavigator.goLeft(animated: Boolean = false, completion: () -> Unit = {}): Boolean {
-    return when (readingProgression) {
-        ReadingProgression.LTR, ReadingProgression.TTB, ReadingProgression.AUTO ->
+    return when (presentation.value.readingProgression) {
+        ReadingProgression.LTR ->
             goBackward(animated = animated, completion = completion)
 
-        ReadingProgression.RTL, ReadingProgression.BTT ->
+        ReadingProgression.RTL ->
             goForward(animated = animated, completion = completion)
     }
 }
@@ -186,12 +188,13 @@ fun VisualNavigator.goLeft(animated: Boolean = false, completion: () -> Unit = {
 /**
  * Moves to the right content portion (eg. page) relative to the reading progression direction.
  */
+@OptIn(ExperimentalReadiumApi::class)
 fun VisualNavigator.goRight(animated: Boolean = false, completion: () -> Unit = {}): Boolean {
-    return when (readingProgression) {
-        ReadingProgression.LTR, ReadingProgression.TTB, ReadingProgression.AUTO ->
+    return when (presentation.value.readingProgression) {
+        ReadingProgression.LTR ->
             goForward(animated = animated, completion = completion)
 
-        ReadingProgression.RTL, ReadingProgression.BTT ->
+        ReadingProgression.RTL ->
             goBackward(animated = animated, completion = completion)
     }
 }
