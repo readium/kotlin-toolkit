@@ -22,6 +22,11 @@ data class PsPdfKitPreferences(
     val offset: Boolean? = null
 ) : Configurable.Preferences {
 
+    init {
+        require(fit in listOf(null, Fit.CONTAIN, Fit.WIDTH))
+        require(pageSpacing == null || pageSpacing >= 0)
+    }
+
     operator fun plus(other: PsPdfKitPreferences) =
         PsPdfKitPreferences(
             readingProgression = other.readingProgression ?: readingProgression,

@@ -21,6 +21,10 @@ data class PdfiumPreferences(
     val fit: Fit? = null,
 ) : Configurable.Preferences {
 
+    init {
+        require(fit in listOf(null, Fit.CONTAIN, Fit.WIDTH))
+    }
+
     operator fun plus(other: PdfiumPreferences) =
         PdfiumPreferences(
             readingProgression = other.readingProgression ?: readingProgression,

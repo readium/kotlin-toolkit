@@ -42,6 +42,16 @@ data class EpubPreferences(
     val wordSpacing: Double? = null
 ): Configurable.Preferences {
 
+    init {
+        require(spread in listOf(null, Spread.NEVER, Spread.ALWAYS))
+        require(fontSize == null || fontSize >= 0)
+        require(letterSpacing == null || letterSpacing >= 0)
+        require(pageMargins == null || pageMargins >= 0)
+        require(paragraphSpacing == null || paragraphSpacing >= 0)
+        require(typeScale == null || typeScale >= 0)
+        require(wordSpacing == null || wordSpacing >= 0)
+    }
+
     operator fun plus(other: EpubPreferences): EpubPreferences =
         EpubPreferences(
             readingProgression = other.readingProgression ?: readingProgression,
