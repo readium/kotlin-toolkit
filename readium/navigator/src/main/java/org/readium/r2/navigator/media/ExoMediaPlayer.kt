@@ -114,7 +114,7 @@ class ExoMediaPlayer(
         .apply {
             setMediaSessionToken(mediaSession.sessionToken)
             setPlayer(player)
-            setSmallIcon(R.drawable.exo_notification_small_icon)
+            setSmallIcon(com.google.android.exoplayer2.ui.R.drawable.exo_notification_small_icon)
             setUsePlayPauseActions(true)
             setUseStopAction(false)
             setUseChronometer(false)

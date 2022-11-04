@@ -29,7 +29,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
         // and the DRM license are the same.
         val link = resource.link()
         val encryption = link.properties.encryption
-            if (encryption == null || encryption.scheme != "http://readium.org/2014/01/lcp")
+        if (encryption == null || encryption.scheme != "http://readium.org/2014/01/lcp")
             return@LazyResource resource
 
         when {

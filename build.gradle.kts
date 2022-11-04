@@ -13,6 +13,10 @@ plugins {
     id("org.jetbrains.dokka") apply true
 }
 
+allprojects {
+    group = "com.github.readium.kotlin-toolkit"
+}
+
 subprojects {
     tasks.register<Jar>("javadocsJar") {
         archiveClassifier.set("javadoc")
