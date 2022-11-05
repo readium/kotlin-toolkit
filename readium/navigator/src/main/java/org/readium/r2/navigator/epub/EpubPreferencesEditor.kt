@@ -18,13 +18,13 @@ import org.readium.r2.shared.util.Language
 class EpubPreferencesEditor internal constructor(
     initialPreferences: EpubPreferences,
     publicationMetadata: Metadata,
-    epubLayout: EpubLayout,
+    val layout: EpubLayout,
     defaults: EpubDefaults,
     configuration: Configuration
 ): PreferencesEditor<EpubPreferences> {
 
     data class Configuration(
-        val fontFamilies: List<FontFamily> = emptyList(),
+        val fontFamilies: List<FontFamily> = DEFAULT_FONT_FAMILIES,
         val fontSizeRange: ClosedRange<Double> = 0.4..5.0,
         val fontSizeProgression: ProgressionStrategy<Double> = DoubleIncrement(0.1),
         val pageMarginsRange: ClosedRange<Double> = 0.5..4.0,
@@ -42,8 +42,6 @@ class EpubPreferencesEditor internal constructor(
 
     private var state: State =
       initialPreferences.toState()
-
-    val layout: EpubLayout = epubLayout
 
     override val preferences: EpubPreferences
         get() = state.preferences
@@ -319,4 +317,18 @@ class EpubPreferencesEditor internal constructor(
     private fun isWordSpacingEffective(): Boolean = layout == EpubLayout.REFLOWABLE &&
         state.layout.stylesheets == Layout.Stylesheets.Default &&
         !state.settings.publisherStyles
+
+    companion object {
+
+        private val DEFAULT_FONT_FAMILIES: List<FontFamily> = listOf(
+            FontFamily.LITERATA,
+            FontFamily.PT_SERIF,
+            FontFamily.ROBOTO,
+            FontFamily.SOURCE_SANS_PRO,
+            FontFamily.VOLLKORN,
+            FontFamily.ACCESSIBLE_DFA,
+            FontFamily.IA_WRITER_DUOSPACE,
+            FontFamily.OPEN_DYSLEXIC
+        )
+    }
 }
