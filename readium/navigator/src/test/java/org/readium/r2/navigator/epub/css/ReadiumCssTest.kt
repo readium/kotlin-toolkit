@@ -1,10 +1,16 @@
+/*
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.navigator.epub.css
 
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.navigator.preferences.FontFamily
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Language
 import org.robolectric.RobolectricTestRunner
 import kotlin.test.assertEquals
@@ -540,14 +546,11 @@ class HtmlInjectionTest {
     fun `Inject font declarations`() {
         val sut = ReadiumCss(
             fontFamilies = listOf(
-                FontFamily.SANS_SERIF.from(FontFamilyDeclaration.System),
-                FontFamily.ROBOTO.from(FontFamilyDeclaration.GoogleFont),
-                FontFamily.LITERATA.from(FontFamilyDeclaration.GoogleFont),
-                FontFamily.LIBRE_FRANKLIN.from(FontFamilyDeclaration.Assets("fonts/LibreFranklin.otf")),
-                FontFamily.ACCESSIBLE_DFA.from(FontFamilyDeclaration.ReadiumCss),
-                FontFamily.PT_SERIF.from(FontFamilyDeclaration.GoogleFont),
-                FontFamily.IA_WRITER_DUOSPACE.from(FontFamilyDeclaration.ReadiumCss),
-                FontFamily.OPEN_DYSLEXIC.from(FontFamilyDeclaration.Assets("fonts/OpenDyslexic.otf")),
+                GoogleFont(FontFamily.ROBOTO),
+                GoogleFont(FontFamily.LITERATA),
+                FontAsset(FontFamily.LIBRE_FRANKLIN, "fonts/LibreFranklin.otf"),
+                GoogleFont(FontFamily.PT_SERIF),
+                FontAsset(FontFamily.OPEN_DYSLEXIC, "fonts/OpenDyslexic.otf"),
             ),
             assetsBaseHref = "/assets/"
         )
