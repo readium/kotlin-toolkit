@@ -6,8 +6,8 @@
 
 plugins {
     id("com.android.library")
-    id("kotlin-android")
-    id("kotlin-parcelize")
+    kotlin("android")
+    kotlin("plugin.parcelize")
     id("maven-publish")
     id("org.jetbrains.dokka")
 }
@@ -39,6 +39,7 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
     }
+    namespace = "org.readium.adapters.pdfium"
 }
 
 publishing {
@@ -57,6 +58,6 @@ publishing {
 }
 
 dependencies {
-    api(project(":readium:adapters:pdfium:pdfium-document"))
-    api(project(":readium:adapters:pdfium:pdfium-navigator"))
+    api(project(":readium:adapters:pdfium:readium-adapter-pdfium-document"))
+    api(project(":readium:adapters:pdfium:readium-adapter-pdfium-navigator"))
 }
