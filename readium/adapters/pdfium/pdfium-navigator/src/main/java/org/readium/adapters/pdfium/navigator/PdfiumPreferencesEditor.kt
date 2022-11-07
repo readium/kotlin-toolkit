@@ -11,6 +11,13 @@ import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 
+/**
+ * Interactive editor of [PdfiumPreferences].
+ *
+ * This can be used as a helper for a user preferences screen.
+ *
+ * @see PdfiumPreferences
+ */
 @ExperimentalReadiumApi
 class PdfiumPreferencesEditor internal constructor(
     initialPreferences: PdfiumPreferences,
@@ -19,6 +26,12 @@ class PdfiumPreferencesEditor internal constructor(
     configuration: Configuration
 ) : PreferencesEditor<PdfiumPreferences> {
 
+    /**
+     * Configuration for [PdfiumPreferencesEditor].
+     *
+     * @param pageSpacingRange The allowed range for page spacing.
+     * @param pageSpacingProgression The progression strategy for page spacing.
+     */
     data class Configuration(
         val pageSpacingRange: ClosedRange<Double> = 0.0..50.0,
         val pageSpacingProgression: ProgressionStrategy<Double> = DoubleIncrement(5.0),
@@ -51,6 +64,17 @@ class PdfiumPreferencesEditor internal constructor(
             supportedValues = listOf(Fit.CONTAIN, Fit.WIDTH),
         )
 
+    val pageSpacing: RangePreference<Double> =
+        RangePreferenceDelegate(
+            getValue = { preferences.pageSpacing },
+            getEffectiveValue = { state.settings.pageSpacing },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(pageSpacing = value) } },
+            supportedRange = configuration.pageSpacingRange,
+            progressionStrategy = configuration.pageSpacingProgression,
+            valueFormatter = { "${it.format(1)} dp" },
+        )
+
     val readingProgression: EnumPreference<ReadingProgression> =
         EnumPreferenceDelegate(
             getValue = { preferences.readingProgression },
@@ -67,17 +91,6 @@ class PdfiumPreferencesEditor internal constructor(
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(scrollAxis = value) } },
             supportedValues = listOf(Axis.VERTICAL, Axis.HORIZONTAL),
-        )
-
-    val pageSpacing: RangePreference<Double> =
-        RangePreferenceDelegate(
-            getValue = { preferences.pageSpacing },
-            getEffectiveValue = { state.settings.pageSpacing },
-            getIsEffective = { true },
-            updateValue = { value -> updateValues { it.copy(pageSpacing = value) } },
-            supportedRange = configuration.pageSpacingRange,
-            progressionStrategy = configuration.pageSpacingProgression,
-            valueFormatter = { "${it.format(1)} dp" },
         )
 
     private fun updateValues(updater: (PdfiumPreferences) -> PdfiumPreferences) {

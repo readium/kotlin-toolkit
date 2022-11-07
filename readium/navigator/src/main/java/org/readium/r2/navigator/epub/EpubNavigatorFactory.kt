@@ -13,12 +13,27 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 
+/**
+ * Factory of the EPUB navigator and related components.
+ *
+ * @param publication EPUB publication to render in the navigator.
+ * @param configuration Configuration of the factory to create.
+ */
 @ExperimentalReadiumApi
 class EpubNavigatorFactory(
     private val publication: Publication,
-    private val configuration: Configuration
+    private val configuration: Configuration = Configuration()
 ) {
 
+    /**
+     * Configuration for the [EpubNavigatorFactory].
+     *
+     * @param defaults navigator fallbacks for some preferences
+     * @param preferencesEditorConfiguration configuration of preferences editors that will be created
+     * @param fontDeclarations fonts to be made available in reflowable publications
+     *   IMPORTANT: If you customize this, you must customize [EpubPreferencesEditor.Configuration.fontFamilies]
+     *   too to be able to get the right font list from preference editors.
+     */
     data class Configuration(
         val defaults: EpubDefaults = EpubDefaults(),
         val preferencesEditorConfiguration: EpubPreferencesEditor.Configuration = EpubPreferencesEditor.Configuration(),

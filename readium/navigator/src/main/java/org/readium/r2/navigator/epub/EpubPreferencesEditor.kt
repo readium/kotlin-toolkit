@@ -14,6 +14,13 @@ import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Language
 
+/**
+ * Interactive editor of [EpubPreferences].
+ *
+ * This can be used as a view model for a user preferences screen.
+ *
+ * @see EpubPreferences
+ */
 @ExperimentalReadiumApi
 class EpubPreferencesEditor internal constructor(
     initialPreferences: EpubPreferences,
@@ -23,6 +30,15 @@ class EpubPreferencesEditor internal constructor(
     configuration: Configuration
 ): PreferencesEditor<EpubPreferences> {
 
+    /**
+     * Configuration for [EpubPreferencesEditor].
+     *
+     * @param fontFamilies a list of font families that can be selected in the editor
+     * @param fontSizeRange the range of font size values that can be set in the editor
+     * @param fontSizeProgression the way the font size value is to be increased or decreased
+     * @param pageMarginsRange the range of page margins values that can be set in the editor
+     * @param pageMarginsProgression the way the page margins value is to be increased or decreased
+     */
     data class Configuration(
         val fontFamilies: List<FontFamily> = DEFAULT_FONT_FAMILIES,
         val fontSizeRange: ClosedRange<Double> = 0.4..5.0,

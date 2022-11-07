@@ -122,11 +122,17 @@ data class FontFamily(val name: String, val alternate: FontFamily? = null) {
     }
 }
 
+/**
+ * Packed color int.
+ */
 @ExperimentalReadiumApi
 @Serializable
 @JvmInline
 value class Color(@ColorInt val int: Int)
 
+/**
+ * Layout axis.
+ */
 @ExperimentalReadiumApi
 @Serializable
 enum class Axis(val value: String) {
@@ -134,6 +140,9 @@ enum class Axis(val value: String) {
     @SerialName("vertical") VERTICAL("vertical");
 }
 
+/**
+ * Synthetic spread policy.
+ */
 @ExperimentalReadiumApi
 @Serializable
 enum class Spread(val value: String) {
@@ -142,6 +151,9 @@ enum class Spread(val value: String) {
     @SerialName("always") ALWAYS("always");
 }
 
+/**
+ * Direction of the reading progression across resources.
+ */
 @ExperimentalReadiumApi
 @Serializable
 enum class ReadingProgression(val value: String) {
@@ -150,7 +162,7 @@ enum class ReadingProgression(val value: String) {
 }
 
 /**
- * Suggested method for constraining a resource inside the viewport.
+ * Method for constraining a resource inside the viewport.
  */
 @ExperimentalReadiumApi
 @Serializable

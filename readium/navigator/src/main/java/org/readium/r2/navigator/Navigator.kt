@@ -111,6 +111,9 @@ interface VisualNavigator : Navigator {
      */
     val readingProgression: PublicationReadingProgression
 
+    /**
+     * Current presentation rendered by the navigator.
+     */
     @ExperimentalReadiumApi
     val presentation: StateFlow<Presentation>
 
@@ -123,10 +126,19 @@ interface VisualNavigator : Navigator {
 
     @ExperimentalReadiumApi
     interface Presentation {
+        /**
+         * Horizontal direction of progression across resources.
+         */
         val readingProgression: ReadingProgression
 
+        /**
+         * If the overflow of the content is managed through scroll instead of pagination.
+         */
         val scroll: Boolean
 
+        /**
+         * Main axis along which the resources are laid out.
+         */
         val axis: Axis
     }
 

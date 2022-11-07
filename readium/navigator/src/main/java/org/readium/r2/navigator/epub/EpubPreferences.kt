@@ -16,7 +16,35 @@ import org.readium.r2.shared.util.Language
 /**
  * Preferences for the EPUB navigator.
  *
- * @see EpubSettings
+ * @param backgroundColor Default page background color.
+ * @param columnCount Number of reflowable columns to display (one-page view or two-page spread).
+ * @param fontFamily Default typeface for the text.
+ * @param fontSize Base text font size.
+ * @param hyphens Enable hyphenation.
+ * @param imageFilter Filter applied to images in dark theme.
+ * @param language Language of the publication content.
+ * @param letterSpacing Space between letters.
+ * @param ligatures Enable ligatures in Arabic.
+ * @param lineHeight Leading line height.
+ * @param pageMargins Factor applied to horizontal margins.
+ * @param paragraphIndent Text indentation for paragraphs.
+ * @param paragraphSpacing Vertical margins for paragraphs.
+ * @param publisherStyles Indicates whether the original publisher styles should be observed.
+ *   Many settings require this to be off.
+ * @param readingProgression Direction of the reading progression across resources.
+ * @param scroll Indicates if the overflow of resources should be handled using scrolling
+ *   instead of synthetic pagination.
+ * @param spread Indicates if the fixed-layout publication should be rendered with a
+ *   synthetic spread (dual-page).
+ * @param textAlign Page text alignment.
+ * @param textColor Default page text color.
+ * @param textNormalization Normalize font style, weight and variants using a specific strategy.
+ * @param theme Reader theme.
+ * @param typeScale Scale applied to all element font sizes.
+ * @param verticalText Indicates whether the text should be laid out vertically. This is used
+ *   for example with CJK languages. This setting is automatically derived from the language if
+ *   no preference is given.
+ * @param wordSpacing Space between words.
  */
 @ExperimentalReadiumApi
 @Serializable
@@ -48,26 +76,24 @@ data class EpubPreferences(
 ): Configurable.Preferences {
 
     init {
-        require(spread in listOf(null, Spread.NEVER, Spread.ALWAYS))
         require(fontSize == null || fontSize >= 0)
         require(letterSpacing == null || letterSpacing >= 0)
         require(pageMargins == null || pageMargins >= 0)
         require(paragraphSpacing == null || paragraphSpacing >= 0)
+        require(spread in listOf(null, Spread.NEVER, Spread.ALWAYS))
         require(typeScale == null || typeScale >= 0)
         require(wordSpacing == null || wordSpacing >= 0)
     }
 
     operator fun plus(other: EpubPreferences): EpubPreferences =
         EpubPreferences(
-            readingProgression = other.readingProgression ?: readingProgression,
-            language = other.language ?: language,
-            spread = other.spread ?: spread,
             backgroundColor = other.backgroundColor ?: backgroundColor,
             columnCount = other.columnCount ?: columnCount,
             fontFamily = other.fontFamily ?: fontFamily,
             fontSize = other.fontSize ?: fontSize,
             hyphens = other.hyphens ?: hyphens,
             imageFilter = other.imageFilter ?: imageFilter,
+            language = other.language ?: language,
             letterSpacing = other.letterSpacing ?: letterSpacing,
             ligatures = other.ligatures ?: ligatures,
             lineHeight = other.lineHeight ?: lineHeight,
@@ -75,7 +101,9 @@ data class EpubPreferences(
             paragraphIndent = other.paragraphIndent ?: paragraphIndent,
             paragraphSpacing = other.paragraphSpacing ?: paragraphSpacing,
             publisherStyles = other.publisherStyles ?: publisherStyles,
+            readingProgression = other.readingProgression ?: readingProgression,
             scroll = other.scroll ?: scroll,
+            spread = other.spread ?: spread,
             textAlign = other.textAlign ?: textAlign,
             textColor = other.textColor ?: textColor,
             textNormalization = other.textNormalization ?: textNormalization,

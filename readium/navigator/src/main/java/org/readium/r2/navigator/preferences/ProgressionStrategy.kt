@@ -18,6 +18,7 @@ interface ProgressionStrategy<V> {
 
 /**
  * Progression strategy based on a list of preferred values for the setting.
+ *
  * Steps MUST be sorted in increasing order.
  */
 class StepsProgression<T: Comparable<T>>(private val steps: List<T>) : ProgressionStrategy<T> {

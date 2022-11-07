@@ -29,7 +29,7 @@ interface PdfEngineProvider<S: Configurable.Settings, P: Configurable.Preference
     suspend fun createDocumentFragment(input: PdfDocumentFragmentInput<S>): PdfDocumentFragment<S>
 
     /**
-     * Creates [Configurable.Settings] for [metadata] and [preferences].
+     * Creates settings for [metadata] and [preferences].
      */
     fun computeSettings(metadata: Metadata, preferences: P): S
 
@@ -39,8 +39,14 @@ interface PdfEngineProvider<S: Configurable.Settings, P: Configurable.Preference
      */
     fun computePresentation(settings: S): VisualNavigator.Presentation
 
-    fun createPreferenceEditor(publication: Publication, currentPreferences: P): E
+    /**
+     * Creates a preferences editor for [publication] and [initialPreferences].
+     */
+    fun createPreferenceEditor(publication: Publication, initialPreferences: P): E
 
+    /**
+     * Creates an empty set of preferences of this PDF engine provider.
+     */
     fun createEmptyPreferences(): P
 }
 

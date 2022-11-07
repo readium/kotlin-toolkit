@@ -4,15 +4,13 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
-
 package org.readium.r2.navigator.preferences
 
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
- * A preference holder able to edit it and predict the navigator's behaviour
- * regarding the computation of settings.
+ * A handle to edit the value of a specific preference which is able to predict
+ * which value the [Configurable] will effectively use.
  */
 @ExperimentalReadiumApi
 interface Preference<T> {
@@ -43,11 +41,12 @@ interface Preference<T> {
 /**
  * Unset the preference.
  */
+@ExperimentalReadiumApi
 fun<T> Preference<T>.clear() =
     set(null)
 
 /**
- * A [Preference] which supports a closed set of values.
+ * A [Preference] which accepts a closed set of values.
  */
 @ExperimentalReadiumApi
 interface EnumPreference<T> : Preference<T> {
@@ -64,17 +63,17 @@ interface RangePreference<T: Comparable<T>> : Preference<T> {
     val supportedRange: ClosedRange<T>
 
     /**
-     * Increment the preference value from its current value or the default value.
+     * Increment the preference value from its current value or a default value.
      */
     fun increment()
 
     /**
-     * Decrement the preference value from its current value or the default value.
+     * Decrement the preference value from its current value or a default value.
      */
     fun decrement()
 
     /**
-     * Format [value] in a suitable way for displaying, including unit when relevant.
+     * Format [value] in a way suitable for display, including unit if relevant.
      */
     fun formatValue(value: T): String
 }
@@ -86,7 +85,7 @@ interface RangePreference<T: Comparable<T>> : Preference<T> {
 interface SwitchPreference : Preference<Boolean> {
 
     /**
-     * Toggle the preference value. The default value is taken as the initial one if
+     * Toggle the preference value. A default value is taken as the initial one if
      * the preference is currently unset.
      */
     fun toggle()

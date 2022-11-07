@@ -11,7 +11,7 @@ import org.readium.r2.navigator.preferences.Spread
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
- * Default values for the PDF navigator with the PsPdfKit adapter.
+ * Default values for the PDF navigator with the PSPDFKit adapter.
  *
  * These values will be used when no publication metadata or user preference takes precedence.
  *

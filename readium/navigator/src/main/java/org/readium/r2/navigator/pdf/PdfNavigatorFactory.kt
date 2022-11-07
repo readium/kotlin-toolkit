@@ -15,7 +15,10 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 
 /**
+ * Factory of the PDF navigator and related components.
+ *
  * @param publication PDF publication to render in the navigator.
+ * @param pdfEngineProvider provider for third-party PDF engine adapter.
  */
 @ExperimentalReadiumApi
 class PdfNavigatorFactory<S: Configurable.Settings, P: Configurable.Preferences, E: PreferencesEditor<P>>(
@@ -28,9 +31,8 @@ class PdfNavigatorFactory<S: Configurable.Settings, P: Configurable.Preferences,
      *
      * @param initialLocator The first location which should be visible when rendering the
      * publication. Can be used to restore the last reading location.
-     * @param preferences Initial set of user preferences.
+     * @param initialPreferences Initial set of user preferences.
      * @param listener Optional listener to implement to observe events, such as user taps.
-     * @param pdfEngineProvider provider for third-party PDF engine adapter.
      */
     @ExperimentalReadiumApi
     fun createFragmentFactory(
@@ -47,11 +49,16 @@ class PdfNavigatorFactory<S: Configurable.Settings, P: Configurable.Preferences,
         )
     }
 
+    /**
+     * Creates a preferences editor for [publication] with [initialPreferences].
+     *
+     * @param initialPreferences Initial set of preferences for the editor.
+     */
     fun createPreferencesEditor(
-        currentPreferences: P
+        initialPreferences: P
     ): E =
        pdfEngineProvider.createPreferenceEditor(
            publication,
-           currentPreferences
+           initialPreferences
        )
 }

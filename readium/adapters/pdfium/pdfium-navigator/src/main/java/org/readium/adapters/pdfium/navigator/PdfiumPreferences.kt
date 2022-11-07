@@ -14,15 +14,20 @@ import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
- * Preferences for the PDF navigator with Pdfium adapter
+ * Preferences for the PDF navigator with the PDFium adapter.
+ *
+ *  @param fit Indicates how pages should be laid out within the viewport.
+ *  @param pageSpacing Space between pages in dp.
+ *  @param readingProgression Direction of the horizontal progression across pages.
+ *  @param scrollAxis Indicates the axis along which pages should be laid out in scroll mode.
  */
 @ExperimentalReadiumApi
 @Serializable
 data class PdfiumPreferences(
+    val fit: Fit? = null,
+    val pageSpacing: Double? = null,
     val readingProgression: ReadingProgression? = null,
     val scrollAxis: Axis? = null,
-    val fit: Fit? = null,
-    val pageSpacing: Double? = null
 ) : Configurable.Preferences {
 
     init {
@@ -32,9 +37,9 @@ data class PdfiumPreferences(
 
     operator fun plus(other: PdfiumPreferences) =
         PdfiumPreferences(
+            fit = other.fit ?: fit,
+            pageSpacing = other.pageSpacing ?: pageSpacing,
             readingProgression = other.readingProgression ?: readingProgression,
             scrollAxis = other.scrollAxis ?: scrollAxis,
-            fit = other.fit ?: fit,
-            pageSpacing = other.pageSpacing ?: pageSpacing
         )
 }

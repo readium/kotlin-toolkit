@@ -9,6 +9,9 @@ package org.readium.r2.navigator.epub
 import org.readium.r2.navigator.preferences.PreferencesFilter
 import org.readium.r2.shared.ExperimentalReadiumApi
 
+/**
+ * Suggested filter to keep only shared [EpubPreferences].
+ */
 @ExperimentalReadiumApi
 object EpubSharedPreferencesFilter : PreferencesFilter<EpubPreferences> {
 
@@ -20,6 +23,9 @@ object EpubSharedPreferencesFilter : PreferencesFilter<EpubPreferences> {
         )
 }
 
+/**
+ * Suggested filter to keep only publication-specific [EpubPreferences].
+ */
 @ExperimentalReadiumApi
 object EpubPublicationPreferencesFilter : PreferencesFilter<EpubPreferences> {
 

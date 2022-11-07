@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.adapters.pspdfkit.navigator
+package org.readium.adapters.pdfium.navigator
 
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -13,18 +13,18 @@ import org.readium.r2.navigator.preferences.PreferencesSerializer
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
- * JSON serializer of [PsPdfKitPreferences].
+ * JSON serializer of [PdfiumPreferences].
  *
  * Serialization and deserialization can be configured through the [json] argument.
  */
 @ExperimentalReadiumApi
-class PsPdfKitPreferencesSerializer(
+class PdfiumPreferencesSerializer(
     private val json: Json = Json
-) : PreferencesSerializer<PsPdfKitPreferences> {
+) : PreferencesSerializer<PdfiumPreferences> {
 
-    override fun serialize(preferences: PsPdfKitPreferences): String =
+    override fun serialize(preferences: PdfiumPreferences): String =
         json.encodeToString(serializer(), preferences)
 
-    override fun deserialize(preferences: String): PsPdfKitPreferences =
+    override fun deserialize(preferences: String): PdfiumPreferences =
         json.decodeFromString(preferences)
 }

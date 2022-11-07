@@ -22,12 +22,13 @@ interface Configurable<T : Settings, P: Preferences> {
      */
     interface Settings
 
+    /**
+     * Marker interface for the [Preferences] properties holder.
+     */
     interface Preferences
 
     /**
      * Current [Settings] values.
-     *
-     * Implementers: Override to set the actual [Settings] sub-type.
      */
     val settings: StateFlow<T>
 
@@ -61,7 +62,7 @@ interface PreferencesSerializer<P: Preferences> {
 /**
  * Interactive editor of preferences.
  *
- * This can be used as a view model for a user preferences screen.
+ * This can be used as a helper for a user preferences screen.
  */
 @ExperimentalReadiumApi
 interface PreferencesEditor<P: Preferences> {
@@ -78,7 +79,7 @@ interface PreferencesEditor<P: Preferences> {
 }
 
 /**
- * A preference filter to keep only some preferences and filter out some others.
+ * A filter to keep only some preferences and filter out some others.
  */
 @ExperimentalReadiumApi
 fun interface PreferencesFilter<T: Preferences> {

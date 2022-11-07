@@ -11,12 +11,12 @@ import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
- * Preferences for the PDF navigator with the PsPdfKit adapter.
+ * Preferences for the PDF navigator with the PSPDFKit adapter.
  *
  *  @param fit Indicates how pages should be laid out within the viewport.
  *  @param offset Indicates if the first page should be displayed in its own spread.
  *  @param pageSpacing Space between pages in dp.
- *  @param readingProgression Direction of the reading progression across pages.
+ *  @param readingProgression Direction of the horizontal progression across pages.
  *  @param scroll Indicates if pages should be handled using scrolling instead of pagination.
  *  @param scrollAxis Indicates the axis along which pages should be laid out in scroll mode.
  *  @param spread Indicates if the publication should be rendered with a synthetic spread (dual-page).

@@ -20,12 +20,12 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.pdf.cachedIn
 
 /**
- * Main component to use the PDF navigator with PsPdfKit.
+ * Main component to use the PDF navigator with PSPDFKit.
  *
  * Provide [PsPdfKitDefaults] and [PsPdfKitPreferencesEditor.Configuration] to customize
  * the default values that will be used by the navigator for some preferences and the
  * way that preferences will be allowed to be modified through preferences editors created
- * through this component.
+ * by this component.
  */
 @ExperimentalReadiumApi
 class PsPdfKitEngineProvider(
@@ -66,10 +66,10 @@ class PsPdfKitEngineProvider(
 
     override fun createPreferenceEditor(
         publication: Publication,
-        currentPreferences: PsPdfKitPreferences
+        initialPreferences: PsPdfKitPreferences
     ): PsPdfKitPreferencesEditor =
         PsPdfKitPreferencesEditor(
-            initialPreferences = currentPreferences,
+            initialPreferences = initialPreferences,
             publicationMetadata = publication.metadata,
             defaults = defaults,
             configuration = preferencesEditorConfiguration

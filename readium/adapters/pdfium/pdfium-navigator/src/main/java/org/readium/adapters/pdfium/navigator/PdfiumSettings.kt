@@ -10,12 +10,14 @@ import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
- *  Settings values of the PDF navigator with Pdfium adapter.
+ *  Settings values of the PDF navigator with the PDFIUM adapter.
+ *
+ *  @see PdfiumPreferences
  */
 @ExperimentalReadiumApi
 data class PdfiumSettings(
-    val readingProgression: ReadingProgression,
-    val scrollAxis: Axis,
     val fit: Fit,
     val pageSpacing: Double,
+    val readingProgression: ReadingProgression,
+    val scrollAxis: Axis,
 ) : Configurable.Settings

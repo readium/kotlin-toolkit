@@ -10,7 +10,7 @@ import org.readium.r2.navigator.preferences.PreferencesFilter
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
- * Suggested filter to filter shared [PsPdfKitPreferences].
+ * Suggested filter to keep only shared [PsPdfKitPreferences].
  */
 @ExperimentalReadiumApi
 object PsPdfKitSharedPreferencesFilter : PreferencesFilter<PsPdfKitPreferences> {
@@ -23,7 +23,7 @@ object PsPdfKitSharedPreferencesFilter : PreferencesFilter<PsPdfKitPreferences> 
 }
 
 /**
- * Suggested filter to filter publication-specific [PsPdfKitPreferences].
+ * Suggested filter to keep only publication-specific [PsPdfKitPreferences].
  */
 @ExperimentalReadiumApi
 object PsPdfKitPublicationPreferencesFilter : PreferencesFilter<PsPdfKitPreferences> {
