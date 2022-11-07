@@ -10,6 +10,11 @@ import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
 
+/**
+ * Default values for the EPUB navigator.
+ *
+ * @see EpubSettings
+ */
 @ExperimentalReadiumApi
 data class EpubDefaults(
     val language: Language? = null,

@@ -21,10 +21,6 @@ import org.readium.r2.shared.util.Language
 /**
  * EPUB navigator settings values.
  *
- * @param language Language of the publication content.
- * @param readingProgression Direction of the reading progression across resources.
- * @param spread Indicates if the fixed-layout publication should be rendered with a
- * synthetic spread (dual-page).
  * @param backgroundColor Default page background color.
  * @param columnCount Number of reflowable columns to display (one-page view or two-page spread).
  * @param fontFamily Default typeface for the text.
@@ -39,18 +35,20 @@ import org.readium.r2.shared.util.Language
  * @param paragraphIndent Text indentation for paragraphs.
  * @param paragraphSpacing Vertical margins for paragraphs.
  * @param publisherStyles Indicates whether the original publisher styles should be observed.
- * Many settings require this to be off.
+ *   Many settings require this to be off.
  * @param readingProgression Direction of the reading progression across resources.
  * @param scroll Indicates if the overflow of resources should be handled using scrolling
- * instead of synthetic pagination.
+ *   instead of synthetic pagination.
+ * @param spread Indicates if the fixed-layout publication should be rendered with a
+ *   synthetic spread (dual-page).
  * @param textAlign Page text alignment.
  * @param textColor Default page text color.
  * @param textNormalization Normalize font style, weight and variants using a specific strategy.
  * @param theme Reader theme.
  * @param typeScale Scale applied to all element font sizes.
  * @param verticalText Indicates whether the text should be laid out vertically. This is used
- * for example with CJK languages. This setting is automatically derived from the language if
- * no preference is given.
+ *   for example with CJK languages. This setting is automatically derived from the language if
+ *   no preference is given.
  * @param wordSpacing Space between words.
  */
 @ExperimentalReadiumApi

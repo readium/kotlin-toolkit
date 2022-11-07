@@ -19,11 +19,19 @@ import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.pdf.cachedIn
 
+/**
+ * Main component to use the PDF navigator with PsPdfKit.
+ *
+ * Provide [PsPdfKitDefaults] and [PsPdfKitPreferencesEditor.Configuration] to customize
+ * the default values that will be used by the navigator for some preferences and the
+ * way that preferences will be allowed to be modified through preferences editors created
+ * through this component.
+ */
 @ExperimentalReadiumApi
 class PsPdfKitEngineProvider(
     private val context: Context,
     private val defaults: PsPdfKitDefaults = PsPdfKitDefaults(),
-    private val editorConfiguration: PsPdfKitPreferencesEditor.Configuration = PsPdfKitPreferencesEditor.Configuration()
+    private val preferencesEditorConfiguration: PsPdfKitPreferencesEditor.Configuration = PsPdfKitPreferencesEditor.Configuration()
 ) : PdfEngineProvider<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor> {
 
     override suspend fun createDocumentFragment(
@@ -64,7 +72,7 @@ class PsPdfKitEngineProvider(
             initialPreferences = currentPreferences,
             publicationMetadata = publication.metadata,
             defaults = defaults,
-            configuration = editorConfiguration
+            configuration = preferencesEditorConfiguration
         )
 
     override fun createEmptyPreferences(): PsPdfKitPreferences =

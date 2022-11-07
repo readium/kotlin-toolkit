@@ -60,13 +60,13 @@ internal class PsPdfKitSettingsResolver(
                 ?: 16.0
 
         return PsPdfKitSettings(
+            fit = fit,
+            offset = offset,
+            pageSpacing = pageSpacing,
             readingProgression = readingProgression,
             scroll = scroll,
             scrollAxis = scrollAxis,
-            fit = fit,
             spread = spread,
-            pageSpacing = pageSpacing,
-            offset = offset
         )
     }
 }

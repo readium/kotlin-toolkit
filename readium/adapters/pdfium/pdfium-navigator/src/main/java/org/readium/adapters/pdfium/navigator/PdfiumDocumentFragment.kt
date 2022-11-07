@@ -24,6 +24,7 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import timber.log.Timber
+import kotlin.math.roundToInt
 
 @ExperimentalReadiumApi
 class PdfiumDocumentFragment internal constructor(
@@ -95,7 +96,7 @@ class PdfiumDocumentFragment internal constructor(
                         }
                     }
                     .swipeHorizontal(settings.scrollAxis == Axis.HORIZONTAL)
-                    .spacing(10)
+                    .spacing(settings.pageSpacing.roundToInt())
                     // Customization of [PDFView] is done before setting the listeners,
                     // to avoid overriding them in reading apps, which would break the
                     // navigator.

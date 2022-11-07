@@ -10,9 +10,10 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.navigator.preferences.ReadingProgression
 
 /**
- * @param readingProgression
+ * Default values for the PDF navigator with Pdfium adapter.
  */
 @ExperimentalReadiumApi
 data class PdfiumDefaults(
     val readingProgression: ReadingProgression? = null,
+    val pageSpacing: Double? = null
 )

@@ -10,11 +10,18 @@ import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.preferences.Spread
 import org.readium.r2.shared.ExperimentalReadiumApi
 
+/**
+ * Default values for the PDF navigator with the PsPdfKit adapter.
+ *
+ * These values will be used when no publication metadata or user preference takes precedence.
+ *
+ * @see PsPdfKitPreferences
+ */
 @ExperimentalReadiumApi
 data class PsPdfKitDefaults(
+    val offset: Boolean? = null,
     val pageSpacing: Double? = null,
     val readingProgression: ReadingProgression? = null,
     val scroll: Boolean? = null,
     val spread: Spread? = null,
-    val offset: Boolean? = null
 )

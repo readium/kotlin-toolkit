@@ -11,6 +11,13 @@ import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 
+/**
+ * Interactive editor of [PsPdfKitPreferences].
+ *
+ * This can be used as a view model for a user preferences screen.
+ *
+ * @see PsPdfKitPreferences
+ */
 @ExperimentalReadiumApi
 class PsPdfKitPreferencesEditor internal constructor(
     initialPreferences: PsPdfKitPreferences,
@@ -19,6 +26,12 @@ class PsPdfKitPreferencesEditor internal constructor(
     configuration: Configuration
 ) : PreferencesEditor<PsPdfKitPreferences> {
 
+    /**
+     * Configuration for [PsPdfKitPreferencesEditor].
+     *
+     * @param pageSpacingRange The allowed range for page spacing.
+     * @param pageSpacingProgression The progression strategy for page spacing.
+     */
     data class Configuration(
         val pageSpacingRange: ClosedRange<Double> = 0.0..50.0,
         val pageSpacingProgression: ProgressionStrategy<Double> = DoubleIncrement(5.0),
@@ -41,6 +54,23 @@ class PsPdfKitPreferencesEditor internal constructor(
     override fun clear() {
         updateValues { PsPdfKitPreferences() }
     }
+
+    val fit: EnumPreference<Fit> =
+        EnumPreferenceDelegate(
+            getValue = { preferences.fit },
+            getEffectiveValue = { state.settings.fit },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(fit = value) } },
+            supportedValues = listOf(Fit.CONTAIN, Fit.WIDTH),
+        )
+
+    val offset: SwitchPreference =
+        SwitchPreferenceDelegate(
+            getValue = { preferences.offset },
+            getEffectiveValue = { state.settings.offset },
+            getIsEffective = { state.settings.spread != Spread.NEVER},
+            updateValue = { value -> updateValues { it.copy(offset = value) } },
+        )
 
     val readingProgression: EnumPreference<ReadingProgression> =
         EnumPreferenceDelegate(
@@ -75,23 +105,6 @@ class PsPdfKitPreferencesEditor internal constructor(
             getIsEffective = { !state.settings.scroll },
             updateValue = { value -> updateValues { it.copy(spread = value) } },
             supportedValues = listOf(Spread.AUTO, Spread.NEVER, Spread.ALWAYS),
-        )
-
-    val offset: SwitchPreference =
-        SwitchPreferenceDelegate(
-            getValue = { preferences.offset },
-            getEffectiveValue = { state.settings.offset },
-            getIsEffective = { state.settings.spread != Spread.NEVER},
-            updateValue = { value -> updateValues { it.copy(offset = value) } },
-        )
-
-    val fit: EnumPreference<Fit> =
-        EnumPreferenceDelegate(
-            getValue = { preferences.fit },
-            getEffectiveValue = { state.settings.fit },
-            getIsEffective = { true },
-            updateValue = { value -> updateValues { it.copy(fit = value) } },
-            supportedValues = listOf(Fit.CONTAIN, Fit.WIDTH),
         )
 
     val pageSpacing: RangePreference<Double> =

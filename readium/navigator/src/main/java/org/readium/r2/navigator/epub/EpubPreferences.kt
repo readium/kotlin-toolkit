@@ -13,6 +13,11 @@ import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
 
+/**
+ * Preferences for the EPUB navigator.
+ *
+ * @see EpubSettings
+ */
 @ExperimentalReadiumApi
 @Serializable
 data class EpubPreferences(

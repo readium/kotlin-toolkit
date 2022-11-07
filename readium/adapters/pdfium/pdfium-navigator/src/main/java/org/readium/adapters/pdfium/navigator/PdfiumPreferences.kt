@@ -13,16 +13,21 @@ import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 
+/**
+ * Preferences for the PDF navigator with Pdfium adapter
+ */
 @ExperimentalReadiumApi
 @Serializable
 data class PdfiumPreferences(
     val readingProgression: ReadingProgression? = null,
     val scrollAxis: Axis? = null,
     val fit: Fit? = null,
+    val pageSpacing: Double? = null
 ) : Configurable.Preferences {
 
     init {
         require(fit in listOf(null, Fit.CONTAIN, Fit.WIDTH))
+        require(pageSpacing == null || pageSpacing >= 0)
     }
 
     operator fun plus(other: PdfiumPreferences) =
@@ -30,5 +35,6 @@ data class PdfiumPreferences(
             readingProgression = other.readingProgression ?: readingProgression,
             scrollAxis = other.scrollAxis ?: scrollAxis,
             fit = other.fit ?: fit,
+            pageSpacing = other.pageSpacing ?: pageSpacing
         )
 }

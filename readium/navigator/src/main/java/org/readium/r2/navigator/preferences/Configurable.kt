@@ -18,7 +18,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 interface Configurable<T : Settings, P: Preferences> {
 
     /**
-     * Marker interface for the [Setting] properties holder.
+     * Marker interface for the [Settings] properties holder.
      */
     interface Settings
 
@@ -41,22 +41,45 @@ interface Configurable<T : Settings, P: Preferences> {
     fun submitPreferences(preferences: P)
 }
 
+/**
+ * JSON serializer of [P].
+ */
 @ExperimentalReadiumApi
 interface PreferencesSerializer<P: Preferences> {
 
+    /**
+     * Serialize [P] into a JSON string.
+     */
     fun serialize(preferences: P): String
 
+    /**
+     * Deserialize [P] from a JSON string.
+     */
     fun deserialize(preferences: String): P
 }
 
+/**
+ * Interactive editor of preferences.
+ *
+ * This can be used as a view model for a user preferences screen.
+ */
 @ExperimentalReadiumApi
 interface PreferencesEditor<P: Preferences> {
 
+    /**
+     * The current preferences.
+     */
     val preferences: P
 
+    /**
+     * Unset all preferences.
+     */
     fun clear()
 }
 
+/**
+ * A preference filter to keep only some preferences and filter out some others.
+ */
 @ExperimentalReadiumApi
 fun interface PreferencesFilter<T: Preferences> {
 

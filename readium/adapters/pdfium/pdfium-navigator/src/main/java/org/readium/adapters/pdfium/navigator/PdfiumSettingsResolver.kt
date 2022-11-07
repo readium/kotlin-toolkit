@@ -39,10 +39,16 @@ internal class PdfiumSettingsResolver(
                 else -> Fit.WIDTH
             }
 
+        val pageSpacing: Double =
+            preferences.pageSpacing
+                ?: defaults.pageSpacing
+                ?: 16.0
+
         return PdfiumSettings(
+            fit = fit,
+            pageSpacing = pageSpacing,
             readingProgression = readingProgression,
             scrollAxis = scrollAxis,
-            fit = fit
         )
     }
 }

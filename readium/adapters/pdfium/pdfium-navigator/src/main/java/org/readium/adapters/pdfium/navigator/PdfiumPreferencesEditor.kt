@@ -6,6 +6,7 @@
 
 package org.readium.adapters.pdfium.navigator
 
+import org.readium.r2.navigator.extensions.format
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
@@ -15,7 +16,13 @@ class PdfiumPreferencesEditor internal constructor(
     initialPreferences: PdfiumPreferences,
     publicationMetadata: Metadata,
     defaults: PdfiumDefaults,
+    configuration: Configuration
 ) : PreferencesEditor<PdfiumPreferences> {
+
+    data class Configuration(
+        val pageSpacingRange: ClosedRange<Double> = 0.0..50.0,
+        val pageSpacingProgression: ProgressionStrategy<Double> = DoubleIncrement(5.0),
+    )
 
     private data class State(
         val preferences: PdfiumPreferences,
@@ -60,6 +67,17 @@ class PdfiumPreferencesEditor internal constructor(
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(scrollAxis = value) } },
             supportedValues = listOf(Axis.VERTICAL, Axis.HORIZONTAL),
+        )
+
+    val pageSpacing: RangePreference<Double> =
+        RangePreferenceDelegate(
+            getValue = { preferences.pageSpacing },
+            getEffectiveValue = { state.settings.pageSpacing },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(pageSpacing = value) } },
+            supportedRange = configuration.pageSpacingRange,
+            progressionStrategy = configuration.pageSpacingProgression,
+            valueFormatter = { "${it.format(1)} dp" },
         )
 
     private fun updateValues(updater: (PdfiumPreferences) -> PdfiumPreferences) {

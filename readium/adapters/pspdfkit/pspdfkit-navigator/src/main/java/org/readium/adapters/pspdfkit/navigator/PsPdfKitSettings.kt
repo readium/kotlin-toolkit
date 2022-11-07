@@ -9,13 +9,18 @@ package org.readium.adapters.pspdfkit.navigator
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 
+/**
+ * Settings values of the PDF navigator with the PsPdfKit adapter.
+ *
+ * @see PsPdfKitPreferences
+ */
 @ExperimentalReadiumApi
 data class PsPdfKitSettings(
+    val fit: Fit,
+    val offset: Boolean,
+    val pageSpacing: Double,
     val readingProgression: ReadingProgression,
     val scroll: Boolean,
     val scrollAxis: Axis,
-    val fit: Fit,
     val spread: Spread,
-    val pageSpacing: Double,
-    val offset: Boolean
 ) : Configurable.Settings
