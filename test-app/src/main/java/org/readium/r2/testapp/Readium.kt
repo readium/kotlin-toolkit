@@ -9,9 +9,9 @@ package org.readium.r2.testapp
 import android.content.Context
 import org.readium.adapters.pspdfkit.document.PsPdfKitDocumentFactory
 import org.readium.r2.lcp.LcpService
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitEngineProvider
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.epub.EpubPreferencesEditor
+import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Try
 import org.readium.r2.streamer.Streamer
@@ -44,6 +44,14 @@ class Readium(context: Context) {
 
     val epubNavigatorConfig: EpubNavigatorFactory.Configuration =
         EpubNavigatorFactory.Configuration(
-            preferencesEditorConfiguration = EpubPreferencesEditor.Configuration()
+            preferencesEditorConfiguration = EpubPreferencesEditor.Configuration(
+                fontFamilies = listOf(
+                    FontFamily.LITERATA,
+                    FontFamily.SANS_SERIF,
+                    FontFamily.IA_WRITER_DUOSPACE,
+                    FontFamily.ACCESSIBLE_DFA,
+                    FontFamily.OPEN_DYSLEXIC
+                )
+            )
         )
 }

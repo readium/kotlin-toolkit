@@ -337,11 +337,9 @@ class EpubPreferencesEditor internal constructor(
     companion object {
 
         private val DEFAULT_FONT_FAMILIES: List<FontFamily> = listOf(
-            FontFamily.LITERATA,
-            FontFamily.PT_SERIF,
-            FontFamily.ROBOTO,
-            FontFamily.SOURCE_SANS_PRO,
-            FontFamily.VOLLKORN,
+            FontFamily.SERIF,
+            FontFamily.SANS_SERIF,
+            FontFamily.MONOSPACE,
             FontFamily.ACCESSIBLE_DFA,
             FontFamily.IA_WRITER_DUOSPACE,
             FontFamily.OPEN_DYSLEXIC

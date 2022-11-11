@@ -23,12 +23,11 @@ import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.readium.r2.navigator.ExperimentalDecorator
-import org.readium.r2.navigator.epub.EpubNavigatorFragment
-import org.readium.r2.navigator.epub.EpubPreferences
-import org.readium.r2.navigator.epub.EpubPreferencesEditor
-import org.readium.r2.navigator.epub.EpubSettings
+import org.readium.r2.navigator.epub.*
+import org.readium.r2.navigator.epub.css.FontStyle
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
 import org.readium.r2.navigator.html.toCss
+import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.testapp.R
@@ -63,12 +62,24 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                     // assets in one go.
                     servedAssets = listOf(
                         /** Icon for the annotation side mark, see [annotationMarkTemplate]. */
+                        "fonts/.*",
                         "annotation-icon.svg"
-                    )
+                    ),
                 ).apply {
                     // Register the HTML template for our custom [DecorationStyleAnnotationMark].
                     decorationTemplates[DecorationStyleAnnotationMark::class] = annotationMarkTemplate()
                     selectionActionModeCallback = customSelectionActionModeCallback
+
+                   addFontFamilyDeclaration(FontFamily.LITERATA) {
+                        addFontFace {
+                            addSource("fonts/Literata-VariableFont_opsz,wght.ttf")
+                            setFontStyle(FontStyle.NORMAL)
+                        }
+                        addFontFace {
+                            addSource("fonts/Literata-Italic-VariableFont_opsz,wght.ttf")
+                            setFontStyle(FontStyle.ITALIC)
+                        }
+                    }
                 }
             )
 

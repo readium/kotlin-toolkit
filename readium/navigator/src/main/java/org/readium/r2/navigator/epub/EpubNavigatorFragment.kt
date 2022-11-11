@@ -91,7 +91,6 @@ class EpubNavigatorFragment internal constructor(
     internal val listener: Listener?,
     internal val paginationListener: PaginationListener?,
     epubLayout: EpubLayout,
-    private val fontFamilyDeclarations: List<FontFamilyDeclaration>,
     private val defaults: EpubDefaults,
     configuration: Configuration,
 ) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable<EpubSettings, EpubPreferences> {
@@ -99,7 +98,13 @@ class EpubNavigatorFragment internal constructor(
     // Make a copy to prevent the user from modifying the configuration after initialization.
     internal val config: Configuration = configuration.copy(
         servedAssets = configuration.servedAssets + "readium/.*"
-    )
+    ).apply {
+        addFontFamilyDeclaration(FontFamily.OPEN_DYSLEXIC) {
+            addFontFace {
+                addSource("readium/fonts/OpenDyslexic-Regular.otf")
+            }
+        }
+    }
 
     data class Configuration(
 
@@ -114,6 +119,12 @@ class EpubNavigatorFragment internal constructor(
          */
         @ExperimentalReadiumApi
         val servedAssets: List<String> = emptyList(),
+
+        /**
+         * Font declarations to inject through Readium CSS.
+         */
+        @ExperimentalReadiumApi
+        internal val fontFamilyDeclarations:  MutableList<FontFamilyDeclaration> = mutableListOf(),
 
         /**
          * Readium CSS reading system settings.
@@ -150,6 +161,15 @@ class EpubNavigatorFragment internal constructor(
          */
         fun registerJavascriptInterface(name: String, factory: JavascriptInterfaceFactory) {
             javascriptInterfaces[name] = factory
+        }
+
+        /**
+         * Adds a declaration for [fontFamily] using [builderAction].
+         */
+        @ExperimentalReadiumApi
+        fun addFontFamilyDeclaration(fontFamily: FontFamily, builderAction: (MutableFontFamilyDeclaration).() -> Unit) {
+            val declaration = buildFontFamilyDeclaration(fontFamily.name, builderAction)
+            fontFamilyDeclarations.add(declaration)
         }
     }
 
@@ -192,7 +212,6 @@ class EpubNavigatorFragment internal constructor(
             baseUrl = baseUrl, config = this.config,
             initialPreferences = initialPreferences,
             layout = epubLayout,
-            fontFamilyDeclarations = fontFamilyDeclarations,
             defaults = defaults
         )
     }
@@ -930,7 +949,6 @@ class EpubNavigatorFragment internal constructor(
                     publication, baseUrl, initialLocator, initialPreferences,
                     listener, paginationListener,
                     epubLayout = publication.metadata.presentation.layout ?: EpubLayout.REFLOWABLE,
-                    fontFamilyDeclarations = DEFAULT_FONT_DECLARATIONS,
                     defaults = EpubDefaults(),
                     configuration = config,
                 )
@@ -941,15 +959,6 @@ class EpubNavigatorFragment internal constructor(
          */
         fun assetUrl(path: String): String =
             WebViewServer.assetUrl(path)
-
-        internal val DEFAULT_FONT_DECLARATIONS: List<FontFamilyDeclaration> = listOf(
-            GoogleFont(FontFamily.LITERATA),
-            GoogleFont(FontFamily.PT_SERIF),
-            GoogleFont(FontFamily.VOLLKORN),
-            GoogleFont(FontFamily.ROBOTO),
-            GoogleFont(FontFamily.SOURCE_SANS_PRO),
-            FontAsset(FontFamily.OPEN_DYSLEXIC, "readium/fonts/OpenDyslexic-Regular.otf")
-        )
     }
 
 }

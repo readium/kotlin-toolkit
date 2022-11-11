@@ -429,7 +429,11 @@ private fun ColumnScope.ReflowableUserPreferences(
                 preference = fontFamily,
                 commit = commit
             ) { value ->
-                value?.name ?: "Original"
+                when (value) {
+                    null ->  "Original"
+                    FontFamily.SANS_SERIF -> "Sans Serif"
+                    else -> value.name
+                }
             }
         }
 
@@ -612,12 +616,12 @@ private fun <T> MenuItem(
     title: String,
     preference: EnumPreference<T>,
     commit: () -> Unit,
-    formatValue: (T) -> String
+    formatValue: (T?) -> String
 ) {
     MenuItem(
         title = title,
         value = preference.value ?: preference.effectiveValue,
-        values = preference.supportedValues,
+        values = listOf(null) + preference.supportedValues,
         isActive = preference.isEffective,
         formatValue = formatValue
     ) { value ->
@@ -856,8 +860,8 @@ fun LanguageItem(
         title = "Language",
         isActive = preference.isEffective,
         value = preference.value ?: preference.effectiveValue,
-        values = listOf(null) + languages,
-        formatValue = { it?.locale?.displayName ?: "Default" }
+        values = languages,
+        formatValue = { it?.locale?.displayName ?: "Unknown" }
     ) { value ->
         preference.set(value)
         commit()

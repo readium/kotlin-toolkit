@@ -25,10 +25,7 @@ import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.navigator.epub.extensions.javascriptForGroup
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
-import org.readium.r2.navigator.preferences.Axis
-import org.readium.r2.navigator.preferences.ColumnCount
-import org.readium.r2.navigator.preferences.Spread
-import org.readium.r2.navigator.preferences.ReadingProgression
+import org.readium.r2.navigator.preferences.*
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.COLUMN_COUNT_REF
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -37,10 +34,10 @@ import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Href
 import kotlin.reflect.KClass
+import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 
 internal enum class DualPage {
     AUTO, OFF, ON
@@ -53,7 +50,6 @@ internal class EpubNavigatorViewModel(
     val config: EpubNavigatorFragment.Configuration,
     initialPreferences: EpubPreferences,
     val layout: EpubLayout,
-    private val fontFamilyDeclarations: List<FontFamilyDeclaration>,
     private val defaults: EpubDefaults,
     baseUrl: String?,
     private val server: WebViewServer?,
@@ -106,10 +102,20 @@ internal class EpubNavigatorViewModel(
             )
         }
 
+    private val googleFonts: List<FontFamily> =
+        if (useLegacySettings)
+            listOf(
+                FontFamily.LITERATA, FontFamily.PT_SERIF, FontFamily.ROBOTO,
+                FontFamily.SOURCE_SANS_PRO, FontFamily.VOLLKORN
+            )
+        else
+            emptyList()
+
     private val css = MutableStateFlow(
         ReadiumCss(
             rsProperties = config.readiumCssRsProperties,
-            fontFamilies = fontFamilyDeclarations,
+            fontFaces = config.fontFamilyDeclarations.flatMap { it.fontFaces },
+            googleFonts = googleFonts,
             assetsBaseHref = WebViewServer.assetsBaseHref
         ).update(settings.value)
     )
@@ -366,12 +372,11 @@ internal class EpubNavigatorViewModel(
 
         fun createFactory(
             application: Application, publication: Publication, baseUrl: String?,
-            layout: EpubLayout, fontFamilyDeclarations: List<FontFamilyDeclaration>,
+            layout: EpubLayout,
             defaults: EpubDefaults, config: EpubNavigatorFragment.Configuration,
             initialPreferences: EpubPreferences
         ) = createViewModelFactory {
             EpubNavigatorViewModel(application, publication, config, initialPreferences, layout,
-                fontFamilyDeclarations = fontFamilyDeclarations,
                 defaults = defaults,
                 baseUrl = baseUrl,
                 server = if (baseUrl != null) null

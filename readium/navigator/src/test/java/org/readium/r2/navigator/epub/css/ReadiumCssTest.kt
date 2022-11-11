@@ -545,12 +545,18 @@ class HtmlInjectionTest {
     @Test
     fun `Inject font declarations`() {
         val sut = ReadiumCss(
-            fontFamilies = listOf(
-                GoogleFont(FontFamily.ROBOTO),
-                GoogleFont(FontFamily.LITERATA),
-                FontAsset(FontFamily.LIBRE_FRANKLIN, "fonts/LibreFranklin.otf"),
-                GoogleFont(FontFamily.PT_SERIF),
-                FontAsset(FontFamily.OPEN_DYSLEXIC, "fonts/OpenDyslexic.otf"),
+            fontFaces = listOf(
+                buildFontFaceDeclaration("Libre Franklin") {
+                    addSource("fonts/LibreFranklin.otf")
+                },
+                buildFontFaceDeclaration("OpenDyslexic") {
+                    addSource("fonts/OpenDyslexic.otf")
+                }
+            ),
+            googleFonts = listOf(
+                FontFamily.ROBOTO,
+                FontFamily.LITERATA,
+                FontFamily.PT_SERIF,
             ),
             assetsBaseHref = "/assets/"
         )
