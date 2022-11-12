@@ -74,7 +74,6 @@ internal class PsPdfKitDocumentFragment(
 
     private fun reloadDocumentAtPage(pageIndex: Int) {
         pdfFragment = createPdfFragment()
-        pdfFragment.setPageIndex(pageIndex, false)
 
         childFragmentManager.commitNow {
             replace(R.id.readium_pspdfkit_fragment, pdfFragment, "com.pspdfkit.ui.PdfFragment")
@@ -83,7 +82,23 @@ internal class PsPdfKitDocumentFragment(
 
     private fun createPdfFragment(): PdfFragment {
         document.document.pageBinding = settings.readingProgression.pageBinding
+        val config = configForSettings(settings)
 
+        val newFragment = if (::pdfFragment.isInitialized) {
+            PdfFragment.newInstance(pdfFragment, config)
+        } else {
+            PdfFragment.newInstance(document.document, config)
+        }
+
+        newFragment.apply {
+            setOnPreparePopupToolbarListener(psPdfKitListener)
+            addDocumentListener(psPdfKitListener)
+        }
+
+        return newFragment
+    }
+
+    private fun configForSettings(settings: PsPdfKitSettings): PdfConfiguration {
         val config = PdfConfiguration.Builder()
             .animateScrollOnEdgeTaps(false)
             .annotationReplyFeatures(AnnotationReplyFeatures.READ_ONLY)
@@ -124,11 +139,7 @@ internal class PsPdfKitDocumentFragment(
             config.disableCopyPaste()
         }
 
-        return PdfFragment.newInstance(document.document, config.build())
-            .apply {
-                setOnPreparePopupToolbarListener(psPdfKitListener)
-                addDocumentListener(psPdfKitListener)
-            }
+        return config.build()
     }
 
     override var pageIndex: Int = initialPageIndex
@@ -181,6 +192,12 @@ internal class PsPdfKitDocumentFragment(
             // Makes sure only the menu items in `allowedTextSelectionItems` will be visible.
             toolbar.menuItems = toolbar.menuItems
                 .filter { allowedTextSelectionItems.contains(it.id) }
+        }
+
+        override fun onDocumentLoaded(document: PdfDocument) {
+            super.onDocumentLoaded(document)
+
+            pdfFragment.setPageIndex(pageIndex, false)
         }
     }
 
