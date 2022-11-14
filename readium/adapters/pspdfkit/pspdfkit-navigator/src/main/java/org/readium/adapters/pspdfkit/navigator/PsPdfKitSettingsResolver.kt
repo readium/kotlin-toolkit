@@ -49,19 +49,19 @@ internal class PsPdfKitSettingsResolver(
                 ?: defaults.spread
                 ?: Spread.AUTO
 
-        val offset: Boolean =
-            preferences.offset
-                ?: defaults.offset
+        val offsetFirstPage: Boolean =
+            preferences.offsetFirstPage
+                ?: defaults.offsetFirstPage
                 ?: true
 
         val pageSpacing: Double =
             preferences.pageSpacing
                 ?: defaults.pageSpacing
-                ?: 16.0
+                ?: 15.0
 
         return PsPdfKitSettings(
             fit = fit,
-            offset = offset,
+            offsetFirstPage = offsetFirstPage,
             pageSpacing = pageSpacing,
             readingProgression = readingProgression,
             scroll = scroll,

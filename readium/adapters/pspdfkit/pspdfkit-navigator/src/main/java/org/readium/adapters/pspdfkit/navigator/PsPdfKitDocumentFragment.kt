@@ -115,7 +115,7 @@ internal class PsPdfKitDocumentFragment(
             .layoutMode(settings.spread.pageLayout)
 //            .loadingProgressDrawable(null)
 //            .maxZoomScale()
-            .firstPageAlwaysSingle(settings.offset)
+            .firstPageAlwaysSingle(settings.offsetFirstPage)
             .pagePadding(settings.pageSpacing.roundToInt())
             .restoreLastViewedPage(false)
             .scrollDirection(

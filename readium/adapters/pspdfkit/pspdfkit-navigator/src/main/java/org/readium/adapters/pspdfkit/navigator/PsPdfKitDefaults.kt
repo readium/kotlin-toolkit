@@ -19,7 +19,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  */
 @ExperimentalReadiumApi
 data class PsPdfKitDefaults(
-    val offset: Boolean? = null,
+    val offsetFirstPage: Boolean? = null,
     val pageSpacing: Double? = null,
     val readingProgression: ReadingProgression? = null,
     val scroll: Boolean? = null,

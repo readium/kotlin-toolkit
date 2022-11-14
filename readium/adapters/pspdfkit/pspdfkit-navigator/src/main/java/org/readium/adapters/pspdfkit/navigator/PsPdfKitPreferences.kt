@@ -14,7 +14,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * Preferences for the PDF navigator with the PSPDFKit adapter.
  *
  *  @param fit Indicates how pages should be laid out within the viewport.
- *  @param offset Indicates if the first page should be displayed in its own spread.
+ *  @param offsetFirstPage Indicates if the first page should be displayed in its own spread.
  *  @param pageSpacing Space between pages in dp.
  *  @param readingProgression Direction of the horizontal progression across pages.
  *  @param scroll Indicates if pages should be handled using scrolling instead of pagination.
@@ -25,7 +25,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 @Serializable
 data class PsPdfKitPreferences(
     val fit: Fit? = null,
-    val offset: Boolean? = null,
+    val offsetFirstPage: Boolean? = null,
     val pageSpacing: Double? = null,
     val readingProgression: ReadingProgression? = null,
     val scroll: Boolean? = null,
@@ -41,7 +41,7 @@ data class PsPdfKitPreferences(
     operator fun plus(other: PsPdfKitPreferences) =
         PsPdfKitPreferences(
             fit = other.fit ?: fit,
-            offset = other.offset ?: offset,
+            offsetFirstPage = other.offsetFirstPage ?: offsetFirstPage,
             pageSpacing = other.pageSpacing ?: pageSpacing,
             readingProgression = other.readingProgression ?: readingProgression,
             scroll = other.scroll ?: scroll,

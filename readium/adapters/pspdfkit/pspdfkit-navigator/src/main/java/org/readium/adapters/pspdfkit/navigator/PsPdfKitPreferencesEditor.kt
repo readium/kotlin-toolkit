@@ -64,12 +64,12 @@ class PsPdfKitPreferencesEditor internal constructor(
             supportedValues = listOf(Fit.CONTAIN, Fit.WIDTH),
         )
 
-    val offset: SwitchPreference =
+    val offsetFirstPage: SwitchPreference =
         SwitchPreferenceDelegate(
-            getValue = { preferences.offset },
-            getEffectiveValue = { state.settings.offset },
-            getIsEffective = { state.settings.spread != Spread.NEVER},
-            updateValue = { value -> updateValues { it.copy(offset = value) } },
+            getValue = { preferences.offsetFirstPage },
+            getEffectiveValue = { state.settings.offsetFirstPage },
+            getIsEffective = { !state.settings.scroll && state.settings.spread != Spread.NEVER},
+            updateValue = { value -> updateValues { it.copy(offsetFirstPage = value) } },
         )
 
     val readingProgression: EnumPreference<ReadingProgression> =

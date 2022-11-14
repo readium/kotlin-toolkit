@@ -93,7 +93,7 @@ private fun <P: Configurable.Preferences, E: PreferencesEditor<P>> UserPreferenc
                     scrollAxis = editor.scrollAxis,
                     fit = editor.fit,
                     spread = editor.spread,
-                    offset = editor.offset,
+                    offsetFirstPage = editor.offsetFirstPage,
                     pageSpacing = editor.pageSpacing
                 )
 
@@ -150,7 +150,7 @@ private fun ColumnScope.FixedLayoutUserPreferences(
     scrollAxis: EnumPreference<Axis>? = null,
     fit: EnumPreference<Fit>? = null,
     spread: EnumPreference<Spread>? = null,
-    offset: SwitchPreference? = null,
+    offsetFirstPage: SwitchPreference? = null,
     pageSpacing: RangePreference<Double>? = null
 ) {
     if (language != null || readingProgression != null) {
@@ -226,10 +226,10 @@ private fun ColumnScope.FixedLayoutUserPreferences(
             }
         }
 
-        if (offset != null) {
+        if (offsetFirstPage != null) {
             SwitchItem(
                 title = "Offset",
-                preference = offset,
+                preference = offsetFirstPage,
                 commit = commit
             )
         }
