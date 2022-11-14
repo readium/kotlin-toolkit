@@ -1,9 +1,12 @@
 package org.readium.navigator.internal.viewer
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.ScrollableState
+import org.readium.navigator.internal.lazy.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -18,18 +21,14 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import dev.chrisbanes.snapper.ExperimentalSnapperApi
-import dev.chrisbanes.snapper.SnapOffsets
 import org.readium.navigator.internal.gestures.scrollable
 import org.readium.navigator.internal.gestures.tappable
-import org.readium.navigator.internal.lazy.LazyItemScope
 import org.readium.navigator.internal.lazy.LazyListScope
 import org.readium.navigator.internal.lazy.LazyList
-import org.readium.navigator.internal.lazy.rememberStateOfItemsProvider
 import org.readium.navigator.internal.util.logConstraints
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-@OptIn(ExperimentalSnapperApi::class)
 internal fun LazyPager(
     modifier: Modifier = Modifier,
     isVertical: Boolean,
@@ -52,10 +51,8 @@ internal fun LazyPager(
     // if rtl and horizontal, do not reverse to make it right-to-left
     val reverseScrollDirection = !reverseLayout
 
-    val flingBehavior = rememberSnapperFlingBehavior(
+    val flingBehavior = rememberSnapFlingBehavior(
         lazyListState = state.lazyListState,
-        snapOffsetForItem = SnapOffsets.Start,
-        maximumFlingDistance = { it.currentItem?.size?.toFloat() ?: 0f }
     )
 
     val dummyScrollableState = ScrollableState { 0f }
@@ -75,14 +72,6 @@ internal fun LazyPager(
                 onTap = onTap,
                 onDoubleTap = onDoubleTap
             ),
-        stateOfItemsProvider = rememberStateOfItemsProvider {
-            pagerContent(
-                isVertical,
-                count,
-                //state.visibleItemInfo,
-                itemContent
-            )
-        },
         state = state.lazyListState,
         contentPadding = contentPadding,
         flingBehavior = flingBehavior,
@@ -91,8 +80,16 @@ internal fun LazyPager(
         verticalAlignment = verticalAlignment,
         verticalArrangement = verticalArrangement,
         isVertical = isVertical,
-        reverseLayout = reverseLayout
-    )
+        reverseLayout = reverseLayout,
+        userScrollEnabled = false,
+    ) {
+        pagerContent(
+            isVertical,
+            count,
+            //state.visibleItemInfo,
+            itemContent
+        )
+    }
 }
 
 private fun (LazyListScope).pagerContent(

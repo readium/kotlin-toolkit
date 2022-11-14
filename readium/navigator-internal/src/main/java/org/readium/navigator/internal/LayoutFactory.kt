@@ -1,8 +1,6 @@
 package org.readium.navigator.internal
 
 import androidx.compose.ui.unit.IntSize
-import org.readium.r2.navigator3.html.HtmlSpreadStateFactory
-import org.readium.navigator.core.image.ImageSpreadStateFactory
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import timber.log.Timber

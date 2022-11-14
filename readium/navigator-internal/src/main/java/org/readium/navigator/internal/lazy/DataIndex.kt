@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 The Android Open Source Project
+ * Copyright 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,15 @@
 package org.readium.navigator.internal.lazy
 
 /**
- * Represents an index in the list of items of lazy list.
+ * Represents an index in the list of items of lazy layout.
  */
-@Suppress("NOTHING_TO_INLINE", "INLINE_CLASS_DEPRECATED", "EXPERIMENTAL_FEATURE_WARNING")
-internal inline class DataIndex(val value: Int) {
-    inline operator fun inc(): org.readium.navigator.internal.lazy.DataIndex =
-        org.readium.navigator.internal.lazy.DataIndex(value + 1)
-    inline operator fun dec(): org.readium.navigator.internal.lazy.DataIndex =
-        org.readium.navigator.internal.lazy.DataIndex(value - 1)
-    inline operator fun plus(i: Int): org.readium.navigator.internal.lazy.DataIndex =
-        org.readium.navigator.internal.lazy.DataIndex(value + i)
-    inline operator fun minus(i: Int): org.readium.navigator.internal.lazy.DataIndex =
-        org.readium.navigator.internal.lazy.DataIndex(value - i)
-    inline operator fun minus(i: org.readium.navigator.internal.lazy.DataIndex): org.readium.navigator.internal.lazy.DataIndex =
-        org.readium.navigator.internal.lazy.DataIndex(value - i.value)
-    inline operator fun compareTo(other: org.readium.navigator.internal.lazy.DataIndex): Int = value - other.value
+@Suppress("NOTHING_TO_INLINE")
+@kotlin.jvm.JvmInline
+internal value class DataIndex(val value: Int) {
+    inline operator fun inc(): DataIndex = DataIndex(value + 1)
+    inline operator fun dec(): DataIndex = DataIndex(value - 1)
+    inline operator fun plus(i: Int): DataIndex = DataIndex(value + i)
+    inline operator fun minus(i: Int): DataIndex = DataIndex(value - i)
+    inline operator fun minus(i: DataIndex): DataIndex = DataIndex(value - i.value)
+    inline operator fun compareTo(other: DataIndex): Int = value - other.value
 }

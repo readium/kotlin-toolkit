@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The Android Open Source Project
+ * Copyright 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-package org.readium.navigator.internal.lazy
+package org.readium.navigator.internal.lazy.layout
 
-import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.AnimationState
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.animateTo
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.copy
+import androidx.compose.foundation.gestures.ScrollScope
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastFirstOrNull
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.math.abs
 
-private class ItemFoundInScroll(val item: LazyListItemInfo) : CancellationException()
+private class ItemFoundInScroll(
+    val itemOffset: Int,
+    val previousAnimation: AnimationState<Float, AnimationVector1D>
+) : CancellationException()
 
 private val TargetDistance = 2500.dp
 private val BoundDistance = 1500.dp
@@ -32,47 +37,108 @@ private val BoundDistance = 1500.dp
 private const val DEBUG = false
 private inline fun debugLog(generateMsg: () -> String) {
     if (DEBUG) {
-        println("LazyListScrolling: ${generateMsg()}")
+        println("LazyScrolling: ${generateMsg()}")
     }
 }
 
-internal suspend fun LazyListState.doSmoothScrollToItem(
+/**
+ * Abstraction over animated scroll for using [animateScrollToItem] in different layouts.
+ * todo(b/243786897): revisit this API and make it public
+ **/
+internal interface LazyAnimateScrollScope {
+    val density: Density
+
+    val firstVisibleItemIndex: Int
+
+    val firstVisibleItemScrollOffset: Int
+
+    val lastVisibleItemIndex: Int
+
+    val itemCount: Int
+
+    fun getTargetItemOffset(index: Int): Int?
+
+    fun ScrollScope.snapToItem(index: Int, scrollOffset: Int)
+
+    fun expectedDistanceTo(index: Int, targetScrollOffset: Int): Float
+
+    /** defines min number of items that forces scroll to snap if animation did not reach it */
+    val numOfItemsForTeleport: Int
+
+    suspend fun scroll(block: suspend ScrollScope.() -> Unit)
+}
+
+internal suspend fun LazyAnimateScrollScope.animateScrollToItem(
     index: Int,
-    scrollOffset: Int
+    scrollOffset: Int,
 ) {
-    val animationSpec: AnimationSpec<Float> = spring()
-    fun getTargetItem() = layoutInfo.visibleItemsInfo.fastFirstOrNull {
-        it.index == index
-    }
     scroll {
-        val targetDistancePx = with(density) { TargetDistance.toPx() }
-        val boundDistancePx = with(density) { BoundDistance.toPx() }
-        var loop = true
-        var prevVelocity = 0f
+        require(index >= 0f) { "Index should be non-negative ($index)" }
         try {
-            val targetItemInitialInfo = getTargetItem()
-            if (targetItemInitialInfo != null) {
+            val targetDistancePx = with(density) { TargetDistance.toPx() }
+            val boundDistancePx = with(density) { BoundDistance.toPx() }
+            var loop = true
+            var anim = AnimationState(0f)
+            val targetItemInitialOffset = getTargetItemOffset(index)
+            if (targetItemInitialOffset != null) {
                 // It's already visible, just animate directly
-                throw ItemFoundInScroll(targetItemInitialInfo)
+                throw ItemFoundInScroll(targetItemInitialOffset, anim)
             }
             val forward = index > firstVisibleItemIndex
-            val target = if (forward) targetDistancePx else -targetDistancePx
+
+            fun isOvershot(): Boolean {
+                // Did we scroll past the item?
+                @Suppress("RedundantIf") // It's way easier to understand the logic this way
+                return if (forward) {
+                    if (firstVisibleItemIndex > index) {
+                        true
+                    } else if (
+                        firstVisibleItemIndex == index &&
+                        firstVisibleItemScrollOffset > scrollOffset
+                    ) {
+                        true
+                    } else {
+                        false
+                    }
+                } else { // backward
+                    if (firstVisibleItemIndex < index) {
+                        true
+                    } else if (
+                        firstVisibleItemIndex == index &&
+                        firstVisibleItemScrollOffset < scrollOffset
+                    ) {
+                        true
+                    } else {
+                        false
+                    }
+                }
+            }
+
             var loops = 1
-            while (loop) {
-                val anim = AnimationState(
-                    initialValue = 0f,
-                    initialVelocity = prevVelocity
-                )
+            while (loop && itemCount > 0) {
+                val expectedDistance = expectedDistanceTo(index, scrollOffset)
+                val target = if (abs(expectedDistance) < targetDistancePx) {
+                    expectedDistance
+                } else {
+                    if (forward) targetDistancePx else -targetDistancePx
+                }
+
+                debugLog {
+                    "Scrolling to index=$index offset=$scrollOffset from " +
+                        "index=$firstVisibleItemIndex offset=$firstVisibleItemScrollOffset with " +
+                        " calculated target=$target"
+                }
+
+                anim = anim.copy(value = 0f)
                 var prevValue = 0f
                 anim.animateTo(
                     target,
-                    animationSpec = animationSpec,
                     sequentialAnimation = (anim.velocity != 0f)
                 ) {
                     // If we haven't found the item yet, check if it's visible.
-                    var targetItem = getTargetItem()
+                    var targetItemOffset = getTargetItemOffset(index)
 
-                    if (targetItem == null) {
+                    if (targetItemOffset == null) {
                         // Springs can overshoot their target, clamp to the desired range
                         val coercedValue = if (target > 0) {
                             value.coerceAtMost(target)
@@ -85,10 +151,10 @@ internal suspend fun LazyListState.doSmoothScrollToItem(
                         }
 
                         val consumed = scrollBy(delta)
-                        targetItem = getTargetItem()
-                        if (targetItem != null) {
+                        targetItemOffset = getTargetItemOffset(index)
+                        if (targetItemOffset != null) {
                             debugLog { "Found the item after performing scrollBy()" }
-                        } else {
+                        } else if (!isOvershot()) {
                             if (delta != consumed) {
                                 debugLog { "Hit end without finding the item" }
                                 cancelAnimation()
@@ -108,82 +174,58 @@ internal suspend fun LazyListState.doSmoothScrollToItem(
                                 }
                             }
 
-                            // Magic constants for teleportation chosen arbitrarily by experiment
                             if (forward) {
                                 if (
                                     loops >= 2 &&
-                                    index - layoutInfo.visibleItemsInfo.last().index > 100
+                                    index - lastVisibleItemIndex > numOfItemsForTeleport
                                 ) {
                                     // Teleport
                                     debugLog { "Teleport forward" }
-                                    snapToItemIndexInternal(index = index - 100, scrollOffset = 0)
+                                    snapToItem(
+                                        index = index - numOfItemsForTeleport,
+                                        scrollOffset = 0
+                                    )
                                 }
                             } else {
                                 if (
                                     loops >= 2 &&
-                                    layoutInfo.visibleItemsInfo.first().index - index > 100
+                                    firstVisibleItemIndex - index > numOfItemsForTeleport
                                 ) {
                                     // Teleport
                                     debugLog { "Teleport backward" }
-                                    snapToItemIndexInternal(index = index + 100, scrollOffset = 0)
+                                    snapToItem(
+                                        index = index + numOfItemsForTeleport,
+                                        scrollOffset = 0
+                                    )
                                 }
                             }
-                        }
-                    }
-                    // Did we scroll past the item?
-                    @Suppress("RedundantIf") // It's way easier to understand the logic this way
-                    val overshot = if (forward) {
-                        if (firstVisibleItemIndex > index) {
-                            true
-                        } else if (
-                            firstVisibleItemIndex == index &&
-                            firstVisibleItemScrollOffset > scrollOffset
-                        ) {
-                            true
-                        } else {
-                            false
-                        }
-                    } else { // backward
-                        if (firstVisibleItemIndex < index) {
-                            true
-                        } else if (
-                            firstVisibleItemIndex == index &&
-                            firstVisibleItemScrollOffset < scrollOffset
-                        ) {
-                            true
-                        } else {
-                            false
                         }
                     }
 
                     // We don't throw ItemFoundInScroll when we snap, because once we've snapped to
                     // the final position, there's no need to animate to it.
-                    if (overshot) {
+                    if (isOvershot()) {
                         debugLog { "Overshot" }
-                        snapToItemIndexInternal(index = index, scrollOffset = scrollOffset)
+                        snapToItem(index = index, scrollOffset = scrollOffset)
                         loop = false
                         cancelAnimation()
                         return@animateTo
-                    } else if (targetItem != null) {
+                    } else if (targetItemOffset != null) {
                         debugLog { "Found item" }
-                        throw ItemFoundInScroll(targetItem)
+                        throw ItemFoundInScroll(targetItemOffset, anim)
                     }
                 }
 
-                prevVelocity = anim.velocity
                 loops++
             }
         } catch (itemFound: ItemFoundInScroll) {
             // We found it, animate to it
             // Bring to the requested position - will be automatically stopped if not possible
-            val anim = AnimationState(
-                initialValue = 0f,
-                initialVelocity = prevVelocity
-            )
-            val target = (itemFound.item.offset + scrollOffset).toFloat()
+            val anim = itemFound.previousAnimation.copy(value = 0f)
+            val target = (itemFound.itemOffset + scrollOffset).toFloat()
             var prevValue = 0f
             debugLog {
-                "Seeking by $target at velocity $prevVelocity, sequential: ${anim.velocity != 0f}"
+                "Seeking by $target at velocity ${itemFound.previousAnimation.velocity}"
             }
             anim.animateTo(target, sequentialAnimation = (anim.velocity != 0f)) {
                 // Springs can overshoot their target, clamp to the desired range
@@ -213,7 +255,7 @@ internal suspend fun LazyListState.doSmoothScrollToItem(
             // rounding error (otherwise we tend to end up with the previous item scrolled the
             // tiniest bit onscreen)
             // TODO: prevent temporarily scrolling *past* the item
-            snapToItemIndexInternal(index = index, scrollOffset = scrollOffset)
+            snapToItem(index = index, scrollOffset = scrollOffset)
         }
     }
 }

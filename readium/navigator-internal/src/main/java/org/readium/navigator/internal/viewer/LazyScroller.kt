@@ -14,10 +14,9 @@ import androidx.compose.ui.unit.dp
 import org.readium.navigator.internal.gestures.scrollable
 import org.readium.navigator.internal.gestures.scrolling
 import org.readium.navigator.internal.gestures.zoomable
-import org.readium.navigator.internal.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.LazyItemScope
 import org.readium.navigator.internal.lazy.LazyList
 import org.readium.navigator.internal.lazy.LazyListScope
-import org.readium.navigator.internal.lazy.rememberStateOfItemsProvider
 import org.readium.navigator.internal.util.FitBox
 
 @Composable
@@ -66,16 +65,6 @@ internal fun LazyScroller(
                     reverseScrolling = reverseScrollDirection
                 )
                 .zoomable(state.zoomState),
-            stateOfItemsProvider = rememberStateOfItemsProvider {
-                scrollerContent(
-                    isVertical = isVertical,
-                    parentConstraints = constraints,
-                    scaleSetting = state.zoomState.scaleState.value,
-                    count = count,
-                    itemSize = itemSize,
-                    itemContent = itemContent
-                )
-            },
             state = state.lazyListState,
             contentPadding = contentPadding,
             flingBehavior = flingBehavior,
@@ -84,8 +73,18 @@ internal fun LazyScroller(
             verticalAlignment = verticalAlignment,
             verticalArrangement = verticalArrangement,
             isVertical = isVertical,
-            reverseLayout = reverseLayout
-        )
+            reverseLayout = reverseLayout,
+            userScrollEnabled = false
+        ) {
+            scrollerContent(
+                isVertical = isVertical,
+                parentConstraints = constraints,
+                scaleSetting = state.zoomState.scaleState.value,
+                count = count,
+                itemSize = itemSize,
+                itemContent = itemContent
+            )
+        }
     }
 }
 
