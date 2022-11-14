@@ -65,6 +65,18 @@ include(":readium:navigator")
 project(":readium:navigator")
     .name = "readium-navigator"
 
+include(":readium:navigator-core")
+project(":readium:navigator-core")
+    .name = "readium-navigator-core"
+
+include(":readium:navigator-internal")
+project(":readium:navigator-internal")
+    .name = "readium-navigator-internal"
+
+include(":readium:navigator-image")
+project(":readium:navigator-image")
+    .name = "readium-navigator-image"
+
 include(":readium:navigator-media2")
 project(":readium:navigator-media2")
     .name = "readium-navigator-media2"
