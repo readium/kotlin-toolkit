@@ -12,7 +12,9 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import org.readium.adapters.pspdfkit.navigator.*
+import org.readium.adapters.pdfium.navigator.PdfiumPreferences
+import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
+import org.readium.adapters.pdfium.navigator.PdfiumSettings
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.*
 import org.readium.r2.navigator.preferences.*
@@ -53,7 +55,7 @@ class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.Prefere
                     val editor = navigatorFactory
                         .createPreferencesEditor(preferencesManager.preferences.value)
 
-                    UserPreferencesViewModel<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>(
+                    UserPreferencesViewModel<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>(
                         bookId, viewModelScope, preferencesManager, editor
                     )
                 }

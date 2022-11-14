@@ -18,10 +18,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferences
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesSerializer
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitPublicationPreferencesFilter
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitSharedPreferencesFilter
+import org.readium.adapters.pdfium.navigator.PdfiumPreferences
+import org.readium.adapters.pdfium.navigator.PdfiumPreferencesSerializer
+import org.readium.adapters.pdfium.navigator.PdfiumPublicationPreferencesFilter
+import org.readium.adapters.pdfium.navigator.PdfiumSharedPreferencesFilter
 import org.readium.r2.navigator.epub.EpubPreferences
 import org.readium.r2.navigator.epub.EpubPreferencesSerializer
 import org.readium.r2.navigator.epub.EpubPublicationPreferencesFilter
@@ -112,14 +112,14 @@ class EpubPreferencesManagerFactory(
         plus = EpubPreferences::plus
 )
 
-class PsPdfKitPreferencesManagerFactory(
+class PdfiumPreferencesManagerFactory(
     dataStore: DataStore<Preferences>,
-) : PreferencesManagerFactory<PsPdfKitPreferences>(
+) : PreferencesManagerFactory<PdfiumPreferences>(
     dataStore = dataStore,
-    klass = PsPdfKitPreferences::class,
-    sharedPreferencesFilter = PsPdfKitSharedPreferencesFilter,
-    publicationPreferencesFilter = PsPdfKitPublicationPreferencesFilter,
-    preferencesSerializer = PsPdfKitPreferencesSerializer(),
-    emptyPreferences = PsPdfKitPreferences(),
-    plus = PsPdfKitPreferences::plus
+    klass = PdfiumPreferences::class,
+    sharedPreferencesFilter = PdfiumSharedPreferencesFilter,
+    publicationPreferencesFilter = PdfiumPublicationPreferencesFilter,
+    preferencesSerializer = PdfiumPreferencesSerializer(),
+    emptyPreferences = PdfiumPreferences(),
+    plus = PdfiumPreferences::plus
 )

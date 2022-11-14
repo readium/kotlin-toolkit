@@ -7,7 +7,7 @@
 package org.readium.r2.testapp
 
 import android.content.Context
-import org.readium.adapters.pspdfkit.document.PsPdfKitDocumentFactory
+import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.epub.EpubPreferencesEditor
@@ -39,7 +39,7 @@ class Readium(context: Context) {
             lcpService.getOrNull()?.contentProtection()
         ),
         // Only required if you want to support PDF files using the PDFium adapter.
-        pdfFactory = PsPdfKitDocumentFactory(context)
+        pdfFactory = PdfiumDocumentFactory(context)
     )
 
     val epubNavigatorConfig: EpubNavigatorFactory.Configuration =

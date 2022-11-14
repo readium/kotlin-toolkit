@@ -12,9 +12,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.commitNow
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferences
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesEditor
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitSettings
+import org.readium.adapters.pdfium.navigator.PdfiumPreferences
+import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
+import org.readium.adapters.pdfium.navigator.PdfiumSettings
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
@@ -25,7 +25,7 @@ import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 @OptIn(ExperimentalReadiumApi::class)
 class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener {
 
-    override lateinit var navigator: PdfNavigatorFragment<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>
+    override lateinit var navigator: PdfNavigatorFragment<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val readerData = model.readerInitData as PdfReaderInitData
@@ -48,7 +48,7 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
             }
         }
         navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!!
-                as PdfNavigatorFragment<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>
+                as PdfNavigatorFragment<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>
         @Suppress("Unchecked_cast")
         return view
     }
@@ -57,7 +57,7 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
         super.onViewCreated(view, savedInstanceState)
 
         @Suppress("Unchecked_cast")
-        (model.settings as UserPreferencesViewModel<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>)
+        (model.settings as UserPreferencesViewModel<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>)
             .bind(navigator, viewLifecycleOwner)
     }
 

@@ -8,9 +8,9 @@
 
 package org.readium.r2.testapp.reader
 
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferences
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitPreferencesEditor
-import org.readium.adapters.pspdfkit.navigator.PsPdfKitSettings
+import org.readium.adapters.pdfium.navigator.PdfiumPreferences
+import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
+import org.readium.adapters.pdfium.navigator.PdfiumSettings
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
@@ -49,8 +49,8 @@ class PdfReaderInitData(
     bookId: Long,
     publication: Publication,
     initialLocation: Locator?,
-    val preferencesManager: PreferencesManager<PsPdfKitPreferences>,
-    val navigatorFactory: PdfNavigatorFactory<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor>
+    val preferencesManager: PreferencesManager<PdfiumPreferences>,
+    val navigatorFactory: PdfNavigatorFactory<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>
 ) : VisualReaderInitData(bookId, publication, initialLocation)
 
 @ExperimentalMedia2
