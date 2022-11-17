@@ -1,7 +1,5 @@
 [versions]
 
-android-gradle-plugin = "7.3.1"
-
 androidx-activity = "1.6.1"
 androidx-appcompat = "1.5.1"
 androidx-browser = "1.4.0"
@@ -146,8 +144,3 @@ navigation = ["androidx-navigation-fragment", "androidx-navigation-ui"]
 room = ["androidx-room-runtime", "androidx-room-ktx"]
 test-frameworks = ["junit", "androidx-ext-junit", "androidx-expresso-core", "robolectric", "kotlin-junit", "assertj", "kotlinx-coroutines-test"]
 
-[plugins]
-agpapp = { id = "com.android.application", version.ref = "android-gradle-plugin" }
-agplib = { id = "com.android.library", version.ref = "android-gradle-plugin" }
-kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

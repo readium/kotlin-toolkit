@@ -11,6 +11,7 @@ plugins {
     id("com.android.library") apply false
     id("org.jetbrains.kotlin.android") apply false
     id("org.jetbrains.dokka") apply true
+    id("org.jlleitschuh.gradle.ktlint") apply true
 }
 
 allprojects {
@@ -25,6 +26,14 @@ subprojects {
     tasks.register<Jar>("sourcesJar") {
         archiveClassifier.set("sources")
         from("src/main/java", "src/main/resources")
+    }
+
+    apply(plugin = "org.jlleitschuh.gradle.ktlint")
+
+    ktlint {
+        android.set(true)
+        disabledRules.add("no-wildcard-imports")
+        disabledRules.add("max-line-length")
     }
 }
 
