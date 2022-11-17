@@ -1,4 +1,4 @@
-package org.readium.navigator.image
+package org.readium.navigator.image.viewer
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember

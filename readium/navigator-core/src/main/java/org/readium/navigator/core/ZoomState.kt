@@ -1,4 +1,4 @@
-package org.readium.navigator.internal.viewer
+package org.readium.navigator.core
 
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollableState
@@ -11,7 +11,7 @@ import org.readium.navigator.internal.gestures.ZoomableState
 import org.readium.navigator.internal.lazy.LazyListState
 import timber.log.Timber
 
-internal class ZoomState(
+class ZoomState internal constructor(
     private val mainAxisOrientation: Orientation,
     private val mainAxisScrollState: LazyListState,
     private val crossAxisScrollState: ScrollableState,
@@ -22,7 +22,7 @@ internal class ZoomState(
         val mainAxisCentroid =
             if (mainAxisOrientation == Orientation.Horizontal) centroid.x else centroid.y
 
-        val firstVisibleItemScrollOffset = mainAxisScrollState.firstVisibleItemScrollOffsetNonObservable
+        val firstVisibleItemScrollOffset = mainAxisScrollState.firstVisibleItemScrollOffset
         val scrollToBeConsumed = mainAxisScrollState.scrollToBeConsumed
 
         //FIXME: there is still a bug between resources

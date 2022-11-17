@@ -33,6 +33,12 @@ android {
             "-opt-in=org.readium.r2.shared.InternalReadiumApi"
         )
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
+    }
+    buildFeatures {
+        compose = true
+    }
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
@@ -65,7 +71,7 @@ dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
     api(project(":readium:readium-shared"))
-    api(project(":readium:readium-navigator-core"))
+    //api(project(":readium:readium-navigator-core"))
 
     implementation(libs.bundles.coroutines)
 

@@ -1,11 +1,9 @@
-package org.readium.navigator.internal
+package org.readium.navigator.core
 
 import androidx.compose.ui.unit.IntSize
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import org.readium.r2.navigator.util.BitmapFactory
-import org.readium.r2.shared.fetcher.ResourceInputStream
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.util.Try
 import timber.log.Timber
@@ -25,7 +23,7 @@ class NavigatorState private constructor(
     internal lateinit var currentLayout: LayoutFactory.Layout
         private set
 
-    internal lateinit var viewerState: org.readium.navigator.internal.viewer.LazyViewerState
+    internal lateinit var viewerState: LazyViewerState
         private set
 
     internal lateinit var layoutCoroutineScope: CoroutineScope
@@ -64,7 +62,7 @@ class NavigatorState private constructor(
             layoutFactory.layout(viewport)
 
         viewerState =
-            org.readium.navigator.internal.viewer.LazyViewerState(
+            LazyViewerState(
                 isVertical = currentLayout.isVertical,
                 isPaginated = currentLayout.isPaginated,
                 initialFirstVisibleItemIndex = 0,
@@ -218,9 +216,10 @@ class NavigatorState private constructor(
             publication: Publication,
             initialLocator: Locator? = null,
             links: List<Link> = publication.readingOrder,
+            spreadStateFactories: List<SpreadState.Factory>
         ): NavigatorState {
             val preprocessedLinks = preprocessLinks(links, publication)
-            val layoutFactory = LayoutFactory(publication, preprocessedLinks)
+            val layoutFactory = LayoutFactory(publication, preprocessedLinks, spreadStateFactories)
             return NavigatorState(publication, preprocessedLinks, layoutFactory, initialLocator)
         }
 
@@ -234,16 +233,7 @@ class NavigatorState private constructor(
         private fun preprocessWebpub(links: List<Link>, publication: Publication): List<Link> =
             links
 
-        private suspend fun preprocessComic(links: List<Link>, publication: Publication): List<Link> =
-            links.map {
-                if (it.width != null && it.height != null) {
-                    it
-                } else {
-                    val resourceStream = ResourceInputStream(publication.get(it))
-                    val size = BitmapFactory.getBitmapSize(resourceStream)
-                    it.copy(width = size.width, height = size.height)
-                }
-            }
+
     }
 }
 

@@ -15,6 +15,9 @@ import kotlinx.coroutines.launch
 import org.readium.adapters.pdfium.navigator.PdfiumPreferences
 import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
 import org.readium.adapters.pdfium.navigator.PdfiumSettings
+import org.readium.navigator.image.preferences.ImagePreferences
+import org.readium.navigator.image.preferences.ImagePreferencesEditor
+import org.readium.navigator.image.preferences.ImageSettings
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.*
 import org.readium.r2.navigator.preferences.*
@@ -56,6 +59,14 @@ class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.Prefere
                         .createPreferencesEditor(preferencesManager.preferences.value)
 
                     UserPreferencesViewModel<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>(
+                        bookId, viewModelScope, preferencesManager, editor
+                    )
+                }
+                is ImageReaderInitData -> with (readerInitData) {
+                    val editor = navigatorFactory
+                        .createPreferencesEditor(preferencesManager.preferences.value)
+
+                    UserPreferencesViewModel<ImageSettings, ImagePreferences, ImagePreferencesEditor>(
                         bookId, viewModelScope, preferencesManager, editor
                     )
                 }

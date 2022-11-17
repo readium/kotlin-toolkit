@@ -71,6 +71,7 @@ dependencies {
     implementation(project(":readium:readium-shared"))
     implementation(project(":readium:readium-streamer"))
     implementation(project(":readium:readium-navigator"))
+    implementation(project(":readium:readium-navigator-image"))
     implementation(project(":readium:readium-navigator-media2"))
     implementation(project(":readium:readium-opds"))
     implementation(project(":readium:readium-lcp"))

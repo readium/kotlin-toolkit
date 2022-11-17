@@ -13,7 +13,7 @@ import androidx.compose.ui.util.fastForEach
 import timber.log.Timber
 import kotlin.math.abs
 
-internal fun Modifier.zoomable(state: ZoomableState): Modifier =
+fun Modifier.zoomable(state: ZoomableState): Modifier =
     this.pointerInput(Unit) {
         forEachGesture {
             awaitPointerEventScope {
@@ -73,7 +73,7 @@ internal fun Modifier.zoomable(state: ZoomableState): Modifier =
         }
     }
 
-internal interface ZoomableState {
+interface ZoomableState {
 
     val scaleState: MutableState<Float>
 

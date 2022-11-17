@@ -11,6 +11,8 @@ package org.readium.r2.testapp.reader
 import org.readium.adapters.pdfium.navigator.PdfiumPreferences
 import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
 import org.readium.adapters.pdfium.navigator.PdfiumSettings
+import org.readium.navigator.image.ImageNavigatorFactory
+import org.readium.navigator.image.preferences.ImagePreferences
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
@@ -34,7 +36,9 @@ sealed class VisualReaderInitData(
 class ImageReaderInitData(
     bookId: Long,
     publication: Publication,
-    initialLocation: Locator?
+    initialLocation: Locator?,
+    val preferencesManager: PreferencesManager<ImagePreferences>,
+    val navigatorFactory: ImageNavigatorFactory
 ) : VisualReaderInitData(bookId, publication, initialLocation)
 
 class EpubReaderInitData(

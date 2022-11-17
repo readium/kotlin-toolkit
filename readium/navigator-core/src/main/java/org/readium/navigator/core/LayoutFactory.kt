@@ -1,4 +1,4 @@
-package org.readium.navigator.internal
+package org.readium.navigator.core
 
 import androidx.compose.ui.unit.IntSize
 import org.readium.r2.shared.publication.Link
@@ -8,6 +8,7 @@ import timber.log.Timber
 internal class LayoutFactory(
     private val publication: Publication,
     private val links: List<Link>,
+    private val spreadStateFactories: List<SpreadState.Factory>
 ) {
     data class Layout(
         val isVertical: Boolean,
@@ -20,7 +21,7 @@ internal class LayoutFactory(
     )
 
     fun layout(viewport: IntSize): Layout {
-        val factories = defaultSpreadStateFactories(viewport)
+        val factories = spreadStateFactories
         val spreads = computeSpreads(links, factories)
         val isVertical = false
         val reverseDirection = false
@@ -36,12 +37,6 @@ internal class LayoutFactory(
             viewport,
             spreads
         )
-    }
-
-    private fun defaultSpreadStateFactories(viewport: IntSize): List<SpreadState.Factory> {
-        val htmlSpreadFactory = HtmlSpreadStateFactory(publication, viewport)
-        val imageSpreadFactory = ImageSpreadStateFactory(publication)
-        return listOf(htmlSpreadFactory, imageSpreadFactory)
     }
 
     private fun computeSpreads(links: List<Link>, factories: List<SpreadState.Factory>): List<SpreadState> {

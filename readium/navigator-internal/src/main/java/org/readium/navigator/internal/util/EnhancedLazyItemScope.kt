@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.readium.navigator.internal.lazy
+package org.readium.navigator.internal.util
 
 import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -33,12 +33,20 @@ import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
+import org.readium.navigator.internal.lazy.LazyItemScope
 import kotlin.math.roundToInt
 
-internal class LazyItemScopeImpl : LazyItemScope {
+class EnhancedLazyItemScope internal constructor()
+    : LazyItemScope {
 
     private var maxWidthState: MutableState<Int> = mutableStateOf(Int.MAX_VALUE)
     private var maxHeightState: MutableState<Int> = mutableStateOf(Int.MAX_VALUE)
+
+    val maxWidth: State<Int>
+        get() = maxWidthState
+
+    val maxHeight: State<Int>
+        get() = maxHeightState
 
     fun setMaxSize(width: Int, height: Int) {
         maxWidthState.value = width

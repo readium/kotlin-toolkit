@@ -65,9 +65,9 @@ include(":readium:navigator")
 project(":readium:navigator")
     .name = "readium-navigator"
 
-include(":readium:navigator-core")
+/*include(":readium:navigator-core")
 project(":readium:navigator-core")
-    .name = "readium-navigator-core"
+    .name = "readium-navigator-core"*/
 
 include(":readium:navigator-internal")
 project(":readium:navigator-internal")

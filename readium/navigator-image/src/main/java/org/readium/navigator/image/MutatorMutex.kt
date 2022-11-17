@@ -1,4 +1,4 @@
-package org.readium.navigator.internal.util
+package org.readium.navigator.image
 
 import androidx.compose.runtime.Stable
 import kotlinx.coroutines.CancellationException

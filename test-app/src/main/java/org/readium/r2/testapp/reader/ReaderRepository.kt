@@ -11,6 +11,7 @@ import android.app.Application
 import androidx.datastore.core.DataStore
 import org.json.JSONObject
 import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider
+import org.readium.navigator.image.ImageNavigatorFactory
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
@@ -27,6 +28,7 @@ import org.readium.r2.testapp.MediaService
 import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.reader.preferences.EpubPreferencesManagerFactory
+import org.readium.r2.testapp.reader.preferences.ImagePreferencesManagerFactory
 import org.readium.r2.testapp.reader.preferences.PdfiumPreferencesManagerFactory
 import java.io.File
 import androidx.datastore.preferences.core.Preferences as JetpackPreferences
@@ -152,15 +154,19 @@ class ReaderRepository(
         )
     }
 
-    private fun openImage(
+    private suspend fun openImage(
         bookId: Long,
         publication: Publication,
         initialLocator: Locator?
     ): ImageReaderInitData {
+
+        val preferencesManager = ImagePreferencesManagerFactory(preferencesDataStore)
+            .createPreferenceManager(bookId)
+        val navigatorFactory = ImageNavigatorFactory.create(publication)
+
         return ImageReaderInitData(
-            bookId = bookId,
-            publication = publication,
-            initialLocation = initialLocator
+            bookId, publication, initialLocator,
+            preferencesManager, navigatorFactory
         )
     }
 

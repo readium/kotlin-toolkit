@@ -1,4 +1,4 @@
-package org.readium.navigator.internal
+package org.readium.navigator.core
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job

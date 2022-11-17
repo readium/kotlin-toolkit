@@ -72,6 +72,7 @@ androidx-compose-material-icons = { group = "androidx.compose.material", name = 
 androidx-compose-theme-adapter = { group ="com.google.android.material", name = "compose-theme-adapter", version.ref = "androidx-compose-theme-adapter" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "androidx-compose-ui" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "androidx-compose-ui" }
+androidx-compose-ui-preview= { group = "androidx.compose.ui", name = "ui-tooling-preview", version.ref = "androidx-compose-ui" }
 androidx-compose-ui-util = { group = "androidx.compose.ui", name = "ui-util", version.ref = "androidx-compose-ui" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidx-constraintlayout" }
 androidx-core = { group = "androidx.core", name = "core-ktx", version.ref = "androidx-core" }
@@ -138,7 +139,7 @@ timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "tim
 
 
 [bundles]
-compose = ["androidx-compose-activity", "androidx-compose-animation", "androidx-compose-foundation", "androidx-compose-material", "androidx-compose-material3", "androidx-compose-material-icons", "androidx-compose-theme-adapter", "androidx-compose-ui", "androidx-compose-ui-tooling",  "androidx-compose-ui-util"]
+compose = ["androidx-compose-activity", "androidx-compose-animation", "androidx-compose-foundation", "androidx-compose-material", "androidx-compose-material3", "androidx-compose-material-icons", "androidx-compose-theme-adapter", "androidx-compose-ui", "androidx-compose-ui-tooling", "androidx-compose-ui-preview", "androidx-compose-ui-util"]
 coroutines = ["kotlinx-coroutines-core", "kotlinx-coroutines-android"]
 exoplayer = ["google-exoplayer-core", "google-exoplayer-ui", "google-exoplayer-mediasession", "google-exoplayer-workmanager", "google-exoplayer-extension-media2"]
 lifecycle = ["androidx-lifecycle-common", "androidx-lifecycle-extensions", "androidx-lifecycle-livedata", "androidx-lifecycle-runtime", "androidx-lifecycle-viewmodel", "androidx-lifecycle-vmsavedstate", "androidx-lifecycle-viewmodel-compose"]

@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
+import org.readium.navigator.image.preferences.ImagePreferencesEditor
 import org.readium.r2.navigator.epub.EpubPreferencesEditor
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -92,6 +93,15 @@ private fun <P: Configurable.Preferences, E: PreferencesEditor<P>> UserPreferenc
                     scrollAxis = editor.scrollAxis,
                     fit = editor.fit,
                     pageSpacing = editor.pageSpacing
+                )
+
+            is ImagePreferencesEditor ->
+                FixedLayoutUserPreferences(
+                    commit = commit,
+                    readingProgression = editor.readingProgression,
+                    scroll = editor.scroll,
+                    scrollAxis = editor.scrollAxis,
+                    fit = editor.fit,
                 )
 
             is EpubPreferencesEditor ->

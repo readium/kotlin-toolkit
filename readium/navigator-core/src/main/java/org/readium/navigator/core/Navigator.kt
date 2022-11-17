@@ -1,4 +1,4 @@
-package org.readium.navigator.internal
+package org.readium.navigator.core
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -12,7 +12,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
-import org.readium.navigator.internal.viewer.LazyPager
 import org.readium.r2.shared.publication.Publication
 import timber.log.Timber
 
@@ -78,7 +77,7 @@ fun Navigator(
                 }
             }
 
-            org.readium.navigator.internal.viewer.LazyScroller(
+            LazyScroller(
                 modifier = Modifier,
                 isVertical = isVertical,
                 state = state.viewerState,

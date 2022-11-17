@@ -181,7 +181,7 @@ private class ScrollingLogic(
         val y = if (verticalState.isScrollInProgress) {
             0f
         } else {
-            verticalState.dispatchRawDelta(scroll.x.reverseIfNeeded())
+            verticalState.dispatchRawDelta(scroll.y.reverseIfNeeded())
                 .reverseIfNeeded()
         }
         return Offset(x, y)

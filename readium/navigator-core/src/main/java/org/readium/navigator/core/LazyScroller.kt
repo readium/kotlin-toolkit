@@ -1,4 +1,4 @@
-package org.readium.navigator.internal.viewer
+package org.readium.navigator.core
 
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.*
@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import org.readium.navigator.internal.gestures.scrollable
 import org.readium.navigator.internal.gestures.scrolling
 import org.readium.navigator.internal.gestures.zoomable
-import androidx.compose.foundation.lazy.LazyItemScope
+import org.readium.navigator.internal.lazy.LazyItemScope
 import org.readium.navigator.internal.lazy.LazyList
 import org.readium.navigator.internal.lazy.LazyListScope
 import org.readium.navigator.internal.util.FitBox
@@ -104,7 +104,7 @@ private fun LazyListScope.scrollerContent(
 
     items(count = count) { index ->
         FitBox(
-            parentSize= parentSize,
+            parentSize = parentSize,
             contentScale = contentScale,
             scaleSetting = scaleSetting,
             itemSize = itemSize(index),

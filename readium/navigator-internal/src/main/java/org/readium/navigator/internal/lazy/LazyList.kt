@@ -195,10 +195,10 @@ private fun rememberLazyListMeasurePolicy(
     placementAnimator
 ) {
     { containerConstraints ->
-        /* COMMENTED: checkScrollableContainerConstraints(
+        checkScrollableContainerConstraints(
             containerConstraints,
             if (isVertical) Orientation.Vertical else Orientation.Horizontal
-        )*/
+        )
 
         // resolve content paddings
         val startPadding =

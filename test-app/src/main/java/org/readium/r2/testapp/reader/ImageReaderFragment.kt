@@ -11,19 +11,27 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.commitNow
+import org.readium.navigator.image.ImageNavigatorFragment
+import org.readium.navigator.image.preferences.ImagePreferences
+import org.readium.navigator.image.preferences.ImagePreferencesEditor
+import org.readium.navigator.image.preferences.ImageSettings
 import org.readium.r2.navigator.Navigator
-import org.readium.r2.navigator.image.ImageNavigatorFragment
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 
+@OptIn(ExperimentalReadiumApi::class)
 class ImageReaderFragment : VisualReaderFragment(), ImageNavigatorFragment.Listener {
 
-    override lateinit var navigator: Navigator
+    override lateinit var navigator: ImageNavigatorFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val readerData = model.readerInitData as VisualReaderInitData
+        val readerData = model.readerInitData as ImageReaderInitData
+
+        val navigatorState = readerData.navigatorFactory.createNavigatorState(readerData.initialLocation)
 
         childFragmentManager.fragmentFactory =
-            ImageNavigatorFragment.createFactory(publication, readerData.initialLocation, this)
+            ImageNavigatorFragment.createFactory(navigatorState, this)
 
         super.onCreate(savedInstanceState)
     }
@@ -35,8 +43,16 @@ class ImageReaderFragment : VisualReaderFragment(), ImageNavigatorFragment.Liste
                 add(R.id.fragment_reader_container, ImageNavigatorFragment::class.java, Bundle(), NAVIGATOR_FRAGMENT_TAG)
             }
         }
-        navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!! as Navigator
+        navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!! as ImageNavigatorFragment
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        @Suppress("Unchecked_cast")
+        (model.settings as UserPreferencesViewModel<ImageSettings, ImagePreferences, ImagePreferencesEditor>)
+            .bind(navigator, viewLifecycleOwner)
     }
 
     companion object {

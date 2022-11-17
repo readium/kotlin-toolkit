@@ -8,6 +8,7 @@ plugins {
     id("com.android.library")
     kotlin("android")
     kotlin("plugin.parcelize")
+    kotlin("plugin.serialization")
     id("maven-publish")
     id("org.jetbrains.dokka")
 }
@@ -32,6 +33,12 @@ android {
             "-opt-in=kotlin.RequiresOptIn",
             "-opt-in=org.readium.r2.shared.InternalReadiumApi"
         )
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.androidx.compose.compiler.get()
+    }
+    buildFeatures {
+        compose = true
     }
     buildTypes {
         getByName("release") {
@@ -65,12 +72,15 @@ dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
     api(project(":readium:readium-shared"))
-    api(project(":readium:readium-navigator-core"))
-    api(project(":readium:readium-navigator-internal"))
+    api(project(":readium:readium-navigator"))
+    //api(project(":readium:readium-navigator-core"))
+    implementation(project(":readium:readium-navigator-internal"))
 
     implementation(libs.bundles.coroutines)
 
     implementation(libs.bundles.compose)
+
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.timber)
 

@@ -1,4 +1,4 @@
-package org.readium.navigator.internal.viewer
+package org.readium.navigator.core
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.ScrollableState
@@ -6,7 +6,7 @@ import org.readium.navigator.internal.lazy.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.lazy.LazyItemScope
+import org.readium.navigator.internal.lazy.LazyItemScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -14,12 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import org.readium.navigator.internal.gestures.scrollable
 import org.readium.navigator.internal.gestures.tappable
@@ -125,42 +122,4 @@ private fun (LazyListScope).pagerContent(
             itemContent(index, scaleState)
         }
     }
-}
-
-private class ConsumeFlingNestedScrollConnection(
-    private val consumeHorizontal: Boolean,
-    private val consumeVertical: Boolean,
-) : NestedScrollConnection {
-    override fun onPostScroll(
-        consumed: Offset,
-        available: Offset,
-        source: NestedScrollSource
-    ): Offset = when (source) {
-        // We can consume all resting fling scrolls so that they don't propagate up to the
-        // Pager
-        NestedScrollSource.Fling -> available.consume(consumeHorizontal, consumeVertical)
-        else -> Offset.Zero
-    }
-
-    override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-        // We can consume all post fling velocity on the main-axis
-        // so that it doesn't propagate up to the Pager
-        return available.consume(consumeHorizontal, consumeVertical)
-    }
-
-    private fun Offset.consume(
-        consumeHorizontal: Boolean,
-        consumeVertical: Boolean,
-    ): Offset = Offset(
-        x = if (consumeHorizontal) this.x else 0f,
-        y = if (consumeVertical) this.y else 0f,
-    )
-
-    private fun Velocity.consume(
-        consumeHorizontal: Boolean,
-        consumeVertical: Boolean,
-    ): Velocity = Velocity(
-        x = if (consumeHorizontal) this.x else 0f,
-        y = if (consumeVertical) this.y else 0f,
-    )
 }

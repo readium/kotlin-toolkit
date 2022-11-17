@@ -22,6 +22,10 @@ import org.readium.adapters.pdfium.navigator.PdfiumPreferences
 import org.readium.adapters.pdfium.navigator.PdfiumPreferencesSerializer
 import org.readium.adapters.pdfium.navigator.PdfiumPublicationPreferencesFilter
 import org.readium.adapters.pdfium.navigator.PdfiumSharedPreferencesFilter
+import org.readium.navigator.image.preferences.ImagePreferences
+import org.readium.navigator.image.preferences.ImagePreferencesSerializer
+import org.readium.navigator.image.preferences.ImagePublicationPreferencesFilter
+import org.readium.navigator.image.preferences.ImageSharedPreferencesFilter
 import org.readium.r2.navigator.epub.EpubPreferences
 import org.readium.r2.navigator.epub.EpubPreferencesSerializer
 import org.readium.r2.navigator.epub.EpubPublicationPreferencesFilter
@@ -122,4 +126,16 @@ class PdfiumPreferencesManagerFactory(
     preferencesSerializer = PdfiumPreferencesSerializer(),
     emptyPreferences = PdfiumPreferences(),
     plus = PdfiumPreferences::plus
+)
+
+class ImagePreferencesManagerFactory(
+    dataStore: DataStore<Preferences>,
+) : PreferencesManagerFactory<ImagePreferences>(
+    dataStore = dataStore,
+    klass = ImagePreferences::class,
+    sharedPreferencesFilter = ImageSharedPreferencesFilter,
+    publicationPreferencesFilter = ImagePublicationPreferencesFilter,
+    preferencesSerializer = ImagePreferencesSerializer(),
+    emptyPreferences = ImagePreferences(),
+    plus = ImagePreferences::plus
 )

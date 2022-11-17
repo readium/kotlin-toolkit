@@ -9,7 +9,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.debugInspectorInfo
 import kotlinx.coroutines.coroutineScope
 
-internal fun Modifier.tappable(
+fun Modifier.tappable(
     enabled: Boolean = true,
     onDoubleTap: ((Offset) -> Unit)? = null,
     onTap: ((Offset) -> Unit)? = null,

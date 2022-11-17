@@ -1,4 +1,4 @@
-package org.readium.navigator.internal
+package org.readium.navigator.core
 
 import androidx.compose.runtime.State
 import org.readium.r2.shared.publication.Link
