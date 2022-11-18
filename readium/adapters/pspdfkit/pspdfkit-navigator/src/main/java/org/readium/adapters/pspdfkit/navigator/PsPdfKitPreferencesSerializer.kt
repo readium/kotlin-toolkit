@@ -6,25 +6,19 @@
 
 package org.readium.adapters.pspdfkit.navigator
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.serializer
 import org.readium.r2.navigator.preferences.PreferencesSerializer
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * JSON serializer of [PsPdfKitPreferences].
- *
- * Serialization and deserialization can be configured through the [json] argument.
  */
 @ExperimentalReadiumApi
-class PsPdfKitPreferencesSerializer(
-    private val json: Json = Json
-) : PreferencesSerializer<PsPdfKitPreferences> {
+class PsPdfKitPreferencesSerializer : PreferencesSerializer<PsPdfKitPreferences> {
 
     override fun serialize(preferences: PsPdfKitPreferences): String =
-        json.encodeToString(serializer(), preferences)
+        Json.encodeToString(PsPdfKitPreferences.serializer(), preferences)
 
     override fun deserialize(preferences: String): PsPdfKitPreferences =
-        json.decodeFromString(preferences)
+        Json.decodeFromString(PsPdfKitPreferences.serializer(), preferences)
 }

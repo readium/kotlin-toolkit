@@ -9,7 +9,6 @@ plugins {
     kotlin("android")
     kotlin("kapt")
     kotlin("plugin.parcelize")
-    kotlin("plugin.serialization")
 }
 
 android {
@@ -102,7 +101,6 @@ dependencies {
     implementation(libs.picasso)
     implementation(libs.joda.time)
     implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.kotlinx.serialization.json)
     implementation(libs.jsoup)
 
     implementation(libs.bundles.media2)
