@@ -73,7 +73,7 @@ data class EpubPreferences(
     val typeScale: Double? = null,
     val verticalText: Boolean? = null,
     val wordSpacing: Double? = null
-): Configurable.Preferences {
+): Configurable.Preferences<EpubPreferences> {
 
     init {
         require(fontSize == null || fontSize >= 0)
@@ -85,7 +85,7 @@ data class EpubPreferences(
         require(wordSpacing == null || wordSpacing >= 0)
     }
 
-    operator fun plus(other: EpubPreferences): EpubPreferences =
+    override operator fun plus(other: EpubPreferences): EpubPreferences =
         EpubPreferences(
             backgroundColor = other.backgroundColor ?: backgroundColor,
             columnCount = other.columnCount ?: columnCount,

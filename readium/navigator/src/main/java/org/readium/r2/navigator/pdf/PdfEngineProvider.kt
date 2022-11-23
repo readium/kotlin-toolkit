@@ -21,7 +21,7 @@ import org.readium.r2.shared.publication.Publication
  * To be implemented by adapters for third-party PDF engines which can be used with [PdfNavigatorFragment].
  */
 @ExperimentalReadiumApi
-interface PdfEngineProvider<S: Configurable.Settings, P: Configurable.Preferences, E: PreferencesEditor<P>> {
+interface PdfEngineProvider<S: Configurable.Settings, P: Configurable.Preferences<P>, E: PreferencesEditor<P>> {
 
     /**
      * Creates a [PdfDocumentFragment] for [input].

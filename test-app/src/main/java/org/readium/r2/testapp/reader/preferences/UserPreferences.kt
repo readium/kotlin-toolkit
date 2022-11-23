@@ -52,7 +52,7 @@ fun UserPreferences(model: UserPreferencesViewModel<*, *, *>) {
 }
 
 @Composable
-private fun <P: Configurable.Preferences, E: PreferencesEditor<P>> UserPreferences(
+private fun <P: Configurable.Preferences<P>, E: PreferencesEditor<P>> UserPreferences(
     editor: E,
     commit: () -> Unit
 ) {

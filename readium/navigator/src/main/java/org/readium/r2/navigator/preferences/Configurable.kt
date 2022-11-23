@@ -15,7 +15,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * A [Configurable] is a component with a set of configurable [Settings].
  */
 @ExperimentalReadiumApi
-interface Configurable<T : Settings, P: Preferences> {
+interface Configurable<S : Settings, P: Preferences<P>> {
 
     /**
      * Marker interface for the [Settings] properties holder.
@@ -25,12 +25,20 @@ interface Configurable<T : Settings, P: Preferences> {
     /**
      * Marker interface for the [Preferences] properties holder.
      */
-    interface Preferences
+    interface Preferences<P : Preferences<P>> {
+        
+        /**
+         * Creates a new instance of [P] after merging the values of [other].
+         *
+         * In case of conflict, [other] takes precedence.
+         */
+        operator fun plus(other: P): P
+    }
 
     /**
      * Current [Settings] values.
      */
-    val settings: StateFlow<T>
+    val settings: StateFlow<S>
 
     /**
      * Submits a new set of [Preferences] to update the current [Settings].
@@ -38,7 +46,6 @@ interface Configurable<T : Settings, P: Preferences> {
      * Note that the [Configurable] might not update its [settings] right away, or might even ignore
      * some of the provided preferences. They are only used as hints to compute the new settings.
      */
-
     fun submitPreferences(preferences: P)
 }
 
@@ -46,7 +53,7 @@ interface Configurable<T : Settings, P: Preferences> {
  * JSON serializer of [P].
  */
 @ExperimentalReadiumApi
-interface PreferencesSerializer<P: Preferences> {
+interface PreferencesSerializer<P: Preferences<P>> {
 
     /**
      * Serialize [P] into a JSON string.
@@ -65,7 +72,7 @@ interface PreferencesSerializer<P: Preferences> {
  * This can be used as a helper for a user preferences screen.
  */
 @ExperimentalReadiumApi
-interface PreferencesEditor<P: Preferences> {
+interface PreferencesEditor<P: Preferences<P>> {
 
     /**
      * The current preferences.
@@ -82,8 +89,8 @@ interface PreferencesEditor<P: Preferences> {
  * A filter to keep only some preferences and filter out some others.
  */
 @ExperimentalReadiumApi
-fun interface PreferencesFilter<T: Preferences> {
+fun interface PreferencesFilter<P: Preferences<P>> {
 
-    fun filter(preferences: T): T
+    fun filter(preferences: P): P
 }
 

@@ -21,7 +21,7 @@ import org.readium.r2.shared.publication.Publication
  * @param pdfEngineProvider provider for third-party PDF engine adapter.
  */
 @ExperimentalReadiumApi
-class PdfNavigatorFactory<S: Configurable.Settings, P: Configurable.Preferences, E: PreferencesEditor<P>>(
+class PdfNavigatorFactory<S: Configurable.Settings, P: Configurable.Preferences<P>, E: PreferencesEditor<P>>(
     private val publication: Publication,
     private val pdfEngineProvider: PdfEngineProvider<S, P, E>
 ) {

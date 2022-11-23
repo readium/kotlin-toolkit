@@ -31,14 +31,14 @@ data class PsPdfKitPreferences(
     val scroll: Boolean? = null,
     val scrollAxis: Axis? = null,
     val spread: Spread? = null,
-) : Configurable.Preferences {
+) : Configurable.Preferences<PsPdfKitPreferences> {
 
     init {
         require(fit in listOf(null, Fit.CONTAIN, Fit.WIDTH))
         require(pageSpacing == null || pageSpacing >= 0)
     }
 
-    operator fun plus(other: PsPdfKitPreferences) =
+    override operator fun plus(other: PsPdfKitPreferences) =
         PsPdfKitPreferences(
             fit = other.fit ?: fit,
             offsetFirstPage = other.offsetFirstPage ?: offsetFirstPage,

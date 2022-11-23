@@ -45,7 +45,7 @@ import timber.log.Timber
  * To use this [Fragment], create a factory with [PdfNavigatorFactory.createFragmentFactory].
  */
 @ExperimentalReadiumApi
-class PdfNavigatorFragment<S: Configurable.Settings, P: Configurable.Preferences, E: PreferencesEditor<P>> internal constructor(
+class PdfNavigatorFragment<S: Configurable.Settings, P: Configurable.Preferences<P>, E: PreferencesEditor<P>> internal constructor(
     override val publication: Publication,
     initialLocator: Locator? = null,
     initialPreferences: P,
@@ -74,7 +74,7 @@ class PdfNavigatorFragment<S: Configurable.Settings, P: Configurable.Preferences
          * @param pdfEngineProvider provider for third-party PDF engine adapter.
          */
         @ExperimentalReadiumApi
-        fun <S: Configurable.Settings, P: Configurable.Preferences, E: PreferencesEditor<P>> createFactory(
+        fun <S: Configurable.Settings, P: Configurable.Preferences<P>, E: PreferencesEditor<P>> createFactory(
             publication: Publication,
             initialLocator: Locator? = null,
             preferences: P? = null,
