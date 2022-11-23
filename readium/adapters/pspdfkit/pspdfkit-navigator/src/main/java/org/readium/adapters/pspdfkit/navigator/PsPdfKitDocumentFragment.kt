@@ -128,7 +128,6 @@ internal class PsPdfKitDocumentFragment(
             .scrollbarsEnabled(true)
             .setAnnotationInspectorEnabled(false)
             .setJavaScriptEnabled(false)
-            .showGapBetweenPages(true)
             .textSelectionEnabled(true)
             .textSelectionPopupToolbarEnabled(true)
             .themeMode(ThemeMode.DEFAULT)
