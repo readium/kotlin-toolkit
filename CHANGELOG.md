@@ -96,6 +96,7 @@ All notable changes to this project will be documented in this file. Take a look
 * The `onTap` event is not sent when an EPUB text selection is active anymore, to prevent showing the app bar while dismissing a selection.
 * [#76](https://github.com/readium/kotlin-toolkit/issues/76) Fixed EPUB fixed layout font size affected by device settings.
 * `Decoration` objects are now properly comparable with `equals()`.
+* [#292](https://github.com/readium/kotlin-toolkit/issues/292) Fix broken pagination when an EPUB uses `overflow-x: hidden`.
 
 
 ## [2.2.1]

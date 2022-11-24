@@ -37,6 +37,10 @@ class HtmlInjectionTest {
                     <head>
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-before.css"/>
                 <style>audio[controls] { width: revert; height: revert; }</style>
+                                <style>
+                                    :root[style], :root { overflow: visible !important; }
+                                    :root[style] > body, :root > body { overflow: visible !important; }
+                                </style>
                 
                         <title>Publication</title>
                         <link rel="stylesheet" href="style.css" type="text/css"/>
@@ -78,6 +82,10 @@ class HtmlInjectionTest {
                     <head xmlns:xlink="http://www.w3.org/1999/xlink">
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-before.css"/>
                 <style>audio[controls] { width: revert; height: revert; }</style>
+                                <style>
+                                    :root[style], :root { overflow: visible !important; }
+                                    :root[style] > body, :root > body { overflow: visible !important; }
+                                </style>
                 
                         <title>Publication</title>
                         <link rel="stylesheet" href="style.css" type="text/css"/>
@@ -117,6 +125,10 @@ class HtmlInjectionTest {
                 <?xml version="1.0" encoding="utf-8"?><html dir="ltr" xmlns="http://www.w3.org/1999/xhtml"><head xmlns:xlink="http://www.w3.org/1999/xlink">
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-before.css"/>
                 <style>audio[controls] { width: revert; height: revert; }</style>
+                                <style>
+                                    :root[style], :root { overflow: visible !important; }
+                                    :root[style] > body, :root > body { overflow: visible !important; }
+                                </style>
                 <title>Publication</title><link rel="stylesheet" href="style.css" type="text/css"/>
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-after.css"/>
                 </head><body dir="ltr" xmlns:xlink="http://www.w3.org/1999/xlink"></body></html>
@@ -144,6 +156,10 @@ class HtmlInjectionTest {
                 <?xml version="1.0" encoding="utf-8"?><HTML dir="ltr" xmlns="http://www.w3.org/1999/xhtml"><HEAD xmlns:xlink="http://www.w3.org/1999/xlink">
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-before.css"/>
                 <style>audio[controls] { width: revert; height: revert; }</style>
+                                <style>
+                                    :root[style], :root { overflow: visible !important; }
+                                    :root[style] > body, :root > body { overflow: visible !important; }
+                                </style>
                 <title>Publication</title><link rel="stylesheet" href="style.css" type="text/css"/>
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-after.css"/>
                 </HEAD><BODY dir="ltr" xmlns:xlink="http://www.w3.org/1999/xlink"></BODY></HTML>
@@ -173,6 +189,10 @@ class HtmlInjectionTest {
                     <head>
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-before.css"/>
                 <style>audio[controls] { width: revert; height: revert; }</style>
+                                <style>
+                                    :root[style], :root { overflow: visible !important; }
+                                    :root[style] > body, :root > body { overflow: visible !important; }
+                                </style>
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-default.css"/>
                 
                         <title>Publication</title>
@@ -271,6 +291,10 @@ class HtmlInjectionTest {
                     <head>
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/rtl/ReadiumCSS-before.css"/>
                 <style>audio[controls] { width: revert; height: revert; }</style>
+                                <style>
+                                    :root[style], :root { overflow: visible !important; }
+                                    :root[style] > body, :root > body { overflow: visible !important; }
+                                </style>
                 
                         <title>Publication</title>
                         <link rel="stylesheet" href="style.css" type="text/css"/>
@@ -312,6 +336,10 @@ class HtmlInjectionTest {
                     <head>
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/cjk-horizontal/ReadiumCSS-before.css"/>
                 <style>audio[controls] { width: revert; height: revert; }</style>
+                                <style>
+                                    :root[style], :root { overflow: visible !important; }
+                                    :root[style] > body, :root > body { overflow: visible !important; }
+                                </style>
                 
                         <title>Publication</title>
                         <link rel="stylesheet" href="style.css" type="text/css"/>
@@ -354,6 +382,10 @@ class HtmlInjectionTest {
                     <head>
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/cjk-vertical/ReadiumCSS-before.css"/>
                 <style>audio[controls] { width: revert; height: revert; }</style>
+                                <style>
+                                    :root[style], :root { overflow: visible !important; }
+                                    :root[style] > body, :root > body { overflow: visible !important; }
+                                </style>
                 
                         <title>Publication</title>
                         <link rel="stylesheet" href="style.css" type="text/css"/>
@@ -395,6 +427,10 @@ class HtmlInjectionTest {
                     <head>
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-before.css"/>
                 <style>audio[controls] { width: revert; height: revert; }</style>
+                                <style>
+                                    :root[style], :root { overflow: visible !important; }
+                                    :root[style] > body, :root > body { overflow: visible !important; }
+                                </style>
                 
                         <title>Publication</title>
                         <link rel="stylesheet" href="style.css" type="text/css"/>
@@ -436,6 +472,10 @@ class HtmlInjectionTest {
                     <head>
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-before.css"/>
                 <style>audio[controls] { width: revert; height: revert; }</style>
+                                <style>
+                                    :root[style], :root { overflow: visible !important; }
+                                    :root[style] > body, :root > body { overflow: visible !important; }
+                                </style>
                 
                         <title>Publication</title>
                         <link rel="stylesheet" href="style.css" type="text/css"/>
@@ -477,6 +517,10 @@ class HtmlInjectionTest {
                     <head>
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-before.css"/>
                 <style>audio[controls] { width: revert; height: revert; }</style>
+                                <style>
+                                    :root[style], :root { overflow: visible !important; }
+                                    :root[style] > body, :root > body { overflow: visible !important; }
+                                </style>
                 
                         <title>Publication</title>
                         <link rel="stylesheet" href="style.css" type="text/css"/>
@@ -518,6 +562,10 @@ class HtmlInjectionTest {
                     <head>
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-before.css"/>
                 <style>audio[controls] { width: revert; height: revert; }</style>
+                                <style>
+                                    :root[style], :root { overflow: visible !important; }
+                                    :root[style] > body, :root > body { overflow: visible !important; }
+                                </style>
                 
                         <title>Publication</title>
                         <link rel="stylesheet" href="style.css" type="text/css"/>
@@ -567,6 +615,10 @@ class HtmlInjectionTest {
                     <head>
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-before.css"/>
                 <style>audio[controls] { width: revert; height: revert; }</style>
+                                <style>
+                                    :root[style], :root { overflow: visible !important; }
+                                    :root[style] > body, :root > body { overflow: visible !important; }
+                                </style>
                 
                         <title>Publication</title>
                         <link rel="stylesheet" href="style.css" type="text/css"/>
@@ -613,6 +665,10 @@ class HtmlInjectionTest {
                     <head>
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-before.css"/>
                 <style>audio[controls] { width: revert; height: revert; }</style>
+                                <style>
+                                    :root[style], :root { overflow: visible !important; }
+                                    :root[style] > body, :root > body { overflow: visible !important; }
+                                </style>
                 
                         <title>Publication</title>
                         <link rel="stylesheet" href="style.css" type="text/css"/>

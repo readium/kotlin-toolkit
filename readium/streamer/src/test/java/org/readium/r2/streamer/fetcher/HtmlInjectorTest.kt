@@ -21,7 +21,10 @@ class HtmlInjectorTest {
                     width: revert;
                     height: revert;
                 }
-                </style>
+                </style>            <style>
+                                :root[style], :root { overflow: visible !important; }
+                                :root[style] > body, :root > body { overflow: visible !important; }
+                            </style>
                         <title>Publication</title>
                         <link rel="stylesheet" href="style.css" type="text/css"/>
                     <link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-after.css"/>
@@ -59,7 +62,10 @@ class HtmlInjectorTest {
                     width: revert;
                     height: revert;
                 }
-                </style>
+                </style>            <style>
+                                :root[style], :root { overflow: visible !important; }
+                                :root[style] > body, :root > body { overflow: visible !important; }
+                            </style>
                         <title>Publication</title>
                         <link rel="stylesheet" href="style.css" type="text/css"/>
                     <link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-after.css"/>
@@ -95,7 +101,10 @@ class HtmlInjectorTest {
                     width: revert;
                     height: revert;
                 }
-                </style><title>Publication</title><link rel="stylesheet" href="style.css" type="text/css"/><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-after.css"/>
+                </style>            <style>
+                                :root[style], :root { overflow: visible !important; }
+                                :root[style] > body, :root > body { overflow: visible !important; }
+                            </style><title>Publication</title><link rel="stylesheet" href="style.css" type="text/css"/><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-after.css"/>
                 <script type="text/javascript" src="/assets/scripts/readium-reflowable.js"></script>
                 <style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style>
                 <style type="text/css"> @font-face{font-family: "OpenDyslexic"; src:url("/assets/fonts/OpenDyslexic-Regular.otf") format('truetype');}</style>
@@ -121,7 +130,10 @@ class HtmlInjectorTest {
                     width: revert;
                     height: revert;
                 }
-                </style><title>Publication</title><link rel="stylesheet" href="style.css" type="text/css"/><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-after.css"/>
+                </style>            <style>
+                                :root[style], :root { overflow: visible !important; }
+                                :root[style] > body, :root > body { overflow: visible !important; }
+                            </style><title>Publication</title><link rel="stylesheet" href="style.css" type="text/css"/><link rel="stylesheet" type="text/css" href="/assets/readium-css/ReadiumCSS-after.css"/>
                 <script type="text/javascript" src="/assets/scripts/readium-reflowable.js"></script>
                 <style>@import url('https://fonts.googleapis.com/css?family=PT+Serif|Roboto|Source+Sans+Pro|Vollkorn');</style>
                 <style type="text/css"> @font-face{font-family: "OpenDyslexic"; src:url("/assets/fonts/OpenDyslexic-Regular.otf") format('truetype');}</style>

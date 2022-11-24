@@ -58,6 +58,16 @@ internal data class ReadiumCss(
             // https://github.com/readium/r2-navigator-kotlin/issues/193
             add("<style>audio[controls] { width: revert; height: revert; }</style>")
 
+            // Fix broken pagination when a book contains `overflow-x: hidden`.
+            // https://github.com/readium/kotlin-toolkit/issues/292
+            // Inspired by https://github.com/readium/readium-css/issues/119#issuecomment-1302348238
+            add("""
+                <style>
+                    :root[style], :root { overflow: visible !important; }
+                    :root[style] > body, :root > body { overflow: visible !important; }
+                </style>
+            """.trimMargin())
+
             if (!hasStyles) {
                 add(stylesheetLink(stylesheetsFolder + "ReadiumCSS-default.css"))
             }
