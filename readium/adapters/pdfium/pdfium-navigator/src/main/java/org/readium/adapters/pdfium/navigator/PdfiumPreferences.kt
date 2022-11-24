@@ -28,14 +28,14 @@ data class PdfiumPreferences(
     val pageSpacing: Double? = null,
     val readingProgression: ReadingProgression? = null,
     val scrollAxis: Axis? = null,
-) : Configurable.Preferences {
+) : Configurable.Preferences<PdfiumPreferences> {
 
     init {
         require(fit in listOf(null, Fit.CONTAIN, Fit.WIDTH))
         require(pageSpacing == null || pageSpacing >= 0)
     }
 
-    operator fun plus(other: PdfiumPreferences) =
+    override operator fun plus(other: PdfiumPreferences) =
         PdfiumPreferences(
             fit = other.fit ?: fit,
             pageSpacing = other.pageSpacing ?: pageSpacing,

@@ -41,7 +41,7 @@ import org.readium.r2.navigator.preferences.TextAlign as ReadiumTextAlign
  * Stateful user settings component paired with a [ReaderViewModel].
  */
 @Composable
-fun UserPreferences(model: UserPreferencesViewModel<*, *, *>) {
+fun UserPreferences(model: UserPreferencesViewModel<*, *>) {
     val editor = remember { mutableStateOf(model.preferencesEditor, policy = neverEqualPolicy()) }
     val commit: () -> Unit = { editor.value = editor.value ; model.commitPreferences() }
 
@@ -929,7 +929,7 @@ class Preset(
 /**
  * Returns the presets associated with the [Configurable.Settings] receiver.
  */
-val <P: Configurable.Preferences> PreferencesEditor<P>.presets: List<Preset> get() =
+val <P: Configurable.Preferences<P>> PreferencesEditor<P>.presets: List<Preset> get() =
     when (this) {
         is EpubPreferencesEditor ->
             when (layout) {

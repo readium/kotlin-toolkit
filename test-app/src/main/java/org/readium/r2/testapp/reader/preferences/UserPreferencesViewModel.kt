@@ -29,7 +29,7 @@ import org.readium.r2.testapp.reader.*
  * @param bookId Database ID for the book.
  */
 @OptIn(ExperimentalReadiumApi::class)
-class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.Preferences, E: PreferencesEditor<P>>(
+class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.Preferences<P>>(
     private val bookId: Long,
     private val viewModelScope: CoroutineScope,
     private val preferencesManager: PreferencesManager<P>,
@@ -41,13 +41,13 @@ class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.Prefere
         operator fun invoke(
             viewModelScope: CoroutineScope,
             readerInitData: ReaderInitData
-        ): UserPreferencesViewModel<*, *, *>? =
+        ): UserPreferencesViewModel<*, *>? =
             when (readerInitData) {
                 is EpubReaderInitData -> with (readerInitData) {
                     val editor = navigatorFactory
                         .createPreferencesEditor(preferencesManager.preferences.value)
 
-                    UserPreferencesViewModel<EpubSettings, EpubPreferences, EpubPreferencesEditor>(
+                    UserPreferencesViewModel<EpubSettings, EpubPreferences>(
                         bookId, viewModelScope, preferencesManager, editor
                     )
                 }
@@ -55,7 +55,7 @@ class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.Prefere
                     val editor = navigatorFactory
                         .createPreferencesEditor(preferencesManager.preferences.value)
 
-                    UserPreferencesViewModel<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>(
+                    UserPreferencesViewModel<PdfiumSettings, PdfiumPreferences>(
                         bookId, viewModelScope, preferencesManager, editor
                     )
                 }

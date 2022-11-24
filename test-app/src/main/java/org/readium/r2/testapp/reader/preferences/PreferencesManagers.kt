@@ -33,28 +33,27 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.testapp.utils.extensions.stateInFirst
 import kotlin.reflect.KClass
 
-class PreferencesManager<T: Configurable.Preferences> internal constructor(
-    val preferences: StateFlow<T>,
+class PreferencesManager<P: Configurable.Preferences<P>> internal constructor(
+    val preferences: StateFlow<P>,
     @Suppress("Unused") // Keep the scope alive until the PreferencesManager is garbage collected
     private val coroutineScope: CoroutineScope,
-    private val editPreferences: suspend (T) -> Unit,
+    private val editPreferences: suspend (P) -> Unit,
 ) {
 
-    suspend fun setPreferences(preferences: T) {
+    suspend fun setPreferences(preferences: P) {
         editPreferences(preferences)
     }
 }
 
-sealed class PreferencesManagerFactory<T: Configurable.Preferences>(
+sealed class PreferencesManagerFactory<P: Configurable.Preferences<P>>(
     private val dataStore: DataStore<Preferences>,
-    private val klass: KClass<T>,
-    private val sharedPreferencesFilter: PreferencesFilter<T>,
-    private val publicationPreferencesFilter: PreferencesFilter<T>,
-    private val preferencesSerializer: PreferencesSerializer<T>,
-    private val emptyPreferences: T,
-    private val plus: (T).(T) -> T
+    private val klass: KClass<P>,
+    private val sharedPreferencesFilter: PreferencesFilter<P>,
+    private val publicationPreferencesFilter: PreferencesFilter<P>,
+    private val preferencesSerializer: PreferencesSerializer<P>,
+    private val emptyPreferences: P
 ) {
-    suspend fun createPreferenceManager(bookId: Long): PreferencesManager<T> {
+    suspend fun createPreferenceManager(bookId: Long): PreferencesManager<P> {
         val coroutineScope = CoroutineScope(Dispatchers.IO)
         val preferences = getPreferences(bookId, coroutineScope)
 
@@ -65,7 +64,7 @@ sealed class PreferencesManagerFactory<T: Configurable.Preferences>(
         )
     }
 
-    private suspend fun setPreferences(bookId: Long, preferences: T) {
+    private suspend fun setPreferences(bookId: Long, preferences: P) {
         dataStore.edit { data ->
             data[key(klass)] = sharedPreferencesFilter
                 .filter(preferences)
@@ -79,7 +78,7 @@ sealed class PreferencesManagerFactory<T: Configurable.Preferences>(
         }
     }
 
-    private suspend fun getPreferences(bookId: Long, scope: CoroutineScope): StateFlow<T> {
+    private suspend fun getPreferences(bookId: Long, scope: CoroutineScope): StateFlow<P> {
         val sharedPrefs = dataStore.data
             .map { data -> data[key(klass)] }
             .map { json -> json?.let { preferencesSerializer.deserialize(it) } ?: emptyPreferences }
@@ -88,7 +87,8 @@ sealed class PreferencesManagerFactory<T: Configurable.Preferences>(
             .map { data -> data[key(bookId)] }
             .map { json -> json?.let { preferencesSerializer.deserialize(it) } ?: emptyPreferences }
 
-        return combine(sharedPrefs, pubPrefs, plus).stateInFirst(scope, SharingStarted.Eagerly)
+        return combine(sharedPrefs, pubPrefs) { shared, pub -> shared + pub }
+            .stateInFirst(scope, SharingStarted.Eagerly)
     }
 
     /** [DataStore] key for the given [bookId]. */
@@ -108,8 +108,7 @@ class EpubPreferencesManagerFactory(
         sharedPreferencesFilter = EpubSharedPreferencesFilter,
         publicationPreferencesFilter = EpubPublicationPreferencesFilter,
         preferencesSerializer = EpubPreferencesSerializer(),
-        emptyPreferences = EpubPreferences(),
-        plus = EpubPreferences::plus
+        emptyPreferences = EpubPreferences()
 )
 
 class PdfiumPreferencesManagerFactory(
@@ -120,6 +119,5 @@ class PdfiumPreferencesManagerFactory(
     sharedPreferencesFilter = PdfiumSharedPreferencesFilter,
     publicationPreferencesFilter = PdfiumPublicationPreferencesFilter,
     preferencesSerializer = PdfiumPreferencesSerializer(),
-    emptyPreferences = PdfiumPreferences(),
-    plus = PdfiumPreferences::plus
+    emptyPreferences = PdfiumPreferences()
 )

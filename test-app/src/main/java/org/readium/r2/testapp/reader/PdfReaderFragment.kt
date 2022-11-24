@@ -57,7 +57,7 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
         super.onViewCreated(view, savedInstanceState)
 
         @Suppress("Unchecked_cast")
-        (model.settings as UserPreferencesViewModel<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>)
+        (model.settings as UserPreferencesViewModel<PdfiumSettings, PdfiumPreferences>)
             .bind(navigator, viewLifecycleOwner)
     }
 

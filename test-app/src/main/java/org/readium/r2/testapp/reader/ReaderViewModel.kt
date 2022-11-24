@@ -63,7 +63,7 @@ class ReaderViewModel(
         scope = viewModelScope
     )
 
-    val settings: UserPreferencesViewModel<*, *, *>? = UserPreferencesViewModel(
+    val settings: UserPreferencesViewModel<*, *>? = UserPreferencesViewModel(
         viewModelScope = viewModelScope,
         readerInitData = readerInitData
     )

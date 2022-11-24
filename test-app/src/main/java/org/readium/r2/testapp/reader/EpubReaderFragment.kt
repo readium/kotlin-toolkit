@@ -117,7 +117,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         super.onViewCreated(view, savedInstanceState)
 
         @Suppress("Unchecked_cast")
-        (model.settings as UserPreferencesViewModel<EpubSettings, EpubPreferences, EpubPreferencesEditor>)
+        (model.settings as UserPreferencesViewModel<EpubSettings, EpubPreferences>)
             .bind(navigator, viewLifecycleOwner)
 
        // This is a hack to draw the right background color on top and bottom blank spaces
