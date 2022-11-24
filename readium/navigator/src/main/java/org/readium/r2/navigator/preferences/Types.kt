@@ -4,12 +4,11 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.settings
+package org.readium.r2.navigator.preferences
 
 import androidx.annotation.ColorInt
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import android.graphics.Color as AndroidColor
 
@@ -81,7 +80,9 @@ enum class ImageFilter {
  * When not available, the Navigator should use [alternate] as a fallback.
  */
 @ExperimentalReadiumApi
+@Serializable
 data class FontFamily(val name: String, val alternate: FontFamily? = null) {
+
     companion object {
         // Generic font families
         // See https://www.w3.org/TR/css-fonts-4/#generic-font-families
@@ -119,55 +120,55 @@ data class FontFamily(val name: String, val alternate: FontFamily? = null) {
         // System
         val ROBOTO = FontFamily("Roboto", alternate = SANS_SERIF)
     }
-
-    class Coder(private val families: List<FontFamily> = emptyList()) : SettingCoder<FontFamily?> {
-        override fun decode(json: JsonElement): FontFamily? =
-            (json as? JsonPrimitive)
-                ?.contentOrNull
-                ?.let { name ->
-                    families.firstOrNull { it.name == name }
-                }
-
-        override fun encode(value: FontFamily?): JsonElement =
-            value
-                ?.let { JsonPrimitive(it.name) }
-                ?: JsonNull
-    }
 }
 
-@JvmInline
+/**
+ * Packed color int.
+ */
 @ExperimentalReadiumApi
-value class Color(@ColorInt val int: Int) {
-    companion object {
-        val AUTO = Color(0)
-    }
+@Serializable
+@JvmInline
+value class Color(@ColorInt val int: Int)
 
-    class Coder(private val namedColors: Map<String, Int> = emptyMap()) : SettingCoder<Color> {
-        override fun decode(json: JsonElement): Color {
-            if (json !is JsonPrimitive) {
-                return AUTO
-            }
+/**
+ * Layout axis.
+ */
+@ExperimentalReadiumApi
+@Serializable
+enum class Axis(val value: String) {
+    @SerialName("horizontal") HORIZONTAL("horizontal"),
+    @SerialName("vertical") VERTICAL("vertical");
+}
 
-            json.intOrNull
-                ?.let { return Color(it) }
+/**
+ * Synthetic spread policy.
+ */
+@ExperimentalReadiumApi
+@Serializable
+enum class Spread(val value: String) {
+    @SerialName("auto") AUTO("auto"),
+    @SerialName("never") NEVER("never"),
+    @SerialName("always") ALWAYS("always");
+}
 
-            json.contentOrNull
-                ?.let { namedColors[it] }
-                ?.let { return Color(it) }
+/**
+ * Direction of the reading progression across resources.
+ */
+@ExperimentalReadiumApi
+@Serializable
+enum class ReadingProgression(val value: String) {
+    @SerialName("ltr") LTR("ltr"),
+    @SerialName("rtl") RTL("rtl");
+}
 
-            return AUTO
-        }
-
-        override fun encode(value: Color): JsonElement {
-            if (value == AUTO) {
-                return JsonNull
-            }
-
-            return namedColors
-                .filter { it.value == value.int }
-                .keys.firstOrNull()
-                ?.let { JsonPrimitive(it) }
-                ?: JsonPrimitive(value.int)
-        }
-    }
+/**
+ * Method for constraining a resource inside the viewport.
+ */
+@ExperimentalReadiumApi
+@Serializable
+enum class Fit(val value: String){
+    @SerialName("cover") COVER("cover"),
+    @SerialName("contain") CONTAIN("contain"),
+    @SerialName("width") WIDTH("width"),
+    @SerialName("height") HEIGHT("height");
 }

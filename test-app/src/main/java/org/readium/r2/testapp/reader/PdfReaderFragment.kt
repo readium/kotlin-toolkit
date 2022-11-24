@@ -12,28 +12,29 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.commitNow
-import org.readium.adapters.pdfium.navigator.PdfiumDocumentFragment
-import org.readium.r2.navigator.Navigator
+import org.readium.adapters.pdfium.navigator.PdfiumPreferences
+import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
+import org.readium.adapters.pdfium.navigator.PdfiumSettings
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
-import org.readium.r2.shared.PdfSupport
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 
-@OptIn(PdfSupport::class)
+@OptIn(ExperimentalReadiumApi::class)
 class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener {
 
-    override lateinit var navigator: Navigator
+    override lateinit var navigator: PdfNavigatorFragment<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val readerData = model.readerInitData as VisualReaderInitData
+        val readerData = model.readerInitData as PdfReaderInitData
 
         childFragmentManager.fragmentFactory =
-            PdfNavigatorFragment.createFactory(
-                publication = publication,
+            readerData.navigatorFactory.createFragmentFactory(
                 initialLocator = readerData.initialLocation,
-                listener = NavigatorListener(),
-                documentFragmentFactory = PdfiumDocumentFragment.createFactory()
+                initialPreferences = readerData.preferencesManager.preferences.value,
+                listener = this,
             )
 
         super.onCreate(savedInstanceState)
@@ -46,21 +47,29 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
                 replace(R.id.fragment_reader_container, PdfNavigatorFragment::class.java, Bundle(), NAVIGATOR_FRAGMENT_TAG)
             }
         }
-        navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!! as Navigator
+        navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!!
+                as PdfNavigatorFragment<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>
+        @Suppress("Unchecked_cast")
         return view
     }
 
-    private inner class NavigatorListener: PdfNavigatorFragment.Listener {
-        override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
-            val message = when (error) {
-                is Resource.Exception.OutOfMemory -> "The PDF is too large to be rendered on this device"
-                else -> "Failed to render this PDF"
-            }
-            Toast.makeText(requireActivity(), message, Toast.LENGTH_LONG).show()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-            // There's nothing we can do to recover, so we quit the Activity.
-            requireActivity().finish()
+        @Suppress("Unchecked_cast")
+        (model.settings as UserPreferencesViewModel<PdfiumSettings, PdfiumPreferences>)
+            .bind(navigator, viewLifecycleOwner)
+    }
+
+    override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
+        val message = when (error) {
+            is Resource.Exception.OutOfMemory -> "The PDF is too large to be rendered on this device"
+            else -> "Failed to render this PDF"
         }
+        Toast.makeText(requireActivity(), message, Toast.LENGTH_LONG).show()
+
+        // There's nothing we can do to recover, so we quit the Activity.
+        requireActivity().finish()
     }
 
     companion object {

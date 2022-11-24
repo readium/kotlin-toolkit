@@ -35,7 +35,6 @@ import org.readium.r2.navigator.R2WebView
 import org.readium.r2.navigator.databinding.ViewpagerFragmentEpubBinding
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel
-import org.readium.r2.navigator.epub.EpubSettings
 import org.readium.r2.navigator.extensions.htmlId
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
@@ -229,14 +228,9 @@ class R2EpubPageFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         if (!viewModel.useLegacySettings) {
-            val isScrollEnabled = viewModel.settings
-                .filterIsInstance<EpubSettings.Reflowable>()
-                .map { it.scroll?.value ?: true }
-                .distinctUntilChanged()
-
             val lifecycleOwner = viewLifecycleOwner
             lifecycleOwner.lifecycleScope.launch {
-                isScrollEnabled
+                viewModel.isScrollEnabled
                     .flowWithLifecycle(lifecycleOwner.lifecycle)
                     .collectLatest { webView?.scrollModeFlow?.value = it }
             }
@@ -302,7 +296,7 @@ class R2EpubPageFragment : Fragment() {
                 }
             }
 
-            if (!viewModel.isScrollEnabled) {
+            if (!viewModel.isScrollEnabled.value) {
                 val margin = resources.getDimension(R.dimen.r2_navigator_epub_vertical_padding).toInt()
                 top += margin
                 bottom += margin

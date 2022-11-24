@@ -12,89 +12,61 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.readium.r2.navigator.preferences.Configurable
+import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation
-import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.positions
 
 @OptIn(ExperimentalReadiumApi::class)
-@PdfSupport
-internal class PdfNavigatorViewModel(
+internal class PdfNavigatorViewModel<S: Configurable.Settings, P: Configurable.Preferences<P>, E: PreferencesEditor<P>>(
     application: Application,
     private val publication: Publication,
     initialLocator: Locator,
-    settings: PdfDocumentFragment.Settings,
-    private val defaultSettings: PdfDocumentFragment.Settings
+    initialPreferences: P,
+    private val pdfEngineProvider: PdfEngineProvider<S, P, E>
 ) : AndroidViewModel(application) {
 
-    data class State(
-        val locator: Locator,
-        val userSettings: PdfDocumentFragment.Settings,
-        val appliedSettings: PdfDocumentFragment.Settings
+    private val _currentLocator: MutableStateFlow<Locator> =
+        MutableStateFlow(initialLocator)
+
+    val currentLocator: StateFlow<Locator> = _currentLocator.asStateFlow()
+
+    private val _settings: MutableStateFlow<Configurable.Settings> = MutableStateFlow(
+        pdfEngineProvider.computeSettings(publication.metadata, initialPreferences)
     )
 
-    private val _state = MutableStateFlow(
-        State(
-            locator = initialLocator,
-            userSettings = settings,
-            appliedSettings = combineSettings(settings)
-        )
-    )
+    val settings: StateFlow<Configurable.Settings> = _settings.asStateFlow()
 
-    val state: StateFlow<State> = _state.asStateFlow()
-
-    fun setUserSettings(settings: PdfDocumentFragment.Settings) {
-        _state.update {
-            it.copy(
-                userSettings = settings,
-                appliedSettings = combineSettings(settings)
-            )
-        }
+    fun submitPreferences(preferences: P) = viewModelScope.launch {
+        _settings.value = pdfEngineProvider.computeSettings(publication.metadata, preferences)
     }
-
-    private fun combineSettings(settings: PdfDocumentFragment.Settings) =
-        PdfDocumentFragment.Settings(
-            fit = settings.fit
-                ?: publication.metadata.presentation.fit
-                ?: defaultSettings.fit,
-            overflow = settings.overflow.takeUnless { it == Presentation.Overflow.AUTO }
-                ?: publication.metadata.presentation.overflow.takeUnless { it == Presentation.Overflow.AUTO }
-                ?: defaultSettings.overflow,
-            readingProgression = settings.readingProgression.takeUnless { it == ReadingProgression.AUTO }
-                ?: publication.metadata.readingProgression.takeUnless { it == ReadingProgression.AUTO }
-                ?: defaultSettings.readingProgression
-        )
 
     fun onPageChanged(pageIndex: Int) = viewModelScope.launch {
         publication.positions().getOrNull(pageIndex)?.let { locator ->
-            _state.update {
-                it.copy(locator = locator)
-            }
+            _currentLocator.value = locator
         }
     }
 
     companion object {
-        fun createFactory(
+        fun <S: Configurable.Settings, P: Configurable.Preferences<P>, E: PreferencesEditor<P>> createFactory(
             application: Application,
             publication: Publication,
             initialLocator: Locator?,
-            settings: PdfDocumentFragment.Settings,
-            defaultSettings: PdfDocumentFragment.Settings
+            initialPreferences: P,
+            pdfEngineProvider: PdfEngineProvider<S, P, E>
         ) = createViewModelFactory {
             PdfNavigatorViewModel(
                 application = application,
                 publication = publication,
                 initialLocator = initialLocator
                     ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first())),
-                settings = settings,
-                defaultSettings = defaultSettings)
+                initialPreferences = initialPreferences,
+                pdfEngineProvider = pdfEngineProvider
+            )
         }
     }
 }

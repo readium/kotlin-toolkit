@@ -33,6 +33,7 @@ import org.readium.r2.navigator.image.ImageNavigatorFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.util.CompositeFragmentFactory
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -54,6 +55,10 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
 
     override val currentLocator: StateFlow<Locator>
         get() = navigatorFragment.currentLocator
+
+    @ExperimentalReadiumApi
+    override val presentation: StateFlow<VisualNavigator.Presentation>
+        get() = navigatorFragment.presentation
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         return navigatorFragment.go(locator, animated, completion)

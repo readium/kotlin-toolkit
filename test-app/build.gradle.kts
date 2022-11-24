@@ -74,8 +74,7 @@ dependencies {
     implementation(project(":readium:readium-opds"))
     implementation(project(":readium:readium-lcp"))
     // Only required if you want to support PDF files using PDFium.
-    implementation(project(":readium:adapters:pdfium:readium-adapter-pdfium-document"))
-    implementation(project(":readium:adapters:pdfium:readium-adapter-pdfium-navigator"))
+    implementation(project(":readium:adapters:pdfium"))
 
     implementation(libs.androidx.compose.activity)
     implementation(libs.androidx.activity.ktx)
@@ -99,11 +98,9 @@ dependencies {
     implementation(libs.androidx.webkit)
     implementation(libs.google.material)
     implementation(libs.timber)
-    // AM NOTE: needs to stay this version for now (June 24,2020)
     implementation(libs.picasso)
     implementation(libs.joda.time)
     implementation(libs.kotlinx.coroutines.core)
-    // AM NOTE: needs to stay this version for now (June 24,2020)
     implementation(libs.jsoup)
 
     implementation(libs.bundles.media2)

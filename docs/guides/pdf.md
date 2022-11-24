@@ -38,27 +38,26 @@ val publication = streamer.open(FileAsset(pdfFile)).getOrThrow()
 ### `navigator` adapter
 
 If you want to render a PDF document with `readium-navigator`, you can use `PdfNavigatorFragment` which handles most of the grunt work.
+You will still need to implement a few interfaces :
 
-For this, you only need to implement the interface `PdfDocumentFragment` which renders a single PDF document. Take care of calling its `Listener` callbacks when the user scrolls or interacts with the document and `PdfNavigatorFragment` will automatically send `Locator` progression events to the application.
+* `Configurable.Preferences` and `Configurable.Settings` which will deal with the settings supported by your PDF engine.
+* `PdfDocumentFragment` which renders a single PDF document.
+* `PreferencesEditor` which enables you to easily build a user interface for your preferences.
+* `VisualNavigator.Presentation` which enables the navigator to get the information it needs about the current presentation, on the basis of the current settings or not.
+* `PdfEngineProvider` which ties everything together for the use of the `PdfNavigatorFactory`.
 
-Finally, provide your implementation of `PdfDocumentFragment` when initializing the `PdfNavigatorFragment` factory:
-
-```kotlin
-override fun onCreate(savedInstanceState: Bundle?) {
-    childFragmentManager.fragmentFactory =
-        PdfNavigatorFragment.createFactory(...,
-            documentFragmentFactory = { input ->
-                CustomDocumentFragment(...)
-            }
-        )
-
-    super.onCreate(savedInstanceState)
-}
-```
-
+Take care of calling the  `Listener` callbacks of `PdfDocumentFragment` when the user scrolls or interacts with the document and `PdfNavigatorFragment` will automatically send `Locator` progression events to the application.
 The `input` parameter will contain:
 
 * `publication` and `link`, to get access to the PDF resource using `publication.get(link)`.
 * `initialPageIndex` which is the page index (from 0) that should be restored when creating the PDF view.
 * `listener` which holds the callbacks.
 
+Finally, provide an instance of your implementation of `PdfEngineProvider` when initializing the `PdfNavigatorFactory`:
+
+```kotlin
+val navigatorFactory = PdfNavigatorFactory(
+    publication = publication,
+    pdfEngineProvider = CustomPdfEngineProvider()
+)
+```

@@ -8,9 +8,9 @@ plugins {
     id("com.android.library")
     kotlin("android")
     kotlin("plugin.parcelize")
+    kotlin("plugin.serialization")
     id("maven-publish")
     id("org.jetbrains.dokka")
-    kotlin("plugin.serialization")
 }
 
 android {

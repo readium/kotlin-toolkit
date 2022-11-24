@@ -8,6 +8,7 @@ plugins {
     id("com.android.library")
     kotlin("android")
     kotlin("plugin.parcelize")
+    kotlin("plugin.serialization")
     id("maven-publish")
     id("org.jetbrains.dokka")
 }
@@ -71,6 +72,7 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.pspdfkit)
     implementation(libs.bundles.coroutines)
+    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)
 

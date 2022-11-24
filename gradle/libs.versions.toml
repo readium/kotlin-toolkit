@@ -52,7 +52,7 @@ pdfium = "1.8.2"
 pdf-viewer = "2.8.2"
 photoview = "2.3.0"
 picasso = "2.71828"
-pspdfkit = "8.2.1"
+pspdfkit = "8.4.1"
 
 robolectric = "4.9"
 

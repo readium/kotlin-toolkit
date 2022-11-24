@@ -1,10 +1,16 @@
+/*
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.navigator.epub.css
 
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.navigator.settings.FontFamily
+import org.readium.r2.navigator.preferences.FontFamily
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Language
 import org.robolectric.RobolectricTestRunner
 import kotlin.test.assertEquals
@@ -587,15 +593,18 @@ class HtmlInjectionTest {
     @Test
     fun `Inject font declarations`() {
         val sut = ReadiumCss(
-            fontFamilies = listOf(
-                FontFamily.SANS_SERIF.from(FontFamilySource.System),
-                FontFamily.ROBOTO.from(FontFamilySource.GoogleFonts),
-                FontFamily.LITERATA.from(FontFamilySource.GoogleFonts),
-                FontFamily.LIBRE_FRANKLIN.from(FontFamilySource.Assets("fonts/LibreFranklin.otf")),
-                FontFamily.ACCESSIBLE_DFA.from(FontFamilySource.ReadiumCss),
-                FontFamily.PT_SERIF.from(FontFamilySource.GoogleFonts),
-                FontFamily.IA_WRITER_DUOSPACE.from(FontFamilySource.ReadiumCss),
-                FontFamily.OPEN_DYSLEXIC.from(FontFamilySource.Assets("fonts/OpenDyslexic.otf")),
+            fontFaces = listOf(
+                buildFontFaceDeclaration("Libre Franklin") {
+                    addSource("fonts/LibreFranklin.otf")
+                },
+                buildFontFaceDeclaration("OpenDyslexic") {
+                    addSource("fonts/OpenDyslexic.otf")
+                }
+            ),
+            googleFonts = listOf(
+                FontFamily.ROBOTO,
+                FontFamily.LITERATA,
+                FontFamily.PT_SERIF,
             ),
             assetsBaseHref = "/assets/"
         )

@@ -8,6 +8,9 @@ package org.readium.r2.testapp
 
 import android.content.*
 import android.os.IBinder
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import com.google.android.material.color.DynamicColors
 import kotlinx.coroutines.*
 import org.readium.r2.testapp.BuildConfig.DEBUG
@@ -19,6 +22,9 @@ import java.io.File
 import java.util.*
 
 class Application : android.app.Application() {
+
+    val Context.navigatorPreferences: DataStore<Preferences>
+        by preferencesDataStore(name = "navigator-preferences")
 
     lateinit var readium: Readium
         private set
@@ -74,7 +80,6 @@ class Application : android.app.Application() {
         startService(intent)
         bindService(intent, mediaServiceConnection, 0)
 
-
         /*
          * Initializing repositories
          */
@@ -88,7 +93,8 @@ class Application : android.app.Application() {
                     this@Application,
                     readium,
                     mediaServiceBinder.await(),
-                    bookRepository
+                    bookRepository,
+                    navigatorPreferences
                 )
             }
 

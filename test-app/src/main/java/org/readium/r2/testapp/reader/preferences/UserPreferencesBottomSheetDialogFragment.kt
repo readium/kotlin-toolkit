@@ -4,17 +4,19 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.testapp.reader.settings
+package org.readium.r2.testapp.reader.preferences
 
 import android.app.Dialog
 import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.ComposeBottomSheetDialogFragment
 
-class UserSettingsBottomSheetDialogFragment : ComposeBottomSheetDialogFragment(
+@OptIn(ExperimentalReadiumApi::class)
+class UserPreferencesBottomSheetDialogFragment : ComposeBottomSheetDialogFragment(
     isScrollable = true
 ) {
     private val model: ReaderViewModel by activityViewModels()
@@ -32,6 +34,7 @@ class UserSettingsBottomSheetDialogFragment : ComposeBottomSheetDialogFragment(
 
     @Composable
     override fun Content() {
-        UserSettings(model.settings)
+        val settingsModel = checkNotNull(model.settings)
+        UserPreferences(settingsModel)
     }
 }

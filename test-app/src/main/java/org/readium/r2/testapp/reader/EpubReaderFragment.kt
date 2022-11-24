@@ -23,20 +23,21 @@ import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.readium.r2.navigator.ExperimentalDecorator
-import org.readium.r2.navigator.Navigator
-import org.readium.r2.navigator.epub.EpubNavigatorFragment
+import org.readium.r2.navigator.epub.*
+import org.readium.r2.navigator.epub.css.FontStyle
 import org.readium.r2.navigator.html.HtmlDecorationTemplate
 import org.readium.r2.navigator.html.toCss
+import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 import org.readium.r2.testapp.search.SearchFragment
 
 @OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
 class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listener {
 
-    override lateinit var navigator: Navigator
-    private lateinit var navigatorFragment: EpubNavigatorFragment
+    override lateinit var navigator: EpubNavigatorFragment
 
     private lateinit var menuSearch: MenuItem
     lateinit var menuSearchView: SearchView
@@ -48,26 +49,37 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             isSearchViewIconified = savedInstanceState.getBoolean(IS_SEARCH_VIEW_ICONIFIED)
         }
 
-        val readerData = model.readerInitData as VisualReaderInitData
+        val readerData = model.readerInitData as EpubReaderInitData
 
         childFragmentManager.fragmentFactory =
-            EpubNavigatorFragment.createFactory(
-                publication = publication,
+            readerData.navigatorFactory.createFragmentFactory(
                 initialLocator = readerData.initialLocation,
                 listener = this,
-                config = EpubNavigatorFragment.Configuration(
-                    preferences = model.settings.preferences.value,
+                initialPreferences = readerData.preferencesManager.preferences.value,
+                configuration = EpubNavigatorFragment.Configuration(
                     // App assets which will be accessible from the EPUB resources.
                     // You can use simple glob patterns, such as "images/.*" to allow several
                     // assets in one go.
                     servedAssets = listOf(
                         /** Icon for the annotation side mark, see [annotationMarkTemplate]. */
+                        "fonts/.*",
                         "annotation-icon.svg"
-                    )
+                    ),
                 ).apply {
                     // Register the HTML template for our custom [DecorationStyleAnnotationMark].
                     decorationTemplates[DecorationStyleAnnotationMark::class] = annotationMarkTemplate()
                     selectionActionModeCallback = customSelectionActionModeCallback
+
+                   addFontFamilyDeclaration(FontFamily.LITERATA) {
+                        addFontFace {
+                            addSource("fonts/Literata-VariableFont_opsz,wght.ttf")
+                            setFontStyle(FontStyle.NORMAL)
+                        }
+                        addFontFace {
+                            addSource("fonts/Literata-Italic-VariableFont_opsz,wght.ttf")
+                            setFontStyle(FontStyle.ITALIC)
+                        }
+                    }
                 }
             )
 
@@ -77,7 +89,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             FragmentResultListener { _, result ->
                 menuSearch.collapseActionView()
                 result.getParcelable<Locator>(SearchFragment::class.java.name)?.let {
-                    navigatorFragment.go(it)
+                    navigator.go(it)
                 }
             }
         )
@@ -96,8 +108,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                 add(R.id.fragment_reader_container, EpubNavigatorFragment::class.java, Bundle(), navigatorFragmentTag)
             }
         }
-        navigator = childFragmentManager.findFragmentByTag(navigatorFragmentTag) as Navigator
-        navigatorFragment = navigator as EpubNavigatorFragment
+        navigator = childFragmentManager.findFragmentByTag(navigatorFragmentTag) as EpubNavigatorFragment
 
         return view
     }
@@ -105,14 +116,18 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        @Suppress("Unchecked_cast")
+        (model.settings as UserPreferencesViewModel<EpubSettings, EpubPreferences>)
+            .bind(navigator, viewLifecycleOwner)
+
        // This is a hack to draw the right background color on top and bottom blank spaces
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                model.settings.theme
-                    .onEach { theme ->
-                        navigatorFragment.resourcePager.setBackgroundColor(theme.backgroundColor)
+                model.settings?.theme
+                    ?.onEach { theme ->
+                        navigator.resourcePager.setBackgroundColor(theme.backgroundColor)
                     }
-                    .launchIn(this)
+                    ?.launchIn(this)
             }
         }
     }
@@ -196,7 +211,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         childFragmentManager.commit {
             childFragmentManager.findFragmentByTag(SEARCH_FRAGMENT_TAG)?.let { remove(it) }
             add(R.id.fragment_reader_container, SearchFragment::class.java, Bundle(), SEARCH_FRAGMENT_TAG)
-            hide(navigatorFragment)
+            hide(navigator)
             addToBackStack(SEARCH_FRAGMENT_TAG)
         }
     }

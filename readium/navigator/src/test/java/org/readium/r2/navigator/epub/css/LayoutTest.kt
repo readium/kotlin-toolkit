@@ -1,8 +1,16 @@
+/*
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.navigator.epub.css
 
 import org.junit.Test
+import org.readium.r2.shared.ExperimentalReadiumApi
 import kotlin.test.assertEquals
 
+@OptIn(ExperimentalReadiumApi::class)
 class LayoutTest {
 
     @Test
