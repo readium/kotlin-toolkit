@@ -111,7 +111,7 @@ class PsPdfKitPreferencesEditor internal constructor(
         RangePreferenceDelegate(
             getValue = { preferences.pageSpacing },
             getEffectiveValue = { state.settings.pageSpacing },
-            getIsEffective = { state.settings.scroll },
+            getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(pageSpacing = value) } },
             supportedRange = configuration.pageSpacingRange,
             progressionStrategy = configuration.pageSpacingProgression,
