@@ -18,24 +18,25 @@ class PublicationTest {
     private fun createPublication(
         subCollections: Map<String, List<PublicationCollection>> = emptyMap()
     ) = Publication(
-            Manifest(
-                metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                subcollections = subCollections
-            )
+        Manifest(
+            metadata = Metadata(localizedTitle = LocalizedString("Title")),
+            subcollections = subCollections
+        )
     )
 
     @Test fun `get {images}`() {
         val links = listOf(Link(href = "/image.png"))
         assertEquals(
             links,
-            createPublication(subCollections = mapOf(
-                "images" to listOf(PublicationCollection(links = links))
-            )).images
+            createPublication(
+                subCollections = mapOf(
+                    "images" to listOf(PublicationCollection(links = links))
+                )
+            ).images
         )
     }
 
     @Test fun `get {images} when missing`() {
         assertEquals(0, createPublication().images.size)
     }
-
 }

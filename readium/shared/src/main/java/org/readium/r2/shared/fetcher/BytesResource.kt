@@ -35,7 +35,6 @@ sealed class BaseBytesResource(val link: Link, val bytes: suspend () -> ByteArra
                 .requireLengthFitInt()
 
             return Try.success(_bytes.sliceArray(range.map(Long::toInt)))
-
         } catch (e: Exception) {
             return Try.failure(Resource.Exception.wrap(e))
         }
@@ -54,7 +53,6 @@ class BytesResource(link: Link, bytes: suspend () -> ByteArray) : BaseBytesResou
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { bytes().size }} bytes)"
-
 }
 
 /** Creates a Resource serving a [String]. */
@@ -64,5 +62,4 @@ class StringResource(link: Link, string: suspend () -> String) : BaseBytesResour
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { bytes().toString() }})"
-
 }

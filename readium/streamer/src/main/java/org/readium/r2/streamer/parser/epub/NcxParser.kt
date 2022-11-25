@@ -10,7 +10,6 @@ import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Href
 
-
 internal object NcxParser {
 
     fun parse(document: ElementNode, filePath: String): Map<String, List<Link>> {
@@ -50,5 +49,4 @@ internal object NcxParser {
     private fun extractHref(element: ElementNode, filePath: String) =
         element.getFirst("content", Namespaces.NCX)?.getAttr("src")
             ?.ifBlank { null }?.let { Href(it, baseHref = filePath).string }
-
 }

@@ -70,7 +70,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                     decorationTemplates[DecorationStyleAnnotationMark::class] = annotationMarkTemplate()
                     selectionActionModeCallback = customSelectionActionModeCallback
 
-                   addFontFamilyDeclaration(FontFamily.LITERATA) {
+                    addFontFamilyDeclaration(FontFamily.LITERATA) {
                         addFontFace {
                             addSource("fonts/Literata-VariableFont_opsz,wght.ttf")
                             setFontStyle(FontStyle.NORMAL)
@@ -99,7 +99,11 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
         val navigatorFragmentTag = getString(R.string.epub_navigator_tag)
 
@@ -120,7 +124,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         (model.settings as UserPreferencesViewModel<EpubSettings, EpubPreferences>)
             .bind(navigator, viewLifecycleOwner)
 
-       // This is a hack to draw the right background color on top and bottom blank spaces
+        // This is a hack to draw the right background color on top and bottom blank spaces
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 model.settings?.theme

@@ -16,11 +16,9 @@ import org.readium.r2.lcp.license.model.LicenseDocument
  */
 internal class BytesLicenseContainer(private var bytes: ByteArray) : LicenseContainer {
 
-    override fun read() : ByteArray = bytes
+    override fun read(): ByteArray = bytes
 
     override fun write(license: LicenseDocument) {
         bytes = license.data
     }
-
 }
-

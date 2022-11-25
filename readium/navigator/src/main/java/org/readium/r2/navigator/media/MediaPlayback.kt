@@ -6,9 +6,9 @@
 
 package org.readium.r2.navigator.media
 
-import org.readium.r2.navigator.ExperimentalAudiobook
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
+import org.readium.r2.navigator.ExperimentalAudiobook
 
 /**
  * State of the playback at a point in time.
@@ -35,5 +35,4 @@ data class MediaPlayback(val state: State, val rate: Double, val timeline: Timel
     )
 
     val isPlaying: Boolean get() = state.isPlaying
-
 }

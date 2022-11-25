@@ -36,7 +36,7 @@ class PsPdfKitPreferencesEditor internal constructor(
         val pageSpacingRange: ClosedRange<Double> = 0.0..50.0,
         val pageSpacingProgression: ProgressionStrategy<Double> = DoubleIncrement(5.0),
     )
-    
+
     private data class State(
         val preferences: PsPdfKitPreferences,
         val settings: PsPdfKitSettings
@@ -68,7 +68,7 @@ class PsPdfKitPreferencesEditor internal constructor(
         SwitchPreferenceDelegate(
             getValue = { preferences.offsetFirstPage },
             getEffectiveValue = { state.settings.offsetFirstPage },
-            getIsEffective = { !state.settings.scroll && state.settings.spread != Spread.NEVER},
+            getIsEffective = { !state.settings.scroll && state.settings.spread != Spread.NEVER },
             updateValue = { value -> updateValues { it.copy(offsetFirstPage = value) } },
         )
 
@@ -122,7 +122,7 @@ class PsPdfKitPreferencesEditor internal constructor(
         val newPreferences = updater(preferences)
         state = newPreferences.toState()
     }
-    
+
     private fun PsPdfKitPreferences.toState() =
         State(preferences = this, settings = settingsResolver.settings(this))
 }

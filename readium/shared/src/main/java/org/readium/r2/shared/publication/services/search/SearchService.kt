@@ -29,10 +29,10 @@ typealias SearchTry<SuccessT> = Try<SuccessT, SearchException>
  */
 @Search
 sealed class SearchException(content: Content, cause: Throwable? = null) : UserException(content, cause) {
-    constructor(@StringRes userMessageId: Int, vararg args: Any, cause: Throwable? = null)
-        : this(Content(userMessageId, *args), cause)
-    constructor(cause: UserException)
-        : this(Content(cause), cause)
+    constructor(@StringRes userMessageId: Int, vararg args: Any, cause: Throwable? = null) :
+        this(Content(userMessageId, *args), cause)
+    constructor(cause: UserException) :
+        this(Content(cause), cause)
 
     /**
      * The publication is not searchable.

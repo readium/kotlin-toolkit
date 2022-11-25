@@ -14,7 +14,7 @@ internal class AccessibilityAdapter {
         val itemsHolder = MetadataItemsHolder(items)
 
         val conformsTo = itemsHolder
-            .adapt { list -> list.mapTakeNotNull{ item -> conformedToProfileOrNull(item) } }
+            .adapt { list -> list.mapTakeNotNull { item -> conformedToProfileOrNull(item) } }
             .toSet()
 
         val summary = itemsHolder
@@ -70,12 +70,13 @@ internal class AccessibilityAdapter {
         .takeAllWithProperty(Vocabularies.SCHEMA + "accessModeSufficient")
         .mapFirst { metas ->
             metas.map { it.value.split(",").map(String::trim).distinct() }
-            .distinct()
-            .mapNotNull { modeGroups -> modeGroups
-                .mapNotNull { Accessibility.PrimaryAccessMode(it) }
-                .toSet()
-                .takeUnless(Set<Accessibility.PrimaryAccessMode>::isEmpty)
-            }.toSet()
+                .distinct()
+                .mapNotNull { modeGroups ->
+                    modeGroups
+                        .mapNotNull { Accessibility.PrimaryAccessMode(it) }
+                        .toSet()
+                        .takeUnless(Set<Accessibility.PrimaryAccessMode>::isEmpty)
+                }.toSet()
         }
 
     private fun adaptCertification(items: List<MetadataItem>): Pair<Accessibility.Certification?, List<MetadataItem>> {

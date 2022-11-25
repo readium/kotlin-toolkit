@@ -46,7 +46,5 @@ enum class ContentLayout(val cssId: String) : Parcelable {
         val cjkv: ContentLayout = CJK_VERTICAL
         @Deprecated("Renamed to [CJK_HORIZONTAL]", ReplaceWith("ContentLayout.CJK_HORIZONTAL"))
         val cjkh: ContentLayout = CJK_HORIZONTAL
-
     }
-
 }

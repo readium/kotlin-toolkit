@@ -19,6 +19,7 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.widget.Toast
 import androidx.media.MediaBrowserServiceCompat
+import kotlin.reflect.KMutableProperty0
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -33,7 +34,6 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationId
 import org.readium.r2.shared.publication.services.cover
 import timber.log.Timber
-import kotlin.reflect.KMutableProperty0
 
 /**
  * [MediaBrowserServiceCompat] implementation holding the current [MediaSessionNavigator] for
@@ -64,14 +64,21 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
      * Creates the [PendingIntent] which will be used to start the media activity when the user
      * activates the media notification.
      */
-    open suspend fun onCreateNotificationIntent(publicationId: PublicationId, publication: Publication): PendingIntent? = null
+    open suspend fun onCreateNotificationIntent(
+        publicationId: PublicationId,
+        publication: Publication
+    ): PendingIntent? = null
 
     /**
      * Creates the [MediaPlayer.NotificationMetadata] for the given resource [link].
      *
      * The metadata will be used for the media-style notification.
      */
-    open fun onCreateNotificationMetadata(publicationId: PublicationId, publication: Publication, link: Link): MediaPlayer.NotificationMetadata =
+    open fun onCreateNotificationMetadata(
+        publicationId: PublicationId,
+        publication: Publication,
+        link: Link
+    ): MediaPlayer.NotificationMetadata =
         MediaPlayer.NotificationMetadata(publication, link)
 
     /**
@@ -123,7 +130,6 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
             currentNavigator.value?.player = value
         }
 
-
     private var notificationId: Int? = null
     private var notification: Notification? = null
 
@@ -154,7 +160,10 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
             return locator
         }
 
-        override suspend fun coverOfPublication(publication: Publication, publicationId: PublicationId): Bitmap? =
+        override suspend fun coverOfPublication(
+            publication: Publication,
+            publicationId: PublicationId
+        ): Bitmap? =
             this@MediaService.coverOfPublication(publicationId, publication)
 
         override fun onNotificationPosted(notificationId: Int, notification: Notification) {
@@ -173,7 +182,11 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
             }
         }
 
-        override fun onCreateNotificationMetadata(publication: Publication, publicationId: PublicationId, link: Link): MediaPlayer.NotificationMetadata =
+        override fun onCreateNotificationMetadata(
+            publication: Publication,
+            publicationId: PublicationId,
+            link: Link
+        ): MediaPlayer.NotificationMetadata =
             this@MediaService.onCreateNotificationMetadata(publicationId, publication, link)
 
         override fun onCommand(command: String, args: Bundle?, cb: ResultReceiver?): Boolean =
@@ -189,7 +202,6 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
         override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
             this@MediaService.onResourceLoadFailed(link, error)
         }
-
     }
 
     // Service
@@ -259,7 +271,10 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
         return BrowserRoot(ROOT_ID, null)
     }
 
-    override fun onLoadChildren(parentId: String, result: Result<MutableList<MediaBrowserCompat.MediaItem>>) {
+    override fun onLoadChildren(
+        parentId: String,
+        result: Result<MutableList<MediaBrowserCompat.MediaItem>>
+    ) {
         result.sendResult(mutableListOf())
     }
 
@@ -293,7 +308,6 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
             }
             mediaSession = null
         }
-
     }
 
     /**
@@ -306,7 +320,12 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
 
         val currentNavigator: StateFlow<MediaSessionNavigator?> get() = navigator
 
-        fun getNavigator(context: Context, publication: Publication, publicationId: PublicationId, initialLocator: Locator?): MediaSessionNavigator {
+        fun getNavigator(
+            context: Context,
+            publication: Publication,
+            publicationId: PublicationId,
+            initialLocator: Locator?
+        ): MediaSessionNavigator {
             context.startForegroundServiceCompat(Intent(context, serviceClass))
 
             currentNavigator.value
@@ -314,23 +333,23 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
                 ?.let { return it }
 
             val navigator = MediaSessionNavigator(publication, publicationId, getMediaSession(context, serviceClass).controller)
-            pendingNavigator.trySend(PendingNavigator(
-                navigator = navigator,
-                media = PendingMedia(
-                    publication = publication,
-                    publicationId = publicationId,
-                    locator = initialLocator
-                        ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
+            pendingNavigator.trySend(
+                PendingNavigator(
+                    navigator = navigator,
+                    media = PendingMedia(
+                        publication = publication,
+                        publicationId = publicationId,
+                        locator = initialLocator
+                            ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
+                    )
                 )
-            ))
+            )
 
             return navigator
         }
-
     }
 
     private class PendingNavigator(val navigator: MediaSessionNavigator, val media: PendingMedia)
-
 }
 
 private fun Context.startForegroundServiceCompat(intent: Intent) {

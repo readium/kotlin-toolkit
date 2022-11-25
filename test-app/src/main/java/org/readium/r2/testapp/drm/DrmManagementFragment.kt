@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import java.util.*
 import kotlinx.coroutines.launch
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
@@ -27,7 +28,6 @@ import org.readium.r2.testapp.databinding.FragmentDrmManagementBinding
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.viewLifecycle
 import timber.log.Timber
-import java.util.*
 
 class DrmManagementFragment : Fragment() {
 
@@ -73,10 +73,10 @@ class DrmManagementFragment : Fragment() {
         binding.drmValueCopiesLeft.text = model.copiesLeft
 
         val datesVisibility =
-                if (model.start != null && model.end != null && model.start != model.end)
-                    View.VISIBLE
-                else
-                    View.GONE
+            if (model.start != null && model.end != null && model.start != model.end)
+                View.VISIBLE
+            else
+                View.GONE
 
         binding.drmStart.visibility = datesVisibility
         binding.drmValueStart.text = model.start.toFormattedString()
@@ -85,7 +85,7 @@ class DrmManagementFragment : Fragment() {
 
         // Actions
         binding.drmLabelActions.visibility =
-                if (model.canRenewLoan || model.canReturnPublication) View.VISIBLE else View.GONE
+            if (model.canRenewLoan || model.canReturnPublication) View.VISIBLE else View.GONE
 
         binding.drmButtonRenew.run {
             visibility = if (model.canRenewLoan) View.VISIBLE else View.GONE
@@ -101,37 +101,37 @@ class DrmManagementFragment : Fragment() {
     private fun onRenewLoanClicked() {
         lifecycleScope.launch {
             model.renewLoan(this@DrmManagementFragment)
-                    .onSuccess { newDate ->
-                        binding.drmValueEnd.text = newDate.toFormattedString()
-                    }.onFailure { exception ->
-                        exception.toastUserMessage(requireView())
-                    }
+                .onSuccess { newDate ->
+                    binding.drmValueEnd.text = newDate.toFormattedString()
+                }.onFailure { exception ->
+                    exception.toastUserMessage(requireView())
+                }
         }
     }
 
     private fun onReturnPublicationClicked() {
         MaterialAlertDialogBuilder(requireContext())
-                .setTitle(getString(R.string.return_publication))
-                .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
-                    dialog.cancel()
+            .setTitle(getString(R.string.return_publication))
+            .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
+                dialog.cancel()
+            }
+            .setPositiveButton(getString(R.string.return_button)) { _, _ ->
+                lifecycleScope.launch {
+                    model.returnPublication()
+                        .onSuccess {
+                            val result = DrmManagementContract.createResult(hasReturned = true)
+                            setFragmentResult(DrmManagementContract.REQUEST_KEY, result)
+                        }.onFailure { exception ->
+                            exception.toastUserMessage(requireView())
+                        }
                 }
-                .setPositiveButton(getString(R.string.return_button)) { _, _ ->
-                    lifecycleScope.launch {
-                        model.returnPublication()
-                                .onSuccess {
-                                    val result = DrmManagementContract.createResult(hasReturned = true)
-                                    setFragmentResult(DrmManagementContract.REQUEST_KEY, result)
-                                }.onFailure { exception ->
-                                    exception.toastUserMessage(requireView())
-                                }
-                    }
-                }
-                .show()
+            }
+            .show()
     }
 }
 
 private fun Date?.toFormattedString() =
-        DateTime(this).toString(DateTimeFormat.shortDateTime()).orEmpty()
+    DateTime(this).toString(DateTimeFormat.shortDateTime()).orEmpty()
 
 // FIXME: the toast is drawn behind the navigation bar
 private fun Exception.toastUserMessage(view: View) {

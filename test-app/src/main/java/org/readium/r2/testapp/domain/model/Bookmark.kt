@@ -14,10 +14,13 @@ import org.json.JSONObject
 import org.readium.r2.shared.publication.Locator
 
 @Entity(
-    tableName = Bookmark.TABLE_NAME, indices = [Index(
-        value = ["BOOK_ID", "LOCATION"],
-        unique = true
-    )]
+    tableName = Bookmark.TABLE_NAME,
+    indices = [
+        Index(
+            value = ["BOOK_ID", "LOCATION"],
+            unique = true
+        )
+    ]
 )
 data class Bookmark(
     @PrimaryKey

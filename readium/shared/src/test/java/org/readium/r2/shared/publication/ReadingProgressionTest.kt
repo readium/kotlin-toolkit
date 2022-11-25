@@ -32,5 +32,4 @@ class ReadingProgressionTest {
         assertFalse(ReadingProgression.TTB.isHorizontal!!)
         assertFalse(ReadingProgression.BTT.isHorizontal!!)
     }
-
 }

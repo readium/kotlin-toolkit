@@ -102,7 +102,6 @@ data class Locator(
 
         @Deprecated("Renamed to [fragments]", ReplaceWith("fragments"))
         val fragment: String? get() = fragments.firstOrNull()
-
     }
 
     /**
@@ -201,7 +200,6 @@ data class Locator(
             return json.parseObjects { Locator.fromJSON(it as? JSONObject, warnings) }
         }
     }
-
 }
 
 /**

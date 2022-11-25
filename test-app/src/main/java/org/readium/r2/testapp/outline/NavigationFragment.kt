@@ -103,11 +103,11 @@ class NavigationFragment : Fragment() {
 }
 
 class NavigationAdapter(private val onLinkSelected: (Link) -> Unit) :
-        ListAdapter<Pair<Int, Link>, NavigationAdapter.ViewHolder>(NavigationDiff()) {
+    ListAdapter<Pair<Int, Link>, NavigationAdapter.ViewHolder>(NavigationDiff()) {
 
     override fun onCreateViewHolder(
-            parent: ViewGroup,
-            viewType: Int
+        parent: ViewGroup,
+        viewType: Int
     ): ViewHolder {
         return ViewHolder(
             ItemRecycleNavigationBinding.inflate(
@@ -138,19 +138,19 @@ class NavigationAdapter(private val onLinkSelected: (Link) -> Unit) :
 private class NavigationDiff : DiffUtil.ItemCallback<Pair<Int, Link>>() {
 
     override fun areItemsTheSame(
-            oldItem: Pair<Int, Link>,
-            newItem: Pair<Int, Link>
+        oldItem: Pair<Int, Link>,
+        newItem: Pair<Int, Link>
     ): Boolean {
-        return oldItem.first == newItem.first
-                && oldItem.second == newItem.second
+        return oldItem.first == newItem.first &&
+            oldItem.second == newItem.second
     }
 
     override fun areContentsTheSame(
-            oldItem: Pair<Int, Link>,
-            newItem: Pair<Int, Link>
+        oldItem: Pair<Int, Link>,
+        newItem: Pair<Int, Link>
     ): Boolean {
-        return oldItem.first == newItem.first
-                && oldItem.second == newItem.second
+        return oldItem.first == newItem.first &&
+            oldItem.second == newItem.second
     }
 }
 

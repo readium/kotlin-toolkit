@@ -13,7 +13,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.adapters.pdfium.navigator.PdfiumPreferences
-import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
 import org.readium.adapters.pdfium.navigator.PdfiumSettings
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.*
@@ -29,7 +28,7 @@ import org.readium.r2.testapp.reader.*
  * @param bookId Database ID for the book.
  */
 @OptIn(ExperimentalReadiumApi::class)
-class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.Preferences<P>>(
+class UserPreferencesViewModel<S : Configurable.Settings, P : Configurable.Preferences<P>>(
     private val bookId: Long,
     private val viewModelScope: CoroutineScope,
     private val preferencesManager: PreferencesManager<P>,
@@ -43,7 +42,7 @@ class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.Prefere
             readerInitData: ReaderInitData
         ): UserPreferencesViewModel<*, *>? =
             when (readerInitData) {
-                is EpubReaderInitData -> with (readerInitData) {
+                is EpubReaderInitData -> with(readerInitData) {
                     val editor = navigatorFactory
                         .createPreferencesEditor(preferencesManager.preferences.value)
 
@@ -51,7 +50,7 @@ class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.Prefere
                         bookId, viewModelScope, preferencesManager, editor
                     )
                 }
-                is PdfReaderInitData -> with (readerInitData) {
+                is PdfReaderInitData -> with(readerInitData) {
                     val editor = navigatorFactory
                         .createPreferencesEditor(preferencesManager.preferences.value)
 
@@ -76,7 +75,6 @@ class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.Prefere
         .map { it.theme }
         .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = Theme.LIGHT)
 
-
     fun bind(configurable: Configurable<S, P>, lifecycleOwner: LifecycleOwner) {
         with(lifecycleOwner) {
             configurable.settings
@@ -94,6 +92,6 @@ class UserPreferencesViewModel<S: Configurable.Settings, P: Configurable.Prefere
     }
 
     fun commitPreferences() = viewModelScope.launch {
-            preferencesManager.setPreferences(this@UserPreferencesViewModel.preferencesEditor.preferences)
-        }
+        preferencesManager.setPreferences(this@UserPreferencesViewModel.preferencesEditor.preferences)
+    }
 }

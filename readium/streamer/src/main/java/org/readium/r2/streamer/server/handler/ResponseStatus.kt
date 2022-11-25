@@ -9,7 +9,6 @@
 
 package org.readium.r2.streamer.server.handler
 
-
 object ResponseStatus {
     const val SUCCESS_RESPONSE = "{\"success\":true}"
     const val FAILURE_RESPONSE = "{\"success\":false}"

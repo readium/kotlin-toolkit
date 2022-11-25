@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.epub
 
+import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.assertNotNull
@@ -23,7 +24,6 @@ import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.streamer.readBlocking
 import org.robolectric.RobolectricTestRunner
-import java.io.File
 
 @RunWith(RobolectricTestRunner::class)
 class EpubDeobfuscatorTest {
@@ -53,7 +53,7 @@ class EpubDeobfuscatorTest {
             ).toJSON().toMap()
         }
         val properties = encryption?.let {
-            mapOf( "encrypted" to it)
+            mapOf("encrypted" to it)
         }.orEmpty()
 
         val obfuscatedRes = fetcher.get(
@@ -111,5 +111,4 @@ class EpubDeobfuscatorTest {
         ).readBlocking().getOrNull()
         assertThat(deobfuscatedRes).isEqualTo(font)
     }
-
 }

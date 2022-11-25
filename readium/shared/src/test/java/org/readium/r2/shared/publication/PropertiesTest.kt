@@ -35,10 +35,14 @@ class PropertiesTest {
                     "other-property2" to listOf(42)
                 )
             ),
-            Properties.fromJSON(JSONObject("""{
+            Properties.fromJSON(
+                JSONObject(
+                    """{
                 "other-property1": "value",
                 "other-property2": [42]
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
@@ -48,10 +52,12 @@ class PropertiesTest {
 
     @Test fun `get full JSON`() {
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "other-property1": "value",
                 "other-property2": [42]
-            }"""),
+            }"""
+            ),
             Properties(
                 otherProperties = mapOf<String, Any>(
                     "other-property1" to "value",
@@ -62,19 +68,22 @@ class PropertiesTest {
     }
 
     @Test fun `copy after adding the given {properties}`() {
-        val properties = Properties(otherProperties = mapOf<String, Any>(
-            "other-property1" to "value",
-            "other-property2" to listOf(42)
-        ))
+        val properties = Properties(
+            otherProperties = mapOf<String, Any>(
+                "other-property1" to "value",
+                "other-property2" to listOf(42)
+            )
+        )
 
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "other-property1": "value",
                 "other-property2": [42],
                 "additional": "property"
-            }"""),
+            }"""
+            ),
             properties.add(mapOf("additional" to "property")).toJSON()
         )
     }
-
 }

@@ -9,6 +9,9 @@
 
 package org.readium.r2.lcp.license.model
 
+import java.net.URL
+import java.nio.charset.Charset
+import java.util.*
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.components.Link
@@ -21,9 +24,6 @@ import org.readium.r2.lcp.service.URLParameters
 import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.util.mediatype.MediaType
-import java.net.URL
-import java.nio.charset.Charset
-import java.util.*
 
 class LicenseDocument(val data: ByteArray) {
     val provider: String
@@ -77,7 +77,7 @@ class LicenseDocument(val data: ByteArray) {
     fun links(rel: Rel, type: MediaType? = null): List<Link> =
         links.allWithRel(rel.rawValue, type)
 
-    fun url(rel: Rel, preferredType: MediaType? = null, parameters:  URLParameters = emptyMap()): URL {
+    fun url(rel: Rel, preferredType: MediaType? = null, parameters: URLParameters = emptyMap()): URL {
         val link = link(rel, preferredType)
             ?: links.firstWithRelAndNoType(rel.rawValue)
             ?: throw LcpException.Parsing.Url(rel = rel.rawValue)
@@ -87,5 +87,4 @@ class LicenseDocument(val data: ByteArray) {
 
     val description: String
         get() = "License($id)"
-
 }

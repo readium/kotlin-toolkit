@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.audio
 
+import java.io.File
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.asset.PublicationAsset
@@ -18,7 +19,6 @@ import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
 import org.readium.r2.streamer.extensions.lowercasedExtension
-import java.io.File
 
 /**
  * Parses an audiobook Publication from an unstructured archive format containing audio files,
@@ -26,7 +26,7 @@ import java.io.File
  *
  * It can also work for a standalone audio file.
  */
-class AudioParser :  PublicationParser {
+class AudioParser : PublicationParser {
 
     override suspend fun parse(asset: PublicationAsset, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? {
 
@@ -65,10 +65,11 @@ class AudioParser :  PublicationParser {
             return true
 
         val allowedExtensions = audioExtensions +
-                listOf("asx", "bio", "m3u", "m3u8", "pla", "pls", "smil", "txt", "vlc", "wpl", "xspf", "zpl")
+            listOf("asx", "bio", "m3u", "m3u8", "pla", "pls", "smil", "txt", "vlc", "wpl", "xspf", "zpl")
 
         if (fetcher.links().filterNot { File(it.href).isHiddenOrThumbs }
-                .all { File(it.href).lowercasedExtension in allowedExtensions })
+            .all { File(it.href).lowercasedExtension in allowedExtensions }
+        )
             return true
 
         return false

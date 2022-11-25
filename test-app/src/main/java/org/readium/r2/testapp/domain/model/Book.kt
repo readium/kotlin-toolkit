@@ -11,10 +11,9 @@ import android.os.Build
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import org.readium.r2.shared.util.mediatype.MediaType
 import java.net.URI
 import java.nio.file.Paths
-
+import org.readium.r2.shared.util.mediatype.MediaType
 
 @Entity(tableName = Book.TABLE_NAME)
 data class Book(

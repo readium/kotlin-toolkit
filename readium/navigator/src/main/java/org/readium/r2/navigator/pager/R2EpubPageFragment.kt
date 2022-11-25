@@ -27,6 +27,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewClientCompat
+import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
@@ -42,7 +43,6 @@ import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.ReadingProgression
-import kotlin.math.roundToInt
 
 class R2EpubPageFragment : Fragment() {
 
@@ -107,7 +107,11 @@ class R2EpubPageFragment : Fragment() {
     }
 
     @SuppressLint("SetJavaScriptEnabled", "JavascriptInterface")
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         _binding = ViewpagerFragmentEpubBinding.inflate(inflater, container, false)
         containerView = binding.root
         preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
@@ -149,11 +153,15 @@ class R2EpubPageFragment : Fragment() {
 
         var endReached = false
         webView.setOnOverScrolledCallback(object : R2BasicWebView.OnOverScrolledCallback {
-            override fun onOverScrolled(scrollX: Int, scrollY: Int, clampedX: Boolean, clampedY: Boolean) {
+            override fun onOverScrolled(
+                scrollX: Int,
+                scrollY: Int,
+                clampedX: Boolean,
+                clampedY: Boolean
+            ) {
                 val activity = activity ?: return
                 val metrics = DisplayMetrics()
                 activity.windowManager.defaultDisplay.getMetrics(metrics)
-
 
                 val topDecile = webView.contentHeight - 1.15 * metrics.heightPixels
                 val bottomDecile = (webView.contentHeight - metrics.heightPixels).toDouble()
@@ -350,7 +358,11 @@ class R2EpubPageFragment : Fragment() {
         }
     }
 
-    private suspend fun loadLocator(webView: R2WebView, readingProgression: ReadingProgression, locator: Locator) {
+    private suspend fun loadLocator(
+        webView: R2WebView,
+        readingProgression: ReadingProgression,
+        locator: Locator
+    ) {
         val text = locator.text
         if (text.highlight != null) {
             if (webView.scrollToText(text)) {
@@ -373,7 +385,6 @@ class R2EpubPageFragment : Fragment() {
 
         if (webView.scrollMode) {
             webView.scrollToPosition(progression)
-
         } else {
             // Figure out the target web view "page" from the requested
             // progression.
@@ -386,7 +397,12 @@ class R2EpubPageFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance(url: String, link: Link? = null, initialLocator: Locator? = null, positionCount: Int = 0): R2EpubPageFragment =
+        fun newInstance(
+            url: String,
+            link: Link? = null,
+            initialLocator: Locator? = null,
+            positionCount: Int = 0
+        ): R2EpubPageFragment =
             R2EpubPageFragment().apply {
                 arguments = Bundle().apply {
                     putString("url", url)

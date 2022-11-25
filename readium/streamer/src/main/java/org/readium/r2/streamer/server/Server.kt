@@ -11,19 +11,23 @@ package org.readium.r2.streamer.server
 
 import android.content.Context
 import android.content.res.AssetManager
-import org.nanohttpd.router.RouterNanoHTTPD
-import org.readium.r2.shared.Injectable
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.streamer.BuildConfig.DEBUG
-import org.readium.r2.streamer.container.Container
-import org.readium.r2.streamer.server.handler.*
-import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.net.URL
 import java.net.URLDecoder
 import java.util.*
+import org.nanohttpd.router.RouterNanoHTTPD
+import org.readium.r2.shared.Injectable
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.streamer.BuildConfig.DEBUG
+import org.readium.r2.streamer.container.Container
+import org.readium.r2.streamer.server.handler.AssetHandler
+import org.readium.r2.streamer.server.handler.FileHandler
+import org.readium.r2.streamer.server.handler.ManifestHandler
+import org.readium.r2.streamer.server.handler.PublicationResourceHandler
+import org.readium.r2.streamer.server.handler.ResourceHandler
+import timber.log.Timber
 
 @Deprecated("The HTTP server is not needed anymore (see migration guide)")
 class Server(
@@ -42,9 +46,9 @@ abstract class AbstractServer(
     private val JSON_MANIFEST_HANDLE = "/manifest.json"
     private val MANIFEST_ITEM_HANDLE = "/(.*)"
     private val MEDIA_OVERLAY_HANDLE = "/media-overlay"
-    private val CSS_HANDLE = "/"+ Injectable.Style.rawValue +"/(.*)"
-    private val JS_HANDLE = "/"+ Injectable.Script.rawValue +"/(.*)"
-    private val FONT_HANDLE = "/"+ Injectable.Font.rawValue +"/(.*)"
+    private val CSS_HANDLE = "/" + Injectable.Style.rawValue + "/(.*)"
+    private val JS_HANDLE = "/" + Injectable.Script.rawValue + "/(.*)"
+    private val FONT_HANDLE = "/" + Injectable.Font.rawValue + "/(.*)"
     private val ASSETS_HANDLE = "/assets/(.*)"
     private var containsMediaOverlay = false
 
@@ -59,7 +63,12 @@ abstract class AbstractServer(
         assets.add(href = "fonts", path = "readium/fonts")
     }
 
-    private fun addResource(name: String, body: String, custom: Boolean = false, injectable: Injectable? = null) {
+    private fun addResource(
+        name: String,
+        body: String,
+        custom: Boolean = false,
+        injectable: Injectable? = null
+    ) {
         if (custom) {
             customResources.add(name, body, injectable)
         }
@@ -94,7 +103,12 @@ abstract class AbstractServer(
         return addPublication(publication, null, "/${UUID.randomUUID()}", userPropertiesFile?.path)
     }
 
-    private fun addPublication(publication: Publication, container: Container?, filename: String, userPropertiesPath: String?): URL? {
+    private fun addPublication(
+        publication: Publication,
+        container: Container?,
+        filename: String,
+        userPropertiesPath: String?
+    ): URL? {
         if (container?.rootFile?.rootFilePath?.isEmpty() == true) {
             return null
         }
@@ -108,8 +122,7 @@ abstract class AbstractServer(
 
         // NanoHTTPD expects percent-decoded routes.
         val basePath =
-            try { URLDecoder.decode(baseUrl.path, "UTF-8") }
-            catch (e: Exception) { baseUrl.path }
+            try { URLDecoder.decode(baseUrl.path, "UTF-8") } catch (e: Exception) { baseUrl.path }
 
         setRoute(basePath + JSON_MANIFEST_HANDLE, ManifestHandler::class.java, fetcher)
         setRoute(basePath + MANIFEST_HANDLE, ManifestHandler::class.java, fetcher)
@@ -128,7 +141,12 @@ abstract class AbstractServer(
     }
 
     @Deprecated("Use the easier-to-use addPublication()", replaceWith = ReplaceWith("this.addPublication(publication, userPropertiesFile = File(userPropertiesPath))"), level = DeprecationLevel.ERROR)
-    fun addEpub(publication: Publication, container: Container?, fileName: String, userPropertiesPath: String?) {
+    fun addEpub(
+        publication: Publication,
+        container: Container?,
+        fileName: String,
+        userPropertiesPath: String?
+    ) {
         addPublication(publication, container, filename = fileName, userPropertiesPath = userPropertiesPath)
     }
 
@@ -163,6 +181,4 @@ abstract class AbstractServer(
     @Suppress("UNUSED_PARAMETER")
     @Deprecated("This is not needed anymore")
     fun loadR2FontResources(assets: AssetManager, context: Context) {}
-
 }
-

@@ -7,6 +7,7 @@
 package org.readium.r2.shared.fetcher
 
 import android.webkit.URLUtil
+import java.io.InputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.read
@@ -22,7 +23,6 @@ import org.readium.r2.shared.util.http.HttpRequest.Method
 import org.readium.r2.shared.util.http.HttpResponse
 import org.readium.r2.shared.util.io.CountingInputStream
 import timber.log.Timber
-import java.io.InputStream
 
 /**
  * Fetches remote resources through HTTP.
@@ -117,7 +117,7 @@ class HttpFetcher(
         private suspend fun stream(from: Long? = null): ResourceTry<InputStream> {
             val stream = inputStream
             if (from != null && stream != null) {
-                //TODO Figure out a better way to handle this Kotlin warning
+                // TODO Figure out a better way to handle this Kotlin warning
                 tryOrLog<Nothing> {
                     val bytesToSkip = from - (inputStreamStart + stream.count)
                     if (bytesToSkip >= 0) {
@@ -159,6 +159,5 @@ class HttpFetcher(
                 Kind.MalformedResponse, Kind.ClientError, Kind.ServerError, Kind.Other ->
                     Resource.Exception.Other(e)
             }
-
     }
 }

@@ -11,6 +11,8 @@ package org.readium.r2.shared.util.pdf
 
 import android.content.Context
 import android.graphics.Bitmap
+import java.io.File
+import kotlin.reflect.KClass
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
@@ -21,8 +23,6 @@ import org.readium.r2.shared.publication.services.cacheService
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.cache.Cache
 import org.readium.r2.shared.util.mediatype.MediaType
-import java.io.File
-import kotlin.reflect.KClass
 
 interface PdfDocumentFactory<T : PdfDocument> {
 
@@ -125,7 +125,7 @@ interface PdfDocument : SuspendingCloseable {
 
     data class OutlineNode(
         val title: String?,
-        val pageNumber: Int?,  // Starts from 1.
+        val pageNumber: Int?, // Starts from 1.
         val children: List<OutlineNode>
     )
 

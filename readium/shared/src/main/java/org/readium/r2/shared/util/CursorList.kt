@@ -22,17 +22,19 @@ class CursorList<E>(
      * Moves the cursor backward and returns the element, or null when reaching the beginning.
      */
     fun previous(): E? =
-        moveAndGet(index
-            ?.let { it - 1}
-            ?: startIndex
+        moveAndGet(
+            index
+                ?.let { it - 1 }
+                ?: startIndex
         )
 
     /**
      * Moves the cursor forward and returns the element, or null when reaching the end.
      */
     fun next(): E? =
-        moveAndGet(index?.let { it + 1}
-            ?: startIndex
+        moveAndGet(
+            index?.let { it + 1 }
+                ?: startIndex
         )
 
     private fun moveAndGet(index: Int): E? {

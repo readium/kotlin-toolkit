@@ -18,7 +18,6 @@ interface JSONable {
      * Serializes the object to its JSON representation.
      */
     fun toJSON(): JSONObject
-
 }
 
 /**

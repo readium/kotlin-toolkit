@@ -50,7 +50,6 @@ publishing {
             artifact(tasks.findByName("sourcesJar"))
             artifact(tasks.findByName("javadocsJar"))
 
-
             afterEvaluate {
                 from(components.getByName("release"))
             }
@@ -72,7 +71,7 @@ dependencies {
     api("com.github.readium.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
         exclude(group = "org.parboiled")
     }
-    //AM NOTE: conflicting support libraries, excluding these
+    // AM NOTE: conflicting support libraries, excluding these
     implementation("com.mcxiaoke.koi:core:0.5.5") {
         exclude(module = "support-v4")
     }

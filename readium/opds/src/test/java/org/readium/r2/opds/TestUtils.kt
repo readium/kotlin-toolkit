@@ -9,11 +9,11 @@
 
 package org.readium.r2.opds
 
+import java.io.File
+import java.net.URL
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert
-import java.io.File
-import java.net.URL
 
 /**
  * Asserts that two [JSONObject] are equal.
@@ -44,5 +44,4 @@ class Fixtures(val path: String? = null) {
 
     fun bytesAt(resourcePath: String): ByteArray =
         fileAt(resourcePath).readBytes()
-
 }

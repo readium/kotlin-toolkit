@@ -10,6 +10,11 @@
 package org.readium.r2.shared.fetcher
 
 import android.webkit.MimeTypeMap
+import java.io.File
+import java.nio.charset.StandardCharsets
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -19,11 +24,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.readBlocking
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
-import java.io.File
-import java.nio.charset.StandardCharsets
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertNotNull
 
 @RunWith(RobolectricTestRunner::class)
 class FileFetcherTest {
@@ -58,14 +58,14 @@ class FileFetcherTest {
     }
 
     @Test
-    fun `Reading a file in a directory works well`(){
+    fun `Reading a file in a directory works well`() {
         val resource = fetcher.get(Link(href = "/dir_href/text1.txt"))
         val result = resource.readBlocking().getOrNull()
         assertEquals("text1", result?.toString(StandardCharsets.UTF_8))
     }
 
     @Test
-    fun `Reading a file in a subdirectory works well`(){
+    fun `Reading a file in a subdirectory works well`() {
         val resource = fetcher.get(Link(href = "/dir_href/subdirectory/text2.txt"))
         val result = resource.readBlocking().getOrNull()
         assertEquals("text2", result?.toString(StandardCharsets.UTF_8))
@@ -76,7 +76,7 @@ class FileFetcherTest {
         val resource = fetcher.get(Link(href = "/dir_href/subdirectory"))
         assertFailsWith<Resource.Exception.NotFound> { resource.readBlocking().getOrThrow() }
     }
-    
+
     @Test
     fun `Reading a file outside the allowed directory returns NotFound`() {
         val resource = fetcher.get(Link(href = "/dir_href/../text.txt"))
@@ -149,5 +149,4 @@ class FileFetcherTest {
             Link(href = "/file_href", type = "text/plain")
         )
     }
-
 }

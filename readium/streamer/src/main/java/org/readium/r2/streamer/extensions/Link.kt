@@ -9,13 +9,12 @@
 
 package org.readium.r2.streamer.extensions
 
-import org.readium.r2.shared.publication.Link
 import java.io.File
-
+import org.readium.r2.shared.publication.Link
 
 /** Returns a [File] to the directory containing all links, if there is such a directory. */
 internal fun List<Link>.hrefCommonFirstComponent(): File? =
-    map { it.href.removePrefix("/").substringBefore("/")  }
+    map { it.href.removePrefix("/").substringBefore("/") }
         .distinct()
         .takeIf { it.size == 1 }
         ?.firstOrNull()

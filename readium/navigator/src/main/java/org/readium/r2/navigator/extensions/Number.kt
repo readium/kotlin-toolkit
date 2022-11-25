@@ -6,8 +6,8 @@
 
 package org.readium.r2.navigator.extensions
 
-import org.readium.r2.shared.InternalReadiumApi
 import java.text.NumberFormat
+import org.readium.r2.shared.InternalReadiumApi
 
 @InternalReadiumApi
 fun Number.format(maximumFractionDigits: Int, percent: Boolean = false): String {

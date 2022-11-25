@@ -6,16 +6,20 @@
 
 package org.readium.r2.navigator.epub
 
-import org.readium.r2.navigator.epub.css.*
+import org.readium.r2.navigator.epub.css.Appearance
+import org.readium.r2.navigator.epub.css.ColCount
+import org.readium.r2.navigator.epub.css.Color as CssColor
+import org.readium.r2.navigator.epub.css.Hyphens
 import org.readium.r2.navigator.epub.css.Layout
+import org.readium.r2.navigator.epub.css.Length
+import org.readium.r2.navigator.epub.css.Ligatures
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.navigator.epub.css.TextAlign as CssTextAlign
-import org.readium.r2.navigator.epub.css.Color as CssColor
+import org.readium.r2.navigator.epub.css.View
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.navigator.preferences.Color
 import org.readium.r2.navigator.preferences.TextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Language
 
@@ -58,13 +62,13 @@ internal fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
     fun FontFamily.toCss(): List<String> = buildList {
         add(name)
         val alternateChain = alternate?.toCss()
-        alternateChain?.let {  addAll(it) }
+        alternateChain?.let { addAll(it) }
     }
 
     fun Color.toCss(): CssColor =
         CssColor.Int(int)
 
-    return with (settings) {
+    return with(settings) {
         copy(
             layout = Layout.from(settings),
             userProperties = userProperties.copy(

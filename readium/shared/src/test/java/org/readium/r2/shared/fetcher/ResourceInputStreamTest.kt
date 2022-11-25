@@ -1,11 +1,11 @@
 package org.readium.r2.shared.fetcher
 
-import kotlinx.coroutines.runBlocking
-import org.junit.Test
 import java.io.ByteArrayOutputStream
 import java.io.File
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.runBlocking
+import org.junit.Test
 
 class ResourceInputStreamTest {
 
@@ -17,7 +17,7 @@ class ResourceInputStreamTest {
         val resource = ResourceInputStreamTest::class.java.getResource("epub.epub")
         assertNotNull(resource)
         fileContent = resource.openStream().readBytes()
-        val fileFetcher = runBlocking { FileFetcher("/epub.epub" , File(resource.path)) }
+        val fileFetcher = runBlocking { FileFetcher("/epub.epub", File(resource.path)) }
         assertNotNull(fileFetcher)
         fetcher = fileFetcher
     }

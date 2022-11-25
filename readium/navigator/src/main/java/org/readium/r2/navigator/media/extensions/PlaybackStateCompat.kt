@@ -13,16 +13,16 @@ import org.readium.r2.navigator.media.MediaPlayback
 
 internal inline val PlaybackStateCompat.isPrepared get() =
     (state == PlaybackStateCompat.STATE_BUFFERING) ||
-    (state == PlaybackStateCompat.STATE_PLAYING) ||
-    (state == PlaybackStateCompat.STATE_PAUSED)
+        (state == PlaybackStateCompat.STATE_PLAYING) ||
+        (state == PlaybackStateCompat.STATE_PAUSED)
 
 internal inline val PlaybackStateCompat.isPlaying get() =
     (state == PlaybackStateCompat.STATE_BUFFERING) ||
-    (state == PlaybackStateCompat.STATE_PLAYING)
+        (state == PlaybackStateCompat.STATE_PLAYING)
 
 internal inline val PlaybackStateCompat.canPlay get() =
     (actions and PlaybackStateCompat.ACTION_PLAY != 0L) ||
-    ((actions and PlaybackStateCompat.ACTION_PLAY_PAUSE != 0L) && (state == PlaybackStateCompat.STATE_PAUSED))
+        ((actions and PlaybackStateCompat.ACTION_PLAY_PAUSE != 0L) && (state == PlaybackStateCompat.STATE_PAUSED))
 
 /**
  * Calculates the current playback position based on last update time along with playback

@@ -6,8 +6,8 @@
 
 package org.readium.adapters.pdfium.navigator
 
-import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.navigator.preferences.ReadingProgression
+import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * Default values for the PDF navigator with the PDFium adapter.

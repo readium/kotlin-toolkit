@@ -9,11 +9,11 @@
 
 package org.readium.r2.lcp.license.container
 
+import java.io.File
+import java.util.zip.ZipFile
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.zeroturnaround.zip.ZipUtil
-import java.io.File
-import java.util.zip.ZipFile
 
 /**
  * Access to a License Document stored in a ZIP archive.
@@ -39,7 +39,6 @@ internal open class ZIPLicenseContainer(private val zip: String, private val pat
         } catch (e: Exception) {
             throw LcpException.Container.ReadFailed(pathInZIP)
         }
-
     }
 
     override fun write(license: LicenseDocument) {

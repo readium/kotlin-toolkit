@@ -23,11 +23,16 @@ class PublicationCollectionTest {
     @Test fun `parse minimal JSON`() {
         assertEquals(
             PublicationCollection(
-                links = listOf(Link(href = "/link"))),
-            PublicationCollection.fromJSON(JSONObject("""{
+                links = listOf(Link(href = "/link"))
+            ),
+            PublicationCollection.fromJSON(
+                JSONObject(
+                    """{
                 "metadata": {},
                 "links": [{"href": "/link"}]
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
@@ -45,7 +50,9 @@ class PublicationCollectionTest {
                     )
                 )
             ),
-            PublicationCollection.fromJSON(JSONObject("""{
+            PublicationCollection.fromJSON(
+                JSONObject(
+                    """{
                 "metadata": {
                     "metadata1": "value"
                 },
@@ -73,7 +80,9 @@ class PublicationCollectionTest {
                         ]
                     }
                 ]
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
@@ -91,7 +100,9 @@ class PublicationCollectionTest {
                     PublicationCollection(links = listOf(Link(href = "/sublink4")))
                 )
             ),
-            PublicationCollection.collectionsFromJSON(JSONObject("""{
+            PublicationCollection.collectionsFromJSON(
+                JSONObject(
+                    """{
                 "sub1": {
                     "links": [
                         {"href": "/sublink"}
@@ -113,23 +124,28 @@ class PublicationCollectionTest {
                         ]
                     }
                 ]
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
     @Test fun `get minimal JSON`() {
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "metadata": {},
                 "links": [{"href": "/link", "templated": false}]
-            }"""),
+            }"""
+            ),
             PublicationCollection(links = listOf(Link(href = "/link"))).toJSON()
         )
     }
 
     @Test fun `get full JSON`() {
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "metadata": {
                     "metadata1": "value"
                 },
@@ -163,7 +179,8 @@ class PublicationCollectionTest {
                         ]
                     }
                 ]
-            }"""),
+            }"""
+            ),
             PublicationCollection(
                 metadata = mapOf("metadata1" to "value"),
                 links = listOf(Link(href = "/link")),
@@ -181,7 +198,8 @@ class PublicationCollectionTest {
 
     @Test fun `get multiple JSON collections`() {
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "sub1": {
                     "metadata": {},
                     "links": [
@@ -209,7 +227,8 @@ class PublicationCollectionTest {
                         ]
                     }
                 ]
-            }"""),
+            }"""
+            ),
             mapOf(
                 "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
                 "sub2" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2")))),

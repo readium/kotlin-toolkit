@@ -81,7 +81,7 @@ data class Link(
         if (!templated)
             emptyList()
         else
-           URITemplate(href).parameters
+            URITemplate(href).parameters
     }
 
     /**
@@ -180,7 +180,6 @@ data class Link(
         ): List<Link> {
             return json.parseObjects { fromJSON(it as? JSONObject, normalizeHref, warnings) }
         }
-
     }
 
     @Deprecated("Use [type] instead", ReplaceWith("type"))
@@ -190,7 +189,6 @@ data class Link(
     @Deprecated("Use [rels] instead.", ReplaceWith("rels"))
     val rel: List<String>
         get() = rels.toList()
-
 }
 
 /**
@@ -233,7 +231,7 @@ fun List<Link>.filterByMediaType(mediaType: MediaType): List<Link> = filter {
  * Finds all the links matching any of the given media types.
  */
 fun List<Link>.filterByMediaTypes(mediaTypes: List<MediaType>): List<Link> = filter {
-    mediaTypes.any { mediaType ->  mediaType.matches(it.type) }
+    mediaTypes.any { mediaType -> mediaType.matches(it.type) }
 }
 
 /**

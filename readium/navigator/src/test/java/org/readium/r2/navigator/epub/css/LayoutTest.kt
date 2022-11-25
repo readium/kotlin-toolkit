@@ -6,9 +6,9 @@
 
 package org.readium.r2.navigator.epub.css
 
+import kotlin.test.assertEquals
 import org.junit.Test
 import org.readium.r2.shared.ExperimentalReadiumApi
-import kotlin.test.assertEquals
 
 @OptIn(ExperimentalReadiumApi::class)
 class LayoutTest {

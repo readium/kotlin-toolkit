@@ -19,7 +19,7 @@ import kotlin.reflect.KProperty
  * This is especially useful for binding properties to avoid memory leaks when Fragments are on
  * the back stack without any view attached.
  */
-class LifecycleDelegates(private val fragment: Fragment):  DefaultLifecycleObserver {
+class LifecycleDelegates(private val fragment: Fragment) : DefaultLifecycleObserver {
 
     /**
      * This delegate is very similar to [Delegates.notNull].
@@ -60,7 +60,7 @@ class LifecycleDelegates(private val fragment: Fragment):  DefaultLifecycleObser
     /**
      * Make a value that will be automatically set to null every time the [Fragment]'s view is destroyed.
      */
-    fun <T: Any> viewLifecycleAware():  ReadWriteProperty<Fragment, T> {
+    fun <T : Any> viewLifecycleAware(): ReadWriteProperty<Fragment, T> {
         val delegate = ViewLifecycleAwareVar<T>()
         viewLifecycleValues.add(delegate as ViewLifecycleAwareVar<*>)
         return delegate
@@ -70,5 +70,5 @@ class LifecycleDelegates(private val fragment: Fragment):  DefaultLifecycleObser
 /**
  * Make a single value automatically set to null every time the [Fragment]'s view is destroyed.
  */
-fun <T: Any> Fragment.viewLifecycle() =
+fun <T : Any> Fragment.viewLifecycle() =
     LifecycleDelegates(this).viewLifecycleAware<T>()

@@ -13,7 +13,6 @@ import org.json.JSONObject
 import org.readium.r2.shared.util.logging.Warning.SeverityLevel.*
 import timber.log.Timber
 
-
 // FIXME: Mark this interface as functional to benefit from the SAM-conversion in Kotlin 1.4 https://blog.jetbrains.com/kotlin/2020/03/kotlin-1-4-m1-released/#new-type-inference
 /**
  * Interface to be implemented by third-party apps if they want to observe warnings raised, for
@@ -23,7 +22,6 @@ interface WarningLogger {
 
     /** Notifies that a warning occurred. */
     fun log(warning: Warning)
-
 }
 
 /**
@@ -41,7 +39,6 @@ class ListWarningLogger : WarningLogger {
     override fun log(warning: Warning) {
         _warnings.add(warning)
     }
-
 }
 
 /**
@@ -56,7 +53,6 @@ class ConsoleWarningLogger : WarningLogger {
             MAJOR -> Timber.e(message)
         }
     }
-
 }
 
 /**
@@ -96,7 +92,6 @@ interface Warning {
      * Indicates the severity level of this warning.
      */
     val severity: SeverityLevel
-
 }
 
 /**
@@ -127,7 +122,8 @@ data class JsonWarning(
  * @param json Source [JSONObject].
  */
 fun WarningLogger.log(
-    modelClass: Class<*>, reason: String,
+    modelClass: Class<*>,
+    reason: String,
     json: JSONObject? = null,
     severity: Warning.SeverityLevel = Warning.SeverityLevel.MAJOR
 ) {

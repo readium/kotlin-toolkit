@@ -51,5 +51,4 @@ class PropertiesTest {
     @Test fun `get Properties {layout} when missing`() {
         assertNull(Properties().layout)
     }
-
 }

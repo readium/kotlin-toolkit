@@ -94,7 +94,6 @@ internal class WebViewServer(
 
         if (range == null) {
             return WebResourceResponse(link.type, null, 200, "OK", headers, ResourceInputStream(resource))
-
         } else { // Byte range request
             val stream = ResourceInputStream(resource)
             val length = stream.available()

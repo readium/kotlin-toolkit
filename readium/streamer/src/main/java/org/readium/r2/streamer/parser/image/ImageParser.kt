@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.image
 
+import java.io.File
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.asset.PublicationAsset
@@ -19,7 +20,6 @@ import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
 import org.readium.r2.streamer.extensions.lowercasedExtension
-import java.io.File
 
 /**
  * Parses an image–based Publication from an unstructured archive format containing bitmap files,
@@ -75,8 +75,9 @@ class ImageParser : PublicationParser {
         val allowedExtensions = listOf("acbf", "txt", "xml")
 
         if (fetcher.links()
-                .filterNot { File(it.href).isHiddenOrThumbs }
-                .all { it.mediaType.isBitmap || File(it.href).lowercasedExtension in allowedExtensions })
+            .filterNot { File(it.href).isHiddenOrThumbs }
+            .all { it.mediaType.isBitmap || File(it.href).lowercasedExtension in allowedExtensions }
+        )
             return true
 
         return false

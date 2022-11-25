@@ -9,9 +9,9 @@
 
 package org.readium.r2.shared.extensions
 
+import java.net.URL
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.net.URL
 
 class URLTest {
 
@@ -25,5 +25,4 @@ class URLTest {
         assertEquals(URL("http://domain.com/two/"), URL("http://domain.com/two/paths?a=1&b=2").removeLastComponent())
         assertEquals(URL("http://domain.com/two/"), URL("http://domain.com/two/paths/?a=1b=2").removeLastComponent())
     }
-
 }

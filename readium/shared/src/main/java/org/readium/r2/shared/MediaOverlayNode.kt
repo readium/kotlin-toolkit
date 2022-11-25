@@ -11,27 +11,28 @@ package org.readium.r2.shared
 
 import java.io.Serializable
 
-data class Clip (
-        val audioResource: String? = null,
-        val fragmentId: String? = null,
-        val start: Double? = null,
-        val end: Double? = null
+data class Clip(
+    val audioResource: String? = null,
+    val fragmentId: String? = null,
+    val start: Double? = null,
+    val end: Double? = null
 )
 
-data class MediaOverlayNode (
-    val text : String, // an URI possibly finishing by a fragment (textFile#id)
-    val audio : String?, // an URI possibly finishing by a simple timer (audioFile#t=start,end)
+data class MediaOverlayNode(
+    val text: String, // an URI possibly finishing by a fragment (textFile#id)
+    val audio: String?, // an URI possibly finishing by a simple timer (audioFile#t=start,end)
     val children: List<MediaOverlayNode> = listOf(),
-    val role: List<String> = listOf()) : Serializable {
+    val role: List<String> = listOf()
+) : Serializable {
 
     val audioFile: String?
         get() = audio?.split("#")?.first()
     val audioTime: String?
-        get() = if (audio != null && '#' in audio) audio.split("#", limit=2).last() else null
+        get() = if (audio != null && '#' in audio) audio.split("#", limit = 2).last() else null
     val textFile: String
         get() = text.split("#").first()
     val fragmentId: String?
-        get () = if ('#' in text) text.split('#', limit=2).last() else null
+        get() = if ('#' in text) text.split('#', limit = 2).last() else null
     val clip: Clip
         get() {
             val audioString = this.audio ?: throw Exception("audio")
@@ -54,5 +55,4 @@ data class MediaOverlayNode (
         val endTimer = end?.toDoubleOrNull()
         return Pair(startTimer, endTimer)
     }
-
 }

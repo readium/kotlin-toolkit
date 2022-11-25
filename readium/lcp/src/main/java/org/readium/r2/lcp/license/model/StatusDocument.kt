@@ -9,6 +9,9 @@
 
 package org.readium.r2.lcp.license.model
 
+import java.net.URL
+import java.nio.charset.Charset
+import java.util.*
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.components.Link
@@ -20,9 +23,6 @@ import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.util.mediatype.MediaType
-import java.net.URL
-import java.nio.charset.Charset
-import java.util.*
 
 class StatusDocument(val data: ByteArray) {
     val id: String
@@ -95,7 +95,7 @@ class StatusDocument(val data: ByteArray) {
     internal fun linkWithNoType(rel: Rel): Link? =
         links.firstWithRelAndNoType(rel.rawValue)
 
-    fun url(rel: Rel, preferredType: MediaType? = null, parameters:  URLParameters = emptyMap()): URL {
+    fun url(rel: Rel, preferredType: MediaType? = null, parameters: URLParameters = emptyMap()): URL {
         val link = link(rel, preferredType)
             ?: linkWithNoType(rel)
             ?: throw LcpException.Parsing.Url(rel = rel.rawValue)
@@ -104,13 +104,11 @@ class StatusDocument(val data: ByteArray) {
     }
 
     fun events(type: Event.EventType): List<Event> =
-            events(type.rawValue)
+        events(type.rawValue)
 
     fun events(type: String): List<Event> =
-            events.filter { it.type == type }
+        events.filter { it.type == type }
 
     val description: String
         get() = "Status(${status.rawValue})"
-
 }
-

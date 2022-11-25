@@ -31,5 +31,4 @@ interface PublicationAsset {
     suspend fun createFetcher(dependencies: Dependencies, credentials: String?): Try<Fetcher, Publication.OpeningException>
 
     data class Dependencies(val archiveFactory: ArchiveFactory)
-
 }

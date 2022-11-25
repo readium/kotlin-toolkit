@@ -12,10 +12,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.flowWithLifecycle
+import kotlin.time.Duration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import kotlin.time.Duration
 
 /**
  * Collects safely the [Flow] as a [State] when the local lifecycle is started.
@@ -68,10 +68,10 @@ fun <T> Flow<T>.throttleLatest(period: Duration): Flow<T> =
         }
     }
 
-suspend fun<P> Flow<P>.stateInFirst(scope: CoroutineScope, sharingStarted: SharingStarted) =
+suspend fun <P> Flow<P>.stateInFirst(scope: CoroutineScope, sharingStarted: SharingStarted) =
     stateIn(scope, sharingStarted, first())
 
-fun<T1, T2, R> combine(
+fun <T1, T2, R> combine(
     scope: CoroutineScope,
     sharingStarted: SharingStarted,
     flow: StateFlow<T1>,

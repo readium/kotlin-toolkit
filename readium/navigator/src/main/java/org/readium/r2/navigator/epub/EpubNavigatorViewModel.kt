@@ -16,12 +16,12 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import kotlin.reflect.KClass
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.readium.r2.navigator.*
-import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.navigator.epub.extensions.javascriptForGroup
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
@@ -34,10 +34,9 @@ import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Href
-import kotlin.reflect.KClass
-import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 
 internal enum class DualPage {
     AUTO, OFF, ON
@@ -139,12 +138,14 @@ internal class EpubNavigatorViewModel(
                     properties += css.userProperties.toCssProperties()
                 }
                 if (properties.isNotEmpty()) {
-                    _events.send(Event.RunScript(
-                        RunScriptCommand(
-                            script = "readium.setCSSProperties(${JSONObject(properties.toMap())});",
-                            scope = RunScriptCommand.Scope.LoadedResources
+                    _events.send(
+                        Event.RunScript(
+                            RunScriptCommand(
+                                script = "readium.setCSSProperties(${JSONObject(properties.toMap())});",
+                                scope = RunScriptCommand.Scope.LoadedResources
+                            )
                         )
-                    ))
+                    )
                 }
 
                 previousCss = css
@@ -230,7 +231,7 @@ internal class EpubNavigatorViewModel(
         css.update { it.update(newSettings) }
 
         val needsInvalidation: Boolean = (
-            oldSettings.readingProgression != newSettings.readingProgression||
+            oldSettings.readingProgression != newSettings.readingProgression ||
                 oldSettings.language != newSettings.language ||
                 oldSettings.verticalText != newSettings.verticalText ||
                 oldSettings.spread != newSettings.spread
@@ -290,7 +291,6 @@ internal class EpubNavigatorViewModel(
             settings.mapStateIn(viewModelScope) {
                 if (layout == EpubLayout.REFLOWABLE) it.scroll else false
             }
-
         }
 
     // Selection
@@ -317,13 +317,15 @@ internal class EpubNavigatorViewModel(
         val cmds = mutableListOf<RunScriptCommand>()
 
         if (target.isEmpty()) {
-            cmds.add(RunScriptCommand(
-                // The updates command are using `requestAnimationFrame()`, so we need it for
-                // `clear()` as well otherwise we might recreate a highlight after it has been
-                // cleared.
-                "requestAnimationFrame(function () { readium.getDecorations('$group').clear(); });",
-                scope = RunScriptCommand.Scope.LoadedResources
-            ))
+            cmds.add(
+                RunScriptCommand(
+                    // The updates command are using `requestAnimationFrame()`, so we need it for
+                    // `clear()` as well otherwise we might recreate a highlight after it has been
+                    // cleared.
+                    "requestAnimationFrame(function () { readium.getDecorations('$group').clear(); });",
+                    scope = RunScriptCommand.Scope.LoadedResources
+                )
+            )
         } else {
             for ((href, changes) in source.changesByHref(target)) {
                 val script = changes.javascriptForGroup(group, decorationTemplates) ?: continue
@@ -371,16 +373,20 @@ internal class EpubNavigatorViewModel(
     companion object {
 
         fun createFactory(
-            application: Application, publication: Publication, baseUrl: String?,
+            application: Application,
+            publication: Publication,
+            baseUrl: String?,
             layout: EpubLayout,
-            defaults: EpubDefaults, config: EpubNavigatorFragment.Configuration,
+            defaults: EpubDefaults,
+            config: EpubNavigatorFragment.Configuration,
             initialPreferences: EpubPreferences
         ) = createViewModelFactory {
-            EpubNavigatorViewModel(application, publication, config, initialPreferences, layout,
+            EpubNavigatorViewModel(
+                application, publication, config, initialPreferences, layout,
                 defaults = defaults,
                 baseUrl = baseUrl,
                 server = if (baseUrl != null) null
-                    else WebViewServer(application, publication, servedAssets = config.servedAssets)
+                else WebViewServer(application, publication, servedAssets = config.servedAssets)
             )
         }
     }

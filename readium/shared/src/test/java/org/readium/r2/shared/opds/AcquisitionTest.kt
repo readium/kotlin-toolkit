@@ -43,7 +43,9 @@ class AcquisitionTest {
                     )
                 )
             ),
-            Acquisition.fromJSON(JSONObject("""{
+            Acquisition.fromJSON(
+                JSONObject(
+                    """{
                 "type": "acquisition-type",
                 "child": [
                     {
@@ -54,7 +56,9 @@ class AcquisitionTest {
                         ]
                     }
                 ]
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
@@ -76,10 +80,14 @@ class AcquisitionTest {
                 Acquisition(type = "acq1"),
                 Acquisition(type = "acq2")
             ),
-            Acquisition.fromJSONArray(JSONArray("""[
+            Acquisition.fromJSONArray(
+                JSONArray(
+                    """[
                 { "type": "acq1" },
                 { "type": "acq2" }
-            ]"""))
+            ]"""
+                )
+            )
         )
     }
 
@@ -88,10 +96,14 @@ class AcquisitionTest {
             listOf(
                 Acquisition(type = "acq1")
             ),
-            Acquisition.fromJSONArray(JSONArray("""[
+            Acquisition.fromJSONArray(
+                JSONArray(
+                    """[
                 { "type": "acq1" },
                 { "invalid": "acq2" }
-            ]"""))
+            ]"""
+                )
+            )
         )
     }
 
@@ -111,7 +123,8 @@ class AcquisitionTest {
 
     @Test fun `get full JSON acquisition`() {
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "type": "acquisition-type",
                 "child": [
                     {
@@ -122,7 +135,8 @@ class AcquisitionTest {
                         ]
                     }
                 ]
-            }"""),
+            }"""
+            ),
             Acquisition(
                 type = "acquisition-type",
                 children = listOf(
@@ -140,15 +154,16 @@ class AcquisitionTest {
 
     @Test fun `get JSON acquisition array`() {
         assertJSONEquals(
-            JSONArray("""[
+            JSONArray(
+                """[
                 { "type": "acq1" },
                 { "type": "acq2" }
-            ]"""),
+            ]"""
+            ),
             listOf(
                 Acquisition(type = "acq1"),
                 Acquisition(type = "acq2")
             ).toJSON()
         )
     }
-
 }

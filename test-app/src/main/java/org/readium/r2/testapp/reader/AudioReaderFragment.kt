@@ -17,6 +17,10 @@ import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -28,16 +32,12 @@ import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentAudiobookBinding
 import org.readium.r2.testapp.utils.viewLifecycle
 import timber.log.Timber
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.DurationUnit
-import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalMedia2::class, ExperimentalTime::class, ExperimentalCoroutinesApi::class)
 class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListener {
 
     override lateinit var navigator: MediaNavigator
-    
+
     private lateinit var displayedPlayback: MediaNavigator.Playback
     private var binding: FragmentAudiobookBinding by viewLifecycle()
     private var seekingItem: Int? = null
@@ -52,7 +52,11 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         binding = FragmentAudiobookBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -72,7 +76,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
 
         viewLifecycleOwner.lifecycleScope.launch {
             navigator.playback.collectLatest { playback ->
-               onPlaybackChanged(playback)
+                onPlaybackChanged(playback)
             }
         }
     }
@@ -200,7 +204,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
         }
     }
 
-    override fun go(locator: Locator, animated: Boolean){
+    override fun go(locator: Locator, animated: Boolean) {
         model.viewModelScope.launch {
             navigator.go(locator)
             navigator.play()

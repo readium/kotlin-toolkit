@@ -26,12 +26,11 @@ class LinkTest {
 
     @Test
     fun `hrefCommonFirstComponent is null when files are in different directories`() {
-           assertNull(
+        assertNull(
             listOf(Link("/dir1/im1.jpg"), Link("/dir2/im2.jpg"), Link("/toc.xml"))
                 .hrefCommonFirstComponent()
         )
     }
-
 
     @Test
     fun `hrefCommonFirstComponent is correct when there is only one file in the root`() {
@@ -52,5 +51,4 @@ class LinkTest {
             ).hrefCommonFirstComponent()?.name
         )
     }
-
 }

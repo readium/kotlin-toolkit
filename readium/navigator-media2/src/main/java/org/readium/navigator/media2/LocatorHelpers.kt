@@ -6,11 +6,11 @@
 
 package org.readium.navigator.media2
 
-import org.readium.r2.shared.publication.Locator
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
+import org.readium.r2.shared.publication.Locator
 
 // FIXME: This should be in r2-shared once this public API is specified.
 

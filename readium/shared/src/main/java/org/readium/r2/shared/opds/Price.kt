@@ -57,7 +57,5 @@ data class Price(
 
             return Price(currency = currency, value = value)
         }
-
     }
-
 }

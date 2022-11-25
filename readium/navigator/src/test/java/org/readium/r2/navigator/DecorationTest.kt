@@ -1,12 +1,12 @@
 package org.readium.r2.navigator
 
 import android.graphics.Color
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Locator
 import org.robolectric.RobolectricTestRunner
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalDecorator::class)
 @RunWith(RobolectricTestRunner::class)
@@ -38,4 +38,3 @@ class DecorationTest {
         assertFalse { d1a == d2 }
     }
 }
-

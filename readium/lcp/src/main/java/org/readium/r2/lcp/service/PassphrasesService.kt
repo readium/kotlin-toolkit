@@ -15,7 +15,12 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 
 internal class PassphrasesService(private val repository: PassphrasesRepository) {
 
-    suspend fun request(license: LicenseDocument, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?): String? {
+    suspend fun request(
+        license: LicenseDocument,
+        authentication: LcpAuthenticating?,
+        allowUserInteraction: Boolean,
+        sender: Any?
+    ): String? {
         val candidates = this@PassphrasesService.possiblePassphrasesFromRepository(license)
         val passphrase = try {
             LcpClient.findOneValidPassphrase(license.json.toString(), candidates)
@@ -29,7 +34,13 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
         }
     }
 
-    private suspend fun authenticate(license: LicenseDocument, reason: LcpAuthenticating.AuthenticationReason, authentication: LcpAuthenticating, allowUserInteraction: Boolean, sender:Any?): String? {
+    private suspend fun authenticate(
+        license: LicenseDocument,
+        reason: LcpAuthenticating.AuthenticationReason,
+        authentication: LcpAuthenticating,
+        allowUserInteraction: Boolean,
+        sender: Any?
+    ): String? {
         val authenticatedLicense = LcpAuthenticating.AuthenticatedLicense(document = license)
         val clearPassphrase = authentication.retrievePassphrase(authenticatedLicense, reason, allowUserInteraction, sender)
             ?: return null
@@ -79,5 +90,4 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
     companion object {
         private val sha256Regex = "^([a-f0-9]{64})$".toRegex(RegexOption.IGNORE_CASE)
     }
-
 }

@@ -46,7 +46,5 @@ data class Copies(
                 available = json.optPositiveInt("available")
             )
         }
-
     }
-
 }

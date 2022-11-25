@@ -9,14 +9,13 @@
 
 package org.readium.r2.streamer.parser
 
+import java.io.File
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.streamer.container.Container
-import java.io.File
 
 data class PubBox(var publication: Publication, var container: Container)
 
 interface PublicationParser {
 
     fun parse(fileAtPath: String, fallbackTitle: String = File(fileAtPath).name): PubBox?
-
 }

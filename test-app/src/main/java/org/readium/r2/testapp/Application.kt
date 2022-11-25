@@ -12,14 +12,14 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.android.material.color.DynamicColors
+import java.io.File
+import java.util.*
 import kotlinx.coroutines.*
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.reader.ReaderRepository
 import timber.log.Timber
-import java.io.File
-import java.util.*
 
 class Application : android.app.Application() {
 
@@ -85,7 +85,7 @@ class Application : android.app.Application() {
          */
         bookRepository =
             BookDatabase.getDatabase(this).booksDao()
-                .let {  BookRepository(it) }
+                .let { BookRepository(it) }
 
         readerRepository =
             coroutineScope.async {
@@ -97,7 +97,6 @@ class Application : android.app.Application() {
                     navigatorPreferences
                 )
             }
-
     }
 
     private fun computeStorageDir(): File {
@@ -113,7 +112,6 @@ class Application : android.app.Application() {
         )
     }
 }
-
 
 val Context.resolver: ContentResolver
     get() = applicationContext.contentResolver

@@ -64,5 +64,4 @@ class DiViNaParser : PublicationParser {
         )
         return PubBox(publication, container)
     }
-
 }

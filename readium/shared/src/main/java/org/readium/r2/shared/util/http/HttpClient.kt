@@ -6,14 +6,14 @@
 
 package org.readium.r2.shared.util.http
 
+import java.io.InputStream
+import java.nio.charset.Charset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
-import java.io.InputStream
-import java.nio.charset.Charset
 
 /**
  * An HTTP client performs HTTP requests.
@@ -47,7 +47,6 @@ interface HttpClient {
     // Declare a companion object to allow reading apps to extend it. For example, by adding a
     // HttpClient.get(Context) constructor.
     companion object
-
 }
 
 /**

@@ -10,10 +10,10 @@
 package org.readium.r2.streamer.server
 
 import android.net.Uri
+import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.extensions.isParentOf
 import org.readium.r2.shared.util.mediatype.MediaType
-import java.io.File
 
 /**
  * Files to be served from the file system.
@@ -56,5 +56,4 @@ internal class Files(
     ) {
         val mediaType: MediaType get() = runBlocking { MediaType.ofFile(file) ?: fallbackMediaType }
     }
-
 }

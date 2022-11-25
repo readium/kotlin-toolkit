@@ -2,8 +2,6 @@
 
 package org.readium.r2.shared
 
-
-
 @Deprecated("Migrate to the new Settings API (see migration guide)")
 const val FONT_SIZE_REF = "fontSize"
 @Deprecated("Migrate to the new Settings API (see migration guide)")
@@ -54,8 +52,6 @@ const val PAGE_MARGINS_NAME = "--USER__$PAGE_MARGINS_REF"
 @Deprecated("Migrate to the new Settings API (see migration guide)")
 const val LINE_HEIGHT_NAME = "--USER__$LINE_HEIGHT_REF"
 
-
-
 // List of strings that can identify the name of a CSS custom property
 // Also used for storing UserSettings in UserDefaults
 @Deprecated("Migrate to the new Settings API (see migration guide)")
@@ -79,7 +75,4 @@ enum class ReadiumCSSName(val ref: String) {
     companion object {
         fun ref(name: String): ReadiumCSSName = valueOf(name)
     }
-
 }
-
-

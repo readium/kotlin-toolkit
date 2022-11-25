@@ -94,7 +94,6 @@ data class Presentation(
                 layout = EpubLayout(json.optString("layout"))
             )
         }
-
     }
 
     /**
@@ -220,5 +219,4 @@ data class Presentation(
 
     @Deprecated("Use [overflow] instead", ReplaceWith("overflow"))
     val flow: Overflow? get() = overflow
-
 }

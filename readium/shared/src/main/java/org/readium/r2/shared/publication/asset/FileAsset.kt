@@ -6,14 +6,14 @@
 
 package org.readium.r2.shared.publication.asset
 
+import java.io.File
+import java.io.FileNotFoundException
 import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
-import java.io.File
-import java.io.FileNotFoundException
 
 /**
  * Represents a publication stored as a file on the local file system.
@@ -55,7 +55,10 @@ class FileAsset private constructor(
 
     private lateinit var _mediaType: MediaType
 
-    override suspend fun createFetcher(dependencies: PublicationAsset.Dependencies, credentials: String?): Try<Fetcher, Publication.OpeningException> {
+    override suspend fun createFetcher(
+        dependencies: PublicationAsset.Dependencies,
+        credentials: String?
+    ): Try<Fetcher, Publication.OpeningException> {
         return try {
             val fetcher = when {
                 file.isDirectory -> FileFetcher(href = "/", file = file)
@@ -66,15 +69,12 @@ class FileAsset private constructor(
                 else -> throw FileNotFoundException(file.path)
             }
             Try.success(fetcher)
-
         } catch (e: SecurityException) {
             Try.failure(Publication.OpeningException.Forbidden(e))
-
         } catch (e: FileNotFoundException) {
             Try.failure(Publication.OpeningException.NotFound(e))
         }
     }
 
     override fun toString(): String = "FileAsset(${file.path})"
-
 }

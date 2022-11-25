@@ -9,17 +9,16 @@
 
 package org.readium.r2.shared.util.archive
 
-import kotlinx.coroutines.runBlocking
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 import java.io.File
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertNotNull
-
+import kotlinx.coroutines.runBlocking
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
 @RunWith(Parameterized::class)
 class ArchiveTest(val archive: Archive) {

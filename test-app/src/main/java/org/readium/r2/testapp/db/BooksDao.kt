@@ -17,7 +17,6 @@ import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.domain.model.Bookmark
 import org.readium.r2.testapp.domain.model.Highlight
 
-
 @Dao
 interface BooksDao {
 

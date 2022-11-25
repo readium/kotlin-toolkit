@@ -12,9 +12,9 @@ import androidx.annotation.ColorRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import kotlin.coroutines.resume
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.readium.r2.testapp.R
-import kotlin.coroutines.resume
 
 @ColorInt
 fun Context.color(@ColorRes id: Int): Int {

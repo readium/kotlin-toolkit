@@ -1,5 +1,7 @@
 package org.readium.r2.opds
 
+import java.net.URL
+import java.util.*
 import org.joda.time.DateTime
 import org.json.JSONObject
 import org.junit.Assert.*
@@ -12,8 +14,6 @@ import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.Properties
 import org.robolectric.RobolectricTestRunner
-import java.net.URL
-import java.util.*
 
 @RunWith(RobolectricTestRunner::class)
 class OPDS1ParserTest {
@@ -82,51 +82,60 @@ class OPDS1ParserTest {
         assertEquals("Unpopular Publications", feed.title)
         assertEquals(1, feed.type)
         assertEquals(URL("https://example.com"), feed.href)
-        assertEquals(OpdsMetadata(
-            title = "Unpopular Publications",
-            modified = parseDate("2010-01-10T10:01:11Z")
-        ), feed.metadata)
-        assertEquals(mutableListOf(
-            Link(
-                href = "https://example.com/opds-catalogs/vampire.farming.xml",
-                type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
-                rels = setOf("related")
+        assertEquals(
+            OpdsMetadata(
+                title = "Unpopular Publications",
+                modified = parseDate("2010-01-10T10:01:11Z")
             ),
-            Link(
-                href = "https://example.com/opds-catalogs/unpopular.xml",
-                type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
-                rels = setOf("self")
+            feed.metadata
+        )
+        assertEquals(
+            mutableListOf(
+                Link(
+                    href = "https://example.com/opds-catalogs/vampire.farming.xml",
+                    type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
+                    rels = setOf("related")
+                ),
+                Link(
+                    href = "https://example.com/opds-catalogs/unpopular.xml",
+                    type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
+                    rels = setOf("self")
+                ),
+                Link(
+                    href = "https://example.com/opds-catalogs/root.xml",
+                    type = "application/atom+xml;profile=opds-catalog;kind=navigation",
+                    rels = setOf("start")
+                ),
+                Link(
+                    href = "https://example.com/opds-catalogs/root.xml",
+                    type = "application/atom+xml;profile=opds-catalog;kind=navigation",
+                    rels = setOf("up")
+                )
             ),
-            Link(
-                href = "https://example.com/opds-catalogs/root.xml",
-                type = "application/atom+xml;profile=opds-catalog;kind=navigation",
-                rels = setOf("start")
-            ),
-            Link(
-                href = "https://example.com/opds-catalogs/root.xml",
-                type = "application/atom+xml;profile=opds-catalog;kind=navigation",
-                rels = setOf("up")
-            )
-        ), feed.links)
-        assertEquals(mutableListOf(
-            Facet(
-                title = "Categories",
-                metadata = OpdsMetadata(title = "Categories"),
-                links = mutableListOf(
-                    Link(
-                        href = "https://example.com/sci-fi",
-                        title = "Science-Fiction",
-                        rels = setOf("http://opds-spec.org/facet")
-                    ),
-                    Link(
-                        href = "https://example.com/romance",
-                        title = "Romance",
-                        rels = setOf("http://opds-spec.org/facet"),
-                        properties = Properties(mapOf("numberOfItems" to 600))
+            feed.links
+        )
+        assertEquals(
+            mutableListOf(
+                Facet(
+                    title = "Categories",
+                    metadata = OpdsMetadata(title = "Categories"),
+                    links = mutableListOf(
+                        Link(
+                            href = "https://example.com/sci-fi",
+                            title = "Science-Fiction",
+                            rels = setOf("http://opds-spec.org/facet")
+                        ),
+                        Link(
+                            href = "https://example.com/romance",
+                            title = "Romance",
+                            rels = setOf("http://opds-spec.org/facet"),
+                            properties = Properties(mapOf("numberOfItems" to 600))
+                        )
                     )
                 )
-            )
-        ), feed.facets)
+            ),
+            feed.facets
+        )
         assertEquals(2, feed.publications.size)
 
         assertJSONEquals(
@@ -317,5 +326,4 @@ class OPDS1ParserTest {
 
     private fun parseDate(string: String): Date =
         DateTime.parse(string).toDate()
-
 }

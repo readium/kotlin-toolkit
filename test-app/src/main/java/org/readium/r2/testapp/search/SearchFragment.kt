@@ -66,20 +66,25 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         binding.searchRecyclerView.apply {
             adapter = searchAdapter
             layoutManager = LinearLayoutManager(activity)
-            addItemDecoration(SectionDecoration(context, object : SectionDecoration.Listener {
-                override fun isStartOfSection(itemPos: Int): Boolean =
-                    viewModel.searchLocators.value.run {
-                        when {
-                            itemPos == 0 -> true
-                            itemPos < 0 -> false
-                            itemPos >= size -> false
-                            else -> getOrNull(itemPos)?.title != getOrNull(itemPos-1)?.title
-                        }
-                    }
+            addItemDecoration(
+                SectionDecoration(
+                    context,
+                    object : SectionDecoration.Listener {
+                        override fun isStartOfSection(itemPos: Int): Boolean =
+                            viewModel.searchLocators.value.run {
+                                when {
+                                    itemPos == 0 -> true
+                                    itemPos < 0 -> false
+                                    itemPos >= size -> false
+                                    else -> getOrNull(itemPos)?.title != getOrNull(itemPos - 1)?.title
+                                }
+                            }
 
-                override fun sectionTitle(itemPos: Int): String =
-                    viewModel.searchLocators.value.getOrNull(itemPos)?.title ?: ""
-            }))
+                        override fun sectionTitle(itemPos: Int): String =
+                            viewModel.searchLocators.value.getOrNull(itemPos)?.title ?: ""
+                    }
+                )
+            )
             addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL))
         }
     }

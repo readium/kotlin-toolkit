@@ -10,6 +10,8 @@
 package org.readium.r2.streamer.server.handler
 
 import android.net.Uri
+import java.io.FileNotFoundException
+import java.io.InputStream
 import org.nanohttpd.protocols.http.IHTTPSession
 import org.nanohttpd.protocols.http.response.IStatus
 import org.nanohttpd.protocols.http.response.Response
@@ -18,8 +20,6 @@ import org.nanohttpd.router.RouterNanoHTTPD
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.BuildConfig
 import timber.log.Timber
-import java.io.FileNotFoundException
-import java.io.InputStream
 
 internal abstract class BaseHandler : RouterNanoHTTPD.DefaultHandler() {
 
@@ -27,7 +27,11 @@ internal abstract class BaseHandler : RouterNanoHTTPD.DefaultHandler() {
     override fun getText(): String = ""
     override fun getStatus(): IStatus = Status.OK
 
-    override fun get(uriResource: RouterNanoHTTPD.UriResource?, urlParams: Map<String, String>?, session: IHTTPSession?): Response {
+    override fun get(
+        uriResource: RouterNanoHTTPD.UriResource?,
+        urlParams: Map<String, String>?,
+        session: IHTTPSession?
+    ): Response {
         uriResource ?: return notFoundResponse
         session ?: return notFoundResponse
 
@@ -36,18 +40,20 @@ internal abstract class BaseHandler : RouterNanoHTTPD.DefaultHandler() {
         return try {
             val uri = Uri.parse(session.uri)
             handle(resource = uriResource, uri = uri, parameters = urlParams)
-
         } catch (e: FileNotFoundException) {
-            if (BuildConfig.DEBUG) Timber.e( "Server handler error: %s", e.toString())
+            if (BuildConfig.DEBUG) Timber.e("Server handler error: %s", e.toString())
             notFoundResponse
-
         } catch (e: Exception) {
-            if (BuildConfig.DEBUG) Timber.e( "Server handler error: %s", e.toString())
+            if (BuildConfig.DEBUG) Timber.e("Server handler error: %s", e.toString())
             createErrorResponse(Status.INTERNAL_ERROR)
         }
     }
 
-    abstract fun handle(resource: RouterNanoHTTPD.UriResource, uri: Uri, parameters: Map<String, String>?): Response
+    abstract fun handle(
+        resource: RouterNanoHTTPD.UriResource,
+        uri: Uri,
+        parameters: Map<String, String>?
+    ): Response
 
     fun createResponse(mediaType: MediaType, body: String): Response =
         createResponse(mediaType, body.toByteArray())
@@ -66,5 +72,4 @@ internal abstract class BaseHandler : RouterNanoHTTPD.DefaultHandler() {
         Response.newFixedLengthResponse(status, "text/html", "")
 
     val notFoundResponse: Response get() = createErrorResponse(Status.NOT_FOUND)
-
 }

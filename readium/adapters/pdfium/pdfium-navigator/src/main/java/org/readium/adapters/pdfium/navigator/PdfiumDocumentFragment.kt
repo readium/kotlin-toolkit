@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import com.github.barteksc.pdfviewer.PDFView
+import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
@@ -24,7 +25,6 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import timber.log.Timber
-import kotlin.math.roundToInt
 
 @ExperimentalReadiumApi
 class PdfiumDocumentFragment internal constructor(
@@ -55,7 +55,11 @@ class PdfiumDocumentFragment internal constructor(
     private var isReloading: Boolean = false
     private var hasToReload: Int? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View =
         PDFView(inflater.context, null)
             .also { pdfView = it }
 

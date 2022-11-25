@@ -39,7 +39,6 @@ interface Fetcher : SuspendingCloseable {
 
     // To be able to add extensions on Fetcher.Companion in other components...
     companion object
-
 }
 
 /** A [Fetcher] providing no resources at all. */
@@ -50,5 +49,4 @@ class EmptyFetcher : Fetcher {
     override fun get(link: Link): Resource = FailureResource(link, Resource.Exception.NotFound())
 
     override suspend fun close() {}
-
 }

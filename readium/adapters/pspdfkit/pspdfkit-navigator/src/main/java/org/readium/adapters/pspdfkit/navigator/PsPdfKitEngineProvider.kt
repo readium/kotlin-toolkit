@@ -61,7 +61,7 @@ class PsPdfKitEngineProvider(
         SimplePresentation(
             readingProgression = settings.readingProgression,
             scroll = settings.scroll,
-            axis =  if (settings.scroll) settings.scrollAxis else Axis.HORIZONTAL
+            axis = if (settings.scroll) settings.scrollAxis else Axis.HORIZONTAL
         )
 
     override fun createPreferenceEditor(

@@ -9,6 +9,7 @@
 
 package org.readium.r2.opds
 
+import java.net.URL
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.then
 import org.joda.time.DateTime
@@ -25,15 +26,14 @@ import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
-import java.net.URL
 
 enum class OPDSParserError {
     MissingTitle
 }
 
 data class MimeTypeParameters(
-        var type: String,
-        var parameters: MutableMap<String, String> = mutableMapOf()
+    var type: String,
+    var parameters: MutableMap<String, String> = mutableMapOf()
 )
 
 object Namespaces {
@@ -77,7 +77,7 @@ class OPDS1Parser {
             DeprecationLevel.WARNING
         )
         @Suppress("unused")
-        fun parseURL(headers: MutableMap<String,String>, url: URL): Promise<ParseData, Exception> {
+        fun parseURL(headers: MutableMap<String, String>, url: URL): Promise<ParseData, Exception> {
             return DefaultHttpClient().fetchPromise(HttpRequest(url = url.toString(), headers = headers)) then {
                 this.parse(xmlData = it.body, url = url)
             }
@@ -93,7 +93,7 @@ class OPDS1Parser {
 
         private fun parseFeed(root: ElementNode, url: URL): Feed {
             val feedTitle = root.getFirst("title", Namespaces.Atom)?.text
-                    ?: throw Exception(OPDSParserError.MissingTitle.name)
+                ?: throw Exception(OPDSParserError.MissingTitle.name)
             val feed = Feed(feedTitle, 1, url)
             val tmpDate = root.getFirst("updated", Namespaces.Atom)?.text
             feed.metadata.modified = tmpDate?.let { DateTime(it).toDate() }
@@ -161,7 +161,6 @@ class OPDS1Parser {
                             feed.navigation.add(newLink)
                         }
                     }
-
                 }
             }
             // Parse links
@@ -250,11 +249,9 @@ class OPDS1Parser {
                     val template = match.getAttr("template")
 
                     template
-
                 }
                 null
             }
-
         }
 
         @Deprecated(
@@ -311,11 +308,9 @@ class OPDS1Parser {
                     val template = match.getAttr("template")
 
                     template
-
                 }
                 null
             }
-
         }
 
         private fun parseEntry(entry: ElementNode, baseUrl: URL): Publication? {
@@ -345,7 +340,6 @@ class OPDS1Parser {
                             properties["price"] = Price(currency = currency, value = value)
                                 .toJSON().toMap()
                         }
-
                     }
 
                     Link(
@@ -416,7 +410,7 @@ class OPDS1Parser {
                 subcollections = mapOf(
                     "images" to listOfNotNull(
                         images.takeIf { it.isNotEmpty() }
-                        ?.let { PublicationCollection(links = it) }
+                            ?.let { PublicationCollection(links = it) }
                     )
                 ).filterValues { it.isNotEmpty() }
             )
@@ -435,7 +429,11 @@ class OPDS1Parser {
             feed.facets.add(newFacet)
         }
 
-        private fun addPublicationInGroup(feed: Feed, publication: Publication, collectionLink: Link) {
+        private fun addPublicationInGroup(
+            feed: Feed,
+            publication: Publication,
+            collectionLink: Link
+        ) {
             for (group in feed.groups) {
                 for (l in group.links) {
                     if (l.href == collectionLink.href) {
@@ -487,7 +485,5 @@ class OPDS1Parser {
                     children = fromXML(child)
                 )
             }
-
     }
-
 }

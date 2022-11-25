@@ -8,7 +8,6 @@ package org.readium.r2.testapp.utils
 
 import android.view.View
 
-
 /**
  * Prevents from double clicks on a view, which could otherwise lead to unpredictable states. Useful
  * while transitioning to another activity for instance.

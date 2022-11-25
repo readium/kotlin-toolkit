@@ -17,10 +17,15 @@ internal var MediaSessionCompat.publicationId: PublicationId?
     get() = controller.publicationId
     set(value) {
         val extras = Bundle(controller.extras ?: Bundle())
-        setExtras(extras.apply {
-            putString(MediaService.EXTRA_PUBLICATION_ID, value)
-        })
-        sendSessionEvent(MediaService.EVENT_PUBLICATION_CHANGED, Bundle().apply {
-            putString(MediaService.EXTRA_PUBLICATION_ID, value)
-        })
+        setExtras(
+            extras.apply {
+                putString(MediaService.EXTRA_PUBLICATION_ID, value)
+            }
+        )
+        sendSessionEvent(
+            MediaService.EVENT_PUBLICATION_CHANGED,
+            Bundle().apply {
+                putString(MediaService.EXTRA_PUBLICATION_ID, value)
+            }
+        )
     }

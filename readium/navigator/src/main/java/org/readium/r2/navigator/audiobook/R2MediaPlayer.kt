@@ -4,12 +4,11 @@ import android.app.ProgressDialog
 import android.media.MediaPlayer
 import android.media.MediaPlayer.OnPreparedListener
 import android.net.Uri
+import java.io.IOException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.readium.r2.shared.publication.Link
-import java.io.IOException
-
 
 class R2MediaPlayer(private var items: List<Link>, private var callback: MediaPlayerCallback) : OnPreparedListener {
 
@@ -23,10 +22,10 @@ class R2MediaPlayer(private var items: List<Link>, private var callback: MediaPl
         get() = mediaPlayer.isPlaying
 
     val duration: Double
-        get() = mediaPlayer.duration.toDouble() //if (isPrepared) {mediaPlayer.duration.toDouble()}else {0.0}
+        get() = mediaPlayer.duration.toDouble() // if (isPrepared) {mediaPlayer.duration.toDouble()}else {0.0}
 
     val currentPosition: Double
-        get() = mediaPlayer.currentPosition.toDouble() //if (isPrepared) {mediaPlayer.currentPosition.toDouble()}else {0.0}
+        get() = mediaPlayer.currentPosition.toDouble() // if (isPrepared) {mediaPlayer.currentPosition.toDouble()}else {0.0}
 
     var isPaused: Boolean
     var isPrepared: Boolean
@@ -43,7 +42,6 @@ class R2MediaPlayer(private var items: List<Link>, private var callback: MediaPl
         }
         toggleProgress(true)
     }
-
 
     /**
      * Called when the media file is ready for playback.
@@ -147,12 +145,9 @@ class R2MediaPlayer(private var items: List<Link>, private var callback: MediaPl
         }
         toggleProgress(true)
     }
-
 }
 
 interface MediaPlayerCallback {
     fun onPrepared()
     fun onComplete(index: Int, currentPosition: Int, duration: Int)
 }
-
-

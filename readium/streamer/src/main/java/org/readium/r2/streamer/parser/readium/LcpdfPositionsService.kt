@@ -60,7 +60,12 @@ internal class LcpdfPositionsService(
         }
     }
 
-    private fun createPositionsOf(link: Link, pageCount: Int, totalPageCount: Int, startPosition: Int): List<Locator> {
+    private fun createPositionsOf(
+        link: Link,
+        pageCount: Int,
+        totalPageCount: Int,
+        startPosition: Int
+    ): List<Locator> {
         if (pageCount <= 0 || totalPageCount <= 0) {
             return emptyList()
         }
@@ -101,5 +106,4 @@ internal class LcpdfPositionsService(
             )
         }
     }
-
 }

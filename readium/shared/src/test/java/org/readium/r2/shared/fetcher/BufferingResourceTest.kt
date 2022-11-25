@@ -1,12 +1,12 @@
 package org.readium.r2.shared.fetcher
 
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.fail
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.publication.Link
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.fail
 
 class BufferingResourceTest {
 

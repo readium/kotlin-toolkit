@@ -9,9 +9,9 @@
 
 package org.readium.r2.shared.fetcher
 
-import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import java.io.InputStream
+import kotlinx.coroutines.runBlocking
 
 /**
  * Input stream reading a [Resource]'s content.
@@ -38,7 +38,6 @@ class ResourceInputStream(
         else {
             kotlin.math.min(resourceLength, range.last + 1)
         }
-
     }
 
     /** Current position in the resource. */
@@ -77,7 +76,6 @@ class ResourceInputStream(
             val bytes = runBlocking { resource.read(position until (position + 1)).getOrThrow() }
             position += 1
             return bytes.first().toInt()
-
         } catch (e: Exception) {
             throw IOException("Can't read ResourceInputStream", e)
         }
@@ -103,7 +101,6 @@ class ResourceInputStream(
             )
             position += bytes.size
             return bytes.size
-
         } catch (e: Exception) {
             throw IOException("Can't read ResourceInputStream", e)
         }
@@ -138,5 +135,4 @@ class ResourceInputStream(
         if (isClosed)
             throw IOException("InputStream is closed.")
     }
-
 }

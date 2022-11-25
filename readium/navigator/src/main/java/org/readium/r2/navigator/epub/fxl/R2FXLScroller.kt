@@ -18,8 +18,18 @@ abstract class R2FXLScroller {
     abstract val currX: Int
     abstract val currY: Int
     abstract fun computeScrollOffset(): Boolean
-    abstract fun fling(startX: Int, startY: Int, velocityX: Int, velocityY: Int, minX: Int, maxX: Int, minY: Int,
-                       maxY: Int, overX: Int, overY: Int)
+    abstract fun fling(
+        startX: Int,
+        startY: Int,
+        velocityX: Int,
+        velocityY: Int,
+        minX: Int,
+        maxX: Int,
+        minY: Int,
+        maxY: Int,
+        overX: Int,
+        overY: Int
+    )
     abstract fun forceFinished(finished: Boolean)
 
     private class Scroller internal constructor(context: Context) : R2FXLScroller() {
@@ -39,14 +49,24 @@ abstract class R2FXLScroller {
             return scroller.computeScrollOffset()
         }
 
-        override fun fling(startX: Int, startY: Int, velocityX: Int, velocityY: Int, minX: Int, maxX: Int, minY: Int, maxY: Int, overX: Int, overY: Int) {
+        override fun fling(
+            startX: Int,
+            startY: Int,
+            velocityX: Int,
+            velocityY: Int,
+            minX: Int,
+            maxX: Int,
+            minY: Int,
+            maxY: Int,
+            overX: Int,
+            overY: Int
+        ) {
             scroller.fling(startX, startY, velocityX, velocityY, minX, maxX, minY, maxY)
         }
 
         override fun forceFinished(finished: Boolean) {
             scroller.forceFinished(finished)
         }
-
     }
 
     companion object {
@@ -54,5 +74,4 @@ abstract class R2FXLScroller {
             return Scroller(context)
         }
     }
-
 }

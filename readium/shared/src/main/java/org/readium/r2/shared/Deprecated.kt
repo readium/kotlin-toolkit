@@ -11,6 +11,7 @@
 
 package org.readium.r2.shared
 
+import java.net.URL
 import org.json.JSONObject
 import org.readium.r2.shared.extensions.removeLastComponent
 import org.readium.r2.shared.publication.Collection
@@ -23,7 +24,6 @@ import org.readium.r2.shared.publication.Subject
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.util.Href
-import java.net.URL
 
 @Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.Locator"))
 typealias Locator = org.readium.r2.shared.publication.Locator

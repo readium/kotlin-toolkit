@@ -24,37 +24,50 @@ class FallbackContentProtectionTest {
 
     @Test
     fun `Sniff EPUB with empty encryption xml`() {
-        assertNull(sniff(mediaType = MediaType.EPUB, resources = mapOf(
-            "/META-INF/encryption.xml" to """<?xml version='1.0' encoding='utf-8'?><encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container" xmlns:enc="http://www.w3.org/2001/04/xmlenc#"></encryption>"""
-        )))
+        assertNull(
+            sniff(
+                mediaType = MediaType.EPUB,
+                resources = mapOf(
+                    "/META-INF/encryption.xml" to """<?xml version='1.0' encoding='utf-8'?><encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container" xmlns:enc="http://www.w3.org/2001/04/xmlenc#"></encryption>"""
+                )
+            )
+        )
     }
 
     @Test
     fun `Sniff LCP protected package`() {
-        assertEquals(Scheme.Lcp, sniff(
-            mediaType = MediaType.ZIP,
-            resources = mapOf(
-                "/license.lcpl" to "{}"
+        assertEquals(
+            Scheme.Lcp,
+            sniff(
+                mediaType = MediaType.ZIP,
+                resources = mapOf(
+                    "/license.lcpl" to "{}"
+                )
             )
-        ))
+        )
     }
 
     @Test
     fun `Sniff LCP protected EPUB`() {
-        assertEquals(Scheme.Lcp, sniff(
-            mediaType = MediaType.EPUB,
-            resources = mapOf(
-                "/META-INF/license.lcpl" to "{}"
+        assertEquals(
+            Scheme.Lcp,
+            sniff(
+                mediaType = MediaType.EPUB,
+                resources = mapOf(
+                    "/META-INF/license.lcpl" to "{}"
+                )
             )
-        ))
+        )
     }
 
     @Test
     fun `Sniff LCP protected EPUB missing the license`() {
-        assertEquals(Scheme.Lcp, sniff(
-            mediaType = MediaType.EPUB,
-            resources = mapOf(
-                "/META-INF/encryption.xml" to """<?xml version="1.0" encoding="UTF-8"?>
+        assertEquals(
+            Scheme.Lcp,
+            sniff(
+                mediaType = MediaType.EPUB,
+                resources = mapOf(
+                    "/META-INF/encryption.xml" to """<?xml version="1.0" encoding="UTF-8"?>
 <encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
   <EncryptedData xmlns="http://www.w3.org/2001/04/xmlenc#">
     <EncryptionMethod xmlns="http://www.w3.org/2001/04/xmlenc#" Algorithm="http://www.w3.org/2001/04/xmlenc#aes256-cbc"></EncryptionMethod>
@@ -71,16 +84,19 @@ class FallbackContentProtectionTest {
     </EncryptionProperties>
   </EncryptedData>
 </encryption>"""
+                )
             )
-        ))
+        )
     }
 
     @Test
     fun `Sniff Adobe ADEPT`() {
-        assertEquals(Scheme.Adept, sniff(
-            mediaType = MediaType.EPUB,
-            resources = mapOf(
-                "/META-INF/encryption.xml" to """<?xml version="1.0"?><encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+        assertEquals(
+            Scheme.Adept,
+            sniff(
+                mediaType = MediaType.EPUB,
+                resources = mapOf(
+                    "/META-INF/encryption.xml" to """<?xml version="1.0"?><encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
   <EncryptedData xmlns="http://www.w3.org/2001/04/xmlenc#">
     <EncryptionMethod Algorithm="http://www.w3.org/2001/04/xmlenc#aes128-cbc"></EncryptionMethod>
     <KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#">
@@ -91,19 +107,23 @@ class FallbackContentProtectionTest {
     </CipherData>
   </EncryptedData>
   </encryption>"""
+                )
             )
-        ))
+        )
     }
 
     @Test
     fun `Sniff Adobe ADEPT from rights xml`() {
-        assertEquals(Scheme.Adept, sniff(
-            mediaType = MediaType.EPUB,
-            resources = mapOf(
-                "/META-INF/encryption.xml" to """<?xml version='1.0' encoding='utf-8'?><encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container" xmlns:enc="http://www.w3.org/2001/04/xmlenc#"></encryption>""",
-                "/META-INF/rights.xml" to """<?xml version="1.0"?><adept:rights xmlns:adept="http://ns.adobe.com/adept"></adept:rights>"""
+        assertEquals(
+            Scheme.Adept,
+            sniff(
+                mediaType = MediaType.EPUB,
+                resources = mapOf(
+                    "/META-INF/encryption.xml" to """<?xml version='1.0' encoding='utf-8'?><encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container" xmlns:enc="http://www.w3.org/2001/04/xmlenc#"></encryption>""",
+                    "/META-INF/rights.xml" to """<?xml version="1.0"?><adept:rights xmlns:adept="http://ns.adobe.com/adept"></adept:rights>"""
+                )
             )
-        ))
+        )
     }
 
     private fun sniff(mediaType: MediaType, resources: Map<String, String>): Scheme? = runBlocking {

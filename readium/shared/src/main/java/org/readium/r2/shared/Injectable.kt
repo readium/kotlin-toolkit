@@ -9,10 +9,10 @@
 
 package org.readium.r2.shared
 
-import org.readium.r2.shared.util.MapCompanion
 import java.io.Serializable
+import org.readium.r2.shared.util.MapCompanion
 
-enum class Injectable(val rawValue: String): Serializable {
+enum class Injectable(val rawValue: String) : Serializable {
     Script("scripts"),
     Font("fonts"),
     Style("styles");
@@ -20,5 +20,4 @@ enum class Injectable(val rawValue: String): Serializable {
     companion object : MapCompanion<String, Injectable>(values(), Injectable::rawValue)
 
     override fun toString(): String = rawValue
-
 }

@@ -16,7 +16,6 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-
 @Database(
     entities = [Passphrase::class, License::class],
     version = 2,
@@ -46,16 +45,15 @@ internal abstract class LcpDatabase : RoomDatabase() {
                     user_id TEXT,
                     passphrase TEXT NOT NULL
                 )
-                """.trimIndent()
+                        """.trimIndent()
                     )
                     database.execSQL(
                         """
                 INSERT INTO passphrases (license_id, provider, user_id, passphrase)
                 SELECT id, origin, userId, passphrase FROM Transactions
-                """.trimIndent()
+                        """.trimIndent()
                     )
                     database.execSQL("DROP TABLE Transactions")
-
 
                     database.execSQL(
                         """
@@ -66,13 +64,13 @@ internal abstract class LcpDatabase : RoomDatabase() {
                     right_copy INTEGER,
                     registered INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 0
                 )
-                """.trimIndent()
+                        """.trimIndent()
                     )
                     database.execSQL(
                         """
                 INSERT INTO new_Licenses (license_id, right_print, right_copy, registered)
                 SELECT id, printsLeft, copiesLeft, registered FROM Licenses
-                """.trimIndent()
+                        """.trimIndent()
                     )
                     database.execSQL("DROP TABLE Licenses")
                     database.execSQL("ALTER TABLE new_Licenses RENAME TO licenses")

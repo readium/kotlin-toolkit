@@ -155,7 +155,12 @@ class ReaderViewModel(
     suspend fun highlightById(id: Long): Highlight? =
         bookRepository.highlightById(id)
 
-    fun addHighlight(locator: Locator, style: Highlight.Style, @ColorInt tint: Int, annotation: String = "") = viewModelScope.launch {
+    fun addHighlight(
+        locator: Locator,
+        style: Highlight.Style,
+        @ColorInt tint: Int,
+        annotation: String = ""
+    ) = viewModelScope.launch {
         bookRepository.addHighlight(bookId, style, tint, locator, annotation)
     }
 

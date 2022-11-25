@@ -136,7 +136,7 @@ data class Accessibility(
     @JvmInline
     value class AccessMode(val value: String) : Parcelable {
 
-        companion object  {
+        companion object {
             /**
              * Indicates that the resource contains information encoded in auditory form.
              */
@@ -145,7 +145,7 @@ data class Accessibility(
             /**
              * Indicates that the resource contains charts encoded in visual form.
              */
-            val CHART_ON_VISUAL =  AccessMode("chartOnVisual")
+            val CHART_ON_VISUAL = AccessMode("chartOnVisual")
 
             /**
              * Indicates that the resource contains chemical equations encoded in visual form.
@@ -536,7 +536,7 @@ data class Accessibility(
         }
     }
 
-    override fun toJSON(): JSONObject =  JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         putIfNotEmpty("conformsTo", conformsTo.toJSONArray())
         put("certification", certification?.toJSON())
         put("summary", summary)

@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import java.text.DecimalFormat
 import org.readium.r2.navigator.tts.PublicationSpeechSynthesizer.Configuration
 import org.readium.r2.navigator.tts.TtsEngine.Voice
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -22,7 +23,6 @@ import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.shared.views.SelectorListItem
 import org.readium.r2.testapp.utils.extensions.asStateWhenStarted
-import java.text.DecimalFormat
 
 /**
  * TTS controls bar displayed at the bottom of the screen when speaking a publication.

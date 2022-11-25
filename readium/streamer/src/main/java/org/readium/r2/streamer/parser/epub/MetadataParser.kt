@@ -9,7 +9,10 @@ package org.readium.r2.streamer.parser.epub
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.util.Href
 
-internal class MetadataParser(private val epubVersion: Double, private val prefixMap: Map<String, String>) {
+internal class MetadataParser(
+    private val epubVersion: Double,
+    private val prefixMap: Map<String, String>
+) {
 
     fun parse(document: ElementNode, filePath: String): List<MetadataItem>? {
         val metadata = document.getFirst("metadata", Namespaces.OPF)
@@ -143,7 +146,11 @@ internal class MetadataParser(private val epubVersion: Double, private val prefi
         return rootExpr.map { computeMetadataItem(it, exprByRefines, emptySet()) }
     }
 
-    private fun computeMetadataItem(expr: MetadataItem, items: Map<String, List<MetadataItem>>, chain: Set<String>): MetadataItem {
+    private fun computeMetadataItem(
+        expr: MetadataItem,
+        items: Map<String, List<MetadataItem>>,
+        chain: Set<String>
+    ): MetadataItem {
         val updatedChain = expr.id?.let { chain + it } ?: chain
         val refinedBy = expr.id?.let { items[it] }?.filter { it.id !in chain }.orEmpty()
         val newChildren = refinedBy.map { computeMetadataItem(it, items, updatedChain) }

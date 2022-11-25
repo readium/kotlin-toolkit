@@ -12,12 +12,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.datepicker.*
-import kotlinx.coroutines.suspendCancellableCoroutine
 import java.net.URL
 import java.util.*
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlinx.coroutines.suspendCancellableCoroutine
 
 /**
  * A default implementation of the [LcpLicense.RenewListener] using Chrome Custom Tabs for
@@ -42,18 +42,24 @@ class MaterialRenewListener(
         val end = maximumDate?.time
 
         MaterialDatePicker.Builder.datePicker()
-            .setCalendarConstraints(CalendarConstraints.Builder().apply {
-                // Restricts the choice between the license expiration date and the given
-                // maximumDate.
-                setStart(start)
-                if (end != null) {
-                    setEnd(end)
-                }
-                setValidator(CompositeDateValidator.allOf(listOfNotNull(
-                    DateValidatorPointForward.from(start),
-                    end?.let { DateValidatorPointBackward.before(end) }
-                )))
-            }.build())
+            .setCalendarConstraints(
+                CalendarConstraints.Builder().apply {
+                    // Restricts the choice between the license expiration date and the given
+                    // maximumDate.
+                    setStart(start)
+                    if (end != null) {
+                        setEnd(end)
+                    }
+                    setValidator(
+                        CompositeDateValidator.allOf(
+                            listOfNotNull(
+                                DateValidatorPointForward.from(start),
+                                end?.let { DateValidatorPointBackward.before(end) }
+                            )
+                        )
+                    )
+                }.build()
+            )
             .setSelection(start)
             .build()
             .apply {
@@ -82,6 +88,4 @@ class MaterialRenewListener(
     private val webPageLauncher = caller.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         webPageContinuation?.resume(Unit)
     }
-
 }
-

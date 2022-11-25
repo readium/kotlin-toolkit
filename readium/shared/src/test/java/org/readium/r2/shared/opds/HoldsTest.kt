@@ -65,5 +65,4 @@ class HoldsTest {
             Holds(total = 5, position = 6).toJSON()
         )
     }
-
 }

@@ -45,7 +45,7 @@ import timber.log.Timber
  * To use this [Fragment], create a factory with [PdfNavigatorFactory.createFragmentFactory].
  */
 @ExperimentalReadiumApi
-class PdfNavigatorFragment<S: Configurable.Settings, P: Configurable.Preferences<P>, E: PreferencesEditor<P>> internal constructor(
+class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> internal constructor(
     override val publication: Publication,
     initialLocator: Locator? = null,
     initialPreferences: P,
@@ -74,7 +74,7 @@ class PdfNavigatorFragment<S: Configurable.Settings, P: Configurable.Preferences
          * @param pdfEngineProvider provider for third-party PDF engine adapter.
          */
         @ExperimentalReadiumApi
-        fun <S: Configurable.Settings, P: Configurable.Preferences<P>, E: PreferencesEditor<P>> createFactory(
+        fun <S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> createFactory(
             publication: Publication,
             initialLocator: Locator? = null,
             preferences: P? = null,
@@ -125,7 +125,11 @@ class PdfNavigatorFragment<S: Configurable.Settings, P: Configurable.Preferences
         super.onCreate(null)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         val view = FragmentContainerView(inflater.context)
         view.id = R.id.readium_pdf_container
         return view
@@ -168,13 +172,15 @@ class PdfNavigatorFragment<S: Configurable.Settings, P: Configurable.Preferences
 
         return try {
             val pageIndex = (locator.locations.page ?: 1) - 1
-            pdfEngineProvider.createDocumentFragment(PdfDocumentFragmentInput(
-                publication = publication,
-                link = link,
-                initialPageIndex = pageIndex,
-                settings = settings,
-                listener = DocumentFragmentListener()
-            ))
+            pdfEngineProvider.createDocumentFragment(
+                PdfDocumentFragmentInput(
+                    publication = publication,
+                    link = link,
+                    initialPageIndex = pageIndex,
+                    settings = settings,
+                    listener = DocumentFragmentListener()
+                )
+            )
         } catch (e: Exception) {
             Timber.e(e, "Failed to load PDF resource ${link.href}")
             listener?.onResourceLoadFailed(link, Resource.Exception.wrap(e))

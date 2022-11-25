@@ -29,24 +29,24 @@ interface TtsEngine : SuspendingCloseable {
         cause: Throwable? = null
     ) : kotlin.Exception(message, cause) {
         /** Failed to initialize the TTS engine. */
-        class InitializationFailed(cause: Throwable? = null)
-            : Exception("The TTS engine failed to initialize", cause)
+        class InitializationFailed(cause: Throwable? = null) :
+            Exception("The TTS engine failed to initialize", cause)
 
         /** Tried to synthesize an utterance with an unsupported language. */
-        class LanguageNotSupported(val language: Language, cause: Throwable? = null)
-            : Exception("The language ${language.code} is not supported by the TTS engine", cause)
+        class LanguageNotSupported(val language: Language, cause: Throwable? = null) :
+            Exception("The language ${language.code} is not supported by the TTS engine", cause)
 
         /** The selected language is missing downloadable data. */
-        class LanguageSupportIncomplete(val language: Language, cause: Throwable? = null)
-            : Exception("The language ${language.code} requires additional files by the TTS engine", cause)
+        class LanguageSupportIncomplete(val language: Language, cause: Throwable? = null) :
+            Exception("The language ${language.code} requires additional files by the TTS engine", cause)
 
         /** Error during network calls. */
-        class Network(cause: Throwable? = null)
-            : Exception("A network error occurred", cause)
+        class Network(cause: Throwable? = null) :
+            Exception("A network error occurred", cause)
 
         /** Other engine-specific errors. */
-        class Other(override val cause: Throwable)
-            : Exception(cause.message ?: "An unknown error occurred", cause)
+        class Other(override val cause: Throwable) :
+            Exception(cause.message ?: "An unknown error occurred", cause)
 
         companion object {
             fun wrap(e: Throwable): Exception = when (e) {

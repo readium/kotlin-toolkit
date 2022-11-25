@@ -24,7 +24,6 @@ inline fun <reified T : Fragment> createFragmentFactory(crossinline factory: () 
             else -> super.instantiate(classLoader, className)
         }
     }
-
 }
 
 /**

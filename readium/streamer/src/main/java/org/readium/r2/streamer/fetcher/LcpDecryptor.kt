@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.fetcher
 
+import java.io.IOException
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.drm.DRMLicense
 import org.readium.r2.shared.extensions.inflate
@@ -16,7 +17,6 @@ import org.readium.r2.shared.fetcher.*
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.util.Try
-import java.io.IOException
 
 /**
  * Decrypts a resource protected with LCP.
@@ -84,8 +84,8 @@ internal class LcpDecryptor(val drm: DRM) {
                             ?: throw Exception("Can't decrypt trailing size of CBC-encrypted stream")
 
                         return@mapCatching length -
-                                AES_BLOCK_SIZE -  // Minus IV or previous block
-                                (AES_BLOCK_SIZE - decryptedBytes.size) % AES_BLOCK_SIZE  // Minus padding part
+                            AES_BLOCK_SIZE - // Minus IV or previous block
+                            (AES_BLOCK_SIZE - decryptedBytes.size) % AES_BLOCK_SIZE // Minus padding part
                     }
             }
 
@@ -137,11 +137,10 @@ internal class LcpDecryptor(val drm: DRM) {
         companion object {
             private const val AES_BLOCK_SIZE = 16 // bytes
         }
-
     }
 }
 
-private fun DRMLicense.decryptFully(data:  ResourceTry<ByteArray>, isDeflated: Boolean): ResourceTry<ByteArray> =
+private fun DRMLicense.decryptFully(data: ResourceTry<ByteArray>, isDeflated: Boolean): ResourceTry<ByteArray> =
     data.mapCatching {
         // Decrypts the resource.
         var bytes = decipher(it)

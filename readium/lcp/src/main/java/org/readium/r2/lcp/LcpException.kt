@@ -8,13 +8,23 @@ package org.readium.r2.lcp
 
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
-import org.readium.r2.shared.UserException
 import java.net.SocketTimeoutException
 import java.util.*
+import org.readium.r2.shared.UserException
 
-sealed class LcpException(userMessageId: Int, vararg args: Any, quantity: Int? = null, cause: Throwable? = null) : UserException(userMessageId, quantity, *args, cause = cause) {
+sealed class LcpException(
+    userMessageId: Int,
+    vararg args: Any,
+    quantity: Int? = null,
+    cause: Throwable? = null
+) : UserException(userMessageId, quantity, *args, cause = cause) {
     constructor(@StringRes userMessageId: Int, vararg args: Any, cause: Throwable? = null) : this(userMessageId, *args, quantity = null, cause = cause)
-    constructor(@PluralsRes userMessageId: Int, quantity: Int, vararg args: Any, cause: Throwable? = null) : this(userMessageId, *args, quantity = quantity, cause = cause)
+    constructor(
+        @PluralsRes userMessageId: Int,
+        quantity: Int,
+        vararg args: Any,
+        cause: Throwable? = null
+    ) : this(userMessageId, *args, quantity = quantity, cause = cause)
 
     /** The interaction is not available with this License. */
     object LicenseInteractionNotAvailable : LcpException(R.string.r2_lcp_exception_license_interaction_not_available)
@@ -63,8 +73,8 @@ sealed class LcpException(userMessageId: Int, vararg args: Any, quantity: Int? =
          * in the status document. If no event is logged in the status document, no such message should
          * appear (certainly not "The license was registered by 0 devices").
          */
-        class Revoked(val date: Date, val devicesCount: Int)
-            : LicenseStatus(R.plurals.r2_lcp_exception_license_status_revoked, devicesCount, date, devicesCount)
+        class Revoked(val date: Date, val devicesCount: Int) :
+            LicenseStatus(R.plurals.r2_lcp_exception_license_status_revoked, devicesCount, date, devicesCount)
     }
 
     /**
@@ -123,7 +133,6 @@ sealed class LcpException(userMessageId: Int, vararg args: Any, quantity: Int? =
 
         /** Invalid URL for link with [rel]. */
         class Url(val rel: String) : Parsing()
-
     }
 
     /**
@@ -158,7 +167,6 @@ sealed class LcpException(userMessageId: Int, vararg args: Any, quantity: Int? =
         object InvalidLicenseSignature : LicenseIntegrity(R.string.r2_lcp_exception_license_integrity_invalid_license_signature)
 
         object InvalidUserKeyCheck : LicenseIntegrity(R.string.r2_lcp_exception_license_integrity_invalid_user_key_check)
-
     }
 
     sealed class Decryption(@StringRes userMessageId: Int) : LcpException(userMessageId) {
@@ -166,7 +174,6 @@ sealed class LcpException(userMessageId: Int, vararg args: Any, quantity: Int? =
         object ContentKeyDecryptError : Decryption(R.string.r2_lcp_exception_decryption_content_key_decrypt_error)
 
         object ContentDecryptError : Decryption(R.string.r2_lcp_exception_decryption_content_decrypt_error)
-
     }
 
     companion object {
@@ -178,7 +185,6 @@ sealed class LcpException(userMessageId: Int, vararg args: Any, quantity: Int? =
         }
     }
 }
-
 
 @Deprecated("Renamed to `LcpException`", replaceWith = ReplaceWith("LcpException"))
 typealias LCPError = LcpException

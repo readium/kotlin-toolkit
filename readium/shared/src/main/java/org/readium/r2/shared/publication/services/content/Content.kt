@@ -6,12 +6,12 @@
 
 package org.readium.r2.shared.publication.services.content
 
+import java.net.URL
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.services.content.Content.Element
 import org.readium.r2.shared.util.Language
-import java.net.URL
 
 /**
  * Provides an iterable list of content [Element]s.

@@ -50,7 +50,6 @@ data class ArchiveProperties(
 
             return ArchiveProperties(entryLength = entryLength, isEntryCompressed = isEntryCompressed)
         }
-
     }
 }
 

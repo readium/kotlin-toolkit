@@ -30,6 +30,7 @@ import com.pspdfkit.listeners.DocumentListener
 import com.pspdfkit.listeners.OnPreparePopupToolbarListener
 import com.pspdfkit.ui.PdfFragment
 import com.pspdfkit.ui.toolbar.popup.PdfTextSelectionPopupToolbar
+import kotlin.math.roundToInt
 import org.readium.adapters.pspdfkit.document.PsPdfKitDocument
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
 import org.readium.r2.navigator.preferences.Axis
@@ -39,7 +40,6 @@ import org.readium.r2.navigator.preferences.Spread
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.isProtected
-import kotlin.math.roundToInt
 
 @ExperimentalReadiumApi
 internal class PsPdfKitDocumentFragment(
@@ -61,7 +61,11 @@ internal class PsPdfKitDocumentFragment(
     private lateinit var pdfFragment: PdfFragment
     private val psPdfKitListener = PsPdfKitListener()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View =
         FragmentContainerView(inflater.context)
             .apply {
                 id = R.id.readium_pspdfkit_fragment
@@ -171,7 +175,13 @@ internal class PsPdfKitDocumentFragment(
             return center?.let { listener.onTap(it) } ?: false
         }
 
-        override fun onPageClick(document: PdfDocument, pageIndex: Int, event: MotionEvent?, pagePosition: PointF?, clickedAnnotation: Annotation?): Boolean {
+        override fun onPageClick(
+            document: PdfDocument,
+            pageIndex: Int,
+            event: MotionEvent?,
+            pagePosition: PointF?,
+            clickedAnnotation: Annotation?
+        ): Boolean {
             if (
                 pagePosition == null || clickedAnnotation is LinkAnnotation ||
                 clickedAnnotation is SoundAnnotation
@@ -227,7 +237,7 @@ internal class PsPdfKitDocumentFragment(
     private val Spread.pageLayout: PageLayoutMode
         get() = when (this) {
             Spread.AUTO -> PageLayoutMode.AUTO
-            Spread.ALWAYS-> PageLayoutMode.DOUBLE
+            Spread.ALWAYS -> PageLayoutMode.DOUBLE
             Spread.NEVER -> PageLayoutMode.SINGLE
         }
 }

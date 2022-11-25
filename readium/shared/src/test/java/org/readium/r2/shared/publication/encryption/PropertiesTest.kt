@@ -22,10 +22,14 @@ class PropertiesTest {
     @Test fun `get Properties {encryption} when available`() {
         assertEquals(
             Encryption(algorithm = "http://algo", compression = "gzip"),
-            Properties(otherProperties = mapOf("encrypted" to mapOf(
-                "algorithm" to "http://algo",
-                "compression" to "gzip"
-            ))).encryption
+            Properties(
+                otherProperties = mapOf(
+                    "encrypted" to mapOf(
+                        "algorithm" to "http://algo",
+                        "compression" to "gzip"
+                    )
+                )
+            ).encryption
         )
     }
 
@@ -36,5 +40,4 @@ class PropertiesTest {
     @Test fun `get Properties {encryption} when not valid`() {
         assertNull(Properties(otherProperties = mapOf("encrypted" to "invalid")).encryption)
     }
-
 }
