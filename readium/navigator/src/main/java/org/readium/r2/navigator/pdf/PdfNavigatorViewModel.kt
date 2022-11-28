@@ -22,12 +22,12 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.positions
 
 @OptIn(ExperimentalReadiumApi::class)
-internal class PdfNavigatorViewModel<S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>>(
+internal class PdfNavigatorViewModel<S : Configurable.Settings, P : Configurable.Preferences<P>>(
     application: Application,
     private val publication: Publication,
     initialLocator: Locator,
     initialPreferences: P,
-    private val pdfEngineProvider: PdfEngineProvider<S, P, E>
+    private val pdfEngineProvider: PdfEngineProvider<S, P, *>
 ) : AndroidViewModel(application) {
 
     private val _currentLocator: MutableStateFlow<Locator> =

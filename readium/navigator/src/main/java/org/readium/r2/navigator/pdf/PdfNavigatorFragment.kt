@@ -45,12 +45,12 @@ import timber.log.Timber
  * To use this [Fragment], create a factory with [PdfNavigatorFactory.createFragmentFactory].
  */
 @ExperimentalReadiumApi
-class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> internal constructor(
+class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferences<P>> internal constructor(
     override val publication: Publication,
     initialLocator: Locator? = null,
     initialPreferences: P,
     private val listener: Listener?,
-    private val pdfEngineProvider: PdfEngineProvider<S, P, E>
+    private val pdfEngineProvider: PdfEngineProvider<S, P, *>
 ) : Fragment(), VisualNavigator, Configurable<S, P> {
 
     interface Listener : VisualNavigator.Listener {
@@ -107,7 +107,7 @@ class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferenc
         viewModel.submitPreferences(preferences)
     }
 
-    private val viewModel: PdfNavigatorViewModel<S, P, E> by viewModels {
+    private val viewModel: PdfNavigatorViewModel<S, P> by viewModels {
         PdfNavigatorViewModel.createFactory(
             requireActivity().application,
             publication,
