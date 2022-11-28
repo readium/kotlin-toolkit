@@ -96,7 +96,8 @@ class PublicationSpeechSynthesizer<E : TtsEngine> private constructor(
         val defaultTokenizerFactory: (Language?) -> ContentTokenizer = { language ->
             TextContentTokenizer(
                 unit = TextUnit.Sentence,
-                defaultLanguage = language
+                language = language,
+                overrideContentLanguage = false
             )
         }
 

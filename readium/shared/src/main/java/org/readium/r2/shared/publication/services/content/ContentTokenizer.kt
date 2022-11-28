@@ -26,7 +26,8 @@ fun interface ContentTokenizer : Tokenizer<Content.Element, Content.Element>
  */
 @ExperimentalReadiumApi
 class TextContentTokenizer(
-    private val defaultLanguage: Language?,
+    private val language: Language?,
+    private val overrideContentLanguage: Boolean = false,
     private val contextSnippetLength: Int = 50,
     private val textTokenizerFactory: (Language?) -> TextTokenizer
 ) : ContentTokenizer {
@@ -34,9 +35,10 @@ class TextContentTokenizer(
     /**
      * A [ContentTokenizer] using the default [TextTokenizer] to split the text of the [Content.Element].
      */
-    constructor(defaultLanguage: Language?, unit: TextUnit) : this(
-        defaultLanguage = defaultLanguage,
-        textTokenizerFactory = { language -> DefaultTextContentTokenizer(unit, language) }
+    constructor(language: Language?, overrideContentLanguage: Boolean, unit: TextUnit) : this(
+        language = language,
+        overrideContentLanguage = overrideContentLanguage,
+        textTokenizerFactory = { contentLanguage -> DefaultTextContentTokenizer(unit, contentLanguage) },
     )
 
     override fun tokenize(data: Content.Element): List<Content.Element> = listOf(
@@ -50,13 +52,16 @@ class TextContentTokenizer(
     )
 
     private fun tokenize(segment: Content.TextElement.Segment): List<Content.TextElement.Segment> =
-        textTokenizerFactory(segment.language ?: defaultLanguage).tokenize(segment.text)
+        textTokenizerFactory(resolveSegmentLanguage(segment)).tokenize(segment.text)
             .map { range ->
                 segment.copy(
                     locator = segment.locator.copy(text = extractTextContextIn(segment.text, range)),
                     text = segment.text.substring(range)
                 )
             }
+
+    private fun resolveSegmentLanguage(segment: Content.TextElement.Segment): Language? =
+        segment.language.takeUnless { overrideContentLanguage } ?: language
 
     private fun extractTextContextIn(string: String, range: IntRange): Locator.Text {
         val after = string.substring(range.last, (range.last + contextSnippetLength).coerceAtMost(string.length))
