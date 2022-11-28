@@ -40,7 +40,11 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
         if (savedInstanceState == null) {
             childFragmentManager.commitNow {
@@ -48,7 +52,7 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
             }
         }
         navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!!
-                as PdfNavigatorFragment<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>
+            as PdfNavigatorFragment<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>
         @Suppress("Unchecked_cast")
         return view
     }

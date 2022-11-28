@@ -1,8 +1,8 @@
 package org.readium.r2.shared.util.mediatype
 
+import kotlin.test.*
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
-import kotlin.test.*
 
 class MediaTypeTest {
 
@@ -162,70 +162,98 @@ class MediaTypeTest {
 
     @Test
     fun `contains equal media type`() {
-        assertTrue(MediaType.parse("text/html;charset=utf-8")
-            !!.contains(MediaType.parse("text/html;charset=utf-8")))
+        assertTrue(
+            MediaType.parse("text/html;charset=utf-8")
+            !!.contains(MediaType.parse("text/html;charset=utf-8"))
+        )
     }
 
     @Test
     fun `contains must match parameters`() {
-        assertFalse(MediaType.parse("text/html;charset=utf-8")
-            !!.contains(MediaType.parse("text/html;charset=ascii")))
-        assertFalse(MediaType.parse("text/html;charset=utf-8")
-            !!.contains(MediaType.parse("text/html")))
+        assertFalse(
+            MediaType.parse("text/html;charset=utf-8")
+            !!.contains(MediaType.parse("text/html;charset=ascii"))
+        )
+        assertFalse(
+            MediaType.parse("text/html;charset=utf-8")
+            !!.contains(MediaType.parse("text/html"))
+        )
     }
 
     @Test
     fun `contains ignores parameters order`() {
-        assertTrue(MediaType.parse("text/html;charset=utf-8;type=entry")
-            !!.contains(MediaType.parse("text/html;type=entry;charset=utf-8")))
+        assertTrue(
+            MediaType.parse("text/html;charset=utf-8;type=entry")
+            !!.contains(MediaType.parse("text/html;type=entry;charset=utf-8"))
+        )
     }
 
     @Test
     fun `contains ignore extra parameters`() {
-        assertTrue(MediaType.parse("text/html")
-            !!.contains(MediaType.parse("text/html;charset=utf-8")))
+        assertTrue(
+            MediaType.parse("text/html")
+            !!.contains(MediaType.parse("text/html;charset=utf-8"))
+        )
     }
 
     @Test
     fun `contains supports wildcards`() {
-        assertTrue(MediaType.parse("*/*")
-            !!.contains(MediaType.parse("text/html;charset=utf-8")))
-        assertTrue(MediaType.parse("text/*")
-            !!.contains(MediaType.parse("text/html;charset=utf-8")))
-        assertFalse(MediaType.parse("text/*")
-            !!.contains(MediaType.parse("application/zip")))
+        assertTrue(
+            MediaType.parse("*/*")
+            !!.contains(MediaType.parse("text/html;charset=utf-8"))
+        )
+        assertTrue(
+            MediaType.parse("text/*")
+            !!.contains(MediaType.parse("text/html;charset=utf-8"))
+        )
+        assertFalse(
+            MediaType.parse("text/*")
+            !!.contains(MediaType.parse("application/zip"))
+        )
     }
 
     @Test
     fun `contains from string`() {
-        assertTrue(MediaType.parse("text/html;charset=utf-8")
-            !!.contains("text/html;charset=utf-8"))
+        assertTrue(
+            MediaType.parse("text/html;charset=utf-8")
+            !!.contains("text/html;charset=utf-8")
+        )
     }
 
     @Test
     fun `matches equal media type`() {
-        assertTrue(MediaType.parse("text/html;charset=utf-8")
-            !!.matches(MediaType.parse("text/html;charset=utf-8")))
+        assertTrue(
+            MediaType.parse("text/html;charset=utf-8")
+            !!.matches(MediaType.parse("text/html;charset=utf-8"))
+        )
     }
 
     @Test
     fun `matches must match parameters`() {
-        assertFalse(MediaType.parse("text/html;charset=ascii")
-            !!.matches(MediaType.parse("text/html;charset=utf-8")))
+        assertFalse(
+            MediaType.parse("text/html;charset=ascii")
+            !!.matches(MediaType.parse("text/html;charset=utf-8"))
+        )
     }
 
     @Test
     fun `matches ignores parameters order`() {
-        assertTrue(MediaType.parse("text/html;charset=utf-8;type=entry")
-            !!.matches(MediaType.parse("text/html;type=entry;charset=utf-8")))
+        assertTrue(
+            MediaType.parse("text/html;charset=utf-8;type=entry")
+            !!.matches(MediaType.parse("text/html;type=entry;charset=utf-8"))
+        )
     }
 
     @Test
     fun `matches ignores extra parameters`() {
-        assertTrue(MediaType.parse("text/html;charset=utf-8")
-            !!.matches(MediaType.parse("text/html;charset=utf-8;extra=param")))
-        assertTrue(MediaType.parse("text/html;charset=utf-8;extra=param")
-            !!.matches(MediaType.parse("text/html;charset=utf-8")))
+        assertTrue(
+            MediaType.parse("text/html;charset=utf-8")
+            !!.matches(MediaType.parse("text/html;charset=utf-8;extra=param"))
+        )
+        assertTrue(
+            MediaType.parse("text/html;charset=utf-8;extra=param")
+            !!.matches(MediaType.parse("text/html;charset=utf-8"))
+        )
     }
 
     @Test
@@ -240,20 +268,30 @@ class MediaTypeTest {
 
     @Test
     fun `matches from string`() {
-        assertTrue(MediaType.parse("text/html;charset=utf-8")
-            !!.matches("text/html;charset=utf-8"))
+        assertTrue(
+            MediaType.parse("text/html;charset=utf-8")
+            !!.matches("text/html;charset=utf-8")
+        )
     }
 
     @Test
     fun `matches any media type`() {
-        assertTrue(MediaType.parse("text/html")
-            !!.matchesAny(MediaType.parse("application/zip")!!, MediaType.parse("text/html;charset=utf-8")!!))
-        assertFalse(MediaType.parse("text/html")
-            !!.matchesAny(MediaType.parse("application/zip")!!, MediaType.parse("text/plain;charset=utf-8")!!))
-        assertTrue(MediaType.parse("text/html")
-            !!.matchesAny("application/zip", "text/html;charset=utf-8"))
-        assertFalse(MediaType.parse("text/html")
-            !!.matchesAny("application/zip", "text/plain;charset=utf-8"))
+        assertTrue(
+            MediaType.parse("text/html")
+            !!.matchesAny(MediaType.parse("application/zip")!!, MediaType.parse("text/html;charset=utf-8")!!)
+        )
+        assertFalse(
+            MediaType.parse("text/html")
+            !!.matchesAny(MediaType.parse("application/zip")!!, MediaType.parse("text/plain;charset=utf-8")!!)
+        )
+        assertTrue(
+            MediaType.parse("text/html")
+            !!.matchesAny("application/zip", "text/html;charset=utf-8")
+        )
+        assertFalse(
+            MediaType.parse("text/html")
+            !!.matchesAny("application/zip", "text/plain;charset=utf-8")
+        )
     }
 
     @Test
@@ -348,5 +386,4 @@ class MediaTypeTest {
         assertTrue(MediaType.parse("application/x.readium.w3c.wpub+json")!!.isPublication)
         assertTrue(MediaType.parse("application/x.readium.zab+zip")!!.isPublication)
     }
-
 }

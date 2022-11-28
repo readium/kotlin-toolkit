@@ -12,12 +12,11 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
+import java.io.File
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.ItemRecycleBookBinding
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.utils.singleClick
-import java.io.File
-
 
 class BookshelfAdapter(
     private val onBookClick: (Book) -> Unit,
@@ -76,11 +75,10 @@ class BookshelfAdapter(
             oldItem: Book,
             newItem: Book
         ): Boolean {
-            return oldItem.title == newItem.title
-                    && oldItem.href == newItem.href
-                    && oldItem.author == newItem.author
-                    && oldItem.identifier == newItem.identifier
+            return oldItem.title == newItem.title &&
+                oldItem.href == newItem.href &&
+                oldItem.author == newItem.author &&
+                oldItem.identifier == newItem.identifier
         }
     }
-
 }

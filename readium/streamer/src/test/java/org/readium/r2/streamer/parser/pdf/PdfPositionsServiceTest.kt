@@ -28,16 +28,20 @@ class PdfPositionsServiceTest {
         val service = createService(pageCount = 1)
 
         assertEquals(
-            listOf(listOf(Locator(
-                href = "/publication.pdf",
-                type = "application/pdf",
-                locations = Locator.Locations(
-                    fragments = listOf("page=1"),
-                    progression = 0.0,
-                    position = 1,
-                    totalProgression = 0.0
+            listOf(
+                listOf(
+                    Locator(
+                        href = "/publication.pdf",
+                        type = "application/pdf",
+                        locations = Locator.Locations(
+                            fragments = listOf("page=1"),
+                            progression = 0.0,
+                            position = 1,
+                            totalProgression = 0.0
+                        )
+                    )
                 )
-            ))),
+            ),
             runBlocking { service.positionsByReadingOrder() }
         )
     }
@@ -95,5 +99,4 @@ class PdfPositionsServiceTest {
         pageCount = pageCount,
         tableOfContents = emptyList()
     )
-
 }

@@ -72,5 +72,4 @@ class NavigationAdapter(val type: Int) :
             return oldItem == newItem
         }
     }
-
 }

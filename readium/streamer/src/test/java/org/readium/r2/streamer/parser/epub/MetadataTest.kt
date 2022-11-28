@@ -16,11 +16,11 @@ import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link as SharedLink
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.robolectric.RobolectricTestRunner
-import org.readium.r2.shared.publication.Link as SharedLink
 
 @RunWith(RobolectricTestRunner::class)
 class ContributorParsingTest {
@@ -57,8 +57,10 @@ class ContributorParsingTest {
 
     @Test
     fun `file-as is parsed`() {
-        val contributor = Contributor(localizedName = LocalizedString("Contributor 3"),
-            localizedSortAs = LocalizedString("Sorting Key"))
+        val contributor = Contributor(
+            localizedName = LocalizedString("Contributor 3"),
+            localizedSortAs = LocalizedString("Sorting Key")
+        )
         assertThat(epub2Metadata.contributors).contains(contributor)
         assertThat(epub3Metadata.contributors).contains(contributor)
     }
@@ -98,7 +100,7 @@ class ContributorParsingTest {
 
     @Test
     fun `Publisher is rightly parsed`() {
-        val contributor = Contributor(localizedName = LocalizedString("Publisher 2")        )
+        val contributor = Contributor(localizedName = LocalizedString("Publisher 2"))
         assertThat(epub2Metadata.publishers).contains(contributor)
         assertThat(epub3Metadata.publishers).contains(contributor)
     }
@@ -360,7 +362,8 @@ class MetadataMiscTest {
                 )
             ),
             entry(
-                "http://my.url/#property0", mapOf(
+                "http://my.url/#property0",
+                mapOf(
                     "@value" to "refines0",
                     "http://my.url/#property1" to mapOf(
                         "@value" to "refines1",
@@ -455,7 +458,6 @@ class AccessibilityTest {
             .containsExactlyInAnyOrder(Accessibility.Hazard.MOTION_SIMULATION, Accessibility.Hazard.NO_SOUND_HAZARD)
         assertThat(epub3Metadata.accessibility?.hazards)
             .containsExactlyInAnyOrder(Accessibility.Hazard.MOTION_SIMULATION, Accessibility.Hazard.NO_SOUND_HAZARD)
-
     }
 
     @Test fun `accessModes are rightly parsed`() {

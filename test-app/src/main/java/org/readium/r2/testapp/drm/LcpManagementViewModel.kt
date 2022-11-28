@@ -9,9 +9,9 @@ package org.readium.r2.testapp.drm
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import java.util.*
 import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.shared.util.Try
-import java.util.*
 
 class LcpManagementViewModel(
     private val lcpLicense: LcpLicense,
@@ -70,5 +70,4 @@ class LcpManagementViewModel(
 
     override suspend fun returnPublication(): Try<Unit, Exception> =
         lcpLicense.returnPublication()
-
 }

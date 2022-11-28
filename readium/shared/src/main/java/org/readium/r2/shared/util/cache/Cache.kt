@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.SuspendingCloseable
  * It implements [MemoryObserver] to flush unused in-memory objects when necessary.
  */
 @InternalReadiumApi
-interface Cache<V>: SuspendingCloseable, MemoryObserver {
+interface Cache<V> : SuspendingCloseable, MemoryObserver {
     /**
      * Performs an atomic [block] transaction on this cache.
      */

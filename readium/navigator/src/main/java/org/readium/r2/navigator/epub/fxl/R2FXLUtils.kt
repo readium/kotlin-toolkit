@@ -71,5 +71,4 @@ object R2FXLUtils {
         array[2] = rect.right
         array[3] = rect.bottom
     }
-
 }

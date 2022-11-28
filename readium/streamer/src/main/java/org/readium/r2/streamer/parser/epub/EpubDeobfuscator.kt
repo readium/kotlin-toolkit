@@ -8,12 +8,12 @@ package org.readium.r2.streamer.parser.epub
 
 import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.toHexBytes
+import kotlin.experimental.xor
 import org.readium.r2.shared.fetcher.LazyResource
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.ResourceTry
 import org.readium.r2.shared.fetcher.TransformingResource
 import org.readium.r2.shared.publication.encryption.encryption
-import kotlin.experimental.xor
 
 /**
  * Deobfuscates fonts according to https://www.w3.org/TR/epub-33/#sec-font-obfuscation
@@ -29,7 +29,7 @@ internal class EpubDeobfuscator(private val pubId: String) {
         }
     }
 
-    inner class DeobfuscatingResource(resource: Resource, private val algorithm: String): TransformingResource(resource) {
+    inner class DeobfuscatingResource(resource: Resource, private val algorithm: String) : TransformingResource(resource) {
 
         // The obfuscation doesn't change the length of the resource.
         override suspend fun length(): ResourceTry<Long> =

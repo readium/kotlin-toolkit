@@ -23,9 +23,7 @@ sealed class UserProperty(var ref: String, var name: String) {
     fun getJson(): String {
         return """{name:"$name",value:"$this"}"""
     }
-
 }
-
 
 // TODO add here your new Subclasses of UserPreference. It has to be an abstract class inheriting from UserSetting.
 
@@ -35,13 +33,15 @@ class Enumerable(var index: Int, private val values: List<String>, ref: String, 
 }
 
 @Deprecated("Migrate to the new Settings API (see migration guide)")
-class Incremental(var value: Float,
-                  val min: Float,
-                  val max: Float,
-                  private val step: Float,
-                  private val suffix: String,
-                  ref: String,
-                  name: String) : UserProperty(ref, name) {
+class Incremental(
+    var value: Float,
+    val min: Float,
+    val max: Float,
+    private val step: Float,
+    private val suffix: String,
+    ref: String,
+    name: String
+) : UserProperty(ref, name) {
 
     fun increment() {
         value += (if (value + step <= max) step else 0.0f)
@@ -66,13 +66,20 @@ class Switchable(onValue: String, offValue: String, var on: Boolean, ref: String
     override fun toString() = values[on] ?: error("")
 }
 
-
 @Deprecated("Migrate to the new Settings API (see migration guide)")
 class UserProperties : Serializable {
 
     val properties: MutableList<UserProperty> = mutableListOf()
 
-    fun addIncremental(nValue: Float, min: Float, max: Float, step: Float, suffix: String, ref: String, name: String) {
+    fun addIncremental(
+        nValue: Float,
+        min: Float,
+        max: Float,
+        step: Float,
+        suffix: String,
+        ref: String,
+        name: String
+    ) {
         properties.add(Incremental(nValue, min, max, step, suffix, ref, name))
     }
 

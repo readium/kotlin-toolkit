@@ -9,18 +9,18 @@
 
 package org.readium.r2.shared.util.archive
 
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.isParentOf
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.readRange
 import org.readium.r2.shared.extensions.tryOr
-import java.io.File
 
 /**
  * An archive exploded on the file system as a directory.
  */
-internal class ExplodedArchive(private val directory: File)  : Archive {
+internal class ExplodedArchive(private val directory: File) : Archive {
 
     private inner class Entry(private val file: File) : Archive.Entry {
 
@@ -44,7 +44,6 @@ internal class ExplodedArchive(private val directory: File)  : Archive {
         }
 
         override suspend fun close() {}
-
     }
 
     override suspend fun entries(): List<Archive.Entry> =
@@ -72,5 +71,4 @@ internal class ExplodedArchiveFactory : ArchiveFactory {
             ?.let { ExplodedArchive(it) }
             ?: throw IllegalArgumentException("[path] must be a directory to be opened as an exploded archive")
     }
-
 }

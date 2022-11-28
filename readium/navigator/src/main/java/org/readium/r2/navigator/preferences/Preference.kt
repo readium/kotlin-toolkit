@@ -42,7 +42,7 @@ interface Preference<T> {
  * Unset the preference.
  */
 @ExperimentalReadiumApi
-fun<T> Preference<T>.clear() =
+fun <T> Preference<T>.clear() =
     set(null)
 
 /**
@@ -58,7 +58,7 @@ interface EnumPreference<T> : Preference<T> {
  * A [Preference] whose values must be in a [ClosedRange] of [T].
  */
 @ExperimentalReadiumApi
-interface RangePreference<T: Comparable<T>> : Preference<T> {
+interface RangePreference<T : Comparable<T>> : Preference<T> {
 
     val supportedRange: ClosedRange<T>
 

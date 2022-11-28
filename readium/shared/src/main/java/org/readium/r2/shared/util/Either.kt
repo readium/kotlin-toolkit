@@ -14,7 +14,7 @@ sealed class Either<A, B> {
     data class Right<A, B>(val value: B) : Either<A, B>()
 
     companion object {
-        inline operator fun <reified A, reified B> invoke(value: Any) : Either<A, B> =
+        inline operator fun <reified A, reified B> invoke(value: Any): Either<A, B> =
             when (value) {
                 is A -> Left(value)
                 is B -> Right(value)

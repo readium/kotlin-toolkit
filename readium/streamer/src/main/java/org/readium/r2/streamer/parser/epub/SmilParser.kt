@@ -65,6 +65,4 @@ internal object SmilParser {
         val audio = "$file#t=$start,$end"
         return MediaOverlayNode(text, audio, children, listOf("section"))
     }
-
 }
-

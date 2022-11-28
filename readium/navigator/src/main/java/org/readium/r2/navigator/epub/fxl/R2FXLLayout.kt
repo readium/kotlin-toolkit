@@ -332,7 +332,6 @@ class R2FXLLayout : FrameLayout {
         }
 
         override fun onShowPress(e: MotionEvent) {
-
         }
 
         override fun onDown(e: MotionEvent): Boolean {
@@ -540,7 +539,13 @@ class R2FXLLayout : FrameLayout {
             return false
         }
 
-        internal fun scale(currentZoom: Float, targetZoom: Float, focalX: Float, focalY: Float, ensureTranslations: Boolean): AnimatedZoomRunnable {
+        internal fun scale(
+            currentZoom: Float,
+            targetZoom: Float,
+            focalX: Float,
+            focalY: Float,
+            ensureTranslations: Boolean
+        ): AnimatedZoomRunnable {
             mFocalX = focalX
             mFocalY = focalY
             mZoomStart = currentZoom
@@ -618,7 +623,6 @@ class R2FXLLayout : FrameLayout {
             t = min(1f, t)
             return animationInterpolator.getInterpolation(t)
         }
-
     }
 
     private inner class FlingRunnable internal constructor(context: Context) : Runnable {
@@ -661,7 +665,6 @@ class R2FXLLayout : FrameLayout {
             } else {
                 mFinished = true
             }
-
         }
 
         internal fun cancelFling() {
@@ -827,8 +830,10 @@ class R2FXLLayout : FrameLayout {
         }
 
         override fun toString(): String {
-            return String.format(Locale.US, STRING_FORMAT,
-                    x, y, relativeX, relativeY, percentX, percentY, isContentClicked)
+            return String.format(
+                Locale.US, STRING_FORMAT,
+                x, y, relativeX, relativeY, percentX, percentY, isContentClicked
+            )
         }
 
         companion object {
@@ -950,7 +955,6 @@ class R2FXLLayout : FrameLayout {
                 internalMove(p.x, p.y, false)
             }
         }
-
     }
 
     companion object {
@@ -962,5 +966,4 @@ class R2FXLLayout : FrameLayout {
             obs.removeOnGlobalLayoutListener(listener)
         }
     }
-
 }

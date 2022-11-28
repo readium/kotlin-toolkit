@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.publication.services
 
+import java.util.*
 import org.json.JSONObject
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.extensions.putIfNotEmpty
@@ -17,12 +18,11 @@ import org.readium.r2.shared.fetcher.FailureResource
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.*
-import java.util.*
 
 /**
  * Provides information about a publication's content protection and manages user rights.
  */
-interface ContentProtectionService: Publication.Service {
+interface ContentProtectionService : Publication.Service {
 
     /**
      * Whether the [Publication] has a restricted access to its resources, and can't be rendered in
@@ -152,7 +152,7 @@ interface ContentProtectionService: Publication.Service {
 
             override fun canPrint(pageCount: Int): Boolean = false
 
-            override fun print(pageCount: Int): Boolean  = false
+            override fun print(pageCount: Int): Boolean = false
         }
     }
 }
@@ -171,7 +171,6 @@ var Publication.ServicesBuilder.contentProtectionServiceFactory: ServiceFactory?
     get() = get(ContentProtectionService::class)
     set(value) = set(ContentProtectionService::class, value)
 
-
 /**
  * Returns whether this Publication is protected by a Content Protection technology.
  */
@@ -185,7 +184,6 @@ val Publication.isProtected: Boolean
 val Publication.isRestricted: Boolean
     get() = protectionService?.isRestricted
         ?: false
-
 
 /**
  * The error raised when trying to unlock the [Publication], if any.
@@ -225,7 +223,6 @@ val Publication.protectionLocalizedName: LocalizedString?
  */
 val Publication.protectionName: String?
     get() = protectionLocalizedName?.string
-
 
 private sealed class RouteHandler {
 
@@ -281,15 +278,21 @@ private sealed class RouteHandler {
         override fun handleRequest(link: Link, service: ContentProtectionService): Resource {
             val parameters = link.href.queryParameters()
             val text = parameters["text"]
-                ?: return FailureResource(link, Resource.Exception.BadRequest(
-                    parameters,
-                    IllegalArgumentException("'text' parameter is required")
-                ))
+                ?: return FailureResource(
+                    link,
+                    Resource.Exception.BadRequest(
+                        parameters,
+                        IllegalArgumentException("'text' parameter is required")
+                    )
+                )
             val peek = (parameters["peek"] ?: "false").toBooleanOrNull()
-                ?: return FailureResource(link, Resource.Exception.BadRequest(
-                    parameters,
-                    IllegalArgumentException("if present, 'peek' must be true or false")
-                ))
+                ?: return FailureResource(
+                    link,
+                    Resource.Exception.BadRequest(
+                        parameters,
+                        IllegalArgumentException("if present, 'peek' must be true or false")
+                    )
+                )
 
             val copyAllowed = with(service.rights) { if (peek) canCopy(text) else copy(text) }
 
@@ -313,21 +316,30 @@ private sealed class RouteHandler {
         override fun handleRequest(link: Link, service: ContentProtectionService): Resource {
             val parameters = link.href.queryParameters()
             val pageCountString = parameters["pageCount"]
-                ?: return FailureResource(link, Resource.Exception.BadRequest(
-                    parameters,
-                    IllegalArgumentException("'pageCount' parameter is required")
-                ))
+                ?: return FailureResource(
+                    link,
+                    Resource.Exception.BadRequest(
+                        parameters,
+                        IllegalArgumentException("'pageCount' parameter is required")
+                    )
+                )
 
             val pageCount = pageCountString.toIntOrNull()?.takeIf { it >= 0 }
-                ?: return FailureResource(link, Resource.Exception.BadRequest(
-                    parameters,
-                    IllegalArgumentException("'pageCount' must be a positive integer")
-                ))
+                ?: return FailureResource(
+                    link,
+                    Resource.Exception.BadRequest(
+                        parameters,
+                        IllegalArgumentException("'pageCount' must be a positive integer")
+                    )
+                )
             val peek = (parameters["peek"] ?: "false").toBooleanOrNull()
-                ?: return FailureResource(link, Resource.Exception.BadRequest(
-                    parameters,
-                    IllegalArgumentException("if present, 'peek' must be true or false")
-                ))
+                ?: return FailureResource(
+                    link,
+                    Resource.Exception.BadRequest(
+                        parameters,
+                        IllegalArgumentException("if present, 'peek' must be true or false")
+                    )
+                )
 
             val printAllowed = with(service.rights) { if (peek) canPrint(pageCount) else print(pageCount) }
 

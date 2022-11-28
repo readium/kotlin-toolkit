@@ -48,7 +48,9 @@ class SubjectTest {
                     Link(href = "pub2")
                 )
             ),
-            Subject.fromJSON(JSONObject("""{
+            Subject.fromJSON(
+                JSONObject(
+                    """{
                 "name": "Science Fiction",
                 "sortAs": "science-fiction",
                 "scheme": "http://scheme",
@@ -57,7 +59,9 @@ class SubjectTest {
                     {"href": "pub1"},
                     {"href": "pub2"}
                 ]
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
@@ -78,13 +82,17 @@ class SubjectTest {
                     scheme = "http://scheme"
                 )
             ),
-            Subject.fromJSONArray(JSONArray("""[
+            Subject.fromJSONArray(
+                JSONArray(
+                    """[
                 "Fantasy",
                 {
                     "name": "Science Fiction",
                     "scheme": "http://scheme"
                 }
-            ]"""))
+            ]"""
+                )
+            )
         )
     }
 
@@ -97,12 +105,16 @@ class SubjectTest {
             listOf(
                 Subject(localizedName = LocalizedString("Fantasy"))
             ),
-            Subject.fromJSONArray(JSONArray("""[
+            Subject.fromJSONArray(
+                JSONArray(
+                    """[
                 "Fantasy",
                 {
                     "code": "CODE"
                 }
-            ]"""))
+            ]"""
+                )
+            )
         )
     }
 
@@ -116,22 +128,29 @@ class SubjectTest {
     @Test fun `parse array from single object`() {
         assertEquals(
             listOf(Subject(localizedName = LocalizedString("Fantasy"), code = "CODE")),
-            Subject.fromJSONArray(JSONObject("""{
+            Subject.fromJSONArray(
+                JSONObject(
+                    """{
                 "name": "Fantasy",
                 "code": "CODE"
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
     @Test fun `get name from the default translation`() {
         assertEquals(
             "Hello world",
-            Subject(localizedName = LocalizedString.fromStrings(mapOf(
-                "en" to "Hello world",
-                "fr" to "Salut le monde"
-            ))).name
+            Subject(
+                localizedName = LocalizedString.fromStrings(
+                    mapOf(
+                        "en" to "Hello world",
+                        "fr" to "Salut le monde"
+                    )
+                )
+            ).name
         )
-
     }
 
     @Test fun `get minimal JSON`() {
@@ -144,7 +163,8 @@ class SubjectTest {
 
     @Test fun `get full JSON`() {
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "name": {"und": "Science Fiction"},
                 "sortAs": {"und": "science-fiction"},
                 "scheme": "http://scheme",
@@ -153,7 +173,8 @@ class SubjectTest {
                     {"href": "pub1", "templated": false},
                     {"href": "pub2", "templated": false}
                 ]
-            }"""),
+            }"""
+            ),
             Subject(
                 localizedName = LocalizedString("Science Fiction"),
                 localizedSortAs = LocalizedString("science-fiction"),
@@ -169,7 +190,8 @@ class SubjectTest {
 
     @Test fun `get JSON array`() {
         assertJSONEquals(
-            JSONArray("""[
+            JSONArray(
+                """[
                 {
                     "name": {"und": "Fantasy"}
                 },
@@ -177,7 +199,8 @@ class SubjectTest {
                     "name": {"und": "Science Fiction"},
                     "scheme": "http://scheme"
                 }
-            ]"""),
+            ]"""
+            ),
             listOf(
                 Subject(localizedName = LocalizedString("Fantasy")),
                 Subject(
@@ -187,5 +210,4 @@ class SubjectTest {
             ).toJSON()
         )
     }
-
 }

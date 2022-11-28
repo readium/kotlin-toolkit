@@ -21,7 +21,7 @@ import org.readium.r2.shared.publication.Publication
  * To be implemented by adapters for third-party PDF engines which can be used with [PdfNavigatorFragment].
  */
 @ExperimentalReadiumApi
-interface PdfEngineProvider<S: Configurable.Settings, P: Configurable.Preferences<P>, E: PreferencesEditor<P>> {
+interface PdfEngineProvider<S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> {
 
     /**
      * Creates a [PdfDocumentFragment] for [input].
@@ -32,7 +32,6 @@ interface PdfEngineProvider<S: Configurable.Settings, P: Configurable.Preference
      * Creates settings for [metadata] and [preferences].
      */
     fun computeSettings(metadata: Metadata, preferences: P): S
-
 
     /**
      * Infers a [VisualNavigator.Presentation] from settings.
@@ -57,7 +56,7 @@ typealias PdfDocumentFragmentFactory<S> = suspend (PdfDocumentFragmentInput<S>) 
  * A [PdfDocumentFragment] renders a single PDF resource.
  */
 @ExperimentalReadiumApi
-abstract class PdfDocumentFragment<S: Configurable.Settings> : Fragment() {
+abstract class PdfDocumentFragment<S : Configurable.Settings> : Fragment() {
 
     interface Listener {
         /**
@@ -96,7 +95,7 @@ abstract class PdfDocumentFragment<S: Configurable.Settings> : Fragment() {
 }
 
 @ExperimentalReadiumApi
-data class PdfDocumentFragmentInput<S: Configurable.Settings>(
+data class PdfDocumentFragmentInput<S : Configurable.Settings>(
     val publication: Publication,
     val link: Link,
     val initialPageIndex: Int,

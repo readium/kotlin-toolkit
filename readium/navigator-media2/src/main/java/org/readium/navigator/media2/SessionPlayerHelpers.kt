@@ -9,10 +9,10 @@ package org.readium.navigator.media2
 import androidx.media2.common.MediaItem
 import androidx.media2.common.MediaMetadata
 import androidx.media2.common.SessionPlayer
-import org.readium.r2.shared.util.Try
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
+import org.readium.r2.shared.util.Try
 
 internal enum class SessionPlayerState {
     Idle,
@@ -60,7 +60,7 @@ internal typealias SessionPlayerResult = Try<Unit, SessionPlayerException>
 
 internal class SessionPlayerException(val error: SessionPlayerError) : Exception()
 
-internal enum class SessionPlayerError{
+internal enum class SessionPlayerError {
     BAD_VALUE,
     INVALID_STATE,
     IO,
@@ -81,7 +81,7 @@ internal enum class SessionPlayerError{
 
         fun fromCode(resultCode: Int): SessionPlayerError {
             require(resultCode != 0)
-            return when(resultCode) {
+            return when (resultCode) {
                 -3 -> BAD_VALUE
                 -2 -> INVALID_STATE
                 -5 -> IO
@@ -130,7 +130,7 @@ internal val SessionPlayer.currentItem: ItemState
     }
 
 internal val SessionPlayer.playbackSpeedNullable
-    get() =  playbackSpeed.takeUnless { it == 0f  }?.toDouble()
+    get() = playbackSpeed.takeUnless { it == 0f }?.toDouble()
 
 internal val SessionPlayer.currentIndexNullable
     get() = currentMediaItemIndex.takeUnless { it == SessionPlayer.INVALID_ITEM_INDEX }
@@ -170,4 +170,3 @@ internal val List<MediaMetadata>.durations: List<Duration>?
 @ExperimentalTime
 internal val List<MediaItem>.metadata: List<MediaMetadata>
     get() = map { it.metadata!! }
-

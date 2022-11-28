@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.fetcher
 
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.addPrefix
@@ -22,7 +23,6 @@ import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
-import java.io.File
 
 /** Provides access to entries of an archive. */
 class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher {
@@ -86,7 +86,7 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
                 it.read(range)
             }
 
-        override suspend fun length(): ResourceTry<Long>  =
+        override suspend fun length(): ResourceTry<Long> =
             metadataLength()?.let { Try.success(it) }
                 ?: read().map { it.size.toLong() }
 
@@ -101,7 +101,6 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
 
         override fun toString(): String =
             "${javaClass.simpleName}(${archive::class.java.simpleName}, ${originalLink.href})"
-
     }
 }
 

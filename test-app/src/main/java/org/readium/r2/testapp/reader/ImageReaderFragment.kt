@@ -28,8 +28,12 @@ class ImageReaderFragment : VisualReaderFragment(), ImageNavigatorFragment.Liste
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val view =  super.onCreateView(inflater, container, savedInstanceState)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val view = super.onCreateView(inflater, container, savedInstanceState)
         if (savedInstanceState == null) {
             childFragmentManager.commitNow {
                 add(R.id.fragment_reader_container, ImageNavigatorFragment::class.java, Bundle(), NAVIGATOR_FRAGMENT_TAG)

@@ -21,7 +21,6 @@ import org.readium.r2.streamer.extensions.readAsJsonOrNull
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 
-
 class AudioBookConstant {
     companion object {
         @Deprecated("Use [MediaType.AUDIOBOOK.toString()] instead", replaceWith = ReplaceWith("MediaType.AUDIOBOOK.toString()"))
@@ -59,7 +58,7 @@ class AudioBookParser : PublicationParser {
         }
 
         val container = PublicationContainer(
-            publication =  publication,
+            publication = publication,
             path = fileAtPath,
             mediaType = MediaType.READIUM_AUDIOBOOK
         )

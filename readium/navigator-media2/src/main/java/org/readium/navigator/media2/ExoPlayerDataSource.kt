@@ -13,11 +13,11 @@ import com.google.android.exoplayer2.upstream.BaseDataSource
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DataSpec
 import com.google.android.exoplayer2.upstream.TransferListener
+import java.io.IOException
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.buffered
 import org.readium.r2.shared.publication.Publication
-import java.io.IOException
 
 sealed class ExoPlayerDataSourceException(message: String, cause: Throwable?) : IOException(message, cause) {
     class NotOpened(message: String) : ExoPlayerDataSourceException(message, null)
@@ -30,7 +30,10 @@ sealed class ExoPlayerDataSourceException(message: String, cause: Throwable?) : 
  */
 class ExoPlayerDataSource internal constructor(private val publication: Publication) : BaseDataSource(/* isNetwork = */ true) {
 
-    class Factory(private val publication: Publication, private val transferListener: TransferListener? = null) : DataSource.Factory {
+    class Factory(
+        private val publication: Publication,
+        private val transferListener: TransferListener? = null
+    ) : DataSource.Factory {
 
         override fun createDataSource(): DataSource =
             ExoPlayerDataSource(publication).apply {
@@ -38,7 +41,6 @@ class ExoPlayerDataSource internal constructor(private val publication: Publicat
                     addTransferListener(transferListener)
                 }
             }
-
     }
 
     private data class OpenedResource(
@@ -115,7 +117,6 @@ class ExoPlayerDataSource internal constructor(private val publication: Publicat
 
             openedResource.position += data.count()
             return data.count()
-
         } catch (e: Exception) {
             if (e is InterruptedException) {
                 return 0
@@ -143,5 +144,4 @@ class ExoPlayerDataSource internal constructor(private val publication: Publicat
         }
         openedResource = null
     }
-
 }

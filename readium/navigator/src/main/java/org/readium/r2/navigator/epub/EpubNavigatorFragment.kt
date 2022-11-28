@@ -30,6 +30,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.whenStarted
 import androidx.viewpager.widget.ViewPager
+import kotlin.math.ceil
+import kotlin.reflect.KClass
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,7 +44,10 @@ import org.json.JSONObject
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel.RunScriptCommand
-import org.readium.r2.navigator.epub.css.*
+import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
+import org.readium.r2.navigator.epub.css.MutableFontFamilyDeclaration
+import org.readium.r2.navigator.epub.css.RsProperties
+import org.readium.r2.navigator.epub.css.buildFontFamilyDeclaration
 import org.readium.r2.navigator.extensions.optRectF
 import org.readium.r2.navigator.extensions.positionsByResource
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
@@ -67,8 +72,6 @@ import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.launchWebBrowser
 import org.readium.r2.shared.util.mediatype.MediaType
-import kotlin.math.ceil
-import kotlin.reflect.KClass
 
 /**
  * Factory for a [JavascriptInterface] which will be injected in the web views.
@@ -124,7 +127,7 @@ class EpubNavigatorFragment internal constructor(
          * Font declarations to inject through Readium CSS.
          */
         @ExperimentalReadiumApi
-        internal val fontFamilyDeclarations:  MutableList<FontFamilyDeclaration> = mutableListOf(),
+        internal val fontFamilyDeclarations: MutableList<FontFamilyDeclaration> = mutableListOf(),
 
         /**
          * Readium CSS reading system settings.
@@ -167,7 +170,10 @@ class EpubNavigatorFragment internal constructor(
          * Adds a declaration for [fontFamily] using [builderAction].
          */
         @ExperimentalReadiumApi
-        fun addFontFamilyDeclaration(fontFamily: FontFamily, builderAction: (MutableFontFamilyDeclaration).() -> Unit) {
+        fun addFontFamilyDeclaration(
+            fontFamily: FontFamily,
+            builderAction: (MutableFontFamilyDeclaration).() -> Unit
+        ) {
             val declaration = buildFontFamilyDeclaration(fontFamily.name, builderAction)
             fontFamilyDeclarations.add(declaration)
         }
@@ -178,10 +184,10 @@ class EpubNavigatorFragment internal constructor(
         fun onPageLoaded() {}
     }
 
-    interface Listener: VisualNavigator.Listener
+    interface Listener : VisualNavigator.Listener
 
     init {
-        require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection."}
+        require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
     }
 
     override val presentation: StateFlow<VisualNavigator.Presentation> get() = viewModel.presentation
@@ -239,7 +245,11 @@ class EpubNavigatorFragment internal constructor(
     private var _binding: ActivityR2ViewpagerBinding? = null
     private val binding get() = _binding!!
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         currentActivity = requireActivity()
         _binding = ActivityR2ViewpagerBinding.inflate(inflater, container, false)
         val view = binding.root
@@ -339,7 +349,6 @@ class EpubNavigatorFragment internal constructor(
 
                 notifyCurrentLocation()
             }
-
         })
 
         return view
@@ -554,7 +563,7 @@ class EpubNavigatorFragment internal constructor(
         val webView = currentReflowablePageFragment?.webView ?: return null
         val json =
             webView.runJavaScriptSuspend("readium.getCurrentSelection();")
-                .takeIf { it != "null"}
+                .takeIf { it != "null" }
                 ?.let { tryOrLog { JSONObject(it) } }
                 ?: return null
 
@@ -635,12 +644,14 @@ class EpubNavigatorFragment internal constructor(
         override fun onScroll() {
             val activity = r2Activity ?: return
             if (activity.supportActionBar?.isShowing == true && activity.allowToggleActionBar) {
-                resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                resourcePager.systemUiVisibility = (
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                        or View.SYSTEM_UI_FLAG_IMMERSIVE)
+                        or View.SYSTEM_UI_FLAG_IMMERSIVE
+                    )
             }
         }
 
@@ -665,7 +676,12 @@ class EpubNavigatorFragment internal constructor(
                 offset = event.offset
             ) ?: false
 
-        override fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean =
+        override fun onDecorationActivated(
+            id: DecorationId,
+            group: String,
+            rect: RectF,
+            point: PointF
+        ): Boolean =
             viewModel.onDecorationActivated(
                 id = id,
                 group = group,
@@ -788,7 +804,7 @@ class EpubNavigatorFragment internal constructor(
 
     private val r2PagerAdapter: R2PagerAdapter?
         get() = if (::resourcePager.isInitialized) resourcePager.adapter as? R2PagerAdapter
-            else null
+        else null
 
     private val currentReflowablePageFragment: R2EpubPageFragment? get() =
         currentFragment as? R2EpubPageFragment
@@ -819,8 +835,9 @@ class EpubNavigatorFragment internal constructor(
         get() = viewModel.readingProgression
 
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
-    private val _currentLocator = MutableStateFlow(initialLocator
-        ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
+    private val _currentLocator = MutableStateFlow(
+        initialLocator
+            ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
     )
 
     /**
@@ -852,7 +869,7 @@ class EpubNavigatorFragment internal constructor(
             var result: MutableMap<String, String> = mutableMapOf()
 
             for (link in linkList) {
-                val title = link.title?: ""
+                val title = link.title ?: ""
 
                 if (title.isNotEmpty()) {
                     result[link.href] = title
@@ -960,5 +977,4 @@ class EpubNavigatorFragment internal constructor(
         fun assetUrl(path: String): String =
             WebViewServer.assetUrl(path)
     }
-
 }

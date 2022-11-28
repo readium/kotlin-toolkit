@@ -9,10 +9,10 @@
 
 package org.readium.r2.lcp.license.model.components.lsd
 
+import java.util.*
 import org.json.JSONObject
 import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.optNullableString
-import java.util.*
 
 data class PotentialRights(val json: JSONObject) {
     val end: Date? = json.optNullableString("end")?.iso8601ToDate()

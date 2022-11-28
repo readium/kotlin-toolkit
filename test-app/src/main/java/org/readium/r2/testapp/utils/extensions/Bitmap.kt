@@ -8,8 +8,8 @@ package org.readium.r2.testapp.utils.extensions
 
 import android.graphics.Bitmap
 import android.util.Base64
-import timber.log.Timber
 import java.io.ByteArrayOutputStream
+import timber.log.Timber
 
 /**
  * Converts the receiver bitmap into a data URL ready to be used in HTML or CSS.

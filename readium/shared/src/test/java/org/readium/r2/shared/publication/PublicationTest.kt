@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.publication
 
+import java.net.URL
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.junit.Assert.*
@@ -25,7 +26,6 @@ import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.Ref
 import org.robolectric.RobolectricTestRunner
-import java.net.URL
 
 @RunWith(RobolectricTestRunner::class)
 class PublicationTest {
@@ -76,7 +76,7 @@ class PublicationTest {
             createPublication(
                 servicesBuilder = Publication.ServicesBuilder(
                     positions = {
-                        object: PositionsService {
+                        object : PositionsService {
                             override suspend fun positionsByReadingOrder(): List<List<Locator>> = listOf(listOf(Locator(href = "locator", type = "")))
                         }
                     }
@@ -89,28 +89,28 @@ class PublicationTest {
         assertEquals(
             listOf(
                 listOf(
-                    Locator(href="res1", type = "text/html", title = "Loc A"),
-                    Locator(href="res1", type = "text/html", title = "Loc B")
+                    Locator(href = "res1", type = "text/html", title = "Loc A"),
+                    Locator(href = "res1", type = "text/html", title = "Loc B")
                 ),
                 listOf(
-                    Locator(href="res2", type = "text/html", title = "Loc B")
+                    Locator(href = "res2", type = "text/html", title = "Loc B")
                 )
             ),
             createPublication(
                 servicesBuilder = Publication.ServicesBuilder(
                     positions = {
-                        object: PositionsService {
+                        object : PositionsService {
                             override suspend fun positionsByReadingOrder(): List<List<Locator>> = listOf(
                                 listOf(
-                                    Locator(href="res1", type = "text/html", title = "Loc A"),
-                                    Locator(href="res1", type = "text/html", title = "Loc B")
+                                    Locator(href = "res1", type = "text/html", title = "Loc A"),
+                                    Locator(href = "res1", type = "text/html", title = "Loc B")
                                 ),
-                                listOf(Locator(href="res2", type = "text/html", title = "Loc B"))
+                                listOf(Locator(href = "res2", type = "text/html", title = "Loc B"))
                             )
                         }
                     }
                 )
-            ).let { runBlocking { it.positionsByReadingOrder() }  }
+            ).let { runBlocking { it.positionsByReadingOrder() } }
         )
     }
 
@@ -168,82 +168,111 @@ class PublicationTest {
         )
 
         assertTrue(
-            createPublication(readingOrder = listOf(
-                Link(href = "c1.mp3", type = "audio/mpeg"),
-                Link(href = "c2.aac", type = "audio/aac"),
-            )).conformsTo(Profile.AUDIOBOOK)
+            createPublication(
+                readingOrder = listOf(
+                    Link(href = "c1.mp3", type = "audio/mpeg"),
+                    Link(href = "c2.aac", type = "audio/aac"),
+                )
+            ).conformsTo(Profile.AUDIOBOOK)
         )
         assertTrue(
-            createPublication(readingOrder = listOf(
-                Link(href = "c1.jpg", type = "image/jpeg"),
-                Link(href = "c2.png", type = "image/png"),
-            )).conformsTo(Profile.DIVINA)
+            createPublication(
+                readingOrder = listOf(
+                    Link(href = "c1.jpg", type = "image/jpeg"),
+                    Link(href = "c2.png", type = "image/png"),
+                )
+            ).conformsTo(Profile.DIVINA)
         )
         assertTrue(
-            createPublication(readingOrder = listOf(
-                Link(href = "c1.pdf", type = "application/pdf"),
-                Link(href = "c2.pdf", type = "application/pdf"),
-            )).conformsTo(Profile.PDF)
+            createPublication(
+                readingOrder = listOf(
+                    Link(href = "c1.pdf", type = "application/pdf"),
+                    Link(href = "c2.pdf", type = "application/pdf"),
+                )
+            ).conformsTo(Profile.PDF)
         )
 
         // Mixed media types disable implicit conformance.
         assertFalse(
-            createPublication(readingOrder = listOf(
-                Link(href = "c1.mp3", type = "audio/mpeg"),
-                Link(href = "c2.jpg", type = "image/jpeg"),
-            )).conformsTo(Profile.AUDIOBOOK)
+            createPublication(
+                readingOrder = listOf(
+                    Link(href = "c1.mp3", type = "audio/mpeg"),
+                    Link(href = "c2.jpg", type = "image/jpeg"),
+                )
+            ).conformsTo(Profile.AUDIOBOOK)
         )
         assertFalse(
-            createPublication(readingOrder = listOf(
-                Link(href = "c1.mp3", type = "audio/mpeg"),
-                Link(href = "c2.jpg", type = "image/jpeg"),
-            )).conformsTo(Profile.DIVINA)
+            createPublication(
+                readingOrder = listOf(
+                    Link(href = "c1.mp3", type = "audio/mpeg"),
+                    Link(href = "c2.jpg", type = "image/jpeg"),
+                )
+            ).conformsTo(Profile.DIVINA)
         )
 
         // XHTML could be EPUB or a Web Publication, so we require an explicit EPUB profile.
         assertTrue(
-            createPublication(readingOrder = listOf(
-                Link(href = "c1.xhtml", type = "application/xhtml+xml"),
-                Link(href = "c2.xhtml", type = "application/xhtml+xml"),
-            ), conformsTo = setOf(Profile.EPUB)).conformsTo(Profile.EPUB)
+            createPublication(
+                readingOrder = listOf(
+                    Link(href = "c1.xhtml", type = "application/xhtml+xml"),
+                    Link(href = "c2.xhtml", type = "application/xhtml+xml"),
+                ),
+                conformsTo = setOf(Profile.EPUB)
+            ).conformsTo(Profile.EPUB)
         )
         assertTrue(
-            createPublication(readingOrder = listOf(
-                Link(href = "c1.html", type = "text/html"),
-                Link(href = "c2.html", type = "text/html"),
-            ), conformsTo = setOf(Profile.EPUB)).conformsTo(Profile.EPUB)
+            createPublication(
+                readingOrder = listOf(
+                    Link(href = "c1.html", type = "text/html"),
+                    Link(href = "c2.html", type = "text/html"),
+                ),
+                conformsTo = setOf(Profile.EPUB)
+            ).conformsTo(Profile.EPUB)
         )
         assertFalse(
-            createPublication(readingOrder = listOf(
-                Link(href = "c1.xhtml", type = "application/xhtml+xml"),
-                Link(href = "c2.xhtml", type = "application/xhtml+xml"),
-            )).conformsTo(Profile.EPUB)
+            createPublication(
+                readingOrder = listOf(
+                    Link(href = "c1.xhtml", type = "application/xhtml+xml"),
+                    Link(href = "c2.xhtml", type = "application/xhtml+xml"),
+                )
+            ).conformsTo(Profile.EPUB)
         )
         assertFalse(
-            createPublication(readingOrder = listOf(
-                Link(href = "c1.html", type = "text/html"),
-                Link(href = "c2.html", type = "text/html"),
-            )).conformsTo(Profile.EPUB)
+            createPublication(
+                readingOrder = listOf(
+                    Link(href = "c1.html", type = "text/html"),
+                    Link(href = "c2.html", type = "text/html"),
+                )
+            ).conformsTo(Profile.EPUB)
         )
         assertFalse(
-            createPublication(readingOrder = listOf(
-                Link(href = "c1.pdf", type = "application/pdf"),
-                Link(href = "c2.pdf", type = "application/pdf"),
-            ), conformsTo = setOf(Profile.EPUB)).conformsTo(Profile.EPUB)
+            createPublication(
+                readingOrder = listOf(
+                    Link(href = "c1.pdf", type = "application/pdf"),
+                    Link(href = "c2.pdf", type = "application/pdf"),
+                ),
+                conformsTo = setOf(Profile.EPUB)
+            ).conformsTo(Profile.EPUB)
         )
 
         // Implicit conformance always take precedence over explicit profiles.
         assertTrue(
-            createPublication(readingOrder = listOf(
-                Link(href = "c1.mp3", type = "audio/mpeg"),
-                Link(href = "c2.aac", type = "audio/aac"),
-            ), conformsTo = setOf(Profile.DIVINA)).conformsTo(Profile.AUDIOBOOK)
+            createPublication(
+                readingOrder = listOf(
+                    Link(href = "c1.mp3", type = "audio/mpeg"),
+                    Link(href = "c2.aac", type = "audio/aac"),
+                ),
+                conformsTo = setOf(Profile.DIVINA)
+            ).conformsTo(Profile.AUDIOBOOK)
         )
         assertFalse(
-            createPublication(readingOrder = listOf(
-                Link(href = "c1.mp3", type = "audio/mpeg"),
-                Link(href = "c2.aac", type = "audio/aac"),
-            ), conformsTo = setOf(Profile.DIVINA)).conformsTo(Profile.DIVINA)
+            createPublication(
+                readingOrder = listOf(
+                    Link(href = "c1.mp3", type = "audio/mpeg"),
+                    Link(href = "c2.aac", type = "audio/aac"),
+                ),
+                conformsTo = setOf(Profile.DIVINA)
+            ).conformsTo(Profile.DIVINA)
         )
 
         // Unknown profile
@@ -286,9 +315,12 @@ class PublicationTest {
                 Link(href = "l4", rels = setOf("rel1"))
             ),
             resources = listOf(
-                Link(href = "l5", alternates = listOf(
-                    Link(href = "alternate", rels = setOf("rel1"))
-                )),
+                Link(
+                    href = "l5",
+                    alternates = listOf(
+                        Link(href = "alternate", rels = setOf("rel1"))
+                    )
+                ),
                 Link(href = "l6", rels = setOf("rel1"))
             )
         )
@@ -375,11 +407,11 @@ class PublicationTest {
     }
 
     @Test fun `get method passes on href parameters to services`() {
-        val service = object: Publication.Service {
+        val service = object : Publication.Service {
             override fun get(link: Link): Resource? {
                 assertFalse(link.templated)
                 assertEquals("param1=a&param2=b", link.href.substringAfter("?"))
-                return StringResource(link,"test passed")
+                return StringResource(link, "test passed")
             }
         }
 
@@ -438,13 +470,13 @@ class PublicationTest {
 
 class ServicesBuilderTest {
 
-    open class FooService: Publication.Service
-    class FooServiceA: FooService()
-    class FooServiceB: FooService()
-    class FooServiceC(val wrapped: FooService?): FooService()
+    open class FooService : Publication.Service
+    class FooServiceA : FooService()
+    class FooServiceB : FooService()
+    class FooServiceC(val wrapped: FooService?) : FooService()
 
-    open class BarService: Publication.Service
-    class BarServiceA: BarService()
+    open class BarService : Publication.Service
+    class BarServiceA : BarService()
 
     private val context = Publication.Service.Context(
         publication = Ref(),
@@ -535,5 +567,4 @@ class ServicesBuilderTest {
 
     private inline fun <reified T> List<Publication.Service>.find(): T? =
         firstOrNull { it is T } as? T
-
 }

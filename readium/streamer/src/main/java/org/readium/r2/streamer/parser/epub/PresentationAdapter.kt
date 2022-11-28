@@ -36,7 +36,7 @@ internal class PresentationAdapter(
                 else
                     "reflowable"
             } else itemsHolder
-                .adapt { it .takeFirstWithProperty(Vocabularies.RENDITION + "layout") }
+                .adapt { it.takeFirstWithProperty(Vocabularies.RENDITION + "layout") }
                 ?.value
 
         val (overflow, continuous) = when (flowProp) {

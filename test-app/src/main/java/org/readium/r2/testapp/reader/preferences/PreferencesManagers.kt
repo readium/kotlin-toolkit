@@ -12,6 +12,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import kotlin.reflect.KClass
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,9 +32,8 @@ import org.readium.r2.navigator.preferences.PreferencesFilter
 import org.readium.r2.navigator.preferences.PreferencesSerializer
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.testapp.utils.extensions.stateInFirst
-import kotlin.reflect.KClass
 
-class PreferencesManager<P: Configurable.Preferences<P>> internal constructor(
+class PreferencesManager<P : Configurable.Preferences<P>> internal constructor(
     val preferences: StateFlow<P>,
     @Suppress("Unused") // Keep the scope alive until the PreferencesManager is garbage collected
     private val coroutineScope: CoroutineScope,
@@ -45,7 +45,7 @@ class PreferencesManager<P: Configurable.Preferences<P>> internal constructor(
     }
 }
 
-sealed class PreferencesManagerFactory<P: Configurable.Preferences<P>>(
+sealed class PreferencesManagerFactory<P : Configurable.Preferences<P>>(
     private val dataStore: DataStore<Preferences>,
     private val klass: KClass<P>,
     private val sharedPreferencesFilter: PreferencesFilter<P>,
@@ -96,19 +96,19 @@ sealed class PreferencesManagerFactory<P: Configurable.Preferences<P>>(
         stringPreferencesKey("book-$bookId")
 
     /** [DataStore] key for the given preferences [klass]. */
-    private fun <T: Any> key(klass: KClass<T>): Preferences.Key<String> =
+    private fun <T : Any> key(klass: KClass<T>): Preferences.Key<String> =
         stringPreferencesKey("class-${klass.simpleName}")
 }
 
 class EpubPreferencesManagerFactory(
     dataStore: DataStore<Preferences>,
 ) : PreferencesManagerFactory<EpubPreferences>(
-        dataStore = dataStore,
-        klass = EpubPreferences::class,
-        sharedPreferencesFilter = EpubSharedPreferencesFilter,
-        publicationPreferencesFilter = EpubPublicationPreferencesFilter,
-        preferencesSerializer = EpubPreferencesSerializer(),
-        emptyPreferences = EpubPreferences()
+    dataStore = dataStore,
+    klass = EpubPreferences::class,
+    sharedPreferencesFilter = EpubSharedPreferencesFilter,
+    publicationPreferencesFilter = EpubPublicationPreferencesFilter,
+    preferencesSerializer = EpubPreferencesSerializer(),
+    emptyPreferences = EpubPreferences()
 )
 
 class PdfiumPreferencesManagerFactory(

@@ -116,7 +116,7 @@ data class PublicationCollection(
                 if (collection != null) {
                     collections.getOrPut(role) { mutableListOf() }.add(collection)
 
-                // Parses a list of collection objects.
+                    // Parses a list of collection objects.
                 } else if (subJSON is JSONArray) {
                     collections.getOrPut(role) { mutableListOf() }.addAll(
                         subJSON.mapNotNull { fromJSON(it, normalizeHref, warnings) }
@@ -125,9 +125,7 @@ data class PublicationCollection(
             }
             return collections
         }
-
     }
-
 }
 
 /**

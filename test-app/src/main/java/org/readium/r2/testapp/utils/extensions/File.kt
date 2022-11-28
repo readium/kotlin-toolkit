@@ -9,17 +9,16 @@
 
 package org.readium.r2.testapp.utils.extensions
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileFilter
 import java.io.IOException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 suspend fun File.moveTo(target: File) = withContext(Dispatchers.IO) {
     if (!this@moveTo.renameTo(target))
         throw IOException()
 }
-
 
 /**
  * As there are cases where [File.listFiles] returns null even though it is a directory, we return

@@ -9,9 +9,9 @@
 
 package org.readium.r2.streamer.extensions
 
+import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.io.File
 
 class FileTest {
 
@@ -29,5 +29,4 @@ class FileTest {
     fun `firstComponent works well when {File} is a file inside a directory`() {
         assertEquals("dir1", File("/dir1/dir2/image.jpg").firstComponent.name)
     }
-
 }

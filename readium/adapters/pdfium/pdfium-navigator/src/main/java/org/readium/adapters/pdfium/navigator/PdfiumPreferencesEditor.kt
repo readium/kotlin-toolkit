@@ -86,7 +86,7 @@ class PdfiumPreferencesEditor internal constructor(
 
     val scrollAxis: EnumPreference<Axis> =
         EnumPreferenceDelegate(
-            getValue = { preferences.scrollAxis},
+            getValue = { preferences.scrollAxis },
             getEffectiveValue = { state.settings.scrollAxis },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(scrollAxis = value) } },

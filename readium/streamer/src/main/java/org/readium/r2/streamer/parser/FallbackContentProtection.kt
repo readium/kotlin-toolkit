@@ -39,7 +39,6 @@ internal class FallbackContentProtection : ContentProtection {
             fun createFactory(scheme: Scheme?): (Publication.Service.Context) -> Service =
                 { Service(scheme) }
         }
-
     }
 
     override suspend fun open(
@@ -76,19 +75,19 @@ internal class FallbackContentProtection : ContentProtection {
                 when {
                     (
                         fetcher.readAsJsonOrNull("/META-INF/license.lcpl") != null ||
-                        encryption?.any { it.value.scheme == "http://readium.org/2014/01/lcp" } == true
-                    ) -> Scheme.Lcp
+                            encryption?.any { it.value.scheme == "http://readium.org/2014/01/lcp" } == true
+                        ) -> Scheme.Lcp
 
                     (
                         encryptionXml != null && (
                             rightsXml?.namespace == "http://ns.adobe.com/adept" ||
-                            encryptionXml
-                                .get("EncryptedData", Namespaces.ENC)
-                                .flatMap { it.get("KeyInfo", Namespaces.SIG) }
-                                .flatMap { it.get("resource", "http://ns.adobe.com/adept")}
-                                .isNotEmpty()
-                        )
-                    ) -> Scheme.Adept
+                                encryptionXml
+                                    .get("EncryptedData", Namespaces.ENC)
+                                    .flatMap { it.get("KeyInfo", Namespaces.SIG) }
+                                    .flatMap { it.get("resource", "http://ns.adobe.com/adept") }
+                                    .isNotEmpty()
+                            )
+                        ) -> Scheme.Adept
 
                     // A file with only obfuscated fonts might still have an `encryption.xml` file.
                     // To make sure that we don't lock a readable publication, we ignore unknown

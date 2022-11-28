@@ -9,9 +9,9 @@
 
 package org.readium.r2.streamer.container
 
+import java.io.InputStream
 import org.readium.r2.shared.RootFile
 import org.readium.r2.shared.drm.DRM
-import java.io.InputStream
 
 /**
  * Container of a publication
@@ -47,4 +47,3 @@ sealed class ContainerError : Exception() {
     data class xmlParse(val underlyingError: Error) : ContainerError()
     data class missingLink(val title: String?) : ContainerError()
 }
-

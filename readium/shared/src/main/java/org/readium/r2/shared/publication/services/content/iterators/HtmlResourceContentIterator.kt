@@ -141,7 +141,7 @@ class HtmlResourceContentIterator(
         fun result() = ParsedElements(
             elements = elements,
             startIndex = if (baseLocator.locations.progression == 1.0) elements.size - 1
-                else startIndex
+            else startIndex
         )
 
         private val elements = mutableListOf<Content.Element>()
@@ -227,7 +227,6 @@ class HtmlResourceContentIterator(
 
                 rawTextAcc += Parser.unescapeEntities(node.wholeText, false)
                 appendNormalisedText(node)
-
             } else if (node is Element) {
                 if (node.isBlock) {
                     flushText()
@@ -250,20 +249,22 @@ class HtmlResourceContentIterator(
             if (startElement != null && currentElement == startElement) {
                 startIndex = elements.size
             }
-            elements.add(Content.TextElement(
-                locator = baseLocator.copy(
-                    locations = Locator.Locations(
-                        otherLocations = buildMap {
-                            currentCssSelector?.let {
-                                put("cssSelector", it as Any)
+            elements.add(
+                Content.TextElement(
+                    locator = baseLocator.copy(
+                        locations = Locator.Locations(
+                            otherLocations = buildMap {
+                                currentCssSelector?.let {
+                                    put("cssSelector", it as Any)
+                                }
                             }
-                        }
+                        ),
+                        text = Locator.Text(highlight = elementRawTextAcc)
                     ),
-                    text = Locator.Text(highlight = elementRawTextAcc)
-                ),
-                role = TextElement.Role.Body,
-                segments = segmentsAcc.toList()
-            ))
+                    role = TextElement.Role.Body,
+                    segments = segmentsAcc.toList()
+                )
+            )
             elementRawTextAcc = ""
             segmentsAcc.clear()
         }

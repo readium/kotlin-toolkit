@@ -58,7 +58,5 @@ data class ProblemDetails(
                 instance = json.optNullableString("instance")
             )
         }
-
     }
-
 }

@@ -59,8 +59,14 @@ data class Highlight(
     var annotation: String = "",
 ) {
 
-    constructor(bookId: Long, style: Style, @ColorInt tint: Int, locator: Locator, annotation: String)
-        : this(
+    constructor(
+        bookId: Long,
+        style: Style,
+        @ColorInt tint: Int,
+        locator: Locator,
+        annotation: String
+    ) :
+        this(
             bookId = bookId,
             style = style,
             tint = tint,

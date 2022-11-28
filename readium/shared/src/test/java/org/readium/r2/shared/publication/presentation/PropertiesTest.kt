@@ -78,5 +78,4 @@ class PropertiesTest {
     @Test fun `get Properties {spread} when missing`() {
         assertNull(Properties().spread)
     }
-
 }

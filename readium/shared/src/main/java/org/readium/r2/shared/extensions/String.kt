@@ -9,14 +9,14 @@
 
 package org.readium.r2.shared.extensions
 
-import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
-import org.json.JSONException
-import org.json.JSONObject
 import java.net.URL
 import java.net.URLDecoder
 import java.security.MessageDigest
 import java.util.*
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
+import org.json.JSONException
+import org.json.JSONObject
 
 fun String.iso8601ToDate(): Date? =
     try {

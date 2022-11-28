@@ -7,16 +7,15 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-
 package org.readium.r2.shared.publication
 
+import kotlin.test.assertEquals
 import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
 import org.robolectric.RobolectricTestRunner
-import kotlin.test.assertEquals
 
 @RunWith(RobolectricTestRunner::class)
 class ManifestTest {
@@ -208,11 +207,13 @@ class ManifestTest {
     @Test
     fun `get minimal JSON`() {
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "metadata": {"title": {"und": "Title"}, "readingProgression": "auto"},
                 "links": [],
                 "readingOrder": []
-            }"""),
+            }"""
+            ),
             Manifest(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
                 links = emptyList(),
@@ -224,7 +225,8 @@ class ManifestTest {
     @Test
     fun `get full JSON`() {
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "@context": ["https://readium.org/webpub-manifest/context.jsonld"],
                 "metadata": {"title": {"und": "Title"}, "readingProgression": "auto"},
                 "links": [
@@ -246,7 +248,8 @@ class ManifestTest {
                         {"href": "/sublink", "templated": false}
                     ]
                 }
-            }"""),
+            }"""
+            ),
             Manifest(
                 context = listOf("https://readium.org/webpub-manifest/context.jsonld"),
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
@@ -261,18 +264,20 @@ class ManifestTest {
 
     @Test
     fun `self link is replaced when parsing a package`() {
-         assertEquals(
+        assertEquals(
             Manifest(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
                 links = listOf(Link(href = "/manifest.json", rels = setOf("alternate")))
             ),
             Manifest.fromJSON(
-                JSONObject("""{
+                JSONObject(
+                    """{
                 "metadata": {"title": "Title"},
                 "links": [
                     {"href": "/manifest.json", "rel": ["self"], "templated": false}
                 ]
-                }"""),
+                }"""
+                ),
                 packaged = true
             )
         )
@@ -286,19 +291,22 @@ class ManifestTest {
                 links = listOf(Link(href = "/manifest.json", rels = setOf("self")))
             ),
             Manifest.fromJSON(
-                JSONObject("""{
+                JSONObject(
+                    """{
                 "metadata": {"title": "Title"},
                 "links": [
                     {"href": "/manifest.json", "rel": ["self"]}
                 ]
-                }""")
+                }"""
+                )
             )
         )
     }
 
     @Test
     fun `href are resolved to root when parsing a package`() {
-        val json =  JSONObject("""{
+        val json = JSONObject(
+            """{
             "metadata": {"title": "Title"},
             "links": [
                 {"href": "http://example.com/manifest.json", "rel": ["self"], "templated": false}
@@ -306,7 +314,8 @@ class ManifestTest {
             "readingOrder": [
                 {"href": "chap1.html", "type": "text/html", "templated": false}
             ]
-        }""")
+        }"""
+        )
 
         assertEquals(
             "/chap1.html",
@@ -316,7 +325,8 @@ class ManifestTest {
 
     @Test
     fun `href are resolved to self link when parsing a remote manifest`() {
-        val json = JSONObject("""{
+        val json = JSONObject(
+            """{
             "metadata": {"title": "Title"},
             "links": [
                 {"href": "http://example.com/directory/manifest.json", "rel": ["self"], "templated": false}
@@ -324,7 +334,8 @@ class ManifestTest {
             "readingOrder": [
                 {"href": "chap1.html", "type": "text/html", "templated": false}
             ]
-        }""")
+        }"""
+        )
 
         assertEquals(
             "http://example.com/directory/chap1.html",

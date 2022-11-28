@@ -26,5 +26,4 @@ class EpubLayoutTest {
         assertEquals("fixed", EpubLayout.FIXED.value)
         assertEquals("reflowable", EpubLayout.REFLOWABLE.value)
     }
-
 }

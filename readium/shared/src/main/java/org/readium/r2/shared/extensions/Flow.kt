@@ -19,9 +19,9 @@ import org.readium.r2.shared.InternalReadiumApi
  */
 @InternalReadiumApi
 fun <T, M> StateFlow<T>.mapStateIn(
-    coroutineScope : CoroutineScope,
-    transform : (value : T) -> M
-) : StateFlow<M> =
+    coroutineScope: CoroutineScope,
+    transform: (value: T) -> M
+): StateFlow<M> =
     map { transform(it) }
         .stateIn(
             coroutineScope,

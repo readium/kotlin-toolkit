@@ -73,7 +73,7 @@ data class EpubPreferences(
     val typeScale: Double? = null,
     val verticalText: Boolean? = null,
     val wordSpacing: Double? = null
-): Configurable.Preferences<EpubPreferences> {
+) : Configurable.Preferences<EpubPreferences> {
 
     init {
         require(fontSize == null || fontSize >= 0)
@@ -114,7 +114,6 @@ data class EpubPreferences(
         )
 }
 
-
 /**
  * Loads the preferences from the legacy EPUB settings stored in the [SharedPreferences] with
  * given [sharedPreferencesName].
@@ -143,7 +142,6 @@ fun EpubPreferences.Companion.fromLegacyEpubSettings(
         ?.let { fontFamilies.getOrNull(it) }
         ?.takeUnless { it == "Original" }
         ?.let { FontFamily(it) }
-
 
     val theme = sp
         .takeIf { sp.contains("appearance") }

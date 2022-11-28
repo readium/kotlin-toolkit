@@ -7,6 +7,11 @@
 package org.readium.r2.shared.util.http
 
 import android.os.Bundle
+import java.io.ByteArrayInputStream
+import java.io.FileInputStream
+import java.net.HttpURLConnection
+import java.net.URL
+import kotlin.time.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.Try
@@ -16,11 +21,6 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.sniffMediaType
 import org.readium.r2.shared.util.tryRecover
 import timber.log.Timber
-import java.io.ByteArrayInputStream
-import java.io.FileInputStream
-import java.net.HttpURLConnection
-import java.net.URL
-import kotlin.time.Duration
 
 /**
  * An implementation of [HttpClient] using the native [HttpURLConnection].
@@ -85,7 +85,11 @@ class DefaultHttpClient constructor(
          *   - a different redirection request
          *   - a [HttpException.CANCELLED] error to abort the redirection
          */
-        suspend fun onFollowUnsafeRedirect(request: HttpRequest, response: HttpResponse, newRequest: HttpRequest): HttpTry<HttpRequest> =
+        suspend fun onFollowUnsafeRedirect(
+            request: HttpRequest,
+            response: HttpResponse,
+            newRequest: HttpRequest
+        ): HttpTry<HttpRequest> =
             Try.failure(HttpException.CANCELLED)
 
         /**
@@ -106,7 +110,6 @@ class DefaultHttpClient constructor(
          * This will be called only if [onRecoverRequest] is not implemented, or returns an error.
          */
         suspend fun onRequestFailed(request: HttpRequest, error: HttpException) {}
-
     }
 
     // We are using Dispatchers.IO but we still get this warning...
@@ -159,7 +162,6 @@ class DefaultHttpClient constructor(
                             )
                         )
                     }
-
                 } catch (e: Exception) {
                     Try.failure(HttpException.wrap(e))
                 }
@@ -271,5 +273,4 @@ class DefaultHttpClient constructor(
             @Suppress("SENSELESS_COMPARISON")
             key == null || value == null
         }
-
 }

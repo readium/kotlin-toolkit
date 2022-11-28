@@ -17,5 +17,4 @@ data class Group(val title: String) {
     var links = mutableListOf<Link>()
     var publications = mutableListOf<Publication>()
     var navigation = mutableListOf<Link>()
-
 }

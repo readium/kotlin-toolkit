@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.container
 
+import java.io.InputStream
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.RootFile
 import org.readium.r2.shared.drm.DRM
@@ -17,7 +18,6 @@ import org.readium.r2.shared.fetcher.ResourceInputStream
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.mediatype.MediaType
-import java.io.InputStream
 
 /**
  * Temporary solution to migrate to [Publication.get] while ensuring backward compatibility with

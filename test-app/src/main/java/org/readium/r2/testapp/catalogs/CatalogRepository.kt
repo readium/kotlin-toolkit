@@ -6,7 +6,6 @@
 
 package org.readium.r2.testapp.catalogs
 
-
 import androidx.lifecycle.LiveData
 import org.readium.r2.testapp.db.CatalogDao
 import org.readium.r2.testapp.domain.model.Catalog

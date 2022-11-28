@@ -81,5 +81,4 @@ class PublicationAdapter :
             return oldItem.jsonManifest == newItem.jsonManifest
         }
     }
-
 }

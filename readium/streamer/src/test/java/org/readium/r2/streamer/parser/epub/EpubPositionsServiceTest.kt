@@ -43,15 +43,17 @@ class EpubPositionsServiceTest {
         )
 
         assertEquals(
-            listOf(Locator(
-                href = "res",
-                type = "application/xml",
-                locations = Locator.Locations(
-                    progression = 0.0,
-                    position = 1,
-                    totalProgression = 0.0
+            listOf(
+                Locator(
+                    href = "res",
+                    type = "application/xml",
+                    locations = Locator.Locations(
+                        progression = 0.0,
+                        position = 1,
+                        totalProgression = 0.0
+                    )
                 )
-            )),
+            ),
             runBlocking { service.positions() }
         )
     }
@@ -83,7 +85,7 @@ class EpubPositionsServiceTest {
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 2,
-                        totalProgression = 1.0/3.0
+                        totalProgression = 1.0 / 3.0
                     )
                 ),
                 Locator(
@@ -93,7 +95,7 @@ class EpubPositionsServiceTest {
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 3,
-                        totalProgression = 2.0/3.0
+                        totalProgression = 2.0 / 3.0
                     )
                 )
             ),
@@ -163,7 +165,7 @@ class EpubPositionsServiceTest {
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 2,
-                        totalProgression = 1.0/3.0
+                        totalProgression = 1.0 / 3.0
                     )
                 ),
                 Locator(
@@ -173,7 +175,7 @@ class EpubPositionsServiceTest {
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 3,
-                        totalProgression = 2.0/3.0
+                        totalProgression = 2.0 / 3.0
                     )
                 )
             ),
@@ -212,7 +214,7 @@ class EpubPositionsServiceTest {
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 2,
-                        totalProgression = 1.0/8.0
+                        totalProgression = 1.0 / 8.0
                     )
                 ),
                 Locator(
@@ -222,7 +224,7 @@ class EpubPositionsServiceTest {
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 3,
-                        totalProgression = 2.0/8.0
+                        totalProgression = 2.0 / 8.0
                     )
                 ),
                 Locator(
@@ -231,7 +233,7 @@ class EpubPositionsServiceTest {
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 4,
-                        totalProgression = 3.0/8.0
+                        totalProgression = 3.0 / 8.0
                     )
                 ),
                 Locator(
@@ -240,7 +242,7 @@ class EpubPositionsServiceTest {
                     locations = Locator.Locations(
                         progression = 0.5,
                         position = 5,
-                        totalProgression = 4.0/8.0
+                        totalProgression = 4.0 / 8.0
                     )
                 ),
                 Locator(
@@ -249,28 +251,28 @@ class EpubPositionsServiceTest {
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 6,
-                        totalProgression = 5.0/8.0
+                        totalProgression = 5.0 / 8.0
                     )
                 ),
                 Locator(
                     href = "chap5",
                     type = "text/html",
                     locations = Locator.Locations(
-                        progression = 1.0/3.0,
+                        progression = 1.0 / 3.0,
                         position = 7,
-                        totalProgression = 6.0/8.0
+                        totalProgression = 6.0 / 8.0
                     )
                 ),
                 Locator(
                     href = "chap5",
                     type = "text/html",
                     locations = Locator.Locations(
-                        progression = 2.0/3.0,
+                        progression = 2.0 / 3.0,
                         position = 8,
-                        totalProgression = 7.0/8.0
+                        totalProgression = 7.0 / 8.0
                     )
                 )
-           ),
+            ),
             runBlocking { service.positions() }
         )
     }
@@ -340,7 +342,7 @@ class EpubPositionsServiceTest {
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 2,
-                        totalProgression = 1.0/4.0
+                        totalProgression = 1.0 / 4.0
                     )
                 ),
                 Locator(
@@ -349,7 +351,7 @@ class EpubPositionsServiceTest {
                     locations = Locator.Locations(
                         progression = 0.5,
                         position = 3,
-                        totalProgression = 2.0/4.0
+                        totalProgression = 2.0 / 4.0
                     )
                 ),
                 Locator(
@@ -358,7 +360,7 @@ class EpubPositionsServiceTest {
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 4,
-                        totalProgression = 3.0/4.0
+                        totalProgression = 3.0 / 4.0
                     )
                 )
             ),
@@ -397,7 +399,7 @@ class EpubPositionsServiceTest {
                         locations = Locator.Locations(
                             progression = 0.0,
                             position = 2,
-                            totalProgression = 1.0/3.0
+                            totalProgression = 1.0 / 3.0
                         )
                     ),
                     Locator(
@@ -406,7 +408,7 @@ class EpubPositionsServiceTest {
                         locations = Locator.Locations(
                             progression = 0.5,
                             position = 3,
-                            totalProgression = 2.0/3.0
+                            totalProgression = 2.0 / 3.0
                         )
                     )
                 )
@@ -443,7 +445,7 @@ class EpubPositionsServiceTest {
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 2,
-                        totalProgression = 1.0/3.0
+                        totalProgression = 1.0 / 3.0
                     )
                 ),
                 Locator(
@@ -452,7 +454,7 @@ class EpubPositionsServiceTest {
                     locations = Locator.Locations(
                         progression = 0.5,
                         position = 3,
-                        totalProgression = 2.0/3.0
+                        totalProgression = 2.0 / 3.0
                     )
                 )
             ),
@@ -491,7 +493,11 @@ class EpubPositionsServiceTest {
         reflowableStrategy = reflowableStrategy
     )
 
-    private fun createProperties(layout: EpubLayout? = null, archiveEntryLength: Long? = null, originalLength: Long? = null): Properties {
+    private fun createProperties(
+        layout: EpubLayout? = null,
+        archiveEntryLength: Long? = null,
+        originalLength: Long? = null
+    ): Properties {
         val properties = mutableMapOf<String, Any>()
         if (layout != null) {
             properties["layout"] = layout.value
@@ -510,5 +516,4 @@ class EpubPositionsServiceTest {
         }
         return Properties(otherProperties = properties)
     }
-
 }

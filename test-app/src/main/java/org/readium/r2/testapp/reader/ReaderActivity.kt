@@ -62,7 +62,7 @@ open class ReaderActivity : AppCompatActivity() {
 
         val binding = ActivityReaderBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
+
         this.binding = binding
 
         val readerFragment = supportFragmentManager.findFragmentByTag(READER_FRAGMENT_TAG)
@@ -145,7 +145,6 @@ open class ReaderActivity : AppCompatActivity() {
             when (currentFragment) {
                 is OutlineFragment, is DrmManagementFragment -> true
                 else -> false
-
             }
         )
     }
@@ -156,7 +155,7 @@ open class ReaderActivity : AppCompatActivity() {
     }
 
     private fun handleReaderFragmentEvent(event: ReaderViewModel.Event) {
-        when(event) {
+        when (event) {
             is ReaderViewModel.Event.OpenOutlineRequested -> showOutlineFragment()
             is ReaderViewModel.Event.OpenDrmManagementRequested -> showDrmManagementFragment()
             is ReaderViewModel.Event.Failure -> showError(event.error)

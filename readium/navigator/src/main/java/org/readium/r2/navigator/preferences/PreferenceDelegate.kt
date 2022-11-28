@@ -64,7 +64,7 @@ class SwitchPreferenceDelegate(
 }
 
 @InternalReadiumApi
-class RangePreferenceDelegate<T: Comparable<T>>(
+class RangePreferenceDelegate<T : Comparable<T>>(
     getValue: () -> T?,
     getEffectiveValue: () -> T,
     getIsEffective: () -> Boolean,
@@ -73,7 +73,7 @@ class RangePreferenceDelegate<T: Comparable<T>>(
     override val supportedRange: ClosedRange<T>,
     private val progressionStrategy: ProgressionStrategy<T>,
 ) : PreferenceDelegate<T>(getValue, getEffectiveValue, getIsEffective, updateValue),
-    RangePreference<T>  {
+    RangePreference<T> {
 
     override fun formatValue(value: T): String =
         valueFormatter.invoke(value)

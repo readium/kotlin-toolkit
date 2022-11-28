@@ -21,7 +21,7 @@ interface ProgressionStrategy<V> {
  *
  * Steps MUST be sorted in increasing order.
  */
-class StepsProgression<T: Comparable<T>>(private val steps: List<T>) : ProgressionStrategy<T> {
+class StepsProgression<T : Comparable<T>>(private val steps: List<T>) : ProgressionStrategy<T> {
 
     constructor(vararg steps: T) : this(steps.toList())
 

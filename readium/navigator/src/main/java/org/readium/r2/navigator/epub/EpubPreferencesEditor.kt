@@ -28,7 +28,7 @@ class EpubPreferencesEditor internal constructor(
     val layout: EpubLayout,
     defaults: EpubDefaults,
     configuration: Configuration
-): PreferencesEditor<EpubPreferences> {
+) : PreferencesEditor<EpubPreferences> {
 
     /**
      * Configuration for [EpubPreferencesEditor].
@@ -46,24 +46,24 @@ class EpubPreferencesEditor internal constructor(
         val pageMarginsRange: ClosedRange<Double> = 0.5..4.0,
         val pageMarginsProgression: ProgressionStrategy<Double> = DoubleIncrement(0.3)
     )
-    
+
     private data class State(
         val preferences: EpubPreferences,
         val settings: EpubSettings,
         val layout: Layout
     )
-    
+
     private val settingsResolver: EpubSettingsResolver =
         EpubSettingsResolver(publicationMetadata, defaults)
 
     private var state: State =
-      initialPreferences.toState()
+        initialPreferences.toState()
 
     override val preferences: EpubPreferences
         get() = state.preferences
 
     override fun clear() {
-       updateValues { EpubPreferences() }
+        updateValues { EpubPreferences() }
     }
 
     val backgroundColor: Preference<Color> =
@@ -73,7 +73,7 @@ class EpubPreferencesEditor internal constructor(
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(backgroundColor = value) } },
         )
-    
+
     val columnCount: EnumPreference<ColumnCount> =
         EnumPreferenceDelegate(
             getValue = { preferences.columnCount },
@@ -108,7 +108,7 @@ class EpubPreferencesEditor internal constructor(
             getValue = { preferences.hyphens },
             getEffectiveValue = { state.settings.hyphens },
             getIsEffective = { isHyphensEffective() },
-            updateValue = { value -> updateValues { it.copy(hyphens = value) }},
+            updateValue = { value -> updateValues { it.copy(hyphens = value) } },
         )
 
     val imageFilter: EnumPreference<ImageFilter> =
@@ -196,7 +196,7 @@ class EpubPreferencesEditor internal constructor(
             getValue = { preferences.publisherStyles },
             getEffectiveValue = { state.settings.publisherStyles },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
-            updateValue = { value -> updateValues { it.copy(publisherStyles = value) }},
+            updateValue = { value -> updateValues { it.copy(publisherStyles = value) } },
         )
 
     val readingProgression: EnumPreference<ReadingProgression> =
@@ -312,7 +312,6 @@ class EpubPreferencesEditor internal constructor(
     private fun isHyphensEffective() = layout == EpubLayout.REFLOWABLE &&
         state.layout.stylesheets == Layout.Stylesheets.Default &&
         !state.settings.publisherStyles
-
 
     private fun isLetterSpacing() = layout == EpubLayout.REFLOWABLE &&
         state.layout.stylesheets == Layout.Stylesheets.Default &&

@@ -6,6 +6,8 @@
 
 package org.readium.r2.navigator.epub.css
 
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.navigator.preferences.FontFamily
@@ -13,12 +15,10 @@ import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
 import org.robolectric.RobolectricTestRunner
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 
 @RunWith(RobolectricTestRunner::class)
 @OptIn(ExperimentalReadiumApi::class)
-class HtmlInjectionTest {
+class ReadiumCssTest {
 
     @Test
     fun `Inject with a simple HEAD`() {
@@ -137,7 +137,7 @@ class HtmlInjectionTest {
                 """
                     <?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml"><head xmlns:xlink="http://www.w3.org/1999/xlink"><title>Publication</title><link rel="stylesheet" href="style.css" type="text/css"/></head><body xmlns:xlink="http://www.w3.org/1999/xlink"></body></html>
                 """.trimIndent()
-           )
+            )
         )
     }
 

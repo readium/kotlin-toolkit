@@ -191,7 +191,8 @@ class HrefTest {
     fun getQueryParameters() {
         assertEquals(emptyList<QueryParameter>(), Href("http://domain.com/path").queryParameters)
         assertEquals(listOf(QueryParameter(name = "query", value = "param")), Href("http://domain.com/path?query=param#anchor").queryParameters)
-        assertEquals(listOf(
+        assertEquals(
+            listOf(
                 QueryParameter(name = "query", value = "param"),
                 QueryParameter(name = "fruit", value = "banana"),
                 QueryParameter(name = "query", value = "other"),
@@ -230,5 +231,4 @@ class HrefTest {
         assertEquals(params.allNamed("empty"), emptyList<QueryParameter>())
         assertEquals(params.allNamed("not-found"), emptyList<QueryParameter>())
     }
-
 }

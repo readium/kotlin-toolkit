@@ -6,13 +6,13 @@
 
 package org.readium.r2.shared.util.io
 
+import java.io.FilterInputStream
+import java.io.IOException
+import java.io.InputStream
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.requireLengthFitInt
-import java.io.FilterInputStream
-import java.io.IOException
-import java.io.InputStream
 
 /**
  * An [InputStream] counting the number of bytes read from a wrapped [inputStream].

@@ -50,41 +50,51 @@ internal data class ReadiumCss(
         val stylesheetsFolder = assetsBaseHref + "/readium/readium-css/" + (layout.stylesheets.folder?.plus("/") ?: "")
 
         val headBeforeIndex = content.indexForOpeningTag("head")
-        content.insert(headBeforeIndex, "\n" + buildList {
-            add(stylesheetLink(stylesheetsFolder + "ReadiumCSS-before.css"))
+        content.insert(
+            headBeforeIndex,
+            "\n" + buildList {
+                add(stylesheetLink(stylesheetsFolder + "ReadiumCSS-before.css"))
 
-            // Fix Readium CSS issue with the positioning of <audio> elements.
-            // https://github.com/readium/readium-css/issues/94
-            // https://github.com/readium/r2-navigator-kotlin/issues/193
-            add("<style>audio[controls] { width: revert; height: revert; }</style>")
+                // Fix Readium CSS issue with the positioning of <audio> elements.
+                // https://github.com/readium/readium-css/issues/94
+                // https://github.com/readium/r2-navigator-kotlin/issues/193
+                add("<style>audio[controls] { width: revert; height: revert; }</style>")
 
-            // Fix broken pagination when a book contains `overflow-x: hidden`.
-            // https://github.com/readium/kotlin-toolkit/issues/292
-            // Inspired by https://github.com/readium/readium-css/issues/119#issuecomment-1302348238
-            add("""
+                // Fix broken pagination when a book contains `overflow-x: hidden`.
+                // https://github.com/readium/kotlin-toolkit/issues/292
+                // Inspired by https://github.com/readium/readium-css/issues/119#issuecomment-1302348238
+                add(
+                    """
                 <style>
                     :root[style], :root { overflow: visible !important; }
                     :root[style] > body, :root > body { overflow: visible !important; }
                 </style>
-            """.trimMargin())
+            """.trimMargin()
+                )
 
-            if (!hasStyles) {
-                add(stylesheetLink(stylesheetsFolder + "ReadiumCSS-default.css"))
-            }
-        }.joinToString("\n") + "\n")
+                if (!hasStyles) {
+                    add(stylesheetLink(stylesheetsFolder + "ReadiumCSS-default.css"))
+                }
+            }.joinToString("\n") + "\n"
+        )
 
         val endHeadIndex = content.indexForClosingTag("head")
-        content.insert(endHeadIndex, "\n" + buildList {
-            add(stylesheetLink(stylesheetsFolder + "ReadiumCSS-after.css"))
+        content.insert(
+            endHeadIndex,
+            "\n" + buildList {
+                add(stylesheetLink(stylesheetsFolder + "ReadiumCSS-after.css"))
 
-            if (fontInjectables.isNotEmpty()) {
-                add("""
+                if (fontInjectables.isNotEmpty()) {
+                    add(
+                        """
                     <style type="text/css">
                     ${fontInjectables.joinToString("\n")}
                     </style>
-                """.trimIndent())
-            }
-        }.joinToString("\n") + "\n")
+                        """.trimIndent()
+                    )
+                }
+            }.joinToString("\n") + "\n"
+        )
     }
 
     /**
@@ -121,9 +131,9 @@ internal data class ReadiumCss(
      * https://github.com/readium/readium-css/blob/develop/docs/CSS06-stylesheets_order.md#append-if-there-is-no-authors-styles
      */
     private fun CharSequence.hasStyles(): Boolean {
-        return indexOf("<link ", 0, true) != -1
-            || indexOf(" style=", 0, true) != -1
-            || Regex("<style.*?>", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL)).containsMatchIn(this)
+        return indexOf("<link ", 0, true) != -1 ||
+            indexOf(" style=", 0, true) != -1 ||
+            Regex("<style.*?>", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL)).containsMatchIn(this)
     }
 
     private fun stylesheetLink(href: String): String =
@@ -200,7 +210,7 @@ internal data class ReadiumCss(
             Regex("""<$tag.*?>""", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL))
                 .find(this, 0)
                 ?: throw IllegalArgumentException("No <$tag> opening tag found in this resource")
-        ).range.last + 1
+            ).range.last + 1
 
     private fun CharSequence.indexForClosingTag(tag: String): Int =
         indexOf("</$tag>", 0, true)
@@ -212,7 +222,7 @@ internal data class ReadiumCss(
             indexOf("<$tag", 0, true)
                 .takeIf { it != -1 }
                 ?: throw IllegalArgumentException("No <$tag> opening tag found in this resource")
-        ) + tag.length + 1
+            ) + tag.length + 1
 }
 
 private val dirRegex = Regex("""(<(?:html|body)[^\>]*)\s+dir=[\"']\w*[\"']""", setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))

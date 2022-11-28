@@ -48,7 +48,7 @@ internal class EpubSettingsResolver(
             lineHeight = preferences.lineHeight ?: defaults.lineHeight ?: 1.2,
             pageMargins = preferences.pageMargins ?: defaults.pageMargins ?: 1.0,
             paragraphIndent = preferences.paragraphIndent ?: defaults.paragraphIndent ?: 0.0,
-            paragraphSpacing = preferences.paragraphSpacing ?: defaults.paragraphSpacing ?:  0.0,
+            paragraphSpacing = preferences.paragraphSpacing ?: defaults.paragraphSpacing ?: 0.0,
             publisherStyles = preferences.publisherStyles ?: defaults.publisherStyles ?: true,
             scroll = preferences.scroll ?: defaults.scroll ?: false,
             textAlign = preferences.textAlign ?: defaults.textAlign ?: TextAlign.START,
@@ -106,8 +106,8 @@ internal class EpubSettingsResolver(
         language: Language?,
         readingProgression: ReadingProgression
     ) = when {
-            verticalPreference != null -> verticalPreference
-            language != null -> language.isCjk && readingProgression == ReadingProgression.RTL
-            else -> false
-        }
+        verticalPreference != null -> verticalPreference
+        language != null -> language.isCjk && readingProgression == ReadingProgression.RTL
+        else -> false
+    }
 }

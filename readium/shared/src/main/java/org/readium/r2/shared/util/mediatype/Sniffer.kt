@@ -7,14 +7,14 @@
 package org.readium.r2.shared.util.mediatype
 
 import android.webkit.MimeTypeMap
+import java.io.File
+import java.net.URLConnection
+import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.*
-import java.io.File
-import java.net.URLConnection
-import java.util.*
 
 /**
  * Determines if the provided content matches a known media type.
@@ -192,11 +192,11 @@ object Sniffers {
         val manifest: Manifest? =
             try {
                 // manifest.json
-                context.contentAsRwpm() ?:
-                // Archive package
-                context.readArchiveEntryAt("manifest.json")
-                    ?.let { Manifest.fromJSON(JSONObject(String(it))) }
-                    ?.also { isManifest = false }
+                context.contentAsRwpm()
+                    // Archive package
+                    ?: context.readArchiveEntryAt("manifest.json")
+                        ?.let { Manifest.fromJSON(JSONObject(String(it))) }
+                        ?.also { isManifest = false }
             } catch (e: Exception) {
                 null
             }
@@ -402,7 +402,6 @@ object Sniffers {
                 ?.let { sniffType(it) }
         }
     }
-
 }
 
 /**

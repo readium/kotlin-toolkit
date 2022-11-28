@@ -55,7 +55,8 @@ class SectionDecoration(
         children.forEach { child ->
             val pos = parent.getChildAdapterPosition(child)
             if (pos != NO_POSITION && listener.sectionTitle(pos) != "" &&
-                (listener.isStartOfSection(pos) || isTopChild(child, children))) {
+                (listener.isStartOfSection(pos) || isTopChild(child, children))
+            ) {
                 sectionTitleView.text = listener.sectionTitle(pos)
                 fixLayoutSize(headerView, parent)
                 drawHeader(c, child, headerView)

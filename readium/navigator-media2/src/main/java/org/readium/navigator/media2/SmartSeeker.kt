@@ -17,7 +17,12 @@ internal object SmartSeeker {
 
     data class Result(val index: Int, val position: Duration)
 
-    fun dispatchSeek(offset: Duration, currentPosition: Duration, currentIndex: Int, playlist: List<Duration>): Result {
+    fun dispatchSeek(
+        offset: Duration,
+        currentPosition: Duration,
+        currentIndex: Int,
+        playlist: List<Duration>
+    ): Result {
         val currentDuration = playlist[currentIndex]
         val dummyNewPosition = currentPosition + offset
 

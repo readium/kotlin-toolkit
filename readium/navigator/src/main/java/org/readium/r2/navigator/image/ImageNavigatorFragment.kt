@@ -36,8 +36,8 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
+import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positions
 
@@ -66,8 +66,9 @@ class ImageNavigatorFragment private constructor(
     private lateinit var currentActivity: FragmentActivity
 
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
-    private val _currentLocator = MutableStateFlow(initialLocator
-        ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
+    private val _currentLocator = MutableStateFlow(
+        initialLocator
+            ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
     )
 
     internal var currentPagerPosition: Int = 0
@@ -99,7 +100,11 @@ class ImageNavigatorFragment private constructor(
         super.onCreate(savedInstanceState)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         currentActivity = requireActivity()
         _binding = ActivityR2ViewpagerBinding.inflate(inflater, container, false)
         val view = binding.root
@@ -176,7 +181,7 @@ class ImageNavigatorFragment private constructor(
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
-                ?: return false
+            ?: return false
 
         listener?.onJumpToLocator(locator)
         currentPagerPosition = resourceIndex
@@ -228,7 +233,11 @@ class ImageNavigatorFragment private constructor(
          *        publication. Can be used to restore the last reading location.
          * @param listener Optional listener to implement to observe events, such as user taps.
          */
-        fun createFactory(publication: Publication, initialLocator: Locator? = null, listener: Listener? = null): FragmentFactory =
+        fun createFactory(
+            publication: Publication,
+            initialLocator: Locator? = null,
+            listener: Listener? = null
+        ): FragmentFactory =
             createFragmentFactory { ImageNavigatorFragment(publication, initialLocator, listener) }
     }
 }

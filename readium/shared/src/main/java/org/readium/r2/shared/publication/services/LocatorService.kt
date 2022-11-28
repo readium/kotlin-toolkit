@@ -25,9 +25,7 @@ interface LocatorService : Publication.Service {
 
     /** Locates the target at the given [totalProgression] relative to the whole publication. */
     suspend fun locateProgression(totalProgression: Double): Locator?
-
 }
-
 
 /** Locates the target of the given [locator]. */
 suspend fun Publication.locate(locator: Locator): Locator? =
@@ -37,19 +35,20 @@ suspend fun Publication.locate(locator: Locator): Locator? =
 suspend fun Publication.locateProgression(totalProgression: Double): Locator? =
     findService(LocatorService::class)?.locateProgression(totalProgression)
 
-
 /** Factory to build a [LocatorService] */
 var Publication.ServicesBuilder.locatorServiceFactory: ServiceFactory?
     get() = get(LocatorService::class)
     set(value) = set(LocatorService::class, value)
 
+open class DefaultLocatorService(
+    val readingOrder: List<Link>,
+    val positionsByReadingOrder: suspend () -> List<List<Locator>>
+) : LocatorService {
 
-open class DefaultLocatorService(val readingOrder: List<Link>, val positionsByReadingOrder: suspend () -> List<List<Locator>>) : LocatorService {
-
-    constructor(readingOrder: List<Link>, services: PublicationServicesHolder)
-            : this(readingOrder, positionsByReadingOrder = {
-        services.findService(PositionsService::class)?.positionsByReadingOrder() ?: emptyList()
-    })
+    constructor(readingOrder: List<Link>, services: PublicationServicesHolder) :
+        this(readingOrder, positionsByReadingOrder = {
+            services.findService(PositionsService::class)?.positionsByReadingOrder() ?: emptyList()
+        })
 
     override suspend fun locate(locator: Locator): Locator? =
         locator.takeIf { readingOrder.firstWithHref(locator.href) != null }
@@ -98,7 +97,11 @@ open class DefaultLocatorService(val readingOrder: List<Link>, val positionsByRe
      * Computes the progression relative to a reading order resource at the given index, from its
      * [totalProgression] relative to the whole publication.
      */
-    private fun resourceProgressionFor(totalProgression: Double, positions: List<List<Locator>>, readingOrderIndex: Int): Double? {
+    private fun resourceProgressionFor(
+        totalProgression: Double,
+        positions: List<List<Locator>>,
+        readingOrderIndex: Int
+    ): Double? {
         val startProgression = positions[readingOrderIndex].firstOrNull()?.locations?.totalProgression ?: return null
         val endProgression = positions.getOrNull(readingOrderIndex + 1)?.firstOrNull()?.locations?.totalProgression ?: 1.0
 
@@ -143,5 +146,4 @@ open class DefaultLocatorService(val readingOrder: List<Link>, val positionsByRe
 
         return last
     }
-
 }

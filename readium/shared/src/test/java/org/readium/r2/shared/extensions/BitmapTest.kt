@@ -12,12 +12,12 @@ package org.readium.r2.shared.extensions
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Size
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class BitmapTest {
@@ -31,7 +31,6 @@ class BitmapTest {
         bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     }
 
-
     @Test
     fun `scaleToFit returns the same Bitmap when its size is ok`() {
         assertTrue(bitmap.scaleToFit(bitmap.size).sameAs(bitmap))
@@ -44,4 +43,3 @@ class BitmapTest {
         assertEquals(299, scaled.width)
     }
 }
-

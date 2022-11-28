@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.server.handler
 
+import java.io.InputStream
 import kotlinx.coroutines.runBlocking
 import org.nanohttpd.protocols.http.IHTTPSession
 import org.nanohttpd.protocols.http.NanoHTTPD.MIME_PLAINTEXT
@@ -23,8 +24,6 @@ import org.readium.r2.shared.fetcher.ResourceInputStream
 import org.readium.r2.streamer.BuildConfig.DEBUG
 import org.readium.r2.streamer.server.ServingFetcher
 import timber.log.Timber
-import java.io.InputStream
-
 
 class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
 
@@ -40,8 +39,11 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
         return Status.OK
     }
 
-    override fun get(uriResource: RouterNanoHTTPD.UriResource, urlParams: Map<String, String>,
-                     session: IHTTPSession): Response = runBlocking {
+    override fun get(
+        uriResource: RouterNanoHTTPD.UriResource,
+        urlParams: Map<String, String>,
+        session: IHTTPSession
+    ): Response = runBlocking {
 
         if (DEBUG) Timber.v("Method: ${session.method}, Uri: ${session.uri}")
         val fetcher = uriResource.initParameter(ServingFetcher::class.java)
@@ -58,7 +60,7 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
                     addHeader("Pragma", "no-cache")
                     addHeader("Expires", "0")
                 }
-        } catch(e: Resource.Exception) {
+        } catch (e: Resource.Exception) {
             Timber.e(e)
             responseFromFailure(e)
                 .also { resource.close() }
@@ -78,7 +80,7 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
         val mimeType = resource.link().mediaType.toString()
 
         // Calculate etag
-        val etag = Integer.toHexString(resource.hashCode()) //FIXME: Is this working?
+        val etag = Integer.toHexString(resource.hashCode()) // FIXME: Is this working?
 
         // Support skipping:
         var startFrom: Long = 0
@@ -94,7 +96,6 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
                     }
                 } catch (ignored: NumberFormatException) {
                 }
-
             }
         }
 
@@ -112,9 +113,8 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
                         addHeader("Content-Range", "bytes 0-0/$dataLength")
                         addHeader("ETag", etag)
                     }.also {
-                       resource.close()
+                        resource.close()
                     }
-
             } else {
                 val responseStream = ResourceInputStream(resource, range = startFrom..endAt)
                 createResponse(Status.PARTIAL_CONTENT, mimeType, responseStream, dataLength)
@@ -138,7 +138,12 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
         }
     }
 
-    private fun createResponse(status: Status, mimeType: String, data: InputStream, dataLength: Long): Response {
+    private fun createResponse(
+        status: Status,
+        mimeType: String,
+        data: InputStream,
+        dataLength: Long
+    ): Response {
         val response = newChunkedResponse(status, mimeType, data.buffered())
         response.addHeader("Accept-Ranges", "bytes")
         response.addHeader("Content-Length", dataLength.toString())
@@ -161,7 +166,7 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
         return if (session.queryParameterString.isNullOrBlank())
             filePath
         else
-            "${filePath}?${session.queryParameterString}"
+            "$filePath?${session.queryParameterString}"
     }
 
     private fun responseFromFailure(error: Resource.Exception): Response {
@@ -174,5 +179,4 @@ class PublicationResourceHandler : RouterNanoHTTPD.DefaultHandler() {
         }
         return newFixedLengthResponse(status, mimeType, ResponseStatus.FAILURE_RESPONSE)
     }
-
 }

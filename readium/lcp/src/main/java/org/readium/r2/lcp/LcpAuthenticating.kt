@@ -44,8 +44,12 @@ interface LcpAuthenticating {
      * @param sender Free object that can be used by reading apps to give some UX context when
      *        presenting dialogs.
      */
-    suspend fun retrievePassphrase(license: AuthenticatedLicense, reason: AuthenticationReason, allowUserInteraction: Boolean, sender: Any? = null): String?
-
+    suspend fun retrievePassphrase(
+        license: AuthenticatedLicense,
+        reason: AuthenticationReason,
+        allowUserInteraction: Boolean,
+        sender: Any? = null
+    ): String?
 
     enum class AuthenticationReason {
 
@@ -94,9 +98,7 @@ interface LcpAuthenticating {
         val user: User?
             get() = document.user
     }
-
 }
-
 
 @Deprecated("Renamed to `LcpAuthenticating`", replaceWith = ReplaceWith("LcpAuthenticating"))
 typealias LCPAuthenticating = LcpAuthenticating

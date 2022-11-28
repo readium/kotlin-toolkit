@@ -91,7 +91,5 @@ class AudioLocatorService(private val readingOrder: List<Link>) : LocatorService
         fun createFactory(): (Publication.Service.Context) -> AudioLocatorService = {
             AudioLocatorService(readingOrder = it.manifest.readingOrder)
         }
-
     }
-
 }

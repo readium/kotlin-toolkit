@@ -18,17 +18,19 @@ import android.view.WindowManager
 import androidx.core.view.ViewCompat
 import androidx.lifecycle.lifecycleScope
 import com.github.chrisbanes.photoview.PhotoView
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.databinding.ViewpagerFragmentCbzBinding
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import kotlin.coroutines.CoroutineContext
 
-
-class R2CbzPageFragment(private val publication: Publication, private val onTapListener: (Float, Float) -> Unit)
-    : androidx.fragment.app.Fragment(), CoroutineScope  {
+class R2CbzPageFragment(
+    private val publication: Publication,
+    private val onTapListener: (Float, Float) -> Unit
+) :
+    androidx.fragment.app.Fragment(), CoroutineScope {
 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main
@@ -42,7 +44,11 @@ class R2CbzPageFragment(private val publication: Publication, private val onTapL
     private var _binding: ViewpagerFragmentCbzBinding? = null
     private val binding get() = _binding!!
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
 
         _binding = ViewpagerFragmentCbzBinding.inflate(inflater, container, false)
         containerView = binding.root
@@ -51,15 +57,15 @@ class R2CbzPageFragment(private val publication: Publication, private val onTapL
 
         setupPadding()
 
-       launch {
-           publication.get(link)
-               .read()
-               .getOrNull()
-               ?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
-               ?.let { photoView.setImageBitmap(it) }
-       }
+        launch {
+            publication.get(link)
+                .read()
+                .getOrNull()
+                ?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
+                ?.let { photoView.setImageBitmap(it) }
+        }
 
-       return containerView
+        return containerView
     }
 
     override fun onDestroyView() {
@@ -100,7 +106,4 @@ class R2CbzPageFragment(private val publication: Publication, private val onTapL
             photoView.setPadding(0, top, 0, bottom)
         }
     }
-
 }
-
-

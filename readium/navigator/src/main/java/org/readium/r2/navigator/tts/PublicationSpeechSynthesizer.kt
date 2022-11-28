@@ -7,6 +7,7 @@
 package org.readium.r2.navigator.tts
 
 import android.content.Context
+import java.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,7 +24,6 @@ import org.readium.r2.shared.publication.services.content.TextContentTokenizer
 import org.readium.r2.shared.publication.services.content.content
 import org.readium.r2.shared.util.*
 import org.readium.r2.shared.util.tokenizer.TextUnit
-import java.util.*
 
 /**
  * [PublicationSpeechSynthesizer] orchestrates the rendition of a [publication] by iterating through
@@ -122,8 +122,8 @@ class PublicationSpeechSynthesizer<E : TtsEngine> private constructor(
     ) : kotlin.Exception(message, cause) {
 
         /** Underlying [TtsEngine] error. */
-        class Engine(val error: TtsEngine.Exception)
-            : Exception(error.message, error)
+        class Engine(val error: TtsEngine.Exception) :
+            Exception(error.message, error)
     }
 
     /**
@@ -422,11 +422,12 @@ class PublicationSpeechSynthesizer<E : TtsEngine> private constructor(
             ?.let { voiceWithId(it) }
             ?.takeIf { language == null || it.language.removeRegion() == language.removeRegion() }
 
-        return Either(voice
-            ?: language
-            ?: config.value.defaultLanguage
-            ?: publication.metadata.language
-            ?: Language(Locale.getDefault())
+        return Either(
+            voice
+                ?: language
+                ?: config.value.defaultLanguage
+                ?: publication.metadata.language
+                ?: Language(Locale.getDefault())
         )
     }
 

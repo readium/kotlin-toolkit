@@ -9,6 +9,12 @@
 
 package org.readium.r2.shared.fetcher
 
+import java.io.File
+import java.io.FileNotFoundException
+import java.io.RandomAccessFile
+import java.lang.ref.WeakReference
+import java.nio.channels.Channels
+import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.*
@@ -17,12 +23,6 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.isLazyInitialized
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.RandomAccessFile
-import java.lang.ref.WeakReference
-import java.nio.channels.Channels
-import java.util.*
 
 /**
  * Provides access to resources on the local file system.
@@ -160,6 +160,5 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
 
         override fun toString(): String =
             "${javaClass.simpleName}(${file.path})"
-
     }
 }

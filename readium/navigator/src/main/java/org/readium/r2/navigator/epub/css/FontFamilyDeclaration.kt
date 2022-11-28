@@ -12,7 +12,10 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * Build a declaration for [fontFamily] using [builderAction].
  */
 @ExperimentalReadiumApi
-fun buildFontFamilyDeclaration(fontFamily: String, builderAction: (MutableFontFamilyDeclaration).() -> Unit) =
+fun buildFontFamilyDeclaration(
+    fontFamily: String,
+    builderAction: (MutableFontFamilyDeclaration).() -> Unit
+) =
     MutableFontFamilyDeclaration(fontFamily).apply(builderAction).toFontFamilyDeclaration()
 
 /**
@@ -28,8 +31,11 @@ data class FontFamilyDeclaration internal constructor(
  * Build a font face declaration for [fontFamily].
  */
 @ExperimentalReadiumApi
-internal fun buildFontFaceDeclaration(fontFamily: String, builderAction: (MutableFontFaceDeclaration).() -> Unit) =
-   MutableFontFaceDeclaration(fontFamily).apply(builderAction).toFontFaceDeclaration()
+internal fun buildFontFaceDeclaration(
+    fontFamily: String,
+    builderAction: (MutableFontFaceDeclaration).() -> Unit
+) =
+    MutableFontFaceDeclaration(fontFamily).apply(builderAction).toFontFaceDeclaration()
 
 /**
  * An immutable font face declaration.

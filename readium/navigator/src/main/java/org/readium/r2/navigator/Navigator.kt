@@ -7,18 +7,18 @@
 package org.readium.r2.navigator
 
 import android.graphics.PointF
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.media.MediaPlayback
 import org.readium.r2.navigator.preferences.Axis
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
-import org.readium.r2.navigator.preferences.ReadingProgression
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 /**
  * Base interface for a navigator rendering a publication.
@@ -92,14 +92,12 @@ interface Navigator {
     val currentLocation: Locator? get() = currentLocator.value
     @Deprecated("Use [VisualNavigator.Listener] instead", ReplaceWith("VisualNavigator.Listener"))
     interface VisualListener : VisualNavigator.Listener
-
 }
 
 interface NavigatorDelegate {
     @Deprecated("Observe [currentLocator] instead")
     fun locationDidChange(navigator: Navigator? = null, locator: Locator) {}
 }
-
 
 /**
  * A navigator rendering the publication visually on-screen.
@@ -210,7 +208,6 @@ fun VisualNavigator.goRight(animated: Boolean = false, completion: () -> Unit = 
             goBackward(animated = animated, completion = completion)
     }
 }
-
 
 /**
  * A navigator rendering an audio or video publication.

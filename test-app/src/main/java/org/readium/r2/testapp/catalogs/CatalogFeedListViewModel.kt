@@ -9,6 +9,7 @@ package org.readium.r2.testapp.catalogs
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import java.net.URL
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import org.json.JSONObject
@@ -22,7 +23,6 @@ import org.readium.r2.shared.util.http.fetchWithDecoder
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.domain.model.Catalog
 import org.readium.r2.testapp.utils.EventChannel
-import java.net.URL
 
 class CatalogFeedListViewModel(application: Application) : AndroidViewModel(application) {
 

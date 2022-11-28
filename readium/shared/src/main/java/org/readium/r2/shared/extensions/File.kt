@@ -9,11 +9,11 @@
 
 package org.readium.r2.shared.extensions
 
-import org.readium.r2.shared.util.mediatype.MediaType
-import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import java.security.MessageDigest
+import org.readium.r2.shared.util.mediatype.MediaType
+import timber.log.Timber
 
 /**
  * Computes the MD5 hash of the file.
@@ -39,7 +39,6 @@ fun File.md5(): String? =
         md.digest()
             // ByteArray to hex string
             .fold("") { str, it -> str + "%02x".format(it) }
-
     } catch (e: Exception) {
         Timber.e(e)
         null

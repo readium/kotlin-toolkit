@@ -13,12 +13,12 @@ import android.content.ContentResolver
 import android.net.Uri
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
-import org.readium.r2.shared.BuildConfig.DEBUG
-import org.readium.r2.shared.extensions.queryProjection
-import org.readium.r2.shared.extensions.tryOrNull
 import java.io.File
 import java.nio.charset.Charset
 import java.util.*
+import org.readium.r2.shared.BuildConfig.DEBUG
+import org.readium.r2.shared.extensions.queryProjection
+import org.readium.r2.shared.extensions.tryOrNull
 
 /**
  * Represents a document format, identified by a unique RFC 6838 media type.
@@ -217,8 +217,8 @@ class MediaType(
 
     /** Returns whether this media type is structured as a ZIP archive. */
     val isZip: Boolean get() =
-        matchesAny(ZIP, LCP_PROTECTED_AUDIOBOOK, LCP_PROTECTED_PDF)
-            || structuredSyntaxSuffix == "+zip"
+        matchesAny(ZIP, LCP_PROTECTED_AUDIOBOOK, LCP_PROTECTED_PDF) ||
+            structuredSyntaxSuffix == "+zip"
 
     /** Returns whether this media type is structured as a JSON file. */
     val isJson: Boolean get() =
@@ -321,7 +321,7 @@ class MediaType(
         val TEXT = MediaType("text/plain", fileExtension = "txt")
         val TIFF = MediaType("image/tiff", fileExtension = "tiff")
         val TTF = MediaType("font/ttf", fileExtension = "ttf")
-        val W3C_WPUB_MANIFEST = MediaType("application/x.readium.w3c.wpub+json", name = "Web Publication", fileExtension = "json")  // non-existent
+        val W3C_WPUB_MANIFEST = MediaType("application/x.readium.w3c.wpub+json", name = "Web Publication", fileExtension = "json") // non-existent
         val WAV = MediaType("audio/wav", fileExtension = "wav")
         val WEBM_AUDIO = MediaType("audio/webm", fileExtension = "webm")
         val WEBM_VIDEO = MediaType("video/webm", fileExtension = "webm")
@@ -330,9 +330,8 @@ class MediaType(
         val WOFF2 = MediaType("font/woff2", fileExtension = "woff2")
         val XHTML = MediaType("application/xhtml+xml", fileExtension = "xhtml")
         val XML = MediaType("application/xml", fileExtension = "xml")
-        val ZAB = MediaType("application/x.readium.zab+zip", name = "Zipped Audio Book", fileExtension = "zab")  // non-existent
+        val ZAB = MediaType("application/x.readium.zab+zip", name = "Zipped Audio Book", fileExtension = "zab") // non-existent
         val ZIP = MediaType("application/zip", fileExtension = "zip")
-
 
         // Sniffing
 
@@ -347,7 +346,11 @@ class MediaType(
          * Resolves a format from a single file extension and media type hint, without checking the actual
          * content.
          */
-        suspend fun of(mediaType: String? = null, fileExtension: String? = null, sniffers: List<Sniffer> = MediaType.sniffers): MediaType? {
+        suspend fun of(
+            mediaType: String? = null,
+            fileExtension: String? = null,
+            sniffers: List<Sniffer> = MediaType.sniffers
+        ): MediaType? {
             if (DEBUG && mediaType?.startsWith("/") == true) {
                 throw IllegalArgumentException("The provided media type is incorrect: $mediaType. To pass a file path, you must wrap it in a File().")
             }
@@ -358,49 +361,83 @@ class MediaType(
          * Resolves a format from file extension and media type hints, without checking the actual
          * content.
          */
-        suspend fun of(mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<Sniffer> = MediaType.sniffers): MediaType? {
+        suspend fun of(
+            mediaTypes: List<String>,
+            fileExtensions: List<String>,
+            sniffers: List<Sniffer> = MediaType.sniffers
+        ): MediaType? {
             return of(content = null, mediaTypes = mediaTypes, fileExtensions = fileExtensions, sniffers = sniffers)
         }
 
         /**
          * Resolves a format from a local file path.
          */
-        suspend fun ofFile(file: File, mediaType: String? = null, fileExtension: String? = null, sniffers: List<Sniffer> = MediaType.sniffers): MediaType? {
+        suspend fun ofFile(
+            file: File,
+            mediaType: String? = null,
+            fileExtension: String? = null,
+            sniffers: List<Sniffer> = MediaType.sniffers
+        ): MediaType? {
             return ofFile(file, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension), sniffers = sniffers)
         }
 
         /**
          * Resolves a format from a local file path.
          */
-        suspend fun ofFile(file: File, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<Sniffer> = MediaType.sniffers): MediaType? {
+        suspend fun ofFile(
+            file: File,
+            mediaTypes: List<String>,
+            fileExtensions: List<String>,
+            sniffers: List<Sniffer> = MediaType.sniffers
+        ): MediaType? {
             return of(content = SnifferFileContent(file), mediaTypes = mediaTypes, fileExtensions = listOf(file.extension) + fileExtensions, sniffers = sniffers)
         }
 
         /**
          * Resolves a format from a local file path.
          */
-        suspend fun ofFile(path: String, mediaType: String? = null, fileExtension: String? = null, sniffers: List<Sniffer> = MediaType.sniffers): MediaType? {
+        suspend fun ofFile(
+            path: String,
+            mediaType: String? = null,
+            fileExtension: String? = null,
+            sniffers: List<Sniffer> = MediaType.sniffers
+        ): MediaType? {
             return ofFile(File(path), mediaType = mediaType, fileExtension = fileExtension, sniffers = sniffers)
         }
 
         /**
          * Resolves a format from a local file path.
          */
-        suspend fun ofFile(path: String, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<Sniffer> = MediaType.sniffers): MediaType? {
+        suspend fun ofFile(
+            path: String,
+            mediaTypes: List<String>,
+            fileExtensions: List<String>,
+            sniffers: List<Sniffer> = MediaType.sniffers
+        ): MediaType? {
             return ofFile(File(path), mediaTypes = mediaTypes, fileExtensions = fileExtensions, sniffers = sniffers)
         }
 
         /**
          * Resolves a format from bytes, e.g. from an HTTP response.
          */
-        suspend fun ofBytes(bytes: () -> ByteArray, mediaType: String? = null, fileExtension: String? = null, sniffers: List<Sniffer> = MediaType.sniffers): MediaType? {
+        suspend fun ofBytes(
+            bytes: () -> ByteArray,
+            mediaType: String? = null,
+            fileExtension: String? = null,
+            sniffers: List<Sniffer> = MediaType.sniffers
+        ): MediaType? {
             return ofBytes(bytes, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension), sniffers = sniffers)
         }
 
         /**
          * Resolves a format from bytes, e.g. from an HTTP response.
          */
-        suspend fun ofBytes(bytes: () -> ByteArray, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<Sniffer> = MediaType.sniffers): MediaType? {
+        suspend fun ofBytes(
+            bytes: () -> ByteArray,
+            mediaTypes: List<String>,
+            fileExtensions: List<String>,
+            sniffers: List<Sniffer> = MediaType.sniffers
+        ): MediaType? {
             return of(content = SnifferBytesContent(bytes), mediaTypes = mediaTypes, fileExtensions = fileExtensions, sniffers = sniffers)
         }
 
@@ -408,7 +445,13 @@ class MediaType(
          * Resolves a format from a content URI and a [ContentResolver].
          * Accepts the following URI schemes: content, android.resource, file.
          */
-        suspend fun ofUri(uri: Uri, contentResolver: ContentResolver, mediaType: String? = null, fileExtension: String? = null, sniffers: List<Sniffer> = MediaType.sniffers): MediaType? {
+        suspend fun ofUri(
+            uri: Uri,
+            contentResolver: ContentResolver,
+            mediaType: String? = null,
+            fileExtension: String? = null,
+            sniffers: List<Sniffer> = MediaType.sniffers
+        ): MediaType? {
             return ofUri(uri, contentResolver, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension), sniffers = sniffers)
         }
 
@@ -416,7 +459,13 @@ class MediaType(
          * Resolves a format from a content URI and a [ContentResolver].
          * Accepts the following URI schemes: content, android.resource, file.
          */
-        suspend fun ofUri(uri: Uri, contentResolver: ContentResolver, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<Sniffer> = MediaType.sniffers): MediaType? {
+        suspend fun ofUri(
+            uri: Uri,
+            contentResolver: ContentResolver,
+            mediaTypes: List<String>,
+            fileExtensions: List<String>,
+            sniffers: List<Sniffer> = MediaType.sniffers
+        ): MediaType? {
             val allMediaTypes = mediaTypes.toMutableList()
             val allFileExtensions = fileExtensions.toMutableList()
 
@@ -446,7 +495,12 @@ class MediaType(
          *  - Light Sniffing checks only the provided file extension or media type hints.
          *  - Heavy Sniffing reads the bytes to perform more advanced sniffing.
          */
-        private suspend fun of(content: SnifferContent?, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<Sniffer>): MediaType? {
+        private suspend fun of(
+            content: SnifferContent?,
+            mediaTypes: List<String>,
+            fileExtensions: List<String>,
+            sniffers: List<Sniffer>
+        ): MediaType? {
             // Light sniffing with only media type hints
             if (mediaTypes.isNotEmpty()) {
                 val context = SnifferContext(mediaTypes = mediaTypes)
@@ -495,7 +549,6 @@ class MediaType(
             return null
         }
 
-
         /* Deprecated */
 
         @Deprecated("Use [READIUM_AUDIOBOOK] instead", ReplaceWith("MediaType.READIUM_AUDIOBOOK"), level = DeprecationLevel.ERROR)
@@ -515,28 +568,58 @@ class MediaType(
 
         @Suppress("UNUSED_PARAMETER")
         @Deprecated("Renamed to [ofFile()]", ReplaceWith("MediaType.ofFile(file, mediaType, fileExtension, sniffers)"), level = DeprecationLevel.ERROR)
-        fun of(file: File, mediaType: String? = null, fileExtension: String? = null, sniffers: List<Sniffer> = MediaType.sniffers): MediaType? = null
+        fun of(
+            file: File,
+            mediaType: String? = null,
+            fileExtension: String? = null,
+            sniffers: List<Sniffer> = MediaType.sniffers
+        ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
         @Deprecated("Renamed to [ofFile()]", ReplaceWith("MediaType.ofFile(file, mediaTypes, fileExtensions, sniffers)"), level = DeprecationLevel.ERROR)
-        fun of(file: File, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<Sniffer> = MediaType.sniffers): MediaType? = null
+        fun of(
+            file: File,
+            mediaTypes: List<String>,
+            fileExtensions: List<String>,
+            sniffers: List<Sniffer> = MediaType.sniffers
+        ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
         @Deprecated("Renamed to [ofBytes()]", ReplaceWith("MediaType.ofBytes(bytes, mediaType, fileExtension, sniffers)"), level = DeprecationLevel.ERROR)
-        fun of(bytes: () -> ByteArray, mediaType: String? = null, fileExtension: String? = null, sniffers: List<Sniffer> = MediaType.sniffers): MediaType? = null
+        fun of(
+            bytes: () -> ByteArray,
+            mediaType: String? = null,
+            fileExtension: String? = null,
+            sniffers: List<Sniffer> = MediaType.sniffers
+        ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
         @Deprecated("Renamed to [ofBytes()]", ReplaceWith("MediaType.ofBytes(bytes, mediaTypes, fileExtensions, sniffers)"), level = DeprecationLevel.ERROR)
-        fun of(bytes: () -> ByteArray, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<Sniffer> = MediaType.sniffers): MediaType? = null
+        fun of(
+            bytes: () -> ByteArray,
+            mediaTypes: List<String>,
+            fileExtensions: List<String>,
+            sniffers: List<Sniffer> = MediaType.sniffers
+        ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
         @Deprecated("Renamed to [ofUri()]", ReplaceWith("MediaType.ofUri(uri, contentResolver, mediaType, fileExtension, sniffers)"), level = DeprecationLevel.ERROR)
-        fun of(uri: Uri, contentResolver: ContentResolver, mediaType: String? = null, fileExtension: String? = null, sniffers: List<Sniffer> = MediaType.sniffers): MediaType? = null
+        fun of(
+            uri: Uri,
+            contentResolver: ContentResolver,
+            mediaType: String? = null,
+            fileExtension: String? = null,
+            sniffers: List<Sniffer> = MediaType.sniffers
+        ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
         @Deprecated("Renamed to [ofUri()]", ReplaceWith("MediaType.ofUri(uri, contentResolver, mediaTypes, fileExtensions, sniffers)"), level = DeprecationLevel.ERROR)
-        fun of(uri: Uri, contentResolver: ContentResolver, mediaTypes: List<String>, fileExtensions: List<String>, sniffers: List<Sniffer> = MediaType.sniffers): MediaType? = null
-
+        fun of(
+            uri: Uri,
+            contentResolver: ContentResolver,
+            mediaTypes: List<String>,
+            fileExtensions: List<String>,
+            sniffers: List<Sniffer> = MediaType.sniffers
+        ): MediaType? = null
     }
-
 }

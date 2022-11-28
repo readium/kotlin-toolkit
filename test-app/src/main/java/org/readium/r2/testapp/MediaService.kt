@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.IBinder
 import androidx.lifecycle.lifecycleScope
 import androidx.media2.session.MediaSession
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -25,7 +26,6 @@ import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.reader.ReaderActivityContract
 import org.readium.r2.testapp.utils.LifecycleMediaSessionService
 import timber.log.Timber
-import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class, ExperimentalMedia2::class, ExperimentalCoroutinesApi::class)
 class MediaService : LifecycleMediaSessionService() {
@@ -69,7 +69,7 @@ class MediaService : LifecycleMediaSessionService() {
              */
             saveLocationJob = navigator.currentLocator
                 .sample(3000)
-                .onEach {  locator -> books.saveProgression(locator, bookId) }
+                .onEach { locator -> books.saveProgression(locator, bookId) }
                 .launchIn(lifecycleScope)
         }
 

@@ -12,6 +12,10 @@ package org.readium.r2.shared.publication.services
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Size
+import java.io.File
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -20,10 +24,6 @@ import org.readium.r2.shared.linkBlocking
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.readBlocking
 import org.robolectric.RobolectricTestRunner
-import java.io.File
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
 class CoverServiceTest {

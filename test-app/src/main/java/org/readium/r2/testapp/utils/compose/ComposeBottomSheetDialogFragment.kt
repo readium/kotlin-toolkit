@@ -23,7 +23,11 @@ abstract class ComposeBottomSheetDialogFragment(
     private val isScrollable: Boolean = false
 ) : BottomSheetDialogFragment() {
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         val context = requireContext()
         val composeView = ComposeView(context).apply {
             setContent {

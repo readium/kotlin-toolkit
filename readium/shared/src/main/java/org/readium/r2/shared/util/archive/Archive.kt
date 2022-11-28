@@ -9,17 +9,16 @@
 
 package org.readium.r2.shared.util.archive
 
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.util.SuspendingCloseable
-import java.io.File
 
 interface ArchiveFactory {
 
     /** Opens an archive from a local [file]. */
     suspend fun open(file: File, password: String?): Archive
-
 }
 
 class DefaultArchiveFactory : ArchiveFactory {
@@ -35,7 +34,6 @@ class DefaultArchiveFactory : ArchiveFactory {
             javaZipFactory.open(file, password)
         }
     }
-
 }
 
 /**

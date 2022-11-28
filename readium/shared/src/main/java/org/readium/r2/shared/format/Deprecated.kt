@@ -7,12 +7,12 @@
 package org.readium.r2.shared.format
 
 import com.github.kittinunf.fuel.core.Response
+import java.net.HttpURLConnection
+import org.readium.r2.shared.util.mediatype.MediaType as NewMediaType
 import org.readium.r2.shared.util.mediatype.Sniffer
 import org.readium.r2.shared.util.mediatype.SnifferContext
 import org.readium.r2.shared.util.mediatype.Sniffers
 import org.readium.r2.shared.util.mediatype.sniffMediaType
-import java.net.HttpURLConnection
-import org.readium.r2.shared.util.mediatype.MediaType as NewMediaType
 
 @Deprecated("Moved to another package", replaceWith = ReplaceWith("org.readium.r2.shared.util.mediatype.MediaType"), level = DeprecationLevel.ERROR)
 typealias MediaType = NewMediaType
@@ -26,9 +26,18 @@ typealias FormatSniffers = Sniffers
 typealias FormatSnifferContext = SnifferContext
 
 @Deprecated("Renamed to another package", ReplaceWith("org.readium.r2.shared.util.mediatype.sniffMediaType"), level = DeprecationLevel.ERROR)
-suspend fun Response.sniffFormat(mediaTypes: List<String> = emptyList(), fileExtensions: List<String> = emptyList(), sniffers: List<Sniffer> = NewMediaType.sniffers): NewMediaType? =
+suspend fun Response.sniffFormat(
+    mediaTypes: List<String> = emptyList(),
+    fileExtensions: List<String> = emptyList(),
+    sniffers: List<Sniffer> = NewMediaType.sniffers
+): NewMediaType? =
     sniffMediaType(mediaTypes, fileExtensions, sniffers)
 
 @Deprecated("Renamed to another package", ReplaceWith("org.readium.r2.shared.util.mediatype.sniffMediaType"), level = DeprecationLevel.ERROR)
-suspend fun HttpURLConnection.sniffFormat(bytes: (() -> ByteArray)? = null, mediaTypes: List<String> = emptyList(), fileExtensions: List<String> = emptyList(), sniffers: List<Sniffer> = NewMediaType.sniffers): NewMediaType? =
+suspend fun HttpURLConnection.sniffFormat(
+    bytes: (() -> ByteArray)? = null,
+    mediaTypes: List<String> = emptyList(),
+    fileExtensions: List<String> = emptyList(),
+    sniffers: List<Sniffer> = NewMediaType.sniffers
+): NewMediaType? =
     sniffMediaType(bytes, mediaTypes, fileExtensions, sniffers)

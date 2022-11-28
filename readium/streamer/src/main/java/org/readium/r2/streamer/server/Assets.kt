@@ -11,12 +11,12 @@ package org.readium.r2.streamer.server
 
 import android.content.res.AssetManager
 import android.net.Uri
+import java.io.File
+import java.io.InputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.isParentOf
 import org.readium.r2.shared.util.mediatype.MediaType
-import java.io.File
-import java.io.InputStream
 
 /**
  * Files to be served from the application's assets.
@@ -60,5 +60,4 @@ internal class Assets(
         val stream: InputStream,
         val mediaType: MediaType
     )
-
 }

@@ -24,6 +24,8 @@ import android.widget.ListPopupWindow
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.annotation.RequiresApi
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,9 +46,6 @@ import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.use
 import timber.log.Timber
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
-
 
 @OptIn(ExperimentalDecorator::class)
 open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
@@ -93,8 +92,8 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     var resourceUrl: String? = null
 
     internal val scrollModeFlow = MutableStateFlow(false)
-    
-    /** Indicates that a user text selection is active. */
+
+/** Indicates that a user text selection is active. */
     internal var isSelecting = false
 
     val scrollMode: Boolean get() = scrollModeFlow.value
@@ -119,7 +118,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             }
 
             progression
-
         } else {
             var x = scrollX.toDouble()
             val pageWidth = computeHorizontalScrollExtent()
@@ -496,7 +494,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         }
     }
 
-
     fun Boolean.toInt() = if (this) 1 else 0
 
     fun scrollToStart() {
@@ -572,7 +569,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     fun runJavaScript(javascript: String, callback: ((String) -> Unit)? = null) {
         if (BuildConfig.DEBUG) {
             val filename = URLUtil.guessFileName(url, null, null)
-            Timber.d("runJavaScript in ${filename}: $javascript")
+            Timber.d("runJavaScript in $filename: $javascript")
         }
 
         this.evaluateJavascript(javascript) { result ->
@@ -639,7 +636,10 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
-    inner class Callback2Wrapper(val callback: ActionMode.Callback, val callback2: ActionMode.Callback2?) : ActionMode.Callback by callback, ActionMode.Callback2() {
+    inner class Callback2Wrapper(
+        val callback: ActionMode.Callback,
+        val callback2: ActionMode.Callback2?
+    ) : ActionMode.Callback by callback, ActionMode.Callback2() {
         override fun onGetContentRect(mode: ActionMode?, view: View?, outRect: Rect?) =
             callback2?.onGetContentRect(mode, view, outRect)
                 ?: super.onGetContentRect(mode, view, outRect)

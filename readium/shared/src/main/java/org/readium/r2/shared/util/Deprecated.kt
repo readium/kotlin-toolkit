@@ -1,3 +1,5 @@
+// ktlint-disable filename
+
 /*
  * Copyright 2020 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license

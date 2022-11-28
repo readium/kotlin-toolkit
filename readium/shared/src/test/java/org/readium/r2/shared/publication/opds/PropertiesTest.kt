@@ -53,10 +53,14 @@ class PropertiesTest {
                 Acquisition(type = "acq1"),
                 Acquisition(type = "acq2")
             ),
-            Properties(otherProperties = mapOf("indirectAcquisition" to listOf(
-                mapOf("type" to "acq1"),
-                mapOf("type" to "acq2")
-            ))).indirectAcquisitions
+            Properties(
+                otherProperties = mapOf(
+                    "indirectAcquisition" to listOf(
+                        mapOf("type" to "acq1"),
+                        mapOf("type" to "acq2")
+                    )
+                )
+            ).indirectAcquisitions
         )
     }
 
@@ -107,19 +111,26 @@ class PropertiesTest {
                 href = "https://example.com/authentication.json",
                 type = "application/opds-authentication+json"
             ),
-            Properties(otherProperties = mapOf("authenticate" to mapOf(
-                "href" to "https://example.com/authentication.json",
-                "type" to "application/opds-authentication+json",
-            ))).authenticate
+            Properties(
+                otherProperties = mapOf(
+                    "authenticate" to mapOf(
+                        "href" to "https://example.com/authentication.json",
+                        "type" to "application/opds-authentication+json",
+                    )
+                )
+            ).authenticate
         )
     }
 
     @Test fun `get Properties {authenticate} when invalid`() {
         assertNull(
-            Properties(otherProperties = mapOf("authenticate" to mapOf(
-                "type" to "application/opds-authentication+json",
-            ))).authenticate
+            Properties(
+                otherProperties = mapOf(
+                    "authenticate" to mapOf(
+                        "type" to "application/opds-authentication+json",
+                    )
+                )
+            ).authenticate
         )
     }
-
 }

@@ -23,9 +23,12 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import java.util.*
 import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
 import org.readium.r2.navigator.epub.EpubPreferencesEditor
 import org.readium.r2.navigator.preferences.*
+import org.readium.r2.navigator.preferences.Color as ReadiumColor
+import org.readium.r2.navigator.preferences.TextAlign as ReadiumTextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Language
@@ -33,9 +36,6 @@ import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.ColorPicker
 import org.readium.r2.testapp.utils.compose.DropdownMenuButton
 import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
-import java.util.*
-import org.readium.r2.navigator.preferences.Color as ReadiumColor
-import org.readium.r2.navigator.preferences.TextAlign as ReadiumTextAlign
 
 /**
  * Stateful user settings component paired with a [ReaderViewModel].
@@ -52,7 +52,7 @@ fun UserPreferences(model: UserPreferencesViewModel<*, *>) {
 }
 
 @Composable
-private fun <P: Configurable.Preferences<P>, E: PreferencesEditor<P>> UserPreferences(
+private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPreferences(
     editor: E,
     commit: () -> Unit
 ) {
@@ -203,10 +203,10 @@ private fun ColumnScope.FixedLayoutUserPreferences(
             preference = scrollAxis,
             commit = commit
         ) { value ->
-                when (value) {
-                    Axis.HORIZONTAL-> "Horizontal"
-                    Axis.VERTICAL -> "Vertical"
-                }
+            when (value) {
+                Axis.HORIZONTAL -> "Horizontal"
+                Axis.VERTICAL -> "Vertical"
+            }
         }
     }
 
@@ -239,7 +239,7 @@ private fun ColumnScope.FixedLayoutUserPreferences(
             commit = commit
         ) { value ->
             when (value) {
-                Fit.CONTAIN-> "Contain"
+                Fit.CONTAIN -> "Contain"
                 Fit.COVER -> "Cover"
                 Fit.WIDTH -> "Width"
                 Fit.HEIGHT -> "Height"
@@ -427,7 +427,7 @@ private fun ColumnScope.ReflowableUserPreferences(
                 commit = commit
             ) { value ->
                 when (value) {
-                    null ->  "Original"
+                    null -> "Original"
                     FontFamily.SANS_SERIF -> "Sans Serif"
                     else -> value.name
                 }
@@ -469,7 +469,7 @@ private fun ColumnScope.ReflowableUserPreferences(
 
     if (textAlign != null) {
         ButtonGroupItem(
-            title ="Alignment",
+            title = "Alignment",
             preference = textAlign,
             commit = commit
         ) { value ->
@@ -510,7 +510,7 @@ private fun ColumnScope.ReflowableUserPreferences(
 
     if (paragraphSpacing != null) {
         StepperItem(
-            title ="Paragraph spacing",
+            title = "Paragraph spacing",
             preference = paragraphSpacing,
             commit = commit
         )
@@ -624,7 +624,7 @@ private fun <T> MenuItem(
     ) { value ->
         preference.set(value)
         commit()
-      }
+    }
 }
 
 /**
@@ -666,7 +666,7 @@ private fun <T> MenuItem(
  * Component for a [RangePreference] with decrement and increment buttons.
  */
 @Composable
-private fun <T: Comparable<T>> StepperItem(
+private fun <T : Comparable<T>> StepperItem(
     title: String,
     preference: RangePreference<T>,
     commit: () -> Unit
@@ -867,11 +867,16 @@ fun LanguageItem(
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-private fun Item(title: String, isActive: Boolean = true, onClick: (() -> Unit)? = null, content: @Composable () -> Unit) {
+private fun Item(
+    title: String,
+    isActive: Boolean = true,
+    onClick: (() -> Unit)? = null,
+    content: @Composable () -> Unit
+) {
     ListItem(
         modifier =
-            if (onClick != null) Modifier.clickable(onClick = onClick)
-            else Modifier,
+        if (onClick != null) Modifier.clickable(onClick = onClick)
+        else Modifier,
         text = {
             val alpha = if (isActive) 1.0f else ContentAlpha.disabled
             CompositionLocalProvider(LocalContentAlpha provides alpha) {
@@ -929,7 +934,7 @@ class Preset(
 /**
  * Returns the presets associated with the [Configurable.Settings] receiver.
  */
-val <P: Configurable.Preferences<P>> PreferencesEditor<P>.presets: List<Preset> get() =
+val <P : Configurable.Preferences<P>> PreferencesEditor<P>.presets: List<Preset> get() =
     when (this) {
         is EpubPreferencesEditor ->
             when (layout) {

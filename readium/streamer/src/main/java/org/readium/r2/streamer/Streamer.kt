@@ -140,7 +140,6 @@ class Streamer constructor(
             .apply { addLegacyProperties(asset.mediaType()) }
 
         Try.success(publication)
-
     } catch (e: Publication.OpeningException) {
         Try.failure(e)
     }

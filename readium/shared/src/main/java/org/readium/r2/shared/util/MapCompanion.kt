@@ -26,7 +26,7 @@ package org.readium.r2.shared.util
  */
 open class MapCompanion<K, E>(protected val map: Map<K, E>) {
 
-    constructor(elements: Array<E>, keySelector: (E) -> K):
+    constructor(elements: Array<E>, keySelector: (E) -> K) :
         this(elements.associateBy(keySelector))
 
     /**
@@ -51,7 +51,6 @@ open class MapCompanion<K, E>(protected val map: Map<K, E>) {
 
     @Deprecated("Use `Enum(\"value\")` instead", ReplaceWith("get(key)"))
     open fun from(key: K?): E? = get(key)
-
 }
 
 /**
@@ -59,7 +58,7 @@ open class MapCompanion<K, E>(protected val map: Map<K, E>) {
  */
 open class MapWithDefaultCompanion<K, E>(map: Map<K, E>, val default: E) : MapCompanion<K, E>(map) {
 
-    constructor(elements: Array<E>, keySelector: (E) -> K, default: E):
+    constructor(elements: Array<E>, keySelector: (E) -> K, default: E) :
         this(elements.associateBy(keySelector), default)
 
     /**
@@ -75,5 +74,4 @@ open class MapWithDefaultCompanion<K, E>(map: Map<K, E>, val default: E) : MapCo
 
     @Deprecated("Use `Enum(\"value\")` instead", ReplaceWith("getOrDefault(key)"))
     override fun from(key: K?): E? = getOrDefault(key)
-
 }

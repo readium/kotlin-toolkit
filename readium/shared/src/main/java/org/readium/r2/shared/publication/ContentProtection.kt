@@ -97,7 +97,12 @@ interface ContentProtection {
         }
     }
 
-    sealed class Exception(userMessageId: Int, vararg args: Any?, quantity: Int? = null, cause: Throwable? = null) : UserException(userMessageId, quantity, *args, cause = cause) {
+    sealed class Exception(
+        userMessageId: Int,
+        vararg args: Any?,
+        quantity: Int? = null,
+        cause: Throwable? = null
+    ) : UserException(userMessageId, quantity, *args, cause = cause) {
         constructor(@StringRes userMessageId: Int, vararg args: Any?, cause: Throwable? = null) : this(userMessageId, *args, quantity = null, cause = cause)
 
         /**

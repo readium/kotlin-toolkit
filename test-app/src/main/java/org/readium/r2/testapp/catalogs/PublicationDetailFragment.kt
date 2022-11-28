@@ -21,7 +21,6 @@ import org.readium.r2.testapp.MainActivity
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentPublicationDetailBinding
 
-
 class PublicationDetailFragment : Fragment() {
 
     private var publication: Publication? = null
@@ -31,7 +30,8 @@ class PublicationDetailFragment : Fragment() {
     private val binding get() = _binding!!
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPublicationDetailBinding.inflate(

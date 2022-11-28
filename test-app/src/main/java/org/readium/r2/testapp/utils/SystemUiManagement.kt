@@ -24,13 +24,13 @@ private fun Activity.isSystemUiVisible(): Boolean {
 /** Enable fullscreen or immersive mode. */
 fun Activity.hideSystemUi() {
     this.window.decorView.systemUiVisibility = (
-            View.SYSTEM_UI_FLAG_IMMERSIVE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN
-            )
+        View.SYSTEM_UI_FLAG_IMMERSIVE
+            or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            or View.SYSTEM_UI_FLAG_FULLSCREEN
+        )
 }
 
 // Using ViewCompat and WindowInsetsCompat does not work properly in all versions of Android
@@ -38,10 +38,10 @@ fun Activity.hideSystemUi() {
 /** Disable fullscreen or immersive mode. */
 fun Activity.showSystemUi() {
     this.window.decorView.systemUiVisibility = (
-            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            )
+        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        )
 }
 
 /** Toggle fullscreen or immersive mode. */

@@ -9,13 +9,13 @@
 
 package org.readium.r2.shared.parser.xml
 
+import java.io.ByteArrayInputStream
+import javax.xml.XMLConstants
+import kotlin.test.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.xmlpull.v1.XmlPullParserException
-import java.io.ByteArrayInputStream
-import javax.xml.XMLConstants
-import kotlin.test.assertEquals
 
 val metadatav3 = """
     <package xmlns="http://www.idpf.org/2007/opf" version="3.0" xml:lang="en" unique-identifier="pub-id">

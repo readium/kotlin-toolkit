@@ -73,7 +73,6 @@ data class Acquisition(
         ): List<Acquisition> {
             return json.parseObjects { fromJSON(it as? JSONObject, warnings) }
         }
-
     }
 
     @Deprecated("Use [type] instead", ReplaceWith("type"))
@@ -83,7 +82,6 @@ data class Acquisition(
     @Deprecated("Use [children] instead", ReplaceWith("children"))
     val child: List<Acquisition>
         get() = children
-
 }
 
 @Deprecated("Renamed into [Acquisition]", ReplaceWith("Acquisition"))

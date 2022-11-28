@@ -70,10 +70,9 @@ class CatalogFeedListAdapter(private val onLongClick: (Catalog) -> Unit) :
             oldItem: Catalog,
             newItem: Catalog
         ): Boolean {
-            return oldItem.title == newItem.title
-                    && oldItem.href == newItem.href
-                    && oldItem.type == newItem.type
+            return oldItem.title == newItem.title &&
+                oldItem.href == newItem.href &&
+                oldItem.type == newItem.type
         }
     }
-
 }

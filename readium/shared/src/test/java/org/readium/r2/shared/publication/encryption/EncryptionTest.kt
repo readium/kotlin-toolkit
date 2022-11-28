@@ -39,13 +39,17 @@ class EncryptionTest {
                 profile = "http://profile",
                 scheme = "http://scheme"
             ),
-            Encryption.fromJSON(JSONObject("""{
+            Encryption.fromJSON(
+                JSONObject(
+                    """{
                 "algorithm": "http://algo",
                 "compression": "gzip",
                 "originalLength": 42099,
                 "profile": "http://profile",
                 "scheme": "http://scheme"
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
@@ -88,5 +92,4 @@ class EncryptionTest {
             ).toJSON().toMap()
         )
     }
-
 }

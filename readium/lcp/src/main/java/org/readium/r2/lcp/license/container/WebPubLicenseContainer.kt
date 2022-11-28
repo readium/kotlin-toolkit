@@ -12,5 +12,5 @@ package org.readium.r2.lcp.license.container
 /**
  * Access a License Document stored in a Readium WebPub package (e.g. WebPub, Audiobook, LCPDF or DiViNa).
  */
-internal class WebPubLicenseContainer(path: String)
-    : ZIPLicenseContainer(zip = path, pathInZIP = "license.lcpl")
+internal class WebPubLicenseContainer(path: String) :
+    ZIPLicenseContainer(zip = path, pathInZIP = "license.lcpl")

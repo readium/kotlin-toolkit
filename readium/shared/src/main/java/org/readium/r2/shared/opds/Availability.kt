@@ -10,6 +10,7 @@
 package org.readium.r2.shared.opds
 
 import android.os.Parcelable
+import java.util.*
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
@@ -19,7 +20,6 @@ import org.readium.r2.shared.extensions.toIso8601String
 import org.readium.r2.shared.util.MapCompanion
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
-import java.util.*
 
 /**
  * Indicated the availability of a given resource.
@@ -43,7 +43,6 @@ data class Availability(
         READY("ready");
 
         companion object : MapCompanion<String, State>(values(), State::value)
-
     }
 
     /**
@@ -74,7 +73,5 @@ data class Availability(
                 until = json?.optNullableString("until")?.iso8601ToDate()
             )
         }
-
     }
-
 }

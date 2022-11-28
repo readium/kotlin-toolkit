@@ -49,6 +49,5 @@ suspend inline fun <T : SuspendingCloseable?, R> T.use(block: (T) -> R): R {
             } catch (closeException: Throwable) {
                 exception.addSuppressed(closeException)
             }
-
     }
 }

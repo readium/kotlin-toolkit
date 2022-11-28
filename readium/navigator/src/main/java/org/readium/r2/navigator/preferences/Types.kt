@@ -6,11 +6,11 @@
 
 package org.readium.r2.navigator.preferences
 
+import android.graphics.Color as AndroidColor
 import androidx.annotation.ColorInt
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.readium.r2.shared.ExperimentalReadiumApi
-import android.graphics.Color as AndroidColor
 
 // https://github.com/readium/readium-css/blob/master/css/src/modules/ReadiumCSS-day_mode.css
 @ColorInt private val dayContentColor: Int = AndroidColor.parseColor("#121212")
@@ -166,7 +166,7 @@ enum class ReadingProgression(val value: String) {
  */
 @ExperimentalReadiumApi
 @Serializable
-enum class Fit(val value: String){
+enum class Fit(val value: String) {
     @SerialName("cover") COVER("cover"),
     @SerialName("contain") CONTAIN("contain"),
     @SerialName("width") WIDTH("width"),

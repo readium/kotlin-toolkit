@@ -35,6 +35,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -51,8 +53,6 @@ import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.utils.*
 import org.readium.r2.testapp.utils.extensions.confirmDialog
 import org.readium.r2.testapp.utils.extensions.throttleLatest
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 /*
  * Base reader fragment class
@@ -295,7 +295,8 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
             } else {
                 event.rect?.let { rect ->
                     val isUnderline = (decoration.style is Decoration.Style.Underline)
-                    showHighlightPopup(rect,
+                    showHighlightPopup(
+                        rect,
                         style = if (isUnderline) Highlight.Style.UNDERLINE
                         else Highlight.Style.HIGHLIGHT,
                         highlightId = id
@@ -305,7 +306,6 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
             return true
         }
-
     }
 
     // Highlights
@@ -356,8 +356,8 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         }
     }
 
-    private fun showHighlightPopup(rect: RectF, style: Highlight.Style, highlightId: Long? = null)
-        = viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+    private fun showHighlightPopup(rect: RectF, style: Highlight.Style, highlightId: Long? = null) =
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
             if (popupWindow?.isShowing == true) return@launchWhenResumed
 
             model.activeHighlightId.value = highlightId
@@ -423,22 +423,26 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
             }
         }
 
-        private fun selectHighlightTint(highlightId: Long? = null, style: Highlight.Style, @ColorInt tint: Int)
-            = viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-                if (highlightId != null) {
-                    model.updateHighlightStyle(highlightId, style, tint)
-                } else {
-                    (navigator as? SelectableNavigator)?.let { navigator ->
-                        navigator.currentSelection()?.let { selection ->
-                            model.addHighlight(locator = selection.locator, style = style, tint = tint)
-                        }
-                        navigator.clearSelection()
+    private fun selectHighlightTint(
+        highlightId: Long? = null,
+        style: Highlight.Style,
+        @ColorInt tint: Int
+    ) =
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            if (highlightId != null) {
+                model.updateHighlightStyle(highlightId, style, tint)
+            } else {
+                (navigator as? SelectableNavigator)?.let { navigator ->
+                    navigator.currentSelection()?.let { selection ->
+                        model.addHighlight(locator = selection.locator, style = style, tint = tint)
                     }
+                    navigator.clearSelection()
                 }
-
-                popupWindow?.dismiss()
-                mode?.finish()
             }
+
+            popupWindow?.dismiss()
+            mode?.finish()
+        }
 
     private fun showAnnotationPopup(highlightId: Long? = null) = viewLifecycleOwner.lifecycleScope.launchWhenResumed {
         val activity = activity ?: return@launchWhenResumed
@@ -522,7 +526,6 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
             navigator = navigator as VisualNavigator
         )
     }
-
 }
 
 /**

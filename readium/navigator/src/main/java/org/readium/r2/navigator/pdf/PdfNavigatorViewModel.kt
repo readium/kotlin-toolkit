@@ -22,7 +22,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.positions
 
 @OptIn(ExperimentalReadiumApi::class)
-internal class PdfNavigatorViewModel<S: Configurable.Settings, P: Configurable.Preferences<P>, E: PreferencesEditor<P>>(
+internal class PdfNavigatorViewModel<S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>>(
     application: Application,
     private val publication: Publication,
     initialLocator: Locator,
@@ -52,7 +52,7 @@ internal class PdfNavigatorViewModel<S: Configurable.Settings, P: Configurable.P
     }
 
     companion object {
-        fun <S: Configurable.Settings, P: Configurable.Preferences<P>, E: PreferencesEditor<P>> createFactory(
+        fun <S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> createFactory(
             application: Application,
             publication: Publication,
             initialLocator: Locator?,

@@ -49,7 +49,9 @@ class ContributorTest {
                     Link(href = "http://link2")
                 )
             ),
-            Contributor.fromJSON(JSONObject("""{
+            Contributor.fromJSON(
+                JSONObject(
+                    """{
                 "name": "Colin Greenwood",
                 "identifier": "colin",
                 "sortAs": "greenwood",
@@ -59,7 +61,9 @@ class ContributorTest {
                     {"href": "http://link1"},
                     {"href": "http://link2"}
                 ]
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
@@ -69,10 +73,14 @@ class ContributorTest {
                 localizedName = LocalizedString("Thom Yorke"),
                 roles = setOf("singer", "guitarist")
             ),
-            Contributor.fromJSON(JSONObject("""{
+            Contributor.fromJSON(
+                JSONObject(
+                    """{
                 "name": "Thom Yorke",
                 "role": ["singer", "guitarist", "guitarist"]
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
@@ -89,20 +97,26 @@ class ContributorTest {
             listOf(
                 Contributor(localizedName = LocalizedString("Thom Yorke")),
                 Contributor(
-                    localizedName = LocalizedString.fromStrings(mapOf(
-                        "en" to "Jonny Greenwood",
-                        "fr" to "Jean Boisvert"
-                    )),
+                    localizedName = LocalizedString.fromStrings(
+                        mapOf(
+                            "en" to "Jonny Greenwood",
+                            "fr" to "Jean Boisvert"
+                        )
+                    ),
                     roles = setOf("guitarist")
                 )
             ),
-            Contributor.fromJSONArray(JSONArray("""[
+            Contributor.fromJSONArray(
+                JSONArray(
+                    """[
                 "Thom Yorke",
                 {
                     "name": {"en": "Jonny Greenwood", "fr": "Jean Boisvert"},
                     "role": "guitarist"
                 }
-            ]"""))
+            ]"""
+                )
+            )
         )
     }
 
@@ -115,12 +129,16 @@ class ContributorTest {
             listOf(
                 Contributor(localizedName = LocalizedString("Thom Yorke"))
             ),
-            Contributor.fromJSONArray(JSONArray("""[
+            Contributor.fromJSONArray(
+                JSONArray(
+                    """[
                 "Thom Yorke",
                 {
                     "role": "guitarist"
                 }
-            ]"""))
+            ]"""
+                )
+            )
         )
     }
 
@@ -133,29 +151,40 @@ class ContributorTest {
 
     @Test fun `parse array from single object`() {
         assertEquals(
-            listOf(Contributor(
-                localizedName = LocalizedString.fromStrings(mapOf(
-                    "en" to "Jonny Greenwood",
-                    "fr" to "Jean Boisvert"
-                )),
-                roles = setOf("guitarist")
-            )),
-            Contributor.fromJSONArray(JSONObject("""{
+            listOf(
+                Contributor(
+                    localizedName = LocalizedString.fromStrings(
+                        mapOf(
+                            "en" to "Jonny Greenwood",
+                            "fr" to "Jean Boisvert"
+                        )
+                    ),
+                    roles = setOf("guitarist")
+                )
+            ),
+            Contributor.fromJSONArray(
+                JSONObject(
+                    """{
                 "name": {"en": "Jonny Greenwood", "fr": "Jean Boisvert"},
                 "role": "guitarist"
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
     @Test fun `get name from the default translation`() {
         assertEquals(
             "Jonny Greenwood",
-            Contributor(localizedName = LocalizedString.fromStrings(mapOf(
-                "en" to "Jonny Greenwood",
-                "fr" to "Jean Boisvert"
-            ))).name
+            Contributor(
+                localizedName = LocalizedString.fromStrings(
+                    mapOf(
+                        "en" to "Jonny Greenwood",
+                        "fr" to "Jean Boisvert"
+                    )
+                )
+            ).name
         )
-
     }
 
     @Test fun `get minimal JSON`() {
@@ -168,7 +197,8 @@ class ContributorTest {
 
     @Test fun `get full JSON`() {
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "name": {"und": "Colin Greenwood"},
                 "identifier": "colin",
                 "sortAs": {"und": "greenwood"},
@@ -178,7 +208,8 @@ class ContributorTest {
                     {"href": "http://link1", "templated": false},
                     {"href": "http://link2", "templated": false}
                 ]
-            }"""),
+            }"""
+            ),
             Contributor(
                 localizedName = LocalizedString("Colin Greenwood"),
                 localizedSortAs = LocalizedString("greenwood"),
@@ -195,7 +226,8 @@ class ContributorTest {
 
     @Test fun `get JSON array`() {
         assertJSONEquals(
-            JSONArray("""[
+            JSONArray(
+                """[
                 {
                     "name": {"und": "Thom Yorke"}
                 },
@@ -203,18 +235,20 @@ class ContributorTest {
                     "name": {"en": "Jonny Greenwood", "fr": "Jean Boisvert"},
                     "role": ["guitarist"]
                 }
-            ]"""),
+            ]"""
+            ),
             listOf(
                 Contributor(localizedName = LocalizedString("Thom Yorke")),
                 Contributor(
-                    localizedName = LocalizedString.fromStrings(mapOf(
-                        "en" to "Jonny Greenwood",
-                        "fr" to "Jean Boisvert"
-                    )),
+                    localizedName = LocalizedString.fromStrings(
+                        mapOf(
+                            "en" to "Jonny Greenwood",
+                            "fr" to "Jean Boisvert"
+                        )
+                    ),
                     roles = setOf("guitarist")
                 )
             ).toJSON()
         )
     }
-
 }

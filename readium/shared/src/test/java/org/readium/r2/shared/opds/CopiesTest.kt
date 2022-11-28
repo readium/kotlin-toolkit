@@ -65,5 +65,4 @@ class CopiesTest {
             Copies(total = 5, available = 6).toJSON()
         )
     }
-
 }

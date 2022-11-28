@@ -23,12 +23,15 @@ import org.readium.r2.streamer.server.Resources
  */
 internal class ResourceHandler : BaseHandler() {
 
-    override fun handle(resource: RouterNanoHTTPD.UriResource, uri: Uri, parameters: Map<String, String>?): Response {
+    override fun handle(
+        resource: RouterNanoHTTPD.UriResource,
+        uri: Uri,
+        parameters: Map<String, String>?
+    ): Response {
         val resources = resource.initParameter(Resources::class.java)
         val href = uri.path?.substringAfterLast("/") ?: return notFoundResponse
         val body = resources.get(href) ?: return notFoundResponse
         val mediaType = runBlocking { MediaType.of(fileExtension = href.substringAfterLast(".", "")) }
         return createResponse(mediaType = mediaType ?: MediaType.BINARY, body = body)
     }
-
 }

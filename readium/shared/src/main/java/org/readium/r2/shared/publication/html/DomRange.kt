@@ -93,7 +93,6 @@ data class DomRange(
                         ?: json.optPositiveInt("offset")
                 )
             }
-
         }
 
         @Deprecated("Renamed into [charOffset]", ReplaceWith("charOffset"))
@@ -119,7 +118,5 @@ data class DomRange(
                 end = Point.fromJSON(json?.optJSONObject("end"))
             )
         }
-
     }
-
 }

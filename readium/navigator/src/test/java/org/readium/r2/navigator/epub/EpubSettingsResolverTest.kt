@@ -8,6 +8,7 @@
 
 package org.readium.r2.navigator.epub
 
+import kotlin.test.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.navigator.epub.css.Layout
@@ -20,10 +21,8 @@ import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import org.readium.r2.shared.publication.ReadingProgression.LTR as PublicationLTR
 import org.readium.r2.shared.publication.ReadingProgression.RTL as PublicationRTL
-
 import org.readium.r2.shared.util.Language
 import org.robolectric.RobolectricTestRunner
-import kotlin.test.assertEquals
 
 @RunWith(RobolectricTestRunner::class)
 class EpubSettingsResolverTest {
@@ -297,9 +296,9 @@ class EpubSettingsResolverTest {
 
     @Test
     fun `RTL readingProgression hint takes precedence over default LTR readingProgression`() {
-       assertEquals(
-           Layout(language = null, stylesheets = Stylesheets.Rtl, readingProgression = RTL),
-           resolveLayout(readingProgression = PublicationRTL, defaults = EpubDefaults(readingProgression = LTR))
+        assertEquals(
+            Layout(language = null, stylesheets = Stylesheets.Rtl, readingProgression = RTL),
+            resolveLayout(readingProgression = PublicationRTL, defaults = EpubDefaults(readingProgression = LTR))
         )
         assertEquals(
             Layout(language = Language("zh-tw"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
@@ -388,7 +387,7 @@ class EpubSettingsResolverTest {
     fun `zh-tw language preference takes precedence over language metadata`() {
         assertEquals(
             Layout(language = Language("zh-tw"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
-            resolveLayout( readingProgression = PublicationLTR, languages = listOf("en"), preferences = EpubPreferences(language = Language("zh-tw")))
+            resolveLayout(readingProgression = PublicationLTR, languages = listOf("en"), preferences = EpubPreferences(language = Language("zh-tw")))
         )
     }
 }

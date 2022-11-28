@@ -27,7 +27,6 @@ import org.readium.r2.testapp.domain.model.Catalog
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.utils.viewLifecycle
 
-
 class CatalogFragment : Fragment() {
 
     private val catalogViewModel: CatalogViewModel by viewModels()
@@ -40,7 +39,8 @@ class CatalogFragment : Fragment() {
     private var binding: FragmentCatalogBinding by viewLifecycle()
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
 

@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.cbz
 
+import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.LocalizedString
@@ -21,7 +22,6 @@ import org.readium.r2.streamer.extensions.fromArchiveOrDirectory
 import org.readium.r2.streamer.parser.PubBox
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.image.ImageParser
-import java.io.File
 
 @Deprecated("Use [MediaType] instead")
 class CBZConstant {
@@ -60,7 +60,7 @@ class CBZParser : PublicationParser {
         val publication = imageParser.parse(FileAsset(file), fetcher)
             ?.apply {
                 val title = LocalizedString(fallbackTitle)
-                val metadata =  manifest.metadata.copy(localizedTitle = title)
+                val metadata = manifest.metadata.copy(localizedTitle = title)
                 manifest = manifest.copy(metadata = metadata)
             }
             ?.build()
@@ -78,5 +78,4 @@ class CBZParser : PublicationParser {
 
         return PubBox(publication, container)
     }
-
 }

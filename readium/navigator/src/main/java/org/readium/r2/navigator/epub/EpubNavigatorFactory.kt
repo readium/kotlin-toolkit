@@ -44,18 +44,18 @@ class EpubNavigatorFactory(
         paginationListener: EpubNavigatorFragment.PaginationListener? = null,
         configuration: EpubNavigatorFragment.Configuration = EpubNavigatorFragment.Configuration(),
     ) = org.readium.r2.navigator.util.createFragmentFactory {
-            EpubNavigatorFragment(
-                publication = publication,
-                baseUrl = null,
-                initialLocator = initialLocator,
-                initialPreferences = initialPreferences,
-                listener = listener,
-                paginationListener = paginationListener,
-                epubLayout = layout,
-                defaults = this.configuration.defaults,
-                configuration = configuration
-            )
-        }
+        EpubNavigatorFragment(
+            publication = publication,
+            baseUrl = null,
+            initialLocator = initialLocator,
+            initialPreferences = initialPreferences,
+            listener = listener,
+            paginationListener = paginationListener,
+            epubLayout = layout,
+            defaults = this.configuration.defaults,
+            configuration = configuration
+        )
+    }
 
     fun createPreferencesEditor(
         currentPreferences: EpubPreferences,

@@ -21,54 +21,63 @@ class PropertiesTest {
     fun `get full archive`() {
         assertEquals(
             ArchiveProperties(entryLength = 8273, isEntryCompressed = true),
-            Properties(mapOf(
-                "archive" to mapOf(
-                    "entryLength" to 8273,
-                    "isEntryCompressed" to true
+            Properties(
+                mapOf(
+                    "archive" to mapOf(
+                        "entryLength" to 8273,
+                        "isEntryCompressed" to true
+                    )
                 )
-            )).archive
+            ).archive
         )
     }
 
     @Test
     fun `get invalid archive`() {
         assertNull(
-            Properties(mapOf(
-                "archive" to mapOf(
-                    "foo" to "bar"
+            Properties(
+                mapOf(
+                    "archive" to mapOf(
+                        "foo" to "bar"
+                    )
                 )
-            )).archive
+            ).archive
         )
     }
 
     @Test
     fun `get incomplete archive`() {
         assertNull(
-            Properties(mapOf(
-                "archive" to mapOf(
-                    "isEntryCompressed" to true
+            Properties(
+                mapOf(
+                    "archive" to mapOf(
+                        "isEntryCompressed" to true
+                    )
                 )
-            )).archive
+            ).archive
         )
 
         assertNull(
-            Properties(mapOf(
-                "archive" to mapOf(
-                    "entryLength" to 8273
+            Properties(
+                mapOf(
+                    "archive" to mapOf(
+                        "entryLength" to 8273
+                    )
                 )
-            )).archive
+            ).archive
         )
     }
 
     @Test
     fun `get archive JSON`() {
         assertJSONEquals(
-            JSONObject(mapOf(
-                "entryLength" to 8273L,
-                "isEntryCompressed" to true
-            )),
+            JSONObject(
+                mapOf(
+                    "entryLength" to 8273L,
+                    "isEntryCompressed" to true
+                )
+            ),
             ArchiveProperties(entryLength = 8273, isEntryCompressed = true).toJSON()
         )
     }
-
 }

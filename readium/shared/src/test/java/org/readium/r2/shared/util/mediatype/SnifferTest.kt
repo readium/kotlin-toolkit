@@ -1,20 +1,20 @@
 package org.readium.r2.shared.util.mediatype
 
 import android.webkit.MimeTypeMap
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 @RunWith(RobolectricTestRunner::class)
 class SnifferTest {
 
     val fixtures = Fixtures("format")
-    
+
     @Test
     fun `sniff ignores extension case`() = runBlocking {
         assertEquals(MediaType.EPUB, MediaType.of(fileExtension = "EPUB"))
@@ -312,5 +312,4 @@ class SnifferTest {
         )!!
         assertEquals(png, MediaType.ofFile(fixtures.fileAt("png.unknown")))
     }
-
 }

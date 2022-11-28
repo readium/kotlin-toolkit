@@ -27,7 +27,8 @@ class EncryptionParserTest {
     }
 
     val lcpChap1 = entry(
-        "/OEBPS/xhtml/chapter01.xhtml", Encryption(
+        "/OEBPS/xhtml/chapter01.xhtml",
+        Encryption(
             algorithm = "http://www.w3.org/2001/04/xmlenc#aes256-cbc",
             compression = "deflate",
             originalLength = 13291,
@@ -37,7 +38,8 @@ class EncryptionParserTest {
     )
 
     val lcpChap2 = entry(
-        "/OEBPS/xhtml/chapter02.xhtml", Encryption(
+        "/OEBPS/xhtml/chapter02.xhtml",
+        Encryption(
             algorithm = "http://www.w3.org/2001/04/xmlenc#aes256-cbc",
             compression = "none",
             originalLength = 12914,
@@ -60,7 +62,8 @@ class EncryptionParserTest {
     fun `Check EncryptionParser with unknown retrieval method`() {
         assertThat(parseEncryption("encryption/encryption-unknown-method.xml")).contains(
             entry(
-                "/OEBPS/xhtml/chapter.xhtml", Encryption(
+                "/OEBPS/xhtml/chapter.xhtml",
+                Encryption(
                     algorithm = "http://www.w3.org/2001/04/xmlenc#kw-aes128",
                     compression = "deflate",
                     originalLength = 12914,
@@ -69,7 +72,8 @@ class EncryptionParserTest {
                 )
             ),
             entry(
-                "/OEBPS/images/image.jpeg", Encryption(
+                "/OEBPS/images/image.jpeg",
+                Encryption(
                     algorithm = "http://www.w3.org/2001/04/xmlenc#kw-aes128",
                     compression = null,
                     originalLength = null,

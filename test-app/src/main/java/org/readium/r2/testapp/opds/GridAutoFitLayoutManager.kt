@@ -25,20 +25,24 @@ class GridAutoFitLayoutManager : GridLayoutManager {
 
     constructor(context: Context, columnWidth: Int) : super(context, 1) {
         setColumnWidth(checkedColumnWidth(context, columnWidth))
-    }/* Initially set spanCount to 1, will be changed automatically later. */
+    } /* Initially set spanCount to 1, will be changed automatically later. */
 
     constructor(context: Context, columnWidth: Int, orientation: Int, reverseLayout: Boolean) : super(context, 1, orientation, reverseLayout) {
         setColumnWidth(checkedColumnWidth(context, columnWidth))
-    }/* Initially set spanCount to 1, will be changed automatically later. */
+    } /* Initially set spanCount to 1, will be changed automatically later. */
 
     private fun checkedColumnWidth(context: Context, columnWidth: Int): Int {
         var width = columnWidth
         width = if (width <= 0) {
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, sColumnWidth.toFloat(),
-                    context.resources.displayMetrics).toInt()
+            TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, sColumnWidth.toFloat(),
+                context.resources.displayMetrics
+            ).toInt()
         } else {
-            TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, width.toFloat(),
-                    context.resources.displayMetrics).toInt()
+            TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, width.toFloat(),
+                context.resources.displayMetrics
+            ).toInt()
         }
         return width
     }

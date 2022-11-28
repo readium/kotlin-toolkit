@@ -46,7 +46,5 @@ data class Holds(
                 position = json.optPositiveInt("position")
             )
         }
-
     }
-
 }

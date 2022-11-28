@@ -6,6 +6,7 @@
 
 package org.readium.r2.streamer.parser.epub
 
+import kotlin.math.ceil
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
@@ -19,7 +20,6 @@ import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.util.use
-import kotlin.math.ceil
 
 /**
  * Positions Service for an EPUB from its [readingOrder] and [fetcher].
@@ -39,7 +39,9 @@ class EpubPositionsService(
 
     companion object {
 
-        fun createFactory(reflowableStrategy: ReflowableStrategy = ReflowableStrategy.recommended): (Publication.Service.Context) -> EpubPositionsService =
+        fun createFactory(reflowableStrategy: ReflowableStrategy = ReflowableStrategy.recommended): (
+            Publication.Service.Context
+        ) -> EpubPositionsService =
             { context ->
                 EpubPositionsService(
                     readingOrder = context.manifest.readingOrder,
@@ -143,7 +145,8 @@ class EpubPositionsService(
     }
 
     private fun createFixed(link: Link, startPosition: Int) = listOf(
-        createLocator(link,
+        createLocator(
+            link,
             progression = 0.0,
             position = startPosition + 1
         )
@@ -155,7 +158,8 @@ class EpubPositionsService(
         }
 
         return (1..positionCount).map { position ->
-            createLocator(link,
+            createLocator(
+                link,
                 progression = (position - 1) / positionCount.toDouble(),
                 position = startPosition + position
             )

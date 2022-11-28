@@ -108,7 +108,7 @@ class PublicationContentIterator(
     private suspend fun initialIterator(): IndexedIterator? {
         val index: Int =
             startLocator?.let { publication.readingOrder.indexOfFirstWithHref(it.href) }
-            ?: 0
+                ?: 0
 
         val locations = startLocator.orProgression(0.0)
 
