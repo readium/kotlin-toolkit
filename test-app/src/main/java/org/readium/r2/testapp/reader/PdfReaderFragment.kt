@@ -13,7 +13,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.commitNow
 import org.readium.adapters.pdfium.navigator.PdfiumPreferences
-import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
 import org.readium.adapters.pdfium.navigator.PdfiumSettings
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -25,7 +24,7 @@ import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 @OptIn(ExperimentalReadiumApi::class)
 class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener {
 
-    override lateinit var navigator: PdfNavigatorFragment<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>
+    override lateinit var navigator: PdfNavigatorFragment<PdfiumSettings, PdfiumPreferences>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val readerData = model.readerInitData as PdfReaderInitData
@@ -51,9 +50,9 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
                 replace(R.id.fragment_reader_container, PdfNavigatorFragment::class.java, Bundle(), NAVIGATOR_FRAGMENT_TAG)
             }
         }
-        navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!!
-            as PdfNavigatorFragment<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>
         @Suppress("Unchecked_cast")
+        navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG)!!
+            as PdfNavigatorFragment<PdfiumSettings, PdfiumPreferences>
         return view
     }
 
