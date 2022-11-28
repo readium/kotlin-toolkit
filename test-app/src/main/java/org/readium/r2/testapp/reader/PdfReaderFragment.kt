@@ -13,7 +13,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.commitNow
 import org.readium.adapters.pdfium.navigator.PdfiumPreferences
-import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
 import org.readium.adapters.pdfium.navigator.PdfiumSettings
 import org.readium.r2.navigator.pdf.PdfNavigatorFragment
 import org.readium.r2.shared.ExperimentalReadiumApi
