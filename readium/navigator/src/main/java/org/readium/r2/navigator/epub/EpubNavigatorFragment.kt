@@ -66,6 +66,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
@@ -154,7 +155,18 @@ class EpubNavigatorFragment internal constructor(
          */
         val shouldApplyInsetsPadding: Boolean? = true,
 
-        internal val javascriptInterfaces: MutableMap<String, JavascriptInterfaceFactory> = mutableMapOf()
+        internal val javascriptInterfaces: MutableMap<String, JavascriptInterfaceFactory> = mutableMapOf(),
+
+        /**
+         * Disable user selection if the publication is protected by a DRM (e.g. with LCP).
+         *
+         * WARNING: If you choose to disable this, you MUST remove the Copy and Share selection
+         * menu items in your app. Otherwise, you will void the EDRLab certification for your
+         * application. If you need help, follow up on:
+         * https://github.com/readium/kotlin-toolkit/issues/299#issuecomment-1315643577
+         */
+        @InternalReadiumApi
+        val disableSelectionWhenProtected: Boolean = true
     ) {
         /**
          * Registers a new factory for the [JavascriptInterface] named [name].
