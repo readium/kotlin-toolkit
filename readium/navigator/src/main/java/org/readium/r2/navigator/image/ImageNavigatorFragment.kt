@@ -21,6 +21,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.SimplePresentation
 import org.readium.r2.navigator.VisualNavigator
@@ -91,7 +92,7 @@ class ImageNavigatorFragment private constructor(
                 scroll = false,
                 axis = Axis.HORIZONTAL
             )
-        )
+        ).asStateFlow()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         childFragmentManager.fragmentFactory = createFragmentFactory {
