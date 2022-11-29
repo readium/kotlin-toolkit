@@ -89,7 +89,7 @@ class EpubPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.fontFamily },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(fontFamily = value) } },
-            supportedValues = configuration.fontFamilies,
+            supportedValues = listOf(null) + configuration.fontFamilies,
         )
 
     val fontSize: RangePreference<Double> =
@@ -162,7 +162,7 @@ class EpubPreferencesEditor internal constructor(
         RangePreferenceDelegate(
             getValue = { preferences.pageMargins },
             getEffectiveValue = { state.settings.pageMargins },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.scroll },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(pageMargins = value) } },
             supportedRange = configuration.pageMarginsRange,
             progressionStrategy = configuration.pageMarginsProgression,
