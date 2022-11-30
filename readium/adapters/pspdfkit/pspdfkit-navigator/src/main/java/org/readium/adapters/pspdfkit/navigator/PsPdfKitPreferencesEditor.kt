@@ -7,7 +7,19 @@
 package org.readium.adapters.pspdfkit.navigator
 
 import org.readium.r2.navigator.extensions.format
-import org.readium.r2.navigator.preferences.*
+import org.readium.r2.navigator.preferences.Axis
+import org.readium.r2.navigator.preferences.DoubleIncrement
+import org.readium.r2.navigator.preferences.EnumPreference
+import org.readium.r2.navigator.preferences.EnumPreferenceDelegate
+import org.readium.r2.navigator.preferences.Fit
+import org.readium.r2.navigator.preferences.Preference
+import org.readium.r2.navigator.preferences.PreferenceDelegate
+import org.readium.r2.navigator.preferences.PreferencesEditor
+import org.readium.r2.navigator.preferences.ProgressionStrategy
+import org.readium.r2.navigator.preferences.RangePreference
+import org.readium.r2.navigator.preferences.RangePreferenceDelegate
+import org.readium.r2.navigator.preferences.ReadingProgression
+import org.readium.r2.navigator.preferences.Spread
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 
@@ -64,8 +76,8 @@ class PsPdfKitPreferencesEditor internal constructor(
             supportedValues = listOf(Fit.CONTAIN, Fit.WIDTH),
         )
 
-    val offsetFirstPage: SwitchPreference =
-        SwitchPreferenceDelegate(
+    val offsetFirstPage: Preference<Boolean> =
+        PreferenceDelegate(
             getValue = { preferences.offsetFirstPage },
             getEffectiveValue = { state.settings.offsetFirstPage },
             getIsEffective = { !state.settings.scroll && state.settings.spread != Spread.NEVER },
@@ -81,8 +93,8 @@ class PsPdfKitPreferencesEditor internal constructor(
             supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL),
         )
 
-    val scroll: SwitchPreference =
-        SwitchPreferenceDelegate(
+    val scroll: Preference<Boolean> =
+        PreferenceDelegate(
             getValue = { preferences.scroll },
             getEffectiveValue = { state.settings.scroll },
             getIsEffective = { true },

@@ -158,7 +158,7 @@ This stateless composable displays the actual preferences for a reflowable publi
 ```kotlin
 @Composable
 fun ReflowableUserPreferences(
-    publisherStyles: SwitchPreference? = null,
+    publisherStyles: Preference<Boolean>? = null,
     fontSize: RangePreference<Double>? = null,
     fontFamily: EnumPreference<FontFamily?>? = null,
     commit: () -> Unit
@@ -179,15 +179,15 @@ fun ReflowableUserPreferences(
 }
 ```
 
-### Composable for a `SwitchPreference`
+### Composable for a boolean `Preference`
 
-A `SwitchPreference` can be represented as a simple switch button.
+A `Preference<Boolean>` can be represented as a simple switch button.
 
 ```kotlin
 @Composable
 fun SwitchItem(
     title: String,
-    preference: SwitchPreference, 
+    preference: Preference<Boolean>, 
     commit: () -> Unit
 ) {
     ListItem(
@@ -210,7 +210,7 @@ fun SwitchItem(
 }
 ```
 
-This composable takes advantage of the helpers in `SwitchPreference` to set the preference in two different ways:
+This composable takes advantage of the helpers in `Preference<Boolean>` to set the preference in two different ways:
 
 * `toggle()` will invert the current preference when tapping on the whole list item.
 * `set(checked)` sets an explicit value provided by the `Switch`'s `onCheckedChange` callback.

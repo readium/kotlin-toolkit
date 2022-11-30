@@ -103,8 +103,8 @@ class EpubPreferencesEditor internal constructor(
             valueFormatter = percentFormatter(),
         )
 
-    val hyphens: SwitchPreference =
-        SwitchPreferenceDelegate(
+    val hyphens: Preference<Boolean> =
+        PreferenceDelegate(
             getValue = { preferences.hyphens },
             getEffectiveValue = { state.settings.hyphens },
             getIsEffective = { isHyphensEffective() },
@@ -139,8 +139,8 @@ class EpubPreferencesEditor internal constructor(
             valueFormatter = percentFormatter(),
         )
 
-    val ligatures: SwitchPreference =
-        SwitchPreferenceDelegate(
+    val ligatures: Preference<Boolean> =
+        PreferenceDelegate(
             getValue = { preferences.ligatures },
             getEffectiveValue = { state.settings.ligatures },
             getIsEffective = { isLigaturesSpacing() },
@@ -191,8 +191,8 @@ class EpubPreferencesEditor internal constructor(
             valueFormatter = percentFormatter(),
         )
 
-    val publisherStyles: SwitchPreference =
-        SwitchPreferenceDelegate(
+    val publisherStyles: Preference<Boolean> =
+        PreferenceDelegate(
             getValue = { preferences.publisherStyles },
             getEffectiveValue = { state.settings.publisherStyles },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
@@ -208,8 +208,8 @@ class EpubPreferencesEditor internal constructor(
             supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL),
         )
 
-    val scroll: SwitchPreference =
-        SwitchPreferenceDelegate(
+    val scroll: Preference<Boolean> =
+        PreferenceDelegate(
             getValue = { preferences.scroll },
             getEffectiveValue = { state.settings.scroll },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
@@ -271,8 +271,8 @@ class EpubPreferencesEditor internal constructor(
             progressionStrategy = StepsProgression(1.0, 1.067, 1.125, 1.2, 1.25, 1.333, 1.414, 1.5, 1.618),
         )
 
-    val verticalText: SwitchPreference =
-        SwitchPreferenceDelegate(
+    val verticalText: Preference<Boolean> =
+        PreferenceDelegate(
             getValue = { preferences.verticalText },
             getEffectiveValue = { state.settings.verticalText },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },

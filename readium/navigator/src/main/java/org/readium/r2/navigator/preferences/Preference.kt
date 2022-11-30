@@ -46,6 +46,15 @@ fun <T> Preference<T>.clear() =
     set(null)
 
 /**
+ * Toggle the preference value. A default value is taken as the initial one if
+ * the preference is currently unset.
+ */
+@OptIn(ExperimentalReadiumApi::class)
+fun Preference<Boolean>.toggle() {
+    set(!(value ?: effectiveValue))
+}
+
+/**
  * A [Preference] which accepts a closed set of values.
  */
 @ExperimentalReadiumApi
@@ -76,17 +85,4 @@ interface RangePreference<T : Comparable<T>> : Preference<T> {
      * Format [value] in a way suitable for display, including unit if relevant.
      */
     fun formatValue(value: T): String
-}
-
-/**
- * A [Boolean] preference.
- */
-@ExperimentalReadiumApi
-interface SwitchPreference : Preference<Boolean> {
-
-    /**
-     * Toggle the preference value. A default value is taken as the initial one if
-     * the preference is currently unset.
-     */
-    fun toggle()
 }

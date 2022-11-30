@@ -49,21 +49,6 @@ class EnumPreferenceDelegate<T>(
 }
 
 @InternalReadiumApi
-class SwitchPreferenceDelegate(
-    getValue: () -> Boolean?,
-    getEffectiveValue: () -> Boolean,
-    getIsEffective: () -> Boolean,
-    updateValue: (Boolean?) -> Unit,
-) : PreferenceDelegate<Boolean>(getValue, getEffectiveValue, getIsEffective, updateValue),
-    SwitchPreference {
-
-    override fun toggle() {
-        val currentValue = value ?: effectiveValue
-        set(!currentValue)
-    }
-}
-
-@InternalReadiumApi
 class RangePreferenceDelegate<T : Comparable<T>>(
     getValue: () -> T?,
     getEffectiveValue: () -> T,

@@ -143,11 +143,11 @@ private fun ColumnScope.FixedLayoutUserPreferences(
     commit: () -> Unit,
     language: Preference<Language?>? = null,
     readingProgression: EnumPreference<ReadingProgression>? = null,
-    scroll: SwitchPreference? = null,
+    scroll: Preference<Boolean>? = null,
     scrollAxis: EnumPreference<Axis>? = null,
     fit: EnumPreference<Fit>? = null,
     spread: EnumPreference<Spread>? = null,
-    offsetFirstPage: SwitchPreference? = null,
+    offsetFirstPage: Preference<Boolean>? = null,
     pageSpacing: RangePreference<Double>? = null
 ) {
     if (language != null || readingProgression != null) {
@@ -267,24 +267,24 @@ private fun ColumnScope.ReflowableUserPreferences(
     columnCount: EnumPreference<ColumnCount>? = null,
     fontFamily: EnumPreference<FontFamily?>? = null,
     fontSize: RangePreference<Double>? = null,
-    hyphens: SwitchPreference? = null,
+    hyphens: Preference<Boolean>? = null,
     imageFilter: EnumPreference<ImageFilter>? = null,
     language: Preference<Language?>? = null,
     letterSpacing: RangePreference<Double>? = null,
-    ligatures: SwitchPreference? = null,
+    ligatures: Preference<Boolean>? = null,
     lineHeight: RangePreference<Double>? = null,
     pageMargins: RangePreference<Double>? = null,
     paragraphIndent: RangePreference<Double>? = null,
     paragraphSpacing: RangePreference<Double>? = null,
-    publisherStyles: SwitchPreference? = null,
+    publisherStyles: Preference<Boolean>? = null,
     readingProgression: EnumPreference<ReadingProgression>? = null,
-    scroll: SwitchPreference? = null,
+    scroll: Preference<Boolean>? = null,
     textAlign: EnumPreference<ReadiumTextAlign>? = null,
     textColor: Preference<ReadiumColor>? = null,
     textNormalization: EnumPreference<TextNormalization>? = null,
     theme: EnumPreference<Theme>? = null,
     typeScale: RangePreference<Double>? = null,
-    verticalText: SwitchPreference? = null,
+    verticalText: Preference<Boolean>? = null,
     wordSpacing: RangePreference<Double>? = null,
 ) {
     if (language != null || readingProgression != null || verticalText != null) {
@@ -722,12 +722,12 @@ private fun <T> StepperItem(
 }
 
 /**
- * Component for a  [SwitchPreference].
+ * Component for a boolean [Preference].
  */
 @Composable
 private fun SwitchItem(
     title: String,
-    preference: SwitchPreference,
+    preference: Preference<Boolean>,
     commit: () -> Unit
 ) {
     SwitchItem(
