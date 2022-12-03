@@ -11,6 +11,13 @@ fun <T, V> Preference<T>.map(from: (T) -> V, to: (V) -> T): Preference<V> =
     MappedPreference(this, from, to)
 
 /**
+ * Creates a new [EnumPreference] object wrapping the receiver with the provided [supportedValues].
+ */
+@ExperimentalReadiumApi
+fun <T> Preference<T>.withSupportedValues(supportedValues: List<T>): EnumPreference<T> =
+    PreferenceWithSupportedValues(this, supportedValues)
+
+/**
  * Creates a new [EnumPreference] object wrapping the receiver and converting its value and
  * [supportedValues], [from] and [to] the target type [V].
  */
@@ -117,6 +124,12 @@ private open class MappedPreference<T, V>(
         original.set(value?.let(to))
     }
 }
+
+@ExperimentalReadiumApi
+private class PreferenceWithSupportedValues<T>(
+    override val original: Preference<T>,
+    override val supportedValues: List<T>,
+) : MappedPreference<T, T>(original, from = { it }, to = { it }), EnumPreference<T>
 
 @ExperimentalReadiumApi
 private class MappedEnumPreference<T, V>(

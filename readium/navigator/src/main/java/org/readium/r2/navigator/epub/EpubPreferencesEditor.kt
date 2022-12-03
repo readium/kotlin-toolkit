@@ -83,13 +83,12 @@ class EpubPreferencesEditor internal constructor(
             supportedValues = listOf(ColumnCount.AUTO, ColumnCount.ONE, ColumnCount.TWO),
         )
 
-    val fontFamily: EnumPreference<FontFamily?> =
-        EnumPreferenceDelegate(
+    val fontFamily: Preference<FontFamily?> =
+        PreferenceDelegate(
             getValue = { preferences.fontFamily },
             getEffectiveValue = { state.settings.fontFamily },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
-            updateValue = { value -> updateValues { it.copy(fontFamily = value) } },
-            supportedValues = listOf(null) + configuration.fontFamilies,
+            updateValue = { value -> updateValues { it.copy(fontFamily = value) } }
         )
 
     val fontSize: RangePreference<Double> =
