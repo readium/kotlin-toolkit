@@ -56,8 +56,8 @@ fun <T : Comparable<T>, V : Comparable<V>> RangePreference<T>.map(
     to: (V) -> T,
     supportedRange: (ClosedRange<T>) -> ClosedRange<V> = { from(it.start)..from(it.endInclusive) },
     formatValue: ((V) -> String)? = null,
-    increment: (() -> Unit)? = null,
-    decrement: (() -> Unit)? = null,
+    increment: (RangePreference<V>.() -> Unit)? = null,
+    decrement: (RangePreference<V>.() -> Unit)? = null,
 ): RangePreference<V> =
     MappedRangePreference(
         this, from, to,
@@ -75,8 +75,8 @@ fun <T : Comparable<T>, V : Comparable<V>> RangePreference<T>.map(
 fun <T : Comparable<T>> RangePreference<T>.map(
     supportedRange: (ClosedRange<T>) -> ClosedRange<T> = { it },
     formatValue: ((T) -> String)? = null,
-    increment: (() -> Unit)? = null,
-    decrement: (() -> Unit)? = null,
+    increment: (RangePreference<T>.() -> Unit)? = null,
+    decrement: (RangePreference<T>.() -> Unit)? = null,
 ): RangePreference<T> =
     MappedRangePreference(
         this, { it }, { it },
@@ -92,19 +92,17 @@ fun <T : Comparable<T>> RangePreference<T>.map(
  * and decrement.
  */
 @ExperimentalReadiumApi
-fun <T : Comparable<T>> RangePreference<T>.withSupportedRange(range: ClosedRange<T>, progressionStrategy: ProgressionStrategy<T>? = null): RangePreference<T> =
+fun <T : Comparable<T>> RangePreference<T>.withSupportedRange(range: ClosedRange<T>, progressionStrategy: ProgressionStrategy<T>): RangePreference<T> =
     map(
         supportedRange = { range },
-        increment = progressionStrategy?.run {{
+        increment = {
             val currentValue = value ?: effectiveValue
-            val newValue = increment(currentValue).coerceIn(range)
-            set(newValue)
-        }},
-        decrement = progressionStrategy?.run {{
+            this.set(progressionStrategy.increment(currentValue))
+        },
+        decrement = {
             val currentValue = value ?: effectiveValue
-            val newValue = decrement(currentValue).coerceIn(range)
-            set(newValue)
-        }}
+            set(progressionStrategy.decrement(currentValue))
+        }
     )
 
 @ExperimentalReadiumApi
@@ -141,6 +139,11 @@ private class MappedEnumPreference<T, V>(
 
     override val supportedValues: List<V>
         get() = transformSupportedValues(original.supportedValues)
+
+    override fun set(value: V?) {
+        require(value == null || value in supportedValues)
+        super.set(value)
+    }
 }
 
 @ExperimentalReadiumApi
@@ -150,19 +153,23 @@ private class MappedRangePreference<T : Comparable<T>, V : Comparable<V>>(
     to: (V) -> T,
     private val transformSupportedRange: (ClosedRange<T>) -> ClosedRange<V>,
     private val valueFormatter: ((V) -> String)?,
-    private val incrementer: (() -> Unit)?,
-    private val decrementer: (() -> Unit)?
+    private val incrementer: (RangePreference<V>.() -> Unit)?,
+    private val decrementer: (RangePreference<V>.() -> Unit)?
 ) : MappedPreference<T, V>(original, from, to), RangePreference<V> {
 
     override val supportedRange: ClosedRange<V>
         get() = transformSupportedRange(original.supportedRange)
 
+    override fun set(value: V?) {
+        super.set(value?.coerceIn(supportedRange))
+    }
+
     override fun increment() {
-        incrementer?.invoke() ?: original.increment()
+        incrementer?.invoke(this) ?: original.increment()
     }
 
     override fun decrement() {
-        decrementer?.invoke() ?: original.decrement()
+        decrementer?.invoke(this) ?: original.decrement()
     }
 
     override fun formatValue(value: V): String =

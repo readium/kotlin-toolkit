@@ -60,18 +60,21 @@ class RangePreferenceDelegate<T : Comparable<T>>(
 ) : PreferenceDelegate<T>(getValue, getEffectiveValue, getIsEffective, updateValue),
     RangePreference<T> {
 
+    override fun set(value: T?) {
+        super.set(value?.coerceIn(supportedRange))
+    }
+
     override fun formatValue(value: T): String =
         valueFormatter.invoke(value)
 
+
     override fun increment() {
         val currentValue = value ?: effectiveValue
-        val newValue = progressionStrategy.increment(currentValue).coerceIn(supportedRange)
-        set(newValue)
+        set(progressionStrategy.increment(currentValue))
     }
 
     override fun decrement() {
         val currentValue = value ?: effectiveValue
-        val newValue = progressionStrategy.decrement(currentValue).coerceIn(supportedRange)
-        set(newValue)
+        set(progressionStrategy.decrement(currentValue))
     }
 }
