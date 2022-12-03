@@ -69,6 +69,13 @@ fun Preference<Boolean>.toggle() {
 }
 
 /**
+ * Returns a new preference with its boolean value flipped.
+ */
+@OptIn(ExperimentalReadiumApi::class)
+fun Preference<Boolean>.flipped(): Preference<Boolean> =
+    map(from = { !it }, to = { !it })
+
+/**
  * A [Preference] which accepts a closed set of values.
  */
 @ExperimentalReadiumApi
