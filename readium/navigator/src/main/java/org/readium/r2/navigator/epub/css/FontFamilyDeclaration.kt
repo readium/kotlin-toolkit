@@ -57,7 +57,7 @@ data class FontFaceDeclaration internal constructor(
             set("src", src)
 
             fontStyle?.let { set("font-style", it.name.lowercase()) }
-            fontWeight?.let { set("font-weight", it.name.lowercase()) }
+            fontWeight?.let { set("font-weight", it.value) }
         }
 
         val descriptorList = descriptors
@@ -135,9 +135,18 @@ enum class FontStyle {
 
 /**
  * Weight (or boldness) of a font.
+ *
+ * See https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-weight#common_weight_name_mapping
  */
 @ExperimentalReadiumApi
-enum class FontWeight {
-    NORMAL,
-    BOLD;
+enum class FontWeight(internal val value: Int) {
+    THIN(100),
+    EXTRA_LIGHT(200),
+    LIGHT(300),
+    NORMAL(400),
+    MEDIUM(500),
+    SEMI_BOLD(600),
+    BOLD(700),
+    EXTRA_BOLD(800),
+    BLACK(900);
 }
