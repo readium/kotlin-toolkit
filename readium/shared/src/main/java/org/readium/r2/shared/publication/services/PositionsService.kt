@@ -19,7 +19,7 @@ import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.toJSON
 
 private val positionsLink = Link(
-    href= "/~readium/positions",
+    href = "/~readium/positions",
     type = "application/vnd.readium.position-list+json"
 )
 
@@ -91,7 +91,6 @@ suspend fun Publication.positions(): List<Locator> {
 val Publication.positionsByResource: Map<String, List<Locator>>
     get() = runBlocking { positions().groupBy { it.href } }
 
-
 /** Factory to build a [PositionsService] */
 var Publication.ServicesBuilder.positionsServiceFactory: ServiceFactory?
     get() = get(PositionsService::class)
@@ -113,15 +112,17 @@ class PerResourcePositionsService(
         val pageCount = readingOrder.size
 
         return readingOrder.mapIndexed { index, link ->
-            listOf(Locator(
-                href = link.href,
-                type = link.type ?: fallbackMediaType,
-                title = link.title,
-                locations = Locator.Locations(
-                    position = index + 1,
-                    totalProgression = index.toDouble() / pageCount.toDouble()
+            listOf(
+                Locator(
+                    href = link.href,
+                    type = link.type ?: fallbackMediaType,
+                    title = link.title,
+                    locations = Locator.Locations(
+                        position = index + 1,
+                        totalProgression = index.toDouble() / pageCount.toDouble()
+                    )
                 )
-            ))
+            )
         }
     }
 
@@ -133,7 +134,5 @@ class PerResourcePositionsService(
                 fallbackMediaType = fallbackMediaType
             )
         }
-
     }
-
 }

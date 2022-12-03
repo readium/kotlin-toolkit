@@ -6,8 +6,8 @@
 
 plugins {
     id("com.android.library")
-    id("kotlin-android")
-    id("kotlin-parcelize")
+    kotlin("android")
+    kotlin("plugin.parcelize")
     id("maven-publish")
     id("org.jetbrains.dokka")
 }
@@ -42,17 +42,20 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    namespace = "org.readium.navigator.media2"
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+
+            groupId = "com.github.readium"
+            artifactId = "readium-navigator-media2"
+            artifact(tasks.findByName("sourcesJar"))
+            artifact(tasks.findByName("javadocsJar"))
+
+            afterEvaluate {
                 from(components.getByName("release"))
-                groupId = "com.github.readium"
-                artifactId = "readium-navigator-media2"
-                artifact(tasks.findByName("sourcesJar"))
-                artifact(tasks.findByName("javadocsJar"))
             }
         }
     }
@@ -61,22 +64,20 @@ afterEvaluate {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    api(project(":readium:shared"))
-    api(project(":readium:navigator"))
+    api(project(":readium:readium-shared"))
+    api(project(":readium:readium-navigator"))
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
+    implementation(libs.bundles.coroutines)
 
-    implementation("com.jakewharton.timber:timber:5.0.1")
+    implementation(libs.timber)
 
-    implementation("androidx.media2:media2-session:1.2.1")
-    implementation("androidx.media2:media2-player:1.2.1")
+    implementation(libs.bundles.media2)
 
-    implementation("com.google.android.exoplayer:exoplayer-core:2.17.1")
-    implementation("com.google.android.exoplayer:extension-media2:2.17.1")
+    implementation(libs.google.exoplayer.core)
+    implementation(libs.google.exoplayer.extension.media2)
 
-    testImplementation("junit:junit:4.13.2")
+    testImplementation(libs.junit)
 
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    androidTestImplementation(libs.androidx.ext.junit)
+    androidTestImplementation(libs.androidx.expresso.core)
 }

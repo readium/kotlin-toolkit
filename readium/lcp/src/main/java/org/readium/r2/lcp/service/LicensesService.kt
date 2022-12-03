@@ -10,6 +10,8 @@
 package org.readium.r2.lcp.service
 
 import android.content.Context
+import java.io.File
+import kotlin.coroutines.resume
 import kotlinx.coroutines.*
 import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.LcpException
@@ -24,8 +26,6 @@ import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
-import java.io.File
-import kotlin.coroutines.resume
 
 internal class LicensesService(
     private val licenses: LicensesRepository,
@@ -51,7 +51,12 @@ internal class LicensesService(
             Try.failure(LcpException.wrap(e))
         }
 
-    override suspend fun retrieveLicense(file: File, authentication: LcpAuthenticating, allowUserInteraction: Boolean, sender: Any?): Try<LcpLicense, LcpException>? =
+    override suspend fun retrieveLicense(
+        file: File,
+        authentication: LcpAuthenticating,
+        allowUserInteraction: Boolean,
+        sender: Any?
+    ): Try<LcpLicense, LcpException>? =
         try {
             val container = createLicenseContainer(file.path)
             // WARNING: Using the Default dispatcher in the state machine code is critical. If we were using the Main Dispatcher,
@@ -66,7 +71,12 @@ internal class LicensesService(
             Try.failure(LcpException.wrap(e))
         }
 
-    private suspend fun retrieveLicense(container: LicenseContainer, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?): License? =
+    private suspend fun retrieveLicense(
+        container: LicenseContainer,
+        authentication: LcpAuthenticating?,
+        allowUserInteraction: Boolean,
+        sender: Any?
+    ): License? =
         suspendCancellableCoroutine { cont ->
             retrieveLicense(container, authentication, allowUserInteraction, sender) { license ->
                 if (cont.isActive) {
@@ -75,14 +85,22 @@ internal class LicensesService(
             }
         }
 
-    private fun retrieveLicense(container: LicenseContainer, authentication: LcpAuthenticating?, allowUserInteraction: Boolean, sender: Any?, completion: (License?) -> Unit) {
+    private fun retrieveLicense(
+        container: LicenseContainer,
+        authentication: LcpAuthenticating?,
+        allowUserInteraction: Boolean,
+        sender: Any?,
+        completion: (License?) -> Unit
+    ) {
 
         var initialData = container.read()
         Timber.d("license ${LicenseDocument(data = initialData).json}")
 
-        val validation = LicenseValidation(authentication = authentication, crl = this.crl,
-                device = this.device, network = this.network, passphrases = this.passphrases, context = this.context,
-                allowUserInteraction = allowUserInteraction, sender = sender) { licenseDocument ->
+        val validation = LicenseValidation(
+            authentication = authentication, crl = this.crl,
+            device = this.device, network = this.network, passphrases = this.passphrases, context = this.context,
+            allowUserInteraction = allowUserInteraction, sender = sender
+        ) { licenseDocument ->
             try {
                 launch {
                     this@LicensesService.licenses.addLicense(licenseDocument)
@@ -102,7 +120,6 @@ internal class LicensesService(
                     Timber.d("Failed to write updated License Document in container: $error")
                 }
             }
-
         }
 
         validation.validate(LicenseValidation.Document.license(initialData)) { documents, error ->
@@ -110,8 +127,8 @@ internal class LicensesService(
                 Timber.d("validated documents $it")
                 try {
                     documents.getContext()
-                    completion( License(documents = it, validation = validation, licenses = this.licenses, device = this.device, network = this.network) )
-                } catch (e:Exception) {
+                    completion(License(documents = it, validation = validation, licenses = this.licenses, device = this.device, network = this.network))
+                } catch (e: Exception) {
                     throw e
                 }
             }
@@ -144,5 +161,4 @@ internal class LicensesService(
             suggestedFilename = "${license.id}.${mediaType.fileExtension}"
         )
     }
-
 }

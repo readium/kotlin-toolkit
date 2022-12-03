@@ -7,7 +7,6 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-
 package org.readium.r2.shared.publication
 
 import org.json.JSONArray
@@ -24,7 +23,7 @@ import org.robolectric.RobolectricTestRunner
 class LinkTest {
 
     @Test fun `templateParameters works fine`() {
-        val href =  "/url{?x,hello,y}name{z,y,w}"
+        val href = "/url{?x,hello,y}name{z,y,w}"
         assertEquals(
             listOf("x", "hello", "y", "z", "w"),
             Link(href = href, templated = true).templateParameters
@@ -32,7 +31,7 @@ class LinkTest {
     }
 
     @Test fun `expand works fine`() {
-        val href =  "/url{?x,hello,y}name"
+        val href = "/url{?x,hello,y}name"
         val parameters = mapOf(
             "x" to "aaa",
             "hello" to "Hello, world",
@@ -74,7 +73,9 @@ class LinkTest {
                     Link(href = "http://child2")
                 )
             ),
-            Link.fromJSON(JSONObject("""{
+            Link.fromJSON(
+                JSONObject(
+                    """{
                 "href": "http://href",
                 "type": "application/pdf",
                 "templated": true,
@@ -96,7 +97,9 @@ class LinkTest {
                     {"href": "http://child1"},
                     {"href": "http://child2"}
                 ]
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
@@ -158,10 +161,14 @@ class LinkTest {
                 Link(href = "http://child1"),
                 Link(href = "http://child2")
             ),
-            Link.fromJSONArray(JSONArray("""[
+            Link.fromJSONArray(
+                JSONArray(
+                    """[
                 {'href': 'http://child1'},
                 {'href': 'http://child2'}
-            ]"""))
+            ]"""
+                )
+            )
         )
     }
 
@@ -174,10 +181,14 @@ class LinkTest {
             listOf(
                 Link(href = "http://child2")
             ),
-            Link.fromJSONArray(JSONArray("""[
+            Link.fromJSONArray(
+                JSONArray(
+                    """[
                 {'title': 'Title'},
                 {'href': 'http://child2'}
-            ]"""))
+            ]"""
+                )
+            )
         )
     }
 
@@ -190,7 +201,8 @@ class LinkTest {
 
     @Test fun `get full JSON`() {
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "href": "http://href",
                 "type": "application/pdf",
                 "templated": true,
@@ -212,7 +224,8 @@ class LinkTest {
                     {"href": "http://child1", "templated": false},
                     {"href": "http://child2", "templated": false}
                 ]
-            }"""),
+            }"""
+            ),
             Link(
                 href = "http://href",
                 type = "application/pdf",
@@ -239,10 +252,12 @@ class LinkTest {
 
     @Test fun `get JSON array`() {
         assertJSONEquals(
-            JSONArray("""[
+            JSONArray(
+                """[
                 {'href': 'http://child1', 'templated': false},
                 {'href': 'http://child2', 'templated': false}
-            ]"""),
+            ]"""
+            ),
             listOf(
                 Link(href = "http://child1"),
                 Link(href = "http://child2")
@@ -329,7 +344,8 @@ class LinkTest {
         )
 
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "href": "http://href",
                 "type": "application/pdf",
                 "templated": true,
@@ -352,7 +368,8 @@ class LinkTest {
                     {"href": "http://child1", "templated": false},
                     {"href": "http://child2", "templated": false}
                 ]
-            }"""),
+            }"""
+            ),
             link.addProperties(mapOf("additional" to "property")).toJSON()
         )
     }
@@ -366,9 +383,8 @@ class LinkTest {
             listOf(
                 Link(href = "href1"),
                 Link(href = "href2"),
-                Link(href = "href2")  // duplicated on purpose
+                Link(href = "href2") // duplicated on purpose
             ).indexOfFirstWithHref("href2")
         )
     }
-
 }

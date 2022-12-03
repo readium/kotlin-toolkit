@@ -54,8 +54,9 @@ class BookshelfFragment : Fragment() {
         bookshelfViewModel.channel.receive(viewLifecycleOwner) { handleEvent(it) }
 
         bookshelfAdapter = BookshelfAdapter(
-            onBookClick = { book -> book.id?.let {  bookshelfViewModel.openBook(it, requireActivity()) } },
-            onBookLongClick = { book -> confirmDeleteBook(book) })
+            onBookClick = { book -> book.id?.let { bookshelfViewModel.openBook(it, requireActivity()) } },
+            onBookLongClick = { book -> confirmDeleteBook(book) }
+        )
 
         documentPickerLauncher =
             registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -164,7 +165,9 @@ class BookshelfFragment : Fragment() {
         RecyclerView.ItemDecoration() {
 
         override fun getItemOffsets(
-            outRect: Rect, view: View, parent: RecyclerView,
+            outRect: Rect,
+            view: View,
+            parent: RecyclerView,
             state: RecyclerView.State
         ) {
             outRect.bottom = verticalSpaceHeight

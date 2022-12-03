@@ -9,6 +9,8 @@
 
 package org.readium.r2.shared
 
+import java.io.File
+import java.net.URL
 import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.json.JSONObject
@@ -19,8 +21,6 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.use
-import java.io.File
-import java.net.URL
 
 /**
  * Asserts that two [JSONObject] are equal.
@@ -48,7 +48,6 @@ class Fixtures(val path: String? = null) {
 
     fun fileAt(resourcePath: String): File =
         File(pathAt(resourcePath))
-
 }
 
 internal fun Resource.readBlocking(range: LongRange? = null) = runBlocking { read(range) }

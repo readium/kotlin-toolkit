@@ -11,6 +11,12 @@ import android.graphics.BitmapFactory
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.MalformedURLException
+import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -30,12 +36,6 @@ import org.readium.r2.testapp.domain.model.Catalog
 import org.readium.r2.testapp.opds.OPDSDownloader
 import org.readium.r2.testapp.utils.EventChannel
 import timber.log.Timber
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.MalformedURLException
-import java.net.URL
 
 class CatalogViewModel(application: android.app.Application) : AndroidViewModel(application) {
 
@@ -108,7 +108,7 @@ class CatalogViewModel(application: android.app.Application) : AndroidViewModel(
             if (!coverImageDir.exists()) {
                 coverImageDir.mkdirs()
             }
-            val coverImageFile = File(storageDir, "covers/${imageName}.png")
+            val coverImageFile = File(storageDir, "covers/$imageName.png")
 
             val bitmap: Bitmap? =
                 publication.cover() ?: getBitmapFromURL(publication.images.first().href)

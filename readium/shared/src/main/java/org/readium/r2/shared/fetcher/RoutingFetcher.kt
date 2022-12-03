@@ -28,8 +28,8 @@ class RoutingFetcher(private val routes: List<Route>) : Fetcher {
      */
     class Route(val fetcher: Fetcher, val accepts: (Link) -> Boolean = { true })
 
-    constructor(local: Fetcher, remote: Fetcher)
-            : this(listOf( Route(local, Link::isLocal), Route(remote) ))
+    constructor(local: Fetcher, remote: Fetcher) :
+        this(listOf(Route(local, Link::isLocal), Route(remote)))
 
     override suspend fun links(): List<Link> = routes.flatMap { it.fetcher.links() }
 

@@ -24,10 +24,12 @@ class MetadataTest {
             Presentation(continuous = false, orientation = Presentation.Orientation.LANDSCAPE),
             Metadata(
                 localizedTitle = LocalizedString("Title"),
-                otherMetadata = mapOf("presentation" to mapOf(
-                    "continuous" to false,
-                    "orientation" to "landscape"
-                ))
+                otherMetadata = mapOf(
+                    "presentation" to mapOf(
+                        "continuous" to false,
+                        "orientation" to "landscape"
+                    )
+                )
             ).presentation
         )
     }
@@ -38,5 +40,4 @@ class MetadataTest {
             Metadata(localizedTitle = LocalizedString("Title")).presentation
         )
     }
-
 }

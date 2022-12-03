@@ -8,18 +8,19 @@ package org.readium.r2.navigator
 
 import android.graphics.PointF
 import android.graphics.RectF
-import android.os.Bundle
 import android.os.Parcelable
 import androidx.annotation.ColorInt
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListUpdateCallback
+import kotlin.reflect.KClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
+import kotlinx.parcelize.WriteWith
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
+import org.readium.r2.shared.extensions.JSONParceler
 import org.readium.r2.shared.publication.Locator
-import kotlin.reflect.KClass
 
 /**
  * A navigator able to render arbitrary decorations over a publication.
@@ -43,7 +44,7 @@ interface DecorableNavigator : Navigator {
      * particular feature before enabling it. For example, underlining an audiobook does not make
      * sense, so an Audiobook Navigator would not support the `underline` decoration style.
      */
-    fun <T: Decoration.Style> supportsDecorationStyle(style: KClass<T>): Boolean
+    fun <T : Decoration.Style> supportsDecorationStyle(style: KClass<T>): Boolean
 
     /**
      * Registers a new [listener] for decoration interactions in the given [group].
@@ -101,7 +102,7 @@ data class Decoration(
     val id: DecorationId,
     val locator: Locator,
     val style: Style,
-    val extras: Bundle = Bundle(),
+    val extras: @WriteWith<JSONParceler> Map<String, Any> = mapOf()
 ) : JSONable, Parcelable {
 
     /**
@@ -113,9 +114,15 @@ data class Decoration(
      */
     interface Style : Parcelable {
         @Parcelize
-        data class Highlight(@ColorInt override val tint: Int, override val isActive: Boolean = false) : Style, Tinted, Activable
+        data class Highlight(
+            @ColorInt override val tint: Int,
+            override val isActive: Boolean = false
+        ) : Style, Tinted, Activable
         @Parcelize
-        data class Underline(@ColorInt override val tint: Int, override val isActive: Boolean = false) : Style, Tinted, Activable
+        data class Underline(
+            @ColorInt override val tint: Int,
+            override val isActive: Boolean = false
+        ) : Style, Tinted, Activable
 
         /** A type of [Style] which has a tint color. */
         interface Tinted {
@@ -166,9 +173,9 @@ suspend fun List<Decoration>.changesByHref(target: List<Decoration>): Map<String
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
             val sourceDecoration = source[oldItemPosition]
             val targetDecoration = target[newItemPosition]
-            return sourceDecoration.id == targetDecoration.id
-                && sourceDecoration.locator == targetDecoration.locator
-                && sourceDecoration.style == targetDecoration.style
+            return sourceDecoration.id == targetDecoration.id &&
+                sourceDecoration.locator == targetDecoration.locator &&
+                sourceDecoration.style == targetDecoration.style
         }
     })
 

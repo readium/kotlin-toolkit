@@ -26,11 +26,9 @@ class LcpContentProtectionService(val license: LcpLicense?, override val error: 
 
     companion object {
 
-        fun createFactory(license:  LcpLicense?, error: LcpException?): (Publication.Service.Context) -> LcpContentProtectionService =
+        fun createFactory(license: LcpLicense?, error: LcpException?): (Publication.Service.Context) -> LcpContentProtectionService =
             { LcpContentProtectionService(license, error) }
-
     }
-
 }
 
 /**

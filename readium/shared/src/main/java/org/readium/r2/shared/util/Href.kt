@@ -9,11 +9,11 @@ package org.readium.r2.shared.util
 import android.net.Uri
 import android.net.UrlQuerySanitizer
 import android.webkit.URLUtil
-import org.readium.r2.shared.extensions.addPrefix
-import timber.log.Timber
 import java.net.IDN
 import java.net.URI
 import java.net.URL
+import org.readium.r2.shared.extensions.addPrefix
+import timber.log.Timber
 
 /**
  * Represents an HREF, optionally relative to another one.
@@ -77,7 +77,6 @@ class Href(
             val url = URL(string)
             val uri = URI(url.protocol, url.userInfo, IDN.toASCII(url.host), url.port, url.path, url.query, url.ref)
             uri.toASCIIString().removePrefix("file://")
-
         } catch (e: Exception) {
             Timber.e(e)
             this.string

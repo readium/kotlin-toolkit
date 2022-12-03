@@ -42,18 +42,6 @@ val publication = streamer.open(FileAsset(pdfFile)).getOrThrow()
 
 ## Render a PDF with Readium's `PdfNavigatorFragment`.
 
-To render the PDF using Readium's `PdfNavigatorFragment`, use:
+To render the PDF using Readium's `PdfNavigatorFragment`, instantiate `PsPdfKitEngineProvider` and use the `PdfNavigatorFactory` to get a `FragmentFactory` and a `PreferencesEditor`.
 
-```kotlin
-override fun onCreate(savedInstanceState: Bundle?) {
-    childFragmentManager.fragmentFactory =
-        PdfNavigatorFragment.createFactory(
-            publication = publication,
-            ...
-            documentFragmentFactory = PsPdfKitDocumentFragment.createFactory(requireContext())
-        )
-
-    super.onCreate(savedInstanceState)
-}
-```
 

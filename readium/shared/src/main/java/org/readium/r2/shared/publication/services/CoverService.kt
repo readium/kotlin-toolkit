@@ -66,9 +66,9 @@ private suspend fun Publication.coverFromManifest(): Bitmap? {
  * Returns the publication cover as a [Bitmap] at its maximum size.
  */
 suspend fun Publication.cover(): Bitmap? {
-        findService(CoverService::class)?.cover()?.let { return it }
-        return coverFromManifest()
-    }
+    findService(CoverService::class)?.cover()?.let { return it }
+    return coverFromManifest()
+}
 
 /**
  * Returns the publication cover as a [Bitmap], scaled down to fit the given [maxSize].
@@ -82,7 +82,6 @@ suspend fun Publication.coverFitting(maxSize: Size): Bitmap? {
 var Publication.ServicesBuilder.coverServiceFactory: ServiceFactory?
     get() = get(CoverService::class)
     set(value) = set(CoverService::class, value)
-
 
 /**
  * A [CoverService] which provides a unique cover for each Publication.
@@ -114,10 +113,8 @@ abstract class GeneratedCoverService : CoverService {
                 val link = coverLink.copy(width = cover.width, height = cover.height)
                 BytesResource(link, png)
             }
-
         }
     }
-
 }
 
 /**
@@ -130,5 +127,4 @@ class InMemoryCoverService internal constructor(private val cover: Bitmap) : Gen
     }
 
     override suspend fun cover(): Bitmap = cover
-
 }

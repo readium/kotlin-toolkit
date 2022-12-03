@@ -46,7 +46,7 @@ data class URITemplate(val uri: String) {
             string.split(",").joinToString(",") { parameters[it] ?: "" }
 
         fun expandFormStyle(string: String, parameters: Map<String, String>): String =
-            "?" + string.split(",").joinToString("&") { "${it}=${parameters[it].orEmpty()}" }
+            "?" + string.split(",").joinToString("&") { "$it=${parameters[it].orEmpty()}" }
 
         // Escaping the last } is somehow required, otherwise the regex can't be parsed on a Pixel
         // 3a. However, without it works with the unit tests.
@@ -61,5 +61,4 @@ data class URITemplate(val uri: String) {
             .replace("~~%20~~", "%2B")
             .replace("~~+~~", "%2B")
     }
-
 }

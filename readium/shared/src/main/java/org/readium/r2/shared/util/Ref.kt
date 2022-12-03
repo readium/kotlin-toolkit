@@ -15,5 +15,4 @@ package org.readium.r2.shared.util
 class Ref<T>(var ref: T? = null) {
 
     operator fun invoke(): T? = ref
-
 }

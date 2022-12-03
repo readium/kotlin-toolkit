@@ -66,13 +66,15 @@ class NcxParserTest {
         Assertions.assertThat(ncxChildren["toc"]).containsExactly(
             Link(title = "Introduction", href = "/OEBPS/xhtml/introduction.xhtml"),
             Link(
-                title = "Part I", href = "#", children = listOf(
+                title = "Part I", href = "#",
+                children = listOf(
                     Link(title = "Chapter 1", href = "/OEBPS/xhtml/part1/chapter1.xhtml"),
                     Link(title = "Chapter 2", href = "/OEBPS/xhtml/part1/chapter2.xhtml")
                 )
             ),
             Link(
-                title = "Part II", href = "/OEBPS/xhtml/part2/chapter1.xhtml", children = listOf(
+                title = "Part II", href = "/OEBPS/xhtml/part2/chapter1.xhtml",
+                children = listOf(
                     Link(title = "Chapter 1", href = "/OEBPS/xhtml/part2/chapter1.xhtml"),
                     Link(title = "Chapter 2", href = "/OEBPS/xhtml/part2/chapter2.xhtml")
                 )

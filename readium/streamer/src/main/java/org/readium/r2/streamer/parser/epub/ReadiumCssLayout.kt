@@ -29,6 +29,7 @@ internal enum class ReadiumCssLayout(val cssId: String) {
     companion object {
 
         operator fun invoke(metadata: Metadata): ReadiumCssLayout =
+            @Suppress("Deprecation")
             invoke(languages = metadata.languages, readingProgression = metadata.effectiveReadingProgression)
 
         /**
@@ -39,7 +40,7 @@ internal enum class ReadiumCssLayout(val cssId: String) {
         operator fun invoke(languages: List<String>, readingProgression: ReadingProgression): ReadiumCssLayout {
             val isCjk: Boolean =
                 if (languages.size == 1) {
-                    val language = languages[0].split("-")[0]  // Remove region
+                    val language = languages[0].split("-")[0] // Remove region
                     listOf("zh", "ja", "ko").contains(language)
                 } else {
                     false
@@ -55,6 +56,5 @@ internal enum class ReadiumCssLayout(val cssId: String) {
                     else LTR
             }
         }
-
     }
 }

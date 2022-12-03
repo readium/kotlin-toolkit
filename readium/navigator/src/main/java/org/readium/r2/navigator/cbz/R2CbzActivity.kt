@@ -21,6 +21,7 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.asLiveData
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
@@ -33,18 +34,17 @@ import org.readium.r2.navigator.image.ImageNavigatorFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.util.CompositeFragmentFactory
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
-import kotlin.coroutines.CoroutineContext
 
 open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator, ImageNavigatorFragment.Listener {
 
     private val navigatorFragment: ImageNavigatorFragment
         get() = supportFragmentManager.findFragmentById(R.id.image_navigator) as ImageNavigatorFragment
-
 
     protected var navigatorDelegate: NavigatorDelegate? = null
 
@@ -54,6 +54,10 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
 
     override val currentLocator: StateFlow<Locator>
         get() = navigatorFragment.currentLocator
+
+    @ExperimentalReadiumApi
+    override val presentation: StateFlow<VisualNavigator.Presentation>
+        get() = navigatorFragment.presentation
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         return navigatorFragment.go(locator, animated, completion)
@@ -73,7 +77,6 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
 
     override val readingProgression: ReadingProgression
         get() = navigatorFragment.readingProgression
-
 
     /**
      * Context of this scope.
@@ -119,11 +122,14 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
 
         resourcePager = navigatorFragment.resourcePager
 
-        navigatorFragment.currentLocator.asLiveData().observe(this, Observer { locator ->
-            locator ?: return@Observer
-            @Suppress("DEPRECATION")
-            navigatorDelegate?.locationDidChange(this, locator)
-        })
+        navigatorFragment.currentLocator.asLiveData().observe(
+            this,
+            Observer { locator ->
+                locator ?: return@Observer
+                @Suppress("DEPRECATION")
+                navigatorDelegate?.locationDidChange(this, locator)
+            }
+        )
 
         // Add support for display cutout.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -151,16 +157,20 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         if (allowToggleActionBar) {
             launch {
                 if (supportActionBar!!.isShowing) {
-                    resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    resourcePager.systemUiVisibility = (
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                             or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                             or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                             or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                            or View.SYSTEM_UI_FLAG_IMMERSIVE)
+                            or View.SYSTEM_UI_FLAG_IMMERSIVE
+                        )
                 } else {
-                    resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    resourcePager.systemUiVisibility = (
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        )
                 }
             }
         }
@@ -207,12 +217,14 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
 
                 @Suppress("DEPRECATION")
                 if (supportActionBar!!.isShowing && allowToggleActionBar) {
-                    resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    resourcePager.systemUiVisibility = (
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                             or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                             or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                             or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                             or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                            or View.SYSTEM_UI_FLAG_IMMERSIVE)
+                            or View.SYSTEM_UI_FLAG_IMMERSIVE
+                        )
                 }
             }
         }

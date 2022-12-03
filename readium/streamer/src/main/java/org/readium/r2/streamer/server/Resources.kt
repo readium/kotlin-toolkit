@@ -27,5 +27,4 @@ class Resources {
             is Pair<*, *> -> resource.first as? String
             else -> resource as? String
         }
-
 }

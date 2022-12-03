@@ -17,10 +17,11 @@ fun URL.removeLastComponent(): URL {
         .lastOrNull { it.isNotEmpty() }
         ?: return this
 
-    return URL(toString()
-        .removeSuffix("?$query")
-        .removeSuffix("/")
-        .removeSuffix(lastPathComponent)
+    return URL(
+        toString()
+            .removeSuffix("?$query")
+            .removeSuffix("/")
+            .removeSuffix(lastPathComponent)
     )
 }
 

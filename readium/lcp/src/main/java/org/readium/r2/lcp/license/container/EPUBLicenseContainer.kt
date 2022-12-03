@@ -9,9 +9,8 @@
 
 package org.readium.r2.lcp.license.container
 
-
 /**
  * Access a License Document stored in an EPUB archive, under META-INF/license.lcpl.
  */
-internal class EPUBLicenseContainer(epub: String)
-    : ZIPLicenseContainer(zip = epub, pathInZIP = "META-INF/license.lcpl")
+internal class EPUBLicenseContainer(epub: String) :
+    ZIPLicenseContainer(zip = epub, pathInZIP = "META-INF/license.lcpl")

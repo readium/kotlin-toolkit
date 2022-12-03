@@ -7,6 +7,7 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
+import java.util.*
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
@@ -18,7 +19,6 @@ import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
-import java.util.*
 
 /**
  * https://readium.org/webpub-manifest/schema/metadata.schema.json
@@ -95,7 +95,7 @@ data class Metadata(
         belongsToCollections: List<Collection> = emptyList(),
         belongsToSeries: List<Collection> = emptyList(),
         otherMetadata: Map<String, Any> = mapOf()
-    ): this(
+    ) : this(
         identifier = identifier,
         type = type,
         conformsTo = conformsTo,
@@ -168,6 +168,7 @@ data class Metadata(
      *
      * See this issue for more details: https://github.com/readium/architecture/issues/113
      */
+    @Deprecated("You should resolve [ReadingProgression.AUTO] by yourself.", level = DeprecationLevel.WARNING)
     @IgnoredOnParcel
     val effectiveReadingProgression: ReadingProgression get() {
         if (readingProgression != ReadingProgression.AUTO) {
@@ -284,10 +285,10 @@ data class Metadata(
             val numberOfPages = json.optPositiveInt("numberOfPages", remove = true)
 
             val belongsToJson = (
-                json.remove("belongsTo") as? JSONObject ?:
-                json.remove("belongs_to") as? JSONObject ?:
-                JSONObject()
-            )
+                json.remove("belongsTo") as? JSONObject
+                    ?: json.remove("belongs_to") as? JSONObject
+                    ?: JSONObject()
+                )
 
             val belongsTo = mutableMapOf<String, List<Collection>>()
             for (key in belongsToJson.keys()) {
@@ -330,7 +331,6 @@ data class Metadata(
                 otherMetadata = json.toMap()
             )
         }
-
     }
 
     @Deprecated("Use [type] instead", ReplaceWith("type"))
@@ -365,5 +365,4 @@ data class Metadata(
 
     @Deprecated("Renamed into [toJSON]", ReplaceWith("toJSON()"))
     fun writeJSON(): JSONObject = toJSON()
-
 }

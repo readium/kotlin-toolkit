@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import kotlin.math.roundToInt
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import org.readium.r2.shared.publication.Publication
@@ -28,7 +29,6 @@ import org.readium.r2.testapp.domain.model.Bookmark
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.extensions.outlineTitle
 import org.readium.r2.testapp.utils.viewLifecycle
-import kotlin.math.roundToInt
 
 class BookmarksFragment : Fragment() {
 
@@ -79,12 +79,16 @@ class BookmarksFragment : Fragment() {
     }
 }
 
-class BookmarkAdapter(private val publication: Publication, private val onBookmarkDeleteRequested: (Bookmark) -> Unit, private val onBookmarkSelectedRequested: (Bookmark) -> Unit) :
-        ListAdapter<Bookmark, BookmarkAdapter.ViewHolder>(BookmarksDiff()) {
+class BookmarkAdapter(
+    private val publication: Publication,
+    private val onBookmarkDeleteRequested: (Bookmark) -> Unit,
+    private val onBookmarkSelectedRequested: (Bookmark) -> Unit
+) :
+    ListAdapter<Bookmark, BookmarkAdapter.ViewHolder>(BookmarksDiff()) {
 
     override fun onCreateViewHolder(
-            parent: ViewGroup,
-            viewType: Int
+        parent: ViewGroup,
+        viewType: Int
     ): ViewHolder {
         return ViewHolder(
             ItemRecycleBookmarkBinding.inflate(
@@ -104,7 +108,7 @@ class BookmarkAdapter(private val publication: Publication, private val onBookma
 
         fun bind(bookmark: Bookmark) {
             val title = getBookSpineItem(bookmark.resourceHref)
-                    ?: "*Title Missing*"
+                ?: "*Title Missing*"
 
             binding.bookmarkChapter.text = title
             bookmark.locator.locations.progression?.let { progression ->
@@ -153,17 +157,17 @@ class BookmarkAdapter(private val publication: Publication, private val onBookma
 private class BookmarksDiff : DiffUtil.ItemCallback<Bookmark>() {
 
     override fun areItemsTheSame(
-            oldItem: Bookmark,
-            newItem: Bookmark
+        oldItem: Bookmark,
+        newItem: Bookmark
     ): Boolean {
         return oldItem.id == newItem.id
     }
 
     override fun areContentsTheSame(
-            oldItem: Bookmark,
-            newItem: Bookmark
+        oldItem: Bookmark,
+        newItem: Bookmark
     ): Boolean {
-        return oldItem.bookId == newItem.bookId
-                && oldItem.location == newItem.location
+        return oldItem.bookId == newItem.bookId &&
+            oldItem.location == newItem.location
     }
 }

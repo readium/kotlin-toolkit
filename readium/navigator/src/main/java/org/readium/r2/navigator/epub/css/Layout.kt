@@ -6,7 +6,10 @@
 
 package org.readium.r2.navigator.epub.css
 
-import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.navigator.epub.EpubSettings
+import org.readium.r2.navigator.epub.extensions.isCjk
+import org.readium.r2.navigator.preferences.ReadingProgression
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
 
 /**
@@ -14,48 +17,12 @@ import org.readium.r2.shared.util.Language
  *
  * See https://github.com/readium/readium-css/tree/master/css/dist
  */
-data class Layout(
+@ExperimentalReadiumApi
+internal data class Layout(
     val language: Language? = null,
     val stylesheets: Stylesheets = Stylesheets.Default,
     val readingProgression: ReadingProgression = ReadingProgression.LTR,
 ) {
-    companion object {
-        fun from(language: Language?, hasMultipleLanguages: Boolean, readingProgression: ReadingProgression, verticalText: Boolean?): Layout {
-            // https://github.com/readium/readium-css/blob/master/docs/CSS16-internationalization.md#missing-page-progression-direction
-            val rp = when {
-                readingProgression.isHorizontal == true ->
-                    readingProgression
-
-                !hasMultipleLanguages && language != null && language.isRtl ->
-                    ReadingProgression.RTL
-
-                else ->
-                    ReadingProgression.LTR
-            }
-
-            val stylesheets: Stylesheets =
-                when {
-                    verticalText == true -> {
-                        Stylesheets.CjkVertical
-                    }
-                    language != null && language.isCjk -> {
-                        if (rp == ReadingProgression.RTL && verticalText != false)
-                            Stylesheets.CjkVertical
-                        else
-                            Stylesheets.CjkHorizontal
-                    }
-                    rp == ReadingProgression.RTL -> {
-                        Stylesheets.Rtl
-                    }
-                    else -> {
-                        Stylesheets.Default
-                    }
-                }
-
-            return Layout(language, stylesheets, rp)
-        }
-    }
-
     /**
      * Readium CSS stylesheet variants.
      */
@@ -78,20 +45,22 @@ data class Layout(
     enum class HtmlDir {
         Unspecified, Ltr, Rtl;
     }
-}
 
-private val Language.isRtl: Boolean get() {
-    val c = code.lowercase()
-    return c == "ar"
-        || c == "fa"
-        || c == "he"
-        || c == "zh-hant"
-        || c == "zh-tw"
-}
+    companion object {
 
-private val Language.isCjk: Boolean get() {
-    val c = code.lowercase()
-    return c == "ja"
-        || c == "ko"
-        || removeRegion().code.lowercase() == "zh"
+        internal fun from(settingsValues: EpubSettings): Layout {
+            val stylesheets = when {
+                settingsValues.verticalText -> Stylesheets.CjkVertical
+                settingsValues.language?.isCjk == true -> Stylesheets.CjkHorizontal
+                settingsValues.readingProgression == ReadingProgression.RTL -> Stylesheets.Rtl
+                else -> Stylesheets.Default
+            }
+
+            return Layout(
+                language = settingsValues.language,
+                readingProgression = settingsValues.readingProgression,
+                stylesheets = stylesheets
+            )
+        }
+    }
 }

@@ -10,18 +10,18 @@ import android.content.Context
 import android.content.Intent
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.speech.tts.Voice as AndroidVoice
+import java.util.*
+import kotlin.Exception
+import kotlin.coroutines.resume
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
-import org.readium.r2.navigator.tts.TtsEngine.*
+import org.readium.r2.navigator.tts.TtsEngine.Voice
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.Try
-import java.util.*
-import kotlin.Exception
-import kotlin.coroutines.resume
-import android.speech.tts.Voice as AndroidVoice
 
 /**
  * Default [TtsEngine] implementation using Android's native text to speech engine.
@@ -29,7 +29,7 @@ import android.speech.tts.Voice as AndroidVoice
 @ExperimentalReadiumApi
 class AndroidTtsEngine(
     context: Context,
-    private val listener: Listener
+    private val listener: TtsEngine.Listener
 ) : TtsEngine {
 
     /**
@@ -103,19 +103,22 @@ class AndroidTtsEngine(
     }
 
     override suspend fun speak(
-        utterance: Utterance,
+        utterance: TtsEngine.Utterance,
         onSpeakRange: (IntRange) -> Unit
     ): TtsTry<Unit> =
         suspendCancellableCoroutine { cont ->
-            val result = tasks.trySend(UtteranceTask(
-                utterance = utterance,
-                continuation = cont,
-                onSpeakRange = onSpeakRange
-            ))
+            val result = tasks.trySend(
+                UtteranceTask(
+                    utterance = utterance,
+                    continuation = cont,
+                    onSpeakRange = onSpeakRange
+                )
+            )
 
             result.onFailure {
                 listener.onEngineError(
-                    TtsEngine.Exception.Other(IllegalStateException("Failed to schedule a new utterance task")))
+                    TtsEngine.Exception.Other(IllegalStateException("Failed to schedule a new utterance task"))
+                )
             }
         }
 
@@ -127,7 +130,10 @@ class AndroidTtsEngine(
      *
      * See https://android-developers.googleblog.com/2009/09/introduction-to-text-to-speech-in.html
      */
-    fun requestInstallMissingVoice(context: Context, intentFlags: Int = Intent.FLAG_ACTIVITY_NEW_TASK): Boolean {
+    fun requestInstallMissingVoice(
+        context: Context,
+        intentFlags: Int = Intent.FLAG_ACTIVITY_NEW_TASK
+    ): Boolean {
         val intent = Intent()
             .setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA)
             .setFlags(intentFlags)
@@ -164,7 +170,7 @@ class AndroidTtsEngine(
      * Holds a single utterance to be synthesized and the continuation for the [speak] call.
      */
     private inner class UtteranceTask(
-        val utterance: Utterance,
+        val utterance: TtsEngine.Utterance,
         val continuation: CancellableContinuation<TtsTry<Unit>>,
         val onSpeakRange: (IntRange) -> Unit,
     ) {
@@ -184,7 +190,7 @@ class AndroidTtsEngine(
                 engine.setup()
                 engine.setOnUtteranceProgressListener(Listener(id))
                 engine.speak(utterance.text, TextToSpeech.QUEUE_FLUSH, null, id)
-            } catch (e: kotlin.Exception) {
+            } catch (e: Exception) {
                 finish(TtsEngine.Exception.wrap(e))
             }
         }
@@ -246,13 +252,15 @@ class AndroidTtsEngine(
                 require(utteranceId == id)
 
                 val error = EngineException(errorCode)
-                finish(when (error.error) {
-                    EngineError.Network, EngineError.NetworkTimeout ->
-                        TtsEngine.Exception.Network(error)
-                    EngineError.NotInstalledYet ->
-                        TtsEngine.Exception.LanguageSupportIncomplete(utterance.language, cause = error)
-                    else -> TtsEngine.Exception.Other(error)
-                })
+                finish(
+                    when (error.error) {
+                        EngineError.Network, EngineError.NetworkTimeout ->
+                            TtsEngine.Exception.Network(error)
+                        EngineError.NotInstalledYet ->
+                            TtsEngine.Exception.LanguageSupportIncomplete(utterance.language, cause = error)
+                        else -> TtsEngine.Exception.Other(error)
+                    }
+                )
             }
 
             override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {

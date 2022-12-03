@@ -12,7 +12,7 @@ package org.readium.r2.lcp.license
 import java.util.concurrent.atomic.AtomicReference
 
 internal class StateMachine<STATE : Any, EVENT : Any> private constructor(
-        private val graph: Graph<STATE, EVENT>
+    private val graph: Graph<STATE, EVENT>
 ) {
 
     private val stateRef = AtomicReference<STATE>(graph.initialState)
@@ -58,10 +58,10 @@ internal class StateMachine<STATE : Any, EVENT : Any> private constructor(
     }
 
     private fun STATE.getDefinition() = graph.stateDefinitions
-            .filter { it.key.matches(this) }
-            .map { it.value }
-            .firstOrNull()
-            .let { checkNotNull(it) }
+        .filter { it.key.matches(this) }
+        .map { it.value }
+        .firstOrNull()
+        .let { checkNotNull(it) }
 
     private fun STATE.notifyOnEnter(cause: EVENT) {
         getDefinition().onEnterListeners.forEach { it(this, cause) }
@@ -81,21 +81,21 @@ internal class StateMachine<STATE : Any, EVENT : Any> private constructor(
         abstract val event: EVENT
 
         data class Valid<out STATE : Any, out EVENT : Any> internal constructor(
-                override val fromState: STATE,
-                override val event: EVENT,
-                val toState: STATE
+            override val fromState: STATE,
+            override val event: EVENT,
+            val toState: STATE
         ) : Transition<STATE, EVENT>()
 
         data class Invalid<out STATE : Any, out EVENT : Any> internal constructor(
-                override val fromState: STATE,
-                override val event: EVENT
+            override val fromState: STATE,
+            override val event: EVENT
         ) : Transition<STATE, EVENT>()
     }
 
     data class Graph<STATE : Any, EVENT : Any>(
-            val initialState: STATE,
-            val stateDefinitions: Map<Matcher<STATE, STATE>, State<STATE, EVENT>>,
-            val onTransitionListeners: List<(Transition<STATE, EVENT>) -> Unit>
+        val initialState: STATE,
+        val stateDefinitions: Map<Matcher<STATE, STATE>, State<STATE, EVENT>>,
+        val onTransitionListeners: List<(Transition<STATE, EVENT>) -> Unit>
     ) {
 
         class State<STATE : Any, EVENT : Any> internal constructor() {
@@ -104,7 +104,7 @@ internal class StateMachine<STATE : Any, EVENT : Any> private constructor(
             val transitions = linkedMapOf<Matcher<EVENT, EVENT>, (STATE, EVENT) -> TransitionTo<STATE>>()
 
             data class TransitionTo<out STATE : Any> internal constructor(
-                    val toState: STATE
+                val toState: STATE
             )
         }
     }
@@ -132,7 +132,7 @@ internal class StateMachine<STATE : Any, EVENT : Any> private constructor(
     }
 
     class GraphBuilder<STATE : Any, EVENT : Any>(
-            graph: Graph<STATE, EVENT>? = null
+        graph: Graph<STATE, EVENT>? = null
     ) {
         private var initialState = graph?.initialState
         private val stateDefinitions = LinkedHashMap(graph?.stateDefinitions ?: emptyMap())
@@ -143,8 +143,8 @@ internal class StateMachine<STATE : Any, EVENT : Any> private constructor(
         }
 
         fun <S : STATE> state(
-                stateMatcher: Matcher<STATE, S>,
-                init: StateDefinitionBuilder<S>.() -> Unit
+            stateMatcher: Matcher<STATE, S>,
+            init: StateDefinitionBuilder<S>.() -> Unit
         ) {
             stateDefinitions[stateMatcher] = StateDefinitionBuilder<S>().apply(init).build()
         }
@@ -153,7 +153,10 @@ internal class StateMachine<STATE : Any, EVENT : Any> private constructor(
             state(Matcher.any(), init)
         }
 
-        inline fun <reified S : STATE> state(state: S, noinline init: StateDefinitionBuilder<S>.() -> Unit) {
+        inline fun <reified S : STATE> state(
+            state: S,
+            noinline init: StateDefinitionBuilder<S>.() -> Unit
+        ) {
             state(Matcher.eq<STATE, S>(state), init)
         }
 
@@ -174,8 +177,8 @@ internal class StateMachine<STATE : Any, EVENT : Any> private constructor(
             inline fun <reified R : EVENT> eq(value: R): Matcher<EVENT, R> = Matcher.eq(value)
 
             fun <E : EVENT> on(
-                    eventMatcher: Matcher<EVENT, E>,
-                    createTransitionTo: S.(E) -> Graph.State.TransitionTo<STATE>
+                eventMatcher: Matcher<EVENT, E>,
+                createTransitionTo: S.(E) -> Graph.State.TransitionTo<STATE>
             ) {
                 stateDefinition.transitions[eventMatcher] = { state, event ->
                     @Suppress("UNCHECKED_CAST")
@@ -184,14 +187,14 @@ internal class StateMachine<STATE : Any, EVENT : Any> private constructor(
             }
 
             inline fun <reified E : EVENT> on(
-                    noinline createTransitionTo: S.(E) -> Graph.State.TransitionTo<STATE>
+                noinline createTransitionTo: S.(E) -> Graph.State.TransitionTo<STATE>
             ) {
                 return on(any(), createTransitionTo)
             }
 
             inline fun <reified E : EVENT> on(
-                    event: E,
-                    noinline createTransitionTo: S.(E) -> Graph.State.TransitionTo<STATE>
+                event: E,
+                noinline createTransitionTo: S.(E) -> Graph.State.TransitionTo<STATE>
             ) {
                 return on(eq(event), createTransitionTo)
             }
@@ -214,7 +217,7 @@ internal class StateMachine<STATE : Any, EVENT : Any> private constructor(
 
             @Suppress("UNUSED") // The unused warning is probably a compiler bug.
             fun S.transitionTo(state: STATE) =
-                    Graph.State.TransitionTo(state)
+                Graph.State.TransitionTo(state)
 
             @Suppress("UNUSED") // The unused warning is probably a compiler bug.
             fun S.dontTransition() = transitionTo(this)
@@ -223,14 +226,14 @@ internal class StateMachine<STATE : Any, EVENT : Any> private constructor(
 
     companion object {
         fun <STATE : Any, EVENT : Any> create(
-                init: GraphBuilder<STATE, EVENT>.() -> Unit
+            init: GraphBuilder<STATE, EVENT>.() -> Unit
         ): StateMachine<STATE, EVENT> {
             return create(null, init)
         }
 
         private fun <STATE : Any, EVENT : Any> create(
-                graph: Graph<STATE, EVENT>?,
-                init: GraphBuilder<STATE, EVENT>.() -> Unit
+            graph: Graph<STATE, EVENT>?,
+            init: GraphBuilder<STATE, EVENT>.() -> Unit
         ): StateMachine<STATE, EVENT> {
             return StateMachine(GraphBuilder(graph).apply(init).build())
         }

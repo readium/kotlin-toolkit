@@ -14,6 +14,13 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
+import java.util.*
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -34,13 +41,6 @@ import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
 import org.readium.r2.testapp.utils.extensions.moveTo
 import timber.log.Timber
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.net.HttpURLConnection
-import java.net.URL
-import java.util.*
-import kotlin.time.ExperimentalTime
 
 class BookshelfViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -192,7 +192,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             if (!coverImageDir.exists()) {
                 coverImageDir.mkdirs()
             }
-            val coverImageFile = File(app.storageDir, "covers/${imageName}.png")
+            val coverImageFile = File(app.storageDir, "covers/$imageName.png")
 
             val bitmap: Bitmap? = publication.cover()
 

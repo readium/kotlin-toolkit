@@ -56,7 +56,5 @@ data class Properties(
         fun fromJSON(json: JSONObject?) = Properties(
             otherProperties = json?.toMap() ?: emptyMap()
         )
-
     }
-
 }

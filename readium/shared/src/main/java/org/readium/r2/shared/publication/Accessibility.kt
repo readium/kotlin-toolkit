@@ -14,11 +14,10 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.publication.Accessibility.AccessMode.Companion.toJSONArray
-import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode.Companion.toJSONArray
 import org.readium.r2.shared.publication.Accessibility.Feature.Companion.toJSONArray
 import org.readium.r2.shared.publication.Accessibility.Hazard.Companion.toJSONArray
+import org.readium.r2.shared.publication.Accessibility.PrimaryAccessMode.Companion.toJSONArray
 import org.readium.r2.shared.publication.Accessibility.Profile.Companion.toJSONArray
 import org.readium.r2.shared.util.MapCompanion
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -137,7 +136,7 @@ data class Accessibility(
     @JvmInline
     value class AccessMode(val value: String) : Parcelable {
 
-        companion object  {
+        companion object {
             /**
              * Indicates that the resource contains information encoded in auditory form.
              */
@@ -146,7 +145,7 @@ data class Accessibility(
             /**
              * Indicates that the resource contains charts encoded in visual form.
              */
-            val CHART_ON_VISUAL =  AccessMode("chartOnVisual")
+            val CHART_ON_VISUAL = AccessMode("chartOnVisual")
 
             /**
              * Indicates that the resource contains chemical equations encoded in visual form.
@@ -537,7 +536,7 @@ data class Accessibility(
         }
     }
 
-    override fun toJSON(): JSONObject =  JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         putIfNotEmpty("conformsTo", conformsTo.toJSONArray())
         put("certification", certification?.toJSON())
         put("summary", summary)

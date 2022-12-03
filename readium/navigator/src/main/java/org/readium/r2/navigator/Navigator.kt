@@ -7,16 +7,18 @@
 package org.readium.r2.navigator
 
 import android.graphics.PointF
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.media.MediaPlayback
+import org.readium.r2.navigator.preferences.Axis
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
+import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 
 /**
  * Base interface for a navigator rendering a publication.
@@ -90,14 +92,12 @@ interface Navigator {
     val currentLocation: Locator? get() = currentLocator.value
     @Deprecated("Use [VisualNavigator.Listener] instead", ReplaceWith("VisualNavigator.Listener"))
     interface VisualListener : VisualNavigator.Listener
-
 }
 
 interface NavigatorDelegate {
     @Deprecated("Observe [currentLocator] instead")
     fun locationDidChange(navigator: Navigator? = null, locator: Locator) {}
 }
-
 
 /**
  * A navigator rendering the publication visually on-screen.
@@ -107,7 +107,13 @@ interface VisualNavigator : Navigator {
     /**
      * Current reading progression direction.
      */
-    val readingProgression: ReadingProgression
+    val readingProgression: PublicationReadingProgression
+
+    /**
+     * Current presentation rendered by the navigator.
+     */
+    @ExperimentalReadiumApi
+    val presentation: StateFlow<Presentation>
 
     /**
      * Returns the [Locator] to the first content element that begins on the current screen.
@@ -115,6 +121,24 @@ interface VisualNavigator : Navigator {
     @ExperimentalReadiumApi
     suspend fun firstVisibleElementLocator(): Locator? =
         currentLocator.value
+
+    @ExperimentalReadiumApi
+    interface Presentation {
+        /**
+         * Horizontal direction of progression across resources.
+         */
+        val readingProgression: ReadingProgression
+
+        /**
+         * If the overflow of the content is managed through scroll instead of pagination.
+         */
+        val scroll: Boolean
+
+        /**
+         * Main axis along which the resources are laid out.
+         */
+        val axis: Axis
+    }
 
     interface Listener : Navigator.Listener {
         /**
@@ -160,12 +184,13 @@ interface VisualNavigator : Navigator {
 /**
  * Moves to the left content portion (eg. page) relative to the reading progression direction.
  */
+@OptIn(ExperimentalReadiumApi::class)
 fun VisualNavigator.goLeft(animated: Boolean = false, completion: () -> Unit = {}): Boolean {
-    return when (readingProgression) {
-        ReadingProgression.LTR, ReadingProgression.TTB, ReadingProgression.AUTO ->
+    return when (presentation.value.readingProgression) {
+        ReadingProgression.LTR ->
             goBackward(animated = animated, completion = completion)
 
-        ReadingProgression.RTL, ReadingProgression.BTT ->
+        ReadingProgression.RTL ->
             goForward(animated = animated, completion = completion)
     }
 }
@@ -173,16 +198,16 @@ fun VisualNavigator.goLeft(animated: Boolean = false, completion: () -> Unit = {
 /**
  * Moves to the right content portion (eg. page) relative to the reading progression direction.
  */
+@OptIn(ExperimentalReadiumApi::class)
 fun VisualNavigator.goRight(animated: Boolean = false, completion: () -> Unit = {}): Boolean {
-    return when (readingProgression) {
-        ReadingProgression.LTR, ReadingProgression.TTB, ReadingProgression.AUTO ->
+    return when (presentation.value.readingProgression) {
+        ReadingProgression.LTR ->
             goForward(animated = animated, completion = completion)
 
-        ReadingProgression.RTL, ReadingProgression.BTT ->
+        ReadingProgression.RTL ->
             goBackward(animated = animated, completion = completion)
     }
 }
-
 
 /**
  * A navigator rendering an audio or video publication.

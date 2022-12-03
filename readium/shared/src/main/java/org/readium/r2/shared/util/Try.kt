@@ -10,14 +10,14 @@
 package org.readium.r2.shared.util
 
 /** A [Result] type which can be used as a return type. */
-sealed class Try<out Success, out Failure: Throwable> {
+sealed class Try<out Success, out Failure : Throwable> {
 
     companion object {
         /** Returns an instance that encapsulates the given value as successful value. */
         fun <Success> success(success: Success): Try<Success, Nothing> = Success(success)
 
         /** Returns the encapsulated Throwable exception if this instance represents failure or null if it is success. */
-        fun <Failure: Throwable> failure(failure: Failure): Try<Nothing, Failure> = Failure(failure)
+        fun <Failure : Throwable> failure(failure: Failure): Try<Nothing, Failure> = Failure(failure)
     }
 
     abstract val isSuccess: Boolean
@@ -119,7 +119,7 @@ inline fun <R, S : R, F : Throwable> Try<S, F>.getOrElse(onFailure: (exception: 
     else
         onFailure(exceptionOrNull()!!)
 
-inline fun <R, S, F: Throwable> Try<S, F>.flatMap(transform: (value: S) -> Try<R, F>): Try<R, F> =
+inline fun <R, S, F : Throwable> Try<S, F>.flatMap(transform: (value: S) -> Try<R, F>): Try<R, F> =
     if (isSuccess)
         transform(getOrThrow())
     else

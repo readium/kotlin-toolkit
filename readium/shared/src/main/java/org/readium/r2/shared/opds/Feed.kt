@@ -9,9 +9,9 @@
 
 package org.readium.r2.shared.opds
 
+import java.net.URL
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import java.net.URL
 
 data class Feed(
     val title: String,

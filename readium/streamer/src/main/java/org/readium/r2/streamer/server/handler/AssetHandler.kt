@@ -22,10 +22,13 @@ import org.readium.r2.streamer.server.Assets
  */
 internal class AssetHandler : BaseHandler() {
 
-    override fun handle(resource: RouterNanoHTTPD.UriResource, uri: Uri, parameters: Map<String, String>?): Response {
+    override fun handle(
+        resource: RouterNanoHTTPD.UriResource,
+        uri: Uri,
+        parameters: Map<String, String>?
+    ): Response {
         val assets = resource.initParameter(Assets::class.java)
         val asset = runBlocking { assets.find(uri) } ?: return notFoundResponse
         return createResponse(mediaType = asset.mediaType, body = asset.stream)
     }
-
 }

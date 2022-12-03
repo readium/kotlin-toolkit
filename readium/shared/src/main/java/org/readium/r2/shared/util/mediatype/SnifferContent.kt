@@ -8,12 +8,12 @@ package org.readium.r2.shared.util.mediatype
 
 import android.content.ContentResolver
 import android.net.Uri
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 /** Provides an access to a file's content to sniff its format. */
 internal interface SnifferContent {
@@ -75,7 +75,6 @@ internal class SnifferBytesContent(val getBytes: () -> ByteArray) : SnifferConte
 
     override suspend fun stream(): InputStream? =
         ByteArrayInputStream(bytes())
-
 }
 
 /** Used to sniff a content URI. */
@@ -98,5 +97,4 @@ internal class SnifferUriContent(val uri: Uri, val contentResolver: ContentResol
             null
         }
     }
-
 }

@@ -10,7 +10,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.cover
 
 @ExperimentalMedia2
-internal class DefaultMetadataFactory(private val publication: Publication): MediaMetadataFactory {
+internal class DefaultMetadataFactory(private val publication: Publication) : MediaMetadataFactory {
 
     private val coroutineScope =
         CoroutineScope(Dispatchers.Default)
@@ -31,15 +31,15 @@ internal class DefaultMetadataFactory(private val publication: Publication): Med
 
         authors
             ?.let {
-                builder.putString(MediaMetadata.METADATA_KEY_AUTHOR,  it)
-                builder.putString(MediaMetadata.METADATA_KEY_ARTIST,  it)
+                builder.putString(MediaMetadata.METADATA_KEY_AUTHOR, it)
+                builder.putString(MediaMetadata.METADATA_KEY_ARTIST, it)
             }
 
         publication.metadata.duration
             ?.let { builder.putLong(MediaMetadata.METADATA_KEY_DURATION, it.toLong() * 1000) }
 
         cover.await()
-            ?.let { builder.putBitmap(MediaMetadata.METADATA_KEY_ART, it)}
+            ?.let { builder.putBitmap(MediaMetadata.METADATA_KEY_ART, it) }
 
         return builder.build()
     }
@@ -61,7 +61,7 @@ internal class DefaultMetadataFactory(private val publication: Publication): Med
             builder.putString(MediaMetadata.METADATA_KEY_ARTIST, it)
             builder.putString(MediaMetadata.METADATA_KEY_AUTHOR, it)
         }
-        cover.await()?.let { builder.putBitmap(MediaMetadata.METADATA_KEY_ART, it)}
+        cover.await()?.let { builder.putBitmap(MediaMetadata.METADATA_KEY_ART, it) }
         return builder.build()
     }
 }

@@ -7,15 +7,16 @@
 package org.readium.r2.navigator.epub.css
 
 import androidx.annotation.ColorInt
+import java.text.NumberFormat
+import java.util.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Either
-import java.text.NumberFormat
 
 /**
  * Holds a set of Readium CSS properties applied together.
  */
 @ExperimentalReadiumApi
-interface Properties: Cssable {
+interface Properties : Cssable {
     fun toCssProperties(): Map<String, String?>
 
     override fun toCss(): String? {
@@ -364,7 +365,7 @@ enum class Appearance(private val css: String?) : Cssable {
 @ExperimentalReadiumApi
 interface Color : Cssable {
 
-    data class Rgb(val red: kotlin.Int, val green: kotlin.Int, val blue: kotlin.Int): Color {
+    data class Rgb(val red: kotlin.Int, val green: kotlin.Int, val blue: kotlin.Int) : Color {
         init {
             require(red in 0..255)
             require(green in 0..255)
@@ -375,7 +376,7 @@ interface Color : Cssable {
     }
 
     @JvmInline
-    value class Hex(val color: String): Color {
+    value class Hex(val color: String) : Color {
         init {
             require(Regex("^#(?:[0-9a-fA-F]{3}){1,2}$").matches(color))
         }
@@ -384,7 +385,7 @@ interface Color : Cssable {
     }
 
     @JvmInline
-    value class Int(@ColorInt val color: kotlin.Int): Color {
+    value class Int(@ColorInt val color: kotlin.Int) : Color {
         override fun toCss(): String =
             String.format("#%06X", 0xFFFFFF and color)
     }
@@ -571,7 +572,7 @@ private fun String.toCss(): String =
  * Converts a [Double] to a string literal with the given [unit].
  */
 private fun Double.toCss(unit: String): String =
-    NumberFormat.getNumberInstance().run {
+    NumberFormat.getNumberInstance(Locale.ROOT).run {
         maximumFractionDigits = 2
         format(this@toCss)
     } + unit

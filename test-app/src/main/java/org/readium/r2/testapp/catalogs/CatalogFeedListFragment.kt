@@ -27,7 +27,6 @@ import org.readium.r2.testapp.databinding.FragmentCatalogFeedListBinding
 import org.readium.r2.testapp.domain.model.Catalog
 import org.readium.r2.testapp.utils.viewLifecycle
 
-
 class CatalogFeedListFragment : Fragment() {
 
     private val catalogFeedListViewModel: CatalogFeedListViewModel by viewModels()
@@ -152,7 +151,9 @@ class CatalogFeedListFragment : Fragment() {
         RecyclerView.ItemDecoration() {
 
         override fun getItemOffsets(
-            outRect: Rect, view: View, parent: RecyclerView,
+            outRect: Rect,
+            view: View,
+            parent: RecyclerView,
             state: RecyclerView.State
         ) {
             outRect.bottom = verticalSpaceHeight

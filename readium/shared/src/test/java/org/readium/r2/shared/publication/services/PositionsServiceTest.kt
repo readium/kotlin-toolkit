@@ -9,6 +9,7 @@
 
 package org.readium.r2.shared.publication.services
 
+import kotlin.test.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.junit.Assert
@@ -20,7 +21,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.robolectric.RobolectricTestRunner
-import kotlin.test.assertEquals
 
 @RunWith(RobolectricTestRunner::class)
 class PositionsServiceTest {
@@ -121,14 +121,16 @@ class PerResourcePositionsServiceTest {
         )
 
         Assert.assertEquals(
-            listOf(Locator(
-                href = "res",
-                type = "image/png",
-                locations = Locator.Locations(
-                    position = 1,
-                    totalProgression = 0.0
+            listOf(
+                Locator(
+                    href = "res",
+                    type = "image/png",
+                    locations = Locator.Locations(
+                        position = 1,
+                        totalProgression = 0.0
+                    )
                 )
-            )),
+            ),
             runBlocking { service.positions() }
         )
     }
@@ -186,16 +188,17 @@ class PerResourcePositionsServiceTest {
         )
 
         Assert.assertEquals(
-            listOf(Locator(
-                href = "res",
-                type = "image/*",
-                locations = Locator.Locations(
-                    position = 1,
-                    totalProgression = 0.0
+            listOf(
+                Locator(
+                    href = "res",
+                    type = "image/*",
+                    locations = Locator.Locations(
+                        position = 1,
+                        totalProgression = 0.0
+                    )
                 )
-            )),
+            ),
             runBlocking { services.positions() }
         )
     }
-
 }

@@ -18,6 +18,7 @@ import android.view.View
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.webkit.WebViewClientCompat
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,8 +28,6 @@ import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.databinding.ActivityR2DivinaBinding
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Publication
-import kotlin.coroutines.CoroutineContext
-
 
 open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator.Listener {
 
@@ -57,7 +56,7 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity, 
 
         preferences = getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
         divinaWebView = binding.divinaWebView
-        //divinaWebView.listener = this
+        // divinaWebView.listener = this
 
         publication = intent.getPublication(this)
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
@@ -79,27 +78,30 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity, 
 //                divinaWebView.evaluateJavascript("window.androidObj.toggleMenu = function() { Android.toggleMenu() };", null)
 
                 // Now launch the DiViNa player for the folderPath = publicationPath
-                divinaWebView.evaluateJavascript("if (player) { player.openDiViNaFromPath('${publicationPath}'); };", null)
+                divinaWebView.evaluateJavascript("if (player) { player.openDiViNaFromPath('$publicationPath'); };", null)
             }
         }
         divinaWebView.loadUrl("file:///android_asset/readium/divina/divinaPlayer.html")
-
     }
 
     @Suppress("DEPRECATION")
     override fun toggleActionBar() {
         launch {
             if (supportActionBar!!.isShowing) {
-                divinaWebView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                divinaWebView.systemUiVisibility = (
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                        or View.SYSTEM_UI_FLAG_IMMERSIVE)
+                        or View.SYSTEM_UI_FLAG_IMMERSIVE
+                    )
             } else {
-                divinaWebView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                divinaWebView.systemUiVisibility = (
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    )
             }
         }
     }
@@ -114,4 +116,3 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity, 
         divinaWebView.evaluateJavascript("if (player) { player.destroy(); };", null)
     }
 }
-

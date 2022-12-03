@@ -9,13 +9,13 @@ package org.readium.r2.navigator.html
 import android.graphics.Color
 import android.os.Parcelable
 import androidx.annotation.ColorInt
+import kotlin.reflect.KClass
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.Decoration.Style
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.shared.JSONable
-import kotlin.reflect.KClass
 
 /**
  * An [HtmlDecorationTemplate] renders a [Decoration] into a set of HTML elements and associated
@@ -71,7 +71,12 @@ data class HtmlDecorationTemplate(
         PAGE("page");
     }
 
-    private data class Padding(val left: Int = 0, val top: Int = 0, val right: Int = 0, val bottom: Int = 0)
+    private data class Padding(
+        val left: Int = 0,
+        val top: Int = 0,
+        val right: Int = 0,
+        val bottom: Int = 0
+    )
 
     override fun toJSON() = JSONObject().apply {
         put("layout", layout.value)
@@ -93,7 +98,13 @@ data class HtmlDecorationTemplate(
          * @param asHighlight When true, the non active style is of an highlight. Otherwise, it is
          *        an underline.
          */
-        private fun createTemplate(asHighlight: Boolean, @ColorInt defaultTint: Int, lineWeight: Int, cornerRadius: Int, alpha: Double): HtmlDecorationTemplate {
+        private fun createTemplate(
+            asHighlight: Boolean,
+            @ColorInt defaultTint: Int,
+            lineWeight: Int,
+            cornerRadius: Int,
+            alpha: Double
+        ): HtmlDecorationTemplate {
             val className = createUniqueClassName(if (asHighlight) "highlight" else "underline")
             val padding = Padding(left = 1, right = 1)
             return HtmlDecorationTemplate(
@@ -125,7 +136,7 @@ data class HtmlDecorationTemplate(
             )
         }
 
-        private var classNamesId = 0;
+        private var classNamesId = 0
         private fun createUniqueClassName(key: String): String =
             "r2-$key-${++classNamesId}"
     }
@@ -134,7 +145,7 @@ data class HtmlDecorationTemplate(
 @ExperimentalDecorator
 class HtmlDecorationTemplates private constructor(
     internal val styles: MutableMap<KClass<*>, HtmlDecorationTemplate> = mutableMapOf()
-): JSONable {
+) : JSONable {
 
     operator fun <S : Style> get(style: KClass<S>): HtmlDecorationTemplate? =
         styles[style]
@@ -167,7 +178,6 @@ class HtmlDecorationTemplates private constructor(
             set(Style.Highlight::class, HtmlDecorationTemplate.highlight(defaultTint = defaultTint, lineWeight = lineWeight, cornerRadius = cornerRadius, alpha = alpha))
             set(Style.Underline::class, HtmlDecorationTemplate.underline(defaultTint = defaultTint, lineWeight = lineWeight, cornerRadius = cornerRadius, alpha = alpha))
         }
-
     }
 }
 

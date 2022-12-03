@@ -43,7 +43,7 @@ data class Contributor(
     /**
      * Shortcut to create a [Contributor] using a string as [name].
      */
-    constructor(name: String): this(
+    constructor(name: String) : this(
         localizedName = LocalizedString(name)
     )
 
@@ -86,7 +86,7 @@ data class Contributor(
         ): Contributor? {
             json ?: return null
 
-            val localizedName: LocalizedString? = when(json) {
+            val localizedName: LocalizedString? = when (json) {
                 is String -> LocalizedString.fromJSON(json, warnings)
                 is JSONObject -> LocalizedString.fromJSON(json.opt("name"), warnings)
                 else -> null
@@ -119,7 +119,7 @@ data class Contributor(
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): List<Contributor> {
-            return when(json) {
+            return when (json) {
                 is String, is JSONObject ->
                     listOf(json).mapNotNull { fromJSON(it, normalizeHref, warnings) }
 
@@ -129,11 +129,9 @@ data class Contributor(
                 else -> emptyList()
             }
         }
-
     }
 
     @Deprecated("Use [localizedName] instead.", ReplaceWith("localizedName"))
     val multilanguageName: LocalizedString
         get() = localizedName
-
 }

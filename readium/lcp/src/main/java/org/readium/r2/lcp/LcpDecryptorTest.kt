@@ -9,6 +9,7 @@
 
 package org.readium.r2.lcp
 
+import kotlin.math.ceil
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.mapCatching
@@ -16,7 +17,6 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.use
 import timber.log.Timber
-import kotlin.math.ceil
 
 suspend fun Publication.checkDecryption() {
 
@@ -84,13 +84,15 @@ private suspend fun checkExceedingRangesAreAllowed(publication: Publication) {
             publication.get(link).use { resource ->
                 val length = resource.length().getOrThrow()
                 val fullTruth = resource.read().getOrThrow()
-                for (range in listOf(
-                    0 until length + 100,
-                    0 until length + 2048,
-                    length - 500 until length + 200,
-                    length until length + 5028,
-                    length + 200 until length + 500
-                )) {
+                for (
+                    range in listOf(
+                        0 until length + 100,
+                        0 until length + 2048,
+                        length - 500 until length + 200,
+                        length until length + 5028,
+                        length + 200 until length + 500
+                    )
+                ) {
                     resource.read(range)
                         .onFailure {
                             throw IllegalStateException("unable to decrypt range $range from ${link.href}")
@@ -108,11 +110,15 @@ private suspend fun checkExceedingRangesAreAllowed(publication: Publication) {
         }
 }
 
-private suspend fun Resource.readByChunks(chunkSize: Long, groundTruth: ByteArray, shuffle: Boolean = true) =
+private suspend fun Resource.readByChunks(
+    chunkSize: Long,
+    groundTruth: ByteArray,
+    shuffle: Boolean = true
+) =
     length().mapCatching { length ->
-        val blockNb =  ceil(length / chunkSize.toDouble()).toInt()
+        val blockNb = ceil(length / chunkSize.toDouble()).toInt()
         val blocks = (0 until blockNb)
-            .map { Pair(it, it * chunkSize until kotlin.math.min(length, (it + 1)  * chunkSize)) }
+            .map { Pair(it, it * chunkSize until kotlin.math.min(length, (it + 1) * chunkSize)) }
             .toMutableList()
 
         if (blocks.size > 1 && shuffle) {
@@ -127,9 +133,9 @@ private suspend fun Resource.readByChunks(chunkSize: Long, groundTruth: ByteArra
             val decryptedBytes = read(it.second).getOrElse { error ->
                 throw IllegalStateException("unable to decrypt chunk ${it.second} from ${link().href}", error)
             }
-            check(decryptedBytes.isNotEmpty()) { "empty decrypted bytearray"}
-            check(decryptedBytes.contentEquals(groundTruth.sliceArray(it.second.map(Long::toInt))))
-            {   Timber.d("decrypted length: ${decryptedBytes.size}")
+            check(decryptedBytes.isNotEmpty()) { "empty decrypted bytearray" }
+            check(decryptedBytes.contentEquals(groundTruth.sliceArray(it.second.map(Long::toInt)))) {
+                Timber.d("decrypted length: ${decryptedBytes.size}")
                 Timber.d("expected length: ${groundTruth.sliceArray(it.second.map(Long::toInt)).size}")
                 "decrypted chunk ${it.first}: ${it.second} seems to be wrong in ${link().href}"
             }

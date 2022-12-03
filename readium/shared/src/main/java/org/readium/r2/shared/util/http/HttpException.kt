@@ -8,15 +8,15 @@ package org.readium.r2.shared.util.http
 
 import android.content.Context
 import androidx.annotation.StringRes
+import java.net.MalformedURLException
+import java.net.SocketTimeoutException
+import java.util.concurrent.CancellationException
 import org.json.JSONObject
 import org.readium.r2.shared.R
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
-import java.net.MalformedURLException
-import java.net.SocketTimeoutException
-import java.util.concurrent.CancellationException
 
 typealias HttpTry<SuccessT> = Try<SuccessT, HttpException>
 
@@ -76,7 +76,6 @@ class HttpException(
                     in 500..599 -> ServerError
                     else -> MalformedResponse
                 }
-
         }
     }
 
@@ -140,7 +139,5 @@ class HttpException(
 
             return HttpException(kind = kind, cause = cause)
         }
-
     }
-
 }

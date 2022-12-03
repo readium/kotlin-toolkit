@@ -17,6 +17,7 @@ import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.tts.AndroidTtsEngine
 import org.readium.r2.navigator.tts.PublicationSpeechSynthesizer
 import org.readium.r2.navigator.tts.PublicationSpeechSynthesizer.Configuration
+import org.readium.r2.navigator.tts.PublicationSpeechSynthesizer.State as TtsState
 import org.readium.r2.navigator.tts.TtsEngine
 import org.readium.r2.navigator.tts.TtsEngine.Voice
 import org.readium.r2.shared.DelicateReadiumApi
@@ -26,7 +27,6 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
-import org.readium.r2.navigator.tts.PublicationSpeechSynthesizer.State as TtsState
 
 /**
  * View model controlling a [PublicationSpeechSynthesizer] to read a publication aloud.

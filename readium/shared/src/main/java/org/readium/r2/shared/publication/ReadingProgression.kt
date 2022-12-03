@@ -10,11 +10,11 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
+import java.util.*
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.readium.r2.shared.util.MapWithDefaultCompanion
-import java.util.*
 
 @Serializable
 @Parcelize
@@ -44,7 +44,5 @@ enum class ReadingProgression(val value: String) : Parcelable {
             // For backward compatibility, we allow uppercase keys.
             keys.firstOrNull { it == key?.lowercase(Locale.ROOT) }
                 ?.let { map[it] }
-
     }
-
 }

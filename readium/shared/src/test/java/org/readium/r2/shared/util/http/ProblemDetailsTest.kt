@@ -12,16 +12,19 @@ class ProblemDetailsTest {
 
     @Test
     fun `parse minimal JSON`() {
-        val json = JSONObject("""
+        val json = JSONObject(
+            """
             {"title": "You do not have enough credit."}
-        """)
+        """
+        )
 
         assertEquals(ProblemDetails(title = "You do not have enough credit."), ProblemDetails.fromJSON(json))
     }
 
     @Test
     fun `parse full JSON`() {
-        val json = JSONObject("""{
+        val json = JSONObject(
+            """{
             "type": "https://example.net/validation-error",
             "title": "Your request parameters didn't validate.",
             "status": 400,
@@ -35,7 +38,8 @@ class ProblemDetailsTest {
                     "reason": "must be 'green', 'red' or 'blue'"
                 }
             ]
-        }""")
+        }"""
+        )
 
         assertEquals(
             ProblemDetails(
@@ -49,11 +53,12 @@ class ProblemDetailsTest {
 
     @Test
     fun `parse without a title`() {
-        val json = JSONObject("""
+        val json = JSONObject(
+            """
             {"type": "https://example.net/validation-error"}
-        """)
+        """
+        )
 
         assertNull(ProblemDetails.fromJSON(json))
     }
-
 }

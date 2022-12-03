@@ -18,7 +18,6 @@ import timber.log.Timber
 
 class R2ViewPager : R2RTLViewPager {
 
-
     lateinit var type: Publication.TYPE
 
     constructor(context: Context) : super(context)
@@ -45,7 +44,6 @@ class R2ViewPager : R2RTLViewPager {
             // java.lang.IllegalArgumentException: pointerIndex out of range
             // i.e. https://stackoverflow.com/q/48496257/1474476
             return super.onTouchEvent(ev)
-
         } catch (ex: IllegalArgumentException) {
             Timber.e(ex)
             false
@@ -72,5 +70,4 @@ class R2ViewPager : R2RTLViewPager {
             false
         }
     }
-
 }

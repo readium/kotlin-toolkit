@@ -15,7 +15,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import timber.log.Timber
-import kotlin.reflect.KClass
 
 /**
  * Unwraps recursively the [JSONObject] to a [Map<String, Any>].
@@ -51,15 +50,17 @@ private fun wrapJSON(value: Any?): Any? = when (value) {
     is JSONable -> value.toJSON()
         .takeIf { it.length() > 0 }
 
-    is Map<*, *> -> value
-        .takeIf { it.isNotEmpty() }
-        ?.mapValues { wrapJSON(it.value) }
-        ?.let { JSONObject(it) }
+    is Map<*, *> ->
+        value
+            .takeIf { it.isNotEmpty() }
+            ?.mapValues { wrapJSON(it.value) }
+            ?.let { JSONObject(it) }
 
-    is List<*> -> value
-        .takeIf { it.isNotEmpty() }
-        ?.mapNotNull { wrapJSON(it) }
-        ?.let { JSONArray(it) }
+    is List<*> ->
+        value
+            .takeIf { it.isNotEmpty() }
+            ?.mapNotNull { wrapJSON(it) }
+            ?.let { JSONArray(it) }
 
     else -> value
 }
@@ -345,7 +346,6 @@ object JSONParceler : Parceler<Map<String, Any>> {
             Timber.e(e, "Failed to write a JSON map into a Parcel")
         }
     }
-
 }
 
 /**

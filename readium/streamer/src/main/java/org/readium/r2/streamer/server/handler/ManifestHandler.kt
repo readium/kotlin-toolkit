@@ -17,9 +17,12 @@ import org.readium.r2.streamer.server.ServingFetcher
 
 internal class ManifestHandler : BaseHandler() {
 
-    override fun handle(resource: RouterNanoHTTPD.UriResource, uri: Uri, parameters: Map<String, String>?): Response {
+    override fun handle(
+        resource: RouterNanoHTTPD.UriResource,
+        uri: Uri,
+        parameters: Map<String, String>?
+    ): Response {
         val fetcher = resource.initParameter(ServingFetcher::class.java)
         return createResponse(mediaType = MediaType.READIUM_WEBPUB_MANIFEST, body = fetcher.publication.jsonManifest)
     }
-
 }

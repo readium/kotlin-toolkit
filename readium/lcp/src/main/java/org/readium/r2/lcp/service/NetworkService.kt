@@ -10,13 +10,6 @@
 package org.readium.r2.lcp.service
 
 import android.net.Uri
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.readium.r2.lcp.LcpException
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.sniffMediaType
-import timber.log.Timber
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -25,7 +18,13 @@ import java.net.URL
 import kotlin.math.round
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
-
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.readium.r2.lcp.LcpException
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.sniffMediaType
+import timber.log.Timber
 
 internal typealias URLParameters = Map<String, String?>
 
@@ -41,7 +40,13 @@ internal class NetworkService {
         }
     }
 
-    suspend fun fetch(url: String, method: Method = Method.GET, parameters: URLParameters = emptyMap(), timeout: Duration? = null, headers: Map<String, String> = emptyMap()): Try<ByteArray, NetworkException> =
+    suspend fun fetch(
+        url: String,
+        method: Method = Method.GET,
+        parameters: URLParameters = emptyMap(),
+        timeout: Duration? = null,
+        headers: Map<String, String> = emptyMap()
+    ): Try<ByteArray, NetworkException> =
         withContext(Dispatchers.IO) {
             try {
                 @Suppress("NAME_SHADOWING")
@@ -82,7 +87,12 @@ internal class NetworkService {
             }
         }
 
-    suspend fun download(url: URL, destination: File, mediaType: String? = null, onProgress: (Double) -> Unit): MediaType? = withContext(Dispatchers.IO) {
+    suspend fun download(
+        url: URL,
+        destination: File,
+        mediaType: String? = null,
+        onProgress: (Double) -> Unit
+    ): MediaType? = withContext(Dispatchers.IO) {
         try {
             val connection = url.openConnection() as HttpURLConnection
             if (connection.responseCode >= 400) {
@@ -123,13 +133,11 @@ internal class NetworkService {
             }
 
             connection.sniffMediaType(mediaTypes = listOfNotNull(mediaType))
-
         } catch (e: Exception) {
             Timber.e(e)
             throw LcpException.Network(e)
         }
     }
-
 }
 
 private fun Double.roundToDecimals(decimals: Int): Double {

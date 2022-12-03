@@ -44,5 +44,4 @@ class R2FXLOnDoubleTapListener(private var threeStep: Boolean) : R2FXLLayout.OnD
             view.setScale(view.minScale, true)
         }
     }
-
 }

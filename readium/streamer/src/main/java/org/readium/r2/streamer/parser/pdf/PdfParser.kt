@@ -10,7 +10,9 @@
 package org.readium.r2.streamer.parser.pdf
 
 import android.content.Context
+import java.io.File
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.FileFetcher
@@ -26,12 +28,12 @@ import org.readium.r2.shared.util.pdf.toLinks
 import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.container.PublicationContainer
 import org.readium.r2.streamer.parser.PubBox
-import java.io.File
 
 /**
  * Parses a PDF file into a Readium [Publication].
  */
 @PdfSupport
+@OptIn(ExperimentalReadiumApi::class)
 class PdfParser(
     context: Context,
     private val pdfFactory: PdfDocumentFactory<*>
@@ -93,5 +95,4 @@ class PdfParser(
 
         PubBox(publication, container)
     }
-
 }

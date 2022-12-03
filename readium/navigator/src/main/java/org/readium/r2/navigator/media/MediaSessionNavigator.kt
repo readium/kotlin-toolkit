@@ -12,23 +12,28 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaControllerCompat.TransportControls
 import android.support.v4.media.session.PlaybackStateCompat
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.MediaNavigator
 import org.readium.r2.navigator.extensions.sum
-import org.readium.r2.navigator.media.extensions.*
+import org.readium.r2.navigator.media.extensions.elapsedPosition
+import org.readium.r2.navigator.media.extensions.id
+import org.readium.r2.navigator.media.extensions.isPlaying
+import org.readium.r2.navigator.media.extensions.publicationId
+import org.readium.r2.navigator.media.extensions.resourceHref
+import org.readium.r2.navigator.media.extensions.toPlaybackState
 import org.readium.r2.shared.publication.*
 import timber.log.Timber
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
 
 /**
  * Rate at which the current locator is broadcasted during playback.
  */
-private const val playbackPositionRefreshRate: Double = 2.0  // Hz
+private const val playbackPositionRefreshRate: Double = 2.0 // Hz
 
 @OptIn(ExperimentalTime::class)
 private val skipForwardInterval: Duration = 30.seconds
@@ -47,7 +52,7 @@ class MediaSessionNavigator(
     var listener: Listener? = null
 ) : MediaNavigator, CoroutineScope by MainScope() {
 
-    interface Listener: MediaNavigator.Listener
+    interface Listener : MediaNavigator.Listener
 
     /**
      * Indicates whether the media session is loaded with a resource from this [publication]. This
@@ -80,7 +85,6 @@ class MediaSessionNavigator(
      */
     private val totalDuration: Duration? =
         durations.sum().takeIf { it > 0.seconds }
-
 
     private val mediaMetadata = MutableStateFlow<MediaMetadataCompat?>(null)
     private val playbackState = MutableStateFlow<PlaybackStateCompat?>(null)
@@ -144,9 +148,7 @@ class MediaSessionNavigator(
                 play()
             }
         }
-
     }
-
 
     // Navigator
 
@@ -181,9 +183,12 @@ class MediaSessionNavigator(
 
         listener?.onJumpToLocator(locator)
 
-        transportControls.playFromMediaId("$publicationId#${locator.href}", Bundle().apply {
-            putParcelable("locator", locator)
-        })
+        transportControls.playFromMediaId(
+            "$publicationId#${locator.href}",
+            Bundle().apply {
+                putParcelable("locator", locator)
+            }
+        )
         completion()
         return true
     }
@@ -208,7 +213,6 @@ class MediaSessionNavigator(
         completion()
         return true
     }
-
 
     // MediaNavigator
 
@@ -245,8 +249,8 @@ class MediaSessionNavigator(
                 )
             )
         }
-        .distinctUntilChanged()
-        .conflate()
+            .distinctUntilChanged()
+            .conflate()
 
     override val isPlaying: Boolean
         get() = playbackState.value?.isPlaying == true
@@ -304,5 +308,4 @@ class MediaSessionNavigator(
 
         seekTo(playbackPosition.value + offset)
     }
-
 }

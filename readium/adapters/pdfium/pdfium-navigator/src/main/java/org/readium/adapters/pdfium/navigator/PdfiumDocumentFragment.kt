@@ -13,50 +13,35 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import com.github.barteksc.pdfviewer.PDFView
+import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.navigator.pdf.PdfDocumentFragment
-import org.readium.r2.navigator.pdf.PdfDocumentFragmentFactory
+import org.readium.r2.navigator.preferences.Axis
+import org.readium.r2.navigator.preferences.Fit
+import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression
-import org.readium.r2.shared.publication.presentation.Presentation
 import timber.log.Timber
 
-@OptIn(ExperimentalReadiumApi::class)
-@PdfSupport
-class PdfiumDocumentFragment private constructor(
+@ExperimentalReadiumApi
+class PdfiumDocumentFragment internal constructor(
     private val publication: Publication,
     private val link: Link,
     private val initialPageIndex: Int,
-    settings: Settings,
+    settings: PdfiumSettings,
     private val appListener: Listener?,
     private val navigatorListener: PdfDocumentFragment.Listener?
-) : PdfDocumentFragment() {
+) : PdfDocumentFragment<PdfiumSettings>() {
 
     interface Listener {
         /** Called when configuring [PDFView]. */
         fun onConfigurePdfView(configurator: PDFView.Configurator) {}
     }
 
-    companion object {
-        fun createFactory(listener: Listener? = null): PdfDocumentFragmentFactory =
-            { input ->
-                PdfiumDocumentFragment(
-                    publication = input.publication,
-                    link = input.link,
-                    initialPageIndex = input.initialPageIndex,
-                    settings = input.settings,
-                    appListener = listener,
-                    navigatorListener = input.listener
-                )
-            }
-    }
-
-    override var settings: Settings = settings
+    override var settings: PdfiumSettings = settings
         set(value) {
             if (field == value) return
 
@@ -67,7 +52,14 @@ class PdfiumDocumentFragment private constructor(
 
     private lateinit var pdfView: PDFView
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    private var isReloading: Boolean = false
+    private var hasToReload: Int? = null
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View =
         PDFView(inflater.context, null)
             .also { pdfView = it }
 
@@ -77,9 +69,17 @@ class PdfiumDocumentFragment private constructor(
     }
 
     private fun reloadDocumentAtPage(pageIndex: Int) {
+        if (isReloading) {
+            hasToReload = pageIndex
+            return
+        }
+
+        isReloading = true
+
         val context = context?.applicationContext ?: return
 
         viewLifecycleOwner.lifecycleScope.launch {
+
             try {
                 val document = PdfiumDocumentFactory(context)
                     // PDFium crashes when reusing the same PdfDocument, so we must not cache it.
@@ -99,19 +99,27 @@ class PdfiumDocumentFragment private constructor(
                             pages(*((pageCount - 1) downTo 0).toList().toIntArray())
                         }
                     }
-                    .swipeHorizontal(settings.readingProgression.isHorizontal ?: false)
-                    .spacing(10)
+                    .swipeHorizontal(settings.scrollAxis == Axis.HORIZONTAL)
+                    .spacing(settings.pageSpacing.roundToInt())
                     // Customization of [PDFView] is done before setting the listeners,
                     // to avoid overriding them in reading apps, which would break the
                     // navigator.
                     .apply { appListener?.onConfigurePdfView(this) }
                     .defaultPage(page)
                     .onRender { _, _, _ ->
-                        if (settings.fit == Presentation.Fit.WIDTH) {
+                        if (settings.fit == Fit.WIDTH) {
                             pdfView.fitToWidth()
                             // Using `fitToWidth` often breaks the use of `defaultPage`, so we
                             // need to jump manually to the target page.
                             pdfView.jumpTo(page, false)
+                        }
+                    }
+                    .onLoad {
+                        val hasToReloadNow = hasToReload
+                        if (hasToReloadNow != null) {
+                            reloadDocumentAtPage(pageIndex)
+                        } else {
+                            isReloading = false
                         }
                     }
                     .onPageChange { index, _ ->
@@ -122,7 +130,6 @@ class PdfiumDocumentFragment private constructor(
                             ?: false
                     }
                     .load()
-
             } catch (e: Exception) {
                 val error = Resource.Exception.wrap(e)
                 Timber.e(error)
@@ -170,9 +177,9 @@ class PdfiumDocumentFragment private constructor(
 
     /**
      * Indicates whether the order of the [PDFView] pages is reversed to take into account
-     * right-to-left and bottom-to-top reading progressions.
+     * right-to-left reading progressions.
      */
     private val isPagesOrderReversed: Boolean get() =
-        settings.readingProgression == ReadingProgression.RTL ||
-            settings.readingProgression == ReadingProgression.BTT
+        settings.scrollAxis == Axis.HORIZONTAL &&
+            settings.readingProgression == ReadingProgression.RTL
 }

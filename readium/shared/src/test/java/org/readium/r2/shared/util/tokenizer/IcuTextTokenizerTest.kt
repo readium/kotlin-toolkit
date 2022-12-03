@@ -6,20 +6,20 @@
 
 package org.readium.r2.shared.util.tokenizer
 
+import java.util.*
+import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
 import org.robolectric.RobolectricTestRunner
-import java.util.*
-import kotlin.test.assertContentEquals
-import kotlin.test.assertEquals
-import kotlin.test.assertFails
 
 @OptIn(ExperimentalReadiumApi::class)
 @RunWith(RobolectricTestRunner::class)
-class IcuTokenizerTest {
+class IcuTextTokenizerTest {
 
     @Test
     fun tokenizeEmptyContent() = runBlocking {

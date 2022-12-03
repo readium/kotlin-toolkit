@@ -10,13 +10,21 @@
 package org.readium.r2.lcp
 
 import android.content.Context
+import java.io.File
 import kotlinx.coroutines.*
 import org.readium.r2.lcp.auth.LcpDialogAuthentication
 import org.readium.r2.lcp.persistence.LcpDatabase
-import org.readium.r2.lcp.service.*
+import org.readium.r2.lcp.service.CRLService
+import org.readium.r2.lcp.service.DeviceRepository
+import org.readium.r2.lcp.service.DeviceService
+import org.readium.r2.lcp.service.LcpClient
+import org.readium.r2.lcp.service.LicensesRepository
+import org.readium.r2.lcp.service.LicensesService
+import org.readium.r2.lcp.service.NetworkService
+import org.readium.r2.lcp.service.PassphrasesRepository
+import org.readium.r2.lcp.service.PassphrasesService
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.util.Try
-import java.io.File
 
 /**
  * Service used to acquire and open publications protected with LCP.
@@ -119,13 +127,15 @@ interface LcpService {
 
         @Deprecated("Use `LcpService()` instead", ReplaceWith("LcpService(context)"), level = DeprecationLevel.ERROR)
         fun create(context: Context): LcpService? = invoke(context)
-
     }
-
 
     @Deprecated("Use `acquirePublication()` with coroutines instead", ReplaceWith("acquirePublication(lcpl)"))
     @DelicateCoroutinesApi
-    fun importPublication(lcpl: ByteArray, authentication: LcpAuthenticating?, completion: (AcquiredPublication?, LcpException?) -> Unit) {
+    fun importPublication(
+        lcpl: ByteArray,
+        authentication: LcpAuthenticating?,
+        completion: (AcquiredPublication?, LcpException?) -> Unit
+    ) {
         GlobalScope.launch {
             acquirePublication(lcpl)
                 .onSuccess { completion(it, null) }
@@ -135,7 +145,11 @@ interface LcpService {
 
     @Deprecated("Use `retrieveLicense()` with coroutines instead", ReplaceWith("retrieveLicense(File(publication), authentication, allowUserInteraction = true)"))
     @DelicateCoroutinesApi
-    fun retrieveLicense(publication: String, authentication: LcpAuthenticating?, completion: (LcpLicense?, LcpException?) -> Unit) {
+    fun retrieveLicense(
+        publication: String,
+        authentication: LcpAuthenticating?,
+        completion: (LcpLicense?, LcpException?) -> Unit
+    ) {
         GlobalScope.launch {
             val result = retrieveLicense(File(publication), authentication ?: LcpDialogAuthentication(), allowUserInteraction = true)
             if (result == null) {
@@ -147,9 +161,7 @@ interface LcpService {
             }
         }
     }
-
 }
-
 
 @Deprecated("Renamed to `LcpService()`", replaceWith = ReplaceWith("LcpService(context)"))
 fun R2MakeLCPService(context: Context): LcpService =

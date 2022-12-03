@@ -6,8 +6,8 @@
 
 plugins {
     id("com.android.library")
-    id("kotlin-android")
-    id("kotlin-parcelize")
+    kotlin("android")
+    kotlin("plugin.parcelize")
     id("maven-publish")
     id("org.jetbrains.dokka")
 }
@@ -42,17 +42,19 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    namespace = "org.readium.adapters.pdfium.document"
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            groupId = "com.github.readium"
+            artifactId = "readium-adapter-pdfium-document"
+            artifact(tasks.findByName("sourcesJar"))
+            artifact(tasks.findByName("javadocsJar"))
+
+            afterEvaluate {
                 from(components.getByName("release"))
-                groupId = "com.github.readium"
-                artifactId = "readium-adapter-pdfium-document"
-                artifact(tasks.findByName("sourcesJar"))
-                artifact(tasks.findByName("javadocsJar"))
             }
         }
     }
@@ -61,16 +63,15 @@ afterEvaluate {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    api(project(":readium:shared"))
+    api(project(":readium:readium-shared"))
 
-    implementation("androidx.core:core-ktx:1.8.0")
-    implementation("com.github.barteksc:pdfium-android:1.8.2")
-    implementation("com.jakewharton.timber:timber:5.0.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
+    implementation(libs.androidx.core)
+    implementation(libs.pdfium)
+    implementation(libs.timber)
+    implementation(libs.bundles.coroutines)
 
-    testImplementation("junit:junit:4.13.2")
+    testImplementation(libs.junit)
 
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    androidTestImplementation(libs.androidx.ext.junit)
+    androidTestImplementation(libs.androidx.expresso.core)
 }

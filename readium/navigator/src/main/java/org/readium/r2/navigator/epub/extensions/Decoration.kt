@@ -19,7 +19,10 @@ import timber.log.Timber
  * Generates the JavaScript used to apply the receiver list of [DecorationChange] in a web view.
  */
 @ExperimentalDecorator
-internal fun List<DecorationChange>.javascriptForGroup(group: String, templates: HtmlDecorationTemplates): String? {
+internal fun List<DecorationChange>.javascriptForGroup(
+    group: String,
+    templates: HtmlDecorationTemplates
+): String? {
     if (isEmpty()) return null
 
     return """

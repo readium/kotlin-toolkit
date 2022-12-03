@@ -30,8 +30,6 @@ import androidx.core.view.ViewCompat;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import com.duolingo.open.rtlviewpager.DelegatingPagerAdapter;
-
 import org.readium.r2.shared.publication.ReadingProgression;
 
 import java.util.HashMap;

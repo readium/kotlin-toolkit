@@ -37,5 +37,4 @@ data class Links(val json: JSONArray) {
         this.rel.contains(rel) && (type?.matches(this.type) ?: true)
 
     operator fun get(rel: String): List<Link> = allWithRel(rel)
-
 }

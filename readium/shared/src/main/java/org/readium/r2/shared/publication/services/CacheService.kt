@@ -8,6 +8,7 @@ package org.readium.r2.shared.publication.services
 
 import android.content.ComponentCallbacks2
 import android.content.Context
+import kotlin.reflect.KClass
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -20,7 +21,6 @@ import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.util.MemoryObserver
 import org.readium.r2.shared.util.cache.Cache
 import org.readium.r2.shared.util.cache.InMemoryCache
-import kotlin.reflect.KClass
 
 /**
  * Provides publication-bound caches.

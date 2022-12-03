@@ -51,7 +51,9 @@ class PresentationTest {
                 spread = Presentation.Spread.BOTH,
                 layout = EpubLayout.FIXED
             ),
-            Presentation.fromJSON(JSONObject("""{
+            Presentation.fromJSON(
+                JSONObject(
+                    """{
                 "clipped": true,
                 "continuous": false,
                 "fit": "cover",
@@ -59,7 +61,9 @@ class PresentationTest {
                 "overflow": "paginated",
                 "spread": "both",
                 "layout": "fixed"
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
@@ -72,7 +76,8 @@ class PresentationTest {
 
     @Test fun `get full JSON`() {
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "clipped": true,
                 "continuous": false,
                 "fit": "cover",
@@ -80,7 +85,8 @@ class PresentationTest {
                 "overflow": "paginated",
                 "spread": "both",
                 "layout": "fixed"
-            }"""),
+            }"""
+            ),
             Presentation(
                 clipped = true,
                 continuous = false,
@@ -166,5 +172,4 @@ class PresentationTest {
         assertEquals("none", Presentation.Spread.NONE.value)
         assertEquals("landscape", Presentation.Spread.LANDSCAPE.value)
     }
-
 }

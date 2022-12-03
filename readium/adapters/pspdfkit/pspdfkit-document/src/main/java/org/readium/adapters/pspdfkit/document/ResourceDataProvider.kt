@@ -7,13 +7,13 @@
 package org.readium.adapters.pspdfkit.document
 
 import com.pspdfkit.document.providers.DataProvider
+import java.util.*
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.synchronized
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.isLazyInitialized
 import timber.log.Timber
-import java.util.*
 
 class ResourceDataProvider(
     resource: Resource,

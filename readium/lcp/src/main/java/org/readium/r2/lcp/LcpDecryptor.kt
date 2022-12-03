@@ -9,6 +9,7 @@
 
 package org.readium.r2.lcp
 
+import java.io.IOException
 import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.extensions.requireLengthFitInt
@@ -17,7 +18,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
-import java.io.IOException
 
 /**
  * Decrypts a resource protected with LCP.
@@ -29,7 +29,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
         // and the DRM license are the same.
         val link = resource.link()
         val encryption = link.properties.encryption
-            if (encryption == null || encryption.scheme != "http://readium.org/2014/01/lcp")
+        if (encryption == null || encryption.scheme != "http://readium.org/2014/01/lcp")
             return@LazyResource resource
 
         when {
@@ -78,7 +78,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
             if (::_length.isInitialized)
                 return _length
 
-            _length =  resource.length().flatMapCatching { length ->
+            _length = resource.length().flatMapCatching { length ->
                 if (length < 2 * AES_BLOCK_SIZE) {
                     throw Exception("Invalid CBC-encrypted stream")
                 }
@@ -91,8 +91,8 @@ internal class LcpDecryptor(val license: LcpLicense?) {
                         check(decryptedBytes.size == AES_BLOCK_SIZE)
 
                         return@mapCatching length -
-                                AES_BLOCK_SIZE -  // Minus IV
-                                decryptedBytes.last().toInt() // Minus padding size
+                            AES_BLOCK_SIZE - // Minus IV
+                            decryptedBytes.last().toInt() // Minus padding size
                     }
             }
 
@@ -101,7 +101,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
             if (range == null)
-               return license.decryptFully(resource.read(), isDeflated = false)
+                return license.decryptFully(resource.read(), isDeflated = false)
 
             @Suppress("NAME_SHADOWING")
             val range = range
@@ -130,10 +130,10 @@ internal class LcpDecryptor(val license: LcpLicense?) {
 
                     val rangeLength =
                         if (lastBlockRead)
-                            // use decrypted length to ensure range.last doesn't exceed decrypted length - 1
+                        // use decrypted length to ensure range.last doesn't exceed decrypted length - 1
                             range.last.coerceAtMost(length().getOrThrow() - 1) - range.first + 1
                         else
-                            // the last block won't be read, so there's no need to compute length
+                        // the last block won't be read, so there's no need to compute length
                             range.last - range.first + 1
 
                     // keep only enough bytes to fit the length corrected request in order to never include padding
@@ -152,14 +152,14 @@ internal class LcpDecryptor(val license: LcpLicense?) {
     }
 }
 
-private suspend fun LcpLicense.decryptFully(data:  ResourceTry<ByteArray>, isDeflated: Boolean): ResourceTry<ByteArray> =
+private suspend fun LcpLicense.decryptFully(data: ResourceTry<ByteArray>, isDeflated: Boolean): ResourceTry<ByteArray> =
     data.mapCatching { encryptedData ->
         // Decrypts the resource.
         var bytes = decrypt(encryptedData)
             .getOrElse { throw Exception("Failed to decrypt the resource", it) }
 
         if (bytes.isEmpty())
-          throw IllegalStateException("Lcp.nativeDecrypt returned an empty ByteArray")
+            throw IllegalStateException("Lcp.nativeDecrypt returned an empty ByteArray")
 
         // Removes the padding.
         val padding = bytes.last().toInt()
@@ -184,4 +184,3 @@ private fun Long.ceilMultipleOf(divisor: Long) =
 
 private fun Long.floorMultipleOf(divisor: Long) =
     divisor * (this / divisor)
-

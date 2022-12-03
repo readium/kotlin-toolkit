@@ -15,7 +15,7 @@ import org.readium.r2.shared.InternalReadiumApi
 data class HttpHeaders(val headers: Map<String, List<String>>) {
 
     companion object {
-        operator fun invoke(headers: Map<String, String>) : HttpHeaders =
+        operator fun invoke(headers: Map<String, String>): HttpHeaders =
             HttpHeaders(headers.mapValues { (_, value) -> listOf(value) })
     }
 
@@ -49,8 +49,8 @@ data class HttpHeaders(val headers: Map<String, List<String>>) {
      * Indicates whether this server supports byte range requests.
      */
     val acceptsByteRanges: Boolean get() {
-        return get("Accept-Ranges")?.lowercase() == "bytes"
-            || get("Content-Range")?.lowercase()?.startsWith("bytes") == true
+        return get("Accept-Ranges")?.lowercase() == "bytes" ||
+            get("Content-Range")?.lowercase()?.startsWith("bytes") == true
     }
 
     /**

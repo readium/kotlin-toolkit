@@ -73,6 +73,5 @@ data class Encryption(
                 scheme = json.optNullableString("scheme")
             )
         }
-
     }
 }

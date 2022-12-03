@@ -9,9 +9,9 @@ package org.readium.r2.shared.util.tokenizer
 import android.icu.text.BreakIterator
 import android.os.Build
 import androidx.annotation.RequiresApi
+import java.util.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
-import java.util.*
 
 /** A tokenizer splitting a String into range tokens (e.g. words, sentences, etc.). */
 @ExperimentalReadiumApi

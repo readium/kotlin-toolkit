@@ -31,5 +31,4 @@ interface PublicationParser {
      * debug their publications.
      */
     suspend fun parse(asset: PublicationAsset, fetcher: Fetcher, warnings: WarningLogger? = null): Publication.Builder?
-
 }

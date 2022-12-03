@@ -16,13 +16,13 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.text.TextUtils
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.readium.r2.testapp.utils.extensions.toFile
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.InputStream
 import java.net.URL
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.readium.r2.testapp.utils.extensions.toFile
 
 object ContentResolverUtil {
 
@@ -66,7 +66,6 @@ object ContentResolverUtil {
                     return context.getExternalFilesDir(null).toString() + "/" + split[1]
                 }
                 // TODO handle non-primary volumes
-
             } else if (isDownloadsDocument(uri)) {
                 val id = DocumentsContract.getDocumentId(uri)
                 if (!TextUtils.isEmpty(id)) {
@@ -75,12 +74,12 @@ object ContentResolverUtil {
                     }
                     return try {
                         val contentUri = ContentUris.withAppendedId(
-                                Uri.parse("content://downloads/public_downloads"), java.lang.Long.valueOf(id))
+                            Uri.parse("content://downloads/public_downloads"), java.lang.Long.valueOf(id)
+                        )
                         getDataColumn(context, contentUri, null, null)
                     } catch (e: NumberFormatException) {
                         null
                     }
-
                 }
             } else if (isMediaDocument(uri)) {
                 val docId = DocumentsContract.getDocumentId(uri)
@@ -103,7 +102,6 @@ object ContentResolverUtil {
 
             // Return the remote address
             return getDataColumn(context, uri, null, null)
-
         } else if ("file".equals(uri.scheme!!, ignoreCase = true)) {
             return uri.path
         }
@@ -121,8 +119,12 @@ object ContentResolverUtil {
      * @param selectionArgs (Optional) Selection arguments used in the query.
      * @return The value of the _data column, which is typically a file path.
      */
-    private fun getDataColumn(context: Context, uri: Uri?, selection: String?,
-                              selectionArgs: Array<String>?): String? {
+    private fun getDataColumn(
+        context: Context,
+        uri: Uri?,
+        selection: String?,
+        selectionArgs: Array<String>?
+    ): String? {
 
         val column = "_data"
         val projection = arrayOf(column)
@@ -136,7 +138,6 @@ object ContentResolverUtil {
         }
         return null
     }
-
 
     /**
      * @param uri The Uri to check.
@@ -161,6 +162,4 @@ object ContentResolverUtil {
     private fun isMediaDocument(uri: Uri): Boolean {
         return "com.android.providers.media.documents" == uri.authority
     }
-
-
 }

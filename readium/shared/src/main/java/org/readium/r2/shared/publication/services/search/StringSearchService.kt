@@ -12,6 +12,8 @@ import android.icu.text.RuleBasedCollator
 import android.icu.text.StringSearch
 import android.os.Build
 import androidx.annotation.RequiresApi
+import java.text.StringCharacterIterator
+import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.Search
@@ -26,8 +28,6 @@ import org.readium.r2.shared.publication.services.search.SearchService.Options
 import org.readium.r2.shared.util.Ref
 import org.readium.r2.shared.util.Try
 import timber.log.Timber
-import java.text.StringCharacterIterator
-import java.util.*
 
 /**
  * Base implementation of [SearchService] iterating through the content of Publication's
@@ -73,18 +73,24 @@ class StringSearchService(
 
     override suspend fun search(query: String, options: Options?): SearchTry<SearchIterator> =
         try {
-            Try.success(Iterator(
-                publication = publication() ?: throw IllegalStateException("No Publication object"),
-                query = query,
-                options = options ?: Options(),
-                locale = options?.language?.let { Locale.forLanguageTag(it) } ?: locale,
-            ))
-
+            Try.success(
+                Iterator(
+                    publication = publication() ?: throw IllegalStateException("No Publication object"),
+                    query = query,
+                    options = options ?: Options(),
+                    locale = options?.language?.let { Locale.forLanguageTag(it) } ?: locale,
+                )
+            )
         } catch (e: Exception) {
             Try.failure(SearchException.wrap(e))
         }
 
-    private inner class Iterator(val publication: Publication, val query: String, val options: Options, val locale: Locale) : SearchIterator {
+    private inner class Iterator(
+        val publication: Publication,
+        val query: String,
+        val options: Options,
+        val locale: Locale
+    ) : SearchIterator {
 
         override var resultCount: Int = 0
             private set
@@ -121,7 +127,6 @@ class StringSearchService(
                 }
 
                 return Try.success(LocatorCollection(locators = locators))
-
             } catch (e: Exception) {
                 return Try.failure(SearchException.wrap(e))
             }
@@ -145,7 +150,12 @@ class StringSearchService(
             return locators
         }
 
-        private suspend fun createLocator(resourceIndex: Int, resourceLocator: Locator, text: String, range: IntRange): Locator {
+        private suspend fun createLocator(
+            resourceIndex: Int,
+            resourceLocator: Locator,
+            text: String,
+            range: IntRange
+        ): Locator {
             val progression = range.first.toDouble() / text.length.toDouble()
 
             var totalProgression: Double? = null
@@ -237,7 +247,12 @@ class StringSearchService(
             wholeWord = false,
         )
 
-        override suspend fun findRanges(query: String, options: Options, text: String, locale: Locale): List<IntRange> {
+        override suspend fun findRanges(
+            query: String,
+            options: Options,
+            text: String,
+            locale: Locale
+        ): List<IntRange> {
             val ranges = mutableListOf<IntRange>()
             val iter = createStringSearch(query, options, text, locale)
             var start = iter.first()
@@ -248,7 +263,12 @@ class StringSearchService(
             return ranges
         }
 
-        private fun createStringSearch(query: String, options: Options, text: String, locale: Locale): StringSearch {
+        private fun createStringSearch(
+            query: String,
+            options: Options,
+            text: String,
+            locale: Locale
+        ): StringSearch {
             val caseSensitive = options.caseSensitive ?: false
             var diacriticSensitive = options.diacriticSensitive ?: false
             val wholeWord = options.wholeWord ?: false
@@ -293,7 +313,12 @@ class StringSearchService(
 
         override val options: Options get() = Options()
 
-        override suspend fun findRanges(query: String, options: Options, text: String, locale: Locale): List<IntRange> {
+        override suspend fun findRanges(
+            query: String,
+            options: Options,
+            text: String,
+            locale: Locale
+        ): List<IntRange> {
             val ranges = mutableListOf<IntRange>()
             var index: Int = text.indexOf(query)
             while (index >= 0) {

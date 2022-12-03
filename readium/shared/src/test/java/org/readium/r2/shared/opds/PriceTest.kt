@@ -53,5 +53,4 @@ class PriceTest {
             Price(currency = "EUR", value = 4.65).toJSON()
         )
     }
-
 }

@@ -7,6 +7,10 @@
 package org.readium.r2.shared.fetcher
 
 import android.webkit.MimeTypeMap
+import java.nio.charset.StandardCharsets
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.junit.Test
@@ -19,10 +23,6 @@ import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.readBlocking
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
-import java.nio.charset.StandardCharsets
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertNotNull
 
 @RunWith(RobolectricTestRunner::class)
 class ArchiveFetcherTest {
@@ -66,8 +66,8 @@ class ArchiveFetcherTest {
         assertEquals(
             listOf(
                 createLink("/mimetype", null, 20, false),
-                createLink("/EPUB/cover.xhtml" , "application/xhtml+xml", 259L, true),
-                createLink("/EPUB/css/epub.css",  "text/css", 595L, true),
+                createLink("/EPUB/cover.xhtml", "application/xhtml+xml", 259L, true),
+                createLink("/EPUB/css/epub.css", "text/css", 595L, true),
                 createLink("/EPUB/css/nav.css", "text/css", 306L, true),
                 createLink("/EPUB/images/cover.png", "image/png", 35809L, true),
                 createLink("/EPUB/nav.xhtml", "application/xhtml+xml", 2293L, true),
@@ -145,13 +145,15 @@ class ArchiveFetcherTest {
     @Test
     fun `Adds compressed length and archive properties to the Link`() = runBlocking {
         assertJSONEquals(
-            JSONObject(mapOf(
-                "compressedLength" to 595L,
-                "archive" to mapOf(
-                    "entryLength" to 595L,
-                    "isEntryCompressed" to true
+            JSONObject(
+                mapOf(
+                    "compressedLength" to 595L,
+                    "archive" to mapOf(
+                        "entryLength" to 595L,
+                        "isEntryCompressed" to true
+                    )
                 )
-            )),
+            ),
             fetcher.get(Link(href = "/EPUB/css/epub.css")).link().properties.toJSON()
         )
     }
@@ -161,10 +163,15 @@ class ArchiveFetcherTest {
         val resource = fetcher.get(Link(href = "/mimetype", properties = Properties(mapOf("other" to "property"))))
 
         assertEquals(
-            Link(href = "/mimetype", properties = Properties(mapOf(
-                "other" to "property",
-                "archive" to mapOf("entryLength" to 20L, "isEntryCompressed" to false)
-            ))),
+            Link(
+                href = "/mimetype",
+                properties = Properties(
+                    mapOf(
+                        "other" to "property",
+                        "archive" to mapOf("entryLength" to 20L, "isEntryCompressed" to false)
+                    )
+                )
+            ),
             resource.linkBlocking()
         )
     }

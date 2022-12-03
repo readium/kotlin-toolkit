@@ -9,6 +9,9 @@
 
 package org.readium.r2.lcp.license
 
+import java.net.HttpURLConnection
+import java.util.*
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -28,9 +31,6 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
-import java.net.HttpURLConnection
-import java.util.*
-import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 internal class License(
@@ -56,7 +56,6 @@ internal class License(
                 val decryptedData = LcpClient.decrypt(context, data)
                 Try.success(decryptedData)
             }
-
         } catch (e: Exception) {
             Try.failure(LcpException.wrap(e))
         }
@@ -209,11 +208,9 @@ internal class License(
             validateStatusDocument(data)
 
             return Try.success(documents.license.rights.end)
-
         } catch (e: CancellationException) {
             // Passthrough for cancelled coroutines
             throw e
-
         } catch (e: Exception) {
             return Try.failure(LcpException.wrap(e))
         }
@@ -245,7 +242,6 @@ internal class License(
                 }
 
             return Try.success(Unit)
-
         } catch (e: Exception) {
             return Try.failure(LcpException.wrap(e))
         }
@@ -261,7 +257,4 @@ internal class License(
 
     private fun validateStatusDocument(data: ByteArray): Unit =
         validation.validate(LicenseValidation.Document.status(data)) { _, _ -> }
-
 }
-
-

@@ -1,10 +1,7 @@
 /*
- * Module: r2-navigator-kotlin
- * Developers: Aferdita Muriqi, Clément Baumann
- *
- * Copyright (c) 2018. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.navigator.epub
@@ -22,6 +19,7 @@ import android.view.ActionMode
 import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
@@ -32,14 +30,14 @@ import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.util.CompositeFragmentFactory
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
-import kotlin.coroutines.CoroutineContext
 
-open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2Highlightable, IR2TTS, CoroutineScope, VisualNavigator, EpubNavigatorFragment.Listener {
+open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2Highlightable, IR2TTS, CoroutineScope, VisualNavigator, EpubNavigatorFragment.Listener {
 
     /**
      * Context of this scope.
@@ -67,7 +65,6 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
 
     private val currentFragment: R2EpubPageFragment? get() =
         adapter.mFragments.get(adapter.getItemId(resourcePager.currentItem)) as? R2EpubPageFragment
-
 
     // For backward compatibility, we expose these properties only through the `R2EpubActivity`.
     val positions: List<Locator> get() = navigatorFragment().positions
@@ -139,16 +136,20 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
     override fun toggleActionBar() {
         if (allowToggleActionBar) {
             if (supportActionBar!!.isShowing) {
-                resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                resourcePager.systemUiVisibility = (
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                        or View.SYSTEM_UI_FLAG_IMMERSIVE)
+                        or View.SYSTEM_UI_FLAG_IMMERSIVE
+                    )
             } else {
-                resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                resourcePager.systemUiVisibility = (
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    )
             }
         }
     }
@@ -156,17 +157,23 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
     override val readingProgression: ReadingProgression
         get() = navigatorFragment().readingProgression
 
+    @ExperimentalReadiumApi
+    override val presentation: StateFlow<VisualNavigator.Presentation>
+        get() = navigatorFragment().presentation
+
     @Suppress("DEPRECATION")
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         navigatorFragment().go(locator, animated, completion)
 
         if (allowToggleActionBar && supportActionBar!!.isShowing) {
-            resourcePager.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            resourcePager.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                     or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                     or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                     or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                    or View.SYSTEM_UI_FLAG_IMMERSIVE)
+                    or View.SYSTEM_UI_FLAG_IMMERSIVE
+                )
         }
 
         return true
@@ -223,7 +230,7 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
     }
 
     override fun showHighlights(highlights: Array<Highlight>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun hideHighlightWithID(id: String) {
@@ -232,7 +239,7 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
     }
 
     override fun hideAllHighlights() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun rectangleForHighlightWithID(id: String, callback: (Rect?) -> Unit) {
@@ -257,11 +264,11 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
     }
 
     override fun rectangleForHighlightAnnotationMarkWithID(id: String): Rect? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun registerHighlightAnnotationMarkStyle(name: String, css: String) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun highlightActivated(id: String) {
@@ -282,12 +289,12 @@ open class R2EpubActivity: AppCompatActivity(), IR2Activity, IR2Selectable, IR2H
                 val json = JSONObject(it)
                 val id = json.getString("id")
                 callback(
-                        Highlight(
-                                id,
-                                locator!!,
-                                color,
-                                Style.highlight
-                        )
+                    Highlight(
+                        id,
+                        locator!!,
+                        color,
+                        Style.highlight
+                    )
                 )
             }
         }

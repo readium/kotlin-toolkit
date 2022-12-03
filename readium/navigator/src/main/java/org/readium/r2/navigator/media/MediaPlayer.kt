@@ -63,7 +63,11 @@ interface MediaPlayer {
          *
          * The metadata will be used for the media-style notification.
          */
-        fun onCreateNotificationMetadata(publication: Publication, publicationId: PublicationId, link: Link): NotificationMetadata
+        fun onCreateNotificationMetadata(
+            publication: Publication,
+            publicationId: PublicationId,
+            link: Link
+        ): NotificationMetadata
     }
 
     // FIXME: ExoPlayer's media session connector doesn't handle the playback speed yet, so I used a custom solution until we create our own connector
@@ -72,5 +76,4 @@ interface MediaPlayer {
     var listener: Listener?
 
     fun onDestroy()
-
 }

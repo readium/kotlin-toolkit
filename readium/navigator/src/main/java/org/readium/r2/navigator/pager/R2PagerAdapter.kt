@@ -19,8 +19,10 @@ import androidx.fragment.app.FragmentManager
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 
-
-class R2PagerAdapter internal constructor(val fm: FragmentManager, private val resources: List<PageResource>) : R2FragmentPagerAdapter(fm) {
+class R2PagerAdapter internal constructor(
+    val fm: FragmentManager,
+    private val resources: List<PageResource>
+) : R2FragmentPagerAdapter(fm) {
 
     internal interface Listener {
         fun onCreatePageFragment(fragment: Fragment) {}
@@ -30,7 +32,12 @@ class R2PagerAdapter internal constructor(val fm: FragmentManager, private val r
 
     internal sealed class PageResource {
         data class EpubReflowable(val link: Link, val url: String, val positionCount: Int) : PageResource()
-        data class EpubFxl(val leftLink: Link? = null, val leftUrl: String? = null, val rightLink: Link? = null, val rightUrl: String? = null) : PageResource()
+        data class EpubFxl(
+            val leftLink: Link? = null,
+            val leftUrl: String? = null,
+            val rightLink: Link? = null,
+            val rightUrl: String? = null
+        ) : PageResource()
         data class Cbz(val link: Link) : PageResource()
     }
 
@@ -50,8 +57,7 @@ class R2PagerAdapter internal constructor(val fm: FragmentManager, private val r
         return nextFragment
     }
 
-    override fun setPrimaryItem(container: ViewGroup, position: Int, `object`: Any)
-    {
+    override fun setPrimaryItem(container: ViewGroup, position: Int, `object`: Any) {
         if (getCurrentFragment() !== `object`) {
             currentFragment = `object` as Fragment
             nextFragment = mFragments.get(getItemId(position + 1))

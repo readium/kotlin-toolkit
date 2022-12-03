@@ -6,6 +6,9 @@
 
 package org.readium.r2.shared.util.mediatype
 
+import java.io.InputStream
+import java.nio.charset.Charset
+import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -19,9 +22,6 @@ import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import timber.log.Timber
-import java.io.InputStream
-import java.nio.charset.Charset
-import java.util.*
 
 /**
  * A companion type of [Sniffer] holding the type hints (file extensions, media types) and

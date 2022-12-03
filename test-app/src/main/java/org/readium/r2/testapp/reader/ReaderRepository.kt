@@ -8,9 +8,16 @@ package org.readium.r2.testapp.reader
 
 import android.app.Activity
 import android.app.Application
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences as JetpackPreferences
+import java.io.File
 import org.json.JSONObject
+import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
+import org.readium.r2.navigator.epub.EpubNavigatorFactory
+import org.readium.r2.navigator.pdf.PdfNavigatorFactory
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
@@ -21,21 +28,23 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.testapp.MediaService
 import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.bookshelf.BookRepository
-import java.io.File
+import org.readium.r2.testapp.reader.preferences.EpubPreferencesManagerFactory
+import org.readium.r2.testapp.reader.preferences.PdfiumPreferencesManagerFactory
 
 /**
  * Open and store publications in order for them to be listened or read.
  *
  * Ensure you call [open] before any attempt to start a [ReaderActivity].
  * Pass the method result to the activity to enable it to know which current publication it must
- * retrieve from this repository - media or visual.
+ * retrieve from this rep+ository - media or visual.
  */
-@OptIn(ExperimentalMedia2::class)
+@OptIn(ExperimentalMedia2::class, ExperimentalReadiumApi::class)
 class ReaderRepository(
     private val application: Application,
     private val readium: Readium,
     private val mediaBinder: MediaService.Binder,
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
+    private val preferencesDataStore: DataStore<JetpackPreferences>,
 ) {
     object CancellationException : Exception()
 
@@ -80,19 +89,17 @@ class ReaderRepository(
         val readerInitData = when {
             publication.conformsTo(Publication.Profile.AUDIOBOOK) ->
                 openAudio(bookId, publication, initialLocator)
+            publication.conformsTo(Publication.Profile.EPUB) ->
+                openEpub(bookId, publication, initialLocator)
+            publication.conformsTo(Publication.Profile.PDF) ->
+                openPdf(bookId, publication, initialLocator)
+            publication.conformsTo(Publication.Profile.DIVINA) ->
+                openImage(bookId, publication, initialLocator)
             else ->
-                openVisual(bookId, publication, initialLocator)
+                throw Exception("Publication is not supported.")
         }
 
         repository[bookId] = readerInitData
-    }
-
-    private fun openVisual(
-        bookId: Long,
-        publication: Publication,
-        initialLocator: Locator?
-    ): VisualReaderInitData {
-        return VisualReaderInitData(bookId, publication, initialLocator)
     }
 
     @OptIn(ExperimentalMedia2::class)
@@ -109,6 +116,51 @@ class ReaderRepository(
 
         mediaBinder.bindNavigator(navigator, bookId)
         return MediaReaderInitData(bookId, publication, navigator)
+    }
+
+    private suspend fun openEpub(
+        bookId: Long,
+        publication: Publication,
+        initialLocator: Locator?
+    ): EpubReaderInitData {
+
+        val preferencesManager = EpubPreferencesManagerFactory(preferencesDataStore)
+            .createPreferenceManager(bookId)
+        val navigatorFactory = EpubNavigatorFactory(publication, readium.epubNavigatorConfig)
+
+        return EpubReaderInitData(
+            bookId, publication, initialLocator,
+            preferencesManager, navigatorFactory
+        )
+    }
+
+    private suspend fun openPdf(
+        bookId: Long,
+        publication: Publication,
+        initialLocator: Locator?
+    ): PdfReaderInitData {
+
+        val preferencesManager = PdfiumPreferencesManagerFactory(preferencesDataStore)
+            .createPreferenceManager(bookId)
+        val pdfEngine = PdfiumEngineProvider()
+        val navigatorFactory = PdfNavigatorFactory(publication, pdfEngine)
+
+        return PdfReaderInitData(
+            bookId, publication, initialLocator,
+            preferencesManager, navigatorFactory
+        )
+    }
+
+    private fun openImage(
+        bookId: Long,
+        publication: Publication,
+        initialLocator: Locator?
+    ): ImageReaderInitData {
+        return ImageReaderInitData(
+            bookId = bookId,
+            publication = publication,
+            initialLocation = initialLocator
+        )
     }
 
     fun close(bookId: Long) {

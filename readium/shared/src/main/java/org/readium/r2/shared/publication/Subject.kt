@@ -40,7 +40,7 @@ data class Subject(
     /**
      * Shortcut to create a [Subject] using a string as [name].
      */
-    constructor(name: String): this(
+    constructor(name: String) : this(
         localizedName = LocalizedString(name)
     )
 
@@ -82,7 +82,7 @@ data class Subject(
         ): Subject? {
             json ?: return null
 
-            val localizedName: LocalizedString? = when(json) {
+            val localizedName: LocalizedString? = when (json) {
                 is String -> LocalizedString.fromJSON(json, warnings)
                 is JSONObject -> LocalizedString.fromJSON(json.opt("name"), warnings)
                 else -> null
@@ -114,7 +114,7 @@ data class Subject(
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): List<Subject> {
-            return when(json) {
+            return when (json) {
                 is String, is JSONObject ->
                     listOf(json).mapNotNull { fromJSON(it, normalizeHref, warnings) }
 
@@ -124,7 +124,5 @@ data class Subject(
                 else -> emptyList()
             }
         }
-
     }
-
 }

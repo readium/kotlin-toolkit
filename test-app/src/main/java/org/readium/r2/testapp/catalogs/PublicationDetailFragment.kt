@@ -21,7 +21,6 @@ import org.readium.r2.testapp.MainActivity
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentPublicationDetailBinding
 
-
 class PublicationDetailFragment : Fragment() {
 
     private var publication: Publication? = null
@@ -31,7 +30,8 @@ class PublicationDetailFragment : Fragment() {
     private val binding get() = _binding!!
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPublicationDetailBinding.inflate(
@@ -46,8 +46,9 @@ class PublicationDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         (activity as MainActivity).supportActionBar?.title = publication?.metadata?.title
 
-        Picasso.get().load(publication?.images?.first()?.href)
-            .into(binding.catalogDetailCoverImage)
+        publication?.images?.firstOrNull()
+            ?.let { Picasso.get().load(it.href) }
+            ?.into(binding.catalogDetailCoverImage)
 
         binding.catalogDetailDescriptionText.text = publication?.metadata?.description
         binding.catalogDetailTitleText.text = publication?.metadata?.title

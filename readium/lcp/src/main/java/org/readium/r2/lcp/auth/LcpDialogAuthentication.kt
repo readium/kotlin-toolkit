@@ -24,6 +24,9 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import java.util.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.LcpAuthenticating
@@ -32,9 +35,6 @@ import org.readium.r2.lcp.license.model.components.Link
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.extensions.tryOrNull
 import timber.log.Timber
-import java.util.*
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * An [LcpAuthenticating] implementation presenting a dialog to the user.
@@ -54,16 +54,20 @@ class LcpDialogAuthentication : LcpAuthenticating {
         if (allowUserInteraction) withContext(Dispatchers.Main) { askPassphrase(license, reason, sender) }
         else null
 
-    private suspend fun askPassphrase(license: LcpAuthenticating.AuthenticatedLicense, reason: LcpAuthenticating.AuthenticationReason, sender: Any?): String? {
+    private suspend fun askPassphrase(
+        license: LcpAuthenticating.AuthenticatedLicense,
+        reason: LcpAuthenticating.AuthenticationReason,
+        sender: Any?
+    ): String? {
         val hostView = (sender as? View) ?: (sender as? Activity)?.findViewById<ViewGroup>(android.R.id.content)?.getChildAt(0) ?: (sender as? Fragment)?.view
-        ?: run {
-            Timber.e("No valid [sender] was passed to `LcpDialogAuthentication::retrievePassphrase()`. Make sure it is an Activity, a Fragment or a View.")
-            return null
-        }
+            ?: run {
+                Timber.e("No valid [sender] was passed to `LcpDialogAuthentication::retrievePassphrase()`. Make sure it is an Activity, a Fragment or a View.")
+                return null
+            }
         val context = hostView.context
 
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        @SuppressLint("InflateParams")  // https://stackoverflow.com/q/26404951/1474476
+        @SuppressLint("InflateParams") // https://stackoverflow.com/q/26404951/1474476
         val dialogView = inflater.inflate(R.layout.r2_lcp_auth_dialog, null)
 
         val title = dialogView.findViewById(R.id.r2_title) as TextView
@@ -152,9 +156,10 @@ class LcpDialogAuthentication : LcpAuthenticating {
             else -> Intent(Intent.ACTION_VIEW)
         }
 
-        startActivity(Intent(action).apply {
-            data = url
-        })
+        startActivity(
+            Intent(action).apply {
+                data = url
+            }
+        )
     }
-
 }

@@ -6,11 +6,11 @@
 
 plugins {
     id("com.android.library")
-    id("kotlin-android")
-    id("kotlin-parcelize")
+    kotlin("android")
+    kotlin("plugin.parcelize")
+    kotlin("plugin.serialization")
     id("maven-publish")
     id("org.jetbrains.dokka")
-    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -40,17 +40,19 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
     }
+    namespace = "org.readium.r2.shared"
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            groupId = "com.github.readium"
+            artifactId = "readium-shared"
+            artifact(tasks.findByName("sourcesJar"))
+            artifact(tasks.findByName("javadocsJar"))
+
+            afterEvaluate {
                 from(components.getByName("release"))
-                groupId = "com.github.readium"
-                artifactId = "readium-shared"
-                artifact(tasks.findByName("sourcesJar"))
-                artifact(tasks.findByName("javadocsJar"))
             }
         }
     }
@@ -59,31 +61,33 @@ afterEvaluate {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    implementation("androidx.appcompat:appcompat:1.4.1")
-    implementation("androidx.browser:browser:1.4.0")
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.browser)
     implementation("com.github.kittinunf.fuel:fuel-android:2.3.1")
     implementation("com.github.kittinunf.fuel:fuel:2.3.1")
-    implementation("com.jakewharton.timber:timber:5.0.1")
-    implementation("joda-time:joda-time:2.10.14")
+    implementation(libs.timber)
+    implementation(libs.joda.time)
     implementation("nl.komponents.kovenant:kovenant-android:3.3.0")
     implementation("nl.komponents.kovenant:kovenant-combine:3.3.0")
     implementation("nl.komponents.kovenant:kovenant-core:3.3.0")
     implementation("nl.komponents.kovenant:kovenant-functional:3.3.0")
     implementation("nl.komponents.kovenant:kovenant-jvm:3.3.0")
     implementation("nl.komponents.kovenant:kovenant:3.3.0")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.21")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0-RC")
-    implementation("org.jsoup:jsoup:1.15.1")
+    implementation(libs.kotlin.reflect)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.jsoup)
 
     // Tests
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.assertj:assertj-core:3.23.1")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.6.21")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.2")
-    testImplementation("org.robolectric:robolectric:4.8.1")
+    testImplementation(libs.junit)
 
-    androidTestImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.6.10")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    androidTestImplementation(libs.androidx.ext.junit)
+    androidTestImplementation(libs.androidx.expresso.core)
+
+    testImplementation(libs.assertj)
+    testImplementation(libs.kotlin.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
+
+    androidTestImplementation(libs.kotlin.junit)
 }

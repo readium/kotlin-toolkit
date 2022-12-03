@@ -10,13 +10,13 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
+import java.util.*
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
-import java.util.*
 
 /**
  * Represents a string with multiple [translations] indexed by a BCP 47 language tag.
@@ -158,7 +158,6 @@ data class LocalizedString(val translations: Map<String?, Translation> = emptyMa
 
             return LocalizedString(translations)
         }
-
     }
 
     @Deprecated("Use [string] instead.", ReplaceWith("string"))
@@ -168,5 +167,4 @@ data class LocalizedString(val translations: Map<String?, Translation> = emptyMa
     @Deprecated("Use [get] instead.", ReplaceWith("()"))
     val multiString: Map<String?, String>
         get() = translations.mapValues { (_, translation) -> translation.string }
-
 }

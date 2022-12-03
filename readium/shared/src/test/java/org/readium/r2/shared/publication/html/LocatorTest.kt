@@ -44,19 +44,20 @@ class LocatorTest {
     @Test fun `get Locations {domRange} when available`() {
         assertEquals(
             DomRange(start = DomRange.Point(cssSelector = "p", textNodeIndex = 4)),
-            Locator.Locations(otherLocations = mapOf(
-                "domRange" to mapOf(
-                    "start" to mapOf(
-                        "cssSelector" to "p",
-                        "textNodeIndex" to 4
+            Locator.Locations(
+                otherLocations = mapOf(
+                    "domRange" to mapOf(
+                        "start" to mapOf(
+                            "cssSelector" to "p",
+                            "textNodeIndex" to 4
+                        )
                     )
                 )
-            )).domRange
+            ).domRange
         )
     }
 
     @Test fun `get Locations {domRange} when missing`() {
         assertNull(Locator.Locations().domRange)
     }
-
 }

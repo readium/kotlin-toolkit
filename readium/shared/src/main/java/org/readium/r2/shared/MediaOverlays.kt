@@ -70,5 +70,4 @@ data class MediaOverlays(private val nodes: List<MediaOverlayNode> = listOf()) :
         }
         return null
     }
-
 }

@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.image
 
+import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.assertEquals
@@ -21,7 +22,6 @@ import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.streamer.parseBlocking
-import java.io.File
 
 class ImageParserTest {
 
@@ -75,7 +75,8 @@ class ImageParserTest {
         with(builder!!.manifest.readingOrder) {
             assertEquals(
                 "/Cory Doctorow's Futuristic Tales of the Here and Now/a-fc.jpg",
-                firstWithRel("cover")?.href)
+                firstWithRel("cover")?.href
+            )
         }
     }
 

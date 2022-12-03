@@ -6,6 +6,8 @@
 
 package org.readium.r2.lcp
 
+import java.net.URL
+import java.util.*
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -16,8 +18,6 @@ import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.util.Try
 import timber.log.Timber
-import java.net.URL
-import java.util.*
 
 /**
  * Opened license, used to decipher a protected publication and manage its license.
@@ -80,7 +80,6 @@ interface LcpLicense : ContentProtectionService.UserRights {
      */
     suspend fun decrypt(data: ByteArray): Try<ByteArray, LcpException>
 
-
     /**
      * UX delegate for the loan renew LSD interaction.
      *
@@ -104,7 +103,6 @@ interface LcpLicense : ContentProtectionService.UserRights {
          * web page is dismissed by the user.
          */
         suspend fun openWebPage(url: URL)
-
     }
 
     @Deprecated("Use `license.encryption.profile` instead", ReplaceWith("license.encryption.profile"))
@@ -121,7 +119,11 @@ interface LcpLicense : ContentProtectionService.UserRights {
     suspend fun renewLoan(end: DateTime?, urlPresenter: suspend (URL) -> Unit): Try<Unit, LcpException> = Try.success(Unit)
 
     @Deprecated("Use `renewLoan` with `RenewListener` instead", ReplaceWith("renewLoan(LcpLicense.RenewListener)"), level = DeprecationLevel.ERROR)
-    fun renewLoan(end: DateTime?, present: (URL, dismissed: () -> Unit) -> Unit, completion: (LcpException?) -> Unit) {}
+    fun renewLoan(
+        end: DateTime?,
+        present: (URL, dismissed: () -> Unit) -> Unit,
+        completion: (LcpException?) -> Unit
+    ) {}
 
     @Deprecated("Use `returnPublication()` with coroutines instead", ReplaceWith("returnPublication"))
     @DelicateCoroutinesApi
@@ -130,7 +132,6 @@ interface LcpLicense : ContentProtectionService.UserRights {
             completion(returnPublication().exceptionOrNull())
         }
     }
-
 }
 
 @Deprecated("Renamed to `LcpService`", replaceWith = ReplaceWith("LcpService"))

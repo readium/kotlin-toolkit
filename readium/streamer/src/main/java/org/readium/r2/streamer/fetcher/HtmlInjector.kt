@@ -11,6 +11,7 @@
 
 package org.readium.r2.streamer.fetcher
 
+import java.io.File
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.Injectable
@@ -27,7 +28,6 @@ import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.streamer.parser.epub.ReadiumCssLayout
 import org.readium.r2.streamer.server.Resources
 import timber.log.Timber
-import java.io.File
 
 internal class HtmlInjector(
     val publication: Publication,
@@ -55,7 +55,6 @@ internal class HtmlInjector(
                     injectFixedLayoutHtml(trimmedText)
                 res.toByteArray()
             }
-
     }
 
     private fun injectReflowableHtml(content: String): String {
@@ -80,14 +79,28 @@ internal class HtmlInjector(
         // Fix Readium CSS issue with the positioning of <audio> elements.
         // https://github.com/readium/readium-css/issues/94
         // https://github.com/readium/r2-navigator-kotlin/issues/193
-        beginIncludes.add("""
+        beginIncludes.add(
+            """
             <style>
             audio[controls] {
                 width: revert;
                 height: revert;
             }
             </style>
-        """.trimIndent())
+            """.trimIndent()
+        )
+
+        // Fix broken pagination when a book contains `overflow-x: hidden`.
+        // https://github.com/readium/kotlin-toolkit/issues/292
+        // Inspired by https://github.com/readium/readium-css/issues/119#issuecomment-1302348238
+        beginIncludes.add(
+            """
+            <style>
+                :root[style], :root { overflow: visible !important; }
+                :root[style] > body, :root > body { overflow: visible !important; }
+            </style>
+        """.trimMargin()
+        )
 
         endIncludes.add(getHtmlLink("/assets/readium-css/${layout.readiumCSSPath}ReadiumCSS-after.css"))
         endIncludes.add(getHtmlScript("/assets/scripts/readium-reflowable.js"))
@@ -120,14 +133,17 @@ internal class HtmlInjector(
         // Disable the text selection if the publication is protected.
         // FIXME: This is a hack until proper LCP copy is implemented, see https://github.com/readium/r2-testapp-kotlin/issues/266
         if (publication.isProtected) {
-            resourceHtml = StringBuilder(resourceHtml).insert(endHeadIndex, """
+            resourceHtml = StringBuilder(resourceHtml).insert(
+                endHeadIndex,
+                """
                 <style>
                 *:not(input):not(textarea) {
                     user-select: none;
                     -webkit-user-select: none;
                 }
                 </style>
-            """).toString()
+            """
+            ).toString()
         }
 
         // Inject userProperties
@@ -144,7 +160,7 @@ internal class HtmlInjector(
                     val beginHtmlIndex = resourceHtml.indexOf("<html", 0, true) + 5
                     resourceHtml = StringBuilder(resourceHtml).insert(beginHtmlIndex, " style=\"${buildStringProperties(propertyPair)}\"").toString()
                 }
-            } ?:run {
+            } ?: run {
                 val beginHtmlIndex = resourceHtml.indexOf("<html", 0, true) + 5
                 resourceHtml = StringBuilder(resourceHtml).insert(beginHtmlIndex, " style=\"${buildStringProperties(propertyPair)}\"").toString()
             }
@@ -249,7 +265,6 @@ internal class HtmlInjector(
                     if (!isInPreset) {
                         properties[value.getString("name")] = value.getString("value")
                     }
-
                 }
                 properties
             } catch (e: Exception) {
@@ -263,7 +278,7 @@ internal class HtmlInjector(
 
         readiumCSSProperty.put("name", preset.first.ref)
 
-        when(preset.first) {
+        when (preset.first) {
             ReadiumCSSName.hyphens -> {
                 readiumCSSProperty.put("value", "")
             }
@@ -325,5 +340,4 @@ internal class HtmlInjector(
         }
         return string
     }
-
 }

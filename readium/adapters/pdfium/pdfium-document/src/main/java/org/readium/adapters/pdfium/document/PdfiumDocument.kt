@@ -9,7 +9,10 @@ package org.readium.adapters.pdfium.document
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.ParcelFileDescriptor
+import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 import com.shockwave.pdfium.PdfiumCore
+import java.io.File
+import kotlin.reflect.KClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.PdfSupport
@@ -20,9 +23,6 @@ import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.use
 import timber.log.Timber
-import java.io.File
-import kotlin.reflect.KClass
-import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 
 @OptIn(PdfSupport::class)
 class PdfiumDocument(
@@ -84,7 +84,7 @@ class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<PdfiumDocumen
 
     override val documentType: KClass<PdfiumDocument> = PdfiumDocument::class
 
-    private val core by lazy { PdfiumCore(context.applicationContext ) }
+    private val core by lazy { PdfiumCore(context.applicationContext) }
 
     override suspend fun open(file: File, password: String?): PdfiumDocument =
         core.fromFile(file, password)

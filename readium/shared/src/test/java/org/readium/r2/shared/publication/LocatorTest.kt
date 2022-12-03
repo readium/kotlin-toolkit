@@ -23,10 +23,14 @@ class LocatorTest {
     @Test fun `parse {Locator} minimal JSON`() {
         assertEquals(
             Locator(href = "http://locator", type = "text/html"),
-            Locator.fromJSON(JSONObject("""{
+            Locator.fromJSON(
+                JSONObject(
+                    """{
                 "href": "http://locator",
                 "type": "text/html"
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
@@ -39,7 +43,9 @@ class LocatorTest {
                 locations = Locator.Locations(position = 42),
                 text = Locator.Text(highlight = "Excerpt")
             ),
-            Locator.fromJSON(JSONObject("""{
+            Locator.fromJSON(
+                JSONObject(
+                    """{
                 "href": "http://locator",
                 "type": "text/html",
                 "title": "My Locator",
@@ -49,7 +55,9 @@ class LocatorTest {
                 "text": {
                     "highlight": "Excerpt"
                 }
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
@@ -63,17 +71,20 @@ class LocatorTest {
 
     @Test fun `get {Locator} minimal JSON`() {
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "href": "http://locator",
                 "type": "text/html"
-            }"""),
+            }"""
+            ),
             Locator(href = "http://locator", type = "text/html").toJSON()
         )
     }
 
     @Test fun `get {Locator} full JSON`() {
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "href": "http://locator",
                 "type": "text/html",
                 "title": "My Locator",
@@ -83,7 +94,8 @@ class LocatorTest {
                 "text": {
                     "highlight": "Excerpt"
                 }
-            }"""),
+            }"""
+            ),
             Locator(
                 href = "http://locator",
                 type = "text/html",
@@ -157,13 +169,17 @@ class LocatorTest {
                 totalProgression = 0.32,
                 otherLocations = mapOf("other" to "other-location")
             ),
-            Locator.Locations.fromJSON(JSONObject("""{
+            Locator.Locations.fromJSON(
+                JSONObject(
+                    """{
                 "fragments": ["p=4", "frag34"],
                 "progression": 0.74,
                 "totalProgression": 0.32,
                 "position": 42,
                 "other": "other-location"
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
@@ -209,13 +225,15 @@ class LocatorTest {
 
     @Test fun `get {Locations} full JSON`() {
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "fragments": ["p=4", "frag34"],
                 "progression": 0.74,
                 "totalProgression": 25.32,
                 "position": 42,
                 "other": "other-location"
-            }"""),
+            }"""
+            ),
             Locator.Locations(
                 fragments = listOf("p=4", "frag34"),
                 progression = 0.74,
@@ -240,11 +258,15 @@ class LocatorTest {
                 highlight = "Highlighted text",
                 after = "Text after"
             ),
-            Locator.Text.fromJSON(JSONObject("""{
+            Locator.Text.fromJSON(
+                JSONObject(
+                    """{
                 "before": "Text before",
                 "highlight": "Highlighted text",
                 "after": "Text after"
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
@@ -261,11 +283,13 @@ class LocatorTest {
 
     @Test fun `get {Text} full JSON`() {
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "before": "Text before",
                 "highlight": "Highlighted text",
                 "after": "Text after"
-            }"""),
+            }"""
+            ),
             Locator.Text(
                 before = "Text before",
                 highlight = "Highlighted text",
@@ -273,7 +297,6 @@ class LocatorTest {
             ).toJSON()
         )
     }
-
 }
 
 @RunWith(RobolectricTestRunner::class)
@@ -290,10 +313,12 @@ class LocatorCollectionTest {
         assertEquals(
             LocatorCollection(
                 metadata = LocatorCollection.Metadata(
-                    localizedTitle = LocalizedString.fromStrings(mapOf(
-                        "en" to "Searching <riddle> in Alice in Wonderlands - Page 1",
-                        "fr" to "Recherche <riddle> dans Alice in Wonderlands – Page 1"
-                    )),
+                    localizedTitle = LocalizedString.fromStrings(
+                        mapOf(
+                            "en" to "Searching <riddle> in Alice in Wonderlands - Page 1",
+                            "fr" to "Recherche <riddle> dans Alice in Wonderlands – Page 1"
+                        )
+                    ),
                     numberOfItems = 3,
                     otherMetadata = mapOf(
                         "extraMetadata" to "value"
@@ -332,7 +357,9 @@ class LocatorCollectionTest {
                     )
                 )
             ),
-            LocatorCollection.fromJSON(JSONObject("""{
+            LocatorCollection.fromJSON(
+                JSONObject(
+                    """{
               "metadata": {
                 "title": {
                     "en": "Searching <riddle> in Alice in Wonderlands - Page 1",
@@ -377,22 +404,27 @@ class LocatorCollectionTest {
                   }
                 }
               ]
-            }"""))
+            }"""
+                )
+            )
         )
     }
 
     @Test fun `get {Locator} minimal JSON`() {
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
                 "locators": []
-            }"""),
+            }"""
+            ),
             LocatorCollection().toJSON()
         )
     }
 
     @Test fun `get {Locator} full JSON`() {
         assertJSONEquals(
-            JSONObject("""{
+            JSONObject(
+                """{
               "metadata": {
                 "title": {
                     "en": "Searching <riddle> in Alice in Wonderlands - Page 1",
@@ -437,13 +469,16 @@ class LocatorCollectionTest {
                   }
                 }
               ]
-            }"""),
+            }"""
+            ),
             LocatorCollection(
                 metadata = LocatorCollection.Metadata(
-                    localizedTitle = LocalizedString.fromStrings(mapOf(
-                        "en" to "Searching <riddle> in Alice in Wonderlands - Page 1",
-                        "fr" to "Recherche <riddle> dans Alice in Wonderlands – Page 1"
-                    )),
+                    localizedTitle = LocalizedString.fromStrings(
+                        mapOf(
+                            "en" to "Searching <riddle> in Alice in Wonderlands - Page 1",
+                            "fr" to "Recherche <riddle> dans Alice in Wonderlands – Page 1"
+                        )
+                    ),
                     numberOfItems = 3,
                     otherMetadata = mapOf(
                         "extraMetadata" to "value"

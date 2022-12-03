@@ -40,7 +40,7 @@ internal class LcpContentProtection(
             ?: this.authentication
 
         val license = lcpService
-            .retrieveLicense(asset.file,  authentication, allowUserInteraction, sender)
+            .retrieveLicense(asset.file, authentication, allowUserInteraction, sender)
 
         val serviceFactory = LcpContentProtectionService
             .createFactory(license?.getOrNull(), license?.exceptionOrNull())
@@ -55,5 +55,4 @@ internal class LcpContentProtection(
 
         return Try.success(protectedFile)
     }
-
 }

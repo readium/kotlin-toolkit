@@ -9,25 +9,23 @@
 
 package org.readium.r2.shared.drm
 
-import org.readium.r2.shared.util.MapCompanion
 import java.io.Serializable
+import org.readium.r2.shared.util.MapCompanion
 
-data class DRM(val brand: Brand): Serializable  {
+data class DRM(val brand: Brand) : Serializable {
     val scheme: Scheme
     var license: DRMLicense? = null
 
-    enum class Brand(val rawValue: String): Serializable  {
+    enum class Brand(val rawValue: String) : Serializable {
         lcp("lcp");
 
         companion object : MapCompanion<String, Brand>(values(), Brand::rawValue)
-
     }
 
-    enum class Scheme(val rawValue: String): Serializable  {
+    enum class Scheme(val rawValue: String) : Serializable {
         lcp("http://readium.org/2014/01/lcp");
 
         companion object : MapCompanion<String, Scheme>(values(), Scheme::rawValue)
-
     }
 
     init {
@@ -37,7 +35,7 @@ data class DRM(val brand: Brand): Serializable  {
     }
 }
 
-interface DRMLicense: Serializable {
+interface DRMLicense : Serializable {
     val encryptionProfile: String?
     fun decipher(data: ByteArray): ByteArray?
     val canCopy: Boolean

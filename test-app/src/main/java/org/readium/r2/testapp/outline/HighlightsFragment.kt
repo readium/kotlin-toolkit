@@ -72,20 +72,22 @@ class HighlightsFragment : Fragment() {
 
     private fun onHighlightSelected(highlight: Highlight) {
         setFragmentResult(
-                OutlineContract.REQUEST_KEY,
-                OutlineContract.createResult(highlight.locator)
+            OutlineContract.REQUEST_KEY,
+            OutlineContract.createResult(highlight.locator)
         )
     }
 }
 
-class HighlightAdapter(private val publication: Publication,
-                       private val onDeleteHighlightRequested: (Highlight) -> Unit,
-                       private val onHighlightSelectedRequested: (Highlight) -> Unit) :
-        ListAdapter<Highlight, HighlightAdapter.ViewHolder>(HighlightsDiff()) {
+class HighlightAdapter(
+    private val publication: Publication,
+    private val onDeleteHighlightRequested: (Highlight) -> Unit,
+    private val onHighlightSelectedRequested: (Highlight) -> Unit
+) :
+    ListAdapter<Highlight, HighlightAdapter.ViewHolder>(HighlightsDiff()) {
 
     override fun onCreateViewHolder(
-            parent: ViewGroup,
-            viewType: Int
+        parent: ViewGroup,
+        viewType: Int
     ): ViewHolder {
         return ViewHolder(
             ItemRecycleHighlightBinding.inflate(

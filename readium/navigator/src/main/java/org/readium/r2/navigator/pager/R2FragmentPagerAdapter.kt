@@ -20,7 +20,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.viewpager.widget.PagerAdapter
 
-
 abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentManager) : androidx.fragment.app.FragmentStatePagerAdapter(mFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
     val mFragments = LongSparseArray<Fragment>()
@@ -74,7 +73,6 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
             fragmentKey = mFragments.keyAt(index)
             mFragments.removeAt(index)
         }
-
 
         if (fragment.isAdded && currentPosition != PagerAdapter.POSITION_NONE) {
             mSavedStates.put(fragmentKey, mFragmentManager.saveFragmentInstanceState(fragment))
@@ -166,9 +164,7 @@ abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentMana
         }
     }
 
-
     fun getItemId(position: Int): Long {
         return position.toLong()
     }
-
 }

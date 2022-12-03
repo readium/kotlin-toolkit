@@ -31,7 +31,8 @@ internal enum class DEFAULT_VOCAB(val iri: String) {
 }
 
 internal fun resolveProperty(
-    property: String, prefixMap: Map<String, String>,
+    property: String,
+    prefixMap: Map<String, String>,
     defaultVocab: DEFAULT_VOCAB? = null
 ): String {
     val splitted = property.split(":", limit = 2).filterNot(String::isEmpty)

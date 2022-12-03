@@ -11,8 +11,9 @@ package org.readium.r2.shared.util.pdf
 
 import android.content.Context
 import android.graphics.Bitmap
+import java.io.File
+import kotlin.reflect.KClass
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
@@ -22,10 +23,7 @@ import org.readium.r2.shared.publication.services.cacheService
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.cache.Cache
 import org.readium.r2.shared.util.mediatype.MediaType
-import java.io.File
-import kotlin.reflect.KClass
 
-@PdfSupport
 interface PdfDocumentFactory<T : PdfDocument> {
 
     /** Class for the type of document this factory produces. */
@@ -46,14 +44,12 @@ interface PdfDocumentFactory<T : PdfDocument> {
  * around.
  */
 @ExperimentalReadiumApi
-@PdfSupport
 suspend fun <T : PdfDocument> PdfDocumentFactory<T>.cachedIn(holder: PublicationServicesHolder): PdfDocumentFactory<T> {
     val namespace = requireNotNull(documentType.qualifiedName)
     val cache = holder.cacheService?.cacheOf(documentType, namespace) ?: return this
     return CachingPdfDocumentFactory(this, cache)
 }
 
-@PdfSupport
 private class CachingPdfDocumentFactory<T : PdfDocument>(
     private val factory: PdfDocumentFactory<T>,
     private val cache: Cache<T>
@@ -77,7 +73,6 @@ private class CachingPdfDocumentFactory<T : PdfDocument>(
 /**
  * Represents a PDF document.
  */
-@PdfSupport
 interface PdfDocument : SuspendingCloseable {
 
     /**
@@ -130,7 +125,7 @@ interface PdfDocument : SuspendingCloseable {
 
     data class OutlineNode(
         val title: String?,
-        val pageNumber: Int?,  // Starts from 1.
+        val pageNumber: Int?, // Starts from 1.
         val children: List<OutlineNode>
     )
 
@@ -144,11 +139,11 @@ interface PdfDocument : SuspendingCloseable {
  * @param documentHref HREF of the PDF document in the [Publication] to which the links are
  *        relative to.
  */
-@PdfSupport
+@ExperimentalReadiumApi
 fun List<PdfDocument.OutlineNode>.toLinks(documentHref: String): List<Link> =
     map { it.toLink(documentHref) }
 
-@PdfSupport
+@ExperimentalReadiumApi
 fun PdfDocument.OutlineNode.toLink(documentHref: String): Link =
     Link(
         href = "$documentHref#page=$pageNumber",

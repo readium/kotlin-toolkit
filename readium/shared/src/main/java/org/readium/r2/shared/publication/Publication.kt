@@ -12,6 +12,9 @@ package org.readium.r2.shared.publication
 import android.net.Uri
 import android.os.Parcelable
 import androidx.annotation.StringRes
+import java.net.URL
+import java.net.URLEncoder
+import kotlin.reflect.KClass
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -26,15 +29,17 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
-import org.readium.r2.shared.publication.services.*
+import org.readium.r2.shared.publication.services.CacheService
+import org.readium.r2.shared.publication.services.ContentProtectionService
+import org.readium.r2.shared.publication.services.CoverService
+import org.readium.r2.shared.publication.services.DefaultLocatorService
+import org.readium.r2.shared.publication.services.LocatorService
+import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Ref
 import org.readium.r2.shared.util.mediatype.MediaType
-import java.net.URL
-import java.net.URLEncoder
-import kotlin.reflect.KClass
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
 
@@ -172,7 +177,7 @@ class Publication(
      * Closes any opened resource associated with the [Publication], including services.
      */
     @OptIn(DelicateCoroutinesApi::class)
-    //TODO Change this to be a suspend function
+    // TODO Change this to be a suspend function
     override fun close() {
         GlobalScope.launch {
             tryOrLog {
@@ -255,14 +260,20 @@ class Publication(
             localBaseUrlOf(filename, port) + href
 
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated("Parse a RWPM with [Manifest::fromJSON] and then instantiate a Publication",
-            ReplaceWith("Manifest.fromJSON(json)",
-                "org.readium.r2.shared.publication.Publication", "org.readium.r2.shared.publication.Manifest"),
-            level = DeprecationLevel.ERROR)
-        fun fromJSON(json: JSONObject?, normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity): Publication? {
+        @Deprecated(
+            "Parse a RWPM with [Manifest::fromJSON] and then instantiate a Publication",
+            ReplaceWith(
+                "Manifest.fromJSON(json)",
+                "org.readium.r2.shared.publication.Publication", "org.readium.r2.shared.publication.Manifest"
+            ),
+            level = DeprecationLevel.ERROR
+        )
+        fun fromJSON(
+            json: JSONObject?,
+            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity
+        ): Publication? {
             throw NotImplementedError()
         }
-
     }
 
     /**
@@ -324,7 +335,7 @@ class Publication(
          * )
          * ```
          */
-        val links: List<Link> get () = emptyList()
+        val links: List<Link> get() = emptyList()
 
         /**
          * A service can return a Resource to:
@@ -354,7 +365,9 @@ class Publication(
      *
      * Provides helpers to manipulate the list of services of a [Publication].
      */
-    class ServicesBuilder private constructor(private val serviceFactories: MutableMap<String, ServiceFactory>) {
+    class ServicesBuilder private constructor(
+        private val serviceFactories: MutableMap<String, ServiceFactory>
+    ) {
 
         @OptIn(Search::class, ExperimentalReadiumApi::class)
         @Suppress("UNCHECKED_CAST")
@@ -366,18 +379,20 @@ class Publication(
             locator: ServiceFactory? = { DefaultLocatorService(it.manifest.readingOrder, it.services) },
             positions: ServiceFactory? = null,
             search: ServiceFactory? = null,
-        ) : this(mapOf(
-            CacheService::class.java.simpleName to cache,
-            ContentService::class.java.simpleName to content,
-            ContentProtectionService::class.java.simpleName to contentProtection,
-            CoverService::class.java.simpleName to cover,
-            LocatorService::class.java.simpleName to locator,
-            PositionsService::class.java.simpleName to positions,
-            SearchService::class.java.simpleName to search,
-        ).filterValues { it != null }.toMutableMap() as MutableMap<String, ServiceFactory>)
+        ) : this(
+            mapOf(
+                CacheService::class.java.simpleName to cache,
+                ContentService::class.java.simpleName to content,
+                ContentProtectionService::class.java.simpleName to contentProtection,
+                CoverService::class.java.simpleName to cover,
+                LocatorService::class.java.simpleName to locator,
+                PositionsService::class.java.simpleName to positions,
+                SearchService::class.java.simpleName to search,
+            ).filterValues { it != null }.toMutableMap() as MutableMap<String, ServiceFactory>
+        )
 
         /** Builds the actual list of publication services to use in a Publication. */
-        fun build(context: Service.Context) : List<Service> = serviceFactories.values.mapNotNull { it(context) }
+        fun build(context: Service.Context): List<Service> = serviceFactories.values.mapNotNull { it(context) }
 
         /** Gets the publication service factory for the given service type. */
         operator fun <T : Service> get(serviceType: KClass<T>): ServiceFactory? {
@@ -405,11 +420,13 @@ class Publication(
          * Replaces the service factory associated with the given service type with the result of
          * [transform].
          */
-        fun <T : Service> decorate(serviceType: KClass<T>, transform: ((ServiceFactory)?) -> ServiceFactory) {
+        fun <T : Service> decorate(
+            serviceType: KClass<T>,
+            transform: ((ServiceFactory)?) -> ServiceFactory
+        ) {
             val key = requireNotNull(serviceType.simpleName)
             serviceFactories[key] = transform(serviceFactories[key])
         }
-
     }
 
     /**
@@ -447,8 +464,7 @@ class Publication(
          * The provided credentials are incorrect and we can't open the publication in a
          * `restricted` state (e.g. for a password-protected ZIP).
          */
-        object IncorrectCredentials: OpeningException(R.string.r2_shared_publication_opening_exception_incorrect_credentials)
-
+        object IncorrectCredentials : OpeningException(R.string.r2_shared_publication_opening_exception_incorrect_credentials)
     }
 
     /**
@@ -504,11 +520,12 @@ class Publication(
 
     @Deprecated("Use [setSelfLink] instead", ReplaceWith("setSelfLink"))
     fun addSelfLink(endPoint: String, baseURL: URL) {
-        setSelfLink(Uri.parse(baseURL.toString())
-            .buildUpon()
-            .appendEncodedPath("$endPoint/manifest.json")
-            .build()
-            .toString()
+        setSelfLink(
+            Uri.parse(baseURL.toString())
+                .buildUpon()
+                .appendEncodedPath("$endPoint/manifest.json")
+                .build()
+                .toString()
         )
     }
 
@@ -551,7 +568,6 @@ class Publication(
     @Deprecated("Use `metadata.effectiveReadingProgression` instead", ReplaceWith("metadata.effectiveReadingProgression"), level = DeprecationLevel.ERROR)
     @Suppress("UNUSED_PARAMETER")
     fun contentLayoutForLanguage(language: String?) = metadata.effectiveReadingProgression
-
 }
 
 /**
@@ -561,12 +577,12 @@ interface PublicationServicesHolder {
     /**
      * Returns the first publication service that is an instance of [serviceType].
      */
-    fun <T: Publication.Service> findService(serviceType: KClass<T>): T?
+    fun <T : Publication.Service> findService(serviceType: KClass<T>): T?
 
     /**
      * Returns all the publication services that are instances of [serviceType].
      */
-    fun <T: Publication.Service> findServices(serviceType: KClass<T>): List<T>
+    fun <T : Publication.Service> findServices(serviceType: KClass<T>): List<T>
 
     /**
      * Closes the publication services.
@@ -577,10 +593,10 @@ interface PublicationServicesHolder {
 internal class ListPublicationServicesHolder(
     var services: List<Publication.Service> = emptyList()
 ) : PublicationServicesHolder {
-    override fun <T: Publication.Service> findService(serviceType: KClass<T>): T? =
+    override fun <T : Publication.Service> findService(serviceType: KClass<T>): T? =
         findServices(serviceType).firstOrNull()
 
-    override fun <T: Publication.Service> findServices(serviceType: KClass<T>): List<T> =
+    override fun <T : Publication.Service> findServices(serviceType: KClass<T>): List<T> =
         services.filterIsInstance(serviceType.java)
 
     override fun close() {

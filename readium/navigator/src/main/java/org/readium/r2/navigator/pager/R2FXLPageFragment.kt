@@ -47,7 +47,11 @@ class R2FXLPageFragment : Fragment() {
         get() = parentFragment as? EpubNavigatorFragment
 
     @SuppressLint("SetJavaScriptEnabled")
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
 
         secondResourceUrl?.let {
             _doubleBinding = FragmentFxllayoutDoubleBinding.inflate(inflater, container, false)
@@ -71,7 +75,7 @@ class R2FXLPageFragment : Fragment() {
             })
 
             return view
-        }?:run {
+        } ?: run {
             _singleBinding = FragmentFxllayoutSingleBinding.inflate(inflater, container, false)
             val view: View = singleBinding.root
             view.setPadding(0, 0, 0, 0)
@@ -137,7 +141,6 @@ class R2FXLPageFragment : Fragment() {
         webView.setPadding(0, 0, 0, 0)
         webView.addJavascriptInterface(webView, "Android")
 
-
         webView.webViewClient = object : WebViewClientCompat() {
 
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean =
@@ -145,7 +148,6 @@ class R2FXLPageFragment : Fragment() {
 
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
                 (webView as? R2BasicWebView)?.shouldInterceptRequest(view, request)
-
         }
         webView.isHapticFeedbackEnabled = false
         webView.isLongClickable = false
@@ -165,9 +167,5 @@ class R2FXLPageFragment : Fragment() {
                     putString("secondUrl", url2)
                 }
             }
-
     }
-
 }
-
-

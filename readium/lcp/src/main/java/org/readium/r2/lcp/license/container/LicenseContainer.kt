@@ -18,11 +18,14 @@ import org.readium.r2.shared.util.mediatype.MediaType
  * or a standalone LCPL file).
  */
 internal interface LicenseContainer {
-    fun read() : ByteArray
+    fun read(): ByteArray
     fun write(license: LicenseDocument)
 }
 
-internal suspend fun createLicenseContainer(filepath: String, mediaTypes: List<String> = emptyList()): LicenseContainer {
+internal suspend fun createLicenseContainer(
+    filepath: String,
+    mediaTypes: List<String> = emptyList()
+): LicenseContainer {
     val mediaType = MediaType.ofFile(filepath, mediaTypes = mediaTypes, fileExtensions = emptyList())
         ?: throw LcpException.Container.OpenFailed
     return createLicenseContainer(filepath, mediaType)

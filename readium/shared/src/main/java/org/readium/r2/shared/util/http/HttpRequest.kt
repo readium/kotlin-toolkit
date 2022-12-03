@@ -40,8 +40,8 @@ class HttpRequest(
 
     /** Supported body values. */
     sealed class Body : Serializable {
-        class Bytes(val bytes: ByteArray): Body()
-        class File(val file: java.io.File): Body()
+        class Bytes(val bytes: ByteArray) : Body()
+        class File(val file: java.io.File) : Body()
     }
 
     fun buildUpon() = Builder(
@@ -116,17 +116,17 @@ class HttpRequest(
             method = Method.POST
             setHeader("Content-Type", "application/x-www-form-urlencoded")
 
-            body = Body.Bytes(form
-                .map { (key, value) ->
-                    "$key=${URLEncoder.encode(value ?: "", "UTF-8")}"
-                }
-                .joinToString("&")
-                .toByteArray()
+            body = Body.Bytes(
+                form
+                    .map { (key, value) ->
+                        "$key=${URLEncoder.encode(value ?: "", "UTF-8")}"
+                    }
+                    .joinToString("&")
+                    .toByteArray()
             )
 
             return this
         }
-
 
         fun build(): HttpRequest = HttpRequest(
             url = url,
@@ -138,7 +138,5 @@ class HttpRequest(
             readTimeout = readTimeout,
             allowUserInteraction = allowUserInteraction,
         )
-
     }
-
 }

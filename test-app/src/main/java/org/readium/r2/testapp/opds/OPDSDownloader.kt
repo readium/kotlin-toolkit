@@ -11,6 +11,9 @@
 package org.readium.r2.testapp.opds
 
 import android.content.Context
+import java.io.File
+import java.io.FileOutputStream
+import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
@@ -20,9 +23,6 @@ import org.readium.r2.shared.util.http.*
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import timber.log.Timber
-import java.io.File
-import java.io.FileOutputStream
-import java.util.*
 
 class OPDSDownloader(context: Context) {
 
@@ -109,5 +109,4 @@ class OPDSDownloader(context: Context) {
         } catch (e: Exception) {
             Try.failure(HttpException.wrap(e))
         }
-
 }

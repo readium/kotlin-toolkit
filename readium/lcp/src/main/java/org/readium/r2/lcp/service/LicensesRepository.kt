@@ -35,7 +35,7 @@ internal class LicensesRepository(private val lcpDao: LcpDao) {
         lcpDao.setCopiesLeft(quantity, licenseId)
     }
 
-    fun printsLeft(licenseId: String) : Int? {
+    fun printsLeft(licenseId: String): Int? {
         return lcpDao.getPrintsLeft(licenseId)
     }
 

@@ -24,7 +24,6 @@ inline fun <reified T : Fragment> createFragmentFactory(crossinline factory: () 
             else -> super.instantiate(classLoader, className)
         }
     }
-
 }
 
 /**
@@ -51,5 +50,4 @@ class CompositeFragmentFactory(private val factories: List<FragmentFactory>) : F
 
         return super.instantiate(classLoader, className)
     }
-
 }

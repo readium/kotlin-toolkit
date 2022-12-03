@@ -168,7 +168,7 @@ data class Manifest(
                 if (packaged)
                     "/"
                 else
-                   Link.fromJSONArray(json.optJSONArray("links"), warnings = warnings)
+                    Link.fromJSONArray(json.optJSONArray("links"), warnings = warnings)
                         .firstWithRel("self")
                         ?.href
                         ?.toUrlOrNull()
@@ -214,4 +214,3 @@ data class Manifest(
         }
     }
 }
-

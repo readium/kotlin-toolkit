@@ -69,8 +69,12 @@ class OutlineFragment : Fragment() {
     }
 }
 
-private class OutlineFragmentStateAdapter(fragment: Fragment, val publication: Publication, val outlines: List<Outline>)
-    : FragmentStateAdapter(fragment) {
+private class OutlineFragmentStateAdapter(
+    fragment: Fragment,
+    val publication: Publication,
+    val outlines: List<Outline>
+) :
+    FragmentStateAdapter(fragment) {
 
     override fun getItemCount(): Int {
         return outlines.size
@@ -87,12 +91,14 @@ private class OutlineFragmentStateAdapter(fragment: Fragment, val publication: P
     }
 
     private fun createContentsFragment() =
-        NavigationFragment.newInstance(when {
-            publication.tableOfContents.isNotEmpty() -> publication.tableOfContents
-            publication.readingOrder.isNotEmpty() -> publication.readingOrder
-            publication.images.isNotEmpty() -> publication.images
-            else -> mutableListOf()
-        })
+        NavigationFragment.newInstance(
+            when {
+                publication.tableOfContents.isNotEmpty() -> publication.tableOfContents
+                publication.readingOrder.isNotEmpty() -> publication.readingOrder
+                publication.images.isNotEmpty() -> publication.images
+                else -> mutableListOf()
+            }
+        )
 
     private fun createPageListFragment() =
         NavigationFragment.newInstance(publication.pageList)

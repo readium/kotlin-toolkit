@@ -8,16 +8,16 @@
  */
 package org.readium.r2.lcp.license.container
 
+import java.io.File
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
-import java.io.File
 
 /**
  * Access a License Document stored in an LCP License Document file (LCPL).
  */
 internal class LCPLLicenseContainer(private val lcpl: String) : LicenseContainer {
 
-    override fun read() : ByteArray =
+    override fun read(): ByteArray =
         try {
             File(lcpl).readBytes()
         } catch (e: Exception) {
@@ -31,6 +31,4 @@ internal class LCPLLicenseContainer(private val lcpl: String) : LicenseContainer
             throw LcpException.Container.WriteFailed(lcpl)
         }
     }
-
 }
-

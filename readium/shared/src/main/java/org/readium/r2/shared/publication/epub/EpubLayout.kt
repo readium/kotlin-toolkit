@@ -28,7 +28,5 @@ enum class EpubLayout(val value: String) : Parcelable {
         val Fixed: EpubLayout get() = FIXED
         @Deprecated("Renamed to [REFLOWABLE]", ReplaceWith("EpubLayout.REFLOWABLE"))
         val Reflowable: EpubLayout get() = REFLOWABLE
-
     }
-
 }

@@ -9,7 +9,6 @@
 package org.readium.r2.testapp.reader
 
 import android.graphics.Color
-import android.os.Bundle
 import androidx.annotation.ColorInt
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -33,7 +32,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.domain.model.Highlight
-import org.readium.r2.testapp.reader.settings.UserSettingsViewModel
+import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
@@ -64,11 +63,9 @@ class ReaderViewModel(
         scope = viewModelScope
     )
 
-    val settings: UserSettingsViewModel = UserSettingsViewModel(
-        application = application,
-        bookId = readerInitData.bookId,
-        kind = readerInitData.navigatorKind,
-        scope = viewModelScope
+    val settings: UserPreferencesViewModel<*, *>? = UserPreferencesViewModel(
+        viewModelScope = viewModelScope,
+        readerInitData = readerInitData
     )
 
     override fun onCleared() {
@@ -129,11 +126,11 @@ class ReaderViewModel(
             id = "$id-$idSuffix",
             locator = locator,
             style = style,
-            extras = Bundle().apply {
-                // We store the highlight's database ID in the extras bundle, for easy retrieval
-                // later. You can store arbitrary information in the bundle.
-                putLong("id", id)
-            }
+            extras = mapOf(
+                // We store the highlight's database ID in the extras map, for easy retrieval
+                // later. You can store arbitrary information in the map.
+                "id" to id
+            )
         )
 
         return listOfNotNull(
@@ -158,7 +155,12 @@ class ReaderViewModel(
     suspend fun highlightById(id: Long): Highlight? =
         bookRepository.highlightById(id)
 
-    fun addHighlight(locator: Locator, style: Highlight.Style, @ColorInt tint: Int, annotation: String = "") = viewModelScope.launch {
+    fun addHighlight(
+        locator: Locator,
+        style: Highlight.Style,
+        @ColorInt tint: Int,
+        annotation: String = ""
+    ) = viewModelScope.launch {
         bookRepository.addHighlight(bookId, style, tint, locator, annotation)
     }
 

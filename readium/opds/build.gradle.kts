@@ -6,8 +6,8 @@
 
 plugins {
     id("com.android.library")
-    id("kotlin-android")
-    id("kotlin-parcelize")
+    kotlin("android")
+    kotlin("plugin.parcelize")
     id("maven-publish")
     id("org.jetbrains.dokka")
 }
@@ -39,17 +39,19 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
     }
+    namespace = "org.readium.r2.opds"
 }
 
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            groupId = "com.github.readium"
+            artifactId = "readium-opds"
+            artifact(tasks.findByName("sourcesJar"))
+            artifact(tasks.findByName("javadocsJar"))
+
+            afterEvaluate {
                 from(components.getByName("release"))
-                groupId = "com.github.readium"
-                artifactId = "readium-opds"
-                artifact(tasks.findByName("sourcesJar"))
-                artifact(tasks.findByName("javadocsJar"))
             }
         }
     }
@@ -58,17 +60,19 @@ afterEvaluate {
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 
-    api(project(":readium:shared"))
+    api(project(":readium:readium-shared"))
 
-    implementation("androidx.appcompat:appcompat:1.4.1")
-    implementation("com.jakewharton.timber:timber:5.0.1")
-    implementation("joda-time:joda-time:2.10.14")
+    implementation(libs.androidx.appcompat)
+    implementation(libs.timber)
+    implementation(libs.joda.time)
     implementation("nl.komponents.kovenant:kovenant:3.3.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
+    implementation(libs.kotlinx.coroutines.core)
 
     // Tests
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.robolectric:robolectric:4.8.1")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    testImplementation(libs.junit)
+
+    androidTestImplementation(libs.androidx.ext.junit)
+    androidTestImplementation(libs.androidx.expresso.core)
+
+    testImplementation(libs.robolectric)
 }

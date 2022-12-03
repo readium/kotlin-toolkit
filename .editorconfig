@@ -1,0 +1,7 @@
+[*.{kt,kts}]
+
+ktlint_disabled_rules=no-wildcard-imports,max-line-length
+
+# Imports must be ordered in lexicographic order without any empty lines in-between.
+# https://github.com/pinterest/ktlint/issues/1236
+ij_kotlin_imports_layout=*

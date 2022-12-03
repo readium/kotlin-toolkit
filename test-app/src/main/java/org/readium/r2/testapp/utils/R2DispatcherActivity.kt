@@ -27,10 +27,10 @@ class R2DispatcherActivity : Activity() {
 
     private fun dispatchIntent(intent: Intent) {
         val uri = uriFromIntent(intent)
-                ?: run {
-                    Timber.d("Got an empty intent.")
-                    return
-                }
+            ?: run {
+                Timber.d("Got an empty intent.")
+                return
+            }
         val newIntent = Intent(this, MainActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             data = uri

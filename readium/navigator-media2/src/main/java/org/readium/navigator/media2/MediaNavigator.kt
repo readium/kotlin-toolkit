@@ -17,6 +17,10 @@ import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.media2.SessionPlayerConnector
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.upstream.DataSource
+import java.util.concurrent.Executors
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -34,10 +38,6 @@ import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import timber.log.Timber
-import java.util.concurrent.Executors
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
 
 /**
  * An audiobook navigator to connect to a MediaSession from Jetpack Media2.
@@ -176,7 +176,7 @@ class MediaNavigator private constructor(
         )
     }
 
-    private suspend fun<T> executeCommand(block: suspend () -> T): T {
+    private suspend fun <T> executeCommand(block: suspend () -> T): T {
         val result = commandMutex.withLock {
             preventStateUpdate = true
             val result = block()
@@ -311,9 +311,8 @@ class MediaNavigator private constructor(
     fun session(context: Context, activityIntent: PendingIntent, id: String? = null): MediaSession =
         playerFacade.session(context, id, activityIntent)
 
-
     data class Configuration(
-        val positionRefreshRate: Double = 2.0,  // Hz
+        val positionRefreshRate: Double = 2.0, // Hz
         val skipForwardInterval: Duration = 30.seconds,
         val skipBackwardInterval: Duration = 30.seconds,
     )
@@ -352,7 +351,7 @@ class MediaNavigator private constructor(
             internal val error: SessionPlayerError
         ) : Exception("${error.name} error occurred in SessionPlayer.")
 
-        class InvalidArgument(message: String): Exception(message)
+        class InvalidArgument(message: String) : Exception(message)
     }
 
     /*
@@ -399,7 +398,7 @@ class MediaNavigator private constructor(
             val callbackExecutor = Executors.newSingleThreadExecutor()
             player.registerPlayerCallback(callbackExecutor, callback)
 
-            val facade = SessionPlayerFacade(player,  seekCompletedChannel, callback.playerState)
+            val facade = SessionPlayerFacade(player, seekCompletedChannel, callback.playerState)
             return preparePlayer(publication, facade, metadataFactory)
                 // Ignoring failure to set initial locator
                 .onSuccess { goInitialLocator(publication, initialLocator, facade) }
@@ -433,7 +432,7 @@ class MediaNavigator private constructor(
                 .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
                 .setAudioAttributes(
                     AudioAttributes.Builder()
-                        .setContentType(C.CONTENT_TYPE_MUSIC)
+                        .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
                         .setUsage(C.USAGE_MEDIA)
                         .build(),
                     true

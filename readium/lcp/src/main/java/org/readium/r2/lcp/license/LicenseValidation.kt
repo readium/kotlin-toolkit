@@ -9,6 +9,9 @@
 
 package org.readium.r2.lcp.license
 
+import java.util.*
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.LcpAuthenticating
@@ -20,9 +23,6 @@ import org.readium.r2.lcp.service.*
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
-import java.util.*
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
 
 internal sealed class Either<A, B> {
     class Left<A, B>(val left: A) : Either<A, B>()
@@ -42,7 +42,11 @@ internal enum class ObserverPolicy {
     always
 }
 
-internal data class ValidatedDocuments constructor(val license: LicenseDocument, private val context: Context, val status: StatusDocument? = null) {
+internal data class ValidatedDocuments constructor(
+    val license: LicenseDocument,
+    private val context: Context,
+    val status: StatusDocument? = null
+) {
     fun getContext(): LcpClient.Context {
         when (context) {
             is Either.Left -> return context.left
@@ -59,13 +63,16 @@ internal sealed class State {
     data class fetchLicense(val license: LicenseDocument, val status: StatusDocument) : State()
     data class checkLicenseStatus(val license: LicenseDocument, val status: StatusDocument?) : State()
     data class retrievePassphrase(val license: LicenseDocument, val status: StatusDocument?) : State()
-    data class validateIntegrity(val license: LicenseDocument, val status: StatusDocument?, val passphrase: String) : State()
+    data class validateIntegrity(
+        val license: LicenseDocument,
+        val status: StatusDocument?,
+        val passphrase: String
+    ) : State()
     data class registerDevice(val documents: ValidatedDocuments, val link: Link) : State()
     data class valid(val documents: ValidatedDocuments) : State()
     data class failure(val error: Exception) : State()
     object cancelled : State()
 }
-
 
 internal sealed class Event {
     data class retrievedLicenseData(val data: ByteArray) : Event()
@@ -183,10 +190,10 @@ internal class LicenseValidation(
         }
         state<State.checkLicenseStatus> {
             on<Event.checkedLicenseStatus> {
-                it.error?.let{ error ->
+                it.error?.let { error ->
                     if (DEBUG) Timber.d("State.valid(ValidatedDocuments(license, Either.Right(error), status))")
                     transitionTo(State.valid(ValidatedDocuments(license, Either.Right(error), status)))
-                }?: run  {
+                } ?: run {
                     if (DEBUG) Timber.d("State.requestPassphrase(license, status)")
                     transitionTo(State.retrievePassphrase(license, status))
                 }
@@ -225,7 +232,7 @@ internal class LicenseValidation(
         }
         state<State.registerDevice> {
             on<Event.registeredDevice> {
-                it.statusData?.let { statusData->
+                it.statusData?.let { statusData ->
                     if (DEBUG) Timber.d("State.validateStatus(documents.license, statusData)")
                     transitionTo(State.validateStatus(documents.license, statusData))
                 } ?: run {
@@ -394,7 +401,11 @@ internal class LicenseValidation(
     }
 
     companion object {
-        fun observe(licenseValidation: LicenseValidation, policy: ObserverPolicy = ObserverPolicy.always, observer: Observer) {
+        fun observe(
+            licenseValidation: LicenseValidation,
+            policy: ObserverPolicy = ObserverPolicy.always,
+            observer: Observer
+        ) {
             var notified = true
             when (licenseValidation.stateMachine.state) {
                 is State.valid -> observer((licenseValidation.stateMachine.state as State.valid).documents, null)
@@ -408,5 +419,4 @@ internal class LicenseValidation(
             observers.add(Pair(observer, policy))
         }
     }
-
 }

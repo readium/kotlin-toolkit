@@ -11,7 +11,12 @@ package org.readium.r2.shared
 
 class RootFile() {
 
-    constructor(rootPath: String = "", rootFilePath: String = "", mimetype: String = "", version: Double? = null) : this() {
+    constructor(
+        rootPath: String = "",
+        rootFilePath: String = "",
+        mimetype: String = "",
+        version: Double? = null
+    ) : this() {
         this.rootPath = rootPath
         this.rootFilePath = rootFilePath
         this.mimetype = mimetype
@@ -23,5 +28,4 @@ class RootFile() {
     var rootFilePath: String = ""
     var mimetype: String = ""
     var version: Double? = null
-
 }

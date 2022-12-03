@@ -11,9 +11,10 @@ import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
+import java.util.concurrent.TimeUnit
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.BuildConfig.DEBUG
@@ -22,14 +23,12 @@ import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.databinding.ActivityR2AudiobookBinding
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.isRestricted
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
-import kotlin.coroutines.CoroutineContext
 
-@OptIn(ExperimentalCoroutinesApi::class)
 open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activity, MediaPlayerCallback, VisualNavigator {
 
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
@@ -103,7 +102,11 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
     }
 
     override val readingProgression: ReadingProgression
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+        get() = TODO("not implemented") // To change initializer of created properties use File | Settings | File Templates.
+
+    @ExperimentalReadiumApi
+    override val presentation: StateFlow<VisualNavigator.Presentation>
+        get() = TODO("Not yet implemented")
 
     /**
      * Context of this scope.
@@ -153,95 +156,97 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         mediaPlayer = R2MediaPlayer(readingOrderOverHttp, this)
 
         Handler(mainLooper).postDelayed({
-            
-        if (this.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
 
-            if (!loadedInitialLocator) {
-                go(publication.readingOrder.first())
-            }
+            if (this.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
 
-            binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                /**
-                 * Notification that the progress level has changed. Clients can use the fromUser parameter
-                 * to distinguish user-initiated changes from those that occurred programmatically.
-                 *
-                 * @param seekBar The SeekBar whose progress has changed
-                 * @param progress The current progress level. This will be in the range min..max where min
-                 * @param fromUser True if the progress change was initiated by the user.
-                 */
-                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                    if (!fromUser) {
-                        return
-                    }
-                    mediaPlayer.seekTo(progress)
-                    if (DEBUG) Timber.d("progress $progress")
+                if (!loadedInitialLocator) {
+                    go(publication.readingOrder.first())
                 }
 
-                /**
-                 * Notification that the user has started a touch gesture. Clients may want to use this
-                 * to disable advancing the seekbar.
-                 * @param seekBar The SeekBar in which the touch gesture began
-                 */
-                override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                    // do nothing
-                    isSeekTracking = true
-                    if (DEBUG) Timber.d("start tracking")
-                }
-
-                /**
-                 * Notification that the user has finished a touch gesture. Clients may want to use this
-                 * to re-enable advancing the seekbar.
-                 * @param seekBar The SeekBar in which the touch gesture began
-                 */
-                override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                    // do nothing
-                    isSeekTracking = false
-                    if (DEBUG) Timber.d("stop tracking")
-                }
-
-            })
-
-            binding.playPause.setOnClickListener {
-                mediaPlayer.let {
-                    if (it.isPlaying) {
-                        it.pause()
-                    } else {
-                        if (it.isPaused) {
-                            it.resume()
-                        } else {
-                            it.startPlayer()
+                binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                    /**
+                     * Notification that the progress level has changed. Clients can use the fromUser parameter
+                     * to distinguish user-initiated changes from those that occurred programmatically.
+                     *
+                     * @param seekBar The SeekBar whose progress has changed
+                     * @param progress The current progress level. This will be in the range min..max where min
+                     * @param fromUser True if the progress change was initiated by the user.
+                     */
+                    override fun onProgressChanged(
+                        seekBar: SeekBar?,
+                        progress: Int,
+                        fromUser: Boolean
+                    ) {
+                        if (!fromUser) {
+                            return
                         }
-                        Handler(mainLooper).postDelayed(updateSeekTime, 100)
+                        mediaPlayer.seekTo(progress)
+                        if (DEBUG) Timber.d("progress $progress")
                     }
-                    this.updateUI()
+
+                    /**
+                     * Notification that the user has started a touch gesture. Clients may want to use this
+                     * to disable advancing the seekbar.
+                     * @param seekBar The SeekBar in which the touch gesture began
+                     */
+                    override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                        // do nothing
+                        isSeekTracking = true
+                        if (DEBUG) Timber.d("start tracking")
+                    }
+
+                    /**
+                     * Notification that the user has finished a touch gesture. Clients may want to use this
+                     * to re-enable advancing the seekbar.
+                     * @param seekBar The SeekBar in which the touch gesture began
+                     */
+                    override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                        // do nothing
+                        isSeekTracking = false
+                        if (DEBUG) Timber.d("stop tracking")
+                    }
+                })
+
+                binding.playPause.setOnClickListener {
+                    mediaPlayer.let {
+                        if (it.isPlaying) {
+                            it.pause()
+                        } else {
+                            if (it.isPaused) {
+                                it.resume()
+                            } else {
+                                it.startPlayer()
+                            }
+                            Handler(mainLooper).postDelayed(updateSeekTime, 100)
+                        }
+                        this.updateUI()
+                    }
+                }
+
+                binding.playPause.callOnClick()
+
+                binding.fastForward.setOnClickListener {
+                    if (startTime.toInt() + forwardTime <= finalTime) {
+                        startTime += forwardTime
+                        mediaPlayer.seekTo(startTime)
+                    }
+                }
+
+                binding.fastBack.setOnClickListener {
+                    if (startTime.toInt() - backwardTime > 0) {
+                        startTime -= backwardTime
+                        mediaPlayer.seekTo(startTime)
+                    }
+                }
+
+                binding.nextChapter.setOnClickListener {
+                    goForward(false) {}
+                }
+
+                binding.prevChapter.setOnClickListener {
+                    goBackward(false) {}
                 }
             }
-
-            binding.playPause.callOnClick()
-
-            binding.fastForward.setOnClickListener {
-                if (startTime.toInt() + forwardTime <= finalTime) {
-                    startTime += forwardTime
-                    mediaPlayer.seekTo(startTime)
-                }
-            }
-
-            binding.fastBack.setOnClickListener {
-                if (startTime.toInt() - backwardTime > 0) {
-                    startTime -= backwardTime
-                    mediaPlayer.seekTo(startTime)
-                }
-            }
-
-            binding.nextChapter.setOnClickListener {
-                goForward(false) {}
-            }
-
-            binding.prevChapter.setOnClickListener {
-                goBackward(false) {}
-            }
-
-        }
         }, 100)
     }
 
@@ -250,7 +255,6 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         if (currentResource == publication.readingOrder.size - 1) {
             binding.nextChapter.isEnabled = false
             binding.nextChapter.alpha = .5f
-
         } else {
             binding.nextChapter.isEnabled = true
             binding.nextChapter.alpha = 1.0f
@@ -258,7 +262,6 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         if (currentResource == 0) {
             binding.prevChapter.isEnabled = false
             binding.prevChapter.alpha = .5f
-
         } else {
             binding.prevChapter.isEnabled = true
             binding.prevChapter.alpha = 1.0f
@@ -266,7 +269,6 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
         val current = publication.readingOrder[currentResource]
         binding.chapterView.text = current.title
-
 
         if (mediaPlayer.isPlaying) {
             binding.playPause.setImageDrawable(ContextCompat.getDrawable(this@R2AudiobookActivity, R.drawable.ic_pause_white_24dp))
@@ -279,13 +281,17 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
 
         binding.seekBar.max = finalTime.toInt()
 
-        binding.chapterTime.text = String.format("%d:%d",
-                TimeUnit.MILLISECONDS.toMinutes(finalTime.toLong()),
-                TimeUnit.MILLISECONDS.toSeconds(finalTime.toLong()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(finalTime.toLong())))
+        binding.chapterTime.text = String.format(
+            "%d:%d",
+            TimeUnit.MILLISECONDS.toMinutes(finalTime.toLong()),
+            TimeUnit.MILLISECONDS.toSeconds(finalTime.toLong()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(finalTime.toLong()))
+        )
 
-        binding.progressTime.text = String.format("%d:%d",
-                TimeUnit.MILLISECONDS.toMinutes(startTime.toLong()),
-                TimeUnit.MILLISECONDS.toSeconds(startTime.toLong()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(startTime.toLong())))
+        binding.progressTime.text = String.format(
+            "%d:%d",
+            TimeUnit.MILLISECONDS.toMinutes(startTime.toLong()),
+            TimeUnit.MILLISECONDS.toSeconds(startTime.toLong()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(startTime.toLong()))
+        )
 
         binding.seekBar.progress = startTime.toInt()
 
@@ -359,9 +365,11 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                 mediaPlayer.let {
                     startTime = it.mediaPlayer.currentPosition.toDouble()
                 }
-                binding.progressTime.text = String.format("%d:%d",
-                        TimeUnit.MILLISECONDS.toMinutes(startTime.toLong()),
-                        TimeUnit.MILLISECONDS.toSeconds(startTime.toLong()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(startTime.toLong())))
+                binding.progressTime.text = String.format(
+                    "%d:%d",
+                    TimeUnit.MILLISECONDS.toMinutes(startTime.toLong()),
+                    TimeUnit.MILLISECONDS.toSeconds(startTime.toLong()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(startTime.toLong()))
+                )
                 binding.seekBar.progress = startTime.toInt()
 
                 notifyCurrentLocation()
@@ -422,9 +430,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
                 }
             }
         }
-
     }
-
 }
 
 internal fun Link.withBaseUrl(baseUrl: String): Link {

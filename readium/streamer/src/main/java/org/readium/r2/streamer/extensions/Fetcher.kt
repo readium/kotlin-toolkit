@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.extensions
 
+import java.io.File
 import org.json.JSONObject
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.ArchiveFetcher
@@ -20,7 +21,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.shared.util.use
-import java.io.File
 
 /** Returns the resource data at the given [Link]'s HREF, or throws a [Resource.Exception] */
 @Throws(Resource.Exception::class)
@@ -60,7 +60,7 @@ internal suspend fun Fetcher.guessTitle(): String? {
     val commonFirstComponent = links().hrefCommonFirstComponent() ?: return null
 
     if (commonFirstComponent.name == firstLink.href.removePrefix("/"))
-       return null
+        return null
 
     return commonFirstComponent.name
 }

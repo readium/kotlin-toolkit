@@ -12,6 +12,9 @@ package org.readium.r2.shared.fetcher
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.annotation.StringRes
+import java.io.ByteArrayInputStream
+import java.io.File
+import java.nio.charset.Charset
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -27,9 +30,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
-import java.io.ByteArrayInputStream
-import java.io.File
-import java.nio.charset.Charset
 
 typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Exception>
 
@@ -117,9 +117,11 @@ interface Resource : SuspendingCloseable {
         /**
          * Creates a cached resource wrapping this resource.
          */
-        @Deprecated("If you were caching a TransformingResource, build it with cacheBytes set to true." +
+        @Deprecated(
+            "If you were caching a TransformingResource, build it with cacheBytes set to true." +
                 "Otherwise, please report your use case.",
-            level = DeprecationLevel.ERROR)
+            level = DeprecationLevel.ERROR
+        )
         fun Resource.cached(): Resource = this
     }
 
@@ -129,8 +131,8 @@ interface Resource : SuspendingCloseable {
     sealed class Exception(@StringRes userMessageId: Int, cause: Throwable? = null) : UserException(userMessageId, cause = cause) {
 
         /** Equivalent to a 400 HTTP error. */
-        class BadRequest(val parameters: Map<String, String> = emptyMap(), cause: Throwable? = null)
-            : Exception(R.string.r2_shared_resource_exception_bad_request, cause)
+        class BadRequest(val parameters: Map<String, String> = emptyMap(), cause: Throwable? = null) :
+            Exception(R.string.r2_shared_resource_exception_bad_request, cause)
 
         /** Equivalent to a 404 HTTP error. */
         class NotFound(cause: Throwable? = null) :
@@ -142,8 +144,8 @@ interface Resource : SuspendingCloseable {
          * This can be returned when trying to read a resource protected with a DRM that is not
          * unlocked.
          */
-        class Forbidden(cause: Throwable? = null)
-            : Exception(R.string.r2_shared_resource_exception_forbidden, cause)
+        class Forbidden(cause: Throwable? = null) :
+            Exception(R.string.r2_shared_resource_exception_forbidden, cause)
 
         /**
          * Equivalent to a 503 HTTP error.
@@ -151,8 +153,8 @@ interface Resource : SuspendingCloseable {
          * Used when the source can't be reached, e.g. no Internet connection, or an issue with the
          * file system. Usually this is a temporary error.
          */
-        class Unavailable(cause: Throwable? = null)
-            : Exception(R.string.r2_shared_resource_exception_unavailable, cause)
+        class Unavailable(cause: Throwable? = null) :
+            Exception(R.string.r2_shared_resource_exception_unavailable, cause)
 
         /**
          * The Internet connection appears to be offline.
@@ -164,8 +166,8 @@ interface Resource : SuspendingCloseable {
          *
          * Used when the requested range is too large to be read in memory.
          */
-        class OutOfMemory(cause: OutOfMemoryError)
-            : Exception(R.string.r2_shared_resource_exception_out_of_memory, cause)
+        class OutOfMemory(cause: OutOfMemoryError) :
+            Exception(R.string.r2_shared_resource_exception_out_of_memory, cause)
 
         /**
          * The request was cancelled by the caller.
@@ -186,9 +188,7 @@ interface Resource : SuspendingCloseable {
                     is OutOfMemoryError -> OutOfMemory(e)
                     else -> Other(e)
                 }
-
         }
-
     }
 }
 
@@ -201,13 +201,12 @@ class FailureResource(private val link: Link, private val error: Resource.Except
 
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = Try.failure(error)
 
-    override suspend fun length():  ResourceTry<Long> = Try.failure(error)
+    override suspend fun length(): ResourceTry<Long> = Try.failure(error)
 
     override suspend fun close() {}
 
     override fun toString(): String =
-        "${javaClass.simpleName}(${error})"
-            
+        "${javaClass.simpleName}($error)"
 }
 
 /**
@@ -305,7 +304,7 @@ abstract class TransformingResource(
 
     private lateinit var _bytes: ResourceTry<ByteArray>
 
-    abstract suspend fun transform(data: ResourceTry<ByteArray>):  ResourceTry<ByteArray>
+    abstract suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray>
 
     private suspend fun bytes(): ResourceTry<ByteArray> {
         if (::_bytes.isInitialized)
@@ -365,7 +364,6 @@ class LazyResource(private val factory: suspend () -> Resource) : Resource {
         } else {
             "${javaClass.simpleName}(...)"
         }
-    
 }
 
 /**
@@ -478,7 +476,7 @@ class BufferingResource(
                 val data = extractRange(requestedRange, buffer, start = bufferedRange.first)
                 return Try.success(data)
 
-            // Beginning of requested data is buffered?
+                // Beginning of requested data is buffered?
             } else if (bufferedRange.contains(requestedRange.first)) {
                 readRange = (bufferedRange.last + 1)..readRange.last
 
@@ -532,7 +530,6 @@ class BufferingResource(
 
     private fun Long.ceilMultipleOf(divisor: Long) =
         divisor * (this / divisor + if (this % divisor == 0L) 0 else 1)
-
 }
 
 /**
@@ -542,7 +539,10 @@ class BufferingResource(
  *        by avoiding requesting the length from the underlying resource.
  * @param bufferSize Size of the buffer chunks to read.
  */
-fun Resource.buffered(resourceLength: Long? = null, size: Long = BufferingResource.DEFAULT_BUFFER_SIZE) =
+fun Resource.buffered(
+    resourceLength: Long? = null,
+    size: Long = BufferingResource.DEFAULT_BUFFER_SIZE
+) =
     BufferingResource(resource = this, resourceLength = resourceLength, bufferSize = size)
 
 /**

@@ -96,5 +96,4 @@ class GroupAdapter(val type: Int) :
             return oldItem == newItem
         }
     }
-
 }

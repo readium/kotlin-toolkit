@@ -4,6 +4,18 @@ All migration steps necessary in reading apps to upgrade to major versions of th
 
 ## 2.3.0
 
+### `Decoration.extras`
+
+`Decoration.extras` is now a `Map<String, Any>` instead of `Bundle`. You will need to update your app if you were storing custom data in `extras`, for example:
+
+```kotlin
+val decoration = Decoration(...,
+    extras = mapOf("id" to id)
+)
+
+val id = decoration.extras["id"] as? Long
+```
+
 ### PDF support
 
 The PDF navigator got refactored to support arbitrary third-party PDF engines. As a consequence, [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) (the open source PDF renderer we previously used) was extracted into its own adapter package. **This is a breaking change** if you were supporting PDF in your application.
@@ -32,15 +44,16 @@ Streamer(...,
 )
 ```
 
-Finally, provide the new `PdfDocumentFragmentFactory` to `PdfNavigatorFragment`:
+Finally, provide the new `PdfiumEngineProvider` to `PdfNavigatorFactory`:
 
 ```kotlin
+val navigatorFactory = PdfNavigatorFactory(
+    publication = publication,
+    pdfEngineProvider = PdfiumEngineProvider()
+)
 override fun onCreate(savedInstanceState: Bundle?) {
     childFragmentManager.fragmentFactory =
-        PdfNavigatorFragment.createFactory(...,
-            documentFragmentFactory = PdfiumDocumentFragment.createFactory()
-        )
-
+        navigatorFactory.createFragmentFactory(...)
     super.onCreate(savedInstanceState)
 }
 ```
@@ -49,7 +62,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
 
 The local HTTP server is not needed anymore to render EPUB publications. You can safely drop all occurrences of `Server` from your project and remove the `baseUrl` parameter when calling `EpubNavigatorFragment.createFactory()`.
 
-:warning: You **must** adopt the new Settings API to remove the HTTP server, as described in the next section of this migration guide.
+:warning: You **must** adopt the new Preferences API to remove the HTTP server, as described in the next section of this migration guide.
 
 #### Serving app assets
 
@@ -71,19 +84,18 @@ EpubNavigatorFragment.createFactory(
 
 Then, use the base URL `https://readium/assets/` to fetch your app assets from the web views. For example:
 
-* `https://readium/assets/fonts/OpenDyslexic.otf`
-* `https://readium/assets/annotation-icon.svg`
+`https://readium/assets/annotation-icon.svg`
 
-### Upgrading to the new Settings API
+### Upgrading to the new Preferences API
 
-The 2.3.0 release introduces a brand new user settings API to configure the EPUB Navigator. This new API is easier and safer to use, [take a look at the user guide](guides/navigator-settings.md) to learn how to integrate it in your app.
+The 2.3.0 release introduces a brand new user preferences API to configure the EPUB Navigator. This new API is easier and safer to use, [take a look at the user guide](guides/navigator-settings.md) to learn how to integrate it in your app.
 
 If you integrated the EPUB navigator from a previous version, follow these steps to migrate:
 
 1. Get familiar with [the concepts of this new API](guides/navigator-settings.md#overview).
 2. Remove the local HTTP server from your app, [as explained in the previous section](#removing-the-http-server)
 3. Remove the whole [`UserSettings.kt`](https://github.com/readium/kotlin-toolkit/blob/f132e541a1d2c290a83974fb017efb352e0f825f/test-app/src/main/java/org/readium/r2/testapp/epub/UserSettings.kt) file from your app, if you copied it from the Test App.
-4. Adapt your user settings interface to the new API. The [Test App](https://github.com/readium/kotlin-toolkit/tree/develop/test-app/src/main/java/org/readium/r2/testapp/reader/settings) and the [user guide](guides/navigator-settings.md#build-a-user-settings-interface) contain examples using Jetpack Compose.
+4. Adapt your user settings interface to the new API using preferences editors. The [Test App](https://github.com/readium/kotlin-toolkit/tree/develop/test-app/src/main/java/org/readium/r2/testapp/reader/preferences) and the [user guide](guides/navigator-settings.md#build-a-user-settings-interface) contain examples using Jetpack Compose.
 5. [Handle the persistence of the user preferences](guides/navigator-settings.md#save-and-restore-the-user-preferences). The settings are not stored in the `SharedPreferences` with name `org.readium.r2.settings` anymore. Instead, you are responsible for persisting and restoring the user preferences as you see fit (e.g. as a JSON file).
     * If you want to migrate the legacy `SharedPreferences` settings, you can use the helper `Preferences.fromLegacyEpubSettings()` which will create a new `Preferences` object after translating the existing user settings.
 6. Make sure you [restore the stored user preferences](guides/navigator-settings.md#setting-the-initial-navigator-preferences-and-app-defaults) when initializing the EPUB navigator.
@@ -116,6 +128,24 @@ Refer to the following table for the correspondence between legacy settings and 
 | N/A                     | `textNormalization` (force bold, accessibility)        |
 | N/A                     | `hyphens`                                              |
 | N/A                     | `ligatures` (arabic)                                   |
+
+
+## 2.2.1
+
+This hotfix release fixes an issue [pulling a third-party dependency (NanoHTTPD) from JitPack](https://github.com/readium/kotlin-toolkit/issues/286).
+
+After upgrading, make sure to remove the dependency to NanoHTTPD from your app's `build.gradle` file before building:
+
+```diff
+-implementation("com.github.edrlab.nanohttpd:nanohttpd:master-SNAPSHOT") {
+-    exclude(group = "org.parboiled")
+-}
+-implementation("com.github.edrlab.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
+-    exclude(group = "org.parboiled")
+-}
+```
+
+:point_up: If you are stuck with an older version of Readium, you can [use this workaround in your root `build.gradle`](https://github.com/readium/kotlin-toolkit/issues/286#issuecomment-1283408861), as an alternative.
 
 
 ## 2.1.0
