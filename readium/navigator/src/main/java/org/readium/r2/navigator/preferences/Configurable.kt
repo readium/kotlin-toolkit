@@ -93,3 +93,16 @@ fun interface PreferencesFilter<P : Preferences<P>> {
 
     fun filter(preferences: P): P
 }
+
+@ExperimentalReadiumApi
+operator fun <P : Preferences<P>> PreferencesFilter<P>.plus(other: PreferencesFilter<P>): PreferencesFilter<P> =
+    CombinedPreferencesFilter(this, other)
+
+@ExperimentalReadiumApi
+private class CombinedPreferencesFilter<P : Preferences<P>>(
+    private val inner: PreferencesFilter<P>,
+    private val outer: PreferencesFilter<P>
+) : PreferencesFilter<P> {
+    override fun filter(preferences: P): P =
+        outer.filter(inner.filter(preferences))
+}
