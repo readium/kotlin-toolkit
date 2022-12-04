@@ -265,7 +265,7 @@ private fun ColumnScope.ReflowableUserPreferences(
     commit: () -> Unit,
     backgroundColor: Preference<ReadiumColor>? = null,
     columnCount: EnumPreference<ColumnCount>? = null,
-    fontFamily: EnumPreference<FontFamily?>? = null,
+    fontFamily: Preference<FontFamily?>? = null,
     fontSize: RangePreference<Double>? = null,
     hyphens: Preference<Boolean>? = null,
     imageFilter: EnumPreference<ImageFilter>? = null,
@@ -423,7 +423,12 @@ private fun ColumnScope.ReflowableUserPreferences(
         if (fontFamily != null) {
             MenuItem(
                 title = "Typeface",
-                preference = fontFamily,
+                preference = fontFamily
+                    .withSupportedValues(listOf(
+                        null, FontFamily.SERIF, FontFamily.SANS_SERIF, FontFamily.MONOSPACE,
+                        FontFamily.ACCESSIBLE_DFA, FontFamily.IA_WRITER_DUOSPACE,
+                        FontFamily.OPEN_DYSLEXIC
+                    )),
                 commit = commit
             ) { value ->
                 when (value) {

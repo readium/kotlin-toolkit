@@ -366,6 +366,8 @@ class EpubNavigatorFragment internal constructor(
             EpubLayout.REFLOWABLE, null -> Publication.TYPE.EPUB
             EpubLayout.FIXED -> Publication.TYPE.FXL
         }
+        resourcePager.setBackgroundColor(viewModel.settings.value.backgroundColor.int)
+
         parent.addView(resourcePager)
 
         resetResourcePagerAdapter()
@@ -456,6 +458,9 @@ class EpubNavigatorFragment internal constructor(
 
         if (previous.fontSize != new.fontSize) {
             r2PagerAdapter?.setFontSize(new.fontSize)
+        }
+        if (previous.backgroundColor != new.backgroundColor) {
+            resourcePager.setBackgroundColor(new.backgroundColor.int)
         }
     }
 
