@@ -101,6 +101,21 @@ class R2EpubPageFragment : Fragment() {
     private val shouldApplyInsetsPadding: Boolean
         get() = navigator?.config?.shouldApplyInsetsPadding ?: true
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt(textZoomBundleKey, textZoom)
+
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+
+        savedInstanceState
+            ?.getInt(textZoomBundleKey)
+            ?.takeIf { it > 0 }
+            ?.let { textZoom = it }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         pendingLocator = requireArguments().getParcelable("initialLocator")
@@ -397,6 +412,8 @@ class R2EpubPageFragment : Fragment() {
     }
 
     companion object {
+        private const val textZoomBundleKey = "org.readium.textZoom"
+
         fun newInstance(
             url: String,
             link: Link? = null,
