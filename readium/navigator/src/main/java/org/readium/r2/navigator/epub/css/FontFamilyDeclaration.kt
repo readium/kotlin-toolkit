@@ -43,16 +43,23 @@ internal fun buildFontFaceDeclaration(
 @ExperimentalReadiumApi
 data class FontFaceDeclaration internal constructor(
     private val fontFamily: String,
-    private val sources: List<String>,
+    private val sources: List<FontFaceSource>,
     private var fontStyle: FontStyle? = null,
     private var fontWeight: FontWeight? = null,
 ) {
+
+    internal fun links(urlNormalizer: (String) -> String): List<String> =
+        sources
+            .filter { it.preload }
+            .map {
+                """<link rel="preload" href="${urlNormalizer(it.href)}" as="font" crossorigin="" />"""
+            }
 
     internal fun toCss(urlNormalizer: (String) -> String): String {
         val descriptors = buildMap {
             set("font-family", """"$fontFamily"""")
 
-            val urls = sources.map(urlNormalizer)
+            val urls = sources.map { urlNormalizer(it.href) }
             val src = urls.joinToString(", ") { """url("$it")""" }
             set("src", src)
 
@@ -67,6 +74,17 @@ data class FontFaceDeclaration internal constructor(
         return "@font-face { $descriptorList }"
     }
 }
+
+/**
+ * Represents an individual font file.
+ *
+ * @param preload Indicates whether this source will be declared for preloading in the HTML using
+ * `<link rel="preload">`.
+ */
+data class FontFaceSource(
+    val href: String,
+    val preload: Boolean = false
+)
 
 /**
  * A mutable font family declaration.
@@ -94,16 +112,19 @@ data class MutableFontFamilyDeclaration internal constructor(
 @ExperimentalReadiumApi
 data class MutableFontFaceDeclaration internal constructor(
     private val fontFamily: String,
-    private val sources: MutableList<String> = mutableListOf(),
+    private val sources: MutableList<FontFaceSource> = mutableListOf(),
     private var fontStyle: FontStyle? = null,
     private var fontWeight: FontWeight? = null,
 ) {
 
     /**
      * Add a source for the font face.
+     *
+     * @param preload Indicates whether this source will be declared for preloading in the HTML
+     * using `<link rel="preload">`.
      */
-    fun addSource(url: String) {
-        this.sources.add(url)
+    fun addSource(href: String, preload: Boolean = false) {
+        this.sources.add(FontFaceSource(href = href, preload = preload))
     }
 
     /**
