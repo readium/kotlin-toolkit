@@ -15,7 +15,6 @@ import org.readium.r2.navigator.preferences.Fit
 import org.readium.r2.navigator.preferences.Preference
 import org.readium.r2.navigator.preferences.PreferenceDelegate
 import org.readium.r2.navigator.preferences.PreferencesEditor
-import org.readium.r2.navigator.preferences.ProgressionStrategy
 import org.readium.r2.navigator.preferences.RangePreference
 import org.readium.r2.navigator.preferences.RangePreferenceDelegate
 import org.readium.r2.navigator.preferences.ReadingProgression
@@ -35,19 +34,7 @@ class PsPdfKitPreferencesEditor internal constructor(
     initialPreferences: PsPdfKitPreferences,
     publicationMetadata: Metadata,
     defaults: PsPdfKitDefaults,
-    configuration: Configuration
 ) : PreferencesEditor<PsPdfKitPreferences> {
-
-    /**
-     * Configuration for [PsPdfKitPreferencesEditor].
-     *
-     * @param pageSpacingRange The allowed range for page spacing.
-     * @param pageSpacingProgression The progression strategy for page spacing.
-     */
-    data class Configuration(
-        val pageSpacingRange: ClosedRange<Double> = 0.0..50.0,
-        val pageSpacingProgression: ProgressionStrategy<Double> = DoubleIncrement(5.0),
-    )
 
     private data class State(
         val preferences: PsPdfKitPreferences,
@@ -125,8 +112,8 @@ class PsPdfKitPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.pageSpacing },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(pageSpacing = value) } },
-            supportedRange = configuration.pageSpacingRange,
-            progressionStrategy = configuration.pageSpacingProgression,
+            supportedRange = 0.0..50.0,
+            progressionStrategy = DoubleIncrement(5.0),
             valueFormatter = { "${it.format(1)} dp" },
         )
 

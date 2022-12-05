@@ -424,11 +424,16 @@ private fun ColumnScope.ReflowableUserPreferences(
             MenuItem(
                 title = "Typeface",
                 preference = fontFamily
-                    .withSupportedValues(listOf(
-                        null, FontFamily.SERIF, FontFamily.SANS_SERIF, FontFamily.MONOSPACE,
-                        FontFamily.ACCESSIBLE_DFA, FontFamily.IA_WRITER_DUOSPACE,
-                        FontFamily.OPEN_DYSLEXIC
-                    )),
+                    .withSupportedValues(
+                        listOf(
+                            null,
+                            FontFamily.LITERATA,
+                            FontFamily.SANS_SERIF,
+                            FontFamily.IA_WRITER_DUOSPACE,
+                            FontFamily.ACCESSIBLE_DFA,
+                            FontFamily.OPEN_DYSLEXIC
+                        )
+                    ),
                 commit = commit
             ) { value ->
                 when (value) {

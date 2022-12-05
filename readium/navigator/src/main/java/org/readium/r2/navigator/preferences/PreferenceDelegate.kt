@@ -67,7 +67,6 @@ class RangePreferenceDelegate<T : Comparable<T>>(
     override fun formatValue(value: T): String =
         valueFormatter.invoke(value)
 
-
     override fun increment() {
         val currentValue = value ?: effectiveValue
         set(progressionStrategy.increment(currentValue))

@@ -8,7 +8,24 @@ package org.readium.r2.navigator.epub
 
 import org.readium.r2.navigator.epub.css.Layout
 import org.readium.r2.navigator.extensions.format
-import org.readium.r2.navigator.preferences.*
+import org.readium.r2.navigator.preferences.Color
+import org.readium.r2.navigator.preferences.ColumnCount
+import org.readium.r2.navigator.preferences.DoubleIncrement
+import org.readium.r2.navigator.preferences.EnumPreference
+import org.readium.r2.navigator.preferences.EnumPreferenceDelegate
+import org.readium.r2.navigator.preferences.FontFamily
+import org.readium.r2.navigator.preferences.ImageFilter
+import org.readium.r2.navigator.preferences.Preference
+import org.readium.r2.navigator.preferences.PreferenceDelegate
+import org.readium.r2.navigator.preferences.PreferencesEditor
+import org.readium.r2.navigator.preferences.RangePreference
+import org.readium.r2.navigator.preferences.RangePreferenceDelegate
+import org.readium.r2.navigator.preferences.ReadingProgression
+import org.readium.r2.navigator.preferences.Spread
+import org.readium.r2.navigator.preferences.StepsProgression
+import org.readium.r2.navigator.preferences.TextAlign
+import org.readium.r2.navigator.preferences.TextNormalization
+import org.readium.r2.navigator.preferences.Theme
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.epub.EpubLayout
@@ -26,26 +43,8 @@ class EpubPreferencesEditor internal constructor(
     initialPreferences: EpubPreferences,
     publicationMetadata: Metadata,
     val layout: EpubLayout,
-    defaults: EpubDefaults,
-    configuration: Configuration
+    defaults: EpubDefaults
 ) : PreferencesEditor<EpubPreferences> {
-
-    /**
-     * Configuration for [EpubPreferencesEditor].
-     *
-     * @param fontFamilies a list of font families that can be selected in the editor
-     * @param fontSizeRange the range of font size values that can be set in the editor
-     * @param fontSizeProgression the way the font size value is to be increased or decreased
-     * @param pageMarginsRange the range of page margins values that can be set in the editor
-     * @param pageMarginsProgression the way the page margins value is to be increased or decreased
-     */
-    data class Configuration(
-        val fontFamilies: List<FontFamily> = DEFAULT_FONT_FAMILIES,
-        val fontSizeRange: ClosedRange<Double> = 0.4..5.0,
-        val fontSizeProgression: ProgressionStrategy<Double> = DoubleIncrement(0.1),
-        val pageMarginsRange: ClosedRange<Double> = 0.5..4.0,
-        val pageMarginsProgression: ProgressionStrategy<Double> = DoubleIncrement(0.3)
-    )
 
     private data class State(
         val preferences: EpubPreferences,
@@ -97,8 +96,8 @@ class EpubPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.fontSize },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(fontSize = value) } },
-            supportedRange = configuration.fontSizeRange,
-            progressionStrategy = configuration.fontSizeProgression,
+            supportedRange = 0.4..5.0,
+            progressionStrategy = DoubleIncrement(0.1),
             valueFormatter = percentFormatter(),
         )
 
@@ -163,8 +162,8 @@ class EpubPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.pageMargins },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(pageMargins = value) } },
-            supportedRange = configuration.pageMarginsRange,
-            progressionStrategy = configuration.pageMarginsProgression,
+            supportedRange = 0.5..4.0,
+            progressionStrategy = DoubleIncrement(0.3),
             valueFormatter = { it.format(5) },
         )
 

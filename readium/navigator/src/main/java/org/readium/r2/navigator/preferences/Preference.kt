@@ -46,20 +46,6 @@ fun <T> Preference<T>.clear() =
     set(null)
 
 /**
- * Toggles the preference to the given [value].
- *
- * If the preference was already set to the same value, it is removed.
- */
-@ExperimentalReadiumApi
-fun <T> Preference<T>.toggle(value: T?) {
-    if (this.value != value) {
-        set(value)
-    } else {
-        clear()
-    }
-}
-
-/**
  * Toggle the preference value. A default value is taken as the initial one if
  * the preference is currently unset.
  */

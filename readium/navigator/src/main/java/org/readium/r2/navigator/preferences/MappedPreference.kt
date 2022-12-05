@@ -92,7 +92,10 @@ fun <T : Comparable<T>> RangePreference<T>.map(
  * and decrement.
  */
 @ExperimentalReadiumApi
-fun <T : Comparable<T>> RangePreference<T>.withSupportedRange(range: ClosedRange<T>, progressionStrategy: ProgressionStrategy<T>): RangePreference<T> =
+fun <T : Comparable<T>> RangePreference<T>.withSupportedRange(
+    range: ClosedRange<T>,
+    progressionStrategy: ProgressionStrategy<T>
+): RangePreference<T> =
     map(
         supportedRange = { range },
         increment = {

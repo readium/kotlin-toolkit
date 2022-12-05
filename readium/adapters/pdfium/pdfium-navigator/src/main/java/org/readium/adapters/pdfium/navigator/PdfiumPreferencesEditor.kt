@@ -23,19 +23,7 @@ class PdfiumPreferencesEditor internal constructor(
     initialPreferences: PdfiumPreferences,
     publicationMetadata: Metadata,
     defaults: PdfiumDefaults,
-    configuration: Configuration
 ) : PreferencesEditor<PdfiumPreferences> {
-
-    /**
-     * Configuration for [PdfiumPreferencesEditor].
-     *
-     * @param pageSpacingRange The allowed range for page spacing.
-     * @param pageSpacingProgression The progression strategy for page spacing.
-     */
-    data class Configuration(
-        val pageSpacingRange: ClosedRange<Double> = 0.0..50.0,
-        val pageSpacingProgression: ProgressionStrategy<Double> = DoubleIncrement(5.0),
-    )
 
     private data class State(
         val preferences: PdfiumPreferences,
@@ -70,8 +58,8 @@ class PdfiumPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.pageSpacing },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(pageSpacing = value) } },
-            supportedRange = configuration.pageSpacingRange,
-            progressionStrategy = configuration.pageSpacingProgression,
+            supportedRange = 0.0..50.0,
+            progressionStrategy = DoubleIncrement(5.0),
             valueFormatter = { "${it.format(1)} dp" },
         )
 

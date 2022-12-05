@@ -28,10 +28,9 @@ class EpubNavigatorFactory(
      * Configuration for the [EpubNavigatorFactory].
      *
      * @param defaults navigator fallbacks for some preferences
-     * @param preferencesEditorConfiguration configuration of preferences editors that will be created */
+     */
     data class Configuration(
         val defaults: EpubDefaults = EpubDefaults(),
-        val preferencesEditorConfiguration: EpubPreferencesEditor.Configuration = EpubPreferencesEditor.Configuration(),
     )
 
     private val layout: EpubLayout =
@@ -64,7 +63,6 @@ class EpubNavigatorFactory(
             initialPreferences = currentPreferences,
             publicationMetadata = publication.metadata,
             layout = layout,
-            defaults = configuration.defaults,
-            configuration = configuration.preferencesEditorConfiguration,
+            defaults = configuration.defaults
         )
 }

@@ -22,16 +22,14 @@ import org.readium.r2.shared.util.pdf.cachedIn
 /**
  * Main component to use the PDF navigator with PSPDFKit.
  *
- * Provide [PsPdfKitDefaults] and [PsPdfKitPreferencesEditor.Configuration] to customize
- * the default values that will be used by the navigator for some preferences and the
- * way that preferences will be allowed to be modified through preferences editors created
- * by this component.
+ * Provide [PsPdfKitDefaults] to customize the default values that will be used by the navigator for
+ * some preferences and the way that preferences will be allowed to be modified through preferences
+ * editors created by this component.
  */
 @ExperimentalReadiumApi
 class PsPdfKitEngineProvider(
     private val context: Context,
-    private val defaults: PsPdfKitDefaults = PsPdfKitDefaults(),
-    private val preferencesEditorConfiguration: PsPdfKitPreferencesEditor.Configuration = PsPdfKitPreferencesEditor.Configuration()
+    private val defaults: PsPdfKitDefaults = PsPdfKitDefaults()
 ) : PdfEngineProvider<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor> {
 
     override suspend fun createDocumentFragment(
@@ -71,8 +69,7 @@ class PsPdfKitEngineProvider(
         PsPdfKitPreferencesEditor(
             initialPreferences = initialPreferences,
             publicationMetadata = publication.metadata,
-            defaults = defaults,
-            configuration = preferencesEditorConfiguration
+            defaults = defaults
         )
 
     override fun createEmptyPreferences(): PsPdfKitPreferences =
