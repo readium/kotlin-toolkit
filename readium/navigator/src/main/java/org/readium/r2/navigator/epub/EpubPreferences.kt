@@ -209,10 +209,11 @@ fun EpubPreferences.Companion.fromLegacyEpubSettings(
         ?.getFloat("lineHeight", 1.2f)
         ?.toDouble()
 
+    // Note that in the legacy preferences storage, "advanced settings" was incorrectly synonym to
+    // "publisher styles", hence we don't need to flip the value.
     val publisherStyles = sp
         .takeIf { sp.contains("advancedSettings") }
         ?.getBoolean("advancedSettings", false)
-        ?.let { !it }
 
     return EpubPreferences(
         fontFamily = fontFamily,
