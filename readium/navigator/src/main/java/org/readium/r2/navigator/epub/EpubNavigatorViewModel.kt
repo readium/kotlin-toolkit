@@ -234,7 +234,11 @@ internal class EpubNavigatorViewModel(
             oldSettings.readingProgression != newSettings.readingProgression ||
                 oldSettings.language != newSettings.language ||
                 oldSettings.verticalText != newSettings.verticalText ||
-                oldSettings.spread != newSettings.spread
+                oldSettings.spread != newSettings.spread ||
+                // We need to invalidate the resource pager when changing from scroll mode to
+                // paginated, otherwise the horizontal scroll will be broken.
+                // See https://github.com/readium/kotlin-toolkit/pull/304
+                oldSettings.scroll != newSettings.scroll
             )
 
         if (needsInvalidation) {
