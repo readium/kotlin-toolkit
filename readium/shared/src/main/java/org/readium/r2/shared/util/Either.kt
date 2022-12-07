@@ -20,9 +20,6 @@ sealed class Either<A, B> {
                 is B -> Right(value)
                 else -> throw IllegalArgumentException("Provided value must be an instance of ${A::class.simpleName} or ${B::class.simpleName}")
             }
-
-        inline fun <reified A, reified B> listOf(vararg values: Any): List<Either<A, B>> =
-            values.map { Either(it) }
     }
 
     val left: A?
