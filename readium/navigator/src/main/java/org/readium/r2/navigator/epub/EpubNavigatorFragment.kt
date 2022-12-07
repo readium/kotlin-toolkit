@@ -41,7 +41,17 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
-import org.readium.r2.navigator.*
+import org.readium.r2.navigator.DecorableNavigator
+import org.readium.r2.navigator.Decoration
+import org.readium.r2.navigator.DecorationId
+import org.readium.r2.navigator.ExperimentalDecorator
+import org.readium.r2.navigator.ExperimentalDragGesture
+import org.readium.r2.navigator.NavigatorDelegate
+import org.readium.r2.navigator.R
+import org.readium.r2.navigator.R2BasicWebView
+import org.readium.r2.navigator.SelectableNavigator
+import org.readium.r2.navigator.Selection
+import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel.RunScriptCommand
 import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
@@ -59,6 +69,7 @@ import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.util.createFragmentFactory
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.fetcher.Resource
@@ -154,7 +165,18 @@ class EpubNavigatorFragment internal constructor(
          */
         val shouldApplyInsetsPadding: Boolean? = true,
 
-        internal val javascriptInterfaces: MutableMap<String, JavascriptInterfaceFactory> = mutableMapOf()
+        internal val javascriptInterfaces: MutableMap<String, JavascriptInterfaceFactory> = mutableMapOf(),
+
+        /**
+         * Disable user selection if the publication is protected by a DRM (e.g. with LCP).
+         *
+         * WARNING: If you choose to disable this, you MUST remove the Copy and Share selection
+         * menu items in your app. Otherwise, you will void the EDRLab certification for your
+         * application. If you need help, follow up on:
+         * https://github.com/readium/kotlin-toolkit/issues/299#issuecomment-1315643577
+         */
+        @DelicateReadiumApi
+        val disableSelectionWhenProtected: Boolean = true
     ) {
         /**
          * Registers a new factory for the [JavascriptInterface] named [name].

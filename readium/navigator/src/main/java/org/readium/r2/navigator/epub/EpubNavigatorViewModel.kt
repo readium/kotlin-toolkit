@@ -390,7 +390,11 @@ internal class EpubNavigatorViewModel(
                 defaults = defaults,
                 baseUrl = baseUrl,
                 server = if (baseUrl != null) null
-                else WebViewServer(application, publication, servedAssets = config.servedAssets)
+                else WebViewServer(
+                    application, publication,
+                    servedAssets = config.servedAssets,
+                    disableSelectionWhenProtected = config.disableSelectionWhenProtected
+                )
             )
         }
     }
