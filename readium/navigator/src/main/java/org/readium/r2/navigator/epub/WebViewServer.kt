@@ -35,6 +35,7 @@ internal class WebViewServer(
     private val application: Application,
     private val publication: Publication,
     servedAssets: List<String>,
+    private val disableSelectionWhenProtected: Boolean
 ) {
     companion object {
         val publicationBaseHref = "https://readium/publication/"
@@ -85,7 +86,11 @@ internal class WebViewServer(
         var resource = publication.get(link)
             .fallback { errorResource(link, error = it) }
         if (link.mediaType.isHtml) {
-            resource = resource.injectHtml(publication, css, baseHref = assetsBaseHref)
+            resource = resource.injectHtml(
+                publication, css,
+                baseHref = assetsBaseHref,
+                disableSelectionWhenProtected = disableSelectionWhenProtected
+            )
         }
 
         val headers = mutableMapOf(

@@ -55,6 +55,7 @@ All notable changes to this project will be documented in this file. Take a look
     * `paragraphSpacing` - Vertical margins for paragraphs.
     * `hyphens` - Enable hyphenation.
     * `ligatures` - Enable ligatures in Arabic.
+* Fixed scroll inertia when scrolling an EPUB.
 
 ### Changed
 
