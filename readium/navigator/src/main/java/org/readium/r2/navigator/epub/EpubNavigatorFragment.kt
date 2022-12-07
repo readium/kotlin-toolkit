@@ -41,7 +41,17 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
-import org.readium.r2.navigator.*
+import org.readium.r2.navigator.DecorableNavigator
+import org.readium.r2.navigator.Decoration
+import org.readium.r2.navigator.DecorationId
+import org.readium.r2.navigator.ExperimentalDecorator
+import org.readium.r2.navigator.ExperimentalDragGesture
+import org.readium.r2.navigator.NavigatorDelegate
+import org.readium.r2.navigator.R
+import org.readium.r2.navigator.R2BasicWebView
+import org.readium.r2.navigator.SelectableNavigator
+import org.readium.r2.navigator.Selection
+import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel.RunScriptCommand
 import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
@@ -59,8 +69,8 @@ import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.util.createFragmentFactory
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
@@ -165,7 +175,7 @@ class EpubNavigatorFragment internal constructor(
          * application. If you need help, follow up on:
          * https://github.com/readium/kotlin-toolkit/issues/299#issuecomment-1315643577
          */
-        @InternalReadiumApi
+        @DelicateReadiumApi
         val disableSelectionWhenProtected: Boolean = true
     ) {
         /**
