@@ -25,7 +25,7 @@ interface ContentService : Publication.Service {
      * The implementation must be fast and non-blocking. Do the actual extraction inside the
      * [Content] implementation.
      */
-    fun content(start: Locator?): Content?
+    fun content(start: Locator?): Content
 }
 
 /**
@@ -64,8 +64,8 @@ class DefaultContentService(
         }
     }
 
-    override fun content(start: Locator?): Content? {
-        val publication = publication() ?: return null
+    override fun content(start: Locator?): Content {
+        val publication = publication() ?: throw IllegalStateException("No Publication object")
         return ContentImpl(publication, start)
     }
 
