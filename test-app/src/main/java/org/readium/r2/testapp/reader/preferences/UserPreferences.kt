@@ -428,7 +428,6 @@ private fun ColumnScope.ReflowableUserPreferences(
                 preference = fontFamily
                     .withSupportedValues(
                         listOf(
-                            null,
                             FontFamily.LITERATA,
                             FontFamily.SANS_SERIF,
                             FontFamily.IA_WRITER_DUOSPACE,

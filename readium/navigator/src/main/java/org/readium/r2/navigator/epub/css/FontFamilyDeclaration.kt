@@ -64,7 +64,15 @@ data class FontFaceDeclaration internal constructor(
             set("src", src)
 
             fontStyle?.let { set("font-style", it.name.lowercase()) }
-            fontWeight?.let { set("font-weight", it.value) }
+
+            fontWeight?.let {
+                when (it) {
+                    is FontWeight.Range ->
+                        set("font-weight", "${it.range.start} ${it.range.endInclusive}")
+                    is FontWeight.Value ->
+                        set("font-weight", it.value)
+                }
+            }
         }
 
         val descriptorList = descriptors
@@ -81,7 +89,7 @@ data class FontFaceDeclaration internal constructor(
  * @param preload Indicates whether this source will be declared for preloading in the HTML using
  * `<link rel="preload">`.
  */
-data class FontFaceSource(
+internal data class FontFaceSource(
     val href: String,
     val preload: Boolean = false
 )
@@ -114,7 +122,7 @@ data class MutableFontFaceDeclaration internal constructor(
     private val fontFamily: String,
     private val sources: MutableList<FontFaceSource> = mutableListOf(),
     private var fontStyle: FontStyle? = null,
-    private var fontWeight: FontWeight? = null,
+    private var fontWeight: FontWeight? = null
 ) {
 
     /**
@@ -141,6 +149,13 @@ data class MutableFontFaceDeclaration internal constructor(
         this.fontWeight = fontWeight
     }
 
+    /**
+     * Set the font weight range of a variable font face.
+     */
+    fun setFontWeightRange(range: ClosedRange<Int> = 1..1000) {
+        this.fontWeight = FontWeight.Range(range)
+    }
+
     internal fun toFontFaceDeclaration() =
         FontFaceDeclaration(fontFamily, sources, fontStyle, fontWeight)
 }
@@ -160,14 +175,19 @@ enum class FontStyle {
  * See https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-weight#common_weight_name_mapping
  */
 @ExperimentalReadiumApi
-enum class FontWeight(internal val value: Int) {
-    THIN(100),
-    EXTRA_LIGHT(200),
-    LIGHT(300),
-    NORMAL(400),
-    MEDIUM(500),
-    SEMI_BOLD(600),
-    BOLD(700),
-    EXTRA_BOLD(800),
-    BLACK(900);
+sealed class FontWeight {
+    data class Range(val range: ClosedRange<Int> = 1..1000) : FontWeight()
+    data class Value(val value: Int) : FontWeight()
+
+    companion object {
+        val THIN = Value(100)
+        val EXTRA_LIGHT = Value(200)
+        val LIGHT = Value(300)
+        val NORMAL = Value(400)
+        val MEDIUM = Value(500)
+        val SEMI_BOLD = Value(600)
+        val BOLD = Value(700)
+        val EXTRA_BOLD = Value(800)
+        val BLACK = Value(900)
+    }
 }

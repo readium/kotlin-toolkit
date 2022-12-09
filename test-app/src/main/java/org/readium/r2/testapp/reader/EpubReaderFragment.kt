@@ -69,10 +69,12 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                         addFontFace {
                             addSource("fonts/Literata-VariableFont_opsz,wght.ttf")
                             setFontStyle(FontStyle.NORMAL)
+                            setFontWeightRange()
                         }
                         addFontFace {
                             addSource("fonts/Literata-Italic-VariableFont_opsz,wght.ttf")
                             setFontStyle(FontStyle.ITALIC)
+                            setFontWeightRange()
                         }
                     }
                 }
