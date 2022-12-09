@@ -103,6 +103,7 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
                             columnCount = editor.columnCount,
                             fontFamily = editor.fontFamily,
                             fontSize = editor.fontSize,
+                            fontWeight = editor.fontWeight,
                             hyphens = editor.hyphens,
                             imageFilter = editor.imageFilter,
                             language = editor.language,
@@ -267,6 +268,7 @@ private fun ColumnScope.ReflowableUserPreferences(
     columnCount: EnumPreference<ColumnCount>? = null,
     fontFamily: Preference<FontFamily?>? = null,
     fontSize: RangePreference<Double>? = null,
+    fontWeight: RangePreference<Double>? = null,
     hyphens: Preference<Boolean>? = null,
     imageFilter: EnumPreference<ImageFilter>? = null,
     language: Preference<Language?>? = null,
@@ -281,7 +283,7 @@ private fun ColumnScope.ReflowableUserPreferences(
     scroll: Preference<Boolean>? = null,
     textAlign: EnumPreference<ReadiumTextAlign>? = null,
     textColor: Preference<ReadiumColor>? = null,
-    textNormalization: EnumPreference<TextNormalization>? = null,
+    textNormalization: Preference<Boolean>? = null,
     theme: EnumPreference<Theme>? = null,
     typeScale: RangePreference<Double>? = null,
     verticalText: Preference<Boolean>? = null,
@@ -452,18 +454,20 @@ private fun ColumnScope.ReflowableUserPreferences(
             )
         }
 
+        if (fontWeight != null) {
+            StepperItem(
+                title = "Font weight",
+                preference = fontWeight,
+                commit = commit
+            )
+        }
+
         if (textNormalization != null) {
-            ButtonGroupItem(
+            SwitchItem(
                 title = "Text normalization",
                 preference = textNormalization,
-                commit = commit,
-            ) { value ->
-                when (value) {
-                    TextNormalization.NONE -> "None"
-                    TextNormalization.BOLD -> "Bold"
-                    TextNormalization.ACCESSIBILITY -> "A11y"
-                }
-            }
+                commit = commit
+            )
         }
 
         Divider()
@@ -953,7 +957,7 @@ val <P : Configurable.Preferences<P>> PreferencesEditor<P>.presets: List<Preset>
                     Preset("Increase legibility") {
                         wordSpacing.set(0.6)
                         fontSize.set(1.4)
-                        textNormalization.set(TextNormalization.ACCESSIBILITY)
+                        fontWeight.set(2.0)
                     },
                     Preset("Document") {
                         scroll.set(true)

@@ -24,7 +24,6 @@ import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.preferences.Spread
 import org.readium.r2.navigator.preferences.StepsProgression
 import org.readium.r2.navigator.preferences.TextAlign
-import org.readium.r2.navigator.preferences.TextNormalization
 import org.readium.r2.navigator.preferences.Theme
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
@@ -88,6 +87,17 @@ class EpubPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.fontFamily },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(fontFamily = value) } }
+        )
+
+    val fontWeight: RangePreference<Double> =
+        RangePreferenceDelegate(
+            getValue = { preferences.fontWeight },
+            getEffectiveValue = { state.settings.fontWeight ?: 1.0 },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            updateValue = { value -> updateValues { it.copy(fontWeight = value) } },
+            valueFormatter = percentFormatter(),
+            supportedRange = 0.0..2.5,
+            progressionStrategy = DoubleIncrement(0.25)
         )
 
     val fontSize: RangePreference<Double> =
@@ -240,13 +250,12 @@ class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(textColor = value) } }
         )
 
-    val textNormalization: EnumPreference<TextNormalization> =
-        EnumPreferenceDelegate(
+    val textNormalization: Preference<Boolean> =
+        PreferenceDelegate(
             getValue = { preferences.textNormalization },
-            getEffectiveValue = { state.settings.textNormalization },
+            getEffectiveValue = { state.settings.textNormalization  },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
-            updateValue = { value -> updateValues { it.copy(textNormalization = value) } },
-            supportedValues = listOf(TextNormalization.NONE, TextNormalization.BOLD, TextNormalization.ACCESSIBILITY),
+            updateValue = { value -> updateValues { it.copy(textNormalization = value) } }
         )
 
     val theme: EnumPreference<Theme> =

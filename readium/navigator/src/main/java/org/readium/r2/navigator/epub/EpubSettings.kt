@@ -6,16 +6,9 @@
 
 package org.readium.r2.navigator.epub
 
-import org.readium.r2.navigator.epub.css.Appearance
-import org.readium.r2.navigator.epub.css.ColCount
 import org.readium.r2.navigator.epub.css.Color as CssColor
-import org.readium.r2.navigator.epub.css.Hyphens
-import org.readium.r2.navigator.epub.css.Layout
-import org.readium.r2.navigator.epub.css.Length
-import org.readium.r2.navigator.epub.css.Ligatures
-import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.navigator.epub.css.TextAlign as CssTextAlign
-import org.readium.r2.navigator.epub.css.View
+import org.readium.r2.navigator.epub.css.*
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.navigator.preferences.Color
 import org.readium.r2.navigator.preferences.TextAlign
@@ -34,6 +27,7 @@ data class EpubSettings(
     val columnCount: ColumnCount,
     val fontFamily: FontFamily?,
     val fontSize: Double,
+    val fontWeight: Double?,
     val hyphens: Boolean,
     val imageFilter: ImageFilter,
     val language: Language?,
@@ -49,7 +43,7 @@ data class EpubSettings(
     val spread: Spread,
     val textAlign: TextAlign,
     val textColor: Color,
-    val textNormalization: TextNormalization,
+    val textNormalization: Boolean,
     val theme: Theme,
     val typeScale: Double,
     val verticalText: Boolean,
@@ -91,7 +85,7 @@ internal fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
                 invertImages = imageFilter == ImageFilter.INVERT,
                 textColor = textColor.toCss(),
                 backgroundColor = backgroundColor.toCss(),
-                fontOverride = (fontFamily != null || (textNormalization == TextNormalization.ACCESSIBILITY)),
+                fontOverride = (fontFamily != null || textNormalization),
                 fontFamily = fontFamily?.toCss(),
                 // Font size is handled natively with WebSettings.textZoom.
                 // See https://github.com/readium/mobile/issues/1#issuecomment-652431984
@@ -112,9 +106,12 @@ internal fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
                 letterSpacing = Length.Rem(letterSpacing / 2),
                 bodyHyphens = if (hyphens) Hyphens.AUTO else Hyphens.NONE,
                 ligatures = if (ligatures) Ligatures.COMMON else Ligatures.NONE,
-                a11yNormalize = textNormalization == TextNormalization.ACCESSIBILITY,
+                a11yNormalize = textNormalization,
                 overrides = mapOf(
-                    "font-weight" to if (textNormalization == TextNormalization.BOLD) "bold" else null
+                    "font-weight" to
+                        if (fontWeight != null)
+                            (FontWeight.NORMAL.value * fontWeight).toInt().coerceIn(1, 1000).toString()
+                        else ""
                 )
             )
         )

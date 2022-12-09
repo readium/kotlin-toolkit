@@ -19,6 +19,7 @@ import org.readium.r2.shared.util.Language
  * @param backgroundColor Default page background color.
  * @param columnCount Number of reflowable columns to display (one-page view or two-page spread).
  * @param fontFamily Default typeface for the text.
+ * @param fontWeight Default boldness for the text.
  * @param fontSize Base text font size.
  * @param hyphens Enable hyphenation.
  * @param imageFilter Filter applied to images in dark theme.
@@ -38,7 +39,7 @@ import org.readium.r2.shared.util.Language
  *   synthetic spread (dual-page).
  * @param textAlign Page text alignment.
  * @param textColor Default page text color.
- * @param textNormalization Normalize font style, weight and variants using a specific strategy.
+ * @param textNormalization Normalize text styles to increase accessibility.
  * @param theme Reader theme.
  * @param typeScale Scale applied to all element font sizes.
  * @param verticalText Indicates whether the text should be laid out vertically. This is used
@@ -53,6 +54,7 @@ data class EpubPreferences(
     val columnCount: ColumnCount? = null,
     val fontFamily: FontFamily? = null,
     val fontSize: Double? = null,
+    val fontWeight: Double? = null,
     val hyphens: Boolean? = null,
     val imageFilter: ImageFilter? = null,
     val language: Language? = null,
@@ -68,7 +70,7 @@ data class EpubPreferences(
     val spread: Spread? = null,
     val textAlign: TextAlign? = null,
     val textColor: Color? = null,
-    val textNormalization: TextNormalization? = null,
+    val textNormalization: Boolean? = null,
     val theme: Theme? = null,
     val typeScale: Double? = null,
     val verticalText: Boolean? = null,
@@ -77,6 +79,7 @@ data class EpubPreferences(
 
     init {
         require(fontSize == null || fontSize >= 0)
+        require(fontWeight == null || fontWeight in 0.0..2.5)
         require(letterSpacing == null || letterSpacing >= 0)
         require(pageMargins == null || pageMargins >= 0)
         require(paragraphSpacing == null || paragraphSpacing >= 0)
@@ -90,6 +93,7 @@ data class EpubPreferences(
             backgroundColor = other.backgroundColor ?: backgroundColor,
             columnCount = other.columnCount ?: columnCount,
             fontFamily = other.fontFamily ?: fontFamily,
+            fontWeight = other.fontWeight ?: fontWeight,
             fontSize = other.fontSize ?: fontSize,
             hyphens = other.hyphens ?: hyphens,
             imageFilter = other.imageFilter ?: imageFilter,
