@@ -11,8 +11,8 @@ All notable changes to this project will be documented in this file. Take a look
 #### Shared
 
 * Extract the raw content (text, images, etc.) of a publication. [Take a look at the user guide](docs/guides/content.md).
-* Add support for unsafe HTTP redirections with `HttpDefaultClient`.
-    * You will need to opt-in explicitly by implementing `HttpDefaultClient.Callback.onFollowUnsafeRedirect`.
+* Add support for unsafe HTTP redirections with `DefaultHttpClient`.
+    * You will need to opt-in explicitly by implementing `DefaultHttpClient.Callback.onFollowUnsafeRedirect`.
 
 #### Navigator
 
