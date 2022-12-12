@@ -31,7 +31,7 @@ class StepsProgression<T : Comparable<T>>(private val steps: List<T>) : Progress
     }
 
     override fun decrement(value: T): T {
-        val index = steps.indexOfLast { it >= value }.takeIf { it != -1 } ?: return value
+        val index = steps.indexOfFirst { it >= value }.takeIf { it != -1 } ?: return value
         return steps.getOrNull(index - 1) ?: value
     }
 }
