@@ -12,9 +12,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +26,7 @@ import org.readium.r2.navigator.epub.EpubPreferencesEditor
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.navigator.preferences.Color as ReadiumColor
 import org.readium.r2.navigator.preferences.TextAlign as ReadiumTextAlign
+import androidx.compose.material.icons.filled.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Language
@@ -174,19 +172,6 @@ private fun ColumnScope.FixedLayoutUserPreferences(
             )
         }
 
-        // The language preferences are specific to a publication. This button resets only the
-        // language preferences to the publication's default metadata for convenience.
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .align(Alignment.End),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Button(onClick = ::reset) {
-                Text("Reset to publication", style = MaterialTheme.typography.caption)
-            }
-        }
-
         Divider()
     }
 
@@ -319,19 +304,6 @@ private fun ColumnScope.ReflowableUserPreferences(
                 preference = verticalText,
                 commit = commit
             )
-        }
-
-        // The language settings are specific to a publication. This button resets only the
-        // language preferences to the publication's default metadata for convenience.
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .align(Alignment.End),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Button(onClick = ::reset) {
-                Text("Reset to publication", style = MaterialTheme.typography.caption)
-            }
         }
 
         Divider()
@@ -582,15 +554,18 @@ private fun <T> ButtonGroupItem(
         isActive = preference.isEffective,
         activeOption = preference.effectiveValue,
         selectedOption = preference.value,
-        formatValue = formatValue
-    ) { newValue ->
-        if (newValue == preference.value) {
-            preference.clear()
-        } else {
-            preference.set(newValue)
+        formatValue = formatValue,
+        onClear = { preference.clear(); commit() }
+            .takeIf { preference.value != null },
+        onSelectedOptionChanged = { newValue ->
+            if (newValue == preference.value) {
+                preference.clear()
+            } else {
+                preference.set(newValue)
+            }
+            commit()
         }
-        commit()
-    }
+    )
 }
 
 /**
@@ -604,9 +579,10 @@ private fun <T> ButtonGroupItem(
     activeOption: T,
     selectedOption: T?,
     formatValue: (T) -> String,
+    onClear: (() -> Unit)?,
     onSelectedOptionChanged: (T) -> Unit,
 ) {
-    Item(title, isActive = isActive) {
+    Item(title, isActive = isActive, onClear = onClear) {
         ToggleButtonGroup(
             options = options,
             activeOption = activeOption,
@@ -636,11 +612,14 @@ private fun <T> MenuItem(
         value = preference.value ?: preference.effectiveValue,
         values = listOf(null) + preference.supportedValues,
         isActive = preference.isEffective,
-        formatValue = formatValue
-    ) { value ->
-        preference.set(value)
-        commit()
-    }
+        formatValue = formatValue,
+        onClear = { preference.clear(); commit() }
+            .takeIf { preference.value != null },
+        onValueChanged = { value ->
+            preference.set(value)
+            commit()
+        }
+    )
 }
 
 /**
@@ -654,8 +633,9 @@ private fun <T> MenuItem(
     isActive: Boolean,
     formatValue: (T) -> String,
     onValueChanged: (T) -> Unit,
+    onClear: (() -> Unit)?
 ) {
-    Item(title, isActive = isActive) {
+    Item(title, isActive = isActive, onClear = onClear) {
         DropdownMenuButton(
             text = {
                 Text(
@@ -693,7 +673,9 @@ private fun <T : Comparable<T>> StepperItem(
         value = preference.value ?: preference.effectiveValue,
         formatValue = preference::formatValue,
         onDecrement = { preference.decrement(); commit() },
-        onIncrement = { preference.increment(); commit() }
+        onIncrement = { preference.increment(); commit() },
+        onClear = { preference.clear(); commit() }
+            .takeIf { preference.value != null },
     )
 }
 
@@ -708,8 +690,9 @@ private fun <T> StepperItem(
     formatValue: (T) -> String,
     onDecrement: () -> Unit,
     onIncrement: () -> Unit,
+    onClear: (() -> Unit)?
 ) {
-    Item(title, isActive = isActive) {
+    Item(title, isActive = isActive, onClear = onClear) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -751,7 +734,9 @@ private fun SwitchItem(
         value = preference.value ?: preference.effectiveValue,
         isActive = preference.isEffective,
         onCheckedChange = { preference.set(it); commit() },
-        onToggle = { preference.toggle(); commit() }
+        onToggle = { preference.toggle(); commit() },
+        onClear = { preference.clear(); commit() }
+            .takeIf { preference.value != null },
     )
 }
 
@@ -765,11 +750,13 @@ private fun SwitchItem(
     isActive: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onToggle: () -> Unit,
+    onClear: (() -> Unit)?
 ) {
     Item(
         title = title,
         isActive = isActive,
-        onClick = onToggle
+        onClick = onToggle,
+        onClear = onClear
     ) {
         Switch(
             checked = value,
@@ -792,7 +779,9 @@ private fun ColorItem(
         isActive = preference.isEffective,
         value = preference.value ?: preference.effectiveValue,
         noValueSelected = preference.value == null,
-        onColorChanged = { preference.set(it); commit() }
+        onColorChanged = { preference.set(it); commit() },
+        onClear = { preference.clear(); commit() }
+            .takeIf { preference.value != null }
     )
 }
 
@@ -805,14 +794,16 @@ private fun ColorItem(
     isActive: Boolean,
     value: ReadiumColor,
     noValueSelected: Boolean,
-    onColorChanged: (ReadiumColor?) -> Unit
+    onColorChanged: (ReadiumColor?) -> Unit,
+    onClear: (() -> Unit)?
 ) {
     var isPicking by remember { mutableStateOf(false) }
 
     Item(
         title = title,
         isActive = isActive,
-        onClick = { isPicking = true }
+        onClick = { isPicking = true },
+        onClear = onClear
     ) {
         val color = Color(value.int)
 
@@ -874,11 +865,14 @@ fun LanguageItem(
         isActive = preference.isEffective,
         value = preference.value ?: preference.effectiveValue,
         values = languages,
-        formatValue = { it?.locale?.displayName ?: "Unknown" }
-    ) { value ->
-        preference.set(value)
-        commit()
-    }
+        formatValue = { it?.locale?.displayName ?: "Unknown" },
+        onClear = { preference.clear(); commit() }
+            .takeIf { preference.value != null },
+        onValueChanged = { value ->
+            preference.set(value)
+            commit()
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -887,6 +881,7 @@ private fun Item(
     title: String,
     isActive: Boolean = true,
     onClick: (() -> Unit)? = null,
+    onClear: (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
     ListItem(
@@ -899,7 +894,18 @@ private fun Item(
                 Text(title)
             }
         },
-        trailing = content
+        trailing = {
+            Row {
+                content()
+
+                IconButton(onClick = onClear ?: {}, enabled = onClear != null) {
+                    Icon(
+                        Icons.Default.Backspace,
+                        contentDescription = "Clear"
+                    )
+                }
+            }
+        }
     )
 }
 
