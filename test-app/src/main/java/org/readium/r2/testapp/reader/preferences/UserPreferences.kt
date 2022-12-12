@@ -281,7 +281,7 @@ private fun ColumnScope.ReflowableUserPreferences(
     publisherStyles: Preference<Boolean>? = null,
     readingProgression: EnumPreference<ReadingProgression>? = null,
     scroll: Preference<Boolean>? = null,
-    textAlign: EnumPreference<ReadiumTextAlign>? = null,
+    textAlign: EnumPreference<ReadiumTextAlign?>? = null,
     textColor: Preference<ReadiumColor>? = null,
     textNormalization: Preference<Boolean>? = null,
     theme: EnumPreference<Theme>? = null,
@@ -478,87 +478,90 @@ private fun ColumnScope.ReflowableUserPreferences(
             preference = publisherStyles,
             commit = commit,
         )
-    }
 
-    if (textAlign != null) {
-        ButtonGroupItem(
-            title = "Alignment",
-            preference = textAlign,
-            commit = commit
-        ) { value ->
-            when (value) {
-                ReadiumTextAlign.CENTER -> "Center"
-                ReadiumTextAlign.JUSTIFY -> "Justify"
-                ReadiumTextAlign.START -> "Start"
-                ReadiumTextAlign.END -> "End"
-                ReadiumTextAlign.LEFT -> "Left"
-                ReadiumTextAlign.RIGHT -> "Right"
+        if (!(publisherStyles.value ?: publisherStyles.effectiveValue)) {
+            if (textAlign != null) {
+                ButtonGroupItem(
+                    title = "Alignment",
+                    preference = textAlign,
+                    commit = commit
+                ) { value ->
+                    when (value) {
+                        ReadiumTextAlign.CENTER -> "Center"
+                        ReadiumTextAlign.JUSTIFY -> "Justify"
+                        ReadiumTextAlign.START -> "Start"
+                        ReadiumTextAlign.END -> "End"
+                        ReadiumTextAlign.LEFT -> "Left"
+                        ReadiumTextAlign.RIGHT -> "Right"
+                        null -> "Default"
+                    }
+                }
+            }
+
+            if (typeScale != null) {
+                StepperItem(
+                    title = "Type scale",
+                    preference = typeScale,
+                    commit = commit
+                )
+            }
+
+            if (lineHeight != null) {
+                StepperItem(
+                    title = "Line height",
+                    preference = lineHeight,
+                    commit = commit
+                )
+            }
+
+            if (paragraphIndent != null) {
+                StepperItem(
+                    title = "Paragraph indent",
+                    preference = paragraphIndent,
+                    commit = commit
+                )
+            }
+
+            if (paragraphSpacing != null) {
+                StepperItem(
+                    title = "Paragraph spacing",
+                    preference = paragraphSpacing,
+                    commit = commit
+                )
+            }
+
+            if (wordSpacing != null) {
+                StepperItem(
+                    title = "Word spacing",
+                    preference = wordSpacing,
+                    commit = commit
+                )
+            }
+
+            if (letterSpacing != null) {
+                StepperItem(
+                    title = "Letter spacing",
+                    preference = letterSpacing,
+                    commit = commit
+                )
+            }
+
+            if (hyphens != null) {
+                SwitchItem(
+                    title = "Hyphens",
+                    preference = hyphens,
+                    commit = commit
+                )
+            }
+
+            if (ligatures != null) {
+                SwitchItem(
+                    title = "Ligatures",
+                    preference = ligatures,
+                    commit = commit
+                )
             }
         }
-    }
-
-    if (typeScale != null) {
-        StepperItem(
-            title = "Type scale",
-            preference = typeScale,
-            commit = commit
-        )
-    }
-
-    if (lineHeight != null) {
-        StepperItem(
-            title = "Line height",
-            preference = lineHeight,
-            commit = commit
-        )
-    }
-
-    if (paragraphIndent != null) {
-        StepperItem(
-            title = "Paragraph indent",
-            preference = paragraphIndent,
-            commit = commit
-        )
-    }
-
-    if (paragraphSpacing != null) {
-        StepperItem(
-            title = "Paragraph spacing",
-            preference = paragraphSpacing,
-            commit = commit
-        )
-    }
-
-    if (wordSpacing != null) {
-        StepperItem(
-            title = "Word spacing",
-            preference = wordSpacing,
-            commit = commit
-        )
-    }
-
-    if (letterSpacing != null) {
-        StepperItem(
-            title = "Letter spacing",
-            preference = letterSpacing,
-            commit = commit
-        )
-    }
-
-    if (hyphens != null) {
-        SwitchItem(
-            title = "Hyphens",
-            preference = hyphens,
-            commit = commit
-        )
-    }
-
-    if (ligatures != null) {
-        SwitchItem(
-            title = "Ligatures",
-            preference = ligatures,
-            commit = commit
-        )
     }
 }
 

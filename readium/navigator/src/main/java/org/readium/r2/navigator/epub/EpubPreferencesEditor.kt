@@ -8,23 +8,7 @@ package org.readium.r2.navigator.epub
 
 import org.readium.r2.navigator.epub.css.Layout
 import org.readium.r2.navigator.extensions.format
-import org.readium.r2.navigator.preferences.Color
-import org.readium.r2.navigator.preferences.ColumnCount
-import org.readium.r2.navigator.preferences.DoubleIncrement
-import org.readium.r2.navigator.preferences.EnumPreference
-import org.readium.r2.navigator.preferences.EnumPreferenceDelegate
-import org.readium.r2.navigator.preferences.FontFamily
-import org.readium.r2.navigator.preferences.ImageFilter
-import org.readium.r2.navigator.preferences.Preference
-import org.readium.r2.navigator.preferences.PreferenceDelegate
-import org.readium.r2.navigator.preferences.PreferencesEditor
-import org.readium.r2.navigator.preferences.RangePreference
-import org.readium.r2.navigator.preferences.RangePreferenceDelegate
-import org.readium.r2.navigator.preferences.ReadingProgression
-import org.readium.r2.navigator.preferences.Spread
-import org.readium.r2.navigator.preferences.StepsProgression
-import org.readium.r2.navigator.preferences.TextAlign
-import org.readium.r2.navigator.preferences.Theme
+import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.epub.EpubLayout
@@ -67,8 +51,8 @@ class EpubPreferencesEditor internal constructor(
     val backgroundColor: Preference<Color> =
         PreferenceDelegate(
             getValue = { preferences.backgroundColor },
-            getEffectiveValue = { state.settings.backgroundColor },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            getEffectiveValue = { state.settings.backgroundColor ?: Color((theme.value ?: theme.effectiveValue).backgroundColor) },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && preferences.backgroundColor != null },
             updateValue = { value -> updateValues { it.copy(backgroundColor = value) } },
         )
 
@@ -93,7 +77,7 @@ class EpubPreferencesEditor internal constructor(
         RangePreferenceDelegate(
             getValue = { preferences.fontWeight },
             getEffectiveValue = { state.settings.fontWeight ?: 1.0 },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && preferences.fontWeight != null },
             updateValue = { value -> updateValues { it.copy(fontWeight = value) } },
             valueFormatter = percentFormatter(),
             supportedRange = 0.0..2.5,
@@ -103,7 +87,7 @@ class EpubPreferencesEditor internal constructor(
     val fontSize: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.fontSize },
-            getEffectiveValue = { state.settings.fontSize },
+            getEffectiveValue = { state.settings.fontSize ?: 1.0 },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(fontSize = value) } },
             supportedRange = 0.4..5.0,
@@ -114,8 +98,8 @@ class EpubPreferencesEditor internal constructor(
     val hyphens: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.hyphens },
-            getEffectiveValue = { state.settings.hyphens },
-            getIsEffective = { isHyphensEffective() },
+            getEffectiveValue = { state.settings.hyphens ?: false },
+            getIsEffective = ::isHyphensEffective,
             updateValue = { value -> updateValues { it.copy(hyphens = value) } },
         )
 
@@ -139,8 +123,8 @@ class EpubPreferencesEditor internal constructor(
     val letterSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.letterSpacing },
-            getEffectiveValue = { state.settings.letterSpacing },
-            getIsEffective = { isLetterSpacing() },
+            getEffectiveValue = { state.settings.letterSpacing ?: 0.0 },
+            getIsEffective = ::isLetterSpacingEffective,
             updateValue = { value -> updateValues { it.copy(letterSpacing = value) } },
             supportedRange = 0.0..1.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -150,16 +134,16 @@ class EpubPreferencesEditor internal constructor(
     val ligatures: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.ligatures },
-            getEffectiveValue = { state.settings.ligatures },
-            getIsEffective = { isLigaturesSpacing() },
+            getEffectiveValue = { state.settings.ligatures ?: false },
+            getIsEffective = ::isLigaturesEffective,
             updateValue = { value -> updateValues { it.copy(ligatures = value) } },
         )
 
     val lineHeight: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.lineHeight },
-            getEffectiveValue = { state.settings.lineHeight },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles },
+            getEffectiveValue = { state.settings.lineHeight ?: 1.2 },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles && preferences.lineHeight != null },
             updateValue = { value -> updateValues { it.copy(lineHeight = value) } },
             supportedRange = 1.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -180,8 +164,8 @@ class EpubPreferencesEditor internal constructor(
     val paragraphIndent: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.paragraphIndent },
-            getEffectiveValue = { state.settings.paragraphIndent },
-            getIsEffective = { isParagraphIndentEffective() },
+            getEffectiveValue = { state.settings.paragraphIndent ?: 0.0 },
+            getIsEffective = ::isParagraphIndentEffective,
             updateValue = { value -> updateValues { it.copy(paragraphIndent = value) } },
             supportedRange = 0.0..3.0,
             progressionStrategy = DoubleIncrement(0.2),
@@ -191,8 +175,8 @@ class EpubPreferencesEditor internal constructor(
     val paragraphSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.paragraphSpacing },
-            getEffectiveValue = { state.settings.paragraphSpacing },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles },
+            getEffectiveValue = { state.settings.paragraphSpacing ?: 0.0 },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles && preferences.paragraphSpacing != null },
             updateValue = { value -> updateValues { it.copy(paragraphSpacing = value) } },
             supportedRange = 0.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -233,11 +217,11 @@ class EpubPreferencesEditor internal constructor(
             supportedValues = listOf(Spread.NEVER, Spread.ALWAYS),
         )
 
-    val textAlign: EnumPreference<TextAlign> =
+    val textAlign: EnumPreference<TextAlign?> =
         EnumPreferenceDelegate(
             getValue = { preferences.textAlign },
             getEffectiveValue = { state.settings.textAlign },
-            getIsEffective = { isTextAlignEffective() },
+            getIsEffective = ::isTextAlignEffective,
             updateValue = { value -> updateValues { it.copy(textAlign = value) } },
             supportedValues = listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY),
         )
@@ -245,15 +229,15 @@ class EpubPreferencesEditor internal constructor(
     val textColor: Preference<Color> =
         PreferenceDelegate(
             getValue = { preferences.textColor },
-            getEffectiveValue = { state.settings.textColor },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            getEffectiveValue = { state.settings.textColor ?: Color((theme.value ?: theme.effectiveValue).contentColor) },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && preferences.textColor != null },
             updateValue = { value -> updateValues { it.copy(textColor = value) } }
         )
 
     val textNormalization: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.textNormalization },
-            getEffectiveValue = { state.settings.textNormalization  },
+            getEffectiveValue = { state.settings.textNormalization },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(textNormalization = value) } }
         )
@@ -270,8 +254,8 @@ class EpubPreferencesEditor internal constructor(
     val typeScale: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.typeScale },
-            getEffectiveValue = { state.settings.typeScale },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles },
+            getEffectiveValue = { state.settings.typeScale ?: 1.2 },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles && preferences.typeScale != null },
             updateValue = { value -> updateValues { it.copy(typeScale = value) } },
             valueFormatter = { it.format(5) },
             supportedRange = 1.0..2.0,
@@ -289,8 +273,8 @@ class EpubPreferencesEditor internal constructor(
     val wordSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.wordSpacing },
-            getEffectiveValue = { state.settings.wordSpacing },
-            getIsEffective = { isWordSpacingEffective() },
+            getEffectiveValue = { state.settings.wordSpacing ?: 0.0 },
+            getIsEffective = ::isWordSpacingEffective,
             updateValue = { value -> updateValues { it.copy(wordSpacing = value) } },
             supportedRange = 0.0..1.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -318,37 +302,31 @@ class EpubPreferencesEditor internal constructor(
 
     private fun isHyphensEffective() = layout == EpubLayout.REFLOWABLE &&
         state.layout.stylesheets == Layout.Stylesheets.Default &&
-        !state.settings.publisherStyles
+        !state.settings.publisherStyles &&
+        preferences.hyphens != null
 
-    private fun isLetterSpacing() = layout == EpubLayout.REFLOWABLE &&
+    private fun isLetterSpacingEffective() = layout == EpubLayout.REFLOWABLE &&
         state.layout.stylesheets == Layout.Stylesheets.Default &&
-        !state.settings.publisherStyles
+        !state.settings.publisherStyles &&
+        preferences.letterSpacing != null
 
-    private fun isLigaturesSpacing() = layout == EpubLayout.REFLOWABLE &&
+    private fun isLigaturesEffective() = layout == EpubLayout.REFLOWABLE &&
         state.layout.stylesheets == Layout.Stylesheets.Rtl &&
-        !state.settings.publisherStyles
+        !state.settings.publisherStyles &&
+        preferences.ligatures != null
 
     private fun isParagraphIndentEffective() = layout == EpubLayout.REFLOWABLE &&
         state.layout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl) &&
-        !state.settings.publisherStyles
+        !state.settings.publisherStyles &&
+        preferences.paragraphIndent != null
 
     private fun isTextAlignEffective() = layout == EpubLayout.REFLOWABLE &&
         state.layout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl) &&
-        !state.settings.publisherStyles
+        !state.settings.publisherStyles &&
+        preferences.textAlign != null
 
     private fun isWordSpacingEffective(): Boolean = layout == EpubLayout.REFLOWABLE &&
         state.layout.stylesheets == Layout.Stylesheets.Default &&
-        !state.settings.publisherStyles
-
-    companion object {
-
-        private val DEFAULT_FONT_FAMILIES: List<FontFamily> = listOf(
-            FontFamily.SERIF,
-            FontFamily.SANS_SERIF,
-            FontFamily.MONOSPACE,
-            FontFamily.ACCESSIBLE_DFA,
-            FontFamily.IA_WRITER_DUOSPACE,
-            FontFamily.OPEN_DYSLEXIC
-        )
-    }
+        !state.settings.publisherStyles &&
+        preferences.wordSpacing != null
 }

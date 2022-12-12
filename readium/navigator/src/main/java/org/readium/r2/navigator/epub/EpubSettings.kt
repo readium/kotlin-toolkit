@@ -6,12 +6,26 @@
 
 package org.readium.r2.navigator.epub
 
+import org.readium.r2.navigator.epub.css.Appearance
+import org.readium.r2.navigator.epub.css.ColCount
 import org.readium.r2.navigator.epub.css.Color as CssColor
+import org.readium.r2.navigator.epub.css.FontWeight
+import org.readium.r2.navigator.epub.css.Hyphens
+import org.readium.r2.navigator.epub.css.Layout
+import org.readium.r2.navigator.epub.css.Length
+import org.readium.r2.navigator.epub.css.Ligatures
+import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.navigator.epub.css.TextAlign as CssTextAlign
-import org.readium.r2.navigator.epub.css.*
-import org.readium.r2.navigator.preferences.*
+import org.readium.r2.navigator.epub.css.View
 import org.readium.r2.navigator.preferences.Color
+import org.readium.r2.navigator.preferences.ColumnCount
+import org.readium.r2.navigator.preferences.Configurable
+import org.readium.r2.navigator.preferences.FontFamily
+import org.readium.r2.navigator.preferences.ImageFilter
+import org.readium.r2.navigator.preferences.ReadingProgression
+import org.readium.r2.navigator.preferences.Spread
 import org.readium.r2.navigator.preferences.TextAlign
+import org.readium.r2.navigator.preferences.Theme
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Language
@@ -23,31 +37,31 @@ import org.readium.r2.shared.util.Language
  */
 @ExperimentalReadiumApi
 data class EpubSettings(
-    val backgroundColor: Color,
+    val backgroundColor: Color?,
     val columnCount: ColumnCount,
     val fontFamily: FontFamily?,
-    val fontSize: Double,
+    val fontSize: Double?,
     val fontWeight: Double?,
-    val hyphens: Boolean,
+    val hyphens: Boolean?,
     val imageFilter: ImageFilter,
     val language: Language?,
-    val letterSpacing: Double,
-    val ligatures: Boolean,
-    val lineHeight: Double,
+    val letterSpacing: Double?,
+    val ligatures: Boolean?,
+    val lineHeight: Double?,
     val pageMargins: Double,
-    val paragraphIndent: Double,
-    val paragraphSpacing: Double,
+    val paragraphIndent: Double?,
+    val paragraphSpacing: Double?,
     val publisherStyles: Boolean,
     val readingProgression: ReadingProgression,
     val scroll: Boolean,
     val spread: Spread,
-    val textAlign: TextAlign,
-    val textColor: Color,
+    val textAlign: TextAlign?,
+    val textColor: Color?,
     val textNormalization: Boolean,
     val theme: Theme,
-    val typeScale: Double,
+    val typeScale: Double?,
     val verticalText: Boolean,
-    val wordSpacing: Double
+    val wordSpacing: Double?
 ) : Configurable.Settings
 
 @OptIn(ExperimentalReadiumApi::class)
@@ -83,14 +97,13 @@ internal fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
                 },
                 darkenImages = imageFilter == ImageFilter.DARKEN,
                 invertImages = imageFilter == ImageFilter.INVERT,
-                textColor = textColor.toCss(),
-                backgroundColor = backgroundColor.toCss(),
+                textColor = textColor?.toCss(),
+                backgroundColor = backgroundColor?.toCss(),
                 fontOverride = (fontFamily != null || textNormalization),
                 fontFamily = fontFamily?.toCss(),
                 // Font size is handled natively with WebSettings.textZoom.
                 // See https://github.com/readium/mobile/issues/1#issuecomment-652431984
-//                fontSize = fontSize.value
-//                    ?.let { Length.Percent(it) },
+//                fontSize = fontSize?.let { Length.Percent(it) },
                 advancedSettings = !publisherStyles,
                 typeScale = typeScale,
                 textAlign = when (textAlign) {
@@ -98,14 +111,15 @@ internal fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
                     TextAlign.LEFT -> CssTextAlign.LEFT
                     TextAlign.RIGHT -> CssTextAlign.RIGHT
                     TextAlign.START, TextAlign.CENTER, TextAlign.END -> CssTextAlign.START
+                    null -> null
                 },
-                lineHeight = Either(lineHeight),
-                paraSpacing = Length.Rem(paragraphSpacing),
-                paraIndent = Length.Rem(paragraphIndent),
-                wordSpacing = Length.Rem(wordSpacing),
-                letterSpacing = Length.Rem(letterSpacing / 2),
-                bodyHyphens = if (hyphens) Hyphens.AUTO else Hyphens.NONE,
-                ligatures = if (ligatures) Ligatures.COMMON else Ligatures.NONE,
+                lineHeight = lineHeight?.let { Either(it) },
+                paraSpacing = paragraphSpacing?.let { Length.Rem(it) },
+                paraIndent = paragraphIndent?.let { Length.Rem(it) },
+                wordSpacing = wordSpacing?.let { Length.Rem(it) },
+                letterSpacing = letterSpacing?.let { Length.Rem(it / 2) },
+                bodyHyphens = hyphens?.let { if (it) Hyphens.AUTO else Hyphens.NONE },
+                ligatures = ligatures?.let { if (it) Ligatures.COMMON else Ligatures.NONE },
                 a11yNormalize = textNormalization,
                 overrides = mapOf(
                     "font-weight" to

@@ -7,6 +7,7 @@
 package org.readium.r2.navigator.epub
 
 import android.content.SharedPreferences
+import android.graphics.Color as AndroidColor
 import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Bundle
@@ -388,7 +389,10 @@ class EpubNavigatorFragment internal constructor(
             EpubLayout.REFLOWABLE, null -> Publication.TYPE.EPUB
             EpubLayout.FIXED -> Publication.TYPE.FXL
         }
-        resourcePager.setBackgroundColor(viewModel.settings.value.backgroundColor.int)
+        resourcePager.setBackgroundColor(
+            viewModel.settings.value.backgroundColor?.int
+                ?: AndroidColor.TRANSPARENT
+        )
 
         parent.addView(resourcePager)
 
@@ -479,10 +483,13 @@ class EpubNavigatorFragment internal constructor(
         if (viewModel.layout == EpubLayout.FIXED) return
 
         if (previous.fontSize != new.fontSize) {
-            r2PagerAdapter?.setFontSize(new.fontSize)
+            r2PagerAdapter?.setFontSize(new.fontSize ?: 1.0)
         }
         if (previous.backgroundColor != new.backgroundColor) {
-            resourcePager.setBackgroundColor(new.backgroundColor.int)
+            resourcePager.setBackgroundColor(
+                new.backgroundColor?.int
+                    ?: AndroidColor.TRANSPARENT
+            )
         }
     }
 
@@ -498,7 +505,7 @@ class EpubNavigatorFragment internal constructor(
                 return
             }
 
-            (fragment as? R2EpubPageFragment)?.setFontSize(settings.value.fontSize)
+            (fragment as? R2EpubPageFragment)?.setFontSize(settings.value.fontSize ?: 1.0)
         }
     }
 
