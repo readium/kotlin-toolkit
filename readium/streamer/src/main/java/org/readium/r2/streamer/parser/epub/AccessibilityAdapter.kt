@@ -61,7 +61,7 @@ internal class AccessibilityAdapter {
     private fun conformedToProfileOrNull(item: MetadataItem): Accessibility.Profile? =
         if (item is MetadataItem.Meta && item.property == Vocabularies.DCTERMS + "conformsTo") {
             accessibilityProfileFromString(item.value)
-        } else if (item is MetadataItem.Link && item.href == Vocabularies.DCTERMS + "conformsTo") {
+        } else if (item is MetadataItem.Link && item.rels.contains(Vocabularies.DCTERMS + "conformsTo")) {
             accessibilityProfileFromString(item.href)
         } else
             null

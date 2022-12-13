@@ -4,7 +4,7 @@
     <dc:title>Alice's Adventures in Wonderland</dc:title>
 
     <dc:conformsTo>any profile</dc:conformsTo>
-    <dc:conformsTo>http://idpf.org/epub/a11y/accessibility-20170105.html#wcag-a</dc:conformsTo>
+    <link href="http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a" rel="dcterms:conformsTo"/>
     <meta property="schema:accessibilitySummary">The publication contains structural and page navigation.</meta>
 
     <meta property="schema:accessMode">textual</meta>
