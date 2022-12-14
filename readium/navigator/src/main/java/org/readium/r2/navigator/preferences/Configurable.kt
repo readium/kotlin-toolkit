@@ -27,7 +27,7 @@ interface Configurable<S : Settings, P : Preferences<P>> {
      */
     interface Preferences<P : Preferences<P>> {
 
-/**
+        /**
          * Creates a new instance of [P] after merging the values of [other].
          *
          * In case of conflict, [other] takes precedence.
