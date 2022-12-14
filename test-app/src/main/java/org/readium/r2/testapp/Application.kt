@@ -6,7 +6,10 @@
 
 package org.readium.r2.testapp
 
-import android.content.*
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -15,8 +18,8 @@ import com.google.android.material.color.DynamicColors
 import java.io.File
 import java.util.*
 import kotlinx.coroutines.*
-import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.BuildConfig.DEBUG
+import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.reader.ReaderRepository
 import timber.log.Timber
