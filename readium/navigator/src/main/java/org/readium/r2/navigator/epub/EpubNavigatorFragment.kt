@@ -6,8 +6,8 @@
 
 package org.readium.r2.navigator.epub
 
+import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import android.content.SharedPreferences
-import android.graphics.Color as AndroidColor
 import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Bundle
@@ -77,7 +77,6 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
@@ -389,10 +388,7 @@ class EpubNavigatorFragment internal constructor(
             EpubLayout.REFLOWABLE, null -> Publication.TYPE.EPUB
             EpubLayout.FIXED -> Publication.TYPE.FXL
         }
-        resourcePager.setBackgroundColor(
-            viewModel.settings.value.backgroundColor?.int
-                ?: AndroidColor.TRANSPARENT
-        )
+        resourcePager.setBackgroundColor(viewModel.settings.value.effectiveBackgroundColor)
 
         parent.addView(resourcePager)
 
@@ -485,11 +481,8 @@ class EpubNavigatorFragment internal constructor(
         if (previous.fontSize != new.fontSize) {
             r2PagerAdapter?.setFontSize(new.fontSize ?: 1.0)
         }
-        if (previous.backgroundColor != new.backgroundColor) {
-            resourcePager.setBackgroundColor(
-                new.backgroundColor?.int
-                    ?: AndroidColor.TRANSPARENT
-            )
+        if (previous.effectiveBackgroundColor != new.effectiveBackgroundColor) {
+            resourcePager.setBackgroundColor(new.effectiveBackgroundColor)
         }
     }
 
@@ -1012,3 +1005,7 @@ class EpubNavigatorFragment internal constructor(
             WebViewServer.assetUrl(path)
     }
 }
+
+@ExperimentalReadiumApi
+private val EpubSettings.effectiveBackgroundColor: Int get() =
+    backgroundColor?.int ?: theme.backgroundColor
