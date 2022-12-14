@@ -169,7 +169,7 @@
 
     <string name="end_of_chapter">End of chapter</string>
 
-    <string name="unable_to_move_pub">Unable to move publication into the library</string>
+    <string name="unexpected_io_exception">Unable to add publication due to an unexpected error on your device</string>
     <string name="import_publication_success">Publication added to your library</string>
     <string name="unable_add_pub_database">Unable to add publication to the database</string>
     <string name="failed_parsing_catalog">Failed parsing Catalog</string>

@@ -21,8 +21,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
-import org.readium.r2.testapp.bookshelf.BookRepository
-import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.reader.ReaderActivityContract
 import org.readium.r2.testapp.utils.LifecycleMediaSessionService
 import timber.log.Timber
@@ -35,9 +33,8 @@ class MediaService : LifecycleMediaSessionService() {
      */
     inner class Binder : android.os.Binder() {
 
-        private val books by lazy {
-            BookRepository(BookDatabase.getDatabase(this@MediaService).booksDao())
-        }
+        private val app: Application
+            get() = application as Application
 
         private var saveLocationJob: Job? = null
 
@@ -69,7 +66,7 @@ class MediaService : LifecycleMediaSessionService() {
              */
             saveLocationJob = navigator.currentLocator
                 .sample(3000)
-                .onEach { locator -> books.saveProgression(locator, bookId) }
+                .onEach { locator -> app.bookRepository.saveProgression(locator, bookId) }
                 .launchIn(lifecycleScope)
         }
 

@@ -15,16 +15,13 @@ import com.google.android.material.color.DynamicColors
 import java.io.File
 import java.util.*
 import kotlinx.coroutines.*
-import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.bookshelf.BookRepository
+import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.reader.ReaderRepository
 import timber.log.Timber
 
 class Application : android.app.Application() {
-
-    val Context.navigatorPreferences: DataStore<Preferences>
-        by preferencesDataStore(name = "navigator-preferences")
 
     lateinit var readium: Readium
         private set
@@ -39,6 +36,9 @@ class Application : android.app.Application() {
 
     private val coroutineScope: CoroutineScope =
         MainScope()
+
+    private val Context.navigatorPreferences: DataStore<Preferences>
+        by preferencesDataStore(name = "navigator-preferences")
 
     private val mediaServiceBinder: CompletableDeferred<MediaService.Binder> =
         CompletableDeferred()
@@ -85,7 +85,7 @@ class Application : android.app.Application() {
          */
         bookRepository =
             BookDatabase.getDatabase(this).booksDao()
-                .let { BookRepository(it) }
+                .let { BookRepository(this, it, storageDir, readium.lcpService, readium.streamer) }
 
         readerRepository =
             coroutineScope.async {
@@ -112,6 +112,3 @@ class Application : android.app.Application() {
         )
     }
 }
-
-val Context.resolver: ContentResolver
-    get() = applicationContext.contentResolver
