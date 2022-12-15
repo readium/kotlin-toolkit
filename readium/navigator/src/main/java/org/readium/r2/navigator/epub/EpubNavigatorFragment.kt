@@ -380,6 +380,8 @@ class EpubNavigatorFragment internal constructor(
         val parent = requireNotNull(resourcePager.parent as? ConstraintLayout) {
             "The parent view of the EPUB `resourcePager` must be a ConstraintLayout"
         }
+        // We need to null out the adapter explicitly, otherwise the page fragments will leak.
+        resourcePager.adapter = null
         parent.removeView(resourcePager)
 
         resourcePager = R2ViewPager(requireContext())
