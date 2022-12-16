@@ -228,7 +228,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     }
 }
 
-
 // Examples of HTML templates for custom Decoration Styles.
 
 /**

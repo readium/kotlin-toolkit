@@ -56,6 +56,7 @@ All notable changes to this project will be documented in this file. Take a look
     * `hyphens` - Enable hyphenation.
     * `ligatures` - Enable ligatures in Arabic.
 * Fixed scroll inertia when scrolling an EPUB.
+* EPUB decorations can now be attached to `Locator` objects containing only an HTML ID (`locations.fragments`) or a CSS selector (`locations.cssSelector`).
 
 ### Changed
 
