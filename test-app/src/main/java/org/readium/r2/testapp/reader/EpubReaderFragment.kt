@@ -66,8 +66,10 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                         "annotation-icon.svg"
                     ),
                 ).apply {
-                    // Register the HTML template for our custom [DecorationStyleAnnotationMark].
+                    // Register the HTML templates for our custom decoration styles.
                     decorationTemplates[DecorationStyleAnnotationMark::class] = annotationMarkTemplate()
+                    decorationTemplates[DecorationStylePageNumber::class] = pageNumberTemplate()
+
                     selectionActionModeCallback = customSelectionActionModeCallback
 
                     addFontFamilyDeclaration(FontFamily.LITERATA) {
@@ -226,11 +228,12 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     }
 }
 
+
+// Examples of HTML templates for custom Decoration Styles.
+
 /**
- * Example of an HTML template for a custom Decoration Style.
- *
- * This one will display a tinted "pen" icon in the page margin to show that a highlight has an
- * associated note.
+ * This Decorator Style will display a tinted "pen" icon in the page margin to show that a highlight
+ * has an associated note.
  *
  * Note that the icon is served from the app assets folder.
  */
@@ -259,6 +262,42 @@ private fun annotationMarkTemplate(@ColorInt defaultTint: Int = Color.YELLOW): H
                 border-radius: 50%;
                 background: url('$iconUrl') no-repeat center;
                 background-size: auto 50%;
+                opacity: 0.8;
+            }
+            """
+    )
+}
+
+/**
+ * This Decoration Style is used to display the page number labels in the margins, when a book
+ * provides a `page-list`. The label is stored in the [DecorationStylePageNumber] itself.
+ *
+ * See http://kb.daisy.org/publishing/docs/navigation/pagelist.html
+ */
+@OptIn(ExperimentalDecorator::class)
+private fun pageNumberTemplate(): HtmlDecorationTemplate {
+    val className = "testapp-page-number"
+    return HtmlDecorationTemplate(
+        layout = HtmlDecorationTemplate.Layout.BOUNDS,
+        width = HtmlDecorationTemplate.Width.PAGE,
+        element = { decoration ->
+            val style = decoration.style as? DecorationStylePageNumber
+
+            // Using `var(--RS__backgroundColor)` is a trick to use the same background color as
+            // the Readium theme. If we don't set it directly inline in the HTML, it might be
+            // forced transparent by Readium CSS.
+            """
+            <div><span class="$className" style="background-color: var(--RS__backgroundColor) !important">${style?.label}</span></div>"
+            """
+        },
+        stylesheet = """
+            .$className {
+                float: left;
+                margin-left: 8px;
+                padding: 0px 4px 0px 4px;
+                border: 1px solid;
+                border-radius: 20%;
+                box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
                 opacity: 0.8;
             }
             """

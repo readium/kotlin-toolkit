@@ -87,6 +87,12 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
         setupObservers()
 
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            // Display page number labels if the book contains a `page-list` navigation document.
+            (navigator as? DecorableNavigator)
+                ?.applyDecorations(model.pageNumberDecorations, "pageNumbers")
+        }
+
         childFragmentManager.addOnBackStackChangedListener {
             updateSystemUiVisibility()
         }
@@ -536,3 +542,14 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 @Parcelize
 @OptIn(ExperimentalDecorator::class)
 data class DecorationStyleAnnotationMark(@ColorInt val tint: Int) : Decoration.Style
+
+/**
+ * Decoration Style for a page number label.
+ *
+ * This is an example of a custom Decoration Style declaration.
+ *
+ * @param label Page number label as declared in the `page-list` link object.
+ */
+@Parcelize
+@OptIn(ExperimentalDecorator::class)
+data class DecorationStylePageNumber(val label: String) : Decoration.Style
