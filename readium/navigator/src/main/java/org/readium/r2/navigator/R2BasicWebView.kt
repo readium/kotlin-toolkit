@@ -83,7 +83,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? = null
 
         @InternalReadiumApi
-        fun resourceAtUrl(url: String): Resource?
+        fun resourceAtUrl(url: String): Resource? = null
     }
 
     lateinit var listener: Listener
