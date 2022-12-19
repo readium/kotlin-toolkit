@@ -17,9 +17,8 @@ import org.readium.r2.shared.publication.Publication
 /**
  * Main component to use the PDF navigator with the PDFium adapter.
  *
- * Provide [PdfiumDefaults] to customize the default values that will be used by the navigator for
- * some preferences and the way that preferences will be allowed to be modified through preferences
- * editors created by this component.
+ * Provide [PdfiumDefaults] to customize the default values that will be used by
+ * the navigator for some preferences.
  */
 @ExperimentalReadiumApi
 class PdfiumEngineProvider(
