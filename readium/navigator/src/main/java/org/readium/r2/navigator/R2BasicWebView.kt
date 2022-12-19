@@ -88,6 +88,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
     lateinit var listener: Listener
     internal var preferences: SharedPreferences? = null
+    internal var useLegacySettings: Boolean = false
 
     var resourceUrl: String? = null
 
@@ -246,7 +247,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             return false
         }
 
-        // FIXME: Let the app handle edge taps and footnotes.
+        // FIXME: Let the app handle footnotes.
 
         // We ignore taps on interactive element, unless it's an element we handle ourselves such as
         // pop-up footnotes.
@@ -260,11 +261,11 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
         // FIXME: Call listener.onTap if scrollLeft|Right fails
         return when {
-            !scrollMode && thresholdRange.contains(event.point.x) -> {
+            useLegacySettings && thresholdRange.contains(event.point.x) -> {
                 scrollLeft(false)
                 true
             }
-            !scrollMode && thresholdRange.contains(clientWidth - event.point.x) -> {
+            useLegacySettings && thresholdRange.contains(clientWidth - event.point.x) -> {
                 scrollRight(false)
                 true
             }

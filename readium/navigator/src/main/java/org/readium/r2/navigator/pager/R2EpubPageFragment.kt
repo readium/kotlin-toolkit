@@ -23,7 +23,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewClientCompat
@@ -62,7 +62,7 @@ class R2EpubPageFragment : Fragment() {
 
     private lateinit var containerView: View
     private lateinit var preferences: SharedPreferences
-    private lateinit var viewModel: EpubNavigatorViewModel
+    private val viewModel: EpubNavigatorViewModel by viewModels(ownerProducer = { requireParentFragment() })
 
     private var _binding: ViewpagerFragmentEpubBinding? = null
     private val binding get() = _binding!!
@@ -130,7 +130,6 @@ class R2EpubPageFragment : Fragment() {
         _binding = ViewpagerFragmentEpubBinding.inflate(inflater, container, false)
         containerView = binding.root
         preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
-        viewModel = ViewModelProvider(requireParentFragment()).get(EpubNavigatorViewModel::class.java)
 
         val webView = binding.webView
         this.webView = webView

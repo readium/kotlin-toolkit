@@ -86,6 +86,21 @@ Then, use the base URL `https://readium/assets/` to fetch your app assets from t
 
 `https://readium/assets/annotation-icon.svg`
 
+#### Edge tap navigation
+
+After removing the HTTP server, tapping on the edge of the screen will not turn pages anymore. If you wish to keep this behavior, you can add it in your app by implementing `VisualNavigator.Listener.onTap()`. An instance of `EdgeTapNavigation` can help to compute the page turns by taking into account the publication reading progression and custom thresholds. [See an example in the test app](https://github.com/readium/kotlin-toolkit/blob/9b84fc42c3db34c0462e972b6a08afc0de3afc95/test-app/src/main/java/org/readium/r2/testapp/reader/VisualReaderFragment.kt#L515-L522).
+
+```kotlin
+override fun onTap(point: PointF): Boolean {
+    val navigated = EdgeTapNavigation(navigator).onTap(point, requireView())
+    if (!navigated) {
+        toggleAppBar()
+    }
+    return true
+}
+```
+
+
 ### Upgrading to the new Preferences API
 
 The 2.3.0 release introduces a brand new user preferences API to configure the EPUB Navigator. This new API is easier and safer to use, [take a look at the user guide](guides/navigator-settings.md) to learn how to integrate it in your app.
