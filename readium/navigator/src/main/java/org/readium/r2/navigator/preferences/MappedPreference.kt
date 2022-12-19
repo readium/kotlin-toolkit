@@ -14,6 +14,13 @@ fun <T, V> Preference<T>.map(from: (T) -> V, to: (V) -> T): Preference<V> =
  * Creates a new [EnumPreference] object wrapping the receiver with the provided [supportedValues].
  */
 @ExperimentalReadiumApi
+fun <T> Preference<T>.withSupportedValues(vararg supportedValues: T): EnumPreference<T> =
+    withSupportedValues(supportedValues.toList())
+
+/**
+ * Creates a new [EnumPreference] object wrapping the receiver with the provided [supportedValues].
+ */
+@ExperimentalReadiumApi
 fun <T> Preference<T>.withSupportedValues(supportedValues: List<T>): EnumPreference<T> =
     PreferenceWithSupportedValues(this, supportedValues)
 
@@ -28,6 +35,13 @@ fun <T, V> EnumPreference<T>.map(
     supportedValues: (List<T>) -> List<V> = { it.map(from) }
 ): EnumPreference<V> =
     MappedEnumPreference(this, from, to, supportedValues)
+
+/**
+ * Creates a new [EnumPreference] object wrapping the receiver with the provided [supportedValues].
+ */
+@ExperimentalReadiumApi
+fun <T> EnumPreference<T>.withSupportedValues(vararg supportedValues: T): EnumPreference<T> =
+    withSupportedValues(supportedValues.toList())
 
 /**
  * Creates a new [EnumPreference] object wrapping the receiver with the provided [supportedValues].
@@ -93,8 +107,8 @@ fun <T : Comparable<T>> RangePreference<T>.map(
  */
 @ExperimentalReadiumApi
 fun <T : Comparable<T>> RangePreference<T>.withSupportedRange(
-    range: ClosedRange<T> = range,
-    progressionStrategy: ProgressionStrategy<T> = progressionStrategy) 
+    range: ClosedRange<T> = supportedRange,
+    progressionStrategy: ProgressionStrategy<T>
 ): RangePreference<T> =
     map(
         supportedRange = { range },

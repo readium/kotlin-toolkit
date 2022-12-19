@@ -6,7 +6,6 @@
 
 package org.readium.r2.navigator.preferences
 
-import kotlin.math.abs
 import org.readium.r2.shared.extensions.equalsDelta
 
 /**
@@ -26,7 +25,10 @@ interface ProgressionStrategy<V> {
  *
  * @param equalsDelta Provide an equality algorithm to compare floating point numbers.
  */
-class StepsProgression<T : Comparable<T>>(private val steps: List<T>, private val equalsDelta: (T, T) -> Boolean) : ProgressionStrategy<T> {
+class StepsProgression<T : Comparable<T>>(
+    private val steps: List<T>,
+    private val equalsDelta: (T, T) -> Boolean
+) : ProgressionStrategy<T> {
 
     companion object {
         operator fun invoke(vararg steps: Int): StepsProgression<Int> =

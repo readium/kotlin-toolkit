@@ -6,7 +6,6 @@
 
 package org.readium.r2.navigator.epub
 
-import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import android.content.SharedPreferences
 import android.graphics.PointF
 import android.graphics.RectF
@@ -77,6 +76,7 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
