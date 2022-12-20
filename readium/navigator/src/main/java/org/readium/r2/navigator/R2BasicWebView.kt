@@ -94,7 +94,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
     internal val scrollModeFlow = MutableStateFlow(false)
 
-/** Indicates that a user text selection is active. */
+    /** Indicates that a user text selection is active. */
     internal var isSelecting = false
 
     val scrollMode: Boolean get() = scrollModeFlow.value

@@ -19,7 +19,7 @@ internal data class ReadiumCss(
     val layout: Layout = Layout(language = null, Layout.Stylesheets.Default, ReadingProgression.LTR),
     val rsProperties: RsProperties = RsProperties(),
     val userProperties: UserProperties = UserProperties(),
-    val fontFaces: List<FontFaceDeclaration> = emptyList(),
+    val fontFamilyDeclarations: List<FontFamilyDeclaration> = emptyList(),
     val googleFonts: List<FontFamily> = emptyList(),
     val assetsBaseHref: String
 ) {
@@ -104,9 +104,11 @@ internal data class ReadiumCss(
      */
     private val fontsInjectableCss: List<String> by lazy {
         buildList {
-            for (fontFace in fontFaces) {
-                add(fontFace.toCss(::normalizeAssetUrl))
-            }
+            addAll(
+                fontFamilyDeclarations
+                    .flatMap { it.fontFaces }
+                    .map { it.toCss(::normalizeAssetUrl) }
+            )
 
             if (googleFonts.isNotEmpty()) {
                 val families = googleFonts.joinToString("|") { it.name }
@@ -124,7 +126,9 @@ internal data class ReadiumCss(
     }
 
     private val fontsInjectableLinks: List<String> by lazy {
-        fontFaces.flatMap { it.links(::normalizeAssetUrl) }
+        fontFamilyDeclarations
+            .flatMap { it.fontFaces }
+            .flatMap { it.links(::normalizeAssetUrl) }
     }
 
     private fun normalizeAssetUrl(url: String): String =

@@ -67,10 +67,13 @@ enum class ImageFilter {
  * Typeface for a publication's text.
  *
  * When not available, the Navigator should use [alternate] as a fallback.
+ *
+ * For a list of vetted font families, see https://readium.org/readium-css/docs/CSS10-libre_fonts.
  */
+@JvmInline
 @ExperimentalReadiumApi
 @Serializable
-data class FontFamily(val name: String, val alternate: FontFamily? = null) {
+value class FontFamily(val name: String) {
 
     companion object {
         // Generic font families
@@ -81,33 +84,10 @@ data class FontFamily(val name: String, val alternate: FontFamily? = null) {
         val FANTASY = FontFamily("fantasy")
         val MONOSPACE = FontFamily("monospace")
 
-        // Vetted font families
-        // See https://readium.org/readium-css/docs/CSS10-libre_fonts
-
-        // Serif
-        val CHARIS_SIL = FontFamily("Charis SIL", alternate = SERIF)
-        val FAUSTINA = FontFamily("Faustina", alternate = SERIF)
-        val IBM_PLEX_SERIF = FontFamily("IBM Plex Serif", alternate = SERIF)
-        val LITERATA = FontFamily("Literata", alternate = SERIF)
-        val MERRIWEATHER = FontFamily("Merriweather", alternate = SERIF)
-        val PT_SERIF = FontFamily("PT Serif", alternate = SERIF)
-        val VOLLKORN = FontFamily("Vollkorn", alternate = SERIF)
-
-        // Sans-serif
-        val CLEAR_SANS = FontFamily("Clear Sans", alternate = SANS_SERIF)
-        val FIRA_SANS = FontFamily("Fira Sans", alternate = SANS_SERIF)
-        val LIBRE_FRANKLIN = FontFamily("Libre Franklin", alternate = SANS_SERIF)
-        val MERRIWEATHER_SANS = FontFamily("Merriweather Sans", alternate = SANS_SERIF)
-        val PT_SANS = FontFamily("PT Sans", alternate = SANS_SERIF)
-        val SOURCE_SANS_PRO = FontFamily("Source Sans Pro", alternate = SANS_SERIF)
-
-        // Accessibility
+        // Accessibility fonts embedded with Readium
         val ACCESSIBLE_DFA = FontFamily("AccessibleDfA")
-        val IA_WRITER_DUOSPACE = FontFamily("IA Writer Duospace", alternate = MONOSPACE)
+        val IA_WRITER_DUOSPACE = FontFamily("IA Writer Duospace")
         val OPEN_DYSLEXIC = FontFamily("OpenDyslexic")
-
-        // System
-        val ROBOTO = FontFamily("Roboto", alternate = SANS_SERIF)
     }
 }
 

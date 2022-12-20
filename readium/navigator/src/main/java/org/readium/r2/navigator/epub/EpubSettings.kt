@@ -67,11 +67,19 @@ data class EpubSettings(
 @OptIn(ExperimentalReadiumApi::class)
 internal fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
 
-    fun FontFamily.toCss(): List<String> = buildList {
-        add(name)
-        val alternateChain = alternate?.toCss()
-        alternateChain?.let { addAll(it) }
+    fun resolveFontStack(fontFamily: String): List<String> = buildList {
+        add(fontFamily)
+
+        val alternates = fontFamilyDeclarations
+            .firstOrNull { it.fontFamily == fontFamily }
+            ?.alternates
+            ?: emptyList()
+
+        addAll(alternates.flatMap(::resolveFontStack))
     }
+
+    fun FontFamily.toCss(): List<String> =
+        resolveFontStack(name)
 
     fun Color.toCss(): CssColor =
         CssColor.Int(int)

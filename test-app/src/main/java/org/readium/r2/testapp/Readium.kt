@@ -9,6 +9,7 @@ package org.readium.r2.testapp
 import android.content.Context
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.lcp.LcpService
+import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Try
 import org.readium.r2.streamer.Streamer
@@ -39,3 +40,6 @@ class Readium(context: Context) {
         pdfFactory = PdfiumDocumentFactory(context)
     )
 }
+
+@OptIn(ExperimentalReadiumApi::class)
+val FontFamily.Companion.LITERATA: FontFamily get() = FontFamily("Literata")

@@ -10,21 +10,29 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
  * Build a declaration for [fontFamily] using [builderAction].
+ *
+ * @param alternates Specifies a list of alternative font families used as fallbacks when symbols
+ * are missing from [fontFamily].
  */
 @ExperimentalReadiumApi
-fun buildFontFamilyDeclaration(
+internal fun buildFontFamilyDeclaration(
     fontFamily: String,
+    alternates: List<String>,
     builderAction: (MutableFontFamilyDeclaration).() -> Unit
 ) =
-    MutableFontFamilyDeclaration(fontFamily).apply(builderAction).toFontFamilyDeclaration()
+    MutableFontFamilyDeclaration(fontFamily, alternates).apply(builderAction).toFontFamilyDeclaration()
 
 /**
  * A font family declaration.
+ *
+ * @param alternates Specifies a list of alternative font families used as fallbacks when symbols
+ * are missing from [fontFamily].
  */
 @ExperimentalReadiumApi
-data class FontFamilyDeclaration internal constructor(
-    internal val fontFamily: String,
-    internal val fontFaces: List<FontFaceDeclaration>
+internal data class FontFamilyDeclaration(
+    val fontFamily: String,
+    val alternates: List<String>,
+    val fontFaces: List<FontFaceDeclaration>
 )
 
 /**
@@ -41,21 +49,21 @@ internal fun buildFontFaceDeclaration(
  * An immutable font face declaration.
  */
 @ExperimentalReadiumApi
-data class FontFaceDeclaration internal constructor(
-    private val fontFamily: String,
-    private val sources: List<FontFaceSource>,
-    private var fontStyle: FontStyle? = null,
-    private var fontWeight: FontWeight? = null,
+internal data class FontFaceDeclaration(
+    val fontFamily: String,
+    val sources: List<FontFaceSource>,
+    var fontStyle: FontStyle? = null,
+    var fontWeight: FontWeight? = null,
 ) {
 
-    internal fun links(urlNormalizer: (String) -> String): List<String> =
+    fun links(urlNormalizer: (String) -> String): List<String> =
         sources
             .filter { it.preload }
             .map {
                 """<link rel="preload" href="${urlNormalizer(it.href)}" as="font" crossorigin="" />"""
             }
 
-    internal fun toCss(urlNormalizer: (String) -> String): String {
+    fun toCss(urlNormalizer: (String) -> String): String {
         val descriptors = buildMap {
             set("font-family", """"$fontFamily"""")
 
@@ -100,6 +108,7 @@ internal data class FontFaceSource(
 @ExperimentalReadiumApi
 data class MutableFontFamilyDeclaration internal constructor(
     private val fontFamily: String,
+    private val alternates: List<String>,
     private val fontFaces: MutableList<FontFaceDeclaration> = mutableListOf()
 ) {
 
@@ -110,7 +119,7 @@ data class MutableFontFamilyDeclaration internal constructor(
 
     internal fun toFontFamilyDeclaration(): FontFamilyDeclaration {
         check(fontFaces.isNotEmpty())
-        return FontFamilyDeclaration(fontFamily, fontFaces)
+        return FontFamilyDeclaration(fontFamily, alternates, fontFaces)
     }
 }
 

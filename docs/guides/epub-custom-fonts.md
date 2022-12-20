@@ -3,7 +3,7 @@
 The `FontFamily` type represents a font family that can be picked up by users when they are reading reflowable EPUBs. Some are predefined in the navigator (though typefaces are not necessarily available for them) and you can create new ones using a name of your choice. Providing an `alternate` font family as a fallback is a good idea in case the font file is unreachable.
 
 ```kotlin
-    val openDyslexic = FontFamily(name = "OpenDyslexic", alternate = FontFamily.ACCESSIBLE_DFA)
+    val openDyslexic = FontFamily(name = "OpenDyslexic")
 ```
 
 # Adding custom typefaces to the EPUB navigator
