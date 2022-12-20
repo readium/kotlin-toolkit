@@ -42,7 +42,7 @@ All notable changes to this project will be documented in this file. Take a look
         ```
 * New [PSPDFKit](readium/adapters/pspdfkit) adapter for rendering PDF documents. [Take a look at the user guide](docs/guides/pdf.md).
 * [A brand new text-to-speech implementation](docs/guides/tts.md).
-* [Support for custom fonts with the EPUB navigator](docs/guides/epub-custom-fonts.md).
+* [Support for custom fonts with the EPUB navigator](docs/guides/epub-fonts.md).
 * New EPUB user settings, as part of [the revamped Settings API](docs/guides/navigator-settings.md):
     * `backgroundColor` - Default page background color.
     * `textColor` - Default page text color.
