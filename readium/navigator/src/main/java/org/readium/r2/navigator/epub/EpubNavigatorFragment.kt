@@ -100,9 +100,9 @@ class EpubNavigatorFragment internal constructor(
 ) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable<EpubSettings, EpubPreferences> {
 
     // Make a copy to prevent the user from modifying the configuration after initialization.
-    internal val config: Configuration = configuration.copy(
-        servedAssets = configuration.servedAssets + "readium/.*"
-    ).apply {
+    internal val config: Configuration = configuration.copy().apply {
+        servedAssets += "readium/.*"
+
         addFontFamilyDeclaration(FontFamily.OPEN_DYSLEXIC) {
             addFontFace {
                 addSource("readium/fonts/OpenDyslexic-Regular.otf")
@@ -122,7 +122,7 @@ class EpubNavigatorFragment internal constructor(
          * Use .* to serve all app assets.
          */
         @ExperimentalReadiumApi
-        val servedAssets: List<String>,
+        var servedAssets: List<String>,
 
         /**
          * Readium CSS reading system settings.
@@ -130,12 +130,12 @@ class EpubNavigatorFragment internal constructor(
          * See https://readium.org/readium-css/docs/CSS19-api.html#reading-system-styles
          */
         @ExperimentalReadiumApi
-        val readiumCssRsProperties: RsProperties,
+        var readiumCssRsProperties: RsProperties,
 
         /**
          * Supported HTML decoration templates.
          */
-        val decorationTemplates: HtmlDecorationTemplates,
+        var decorationTemplates: HtmlDecorationTemplates,
 
         /**
          * Custom [ActionMode.Callback] to be used when the user selects content.
@@ -147,7 +147,7 @@ class EpubNavigatorFragment internal constructor(
         /**
          * Whether padding accounting for display cutouts should be applied.
          */
-        val shouldApplyInsetsPadding: Boolean?,
+        var shouldApplyInsetsPadding: Boolean?,
 
         /**
          * Disable user selection if the publication is protected by a DRM (e.g. with LCP).
@@ -160,8 +160,8 @@ class EpubNavigatorFragment internal constructor(
         @DelicateReadiumApi
         var disableSelectionWhenProtected: Boolean,
 
-        internal val fontFamilyDeclarations: MutableList<FontFamilyDeclaration>,
-        internal val javascriptInterfaces: MutableMap<String, JavascriptInterfaceFactory>
+        internal var fontFamilyDeclarations: List<FontFamilyDeclaration>,
+        internal var javascriptInterfaces: Map<String, JavascriptInterfaceFactory>
     ) {
         constructor(
             servedAssets: List<String> = emptyList(),
@@ -176,8 +176,8 @@ class EpubNavigatorFragment internal constructor(
             selectionActionModeCallback = selectionActionModeCallback,
             shouldApplyInsetsPadding = shouldApplyInsetsPadding,
             disableSelectionWhenProtected = true,
-            fontFamilyDeclarations = mutableListOf(),
-            javascriptInterfaces = mutableMapOf()
+            fontFamilyDeclarations = emptyList(),
+            javascriptInterfaces = emptyMap()
         )
 
         /**
@@ -187,7 +187,7 @@ class EpubNavigatorFragment internal constructor(
          * resource.
          */
         fun registerJavascriptInterface(name: String, factory: JavascriptInterfaceFactory) {
-            javascriptInterfaces[name] = factory
+            javascriptInterfaces += name to factory
         }
 
         /**
@@ -202,12 +202,16 @@ class EpubNavigatorFragment internal constructor(
             alternates: List<FontFamily> = emptyList(),
             builderAction: (MutableFontFamilyDeclaration).() -> Unit
         ) {
-            val declaration = buildFontFamilyDeclaration(
+            fontFamilyDeclarations += buildFontFamilyDeclaration(
                 fontFamily = fontFamily.name,
                 alternates = alternates.map { it.name },
                 builderAction = builderAction
             )
-            fontFamilyDeclarations.add(declaration)
+        }
+
+        companion object {
+            operator fun invoke(builder: Configuration.() -> Unit): Configuration =
+                Configuration().apply(builder)
         }
     }
 

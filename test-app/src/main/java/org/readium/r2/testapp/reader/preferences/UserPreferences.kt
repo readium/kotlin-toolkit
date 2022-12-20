@@ -400,13 +400,11 @@ private fun ColumnScope.ReflowableUserPreferences(
                 title = "Typeface",
                 preference = fontFamily
                     .withSupportedValues(
-                        listOf(
-                            FontFamily.LITERATA,
-                            FontFamily.SANS_SERIF,
-                            FontFamily.IA_WRITER_DUOSPACE,
-                            FontFamily.ACCESSIBLE_DFA,
-                            FontFamily.OPEN_DYSLEXIC
-                        )
+                        FontFamily.LITERATA,
+                        FontFamily.SANS_SERIF,
+                        FontFamily.IA_WRITER_DUOSPACE,
+                        FontFamily.ACCESSIBLE_DFA,
+                        FontFamily.OPEN_DYSLEXIC
                     ),
                 commit = commit
             ) { value ->

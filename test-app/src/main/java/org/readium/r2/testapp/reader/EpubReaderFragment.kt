@@ -52,24 +52,29 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                 initialLocator = readerData.initialLocation,
                 listener = this,
                 initialPreferences = readerData.preferencesManager.preferences.value,
-                configuration = EpubNavigatorFragment.Configuration(
+                configuration = EpubNavigatorFragment.Configuration {
+                    // To customize the text selection menu.
+                    selectionActionModeCallback = customSelectionActionModeCallback
+
                     // App assets which will be accessible from the EPUB resources.
                     // You can use simple glob patterns, such as "images/.*" to allow several
                     // assets in one go.
                     servedAssets = listOf(
-                        /** Icon for the annotation side mark, see [annotationMarkTemplate]. */
+                        // For the custom font Literata.
                         "fonts/.*",
+                        // Icon for the annotation side mark, see [annotationMarkTemplate].
                         "annotation-icon.svg"
-                    ),
-                ).apply {
+                    )
+
                     // Register the HTML template for our custom [DecorationStyleAnnotationMark].
                     decorationTemplates[DecorationStyleAnnotationMark::class] = annotationMarkTemplate()
-                    selectionActionModeCallback = customSelectionActionModeCallback
 
+                    // Declare a custom font family for reflowable EPUBs.
                     addFontFamilyDeclaration(FontFamily.LITERATA) {
                         addFontFace {
                             addSource("fonts/Literata-VariableFont_opsz,wght.ttf")
                             setFontStyle(FontStyle.NORMAL)
+                            // Literata is a variable font family, so we can provide a font weight range.
                             setFontWeightRange()
                         }
                         addFontFace {
