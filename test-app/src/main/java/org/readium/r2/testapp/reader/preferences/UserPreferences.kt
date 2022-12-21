@@ -8,6 +8,8 @@
 
 package org.readium.r2.testapp.reader.preferences
 
+import org.readium.r2.navigator.preferences.Color as ReadiumColor
+import org.readium.r2.navigator.preferences.TextAlign as ReadiumTextAlign
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -25,8 +27,6 @@ import java.util.*
 import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
 import org.readium.r2.navigator.epub.EpubPreferencesEditor
 import org.readium.r2.navigator.preferences.*
-import org.readium.r2.navigator.preferences.Color as ReadiumColor
-import org.readium.r2.navigator.preferences.TextAlign as ReadiumTextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Language
@@ -41,12 +41,11 @@ import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
  */
 @Composable
 fun UserPreferences(model: UserPreferencesViewModel<*, *>) {
-    val editor = remember { mutableStateOf(model.preferencesEditor, policy = neverEqualPolicy()) }
-    val commit: () -> Unit = { editor.value = editor.value ; model.commitPreferences() }
+    val editor by model.editor.collectAsState()
 
     UserPreferences(
-        editor = editor.value,
-        commit = commit
+        editor = editor,
+        commit = model::commit
     )
 }
 

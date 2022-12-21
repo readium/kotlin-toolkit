@@ -18,6 +18,7 @@ import org.readium.r2.navigator.epub.*
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.testapp.reader.*
+import org.readium.r2.testapp.utils.extensions.mapStateIn
 
 /**
  * Manages user settings.
@@ -31,8 +32,10 @@ class UserPreferencesViewModel<S : Configurable.Settings, P : Configurable.Prefe
     private val bookId: Long,
     private val viewModelScope: CoroutineScope,
     private val preferencesManager: PreferencesManager<P>,
-    val preferencesEditor: PreferencesEditor<P>
+    private val createPreferencesEditor: (P) -> PreferencesEditor<P>
 ) {
+    val editor: StateFlow<PreferencesEditor<P>> = preferencesManager.preferences
+        .mapStateIn(viewModelScope, createPreferencesEditor)
 
     fun bind(configurable: Configurable<S, P>, lifecycleOwner: LifecycleOwner) {
         with(lifecycleOwner) {
@@ -43,8 +46,10 @@ class UserPreferencesViewModel<S : Configurable.Settings, P : Configurable.Prefe
         }
     }
 
-    fun commitPreferences() = viewModelScope.launch {
-        preferencesManager.setPreferences(this@UserPreferencesViewModel.preferencesEditor.preferences)
+    fun commit() {
+        viewModelScope.launch {
+            preferencesManager.setPreferences(editor.value.preferences)
+        }
     }
 
     companion object {
@@ -55,19 +60,15 @@ class UserPreferencesViewModel<S : Configurable.Settings, P : Configurable.Prefe
         ): UserPreferencesViewModel<*, *>? =
             when (readerInitData) {
                 is EpubReaderInitData -> with(readerInitData) {
-                    val editor = navigatorFactory
-                        .createPreferencesEditor(preferencesManager.preferences.value)
-
                     UserPreferencesViewModel<EpubSettings, EpubPreferences>(
-                        bookId, viewModelScope, preferencesManager, editor
+                        bookId, viewModelScope, preferencesManager,
+                        createPreferencesEditor = navigatorFactory::createPreferencesEditor
                     )
                 }
                 is PdfReaderInitData -> with(readerInitData) {
-                    val editor = navigatorFactory
-                        .createPreferencesEditor(preferencesManager.preferences.value)
-
                     UserPreferencesViewModel<PdfiumSettings, PdfiumPreferences>(
-                        bookId, viewModelScope, preferencesManager, editor
+                        bookId, viewModelScope, preferencesManager,
+                        createPreferencesEditor = navigatorFactory::createPreferencesEditor
                     )
                 }
                 else -> null
