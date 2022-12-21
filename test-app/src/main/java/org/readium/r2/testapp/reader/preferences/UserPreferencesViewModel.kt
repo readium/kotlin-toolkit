@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.readium.adapters.pdfium.navigator.PdfiumPreferences
 import org.readium.adapters.pdfium.navigator.PdfiumSettings
-import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.epub.*
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -23,7 +22,7 @@ import org.readium.r2.testapp.reader.*
 /**
  * Manages user settings.
  *
- * Note: This is not an Android [ViewModel], but it is a component of [ReaderViewModel].
+ * Note: This is not an Android ViewModel, but it is a component of [ReaderViewModel].
  *
  * @param bookId Database ID for the book.
  */
@@ -34,6 +33,19 @@ class UserPreferencesViewModel<S : Configurable.Settings, P : Configurable.Prefe
     private val preferencesManager: PreferencesManager<P>,
     val preferencesEditor: PreferencesEditor<P>
 ) {
+
+    fun bind(configurable: Configurable<S, P>, lifecycleOwner: LifecycleOwner) {
+        with(lifecycleOwner) {
+            preferencesManager.preferences
+                .flowWithLifecycle(lifecycle)
+                .onEach { configurable.submitPreferences(it) }
+                .launchIn(lifecycleScope)
+        }
+    }
+
+    fun commitPreferences() = viewModelScope.launch {
+        preferencesManager.setPreferences(this@UserPreferencesViewModel.preferencesEditor.preferences)
+    }
 
     companion object {
 
@@ -60,38 +72,5 @@ class UserPreferencesViewModel<S : Configurable.Settings, P : Configurable.Prefe
                 }
                 else -> null
             }
-    }
-
-    /**
-     * Current [Navigator] settings.
-     */
-    private val _settings = MutableStateFlow<S?>(null)
-
-    /**
-     * Current reader theme.
-     */
-    val theme: StateFlow<Theme> = _settings
-        .filterIsInstance<EpubSettings>()
-        .map { it.theme }
-        .stateIn(viewModelScope, SharingStarted.Lazily, initialValue = Theme.LIGHT)
-
-    fun bind(configurable: Configurable<S, P>, lifecycleOwner: LifecycleOwner) {
-        with(lifecycleOwner) {
-            configurable.settings
-                .flowWithLifecycle(lifecycle)
-                .onEach {
-                    _settings.value = it
-                }
-                .launchIn(lifecycleScope)
-
-            preferencesManager.preferences
-                .flowWithLifecycle(lifecycle)
-                .onEach { configurable.submitPreferences(it) }
-                .launchIn(lifecycleScope)
-        }
-    }
-
-    fun commitPreferences() = viewModelScope.launch {
-        preferencesManager.setPreferences(this@UserPreferencesViewModel.preferencesEditor.preferences)
     }
 }

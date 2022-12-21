@@ -17,7 +17,6 @@ import org.readium.r2.streamer.Streamer
 /**
  * Holds the shared Readium objects and services used by the app.
  */
-@OptIn(ExperimentalReadiumApi::class)
 class Readium(context: Context) {
 
     /**
