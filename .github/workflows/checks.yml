@@ -19,12 +19,26 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
       - name: Build
-        run: ./gradlew clean build -x test
+        run: ./gradlew clean build -x test -x ktlintMainSourceSetCheck
       - name: Test
         run: ./gradlew test --continue
 
-  lint:
-    name: Lint
+  lint-kt:
+    name: Lint Kotlin
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Lint
+        run: ./gradlew ktlintCheck
+
+  lint-js:
+    name: Lint JavaScript
     runs-on: macos-latest
     defaults:
       run:
@@ -37,13 +51,12 @@ jobs:
         uses: actions/checkout@v2
       - name: Install dependencies
         run: make install
-      - name: Lint JavaScript
+      - name: Lint
         run: yarn --cwd "$scripts" run lint
-      - name: Check JavaScript formatting
+      - name: Check formatting
         run: yarn --cwd "$scripts" run checkformat
       # FIXME: This suddenly stopped working even though the toolchain versions seem identical.
       # - name: Check if bundled scripts are up-to-date
       #   run: |
       #       make scripts
       #       git diff --exit-code --name-only src/main/assets/readium/scripts/*.js
-
