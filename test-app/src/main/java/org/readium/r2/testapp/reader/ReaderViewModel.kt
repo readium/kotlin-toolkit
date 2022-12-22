@@ -25,7 +25,6 @@ import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.LocatorCollection
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.shared.publication.services.search.SearchIterator
 import org.readium.r2.shared.publication.services.search.SearchTry
 import org.readium.r2.shared.publication.services.search.search
@@ -91,28 +90,6 @@ class ReaderViewModel(
 
     fun deleteBookmark(id: Long) = viewModelScope.launch {
         bookRepository.deleteBookmark(id)
-    }
-
-    // Page numbers
-
-    /**
-     * Will display margin labels next to page numbers in an EPUB publication with a `page-list`
-     * navigation document.
-     *
-     * See http://kb.daisy.org/publishing/docs/navigation/pagelist.html
-     */
-    val pageNumberDecorations: List<Decoration> by lazy {
-        publication.pageList
-            .mapIndexedNotNull { index, link ->
-                val label = link.title ?: return@mapIndexedNotNull null
-                val locator = publication.locatorFromLink(link) ?: return@mapIndexedNotNull null
-
-                Decoration(
-                    id = "page-$index",
-                    locator = locator,
-                    style = DecorationStylePageNumber(label = label),
-                )
-            }
     }
 
     // Highlights

@@ -87,12 +87,6 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
         setupObservers()
 
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            // Display page number labels if the book contains a `page-list` navigation document.
-            (navigator as? DecorableNavigator)
-                ?.applyDecorations(model.pageNumberDecorations, "pageNumbers")
-        }
-
         childFragmentManager.addOnBackStackChangedListener {
             updateSystemUiVisibility()
         }

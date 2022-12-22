@@ -22,6 +22,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import org.readium.r2.navigator.DecorableNavigator
+import org.readium.r2.navigator.Decoration
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.epub.*
 import org.readium.r2.navigator.epub.css.FontStyle
@@ -30,6 +32,7 @@ import org.readium.r2.navigator.html.toCss
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.epub.pageList
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 import org.readium.r2.testapp.search.SearchFragment
@@ -134,8 +137,33 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                         navigator.resourcePager.setBackgroundColor(theme.backgroundColor)
                     }
                     ?.launchIn(this)
+
+                // Display page number labels if the book contains a `page-list` navigation document.
+                (navigator as? DecorableNavigator)?.applyPageNumberDecorations()
             }
         }
+    }
+
+    /**
+     * Will display margin labels next to page numbers in an EPUB publication with a `page-list`
+     * navigation document.
+     *
+     * See http://kb.daisy.org/publishing/docs/navigation/pagelist.html
+     */
+    private suspend fun DecorableNavigator.applyPageNumberDecorations() {
+        val decorations = publication.pageList
+            .mapIndexedNotNull { index, link ->
+                val label = link.title ?: return@mapIndexedNotNull null
+                val locator = publication.locatorFromLink(link) ?: return@mapIndexedNotNull null
+
+                Decoration(
+                    id = "page-$index",
+                    locator = locator,
+                    style = DecorationStylePageNumber(label = label),
+                )
+            }
+
+        applyDecorations(decorations, "pageNumbers")
     }
 
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
