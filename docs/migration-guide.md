@@ -103,19 +103,19 @@ override fun onTap(point: PointF): Boolean {
 
 ### Upgrading to the new Preferences API
 
-The 2.3.0 release introduces a brand new user preferences API to configure the EPUB Navigator. This new API is easier and safer to use, [take a look at the user guide](guides/navigator-settings.md) to learn how to integrate it in your app.
+The 2.3.0 release introduces a brand new user preferences API for configuring the EPUB and PDF Navigators. This new API is easier and safer to use. To learn how to integrate it in your app, [please refer to the user guide](guides/navigator-preferences.md).
 
 If you integrated the EPUB navigator from a previous version, follow these steps to migrate:
 
-1. Get familiar with [the concepts of this new API](guides/navigator-settings.md#overview).
-2. Remove the local HTTP server from your app, [as explained in the previous section](#removing-the-http-server)
+1. Get familiar with [the concepts of this new API](guides/navigator-preferences.md#overview).
+2. Remove the local HTTP server from your app, [as explained in the previous section](#removing-the-http-server).
 3. Remove the whole [`UserSettings.kt`](https://github.com/readium/kotlin-toolkit/blob/f132e541a1d2c290a83974fb017efb352e0f825f/test-app/src/main/java/org/readium/r2/testapp/epub/UserSettings.kt) file from your app, if you copied it from the Test App.
-4. Adapt your user settings interface to the new API using preferences editors. The [Test App](https://github.com/readium/kotlin-toolkit/tree/develop/test-app/src/main/java/org/readium/r2/testapp/reader/preferences) and the [user guide](guides/navigator-settings.md#build-a-user-settings-interface) contain examples using Jetpack Compose.
-5. [Handle the persistence of the user preferences](guides/navigator-settings.md#save-and-restore-the-user-preferences). The settings are not stored in the `SharedPreferences` with name `org.readium.r2.settings` anymore. Instead, you are responsible for persisting and restoring the user preferences as you see fit (e.g. as a JSON file).
-    * If you want to migrate the legacy `SharedPreferences` settings, you can use the helper `Preferences.fromLegacyEpubSettings()` which will create a new `Preferences` object after translating the existing user settings.
-6. Make sure you [restore the stored user preferences](guides/navigator-settings.md#setting-the-initial-navigator-preferences-and-app-defaults) when initializing the EPUB navigator.
+4. Adapt your user settings interface to the new API using preferences editors. The [Test App](https://github.com/readium/kotlin-toolkit/tree/develop/test-app/src/main/java/org/readium/r2/testapp/reader/preferences) and the [user guide](guides/navigator-preferences.md#build-a-user-settings-interface) contain examples using Jetpack Compose.
+5. [Handle the persistence of the user preferences](guides/navigator-preferences.md#save-and-restore-the-user-preferences). The settings are not stored in the `SharedPreferences` with name `org.readium.r2.settings` anymore. Instead, you are responsible for persisting and restoring the user preferences as you see fit (e.g. as a JSON file).
+    * If you want to migrate the legacy `SharedPreferences` settings, you can use the helper `EpubPreferences.fromLegacyEpubSettings()` which will create a new `EpubPreferences` object after translating the existing user settings.
+6. Make sure you [restore the stored user preferences](guides/navigator-preferences.md#setting-the-initial-navigator-preferences-and-app-defaults) when initializing the EPUB navigator.
 
-Refer to the following table for the correspondence between legacy settings and new ones.
+Please refer to the following table for the correspondence between legacy settings and new ones.
 
 | **Legacy**              | **New**                                                |
 |-------------------------|--------------------------------------------------------|
@@ -132,18 +132,20 @@ Refer to the following table for the correspondence between legacy settings and 
 | `SCROLL_REF`            | `overflow` (`scrolled`)                                |
 | `TEXT_ALIGNMENT_REF`    | `textAlign`                                            |
 | `WORD_SPACING_REF`      | `wordSpacing`                                          |
-| N/A                     | `language`                                             |
-| N/A                     | `readingProgression` (e.g. RTL)                        |
-| N/A                     | `textColor`                                            |
-| N/A                     | `backgroundColor`                                      |
-| N/A                     | `imageFilter` (dark theme only)                        |
-| N/A                     | `paragraphIndent`                                      |
-| N/A                     | `paragraphSpacing`                                     |
-| N/A                     | `typeScale`                                            |
-| N/A                     | `textNormalization` (force bold, accessibility)        |
-| N/A                     | `hyphens`                                              |
-| N/A                     | `ligatures` (arabic)                                   |
 
+#### Deprecation of `userSettingsUIPreset`
+
+`publication.userSettingsUIPreset` is now deprecated, but you might still have this code in your application:
+
+```kotlin
+publication.userSettingsUIPreset[ReadiumCSSName.ref(SCROLL_REF)] = true
+```
+
+You can remove it, as the support for screen readers will be added directly to the navigator in a coming release. However if you want to keep it, here is the equivalent with the new API:
+
+```kotlin
+navigator.submitPreferences(currentPreferences.copy(scroll = true))
+```
 
 ## 2.2.1
 
