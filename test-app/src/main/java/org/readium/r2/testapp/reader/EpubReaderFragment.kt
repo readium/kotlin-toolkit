@@ -75,12 +75,12 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                             addSource("fonts/Literata-VariableFont_opsz,wght.ttf")
                             setFontStyle(FontStyle.NORMAL)
                             // Literata is a variable font family, so we can provide a font weight range.
-                            setFontWeightRange()
+                            setFontWeight(200..900)
                         }
                         addFontFace {
                             addSource("fonts/Literata-Italic-VariableFont_opsz,wght.ttf")
                             setFontStyle(FontStyle.ITALIC)
-                            setFontWeightRange()
+                            setFontWeight(200..900)
                         }
                     }
                 }

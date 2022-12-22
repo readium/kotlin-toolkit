@@ -87,7 +87,7 @@ class EpubPreferencesEditor internal constructor(
     val fontSize: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.fontSize },
-            getEffectiveValue = { state.settings.fontSize ?: 1.0 },
+            getEffectiveValue = { state.settings.fontSize },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(fontSize = value) } },
             supportedRange = 0.4..5.0,
@@ -103,13 +103,13 @@ class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(hyphens = value) } },
         )
 
-    val imageFilter: EnumPreference<ImageFilter> =
+    val imageFilter: EnumPreference<ImageFilter?> =
         EnumPreferenceDelegate(
             getValue = { preferences.imageFilter },
             getEffectiveValue = { state.settings.imageFilter },
             getIsEffective = { state.settings.theme == Theme.DARK },
             updateValue = { value -> updateValues { it.copy(imageFilter = value) } },
-            supportedValues = listOf(ImageFilter.NONE, ImageFilter.DARKEN, ImageFilter.INVERT),
+            supportedValues = listOf(ImageFilter.DARKEN, ImageFilter.INVERT),
         )
 
     val language: Preference<Language?> =

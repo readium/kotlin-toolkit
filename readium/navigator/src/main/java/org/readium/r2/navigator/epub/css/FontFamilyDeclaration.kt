@@ -7,6 +7,7 @@
 package org.readium.r2.navigator.epub.css
 
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.Either
 
 /**
  * Build a declaration for [fontFamily] using [builderAction].
@@ -53,7 +54,7 @@ internal data class FontFaceDeclaration(
     val fontFamily: String,
     val sources: List<FontFaceSource>,
     var fontStyle: FontStyle? = null,
-    var fontWeight: FontWeight? = null,
+    var fontWeight: Either<FontWeight, ClosedRange<Int>>? = null,
 ) {
 
     fun links(urlNormalizer: (String) -> String): List<String> =
@@ -75,10 +76,10 @@ internal data class FontFaceDeclaration(
 
             fontWeight?.let {
                 when (it) {
-                    is FontWeight.Range ->
-                        set("font-weight", "${it.range.start} ${it.range.endInclusive}")
-                    is FontWeight.Value ->
-                        set("font-weight", it.value)
+                    is Either.Left ->
+                        set("font-weight", it.value.value)
+                    is Either.Right ->
+                        set("font-weight", "${it.value.start} ${it.value.endInclusive}")
                 }
             }
         }
@@ -131,7 +132,7 @@ data class MutableFontFaceDeclaration internal constructor(
     private val fontFamily: String,
     private val sources: MutableList<FontFaceSource> = mutableListOf(),
     private var fontStyle: FontStyle? = null,
-    private var fontWeight: FontWeight? = null
+    private var fontWeight: Either<FontWeight, ClosedRange<Int>>? = null
 ) {
 
     /**
@@ -155,14 +156,16 @@ data class MutableFontFaceDeclaration internal constructor(
      * Set the font weight of the font face.
      */
     fun setFontWeight(fontWeight: FontWeight) {
-        this.fontWeight = fontWeight
+        this.fontWeight = Either(fontWeight)
     }
 
     /**
      * Set the font weight range of a variable font face.
      */
-    fun setFontWeightRange(range: ClosedRange<Int> = 1..1000) {
-        this.fontWeight = FontWeight.Range(range)
+    fun setFontWeight(range: ClosedRange<Int>) {
+        require(range.start >= 1)
+        require(range.endInclusive <= 1000)
+        this.fontWeight = Either(range)
     }
 
     internal fun toFontFaceDeclaration() =
@@ -184,19 +187,14 @@ enum class FontStyle {
  * See https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-weight#common_weight_name_mapping
  */
 @ExperimentalReadiumApi
-sealed class FontWeight {
-    data class Range(val range: ClosedRange<Int> = 1..1000) : FontWeight()
-    data class Value(val value: Int) : FontWeight()
-
-    companion object {
-        val THIN = Value(100)
-        val EXTRA_LIGHT = Value(200)
-        val LIGHT = Value(300)
-        val NORMAL = Value(400)
-        val MEDIUM = Value(500)
-        val SEMI_BOLD = Value(600)
-        val BOLD = Value(700)
-        val EXTRA_BOLD = Value(800)
-        val BLACK = Value(900)
-    }
+enum class FontWeight(val value: Int) {
+    THIN(100),
+    EXTRA_LIGHT(200),
+    LIGHT(300),
+    NORMAL(400),
+    MEDIUM(500),
+    SEMI_BOLD(600),
+    BOLD(700),
+    EXTRA_BOLD(800),
+    BLACK(900);
 }

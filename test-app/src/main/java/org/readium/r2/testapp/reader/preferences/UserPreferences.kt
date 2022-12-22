@@ -255,7 +255,7 @@ private fun ColumnScope.ReflowableUserPreferences(
     fontSize: RangePreference<Double>? = null,
     fontWeight: RangePreference<Double>? = null,
     hyphens: Preference<Boolean>? = null,
-    imageFilter: EnumPreference<ImageFilter>? = null,
+    imageFilter: EnumPreference<ImageFilter?>? = null,
     language: Preference<Language?>? = null,
     letterSpacing: RangePreference<Double>? = null,
     ligatures: Preference<Boolean>? = null,
@@ -367,9 +367,9 @@ private fun ColumnScope.ReflowableUserPreferences(
                 commit = commit
             ) { value ->
                 when (value) {
-                    ImageFilter.NONE -> "None"
                     ImageFilter.DARKEN -> "Darken"
                     ImageFilter.INVERT -> "Invert"
+                    null -> "None"
                 }
             }
         }

@@ -58,7 +58,6 @@ enum class ColumnCount {
 @ExperimentalReadiumApi
 @Serializable
 enum class ImageFilter {
-    @SerialName("none") NONE,
     @SerialName("darken") DARKEN,
     @SerialName("invert") INVERT;
 }
