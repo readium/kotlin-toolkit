@@ -383,3 +383,86 @@ val combinedPrefs = publicationPrefs + sharedPrefs + globalPrefs
 
 :warning: Some preferences are closely tied to a specific publication and should never be shared between multiple publications, such as the language. It is recommended that you store these preferences separately per book, which is what the suggested filters will do if you use them.
 
+## Appendix: Preference constraints
+
+### EPUB
+
+#### Reflowable vs fixed-layout
+
+EPUB comes in two very different flavors: **reflowable** which allows a lot of customization, and **fixed-layout** which is similar to a PDF or a comic book. Depending on the EPUB being rendered, the Navigator will ignore some of the preferences.
+
+| Setting              | Reflowable         | Fixed Layout       |
+|----------------------|--------------------|--------------------|
+| `backgroundColor`    | :white_check_mark: | :white_check_mark: |
+| `columnCount`        | :white_check_mark: |                    |
+| `fontFamily`         | :white_check_mark: |                    |
+| `fontSize`           | :white_check_mark: |                    |
+| `fontWeight`         | :white_check_mark: |                    |
+| `hyphens`            | :white_check_mark: |                    |
+| `imageFilter`        | :white_check_mark: |                    |
+| `language`           | :white_check_mark: | :white_check_mark: |
+| `letterSpacing`      | :white_check_mark: |                    |
+| `ligatures`          | :white_check_mark: |                    |
+| `lineHeight`         | :white_check_mark: |                    |
+| `pageMargins`        | :white_check_mark: |                    |
+| `paragraphIndent`    | :white_check_mark: |                    |
+| `paragraphSpacing`   | :white_check_mark: |                    |
+| `publisherStyles`    | :white_check_mark: |                    |
+| `readingProgression` | :white_check_mark: | :white_check_mark: |
+| `scroll`             | :white_check_mark: |                    |
+| `spread`             |                    | :white_check_mark: |
+| `textAlign`          | :white_check_mark: |                    |
+| `textColor`          | :white_check_mark: |                    |
+| `textNormalization`  | :white_check_mark: |                    |
+| `theme`              | :white_check_mark: |                    |
+| `typeScale`          | :white_check_mark: |                    |
+| `verticalText`       | :white_check_mark: |                    |
+| `wordSpacing`        | :white_check_mark: |                    |
+
+#### Publisher styles
+
+The following advanced preferences require `publisherStyles` to be explicitly set to `false`. Make sure you convey this in your user interface.
+
+* `hyphens`
+* `letterSpacing`
+* `ligatures`
+* `lineHeight`
+* `paragraphIndent`
+* `paragraphSpacing`
+* `textAlign`
+* `typeScale`
+* `wordSpacing`
+
+#### Scroll vs paginated
+
+The `columnCount` preference is available only when in paginated mode (`scroll = false`).
+
+#### Dark theme specific preferences
+
+The `imageFilter` preference is available only in dark mode (`theme = Theme.DARK`).
+
+#### Language specific preferences
+
+Some preferences are not available for all languages and reading progression.
+
+| Preference        | LTR                | RTL                | CJK |
+|-------------------|--------------------|--------------------|-----|
+| `paragraphIndent` | :white_check_mark: | :white_check_mark: |     |
+| `textAlign`       | :white_check_mark: | :white_check_mark: |     |
+| `letterSpacing`   | :white_check_mark: |                    |     |
+| `wordSpacing      | :white_check_mark: |                    |     |
+| `hyphens`         | :white_check_mark: |                    |     |
+| `ligatures`       |                    | :white_check_mark: |     |
+
+### PDF (PSPDFKit)
+
+#### Scroll vs paginated
+
+Some preferences are available only in scroll or paginated mode (`scroll = false`).
+
+| Preference        | Scroll             | Paginated          |
+|-------------------|--------------------|--------------------|
+| `offsetFirstPage` |                    | :white_check_mark: |
+| `spread`          |                    | :white_check_mark: |
+| `scrollAxis`      | :white_check_mark: |                    |
+
