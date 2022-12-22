@@ -19,8 +19,8 @@ import org.readium.r2.shared.util.Language
  * @param backgroundColor Default page background color.
  * @param columnCount Number of reflowable columns to display (one-page view or two-page spread).
  * @param fontFamily Default typeface for the text.
- * @param fontWeight Default boldness for the text.
  * @param fontSize Base text font size.
+ * @param fontWeight Default boldness for the text.
  * @param hyphens Enable hyphenation.
  * @param imageFilter Filter applied to images in dark theme.
  * @param language Language of the publication content.

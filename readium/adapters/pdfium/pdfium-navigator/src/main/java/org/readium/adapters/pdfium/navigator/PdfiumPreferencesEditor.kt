@@ -12,11 +12,11 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 
 /**
- * Interactive editor of [PdfiumPreferences].
+ * Editor for a set of [PdfiumPreferences].
  *
- * This can be used as a helper for a user preferences screen.
- *
- * @see PdfiumPreferences
+ * Use [PdfiumPreferencesEditor] to assist you in building a preferences user interface or modifying
+ * existing preferences. It includes rules for adjusting preferences, such as the supported values
+ * or ranges.
  */
 @ExperimentalReadiumApi
 class PdfiumPreferencesEditor internal constructor(
@@ -39,10 +39,16 @@ class PdfiumPreferencesEditor internal constructor(
     override val preferences: PdfiumPreferences
         get() = state.preferences
 
+    /**
+     * Reset all preferences.
+     */
     override fun clear() {
         updateValues { PdfiumPreferences() }
     }
 
+    /**
+     * Indicates how pages should be laid out within the viewport.
+     */
     val fit: EnumPreference<Fit> =
         EnumPreferenceDelegate(
             getValue = { preferences.fit },
@@ -52,6 +58,9 @@ class PdfiumPreferencesEditor internal constructor(
             supportedValues = listOf(Fit.CONTAIN, Fit.WIDTH),
         )
 
+    /**
+     * Space between pages in dp.
+     */
     val pageSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.pageSpacing },
@@ -63,6 +72,9 @@ class PdfiumPreferencesEditor internal constructor(
             valueFormatter = { "${it.format(1)} dp" },
         )
 
+    /**
+     * Direction of the horizontal progression across pages.
+     */
     val readingProgression: EnumPreference<ReadingProgression> =
         EnumPreferenceDelegate(
             getValue = { preferences.readingProgression },
@@ -72,6 +84,9 @@ class PdfiumPreferencesEditor internal constructor(
             supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL),
         )
 
+    /**
+     * Indicates the axis along which pages should be laid out in scroll mode.
+     */
     val scrollAxis: EnumPreference<Axis> =
         EnumPreferenceDelegate(
             getValue = { preferences.scrollAxis },

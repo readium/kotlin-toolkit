@@ -15,11 +15,11 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Language
 
 /**
- * Interactive editor of [EpubPreferences].
+ * Editor for a set of [EpubPreferences].
  *
- * This can be used as a view model for a user preferences screen.
- *
- * @see EpubPreferences
+ * Use [EpubPreferencesEditor] to assist you in building a preferences user interface or modifying
+ * existing preferences. It includes rules for adjusting preferences, such as the supported values
+ * or ranges.
  */
 @ExperimentalReadiumApi
 class EpubPreferencesEditor internal constructor(
@@ -44,10 +44,19 @@ class EpubPreferencesEditor internal constructor(
     override val preferences: EpubPreferences
         get() = state.preferences
 
+    /**
+     * Reset all preferences.
+     */
     override fun clear() {
         updateValues { EpubPreferences() }
     }
 
+    /**
+     * Default page background color.
+     *
+     * When unset, the current [theme] background color is effective.
+     * Only effective with fixed-layout publications.
+     */
     val backgroundColor: Preference<Color> =
         PreferenceDelegate(
             getValue = { preferences.backgroundColor },
@@ -56,6 +65,13 @@ class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(backgroundColor = value) } },
         )
 
+    /**
+     * Number of reflowable columns to display (one-page view or two-page spread).
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [scroll] is off
+     */
     val columnCount: EnumPreference<ColumnCount> =
         EnumPreferenceDelegate(
             getValue = { preferences.columnCount },
@@ -65,6 +81,11 @@ class EpubPreferencesEditor internal constructor(
             supportedValues = listOf(ColumnCount.AUTO, ColumnCount.ONE, ColumnCount.TWO),
         )
 
+    /**
+     * Default typeface for the text.
+     *
+     * Only effective with reflowable publications.
+     */
     val fontFamily: Preference<FontFamily?> =
         PreferenceDelegate(
             getValue = { preferences.fontFamily },
@@ -73,17 +94,13 @@ class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(fontFamily = value) } }
         )
 
-    val fontWeight: RangePreference<Double> =
-        RangePreferenceDelegate(
-            getValue = { preferences.fontWeight },
-            getEffectiveValue = { state.settings.fontWeight ?: 1.0 },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && preferences.fontWeight != null },
-            updateValue = { value -> updateValues { it.copy(fontWeight = value) } },
-            valueFormatter = percentFormatter(),
-            supportedRange = 0.0..2.5,
-            progressionStrategy = DoubleIncrement(0.25)
-        )
-
+    /**
+     * Base text font size as a percentage. Default to 100%.
+     *
+     * Note that allowing a font size that is too large could break the pagination.
+     *
+     * Only effective with reflowable publications.
+     */
     val fontSize: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.fontSize },
@@ -95,6 +112,33 @@ class EpubPreferencesEditor internal constructor(
             valueFormatter = percentFormatter(),
         )
 
+    /**
+     * Default boldness for the text as a percentage.
+     *
+     * If you want to change the boldness of all text, including headers, you can use this with
+     * [textNormalization].
+     *
+     * Only effective with reflowable publications.
+     */
+    val fontWeight: RangePreference<Double> =
+        RangePreferenceDelegate(
+            getValue = { preferences.fontWeight },
+            getEffectiveValue = { state.settings.fontWeight ?: 1.0 },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && preferences.fontWeight != null },
+            updateValue = { value -> updateValues { it.copy(fontWeight = value) } },
+            valueFormatter = percentFormatter(),
+            supportedRange = 0.0..2.5,
+            progressionStrategy = DoubleIncrement(0.25)
+        )
+
+    /**
+     * Enable hyphenation for latin languages.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [publisherStyles] is off
+     *  - the layout is LTR
+     */
     val hyphens: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.hyphens },
@@ -103,6 +147,13 @@ class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(hyphens = value) } },
         )
 
+    /**
+     * Filter applied to images in dark theme.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - the [theme] is set to [Theme.DARK]
+     */
     val imageFilter: EnumPreference<ImageFilter?> =
         EnumPreferenceDelegate(
             getValue = { preferences.imageFilter },
@@ -112,6 +163,11 @@ class EpubPreferencesEditor internal constructor(
             supportedValues = listOf(ImageFilter.DARKEN, ImageFilter.INVERT),
         )
 
+    /**
+     * Language of the publication content.
+     *
+     * This has an impact on the resolved layout (e.g. LTR, RTL).
+     */
     val language: Preference<Language?> =
         PreferenceDelegate(
             getValue = { preferences.language },
@@ -120,6 +176,14 @@ class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(language = value) } },
         )
 
+    /**
+     * Space between letters.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [publisherStyles] is off
+     *  - the layout is LTR
+     */
     val letterSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.letterSpacing },
@@ -131,6 +195,14 @@ class EpubPreferencesEditor internal constructor(
             valueFormatter = percentFormatter(),
         )
 
+    /**
+     * Enable ligatures in Arabic.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [publisherStyles] is off
+     *  - the layout is RTL
+     */
     val ligatures: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.ligatures },
@@ -139,6 +211,13 @@ class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(ligatures = value) } },
         )
 
+    /**
+     * Leading line height.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [publisherStyles] is off
+     */
     val lineHeight: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.lineHeight },
@@ -150,6 +229,11 @@ class EpubPreferencesEditor internal constructor(
             valueFormatter = { it.format(5) },
         )
 
+    /**
+     * Factor applied to horizontal margins. Default to 1.
+     *
+     * Only effective with reflowable publications.
+     */
     val pageMargins: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.pageMargins },
@@ -161,6 +245,14 @@ class EpubPreferencesEditor internal constructor(
             valueFormatter = { it.format(5) },
         )
 
+    /**
+     * Text indentation for paragraphs.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [publisherStyles] is off
+     *  - the layout is LTR or RTL
+     */
     val paragraphIndent: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.paragraphIndent },
@@ -172,6 +264,13 @@ class EpubPreferencesEditor internal constructor(
             valueFormatter = percentFormatter(),
         )
 
+    /**
+     * Vertical margins for paragraphs.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [publisherStyles] is off
+     */
     val paragraphSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.paragraphSpacing },
@@ -183,6 +282,12 @@ class EpubPreferencesEditor internal constructor(
             valueFormatter = percentFormatter(),
         )
 
+    /**
+     * Indicates whether the original publisher styles should be observed. Many advanced settings
+     * require this to be off.
+     *
+     * Only effective with reflowable publications.
+     */
     val publisherStyles: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.publisherStyles },
@@ -191,6 +296,11 @@ class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(publisherStyles = value) } },
         )
 
+    /**
+     * Direction of the reading progression across resources.
+     *
+     * This can be changed to influence directly the layout (e.g. LTR or RTL).
+     */
     val readingProgression: EnumPreference<ReadingProgression> =
         EnumPreferenceDelegate(
             getValue = { preferences.readingProgression },
@@ -200,6 +310,12 @@ class EpubPreferencesEditor internal constructor(
             supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL),
         )
 
+    /**
+     * Indicates if the overflow of resources should be handled using scrolling instead of synthetic
+     * pagination.
+     *
+     * Only effective with reflowable publications.
+     */
     val scroll: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.scroll },
@@ -208,6 +324,12 @@ class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(scroll = value) } },
         )
 
+    /**
+     * Indicates if the fixed-layout publication should be rendered with a synthetic spread
+     * (dual-page).
+     *
+     * Only effective with fixed-layout publications.
+     */
     val spread: EnumPreference<Spread> =
         EnumPreferenceDelegate(
             getValue = { preferences.spread },
@@ -217,6 +339,14 @@ class EpubPreferencesEditor internal constructor(
             supportedValues = listOf(Spread.NEVER, Spread.ALWAYS),
         )
 
+    /**
+     * Page text alignment.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [publisherStyles] is off
+     *  - the layout is LTR or RTL
+     */
     val textAlign: EnumPreference<TextAlign?> =
         EnumPreferenceDelegate(
             getValue = { preferences.textAlign },
@@ -226,6 +356,12 @@ class EpubPreferencesEditor internal constructor(
             supportedValues = listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY),
         )
 
+    /**
+     * Default page text color.
+     *
+     * When unset, the current [theme] text color is effective.
+     * Only effective with reflowable publications.
+     */
     val textColor: Preference<Color> =
         PreferenceDelegate(
             getValue = { preferences.textColor },
@@ -234,6 +370,11 @@ class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(textColor = value) } }
         )
 
+    /**
+     * Normalize text styles to increase accessibility.
+     *
+     * Only effective with reflowable publications.
+     */
     val textNormalization: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.textNormalization },
@@ -242,6 +383,11 @@ class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(textNormalization = value) } }
         )
 
+    /**
+     * Reader theme (light, dark, sepia).
+     *
+     * Only effective with reflowable publications.
+     */
     val theme: EnumPreference<Theme> =
         EnumPreferenceDelegate(
             getValue = { preferences.theme },
@@ -251,6 +397,13 @@ class EpubPreferencesEditor internal constructor(
             supportedValues = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA),
         )
 
+    /**
+     * Scale applied to all element font sizes.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [publisherStyles] is off
+     */
     val typeScale: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.typeScale },
@@ -262,6 +415,12 @@ class EpubPreferencesEditor internal constructor(
             progressionStrategy = StepsProgression(1.0, 1.067, 1.125, 1.2, 1.25, 1.333, 1.414, 1.5, 1.618),
         )
 
+    /**
+     * Indicates whether the text should be laid out vertically. This is used for example with CJK
+     * languages. This setting is automatically derived from the language if no preference is given.
+     *
+     * Only effective with reflowable publications.
+     */
     val verticalText: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.verticalText },
@@ -270,6 +429,13 @@ class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(verticalText = value) } },
         )
 
+    /**
+     * Space between words.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - the layout is LTR
+     */
     val wordSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.wordSpacing },

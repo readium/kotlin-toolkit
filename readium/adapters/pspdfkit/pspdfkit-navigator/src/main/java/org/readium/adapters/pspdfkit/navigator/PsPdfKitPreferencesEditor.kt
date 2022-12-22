@@ -23,11 +23,11 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 
 /**
- * Interactive editor of [PsPdfKitPreferences].
+ * Editor for a set of [PsPdfKitPreferences].
  *
- * This can be used as a view model for a user preferences screen.
- *
- * @see PsPdfKitPreferences
+ * Use [PsPdfKitPreferencesEditor] to assist you in building a preferences user interface or modifying
+ * existing preferences. It includes rules for adjusting preferences, such as the supported values
+ * or ranges.
  */
 @ExperimentalReadiumApi
 class PsPdfKitPreferencesEditor internal constructor(
@@ -50,10 +50,16 @@ class PsPdfKitPreferencesEditor internal constructor(
     override val preferences: PsPdfKitPreferences
         get() = state.preferences
 
+    /**
+     * Reset all preferences.
+     */
     override fun clear() {
         updateValues { PsPdfKitPreferences() }
     }
 
+    /**
+     * Indicates how pages should be laid out within the viewport.
+     */
     val fit: EnumPreference<Fit> =
         EnumPreferenceDelegate(
             getValue = { preferences.fit },
@@ -63,6 +69,13 @@ class PsPdfKitPreferencesEditor internal constructor(
             supportedValues = listOf(Fit.CONTAIN, Fit.WIDTH),
         )
 
+    /**
+     * Indicates if the first page should be displayed in its own spread.
+     *
+     * Only effective when:
+     *  - [scroll] is off
+     *  - [spread] are not disabled
+     */
     val offsetFirstPage: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.offsetFirstPage },
@@ -71,41 +84,9 @@ class PsPdfKitPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(offsetFirstPage = value) } },
         )
 
-    val readingProgression: EnumPreference<ReadingProgression> =
-        EnumPreferenceDelegate(
-            getValue = { preferences.readingProgression },
-            getEffectiveValue = { state.settings.readingProgression },
-            getIsEffective = { true },
-            updateValue = { value -> updateValues { it.copy(readingProgression = value) } },
-            supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL),
-        )
-
-    val scroll: Preference<Boolean> =
-        PreferenceDelegate(
-            getValue = { preferences.scroll },
-            getEffectiveValue = { state.settings.scroll },
-            getIsEffective = { true },
-            updateValue = { value -> updateValues { it.copy(scroll = value) } },
-        )
-
-    val scrollAxis: EnumPreference<Axis> =
-        EnumPreferenceDelegate(
-            getValue = { preferences.scrollAxis },
-            getEffectiveValue = { state.settings.scrollAxis },
-            getIsEffective = { state.settings.scroll },
-            updateValue = { value -> updateValues { it.copy(scrollAxis = value) } },
-            supportedValues = listOf(Axis.VERTICAL, Axis.HORIZONTAL),
-        )
-
-    val spread: EnumPreference<Spread> =
-        EnumPreferenceDelegate(
-            getValue = { preferences.spread },
-            getEffectiveValue = { state.settings.spread },
-            getIsEffective = { !state.settings.scroll },
-            updateValue = { value -> updateValues { it.copy(spread = value) } },
-            supportedValues = listOf(Spread.AUTO, Spread.NEVER, Spread.ALWAYS),
-        )
-
+    /**
+     * Space between pages in dp.
+     */
     val pageSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.pageSpacing },
@@ -115,6 +96,57 @@ class PsPdfKitPreferencesEditor internal constructor(
             supportedRange = 0.0..50.0,
             progressionStrategy = DoubleIncrement(5.0),
             valueFormatter = { "${it.format(1)} dp" },
+        )
+
+    /**
+     * Direction of the horizontal progression across pages.
+     */
+    val readingProgression: EnumPreference<ReadingProgression> =
+        EnumPreferenceDelegate(
+            getValue = { preferences.readingProgression },
+            getEffectiveValue = { state.settings.readingProgression },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(readingProgression = value) } },
+            supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL),
+        )
+
+    /**
+     * Indicates if pages should be handled using scrolling instead of pagination.
+     */
+    val scroll: Preference<Boolean> =
+        PreferenceDelegate(
+            getValue = { preferences.scroll },
+            getEffectiveValue = { state.settings.scroll },
+            getIsEffective = { true },
+            updateValue = { value -> updateValues { it.copy(scroll = value) } },
+        )
+
+    /**
+     * Indicates the axis along which pages should be laid out in scroll mode.
+     *
+     * Only effective when [scroll] is on.
+     */
+    val scrollAxis: EnumPreference<Axis> =
+        EnumPreferenceDelegate(
+            getValue = { preferences.scrollAxis },
+            getEffectiveValue = { state.settings.scrollAxis },
+            getIsEffective = { state.settings.scroll },
+            updateValue = { value -> updateValues { it.copy(scrollAxis = value) } },
+            supportedValues = listOf(Axis.VERTICAL, Axis.HORIZONTAL),
+        )
+
+    /**
+     * Indicates if the publication should be rendered with a synthetic spread (dual-page).
+     *
+     * Only effective when [scroll] is off.
+     */
+    val spread: EnumPreference<Spread> =
+        EnumPreferenceDelegate(
+            getValue = { preferences.spread },
+            getEffectiveValue = { state.settings.spread },
+            getIsEffective = { !state.settings.scroll },
+            updateValue = { value -> updateValues { it.copy(spread = value) } },
+            supportedValues = listOf(Spread.AUTO, Spread.NEVER, Spread.ALWAYS),
         )
 
     private fun updateValues(updater: (PsPdfKitPreferences) -> PsPdfKitPreferences) {
