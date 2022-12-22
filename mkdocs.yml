@@ -45,7 +45,7 @@ nav:
   - Home: index.md
   - Migration Guide: migration-guide.md
   - User Guides:
-      - Navigator settings: guides/navigator-settings.md
+      - Navigator preferences: guides/navigator-preferences.md
       - EPUB font families: guides/epub-fonts.md
       - PDF support: guides/pdf.md
       - Text-to-speech: guides/tts.md
