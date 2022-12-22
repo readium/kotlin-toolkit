@@ -6,11 +6,11 @@ Take a look at the [migration guide](../migration-guide.md) if you are already u
 
 ## Overview
 
-A few Readium components – such as the Navigator – support dynamic configuration through the `Configurable` interface.
+The Readium Navigator can be configured dynamically, as it implements the `Configurable` interface.
 
-The application cannot explicitly set the Navigator settings. Instead, you can submit a set of `Preferences` to the Navigator (`Configurable`) which will in turn recompute its settings and refresh the presentation.
+You cannot directly overwrite the Navigator settings. Instead, you submit a set of `Preferences` to the Navigator, which will then recalculate its settings and update the presentation.
 
-For a concrete example: "font size" is a **setting**, the application can submit the font size value `150%` which is a **preference**.
+For instance: "font size" is a **setting**, and the application can submit the font size value `150%` as a **preference**.
 
 <img src="assets/settings-flow.svg">
 
@@ -18,80 +18,70 @@ For a concrete example: "font size" is a **setting**, the application can submit
 // 1. Create a set of preferences.
 val preferences = EpubPreferences(
     fontFamily = FontFamily.SERIF,
-    fontSize = 2,
+    fontSize = 2.0,
     publisherStyles = false
 )
 
-// 2. Submit the preferences, the Navigator will update the presentation and its settings. 
+// 2. Submit the preferences, the Navigator will update its settings and the presentation.
 navigator.submitPreferences(preferences)
 ```
-In addition, Readium provides a `PreferencesEditor` for each `Configurable` navigator which enables you to easily build a user settings interface.
+
+### Editing preferences
+
+To assist you in building a preferences user interface or modifying existing preferences, navigators can offer a `PreferencesEditor`. Each implementation includes rules for adjusting preferences, such as the supported values or ranges.
 
 ```kotlin
-// 1. Create a preferences editor
-val preferencesEditor = navigatorFactory.createPreferencesEditor(initialPreferences)
+// 1. Create a preferences editor.
+val editor = EpubNavigatorFactory(publication).createPreferencesEditor(preferences)
     
-// 2. Let the user update preferences through the preferences editor
-preferencesEditor.apply {
+// 2. Modify the preferences through the editor.
+editor.apply {
     fontFamily.set(FontFamily.SERIF)
     fontSize.increment()
     publisherStyles.toggle()
 }
 
-// 3. Submit the updated preferences
-navigator.submitPreferences(preferencesEditor.preferences)
+// 3. Submit the edited preferences
+navigator.submitPreferences(editor.preferences)
 ```
 
-### Preferences Editors
+### Preferences are low-level
 
-The `PreferencesEditor` object is unique for each Navigator implementation and provides helpers to deal with each specific preference. Each `Preference` property represents a single configurable property of the Navigator, such as the font size or the theme. It provides access to the current value of the preference, the value that the navigator will compute as the corresponding setting, as well as additional metadata and constraints depending on the preference type.
+Preferences are low-level technical properties. While some of them can be exposed directly to the user, such as the font size, others should not be displayed as-is.
 
-Here are some of the available preference types:
+For instance, in EPUB, we can simulate two pages side by side using the `columnCount` (`auto`, `1`, `2`) property for reflowable resources, and the `spread` (`auto`, `never`, `always`) property for fixed-layout publications. Rather than displaying both of these settings with all of their possible values in the user interface, you might prefer to show a single switch button to enable a dual-page mode, which will set both settings appropriately.
 
-* `TogglePreference` - a simple boolean preference, e.g. whether or not the publisher styles are enabled.
-* `RangePreference<V>` - a preference for numbers constrained in a range, e.g. the page margins as a `RangeSetting<Int>` could range from 0px to 200px.
-* `EnumPreference<V>` - a preference whose value is a member of the enum `V`, e.g. the theme (`light`, `dark`, `sepia`) or the font family.
+### Inactive settings
 
-#### `Preferences` are low-level
+A setting may be inactive if its activation conditions are not met in a set of preferences. The Navigator will ignore inactive settings when updating its presentation. For example, with the EPUB navigator, the word spacing setting requires the publisher styles to be disabled in order to take effect.
 
-The `Preferences` objects are technical low-level properties. While some of them can be directly exposed to the user, such as the font size, other preferences should not be displayed as-is.
-
-For example in EPUB, we simulate two pages side by side with `columnCount` (`auto`, `1`, `2`) for reflowable resources and `spread` (`auto`, `never`, `always`) for a fixed layout publication. Instead of showing both settings with all their possible values in the user interface, you might prefer showing a single switch button to enable a dual-page mode which will set both settings appropriately.
-
-### Preferences
-
-The `Preferences` object holds the values which should be preferred by the Navigator when computing its `Settings`. Preferences can be combined by the app from different sources:
-
-* Static app defaults.
-* User preferences restored from JSON.
-* User preferences interface.
-
-#### Inactive settings
-
-A setting can be inactive if its activation conditions are not met in a set of preferences. The Navigator will ignore inactive settings when refreshing its presentation. For instance with the EPUB navigator, the word spacing setting requires the publisher styles to be disabled to take effect.
-
-You can check if a setting is effective with:
+You can check if a setting is effective for a set of preferences using the `PreferencesEditor`:
 
 ```kotlin
-preference.isEffective
+val editor = EpubNavigatorFactory(publication)
+    .createPreferencesEditor(preferences)
+
+editor.wordSpacing.isEffective
 ```
 
 ## Setting the initial Navigator preferences and app defaults
 
-When opening a publication, you want to apply the user preferences right away. You can do that by providing them to the Navigator constructor. The API depends on each Navigator implementation, but looks like this:
+When opening a publication, you can immediately apply the user preferences by providing them to the Navigator constructor. The API for doing this varies depending on the Navigator implementation, but generally looks like this:
 
 ```kotlin
 val navigatorFactory = EpubNavigatorFactory(
     publication = publication,
     configuration = EpubNavigatorFactory.Configuration(
-        defaults = EpubDefaults(language="fr")
+        defaults = EpubDefaults(
+            pageMargins = 1.5,
+            scroll = true
+        )
     )
 )
 
 navigatorFactory.createFragmentFactory(
-    ...,
     initialPreferences = EpubPreferences(
-        scroll = true
+        language = "fr"
     )
 )
 ```
@@ -100,29 +90,25 @@ The `defaults` are used as fallback values when the default Navigator settings a
 
 ## Build a user settings interface
 
-:question: The following examples are using [Jetpack Compose](https://developer.android.com/jetpack/compose), but could be implemented with regular Android views.
+:question: The following examples use [Jetpack Compose](https://developer.android.com/jetpack/compose), but could be implemented using regular Android views as well.
 
-You can use the `PreferencesEditor` API to build a user settings interface dynamically. As this API is agnostic to the type of publication (excepted the editor itself), you can reuse parts of the user settings screen across Navigator implementations or media types.
+### `PreferencesEditor`
 
-For example, you could group the user preferences per nature of publications:
+Although you could create and modify `Preferences` objects directly before submitting them to the Navigator, a `PreferenceEditor` can assist you by providing helpers for dealing with each preference type when building the user interface.
 
-* `ReflowableUserPreferences` for a visual publication with adjustable fonts and dimensions, such as a reflowable EPUB, HTML document or PDF with reflow mode enabled.
-* `FixedLayoutUserPreferences` for a visual publication with a fixed layout, such as FXL EPUB, PDF or comic books.
-* `PlaybackUserPreferences` for an audiobook, text-to-speech or EPUB media overlays preferences.
+`PreferencesEditor` implementations are specific to each Navigator, but they all provide `Preference<T>` properties for every setting (e.g. theme or font size). 
 
-### Stateless `UserSettings` composable
+### Stateless `UserPreferences` composable
 
-You can switch over the `PreferencesEditor` type to decide on the best kind of user preferences screen for it.
+You can use the `PreferencesEditor` type to determine which (media type agnostic) view to create.
 
 ```kotlin
 @Composable
-fun <P: Configurable.Preferences, E: PreferencesEditor<P>> UserSettings(
-    editor: E,
+fun <P: Configurable.Preferences> UserPreferences(
+    editor: PreferencesEditor<P>,
     commit: () -> Unit
 ) {
     Column {
-        Text("User settings")
-        
         Button(
             onClick = {
                 editor.clear()
@@ -132,49 +118,58 @@ fun <P: Configurable.Preferences, E: PreferencesEditor<P>> UserSettings(
             Text("Reset")
         }
 
-        Divider()
-
         when (editor) {
+            is PsPdfKitPreferencesEditor ->
+                FixedLayoutUserPreferences(
+                    commit = commit,
+                    scroll = editor.scroll,
+                    fit = editor.fit,
+                    pageSpacing = editor.pageSpacing,
+                    ...
+                )
             is EpubPreferencesEditor ->
                 ReflowableUserPreferences(
-                    publisherStyles = editor.publisherStyles,
-                    fontSize = editor.fontSize,
-                    fontFamily = editor.fontFamily,
                     commit = commit,
+                    ...
                 )
         }
     }
 }
 ```
 
-The `commit` parameter is a closure used to save the edited preferences to the data store.
+The `commit` parameter is a closure used to save the edited preferences to the data store, before submitting them to the Navigator.
 
-:question: The individual `EpubPreferences`' `Preference` properties are forwarded to `ReflowableUserPreferences` to be able to reuse it with other reflowable publication types.
+:question: The individual `PsPdfKitPreferencesEditor` properties are passed to `FixedLayoutUserPreferences` to that it can be reused with other fixed-layout publication types, such as FXL EPUB or comic books.
 
-### User settings composable for reflowable publications
+### User settings composable for fixed-layout publications
 
-This stateless composable displays the actual preferences for a reflowable publication. The `Preference` parameters are nullable as they might not be available at all times or for all media types. It delegates the rendering of individual preferences to specific composables.
+This stateless composable displays the actual preferences for a fixed-layout publication. The `Preference` parameters are nullable as they might not be available at all times or for all media types. It delegates the rendering of individual preferences to more specific composables.
 
 ```kotlin
 @Composable
-fun ReflowableUserPreferences(
-    publisherStyles: Preference<Boolean>? = null,
-    fontSize: RangePreference<Double>? = null,
-    fontFamily: EnumPreference<FontFamily?>? = null,
-    commit: () -> Unit
+fun FixedLayoutUserPreferences(
+    commit: () -> Unit,
+    scroll: Preference<Boolean>? = null,
+    fit: EnumPreference<Fit>? = null,
+    pageSpacing: RangePreference<Double>? = null
 ) {
-    if (publisherStyles != null) {
-        SwitchItem("Publisher styles", publisherStyles, commit)
+    if (scroll != null) {
+        SwitchItem("Scroll mode", scroll, commit)
     }
 
-    if (fontSize != null) {
-        StepperItem("Font size", fontSize, commit)
-    }
-
-    if (font != null) {
-        MenuItem("Font", fontFamily, commit) { fontFamily ->
-            fontFamily.name
+    if (fit != null) {
+        MenuItem("Page fit", fit, commit) { value ->
+            when (value) {
+                Fit.WIDTH -> "Width"
+                Fit.HEIGHT -> "Height"
+                Fit.CONTAIN -> "Width and height"
+                Fit.COVER -> "Cover"
+            }
         }
+    }
+
+    if (pageSpacing != null) {
+        StepperItem("Page spacing", pageSpacing, commit)
     }
 }
 ```
@@ -210,22 +205,29 @@ fun SwitchItem(
 }
 ```
 
-This composable takes advantage of the helpers in `Preference<Boolean>` to set the preference in two different ways:
+This composable uses the helpers in `Preference<Boolean>` to edit the preference in two different ways:
 
-* `toggle()` will invert the current preference when tapping on the whole list item.
+* `toggle()` will reverse the current preference when tapping on the entire list item.
 * `set(checked)` sets an explicit value provided by the `Switch`'s `onCheckedChange` callback.
 
-:point_up: Note that the current state for `Switch` is derived from the selected preference first, and the actual setting value as a fallback (`checked = preference.value ?: preference.effectiveValue`). We deemed more important to display the user selected value first, even if it is not applied yet in the Navigator. Your opinion may differ, in which case you can use `checked = preference.effectiveValue`.
+### `value` vs `effectiveValue`, which one to use?
 
-### Composable for a `RangePreference<V>`
+In the previous example, you may have noticed the use of `preference.value ?: preference.effectiveValue` for the current value.
 
-A `RangePreference<V>` can be represented as a stepper component with decrement and increment buttons.
+* `value` holds the user-selected preference, which may be `null`.
+* `effectiveValue` is the setting value that will actually be used by the Navigator once the preferences are submitted. It may be different from the user-selected value if it is incompatible or invalid.
+
+This is a common pattern with this API because it is less confusing to display the user-selected value, even if it will not actually be used by the Navigator.
+
+### Composable for a `RangePreference<T>`
+
+A `RangePreference<T>` can be represented as a stepper component with decrement and increment buttons.
 
 ```kotlin
 @Composable
-fun  <V: Comparable<V>> StepperItem(
+fun  <T: Comparable<T>> StepperItem(
     title: String,
-    preference: RangePreference<V>,
+    preference: RangePreference<T>,
     commit: () -> Unit,
 ) {
     ListItem(
@@ -238,7 +240,7 @@ fun  <V: Comparable<V>> StepperItem(
                         commit()
                     }
                 ) {
-                    Icon(Icons.Default.Remove, contentDescription = "Less")
+                    Icon(Icons.Default.Remove, contentDescription = "Decrease")
                 }
 
                 val currentValue = preferences.value ?: preference.effectiveValue
@@ -250,7 +252,7 @@ fun  <V: Comparable<V>> StepperItem(
                         commit()
                     }
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "More")
+                    Icon(Icons.Default.Add, contentDescription = "Increase")
                 }
             }
         },
@@ -258,18 +260,18 @@ fun  <V: Comparable<V>> StepperItem(
 }
 ```
 
-This composable uses the `increment()` and `decrement()` range helpers of `RangePreference`, but you could also set a value manually.
+This composable uses the `increment()` and `decrement()` range helpers of `RangePreference`, but it is also possible to set a value manually.
 
-Between the two buttons, we display the current value using the `RangeSetting<V>.formatValue()` helper. This will automatically format the value to a human-readable string, such as a percentage or a value with units (e.g. 30px).
+Between the two buttons, we display the current value using the `RangeSetting<T>.formatValue()` helper. This will automatically format the value to a human-readable string, such as a percentage or a value with units (e.g. 30px).
 
-### Composable for an `EnumPreference<V>`
+### Composable for an `EnumPreference<T>`
 
-An enum can be displayed with various components, such as:
+An `EnumPreference<T>` is a preference accepting a closed set of values. It can be displayed using various UI components, such as:
 
 * a dropdown menu for a large enum
 * [segmented buttons](https://m3.material.io/components/segmented-buttons/overview) for a small one
 
-In this example, we chose a dropdown menu built using the `preference.supportedValues`, which returns the allowed enum members.
+In the following example, we chose a dropdown menu built with `preference.supportedValues`, which returns the allowed enum members.
 
 ```kotlin
 @Composable
@@ -326,40 +328,58 @@ fun DropdownMenuButton(
 
 ## Save and restore the user preferences
 
-Having a user settings screen is moot if you cannot save and restore the selected preferences for future sessions. Each navigator comes with a JSON serialization helper that you can use or not.
+Having a user settings screen is not useful if you cannot save and restore the selected preferences for future sessions. Each navigator includes a JSON serialization helper that you can choose to use or not.
 
 ```kotlin
-val epubPreferencesSerializer = EpubPreferencesSerializer()
+val serializer = EpubPreferencesSerializer()
 
-val jsonString = epubPreferencesSerializer.serialize(preferences)
+val jsonString = serializer.serialize(preferences)
 ```
 
 When you are ready to restore the user preferences, construct a new `Preferences` object from the JSON string.
 
 ```kotlin
-val preferences = epubPreferencesSerializer.deserialize(jsonString)
+val preferences = serializer.deserialize(jsonString)
 ```
 
 In the Test App, `UserPreferencesViewModel` delegates the preferences state hoisting and persistence to a `PreferencesManager`, which acts as a single source of truth.
 
 ### Splitting and merging preferences
 
-How you store user preferences has an impact on the available features. You could have, for example:
+The way you store user preferences can affect the available features. You could have, for example:
 
-* A different unique set of preferences for each publication.
+* A unique set of preferences for each publication.
 * Preferences shared between publications with the same profile or media type (EPUB, PDF, etc.).
 * Global preferences shared with all publications (e.g. theme).
-* Several user setting profiles/themes that the user can switch to and modify independently.
+* Several user setting profiles/themes that the user can switch between and modify independently.
 * Some settings that are not stored as JSON and will need to be reconstructed (e.g. the publication language).
 
-To help you to deal with this, the toolkit provides for each navigator suggested filters that you can use or not.
-You can then combine several sets of preferences with the `+` operator.
+To assist you, the toolkit provides suggested filters for each navigator. You can combine preference filters with the `+` operator.
 
 ```kotlin
-val bookPrefs = EpubPublicationPreferencesFilter.filter(preferences)
-val profilePrefs = EpubSharedPreferencesFilter.filter(preferences)
+// The suggested filter for the preferences that should be tied to a
+// publication and not shared:
+val publicationFilter = EpubPublicationPreferencesFilter
 
-val combinedPrefs = profilePrefs + bookPrefs
+// The suggested filter for the preferences that will be shared between
+// publications of the same type.
+// Note that in this example, we combine it with an inline custom filter
+// to remove the `theme` preference which will be stored globally.
+val sharedFilter = EpubSharedPreferencesFilter
+    + { it.copy(theme = null) }
+
+// A custom filter to extract the settings which be stored globally.
+val globalFilter = PreferencesFilter<EpubPreferences> {
+    EpubPreferences(theme = it.theme)
+}
+
+val publicationPrefs = preferencesFilter.filter(preferences)
+val sharedPrefs = sharedFilter.filter(preferences)
+val globalPrefs = globalFilter.filter(preferences)
+
+// You can reconstruct the original preferences by combining the filtered ones.
+val combinedPrefs = publicationPrefs + sharedPrefs + globalPrefs
 ```
 
-:warning: Some preferences are really tied to a particular publication and should never be shared between several publications, such as the language. It's recommended that you store these preferences separately per book and that's what the suggested filters would make you do if you use them.
+:warning: Some preferences are closely tied to a specific publication and should never be shared between multiple publications, such as the language. It is recommended that you store these preferences separately per book, which is what the suggested filters will do if you use them.
+
