@@ -58,8 +58,6 @@ publishing {
 }
 
 dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-
     api(project(":readium:readium-shared"))
 
     implementation(libs.androidx.appcompat)

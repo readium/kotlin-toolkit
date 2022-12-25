@@ -287,11 +287,11 @@ export function setCSSProperties(properties) {
 
 // For setting user setting.
 export function setProperty(key, value) {
-  if (value === null) {
+  if (value === null || value === "") {
     removeProperty(key);
   } else {
     var root = document.documentElement;
-    root.style.setProperty(key, value);
+    root.style.setProperty(key, value, "important");
   }
 }
 

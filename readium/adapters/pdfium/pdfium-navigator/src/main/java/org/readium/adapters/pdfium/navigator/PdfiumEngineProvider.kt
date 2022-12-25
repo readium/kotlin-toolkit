@@ -17,16 +17,13 @@ import org.readium.r2.shared.publication.Publication
 /**
  * Main component to use the PDF navigator with the PDFium adapter.
  *
- * Provide [PdfiumDefaults] and [PdfiumPreferencesEditor.Configuration] to customize
- * the default values that will be used by the navigator for some preferences and the
- * way that preferences will be allowed to be modified through preferences editors created
- * by this component.
+ * Provide [PdfiumDefaults] to customize the default values that will be used by
+ * the navigator for some preferences.
  */
 @ExperimentalReadiumApi
 class PdfiumEngineProvider(
     private val listener: PdfiumDocumentFragment.Listener? = null,
-    private val defaults: PdfiumDefaults = PdfiumDefaults(),
-    private val preferencesEditorConfiguration: PdfiumPreferencesEditor.Configuration = PdfiumPreferencesEditor.Configuration()
+    private val defaults: PdfiumDefaults = PdfiumDefaults()
 ) : PdfEngineProvider<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor> {
 
     override suspend fun createDocumentFragment(input: PdfDocumentFragmentInput<PdfiumSettings>) =
@@ -58,8 +55,7 @@ class PdfiumEngineProvider(
         PdfiumPreferencesEditor(
             initialPreferences,
             publication.metadata,
-            defaults,
-            preferencesEditorConfiguration
+            defaults
         )
 
     override fun createEmptyPreferences(): PdfiumPreferences =

@@ -57,7 +57,7 @@ internal class PsPdfKitSettingsResolver(
         val pageSpacing: Double =
             preferences.pageSpacing
                 ?: defaults.pageSpacing
-                ?: 15.0
+                ?: 16.0
 
         return PsPdfKitSettings(
             fit = fit,

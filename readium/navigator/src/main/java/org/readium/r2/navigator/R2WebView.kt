@@ -186,8 +186,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
 
     private var mScrollState = SCROLL_STATE_IDLE
 
-    internal var useLegacySettings = false
-
     private fun initWebPager() {
         setWillNotDraw(false)
         descendantFocusability = ViewGroup.FOCUS_AFTER_DESCENDANTS

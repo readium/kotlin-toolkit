@@ -593,18 +593,22 @@ class ReadiumCssTest {
     @Test
     fun `Inject font declarations`() {
         val sut = ReadiumCss(
-            fontFaces = listOf(
-                buildFontFaceDeclaration("Libre Franklin") {
-                    addSource("fonts/LibreFranklin.otf")
+            fontFamilyDeclarations = listOf(
+                buildFontFamilyDeclaration("Libre Franklin", alternates = emptyList()) {
+                    addFontFace {
+                        addSource("fonts/LibreFranklin.otf")
+                    }
                 },
-                buildFontFaceDeclaration("OpenDyslexic") {
-                    addSource("fonts/OpenDyslexic.otf")
+                buildFontFamilyDeclaration("Open Dyslexic", alternates = emptyList()) {
+                    addFontFace {
+                        addSource("fonts/OpenDyslexic.otf")
+                    }
                 }
             ),
             googleFonts = listOf(
-                FontFamily.ROBOTO,
-                FontFamily.LITERATA,
-                FontFamily.PT_SERIF,
+                FontFamily.OPEN_DYSLEXIC,
+                FontFamily.SANS_SERIF,
+                FontFamily.SERIF,
             ),
             assetsBaseHref = "/assets/"
         )
@@ -625,9 +629,9 @@ class ReadiumCssTest {
                     
                 <link rel="stylesheet" type="text/css" href="/assets/readium/readium-css/ReadiumCSS-after.css"/>
                                     <style type="text/css">
-                                    @import url('https://fonts.googleapis.com/css?family=Roboto%7CLiterata%7CPT%20Serif');
+                                    @import url('https://fonts.googleapis.com/css?family=OpenDyslexic%7Csans-serif%7Cserif');
                 @font-face { font-family: "Libre Franklin"; src: url("/assets/fonts/LibreFranklin.otf"); }
-                @font-face { font-family: "OpenDyslexic"; src: url("/assets/fonts/OpenDyslexic.otf"); }
+                @font-face { font-family: "Open Dyslexic"; src: url("/assets/fonts/OpenDyslexic.otf"); }
                                     </style>
                 </head>
                     <body dir="ltr"></body>

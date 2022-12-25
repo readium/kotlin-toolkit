@@ -58,19 +58,13 @@ publishing {
 }
 
 dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-
     api(project(":readium:readium-shared"))
+
+    api(files("libs/nanohttpd-2.3.2.jar", "libs/nanohttpd-nanolets-2.3.2.jar"))
 
     implementation(libs.androidx.appcompat)
     @Suppress("GradleDependency")
     implementation(libs.timber)
-    api("com.github.readium.nanohttpd:nanohttpd:master-SNAPSHOT") {
-        exclude(group = "org.parboiled")
-    }
-    api("com.github.readium.nanohttpd:nanohttpd-nanolets:master-SNAPSHOT") {
-        exclude(group = "org.parboiled")
-    }
     // AM NOTE: conflicting support libraries, excluding these
     implementation("com.mcxiaoke.koi:core:0.5.5") {
         exclude(module = "support-v4")

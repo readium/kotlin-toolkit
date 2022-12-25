@@ -59,8 +59,6 @@ publishing {
 }
 
 dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.browser)
     implementation("com.github.kittinunf.fuel:fuel-android:2.3.1")

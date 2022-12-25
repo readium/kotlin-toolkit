@@ -18,7 +18,8 @@ object PsPdfKitSharedPreferencesFilter : PreferencesFilter<PsPdfKitPreferences> 
     override fun filter(preferences: PsPdfKitPreferences): PsPdfKitPreferences =
         preferences.copy(
             readingProgression = null,
-            offsetFirstPage = null
+            offsetFirstPage = null,
+            spread = null,
         )
 }
 
@@ -31,6 +32,7 @@ object PsPdfKitPublicationPreferencesFilter : PreferencesFilter<PsPdfKitPreferen
     override fun filter(preferences: PsPdfKitPreferences): PsPdfKitPreferences =
         PsPdfKitPreferences(
             readingProgression = preferences.readingProgression,
-            offsetFirstPage = preferences.offsetFirstPage
+            offsetFirstPage = preferences.offsetFirstPage,
+            spread = preferences.spread,
         )
 }
