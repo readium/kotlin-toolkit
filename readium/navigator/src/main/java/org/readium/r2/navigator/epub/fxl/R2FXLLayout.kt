@@ -16,16 +16,20 @@ import android.graphics.Matrix
 import android.graphics.PointF
 import android.graphics.RectF
 import android.util.AttributeSet
-import android.view.*
+import android.view.GestureDetector
+import android.view.MotionEvent
+import android.view.ScaleGestureDetector
+import android.view.View
+import android.view.ViewTreeObserver
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.Interpolator
 import android.widget.FrameLayout
 import androidx.core.view.ViewCompat
-import java.util.*
-import kotlin.math.abs
+import java.util.Locale
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
+import org.readium.r2.shared.extensions.equalsDelta
 
 class R2FXLLayout : FrameLayout {
 
@@ -93,9 +97,6 @@ class R2FXLLayout : FrameLayout {
     private var onTapListeners: MutableList<OnTapListener>? = null
     private var mOnDoubleTapListeners: MutableList<OnDoubleTapListener>? = null
     private var onLongTapListeners: MutableList<OnLongTapListener>? = null
-
-    private fun Float.equalsDelta(other: Float, delta: Float = 0.001f) =
-        this == other || abs(this - other) < delta
 
     var scale: Float
         get() = getMatrixValue(scaleMatrix, Matrix.MSCALE_X)

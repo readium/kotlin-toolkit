@@ -71,12 +71,17 @@ fun <T> Flow<T>.throttleLatest(period: Duration): Flow<T> =
 suspend fun <P> Flow<P>.stateInFirst(scope: CoroutineScope, sharingStarted: SharingStarted) =
     stateIn(scope, sharingStarted, first())
 
-fun <T1, T2, R> combine(
-    scope: CoroutineScope,
-    sharingStarted: SharingStarted,
-    flow: StateFlow<T1>,
-    flow2: StateFlow<T2>,
-    transform: (T1, T2) -> R
-): StateFlow<R> =
-    combine(flow, flow2, transform)
-        .stateIn(scope, sharingStarted, transform(flow.value, flow2.value))
+/**
+ * Transforms the value of a [StateFlow] and stores it in a new [StateFlow] using the given
+ * [coroutineScope].
+ */
+fun <T, M> StateFlow<T>.mapStateIn(
+    coroutineScope: CoroutineScope,
+    transform: (value: T) -> M
+): StateFlow<M> =
+    map { transform(it) }
+        .stateIn(
+            coroutineScope,
+            SharingStarted.Eagerly,
+            transform(value)
+        )

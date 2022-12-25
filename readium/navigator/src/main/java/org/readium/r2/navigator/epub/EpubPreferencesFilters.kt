@@ -19,7 +19,8 @@ object EpubSharedPreferencesFilter : PreferencesFilter<EpubPreferences> {
         preferences.copy(
             readingProgression = null,
             language = null,
-            verticalText = null
+            spread = null,
+            verticalText = null,
         )
 }
 
@@ -33,6 +34,7 @@ object EpubPublicationPreferencesFilter : PreferencesFilter<EpubPreferences> {
         EpubPreferences(
             readingProgression = preferences.readingProgression,
             language = preferences.language,
-            verticalText = preferences.verticalText
+            spread = preferences.spread,
+            verticalText = preferences.verticalText,
         )
 }

@@ -19,7 +19,7 @@ internal data class ReadiumCss(
     val layout: Layout = Layout(language = null, Layout.Stylesheets.Default, ReadingProgression.LTR),
     val rsProperties: RsProperties = RsProperties(),
     val userProperties: UserProperties = UserProperties(),
-    val fontFaces: List<FontFaceDeclaration> = emptyList(),
+    val fontFamilyDeclarations: List<FontFamilyDeclaration> = emptyList(),
     val googleFonts: List<FontFamily> = emptyList(),
     val assetsBaseHref: String
 ) {
@@ -53,6 +53,8 @@ internal data class ReadiumCss(
         content.insert(
             headBeforeIndex,
             "\n" + buildList {
+                addAll(fontsInjectableLinks)
+
                 add(stylesheetLink(stylesheetsFolder + "ReadiumCSS-before.css"))
 
                 // Fix Readium CSS issue with the positioning of <audio> elements.
@@ -84,11 +86,11 @@ internal data class ReadiumCss(
             "\n" + buildList {
                 add(stylesheetLink(stylesheetsFolder + "ReadiumCSS-after.css"))
 
-                if (fontInjectables.isNotEmpty()) {
+                if (fontsInjectableCss.isNotEmpty()) {
                     add(
                         """
                     <style type="text/css">
-                    ${fontInjectables.joinToString("\n")}
+                    ${fontsInjectableCss.joinToString("\n")}
                     </style>
                         """.trimIndent()
                     )
@@ -100,15 +102,13 @@ internal data class ReadiumCss(
     /**
      * Generates the font face declarations from the declared font families.
      */
-    private val fontInjectables: List<String> by lazy {
-        val urlNormalizer: (String) -> String = { url ->
-            assetsBaseHref.removeSuffix("/") + "/" + url.removePrefix("/")
-        }
-
+    private val fontsInjectableCss: List<String> by lazy {
         buildList {
-            for (fontFace in fontFaces) {
-                add(fontFace.toCss(urlNormalizer))
-            }
+            addAll(
+                fontFamilyDeclarations
+                    .flatMap { it.fontFaces }
+                    .map { it.toCss(::normalizeAssetUrl) }
+            )
 
             if (googleFonts.isNotEmpty()) {
                 val families = googleFonts.joinToString("|") { it.name }
@@ -124,6 +124,15 @@ internal data class ReadiumCss(
             }
         }
     }
+
+    private val fontsInjectableLinks: List<String> by lazy {
+        fontFamilyDeclarations
+            .flatMap { it.fontFaces }
+            .flatMap { it.links(::normalizeAssetUrl) }
+    }
+
+    private fun normalizeAssetUrl(url: String): String =
+        assetsBaseHref.removeSuffix("/") + "/" + url.removePrefix("/")
 
     /**
      * Returns whether the [String] receiver has any CSS styles.

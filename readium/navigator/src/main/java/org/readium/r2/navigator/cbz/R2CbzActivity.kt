@@ -75,6 +75,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         return navigatorFragment.goBackward(animated, completion)
     }
 
+    @Deprecated("Use `presentation.value.readingProgression` instead", replaceWith = ReplaceWith("presentation.value.readingProgression"))
     override val readingProgression: ReadingProgression
         get() = navigatorFragment.readingProgression
 

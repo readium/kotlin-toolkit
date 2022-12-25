@@ -17,11 +17,6 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.navigator.epub.*
 import org.readium.r2.navigator.epub.css.FontStyle
@@ -30,6 +25,7 @@ import org.readium.r2.navigator.html.toCss
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.testapp.LITERATA
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 import org.readium.r2.testapp.search.SearchFragment
@@ -56,28 +52,35 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                 initialLocator = readerData.initialLocation,
                 listener = this,
                 initialPreferences = readerData.preferencesManager.preferences.value,
-                configuration = EpubNavigatorFragment.Configuration(
+                configuration = EpubNavigatorFragment.Configuration {
+                    // To customize the text selection menu.
+                    selectionActionModeCallback = customSelectionActionModeCallback
+
                     // App assets which will be accessible from the EPUB resources.
                     // You can use simple glob patterns, such as "images/.*" to allow several
                     // assets in one go.
                     servedAssets = listOf(
-                        /** Icon for the annotation side mark, see [annotationMarkTemplate]. */
+                        // For the custom font Literata.
                         "fonts/.*",
+                        // Icon for the annotation side mark, see [annotationMarkTemplate].
                         "annotation-icon.svg"
-                    ),
-                ).apply {
+                    )
+
                     // Register the HTML template for our custom [DecorationStyleAnnotationMark].
                     decorationTemplates[DecorationStyleAnnotationMark::class] = annotationMarkTemplate()
-                    selectionActionModeCallback = customSelectionActionModeCallback
 
+                    // Declare a custom font family for reflowable EPUBs.
                     addFontFamilyDeclaration(FontFamily.LITERATA) {
                         addFontFace {
                             addSource("fonts/Literata-VariableFont_opsz,wght.ttf")
                             setFontStyle(FontStyle.NORMAL)
+                            // Literata is a variable font family, so we can provide a font weight range.
+                            setFontWeight(200..900)
                         }
                         addFontFace {
                             addSource("fonts/Literata-Italic-VariableFont_opsz,wght.ttf")
                             setFontStyle(FontStyle.ITALIC)
+                            setFontWeight(200..900)
                         }
                     }
                 }
@@ -123,17 +126,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         @Suppress("Unchecked_cast")
         (model.settings as UserPreferencesViewModel<EpubSettings, EpubPreferences>)
             .bind(navigator, viewLifecycleOwner)
-
-        // This is a hack to draw the right background color on top and bottom blank spaces
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                model.settings?.theme
-                    ?.onEach { theme ->
-                        navigator.resourcePager.setBackgroundColor(theme.backgroundColor)
-                    }
-                    ?.launchIn(this)
-            }
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
