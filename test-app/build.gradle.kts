@@ -63,7 +63,6 @@ android {
 }
 
 dependencies {
-    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
     implementation(libs.kotlin.stdlib)
     implementation(libs.androidx.legacy.v4)
 

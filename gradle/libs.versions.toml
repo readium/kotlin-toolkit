@@ -48,7 +48,6 @@ kotlinx-serialization-json = "1.4.1"
 
 pdfium = "1.8.2"
 pdf-viewer = "2.8.2"
-photoview = "2.3.0"
 picasso = "2.71828"
 pspdfkit = "8.4.1"
 
@@ -125,7 +124,6 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 
 pdfium = { group = "com.github.barteksc", name = "pdfium-android", version.ref="pdfium" }
 pdf-viewer = { group = "com.github.barteksc", name ="android-pdf-viewer", version.ref="pdf-viewer" }
-photoview = { group = "com.github.chrisbanes", name = "PhotoView", version.ref = "photoview" }
 picasso = { group = "com.squareup.picasso", name = "picasso", version.ref = "picasso" }
 pspdfkit = { group = "com.pspdfkit", name = "pspdfkit", version.ref ="pspdfkit" }
 
