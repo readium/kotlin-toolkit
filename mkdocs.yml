@@ -45,8 +45,8 @@ nav:
   - Home: index.md
   - Migration Guide: migration-guide.md
   - User Guides:
-      - Navigator settings: guides/navigator-settings.md
-      - Adding custom fonts: guides/epub-custom-fonts.md
+      - Navigator preferences: guides/navigator-preferences.md
+      - EPUB font families: guides/epub-fonts.md
       - PDF support: guides/pdf.md
       - Text-to-speech: guides/tts.md
       - Extracting the content of a publication: guides/content.md

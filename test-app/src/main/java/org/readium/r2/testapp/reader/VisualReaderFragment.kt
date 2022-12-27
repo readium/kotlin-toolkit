@@ -536,3 +536,14 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 @Parcelize
 @OptIn(ExperimentalDecorator::class)
 data class DecorationStyleAnnotationMark(@ColorInt val tint: Int) : Decoration.Style
+
+/**
+ * Decoration Style for a page number label.
+ *
+ * This is an example of a custom Decoration Style declaration.
+ *
+ * @param label Page number label as declared in the `page-list` link object.
+ */
+@Parcelize
+@OptIn(ExperimentalDecorator::class)
+data class DecorationStylePageNumber(val label: String) : Decoration.Style

@@ -7,24 +7,33 @@
 package org.readium.r2.navigator.epub.css
 
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.Either
 
 /**
  * Build a declaration for [fontFamily] using [builderAction].
+ *
+ * @param alternates Specifies a list of alternative font families used as fallbacks when symbols
+ * are missing from [fontFamily].
  */
 @ExperimentalReadiumApi
-fun buildFontFamilyDeclaration(
+internal fun buildFontFamilyDeclaration(
     fontFamily: String,
+    alternates: List<String>,
     builderAction: (MutableFontFamilyDeclaration).() -> Unit
 ) =
-    MutableFontFamilyDeclaration(fontFamily).apply(builderAction).toFontFamilyDeclaration()
+    MutableFontFamilyDeclaration(fontFamily, alternates).apply(builderAction).toFontFamilyDeclaration()
 
 /**
  * A font family declaration.
+ *
+ * @param alternates Specifies a list of alternative font families used as fallbacks when symbols
+ * are missing from [fontFamily].
  */
 @ExperimentalReadiumApi
-data class FontFamilyDeclaration internal constructor(
-    internal val fontFamily: String,
-    internal val fontFaces: List<FontFaceDeclaration>
+internal data class FontFamilyDeclaration(
+    val fontFamily: String,
+    val alternates: List<String>,
+    val fontFaces: List<FontFaceDeclaration>
 )
 
 /**
@@ -41,23 +50,38 @@ internal fun buildFontFaceDeclaration(
  * An immutable font face declaration.
  */
 @ExperimentalReadiumApi
-data class FontFaceDeclaration internal constructor(
-    private val fontFamily: String,
-    private val sources: List<String>,
-    private var fontStyle: FontStyle? = null,
-    private var fontWeight: FontWeight? = null,
+internal data class FontFaceDeclaration(
+    val fontFamily: String,
+    val sources: List<FontFaceSource>,
+    var fontStyle: FontStyle? = null,
+    var fontWeight: Either<FontWeight, ClosedRange<Int>>? = null,
 ) {
 
-    internal fun toCss(urlNormalizer: (String) -> String): String {
+    fun links(urlNormalizer: (String) -> String): List<String> =
+        sources
+            .filter { it.preload }
+            .map {
+                """<link rel="preload" href="${urlNormalizer(it.href)}" as="font" crossorigin="" />"""
+            }
+
+    fun toCss(urlNormalizer: (String) -> String): String {
         val descriptors = buildMap {
             set("font-family", """"$fontFamily"""")
 
-            val urls = sources.map(urlNormalizer)
+            val urls = sources.map { urlNormalizer(it.href) }
             val src = urls.joinToString(", ") { """url("$it")""" }
             set("src", src)
 
             fontStyle?.let { set("font-style", it.name.lowercase()) }
-            fontWeight?.let { set("font-weight", it.name.lowercase()) }
+
+            fontWeight?.let {
+                when (it) {
+                    is Either.Left ->
+                        set("font-weight", it.value.value)
+                    is Either.Right ->
+                        set("font-weight", "${it.value.start} ${it.value.endInclusive}")
+                }
+            }
         }
 
         val descriptorList = descriptors
@@ -69,11 +93,23 @@ data class FontFaceDeclaration internal constructor(
 }
 
 /**
+ * Represents an individual font file.
+ *
+ * @param preload Indicates whether this source will be declared for preloading in the HTML using
+ * `<link rel="preload">`.
+ */
+internal data class FontFaceSource(
+    val href: String,
+    val preload: Boolean = false
+)
+
+/**
  * A mutable font family declaration.
  */
 @ExperimentalReadiumApi
 data class MutableFontFamilyDeclaration internal constructor(
     private val fontFamily: String,
+    private val alternates: List<String>,
     private val fontFaces: MutableList<FontFaceDeclaration> = mutableListOf()
 ) {
 
@@ -84,7 +120,7 @@ data class MutableFontFamilyDeclaration internal constructor(
 
     internal fun toFontFamilyDeclaration(): FontFamilyDeclaration {
         check(fontFaces.isNotEmpty())
-        return FontFamilyDeclaration(fontFamily, fontFaces)
+        return FontFamilyDeclaration(fontFamily, alternates, fontFaces)
     }
 }
 
@@ -94,16 +130,19 @@ data class MutableFontFamilyDeclaration internal constructor(
 @ExperimentalReadiumApi
 data class MutableFontFaceDeclaration internal constructor(
     private val fontFamily: String,
-    private val sources: MutableList<String> = mutableListOf(),
+    private val sources: MutableList<FontFaceSource> = mutableListOf(),
     private var fontStyle: FontStyle? = null,
-    private var fontWeight: FontWeight? = null,
+    private var fontWeight: Either<FontWeight, ClosedRange<Int>>? = null
 ) {
 
     /**
      * Add a source for the font face.
+     *
+     * @param preload Indicates whether this source will be declared for preloading in the HTML
+     * using `<link rel="preload">`.
      */
-    fun addSource(url: String) {
-        this.sources.add(url)
+    fun addSource(href: String, preload: Boolean = false) {
+        this.sources.add(FontFaceSource(href = href, preload = preload))
     }
 
     /**
@@ -117,7 +156,16 @@ data class MutableFontFaceDeclaration internal constructor(
      * Set the font weight of the font face.
      */
     fun setFontWeight(fontWeight: FontWeight) {
-        this.fontWeight = fontWeight
+        this.fontWeight = Either(fontWeight)
+    }
+
+    /**
+     * Set the font weight range of a variable font face.
+     */
+    fun setFontWeight(range: ClosedRange<Int>) {
+        require(range.start >= 1)
+        require(range.endInclusive <= 1000)
+        this.fontWeight = Either(range)
     }
 
     internal fun toFontFaceDeclaration() =
@@ -135,9 +183,18 @@ enum class FontStyle {
 
 /**
  * Weight (or boldness) of a font.
+ *
+ * See https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-weight#common_weight_name_mapping
  */
 @ExperimentalReadiumApi
-enum class FontWeight {
-    NORMAL,
-    BOLD;
+enum class FontWeight(val value: Int) {
+    THIN(100),
+    EXTRA_LIGHT(200),
+    LIGHT(300),
+    NORMAL(400),
+    MEDIUM(500),
+    SEMI_BOLD(600),
+    BOLD(700),
+    EXTRA_BOLD(800),
+    BLACK(900);
 }

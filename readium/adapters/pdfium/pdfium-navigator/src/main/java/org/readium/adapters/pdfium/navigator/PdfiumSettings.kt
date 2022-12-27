@@ -10,7 +10,7 @@ import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
- *  Settings values of the PDF navigator with the PDFIUM adapter.
+ *  Settings values of the PDF navigator with the PDFium adapter.
  *
  *  @see PdfiumPreferences
  */

@@ -59,6 +59,7 @@ import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.navigator.util.createFragmentFactory
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.fetcher.Resource
@@ -99,9 +100,9 @@ class EpubNavigatorFragment internal constructor(
 ) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable<EpubSettings, EpubPreferences> {
 
     // Make a copy to prevent the user from modifying the configuration after initialization.
-    internal val config: Configuration = configuration.copy(
-        servedAssets = configuration.servedAssets + "readium/.*"
-    ).apply {
+    internal val config: Configuration = configuration.copy().apply {
+        servedAssets += "readium/.*"
+
         addFontFamilyDeclaration(FontFamily.OPEN_DYSLEXIC) {
             addFontFace {
                 addSource("readium/fonts/OpenDyslexic-Regular.otf")
@@ -109,7 +110,7 @@ class EpubNavigatorFragment internal constructor(
         }
     }
 
-    data class Configuration(
+    data class Configuration internal constructor(
 
         /**
          * Patterns for asset paths which will be available to EPUB resources under
@@ -121,13 +122,7 @@ class EpubNavigatorFragment internal constructor(
          * Use .* to serve all app assets.
          */
         @ExperimentalReadiumApi
-        val servedAssets: List<String> = emptyList(),
-
-        /**
-         * Font declarations to inject through Readium CSS.
-         */
-        @ExperimentalReadiumApi
-        internal val fontFamilyDeclarations: MutableList<FontFamilyDeclaration> = mutableListOf(),
+        var servedAssets: List<String>,
 
         /**
          * Readium CSS reading system settings.
@@ -135,27 +130,56 @@ class EpubNavigatorFragment internal constructor(
          * See https://readium.org/readium-css/docs/CSS19-api.html#reading-system-styles
          */
         @ExperimentalReadiumApi
-        val readiumCssRsProperties: RsProperties = RsProperties(),
+        var readiumCssRsProperties: RsProperties,
 
         /**
          * Supported HTML decoration templates.
          */
-        val decorationTemplates: HtmlDecorationTemplates = HtmlDecorationTemplates.defaultTemplates(),
+        var decorationTemplates: HtmlDecorationTemplates,
 
         /**
          * Custom [ActionMode.Callback] to be used when the user selects content.
          *
          * Provide one if you want to customize the selection context menu items.
          */
-        var selectionActionModeCallback: ActionMode.Callback? = null,
+        var selectionActionModeCallback: ActionMode.Callback?,
 
         /**
          * Whether padding accounting for display cutouts should be applied.
          */
-        val shouldApplyInsetsPadding: Boolean? = true,
+        var shouldApplyInsetsPadding: Boolean?,
 
-        internal val javascriptInterfaces: MutableMap<String, JavascriptInterfaceFactory> = mutableMapOf()
+        /**
+         * Disable user selection if the publication is protected by a DRM (e.g. with LCP).
+         *
+         * WARNING: If you choose to disable this, you MUST remove the Copy and Share selection
+         * menu items in your app. Otherwise, you will void the EDRLab certification for your
+         * application. If you need help, follow up on:
+         * https://github.com/readium/kotlin-toolkit/issues/299#issuecomment-1315643577
+         */
+        @DelicateReadiumApi
+        var disableSelectionWhenProtected: Boolean,
+
+        internal var fontFamilyDeclarations: List<FontFamilyDeclaration>,
+        internal var javascriptInterfaces: Map<String, JavascriptInterfaceFactory>
     ) {
+        constructor(
+            servedAssets: List<String> = emptyList(),
+            readiumCssRsProperties: RsProperties = RsProperties(),
+            decorationTemplates: HtmlDecorationTemplates = HtmlDecorationTemplates.defaultTemplates(),
+            selectionActionModeCallback: ActionMode.Callback? = null,
+            shouldApplyInsetsPadding: Boolean? = true,
+        ) : this(
+            servedAssets = servedAssets,
+            readiumCssRsProperties = readiumCssRsProperties,
+            decorationTemplates = decorationTemplates,
+            selectionActionModeCallback = selectionActionModeCallback,
+            shouldApplyInsetsPadding = shouldApplyInsetsPadding,
+            disableSelectionWhenProtected = true,
+            fontFamilyDeclarations = emptyList(),
+            javascriptInterfaces = emptyMap()
+        )
+
         /**
          * Registers a new factory for the [JavascriptInterface] named [name].
          *
@@ -163,19 +187,31 @@ class EpubNavigatorFragment internal constructor(
          * resource.
          */
         fun registerJavascriptInterface(name: String, factory: JavascriptInterfaceFactory) {
-            javascriptInterfaces[name] = factory
+            javascriptInterfaces += name to factory
         }
 
         /**
          * Adds a declaration for [fontFamily] using [builderAction].
+         *
+         * @param alternates Specifies a list of alternative font families used as fallbacks when
+         * symbols are missing from [fontFamily].
          */
         @ExperimentalReadiumApi
         fun addFontFamilyDeclaration(
             fontFamily: FontFamily,
+            alternates: List<FontFamily> = emptyList(),
             builderAction: (MutableFontFamilyDeclaration).() -> Unit
         ) {
-            val declaration = buildFontFamilyDeclaration(fontFamily.name, builderAction)
-            fontFamilyDeclarations.add(declaration)
+            fontFamilyDeclarations += buildFontFamilyDeclaration(
+                fontFamily = fontFamily.name,
+                alternates = alternates.map { it.name },
+                builderAction = builderAction
+            )
+        }
+
+        companion object {
+            operator fun invoke(builder: Configuration.() -> Unit): Configuration =
+                Configuration().apply(builder)
         }
     }
 
@@ -358,6 +394,8 @@ class EpubNavigatorFragment internal constructor(
         val parent = requireNotNull(resourcePager.parent as? ConstraintLayout) {
             "The parent view of the EPUB `resourcePager` must be a ConstraintLayout"
         }
+        // We need to null out the adapter explicitly, otherwise the page fragments will leak.
+        resourcePager.adapter = null
         parent.removeView(resourcePager)
 
         resourcePager = R2ViewPager(requireContext())
@@ -366,6 +404,8 @@ class EpubNavigatorFragment internal constructor(
             EpubLayout.REFLOWABLE, null -> Publication.TYPE.EPUB
             EpubLayout.FIXED -> Publication.TYPE.FXL
         }
+        resourcePager.setBackgroundColor(viewModel.settings.value.effectiveBackgroundColor)
+
         parent.addView(resourcePager)
 
         resetResourcePagerAdapter()
@@ -456,6 +496,9 @@ class EpubNavigatorFragment internal constructor(
 
         if (previous.fontSize != new.fontSize) {
             r2PagerAdapter?.setFontSize(new.fontSize)
+        }
+        if (previous.effectiveBackgroundColor != new.effectiveBackgroundColor) {
+            resourcePager.setBackgroundColor(new.effectiveBackgroundColor)
         }
     }
 
@@ -978,3 +1021,7 @@ class EpubNavigatorFragment internal constructor(
             WebViewServer.assetUrl(path)
     }
 }
+
+@ExperimentalReadiumApi
+private val EpubSettings.effectiveBackgroundColor: Int get() =
+    backgroundColor?.int ?: theme.backgroundColor

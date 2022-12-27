@@ -23,7 +23,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewClientCompat
@@ -62,7 +62,7 @@ class R2EpubPageFragment : Fragment() {
 
     private lateinit var containerView: View
     private lateinit var preferences: SharedPreferences
-    private lateinit var viewModel: EpubNavigatorViewModel
+    private val viewModel: EpubNavigatorViewModel by viewModels(ownerProducer = { requireParentFragment() })
 
     private var _binding: ViewpagerFragmentEpubBinding? = null
     private val binding get() = _binding!!
@@ -101,6 +101,21 @@ class R2EpubPageFragment : Fragment() {
     private val shouldApplyInsetsPadding: Boolean
         get() = navigator?.config?.shouldApplyInsetsPadding ?: true
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt(textZoomBundleKey, textZoom)
+
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+
+        savedInstanceState
+            ?.getInt(textZoomBundleKey)
+            ?.takeIf { it > 0 }
+            ?.let { textZoom = it }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         pendingLocator = requireArguments().getParcelable("initialLocator")
@@ -115,7 +130,6 @@ class R2EpubPageFragment : Fragment() {
         _binding = ViewpagerFragmentEpubBinding.inflate(inflater, container, false)
         containerView = binding.root
         preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
-        viewModel = ViewModelProvider(requireParentFragment()).get(EpubNavigatorViewModel::class.java)
 
         val webView = binding.webView
         this.webView = webView
@@ -139,6 +153,7 @@ class R2EpubPageFragment : Fragment() {
             @Suppress("DEPRECATION")
             webView.setScrollMode(preferences.getBoolean(SCROLL_REF, false))
         }
+        webView.useLegacySettings = viewModel.useLegacySettings
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false
         webView.isHorizontalScrollBarEnabled = false
@@ -397,6 +412,8 @@ class R2EpubPageFragment : Fragment() {
     }
 
     companion object {
+        private const val textZoomBundleKey = "org.readium.textZoom"
+
         fun newInstance(
             url: String,
             link: Link? = null,

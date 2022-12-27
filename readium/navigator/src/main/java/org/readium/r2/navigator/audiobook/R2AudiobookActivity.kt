@@ -101,6 +101,7 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         return true
     }
 
+    @Deprecated("Use `presentation.value.readingProgression` instead", replaceWith = ReplaceWith("presentation.value.readingProgression"))
     override val readingProgression: ReadingProgression
         get() = TODO("not implemented") // To change initializer of created properties use File | Settings | File Templates.
 

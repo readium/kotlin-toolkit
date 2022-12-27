@@ -550,6 +550,10 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     }
 
     override fun computeScroll() {
+        if (!useLegacySettings && scrollMode) {
+            return super.computeScroll()
+        }
+
         mIsScrollStarted = true
         if (!mScroller!!.isFinished && mScroller!!.computeScrollOffset()) {
             val oldX = scrollX

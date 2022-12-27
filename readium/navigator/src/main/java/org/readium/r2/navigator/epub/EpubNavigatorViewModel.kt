@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.r2.navigator.epub
 
 import android.app.Application
@@ -113,7 +115,7 @@ internal class EpubNavigatorViewModel(
     private val css = MutableStateFlow(
         ReadiumCss(
             rsProperties = config.readiumCssRsProperties,
-            fontFaces = config.fontFamilyDeclarations.flatMap { it.fontFaces },
+            fontFamilyDeclarations = config.fontFamilyDeclarations,
             googleFonts = googleFonts,
             assetsBaseHref = WebViewServer.assetsBaseHref
         ).update(settings.value)
@@ -234,7 +236,11 @@ internal class EpubNavigatorViewModel(
             oldSettings.readingProgression != newSettings.readingProgression ||
                 oldSettings.language != newSettings.language ||
                 oldSettings.verticalText != newSettings.verticalText ||
-                oldSettings.spread != newSettings.spread
+                oldSettings.spread != newSettings.spread ||
+                // We need to invalidate the resource pager when changing from scroll mode to
+                // paginated, otherwise the horizontal scroll will be broken.
+                // See https://github.com/readium/kotlin-toolkit/pull/304
+                oldSettings.scroll != newSettings.scroll
             )
 
         if (needsInvalidation) {
@@ -386,8 +392,18 @@ internal class EpubNavigatorViewModel(
                 defaults = defaults,
                 baseUrl = baseUrl,
                 server = if (baseUrl != null) null
-                else WebViewServer(application, publication, servedAssets = config.servedAssets)
+                else WebViewServer(
+                    application, publication,
+                    servedAssets = config.servedAssets,
+                    disableSelectionWhenProtected = config.disableSelectionWhenProtected
+                )
             )
         }
     }
 }
+
+private val FontFamily.Companion.LITERATA: FontFamily get() = FontFamily("Literata")
+private val FontFamily.Companion.PT_SERIF: FontFamily get() = FontFamily("PT Serif")
+private val FontFamily.Companion.ROBOTO: FontFamily get() = FontFamily("Roboto")
+private val FontFamily.Companion.SOURCE_SANS_PRO: FontFamily get() = FontFamily("Source Sans Pro")
+private val FontFamily.Companion.VOLLKORN: FontFamily get() = FontFamily("Vollkorn")
