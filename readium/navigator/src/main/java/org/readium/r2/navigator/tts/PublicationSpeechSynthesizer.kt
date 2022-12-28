@@ -34,6 +34,7 @@ import org.readium.r2.shared.util.tokenizer.TextUnit
  */
 @OptIn(DelicateReadiumApi::class)
 @ExperimentalReadiumApi
+@Deprecated("The API described in this guide will be changed in the next version of the Kotlin toolkit to support background TTS playback and media notifications. It is recommended that you wait before integrating it in your app.")
 class PublicationSpeechSynthesizer<E : TtsEngine> private constructor(
     private val publication: Publication,
     config: Configuration,
