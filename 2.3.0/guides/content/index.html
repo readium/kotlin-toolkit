@@ -1,0 +1,1046 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Readium Mobile is a toolkit for ebooks, audiobooks and comics written in Swift & Kotlin.">
+      
+      
+        <meta name="author" content="Readium Foundation">
+      
+      
+        <link rel="canonical" href="https://github.com/readium/kotlin-toolkit/2.3.0/guides/content/">
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.2.11">
+    
+    
+      
+        <title>Extracting the content of a publication - Readium Kotlin</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8c5ef100.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.9647289d.min.css">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../readium_colors.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#extracting-the-content-of-a-publication" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-component="outdated" hidden>
+        <aside class="md-banner md-banner--warning">
+          
+        </aside>
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Readium Kotlin" class="md-header__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Readium Kotlin
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Extracting the content of a publication
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/readium/kotlin-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Readium Kotlin" class="md-nav__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Readium Kotlin
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/readium/kotlin-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration-guide/" class="md-nav__link">
+        Migration Guide
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          User Guides
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="User Guides" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          User Guides
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../navigator-preferences/" class="md-nav__link">
+        Navigator preferences
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../epub-fonts/" class="md-nav__link">
+        EPUB font families
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pdf/" class="md-nav__link">
+        PDF support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tts/" class="md-nav__link">
+        Text-to-speech
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Extracting the content of a publication
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Extracting the content of a publication
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#extracting-the-raw-text-content" class="md-nav__link">
+    Extracting the raw text content
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iterating-through-the-content" class="md-nav__link">
+    Iterating through the content
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#processing-the-elements" class="md-nav__link">
+    Processing the elements
+  </a>
+  
+    <nav class="md-nav" aria-label="Processing the elements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#types-of-elements" class="md-nav__link">
+    Types of elements
+  </a>
+  
+    <nav class="md-nav" aria-label="Types of elements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#embedded-media" class="md-nav__link">
+    Embedded media
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#text" class="md-nav__link">
+    Text
+  </a>
+  
+    <nav class="md-nav" aria-label="Text">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#textual-elements" class="md-nav__link">
+    Textual elements
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#text-elements" class="md-nav__link">
+    Text elements
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-attributes" class="md-nav__link">
+    Element attributes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-cases" class="md-nav__link">
+    Use cases
+  </a>
+  
+    <nav class="md-nav" aria-label="Use cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#an-index-of-all-images-embedded-in-the-publication" class="md-nav__link">
+    An index of all images embedded in the publication
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    References
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          API Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="API Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          API Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/shared/index.md" class="md-nav__link">
+        Shared
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/streamer/index.md" class="md-nav__link">
+        Streamer
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/navigator/index.md" class="md-nav__link">
+        Navigator
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/opds/index.md" class="md-nav__link">
+        OPDS
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/lcp/index.md" class="md-nav__link">
+        LCP
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_6" type="checkbox" id="__nav_4_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_6">
+          Adapters
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Adapters" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_6">
+          <span class="md-nav__icon md-icon"></span>
+          Adapters
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/navigator-media2/index.md" class="md-nav__link">
+        Navigator media2
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/adapters/pdfium/pdfium-document/index.md" class="md-nav__link">
+        PDFium Document
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/adapters/pdfium/pdfium-navigator/index.md" class="md-nav__link">
+        PDFium Navigator
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/adapters/pspdfkit/pspdfkit-document/index.md" class="md-nav__link">
+        PSPDFKit Document
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/adapters/pspdfkit/pspdfkit-navigator/index.md" class="md-nav__link">
+        PSPDFKit Navigator
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#extracting-the-raw-text-content" class="md-nav__link">
+    Extracting the raw text content
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iterating-through-the-content" class="md-nav__link">
+    Iterating through the content
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#processing-the-elements" class="md-nav__link">
+    Processing the elements
+  </a>
+  
+    <nav class="md-nav" aria-label="Processing the elements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#types-of-elements" class="md-nav__link">
+    Types of elements
+  </a>
+  
+    <nav class="md-nav" aria-label="Types of elements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#embedded-media" class="md-nav__link">
+    Embedded media
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#text" class="md-nav__link">
+    Text
+  </a>
+  
+    <nav class="md-nav" aria-label="Text">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#textual-elements" class="md-nav__link">
+    Textual elements
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#text-elements" class="md-nav__link">
+    Text elements
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#element-attributes" class="md-nav__link">
+    Element attributes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-cases" class="md-nav__link">
+    Use cases
+  </a>
+  
+    <nav class="md-nav" aria-label="Use cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#an-index-of-all-images-embedded-in-the-publication" class="md-nav__link">
+    An index of all images embedded in the publication
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    References
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+  <a href="https://github.com/readium/kotlin-toolkit/edit/master/docs/guides/content.md" title="Edit this page" class="md-content__button md-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+
+<h1 id="extracting-the-content-of-a-publication">Extracting the content of a publication<a class="headerlink" href="#extracting-the-content-of-a-publication" title="Permanent link">&para;</a></h1>
+<p>:warning: The described feature is still experimental and the implementation incomplete.</p>
+<p>Many high-level features require access to the raw content (text, media, etc.) of a publication, such as:</p>
+<ul>
+<li>Text-to-speech</li>
+<li>Accessibility reader</li>
+<li>Basic search</li>
+<li>Full-text search indexing</li>
+<li>Image or audio indexes</li>
+</ul>
+<p>The <code>ContentService</code> provides a way to iterate through a publication's content, extracted as semantic elements.</p>
+<p>First, request the publication's <code>Content</code>, starting from a given <code>Locator</code>. If the locator is missing, the <code>Content</code> will be extracted from the beginning of the publication.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span> <span class="nv">content</span> <span class="o">=</span> <span class="n">publication</span><span class="p">.</span><span class="na">content</span><span class="p">(</span><span class="n">startLocator</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">content</span> <span class="o">==</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Abort as the content cannot be extracted</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="extracting-the-raw-text-content">Extracting the raw text content<a class="headerlink" href="#extracting-the-raw-text-content" title="Permanent link">&para;</a></h2>
+<p>Getting the whole raw text of a publication is such a common use case that a helper is available on <code>Content</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span> <span class="nv">wholeText</span> <span class="o">=</span> <span class="n">content</span><span class="p">.</span><span class="na">text</span><span class="p">()</span>
+</code></pre></div>
+<p>This is an expensive operation, proceed with caution and cache the result if you need to reuse it.</p>
+<h2 id="iterating-through-the-content">Iterating through the content<a class="headerlink" href="#iterating-through-the-content" title="Permanent link">&para;</a></h2>
+<p>The individual <code>Content</code> elements can be iterated through with a regular <code>for</code> loop:</p>
+<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="p">(</span><span class="n">element</span> <span class="k">in</span> <span class="n">content</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Process element</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Alternatively, you can get the whole list of elements with <code>content.elements()</code>, or use the lower level APIs to iterate the content manually:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span> <span class="nv">iterator</span> <span class="o">=</span> <span class="n">content</span><span class="p">.</span><span class="na">iterator</span><span class="p">()</span>
+<span class="k">while</span> <span class="p">(</span><span class="n">iterator</span><span class="p">.</span><span class="na">hasNext</span><span class="p">())</span> <span class="p">{</span>
+    <span class="kd">val</span> <span class="nv">element</span> <span class="o">=</span> <span class="n">iterator</span><span class="p">.</span><span class="na">next</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Some <code>Content</code> implementations support bidirectional iterations. To iterate backwards, use:</p>
+<div class="highlight"><pre><span></span><code><span class="k">while</span> <span class="p">(</span><span class="n">iterator</span><span class="p">.</span><span class="na">hasPrevious</span><span class="p">())</span> <span class="p">{</span>
+    <span class="kd">val</span> <span class="nv">element</span> <span class="o">=</span> <span class="n">iterator</span><span class="p">.</span><span class="na">hasPrevious</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="processing-the-elements">Processing the elements<a class="headerlink" href="#processing-the-elements" title="Permanent link">&para;</a></h2>
+<p>The <code>Content</code> iterator yields <code>Content.Element</code> objects representing a single semantic portion of the publication, such as a heading, a paragraph or an embedded image.</p>
+<p>Every element has a <code>locator</code> property targeting it in the publication. You can use the locator, for example, to navigate to the element or to draw a <code>Decoration</code> on top of it.</p>
+<div class="highlight"><pre><span></span><code><span class="n">navigator</span><span class="p">.</span><span class="na">go</span><span class="p">(</span><span class="n">element</span><span class="p">.</span><span class="na">locator</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="types-of-elements">Types of elements<a class="headerlink" href="#types-of-elements" title="Permanent link">&para;</a></h3>
+<p>Depending on the actual implementation of <code>Content.Element</code>, more properties are available to access the actual data. The toolkit ships with a number of default implementations for common types of elements.</p>
+<h4 id="embedded-media">Embedded media<a class="headerlink" href="#embedded-media" title="Permanent link">&para;</a></h4>
+<p>The <code>Content.EmbeddedElement</code> interface is implemented by any element referencing an external resource. It contains an <code>embeddedLink</code> property you can use to get the actual content of the resource.</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="p">(</span><span class="n">element</span> <span class="k">is</span> <span class="n">Content</span><span class="p">.</span><span class="na">EmbeddedElement</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">val</span> <span class="nv">bytes</span> <span class="o">=</span> <span class="n">publication</span>
+        <span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">element</span><span class="p">.</span><span class="na">embeddedLink</span><span class="p">)</span>
+        <span class="p">.</span><span class="na">read</span><span class="p">().</span><span class="na">getOrThrow</span><span class="p">()</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Here are the default available implementations:</p>
+<ul>
+<li><code>Content.AudioElement</code> - audio clips</li>
+<li><code>Content.VideoElement</code> - video clips</li>
+<li><code>Content.ImageElement</code> - bitmap images, with the additional property:<ul>
+<li><code>caption: String?</code> - figure caption, when available</li>
+</ul>
+</li>
+</ul>
+<h4 id="text">Text<a class="headerlink" href="#text" title="Permanent link">&para;</a></h4>
+<h5 id="textual-elements">Textual elements<a class="headerlink" href="#textual-elements" title="Permanent link">&para;</a></h5>
+<p>The <code>Content.TextualElement</code> interface is implemented by any element which can be represented as human-readable text. This is useful when you want to extract the text content of a publication without caring for each individual type of elements.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span> <span class="nv">wholeText</span> <span class="o">=</span> <span class="n">publication</span><span class="p">.</span><span class="na">content</span><span class="p">()</span>
+    <span class="p">.</span><span class="na">elements</span><span class="p">()</span>
+    <span class="p">.</span><span class="na">filterIsInstance</span><span class="o">&lt;</span><span class="n">Content</span><span class="p">.</span><span class="na">TextualElement</span><span class="o">&gt;</span><span class="p">()</span>
+    <span class="p">.</span><span class="na">mapNotNull</span> <span class="p">{</span> <span class="nb">it</span><span class="p">.</span><span class="na">text</span> <span class="p">}</span>
+    <span class="p">.</span><span class="na">joinToString</span><span class="p">(</span><span class="n">separator</span> <span class="o">=</span> <span class="s">&quot;\n&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h5 id="text-elements">Text elements<a class="headerlink" href="#text-elements" title="Permanent link">&para;</a></h5>
+<p>Actual text elements are instances of <code>Content.TextElement</code>, which represent a single block of text such as a heading, a paragraph or a list item. It is comprised of a <code>role</code> and a list of <code>segments</code>.</p>
+<p>The <code>role</code> is the nature of the text element in the document. For example a heading, body, footnote or a quote. It can be used to reconstruct part of the structure of the original document.</p>
+<p>A text element is composed of individual segments with their own <code>locator</code> and <code>attributes</code>. They are useful to associate attributes with a portion of a text element. For example, given the HTML paragraph:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>It is pronounced <span class="p">&lt;</span><span class="nt">span</span> <span class="na">lang</span><span class="o">=</span><span class="s">&quot;fr&quot;</span><span class="p">&gt;</span>croissant<span class="p">&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>.<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+</code></pre></div>
+<p>The following <code>TextElement</code> will be produced:</p>
+<div class="highlight"><pre><span></span><code><span class="n">TextElement</span><span class="p">(</span>
+    <span class="n">segments</span> <span class="o">=</span> <span class="n">listOf</span><span class="p">(</span>
+        <span class="n">Segment</span><span class="p">(</span><span class="n">text</span> <span class="o">=</span> <span class="s">&quot;It is pronounced &quot;</span><span class="p">),</span>
+        <span class="n">Segment</span><span class="p">(</span><span class="n">text</span> <span class="o">=</span> <span class="s">&quot;croissant&quot;</span><span class="p">,</span> <span class="n">attributes</span> <span class="o">=</span> <span class="n">mapOf</span><span class="p">(</span><span class="n">LANGUAGE</span> <span class="n">to</span> <span class="s">&quot;fr&quot;</span><span class="p">)),</span>
+        <span class="n">Segment</span><span class="p">(</span><span class="n">text</span> <span class="o">=</span> <span class="s">&quot;.&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>If you are not interested in the segment attributes, you can also use <code>element.text</code> to get the concatenated raw text.</p>
+<h3 id="element-attributes">Element attributes<a class="headerlink" href="#element-attributes" title="Permanent link">&para;</a></h3>
+<p>All types of <code>Content.Element</code> can have associated attributes. Custom <code>ContentService</code> implementations can use this as an extensibility point.</p>
+<h2 id="use-cases">Use cases<a class="headerlink" href="#use-cases" title="Permanent link">&para;</a></h2>
+<h3 id="an-index-of-all-images-embedded-in-the-publication">An index of all images embedded in the publication<a class="headerlink" href="#an-index-of-all-images-embedded-in-the-publication" title="Permanent link">&para;</a></h3>
+<p>This example extracts all the embedded images in the publication and displays them in a Jetpack Compose list. Clicking on an image jumps to its location in the publication.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">data</span> <span class="kd">class</span> <span class="nc">Item</span><span class="p">(</span>
+    <span class="kd">val</span> <span class="nv">locator</span><span class="p">:</span> <span class="n">Locator</span><span class="p">,</span>
+    <span class="kd">val</span> <span class="nv">text</span><span class="p">:</span> <span class="kt">String?</span><span class="p">,</span>
+    <span class="kd">val</span> <span class="nv">bitmap</span><span class="p">:</span> <span class="n">ImageBitmap?</span>
+<span class="p">)</span>
+
+<span class="kd">var</span> <span class="nv">images</span> <span class="k">by</span> <span class="n">remember</span> <span class="p">{</span>
+    <span class="n">mutableStateOf</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Item</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">emptyList</span><span class="p">())</span>
+<span class="p">}</span>
+
+<span class="n">LaunchedEffect</span><span class="p">(</span><span class="n">publication</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">publication</span><span class="p">.</span><span class="na">content</span><span class="p">()</span><span class="o">?.</span><span class="na">let</span> <span class="p">{</span> <span class="n">content</span> <span class="o">-&gt;</span>
+        <span class="n">images</span> <span class="o">=</span> <span class="n">content</span><span class="p">.</span><span class="na">elements</span><span class="p">()</span>
+            <span class="p">.</span><span class="na">filterIsInstance</span><span class="o">&lt;</span><span class="n">Content</span><span class="p">.</span><span class="na">ImageElement</span><span class="o">&gt;</span><span class="p">()</span>
+            <span class="p">.</span><span class="na">map</span> <span class="p">{</span> <span class="n">element</span> <span class="o">-&gt;</span>
+                <span class="n">Item</span><span class="p">(</span>
+                    <span class="n">locator</span> <span class="o">=</span> <span class="n">element</span><span class="p">.</span><span class="na">locator</span><span class="p">,</span>
+                    <span class="n">text</span> <span class="o">=</span> <span class="n">element</span><span class="p">.</span><span class="na">caption</span><span class="p">,</span>
+                    <span class="n">bitmap</span> <span class="o">=</span> <span class="n">publication</span><span class="p">.</span><span class="na">get</span><span class="p">(</span><span class="n">element</span><span class="p">.</span><span class="na">embeddedLink</span><span class="p">)</span>
+                        <span class="p">.</span><span class="na">readAsBitmap</span><span class="p">().</span><span class="na">getOrNull</span><span class="p">()</span><span class="o">?.</span><span class="na">asImageBitmap</span><span class="p">()</span>
+                <span class="p">)</span>
+            <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">LazyColumn</span> <span class="p">{</span>
+    <span class="n">items</span><span class="p">(</span><span class="n">images</span><span class="p">)</span> <span class="p">{</span> <span class="n">item</span> <span class="o">-&gt;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">item</span><span class="p">.</span><span class="na">bitmap</span> <span class="o">!=</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">Column</span><span class="p">(</span>
+                <span class="n">modifier</span> <span class="o">=</span> <span class="n">Modifier</span><span class="p">.</span><span class="na">clickable</span> <span class="p">{</span>
+                    <span class="n">navigator</span><span class="p">.</span><span class="na">go</span><span class="p">(</span><span class="n">item</span><span class="p">.</span><span class="na">locator</span><span class="p">)</span>
+                <span class="p">}</span>
+            <span class="p">)</span> <span class="p">{</span>
+                <span class="n">Image</span><span class="p">(</span><span class="n">bitmap</span> <span class="o">=</span> <span class="n">item</span><span class="p">.</span><span class="na">bitmap</span><span class="p">,</span> <span class="n">contentDescription</span> <span class="o">=</span> <span class="n">item</span><span class="p">.</span><span class="na">text</span><span class="p">)</span>
+                <span class="n">Text</span><span class="p">(</span><span class="n">item</span><span class="p">.</span><span class="na">caption</span> <span class="o">?:</span> <span class="s">&quot;No caption&quot;</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://github.com/readium/architecture/pull/177">Content Iterator proposal</a></li>
+</ul>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../tts/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Text-to-speech" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Text-to-speech
+            </div>
+          </div>
+        </a>
+      
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2022 Readium Foundation
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.748e2769.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1666 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Readium Mobile is a toolkit for ebooks, audiobooks and comics written in Swift & Kotlin.">
+      
+      
+        <meta name="author" content="Readium Foundation">
+      
+      
+        <link rel="canonical" href="https://github.com/readium/kotlin-toolkit/2.3.0/guides/navigator-preferences/">
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.2.11">
+    
+    
+      
+        <title>Navigator preferences - Readium Kotlin</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8c5ef100.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.9647289d.min.css">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../readium_colors.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#configuring-the-navigator" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-component="outdated" hidden>
+        <aside class="md-banner md-banner--warning">
+          
+        </aside>
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Readium Kotlin" class="md-header__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Readium Kotlin
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Navigator preferences
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/readium/kotlin-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Readium Kotlin" class="md-nav__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Readium Kotlin
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/readium/kotlin-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration-guide/" class="md-nav__link">
+        Migration Guide
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          User Guides
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="User Guides" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          User Guides
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Navigator preferences
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Navigator preferences
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#editing-preferences" class="md-nav__link">
+    Editing preferences
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preferences-are-low-level" class="md-nav__link">
+    Preferences are low-level
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inactive-settings" class="md-nav__link">
+    Inactive settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setting-the-initial-navigator-preferences-and-app-defaults" class="md-nav__link">
+    Setting the initial Navigator preferences and app defaults
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-a-user-settings-interface" class="md-nav__link">
+    Build a user settings interface
+  </a>
+  
+    <nav class="md-nav" aria-label="Build a user settings interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#preferenceseditor" class="md-nav__link">
+    PreferencesEditor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stateless-userpreferences-composable" class="md-nav__link">
+    Stateless UserPreferences composable
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-settings-composable-for-fixed-layout-publications" class="md-nav__link">
+    User settings composable for fixed-layout publications
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#composable-for-a-boolean-preference" class="md-nav__link">
+    Composable for a boolean Preference
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#value-vs-effectivevalue-which-one-to-use" class="md-nav__link">
+    value vs effectiveValue, which one to use?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#composable-for-a-rangepreferencet" class="md-nav__link">
+    Composable for a RangePreference&lt;T&gt;
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#composable-for-an-enumpreferencet" class="md-nav__link">
+    Composable for an EnumPreference&lt;T&gt;
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#save-and-restore-the-user-preferences" class="md-nav__link">
+    Save and restore the user preferences
+  </a>
+  
+    <nav class="md-nav" aria-label="Save and restore the user preferences">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#splitting-and-merging-preferences" class="md-nav__link">
+    Splitting and merging preferences
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-preference-constraints" class="md-nav__link">
+    Appendix: Preference constraints
+  </a>
+  
+    <nav class="md-nav" aria-label="Appendix: Preference constraints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#epub" class="md-nav__link">
+    EPUB
+  </a>
+  
+    <nav class="md-nav" aria-label="EPUB">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reflowable-vs-fixed-layout" class="md-nav__link">
+    Reflowable vs fixed-layout
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#publisher-styles" class="md-nav__link">
+    Publisher styles
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scroll-vs-paginated" class="md-nav__link">
+    Scroll vs paginated
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dark-theme-specific-preferences" class="md-nav__link">
+    Dark theme specific preferences
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#language-specific-preferences" class="md-nav__link">
+    Language specific preferences
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pdf-pspdfkit" class="md-nav__link">
+    PDF (PSPDFKit)
+  </a>
+  
+    <nav class="md-nav" aria-label="PDF (PSPDFKit)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scroll-vs-paginated_1" class="md-nav__link">
+    Scroll vs paginated
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../epub-fonts/" class="md-nav__link">
+        EPUB font families
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pdf/" class="md-nav__link">
+        PDF support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tts/" class="md-nav__link">
+        Text-to-speech
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/" class="md-nav__link">
+        Extracting the content of a publication
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          API Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="API Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          API Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/shared/index.md" class="md-nav__link">
+        Shared
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/streamer/index.md" class="md-nav__link">
+        Streamer
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/navigator/index.md" class="md-nav__link">
+        Navigator
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/opds/index.md" class="md-nav__link">
+        OPDS
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/lcp/index.md" class="md-nav__link">
+        LCP
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_6" type="checkbox" id="__nav_4_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_6">
+          Adapters
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Adapters" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_6">
+          <span class="md-nav__icon md-icon"></span>
+          Adapters
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/navigator-media2/index.md" class="md-nav__link">
+        Navigator media2
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/adapters/pdfium/pdfium-document/index.md" class="md-nav__link">
+        PDFium Document
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/adapters/pdfium/pdfium-navigator/index.md" class="md-nav__link">
+        PDFium Navigator
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/adapters/pspdfkit/pspdfkit-document/index.md" class="md-nav__link">
+        PSPDFKit Document
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../readium/adapters/pspdfkit/pspdfkit-navigator/index.md" class="md-nav__link">
+        PSPDFKit Navigator
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#editing-preferences" class="md-nav__link">
+    Editing preferences
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preferences-are-low-level" class="md-nav__link">
+    Preferences are low-level
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inactive-settings" class="md-nav__link">
+    Inactive settings
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setting-the-initial-navigator-preferences-and-app-defaults" class="md-nav__link">
+    Setting the initial Navigator preferences and app defaults
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-a-user-settings-interface" class="md-nav__link">
+    Build a user settings interface
+  </a>
+  
+    <nav class="md-nav" aria-label="Build a user settings interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#preferenceseditor" class="md-nav__link">
+    PreferencesEditor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stateless-userpreferences-composable" class="md-nav__link">
+    Stateless UserPreferences composable
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-settings-composable-for-fixed-layout-publications" class="md-nav__link">
+    User settings composable for fixed-layout publications
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#composable-for-a-boolean-preference" class="md-nav__link">
+    Composable for a boolean Preference
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#value-vs-effectivevalue-which-one-to-use" class="md-nav__link">
+    value vs effectiveValue, which one to use?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#composable-for-a-rangepreferencet" class="md-nav__link">
+    Composable for a RangePreference&lt;T&gt;
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#composable-for-an-enumpreferencet" class="md-nav__link">
+    Composable for an EnumPreference&lt;T&gt;
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#save-and-restore-the-user-preferences" class="md-nav__link">
+    Save and restore the user preferences
+  </a>
+  
+    <nav class="md-nav" aria-label="Save and restore the user preferences">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#splitting-and-merging-preferences" class="md-nav__link">
+    Splitting and merging preferences
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-preference-constraints" class="md-nav__link">
+    Appendix: Preference constraints
+  </a>
+  
+    <nav class="md-nav" aria-label="Appendix: Preference constraints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#epub" class="md-nav__link">
+    EPUB
+  </a>
+  
+    <nav class="md-nav" aria-label="EPUB">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reflowable-vs-fixed-layout" class="md-nav__link">
+    Reflowable vs fixed-layout
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#publisher-styles" class="md-nav__link">
+    Publisher styles
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scroll-vs-paginated" class="md-nav__link">
+    Scroll vs paginated
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dark-theme-specific-preferences" class="md-nav__link">
+    Dark theme specific preferences
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#language-specific-preferences" class="md-nav__link">
+    Language specific preferences
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pdf-pspdfkit" class="md-nav__link">
+    PDF (PSPDFKit)
+  </a>
+  
+    <nav class="md-nav" aria-label="PDF (PSPDFKit)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scroll-vs-paginated_1" class="md-nav__link">
+    Scroll vs paginated
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+  <a href="https://github.com/readium/kotlin-toolkit/edit/master/docs/guides/navigator-preferences.md" title="Edit this page" class="md-content__button md-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+
+<h1 id="configuring-the-navigator">Configuring the Navigator<a class="headerlink" href="#configuring-the-navigator" title="Permanent link">&para;</a></h1>
+<p>:warning: The Navigator Setting API is still experimental and currently only available with <code>EpubNavigatorFragment</code> and <code>PdfNavigatorFragment</code>.</p>
+<p>Take a look at the <a href="../../migration-guide/">migration guide</a> if you are already using the legacy EPUB settings.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The Readium Navigator can be configured dynamically, as it implements the <code>Configurable</code> interface.</p>
+<p>You cannot directly overwrite the Navigator settings. Instead, you submit a set of <code>Preferences</code> to the Navigator, which will then recalculate its settings and update the presentation.</p>
+<p>For instance: "font size" is a <strong>setting</strong>, and the application can submit the font size value <code>150%</code> as a <strong>preference</strong>.</p>
+<p><img src="assets/settings-flow.svg"></p>
+<div class="highlight"><pre><span></span><code><span class="c1">// 1. Create a set of preferences.</span>
+<span class="kd">val</span> <span class="nv">preferences</span> <span class="o">=</span> <span class="n">EpubPreferences</span><span class="p">(</span>
+    <span class="n">fontFamily</span> <span class="o">=</span> <span class="n">FontFamily</span><span class="p">.</span><span class="na">SERIF</span><span class="p">,</span>
+    <span class="n">fontSize</span> <span class="o">=</span> <span class="m">2.0</span><span class="p">,</span>
+    <span class="n">publisherStyles</span> <span class="o">=</span> <span class="kc">false</span>
+<span class="p">)</span>
+
+<span class="c1">// 2. Submit the preferences, the Navigator will update its settings and the presentation.</span>
+<span class="n">navigator</span><span class="p">.</span><span class="na">submitPreferences</span><span class="p">(</span><span class="n">preferences</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="editing-preferences">Editing preferences<a class="headerlink" href="#editing-preferences" title="Permanent link">&para;</a></h3>
+<p>To assist you in building a preferences user interface or modifying existing preferences, navigators can offer a <code>PreferencesEditor</code>. Each implementation includes rules for adjusting preferences, such as the supported values or ranges.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// 1. Create a preferences editor.</span>
+<span class="kd">val</span> <span class="nv">editor</span> <span class="o">=</span> <span class="n">EpubNavigatorFactory</span><span class="p">(</span><span class="n">publication</span><span class="p">).</span><span class="na">createPreferencesEditor</span><span class="p">(</span><span class="n">preferences</span><span class="p">)</span>
+
+<span class="c1">// 2. Modify the preferences through the editor.</span>
+<span class="n">editor</span><span class="p">.</span><span class="na">apply</span> <span class="p">{</span>
+    <span class="n">fontFamily</span><span class="p">.</span><span class="na">set</span><span class="p">(</span><span class="n">FontFamily</span><span class="p">.</span><span class="na">SERIF</span><span class="p">)</span>
+    <span class="n">fontSize</span><span class="p">.</span><span class="na">increment</span><span class="p">()</span>
+    <span class="n">publisherStyles</span><span class="p">.</span><span class="na">toggle</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="c1">// 3. Submit the edited preferences</span>
+<span class="n">navigator</span><span class="p">.</span><span class="na">submitPreferences</span><span class="p">(</span><span class="n">editor</span><span class="p">.</span><span class="na">preferences</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="preferences-are-low-level">Preferences are low-level<a class="headerlink" href="#preferences-are-low-level" title="Permanent link">&para;</a></h3>
+<p>Preferences are low-level technical properties. While some of them can be exposed directly to the user, such as the font size, others should not be displayed as-is.</p>
+<p>For instance, in EPUB, we can simulate two pages side by side using the <code>columnCount</code> (<code>auto</code>, <code>1</code>, <code>2</code>) property for reflowable resources, and the <code>spread</code> (<code>auto</code>, <code>never</code>, <code>always</code>) property for fixed-layout publications. Rather than displaying both of these settings with all of their possible values in the user interface, you might prefer to show a single switch button to enable a dual-page mode, which will set both settings appropriately.</p>
+<h3 id="inactive-settings">Inactive settings<a class="headerlink" href="#inactive-settings" title="Permanent link">&para;</a></h3>
+<p>A setting may be inactive if its activation conditions are not met in a set of preferences. The Navigator will ignore inactive settings when updating its presentation. For example, with the EPUB navigator, the word spacing setting requires the publisher styles to be disabled in order to take effect.</p>
+<p>You can check if a setting is effective for a set of preferences using the <code>PreferencesEditor</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span> <span class="nv">editor</span> <span class="o">=</span> <span class="n">EpubNavigatorFactory</span><span class="p">(</span><span class="n">publication</span><span class="p">)</span>
+    <span class="p">.</span><span class="na">createPreferencesEditor</span><span class="p">(</span><span class="n">preferences</span><span class="p">)</span>
+
+<span class="n">editor</span><span class="p">.</span><span class="na">wordSpacing</span><span class="p">.</span><span class="na">isEffective</span>
+</code></pre></div>
+<h2 id="setting-the-initial-navigator-preferences-and-app-defaults">Setting the initial Navigator preferences and app defaults<a class="headerlink" href="#setting-the-initial-navigator-preferences-and-app-defaults" title="Permanent link">&para;</a></h2>
+<p>When opening a publication, you can immediately apply the user preferences by providing them to the Navigator constructor. The API for doing this varies depending on the Navigator implementation, but generally looks like this:</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span> <span class="nv">navigatorFactory</span> <span class="o">=</span> <span class="n">EpubNavigatorFactory</span><span class="p">(</span>
+    <span class="n">publication</span> <span class="o">=</span> <span class="n">publication</span><span class="p">,</span>
+    <span class="n">configuration</span> <span class="o">=</span> <span class="n">EpubNavigatorFactory</span><span class="p">.</span><span class="na">Configuration</span><span class="p">(</span>
+        <span class="n">defaults</span> <span class="o">=</span> <span class="n">EpubDefaults</span><span class="p">(</span>
+            <span class="n">pageMargins</span> <span class="o">=</span> <span class="m">1.5</span><span class="p">,</span>
+            <span class="n">scroll</span> <span class="o">=</span> <span class="kc">true</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">navigatorFactory</span><span class="p">.</span><span class="na">createFragmentFactory</span><span class="p">(</span>
+    <span class="n">initialPreferences</span> <span class="o">=</span> <span class="n">EpubPreferences</span><span class="p">(</span>
+        <span class="n">language</span> <span class="o">=</span> <span class="s">&quot;fr&quot;</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>The <code>defaults</code> are used as fallback values when the default Navigator settings are not suitable for your application.</p>
+<h2 id="build-a-user-settings-interface">Build a user settings interface<a class="headerlink" href="#build-a-user-settings-interface" title="Permanent link">&para;</a></h2>
+<p>:question: The following examples use <a href="https://developer.android.com/jetpack/compose">Jetpack Compose</a>, but could be implemented using regular Android views as well.</p>
+<h3 id="preferenceseditor"><code>PreferencesEditor</code><a class="headerlink" href="#preferenceseditor" title="Permanent link">&para;</a></h3>
+<p>Although you could create and modify <code>Preferences</code> objects directly before submitting them to the Navigator, a <code>PreferenceEditor</code> can assist you by providing helpers for dealing with each preference type when building the user interface.</p>
+<p><code>PreferencesEditor</code> implementations are specific to each Navigator, but they all provide <code>Preference&lt;T&gt;</code> properties for every setting (e.g. theme or font size). </p>
+<h3 id="stateless-userpreferences-composable">Stateless <code>UserPreferences</code> composable<a class="headerlink" href="#stateless-userpreferences-composable" title="Permanent link">&para;</a></h3>
+<p>You can use the <code>PreferencesEditor</code> type to determine which (media type agnostic) view to create.</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@Composable</span>
+<span class="kd">fun</span> <span class="o">&lt;</span><span class="n">P</span><span class="p">:</span> <span class="n">Configurable</span><span class="err">.</span><span class="n">Preferences</span><span class="o">&gt;</span> <span class="nf">UserPreferences</span><span class="p">(</span>
+    <span class="n">editor</span><span class="p">:</span> <span class="n">PreferencesEditor</span><span class="o">&lt;</span><span class="n">P</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">commit</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Unit</span>
+<span class="p">)</span> <span class="p">{</span>
+    <span class="n">Column</span> <span class="p">{</span>
+        <span class="n">Button</span><span class="p">(</span>
+            <span class="n">onClick</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">editor</span><span class="p">.</span><span class="na">clear</span><span class="p">()</span>
+                <span class="n">commit</span><span class="p">()</span>
+            <span class="p">},</span>
+        <span class="p">)</span> <span class="p">{</span>
+            <span class="n">Text</span><span class="p">(</span><span class="s">&quot;Reset&quot;</span><span class="p">)</span>
+        <span class="p">}</span>
+
+        <span class="k">when</span> <span class="p">(</span><span class="n">editor</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">is</span> <span class="n">PsPdfKitPreferencesEditor</span> <span class="o">-&gt;</span>
+                <span class="n">FixedLayoutUserPreferences</span><span class="p">(</span>
+                    <span class="n">commit</span> <span class="o">=</span> <span class="n">commit</span><span class="p">,</span>
+                    <span class="n">scroll</span> <span class="o">=</span> <span class="n">editor</span><span class="p">.</span><span class="na">scroll</span><span class="p">,</span>
+                    <span class="n">fit</span> <span class="o">=</span> <span class="n">editor</span><span class="p">.</span><span class="na">fit</span><span class="p">,</span>
+                    <span class="n">pageSpacing</span> <span class="o">=</span> <span class="n">editor</span><span class="p">.</span><span class="na">pageSpacing</span><span class="p">,</span>
+                    <span class="p">...</span>
+                <span class="p">)</span>
+            <span class="k">is</span> <span class="n">EpubPreferencesEditor</span> <span class="o">-&gt;</span>
+                <span class="n">ReflowableUserPreferences</span><span class="p">(</span>
+                    <span class="n">commit</span> <span class="o">=</span> <span class="n">commit</span><span class="p">,</span>
+                    <span class="p">...</span>
+                <span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The <code>commit</code> parameter is a closure used to save the edited preferences to the data store, before submitting them to the Navigator.</p>
+<p>:question: The individual <code>PsPdfKitPreferencesEditor</code> properties are passed to <code>FixedLayoutUserPreferences</code> to that it can be reused with other fixed-layout publication types, such as FXL EPUB or comic books.</p>
+<h3 id="user-settings-composable-for-fixed-layout-publications">User settings composable for fixed-layout publications<a class="headerlink" href="#user-settings-composable-for-fixed-layout-publications" title="Permanent link">&para;</a></h3>
+<p>This stateless composable displays the actual preferences for a fixed-layout publication. The <code>Preference</code> parameters are nullable as they might not be available at all times or for all media types. It delegates the rendering of individual preferences to more specific composables.</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@Composable</span>
+<span class="kd">fun</span> <span class="nf">FixedLayoutUserPreferences</span><span class="p">(</span>
+    <span class="n">commit</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Unit</span><span class="p">,</span>
+    <span class="n">scroll</span><span class="p">:</span> <span class="n">Preference</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;?</span> <span class="o">=</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="n">fit</span><span class="p">:</span> <span class="n">EnumPreference</span><span class="o">&lt;</span><span class="n">Fit</span><span class="o">&gt;?</span> <span class="o">=</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="n">pageSpacing</span><span class="p">:</span> <span class="n">RangePreference</span><span class="o">&lt;</span><span class="kt">Double</span><span class="o">&gt;?</span> <span class="o">=</span> <span class="kc">null</span>
+<span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">scroll</span> <span class="o">!=</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">SwitchItem</span><span class="p">(</span><span class="s">&quot;Scroll mode&quot;</span><span class="p">,</span> <span class="n">scroll</span><span class="p">,</span> <span class="n">commit</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">fit</span> <span class="o">!=</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">MenuItem</span><span class="p">(</span><span class="s">&quot;Page fit&quot;</span><span class="p">,</span> <span class="n">fit</span><span class="p">,</span> <span class="n">commit</span><span class="p">)</span> <span class="p">{</span> <span class="n">value</span> <span class="o">-&gt;</span>
+            <span class="k">when</span> <span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">Fit</span><span class="p">.</span><span class="na">WIDTH</span> <span class="o">-&gt;</span> <span class="s">&quot;Width&quot;</span>
+                <span class="n">Fit</span><span class="p">.</span><span class="na">HEIGHT</span> <span class="o">-&gt;</span> <span class="s">&quot;Height&quot;</span>
+                <span class="n">Fit</span><span class="p">.</span><span class="na">CONTAIN</span> <span class="o">-&gt;</span> <span class="s">&quot;Width and height&quot;</span>
+                <span class="n">Fit</span><span class="p">.</span><span class="na">COVER</span> <span class="o">-&gt;</span> <span class="s">&quot;Cover&quot;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">pageSpacing</span> <span class="o">!=</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">StepperItem</span><span class="p">(</span><span class="s">&quot;Page spacing&quot;</span><span class="p">,</span> <span class="n">pageSpacing</span><span class="p">,</span> <span class="n">commit</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="composable-for-a-boolean-preference">Composable for a boolean <code>Preference</code><a class="headerlink" href="#composable-for-a-boolean-preference" title="Permanent link">&para;</a></h3>
+<p>A <code>Preference&lt;Boolean&gt;</code> can be represented as a simple switch button.</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@Composable</span>
+<span class="kd">fun</span> <span class="nf">SwitchItem</span><span class="p">(</span>
+    <span class="n">title</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+    <span class="n">preference</span><span class="p">:</span> <span class="n">Preference</span><span class="o">&lt;</span><span class="kt">Boolean</span><span class="o">&gt;</span><span class="p">,</span> 
+    <span class="n">commit</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Unit</span>
+<span class="p">)</span> <span class="p">{</span>
+    <span class="n">ListItem</span><span class="p">(</span>
+        <span class="n">modifier</span> <span class="o">=</span> <span class="n">Modifier</span>
+            <span class="p">.</span><span class="na">clickable</span> <span class="p">{</span>
+                <span class="n">preference</span><span class="p">.</span><span class="na">toggle</span><span class="p">()</span>
+                <span class="n">commit</span><span class="p">()</span> 
+            <span class="p">},</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="p">{</span> <span class="n">Text</span><span class="p">(</span><span class="n">title</span><span class="p">)</span> <span class="p">},</span>
+        <span class="n">trailing</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">Switch</span><span class="p">(</span>
+                <span class="n">checked</span> <span class="o">=</span> <span class="n">preference</span><span class="p">.</span><span class="na">value</span> <span class="o">?:</span> <span class="n">preference</span><span class="p">.</span><span class="na">effectiveValue</span><span class="p">,</span>
+                <span class="n">onCheckedChange</span> <span class="o">=</span> <span class="p">{</span> <span class="n">checked</span> <span class="o">-&gt;</span>
+                    <span class="n">preference</span><span class="p">.</span><span class="na">set</span><span class="p">(</span><span class="n">checked</span><span class="p">)</span>
+                    <span class="n">commit</span><span class="p">()</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>This composable uses the helpers in <code>Preference&lt;Boolean&gt;</code> to edit the preference in two different ways:</p>
+<ul>
+<li><code>toggle()</code> will reverse the current preference when tapping on the entire list item.</li>
+<li><code>set(checked)</code> sets an explicit value provided by the <code>Switch</code>'s <code>onCheckedChange</code> callback.</li>
+</ul>
+<h3 id="value-vs-effectivevalue-which-one-to-use"><code>value</code> vs <code>effectiveValue</code>, which one to use?<a class="headerlink" href="#value-vs-effectivevalue-which-one-to-use" title="Permanent link">&para;</a></h3>
+<p>In the previous example, you may have noticed the use of <code>preference.value ?: preference.effectiveValue</code> for the current value.</p>
+<ul>
+<li><code>value</code> holds the user-selected preference, which may be <code>null</code>.</li>
+<li><code>effectiveValue</code> is the setting value that will actually be used by the Navigator once the preferences are submitted. It may be different from the user-selected value if it is incompatible or invalid.</li>
+</ul>
+<p>This is a common pattern with this API because it is less confusing to display the user-selected value, even if it will not actually be used by the Navigator.</p>
+<h3 id="composable-for-a-rangepreferencet">Composable for a <code>RangePreference&lt;T&gt;</code><a class="headerlink" href="#composable-for-a-rangepreferencet" title="Permanent link">&para;</a></h3>
+<p>A <code>RangePreference&lt;T&gt;</code> can be represented as a stepper component with decrement and increment buttons.</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@Composable</span>
+<span class="kd">fun</span>  <span class="o">&lt;</span><span class="n">T</span><span class="p">:</span> <span class="n">Comparable</span><span class="err">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="err">&gt; </span><span class="nf">StepperItem</span><span class="p">(</span>
+    <span class="n">title</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+    <span class="n">preference</span><span class="p">:</span> <span class="n">RangePreference</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">commit</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Unit</span><span class="p">,</span>
+<span class="p">)</span> <span class="p">{</span>
+    <span class="n">ListItem</span><span class="p">(</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="p">{</span> <span class="n">Text</span><span class="p">(</span><span class="n">title</span><span class="p">)</span> <span class="p">},</span>
+        <span class="n">trailing</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">Row</span> <span class="p">{</span>
+                <span class="n">IconButton</span><span class="p">(</span>
+                    <span class="n">onClick</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="n">preference</span><span class="p">.</span><span class="na">decrement</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span>
+                        <span class="n">commit</span><span class="p">()</span>
+                    <span class="p">}</span>
+                <span class="p">)</span> <span class="p">{</span>
+                    <span class="n">Icon</span><span class="p">(</span><span class="n">Icons</span><span class="p">.</span><span class="na">Default</span><span class="p">.</span><span class="na">Remove</span><span class="p">,</span> <span class="n">contentDescription</span> <span class="o">=</span> <span class="s">&quot;Decrease&quot;</span><span class="p">)</span>
+                <span class="p">}</span>
+
+                <span class="kd">val</span> <span class="nv">currentValue</span> <span class="o">=</span> <span class="n">preferences</span><span class="p">.</span><span class="na">value</span> <span class="o">?:</span> <span class="n">preference</span><span class="p">.</span><span class="na">effectiveValue</span>
+                <span class="n">Text</span><span class="p">(</span><span class="n">preference</span><span class="p">.</span><span class="na">formatValue</span><span class="p">(</span><span class="n">currentValue</span><span class="p">))</span>
+
+                <span class="n">IconButton</span><span class="p">(</span>
+                    <span class="n">onClick</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="n">preference</span><span class="p">.</span><span class="na">increment</span><span class="p">(</span><span class="n">setting</span><span class="p">)</span>
+                        <span class="n">commit</span><span class="p">()</span>
+                    <span class="p">}</span>
+                <span class="p">)</span> <span class="p">{</span>
+                    <span class="n">Icon</span><span class="p">(</span><span class="n">Icons</span><span class="p">.</span><span class="na">Default</span><span class="p">.</span><span class="na">Add</span><span class="p">,</span> <span class="n">contentDescription</span> <span class="o">=</span> <span class="s">&quot;Increase&quot;</span><span class="p">)</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>This composable uses the <code>increment()</code> and <code>decrement()</code> range helpers of <code>RangePreference</code>, but it is also possible to set a value manually.</p>
+<p>Between the two buttons, we display the current value using the <code>RangeSetting&lt;T&gt;.formatValue()</code> helper. This will automatically format the value to a human-readable string, such as a percentage or a value with units (e.g. 30px).</p>
+<h3 id="composable-for-an-enumpreferencet">Composable for an <code>EnumPreference&lt;T&gt;</code><a class="headerlink" href="#composable-for-an-enumpreferencet" title="Permanent link">&para;</a></h3>
+<p>An <code>EnumPreference&lt;T&gt;</code> is a preference accepting a closed set of values. It can be displayed using various UI components, such as:</p>
+<ul>
+<li>a dropdown menu for a large enum</li>
+<li><a href="https://m3.material.io/components/segmented-buttons/overview">segmented buttons</a> for a small one</li>
+</ul>
+<p>In the following example, we chose a dropdown menu built with <code>preference.supportedValues</code>, which returns the allowed enum members.</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@Composable</span>
+<span class="kd">fun</span> <span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="nf">MenuItem</span><span class="p">(</span>
+    <span class="n">title</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span>
+    <span class="n">preference</span><span class="p">:</span> <span class="n">EnumPreference</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">commit</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Unit</span><span class="p">,</span>
+    <span class="n">formatValue</span><span class="p">:</span> <span class="p">(</span><span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">String</span>
+<span class="p">)</span> <span class="p">{</span>
+    <span class="kd">val</span> <span class="nv">currentValue</span> <span class="o">=</span> <span class="n">preference</span><span class="p">.</span><span class="na">value</span> <span class="o">?:</span> <span class="n">preference</span><span class="p">.</span><span class="na">effectiveValue</span>
+
+    <span class="n">ListItem</span><span class="p">(</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="p">{</span> <span class="n">Text</span><span class="p">(</span><span class="n">title</span><span class="p">)</span> <span class="p">},</span>
+        <span class="n">trailing</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">DropdownMenuButton</span><span class="p">(</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="p">{</span> <span class="n">Text</span><span class="p">(</span><span class="n">formatValue</span><span class="p">(</span><span class="n">currentValue</span><span class="p">))</span> <span class="p">}</span>
+            <span class="p">)</span> <span class="p">{</span>
+                <span class="k">for</span> <span class="p">(</span><span class="n">value</span> <span class="k">in</span> <span class="n">setting</span><span class="p">.</span><span class="na">values</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="n">DropdownMenuItem</span><span class="p">(</span>
+                        <span class="n">onClick</span> <span class="o">=</span> <span class="p">{</span>
+                            <span class="n">preference</span><span class="p">.</span><span class="na">set</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                            <span class="n">commit</span><span class="p">()</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span> <span class="p">{</span>
+                        <span class="n">Text</span><span class="p">(</span><span class="n">formatValue</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+
+<span class="nd">@Composable</span>
+<span class="kd">fun</span> <span class="nf">DropdownMenuButton</span><span class="p">(</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nd">@Composable</span> <span class="n">RowScope</span><span class="p">.()</span> <span class="o">-&gt;</span> <span class="kt">Unit</span><span class="p">,</span>
+    <span class="n">content</span><span class="p">:</span> <span class="nd">@Composable</span> <span class="n">ColumnScope</span><span class="p">.(</span><span class="n">dismiss</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Unit</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Unit</span>
+<span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nv">isExpanded</span> <span class="k">by</span> <span class="n">remember</span> <span class="p">{</span> <span class="n">mutableStateOf</span><span class="p">(</span><span class="kc">false</span><span class="p">)</span> <span class="p">}</span>
+    <span class="kd">fun</span> <span class="nf">dismiss</span><span class="p">()</span> <span class="p">{</span> <span class="n">isExpanded</span> <span class="o">=</span> <span class="kc">false</span> <span class="p">}</span>
+
+    <span class="n">OutlinedButton</span><span class="p">(</span>
+        <span class="n">onClick</span> <span class="o">=</span> <span class="p">{</span> <span class="n">isExpanded</span> <span class="o">=</span> <span class="kc">true</span> <span class="p">},</span>
+    <span class="p">)</span> <span class="p">{</span>
+        <span class="n">text</span><span class="p">()</span>
+        <span class="n">DropdownMenu</span><span class="p">(</span>
+            <span class="n">expanded</span> <span class="o">=</span> <span class="n">isExpanded</span><span class="p">,</span>
+            <span class="n">onDismissRequest</span> <span class="o">=</span> <span class="p">{</span> <span class="n">isExpanded</span> <span class="o">=</span> <span class="kc">false</span> <span class="p">}</span>
+        <span class="p">)</span> <span class="p">{</span>
+            <span class="n">content</span><span class="p">(</span><span class="o">::</span><span class="n">dismiss</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="save-and-restore-the-user-preferences">Save and restore the user preferences<a class="headerlink" href="#save-and-restore-the-user-preferences" title="Permanent link">&para;</a></h2>
+<p>Having a user settings screen is not useful if you cannot save and restore the selected preferences for future sessions. Each navigator includes a JSON serialization helper that you can choose to use or not.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span> <span class="nv">serializer</span> <span class="o">=</span> <span class="n">EpubPreferencesSerializer</span><span class="p">()</span>
+
+<span class="kd">val</span> <span class="nv">jsonString</span> <span class="o">=</span> <span class="n">serializer</span><span class="p">.</span><span class="na">serialize</span><span class="p">(</span><span class="n">preferences</span><span class="p">)</span>
+</code></pre></div>
+<p>When you are ready to restore the user preferences, construct a new <code>Preferences</code> object from the JSON string.</p>
+<div class="highlight"><pre><span></span><code><span class="kd">val</span> <span class="nv">preferences</span> <span class="o">=</span> <span class="n">serializer</span><span class="p">.</span><span class="na">deserialize</span><span class="p">(</span><span class="n">jsonString</span><span class="p">)</span>
+</code></pre></div>
+<p>In the Test App, <code>UserPreferencesViewModel</code> delegates the preferences state hoisting and persistence to a <code>PreferencesManager</code>, which acts as a single source of truth.</p>
+<h3 id="splitting-and-merging-preferences">Splitting and merging preferences<a class="headerlink" href="#splitting-and-merging-preferences" title="Permanent link">&para;</a></h3>
+<p>The way you store user preferences can affect the available features. You could have, for example:</p>
+<ul>
+<li>A unique set of preferences for each publication.</li>
+<li>Preferences shared between publications with the same profile or media type (EPUB, PDF, etc.).</li>
+<li>Global preferences shared with all publications (e.g. theme).</li>
+<li>Several user setting profiles/themes that the user can switch between and modify independently.</li>
+<li>Some settings that are not stored as JSON and will need to be reconstructed (e.g. the publication language).</li>
+</ul>
+<p>To assist you, the toolkit provides suggested filters for each navigator. You can combine preference filters with the <code>+</code> operator.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// The suggested filter for the preferences that should be tied to a</span>
+<span class="c1">// publication and not shared:</span>
+<span class="kd">val</span> <span class="nv">publicationFilter</span> <span class="o">=</span> <span class="n">EpubPublicationPreferencesFilter</span>
+
+<span class="c1">// The suggested filter for the preferences that will be shared between</span>
+<span class="c1">// publications of the same type.</span>
+<span class="c1">// Note that in this example, we combine it with an inline custom filter</span>
+<span class="c1">// to remove the `theme` preference which will be stored globally.</span>
+<span class="kd">val</span> <span class="nv">sharedFilter</span> <span class="o">=</span> <span class="n">EpubSharedPreferencesFilter</span>
+    <span class="o">+</span> <span class="p">{</span> <span class="nb">it</span><span class="p">.</span><span class="na">copy</span><span class="p">(</span><span class="n">theme</span> <span class="o">=</span> <span class="kc">null</span><span class="p">)</span> <span class="p">}</span>
+
+<span class="c1">// A custom filter to extract the settings which be stored globally.</span>
+<span class="kd">val</span> <span class="nv">globalFilter</span> <span class="o">=</span> <span class="n">PreferencesFilter</span><span class="o">&lt;</span><span class="n">EpubPreferences</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="n">EpubPreferences</span><span class="p">(</span><span class="n">theme</span> <span class="o">=</span> <span class="nb">it</span><span class="p">.</span><span class="na">theme</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">val</span> <span class="nv">publicationPrefs</span> <span class="o">=</span> <span class="n">preferencesFilter</span><span class="p">.</span><span class="na">filter</span><span class="p">(</span><span class="n">preferences</span><span class="p">)</span>
+<span class="kd">val</span> <span class="nv">sharedPrefs</span> <span class="o">=</span> <span class="n">sharedFilter</span><span class="p">.</span><span class="na">filter</span><span class="p">(</span><span class="n">preferences</span><span class="p">)</span>
+<span class="kd">val</span> <span class="nv">globalPrefs</span> <span class="o">=</span> <span class="n">globalFilter</span><span class="p">.</span><span class="na">filter</span><span class="p">(</span><span class="n">preferences</span><span class="p">)</span>
+
+<span class="c1">// You can reconstruct the original preferences by combining the filtered ones.</span>
+<span class="kd">val</span> <span class="nv">combinedPrefs</span> <span class="o">=</span> <span class="n">publicationPrefs</span> <span class="o">+</span> <span class="n">sharedPrefs</span> <span class="o">+</span> <span class="n">globalPrefs</span>
+</code></pre></div>
+<p>:warning: Some preferences are closely tied to a specific publication and should never be shared between multiple publications, such as the language. It is recommended that you store these preferences separately per book, which is what the suggested filters will do if you use them.</p>
+<h2 id="appendix-preference-constraints">Appendix: Preference constraints<a class="headerlink" href="#appendix-preference-constraints" title="Permanent link">&para;</a></h2>
+<h3 id="epub">EPUB<a class="headerlink" href="#epub" title="Permanent link">&para;</a></h3>
+<h4 id="reflowable-vs-fixed-layout">Reflowable vs fixed-layout<a class="headerlink" href="#reflowable-vs-fixed-layout" title="Permanent link">&para;</a></h4>
+<p>EPUB comes in two very different flavors: <strong>reflowable</strong> which allows a lot of customization, and <strong>fixed-layout</strong> which is similar to a PDF or a comic book. Depending on the EPUB being rendered, the Navigator will ignore some of the preferences.</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Reflowable</th>
+<th>Fixed Layout</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>backgroundColor</code></td>
+<td>:white_check_mark:</td>
+<td>:white_check_mark:</td>
+</tr>
+<tr>
+<td><code>columnCount</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>fontFamily</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>fontSize</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>fontWeight</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>hyphens</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>imageFilter</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>language</code></td>
+<td>:white_check_mark:</td>
+<td>:white_check_mark:</td>
+</tr>
+<tr>
+<td><code>letterSpacing</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ligatures</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>lineHeight</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>pageMargins</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>paragraphIndent</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>paragraphSpacing</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>publisherStyles</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>readingProgression</code></td>
+<td>:white_check_mark:</td>
+<td>:white_check_mark:</td>
+</tr>
+<tr>
+<td><code>scroll</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>spread</code></td>
+<td></td>
+<td>:white_check_mark:</td>
+</tr>
+<tr>
+<td><code>textAlign</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>textColor</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>textNormalization</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>theme</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>typeScale</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>verticalText</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>wordSpacing</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="publisher-styles">Publisher styles<a class="headerlink" href="#publisher-styles" title="Permanent link">&para;</a></h4>
+<p>The following advanced preferences require <code>publisherStyles</code> to be explicitly set to <code>false</code>. Make sure you convey this in your user interface.</p>
+<ul>
+<li><code>hyphens</code></li>
+<li><code>letterSpacing</code></li>
+<li><code>ligatures</code></li>
+<li><code>lineHeight</code></li>
+<li><code>paragraphIndent</code></li>
+<li><code>paragraphSpacing</code></li>
+<li><code>textAlign</code></li>
+<li><code>typeScale</code></li>
+<li><code>wordSpacing</code></li>
+</ul>
+<h4 id="scroll-vs-paginated">Scroll vs paginated<a class="headerlink" href="#scroll-vs-paginated" title="Permanent link">&para;</a></h4>
+<p>The <code>columnCount</code> preference is available only when in paginated mode (<code>scroll = false</code>).</p>
+<h4 id="dark-theme-specific-preferences">Dark theme specific preferences<a class="headerlink" href="#dark-theme-specific-preferences" title="Permanent link">&para;</a></h4>
+<p>The <code>imageFilter</code> preference is available only in dark mode (<code>theme = Theme.DARK</code>).</p>
+<h4 id="language-specific-preferences">Language specific preferences<a class="headerlink" href="#language-specific-preferences" title="Permanent link">&para;</a></h4>
+<p>Some preferences are not available for all languages and layout.</p>
+<table>
+<thead>
+<tr>
+<th>Preference</th>
+<th>LTR</th>
+<th>RTL</th>
+<th>CJK</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>paragraphIndent</code></td>
+<td>:white_check_mark:</td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>textAlign</code></td>
+<td>:white_check_mark:</td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+<tr>
+<td><code>letterSpacing</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>wordSpacing</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>hyphens</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>ligatures</code></td>
+<td></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="pdf-pspdfkit">PDF (PSPDFKit)<a class="headerlink" href="#pdf-pspdfkit" title="Permanent link">&para;</a></h3>
+<h4 id="scroll-vs-paginated_1">Scroll vs paginated<a class="headerlink" href="#scroll-vs-paginated_1" title="Permanent link">&para;</a></h4>
+<p>Some preferences are available only in scroll or paginated mode (<code>scroll = false</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Preference</th>
+<th>Scroll</th>
+<th>Paginated</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>offsetFirstPage</code></td>
+<td></td>
+<td>:white_check_mark:</td>
+</tr>
+<tr>
+<td><code>spread</code></td>
+<td></td>
+<td>:white_check_mark:</td>
+</tr>
+<tr>
+<td><code>scrollAxis</code></td>
+<td>:white_check_mark:</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../../migration-guide/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Migration Guide" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Migration Guide
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../epub-fonts/" class="md-footer__link md-footer__link--next" aria-label="Next: EPUB font families" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              EPUB font families
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2022 Readium Foundation
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.748e2769.min.js"></script>
+      
+    
+  </body>
+</html>

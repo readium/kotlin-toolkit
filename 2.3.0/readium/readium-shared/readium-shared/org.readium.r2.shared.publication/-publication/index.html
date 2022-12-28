@@ -1,0 +1,1055 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Readium Mobile is a toolkit for ebooks, audiobooks and comics written in Swift & Kotlin.">
+      
+      
+        <meta name="author" content="Readium Foundation">
+      
+      
+        <link rel="canonical" href="https://github.com/readium/kotlin-toolkit/2.3.0/readium/readium-shared/readium-shared/org.readium.r2.shared.publication/-publication/">
+      
+      <link rel="icon" href="../../../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.2.11">
+    
+    
+      
+        <title>Index - Readium Kotlin</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.8c5ef100.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.9647289d.min.css">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../readium_colors.css">
+    
+    <script>__md_scope=new URL("../../../../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#publication" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-component="outdated" hidden>
+        <aside class="md-banner md-banner--warning">
+          
+        </aside>
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../../.." title="Readium Kotlin" class="md-header__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Readium Kotlin
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Index
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/readium/kotlin-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../.." title="Readium Kotlin" class="md-nav__button md-logo" aria-label="Readium Kotlin" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Readium Kotlin
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/readium/kotlin-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    kotlin-toolkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../migration-guide/" class="md-nav__link">
+        Migration Guide
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          User Guides
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="User Guides" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          User Guides
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../guides/navigator-preferences/" class="md-nav__link">
+        Navigator preferences
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../guides/epub-fonts/" class="md-nav__link">
+        EPUB font families
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../guides/pdf/" class="md-nav__link">
+        PDF support
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../guides/tts/" class="md-nav__link">
+        Text-to-speech
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../guides/content/" class="md-nav__link">
+        Extracting the content of a publication
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          API Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="API Reference" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          API Reference
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../shared/index.md" class="md-nav__link">
+        Shared
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../streamer/index.md" class="md-nav__link">
+        Streamer
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../navigator/index.md" class="md-nav__link">
+        Navigator
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../opds/index.md" class="md-nav__link">
+        OPDS
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../lcp/index.md" class="md-nav__link">
+        LCP
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4_6" type="checkbox" id="__nav_4_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4_6">
+          Adapters
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Adapters" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_6">
+          <span class="md-nav__icon md-icon"></span>
+          Adapters
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../navigator-media2/index.md" class="md-nav__link">
+        Navigator media2
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adapters/pdfium/pdfium-document/index.md" class="md-nav__link">
+        PDFium Document
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adapters/pdfium/pdfium-navigator/index.md" class="md-nav__link">
+        PDFium Navigator
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adapters/pspdfkit/pspdfkit-document/index.md" class="md-nav__link">
+        PSPDFKit Document
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../adapters/pspdfkit/pspdfkit-navigator/index.md" class="md-nav__link">
+        PSPDFKit Navigator
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    Parameters
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#constructors" class="md-nav__link">
+    Constructors
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#types" class="md-nav__link">
+    Types
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    Functions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#properties" class="md-nav__link">
+    Properties
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extensions" class="md-nav__link">
+    Extensions
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+  <a href="https://github.com/readium/kotlin-toolkit/edit/master/docs/readium/readium-shared/readium-shared/org.readium.r2.shared.publication/-publication/index.md" title="Edit this page" class="md-content__button md-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+
+<p>//<a href="../../../">readium-shared</a>/<a href="../">org.readium.r2.shared.publication</a>/<a href="./">Publication</a></p>
+<h1 id="publication">Publication<a class="headerlink" href="#publication" title="Permanent link">&para;</a></h1>
+<p>[androidJvm]\
+class <a href="./">Publication</a>(manifest: <a href="../-manifest/">Manifest</a>, fetcher: <a href="../../org.readium.r2.shared.fetcher/-fetcher/">Fetcher</a> = EmptyFetcher(), servicesBuilder: <a href="-services-builder/">Publication.ServicesBuilder</a> = ServicesBuilder(), var userSettingsUIPreset: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-map/index.html">MutableMap</a>&lt;<a href="../../org.readium.r2.shared/-readium-c-s-s-name/">ReadiumCSSName</a>, <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>&gt; = mutableMapOf(), var cssStyle: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = null) : <a href="../-publication-services-holder/">PublicationServicesHolder</a></p>
+<p>The Publication shared model is the entry-point for all the metadata and services related to a Readium publication.</p>
+<h4 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h4>
+<p>androidJvm</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>manifest</td>
+<td>The manifest holding the publication metadata extracted from the publication file.</td>
+</tr>
+<tr>
+<td>fetcher</td>
+<td>The underlying fetcher used to read publication resources. The default implementation returns Resource.Exception.NotFound for all HREFs.</td>
+</tr>
+<tr>
+<td>servicesBuilder</td>
+<td>Holds the list of service factories used to create the instances of Publication.Service attached to this Publication.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="constructors">Constructors<a class="headerlink" href="#constructors" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="-publication/">Publication</a></td>
+<td>[androidJvm]<br>fun <a href="-publication/">Publication</a>(manifest: <a href="../-manifest/">Manifest</a>, fetcher: <a href="../../org.readium.r2.shared.fetcher/-fetcher/">Fetcher</a> = EmptyFetcher(), servicesBuilder: <a href="-services-builder/">Publication.ServicesBuilder</a> = ServicesBuilder(), userSettingsUIPreset: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-map/index.html">MutableMap</a>&lt;<a href="../../org.readium.r2.shared/-readium-c-s-s-name/">ReadiumCSSName</a>, <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>&gt; = mutableMapOf(), cssStyle: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = null)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="types">Types<a class="headerlink" href="#types" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="-builder/">Builder</a></td>
+<td>[androidJvm]<br>class <a href="-builder/">Builder</a>(var manifest: <a href="../-manifest/">Manifest</a>, var fetcher: <a href="../../org.readium.r2.shared.fetcher/-fetcher/">Fetcher</a>, var servicesBuilder: <a href="-services-builder/">Publication.ServicesBuilder</a> = ServicesBuilder())<br>Builds a Publication from its components.</td>
+</tr>
+<tr>
+<td><a href="-companion/">Companion</a></td>
+<td>[androidJvm]<br>object <a href="-companion/">Companion</a></td>
+</tr>
+<tr>
+<td><a href="-e-x-t-e-n-s-i-o-n/">EXTENSION</a></td>
+<td>[androidJvm]<br>enum <a href="-e-x-t-e-n-s-i-o-n/">EXTENSION</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-enum/index.html">Enum</a>&lt;<a href="-e-x-t-e-n-s-i-o-n/">Publication.EXTENSION</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="-opening-exception/">OpeningException</a></td>
+<td>[androidJvm]<br>sealed class <a href="-opening-exception/">OpeningException</a> : <a href="../../org.readium.r2.shared/-user-exception/">UserException</a><br>Errors occurring while opening a Publication.</td>
+</tr>
+<tr>
+<td><a href="-position-list-factory/">PositionListFactory</a></td>
+<td>[androidJvm]<br>interface <a href="-position-list-factory/">~~PositionListFactory~~</a><br>Creates a <a href="./">Publication</a>'s positions.</td>
+</tr>
+<tr>
+<td><a href="-profile/">Profile</a></td>
+<td>[androidJvm]<br>data class <a href="-profile/">Profile</a>(val uri: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>) : <a href="https://developer.android.com/reference/kotlin/android/os/Parcelable.html">Parcelable</a><br>Represents a Readium Web Publication Profile a <a href="./">Publication</a> can conform to.</td>
+</tr>
+<tr>
+<td><a href="-service/">Service</a></td>
+<td>[androidJvm]<br>interface <a href="-service/">Service</a> : <a href="../../org.readium.r2.shared.util/-closeable/">Closeable</a><br>Base interface to be implemented by all publication services.</td>
+</tr>
+<tr>
+<td><a href="-services-builder/">ServicesBuilder</a></td>
+<td>[androidJvm]<br>class <a href="-services-builder/">ServicesBuilder</a><br>Builds a list of <a href="-service/">Publication.Service</a> from a collection of service factories.</td>
+</tr>
+<tr>
+<td><a href="-t-y-p-e/">TYPE</a></td>
+<td>[androidJvm]<br>enum <a href="-t-y-p-e/">TYPE</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-enum/index.html">Enum</a>&lt;<a href="-t-y-p-e/">Publication.TYPE</a>&gt;</td>
+</tr>
+</tbody>
+</table>
+<h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="add-self-link/">addSelfLink</a></td>
+<td>[androidJvm]<br>fun <a href="add-self-link/">~~addSelfLink~~</a>(endPoint: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, baseURL: <a href="https://developer.android.com/reference/kotlin/java/net/URL.html">URL</a>)</td>
+</tr>
+<tr>
+<td><a href="base-url/">baseUrl</a></td>
+<td>[androidJvm]<br>fun <a href="base-url/">~~baseUrl~~</a>(): <a href="https://developer.android.com/reference/kotlin/java/net/URL.html">URL</a>?</td>
+</tr>
+<tr>
+<td><a href="close/">close</a></td>
+<td>[androidJvm]<br>open override fun <a href="close/">close</a>()<br>Closes any opened resource associated with the <a href="./">Publication</a>, including services.</td>
+</tr>
+<tr>
+<td><a href="conforms-to/">conformsTo</a></td>
+<td>[androidJvm]<br>fun <a href="conforms-to/">conformsTo</a>(profile: <a href="-profile/">Publication.Profile</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>Returns whether this publication conforms to the given Readium Web Publication Profile.</td>
+</tr>
+<tr>
+<td><a href="content-layout-for-language/">contentLayoutForLanguage</a></td>
+<td>[androidJvm]<br>fun <a href="content-layout-for-language/">~~contentLayoutForLanguage~~</a>(language: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?): <a href="../-reading-progression/">ReadingProgression</a></td>
+</tr>
+<tr>
+<td><a href="copy-with-positions-factory/">copyWithPositionsFactory</a></td>
+<td>[androidJvm]<br>fun <a href="copy-with-positions-factory/">~~copyWithPositionsFactory~~</a>(createFactory: <a href="./">Publication</a>.() -&gt; <a href="-position-list-factory/">Publication.PositionListFactory</a>): <a href="./">Publication</a><br>Copy the <a href="./">Publication</a> with a different <a href="-position-list-factory/">PositionListFactory</a>. The provided closure will be used to build the <a href="-position-list-factory/">PositionListFactory</a>, with this being the <a href="./">Publication</a>.</td>
+</tr>
+<tr>
+<td><a href="find-service/">findService</a></td>
+<td>[androidJvm]<br>open override fun &lt;<a href="find-service/">T</a> : <a href="-service/">Publication.Service</a>&gt; <a href="find-service/">findService</a>(serviceType: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.reflect/-k-class/index.html">KClass</a>&lt;<a href="find-service/">T</a>&gt;): <a href="find-service/">T</a>?<br>Returns the first publication service that is an instance of <a href="find-service/">serviceType</a>.</td>
+</tr>
+<tr>
+<td><a href="find-services/">findServices</a></td>
+<td>[androidJvm]<br>open override fun &lt;<a href="find-services/">T</a> : <a href="-service/">Publication.Service</a>&gt; <a href="find-services/">findServices</a>(serviceType: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.reflect/-k-class/index.html">KClass</a>&lt;<a href="find-services/">T</a>&gt;): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="find-services/">T</a>&gt;<br>Returns all the publication services that are instances of <a href="find-services/">serviceType</a>.</td>
+</tr>
+<tr>
+<td><a href="get/">get</a></td>
+<td>[androidJvm]<br>fun <a href="get/">get</a>(link: <a href="../-link/">Link</a>): <a href="../../org.readium.r2.shared.fetcher/-resource/">Resource</a><br>Returns the resource targeted by the given non-templated <a href="get/">link</a>.</td>
+</tr>
+<tr>
+<td><a href="link/">link</a></td>
+<td>[androidJvm]<br>fun <a href="link/">~~link~~</a>(predicate: (<a href="../-link/">Link</a>) -&gt; <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>): <a href="../-link/">Link</a>?<br>Finds the first <a href="../-link/">Link</a> matching the given <a href="link/">predicate</a> in the publications's <a href="../-link/">Link</a> properties: <a href="resources/">resources</a>, <a href="reading-order/">readingOrder</a> and <a href="links/">links</a>.</td>
+</tr>
+<tr>
+<td><a href="links-with-rel/">linksWithRel</a></td>
+<td>[androidJvm]<br>fun <a href="links-with-rel/">linksWithRel</a>(rel: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-link/">Link</a>&gt;<br>Finds all <a href="../-link/">Link</a>s having the given <a href="links-with-rel/">rel</a> in the publications's links.</td>
+</tr>
+<tr>
+<td><a href="link-with-href/">linkWithHref</a></td>
+<td>[androidJvm]<br>fun <a href="link-with-href/">linkWithHref</a>(href: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="../-link/">Link</a>?<br>Finds the first <a href="../-link/">Link</a> with the given HREF in the publication's links.</td>
+</tr>
+<tr>
+<td><a href="link-with-rel/">linkWithRel</a></td>
+<td>[androidJvm]<br>fun <a href="link-with-rel/">linkWithRel</a>(rel: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="../-link/">Link</a>?<br>Finds the first <a href="../-link/">Link</a> having the given <a href="link-with-rel/">rel</a> in the publications's links.</td>
+</tr>
+<tr>
+<td><a href="locator-from-link/">locatorFromLink</a></td>
+<td>[androidJvm]<br>fun <a href="locator-from-link/">locatorFromLink</a>(link: <a href="../-link/">Link</a>): <a href="../-locator/">Locator</a>?<br>Creates a new <a href="../-locator/">Locator</a> object from a <a href="../-link/">Link</a> to a resource of this publication.</td>
+</tr>
+<tr>
+<td><a href="resource/">resource</a></td>
+<td>[androidJvm]<br>fun <a href="resource/">~~resource~~</a>(href: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="../-link/">Link</a>?</td>
+</tr>
+<tr>
+<td><a href="resource-with-href/">resourceWithHref</a></td>
+<td>[androidJvm]<br>fun <a href="resource-with-href/">~~resourceWithHref~~</a>(href: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>): <a href="../-link/">Link</a>?<br>Finds the first resource <a href="../-link/">Link</a> (asset or <a href="reading-order/">readingOrder</a> item) at the given relative path.</td>
+</tr>
+<tr>
+<td><a href="set-self-link/">setSelfLink</a></td>
+<td>[androidJvm]<br>fun <a href="set-self-link/">setSelfLink</a>(href: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>)<br>Sets the URL where this <a href="./">Publication</a>'s RWPM manifest is served.</td>
+</tr>
+<tr>
+<td><a href="to-j-s-o-n/">toJSON</a></td>
+<td>[androidJvm]<br>fun <a href="to-j-s-o-n/">~~toJSON~~</a>(): <a href="https://developer.android.com/reference/kotlin/org/json/JSONObject.html">JSONObject</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="base-url/">baseUrl</a></td>
+<td>[androidJvm]<br>val <a href="base-url/">baseUrl</a>: <a href="https://developer.android.com/reference/kotlin/java/net/URL.html">URL</a>?<br>The URL where this publication is served, computed from the <a href="../-link/">Link</a> with <code>self</code> relation.</td>
+</tr>
+<tr>
+<td><a href="content-layout/">contentLayout</a></td>
+<td>[androidJvm]<br>val <a href="content-layout/">~~contentLayout~~</a>: <a href="../-reading-progression/">ReadingProgression</a></td>
+</tr>
+<tr>
+<td><a href="context/">context</a></td>
+<td>[androidJvm]<br>val <a href="context/">context</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="cover-link/">coverLink</a></td>
+<td>[androidJvm]<br>val <a href="cover-link/">~~coverLink~~</a>: <a href="../-link/">Link</a>?<br>Finds the first <a href="../-link/">Link</a> to the publication's cover (rel = cover).</td>
+</tr>
+<tr>
+<td><a href="css-style/">cssStyle</a></td>
+<td>[androidJvm]<br>var <a href="css-style/">~~cssStyle~~</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>? = null</td>
+</tr>
+<tr>
+<td><a href="json-manifest/">jsonManifest</a></td>
+<td>[androidJvm]<br>val <a href="json-manifest/">jsonManifest</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><br>Returns the RWPM JSON representation for this <a href="./">Publication</a>'s manifest, as a string.</td>
+</tr>
+<tr>
+<td><a href="links/">links</a></td>
+<td>[androidJvm]<br>val <a href="links/">links</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-link/">Link</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="list-of-audio-files/">listOfAudioFiles</a></td>
+<td>[androidJvm]<br>val <a href="list-of-audio-files/">~~listOfAudioFiles~~</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-link/">Link</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="list-of-videos/">listOfVideos</a></td>
+<td>[androidJvm]<br>val <a href="list-of-videos/">~~listOfVideos~~</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-link/">Link</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="metadata/">metadata</a></td>
+<td>[androidJvm]<br>val <a href="metadata/">metadata</a>: <a href="../-metadata/">Metadata</a></td>
+</tr>
+<tr>
+<td><a href="other-collections/">otherCollections</a></td>
+<td>[androidJvm]<br>val <a href="other-collections/">~~otherCollections~~</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-publication-collection/">PublicationCollection</a>&gt;&gt;</td>
+</tr>
+<tr>
+<td><a href="reading-order/">readingOrder</a></td>
+<td>[androidJvm]<br>val <a href="reading-order/">readingOrder</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-link/">Link</a>&gt;<br>Identifies a list of resources in reading order for the publication.</td>
+</tr>
+<tr>
+<td><a href="resources/">resources</a></td>
+<td>[androidJvm]<br>val <a href="resources/">resources</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-link/">Link</a>&gt;<br>Identifies resources that are necessary for rendering the publication.</td>
+</tr>
+<tr>
+<td><a href="subcollections/">subcollections</a></td>
+<td>[androidJvm]<br>val <a href="subcollections/">subcollections</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-publication-collection/">PublicationCollection</a>&gt;&gt;</td>
+</tr>
+<tr>
+<td><a href="table-of-contents/">tableOfContents</a></td>
+<td>[androidJvm]<br>val <a href="table-of-contents/">tableOfContents</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-link/">Link</a>&gt;<br>Identifies the collection that contains a table of contents.</td>
+</tr>
+<tr>
+<td><a href="type/">type</a></td>
+<td>[androidJvm]<br>var <a href="type/">~~type~~</a>: <a href="-t-y-p-e/">Publication.TYPE</a></td>
+</tr>
+<tr>
+<td><a href="user-settings-u-i-preset/">userSettingsUIPreset</a></td>
+<td>[androidJvm]<br>var <a href="user-settings-u-i-preset/">~~userSettingsUIPreset~~</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-map/index.html">MutableMap</a>&lt;<a href="../../org.readium.r2.shared/-readium-c-s-s-name/">ReadiumCSSName</a>, <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="version/">version</a></td>
+<td>[androidJvm]<br>var <a href="version/">~~version~~</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a> = 0.0</td>
+</tr>
+</tbody>
+</table>
+<h2 id="extensions">Extensions<a class="headerlink" href="#extensions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services/cache-service/">cacheService</a></td>
+<td>[androidJvm]<br>val <a href="../-publication-services-holder/">PublicationServicesHolder</a>.<a href="../../org.readium.r2.shared.publication.services/cache-service/">cacheService</a>: <a href="../../org.readium.r2.shared.publication.services/-cache-service/">CacheService</a>?</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services.content/content/">content</a></td>
+<td>[androidJvm]<br>fun <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services.content/content/">content</a>(start: <a href="../-locator/">Locator</a>? = null): <a href="../../org.readium.r2.shared.publication.services.content/-content/">Content</a>?<br>Creates a <a href="../../org.readium.r2.shared.publication.services.content/-content/">Content</a> starting from the given <a href="../../org.readium.r2.shared.publication.services.content/content/">start</a> location, or the beginning of the publication when missing.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services/cover/">cover</a></td>
+<td>[androidJvm]<br>suspend fun <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services/cover/">cover</a>(): <a href="https://developer.android.com/reference/kotlin/android/graphics/Bitmap.html">Bitmap</a>?<br>Returns the publication cover as a <a href="https://developer.android.com/reference/kotlin/android/graphics/Bitmap.html">Bitmap</a> at its maximum size.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services/cover-fitting/">coverFitting</a></td>
+<td>[androidJvm]<br>suspend fun <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services/cover-fitting/">coverFitting</a>(maxSize: <a href="https://developer.android.com/reference/kotlin/android/util/Size.html">Size</a>): <a href="https://developer.android.com/reference/kotlin/android/graphics/Bitmap.html">Bitmap</a>?<br>Returns the publication cover as a <a href="https://developer.android.com/reference/kotlin/android/graphics/Bitmap.html">Bitmap</a>, scaled down to fit the given <a href="../../org.readium.r2.shared.publication.services/cover-fitting/">maxSize</a>.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services/credentials/">credentials</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services/credentials/">credentials</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?<br>Credentials used to unlock this <a href="./">Publication</a>.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.opds/images/">images</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.opds/images/">images</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-link/">Link</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services/is-protected/">isProtected</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services/is-protected/">isProtected</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>Returns whether this Publication is protected by a Content Protection technology.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services/is-restricted/">isRestricted</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services/is-restricted/">isRestricted</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>Whether the <a href="./">Publication</a> has a restricted access to its resources, and can't be rendered in a Navigator.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services.search/is-searchable/">isSearchable</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services.search/is-searchable/">isSearchable</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><br>Indicates whether the content of this publication can be searched.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.epub/landmarks/">landmarks</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.epub/landmarks/">landmarks</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-link/">Link</a>&gt;<br>Identifies fundamental structural components of the publication in order to enable Reading Systems to provide the User efficient access to them.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.epub/list-of-audio-clips/">listOfAudioClips</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.epub/list-of-audio-clips/">listOfAudioClips</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-link/">Link</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.epub/list-of-illustrations/">listOfIllustrations</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.epub/list-of-illustrations/">listOfIllustrations</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-link/">Link</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.epub/list-of-tables/">listOfTables</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.epub/list-of-tables/">listOfTables</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-link/">Link</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.epub/list-of-video-clips/">listOfVideoClips</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.epub/list-of-video-clips/">listOfVideoClips</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-link/">Link</a>&gt;</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services/locate/">locate</a></td>
+<td>[androidJvm]<br>suspend fun <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services/locate/">locate</a>(locator: <a href="../-locator/">Locator</a>): <a href="../-locator/">Locator</a>?<br>Locates the target of the given <a href="../../org.readium.r2.shared.publication.services/locate/">locator</a>.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services/locate-progression/">locateProgression</a></td>
+<td>[androidJvm]<br>suspend fun <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services/locate-progression/">locateProgression</a>(totalProgression: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a>): <a href="../-locator/">Locator</a>?<br>Locates the target at the given progression relative to the whole publication.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.epub/page-list/">pageList</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.epub/page-list/">pageList</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-link/">Link</a>&gt;<br>Provides navigation to positions in the Publication content that correspond to the locations of page boundaries present in a print source being represented by this EPUB Publication.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services/positions/">positions</a></td>
+<td>[androidJvm]<br>suspend fun <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services/positions/">positions</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-locator/">Locator</a>&gt;<br>Returns the list of all the positions in the publication.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services/positions-by-reading-order/">positionsByReadingOrder</a></td>
+<td>[androidJvm]<br>suspend fun <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services/positions-by-reading-order/">positionsByReadingOrder</a>(): <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-locator/">Locator</a>&gt;&gt;<br>Returns the list of all the positions in the publication, grouped by the resource reading order index.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services/positions-by-resource/">positionsByResource</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services/positions-by-resource/">~~positionsByResource~~</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a>&lt;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a>&lt;<a href="../-locator/">Locator</a>&gt;&gt;<br>List of all the positions in each resource, indexed by their href.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services/protection-error/">protectionError</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services/protection-error/">protectionError</a>: <a href="../../org.readium.r2.shared/-user-exception/">UserException</a>?<br>The error raised when trying to unlock the <a href="./">Publication</a>, if any.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services/protection-localized-name/">protectionLocalizedName</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services/protection-localized-name/">protectionLocalizedName</a>: <a href="../-localized-string/">LocalizedString</a>?<br>User-facing localized name for this Content Protection, e.g. &quot;Readium LCP&quot;. It could be used in a sentence such as &quot;Protected by {name}&quot;.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services/protection-name/">protectionName</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services/protection-name/">protectionName</a>: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>?<br>User-facing name for this Content Protection, e.g. &quot;Readium LCP&quot;. It could be used in a sentence such as &quot;Protected by {name}&quot;.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services/protection-scheme/">protectionScheme</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services/protection-scheme/">protectionScheme</a>: <a href="../-content-protection/-scheme/">ContentProtection.Scheme</a>?<br>Known technology for this type of Content Protection.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services/rights/">rights</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services/rights/">rights</a>: <a href="../../org.readium.r2.shared.publication.services/-content-protection-service/-user-rights/">ContentProtectionService.UserRights</a><br>Manages consumption of user rights and permissions.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services.search/search/">search</a></td>
+<td>[androidJvm]<br>suspend fun <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services.search/search/">search</a>(query: <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a>, options: <a href="../../org.readium.r2.shared.publication.services.search/-search-service/-options/">SearchService.Options</a>? = null): <a href="../../org.readium.r2.shared.publication.services.search/#-388591585%2FClasslikes%2F113195696">SearchTry</a>&lt;<a href="../../org.readium.r2.shared.publication.services.search/-search-iterator/">SearchIterator</a>&gt;<br>Starts a new search through the publication content, with the given <a href="../../org.readium.r2.shared.publication.services.search/search/">query</a>.</td>
+</tr>
+<tr>
+<td><a href="../../org.readium.r2.shared.publication.services.search/search-options/">searchOptions</a></td>
+<td>[androidJvm]<br>val <a href="./">Publication</a>.<a href="../../org.readium.r2.shared.publication.services.search/search-options/">searchOptions</a>: <a href="../../org.readium.r2.shared.publication.services.search/-search-service/-options/">SearchService.Options</a><br>Default value for the search options of this publication.</td>
+</tr>
+</tbody>
+</table>
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2022 Readium Foundation
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../../../../..", "features": [], "search": "../../../../../assets/javascripts/workers/search.2a1c317c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../../../../assets/javascripts/bundle.748e2769.min.js"></script>
+      
+    
+  </body>
+</html>
