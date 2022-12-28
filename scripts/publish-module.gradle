@@ -61,6 +61,23 @@ afterEvaluate {
                             url = 'https://github.com/readium/kotlin-toolkit/blob/main/LICENSE'
                         }
                     }
+                    developers {
+                        developer {
+                            id = 'aferditamuriqi'
+                            name = 'Aferdita Muriqi'
+                            email = 'aferdita.muriqi@gmail.com'
+                        }
+                        developer {
+                            id = 'mickael-menu'
+                            name = 'Mickaël Menu'
+                            email = 'mickael.menu@gmail.com'
+                        }
+                        developer {
+                            id = 'qnga'
+                            name = 'Quentin Gliosca'
+                            email = 'quentin.gliosca@gmail.com'
+                        }
+                    }
                     scm {
                         connection = 'scm:git:github.com/readium/kotlin-toolkit.git'
                         developerConnection = 'scm:git:ssh://github.com/readium/kotlin-toolkit.git'
