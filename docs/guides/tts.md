@@ -1,6 +1,6 @@
 # Text-to-speech
 
-:warning: TTS is an experimental feature which is not yet implemented for all formats.
+:warning: The API described in this guide will be changed in the next version of the Kotlin toolkit to support background TTS playback and media notifications. It is recommended that you wait before integrating it in your app.
 
 Text-to-speech can be used to read aloud a publication using a synthetic voice. The Readium toolkit ships with a TTS implementation based on the native [Android TTS engine](https://developer.android.com/reference/android/speech/tts/TextToSpeech), but it is opened for extension if you want to use a different TTS engine.
 
