@@ -45,7 +45,7 @@ android {
 }
 
 rootProject.ext["publish.artifactId"] = "readium-adapter-pspdfkit-navigator"
-apply(from = "${rootDir}/scripts/publish-module.gradle")
+apply(from = "$rootDir/scripts/publish-module.gradle")
 
 dependencies {
     api(project(":readium:readium-shared"))

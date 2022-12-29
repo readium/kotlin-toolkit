@@ -41,7 +41,7 @@ android {
 }
 
 rootProject.ext["publish.artifactId"] = "readium-lcp"
-apply(from = "${rootDir}/scripts/publish-module.gradle")
+apply(from = "$rootDir/scripts/publish-module.gradle")
 
 dependencies {
     implementation(libs.kotlinx.coroutines.core)

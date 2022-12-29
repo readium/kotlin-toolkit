@@ -44,7 +44,7 @@ android {
 }
 
 rootProject.ext["publish.artifactId"] = "readium-navigator-media2"
-apply(from = "${rootDir}/scripts/publish-module.gradle")
+apply(from = "$rootDir/scripts/publish-module.gradle")
 
 dependencies {
     api(project(":readium:readium-shared"))

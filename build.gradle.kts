@@ -15,7 +15,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") apply true
 }
 
-apply(from = "${rootDir}/scripts/publish-root.gradle")
+apply(from = "$rootDir/scripts/publish-root.gradle")
 
 ext {
     set("publish.groupId", "org.readium.kotlin-toolkit")

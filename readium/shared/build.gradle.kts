@@ -42,7 +42,7 @@ android {
 }
 
 rootProject.ext["publish.artifactId"] = "readium-shared"
-apply(from = "${rootDir}/scripts/publish-module.gradle")
+apply(from = "$rootDir/scripts/publish-module.gradle")
 
 dependencies {
     implementation(libs.androidx.appcompat)
