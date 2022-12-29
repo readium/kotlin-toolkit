@@ -15,37 +15,19 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Language
 
 /**
- * Interactive editor of [EpubPreferences].
+ * Editor for a set of [EpubPreferences].
  *
- * This can be used as a view model for a user preferences screen.
- *
- * @see EpubPreferences
+ * Use [EpubPreferencesEditor] to assist you in building a preferences user interface or modifying
+ * existing preferences. It includes rules for adjusting preferences, such as the supported values
+ * or ranges.
  */
 @ExperimentalReadiumApi
 class EpubPreferencesEditor internal constructor(
     initialPreferences: EpubPreferences,
     publicationMetadata: Metadata,
     val layout: EpubLayout,
-    defaults: EpubDefaults,
-    configuration: Configuration
+    defaults: EpubDefaults
 ) : PreferencesEditor<EpubPreferences> {
-
-    /**
-     * Configuration for [EpubPreferencesEditor].
-     *
-     * @param fontFamilies a list of font families that can be selected in the editor
-     * @param fontSizeRange the range of font size values that can be set in the editor
-     * @param fontSizeProgression the way the font size value is to be increased or decreased
-     * @param pageMarginsRange the range of page margins values that can be set in the editor
-     * @param pageMarginsProgression the way the page margins value is to be increased or decreased
-     */
-    data class Configuration(
-        val fontFamilies: List<FontFamily> = DEFAULT_FONT_FAMILIES,
-        val fontSizeRange: ClosedRange<Double> = 0.4..5.0,
-        val fontSizeProgression: ProgressionStrategy<Double> = DoubleIncrement(0.1),
-        val pageMarginsRange: ClosedRange<Double> = 0.5..4.0,
-        val pageMarginsProgression: ProgressionStrategy<Double> = DoubleIncrement(0.3)
-    )
 
     private data class State(
         val preferences: EpubPreferences,
@@ -62,18 +44,34 @@ class EpubPreferencesEditor internal constructor(
     override val preferences: EpubPreferences
         get() = state.preferences
 
+    /**
+     * Reset all preferences.
+     */
     override fun clear() {
         updateValues { EpubPreferences() }
     }
 
+    /**
+     * Default page background color.
+     *
+     * When unset, the current [theme] background color is effective.
+     * Only effective with fixed-layout publications.
+     */
     val backgroundColor: Preference<Color> =
         PreferenceDelegate(
             getValue = { preferences.backgroundColor },
-            getEffectiveValue = { state.settings.backgroundColor },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            getEffectiveValue = { state.settings.backgroundColor ?: Color((theme.value ?: theme.effectiveValue).backgroundColor) },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && preferences.backgroundColor != null },
             updateValue = { value -> updateValues { it.copy(backgroundColor = value) } },
         )
 
+    /**
+     * Number of reflowable columns to display (one-page view or two-page spread).
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [scroll] is off
+     */
     val columnCount: EnumPreference<ColumnCount> =
         EnumPreferenceDelegate(
             getValue = { preferences.columnCount },
@@ -83,43 +81,93 @@ class EpubPreferencesEditor internal constructor(
             supportedValues = listOf(ColumnCount.AUTO, ColumnCount.ONE, ColumnCount.TWO),
         )
 
-    val fontFamily: EnumPreference<FontFamily?> =
-        EnumPreferenceDelegate(
+    /**
+     * Default typeface for the text.
+     *
+     * Only effective with reflowable publications.
+     */
+    val fontFamily: Preference<FontFamily?> =
+        PreferenceDelegate(
             getValue = { preferences.fontFamily },
             getEffectiveValue = { state.settings.fontFamily },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
-            updateValue = { value -> updateValues { it.copy(fontFamily = value) } },
-            supportedValues = configuration.fontFamilies,
+            updateValue = { value -> updateValues { it.copy(fontFamily = value) } }
         )
 
+    /**
+     * Base text font size as a percentage. Default to 100%.
+     *
+     * Note that allowing a font size that is too large could break the pagination.
+     *
+     * Only effective with reflowable publications.
+     */
     val fontSize: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.fontSize },
             getEffectiveValue = { state.settings.fontSize },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(fontSize = value) } },
-            supportedRange = configuration.fontSizeRange,
-            progressionStrategy = configuration.fontSizeProgression,
+            supportedRange = 0.4..5.0,
+            progressionStrategy = DoubleIncrement(0.1),
             valueFormatter = percentFormatter(),
         )
 
-    val hyphens: SwitchPreference =
-        SwitchPreferenceDelegate(
+    /**
+     * Default boldness for the text as a percentage.
+     *
+     * If you want to change the boldness of all text, including headers, you can use this with
+     * [textNormalization].
+     *
+     * Only effective with reflowable publications.
+     */
+    val fontWeight: RangePreference<Double> =
+        RangePreferenceDelegate(
+            getValue = { preferences.fontWeight },
+            getEffectiveValue = { state.settings.fontWeight ?: 1.0 },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && preferences.fontWeight != null },
+            updateValue = { value -> updateValues { it.copy(fontWeight = value) } },
+            valueFormatter = percentFormatter(),
+            supportedRange = 0.0..2.5,
+            progressionStrategy = DoubleIncrement(0.25)
+        )
+
+    /**
+     * Enable hyphenation for latin languages.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [publisherStyles] is off
+     *  - the layout is LTR
+     */
+    val hyphens: Preference<Boolean> =
+        PreferenceDelegate(
             getValue = { preferences.hyphens },
-            getEffectiveValue = { state.settings.hyphens },
-            getIsEffective = { isHyphensEffective() },
+            getEffectiveValue = { state.settings.hyphens ?: false },
+            getIsEffective = ::isHyphensEffective,
             updateValue = { value -> updateValues { it.copy(hyphens = value) } },
         )
 
-    val imageFilter: EnumPreference<ImageFilter> =
+    /**
+     * Filter applied to images in dark theme.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - the [theme] is set to [Theme.DARK]
+     */
+    val imageFilter: EnumPreference<ImageFilter?> =
         EnumPreferenceDelegate(
             getValue = { preferences.imageFilter },
             getEffectiveValue = { state.settings.imageFilter },
             getIsEffective = { state.settings.theme == Theme.DARK },
             updateValue = { value -> updateValues { it.copy(imageFilter = value) } },
-            supportedValues = listOf(ImageFilter.NONE, ImageFilter.DARKEN, ImageFilter.INVERT),
+            supportedValues = listOf(ImageFilter.DARKEN, ImageFilter.INVERT),
         )
 
+    /**
+     * Language of the publication content.
+     *
+     * This has an impact on the resolved layout (e.g. LTR, RTL).
+     */
     val language: Preference<Language?> =
         PreferenceDelegate(
             getValue = { preferences.language },
@@ -128,77 +176,131 @@ class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(language = value) } },
         )
 
+    /**
+     * Space between letters.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [publisherStyles] is off
+     *  - the layout is LTR
+     */
     val letterSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.letterSpacing },
-            getEffectiveValue = { state.settings.letterSpacing },
-            getIsEffective = { isLetterSpacing() },
+            getEffectiveValue = { state.settings.letterSpacing ?: 0.0 },
+            getIsEffective = ::isLetterSpacingEffective,
             updateValue = { value -> updateValues { it.copy(letterSpacing = value) } },
             supportedRange = 0.0..1.0,
             progressionStrategy = DoubleIncrement(0.1),
             valueFormatter = percentFormatter(),
         )
 
-    val ligatures: SwitchPreference =
-        SwitchPreferenceDelegate(
+    /**
+     * Enable ligatures in Arabic.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [publisherStyles] is off
+     *  - the layout is RTL
+     */
+    val ligatures: Preference<Boolean> =
+        PreferenceDelegate(
             getValue = { preferences.ligatures },
-            getEffectiveValue = { state.settings.ligatures },
-            getIsEffective = { isLigaturesSpacing() },
+            getEffectiveValue = { state.settings.ligatures ?: false },
+            getIsEffective = ::isLigaturesEffective,
             updateValue = { value -> updateValues { it.copy(ligatures = value) } },
         )
 
+    /**
+     * Leading line height.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [publisherStyles] is off
+     */
     val lineHeight: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.lineHeight },
-            getEffectiveValue = { state.settings.lineHeight },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles },
+            getEffectiveValue = { state.settings.lineHeight ?: 1.2 },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles && preferences.lineHeight != null },
             updateValue = { value -> updateValues { it.copy(lineHeight = value) } },
             supportedRange = 1.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
             valueFormatter = { it.format(5) },
         )
 
+    /**
+     * Factor applied to horizontal margins. Default to 1.
+     *
+     * Only effective with reflowable publications.
+     */
     val pageMargins: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.pageMargins },
             getEffectiveValue = { state.settings.pageMargins },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.scroll },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(pageMargins = value) } },
-            supportedRange = configuration.pageMarginsRange,
-            progressionStrategy = configuration.pageMarginsProgression,
+            supportedRange = 0.5..4.0,
+            progressionStrategy = DoubleIncrement(0.3),
             valueFormatter = { it.format(5) },
         )
 
+    /**
+     * Text indentation for paragraphs.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [publisherStyles] is off
+     *  - the layout is LTR or RTL
+     */
     val paragraphIndent: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.paragraphIndent },
-            getEffectiveValue = { state.settings.paragraphIndent },
-            getIsEffective = { isParagraphIndentEffective() },
+            getEffectiveValue = { state.settings.paragraphIndent ?: 0.0 },
+            getIsEffective = ::isParagraphIndentEffective,
             updateValue = { value -> updateValues { it.copy(paragraphIndent = value) } },
             supportedRange = 0.0..3.0,
             progressionStrategy = DoubleIncrement(0.2),
             valueFormatter = percentFormatter(),
         )
 
+    /**
+     * Vertical margins for paragraphs.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [publisherStyles] is off
+     */
     val paragraphSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.paragraphSpacing },
-            getEffectiveValue = { state.settings.paragraphSpacing },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles },
+            getEffectiveValue = { state.settings.paragraphSpacing ?: 0.0 },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles && preferences.paragraphSpacing != null },
             updateValue = { value -> updateValues { it.copy(paragraphSpacing = value) } },
             supportedRange = 0.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
             valueFormatter = percentFormatter(),
         )
 
-    val publisherStyles: SwitchPreference =
-        SwitchPreferenceDelegate(
+    /**
+     * Indicates whether the original publisher styles should be observed. Many advanced settings
+     * require this to be off.
+     *
+     * Only effective with reflowable publications.
+     */
+    val publisherStyles: Preference<Boolean> =
+        PreferenceDelegate(
             getValue = { preferences.publisherStyles },
             getEffectiveValue = { state.settings.publisherStyles },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(publisherStyles = value) } },
         )
 
+    /**
+     * Direction of the reading progression across resources.
+     *
+     * This can be changed to influence directly the layout (e.g. LTR or RTL).
+     */
     val readingProgression: EnumPreference<ReadingProgression> =
         EnumPreferenceDelegate(
             getValue = { preferences.readingProgression },
@@ -208,14 +310,26 @@ class EpubPreferencesEditor internal constructor(
             supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL),
         )
 
-    val scroll: SwitchPreference =
-        SwitchPreferenceDelegate(
+    /**
+     * Indicates if the overflow of resources should be handled using scrolling instead of synthetic
+     * pagination.
+     *
+     * Only effective with reflowable publications.
+     */
+    val scroll: Preference<Boolean> =
+        PreferenceDelegate(
             getValue = { preferences.scroll },
             getEffectiveValue = { state.settings.scroll },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(scroll = value) } },
         )
 
+    /**
+     * Indicates if the fixed-layout publication should be rendered with a synthetic spread
+     * (dual-page).
+     *
+     * Only effective with fixed-layout publications.
+     */
     val spread: EnumPreference<Spread> =
         EnumPreferenceDelegate(
             getValue = { preferences.spread },
@@ -225,32 +339,55 @@ class EpubPreferencesEditor internal constructor(
             supportedValues = listOf(Spread.NEVER, Spread.ALWAYS),
         )
 
-    val textAlign: EnumPreference<TextAlign> =
+    /**
+     * Page text alignment.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [publisherStyles] is off
+     *  - the layout is LTR or RTL
+     */
+    val textAlign: EnumPreference<TextAlign?> =
         EnumPreferenceDelegate(
             getValue = { preferences.textAlign },
             getEffectiveValue = { state.settings.textAlign },
-            getIsEffective = { isTextAlignEffective() },
+            getIsEffective = ::isTextAlignEffective,
             updateValue = { value -> updateValues { it.copy(textAlign = value) } },
             supportedValues = listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY),
         )
 
+    /**
+     * Default page text color.
+     *
+     * When unset, the current [theme] text color is effective.
+     * Only effective with reflowable publications.
+     */
     val textColor: Preference<Color> =
         PreferenceDelegate(
             getValue = { preferences.textColor },
-            getEffectiveValue = { state.settings.textColor },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE },
+            getEffectiveValue = { state.settings.textColor ?: Color((theme.value ?: theme.effectiveValue).contentColor) },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && preferences.textColor != null },
             updateValue = { value -> updateValues { it.copy(textColor = value) } }
         )
 
-    val textNormalization: EnumPreference<TextNormalization> =
-        EnumPreferenceDelegate(
+    /**
+     * Normalize text styles to increase accessibility.
+     *
+     * Only effective with reflowable publications.
+     */
+    val textNormalization: Preference<Boolean> =
+        PreferenceDelegate(
             getValue = { preferences.textNormalization },
             getEffectiveValue = { state.settings.textNormalization },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
-            updateValue = { value -> updateValues { it.copy(textNormalization = value) } },
-            supportedValues = listOf(TextNormalization.NONE, TextNormalization.BOLD, TextNormalization.ACCESSIBILITY),
+            updateValue = { value -> updateValues { it.copy(textNormalization = value) } }
         )
 
+    /**
+     * Reader theme (light, dark, sepia).
+     *
+     * Only effective with reflowable publications.
+     */
     val theme: EnumPreference<Theme> =
         EnumPreferenceDelegate(
             getValue = { preferences.theme },
@@ -260,30 +397,50 @@ class EpubPreferencesEditor internal constructor(
             supportedValues = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA),
         )
 
+    /**
+     * Scale applied to all element font sizes.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - [publisherStyles] is off
+     */
     val typeScale: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.typeScale },
-            getEffectiveValue = { state.settings.typeScale },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles },
+            getEffectiveValue = { state.settings.typeScale ?: 1.2 },
+            getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.publisherStyles && preferences.typeScale != null },
             updateValue = { value -> updateValues { it.copy(typeScale = value) } },
             valueFormatter = { it.format(5) },
             supportedRange = 1.0..2.0,
             progressionStrategy = StepsProgression(1.0, 1.067, 1.125, 1.2, 1.25, 1.333, 1.414, 1.5, 1.618),
         )
 
-    val verticalText: SwitchPreference =
-        SwitchPreferenceDelegate(
+    /**
+     * Indicates whether the text should be laid out vertically. This is used for example with CJK
+     * languages. This setting is automatically derived from the language if no preference is given.
+     *
+     * Only effective with reflowable publications.
+     */
+    val verticalText: Preference<Boolean> =
+        PreferenceDelegate(
             getValue = { preferences.verticalText },
             getEffectiveValue = { state.settings.verticalText },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(verticalText = value) } },
         )
 
+    /**
+     * Space between words.
+     *
+     * Only effective when:
+     *  - the publication is reflowable
+     *  - the layout is LTR
+     */
     val wordSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.wordSpacing },
-            getEffectiveValue = { state.settings.wordSpacing },
-            getIsEffective = { isWordSpacingEffective() },
+            getEffectiveValue = { state.settings.wordSpacing ?: 0.0 },
+            getIsEffective = ::isWordSpacingEffective,
             updateValue = { value -> updateValues { it.copy(wordSpacing = value) } },
             supportedRange = 0.0..1.0,
             progressionStrategy = DoubleIncrement(0.1),
@@ -311,37 +468,31 @@ class EpubPreferencesEditor internal constructor(
 
     private fun isHyphensEffective() = layout == EpubLayout.REFLOWABLE &&
         state.layout.stylesheets == Layout.Stylesheets.Default &&
-        !state.settings.publisherStyles
+        !state.settings.publisherStyles &&
+        preferences.hyphens != null
 
-    private fun isLetterSpacing() = layout == EpubLayout.REFLOWABLE &&
+    private fun isLetterSpacingEffective() = layout == EpubLayout.REFLOWABLE &&
         state.layout.stylesheets == Layout.Stylesheets.Default &&
-        !state.settings.publisherStyles
+        !state.settings.publisherStyles &&
+        preferences.letterSpacing != null
 
-    private fun isLigaturesSpacing() = layout == EpubLayout.REFLOWABLE &&
+    private fun isLigaturesEffective() = layout == EpubLayout.REFLOWABLE &&
         state.layout.stylesheets == Layout.Stylesheets.Rtl &&
-        !state.settings.publisherStyles
+        !state.settings.publisherStyles &&
+        preferences.ligatures != null
 
     private fun isParagraphIndentEffective() = layout == EpubLayout.REFLOWABLE &&
         state.layout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl) &&
-        !state.settings.publisherStyles
+        !state.settings.publisherStyles &&
+        preferences.paragraphIndent != null
 
     private fun isTextAlignEffective() = layout == EpubLayout.REFLOWABLE &&
         state.layout.stylesheets in listOf(Layout.Stylesheets.Default, Layout.Stylesheets.Rtl) &&
-        !state.settings.publisherStyles
+        !state.settings.publisherStyles &&
+        preferences.textAlign != null
 
     private fun isWordSpacingEffective(): Boolean = layout == EpubLayout.REFLOWABLE &&
         state.layout.stylesheets == Layout.Stylesheets.Default &&
-        !state.settings.publisherStyles
-
-    companion object {
-
-        private val DEFAULT_FONT_FAMILIES: List<FontFamily> = listOf(
-            FontFamily.SERIF,
-            FontFamily.SANS_SERIF,
-            FontFamily.MONOSPACE,
-            FontFamily.ACCESSIBLE_DFA,
-            FontFamily.IA_WRITER_DUOSPACE,
-            FontFamily.OPEN_DYSLEXIC
-        )
-    }
+        !state.settings.publisherStyles &&
+        preferences.wordSpacing != null
 }

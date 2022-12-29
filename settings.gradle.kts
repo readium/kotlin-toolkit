@@ -11,7 +11,6 @@ pluginManagement {
         mavenLocal()
         mavenCentral()
         maven(url = "https://jcenter.bintray.com")
-        maven(url = "https://jitpack.io")
         maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
     }
 
@@ -34,7 +33,6 @@ dependencyResolutionManagement {
         mavenLocal()
         mavenCentral()
         maven(url = "https://jcenter.bintray.com")
-        maven(url = "https://jitpack.io")
         maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
         maven(url = "https://customers.pspdfkit.com/maven")
     }

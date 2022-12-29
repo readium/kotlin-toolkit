@@ -19,11 +19,13 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.webkit.WebViewClientCompat
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.databinding.FragmentFxllayoutDoubleBinding
 import org.readium.r2.navigator.databinding.FragmentFxllayoutSingleBinding
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
+import org.readium.r2.navigator.epub.EpubNavigatorViewModel
 import org.readium.r2.navigator.epub.fxl.R2FXLLayout
 import org.readium.r2.navigator.epub.fxl.R2FXLOnDoubleTapListener
 
@@ -45,6 +47,8 @@ class R2FXLPageFragment : Fragment() {
 
     private val navigator: EpubNavigatorFragment?
         get() = parentFragment as? EpubNavigatorFragment
+
+    private val viewModel: EpubNavigatorViewModel by viewModels(ownerProducer = { requireParentFragment() })
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(
@@ -123,6 +127,7 @@ class R2FXLPageFragment : Fragment() {
             webView.listener = it.webViewListener
         }
 
+        webView.useLegacySettings = viewModel.useLegacySettings
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false
         webView.isHorizontalScrollBarEnabled = false

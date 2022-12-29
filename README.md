@@ -29,7 +29,7 @@ Readium modules are distributed through [JitPack](https://jitpack.io/#readium/ko
 
 ```groovy
 buildscript {
-    ext.readium_version = '2.2.1'
+    ext.readium_version = '2.3.0'
 }
 
 allprojects {

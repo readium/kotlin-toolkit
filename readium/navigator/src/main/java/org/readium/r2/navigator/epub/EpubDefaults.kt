@@ -21,6 +21,7 @@ import org.readium.r2.shared.util.Language
 data class EpubDefaults(
     val columnCount: ColumnCount? = null,
     val fontSize: Double? = null,
+    val fontWeight: Double? = null,
     val hyphens: Boolean? = null,
     val imageFilter: ImageFilter? = null,
     val language: Language? = null,
@@ -35,7 +36,7 @@ data class EpubDefaults(
     val scroll: Boolean? = null,
     val spread: Spread? = null,
     val textAlign: TextAlign? = null,
-    val textNormalization: TextNormalization? = null,
+    val textNormalization: Boolean? = null,
     val typeScale: Double? = null,
     val wordSpacing: Double? = null
 )

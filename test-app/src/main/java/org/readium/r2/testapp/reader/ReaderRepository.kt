@@ -126,7 +126,7 @@ class ReaderRepository(
 
         val preferencesManager = EpubPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)
-        val navigatorFactory = EpubNavigatorFactory(publication, readium.epubNavigatorConfig)
+        val navigatorFactory = EpubNavigatorFactory(publication)
 
         return EpubReaderInitData(
             bookId, publication, initialLocator,

@@ -12,9 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +30,7 @@ import org.readium.r2.navigator.preferences.TextAlign as ReadiumTextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Language
+import org.readium.r2.testapp.LITERATA
 import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.ColorPicker
 import org.readium.r2.testapp.utils.compose.DropdownMenuButton
@@ -42,12 +41,11 @@ import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
  */
 @Composable
 fun UserPreferences(model: UserPreferencesViewModel<*, *>) {
-    val editor = remember { mutableStateOf(model.preferencesEditor, policy = neverEqualPolicy()) }
-    val commit: () -> Unit = { editor.value = editor.value ; model.commitPreferences() }
+    val editor by model.editor.collectAsState()
 
     UserPreferences(
-        editor = editor.value,
-        commit = commit
+        editor = editor,
+        commit = model::commit
     )
 }
 
@@ -103,6 +101,7 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
                             columnCount = editor.columnCount,
                             fontFamily = editor.fontFamily,
                             fontSize = editor.fontSize,
+                            fontWeight = editor.fontWeight,
                             hyphens = editor.hyphens,
                             imageFilter = editor.imageFilter,
                             language = editor.language,
@@ -143,11 +142,11 @@ private fun ColumnScope.FixedLayoutUserPreferences(
     commit: () -> Unit,
     language: Preference<Language?>? = null,
     readingProgression: EnumPreference<ReadingProgression>? = null,
-    scroll: SwitchPreference? = null,
+    scroll: Preference<Boolean>? = null,
     scrollAxis: EnumPreference<Axis>? = null,
     fit: EnumPreference<Fit>? = null,
     spread: EnumPreference<Spread>? = null,
-    offsetFirstPage: SwitchPreference? = null,
+    offsetFirstPage: Preference<Boolean>? = null,
     pageSpacing: RangePreference<Double>? = null
 ) {
     if (language != null || readingProgression != null) {
@@ -171,19 +170,6 @@ private fun ColumnScope.FixedLayoutUserPreferences(
                 commit = commit,
                 formatValue = { it.name }
             )
-        }
-
-        // The language preferences are specific to a publication. This button resets only the
-        // language preferences to the publication's default metadata for convenience.
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .align(Alignment.End),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Button(onClick = ::reset) {
-                Text("Reset to publication", style = MaterialTheme.typography.caption)
-            }
         }
 
         Divider()
@@ -265,26 +251,27 @@ private fun ColumnScope.ReflowableUserPreferences(
     commit: () -> Unit,
     backgroundColor: Preference<ReadiumColor>? = null,
     columnCount: EnumPreference<ColumnCount>? = null,
-    fontFamily: EnumPreference<FontFamily?>? = null,
+    fontFamily: Preference<FontFamily?>? = null,
     fontSize: RangePreference<Double>? = null,
-    hyphens: SwitchPreference? = null,
-    imageFilter: EnumPreference<ImageFilter>? = null,
+    fontWeight: RangePreference<Double>? = null,
+    hyphens: Preference<Boolean>? = null,
+    imageFilter: EnumPreference<ImageFilter?>? = null,
     language: Preference<Language?>? = null,
     letterSpacing: RangePreference<Double>? = null,
-    ligatures: SwitchPreference? = null,
+    ligatures: Preference<Boolean>? = null,
     lineHeight: RangePreference<Double>? = null,
     pageMargins: RangePreference<Double>? = null,
     paragraphIndent: RangePreference<Double>? = null,
     paragraphSpacing: RangePreference<Double>? = null,
-    publisherStyles: SwitchPreference? = null,
+    publisherStyles: Preference<Boolean>? = null,
     readingProgression: EnumPreference<ReadingProgression>? = null,
-    scroll: SwitchPreference? = null,
-    textAlign: EnumPreference<ReadiumTextAlign>? = null,
+    scroll: Preference<Boolean>? = null,
+    textAlign: EnumPreference<ReadiumTextAlign?>? = null,
     textColor: Preference<ReadiumColor>? = null,
-    textNormalization: EnumPreference<TextNormalization>? = null,
+    textNormalization: Preference<Boolean>? = null,
     theme: EnumPreference<Theme>? = null,
     typeScale: RangePreference<Double>? = null,
-    verticalText: SwitchPreference? = null,
+    verticalText: Preference<Boolean>? = null,
     wordSpacing: RangePreference<Double>? = null,
 ) {
     if (language != null || readingProgression != null || verticalText != null) {
@@ -317,19 +304,6 @@ private fun ColumnScope.ReflowableUserPreferences(
                 preference = verticalText,
                 commit = commit
             )
-        }
-
-        // The language settings are specific to a publication. This button resets only the
-        // language preferences to the publication's default metadata for convenience.
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .align(Alignment.End),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Button(onClick = ::reset) {
-                Text("Reset to publication", style = MaterialTheme.typography.caption)
-            }
         }
 
         Divider()
@@ -393,9 +367,9 @@ private fun ColumnScope.ReflowableUserPreferences(
                 commit = commit
             ) { value ->
                 when (value) {
-                    ImageFilter.NONE -> "None"
                     ImageFilter.DARKEN -> "Darken"
                     ImageFilter.INVERT -> "Invert"
+                    null -> "None"
                 }
             }
         }
@@ -423,7 +397,14 @@ private fun ColumnScope.ReflowableUserPreferences(
         if (fontFamily != null) {
             MenuItem(
                 title = "Typeface",
-                preference = fontFamily,
+                preference = fontFamily
+                    .withSupportedValues(
+                        FontFamily.LITERATA,
+                        FontFamily.SANS_SERIF,
+                        FontFamily.IA_WRITER_DUOSPACE,
+                        FontFamily.ACCESSIBLE_DFA,
+                        FontFamily.OPEN_DYSLEXIC
+                    ),
                 commit = commit
             ) { value ->
                 when (value) {
@@ -442,18 +423,20 @@ private fun ColumnScope.ReflowableUserPreferences(
             )
         }
 
+        if (fontWeight != null) {
+            StepperItem(
+                title = "Font weight",
+                preference = fontWeight,
+                commit = commit
+            )
+        }
+
         if (textNormalization != null) {
-            ButtonGroupItem(
+            SwitchItem(
                 title = "Text normalization",
                 preference = textNormalization,
-                commit = commit,
-            ) { value ->
-                when (value) {
-                    TextNormalization.NONE -> "None"
-                    TextNormalization.BOLD -> "Bold"
-                    TextNormalization.ACCESSIBILITY -> "A11y"
-                }
-            }
+                commit = commit
+            )
         }
 
         Divider()
@@ -465,87 +448,90 @@ private fun ColumnScope.ReflowableUserPreferences(
             preference = publisherStyles,
             commit = commit,
         )
-    }
 
-    if (textAlign != null) {
-        ButtonGroupItem(
-            title = "Alignment",
-            preference = textAlign,
-            commit = commit
-        ) { value ->
-            when (value) {
-                ReadiumTextAlign.CENTER -> "Center"
-                ReadiumTextAlign.JUSTIFY -> "Justify"
-                ReadiumTextAlign.START -> "Start"
-                ReadiumTextAlign.END -> "End"
-                ReadiumTextAlign.LEFT -> "Left"
-                ReadiumTextAlign.RIGHT -> "Right"
+        if (!(publisherStyles.value ?: publisherStyles.effectiveValue)) {
+            if (textAlign != null) {
+                ButtonGroupItem(
+                    title = "Alignment",
+                    preference = textAlign,
+                    commit = commit
+                ) { value ->
+                    when (value) {
+                        ReadiumTextAlign.CENTER -> "Center"
+                        ReadiumTextAlign.JUSTIFY -> "Justify"
+                        ReadiumTextAlign.START -> "Start"
+                        ReadiumTextAlign.END -> "End"
+                        ReadiumTextAlign.LEFT -> "Left"
+                        ReadiumTextAlign.RIGHT -> "Right"
+                        null -> "Default"
+                    }
+                }
+            }
+
+            if (typeScale != null) {
+                StepperItem(
+                    title = "Type scale",
+                    preference = typeScale,
+                    commit = commit
+                )
+            }
+
+            if (lineHeight != null) {
+                StepperItem(
+                    title = "Line height",
+                    preference = lineHeight,
+                    commit = commit
+                )
+            }
+
+            if (paragraphIndent != null) {
+                StepperItem(
+                    title = "Paragraph indent",
+                    preference = paragraphIndent,
+                    commit = commit
+                )
+            }
+
+            if (paragraphSpacing != null) {
+                StepperItem(
+                    title = "Paragraph spacing",
+                    preference = paragraphSpacing,
+                    commit = commit
+                )
+            }
+
+            if (wordSpacing != null) {
+                StepperItem(
+                    title = "Word spacing",
+                    preference = wordSpacing,
+                    commit = commit
+                )
+            }
+
+            if (letterSpacing != null) {
+                StepperItem(
+                    title = "Letter spacing",
+                    preference = letterSpacing,
+                    commit = commit
+                )
+            }
+
+            if (hyphens != null) {
+                SwitchItem(
+                    title = "Hyphens",
+                    preference = hyphens,
+                    commit = commit
+                )
+            }
+
+            if (ligatures != null) {
+                SwitchItem(
+                    title = "Ligatures",
+                    preference = ligatures,
+                    commit = commit
+                )
             }
         }
-    }
-
-    if (typeScale != null) {
-        StepperItem(
-            title = "Type scale",
-            preference = typeScale,
-            commit = commit
-        )
-    }
-
-    if (lineHeight != null) {
-        StepperItem(
-            title = "Line height",
-            preference = lineHeight,
-            commit = commit
-        )
-    }
-
-    if (paragraphIndent != null) {
-        StepperItem(
-            title = "Paragraph indent",
-            preference = paragraphIndent,
-            commit = commit
-        )
-    }
-
-    if (paragraphSpacing != null) {
-        StepperItem(
-            title = "Paragraph spacing",
-            preference = paragraphSpacing,
-            commit = commit
-        )
-    }
-
-    if (wordSpacing != null) {
-        StepperItem(
-            title = "Word spacing",
-            preference = wordSpacing,
-            commit = commit
-        )
-    }
-
-    if (letterSpacing != null) {
-        StepperItem(
-            title = "Letter spacing",
-            preference = letterSpacing,
-            commit = commit
-        )
-    }
-
-    if (hyphens != null) {
-        SwitchItem(
-            title = "Hyphens",
-            preference = hyphens,
-            commit = commit
-        )
-    }
-
-    if (ligatures != null) {
-        SwitchItem(
-            title = "Ligatures",
-            preference = ligatures,
-            commit = commit
-        )
     }
 }
 
@@ -566,15 +552,18 @@ private fun <T> ButtonGroupItem(
         isActive = preference.isEffective,
         activeOption = preference.effectiveValue,
         selectedOption = preference.value,
-        formatValue = formatValue
-    ) { newValue ->
-        if (newValue == preference.value) {
-            preference.clear()
-        } else {
-            preference.set(newValue)
+        formatValue = formatValue,
+        onClear = { preference.clear(); commit() }
+            .takeIf { preference.value != null },
+        onSelectedOptionChanged = { newValue ->
+            if (newValue == preference.value) {
+                preference.clear()
+            } else {
+                preference.set(newValue)
+            }
+            commit()
         }
-        commit()
-    }
+    )
 }
 
 /**
@@ -588,9 +577,10 @@ private fun <T> ButtonGroupItem(
     activeOption: T,
     selectedOption: T?,
     formatValue: (T) -> String,
+    onClear: (() -> Unit)?,
     onSelectedOptionChanged: (T) -> Unit,
 ) {
-    Item(title, isActive = isActive) {
+    Item(title, isActive = isActive, onClear = onClear) {
         ToggleButtonGroup(
             options = options,
             activeOption = activeOption,
@@ -620,11 +610,14 @@ private fun <T> MenuItem(
         value = preference.value ?: preference.effectiveValue,
         values = listOf(null) + preference.supportedValues,
         isActive = preference.isEffective,
-        formatValue = formatValue
-    ) { value ->
-        preference.set(value)
-        commit()
-    }
+        formatValue = formatValue,
+        onClear = { preference.clear(); commit() }
+            .takeIf { preference.value != null },
+        onValueChanged = { value ->
+            preference.set(value)
+            commit()
+        }
+    )
 }
 
 /**
@@ -638,8 +631,9 @@ private fun <T> MenuItem(
     isActive: Boolean,
     formatValue: (T) -> String,
     onValueChanged: (T) -> Unit,
+    onClear: (() -> Unit)?
 ) {
-    Item(title, isActive = isActive) {
+    Item(title, isActive = isActive, onClear = onClear) {
         DropdownMenuButton(
             text = {
                 Text(
@@ -677,7 +671,9 @@ private fun <T : Comparable<T>> StepperItem(
         value = preference.value ?: preference.effectiveValue,
         formatValue = preference::formatValue,
         onDecrement = { preference.decrement(); commit() },
-        onIncrement = { preference.increment(); commit() }
+        onIncrement = { preference.increment(); commit() },
+        onClear = { preference.clear(); commit() }
+            .takeIf { preference.value != null },
     )
 }
 
@@ -692,8 +688,9 @@ private fun <T> StepperItem(
     formatValue: (T) -> String,
     onDecrement: () -> Unit,
     onIncrement: () -> Unit,
+    onClear: (() -> Unit)?
 ) {
-    Item(title, isActive = isActive) {
+    Item(title, isActive = isActive, onClear = onClear) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -722,12 +719,12 @@ private fun <T> StepperItem(
 }
 
 /**
- * Component for a  [SwitchPreference].
+ * Component for a boolean [Preference].
  */
 @Composable
 private fun SwitchItem(
     title: String,
-    preference: SwitchPreference,
+    preference: Preference<Boolean>,
     commit: () -> Unit
 ) {
     SwitchItem(
@@ -735,7 +732,9 @@ private fun SwitchItem(
         value = preference.value ?: preference.effectiveValue,
         isActive = preference.isEffective,
         onCheckedChange = { preference.set(it); commit() },
-        onToggle = { preference.toggle(); commit() }
+        onToggle = { preference.toggle(); commit() },
+        onClear = { preference.clear(); commit() }
+            .takeIf { preference.value != null },
     )
 }
 
@@ -749,11 +748,13 @@ private fun SwitchItem(
     isActive: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onToggle: () -> Unit,
+    onClear: (() -> Unit)?
 ) {
     Item(
         title = title,
         isActive = isActive,
-        onClick = onToggle
+        onClick = onToggle,
+        onClear = onClear
     ) {
         Switch(
             checked = value,
@@ -776,7 +777,9 @@ private fun ColorItem(
         isActive = preference.isEffective,
         value = preference.value ?: preference.effectiveValue,
         noValueSelected = preference.value == null,
-        onColorChanged = { preference.set(it); commit() }
+        onColorChanged = { preference.set(it); commit() },
+        onClear = { preference.clear(); commit() }
+            .takeIf { preference.value != null }
     )
 }
 
@@ -789,14 +792,16 @@ private fun ColorItem(
     isActive: Boolean,
     value: ReadiumColor,
     noValueSelected: Boolean,
-    onColorChanged: (ReadiumColor?) -> Unit
+    onColorChanged: (ReadiumColor?) -> Unit,
+    onClear: (() -> Unit)?
 ) {
     var isPicking by remember { mutableStateOf(false) }
 
     Item(
         title = title,
         isActive = isActive,
-        onClick = { isPicking = true }
+        onClick = { isPicking = true },
+        onClear = onClear
     ) {
         val color = Color(value.int)
 
@@ -858,11 +863,14 @@ fun LanguageItem(
         isActive = preference.isEffective,
         value = preference.value ?: preference.effectiveValue,
         values = languages,
-        formatValue = { it?.locale?.displayName ?: "Unknown" }
-    ) { value ->
-        preference.set(value)
-        commit()
-    }
+        formatValue = { it?.locale?.displayName ?: "Unknown" },
+        onClear = { preference.clear(); commit() }
+            .takeIf { preference.value != null },
+        onValueChanged = { value ->
+            preference.set(value)
+            commit()
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -871,6 +879,7 @@ private fun Item(
     title: String,
     isActive: Boolean = true,
     onClick: (() -> Unit)? = null,
+    onClear: (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
     ListItem(
@@ -883,7 +892,18 @@ private fun Item(
                 Text(title)
             }
         },
-        trailing = content
+        trailing = {
+            Row {
+                content()
+
+                IconButton(onClick = onClear ?: {}, enabled = onClear != null) {
+                    Icon(
+                        Icons.Default.Backspace,
+                        contentDescription = "Clear"
+                    )
+                }
+            }
+        }
     )
 }
 
@@ -943,7 +963,7 @@ val <P : Configurable.Preferences<P>> PreferencesEditor<P>.presets: List<Preset>
                     Preset("Increase legibility") {
                         wordSpacing.set(0.6)
                         fontSize.set(1.4)
-                        textNormalization.set(TextNormalization.ACCESSIBILITY)
+                        fontWeight.set(2.0)
                     },
                     Preset("Document") {
                         scroll.set(true)

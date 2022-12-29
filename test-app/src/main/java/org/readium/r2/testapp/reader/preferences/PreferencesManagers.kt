@@ -31,6 +31,7 @@ import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesFilter
 import org.readium.r2.navigator.preferences.PreferencesSerializer
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.testapp.utils.extensions.stateInFirst
 
 class PreferencesManager<P : Configurable.Preferences<P>> internal constructor(
@@ -81,11 +82,19 @@ sealed class PreferencesManagerFactory<P : Configurable.Preferences<P>>(
     private suspend fun getPreferences(bookId: Long, scope: CoroutineScope): StateFlow<P> {
         val sharedPrefs = dataStore.data
             .map { data -> data[key(klass)] }
-            .map { json -> json?.let { preferencesSerializer.deserialize(it) } ?: emptyPreferences }
+            .map { json ->
+                tryOrNull {
+                    json?.let { preferencesSerializer.deserialize(it) }
+                } ?: emptyPreferences
+            }
 
         val pubPrefs = dataStore.data
             .map { data -> data[key(bookId)] }
-            .map { json -> json?.let { preferencesSerializer.deserialize(it) } ?: emptyPreferences }
+            .map { json ->
+                tryOrNull {
+                    json?.let { preferencesSerializer.deserialize(it) }
+                } ?: emptyPreferences
+            }
 
         return combine(sharedPrefs, pubPrefs) { shared, pub -> shared + pub }
             .stateInFirst(scope, SharingStarted.Eagerly)

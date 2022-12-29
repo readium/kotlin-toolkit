@@ -29,10 +29,10 @@ fun <T> SelectorListItem(
     fun dismiss() { isExpanded = false }
 
     ListItem(
-        modifier = Modifier.run {
-            if (enabled) clickable { isExpanded = true }
-            else this
-        },
+        modifier = Modifier
+            .clickable(enabled = enabled) {
+                isExpanded = true
+            },
         text = {
             Group(enabled = enabled) {
                 Text(label)

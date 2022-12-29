@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.r2.navigator.epub
 
 import android.app.Application
@@ -113,7 +115,7 @@ internal class EpubNavigatorViewModel(
     private val css = MutableStateFlow(
         ReadiumCss(
             rsProperties = config.readiumCssRsProperties,
-            fontFaces = config.fontFamilyDeclarations.flatMap { it.fontFaces },
+            fontFamilyDeclarations = config.fontFamilyDeclarations,
             googleFonts = googleFonts,
             assetsBaseHref = WebViewServer.assetsBaseHref
         ).update(settings.value)
@@ -399,3 +401,9 @@ internal class EpubNavigatorViewModel(
         }
     }
 }
+
+private val FontFamily.Companion.LITERATA: FontFamily get() = FontFamily("Literata")
+private val FontFamily.Companion.PT_SERIF: FontFamily get() = FontFamily("PT Serif")
+private val FontFamily.Companion.ROBOTO: FontFamily get() = FontFamily("Roboto")
+private val FontFamily.Companion.SOURCE_SANS_PRO: FontFamily get() = FontFamily("Source Sans Pro")
+private val FontFamily.Companion.VOLLKORN: FontFamily get() = FontFamily("Vollkorn")

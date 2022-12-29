@@ -27,34 +27,33 @@ internal class EpubSettingsResolver(
         val verticalText = resolveVerticalText(verticalPref, language, readingProgression)
 
         val theme = preferences.theme ?: Theme.LIGHT
-        val backgroundColor = preferences.backgroundColor ?: Color(theme.backgroundColor)
-        val textColor = preferences.textColor ?: Color(theme.contentColor)
 
         return EpubSettings(
-            language = language,
-            readingProgression = readingProgression,
-            spread = preferences.spread ?: defaults.spread ?: Spread.NEVER,
-            verticalText = verticalText,
-            theme = theme,
-            backgroundColor = backgroundColor,
-            textColor = textColor,
+            backgroundColor = preferences.backgroundColor,
             columnCount = preferences.columnCount ?: defaults.columnCount ?: ColumnCount.AUTO,
             fontFamily = preferences.fontFamily,
             fontSize = preferences.fontSize ?: defaults.fontSize ?: 1.0,
-            hyphens = preferences.hyphens ?: defaults.hyphens ?: true,
-            imageFilter = preferences.imageFilter ?: defaults.imageFilter ?: ImageFilter.NONE,
-            letterSpacing = preferences.letterSpacing ?: defaults.letterSpacing ?: 0.0,
-            ligatures = preferences.ligatures ?: defaults.ligatures ?: true,
-            lineHeight = preferences.lineHeight ?: defaults.lineHeight ?: 1.2,
+            fontWeight = preferences.fontWeight ?: defaults.fontWeight,
+            hyphens = preferences.hyphens ?: defaults.hyphens,
+            imageFilter = preferences.imageFilter ?: defaults.imageFilter,
+            language = language,
+            letterSpacing = preferences.letterSpacing ?: defaults.letterSpacing,
+            ligatures = preferences.ligatures ?: defaults.ligatures,
+            lineHeight = preferences.lineHeight ?: defaults.lineHeight,
             pageMargins = preferences.pageMargins ?: defaults.pageMargins ?: 1.0,
-            paragraphIndent = preferences.paragraphIndent ?: defaults.paragraphIndent ?: 0.0,
-            paragraphSpacing = preferences.paragraphSpacing ?: defaults.paragraphSpacing ?: 0.0,
+            paragraphIndent = preferences.paragraphIndent ?: defaults.paragraphIndent,
+            paragraphSpacing = preferences.paragraphSpacing ?: defaults.paragraphSpacing,
             publisherStyles = preferences.publisherStyles ?: defaults.publisherStyles ?: true,
+            readingProgression = readingProgression,
             scroll = preferences.scroll ?: defaults.scroll ?: false,
-            textAlign = preferences.textAlign ?: defaults.textAlign ?: TextAlign.START,
-            textNormalization = preferences.textNormalization ?: defaults.textNormalization ?: TextNormalization.NONE,
-            typeScale = preferences.typeScale ?: defaults.typeScale ?: 1.2,
-            wordSpacing = preferences.wordSpacing ?: defaults.wordSpacing ?: 0.0,
+            spread = preferences.spread ?: defaults.spread ?: Spread.NEVER,
+            textAlign = preferences.textAlign ?: defaults.textAlign,
+            textColor = preferences.textColor,
+            textNormalization = preferences.textNormalization ?: defaults.textNormalization ?: false,
+            theme = theme,
+            typeScale = preferences.typeScale ?: defaults.typeScale,
+            verticalText = verticalText,
+            wordSpacing = preferences.wordSpacing ?: defaults.wordSpacing,
         )
     }
 

@@ -105,11 +105,6 @@ interface NavigatorDelegate {
 interface VisualNavigator : Navigator {
 
     /**
-     * Current reading progression direction.
-     */
-    val readingProgression: PublicationReadingProgression
-
-    /**
      * Current presentation rendered by the navigator.
      */
     @ExperimentalReadiumApi
@@ -179,6 +174,12 @@ interface VisualNavigator : Navigator {
         @ExperimentalDragGesture
         fun onDragEnd(startPoint: PointF, offset: PointF): Boolean = false
     }
+
+    /**
+     * Current reading progression direction.
+     */
+    @Deprecated("Use `presentation.value.readingProgression` instead", ReplaceWith("presentation.value.readingProgression"))
+    val readingProgression: PublicationReadingProgression
 }
 
 /**

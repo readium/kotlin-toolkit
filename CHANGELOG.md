@@ -4,15 +4,17 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-## [Unreleased]
+<!--## [Unreleased]-->
+
+## [2.3.0]
 
 ### Added
 
 #### Shared
 
 * Extract the raw content (text, images, etc.) of a publication. [Take a look at the user guide](docs/guides/content.md).
-* Add support for unsafe HTTP redirections with `HttpDefaultClient`.
-    * You will need to opt-in explicitly by implementing `HttpDefaultClient.Callback.onFollowUnsafeRedirect`.
+* Add support for unsafe HTTP redirections with `DefaultHttpClient`.
+    * You will need to opt-in explicitly by implementing `DefaultHttpClient.Callback.onFollowUnsafeRedirect`.
 
 #### Navigator
 
@@ -42,11 +44,12 @@ All notable changes to this project will be documented in this file. Take a look
         ```
 * New [PSPDFKit](readium/adapters/pspdfkit) adapter for rendering PDF documents. [Take a look at the user guide](docs/guides/pdf.md).
 * [A brand new text-to-speech implementation](docs/guides/tts.md).
-* [Support for custom fonts with the EPUB navigator](docs/guides/epub-custom-fonts.md).
-* New EPUB user settings, as part of [the revamped Settings API](docs/guides/navigator-settings.md):
+* [Support for custom fonts with the EPUB navigator](docs/guides/epub-fonts.md).
+* New EPUB user preferences, as part of [the revamped Settings API](docs/guides/navigator-preferences.md):
     * `backgroundColor` - Default page background color.
+    * `fontWeight` - Base text font weight.
     * `textColor` - Default page text color.
-    * `textNormalization` - Normalize font style, weight and variants using a specific strategy (force bold, accessibility).
+    * `textNormalization` - Normalize font style, weight and variants, which improves accessibility.
     * `imageFilter` - Filter applied to images in dark theme (darken, invert colors)
     * `language` - Language of the publication content.
     * `readingProgression` - Direction of the reading progression across resources, e.g. RTL.
@@ -56,6 +59,7 @@ All notable changes to this project will be documented in this file. Take a look
     * `hyphens` - Enable hyphenation.
     * `ligatures` - Enable ligatures in Arabic.
 * Fixed scroll inertia when scrolling an EPUB.
+* EPUB decorations can now be attached to `Locator` objects containing only an HTML ID (`locations.fragments`) or a CSS selector (`locations.cssSelector`).
 
 ### Changed
 
@@ -66,7 +70,7 @@ All notable changes to this project will be documented in this file. Take a look
 
 #### Navigator
 
-* The EPUB user settings API got revamped. [Take a look at the user guide](docs/guides/navigator-settings.md) and the [migration guide](docs/migration-guide.md#230) to learn how to use it.
+* The EPUB and PDF user preferences API got revamped. [Take a look at the user guide](docs/guides/navigator-preferences.md) and the [migration guide](docs/migration-guide.md#230) to learn how to use it.
 * `Decoration.extras` is now a `Map<String, Any>` instead of `Bundle`. You will need to update your app if you were storing custom data in `extras`, for example:
     ```kotlin
     val decoration = Decoration(...,
@@ -634,4 +638,5 @@ progression. Now if no reading progression is set, the `effectiveReadingProgress
 [2.1.1]: https://github.com/readium/kotlin-toolkit/compare/2.1.0...2.1.1
 [2.2.0]: https://github.com/readium/kotlin-toolkit/compare/2.1.1...2.2.0
 [2.2.1]: https://github.com/readium/kotlin-toolkit/compare/2.2.0...2.2.1
+[2.3.0]: https://github.com/readium/kotlin-toolkit/compare/2.2.1...2.3.0
 
