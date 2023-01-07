@@ -9,14 +9,23 @@ package org.readium.r2.testapp.bookshelf
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.UserException
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.testapp.BuildConfig
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.domain.model.Book
@@ -113,6 +122,38 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     fun closePublication(bookId: Long) = viewModelScope.launch {
         val readerRepository = app.readerRepository.await()
         readerRepository.close(bookId)
+    }
+
+    private fun storeCoverImage(publication: Publication, imageName: String) =
+        viewModelScope.launch(Dispatchers.IO) {
+            // TODO Figure out where to store these cover images
+            val coverImageDir = File(app.storageDir, "covers/")
+            if (!coverImageDir.exists()) {
+                coverImageDir.mkdirs()
+            }
+            val coverImageFile = File(app.storageDir, "covers/$imageName.png")
+
+            val bitmap: Bitmap? = publication.cover()
+
+            val resized = bitmap?.let { Bitmap.createScaledBitmap(it, 120, 200, true) }
+            val fos = FileOutputStream(coverImageFile)
+            resized?.compress(Bitmap.CompressFormat.PNG, 80, fos)
+            fos.flush()
+            fos.close()
+        }
+
+    private fun getBitmapFromURL(src: String): Bitmap? {
+        return try {
+            val url = URL(src)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.doInput = true
+            connection.connect()
+            val input = connection.inputStream
+            BitmapFactory.decodeStream(input)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
+        }
     }
 
     sealed class Event {

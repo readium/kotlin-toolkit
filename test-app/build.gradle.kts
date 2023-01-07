@@ -102,7 +102,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.jsoup)
 
-    implementation(libs.bundles.media2)
+    implementation(libs.bundles.media3)
 
     // Room database
     implementation(libs.bundles.room)

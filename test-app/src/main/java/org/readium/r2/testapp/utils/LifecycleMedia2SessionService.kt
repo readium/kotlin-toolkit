@@ -1,3 +1,9 @@
+/*
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.testapp.utils
 
 import android.content.Intent
@@ -13,7 +19,7 @@ import androidx.media2.session.MediaSessionService
  * https://android.googlesource.com/platform/frameworks/support/+/refs/heads/androidx-main/lifecycle/lifecycle-service/src/main/java/androidx/lifecycle/LifecycleService.java
  */
 
-abstract class LifecycleMediaSessionService : MediaSessionService(), LifecycleOwner {
+abstract class LifecycleMedia2SessionService : MediaSessionService(), LifecycleOwner {
 
     @Suppress("LeakingThis")
     private val lifecycleDispatcher = ServiceLifecycleDispatcher(this)

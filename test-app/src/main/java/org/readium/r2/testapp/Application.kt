@@ -6,11 +6,7 @@
 
 package org.readium.r2.testapp
 
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.ServiceConnection
-import android.os.IBinder
+import android.content.*
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
@@ -43,27 +39,6 @@ class Application : android.app.Application() {
     private val Context.navigatorPreferences: DataStore<Preferences>
         by preferencesDataStore(name = "navigator-preferences")
 
-    private val mediaServiceBinder: CompletableDeferred<MediaService.Binder> =
-        CompletableDeferred()
-
-    private val mediaServiceConnection = object : ServiceConnection {
-
-        override fun onServiceConnected(name: ComponentName?, service: IBinder) {
-            Timber.d("MediaService bound.")
-            mediaServiceBinder.complete(service as MediaService.Binder)
-        }
-
-        override fun onServiceDisconnected(name: ComponentName) {
-            Timber.d("MediaService disconnected.")
-            // Should not happen, do nothing.
-        }
-
-        override fun onNullBinding(name: ComponentName) {
-            Timber.d("Failed to bind to MediaService.")
-            // Should not happen, do nothing.
-        }
-    }
-
     override fun onCreate() {
         super.onCreate()
         DynamicColors.applyToActivitiesIfAvailable(this)
@@ -74,28 +49,25 @@ class Application : android.app.Application() {
         storageDir = computeStorageDir()
 
         /*
-         * Starting media service.
-         */
-
-        // MediaSessionService.onBind requires the intent to have a non-null action.
-        val intent = Intent(MediaService.SERVICE_INTERFACE)
-            .apply { setClass(applicationContext, MediaService::class.java) }
-        startService(intent)
-        bindService(intent, mediaServiceConnection, 0)
-
-        /*
          * Initializing repositories
          */
         bookRepository =
             BookDatabase.getDatabase(this).booksDao()
-                .let { BookRepository(this, it, storageDir, readium.lcpService, readium.streamer) }
+                .let { dao ->
+                    BookRepository(
+                        applicationContext,
+                        dao,
+                        storageDir,
+                        readium.lcpService,
+                        readium.streamer
+                    )
+                }
 
         readerRepository =
             coroutineScope.async {
                 ReaderRepository(
                     this@Application,
                     readium,
-                    mediaServiceBinder.await(),
                     bookRepository,
                     navigatorPreferences
                 )

@@ -11,32 +11,41 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.VisualNavigator
-import org.readium.r2.navigator.tts.AndroidTtsEngine
+import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferences
+import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferencesEditor
+import org.readium.r2.navigator.media3.androidtts.AndroidTtsSettings
+import org.readium.r2.navigator.media3.api.MediaNavigator
+import org.readium.r2.navigator.media3.tts2.TtsNavigator
+import org.readium.r2.navigator.media3.tts2.TtsNavigatorFactory
+import org.readium.r2.navigator.media3.tts2.TtsNavigatorListener
 import org.readium.r2.navigator.tts.PublicationSpeechSynthesizer
-import org.readium.r2.navigator.tts.PublicationSpeechSynthesizer.Configuration
-import org.readium.r2.navigator.tts.PublicationSpeechSynthesizer.State as TtsState
-import org.readium.r2.navigator.tts.TtsEngine
-import org.readium.r2.navigator.tts.TtsEngine.Voice
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Language
-import org.readium.r2.testapp.R
+import org.readium.r2.testapp.reader.ReaderInitData
+import org.readium.r2.testapp.reader.VisualReaderInitData
+import org.readium.r2.testapp.reader.preferences.PreferencesManager
+import timber.log.Timber
 
 /**
- * View model controlling a [PublicationSpeechSynthesizer] to read a publication aloud.
+ * View model controlling a [TtsNavigator] to read a publication aloud.
  *
  * Note: This is not an Android [ViewModel], but it is a component of [ReaderViewModel].
  */
 @OptIn(ExperimentalReadiumApi::class)
 class TtsViewModel private constructor(
-    private val synthesizer: PublicationSpeechSynthesizer<AndroidTtsEngine>,
-    private val scope: CoroutineScope
+    private val viewModelScope: CoroutineScope,
+    private val bookId: Long,
+    private val publication: Publication,
+    private val ttsNavigatorFactory: TtsNavigatorFactory<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsPreferencesEditor>,
+    private val ttsSessionBinder: TtsService.Binder,
+    private val preferencesManager: PreferencesManager<AndroidTtsPreferences>,
+    val preferencesEditor: AndroidTtsPreferencesEditor
 ) {
 
     companion object {
@@ -45,12 +54,28 @@ class TtsViewModel private constructor(
          * TTS engine.
          */
         operator fun invoke(
-            context: Context,
-            publication: Publication,
-            scope: CoroutineScope
-        ): TtsViewModel? =
-            PublicationSpeechSynthesizer(context, publication)
-                ?.let { TtsViewModel(it, scope) }
+            viewModelScope: CoroutineScope,
+            readerInitData: ReaderInitData
+        ): TtsViewModel? {
+            if (readerInitData !is VisualReaderInitData || readerInitData.ttsInitData == null) {
+                return null
+            }
+
+            val preferencesEditor =
+                readerInitData.ttsInitData.ttsNavigatorFactory.createTtsPreferencesEditor(
+                    readerInitData.ttsInitData.preferencesManager.preferences.value
+                )
+
+            return TtsViewModel(
+                viewModelScope = viewModelScope,
+                bookId = readerInitData.bookId,
+                publication = readerInitData.publication,
+                ttsNavigatorFactory = readerInitData.ttsInitData.ttsNavigatorFactory,
+                ttsSessionBinder = readerInitData.ttsInitData.sessionBinder,
+                preferencesManager = readerInitData.ttsInitData.preferencesManager,
+                preferencesEditor = preferencesEditor
+            )
+        }
     }
 
     /**
@@ -58,27 +83,12 @@ class TtsViewModel private constructor(
      * @param isPlaying Whether the TTS is currently speaking.
      * @param playingWordRange Locator to the currently spoken word.
      * @param playingUtterance Locator for the currently spoken utterance (e.g. sentence).
-     * @param settings Current user settings and their constraints.
      */
     data class State(
         val showControls: Boolean = false,
         val isPlaying: Boolean = false,
         val playingWordRange: Locator? = null,
         val playingUtterance: Locator? = null,
-        val settings: Settings = Settings()
-    )
-
-    /**
-     * @param config Currently selected user settings.
-     * @param rateRange Supported range for the rate setting.
-     * @param availableLanguages Languages supported by the TTS engine.
-     * @param availableVoices Voices supported by the TTS engine, for the selected language.
-     */
-    data class Settings(
-        val config: Configuration = Configuration(),
-        val rateRange: ClosedRange<Double> = 1.0..1.0,
-        val availableLanguages: List<Language> = emptyList(),
-        val availableVoices: List<Voice> = emptyList(),
     )
 
     sealed class Event {
@@ -93,124 +103,116 @@ class TtsViewModel private constructor(
         class OnMissingVoiceData(val language: Language) : Event()
     }
 
+    private val ttsNavigator: TtsNavigator<AndroidTtsSettings, AndroidTtsPreferences>? get() =
+        ttsSessionBinder.mediaNavigator
+
     /**
      * Current state of the view model.
      */
-    val state: StateFlow<State>
+    private val _state: MutableStateFlow<State> = MutableStateFlow(
+        stateFromPlayback(ttsNavigator?.playback?.value)
+    )
+
+    init {
+        ttsNavigator?.let { bindStateToNavigator(it) }
+    }
+    val state: StateFlow<State> = _state.asStateFlow()
 
     private val _events: Channel<Event> = Channel(Channel.BUFFERED)
     val events: Flow<Event> = _events.receiveAsFlow()
 
     /**
-     * Indicates whether the TTS is in the Stopped state.
-     */
-    private val isStopped: StateFlow<Boolean>
-
-    init {
-        synthesizer.listener = SynthesizerListener()
-
-        // Automatically close the TTS when reaching the Stopped state.
-        isStopped = synthesizer.state
-            .map { it == PublicationSpeechSynthesizer.State.Stopped }
-            .stateIn(scope, SharingStarted.Lazily, initialValue = true)
-
-        // Supported voices grouped by their language.
-        val voicesByLanguage: Flow<Map<Language, List<Voice>>> =
-            synthesizer.availableVoices
-                .map { voices -> voices.groupBy { it.language } }
-
-        // All supported languages.
-        val languages: Flow<List<Language>> = voicesByLanguage
-            .map { voices ->
-                voices.keys.sortedBy { it.locale.displayName }
-            }
-
-        // Supported voices for the language selected in the synthesizer configuration.
-        val voicesForSelectedLanguage: Flow<List<Voice>> =
-            combine(
-                synthesizer.config.map { it.defaultLanguage },
-                voicesByLanguage,
-            ) { language, voices ->
-                language
-                    ?.let { voices[it] }
-                    ?.sortedBy { it.name ?: it.id }
-                    ?: emptyList()
-            }
-
-        // Settings model for the current configuration.
-        val settings: Flow<Settings> = combine(
-            synthesizer.config,
-            languages,
-            voicesForSelectedLanguage,
-        ) { config, langs, voices ->
-            Settings(
-                config = config,
-                rateRange = synthesizer.rateMultiplierRange,
-                availableLanguages = langs,
-                availableVoices = voices
-            )
-        }
-
-        // Current view model state.
-        state = combine(
-            isStopped,
-            synthesizer.state,
-            settings
-        ) { isStopped, state, currentSettings ->
-            val playing = (state as? TtsState.Playing)
-            val paused = (state as? TtsState.Paused)
-
-            State(
-                showControls = !isStopped,
-                isPlaying = (playing != null),
-                playingWordRange = playing?.range,
-                playingUtterance = (playing?.utterance ?: paused?.utterance)?.locator,
-                settings = currentSettings
-            )
-        }.stateIn(scope, SharingStarted.Eagerly, initialValue = State())
-    }
-
-    fun onCleared() {
-        runBlocking {
-            synthesizer.close()
-        }
-    }
-
-    /**
      * Starts the TTS using the first visible locator in the given [navigator].
      */
     fun start(navigator: Navigator) {
-        if (!isStopped.value) return
+        if (ttsNavigator != null) return
 
-        scope.launch {
-            val start = (navigator as? VisualNavigator)?.firstVisibleElementLocator()
-            synthesizer.start(fromLocator = start)
+        viewModelScope.launch {
+            val ttsNavigator = createTtsNavigator(navigator)
+            bindStateToNavigator(ttsNavigator)
+            ttsNavigator.play()
         }
     }
 
-    fun stop() {
-        if (isStopped.value) return
-        synthesizer.stop()
+    private suspend fun createTtsNavigator(navigator: Navigator): TtsNavigator<AndroidTtsSettings, AndroidTtsPreferences> {
+        val start = (navigator as? VisualNavigator)?.firstVisibleElementLocator()
+
+        val listener = object : TtsNavigatorListener {
+
+            override fun onStopRequested() {
+                stop()
+            }
+
+            override fun onPlaybackException() {
+                TODO("Not yet implemented")
+            }
+        }
+
+        val ttsNavigator = ttsNavigatorFactory.createNavigator(
+            listener,
+            preferencesManager.preferences.value,
+            start
+        )
+
+        ttsSessionBinder.bindNavigator(ttsNavigator, bookId)
+        return ttsNavigator
     }
 
-    fun pauseOrResume() {
-        synthesizer.pauseOrResume()
+    private fun bindStateToNavigator(
+        ttsNavigator: TtsNavigator<AndroidTtsSettings, AndroidTtsPreferences>
+    ) {
+        ttsNavigator.playback
+            .onEach { playback ->
+                Timber.d("new TTS playback $playback")
+                _state.value = stateFromPlayback(playback)
+                Timber.d("new TTS state ${_state.value}")
+            }.launchIn(viewModelScope)
+    }
+
+    private fun stateFromPlayback(playback: TtsNavigator.Playback?): State {
+        if (playback == null)
+            return State()
+
+        return State(
+            showControls = playback.state != MediaNavigator.State.Ended,
+            isPlaying = playback.state == MediaNavigator.State.Playing,
+            playingWordRange = playback.token,
+            playingUtterance = playback.locator
+        )
+    }
+
+    fun stop() {
+        if (ttsNavigator == null) return
+
+        _state.value = State(
+            showControls = false,
+            isPlaying = false,
+            playingWordRange = null,
+            playingUtterance = null,
+        )
+        ttsSessionBinder.closeNavigator()
+    }
+
+    fun play() {
+        ttsNavigator?.play()
     }
 
     fun pause() {
-        synthesizer.pause()
+        ttsNavigator?.pause()
     }
 
     fun previous() {
-        synthesizer.previous()
+        ttsNavigator?.goBackward()
     }
 
     fun next() {
-        synthesizer.next()
+        ttsNavigator?.goForward()
     }
 
-    fun setConfig(config: Configuration) {
-        synthesizer.setConfig(config)
+    fun commitPreferences() {
+        viewModelScope.launch {
+            preferencesManager.setPreferences(preferencesEditor.preferences)
+        }
     }
 
     /**
@@ -218,15 +220,15 @@ class TtsViewModel private constructor(
      */
     @OptIn(DelicateReadiumApi::class)
     fun requestInstallVoice(context: Context) {
-        synthesizer.engine.requestInstallMissingVoice(context)
+        // synthesizer.engine.requestInstallMissingVoice(context)
     }
 
-    private inner class SynthesizerListener : PublicationSpeechSynthesizer.Listener {
+    /*private inner class SynthesizerListener : PublicationSpeechSynthesizer.Listener {
         override fun onUtteranceError(
             utterance: PublicationSpeechSynthesizer.Utterance,
             error: PublicationSpeechSynthesizer.Exception
         ) {
-            scope.launch {
+            viewModelScope.launch {
                 // The synthesizer is paused when encountering an error while playing an
                 // utterance. Here we will skip to the next utterance unless the exception is
                 // recoverable.
@@ -238,7 +240,7 @@ class TtsViewModel private constructor(
         }
 
         override fun onError(error: PublicationSpeechSynthesizer.Exception) {
-            scope.launch {
+            viewModelScope.launch {
                 handleTtsException(error)
             }
         }
@@ -282,5 +284,5 @@ class TtsViewModel private constructor(
                 is TtsEngine.Exception.Other ->
                     UserException(R.string.tts_error_other)
             }
-    }
+    }*/
 }

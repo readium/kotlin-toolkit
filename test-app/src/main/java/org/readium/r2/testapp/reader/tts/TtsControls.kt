@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import java.text.DecimalFormat
-import org.readium.r2.navigator.tts.PublicationSpeechSynthesizer.Configuration
+import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferencesEditor
 import org.readium.r2.navigator.tts.TtsEngine.Voice
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
@@ -32,18 +32,21 @@ import org.readium.r2.testapp.utils.extensions.asStateWhenStarted
 fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
     val showControls by model.state.asStateWhenStarted { it.showControls }
     val isPlaying by model.state.asStateWhenStarted { it.isPlaying }
-    val settings by model.state.asStateWhenStarted { it.settings }
+    // val settings by model.state.asStateWhenStarted { it.settings }
+
+    val editor = remember { mutableStateOf(model.preferencesEditor, policy = neverEqualPolicy()) }
+    val commit: () -> Unit = { editor.value = editor.value ; model.commitPreferences() }
 
     if (showControls) {
         TtsControls(
             playing = isPlaying,
-            availableRates = listOf(0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0)
-                .filter { it in settings.rateRange },
-            availableLanguages = settings.availableLanguages,
-            availableVoices = settings.availableVoices,
-            config = settings.config,
-            onConfigChange = model::setConfig,
-            onPlayPause = model::pauseOrResume,
+            availableRates = listOf(0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0),
+            // .filter { it in settings.rateRange },
+            availableLanguages = emptyList(), // settings.availableLanguages,
+            availableVoices = emptyList(), // settings.availableVoices,
+            editor = editor.value,
+            commit = commit,
+            onPlayPause = { if (isPlaying) model.pause() else model.play() },
             onStop = model::stop,
             onPrevious = model::previous,
             onNext = model::next,
@@ -59,8 +62,8 @@ fun TtsControls(
     availableRates: List<Double>,
     availableLanguages: List<Language>,
     availableVoices: List<Voice>,
-    config: Configuration?,
-    onConfigChange: (Configuration) -> Unit,
+    editor: AndroidTtsPreferencesEditor,
+    commit: () -> Unit,
     onPlayPause: () -> Unit,
     onStop: () -> Unit,
     onPrevious: () -> Unit,
@@ -69,13 +72,13 @@ fun TtsControls(
 ) {
     var showSettings by remember { mutableStateOf(false) }
 
-    if (config != null && showSettings) {
-        TtsSettingsDialog(
+    if (showSettings) {
+        TtsPreferencesDialog(
             availableRates = availableRates,
             availableLanguages = availableLanguages,
             availableVoices = availableVoices,
-            config = config,
-            onConfigChange = onConfigChange,
+            editor = editor,
+            commit = commit,
             onDismiss = { showSettings = false }
         )
     }
@@ -139,12 +142,12 @@ fun TtsControls(
 
 @OptIn(ExperimentalReadiumApi::class)
 @Composable
-private fun TtsSettingsDialog(
+private fun TtsPreferencesDialog(
     availableRates: List<Double>,
     availableLanguages: List<Language>,
     availableVoices: List<Voice>,
-    config: Configuration,
-    onConfigChange: (Configuration) -> Unit,
+    editor: AndroidTtsPreferencesEditor,
+    commit: () -> Unit,
     onDismiss: () -> Unit
 ) {
     AlertDialog(
@@ -161,12 +164,13 @@ private fun TtsSettingsDialog(
                     SelectorListItem(
                         label = stringResource(R.string.tts_rate),
                         values = availableRates,
-                        selection = config.rateMultiplier,
+                        selection = editor.speedRate.value,
                         titleForValue = { rate ->
                             DecimalFormat("x#.##").format(rate)
                         },
                         onSelected = {
-                            onConfigChange(config.copy(rateMultiplier = it))
+                            editor.speedRate.set(it)
+                            commit()
                         }
                     )
                 }
@@ -174,20 +178,26 @@ private fun TtsSettingsDialog(
                 SelectorListItem(
                     label = stringResource(R.string.language),
                     values = availableLanguages,
-                    selection = config.defaultLanguage,
+                    selection = editor.language.value,
                     titleForValue = { language ->
                         language?.locale?.displayName
                             ?: stringResource(R.string.auto)
                     },
-                    onSelected = { onConfigChange(config.copy(defaultLanguage = it, voiceId = null)) }
+                    onSelected = {
+                        editor.language.set(it)
+                        commit()
+                    }
                 )
 
                 SelectorListItem(
                     label = stringResource(R.string.tts_voice),
                     values = availableVoices,
-                    selection = availableVoices.firstOrNull { it.id == config.voiceId },
+                    selection = availableVoices.firstOrNull { it.id == editor.voiceId.value },
                     titleForValue = { it?.name ?: it?.id ?: stringResource(R.string.auto) },
-                    onSelected = { onConfigChange(config.copy(voiceId = it?.id)) }
+                    onSelected = {
+                        editor.voiceId.set(it?.id)
+                        commit()
+                    }
                 )
             }
         }

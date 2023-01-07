@@ -35,7 +35,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
@@ -79,6 +78,8 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
      * When true, the user won't be able to interact with the navigator.
      */
     private var disableTouches by mutableStateOf(false)
+
+    private var preventProgressionSaving: Boolean = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -134,7 +135,11 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 navigator.currentLocator
-                    .onEach { model.saveProgression(it) }
+                    .onEach {
+                        if (!preventProgressionSaving) {
+                            model.saveProgression(it)
+                        }
+                    }
                     .launchIn(this)
 
                 setupHighlights(this)
@@ -179,16 +184,6 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                 }
                 .launchIn(scope)
 
-            // Navigate to the currently spoken utterance.
-            state.map { it.playingUtterance }
-                .filterNotNull()
-                // Prevent jumping to many locations when the user skips repeatedly forward/backward.
-                .throttleLatest(500.milliseconds)
-                .onEach { locator ->
-                    navigator.go(locator, animated = false)
-                }
-                .launchIn(scope)
-
             // Navigate to the currently spoken word.
             // This will automatically turn pages when needed.
             state.map { it.playingWordRange }
@@ -225,6 +220,13 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                     }
                     .launchIn(scope)
             }
+
+            state.map { it.showControls }
+                .distinctUntilChanged()
+                .onEach { showControls ->
+                    preventProgressionSaving = showControls
+                }
+                .launchIn(scope)
         }
     }
 
@@ -249,12 +251,6 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         super.onDestroyView()
     }
 
-    override fun onStop() {
-        super.onStop()
-
-        model.tts?.pause()
-    }
-
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
         setMenuVisibility(!hidden)
@@ -269,6 +265,10 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.tts -> checkNotNull(model.tts).start(navigator)
+            R.id.toc -> {
+                model.tts?.stop()
+                super.onOptionsItemSelected(item)
+            }
             else -> return super.onOptionsItemSelected(item)
         }
         return true
