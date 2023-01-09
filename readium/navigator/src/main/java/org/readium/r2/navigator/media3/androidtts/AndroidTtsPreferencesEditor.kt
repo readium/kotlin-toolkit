@@ -44,34 +44,34 @@ class AndroidTtsPreferencesEditor(
             updateValue = { value -> updateValues { it.copy(language = value) } },
         )
 
-    val pitchRate: RangePreference<Double> =
+    val pitch: RangePreference<Double> =
         RangePreferenceDelegate(
-            getValue = { preferences.pitchRate },
-            getEffectiveValue = { state.settings.pitchRate },
+            getValue = { preferences.pitch },
+            getEffectiveValue = { state.settings.pitch },
             getIsEffective = { true },
-            updateValue = { value -> updateValues { it.copy(pitchRate = value) } },
+            updateValue = { value -> updateValues { it.copy(pitch = value) } },
             supportedRange = 0.0..Double.MAX_VALUE,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = { it.format(1) },
+            valueFormatter = { "${it.format(2)}x" },
         )
 
-    val speedRate: RangePreference<Double> =
+    val speed: RangePreference<Double> =
         RangePreferenceDelegate(
-            getValue = { preferences.speedRate },
-            getEffectiveValue = { state.settings.speedRate },
+            getValue = { preferences.speed },
+            getEffectiveValue = { state.settings.speed },
             getIsEffective = { true },
-            updateValue = { value -> updateValues { it.copy(speedRate = value) } },
+            updateValue = { value -> updateValues { it.copy(speed = value) } },
             supportedRange = 0.0..Double.MAX_VALUE,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = { "${it.format(1)}x" },
+            valueFormatter = { "${it.format(2)}x" },
         )
 
-    val voiceId: Preference<String?> =
+    val voices: Preference<Map<Language, String>> =
         PreferenceDelegate(
-            getValue = { preferences.voiceId },
-            getEffectiveValue = { state.settings.voiceId },
+            getValue = { preferences.voices },
+            getEffectiveValue = { state.settings.voices },
             getIsEffective = { true },
-            updateValue = { value -> updateValues { it.copy(voiceId = value) } },
+            updateValue = { value -> updateValues { it.copy(voices = value) } },
         )
 
     private fun updateValues(updater: (AndroidTtsPreferences) -> AndroidTtsPreferences) {

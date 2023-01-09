@@ -22,10 +22,9 @@ import org.readium.r2.shared.extensions.mapStateIn
 @OptIn(ExperimentalCoroutinesApi::class)
 @ExperimentalReadiumApi
 internal class TtsNavigatorInternal<S : TtsSettings, P : TtsPreferences<P>>(
-    application: Application,
-    private val ttsEngineFacade: TtsEngineFacade<S, P>,
-    private val player: TtsPlayer,
-) : MediaNavigatorInternal<TtsLocator, TtsPlayback>, Configurable<S, P> by ttsEngineFacade {
+    private val ttsPlayer: TtsPlayer<S, P>,
+    private val sessionAdapter: TtsSessionAdapter,
+) : MediaNavigatorInternal<TtsLocator, TtsPlayback>, Configurable<S, P> by ttsPlayer {
 
     companion object {
 
@@ -38,25 +37,21 @@ internal class TtsNavigatorInternal<S : TtsSettings, P : TtsPreferences<P>>(
             listener: TtsNavigatorListener
         ): TtsNavigatorInternal<S, P>? {
 
-            val facadeListener = object : TtsEngineFacadeListener {
-
-                override fun onNavigatorStopped() {
-                    listener.onStopRequested()
-                }
+            val playerListener = object : TtsPlayer.Listener {
 
                 override fun onPlaybackException() {
                     listener.onPlaybackException()
                 }
             }
 
-            val ttsEngineFacade =
-                TtsEngineFacade(ttsEngine, ttsContentIterator, facadeListener)
+            val ttsPlayer =
+                TtsPlayer(ttsEngine, ttsContentIterator, playerListener)
                     ?: return null
 
-            val player =
-                TtsPlayer(application, ttsEngineFacade, playlistMetadata, mediaItems)
+            val sessionAdapter =
+                TtsSessionAdapter(application, ttsPlayer, playlistMetadata, mediaItems, listener::onStopRequested)
 
-            return TtsNavigatorInternal(application, ttsEngineFacade, player)
+            return TtsNavigatorInternal(ttsPlayer, sessionAdapter)
         }
     }
 
@@ -64,13 +59,13 @@ internal class TtsNavigatorInternal<S : TtsSettings, P : TtsPreferences<P>>(
         MainScope()
 
     override val playback: StateFlow<TtsPlayback> =
-        ttsEngineFacade.playback
+        ttsPlayer.playback
             .mapStateIn(coroutineScope) { playback ->
                 val state = when (playback.state) {
-                    TtsEngineFacadePlayback.State.READY ->
+                    TtsPlayer.Playback.State.READY ->
                         if (playback.playWhenReady) MediaNavigatorInternal.State.Playing
                         else MediaNavigatorInternal.State.Paused
-                    TtsEngineFacadePlayback.State.ENDED ->
+                    TtsPlayer.Playback.State.ENDED ->
                         MediaNavigatorInternal.State.Ended
                 }
 
@@ -85,30 +80,30 @@ internal class TtsNavigatorInternal<S : TtsSettings, P : TtsPreferences<P>>(
             }
 
     override fun play() {
-        ttsEngineFacade.play()
+        ttsPlayer.play()
     }
 
     override fun pause() {
-        ttsEngineFacade.pause()
+        ttsPlayer.pause()
     }
 
     override fun go(locator: TtsLocator) {
-        ttsEngineFacade.go(locator)
+        ttsPlayer.go(locator)
     }
 
     override fun goForward() {
-        ttsEngineFacade.nextUtterance()
+        ttsPlayer.nextUtterance()
     }
 
     override fun goBackward() {
-        ttsEngineFacade.previousUtterance()
+        ttsPlayer.previousUtterance()
     }
 
     override fun asPlayer(): Player {
-        return player
+        return sessionAdapter
     }
 
     fun close() {
-        ttsEngineFacade.close()
+        ttsPlayer.close()
     }
 }

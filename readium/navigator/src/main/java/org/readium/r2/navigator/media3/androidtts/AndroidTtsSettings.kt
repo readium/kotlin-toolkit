@@ -13,7 +13,7 @@ import org.readium.r2.shared.util.Language
 @ExperimentalReadiumApi
 data class AndroidTtsSettings(
     override val language: Language?,
-    val voiceId: String?,
-    val pitchRate: Double,
-    val speedRate: Double,
+    val voices: Map<Language, String>,
+    val pitch: Double,
+    val speed: Double,
 ) : TtsSettings

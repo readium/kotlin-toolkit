@@ -18,9 +18,9 @@ internal class AndroidTtsSettingsResolver(
 
         return AndroidTtsSettings(
             language = preferences.language ?: metadata.language,
-            voiceId = preferences.voiceId,
-            pitchRate = preferences.pitchRate ?: 1.0,
-            speedRate = preferences.speedRate ?: 1.0,
+            voices = preferences.voices ?: emptyMap(),
+            pitch = preferences.pitch ?: 1.0,
+            speed = preferences.speed ?: 1.0,
         )
     }
 }

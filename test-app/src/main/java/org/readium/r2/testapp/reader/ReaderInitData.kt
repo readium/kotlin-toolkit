@@ -33,7 +33,7 @@ sealed class ReaderInitData {
 sealed class VisualReaderInitData(
     override val bookId: Long,
     override val publication: Publication,
-    val initialLocation: Locator?,
+    var initialLocation: Locator?,
     val ttsInitData: TtsInitData?,
 ) : ReaderInitData()
 

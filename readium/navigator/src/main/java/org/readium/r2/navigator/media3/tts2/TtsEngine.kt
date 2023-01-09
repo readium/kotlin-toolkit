@@ -17,7 +17,6 @@ import org.readium.r2.shared.util.Language
 @ExperimentalReadiumApi
 interface TtsEngine<S : TtsSettings, P : TtsPreferences<P>> : Configurable<S, P>, Closeable {
 
-    @ExperimentalReadiumApi
     sealed class Exception private constructor(
         override val message: String,
         cause: Throwable? = null
@@ -53,23 +52,22 @@ interface TtsEngine<S : TtsSettings, P : TtsPreferences<P>> : Configurable<S, P>
     /**
      * TTS engine callbacks.
      */
-    @ExperimentalReadiumApi
     interface Listener {
 
-        fun onStart(id: String)
+        fun onStart(requestId: String)
 
-        fun onRange(id: String, range: IntRange)
+        fun onRange(requestId: String, range: IntRange)
 
-        fun onInterrupted(id: String)
+        fun onInterrupted(requestId: String)
 
-        fun onFlushed(id: String)
+        fun onFlushed(requestId: String)
 
-        fun onDone(id: String)
+        fun onDone(requestId: String)
 
-        fun onError(id: String, error: Exception)
+        fun onError(requestId: String, error: Exception)
     }
 
-    fun speak(utterance: TtsUtterance, requestId: String)
+    fun speak(requestId: String, text: String, language: Language?)
 
     fun stop()
 

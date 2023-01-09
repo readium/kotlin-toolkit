@@ -52,6 +52,7 @@ import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.utils.*
 import org.readium.r2.testapp.utils.extensions.confirmDialog
 import org.readium.r2.testapp.utils.extensions.throttleLatest
+import timber.log.Timber
 
 /*
  * Base reader fragment class
@@ -209,6 +210,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                 state.map { it.playingUtterance }
                     .distinctUntilChanged()
                     .onEach { locator ->
+                        Timber.d("Highlighting $locator")
                         val decoration = locator?.let {
                             Decoration(
                                 id = "tts",

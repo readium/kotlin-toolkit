@@ -10,6 +10,9 @@ import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Publication
 
+/**
+ * To be implemented by adapters for third-party TTS engines which can be used with [TtsNavigator].
+ */
 @ExperimentalReadiumApi
 interface TtsEngineProvider<S : TtsSettings, P : TtsPreferences<P>, E : PreferencesEditor<P>> {
 

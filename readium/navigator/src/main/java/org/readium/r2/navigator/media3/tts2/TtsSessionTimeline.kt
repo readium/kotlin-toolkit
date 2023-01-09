@@ -11,7 +11,7 @@ import androidx.media3.common.Timeline
 import java.util.*
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-internal class TtsTimeline(
+internal class TtsSessionTimeline(
     private val mediaItems: List<MediaItem>,
 ) : Timeline() {
 

@@ -21,10 +21,10 @@ internal class TtsContentIterator(
     private val tokenizerFactory: (language: Language?) -> ContentTokenizer,
     initialLocator: TtsLocator?
 ) {
-    enum class Direction {
-        Forward, Backward;
-    }
 
+    /**
+     * Current subset of utterances with a cursor.
+     */
     private var utterances: CursorList<TtsUtterance> =
         CursorList()
 
@@ -37,29 +37,13 @@ internal class TtsContentIterator(
             utterances = CursorList()
         }
 
-    private var language: Language? =
-        null
-
     /**
-     * Sets the tokenizer language.
+     * The tokenizer language.
      *
-     * The change is not immediate, it will be applied as soon as possible.
+     * Modifying this property is not immediate, the new value will be applied as soon as possible.
      */
-    fun setLanguage(language: Language?) {
-        this.language = language
-    }
-
-    /**
-     * Gets the next utterance in the given [direction], or null when reaching the beginning or the
-     * end.
-     */
-    suspend fun nextUtterance(direction: Direction): TtsUtterance? {
-        val utterance = utterances.nextIn(direction)
-        if (utterance == null && loadNextUtterances(direction)) {
-            return nextUtterance(direction)
-        }
-        return utterance
-    }
+    var language: Language? =
+        null
 
     /**
      * Moves the iterator to the position provided in [locator].
@@ -68,14 +52,48 @@ internal class TtsContentIterator(
         publicationIterator = createIterator(locator)
     }
 
-    fun restart() {
+    /**
+     * Moves the iterator to the beginning of the publication.
+     */
+    fun seekToBeginning() {
         publicationIterator = createIterator(null)
     }
 
-    private fun createIterator(locator: TtsLocator?) =
+    /**
+     * Creates a fresh content iterator for the publication starting from [locator].
+     */
+    private fun createIterator(locator: TtsLocator?): Content.Iterator =
         publication.content(locator?.toLocator(publication))
             ?.iterator()
             ?: throw IllegalStateException("No ContentService.")
+
+    /**
+     * Advances to the previous item and returns it, or null if we reached the beginning.
+     */
+    suspend fun previousUtterance(): TtsUtterance? =
+        nextUtterance(Direction.Backward)
+
+    /**
+     * Advances to the next item and returns it, or null if we reached the end.
+     */
+    suspend fun nextUtterance(): TtsUtterance? =
+        nextUtterance(Direction.Forward)
+
+    private enum class Direction {
+        Forward, Backward;
+    }
+
+    /**
+     * Gets the next utterance in the given [direction], or null when reaching the beginning or the
+     * end.
+     */
+    private suspend fun nextUtterance(direction: Direction): TtsUtterance? {
+        val utterance = utterances.nextIn(direction)
+        if (utterance == null && loadNextUtterances(direction)) {
+            return nextUtterance(direction)
+        }
+        return utterance
+    }
 
     /**
      * Loads the utterances for the next publication [Content.Element] item in the given [direction].

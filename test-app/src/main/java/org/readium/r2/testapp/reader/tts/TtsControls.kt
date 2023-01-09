@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.r2.testapp.reader.tts
 
 import androidx.compose.foundation.layout.*
@@ -14,38 +16,31 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import java.text.DecimalFormat
 import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferencesEditor
-import org.readium.r2.navigator.tts.TtsEngine.Voice
+import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.shared.views.SelectorListItem
+import org.readium.r2.testapp.shared.views.LanguageItem
+import org.readium.r2.testapp.shared.views.MenuItem
 import org.readium.r2.testapp.utils.extensions.asStateWhenStarted
 
 /**
  * TTS controls bar displayed at the bottom of the screen when speaking a publication.
  */
-@OptIn(ExperimentalReadiumApi::class)
 @Composable
 fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
     val showControls by model.state.asStateWhenStarted { it.showControls }
     val isPlaying by model.state.asStateWhenStarted { it.isPlaying }
-    // val settings by model.state.asStateWhenStarted { it.settings }
-
-    val editor = remember { mutableStateOf(model.preferencesEditor, policy = neverEqualPolicy()) }
-    val commit: () -> Unit = { editor.value = editor.value ; model.commitPreferences() }
+    val editor by model.editor.collectAsState()
 
     if (showControls) {
         TtsControls(
             playing = isPlaying,
-            availableRates = listOf(0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0),
-            // .filter { it in settings.rateRange },
-            availableLanguages = emptyList(), // settings.availableLanguages,
-            availableVoices = emptyList(), // settings.availableVoices,
-            editor = editor.value,
-            commit = commit,
+            editor = editor,
+            commit = model::commit,
             onPlayPause = { if (isPlaying) model.pause() else model.play() },
             onStop = model::stop,
             onPrevious = model::previous,
@@ -59,9 +54,6 @@ fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
 @Composable
 fun TtsControls(
     playing: Boolean,
-    availableRates: List<Double>,
-    availableLanguages: List<Language>,
-    availableVoices: List<Voice>,
     editor: AndroidTtsPreferencesEditor,
     commit: () -> Unit,
     onPlayPause: () -> Unit,
@@ -74,10 +66,10 @@ fun TtsControls(
 
     if (showSettings) {
         TtsPreferencesDialog(
-            availableRates = availableRates,
-            availableLanguages = availableLanguages,
-            availableVoices = availableVoices,
-            editor = editor,
+            speed = editor.speed,
+            pitch = editor.pitch,
+            language = editor.language,
+            voices = editor.voices,
             commit = commit,
             onDismiss = { showSettings = false }
         )
@@ -140,13 +132,12 @@ fun TtsControls(
     }
 }
 
-@OptIn(ExperimentalReadiumApi::class)
 @Composable
 private fun TtsPreferencesDialog(
-    availableRates: List<Double>,
-    availableLanguages: List<Language>,
-    availableVoices: List<Voice>,
-    editor: AndroidTtsPreferencesEditor,
+    speed: RangePreference<Double>,
+    pitch: RangePreference<Double>,
+    language: Preference<Language?>,
+    voices: Preference<Map<Language, String>>,
     commit: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -157,47 +148,54 @@ private fun TtsPreferencesDialog(
                 Text(text = stringResource(R.string.close))
             }
         },
-        title = { Text(stringResource(R.string.tts_settings)) },
+        title = {
+            Text(
+                text = stringResource(R.string.tts_settings),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.h6,
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+        },
         text = {
             Column {
-                if (availableRates.size > 1) {
-                    SelectorListItem(
-                        label = stringResource(R.string.tts_rate),
-                        values = availableRates,
-                        selection = editor.speedRate.value,
-                        titleForValue = { rate ->
-                            DecimalFormat("x#.##").format(rate)
-                        },
-                        onSelected = {
-                            editor.speedRate.set(it)
-                            commit()
-                        }
-                    )
-                }
-
-                SelectorListItem(
-                    label = stringResource(R.string.language),
-                    values = availableLanguages,
-                    selection = editor.language.value,
-                    titleForValue = { language ->
-                        language?.locale?.displayName
-                            ?: stringResource(R.string.auto)
-                    },
-                    onSelected = {
-                        editor.language.set(it)
-                        commit()
-                    }
+                MenuItem(
+                    title = stringResource(R.string.speed_rate),
+                    preference = speed.withSupportedValues(0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0),
+                    formatValue = speed::formatValue,
+                    commit = commit
                 )
-
-                SelectorListItem(
-                    label = stringResource(R.string.tts_voice),
-                    values = availableVoices,
-                    selection = availableVoices.firstOrNull { it.id == editor.voiceId.value },
-                    titleForValue = { it?.name ?: it?.id ?: stringResource(R.string.auto) },
-                    onSelected = {
-                        editor.voiceId.set(it?.id)
-                        commit()
-                    }
+                MenuItem(
+                    title = stringResource(R.string.pitch_rate),
+                    preference = pitch.withSupportedValues(0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0),
+                    formatValue = pitch::formatValue,
+                    commit = commit
+                )
+                LanguageItem(
+                    preference = language,
+                    commit = commit
+                )
+                MenuItem(
+                    title = stringResource(R.string.tts_voice),
+                    preference = voices.map(
+                        from = { voices ->
+                            language.effectiveValue?.let { voices[it] }
+                        },
+                        to = { voice ->
+                            buildMap {
+                                voices.value?.let { putAll(it) }
+                                language.effectiveValue?.let {
+                                    if (voice == null) {
+                                        remove(it)
+                                    } else {
+                                        put(it, voice)
+                                    }
+                                }
+                            }
+                        }
+                    ).withSupportedValues("a", "b", "c"),
+                    formatValue = { it ?: "Default" }, // it?.name ?: it?.id ?: stringResource(R.string.auto) },
+                    commit = commit
                 )
             }
         }

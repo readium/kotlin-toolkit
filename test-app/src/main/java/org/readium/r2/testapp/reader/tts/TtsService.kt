@@ -6,17 +6,19 @@
 
 package org.readium.r2.testapp.reader.tts
 
-import android.app.Application
-import android.app.PendingIntent
+import android.app.*
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.graphics.Color
 import android.os.Build
 import android.os.IBinder
-import androidx.lifecycle.lifecycleScope
+import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.media3.session.MediaSession
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
@@ -32,6 +34,14 @@ import timber.log.Timber
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class TtsService : LifecycleMedia3SessionService() {
 
+    class Session(
+        val bookId: Long,
+        val navigator: TtsNavigator<AndroidTtsSettings, AndroidTtsPreferences>,
+        val mediaSession: MediaSession,
+    ) {
+        val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    }
+
     /**
      * The service interface to be used by the app.
      */
@@ -40,46 +50,48 @@ class TtsService : LifecycleMedia3SessionService() {
         private val app: org.readium.r2.testapp.Application
             get() = application as org.readium.r2.testapp.Application
 
-        private var saveLocationJob: Job? = null
-
-        var mediaNavigator: TtsNavigator<AndroidTtsSettings, AndroidTtsPreferences>? = null
-
-        var mediaSession: MediaSession? = null
+        var session: Session? = null
 
         fun closeNavigator() {
             stopForeground(true)
-            mediaSession?.release()
-            mediaSession = null
-            saveLocationJob?.cancel()
-            saveLocationJob = null
-            mediaNavigator?.close()
-            mediaNavigator = null
+            session?.mediaSession?.release()
+            session?.navigator?.close()
+            session?.coroutineScope?.cancel()
+            session = null
         }
 
         fun bindNavigator(
             navigator: TtsNavigator<AndroidTtsSettings, AndroidTtsPreferences>,
             bookId: Long
-        ) {
+        ): Session {
             val activityIntent = createSessionActivityIntent(bookId)
-            mediaNavigator = navigator
-            val session = MediaSession.Builder(applicationContext, navigator.asPlayer())
+            val mediaSession = MediaSession.Builder(applicationContext, navigator.asPlayer())
                 .setSessionActivity(activityIntent)
                 .setId(bookId.toString())
                 .build()
 
-            mediaSession = session
-            addSession(session)
+            addSession(mediaSession)
+
+            val session = Session(
+                bookId,
+                navigator,
+                mediaSession
+            )
+
+            this@Binder.session = session
 
             /*
              * Launch a job for saving progression even when playback is going on in the background
              * with no ReaderActivity opened.
              */
-            saveLocationJob = navigator.currentLocator
+            navigator.currentLocator
                 .sample(3000)
                 .onEach { locator ->
                     Timber.d("Saving TTS progression $locator")
                     app.bookRepository.saveProgression(locator, bookId)
-                }.launchIn(lifecycleScope)
+                }.launchIn(session.coroutineScope)
+
+            return session
         }
 
         private fun createSessionActivityIntent(bookId: Long): PendingIntent {
@@ -108,6 +120,39 @@ class TtsService : LifecycleMedia3SessionService() {
     override fun onCreate() {
         super.onCreate()
         Timber.d("TtsService created.")
+        // val initialNotification = createInitialNotification()
+        // startForeground(1, initialNotification)
+    }
+
+    private fun createInitialNotification(): Notification {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationChannelId = createNotificationChannel()
+            Notification.Builder(this, notificationChannelId)
+                .setContentTitle("R2 testapp")
+                .setContentText("rgergergergg")
+                .setAutoCancel(true)
+                .build()
+        } else {
+            NotificationCompat.Builder(this)
+                .setContentTitle("R2 testapp")
+                .setContentText("grgrgrgrg")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true)
+                .build()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createNotificationChannel(): String {
+        val notificationChannelId = "example.permanence"
+        val channelName = "Background Service"
+        val channel = NotificationChannel(notificationChannelId, channelName, NotificationManager.IMPORTANCE_NONE)
+        channel.lightColor = Color.BLUE
+        channel.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.createNotificationChannel(channel)
+        return notificationChannelId
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -126,7 +171,7 @@ class TtsService : LifecycleMedia3SessionService() {
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
-        return binder.mediaSession
+        return binder.session?.mediaSession
     }
 
     override fun onUpdateNotification(session: MediaSession) {
@@ -153,7 +198,7 @@ class TtsService : LifecycleMedia3SessionService() {
 
         fun start(application: Application) {
             val intent = intent(application)
-            application.startService(intent)
+            ContextCompat.startForegroundService(application, intent)
         }
 
         suspend fun bind(application: Application): TtsService.Binder {

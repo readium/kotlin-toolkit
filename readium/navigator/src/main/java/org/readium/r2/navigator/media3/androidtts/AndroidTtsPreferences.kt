@@ -15,15 +15,16 @@ import org.readium.r2.shared.util.Language
 @Serializable
 data class AndroidTtsPreferences(
     override val language: Language? = null,
-    val voiceId: String? = null,
-    val pitchRate: Double? = null,
-    val speedRate: Double? = null,
+    val voices: Map<Language, String>? = null,
+    val pitch: Double? = null,
+    val speed: Double? = null,
 ) : TtsPreferences<AndroidTtsPreferences> {
 
     override fun plus(other: AndroidTtsPreferences): AndroidTtsPreferences =
         AndroidTtsPreferences(
             language = other.language ?: language,
-            voiceId = other.voiceId ?: voiceId,
-            speedRate = other.speedRate ?: speedRate,
+            voices = other.voices ?: voices,
+            speed = other.speed ?: speed,
+            pitch = other.pitch ?: pitch
         )
 }

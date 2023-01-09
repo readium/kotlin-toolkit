@@ -7,166 +7,89 @@
 package org.readium.r2.navigator.media3.tts2
 
 import java.util.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.util.Language
 
 @ExperimentalReadiumApi
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class TtsEngineFacade<S : TtsSettings, P : TtsPreferences<P>>(
-    private val ttsEngine: TtsEngine<S, P>,
-    private val ttsContentIterator: TtsContentIterator,
-    private val listener: TtsEngineFacadeListener,
-    firstUtterance: TtsUtterance,
+    private val ttsEngine: TtsEngine<S, P>
 ) : Configurable<S, P> by ttsEngine {
 
-    companion object {
-
-        suspend operator fun <S : TtsSettings, P : TtsPreferences<P>> invoke(
-            ttsEngine: TtsEngine<S, P>,
-            ttsContentIterator: TtsContentIterator,
-            listener: TtsEngineFacadeListener
-        ): TtsEngineFacade<S, P>? {
-
-            val firstUtterance = ttsContentIterator.nextUtterance(TtsContentIterator.Direction.Forward)
-                ?: run {
-                    ttsContentIterator.restart()
-                    ttsContentIterator.nextUtterance(TtsContentIterator.Direction.Forward)
-                } ?: return null
-
-            return TtsEngineFacade(ttsEngine, ttsContentIterator, listener, firstUtterance)
-        }
-    }
-
-    private val coroutineScope: CoroutineScope =
-        MainScope()
-
-    private var pendingUtterance: TtsUtterance? =
-        firstUtterance
-
-    private var playbackJob: Job? = null
-
-    private val ttsEngineListener = TtsEngineListener()
-
-    private val playbackMutable: MutableStateFlow<TtsEngineFacadePlayback> =
-        MutableStateFlow(
-            TtsEngineFacadePlayback(
-                index = firstUtterance.locator.resourceIndex,
-                state = TtsEngineFacadePlayback.State.READY,
-                isPlaying = false,
-                playWhenReady = false,
-                locator = firstUtterance.locator,
-                range = null
-            )
-        )
-
     init {
-        ttsEngine.setListener(ttsEngineListener)
-        ttsContentIterator.setLanguage(ttsEngine.settings.value.language)
-
-        ttsEngineListener.state
-            .onEach { engineState -> onEngineStateChanged(engineState) }
-            .launchIn(coroutineScope)
+        val listener = TtsEngineListener()
+        ttsEngine.setListener(listener)
     }
 
-    private fun onEngineStateChanged(state: TtsEngineListener.EngineState) {
-        val newPlayback = playbackMutable.value.copy(
-            isPlaying = state.utteranceId != null,
-            range = state.range
-        )
+    private var currentTask: UtteranceTask? = null
 
-        playbackMutable.value = newPlayback
-    }
-
-    val playback: StateFlow<TtsEngineFacadePlayback> =
-        playbackMutable.asStateFlow()
-
-    fun play() {
-        replacePlaybackJob {
-            playbackMutable.value =
-                playbackMutable.value.copy(
-                    state = TtsEngineFacadePlayback.State.READY,
-                    playWhenReady = true,
-                    isPlaying = true
-                )
-            playContinuous()
-        }
-    }
-
-    fun pause() {
-        replacePlaybackJob {
-            playbackMutable.value =
-                playbackMutable.value.copy(
-                    playWhenReady = false,
-                    isPlaying = false
-                )
-        }
-    }
-
-    fun go(locator: TtsLocator) {
-        replacePlaybackJob {
-            pendingUtterance = null
-            ttsContentIterator.seek(locator)
-            playContinuous()
-        }
-    }
-
-    fun nextUtterance() {
-        replacePlaybackJob {
-            pendingUtterance = null
-            ttsContentIterator.nextUtterance(TtsContentIterator.Direction.Forward)
-            playContinuous()
-        }
-    }
-
-    fun previousUtterance() {
-        replacePlaybackJob {
-            pendingUtterance = null
-            ttsContentIterator.nextUtterance(TtsContentIterator.Direction.Backward)
-            playContinuous()
-        }
-    }
-
-    private fun replacePlaybackJob(block: suspend CoroutineScope.() -> Unit) {
-        coroutineScope.launch {
-            ttsEngine.stop()
-            playbackJob?.cancelAndJoin()
-            ttsEngineListener.removeAllCallbacks()
-            playbackJob = launch {
-                block()
-            }
-        }
-    }
-
-    private suspend fun playContinuous() {
-        if (pendingUtterance == null) {
-            pendingUtterance = ttsContentIterator.nextUtterance(TtsContentIterator.Direction.Forward)
-        }
-        pendingUtterance?.let {
-            playbackMutable.value = playbackMutable.value.copy(range = null, locator = it.locator)
-            speakUtterance(it)
-            pendingUtterance = null
-            playContinuous()
-        } ?: run {
-            playbackMutable.value = playbackMutable.value.copy(
-                isPlaying = false, playWhenReady = false, state = TtsEngineFacadePlayback.State.ENDED
-            )
-        }
-    }
-
-    private suspend fun speakUtterance(utterance: TtsUtterance) =
+    suspend fun speak(text: String, language: Language?, onRange: (IntRange) -> Unit) {
         suspendCancellableCoroutine { continuation ->
+            continuation.invokeOnCancellation { ttsEngine.stop() }
             val id = UUID.randomUUID().toString()
-            ttsEngineListener.addCallback(id, continuation)
-            ttsEngine.speak(utterance, id)
+            currentTask?.continuation?.cancel()
+            currentTask = UtteranceTask(id, continuation, onRange)
+            ttsEngine.speak(id, text, language)
         }
-
-    fun stop() {
-        listener.onNavigatorStopped()
-        pause()
     }
 
     fun close() {
+        currentTask?.continuation?.cancel()
         ttsEngine.close()
+    }
+
+    private data class UtteranceTask(
+        val requestId: String,
+        val continuation: CancellableContinuation<TtsEngine.Exception?>,
+        val onRange: (IntRange) -> Unit
+    )
+
+    private inner class TtsEngineListener : TtsEngine.Listener {
+
+        override fun onStart(requestId: String) {
+        }
+
+        override fun onRange(requestId: String, range: IntRange) {
+            currentTask
+                ?.takeIf { it.requestId == requestId }
+                ?.onRange
+                ?.invoke(range)
+        }
+
+        override fun onInterrupted(requestId: String) {
+            currentTask
+                ?.takeIf { it.requestId == requestId }
+                ?.continuation
+                ?.cancel()
+            currentTask = null
+        }
+
+        override fun onFlushed(requestId: String) {
+            currentTask
+                ?.takeIf { it.requestId == requestId }
+                ?.continuation
+                ?.cancel()
+            currentTask = null
+        }
+
+        override fun onDone(requestId: String) {
+            currentTask
+                ?.takeIf { it.requestId == requestId }
+                ?.continuation
+                ?.resume(null) {}
+            currentTask = null
+        }
+
+        override fun onError(requestId: String, error: TtsEngine.Exception) {
+            currentTask
+                ?.takeIf { it.requestId == requestId }
+                ?.continuation
+                ?.resume(error) {}
+            currentTask = null
+        }
     }
 }

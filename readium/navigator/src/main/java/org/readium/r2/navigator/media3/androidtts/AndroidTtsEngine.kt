@@ -16,9 +16,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.readium.r2.navigator.media3.tts2.TtsEngine
-import org.readium.r2.navigator.media3.tts2.TtsUtterance
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.util.Language
 
 /**
  * Default [TtsEngine] implementation using Android's native text to speech engine.
@@ -91,9 +91,6 @@ class AndroidTtsEngine(
         engine.setOnUtteranceProgressListener(Listener())
     }
 
-    private val scope: CoroutineScope =
-        CoroutineScope(SupervisorJob() + Dispatchers.Default)
-
     private var listener: TtsEngine.Listener? =
         null
 
@@ -104,15 +101,16 @@ class AndroidTtsEngine(
         MutableStateFlow(settingsResolver.settings(initialPreferences))
 
     override fun close() {
-        scope.cancel()
         engine.shutdown()
     }
 
     override fun speak(
-        utterance: TtsUtterance,
         requestId: String,
+        text: String,
+        language: Language?
     ) {
-        engine.speak(utterance.text, QUEUE_ADD, null, requestId)
+        engine.language = language?.locale ?: settings.value.language?.locale
+        engine.speak(text, QUEUE_ADD, null, requestId)
     }
 
     /**
@@ -159,7 +157,8 @@ class AndroidTtsEngine(
     }
 
     private fun TextToSpeech.setup(settings: AndroidTtsSettings) {
-        setSpeechRate(settings.speedRate.toFloat())
+        setSpeechRate(settings.speed.toFloat())
+        setPitch(settings.pitch.toFloat())
 
         val localeResult = engine.setLanguage(settings.language?.locale)
         if (localeResult < TextToSpeech.LANG_AVAILABLE) {
@@ -171,35 +170,35 @@ class AndroidTtsEngine(
     }
 
     inner class Listener : UtteranceProgressListener() {
-        override fun onStart(utteranceId: String?) {
-            listener?.onStart(utteranceId!!)
+        override fun onStart(utteranceId: String) {
+            listener?.onStart(utteranceId)
         }
 
-        override fun onStop(utteranceId: String?, interrupted: Boolean) {
+        override fun onStop(utteranceId: String, interrupted: Boolean) {
             listener?.let {
                 if (interrupted) {
-                    it.onInterrupted(utteranceId!!)
+                    it.onInterrupted(utteranceId)
                 } else {
-                    it.onFlushed(utteranceId!!)
+                    it.onFlushed(utteranceId)
                 }
             }
         }
 
-        override fun onDone(utteranceId: String?) {
-            listener?.onDone(utteranceId!!)
+        override fun onDone(utteranceId: String) {
+            listener?.onDone(utteranceId)
         }
 
         @Deprecated("Deprecated in the interface", ReplaceWith("onError(utteranceId, -1)"))
-        override fun onError(utteranceId: String?) {
+        override fun onError(utteranceId: String) {
             onError(utteranceId, -1)
         }
 
-        override fun onError(utteranceId: String?, errorCode: Int) {
+        override fun onError(utteranceId: String, errorCode: Int) {
             // listener?.onError(utteranceId!!, EngineException(errorCode))
         }
 
-        override fun onRangeStart(utteranceId: String?, start: Int, end: Int, frame: Int) {
-            listener?.onRange(utteranceId!!, start until end)
+        override fun onRangeStart(utteranceId: String, start: Int, end: Int, frame: Int) {
+            listener?.onRange(utteranceId, start until end)
         }
     }
 }
