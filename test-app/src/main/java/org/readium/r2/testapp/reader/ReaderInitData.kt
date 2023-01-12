@@ -16,14 +16,12 @@ import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.epub.EpubPreferences
 import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferences
-import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferencesEditor
-import org.readium.r2.navigator.media3.androidtts.AndroidTtsSettings
-import org.readium.r2.navigator.media3.tts2.TtsNavigatorFactory
 import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.*
 import org.readium.r2.testapp.reader.preferences.PreferencesManager
-import org.readium.r2.testapp.reader.tts.TtsService
+import org.readium.r2.testapp.reader.tts.AndroidTtsNavigatorFactory
+import org.readium.r2.testapp.reader.tts.TtsServiceFacade
 
 sealed class ReaderInitData {
     abstract val bookId: Long
@@ -83,7 +81,7 @@ class DummyReaderInitData(
 }
 
 class TtsInitData(
-    val sessionBinder: TtsService.Binder,
-    val ttsNavigatorFactory: TtsNavigatorFactory<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsPreferencesEditor>,
+    val ttsServiceFacade: TtsServiceFacade,
+    val ttsNavigatorFactory: AndroidTtsNavigatorFactory,
     val preferencesManager: PreferencesManager<AndroidTtsPreferences>,
 )

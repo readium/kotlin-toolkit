@@ -22,9 +22,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
-import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferences
-import org.readium.r2.navigator.media3.androidtts.AndroidTtsSettings
-import org.readium.r2.navigator.media3.tts2.TtsNavigator
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.testapp.reader.ReaderActivityContract
 import org.readium.r2.testapp.utils.LifecycleMedia3SessionService
@@ -36,7 +33,7 @@ class TtsService : LifecycleMedia3SessionService() {
 
     class Session(
         val bookId: Long,
-        val navigator: TtsNavigator<AndroidTtsSettings, AndroidTtsPreferences>,
+        val navigator: AndroidTtsNavigator,
         val mediaSession: MediaSession,
     ) {
         val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -52,7 +49,7 @@ class TtsService : LifecycleMedia3SessionService() {
 
         var session: Session? = null
 
-        fun closeNavigator() {
+        fun closeSession() {
             stopForeground(true)
             session?.mediaSession?.release()
             session?.navigator?.close()
@@ -60,8 +57,8 @@ class TtsService : LifecycleMedia3SessionService() {
             session = null
         }
 
-        fun bindNavigator(
-            navigator: TtsNavigator<AndroidTtsSettings, AndroidTtsPreferences>,
+        fun openSession(
+            navigator: AndroidTtsNavigator,
             bookId: Long
         ): Session {
             val activityIntent = createSessionActivityIntent(bookId)
@@ -188,7 +185,7 @@ class TtsService : LifecycleMedia3SessionService() {
         super.onTaskRemoved(rootIntent)
         Timber.d("Task removed. Stopping session and service.")
         // Close the navigator to allow the service to be stopped.
-        binder.closeNavigator()
+        binder.closeSession()
         stopSelf()
     }
 

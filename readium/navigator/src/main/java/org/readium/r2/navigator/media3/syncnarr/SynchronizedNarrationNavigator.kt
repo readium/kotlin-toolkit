@@ -6,16 +6,7 @@
 
 package org.readium.r2.navigator.media3.syncnarr
 
-import androidx.media3.common.Player
-import kotlinx.coroutines.flow.StateFlow
-import org.readium.r2.navigator.media3.api.MediaNavigator
-import org.readium.r2.navigator.preferences.Configurable
-import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
-
-@ExperimentalReadiumApi
+/*@ExperimentalReadiumApi
 class SynchronizedNarrationNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>>(
     private val internalNavigator: SynchronizedNarrationNavigatorInternal<S, P>
 ) : MediaNavigator<SynchronizedNarrationNavigator.Playback> {
@@ -67,4 +58,4 @@ class SynchronizedNarrationNavigator<S : Configurable.Settings, P : Configurable
     override fun asPlayer(): Player {
         TODO("Not yet implemented")
     }
-}
+}*/

@@ -17,8 +17,7 @@ object AndroidTtsSharedPreferencesFilter : PreferencesFilter<AndroidTtsPreferenc
 
     override fun filter(preferences: AndroidTtsPreferences): AndroidTtsPreferences =
         preferences.copy(
-            language = null,
-            voices = null
+            language = null
         )
 }
 
@@ -30,7 +29,6 @@ object AndroidTtsPublicationPreferencesFilter : PreferencesFilter<AndroidTtsPref
 
     override fun filter(preferences: AndroidTtsPreferences): AndroidTtsPreferences =
         AndroidTtsPreferences(
-            language = preferences.language,
-            voices = preferences.voices
+            language = preferences.language
         )
 }

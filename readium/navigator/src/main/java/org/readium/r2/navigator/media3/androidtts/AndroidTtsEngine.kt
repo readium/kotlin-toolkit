@@ -7,10 +7,12 @@
 package org.readium.r2.navigator.media3.androidtts
 
 import android.content.Context
-import android.content.Intent
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeech.QUEUE_ADD
 import android.speech.tts.UtteranceProgressListener
+import android.speech.tts.Voice as AndroidVoice
+import android.speech.tts.Voice.*
+import java.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,14 +29,17 @@ import org.readium.r2.shared.util.Language
 class AndroidTtsEngine(
     private val engine: TextToSpeech,
     metadata: Metadata,
+    private val defaultVoiceProvider: DefaultVoiceProvider?,
     initialPreferences: AndroidTtsPreferences
-) : TtsEngine<AndroidTtsSettings, AndroidTtsPreferences> {
+) : TtsEngine<AndroidTtsSettings, AndroidTtsPreferences,
+        AndroidTtsEngine.Exception, AndroidTtsEngine.Voice> {
 
     companion object {
 
         suspend operator fun invoke(
             context: Context,
             metadata: Metadata,
+            defaultVoiceProvider: DefaultVoiceProvider?,
             initialPreferences: AndroidTtsPreferences
         ): AndroidTtsEngine? {
 
@@ -46,10 +51,15 @@ class AndroidTtsEngine(
             val engine = TextToSpeech(context, listener)
 
             return if (init.await())
-                AndroidTtsEngine(engine, metadata, initialPreferences)
+                AndroidTtsEngine(engine, metadata, defaultVoiceProvider, initialPreferences)
             else
                 null
         }
+    }
+
+    fun interface DefaultVoiceProvider {
+
+        fun chooseVoice(language: Language?, availableVoices: Set<Voice>): Voice?
     }
 
     /**
@@ -82,16 +92,38 @@ class AndroidTtsEngine(
         }
     }
 
-    class EngineException(code: Int) : Exception("Android TTS engine error: $code") {
+    class Exception(code: Int) :
+        kotlin.Exception("Android TTS engine error: $code"), TtsEngine.Error {
+
         val error: EngineError =
             EngineError.getOrDefault(code)
+    }
+
+    /**
+     * Represents a voice provided by the TTS engine which can speak an utterance.
+     *
+     * @param name Unique and stable identifier for this voice
+     * @param language Language (and region) this voice belongs to.
+     * @param quality Voice quality.
+     * @param requiresNetwork Indicates whether using this voice requires an Internet connection.
+     */
+    data class Voice(
+        val name: String,
+        override val language: Language,
+        val quality: Quality = Quality.Normal,
+        val requiresNetwork: Boolean = false,
+    ) : TtsEngine.Voice {
+
+        enum class Quality {
+            Lowest, Low, Normal, High, Highest
+        }
     }
 
     init {
         engine.setOnUtteranceProgressListener(Listener())
     }
 
-    private var listener: TtsEngine.Listener? =
+    private var listener: TtsEngine.Listener<Exception>? =
         null
 
     private val settingsResolver: AndroidTtsSettingsResolver =
@@ -100,8 +132,13 @@ class AndroidTtsEngine(
     private val _settings: MutableStateFlow<AndroidTtsSettings> =
         MutableStateFlow(settingsResolver.settings(initialPreferences))
 
-    override fun close() {
-        engine.shutdown()
+    override val voices: Set<Voice> get() =
+        engine.voices
+            .map { it.toTtsEngineVoice() }
+            .toSet()
+
+    override fun setListener(listener: TtsEngine.Listener<Exception>?) {
+        this.listener = listener
     }
 
     override fun speak(
@@ -109,42 +146,16 @@ class AndroidTtsEngine(
         text: String,
         language: Language?
     ) {
-        engine.language = language?.locale ?: settings.value.language?.locale
+        engine.setupVoice(settings.value, language, voices)
         engine.speak(text, QUEUE_ADD, null, requestId)
     }
-
-    /**
-     * Start the activity to install additional language data.
-     * To be called if you receive a [TtsEngine.Exception.LanguageSupportIncomplete] error.
-     *
-     * Returns whether the request was successful.
-     *
-     * See https://android-developers.googleblog.com/2009/09/introduction-to-text-to-speech-in.html
-     */
-    fun requestInstallMissingVoice(
-        context: Context,
-        intentFlags: Int = Intent.FLAG_ACTIVITY_NEW_TASK
-    ): Boolean {
-        val intent = Intent()
-            .setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA)
-            .setFlags(intentFlags)
-
-        if (context.packageManager.queryIntentActivities(intent, 0).isEmpty()) {
-            return false
-        }
-
-        context.startActivity(intent)
-        return true
-    }
-
-    // Engine
 
     override fun stop() {
         engine.stop()
     }
 
-    override fun setListener(listener: TtsEngine.Listener?) {
-        this.listener = listener
+    override fun close() {
+        engine.shutdown()
     }
 
     override val settings: StateFlow<AndroidTtsSettings> =
@@ -152,22 +163,58 @@ class AndroidTtsEngine(
 
     override fun submitPreferences(preferences: AndroidTtsPreferences) {
         val newSettings = settingsResolver.settings(preferences)
-        engine.setup(newSettings)
+        engine.setupPitchAndSpeed(newSettings)
         _settings.value = newSettings
     }
 
-    private fun TextToSpeech.setup(settings: AndroidTtsSettings) {
+    private fun TextToSpeech.setupPitchAndSpeed(settings: AndroidTtsSettings) {
         setSpeechRate(settings.speed.toFloat())
         setPitch(settings.pitch.toFloat())
-
-        val localeResult = engine.setLanguage(settings.language?.locale)
-        if (localeResult < TextToSpeech.LANG_AVAILABLE) {
-            if (localeResult == TextToSpeech.LANG_MISSING_DATA)
-                throw org.readium.r2.navigator.tts.TtsEngine.Exception.LanguageSupportIncomplete(settings.language!!)
-            else
-                throw org.readium.r2.navigator.tts.TtsEngine.Exception.LanguageNotSupported(settings.language!!)
-        }
     }
+
+    private fun TextToSpeech.setupVoice(
+        settings: AndroidTtsSettings,
+        utteranceLanguage: Language?,
+        voices: Set<Voice>
+    ) {
+        val language = utteranceLanguage
+            ?: settings.language
+
+        val preferredVoice = language
+            ?.let { settings.voices[it] }
+            ?.let { voiceForName(it) }
+
+        val voice = preferredVoice
+            ?: defaultVoice(language, voices)
+
+        voice
+            ?.let { engine.voice = it }
+            ?: run { engine.language = language?.locale ?: Locale.getDefault() }
+    }
+
+    private fun defaultVoice(language: Language?, voices: Set<Voice>): AndroidVoice? =
+        defaultVoiceProvider
+            ?.chooseVoice(language, voices)
+            ?.let { voiceForName(it.name) }
+
+    private fun voiceForName(name: String) =
+        engine.voices
+            .firstOrNull { it.name == name }
+
+    private fun AndroidVoice.toTtsEngineVoice() =
+        Voice(
+            name = name,
+            language = Language(locale),
+            quality = when (quality) {
+                QUALITY_VERY_HIGH -> Voice.Quality.Highest
+                QUALITY_HIGH -> Voice.Quality.High
+                QUALITY_NORMAL -> Voice.Quality.Normal
+                QUALITY_LOW -> Voice.Quality.Low
+                QUALITY_VERY_LOW -> Voice.Quality.Lowest
+                else -> throw IllegalStateException("Unexpected voice quality.")
+            },
+            requiresNetwork = isNetworkConnectionRequired
+        )
 
     inner class Listener : UtteranceProgressListener() {
         override fun onStart(utteranceId: String) {
@@ -194,7 +241,10 @@ class AndroidTtsEngine(
         }
 
         override fun onError(utteranceId: String, errorCode: Int) {
-            // listener?.onError(utteranceId!!, EngineException(errorCode))
+            listener?.onError(
+                utteranceId,
+                Exception(errorCode)
+            )
         }
 
         override fun onRangeStart(utteranceId: String, start: Int, end: Int, frame: Int) {

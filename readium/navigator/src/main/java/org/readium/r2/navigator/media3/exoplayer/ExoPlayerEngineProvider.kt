@@ -12,7 +12,6 @@ import androidx.media3.common.C
 import androidx.media3.datasource.DataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import org.readium.r2.navigator.media3.player.ExoPlayerDataSource
 import org.readium.r2.navigator.media3.player.MediaEngineProvider
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata

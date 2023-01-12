@@ -16,39 +16,42 @@ import org.readium.r2.shared.util.Language
 
 @ExperimentalReadiumApi
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class TtsEngineFacade<S : TtsSettings, P : TtsPreferences<P>>(
-    private val ttsEngine: TtsEngine<S, P>
-) : Configurable<S, P> by ttsEngine {
+internal class TtsEngineFacade<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
+    E : TtsEngine.Error, V : TtsEngine.Voice>(
+    private val engine: TtsEngine<S, P, E, V>
+) : Configurable<S, P> by engine {
 
     init {
         val listener = TtsEngineListener()
-        ttsEngine.setListener(listener)
+        engine.setListener(listener)
     }
 
-    private var currentTask: UtteranceTask? = null
+    private var currentTask: UtteranceTask<E>? = null
 
-    suspend fun speak(text: String, language: Language?, onRange: (IntRange) -> Unit) {
+    val voices: Set<V>
+        get() = engine.voices
+
+    suspend fun speak(text: String, language: Language?, onRange: (IntRange) -> Unit): E? =
         suspendCancellableCoroutine { continuation ->
-            continuation.invokeOnCancellation { ttsEngine.stop() }
+            continuation.invokeOnCancellation { engine.stop() }
             val id = UUID.randomUUID().toString()
             currentTask?.continuation?.cancel()
             currentTask = UtteranceTask(id, continuation, onRange)
-            ttsEngine.speak(id, text, language)
+            engine.speak(id, text, language)
         }
-    }
 
     fun close() {
         currentTask?.continuation?.cancel()
-        ttsEngine.close()
+        engine.close()
     }
 
-    private data class UtteranceTask(
+    private data class UtteranceTask<E : TtsEngine.Error>(
         val requestId: String,
-        val continuation: CancellableContinuation<TtsEngine.Exception?>,
+        val continuation: CancellableContinuation<E?>,
         val onRange: (IntRange) -> Unit
     )
 
-    private inner class TtsEngineListener : TtsEngine.Listener {
+    private inner class TtsEngineListener : TtsEngine.Listener<E> {
 
         override fun onStart(requestId: String) {
         }
@@ -84,7 +87,7 @@ internal class TtsEngineFacade<S : TtsSettings, P : TtsPreferences<P>>(
             currentTask = null
         }
 
-        override fun onError(requestId: String, error: TtsEngine.Exception) {
+        override fun onError(requestId: String, error: E) {
             currentTask
                 ?.takeIf { it.requestId == requestId }
                 ?.continuation

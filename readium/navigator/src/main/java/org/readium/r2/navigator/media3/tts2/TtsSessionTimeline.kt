@@ -31,6 +31,7 @@ internal class TtsSessionTimeline(
         window.firstPeriodIndex = windowIndex
         window.lastPeriodIndex = windowIndex
         window.mediaItem = mediaItems[windowIndex]
+        window.isSeekable = false
         return window
     }
 

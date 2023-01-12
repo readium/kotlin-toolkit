@@ -69,7 +69,7 @@ class Application : android.app.Application() {
                     this@Application,
                     readium,
                     bookRepository,
-                    navigatorPreferences
+                    navigatorPreferences,
                 )
             }
     }

@@ -7,8 +7,9 @@
 package org.readium.r2.navigator.media3.tts2
 
 import android.app.Application
-import org.readium.r2.navigator.media3.api.DefaultMetadataProvider
-import org.readium.r2.navigator.media3.api.MetadataProvider
+import org.readium.r2.navigator.media3.api.DefaultMediaMetadataFactory
+import org.readium.r2.navigator.media3.api.MediaMetadataFactory
+import org.readium.r2.navigator.media3.api.MediaMetadataProvider
 import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
@@ -18,22 +19,24 @@ import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.tokenizer.TextUnit
 
 @ExperimentalReadiumApi
-class TtsNavigatorFactory<S : TtsSettings, P : TtsPreferences<P>, E : PreferencesEditor<P>>(
+class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
+    F : TtsEngine.Error, V : TtsEngine.Voice>(
     private val application: Application,
     private val publication: Publication,
-    private val ttsEngineProvider: TtsEngineProvider<S, P, E>,
+    private val ttsEngineProvider: TtsEngineProvider<S, P, E, F, V>,
     private val tokenizerFactory: (defaultLanguage: Language?) -> ContentTokenizer,
-    private val metadataProvider: MetadataProvider
+    private val metadataProvider: MediaMetadataProvider
 ) {
     companion object {
 
-        suspend operator fun <S : TtsSettings, P : TtsPreferences<P>, E : PreferencesEditor<P>> invoke(
+        suspend operator fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
+            F : TtsEngine.Error, V : TtsEngine.Voice> invoke(
             application: Application,
             publication: Publication,
-            ttsEngineProvider: TtsEngineProvider<S, P, E>,
+            ttsEngineProvider: TtsEngineProvider<S, P, E, F, V>,
             tokenizerFactory: (defaultLanguage: Language?) -> ContentTokenizer = defaultTokenizerFactory,
-            metadataProvider: MetadataProvider = defaultMetadataProvider
-        ): TtsNavigatorFactory<S, P, E>? {
+            metadataProvider: MediaMetadataProvider = defaultMediaMetadataProvider
+        ): TtsNavigatorFactory<S, P, E, F, V>? {
 
             publication.content()
                 ?.iterator()
@@ -54,14 +57,19 @@ class TtsNavigatorFactory<S : TtsSettings, P : TtsPreferences<P>, E : Preference
             )
         }
 
-        val defaultMetadataProvider: MetadataProvider = DefaultMetadataProvider()
+        val defaultMediaMetadataProvider: MediaMetadataProvider =
+            object : MediaMetadataProvider {
+                override fun createMetadataFactory(publication: Publication): MediaMetadataFactory {
+                    return DefaultMediaMetadataFactory(publication)
+                }
+            }
     }
 
     suspend fun createNavigator(
         listener: TtsNavigatorListener,
         initialPreferences: P? = null,
         initialLocator: Locator? = null
-    ): TtsNavigator<S, P> {
+    ): TtsNavigator<S, P, F, V> {
         return TtsNavigator(
             application,
             publication,

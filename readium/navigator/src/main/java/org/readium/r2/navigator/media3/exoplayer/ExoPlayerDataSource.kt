@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.media3.player
+package org.readium.r2.navigator.media3.exoplayer
 
 import android.net.Uri
 import androidx.media3.common.C.LENGTH_UNSET

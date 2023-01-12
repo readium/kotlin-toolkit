@@ -7,44 +7,30 @@
 package org.readium.r2.navigator.media3.api
 
 import androidx.media3.common.Player
-import kotlin.time.Duration
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Closeable
 
 @ExperimentalReadiumApi
-interface MediaNavigator<P : MediaNavigator.Playback> : Navigator, Closeable {
+interface MediaNavigator<E : MediaNavigator.Error> : Navigator, Closeable {
+
+    interface Error
 
     enum class State {
-        Playing,
-        Paused,
-        Ended;
+        Ready,
+        Buffering,
+        Ended,
+        Error;
     }
 
-    data class Buffer(
-        val isPlayable: Boolean,
-        val position: Duration
+    data class Playback<E : Error>(
+        val state: State,
+        val playWhenReady: Boolean,
+        val error: E?
     )
 
-    interface Playback {
-
-        val state: State
-        val locator: Locator
-    }
-
-    interface TextSynchronization {
-
-        val token: Locator?
-    }
-
-    interface BufferProvider {
-
-        val buffer: Buffer
-    }
-
-    val playback: StateFlow<P>
+    val playback: StateFlow<Playback<E>>
 
     /**
      * Resumes the playback at the current location or start it again from the beginning if it has finished.

@@ -6,63 +6,107 @@
 
 package org.readium.r2.navigator.media3.tts2
 
-import androidx.media3.common.Player
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Locator
 import timber.log.Timber
 
 @ExperimentalReadiumApi
-internal class TtsPlayer<S : TtsSettings, P : TtsPreferences<P>>(
-    private val engineFacade: TtsEngineFacade<S, P>,
+internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
+    E : TtsEngine.Error, V : TtsEngine.Voice> private constructor(
+    private val engineFacade: TtsEngineFacade<S, P, E, V>,
     private val contentIterator: TtsContentIterator,
-    private val listener: Listener,
-    firstUtterance: TtsUtterance,
-) : Configurable<S, P> by engineFacade {
+    initialContext: Context,
+    initialPreferences: P
+) : Configurable<S, P> {
 
     companion object {
 
-        suspend operator fun <S : TtsSettings, P : TtsPreferences<P>> invoke(
-            engine: TtsEngine<S, P>,
+        suspend operator fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
+            E : TtsEngine.Error, V : TtsEngine.Voice> invoke(
+            engine: TtsEngine<S, P, E, V>,
             contentIterator: TtsContentIterator,
-            listener: Listener
-        ): TtsPlayer<S, P>? {
+            initialPreferences: P,
+        ): TtsPlayer<S, P, E, V>? {
 
-            val firstUtterance = contentIterator.nextUtterance()
-                ?: run {
-                    contentIterator.seekToBeginning()
-                    contentIterator.nextUtterance()
-                } ?: return null
+            val initialContext = contentIterator.startContext()
+                ?: return null
 
             val ttsEngineFacade = TtsEngineFacade(engine)
+            ttsEngineFacade.submitPreferences(initialPreferences)
+            contentIterator.language = ttsEngineFacade.settings.value.language
 
-            return TtsPlayer(ttsEngineFacade, contentIterator, listener, firstUtterance)
+            return TtsPlayer(ttsEngineFacade, contentIterator, initialContext, initialPreferences)
+        }
+
+        private suspend fun TtsContentIterator.startContext(): Context? {
+            val previousUtterance = previousUtterance()
+            val currentUtterance = nextUtterance()
+
+            return if (currentUtterance != null) {
+                Context(
+                    previousUtterance = previousUtterance,
+                    currentUtterance = currentUtterance,
+                    nextUtterance = nextUtterance(),
+                    ended = false
+                )
+            } else {
+                Context(
+                    previousUtterance = previousUtterance(),
+                    currentUtterance = previousUtterance ?: return null,
+                    nextUtterance = null,
+                    ended = true
+                )
+            }
         }
     }
 
-    interface Listener {
+    sealed class Error {
 
-        fun onPlaybackException()
+        data class EngineError<E : TtsEngine.Error> (val error: E) : Error()
+
+        data class ContentError(val exception: Exception) : Error()
     }
 
-    @ExperimentalReadiumApi
     data class Playback(
         val state: State,
-        val isPlaying: Boolean,
         val playWhenReady: Boolean,
-        val index: Int,
-        val locator: TtsLocator,
+        val error: Error?
+    ) {
+
+        enum class State {
+            Ready,
+            Ended,
+            Error;
+        }
+    }
+
+    data class Utterance(
+        val text: String,
+        val position: Position,
         val range: IntRange?
     ) {
 
-        enum class State(val value: Int) {
-            READY(Player.STATE_READY),
-            ENDED(Player.STATE_ENDED);
-        }
+        data class Position(
+            val resourceIndex: Int,
+            val cssSelector: String,
+            val textBefore: String?,
+            val textAfter: String?,
+        )
     }
+
+    private data class Context(
+        val previousUtterance: TtsContentIterator.Utterance?,
+        val currentUtterance: TtsContentIterator.Utterance,
+        val nextUtterance: TtsContentIterator.Utterance?,
+        val ended: Boolean = false
+    )
 
     private val coroutineScope: CoroutineScope =
         MainScope()
@@ -70,104 +114,294 @@ internal class TtsPlayer<S : TtsSettings, P : TtsPreferences<P>>(
     private val playbackMutable: MutableStateFlow<Playback> =
         MutableStateFlow(
             Playback(
-                index = firstUtterance.locator.resourceIndex,
-                state = Playback.State.READY,
-                isPlaying = false,
+                state = if (initialContext.ended) Playback.State.Ended else Playback.State.Ready,
                 playWhenReady = false,
-                locator = firstUtterance.locator,
-                range = null
+                error = null
             )
         )
 
-    private var pendingUtterance: TtsUtterance? =
-        firstUtterance
+    private val utteranceMutable: MutableStateFlow<Utterance> =
+        MutableStateFlow(initialContext.currentUtterance.ttsPlayerUtterance())
+
+    private var context: Context =
+        initialContext
 
     private var playbackJob: Job? = null
 
-    init {
-        contentIterator.language = engineFacade.settings.value.language
-    }
+    private val mutex = Mutex()
+
+    val voices: Set<V> get() =
+        engineFacade.voices
 
     val playback: StateFlow<Playback> =
         playbackMutable.asStateFlow()
 
+    val utterance: StateFlow<Utterance> =
+        utteranceMutable.asStateFlow()
+
     fun play() {
-        replacePlaybackJob {
-            playbackMutable.value =
-                playbackMutable.value.copy(
-                    state = Playback.State.READY,
-                    playWhenReady = true,
-                    isPlaying = true
-                )
-            playContinuous()
+        coroutineScope.launch {
+            playAsync()
         }
+    }
+
+    private suspend fun playAsync() = mutex.withLock {
+        if (isPlaying()) {
+            return
+        }
+
+        playbackMutable.value = playbackMutable.value.copy(playWhenReady = true)
+        playIfReadyAndNotPaused()
     }
 
     fun pause() {
-        replacePlaybackJob {
-            playbackMutable.value =
-                playbackMutable.value.copy(
-                    playWhenReady = false,
-                    isPlaying = false
-                )
+        coroutineScope.launch {
+            pauseAsync()
         }
     }
 
-    fun go(locator: TtsLocator) {
-        replacePlaybackJob {
-            pendingUtterance = null
-            contentIterator.seek(locator)
-            playContinuous()
+    private suspend fun pauseAsync() = mutex.withLock {
+        if (!playbackMutable.value.playWhenReady) {
+            return
+        }
+
+        playbackJob?.cancelAndJoin()
+        playbackMutable.value = playbackMutable.value.copy(playWhenReady = false)
+        utteranceMutable.value = utteranceMutable.value.copy(range = null)
+    }
+
+    fun go(locator: Locator) {
+        coroutineScope.launch {
+            goAsync(locator)
         }
     }
+
+    private suspend fun goAsync(locator: Locator) = mutex.withLock {
+        playbackJob?.cancelAndJoin()
+        contentIterator.seek(locator)
+        resetContext()
+        playIfReadyAndNotPaused()
+    }
+
+    fun go(resourceIndex: Int) {
+        coroutineScope.launch {
+            goAsync(resourceIndex)
+        }
+    }
+
+    private suspend fun goAsync(resourceIndex: Int) = mutex.withLock {
+        playbackJob?.cancelAndJoin()
+        contentIterator.seekToResource(resourceIndex)
+        resetContext()
+        playIfReadyAndNotPaused()
+    }
+
+    fun restartUtterance() {
+        coroutineScope.launch {
+            restartUtteranceAsync()
+        }
+    }
+
+    private suspend fun restartUtteranceAsync() = mutex.withLock {
+        playbackJob?.cancelAndJoin()
+        if (playbackMutable.value.state == Playback.State.Ended) {
+            playbackMutable.value = playbackMutable.value.copy(state = Playback.State.Ready)
+        }
+        playIfReadyAndNotPaused()
+    }
+
+    fun hasNextUtterance() =
+        context.nextUtterance != null
 
     fun nextUtterance() {
-        replacePlaybackJob {
-            pendingUtterance = null
-            playContinuous()
+        coroutineScope.launch {
+            nextUtteranceAsync()
         }
     }
+
+    private suspend fun nextUtteranceAsync() = mutex.withLock {
+        if (context.nextUtterance == null) {
+            return
+        }
+
+        playbackJob?.cancelAndJoin()
+        tryLoadNextContext()
+        playIfReadyAndNotPaused()
+    }
+
+    fun hasPreviousUtterance() =
+        context.previousUtterance != null
 
     fun previousUtterance() {
-        replacePlaybackJob {
-            pendingUtterance = null
-            pendingUtterance = contentIterator.previousUtterance()
-            playContinuous()
+        coroutineScope.launch {
+            previousUtteranceAsync()
         }
     }
 
-    private fun replacePlaybackJob(block: suspend CoroutineScope.() -> Unit) {
+    private suspend fun previousUtteranceAsync() = mutex.withLock {
+        if (context.previousUtterance == null) {
+            return
+        }
+        playbackJob?.cancelAndJoin()
+        tryLoadPreviousContext()
+        playIfReadyAndNotPaused()
+    }
+
+    fun hasNextResource(): Boolean =
+        utteranceMutable.value.position.resourceIndex + 1 < contentIterator.resourceCount
+
+    fun nextResource() {
         coroutineScope.launch {
-            playbackJob?.cancelAndJoin()
-            playbackJob = launch {
-                block()
+            nextResourceAsync()
+        }
+    }
+
+    private suspend fun nextResourceAsync() = mutex.withLock {
+        if (!hasNextUtterance()) {
+            return
+        }
+
+        playbackJob?.cancelAndJoin()
+        val currentIndex = utteranceMutable.value.position.resourceIndex
+        contentIterator.seekToResource(currentIndex + 1)
+        resetContext()
+        playIfReadyAndNotPaused()
+    }
+
+    fun hasPreviousResource(): Boolean =
+        utteranceMutable.value.position.resourceIndex > 0
+
+    fun previousResource() {
+        coroutineScope.launch {
+            previousResourceAsync()
+        }
+    }
+
+    private suspend fun previousResourceAsync() = mutex.withLock {
+        if (!hasPreviousResource()) {
+            return
+        }
+        playbackJob?.cancelAndJoin()
+        val currentIndex = utteranceMutable.value.position.resourceIndex
+        contentIterator.seekToResource(currentIndex - 1)
+        resetContext()
+        playIfReadyAndNotPaused()
+    }
+
+    private fun playIfReadyAndNotPaused() {
+        check(playbackJob?.isCompleted ?: true)
+        if (playback.value.playWhenReady && playback.value.state == Playback.State.Ready) {
+            playbackJob = coroutineScope.launch {
+                playContinuous()
             }
         }
     }
 
-    private suspend fun playContinuous() {
-        if (pendingUtterance == null) {
-            pendingUtterance = contentIterator.nextUtterance()
-        }
-        pendingUtterance?.let {
-            Timber.d("Setting playback to locator ${it.locator}")
-            playbackMutable.value = playbackMutable.value.copy(range = null, locator = it.locator, isPlaying = true)
-            engineFacade.speak(it.text, it.language, ::onRangeChanged)
-            pendingUtterance = null
-            playContinuous()
-        } ?: run {
-            playbackMutable.value = playbackMutable.value.copy(
-                isPlaying = false, playWhenReady = false, state = Playback.State.ENDED
+    private suspend fun tryLoadPreviousContext() {
+        val contextNow = context
+        // Get previously nextUtterance once more
+        contentIterator.previousUtterance()
+
+        // Get previously currentUtterance once more
+        val currentUtterance = checkNotNull(contentIterator.previousUtterance())
+
+        // Get previous utterance
+        val previousUtterance = contentIterator.previousUtterance()
+
+        // Get to nextUtterance position
+        contentIterator.nextUtterance()
+        contentIterator.nextUtterance()
+
+        context = Context(
+            previousUtterance = previousUtterance,
+            currentUtterance = currentUtterance,
+            nextUtterance = contextNow.currentUtterance
+        )
+        utteranceMutable.value = context.currentUtterance.ttsPlayerUtterance()
+    }
+
+    private suspend fun tryLoadNextContext() {
+        Timber.d("tryLoadNextContext")
+        val contextNow = context
+        Timber.d("contextNow $contextNow")
+
+        if (contextNow.nextUtterance == null) {
+            onEndReached()
+        } else {
+            context = Context(
+                previousUtterance = contextNow.currentUtterance,
+                currentUtterance = contextNow.nextUtterance,
+                nextUtterance = contentIterator.nextUtterance()
             )
+            Timber.d("newContext $context")
+            utteranceMutable.value = context.currentUtterance.ttsPlayerUtterance()
+            Timber.d("utterance ${utteranceMutable.value.text}")
+            if (playbackMutable.value.state == Playback.State.Ended) {
+                playbackMutable.value = playbackMutable.value.copy(state = Playback.State.Ready)
+            }
         }
     }
 
+    private suspend fun resetContext() {
+        context = checkNotNull(contentIterator.startContext())
+        if (context.nextUtterance == null && context.ended) {
+            onEndReached()
+        }
+    }
+
+    private fun onEndReached() {
+        playbackMutable.value = playbackMutable.value.copy(
+            state = Playback.State.Ended,
+        )
+    }
+
+    private suspend fun playContinuous() {
+        engineFacade.speak(context.currentUtterance.text, context.currentUtterance.language, ::onRangeChanged)
+            ?.let { exception -> onEngineError(exception) }
+        mutex.withLock { tryLoadNextContext() }
+        playContinuous()
+    }
+
+    private fun onEngineError(error: E) {
+        Timber.d("onEngineError $error")
+        playbackMutable.value = playbackMutable.value.copy(
+            state = Playback.State.Error,
+            error = Error.EngineError(error)
+        )
+    }
+
     private fun onRangeChanged(range: IntRange) {
-        val newPlayback = playbackMutable.value.copy(range = range)
-        playbackMutable.value = newPlayback
+        val newUtterance = utteranceMutable.value.copy(range = range)
+        utteranceMutable.value = newUtterance
     }
 
     fun close() {
         engineFacade.close()
     }
+
+    var lastPreferences: P =
+        initialPreferences
+
+    override val settings: StateFlow<S>
+        get() = engineFacade.settings
+
+    override fun submitPreferences(preferences: P) {
+        lastPreferences = preferences
+        engineFacade.submitPreferences(preferences)
+    }
+
+    private fun isPlaying() =
+        playbackMutable.value.playWhenReady && playback.value.state == Playback.State.Ready
+
+    private fun TtsContentIterator.Utterance.ttsPlayerUtterance(): Utterance =
+        Utterance(
+            text = text,
+            range = null,
+            position = Utterance.Position(
+                resourceIndex = resourceIndex,
+                cssSelector = cssSelector,
+                textAfter = textAfter,
+                textBefore = textBefore
+            )
+        )
 }

@@ -7,46 +7,38 @@
 package org.readium.r2.navigator.media3.api
 
 import androidx.media3.common.Player
-import kotlin.time.Duration
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.shared.InternalReadiumApi
 
 @InternalReadiumApi
-interface MediaNavigatorInternal<L : MediaNavigatorInternal.Locator, P : MediaNavigatorInternal.Playback<L>> {
+interface MediaNavigatorInternal<P : MediaNavigatorInternal.Position,
+    R : MediaNavigatorInternal.RelaxedPosition, E : MediaNavigatorInternal.Error> {
 
-    interface Locator
+    interface Position
+
+    interface RelaxedPosition
+
+    interface Error
 
     enum class State {
-        Playing,
-        Paused,
-        Ended;
+        Ready,
+        Buffering,
+        Ended,
+        Error;
     }
 
-    data class Buffer(
-        val isPlayable: Boolean,
-        val position: Duration
+    data class Playback<E : Error>(
+        val state: State,
+        val playWhenReady: Boolean,
+        val error: E?
     )
 
-    interface Playback<L : Locator> {
+    val playback: StateFlow<Playback<E>>
 
-        val state: State
-        val locator: L
-    }
-
-    interface TextSynchronization {
-
-        val token: Locator?
-    }
-
-    interface BufferProvider {
-
-        val buffer: Buffer
-    }
-
-    val playback: StateFlow<P>
+    val progression: StateFlow<P>
 
     /**
-     * Resumes the playback at the current location or start it again from the beginning if it has finished.
+     * Resumes the playback at the current location.
      */
     fun play()
 
@@ -58,7 +50,7 @@ interface MediaNavigatorInternal<L : MediaNavigatorInternal.Locator, P : MediaNa
     /**
      * Seeks to the given locator.
      */
-    fun go(locator: L)
+    fun go(position: R)
 
     /**
      * Skips forward

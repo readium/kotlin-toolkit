@@ -32,7 +32,7 @@ import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.reader.preferences.AndroidTtsPreferencesManagerFactory
 import org.readium.r2.testapp.reader.preferences.EpubPreferencesManagerFactory
 import org.readium.r2.testapp.reader.preferences.PdfiumPreferencesManagerFactory
-import org.readium.r2.testapp.reader.tts.TtsService
+import org.readium.r2.testapp.reader.tts.TtsServiceFacade
 import timber.log.Timber
 
 /**
@@ -53,6 +53,9 @@ class ReaderRepository(
 
     private val repository: MutableMap<Long, ReaderInitData> =
         mutableMapOf()
+
+    private val ttsServiceFacade: TtsServiceFacade =
+        TtsServiceFacade(application)
 
     operator fun get(bookId: Long): ReaderInitData? =
         repository[bookId]
@@ -211,27 +214,24 @@ class ReaderRepository(
         bookId: Long,
         publication: Publication,
     ): TtsInitData? {
-        TtsService.start(application)
-        val sessionBinder = TtsService.bind(application)
         val preferencesManager = AndroidTtsPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)
         val ttsEngine = AndroidTtsEngineProvider(application)
         val navigatorFactory = TtsNavigatorFactory(application, publication, ttsEngine) ?: return null
-        return TtsInitData(sessionBinder, navigatorFactory, preferencesManager)
+        return TtsInitData(ttsServiceFacade, navigatorFactory, preferencesManager)
     }
 
-    fun close(bookId: Long) {
+    suspend fun close(bookId: Long) {
         Timber.d("Closing Publication")
         when (val initData = repository.remove(bookId)) {
             is MediaReaderInitData -> {
-                initData.publication.close()
                 initData.sessionBinder.closeNavigator()
                 MediaService.stop(application)
+                initData.publication.close()
             }
             is VisualReaderInitData -> {
+                initData.ttsInitData?.ttsServiceFacade?.closeSession()
                 initData.publication.close()
-                initData.ttsInitData?.sessionBinder?.closeNavigator()
-                TtsService.stop(application)
             }
             null, is DummyReaderInitData -> {
                 // Do nothing

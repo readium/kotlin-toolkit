@@ -9,6 +9,4 @@ package org.readium.r2.navigator.media3.tts2
 interface TtsNavigatorListener {
 
     fun onStopRequested()
-
-    fun onPlaybackException()
 }

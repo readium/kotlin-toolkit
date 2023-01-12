@@ -190,7 +190,7 @@ class AndroidTtsEngine(
                 engine.setup()
                 engine.setOnUtteranceProgressListener(Listener(id))
                 engine.speak(utterance.text, TextToSpeech.QUEUE_FLUSH, null, id)
-            } catch (e: Exception) {
+            } catch (e: java.lang.Exception) {
                 finish(TtsEngine.Exception.wrap(e))
             }
         }

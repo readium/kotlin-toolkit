@@ -13,9 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.Navigator
-import org.readium.r2.navigator.media3.api.MediaNavigator
-import org.readium.r2.navigator.media3.api.MediaNavigatorInternal
-import org.readium.r2.navigator.media3.api.MetadataProvider
+import org.readium.r2.navigator.media3.api.*
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.mapStateIn
@@ -25,38 +23,38 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.content.ContentTokenizer
 import org.readium.r2.shared.util.Language
+import timber.log.Timber
 
 @ExperimentalReadiumApi
-class TtsNavigator<S : TtsSettings, P : TtsPreferences<P>> private constructor(
+class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
+    E : TtsEngine.Error, V : TtsEngine.Voice> private constructor(
     override val publication: Publication,
-    private val ttsNavigator: TtsNavigatorInternal<S, P>
-) : MediaNavigator<TtsNavigator.Playback>, Navigator, Configurable<S, P> by ttsNavigator {
+    private val ttsNavigator: TtsNavigatorInternal<S, P, E, V>
+) : SynchronizedMediaNavigator<TtsNavigator.Error>, Navigator, Configurable<S, P> by ttsNavigator {
 
     companion object {
 
-        suspend operator fun <S : TtsSettings, P : TtsPreferences<P>> invoke(
+        suspend operator fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
+            E : TtsEngine.Error, V : TtsEngine.Voice> invoke(
             application: Application,
             publication: Publication,
-            ttsEngineProvider: TtsEngineProvider<S, P, *>,
+            ttsEngineProvider: TtsEngineProvider<S, P, *, E, V>,
             tokenizerFactory: (defaultLanguage: Language?) -> ContentTokenizer,
-            metadataProvider: MetadataProvider,
+            metadataProvider: MediaMetadataProvider,
             listener: TtsNavigatorListener,
             initialPreferences: P? = null,
             initialLocator: Locator? = null,
-        ): TtsNavigator<S, P>? {
+        ): TtsNavigator<S, P, E, V>? {
 
             if (publication.findService(ContentService::class) == null) {
                 return null
             }
 
-            val actualInitialLocator = initialLocator
-                ?.toTtsLocator(publication)
-
             val actualInitialPreferences = initialPreferences
                 ?: ttsEngineProvider.createEmptyPreferences()
 
             val contentIterator =
-                TtsContentIterator(publication, tokenizerFactory, actualInitialLocator)
+                TtsContentIterator(publication, tokenizerFactory, initialLocator)
 
             val ttsEngine =
                 ttsEngineProvider.createEngine(publication, actualInitialPreferences)
@@ -77,42 +75,44 @@ class TtsNavigator<S : TtsSettings, P : TtsPreferences<P>> private constructor(
                 }
 
             val internalNavigator =
-                TtsNavigatorInternal(application, ttsEngine, contentIterator, playlistMetadata, mediaItems, listener)
-                    ?: return null
+                TtsNavigatorInternal(
+                    application,
+                    ttsEngine,
+                    contentIterator,
+                    playlistMetadata,
+                    mediaItems,
+                    ttsEngineProvider::getPlaybackParameters,
+                    ttsEngineProvider::updatePlaybackParameters,
+                    ttsEngineProvider::mapEngineError,
+                    actualInitialPreferences,
+                    listener,
+                ) ?: return null
 
             return TtsNavigator(publication, internalNavigator)
         }
     }
 
-    data class Playback(
-        override val state: MediaNavigator.State,
-        override val locator: Locator,
-        override val token: Locator?
-    ) : MediaNavigator.Playback, MediaNavigator.TextSynchronization
+    sealed class Error : MediaNavigator.Error {
+
+        data class EngineError<E : TtsEngine.Error> (val error: E) : Error()
+
+        data class ContentError(val exception: Exception) : Error()
+    }
 
     private val coroutineScope: CoroutineScope =
         MainScope()
 
-    override val playback: StateFlow<Playback> =
+    override val playback: StateFlow<MediaNavigator.Playback<Error>> =
         ttsNavigator.playback.mapStateIn(coroutineScope) { it.toPlayback() }
 
-    private fun TtsPlayback.toPlayback() =
-        Playback(
-            state = when (state) {
-                MediaNavigatorInternal.State.Playing -> MediaNavigator.State.Playing
-                MediaNavigatorInternal.State.Paused -> MediaNavigator.State.Paused
-                MediaNavigatorInternal.State.Ended -> MediaNavigator.State.Ended
-            },
-            locator = locator.toLocator(publication),
-            token = token?.toLocator(publication)
-        )
+    override val utterance: StateFlow<SynchronizedMediaNavigator.Utterance> =
+        ttsNavigator.utterance.mapStateIn(coroutineScope) { Timber.d("utterance $it"); it.toUtterance() }
 
     override val currentLocator: StateFlow<Locator> =
-        playback.mapStateIn(coroutineScope) { it.locator }
+        ttsNavigator.utterance.mapStateIn(coroutineScope) { it.toLocator() }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        val ttsLocator = locator.toTtsLocator(publication) ?: return false
-        ttsNavigator.go(ttsLocator)
+        ttsNavigator.go(TtsNavigatorInternal.RelaxedPosition(locator))
         return true
     }
 
@@ -145,4 +145,48 @@ class TtsNavigator<S : TtsSettings, P : TtsPreferences<P>> private constructor(
 
     override fun asPlayer(): Player =
         ttsNavigator.asPlayer()
+
+    private fun MediaNavigatorInternal.Playback<TtsNavigatorInternal.Error>.toPlayback() =
+        MediaNavigator.Playback(
+            state = state.toState(),
+            playWhenReady = playWhenReady,
+            error = error?.toError()
+        )
+
+    private fun MediaNavigatorInternal.State.toState() =
+        when (this) {
+            MediaNavigatorInternal.State.Ready -> MediaNavigator.State.Ready
+            MediaNavigatorInternal.State.Ended -> MediaNavigator.State.Ended
+            MediaNavigatorInternal.State.Buffering -> MediaNavigator.State.Buffering
+            MediaNavigatorInternal.State.Error -> MediaNavigator.State.Error
+        }
+
+    private fun TtsNavigatorInternal.Error.toError(): Error =
+        when (this) {
+            is TtsNavigatorInternal.Error.ContentError -> Error.ContentError(exception)
+            is TtsNavigatorInternal.Error.EngineError<*> -> Error.EngineError(error)
+        }
+
+    private fun SynchronizedMediaNavigatorInternal.Utterance<TtsNavigatorInternal.Position>.toUtterance() =
+        SynchronizedMediaNavigator.Utterance(
+            locator = toLocator(),
+            range = range
+        )
+
+    private fun SynchronizedMediaNavigatorInternal.Utterance<TtsNavigatorInternal.Position>.toLocator() =
+        publication
+            .locatorFromLink(publication.readingOrder[position.resourceIndex])!!
+            .copyWithLocations(
+                progression = null,
+                otherLocations = buildMap {
+                    put("cssSelector", position.cssSelector)
+                }
+            ).copy(
+                text =
+                Locator.Text(
+                    highlight = text,
+                    before = position.textBefore,
+                    after = position.textAfter
+                )
+            )
 }

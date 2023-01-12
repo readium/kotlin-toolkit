@@ -15,44 +15,30 @@ import org.readium.r2.shared.util.Language
  * A text-to-speech engine synthesizes text utterances (e.g. sentence).
  */
 @ExperimentalReadiumApi
-interface TtsEngine<S : TtsSettings, P : TtsPreferences<P>> : Configurable<S, P>, Closeable {
+interface TtsEngine<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
+    E : TtsEngine.Error, V : TtsEngine.Voice> : Configurable<S, P>, Closeable {
 
-    sealed class Exception private constructor(
-        override val message: String,
-        cause: Throwable? = null
-    ) : kotlin.Exception(message, cause) {
-        /** Failed to initialize the TTS engine. */
-        class InitializationFailed(cause: Throwable? = null) :
-            Exception("The TTS engine failed to initialize", cause)
+    interface Preferences<P : Configurable.Preferences<P>> : Configurable.Preferences<P> {
 
-        /** Tried to synthesize an utterance with an unsupported language. */
-        class LanguageNotSupported(val language: Language, cause: Throwable? = null) :
-            Exception("The language ${language.code} is not supported by the TTS engine", cause)
-
-        /** The selected language is missing downloadable data. */
-        class LanguageSupportIncomplete(val language: Language, cause: Throwable? = null) :
-            Exception("The language ${language.code} requires additional files by the TTS engine", cause)
-
-        /** Error during network calls. */
-        class Network(cause: Throwable? = null) :
-            Exception("A network error occurred", cause)
-
-        /** Other engine-specific errors. */
-        class Other(override val cause: Throwable) :
-            Exception(cause.message ?: "An unknown error occurred", cause)
-
-        companion object {
-            fun wrap(e: Throwable): Exception = when (e) {
-                is Exception -> e
-                else -> Other(e)
-            }
-        }
+        val language: Language?
     }
+
+    interface Settings : Configurable.Settings {
+
+        val language: Language?
+    }
+
+    interface Voice {
+
+        val language: Language
+    }
+
+    interface Error
 
     /**
      * TTS engine callbacks.
      */
-    interface Listener {
+    interface Listener<E : Error> {
 
         fun onStart(requestId: String)
 
@@ -64,12 +50,14 @@ interface TtsEngine<S : TtsSettings, P : TtsPreferences<P>> : Configurable<S, P>
 
         fun onDone(requestId: String)
 
-        fun onError(requestId: String, error: Exception)
+        fun onError(requestId: String, error: E)
     }
+
+    val voices: Set<V>
 
     fun speak(requestId: String, text: String, language: Language?)
 
     fun stop()
 
-    fun setListener(listener: Listener?)
+    fun setListener(listener: Listener<E>?)
 }

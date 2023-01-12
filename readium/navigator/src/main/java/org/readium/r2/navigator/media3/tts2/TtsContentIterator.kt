@@ -9,6 +9,8 @@ package org.readium.r2.navigator.media3.tts2
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.html.cssSelector
+import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.publication.services.content.ContentTokenizer
 import org.readium.r2.shared.publication.services.content.content
@@ -19,13 +21,21 @@ import org.readium.r2.shared.util.Language
 internal class TtsContentIterator(
     private val publication: Publication,
     private val tokenizerFactory: (language: Language?) -> ContentTokenizer,
-    initialLocator: TtsLocator?
+    initialLocator: Locator?
 ) {
+    data class Utterance(
+        val resourceIndex: Int,
+        val cssSelector: String,
+        val text: String,
+        val textBefore: String?,
+        val textAfter: String?,
+        val language: Language?
+    )
 
     /**
      * Current subset of utterances with a cursor.
      */
-    private var utterances: CursorList<TtsUtterance> =
+    private var utterances: CursorList<Utterance> =
         CursorList()
 
     /**
@@ -45,10 +55,13 @@ internal class TtsContentIterator(
     var language: Language? =
         null
 
+    val resourceCount: Int =
+        publication.readingOrder.size
+
     /**
      * Moves the iterator to the position provided in [locator].
      */
-    fun seek(locator: TtsLocator) {
+    fun seek(locator: Locator) {
         publicationIterator = createIterator(locator)
     }
 
@@ -56,27 +69,37 @@ internal class TtsContentIterator(
      * Moves the iterator to the beginning of the publication.
      */
     fun seekToBeginning() {
-        publicationIterator = createIterator(null)
+        publicationIterator = createIterator(locator = null)
     }
 
     /**
-     * Creates a fresh content iterator for the publication starting from [locator].
+     * Moves the iterator to the resource with the given [index] in the publication reading order.
      */
-    private fun createIterator(locator: TtsLocator?): Content.Iterator =
-        publication.content(locator?.toLocator(publication))
+    fun seekToResource(index: Int) {
+        val link = publication.readingOrder.getOrNull(index) ?: return
+        val locator = publication.locatorFromLink(link)
+        publicationIterator = createIterator(locator)
+    }
+
+    /**
+     * Creates a fresh content iterator for the publication starting from [Locator].
+     */
+
+    private fun createIterator(locator: Locator?): Content.Iterator =
+        publication.content(locator)
             ?.iterator()
             ?: throw IllegalStateException("No ContentService.")
 
     /**
      * Advances to the previous item and returns it, or null if we reached the beginning.
      */
-    suspend fun previousUtterance(): TtsUtterance? =
+    suspend fun previousUtterance(): Utterance? =
         nextUtterance(Direction.Backward)
 
     /**
      * Advances to the next item and returns it, or null if we reached the end.
      */
-    suspend fun nextUtterance(): TtsUtterance? =
+    suspend fun nextUtterance(): Utterance? =
         nextUtterance(Direction.Forward)
 
     private enum class Direction {
@@ -87,7 +110,7 @@ internal class TtsContentIterator(
      * Gets the next utterance in the given [direction], or null when reaching the beginning or the
      * end.
      */
-    private suspend fun nextUtterance(direction: Direction): TtsUtterance? {
+    private suspend fun nextUtterance(direction: Direction): Utterance? {
         val utterance = utterances.nextIn(direction)
         if (utterance == null && loadNextUtterances(direction)) {
             return nextUtterance(direction)
@@ -126,21 +149,32 @@ internal class TtsContentIterator(
      *
      * This is used to split a paragraph into sentences, for example.
      */
-    private fun Content.Element.tokenize(): List<Content.Element> =
-        tokenizerFactory(language).tokenize(this)
+    private fun Content.Element.tokenize(): List<Content.Element> {
+        val language = this@tokenize.language ?: this@TtsContentIterator.language
+        return tokenizerFactory(language).tokenize(this)
+    }
 
     /**
      * Splits a publication [Content.Element] item into the utterances to be spoken.
      */
-    private fun Content.Element.utterances(): List<TtsUtterance> {
-        fun utterance(text: String, locator: Locator, language: Language? = null): TtsUtterance? {
+    private fun Content.Element.utterances(): List<Utterance> {
+        fun utterance(text: String, locator: Locator, language: Language? = null): Utterance? {
             if (!text.any { it.isLetterOrDigit() })
                 return null
 
-            return TtsUtterance(
+            val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
+                ?: throw IllegalStateException("Content Element cannot be found in readingOrder.")
+
+            val cssSelector = locator.locations.cssSelector
+                ?: throw IllegalStateException("Css selectors are expected in iterator locators.")
+
+            return Utterance(
                 text = text,
-                locator = checkNotNull(locator.toTtsLocator(publication)) { "Missing data in locator." },
-                language = language
+                language = language,
+                resourceIndex = resourceIndex,
+                textBefore = locator.text.before,
+                textAfter = locator.text.after,
+                cssSelector = cssSelector,
             )
         }
 

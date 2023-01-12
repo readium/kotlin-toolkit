@@ -6,7 +6,7 @@
 
 package org.readium.r2.navigator.media3.player
 
-import org.readium.r2.navigator.media3.api.MetadataProvider
+/*import org.readium.r2.navigator.media3.api.MediaMetadataProvider
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -25,7 +25,7 @@ class PlayerNavigatorFactory<S : Configurable.Settings, P : Configurable.Prefere
         suspend operator fun <S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> invoke(
             publication: Publication,
             mediaEngineProvider: MediaEngineProvider<S, P, E>,
-            metadataProvider: MetadataProvider,
+            metadataProvider: MediaMetadataProvider,
             initialPreferences: P,
             initialLocator: Locator
         ): PlayerNavigatorFactory<S, P, E> {
@@ -56,4 +56,4 @@ class PlayerNavigatorFactory<S : Configurable.Settings, P : Configurable.Prefere
             publication,
             initialPreferences
         )
-}
+}*/

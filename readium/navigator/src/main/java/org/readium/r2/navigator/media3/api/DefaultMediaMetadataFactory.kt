@@ -14,7 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import org.readium.r2.shared.publication.Publication
 
-internal class DefaultMetadataFactory(private val publication: Publication) : MediaMetadataFactory {
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+internal class DefaultMediaMetadataFactory(private val publication: Publication) : MediaMetadataFactory {
 
     private val coroutineScope =
         CoroutineScope(Dispatchers.Default)
@@ -30,7 +31,6 @@ internal class DefaultMetadataFactory(private val publication: Publication) : Me
             ?.getOrNull()
     }
 
-    @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     override suspend fun publicationMetadata(): MediaMetadata {
         val builder = MediaMetadata.Builder()
             .setTitle(publication.metadata.title)

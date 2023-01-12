@@ -20,7 +20,7 @@ data class PlayerLocator(
     val index: Int,
     @Serializable(with = DurationSerializer::class)
     val position: Duration
-) : MediaNavigatorInternal.Locator
+) : MediaNavigatorInternal.Position
 
 internal val Locator.Locations.time: Duration? get() =
     fragmentParameters["t"]?.toIntOrNull()?.seconds
