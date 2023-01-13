@@ -265,6 +265,26 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#unreleased" class="md-nav__link">
+    Unreleased
+  </a>
+  
+    <nav class="md-nav" aria-label="Unreleased">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#maven-central" class="md-nav__link">
+    Maven Central
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#230" class="md-nav__link">
     2.3.0
   </a>
@@ -1105,6 +1125,26 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#unreleased" class="md-nav__link">
+    Unreleased
+  </a>
+  
+    <nav class="md-nav" aria-label="Unreleased">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#maven-central" class="md-nav__link">
+    Maven Central
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#230" class="md-nav__link">
     2.3.0
   </a>
@@ -1619,6 +1659,25 @@
 
 <h1 id="migration-guide">Migration Guide<a class="headerlink" href="#migration-guide" title="Permanent link">&para;</a></h1>
 <p>All migration steps necessary in reading apps to upgrade to major versions of the Kotlin Readium toolkit will be documented in this file.</p>
+<h2 id="unreleased">Unreleased<a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
+<h3 id="maven-central">Maven Central<a class="headerlink" href="#maven-central" title="Permanent link">&para;</a></h3>
+<p>Readium is now distributed with <a href="https://search.maven.org/search?q=g:org.readium.kotlin-toolkit">Maven Central</a>. You must update your Gradle configuration.</p>
+<div class="highlight"><pre><span></span><code><span class="w">allprojects {</span>
+<span class="w"> </span>   repositories {<span class="w"></span>
+<span class="gd">-       maven { url &#39;https://jitpack.io&#39; }</span><span class="w"></span>
+<span class="gi">+       mavenCentral()</span><span class="w"></span>
+<span class="w"> </span>   }<span class="w"></span>
+<span class="w">}</span>
+</code></pre></div>
+<p>The group ID of the Readium modules is now <code>org.readium.kotlin-toolkit</code>, for instance:</p>
+<div class="highlight"><pre><span></span><code><span class="n">dependencies</span> <span class="o">{</span>
+    <span class="n">implementation</span> <span class="s2">&quot;org.readium.kotlin-toolkit:readium-shared:$readium_version&quot;</span>
+    <span class="n">implementation</span> <span class="s2">&quot;org.readium.kotlin-toolkit:readium-streamer:$readium_version&quot;</span>
+    <span class="n">implementation</span> <span class="s2">&quot;org.readium.kotlin-toolkit:readium-navigator:$readium_version&quot;</span>
+    <span class="n">implementation</span> <span class="s2">&quot;org.readium.kotlin-toolkit:readium-opds:$readium_version&quot;</span>
+    <span class="n">implementation</span> <span class="s2">&quot;org.readium.kotlin-toolkit:readium-lcp:$readium_version&quot;</span>
+<span class="o">}</span>
+</code></pre></div>
 <h2 id="230">2.3.0<a class="headerlink" href="#230" title="Permanent link">&para;</a></h2>
 <h3 id="decorationextras"><code>Decoration.extras</code><a class="headerlink" href="#decorationextras" title="Permanent link">&para;</a></h3>
 <p><code>Decoration.extras</code> is now a <code>Map&lt;String, Any&gt;</code> instead of <code>Bundle</code>. You will need to update your app if you were storing custom data in <code>extras</code>, for example:</p>
