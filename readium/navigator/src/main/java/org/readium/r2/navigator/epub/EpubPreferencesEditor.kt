@@ -55,13 +55,12 @@ class EpubPreferencesEditor internal constructor(
      * Default page background color.
      *
      * When unset, the current [theme] background color is effective.
-     * Only effective with fixed-layout publications.
      */
     val backgroundColor: Preference<Color> =
         PreferenceDelegate(
             getValue = { preferences.backgroundColor },
             getEffectiveValue = { state.settings.backgroundColor ?: Color((theme.value ?: theme.effectiveValue).backgroundColor) },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && preferences.backgroundColor != null },
+            getIsEffective = { preferences.backgroundColor != null },
             updateValue = { value -> updateValues { it.copy(backgroundColor = value) } },
         )
 

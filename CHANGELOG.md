@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!--## [Unreleased]-->
+## [Unreleased]
+
+### Added
+
+#### Navigator
+
+* The EPUB `backgroundColor` preference is now available with fixed-layout publications.
 
 ## [2.3.0]
 

@@ -492,13 +492,14 @@ class EpubNavigatorFragment internal constructor(
     }
 
     private fun onSettingsChange(previous: EpubSettings, new: EpubSettings) {
-        if (viewModel.layout == EpubLayout.FIXED) return
-
-        if (previous.fontSize != new.fontSize) {
-            r2PagerAdapter?.setFontSize(new.fontSize)
-        }
         if (previous.effectiveBackgroundColor != new.effectiveBackgroundColor) {
             resourcePager.setBackgroundColor(new.effectiveBackgroundColor)
+        }
+
+        if (viewModel.layout == EpubLayout.REFLOWABLE) {
+            if (previous.fontSize != new.fontSize) {
+                r2PagerAdapter?.setFontSize(new.fontSize)
+            }
         }
     }
 
