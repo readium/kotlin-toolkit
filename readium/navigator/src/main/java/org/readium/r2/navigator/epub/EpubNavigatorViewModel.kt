@@ -118,7 +118,7 @@ internal class EpubNavigatorViewModel(
             fontFamilyDeclarations = config.fontFamilyDeclarations,
             googleFonts = googleFonts,
             assetsBaseHref = WebViewServer.assetsBaseHref
-        ).update(settings.value)
+        ).update(settings.value, useNativeFontSizeStrategy = config.useNativeFontSizeStrategy)
     )
 
     init {
@@ -230,7 +230,7 @@ internal class EpubNavigatorViewModel(
 
         val newSettings = settingsPolicy.settings(preferences)
         _settings.value = newSettings
-        css.update { it.update(newSettings) }
+        css.update { it.update(newSettings, useNativeFontSizeStrategy = config.useNativeFontSizeStrategy) }
 
         val needsInvalidation: Boolean = (
             oldSettings.readingProgression != newSettings.readingProgression ||
