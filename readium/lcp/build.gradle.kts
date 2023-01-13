@@ -9,8 +9,6 @@ plugins {
     kotlin("android")
     kotlin("plugin.parcelize")
     kotlin("kapt")
-    id("maven-publish")
-    id("org.jetbrains.dokka")
 }
 
 android {
@@ -42,20 +40,8 @@ android {
     namespace = "org.readium.r2.lcp"
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("release") {
-            groupId = "com.github.readium"
-            artifactId = "readium-lcp"
-            artifact(tasks.findByName("sourcesJar"))
-            artifact(tasks.findByName("javadocsJar"))
-
-            afterEvaluate {
-                from(components.getByName("release"))
-            }
-        }
-    }
-}
+rootProject.ext["publish.artifactId"] = "readium-lcp"
+apply(from = "$rootDir/scripts/publish-module.gradle")
 
 dependencies {
     implementation(libs.kotlinx.coroutines.core)

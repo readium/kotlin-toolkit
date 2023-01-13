@@ -9,8 +9,6 @@ plugins {
     kotlin("android")
     kotlin("plugin.parcelize")
     kotlin("plugin.serialization")
-    id("maven-publish")
-    id("org.jetbrains.dokka")
 }
 
 android {
@@ -43,20 +41,8 @@ android {
     namespace = "org.readium.r2.shared"
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("release") {
-            groupId = "com.github.readium"
-            artifactId = "readium-shared"
-            artifact(tasks.findByName("sourcesJar"))
-            artifact(tasks.findByName("javadocsJar"))
-
-            afterEvaluate {
-                from(components.getByName("release"))
-            }
-        }
-    }
-}
+rootProject.ext["publish.artifactId"] = "readium-shared"
+apply(from = "$rootDir/scripts/publish-module.gradle")
 
 dependencies {
     implementation(libs.androidx.appcompat)

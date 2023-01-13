@@ -25,7 +25,7 @@ A [Test App](test-app) demonstrates how to integrate the Readium Kotlin toolkit 
 
 ## Setting Up Readium
 
-Readium modules are distributed through [JitPack](https://jitpack.io/#readium/kotlin-toolkit). Make sure that you have the `$readium_version` property set in your root `build.gradle`, then add the JitPack and JCenter repositories.
+Readium modules are distributed with [Maven Central](https://search.maven.org/search?q=g:org.readium.kotlin-toolkit). Make sure that you have the `$readium_version` property set in your root `build.gradle`, then add the Maven Central and JCenter repositories.
 
 ```groovy
 buildscript {
@@ -35,7 +35,7 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
-        maven { url 'https://jitpack.io' }
+        mavenCentral()
     }
 }
 ```
@@ -44,11 +44,11 @@ Then, add the dependencies to the Readium modules you need in your app's `build.
 
 ```groovy
 dependencies {
-    implementation "com.github.readium.kotlin-toolkit:readium-shared:$readium_version"
-    implementation "com.github.readium.kotlin-toolkit:readium-streamer:$readium_version"
-    implementation "com.github.readium.kotlin-toolkit:readium-navigator:$readium_version"
-    implementation "com.github.readium.kotlin-toolkit:readium-opds:$readium_version"
-    implementation "com.github.readium.kotlin-toolkit:readium-lcp:$readium_version"
+    implementation "org.readium.kotlin-toolkit:readium-shared:$readium_version"
+    implementation "org.readium.kotlin-toolkit:readium-streamer:$readium_version"
+    implementation "org.readium.kotlin-toolkit:readium-navigator:$readium_version"
+    implementation "org.readium.kotlin-toolkit:readium-opds:$readium_version"
+    implementation "org.readium.kotlin-toolkit:readium-lcp:$readium_version"
 }
 ```
 
