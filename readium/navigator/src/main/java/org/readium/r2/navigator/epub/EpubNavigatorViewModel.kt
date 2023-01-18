@@ -37,6 +37,7 @@ import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
+import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Href
 
@@ -44,7 +45,7 @@ internal enum class DualPage {
     AUTO, OFF, ON
 }
 
-@OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class)
+@OptIn(ExperimentalReadiumApi::class, ExperimentalDecorator::class, DelicateReadiumApi::class)
 internal class EpubNavigatorViewModel(
     application: Application,
     val publication: Publication,
@@ -118,7 +119,7 @@ internal class EpubNavigatorViewModel(
             fontFamilyDeclarations = config.fontFamilyDeclarations,
             googleFonts = googleFonts,
             assetsBaseHref = WebViewServer.assetsBaseHref
-        ).update(settings.value, useNativeFontSizeStrategy = config.useNativeFontSizeStrategy)
+        ).update(settings.value, useReadiumCssFontSize = config.useReadiumCssFontSize)
     )
 
     init {
@@ -230,7 +231,7 @@ internal class EpubNavigatorViewModel(
 
         val newSettings = settingsPolicy.settings(preferences)
         _settings.value = newSettings
-        css.update { it.update(newSettings, useNativeFontSizeStrategy = config.useNativeFontSizeStrategy) }
+        css.update { it.update(newSettings, useReadiumCssFontSize = config.useReadiumCssFontSize) }
 
         val needsInvalidation: Boolean = (
             oldSettings.readingProgression != newSettings.readingProgression ||

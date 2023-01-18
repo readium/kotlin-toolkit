@@ -86,7 +86,7 @@ typealias JavascriptInterfaceFactory = (resource: Link) -> Any?
  *
  * To use this [Fragment], create a factory with `EpubNavigatorFragment.createFactory()`.
  */
-@OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class)
+@OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class, DelicateReadiumApi::class)
 class EpubNavigatorFragment internal constructor(
     override val publication: Publication,
     private val baseUrl: String?,
@@ -133,11 +133,11 @@ class EpubNavigatorFragment internal constructor(
         var readiumCssRsProperties: RsProperties,
 
         /**
-         * When true, the Android web view's `WebSettings.textZoom` will be used to adjust the font
-         * size, instead of using the Readium CSS's `--USER__fontSize` variable.
+         * When disabled, the Android web view's `WebSettings.textZoom` will be used to adjust the
+         * font size, instead of using the Readium CSS's `--USER__fontSize` variable.
          *
          * `WebSettings.textZoom` will work with more publications than `--USER__fontSize`, even the
-         * ones poorly authored. However the page width is not adjusted when changing the font
+         * ones poorly authored. However, the page width is not adjusted when changing the font
          * size to keep the optimal line length.
          *
          * See:
@@ -145,7 +145,8 @@ class EpubNavigatorFragment internal constructor(
          *   - https://github.com/readium/mobile/issues/1#issuecomment-652431984
          */
         @ExperimentalReadiumApi
-        var useNativeFontSizeStrategy: Boolean = true,
+        @DelicateReadiumApi
+        var useReadiumCssFontSize: Boolean = true,
 
         /**
          * Supported HTML decoration templates.
@@ -518,7 +519,7 @@ class EpubNavigatorFragment internal constructor(
     }
 
     private fun R2PagerAdapter.setFontSize(fontSize: Double) {
-        if (!config.useNativeFontSizeStrategy) return
+        if (config.useReadiumCssFontSize) return
 
         mFragments.forEach { _, fragment ->
             (fragment as? R2EpubPageFragment)?.setFontSize(fontSize)
@@ -528,7 +529,7 @@ class EpubNavigatorFragment internal constructor(
     private inner class PagerAdapterListener : R2PagerAdapter.Listener {
         override fun onCreatePageFragment(fragment: Fragment) {
             if (viewModel.layout == EpubLayout.REFLOWABLE) {
-                if (config.useNativeFontSizeStrategy) {
+                if (!config.useReadiumCssFontSize) {
                     (fragment as? R2EpubPageFragment)?.setFontSize(settings.value.fontSize)
                 }
             }
