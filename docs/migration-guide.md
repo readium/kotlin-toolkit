@@ -2,6 +2,33 @@
 
 All migration steps necessary in reading apps to upgrade to major versions of the Kotlin Readium toolkit will be documented in this file.
 
+## Unreleased
+
+### Maven Central
+
+Readium is now distributed with [Maven Central](https://search.maven.org/search?q=g:org.readium.kotlin-toolkit). You must update your Gradle configuration.
+
+```diff
+allprojects {
+    repositories {
+-       maven { url 'https://jitpack.io' }
++       mavenCentral()
+    }
+}
+```
+
+The group ID of the Readium modules is now `org.readium.kotlin-toolkit`, for instance:
+
+```groovy
+dependencies {
+    implementation "org.readium.kotlin-toolkit:readium-shared:$readium_version"
+    implementation "org.readium.kotlin-toolkit:readium-streamer:$readium_version"
+    implementation "org.readium.kotlin-toolkit:readium-navigator:$readium_version"
+    implementation "org.readium.kotlin-toolkit:readium-opds:$readium_version"
+    implementation "org.readium.kotlin-toolkit:readium-lcp:$readium_version"
+}
+```
+
 ## 2.3.0
 
 ### `Decoration.extras`
