@@ -15,9 +15,9 @@ Follow the same setup instructions as the core Readium toolkit, then add this ne
 
 ```groovy
 dependencies {
-    implementation "com.github.readium.kotlin-toolkit:readium-adapter-pdfium:$readium_version"
+    implementation "org.readium.kotlin-toolkit:readium-adapter-pdfium:$readium_version"
     // Or, if you need only the parser but not the navigator:
-    implementation "com.github.readium.kotlin-toolkit:readium-adapter-pdfium-document:$readium_version"
+    implementation "org.readium.kotlin-toolkit:readium-adapter-pdfium-document:$readium_version"
 }
 ```
 
