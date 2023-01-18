@@ -110,7 +110,7 @@ internal fun ReadiumCss.update(settings: EpubSettings, useReadiumCssFontSize: Bo
                 fontOverride = (fontFamily != null || textNormalization),
                 fontFamily = fontFamily?.toCss(),
                 fontSize = if (useReadiumCssFontSize) Length.Percent(fontSize)
-                    else null,
+                else null,
                 advancedSettings = !publisherStyles,
                 typeScale = typeScale,
                 textAlign = when (textAlign) {
