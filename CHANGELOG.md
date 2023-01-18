@@ -4,7 +4,15 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!--## [Unreleased]-->
+## [Unreleased]
+
+### Added
+
+#### Navigator
+
+* New `EPUBNavigatorFragment.Configuration.useReadiumCssFontSize` option to revert to the 2.2.0 strategy for setting the font size of reflowable EPUB publications.
+    * The native font size strategy introduced in 2.3.0 uses the Android web view's [`WebSettings.textZoom`](https://developer.android.com/reference/android/webkit/WebSettings#setTextZoom(int)) property to adjust the font size. 2.2.0 was using Readium CSS's [`--USER__fontSize` variable](https://readium.org/readium-css/docs/CSS12-user_prefs.html#font-size).
+    * `WebSettings.textZoom` will work with more publications than `--USER__fontSize`, even the ones poorly authored. However the page width is not adjusted when changing the font size to keep the optimal line length.
 
 ## [2.3.0]
 
