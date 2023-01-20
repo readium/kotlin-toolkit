@@ -52,7 +52,10 @@ class EpubPreferencesEditor internal constructor(
     }
 
     /**
-     * Default page background color.
+     * Default background color.
+     *
+     * For fixed-layout publications, it applies to the navigator background but not the publication
+     * pages.
      *
      * When unset, the current [theme] background color is effective.
      */
