@@ -1,0 +1,99 @@
+/*
+ * Copyright 2022 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+apply plugin: 'org.jetbrains.dokka'
+
+task androidSourcesJar(type: Jar) {
+    archiveClassifier.set('sources')
+    if (project.plugins.findPlugin("com.android.library")) {
+        // // For Android libraries
+        from android.sourceSets.main.java.srcDirs
+        from android.sourceSets.main.kotlin.srcDirs
+    } else {
+        // For pure Kotlin libraries
+        from sourceSets.main.java.srcDirs
+        from sourceSets.main.kotlin.srcDirs
+    }
+}
+
+task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+    archiveClassifier.set('javadoc')
+    from dokkaJavadoc.outputDirectory
+}
+
+artifacts {
+    archives androidSourcesJar
+    archives javadocJar
+}
+
+group = rootProject.ext["publish.groupId"]
+version = rootProject.ext["publish.version"]
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId rootProject.ext["publish.groupId"]
+                artifactId rootProject.ext["publish.artifactId"]
+                version rootProject.ext["publish.version"]
+
+                if (project.plugins.findPlugin("com.android.library")) {
+                    from components.release
+                } else {
+                    from components.java
+                }
+
+                artifact androidSourcesJar
+                artifact javadocJar
+
+                pom {
+                    name = rootProject.ext["publish.artifactId"]
+                    description = 'A toolkit for ebooks, audiobooks and comics written in Kotlin'
+                    url = 'https://github.com/readium/kotlin-toolkit'
+                    licenses {
+                        license {
+                            name = 'BSD-3-Clause license'
+                            url = 'https://github.com/readium/kotlin-toolkit/blob/main/LICENSE'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'aferditamuriqi'
+                            name = 'Aferdita Muriqi'
+                            email = 'aferdita.muriqi@gmail.com'
+                        }
+                        developer {
+                            id = 'mickael-menu'
+                            name = 'Mickaël Menu'
+                            email = 'mickael.menu@gmail.com'
+                        }
+                        developer {
+                            id = 'qnga'
+                            name = 'Quentin Gliosca'
+                            email = 'quentin.gliosca@gmail.com'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:github.com/readium/kotlin-toolkit.git'
+                        developerConnection = 'scm:git:ssh://github.com/readium/kotlin-toolkit.git'
+                        url = 'https://github.com/readium/kotlin-toolkit'
+                    }
+                }
+            }
+        }
+    }
+}
+
+signing {
+    useInMemoryPgpKeys(
+        rootProject.ext["signing.keyId"],
+        rootProject.ext["signing.key"],
+        rootProject.ext["signing.password"],
+    )
+    sign publishing.publications
+}

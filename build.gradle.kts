@@ -9,25 +9,20 @@ import org.jetbrains.dokka.gradle.DokkaTaskPartial
 plugins {
     id("com.android.application") apply false
     id("com.android.library") apply false
-    id("org.jetbrains.kotlin.android") apply false
+    id("io.github.gradle-nexus.publish-plugin") apply true
     id("org.jetbrains.dokka") apply true
+    id("org.jetbrains.kotlin.android") apply false
     id("org.jlleitschuh.gradle.ktlint") apply true
 }
 
-allprojects {
-    group = "com.github.readium.kotlin-toolkit"
+apply(from = "$rootDir/scripts/publish-root.gradle")
+
+ext {
+    set("publish.groupId", "org.readium.kotlin-toolkit")
+    set("publish.version", "2.3.0")
 }
 
 subprojects {
-    tasks.register<Jar>("javadocsJar") {
-        archiveClassifier.set("javadoc")
-    }
-
-    tasks.register<Jar>("sourcesJar") {
-        archiveClassifier.set("sources")
-        from("src/main/java", "src/main/resources")
-    }
-
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
     ktlint {

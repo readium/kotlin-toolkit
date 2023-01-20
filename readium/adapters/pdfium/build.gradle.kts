@@ -8,8 +8,6 @@ plugins {
     id("com.android.library")
     kotlin("android")
     kotlin("plugin.parcelize")
-    id("maven-publish")
-    id("org.jetbrains.dokka")
 }
 
 android {
@@ -42,20 +40,8 @@ android {
     namespace = "org.readium.adapters.pdfium"
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("release") {
-            groupId = "com.github.readium"
-            artifactId = "readium-adapter-pdfium"
-            artifact(tasks.findByName("sourcesJar"))
-            artifact(tasks.findByName("javadocsJar"))
-
-            afterEvaluate {
-                from(components.getByName("release"))
-            }
-        }
-    }
-}
+rootProject.ext["publish.artifactId"] = "readium-adapter-pdfium"
+apply(from = "$rootDir/scripts/publish-module.gradle")
 
 dependencies {
     api(project(":readium:adapters:pdfium:readium-adapter-pdfium-document"))
