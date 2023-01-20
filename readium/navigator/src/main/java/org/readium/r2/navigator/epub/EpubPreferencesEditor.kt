@@ -52,16 +52,18 @@ class EpubPreferencesEditor internal constructor(
     }
 
     /**
-     * Default page background color.
+     * Default background color.
+     *
+     * For fixed-layout publications, it applies to the navigator background but not the publication
+     * pages.
      *
      * When unset, the current [theme] background color is effective.
-     * Only effective with fixed-layout publications.
      */
     val backgroundColor: Preference<Color> =
         PreferenceDelegate(
             getValue = { preferences.backgroundColor },
             getEffectiveValue = { state.settings.backgroundColor ?: Color((theme.value ?: theme.effectiveValue).backgroundColor) },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && preferences.backgroundColor != null },
+            getIsEffective = { preferences.backgroundColor != null },
             updateValue = { value -> updateValues { it.copy(backgroundColor = value) } },
         )
 
