@@ -949,6 +949,9 @@ class EpubNavigatorFragment internal constructor(
     }
 
     private fun notifyCurrentLocation() {
+        // Make sure viewLifecycleOwner is accessible.
+        view ?: return
+
         val navigator = this
         debounceLocationNotificationJob?.cancel()
         debounceLocationNotificationJob = viewLifecycleOwner.lifecycleScope.launch {

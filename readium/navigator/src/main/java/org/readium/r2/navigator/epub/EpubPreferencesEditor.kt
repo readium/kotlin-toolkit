@@ -109,7 +109,7 @@ class EpubPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.fontSize },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(fontSize = value) } },
-            supportedRange = 0.4..5.0,
+            supportedRange = 0.1..5.0,
             progressionStrategy = DoubleIncrement(0.1),
             valueFormatter = percentFormatter(),
         )
@@ -242,7 +242,7 @@ class EpubPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.pageMargins },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(pageMargins = value) } },
-            supportedRange = 0.5..4.0,
+            supportedRange = 0.0..4.0,
             progressionStrategy = DoubleIncrement(0.3),
             valueFormatter = { it.format(5) },
         )

@@ -185,13 +185,13 @@ class R2EpubPageFragment : Fragment() {
                     in topDecile..bottomDecile -> {
                         if (!endReached) {
                             endReached = true
-                            webView.listener.onPageEnded(endReached)
+                            webView.listener?.onPageEnded(endReached)
                         }
                     }
                     else -> {
                         if (endReached) {
                             endReached = false
-                            webView.listener.onPageEnded(endReached)
+                            webView.listener?.onPageEnded(endReached)
                         }
                     }
                 }
@@ -211,7 +211,7 @@ class R2EpubPageFragment : Fragment() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
 
-                webView.listener.onResourceLoaded(link, webView, url)
+                webView.listener?.onResourceLoaded(link, webView, url)
 
                 // To make sure the page is properly laid out before jumping to the target locator,
                 // we execute a dummy JavaScript and wait for the callback result.
@@ -241,7 +241,7 @@ class R2EpubPageFragment : Fragment() {
         // Forward a tap event when the web view is not ready to propagate the taps. This allows
         // to toggle a navigation UI while a page is loading, for example.
         binding.root.setOnClickListenerWithPoint { _, point ->
-            webView.listener.onTap(point)
+            webView.listener?.onTap(point)
         }
 
         return containerView
@@ -260,6 +260,13 @@ class R2EpubPageFragment : Fragment() {
         }
     }
 
+    override fun onDestroyView() {
+        webView?.listener = null
+        _binding = null
+
+        super.onDestroyView()
+    }
+
     override fun onDetach() {
         super.onDetach()
 
@@ -270,11 +277,6 @@ class R2EpubPageFragment : Fragment() {
             wv.removeAllViews()
             wv.destroy()
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     private fun setupPadding() {
@@ -355,7 +357,7 @@ class R2EpubPageFragment : Fragment() {
                 }
                 .also { pendingLocator = null }
 
-            webView.listener.onPageLoaded()
+            webView.listener?.onPageLoaded()
         }
     }
 
@@ -369,7 +371,7 @@ class R2EpubPageFragment : Fragment() {
             val webView = requireNotNull(webView)
             val epubNavigator = requireNotNull(navigator)
             loadLocator(webView, epubNavigator.readingProgression, locator)
-            webView.listener.onProgressionChanged()
+            webView.listener?.onProgressionChanged()
         }
     }
 
