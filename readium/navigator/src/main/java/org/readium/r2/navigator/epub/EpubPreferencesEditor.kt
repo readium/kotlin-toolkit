@@ -240,7 +240,7 @@ class EpubPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.pageMargins },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(pageMargins = value) } },
-            supportedRange = 0.5..4.0,
+            supportedRange = 0.0..4.0,
             progressionStrategy = DoubleIncrement(0.3),
             valueFormatter = { it.format(5) },
         )
