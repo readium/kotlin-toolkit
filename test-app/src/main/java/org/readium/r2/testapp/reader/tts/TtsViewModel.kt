@@ -16,9 +16,8 @@ import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferences
 import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferencesEditor
 import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.media3.api.SynchronizedMediaNavigator
-import org.readium.r2.navigator.media3.tts2.TtsNavigator
-import org.readium.r2.navigator.media3.tts2.TtsNavigatorListener
-import org.readium.r2.navigator.tts.PublicationSpeechSynthesizer
+import org.readium.r2.navigator.media3.tts.TtsNavigator
+import org.readium.r2.navigator.media3.tts.TtsNavigatorListener
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.UserException

@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.media3.tts2
+package org.readium.r2.navigator.media3.tts
 
 import android.app.Application
 import android.os.Handler
@@ -20,10 +20,13 @@ import androidx.media3.common.Player.*
 import androidx.media3.common.text.CueGroup
 import androidx.media3.common.util.Clock
 import androidx.media3.common.util.ListenerSet
+import androidx.media3.common.util.Size
 import androidx.media3.common.util.Util
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 import timber.log.Timber
@@ -401,7 +404,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun getCurrentTracks(): Tracks {
-        throw NotImplementedError()
+        return Tracks.EMPTY
     }
 
     override fun getTrackSelectionParameters(): TrackSelectionParameters {
@@ -635,8 +638,12 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         return VideoSize.UNKNOWN
     }
 
+    override fun getSurfaceSize(): Size {
+        return Size.UNKNOWN
+    }
+
     override fun getCurrentCues(): CueGroup {
-        return CueGroup(emptyList())
+        return CueGroup.EMPTY_TIME_ZERO
     }
 
     override fun getDeviceInfo(): DeviceInfo {

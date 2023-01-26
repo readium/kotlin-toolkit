@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.media3.tts2
+package org.readium.r2.navigator.media3.tts
 
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
@@ -141,9 +141,9 @@ internal class TtsContentIterator(
 
         utterances = CursorList(
             list = nextUtterances,
-            startIndex = when (direction) {
-                Direction.Forward -> 0
-                Direction.Backward -> nextUtterances.size + 1
+            index = when (direction) {
+                Direction.Forward -> -1
+                Direction.Backward -> nextUtterances.size
             }
         )
 

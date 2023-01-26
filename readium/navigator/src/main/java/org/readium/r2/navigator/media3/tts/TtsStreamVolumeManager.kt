@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.readium.r2.navigator.media3.tts2
+package org.readium.r2.navigator.media3.tts
 
 import android.content.BroadcastReceiver
 import android.content.Context

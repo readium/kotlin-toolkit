@@ -197,6 +197,9 @@ interface Content {
 
     /**
      * Iterates through a list of [Element] items asynchronously.
+     *
+     * [hasNext] and [hasPrevious] refer to the last element computed by a previous call
+     * to any of both methods.
      */
     @ExperimentalReadiumApi
     interface Iterator {

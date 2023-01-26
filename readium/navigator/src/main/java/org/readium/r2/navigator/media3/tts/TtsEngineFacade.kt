@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.media3.tts2
+package org.readium.r2.navigator.media3.tts
 
 import java.util.*
 import kotlinx.coroutines.CancellableContinuation

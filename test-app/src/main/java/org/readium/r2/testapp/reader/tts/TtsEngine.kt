@@ -10,8 +10,8 @@ import org.readium.r2.navigator.media3.androidtts.AndroidTtsEngine
 import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferences
 import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferencesEditor
 import org.readium.r2.navigator.media3.androidtts.AndroidTtsSettings
-import org.readium.r2.navigator.media3.tts2.TtsNavigator
-import org.readium.r2.navigator.media3.tts2.TtsNavigatorFactory
+import org.readium.r2.navigator.media3.tts.TtsNavigator
+import org.readium.r2.navigator.media3.tts.TtsNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @OptIn(ExperimentalReadiumApi::class)
