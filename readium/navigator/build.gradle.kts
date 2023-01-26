@@ -9,8 +9,6 @@ plugins {
     kotlin("android")
     kotlin("plugin.parcelize")
     kotlin("plugin.serialization")
-    id("maven-publish")
-    id("org.jetbrains.dokka")
 }
 
 android {
@@ -50,20 +48,8 @@ android {
     namespace = "org.readium.r2.navigator"
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("release") {
-            groupId = "com.github.readium"
-            artifactId = "readium-navigator"
-            artifact(tasks.findByName("sourcesJar"))
-            artifact(tasks.findByName("javadocsJar"))
-
-            afterEvaluate {
-                from(components.getByName("release"))
-            }
-        }
-    }
-}
+rootProject.ext["publish.artifactId"] = "readium-navigator"
+apply(from = "$rootDir/scripts/publish-module.gradle")
 
 dependencies {
     api(project(":readium:readium-shared"))

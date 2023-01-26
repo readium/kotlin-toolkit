@@ -118,6 +118,7 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
                     EpubLayout.FIXED ->
                         FixedLayoutUserPreferences(
                             commit = commit,
+                            backgroundColor = editor.backgroundColor,
                             language = editor.language,
                             readingProgression = editor.readingProgression,
                             spread = editor.spread,
@@ -135,6 +136,7 @@ private fun ColumnScope.FixedLayoutUserPreferences(
     commit: () -> Unit,
     language: Preference<Language?>? = null,
     readingProgression: EnumPreference<ReadingProgression>? = null,
+    backgroundColor: Preference<ReadiumColor>? = null,
     scroll: Preference<Boolean>? = null,
     scrollAxis: EnumPreference<Axis>? = null,
     fit: EnumPreference<Fit>? = null,
@@ -164,6 +166,16 @@ private fun ColumnScope.FixedLayoutUserPreferences(
                 formatValue = { it.name }
             )
         }
+
+        Divider()
+    }
+
+    if (backgroundColor != null) {
+        ColorItem(
+            title = "Background color",
+            preference = backgroundColor,
+            commit = commit
+        )
 
         Divider()
     }
