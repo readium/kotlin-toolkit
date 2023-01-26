@@ -98,6 +98,9 @@ internal class TtsNavigatorInternal<S : TtsEngine.Settings, P : TtsEngine.Prefer
         data class ContentError(val exception: Exception) : Error()
     }
 
+    val voices: Set<V> get() =
+        ttsPlayer.voices
+
     override val playback: StateFlow<MediaNavigatorInternal.Playback<Error>> =
         ttsPlayer.playback.mapStateIn(coroutineScope) { it.toPlayback() }
 

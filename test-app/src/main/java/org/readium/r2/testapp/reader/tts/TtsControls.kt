@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.readium.r2.navigator.media3.androidtts.AndroidTtsEngine
 import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferencesEditor
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -40,6 +41,7 @@ fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
         TtsControls(
             playing = isPlaying,
             editor = editor,
+            availableVoices = model.voices,
             commit = model::commit,
             onPlayPause = { if (isPlaying) model.pause() else model.play() },
             onStop = model::stop,
@@ -55,6 +57,7 @@ fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
 fun TtsControls(
     playing: Boolean,
     editor: AndroidTtsPreferencesEditor,
+    availableVoices: Set<AndroidTtsEngine.Voice>,
     commit: () -> Unit,
     onPlayPause: () -> Unit,
     onStop: () -> Unit,
@@ -70,6 +73,7 @@ fun TtsControls(
             pitch = editor.pitch,
             language = editor.language,
             voices = editor.voices,
+            availableVoices = availableVoices,
             commit = commit,
             onDismiss = { showSettings = false }
         )
@@ -138,6 +142,7 @@ private fun TtsPreferencesDialog(
     pitch: RangePreference<Double>,
     language: Preference<Language?>,
     voices: Preference<Map<Language, String>>,
+    availableVoices: Set<AndroidTtsEngine.Voice>,
     commit: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -193,7 +198,7 @@ private fun TtsPreferencesDialog(
                                 }
                             }
                         }
-                    ).withSupportedValues("a", "b", "c"),
+                    ).withSupportedValues(availableVoices.map { it.name }),
                     formatValue = { it ?: "Default" }, // it?.name ?: it?.id ?: stringResource(R.string.auto) },
                     commit = commit
                 )

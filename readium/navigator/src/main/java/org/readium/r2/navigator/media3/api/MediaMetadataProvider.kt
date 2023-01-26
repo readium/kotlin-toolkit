@@ -8,7 +8,10 @@ package org.readium.r2.navigator.media3.api
 
 import org.readium.r2.shared.publication.Publication
 
-interface MediaMetadataProvider {
+/**
+ *  To be implemented to use a custom [MediaMetadataFactory].
+ */
+fun interface MediaMetadataProvider {
 
     fun createMetadataFactory(publication: Publication): MediaMetadataFactory
 }

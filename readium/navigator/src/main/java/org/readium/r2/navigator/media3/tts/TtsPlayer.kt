@@ -65,8 +65,6 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
                 )
             }
 
-            Timber.d("startContext $context")
-
             return context
         }
     }
@@ -367,7 +365,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     }
 
     private fun onEngineError(error: E) {
-        Timber.d("onEngineError $error")
+        Timber.e("onEngineError $error")
         playbackMutable.value = playbackMutable.value.copy(
             state = Playback.State.Error,
             error = Error.EngineError(error)

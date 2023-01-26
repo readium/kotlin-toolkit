@@ -12,6 +12,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.media3.androidtts.AndroidTtsEngine
 import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferences
 import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferencesEditor
 import org.readium.r2.navigator.media3.api.MediaNavigator
@@ -118,6 +119,9 @@ class TtsViewModel private constructor(
 
     private val navigatorNow: AndroidTtsNavigator? get() =
         ttsServiceFacade.sessionNow()?.navigator
+
+    val voices: Set<AndroidTtsEngine.Voice> get() =
+        navigatorNow!!.voices
 
     private var binding: Deferred<Binding?> =
         viewModelScope.async {

@@ -18,9 +18,9 @@ class CursorList<E>(
     private var index: Int = -1
 ) : List<E> by list {
 
-     init {
-        check(index in  -1..list.size)
-     }
+    init {
+        check(index in -1..list.size)
+    }
 
     fun hasPrevious(): Boolean {
         return index > 0

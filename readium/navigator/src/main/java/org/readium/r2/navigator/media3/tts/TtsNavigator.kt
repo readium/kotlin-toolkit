@@ -104,6 +104,9 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     private val coroutineScope: CoroutineScope =
         MainScope()
 
+    val voices: Set<V> get() =
+        ttsNavigator.voices
+
     override val playback: StateFlow<MediaNavigator.Playback<Error>> =
         ttsNavigator.playback.mapStateIn(coroutineScope) { it.toPlayback() }
 

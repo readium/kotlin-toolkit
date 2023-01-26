@@ -15,14 +15,17 @@ import kotlinx.coroutines.async
 import org.readium.r2.shared.publication.Publication
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-internal class DefaultMediaMetadataFactory(private val publication: Publication) : MediaMetadataFactory {
+internal class DefaultMediaMetadataFactory(
+    private val publication: Publication
+) : MediaMetadataFactory {
 
     private val coroutineScope =
         CoroutineScope(Dispatchers.Default)
 
-    private val authors: String?
-        get() = publication.metadata.authors
-            .joinToString(", ") { it.name }.takeIf { it.isNotBlank() }
+    private val authors: String? =
+        publication.metadata.authors
+            .joinToString(", ") { it.name }
+            .takeIf { it.isNotBlank() }
 
     private val cover: Deferred<ByteArray?> = coroutineScope.async {
         publication.linkWithRel("cover")
@@ -34,14 +37,10 @@ internal class DefaultMediaMetadataFactory(private val publication: Publication)
     override suspend fun publicationMetadata(): MediaMetadata {
         val builder = MediaMetadata.Builder()
             .setTitle(publication.metadata.title)
-            .setAlbumTitle(publication.metadata.title)
             .setTotalTrackCount(publication.readingOrder.size)
 
         authors
-            ?.let {
-                builder.setArtist(it)
-                builder.setAlbumArtist(it)
-            }
+            ?.let { builder.setArtist(it) }
 
         cover.await()
             ?.let { builder.maybeSetArtworkData(it, PICTURE_TYPE_FRONT_COVER) }
@@ -55,17 +54,11 @@ internal class DefaultMediaMetadataFactory(private val publication: Publication)
         val link = publication.readingOrder[index]
 
         builder.setTrackNumber(index)
-        // builder.setMediaUri(link.href)
         builder.setTitle(link.title)
         builder.setTitle(publication.metadata.title)
-        builder.setAlbumTitle(publication.metadata.title)
-        // builder.setDuration(MediaMetadata.METADATA_KEY_DURATION, (link.duration?.toLong() ?: 0) * 1000)
 
         authors
-            ?.let {
-                builder.setArtist(it)
-                builder.setAlbumArtist(it)
-            }
+            ?.let { builder.setArtist(it) }
 
         cover.await()
             ?.let { builder.maybeSetArtworkData(it, PICTURE_TYPE_FRONT_COVER) }

@@ -58,11 +58,7 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
         }
 
         val defaultMediaMetadataProvider: MediaMetadataProvider =
-            object : MediaMetadataProvider {
-                override fun createMetadataFactory(publication: Publication): MediaMetadataFactory {
-                    return DefaultMediaMetadataFactory(publication)
-                }
-            }
+            MediaMetadataProvider { publication -> DefaultMediaMetadataFactory(publication) }
     }
 
     suspend fun createNavigator(

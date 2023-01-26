@@ -136,7 +136,7 @@ private fun ColumnScope.FixedLayoutUserPreferences(
     commit: () -> Unit,
     language: Preference<Language?>? = null,
     readingProgression: EnumPreference<ReadingProgression>? = null,
-    backgroundColor: Preference<ReadiumColor>? = null,
+    backgroundColor: Preference<Color>? = null,
     scroll: Preference<Boolean>? = null,
     scrollAxis: EnumPreference<Axis>? = null,
     fit: EnumPreference<Fit>? = null,

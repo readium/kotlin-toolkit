@@ -400,7 +400,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     override fun stop(reset: Boolean) {}
 
     override fun release() {
-        ttsPlayer.close()
+        // Do nothing. This object does not own the TtsPlayer instance.
     }
 
     override fun getCurrentTracks(): Tracks {

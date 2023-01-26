@@ -15,8 +15,14 @@ import org.readium.r2.shared.util.Closeable
 @ExperimentalReadiumApi
 interface MediaNavigator<E : MediaNavigator.Error> : Navigator, Closeable {
 
+    /**
+     * Marker interface for the [Playback.error] property.
+     */
     interface Error
 
+    /**
+     * State of the player.
+     */
     enum class State {
         Ready,
         Buffering,
@@ -24,16 +30,22 @@ interface MediaNavigator<E : MediaNavigator.Error> : Navigator, Closeable {
         Error;
     }
 
+    /**
+     * State of the playback.
+     */
     data class Playback<E : Error>(
         val state: State,
         val playWhenReady: Boolean,
         val error: E?
     )
 
+    /**
+     * Indicates the current state of the playback.
+     */
     val playback: StateFlow<Playback<E>>
 
     /**
-     * Resumes the playback at the current location or start it again from the beginning if it has finished.
+     * Resumes the playback at the current location.
      */
     fun play()
 
