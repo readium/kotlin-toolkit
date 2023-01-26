@@ -49,7 +49,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             val previousUtterance = previousUtterance()
             val currentUtterance = nextUtterance()
 
-            return if (currentUtterance != null) {
+            val context = if (currentUtterance != null) {
                 Context(
                     previousUtterance = previousUtterance,
                     currentUtterance = currentUtterance,
@@ -59,11 +59,15 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             } else {
                 Context(
                     previousUtterance = previousUtterance(),
-                    currentUtterance = previousUtterance ?: return null,
+                    currentUtterance = nextUtterance() ?: return null,
                     nextUtterance = null,
                     ended = true
                 )
             }
+
+            Timber.d("startContext $context")
+
+            return context
         }
     }
 

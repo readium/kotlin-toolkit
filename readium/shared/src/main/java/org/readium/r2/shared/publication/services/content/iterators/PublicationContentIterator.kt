@@ -14,6 +14,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.util.Either
+import timber.log.Timber
 
 /**
  * Creates a [Content.Iterator] instance for the [Resource], starting from the given [Locator].
@@ -62,6 +63,7 @@ class PublicationContentIterator(
 
     override suspend fun hasPrevious(): Boolean {
         currentElement = nextIn(Direction.Backward)
+        Timber.d("hasPrevious  ${currentElement?.element?.locator}")
         return currentElement != null
     }
 
@@ -72,6 +74,7 @@ class PublicationContentIterator(
 
     override suspend fun hasNext(): Boolean {
         currentElement = nextIn(Direction.Forward)
+        Timber.d("hasNext ${currentElement?.element?.locator}")
         return currentElement != null
     }
 

@@ -65,8 +65,15 @@ class HtmlResourceContentIterator(
     private var currentElement: ContentWithDelta? = null
 
     override suspend fun hasPrevious(): Boolean {
-        currentElement = nextBy(-1)
-        return currentElement != null
+        val elements = elements()
+        val index = (currentIndex ?: elements.startIndex) - 1
+
+        val content = elements.elements.getOrNull(index)
+            ?: return false
+
+        currentIndex = index
+        currentElement = ContentWithDelta(content, -1)
+        return true
     }
 
     override fun previous(): Content.Element =
@@ -75,26 +82,21 @@ class HtmlResourceContentIterator(
             ?: throw IllegalStateException("Called previous() without a successful call to hasPrevious() first")
 
     override suspend fun hasNext(): Boolean {
-        currentElement = nextBy(+1)
-        return currentElement != null
+        val elements = elements()
+        val index = (currentIndex ?: (elements.startIndex - 1)) + 1
+
+        val content = elements.elements.getOrNull(index)
+            ?: return false
+
+        currentIndex = index
+        currentElement = ContentWithDelta(content, +1)
+        return true
     }
 
     override fun next(): Content.Element =
         currentElement
             ?.takeIf { it.delta == +1 }?.element
             ?: throw IllegalStateException("Called next() without a successful call to hasNext() first")
-
-    private suspend fun nextBy(delta: Int): ContentWithDelta? {
-        val elements = elements()
-        val index = currentIndex?.let { it + delta }
-            ?: elements.startIndex
-
-        val content = elements.elements.getOrNull(index)
-            ?: return null
-
-        currentIndex = index
-        return ContentWithDelta(content, delta)
-    }
 
     private var currentIndex: Int? = null
 
@@ -123,7 +125,7 @@ class HtmlResourceContentIterator(
     }
 
     /**
-     * Holds the result of parsing the HTML resource into a list of [ContentElement].
+     * Holds the result of parsing the HTML resource into a list of [Content.Element].
      *
      * The [startIndex] will be calculated from the element matched by the base [locator], if
      * possible. Defaults to 0.
@@ -140,7 +142,7 @@ class HtmlResourceContentIterator(
 
         fun result() = ParsedElements(
             elements = elements,
-            startIndex = if (baseLocator.locations.progression == 1.0) elements.size - 1
+            startIndex = if (baseLocator.locations.progression == 1.0) elements.size
             else startIndex
         )
 

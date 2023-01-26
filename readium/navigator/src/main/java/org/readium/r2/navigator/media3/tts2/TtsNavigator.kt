@@ -50,6 +50,8 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
                 return null
             }
 
+            Timber.d("initialLocator $initialLocator")
+
             val actualInitialPreferences = initialPreferences
                 ?: ttsEngineProvider.createEmptyPreferences()
 

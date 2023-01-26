@@ -18,6 +18,12 @@ import org.readium.r2.shared.util.CursorList
 import org.readium.r2.shared.util.Language
 
 @ExperimentalReadiumApi
+
+/**
+ * A Content Iterator able to provide short utterances.
+ *
+ * It is not safe for several coroutines to use this at the same time.
+ */
 internal class TtsContentIterator(
     private val publication: Publication,
     private val tokenizerFactory: (language: Language?) -> ContentTokenizer,
@@ -137,7 +143,7 @@ internal class TtsContentIterator(
             list = nextUtterances,
             startIndex = when (direction) {
                 Direction.Forward -> 0
-                Direction.Backward -> nextUtterances.size - 1
+                Direction.Backward -> nextUtterances.size + 1
             }
         )
 
@@ -203,8 +209,8 @@ internal class TtsContentIterator(
 
     private fun <E> CursorList<E>.nextIn(direction: Direction): E? =
         when (direction) {
-            Direction.Forward -> next()
-            Direction.Backward -> previous()
+            Direction.Forward -> if (hasNext()) next() else null
+            Direction.Backward -> if (hasPrevious()) previous() else null
         }
 
     private suspend fun Content.Iterator.nextIn(direction: Direction): Content.Element? =
