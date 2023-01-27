@@ -4,7 +4,7 @@
 //  available in the top-level LICENSE file of the project.
 //
 
-import { isScrollModeEnabled, pageWidth } from "./utils";
+import { isScrollModeEnabled } from "./utils";
 import { getCssSelector } from "css-selector-generator";
 
 export function findFirstVisibleLocator() {
