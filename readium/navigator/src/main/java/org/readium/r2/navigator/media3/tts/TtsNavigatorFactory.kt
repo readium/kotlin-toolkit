@@ -61,7 +61,7 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
     }
 
     suspend fun createNavigator(
-        listener: TtsNavigatorListener,
+        listener: TtsNavigator.Listener,
         initialPreferences: P? = null,
         initialLocator: Locator? = null
     ): TtsNavigator<S, P, F, V> {

@@ -13,7 +13,12 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Closeable
 
 @ExperimentalReadiumApi
-interface MediaNavigator<E : MediaNavigator.Error> : Navigator, Closeable {
+interface MediaNavigator<P: MediaNavigator.Position, E : MediaNavigator.Error> : Navigator, Closeable {
+
+    /**
+     *  Marker interface for the [position] flow.
+     */
+    interface Position
 
     /**
      * Marker interface for the [Playback.error] property.
@@ -43,6 +48,8 @@ interface MediaNavigator<E : MediaNavigator.Error> : Navigator, Closeable {
      * Indicates the current state of the playback.
      */
     val playback: StateFlow<Playback<E>>
+
+    val position: StateFlow<P>
 
     /**
      * Resumes the playback at the current location.

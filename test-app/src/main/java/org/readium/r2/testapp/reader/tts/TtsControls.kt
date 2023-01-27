@@ -208,7 +208,7 @@ private fun TtsPreferencesDialog(
                             .filter { it.language.removeRegion() == language.effectiveValue }
                             .map { it.name }
                     ),
-                    formatValue = { it  ?: context.getString(R.string.defaultValue) },
+                    formatValue = { it ?: context.getString(R.string.defaultValue) },
                     commit = commit
                 )
             }

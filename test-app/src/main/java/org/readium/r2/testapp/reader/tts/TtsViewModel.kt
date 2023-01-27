@@ -18,7 +18,6 @@ import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferencesEditor
 import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.media3.api.SynchronizedMediaNavigator
 import org.readium.r2.navigator.media3.tts.TtsNavigator
-import org.readium.r2.navigator.media3.tts.TtsNavigatorListener
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.UserException
@@ -145,7 +144,7 @@ class TtsViewModel private constructor(
     private suspend fun openSession(navigator: Navigator): TtsService.Session {
         val start = (navigator as? VisualNavigator)?.firstVisibleElementLocator()
 
-        val listener = object : TtsNavigatorListener {
+        val listener = object : TtsNavigator.Listener {
 
             override fun onStopRequested() {
                 stop()
@@ -184,7 +183,7 @@ class TtsViewModel private constructor(
 
     private fun stateFromPlayback(
         playback: MediaNavigator.Playback<TtsNavigator.Error>?,
-        utterance: SynchronizedMediaNavigator.Utterance?
+        utterance: SynchronizedMediaNavigator.Utterance<TtsNavigator.Position>?
     ): State {
         if (playback == null || utterance == null)
             return State()
