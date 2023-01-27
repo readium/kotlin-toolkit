@@ -21,12 +21,11 @@ interface SynchronizedMediaNavigator<P: MediaNavigator.Position, E : MediaNaviga
 
         val range: IntRange?
 
-        val locator: Locator
+        val utteranceLocator: Locator
 
         val rangeLocator: Locator? get() = range
-            ?.let { locator.copy(text = locator.text.substring(it)) }
+            ?.let { utteranceLocator.copy(text = utteranceLocator.text.substring(it)) }
     }
-
 
     val utterance: StateFlow<Utterance<P>>
 }

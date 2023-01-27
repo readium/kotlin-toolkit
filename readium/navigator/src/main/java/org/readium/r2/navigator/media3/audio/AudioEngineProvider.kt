@@ -4,9 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.media3.player
+package org.readium.r2.navigator.media3.audio
 
-import androidx.media3.common.Player
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -14,9 +13,10 @@ import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 
 @ExperimentalReadiumApi
-interface MediaEngineProvider<S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> {
+interface AudioEngineProvider<S : Configurable.Settings, P : Configurable.Preferences<P>,
+    E : PreferencesEditor<P>, F : AudioEngine.Error> {
 
-    suspend fun createPlayer(publication: Publication): Player
+    suspend fun createEngine(publication: Publication): AudioEngine<S, P, F>
 
     /**
      * Creates settings for [metadata] and [preferences].

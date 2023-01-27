@@ -6,36 +6,17 @@
 
 package org.readium.r2.navigator.media3.exoplayer
 
-import android.content.Context
-import androidx.media3.common.AudioAttributes
-import androidx.media3.common.C
-import androidx.media3.datasource.DataSource
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import org.readium.r2.navigator.media3.player.MediaEngineProvider
+import org.readium.r2.navigator.media3.audio.AudioEngineProvider
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 
 @ExperimentalReadiumApi
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-class ExoPlayerEngineProvider(
-    private val context: Context,
-) : MediaEngineProvider<ExoPlayerSettings, ExoPlayerPreferences, ExoPlayerPreferencesEditor> {
+class ExoPlayerEngineProvider() : AudioEngineProvider<ExoPlayerSettings, ExoPlayerPreferences, ExoPlayerPreferencesEditor, ExoPlayerEngine.Error> {
 
-    override suspend fun createPlayer(publication: Publication): ExoPlayer {
-        val dataSourceFactory: DataSource.Factory = ExoPlayerDataSource.Factory(publication)
-        return ExoPlayer.Builder(context)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-                    .setUsage(C.USAGE_MEDIA)
-                    .build(),
-                true
-            )
-            .setHandleAudioBecomingNoisy(true)
-            .build()
+    override suspend fun createEngine(publication: Publication):ExoPlayerEngine {
+        TODO("Not yet implemented")
     }
 
     override fun computeSettings(

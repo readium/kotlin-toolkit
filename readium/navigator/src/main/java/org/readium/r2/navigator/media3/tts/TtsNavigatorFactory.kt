@@ -7,6 +7,7 @@
 package org.readium.r2.navigator.media3.tts
 
 import android.app.Application
+import org.readium.r2.navigator.media3.tts.android.*
 import org.readium.r2.navigator.media3.api.DefaultMediaMetadataFactory
 import org.readium.r2.navigator.media3.api.MediaMetadataProvider
 import org.readium.r2.navigator.preferences.PreferencesEditor
@@ -19,7 +20,7 @@ import org.readium.r2.shared.util.tokenizer.TextUnit
 
 @ExperimentalReadiumApi
 class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
-    F : TtsEngine.Error, V : TtsEngine.Voice>(
+    F : TtsEngine.Error, V : TtsEngine.Voice> private constructor(
     private val application: Application,
     private val publication: Publication,
     private val ttsEngineProvider: TtsEngineProvider<S, P, E, F, V>,
@@ -28,8 +29,46 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
 ) {
     companion object {
 
+        suspend operator fun invoke(
+            application: Application,
+            publication: Publication,
+            tokenizerFactory: (defaultLanguage: Language?) -> ContentTokenizer = defaultTokenizerFactory,
+            metadataProvider: MediaMetadataProvider = defaultMediaMetadataProvider,
+            defaultVoiceProvider: AndroidTtsEngine.DefaultVoiceProvider? = null
+        ): TtsNavigatorFactory<AndroidTtsSettings,AndroidTtsPreferences,
+            AndroidTtsPreferencesEditor, AndroidTtsEngine.Exception, AndroidTtsEngine.Voice>? {
+
+            val engineProvider = AndroidTtsEngineProvider(application, defaultVoiceProvider)
+
+            return createNavigatorFactory(
+                application,
+                publication,
+                engineProvider,
+                tokenizerFactory,
+                metadataProvider
+            )
+        }
+
         suspend operator fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
             F : TtsEngine.Error, V : TtsEngine.Voice> invoke(
+            application: Application,
+            publication: Publication,
+            ttsEngineProvider: TtsEngineProvider<S, P, E, F, V>,
+            tokenizerFactory: (defaultLanguage: Language?) -> ContentTokenizer = defaultTokenizerFactory,
+            metadataProvider: MediaMetadataProvider = defaultMediaMetadataProvider
+        ): TtsNavigatorFactory<S, P, E, F, V>? {
+
+            return createNavigatorFactory(
+                application,
+                publication,
+                ttsEngineProvider,
+                tokenizerFactory,
+                metadataProvider
+            )
+        }
+
+        suspend fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
+            F : TtsEngine.Error, V : TtsEngine.Voice> createNavigatorFactory(
             application: Application,
             publication: Publication,
             ttsEngineProvider: TtsEngineProvider<S, P, E, F, V>,
@@ -42,7 +81,13 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
                 ?.takeIf { it.hasNext() }
                 ?: return null
 
-            return TtsNavigatorFactory(application, publication, ttsEngineProvider, tokenizerFactory, metadataProvider)
+            return TtsNavigatorFactory(
+                application,
+                publication,
+                ttsEngineProvider,
+                tokenizerFactory,
+                metadataProvider
+            )
         }
 
         /**

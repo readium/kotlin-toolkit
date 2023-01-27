@@ -90,7 +90,10 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
                 }
 
             val onSetPlaybackParameters = { parameters: PlaybackParameters ->
-                val newPreferences = ttsEngineProvider.updatePlaybackParameters(ttsPlayer.lastPreferences, parameters)
+                val newPreferences = ttsEngineProvider.updatePlaybackParameters(
+                    ttsPlayer.lastPreferences,
+                    parameters
+                )
                 ttsPlayer.submitPreferences(newPreferences)
             }
 
@@ -114,7 +117,7 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
         fun onStopRequested()
 
-        fun onMissingLanguageData()
+        fun onMissingLanguageData(language: Language)
     }
 
     data class Position(
@@ -129,11 +132,11 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         override val text: String,
         override val position: Position,
         override val range: IntRange?,
-        override val locator: Locator
+        override val utteranceLocator: Locator
     ) : SynchronizedMediaNavigator.Utterance<Position> {
 
         override val rangeLocator: Locator? = range
-            ?.let { locator.copy(text = locator.text.substring(it)) }
+            ?.let { utteranceLocator.copy(text = utteranceLocator.text.substring(it)) }
     }
 
     sealed class Error : MediaNavigator.Error {
@@ -183,7 +186,7 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     }
 
     override val currentLocator: StateFlow<Locator> =
-        utterance.mapStateIn(coroutineScope) { it.locator }
+        utterance.mapStateIn(coroutineScope) { it.utteranceLocator }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         player.go(locator)
@@ -252,7 +255,7 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         return Utterance(
             text = text,
             position = position,
-            locator = locator,
+            utteranceLocator = locator,
             range = range
         )
     }

@@ -27,10 +27,10 @@ import org.readium.r2.navigator.epub.EpubPreferences
 import org.readium.r2.navigator.epub.EpubPreferencesSerializer
 import org.readium.r2.navigator.epub.EpubPublicationPreferencesFilter
 import org.readium.r2.navigator.epub.EpubSharedPreferencesFilter
-import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferences
-import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferencesSerializer
-import org.readium.r2.navigator.media3.androidtts.AndroidTtsPublicationPreferencesFilter
-import org.readium.r2.navigator.media3.androidtts.AndroidTtsSharedPreferencesFilter
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferencesSerializer
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsPublicationPreferencesFilter
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsSharedPreferencesFilter
 import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferences
 import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferencesSerializer
 import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPublicationPreferencesFilter

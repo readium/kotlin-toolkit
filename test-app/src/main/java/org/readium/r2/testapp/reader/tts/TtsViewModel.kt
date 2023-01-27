@@ -7,33 +7,36 @@
 package org.readium.r2.testapp.reader.tts
 
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.speech.tts.TextToSpeech
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.VisualNavigator
-import org.readium.r2.navigator.media3.androidtts.AndroidTtsEngine
-import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferences
-import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferencesEditor
+import org.readium.r2.navigator.media3.tts.TtsNavigator
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferencesEditor
 import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.media3.api.SynchronizedMediaNavigator
-import org.readium.r2.navigator.media3.tts.TtsNavigator
-import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Language
+import org.readium.r2.testapp.R
 import org.readium.r2.testapp.reader.ReaderInitData
 import org.readium.r2.testapp.reader.VisualReaderInitData
 import org.readium.r2.testapp.reader.preferences.PreferencesManager
 import org.readium.r2.testapp.utils.extensions.mapStateIn
-import timber.log.Timber
 
 /**
  * View model controlling a [TtsNavigator] to read a publication aloud.
  *
- * Note: This is not an Android [ViewModel], but it is a component of [ReaderViewModel].
+ * Note: This is not an Android ViewModel, but it is a component of ReaderViewModel.
  */
 @OptIn(ExperimentalReadiumApi::class)
 class TtsViewModel private constructor(
@@ -91,7 +94,7 @@ class TtsViewModel private constructor(
 
     sealed class Event {
         /**
-         * Emitted when the [PublicationSpeechSynthesizer] fails with an error.
+         * Emitted when the [TtsNavigator] fails with an error.
          */
         class OnError(val error: UserException) : Event()
 
@@ -149,6 +152,12 @@ class TtsViewModel private constructor(
             override fun onStopRequested() {
                 stop()
             }
+
+            override fun onMissingLanguageData(language: Language) {
+                viewModelScope.launch {
+                    _events.send(Event.OnMissingVoiceData(language))
+                }
+            }
         }
 
         val ttsNavigator = ttsNavigatorFactory.createNavigator(
@@ -167,11 +176,12 @@ class TtsViewModel private constructor(
         ttsSession: TtsService.Session
     ): Binding {
         val playbackJob = ttsSession.navigator.playback
-            .combine(ttsSession.navigator.utterance) { playback, utterance ->
+            .onEach {  playback ->
+                playback.error?.let { onPlaybackError(it) }
+            }.combine(ttsSession.navigator.utterance) { playback, utterance ->
                 stateFromPlayback(playback, utterance)
             }.onEach { state ->
                 _state.value = state
-                Timber.d("new TTS state ${_state.value}")
             }.launchIn(viewModelScope)
 
         val preferencesJob = preferencesManager.preferences
@@ -192,7 +202,7 @@ class TtsViewModel private constructor(
             showControls = playback.state != MediaNavigator.State.Ended,
             isPlaying = playback.playWhenReady,
             playingWordRange = utterance.rangeLocator,
-            playingUtterance = utterance.locator
+            playingUtterance = utterance.utteranceLocator
         )
     }
 
@@ -238,71 +248,44 @@ class TtsViewModel private constructor(
     /**
      * Starts the activity to install additional voice data.
      */
-    @OptIn(DelicateReadiumApi::class)
     fun requestInstallVoice(context: Context) {
-        // synthesizer.engine.requestInstallMissingVoice(context)
+        val intent = Intent()
+            .setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA)
+            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        val availableActivities =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.packageManager.queryIntentActivities(
+                    intent,
+                    PackageManager.ResolveInfoFlags.of(0)
+                )
+            } else {
+                @Suppress("Deprecation")
+                context.packageManager.queryIntentActivities(intent, 0)
+            }
+
+        if (availableActivities.isNotEmpty()) {
+            context.startActivity(intent)
+        }
     }
 
-    /*private inner class SynthesizerListener : PublicationSpeechSynthesizer.Listener {
-        override fun onUtteranceError(
-            utterance: PublicationSpeechSynthesizer.Utterance,
-            error: PublicationSpeechSynthesizer.Exception
-        ) {
-            viewModelScope.launch {
-                // The synthesizer is paused when encountering an error while playing an
-                // utterance. Here we will skip to the next utterance unless the exception is
-                // recoverable.
-                val shouldContinuePlayback = !handleTtsException(error)
-                if (shouldContinuePlayback) {
-                    next()
+    private fun onPlaybackError(error: TtsNavigator.Error) {
+        val exception = when (error) {
+            is TtsNavigator.Error.ContentError -> {
+                UserException(R.string.tts_error_other)
+            }
+            is TtsNavigator.Error.EngineError<*> -> {
+                when ((error.error as AndroidTtsEngine.Exception).error) {
+                    AndroidTtsEngine.EngineError.Network ->
+                        UserException(R.string.tts_error_network)
+                    else ->
+                        UserException(R.string.tts_error_other)
                 }
             }
         }
 
-        override fun onError(error: PublicationSpeechSynthesizer.Exception) {
-            viewModelScope.launch {
-                handleTtsException(error)
-            }
+        viewModelScope.launch {
+            _events.send(Event.OnError(exception))
         }
-
-        /**
-         * Handles the given error and returns whether it was recovered from.
-         */
-        private suspend fun handleTtsException(error: PublicationSpeechSynthesizer.Exception): Boolean =
-            when (error) {
-                is PublicationSpeechSynthesizer.Exception.Engine -> when (val err = error.error) {
-                    // The `LanguageSupportIncomplete` exception is a special case. We can recover from
-                    // it by asking the user to download the missing voice data.
-                    is TtsEngine.Exception.LanguageSupportIncomplete -> {
-                        _events.send(Event.OnMissingVoiceData(err.language))
-                        true
-                    }
-
-                    else -> {
-                        _events.send(Event.OnError(err.toUserException()))
-                        false
-                    }
-                }
-            }
-
-        private fun TtsEngine.Exception.toUserException(): UserException =
-            when (this) {
-                is TtsEngine.Exception.InitializationFailed ->
-                    UserException(R.string.tts_error_initialization)
-                is TtsEngine.Exception.LanguageNotSupported ->
-                    UserException(
-                        R.string.tts_error_language_not_supported,
-                        language.locale.displayName
-                    )
-                is TtsEngine.Exception.LanguageSupportIncomplete ->
-                    UserException(
-                        R.string.tts_error_language_support_incomplete,
-                        language.locale.displayName
-                    )
-                is TtsEngine.Exception.Network ->
-                    UserException(R.string.tts_error_network)
-                is TtsEngine.Exception.Other ->
-                    UserException(R.string.tts_error_other)
-            }
-    }*/
+    }
 }

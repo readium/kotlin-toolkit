@@ -19,8 +19,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import org.readium.r2.navigator.media3.androidtts.AndroidTtsEngine
-import org.readium.r2.navigator.media3.androidtts.AndroidTtsPreferencesEditor
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferencesEditor
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language

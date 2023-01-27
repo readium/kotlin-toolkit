@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.media3.androidtts
+package org.readium.r2.navigator.media3.tts.android
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
@@ -32,7 +32,7 @@ class AndroidTtsEngine(
     private val defaultVoiceProvider: DefaultVoiceProvider?,
     initialPreferences: AndroidTtsPreferences
 ) : TtsEngine<AndroidTtsSettings, AndroidTtsPreferences,
-        AndroidTtsEngine.Exception, AndroidTtsEngine.Voice> {
+    AndroidTtsEngine.Exception, AndroidTtsEngine.Voice> {
 
     companion object {
 

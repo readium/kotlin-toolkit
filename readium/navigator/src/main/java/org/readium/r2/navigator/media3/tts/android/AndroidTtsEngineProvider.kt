@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.media3.androidtts
+package org.readium.r2.navigator.media3.tts.android
 
 import android.content.Context
 import androidx.media3.common.PlaybackException
@@ -21,7 +21,7 @@ class AndroidTtsEngineProvider(
     private val context: Context,
     private val defaultVoiceProvider: AndroidTtsEngine.DefaultVoiceProvider? = null
 ) : TtsEngineProvider<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsPreferencesEditor,
-        AndroidTtsEngine.Exception, AndroidTtsEngine.Voice> {
+    AndroidTtsEngine.Exception, AndroidTtsEngine.Voice> {
 
     override suspend fun createEngine(
         publication: Publication,

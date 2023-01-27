@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.media3.androidtts
+package org.readium.r2.navigator.media3.tts.android
 
 import kotlinx.serialization.json.Json
 import org.readium.r2.navigator.preferences.PreferencesSerializer

@@ -6,17 +6,16 @@
 
 package org.readium.r2.testapp.reader
 
+import androidx.datastore.preferences.core.Preferences as JetpackPreferences
 import android.app.Activity
 import android.app.Application
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences as JetpackPreferences
 import java.io.File
 import org.json.JSONObject
 import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider
 import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
-import org.readium.r2.navigator.media3.androidtts.AndroidTtsEngineProvider
 import org.readium.r2.navigator.media3.tts.TtsNavigatorFactory
 import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -216,8 +215,7 @@ class ReaderRepository(
     ): TtsInitData? {
         val preferencesManager = AndroidTtsPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)
-        val ttsEngine = AndroidTtsEngineProvider(application)
-        val navigatorFactory = TtsNavigatorFactory(application, publication, ttsEngine) ?: return null
+        val navigatorFactory = TtsNavigatorFactory(application, publication) ?: return null
         return TtsInitData(ttsServiceFacade, navigatorFactory, preferencesManager)
     }
 
