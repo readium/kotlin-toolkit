@@ -4,7 +4,14 @@ All notable changes to this project will be documented in this file. Take a look
 
 **Warning:** Features marked as *experimental* may change or be removed in a future release without notice. Use with caution.
 
-<!--## [Unreleased]-->
+## [Unreleased]
+
+### Added
+
+#### Navigator
+
+* Scroll mode: jumping between two EPUB resources with a horizontal swipe triggers the `Navigator.Listener.onJumpToLocator()` callback.
+    * This can be used to allow the user to go back to their previous location if they swiped across chapters by mistake.
 
 ## [2.3.0]
 
