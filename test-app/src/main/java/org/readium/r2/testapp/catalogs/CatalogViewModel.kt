@@ -6,18 +6,14 @@
 
 package org.readium.r2.testapp.catalogs
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.URL
-import kotlinx.coroutines.Dispatchers
+import java.util.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import org.readium.r2.opds.OPDS1Parser
@@ -25,24 +21,20 @@ import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.opds.images
-import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.testapp.Application
-import org.readium.r2.testapp.bookshelf.BookRepository
-import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.domain.model.Catalog
-import org.readium.r2.testapp.opds.OPDSDownloader
 import org.readium.r2.testapp.utils.EventChannel
+import org.readium.r2.testapp.utils.extensions.downloadTo
 import timber.log.Timber
 
-class CatalogViewModel(application: android.app.Application) : AndroidViewModel(application) {
+class CatalogViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val bookDao = BookDatabase.getDatabase(application).booksDao()
-    private val bookRepository = BookRepository(bookDao)
-    private var opdsDownloader = OPDSDownloader(application.applicationContext)
-    private var storageDir = (application as Application).storageDir
+    private val app get() =
+        getApplication<org.readium.r2.testapp.Application>()
+
     val detailChannel = EventChannel(Channel<Event.DetailEvent>(Channel.BUFFERED), viewModelScope)
     val eventChannel = EventChannel(Channel<Event.FeedEvent>(Channel.BUFFERED), viewModelScope)
     val parseData = MutableLiveData<ParseData>()
@@ -71,68 +63,32 @@ class CatalogViewModel(application: android.app.Application) : AndroidViewModel(
     }
 
     fun downloadPublication(publication: Publication) = viewModelScope.launch {
-        val downloadUrl = getDownloadURL(publication)
-        val publicationUrl = opdsDownloader.publicationUrl(downloadUrl.toString())
-        publicationUrl.onSuccess {
-            val id = addPublicationToDatabase(it.first, MediaType.EPUB, publication)
-            if (id != -1L) {
+        val filename = UUID.randomUUID().toString()
+        val dest = File(app.storageDir, filename)
+
+        getDownloadURL(publication)
+            .flatMap { url ->
+                url.downloadTo(dest)
+            }.flatMap {
+                val opdsCover = publication.images.firstOrNull()?.href
+                app.bookRepository.addBook(dest, opdsCover)
+            }.onSuccess {
                 detailChannel.send(Event.DetailEvent.ImportPublicationSuccess)
-            } else {
-                detailChannel.send(Event.DetailEvent.ImportPublicationFailed)
-            }
-        }
-            .onFailure {
+            }.onFailure {
                 detailChannel.send(Event.DetailEvent.ImportPublicationFailed)
             }
     }
 
-    private fun getDownloadURL(publication: Publication): URL? =
+    private fun getDownloadURL(publication: Publication): Try<URL, Exception> =
         publication.links
-            .firstOrNull { it.mediaType.isPublication }
-            ?.let { URL(it.href) }
-
-    private suspend fun addPublicationToDatabase(
-        href: String,
-        mediaType: MediaType,
-        publication: Publication
-    ): Long {
-        val id = bookRepository.insertBook(href, mediaType, publication)
-        storeCoverImage(publication, id.toString())
-        return id
-    }
-
-    private fun storeCoverImage(publication: Publication, imageName: String) =
-        viewModelScope.launch(Dispatchers.IO) {
-            // TODO Figure out where to store these cover images
-            val coverImageDir = File(storageDir, "covers/")
-            if (!coverImageDir.exists()) {
-                coverImageDir.mkdirs()
-            }
-            val coverImageFile = File(storageDir, "covers/$imageName.png")
-
-            val bitmap: Bitmap? =
-                publication.cover() ?: getBitmapFromURL(publication.images.first().href)
-
-            val resized = bitmap?.let { Bitmap.createScaledBitmap(it, 120, 200, true) }
-            val fos = FileOutputStream(coverImageFile)
-            resized?.compress(Bitmap.CompressFormat.PNG, 80, fos)
-            fos.flush()
-            fos.close()
-        }
-
-    private fun getBitmapFromURL(src: String): Bitmap? {
-        return try {
-            val url = URL(src)
-            val connection = url.openConnection() as HttpURLConnection
-            connection.doInput = true
-            connection.connect()
-            val input = connection.inputStream
-            BitmapFactory.decodeStream(input)
-        } catch (e: IOException) {
-            e.printStackTrace()
-            null
-        }
-    }
+            .firstOrNull { it.mediaType.isPublication || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
+            ?.let {
+                try {
+                    Try.success(URL(it.href))
+                } catch (e: Exception) {
+                    Try.failure(e)
+                }
+            } ?: Try.failure(Exception("No supported link to acquire publication."))
 
     sealed class Event {
 

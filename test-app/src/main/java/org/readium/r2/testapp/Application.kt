@@ -6,7 +6,10 @@
 
 package org.readium.r2.testapp
 
-import android.content.*
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -23,9 +26,6 @@ import timber.log.Timber
 
 class Application : android.app.Application() {
 
-    val Context.navigatorPreferences: DataStore<Preferences>
-        by preferencesDataStore(name = "navigator-preferences")
-
     lateinit var readium: Readium
         private set
 
@@ -39,6 +39,9 @@ class Application : android.app.Application() {
 
     private val coroutineScope: CoroutineScope =
         MainScope()
+
+    private val Context.navigatorPreferences: DataStore<Preferences>
+        by preferencesDataStore(name = "navigator-preferences")
 
     private val mediaServiceBinder: CompletableDeferred<MediaService.Binder> =
         CompletableDeferred()
@@ -85,7 +88,7 @@ class Application : android.app.Application() {
          */
         bookRepository =
             BookDatabase.getDatabase(this).booksDao()
-                .let { BookRepository(it) }
+                .let { BookRepository(this, it, storageDir, readium.lcpService, readium.streamer) }
 
         readerRepository =
             coroutineScope.async {
@@ -112,6 +115,3 @@ class Application : android.app.Application() {
         )
     }
 }
-
-val Context.resolver: ContentResolver
-    get() = applicationContext.contentResolver

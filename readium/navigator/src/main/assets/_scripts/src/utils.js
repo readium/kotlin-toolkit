@@ -19,7 +19,6 @@ window.addEventListener(
   "load",
   function () {
     const observer = new ResizeObserver(() => {
-      appendVirtualColumnIfNeeded();
       onViewportWidthChanged();
       snapCurrentOffset();
     });
@@ -71,6 +70,8 @@ function onViewportWidthChanged() {
     "--RS__viewportWidth",
     "calc(" + width + "px / " + window.devicePixelRatio + ")"
   );
+
+  appendVirtualColumnIfNeeded();
 }
 
 export function getColumnCountPerScreen() {

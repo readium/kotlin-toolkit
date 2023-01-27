@@ -94,7 +94,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         fun goToPreviousResource(jump: Boolean, animated: Boolean): Boolean = false
     }
 
-    lateinit var listener: Listener
+    var listener: Listener? = null
     internal var preferences: SharedPreferences? = null
     internal var useLegacySettings: Boolean = false
 
@@ -132,7 +132,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             val pageWidth = computeHorizontalScrollExtent()
             val contentWidth = computeHorizontalScrollRange()
 
-            val isRtl = (listener.readingProgression == ReadingProgression.RTL)
+            val isRtl = (listener?.readingProgression == ReadingProgression.RTL)
 
             // For RTL, we need to add the equivalent of one page to the x position, otherwise the
             // progression will be one page off.
@@ -170,7 +170,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
     override fun onScrollChanged(l: Int, t: Int, oldl: Int, oldt: Int) {
         super.onScrollChanged(l, t, oldl, oldt)
-        listener.onProgressionChanged()
+        listener?.onProgressionChanged()
     }
 
     override fun onAttachedToWindow() {
@@ -188,6 +188,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     open fun scrollRight(animated: Boolean = false) {
         uiScope.launch {
+            val listener = listener ?: return@launch
             listener.onScroll()
 
             val isRtl = (listener.readingProgression == ReadingProgression.RTL)
@@ -222,6 +223,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     open fun scrollLeft(animated: Boolean = false) {
         uiScope.launch {
+            val listener = listener ?: return@launch
             listener.onScroll()
 
             fun goLeft(jump: Boolean) {
@@ -294,7 +296,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 true
             }
             else ->
-                runBlocking(uiScope.coroutineContext) { listener.onTap(event.point) }
+                runBlocking(uiScope.coroutineContext) { listener?.onTap(event.point) ?: false }
         }
     }
 
@@ -313,7 +315,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             return false
         }
 
-        return listener.onDecorationActivated(id, group, rect, click.point)
+        return listener?.onDecorationActivated(id, group, rect, click.point) ?: false
     }
 
     /** Produced by gestures.js */
@@ -360,7 +362,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
         val aside = runBlocking {
             tryOrLog {
-                listener.resourceAtUrl(absoluteUrl)
+                listener?.resourceAtUrl(absoluteUrl)
                     ?.use { res ->
                         res.readAsString()
                             .map { Jsoup.parse(it) }
@@ -422,7 +424,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         val event = DragEvent.fromJSON(eventJson)?.takeIf { it.isValid }
             ?: return false
 
-        return runBlocking(uiScope.coroutineContext) { listener.onDragStart(event) }
+        return runBlocking(uiScope.coroutineContext) { listener?.onDragStart(event) ?: false }
     }
 
     @android.webkit.JavascriptInterface
@@ -430,7 +432,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         val event = DragEvent.fromJSON(eventJson)?.takeIf { it.isValid }
             ?: return false
 
-        return runBlocking(uiScope.coroutineContext) { listener.onDragMove(event) }
+        return runBlocking(uiScope.coroutineContext) { listener?.onDragMove(event) ?: false }
     }
 
     @android.webkit.JavascriptInterface
@@ -438,7 +440,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         val event = DragEvent.fromJSON(eventJson)?.takeIf { it.isValid }
             ?: return false
 
-        return runBlocking(uiScope.coroutineContext) { listener.onDragEnd(event) }
+        return runBlocking(uiScope.coroutineContext) { listener?.onDragEnd(event) ?: false }
     }
 
     @android.webkit.JavascriptInterface
@@ -508,14 +510,14 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     fun highlightActivated(id: String) {
         uiScope.launch {
-            listener.onHighlightActivated(id)
+            listener?.onHighlightActivated(id)
         }
     }
 
     @android.webkit.JavascriptInterface
     fun highlightAnnotationMarkActivated(id: String) {
         uiScope.launch {
-            listener.onHighlightAnnotationMarkActivated(id)
+            listener?.onHighlightAnnotationMarkActivated(id)
         }
     }
 
@@ -611,7 +613,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     internal fun shouldOverrideUrlLoading(request: WebResourceRequest): Boolean {
         if (resourceUrl == request.url?.toString()) return false
 
-        return listener.shouldOverrideUrlLoading(this, request)
+        return listener?.shouldOverrideUrlLoading(this, request) ?: false
     }
 
     internal fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? {
@@ -622,7 +624,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             }
         }
 
-        return listener.shouldInterceptRequest(webView, request)
+        return listener?.shouldInterceptRequest(webView, request)
     }
 
     // Text selection ActionMode overrides
@@ -632,7 +634,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     // used by the web view.
 
     override fun startActionMode(callback: ActionMode.Callback?): ActionMode? {
-        val customCallback = listener.selectionActionModeCallback
+        val customCallback = listener?.selectionActionModeCallback
             ?: return super.startActionMode(callback)
 
         val parent = parent ?: return null
@@ -652,7 +654,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun startActionMode(callback: ActionMode.Callback?, type: Int): ActionMode? {
-        val customCallback = listener.selectionActionModeCallback
+        val customCallback = listener?.selectionActionModeCallback
             ?: return super.startActionMode(callback, type)
 
         val parent = parent ?: return null

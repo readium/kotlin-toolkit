@@ -52,16 +52,18 @@ class EpubPreferencesEditor internal constructor(
     }
 
     /**
-     * Default page background color.
+     * Default background color.
+     *
+     * For fixed-layout publications, it applies to the navigator background but not the publication
+     * pages.
      *
      * When unset, the current [theme] background color is effective.
-     * Only effective with fixed-layout publications.
      */
     val backgroundColor: Preference<Color> =
         PreferenceDelegate(
             getValue = { preferences.backgroundColor },
             getEffectiveValue = { state.settings.backgroundColor ?: Color((theme.value ?: theme.effectiveValue).backgroundColor) },
-            getIsEffective = { layout == EpubLayout.REFLOWABLE && preferences.backgroundColor != null },
+            getIsEffective = { preferences.backgroundColor != null },
             updateValue = { value -> updateValues { it.copy(backgroundColor = value) } },
         )
 
@@ -107,7 +109,7 @@ class EpubPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.fontSize },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(fontSize = value) } },
-            supportedRange = 0.4..5.0,
+            supportedRange = 0.1..5.0,
             progressionStrategy = DoubleIncrement(0.1),
             valueFormatter = percentFormatter(),
         )
@@ -240,7 +242,7 @@ class EpubPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.pageMargins },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(pageMargins = value) } },
-            supportedRange = 0.5..4.0,
+            supportedRange = 0.0..4.0,
             progressionStrategy = DoubleIncrement(0.3),
             valueFormatter = { it.format(5) },
         )

@@ -65,7 +65,7 @@ data class EpubSettings(
 ) : Configurable.Settings
 
 @OptIn(ExperimentalReadiumApi::class)
-internal fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
+internal fun ReadiumCss.update(settings: EpubSettings, useReadiumCssFontSize: Boolean): ReadiumCss {
 
     fun resolveFontStack(fontFamily: String): List<String> = buildList {
         add(fontFamily)
@@ -109,9 +109,8 @@ internal fun ReadiumCss.update(settings: EpubSettings): ReadiumCss {
                 backgroundColor = backgroundColor?.toCss(),
                 fontOverride = (fontFamily != null || textNormalization),
                 fontFamily = fontFamily?.toCss(),
-                // Font size is handled natively with WebSettings.textZoom.
-                // See https://github.com/readium/mobile/issues/1#issuecomment-652431984
-//                fontSize = fontSize?.let { Length.Percent(it) },
+                fontSize = if (useReadiumCssFontSize) Length.Percent(fontSize)
+                else null,
                 advancedSettings = !publisherStyles,
                 typeScale = typeScale,
                 textAlign = when (textAlign) {
