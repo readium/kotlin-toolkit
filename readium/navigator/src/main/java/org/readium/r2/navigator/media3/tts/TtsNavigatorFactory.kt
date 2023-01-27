@@ -8,7 +8,6 @@ package org.readium.r2.navigator.media3.tts
 
 import android.app.Application
 import org.readium.r2.navigator.media3.api.DefaultMediaMetadataFactory
-import org.readium.r2.navigator.media3.api.MediaMetadataFactory
 import org.readium.r2.navigator.media3.api.MediaMetadataProvider
 import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.shared.ExperimentalReadiumApi

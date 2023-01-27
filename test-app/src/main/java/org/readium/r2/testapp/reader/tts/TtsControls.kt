@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -180,26 +181,34 @@ private fun TtsPreferencesDialog(
                     preference = language,
                     commit = commit
                 )
+
+                val context = LocalContext.current
+
                 MenuItem(
                     title = stringResource(R.string.tts_voice),
                     preference = voices.map(
                         from = { voices ->
-                            language.effectiveValue?.let { voices[it] }
+                            language.effectiveValue?.let { voices[it.removeRegion()] }
                         },
                         to = { voice ->
                             buildMap {
                                 voices.value?.let { putAll(it) }
                                 language.effectiveValue?.let {
+                                    val withoutRegion = it.removeRegion()
                                     if (voice == null) {
-                                        remove(it)
+                                        remove(withoutRegion)
                                     } else {
-                                        put(it, voice)
+                                        put(withoutRegion, voice)
                                     }
                                 }
                             }
                         }
-                    ).withSupportedValues(availableVoices.map { it.name }),
-                    formatValue = { it ?: "Default" }, // it?.name ?: it?.id ?: stringResource(R.string.auto) },
+                    ).withSupportedValues(
+                        availableVoices
+                            .filter { it.language.removeRegion() == language.effectiveValue }
+                            .map { it.name }
+                    ),
+                    formatValue = { it  ?: context.getString(R.string.defaultValue) },
                     commit = commit
                 )
             }

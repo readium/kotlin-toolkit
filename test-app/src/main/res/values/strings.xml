@@ -197,7 +197,7 @@
     <string name="select_a_font">Select a font</string>
     <string name="close">Close</string>
     <string name="language">Language</string>
-    <string name="auto">Auto</string>
+    <string name="defaultValue">Default</string>
 
     <string name="tts_error_initialization">Failed to initialize the TTS engine</string>
     <string name="tts_error_language_not_supported">The language %s is not supported</string>
