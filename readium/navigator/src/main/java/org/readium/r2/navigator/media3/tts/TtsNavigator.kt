@@ -127,17 +127,13 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         val textAfter: String?,
     ) : MediaNavigator.Position
 
-
     data class Utterance(
         override val text: String,
         override val position: Position,
         override val range: IntRange?,
-        override val utteranceLocator: Locator
-    ) : SynchronizedMediaNavigator.Utterance<Position> {
-
-        override val rangeLocator: Locator? = range
-            ?.let { utteranceLocator.copy(text = utteranceLocator.text.substring(it)) }
-    }
+        override val utteranceHighlight: Locator,
+        override val tokenHighlight: Locator?
+    ) : SynchronizedMediaNavigator.Utterance<Position>
 
     sealed class Error : MediaNavigator.Error {
 
@@ -156,7 +152,9 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         player.utterance.mapStateIn(coroutineScope) { it.toUtterance() }
 
     override val position: StateFlow<Position> =
-        utterance.mapStateIn(coroutineScope) { it.position }
+        utterance.mapStateIn(coroutineScope) { utterance ->
+            utterance.position.copy(textAfter = utterance.text + utterance.position.textAfter)
+        }
 
     override fun play() {
         player.play()
@@ -186,7 +184,7 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     }
 
     override val currentLocator: StateFlow<Locator> =
-        utterance.mapStateIn(coroutineScope) { it.utteranceLocator }
+        utterance.mapStateIn(coroutineScope) { it.tokenHighlight ?: it.utteranceHighlight }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         player.go(locator)
@@ -228,15 +226,16 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             is TtsPlayer.Error.EngineError<*> -> Error.EngineError(error)
         }
 
-    private fun TtsPlayer.Utterance.toUtterance(): Utterance {
-        val position = Position(
-            resourceIndex = position.resourceIndex,
-            cssSelector = position.cssSelector,
-            textBefore = position.textBefore,
-            textAfter = position.textAfter
+    private fun TtsPlayer.Utterance.Position.toPosition(): Position =
+        Position(
+            resourceIndex = resourceIndex,
+            cssSelector = cssSelector,
+            textBefore = textBefore,
+            textAfter = textAfter
         )
 
-        val locator = publication
+    private fun TtsPlayer.Utterance.toUtterance(): Utterance {
+        val utteranceHighlight = publication
             .locatorFromLink(publication.readingOrder[position.resourceIndex])!!
             .copyWithLocations(
                 progression = null,
@@ -252,11 +251,15 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
                 )
             )
 
+        val tokenHighlight = range
+            ?.let { utteranceHighlight.copy(text = utteranceHighlight.text.substring(it)) }
+
         return Utterance(
             text = text,
-            position = position,
-            utteranceLocator = locator,
-            range = range
+            position = position.toPosition(),
+            range = range,
+            utteranceHighlight = utteranceHighlight,
+            tokenHighlight = tokenHighlight,
         )
     }
 }

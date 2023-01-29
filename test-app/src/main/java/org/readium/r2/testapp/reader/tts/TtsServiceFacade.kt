@@ -5,6 +5,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.readium.r2.shared.ExperimentalReadiumApi
 
+/**
+ * Enables to try to close a session without starting the [TtsService] if it is not started.
+ */
 @OptIn(ExperimentalReadiumApi::class)
 class TtsServiceFacade(
     private val application: Application

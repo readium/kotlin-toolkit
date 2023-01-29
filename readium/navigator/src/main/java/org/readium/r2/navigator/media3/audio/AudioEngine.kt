@@ -14,8 +14,8 @@ import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
-interface AudioEngine<S : Configurable.Settings, P: Configurable.Preferences<P>, E : AudioEngine.Error>
-    : Configurable<S, P> {
+interface AudioEngine<S : Configurable.Settings, P : Configurable.Preferences<P>, E : AudioEngine.Error> :
+    Configurable<S, P> {
 
     interface Error
 

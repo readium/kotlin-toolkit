@@ -12,6 +12,13 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.util.Language
 
+/**
+ * Editor for a set of [AndroidTtsPreferences].
+ *
+ * Use [AndroidTtsPreferencesEditor] to assist you in building a preferences user interface or modifying
+ * existing preferences. It includes rules for adjusting preferences, such as the supported values
+ * or ranges.
+ */
 @ExperimentalReadiumApi
 class AndroidTtsPreferencesEditor(
     initialPreferences: AndroidTtsPreferences,
@@ -50,7 +57,7 @@ class AndroidTtsPreferencesEditor(
             getEffectiveValue = { state.settings.pitch },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(pitch = value) } },
-            supportedRange = 0.0..Double.MAX_VALUE,
+            supportedRange = 0.1..Double.MAX_VALUE,
             progressionStrategy = DoubleIncrement(0.1),
             valueFormatter = { "${it.format(2)}x" },
         )
@@ -61,7 +68,7 @@ class AndroidTtsPreferencesEditor(
             getEffectiveValue = { state.settings.speed },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(speed = value) } },
-            supportedRange = 0.0..Double.MAX_VALUE,
+            supportedRange = 0.1..Double.MAX_VALUE,
             progressionStrategy = DoubleIncrement(0.1),
             valueFormatter = { "${it.format(2)}x" },
         )

@@ -21,7 +21,7 @@ class AndroidTtsEngineProvider(
     private val context: Context,
     private val defaultVoiceProvider: AndroidTtsEngine.DefaultVoiceProvider? = null
 ) : TtsEngineProvider<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsPreferencesEditor,
-    AndroidTtsEngine.Exception, AndroidTtsEngine.Voice> {
+        AndroidTtsEngine.Error, AndroidTtsEngine.Voice> {
 
     override suspend fun createEngine(
         publication: Publication,
@@ -66,23 +66,28 @@ class AndroidTtsEngineProvider(
         )
     }
 
-    override fun mapEngineError(error: AndroidTtsEngine.Exception): PlaybackException =
-        when (error.error) {
-            AndroidTtsEngine.EngineError.Unknown ->
-                PlaybackException(error.message, error.cause, ERROR_CODE_UNSPECIFIED)
-            AndroidTtsEngine.EngineError.InvalidRequest ->
-                PlaybackException(error.message, error.cause, ERROR_CODE_IO_BAD_HTTP_STATUS)
-            AndroidTtsEngine.EngineError.Network ->
-                PlaybackException(error.message, error.cause, ERROR_CODE_IO_NETWORK_CONNECTION_FAILED)
-            AndroidTtsEngine.EngineError.NetworkTimeout ->
-                PlaybackException(error.message, error.cause, ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT)
-            AndroidTtsEngine.EngineError.NotInstalledYet ->
-                PlaybackException(error.message, error.cause, ERROR_CODE_UNSPECIFIED)
-            AndroidTtsEngine.EngineError.Output ->
-                PlaybackException(error.message, error.cause, ERROR_CODE_UNSPECIFIED)
-            AndroidTtsEngine.EngineError.Service ->
-                PlaybackException(error.message, error.cause, ERROR_CODE_UNSPECIFIED)
-            AndroidTtsEngine.EngineError.Synthesis ->
-                PlaybackException(error.message, error.cause, ERROR_CODE_UNSPECIFIED)
+    override fun mapEngineError(error: AndroidTtsEngine.Error): PlaybackException {
+        val errorCode = when (error.kind) {
+            AndroidTtsEngine.Error.Kind.Unknown ->
+                ERROR_CODE_UNSPECIFIED
+            AndroidTtsEngine.Error.Kind.InvalidRequest ->
+                ERROR_CODE_IO_BAD_HTTP_STATUS
+            AndroidTtsEngine.Error.Kind.Network ->
+                ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
+            AndroidTtsEngine.Error.Kind.NetworkTimeout ->
+                ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT
+            AndroidTtsEngine.Error.Kind.NotInstalledYet ->
+                ERROR_CODE_UNSPECIFIED
+            AndroidTtsEngine.Error.Kind.Output ->
+                ERROR_CODE_UNSPECIFIED
+            AndroidTtsEngine.Error.Kind.Service ->
+                ERROR_CODE_UNSPECIFIED
+            AndroidTtsEngine.Error.Kind.Synthesis ->
+                ERROR_CODE_UNSPECIFIED
         }
+
+        val message = "Android TTS engine error: ${error.kind.code}"
+
+        return PlaybackException(message, null, errorCode)
+    }
 }

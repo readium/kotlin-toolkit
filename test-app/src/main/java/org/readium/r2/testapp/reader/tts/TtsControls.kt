@@ -34,9 +34,9 @@ import org.readium.r2.testapp.utils.extensions.asStateWhenStarted
  */
 @Composable
 fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
-    val showControls by model.state.asStateWhenStarted { it.showControls }
-    val isPlaying by model.state.asStateWhenStarted { it.isPlaying }
-    val editor by model.editor.collectAsState()
+    val showControls by model.showControls.asStateWhenStarted()
+    val isPlaying by model.isPlaying.asStateWhenStarted()
+    val editor by model.editor.asStateWhenStarted()
 
     if (showControls) {
         TtsControls(

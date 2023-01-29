@@ -6,8 +6,10 @@
 
 package org.readium.r2.navigator.media3.tts.android
 
+import androidx.compose.ui.text.intl.Locale
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.util.Language
 
 @ExperimentalReadiumApi
 internal class AndroidTtsSettingsResolver(
@@ -15,9 +17,12 @@ internal class AndroidTtsSettingsResolver(
 ) {
 
     fun settings(preferences: AndroidTtsPreferences): AndroidTtsSettings {
+        val language = preferences.language
+            ?: metadata.language
+            ?: Language(Locale.current.toLanguageTag())
 
         return AndroidTtsSettings(
-            language = preferences.language ?: metadata.language,
+            language = language,
             voices = preferences.voices ?: emptyMap(),
             pitch = preferences.pitch ?: 1.0,
             speed = preferences.speed ?: 1.0,

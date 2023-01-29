@@ -6,10 +6,10 @@
 
 package org.readium.r2.testapp.reader
 
-import androidx.datastore.preferences.core.Preferences as JetpackPreferences
 import android.app.Activity
 import android.app.Application
 import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences as JetpackPreferences
 import java.io.File
 import org.json.JSONObject
 import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider

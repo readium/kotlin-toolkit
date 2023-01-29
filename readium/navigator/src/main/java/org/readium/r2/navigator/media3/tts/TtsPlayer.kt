@@ -6,16 +6,21 @@
 
 package org.readium.r2.navigator.media3.tts
 
-import kotlinx.coroutines.*
+import kotlin.coroutines.coroutineContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
-import timber.log.Timber
 
 @ExperimentalReadiumApi
 internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
@@ -39,8 +44,6 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
                 ?: return null
 
             val ttsEngineFacade = TtsEngineFacade(engine)
-            ttsEngineFacade.submitPreferences(initialPreferences)
-            contentIterator.language = ttsEngineFacade.settings.value.language
 
             return TtsPlayer(ttsEngineFacade, contentIterator, initialContext, initialPreferences)
         }
@@ -57,9 +60,15 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
                     ended = false
                 )
             } else {
+                val actualCurrentUtterance = previousUtterance ?: return null
+                val actualPreviousUtterance = previousUtterance()
+
+                // Go back to the end of the iterator.
+                nextUtterance()
+
                 Context(
-                    previousUtterance = previousUtterance(),
-                    currentUtterance = nextUtterance() ?: return null,
+                    previousUtterance = actualPreviousUtterance,
+                    currentUtterance = actualCurrentUtterance,
                     nextUtterance = null,
                     ended = true
                 )
@@ -113,6 +122,15 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     private val coroutineScope: CoroutineScope =
         MainScope()
 
+    private var context: Context =
+        initialContext
+
+    private var playbackJob: Job? =
+        null
+
+    private val mutex: Mutex =
+        Mutex()
+
     private val playbackMutable: MutableStateFlow<Playback> =
         MutableStateFlow(
             Playback(
@@ -125,14 +143,10 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     private val utteranceMutable: MutableStateFlow<Utterance> =
         MutableStateFlow(initialContext.currentUtterance.ttsPlayerUtterance())
 
-    private var context: Context =
-        initialContext
+    override val settings: StateFlow<S> =
+        engineFacade.settings
 
-    private var playbackJob: Job? = null
-
-    private val mutex = Mutex()
-
-    val voices: Set<V> get() =
+    val voices: Set<V> =
         engineFacade.voices
 
     val playback: StateFlow<Playback> =
@@ -140,6 +154,13 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     val utterance: StateFlow<Utterance> =
         utteranceMutable.asStateFlow()
+
+    var lastPreferences: P =
+        initialPreferences
+
+    init {
+        submitPreferences(initialPreferences)
+    }
 
     fun play() {
         coroutineScope.launch {
@@ -167,9 +188,23 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             return
         }
 
-        playbackJob?.cancelAndJoin()
         playbackMutable.value = playbackMutable.value.copy(playWhenReady = false)
         utteranceMutable.value = utteranceMutable.value.copy(range = null)
+        playbackJob?.cancelAndJoin()
+        Unit
+    }
+
+    fun tryRecover() {
+        coroutineScope.launch {
+            tryRecoverAsync()
+        }
+    }
+
+    private suspend fun tryRecoverAsync() = mutex.withLock {
+        playbackMutable.value = playbackMutable.value.copy(error = null)
+        utteranceMutable.value = utteranceMutable.value.copy(range = null)
+        playbackJob?.join()
+        playIfReadyAndNotPaused()
     }
 
     fun go(locator: Locator) {
@@ -179,9 +214,10 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     }
 
     private suspend fun goAsync(locator: Locator) = mutex.withLock {
-        playbackJob?.cancelAndJoin()
+        playbackJob?.cancel()
         contentIterator.seek(locator)
         resetContext()
+        playbackJob?.join()
         playIfReadyAndNotPaused()
     }
 
@@ -192,9 +228,10 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     }
 
     private suspend fun goAsync(resourceIndex: Int) = mutex.withLock {
-        playbackJob?.cancelAndJoin()
+        playbackJob?.cancel()
         contentIterator.seekToResource(resourceIndex)
         resetContext()
+        playbackJob?.join()
         playIfReadyAndNotPaused()
     }
 
@@ -205,10 +242,12 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     }
 
     private suspend fun restartUtteranceAsync() = mutex.withLock {
-        playbackJob?.cancelAndJoin()
+        playbackJob?.cancel()
         if (playbackMutable.value.state == Playback.State.Ended) {
             playbackMutable.value = playbackMutable.value.copy(state = Playback.State.Ready)
         }
+        utteranceMutable.value = utteranceMutable.value.copy(range = null)
+        playbackJob?.join()
         playIfReadyAndNotPaused()
     }
 
@@ -226,8 +265,9 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             return
         }
 
-        playbackJob?.cancelAndJoin()
+        playbackJob?.cancel()
         tryLoadNextContext()
+        playbackJob?.join()
         playIfReadyAndNotPaused()
     }
 
@@ -244,8 +284,9 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         if (context.previousUtterance == null) {
             return
         }
-        playbackJob?.cancelAndJoin()
+        playbackJob?.cancel()
         tryLoadPreviousContext()
+        playbackJob?.join()
         playIfReadyAndNotPaused()
     }
 
@@ -263,10 +304,11 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             return
         }
 
-        playbackJob?.cancelAndJoin()
+        playbackJob?.cancel()
         val currentIndex = utteranceMutable.value.position.resourceIndex
         contentIterator.seekToResource(currentIndex + 1)
         resetContext()
+        playbackJob?.join()
         playIfReadyAndNotPaused()
     }
 
@@ -283,10 +325,11 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         if (!hasPreviousResource()) {
             return
         }
-        playbackJob?.cancelAndJoin()
+        playbackJob?.cancel()
         val currentIndex = utteranceMutable.value.position.resourceIndex
         contentIterator.seekToResource(currentIndex - 1)
         resetContext()
+        playbackJob?.join()
         playIfReadyAndNotPaused()
     }
 
@@ -301,31 +344,32 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private suspend fun tryLoadPreviousContext() {
         val contextNow = context
-        // Get previously nextUtterance once more
-        contentIterator.previousUtterance()
 
         // Get previously currentUtterance once more
-        val currentUtterance = checkNotNull(contentIterator.previousUtterance())
+        contentIterator.previousUtterance()
 
-        // Get previous utterance
+        // Get previously previousUtterance once more
+        contentIterator.previousUtterance()
+
+        // Get new previous utterance
         val previousUtterance = contentIterator.previousUtterance()
 
-        // Get to nextUtterance position
+        // Go to currentUtterance position
         contentIterator.nextUtterance()
+
+        // Go to nextUtterance position
         contentIterator.nextUtterance()
 
         context = Context(
             previousUtterance = previousUtterance,
-            currentUtterance = currentUtterance,
+            currentUtterance = checkNotNull(contextNow.previousUtterance),
             nextUtterance = contextNow.currentUtterance
         )
         utteranceMutable.value = context.currentUtterance.ttsPlayerUtterance()
     }
 
     private suspend fun tryLoadNextContext() {
-        Timber.d("tryLoadNextContext")
         val contextNow = context
-        Timber.d("contextNow $contextNow")
 
         if (contextNow.nextUtterance == null) {
             onEndReached()
@@ -335,9 +379,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
                 currentUtterance = contextNow.nextUtterance,
                 nextUtterance = contentIterator.nextUtterance()
             )
-            Timber.d("newContext $context")
             utteranceMutable.value = context.currentUtterance.ttsPlayerUtterance()
-            Timber.d("utterance ${utteranceMutable.value.text}")
             if (playbackMutable.value.state == Playback.State.Ended) {
                 playbackMutable.value = playbackMutable.value.copy(state = Playback.State.Ready)
             }
@@ -358,18 +400,28 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     }
 
     private suspend fun playContinuous() {
-        engineFacade.speak(context.currentUtterance.text, context.currentUtterance.language, ::onRangeChanged)
-            ?.let { exception -> onEngineError(exception) }
-        mutex.withLock { tryLoadNextContext() }
+        if (!coroutineContext.isActive) {
+            return
+        }
+
+        val error = speakUtterance(context.currentUtterance)
+
+        mutex.withLock {
+            error?.let { exception -> onEngineError(exception) }
+            tryLoadNextContext()
+        }
         playContinuous()
     }
 
+    private suspend fun speakUtterance(utterance: TtsContentIterator.Utterance): E? =
+        engineFacade.speak(utterance.text, utterance.language, ::onRangeChanged)
+
     private fun onEngineError(error: E) {
-        Timber.e("onEngineError $error")
         playbackMutable.value = playbackMutable.value.copy(
             state = Playback.State.Error,
             error = Error.EngineError(error)
         )
+        playbackJob?.cancel()
     }
 
     private fun onRangeChanged(range: IntRange) {
@@ -381,15 +433,10 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         engineFacade.close()
     }
 
-    var lastPreferences: P =
-        initialPreferences
-
-    override val settings: StateFlow<S>
-        get() = engineFacade.settings
-
     override fun submitPreferences(preferences: P) {
         lastPreferences = preferences
         engineFacade.submitPreferences(preferences)
+        contentIterator.language = engineFacade.settings.value.language
     }
 
     private fun isPlaying() =

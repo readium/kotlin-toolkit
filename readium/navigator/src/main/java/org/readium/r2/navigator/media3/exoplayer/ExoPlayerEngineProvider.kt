@@ -15,7 +15,7 @@ import org.readium.r2.shared.publication.Publication
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class ExoPlayerEngineProvider() : AudioEngineProvider<ExoPlayerSettings, ExoPlayerPreferences, ExoPlayerPreferencesEditor, ExoPlayerEngine.Error> {
 
-    override suspend fun createEngine(publication: Publication):ExoPlayerEngine {
+    override suspend fun createEngine(publication: Publication): ExoPlayerEngine {
         TODO("Not yet implemented")
     }
 

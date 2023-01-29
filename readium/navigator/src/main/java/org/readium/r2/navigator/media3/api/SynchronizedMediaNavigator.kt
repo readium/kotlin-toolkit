@@ -11,8 +11,8 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 
 @ExperimentalReadiumApi
-interface SynchronizedMediaNavigator<P: MediaNavigator.Position, E : MediaNavigator.Error>
-    : MediaNavigator<P, E> {
+interface SynchronizedMediaNavigator<P : MediaNavigator.Position, E : MediaNavigator.Error> :
+    MediaNavigator<P, E> {
 
     interface Utterance<P : MediaNavigator.Position> {
         val text: String
@@ -21,10 +21,9 @@ interface SynchronizedMediaNavigator<P: MediaNavigator.Position, E : MediaNaviga
 
         val range: IntRange?
 
-        val utteranceLocator: Locator
+        val utteranceHighlight: Locator
 
-        val rangeLocator: Locator? get() = range
-            ?.let { utteranceLocator.copy(text = utteranceLocator.text.substring(it)) }
+        val tokenHighlight: Locator?
     }
 
     val utterance: StateFlow<Utterance<P>>

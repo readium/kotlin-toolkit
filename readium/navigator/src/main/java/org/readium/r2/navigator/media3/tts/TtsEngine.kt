@@ -20,19 +20,31 @@ interface TtsEngine<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     interface Preferences<P : Configurable.Preferences<P>> : Configurable.Preferences<P> {
 
+        /**
+         * The default language to use when no language information is passed to [speak].
+         */
         val language: Language?
     }
 
     interface Settings : Configurable.Settings {
 
+        /**
+         * The default language to use when no language information is passed to [speak].
+         */
         val language: Language?
     }
 
     interface Voice {
 
+        /**
+         * The voice's language.
+         * */
         val language: Language
     }
 
+    /**
+     * Marker interface for the errors that the [TtsEngine] returns.
+     */
     interface Error
 
     /**
@@ -40,24 +52,59 @@ interface TtsEngine<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
      */
     interface Listener<E : Error> {
 
+        /**
+         * Called when the utterance with the given id starts as perceived by the caller.
+         */
         fun onStart(requestId: String)
 
+        /**
+         * Called when the [TtsEngine] is about to speak the specified [range] of the utterance with
+         * the given id.
+         *
+         * This callback may not be called if the [TtsEngine] does not provide range information.
+         */
         fun onRange(requestId: String, range: IntRange)
 
+        /**
+         * Called if the utterance with the given id has been stopped while in progress
+         * by a call to [stop].
+         */
         fun onInterrupted(requestId: String)
 
+        /**
+         * Called when the utterance with the given id has been flushed from the synthesis queue
+         * by a call to [stop].
+         */
         fun onFlushed(requestId: String)
 
+        /**
+         * Called when the utterance with the given id has successfully completed processing.
+         */
         fun onDone(requestId: String)
 
+        /**
+         * Called when an error has occurred during processing of te utterance with the given id.
+         */
         fun onError(requestId: String, error: E)
     }
 
+    /**
+     * Sets of voices available with this [TtsEngine].
+     */
     val voices: Set<V>
 
+    /**
+     * Submits a new speak request.
+     */
     fun speak(requestId: String, text: String, language: Language?)
 
+    /**
+     * Stops the [TtsEngine].
+     */
     fun stop()
 
+    /**
+     * Sets a new listener or removes the current one.
+     */
     fun setListener(listener: Listener<E>?)
 }

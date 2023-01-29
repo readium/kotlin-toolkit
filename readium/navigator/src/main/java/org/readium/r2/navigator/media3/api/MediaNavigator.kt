@@ -13,7 +13,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Closeable
 
 @ExperimentalReadiumApi
-interface MediaNavigator<P: MediaNavigator.Position, E : MediaNavigator.Error> : Navigator, Closeable {
+interface MediaNavigator<P : MediaNavigator.Position, E : MediaNavigator.Error> : Navigator, Closeable {
 
     /**
      *  Marker interface for the [position] flow.

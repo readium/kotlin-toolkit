@@ -22,7 +22,7 @@ internal class TtsEngineFacade<S : TtsEngine.Settings, P : TtsEngine.Preferences
 ) : Configurable<S, P> by engine {
 
     init {
-        val listener = TtsEngineListener()
+        val listener = EngineListener()
         engine.setListener(listener)
     }
 
@@ -34,8 +34,8 @@ internal class TtsEngineFacade<S : TtsEngine.Settings, P : TtsEngine.Preferences
     suspend fun speak(text: String, language: Language?, onRange: (IntRange) -> Unit): E? =
         suspendCancellableCoroutine { continuation ->
             continuation.invokeOnCancellation { engine.stop() }
-            val id = UUID.randomUUID().toString()
             currentTask?.continuation?.cancel()
+            val id = UUID.randomUUID().toString()
             currentTask = UtteranceTask(id, continuation, onRange)
             engine.speak(id, text, language)
         }
@@ -51,7 +51,7 @@ internal class TtsEngineFacade<S : TtsEngine.Settings, P : TtsEngine.Preferences
         val onRange: (IntRange) -> Unit
     )
 
-    private inner class TtsEngineListener : TtsEngine.Listener<E> {
+    private inner class EngineListener : TtsEngine.Listener<E> {
 
         override fun onStart(requestId: String) {
         }

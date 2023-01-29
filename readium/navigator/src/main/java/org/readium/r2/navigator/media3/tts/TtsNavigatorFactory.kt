@@ -7,9 +7,13 @@
 package org.readium.r2.navigator.media3.tts
 
 import android.app.Application
-import org.readium.r2.navigator.media3.tts.android.*
 import org.readium.r2.navigator.media3.api.DefaultMediaMetadataFactory
 import org.readium.r2.navigator.media3.api.MediaMetadataProvider
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngineProvider
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferencesEditor
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsSettings
 import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
@@ -35,8 +39,8 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
             tokenizerFactory: (defaultLanguage: Language?) -> ContentTokenizer = defaultTokenizerFactory,
             metadataProvider: MediaMetadataProvider = defaultMediaMetadataProvider,
             defaultVoiceProvider: AndroidTtsEngine.DefaultVoiceProvider? = null
-        ): TtsNavigatorFactory<AndroidTtsSettings,AndroidTtsPreferences,
-            AndroidTtsPreferencesEditor, AndroidTtsEngine.Exception, AndroidTtsEngine.Voice>? {
+        ): TtsNavigatorFactory<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsPreferencesEditor,
+            AndroidTtsEngine.Error, AndroidTtsEngine.Voice>? {
 
             val engineProvider = AndroidTtsEngineProvider(application, defaultVoiceProvider)
 
@@ -67,13 +71,13 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
             )
         }
 
-        suspend fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
+        private suspend fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
             F : TtsEngine.Error, V : TtsEngine.Voice> createNavigatorFactory(
             application: Application,
             publication: Publication,
             ttsEngineProvider: TtsEngineProvider<S, P, E, F, V>,
-            tokenizerFactory: (defaultLanguage: Language?) -> ContentTokenizer = defaultTokenizerFactory,
-            metadataProvider: MediaMetadataProvider = defaultMediaMetadataProvider
+            tokenizerFactory: (defaultLanguage: Language?) -> ContentTokenizer,
+            metadataProvider: MediaMetadataProvider
         ): TtsNavigatorFactory<S, P, E, F, V>? {
 
             publication.content()

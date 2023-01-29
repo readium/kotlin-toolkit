@@ -52,7 +52,6 @@ import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.utils.*
 import org.readium.r2.testapp.utils.extensions.confirmDialog
 import org.readium.r2.testapp.utils.extensions.throttleLatest
-import timber.log.Timber
 
 /*
  * Base reader fragment class
@@ -187,7 +186,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
             // Navigate to the currently spoken word.
             // This will automatically turn pages when needed.
-            state.map { it.playingWordRange }
+            position
                 .filterNotNull()
                 // Improve performances by throttling the moves to maximum one per second.
                 .throttleLatest(1.seconds)
@@ -198,8 +197,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
             // Prevent interacting with the publication (including page turns) while the TTS is
             // playing.
-            state.map { it.isPlaying }
-                .distinctUntilChanged()
+            isPlaying
                 .onEach { isPlaying ->
                     disableTouches = isPlaying
                 }
@@ -207,10 +205,8 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
             // Highlight the currently spoken utterance.
             (navigator as? DecorableNavigator)?.let { navigator ->
-                state.map { it.playingUtterance }
-                    .distinctUntilChanged()
+                highlight
                     .onEach { locator ->
-                        Timber.d("Highlighting $locator")
                         val decoration = locator?.let {
                             Decoration(
                                 id = "tts",
@@ -223,8 +219,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                     .launchIn(scope)
             }
 
-            state.map { it.showControls }
-                .distinctUntilChanged()
+            showControls
                 .onEach { showControls ->
                     preventProgressionSaving = showControls
                 }

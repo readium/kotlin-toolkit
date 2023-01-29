@@ -20,7 +20,7 @@ class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>,
     private val mediaEngine: AudioEngine<S, P, E>
 ) : MediaNavigator<AudioNavigator.Position, AudioNavigator.Error>, Configurable<S, P> by mediaEngine {
 
-    class Position: MediaNavigator.Position
+    class Position : MediaNavigator.Position
 
     class Error : MediaNavigator.Error
 

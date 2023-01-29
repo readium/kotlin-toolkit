@@ -16,12 +16,11 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.media3.tts.TtsNavigator
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferencesEditor
-import org.readium.r2.navigator.media3.api.MediaNavigator
-import org.readium.r2.navigator.media3.api.SynchronizedMediaNavigator
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
@@ -47,7 +46,7 @@ class TtsViewModel private constructor(
     private val ttsServiceFacade: TtsServiceFacade,
     private val preferencesManager: PreferencesManager<AndroidTtsPreferences>,
     private val createPreferencesEditor: (AndroidTtsPreferences) -> AndroidTtsPreferencesEditor
-) {
+) : TtsNavigator.Listener {
 
     companion object {
         /**
@@ -74,24 +73,6 @@ class TtsViewModel private constructor(
         }
     }
 
-    /**
-     * @param showControls Whether the TTS was enabled by the user.
-     * @param isPlaying Whether the TTS is currently speaking.
-     * @param playingWordRange Locator to the currently spoken word.
-     * @param playingUtterance Locator for the currently spoken utterance (e.g. sentence).
-     */
-    data class State(
-        val showControls: Boolean = false,
-        val isPlaying: Boolean = false,
-        val playingWordRange: Locator? = null,
-        val playingUtterance: Locator? = null,
-    )
-
-    data class Binding(
-        val playbackJob: Job,
-        val submitSettingsJob: Job
-    )
-
     sealed class Event {
         /**
          * Emitted when the [TtsNavigator] fails with an error.
@@ -104,31 +85,50 @@ class TtsViewModel private constructor(
         class OnMissingVoiceData(val language: Language) : Event()
     }
 
+    private var binding: Deferred<Job?> =
+        viewModelScope.async {
+            ttsServiceFacade.getSession()
+                ?.let { bindSession(it) }
+        }
+
+    private val _showControls: MutableStateFlow<Boolean> =
+        MutableStateFlow(navigatorNow != null)
+
+    private val _isPlaying: MutableStateFlow<Boolean> =
+        MutableStateFlow(navigatorNow?.playback?.value?.playWhenReady ?: false)
+
+    private val _position: MutableStateFlow<Locator?> =
+        MutableStateFlow(navigatorNow?.currentLocator?.value)
+
+    private val _highlight: MutableStateFlow<Locator?> =
+        MutableStateFlow(navigatorNow?.utterance?.value?.utteranceHighlight)
+
+    private val _events: Channel<Event> =
+        Channel(Channel.BUFFERED)
+
     val editor: StateFlow<AndroidTtsPreferencesEditor> = preferencesManager.preferences
         .mapStateIn(viewModelScope, createPreferencesEditor)
 
-    /**
-     * Current state of the view model.
-     */
-    private val _state: MutableStateFlow<State> = MutableStateFlow(
-        stateFromPlayback(navigatorNow?.playback?.value, navigatorNow?.utterance?.value)
-    )
+    val showControls: StateFlow<Boolean> =
+        _showControls.asStateFlow()
 
-    val state: StateFlow<State> = _state.asStateFlow()
+    val isPlaying: StateFlow<Boolean> =
+        _isPlaying.asStateFlow()
 
-    private val _events: Channel<Event> = Channel(Channel.BUFFERED)
-    val events: Flow<Event> = _events.receiveAsFlow()
+    val position: StateFlow<Locator?> =
+        _position.asStateFlow()
+
+    val highlight: StateFlow<Locator?> =
+        _highlight.asStateFlow()
+
+    val events: Flow<Event> =
+        _events.receiveAsFlow()
 
     private val navigatorNow: AndroidTtsNavigator? get() =
         ttsServiceFacade.sessionNow()?.navigator
 
     val voices: Set<AndroidTtsEngine.Voice> get() =
         navigatorNow!!.voices
-
-    private var binding: Deferred<Binding?> =
-        viewModelScope.async {
-            ttsServiceFacade.getSession()?.let { bindSession(it) }
-        }
 
     /**
      * Starts the TTS using the first visible locator in the given [navigator].
@@ -147,21 +147,8 @@ class TtsViewModel private constructor(
     private suspend fun openSession(navigator: Navigator): TtsService.Session {
         val start = (navigator as? VisualNavigator)?.firstVisibleElementLocator()
 
-        val listener = object : TtsNavigator.Listener {
-
-            override fun onStopRequested() {
-                stop()
-            }
-
-            override fun onMissingLanguageData(language: Language) {
-                viewModelScope.launch {
-                    _events.send(Event.OnMissingVoiceData(language))
-                }
-            }
-        }
-
         val ttsNavigator = ttsNavigatorFactory.createNavigator(
-            listener,
+            this,
             preferencesManager.preferences.value,
             start
         )
@@ -174,53 +161,45 @@ class TtsViewModel private constructor(
 
     private fun bindSession(
         ttsSession: TtsService.Session
-    ): Binding {
-        val playbackJob = ttsSession.navigator.playback
-            .onEach {  playback ->
+    ): Job {
+        val job = Job()
+        val scope = viewModelScope + job
+
+        _showControls.value = true
+
+        ttsSession.navigator.playback
+            .onEach { playback ->
+                if (playback.state == MediaNavigator.State.Ended) {
+                    stop()
+                }
+
+                _isPlaying.value = playback.playWhenReady
                 playback.error?.let { onPlaybackError(it) }
-            }.combine(ttsSession.navigator.utterance) { playback, utterance ->
-                stateFromPlayback(playback, utterance)
-            }.onEach { state ->
-                _state.value = state
-            }.launchIn(viewModelScope)
+            }.launchIn(scope)
 
-        val preferencesJob = preferencesManager.preferences
+        ttsSession.navigator.utterance
+            .onEach { utterance ->
+                _highlight.value = utterance.utteranceHighlight
+            }.launchIn(scope)
+
+        preferencesManager.preferences
             .onEach { ttsSession.navigator.submitPreferences(it) }
-            .launchIn(viewModelScope)
+            .launchIn(scope)
 
-        return Binding(playbackJob, preferencesJob)
-    }
+        ttsSession.navigator.currentLocator
+            .onEach { _position.value = it }
+            .launchIn(scope)
 
-    private fun stateFromPlayback(
-        playback: MediaNavigator.Playback<TtsNavigator.Error>?,
-        utterance: SynchronizedMediaNavigator.Utterance<TtsNavigator.Position>?
-    ): State {
-        if (playback == null || utterance == null)
-            return State()
-
-        return State(
-            showControls = playback.state != MediaNavigator.State.Ended,
-            isPlaying = playback.playWhenReady,
-            playingWordRange = utterance.rangeLocator,
-            playingUtterance = utterance.utteranceLocator
-        )
+        return job
     }
 
     fun stop() {
         viewModelScope.launch {
-            binding.await()?.apply {
-                playbackJob.cancel()
-                submitSettingsJob.cancel()
-            }
-
+            binding.cancelAndJoin()
+            _highlight.value = null
+            _showControls.value = false
+            _isPlaying.value = false
             ttsServiceFacade.closeSession()
-
-            _state.value = State(
-                showControls = false,
-                isPlaying = false,
-                playingWordRange = null,
-                playingUtterance = null,
-            )
         }
     }
 
@@ -269,14 +248,24 @@ class TtsViewModel private constructor(
         }
     }
 
+    override fun onStopRequested() {
+        stop()
+    }
+
+    override fun onMissingLanguageData(language: Language) {
+        viewModelScope.launch {
+            _events.send(Event.OnMissingVoiceData(language))
+        }
+    }
+
     private fun onPlaybackError(error: TtsNavigator.Error) {
         val exception = when (error) {
             is TtsNavigator.Error.ContentError -> {
-                UserException(R.string.tts_error_other)
+                UserException(R.string.tts_error_other, cause = error.exception)
             }
             is TtsNavigator.Error.EngineError<*> -> {
-                when ((error.error as AndroidTtsEngine.Exception).error) {
-                    AndroidTtsEngine.EngineError.Network ->
+                when ((error.error as AndroidTtsEngine.Error).kind) {
+                    AndroidTtsEngine.Error.Kind.Network ->
                         UserException(R.string.tts_error_network)
                     else ->
                         UserException(R.string.tts_error_other)

@@ -10,10 +10,14 @@ import org.readium.r2.navigator.media3.tts.TtsEngine
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
 
+/* Settings values of the TTS navigator with the Android built-in engine.
+*
+* @see AndroidTtsPreferences
+*/
 @ExperimentalReadiumApi
 data class AndroidTtsSettings(
-    override val language: Language?,
-    val voices: Map<Language, String>,
+    override val language: Language,
     val pitch: Double,
     val speed: Double,
+    val voices: Map<Language, String>,
 ) : TtsEngine.Settings

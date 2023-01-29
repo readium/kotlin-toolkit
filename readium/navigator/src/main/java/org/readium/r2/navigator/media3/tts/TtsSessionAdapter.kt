@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
-import timber.log.Timber
 
 @ExperimentalReadiumApi
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
@@ -58,7 +57,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     private val volumeManager = TtsStreamVolumeManager(
         application,
-        Handler(Looper.getMainLooper()),
+        Handler(applicationLooper),
         StreamVolumeManagerListener()
     )
 
@@ -114,12 +113,10 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun addListener(listener: Listener) {
-        Timber.d("addListener")
         listeners.add(listener)
     }
 
     override fun removeListener(listener: Listener) {
-        Timber.d("removeListener")
         listeners.remove(listener)
     }
 
@@ -187,6 +184,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun prepare() {
+        ttsPlayer.tryRecover()
     }
 
     override fun getPlaybackState(): Int {
@@ -194,7 +192,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun getPlaybackSuppressionReason(): Int {
-        return PLAYBACK_SUPPRESSION_REASON_NONE // TODO
+        return PLAYBACK_SUPPRESSION_REASON_NONE
     }
 
     override fun isPlaying(): Boolean {
@@ -205,7 +203,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun getPlayerError(): PlaybackException? {
-        return null // TODO
+        return lastPlayback.error?.toPlaybackException()
     }
 
     override fun play() {
@@ -229,7 +227,6 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun setRepeatMode(repeatMode: Int) {
-        throw NotImplementedError()
     }
 
     override fun getRepeatMode(): Int {
@@ -237,7 +234,6 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun setShuffleModeEnabled(shuffleModeEnabled: Boolean) {
-        throw NotImplementedError()
     }
 
     override fun getShuffleModeEnabled(): Boolean {
@@ -413,11 +409,11 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun setTrackSelectionParameters(parameters: TrackSelectionParameters) {
-        throw NotImplementedError()
     }
 
     override fun getMediaMetadata(): MediaMetadata {
-        return currentTimeline.getWindow(currentMediaItemIndex, window).mediaItem.mediaMetadata
+        return currentTimeline.getWindow(currentMediaItemIndex, window)
+            .mediaItem.mediaMetadata
     }
 
     override fun getPlaylistMetadata(): MediaMetadata {
@@ -430,10 +426,10 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     override fun getCurrentManifest(): Any? {
         val timeline = currentTimeline
-        return if (timeline.isEmpty) null else timeline.getWindow(
-            currentMediaItemIndex,
-            window
-        ).manifest
+        return if (timeline.isEmpty)
+            null
+        else
+            timeline.getWindow(currentMediaItemIndex, window).manifest
     }
 
     override fun getCurrentTimeline(): Timeline {
@@ -461,9 +457,14 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     override fun getNextMediaItemIndex(): Int {
         val timeline = currentTimeline
-        return if (timeline.isEmpty) INDEX_UNSET else timeline.getNextWindowIndex(
-            currentMediaItemIndex, getRepeatModeForNavigation(), shuffleModeEnabled
-        )
+        return if (timeline.isEmpty)
+            INDEX_UNSET
+        else
+            timeline.getNextWindowIndex(
+                currentMediaItemIndex,
+                getRepeatModeForNavigation(),
+                shuffleModeEnabled
+            )
     }
 
     @Deprecated("Deprecated in Java", ReplaceWith("previousMediaItemIndex"))
@@ -473,9 +474,12 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     override fun getPreviousMediaItemIndex(): Int {
         val timeline = currentTimeline
-        return if (timeline.isEmpty) INDEX_UNSET else timeline.getPreviousWindowIndex(
-            currentMediaItemIndex, getRepeatModeForNavigation(), shuffleModeEnabled
-        )
+        return if (timeline.isEmpty)
+            INDEX_UNSET
+        else
+            timeline.getPreviousWindowIndex(
+                currentMediaItemIndex, getRepeatModeForNavigation(), shuffleModeEnabled
+            )
     }
 
     override fun getCurrentMediaItem(): MediaItem? {
@@ -579,9 +583,10 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     override fun getContentDuration(): Long {
         val timeline = currentTimeline
-        return if (timeline.isEmpty) TIME_UNSET else timeline.getWindow(
-            currentMediaItemIndex, window
-        ).durationMs
+        return if (timeline.isEmpty)
+            TIME_UNSET
+        else
+            timeline.getWindow(currentMediaItemIndex, window).durationMs
     }
 
     override fun getContentPosition(): Long {

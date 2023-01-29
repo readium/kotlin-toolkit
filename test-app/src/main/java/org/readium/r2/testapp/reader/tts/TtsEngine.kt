@@ -6,16 +6,16 @@
 
 package org.readium.r2.testapp.reader.tts
 
+import org.readium.r2.navigator.media3.tts.TtsNavigator
+import org.readium.r2.navigator.media3.tts.TtsNavigatorFactory
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferencesEditor
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsSettings
-import org.readium.r2.navigator.media3.tts.TtsNavigator
-import org.readium.r2.navigator.media3.tts.TtsNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @OptIn(ExperimentalReadiumApi::class)
-typealias AndroidTtsNavigatorFactory = TtsNavigatorFactory<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsPreferencesEditor, AndroidTtsEngine.Exception, AndroidTtsEngine.Voice>
+typealias AndroidTtsNavigatorFactory = TtsNavigatorFactory<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsPreferencesEditor, AndroidTtsEngine.Error, AndroidTtsEngine.Voice>
 
 @OptIn(ExperimentalReadiumApi::class)
-typealias AndroidTtsNavigator = TtsNavigator<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsEngine.Exception, AndroidTtsEngine.Voice>
+typealias AndroidTtsNavigator = TtsNavigator<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsEngine.Error, AndroidTtsEngine.Voice>

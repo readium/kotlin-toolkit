@@ -12,8 +12,8 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.content.Content
+import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.content.ContentTokenizer
-import org.readium.r2.shared.publication.services.content.content
 import org.readium.r2.shared.util.CursorList
 import org.readium.r2.shared.util.Language
 
@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.Language
 /**
  * A Content Iterator able to provide short utterances.
  *
- * It is not safe for several coroutines to use this at the same time.
+ * Not thread-safe.
  */
 internal class TtsContentIterator(
     private val publication: Publication,
@@ -37,6 +37,10 @@ internal class TtsContentIterator(
         val textAfter: String?,
         val language: Language?
     )
+
+    private val contentService: ContentService =
+        publication.findService(ContentService::class)
+            ?: throw IllegalStateException("No ContentService.")
 
     /**
      * Current subset of utterances with a cursor.
@@ -92,9 +96,7 @@ internal class TtsContentIterator(
      */
 
     private fun createIterator(locator: Locator?): Content.Iterator =
-        publication.content(locator)
-            ?.iterator()
-            ?: throw IllegalStateException("No ContentService.")
+        contentService.content(locator).iterator()
 
     /**
      * Advances to the previous item and returns it, or null if we reached the beginning.
