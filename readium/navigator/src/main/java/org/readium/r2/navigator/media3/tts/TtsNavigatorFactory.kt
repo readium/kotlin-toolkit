@@ -113,7 +113,7 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
         listener: TtsNavigator.Listener,
         initialPreferences: P? = null,
         initialLocator: Locator? = null
-    ): TtsNavigator<S, P, F, V> {
+    ): TtsNavigator<S, P, F, V>? {
         return TtsNavigator(
             application,
             publication,
@@ -123,7 +123,7 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
             listener,
             initialPreferences,
             initialLocator
-        )!!
+        )
     }
 
     fun createTtsPreferencesEditor(

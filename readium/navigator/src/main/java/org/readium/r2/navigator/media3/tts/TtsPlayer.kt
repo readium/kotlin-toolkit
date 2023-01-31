@@ -20,6 +20,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Locator
 
 @ExperimentalReadiumApi
@@ -40,7 +41,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             initialPreferences: P,
         ): TtsPlayer<S, P, E, V>? {
 
-            val initialContext = contentIterator.startContext()
+            val initialContext = tryOrNull { contentIterator.startContext() }
                 ?: return null
 
             val ttsEngineFacade = TtsEngineFacade(engine)
@@ -345,20 +346,28 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     private suspend fun tryLoadPreviousContext() {
         val contextNow = context
 
-        // Get previously currentUtterance once more
-        contentIterator.previousUtterance()
+        val previousUtterance =
+            try {
+                // Get previously currentUtterance once more
+                contentIterator.previousUtterance()
 
-        // Get previously previousUtterance once more
-        contentIterator.previousUtterance()
+                // Get previously previousUtterance once more
+                contentIterator.previousUtterance()
 
-        // Get new previous utterance
-        val previousUtterance = contentIterator.previousUtterance()
+                // Get new previous utterance
+                val previousUtterance = contentIterator.previousUtterance()
 
-        // Go to currentUtterance position
-        contentIterator.nextUtterance()
+                // Go to currentUtterance position
+                contentIterator.nextUtterance()
 
-        // Go to nextUtterance position
-        contentIterator.nextUtterance()
+                // Go to nextUtterance position
+                contentIterator.nextUtterance()
+
+                previousUtterance
+            } catch (e: Exception) {
+                onContentError(e)
+                return
+            }
 
         context = Context(
             previousUtterance = previousUtterance,
@@ -373,21 +382,35 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
         if (contextNow.nextUtterance == null) {
             onEndReached()
-        } else {
-            context = Context(
-                previousUtterance = contextNow.currentUtterance,
-                currentUtterance = contextNow.nextUtterance,
-                nextUtterance = contentIterator.nextUtterance()
-            )
-            utteranceMutable.value = context.currentUtterance.ttsPlayerUtterance()
-            if (playbackMutable.value.state == Playback.State.Ended) {
-                playbackMutable.value = playbackMutable.value.copy(state = Playback.State.Ready)
-            }
+            return
+        }
+
+        val nextUtterance = try {
+            contentIterator.nextUtterance()
+        } catch (e: Exception) {
+            onContentError(e)
+            return
+        }
+
+        context = Context(
+            previousUtterance = contextNow.currentUtterance,
+            currentUtterance = contextNow.nextUtterance,
+            nextUtterance = nextUtterance
+        )
+        utteranceMutable.value = context.currentUtterance.ttsPlayerUtterance()
+        if (playbackMutable.value.state == Playback.State.Ended) {
+            playbackMutable.value = playbackMutable.value.copy(state = Playback.State.Ready)
         }
     }
 
     private suspend fun resetContext() {
-        context = checkNotNull(contentIterator.startContext())
+        val startContext = try {
+            contentIterator.startContext()
+        } catch (e: Exception) {
+            onContentError(e)
+            return
+        }
+        context = checkNotNull(startContext)
         if (context.nextUtterance == null && context.ended) {
             onEndReached()
         }
@@ -420,6 +443,14 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         playbackMutable.value = playbackMutable.value.copy(
             state = Playback.State.Error,
             error = Error.EngineError(error)
+        )
+        playbackJob?.cancel()
+    }
+
+    private fun onContentError(exception: Exception) {
+        playbackMutable.value = playbackMutable.value.copy(
+            state = Playback.State.Error,
+            error = Error.ContentError(exception)
         )
         playbackJob?.cancel()
     }

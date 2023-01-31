@@ -139,19 +139,25 @@ class TtsViewModel private constructor(
                 return@launch
 
             val session = openSession(navigator)
+                ?: run {
+                    val exception = UserException(R.string.tts_error_initialization)
+                    _events.send(Event.OnError(exception))
+                    return@launch
+                }
+
             binding.cancelAndJoin()
             binding = async { bindSession(session) }
         }
     }
 
-    private suspend fun openSession(navigator: Navigator): TtsService.Session {
+    private suspend fun openSession(navigator: Navigator): TtsService.Session? {
         val start = (navigator as? VisualNavigator)?.firstVisibleElementLocator()
 
         val ttsNavigator = ttsNavigatorFactory.createNavigator(
             this,
             preferencesManager.preferences.value,
             start
-        )
+        ) ?: return null
 
         // playWhenReady must be true for the MediaSessionService to call Service.startForeground
         // and prevent crashing

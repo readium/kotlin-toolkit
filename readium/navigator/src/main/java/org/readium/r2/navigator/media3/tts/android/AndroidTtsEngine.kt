@@ -8,6 +8,7 @@ package org.readium.r2.navigator.media3.tts.android
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
+import android.speech.tts.TextToSpeech.ERROR
 import android.speech.tts.TextToSpeech.QUEUE_ADD
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice as AndroidVoice
@@ -124,6 +125,9 @@ class AndroidTtsEngine private constructor(
     private val _settings: MutableStateFlow<AndroidTtsSettings> =
         MutableStateFlow(settingsResolver.settings(initialPreferences))
 
+    private var listener: TtsEngine.Listener<Error>? =
+        null
+
     override val voices: Set<Voice> get() =
         engine.voices
             ?.map { it.toTtsEngineVoice() }
@@ -135,7 +139,9 @@ class AndroidTtsEngine private constructor(
     ) {
         if (listener == null) {
             engine.setOnUtteranceProgressListener(null)
+            this@AndroidTtsEngine.listener = null
         } else {
+            this@AndroidTtsEngine.listener = listener
             engine.setOnUtteranceProgressListener(UtteranceListener(listener))
         }
     }
@@ -146,7 +152,10 @@ class AndroidTtsEngine private constructor(
         language: Language?
     ) {
         engine.setupVoice(settings.value, language, voices)
-        engine.speak(text, QUEUE_ADD, null, requestId)
+        val queued = engine.speak(text, QUEUE_ADD, null, requestId)
+        if (queued == ERROR) {
+            listener?.onError(requestId, Error(Error.Kind.Unknown.code))
+        }
     }
 
     override fun stop() {
