@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.testapp.reader.ReaderActivityContract
 import org.readium.r2.testapp.utils.LifecycleMedia3SessionService
 import timber.log.Timber
 
@@ -98,13 +97,7 @@ class TtsService : LifecycleMedia3SessionService() {
                 flags = flags or PendingIntent.FLAG_IMMUTABLE
             }
 
-            val intent =
-                ReaderActivityContract().createIntent(
-                    applicationContext,
-                    ReaderActivityContract.Arguments(bookId)
-                )
-            /*intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)*/
+            val intent = application.packageManager.getLaunchIntentForPackage(application.packageName)
 
             return PendingIntent.getActivity(applicationContext, 0, intent, flags)
         }

@@ -78,13 +78,7 @@ class MediaService : LifecycleMedia2SessionService() {
                 flags = flags or PendingIntent.FLAG_IMMUTABLE
             }
 
-            val intent =
-                ReaderActivityContract().createIntent(
-                    applicationContext,
-                    ReaderActivityContract.Arguments(bookId)
-                )
-            /* intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                 .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP) */
+            val intent = application.packageManager.getLaunchIntentForPackage(application.packageName)
             return PendingIntent.getActivity(applicationContext, 0, intent, flags)
         }
     }
