@@ -17,9 +17,11 @@ import org.zeroturnaround.zip.ZipUtil
 
 /**
  * Access to a License Document stored in a ZIP archive.
- * Meant to be subclassed to customize the pathInZIP property, eg. [EPUBLicenseContainer].
  */
-internal open class ZIPLicenseContainer(private val zip: String, private val pathInZIP: String) : LicenseContainer {
+internal class ZIPLicenseContainer(
+    private val zip: String,
+    private val pathInZIP: String,
+) : LicenseContainer {
 
     override fun read(): ByteArray {
 

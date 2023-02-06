@@ -9,9 +9,18 @@
 
 package org.readium.r2.lcp.license.container
 
+import java.net.URL
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
+import org.readium.r2.shared.extensions.addPrefix
+import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.shared.util.mediatype.MediaType
+
+private const val LICENSE_IN_EPUB = "META-INF/license.lcpl"
+
+private const val LICENSE_IN_RPF = "license.lcpl"
 
 /**
  * Encapsulates the read/write access to the packaged License Document (eg. in an EPUB container,
@@ -31,10 +40,43 @@ internal suspend fun createLicenseContainer(
     return createLicenseContainer(filepath, mediaType)
 }
 
-internal fun createLicenseContainer(filepath: String, mediaType: MediaType): LicenseContainer =
+internal fun createLicenseContainer(
+    filepath: String,
+    mediaType: MediaType
+): LicenseContainer =
     when (mediaType) {
-        MediaType.EPUB -> EPUBLicenseContainer(filepath)
+        MediaType.EPUB -> ZIPLicenseContainer(filepath, LICENSE_IN_EPUB)
         MediaType.LCP_LICENSE_DOCUMENT -> LCPLLicenseContainer(filepath)
         // Assuming it's a Readium WebPub package (e.g. audiobook, LCPDF, etc.) as a fallback
-        else -> WebPubLicenseContainer(filepath)
+        else -> ZIPLicenseContainer(filepath, LICENSE_IN_RPF)
     }
+
+internal fun createLicenseContainer(
+    fetcher: Fetcher,
+    mediaType: MediaType,
+): LicenseContainer {
+    val licensePath = when (mediaType) {
+        MediaType.EPUB -> LICENSE_IN_EPUB.addPrefix("/")
+        // Assuming it's a Readium WebPub package (e.g. audiobook, LCPDF, etc.) as a fallback
+        else -> LICENSE_IN_RPF.addPrefix("/")
+    }
+    return FetcherLicenseContainer(fetcher, licensePath)
+}
+
+internal suspend fun createLicenseContainer(
+    url: URL,
+    mediaType: MediaType,
+    archiveFactory: ArchiveFactory = DefaultArchiveFactory()
+): LicenseContainer {
+    val licensePath = when (mediaType) {
+        MediaType.EPUB -> LICENSE_IN_EPUB
+        // Assuming it's a Readium WebPub package (e.g. audiobook, LCPDF, etc.) as a fallback
+        else -> LICENSE_IN_RPF
+    }
+    return try {
+        val archive = archiveFactory.open(url, password = null)
+        ArchiveLicenseContainer(archive, licensePath)
+    } catch (e: Exception) {
+        throw LcpException.Container.OpenFailed
+    }
+}

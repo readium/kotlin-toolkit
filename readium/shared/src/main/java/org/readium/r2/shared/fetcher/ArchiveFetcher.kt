@@ -10,6 +10,7 @@
 package org.readium.r2.shared.fetcher
 
 import java.io.File
+import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.addPrefix
@@ -25,7 +26,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
 /** Provides access to entries of an archive. */
-class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher {
+class ArchiveFetcher internal constructor(private val archive: Archive) : Fetcher {
 
     override suspend fun links(): List<Link> =
         tryOr(emptyList()) { archive.entries() }
@@ -47,6 +48,11 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
         suspend fun fromPath(path: String, archiveFactory: ArchiveFactory = DefaultArchiveFactory()): ArchiveFetcher? =
             withContext(Dispatchers.IO) {
                 tryOrNull { ArchiveFetcher(archiveFactory.open(File(path), password = null)) }
+            }
+
+        suspend fun fromUrl(url: URL, archiveFactory: ArchiveFactory = DefaultArchiveFactory()): ArchiveFetcher? =
+            withContext(Dispatchers.IO) {
+                tryOrNull { ArchiveFetcher(archiveFactory.open(url, password = null)) }
             }
     }
 

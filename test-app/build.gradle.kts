@@ -28,6 +28,8 @@ android {
         ndk.abiFilters.add("x86_64")
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
+
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -103,6 +105,9 @@ dependencies {
     implementation(libs.jsoup)
 
     implementation(libs.bundles.media2)
+
+    implementation("readium:liblcp:1.0.0@aar")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.2.2")
 
     // Room database
     implementation(libs.bundles.room)

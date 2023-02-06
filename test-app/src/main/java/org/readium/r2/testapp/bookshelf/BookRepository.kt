@@ -23,16 +23,19 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.joda.time.DateTime
 import org.readium.r2.lcp.LcpService
+import org.readium.r2.shared.extensions.extension
 import org.readium.r2.shared.extensions.mediaType
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
+import org.readium.r2.shared.publication.asset.RemoteAsset
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.sniffMediaType
 import org.readium.r2.streamer.Streamer
 import org.readium.r2.testapp.db.BooksDao
 import org.readium.r2.testapp.domain.model.Book
@@ -141,6 +144,10 @@ class BookRepository(
         class UnableToOpenPublication(
             val exception: Publication.OpeningException
         ) : ImportException(cause = exception)
+
+        class UnsupportedProtocol(
+            private val protocol: String
+        ) : ImportException()
     }
 
     suspend fun addBook(
@@ -149,6 +156,44 @@ class BookRepository(
         contentUri.copyToTempFile(context, storageDir)
             .mapFailure { ImportException.IOException }
             .map { addBook(it) }
+
+    suspend fun addBook(
+        url: URL
+    ): Try<Unit, ImportException> {
+        if (!url.protocol.startsWith("http")) {
+            return Try.failure(ImportException.UnsupportedProtocol(url.protocol))
+        }
+
+        val mediaType = withContext(Dispatchers.IO) {
+            MediaType.of(fileExtension = url.extension)
+                ?: run {
+                    val connection = url.openConnection() as HttpURLConnection
+                    connection.requestMethod = "HEAD"
+                    connection.sniffMediaType()
+                } ?: MediaType.BINARY
+        }
+
+        val asset = RemoteAsset(url, mediaType)
+
+        streamer.open(asset, allowUserInteraction = false)
+            .onSuccess { publication ->
+                val id = insertBookIntoDatabase(
+                    url.toString(),
+                    asset.mediaType(),
+                    publication
+                )
+                if (id == -1L)
+                    return Try.failure(ImportException.ImportDatabaseFailed)
+
+                Try.success(Unit)
+            }
+            .onFailure {
+                Timber.d(it)
+                return Try.failure(ImportException.UnableToOpenPublication(it))
+            }
+
+        return Try.success(Unit)
+    }
 
     suspend fun addBook(
         tempFile: File,

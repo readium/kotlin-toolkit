@@ -10,6 +10,8 @@
 package org.readium.r2.shared.util.archive
 
 import java.io.File
+import java.io.IOException
+import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOr
@@ -19,6 +21,13 @@ interface ArchiveFactory {
 
     /** Opens an archive from a local [file]. */
     suspend fun open(file: File, password: String?): Archive
+
+    suspend fun open(url: URL, password: String?): Archive =
+        if (url.protocol == "file") {
+            open(File(url.path), password)
+        } else {
+            throw IOException("Cannot access ZIP archives through protocol ${url.protocol}.")
+        }
 }
 
 class DefaultArchiveFactory : ArchiveFactory {
@@ -34,6 +43,26 @@ class DefaultArchiveFactory : ArchiveFactory {
             javaZipFactory.open(file, password)
         }
     }
+}
+
+class CompositeArchiveFactory(
+    private val primaryFactory: ArchiveFactory,
+    private val fallbackFactory: ArchiveFactory
+) : ArchiveFactory {
+
+    override suspend fun open(file: File, password: String?): Archive =
+        try {
+            primaryFactory.open(file, password)
+        } catch (e: Exception) {
+            fallbackFactory.open(file, password)
+        }
+
+    override suspend fun open(url: URL, password: String?): Archive =
+        try {
+            primaryFactory.open(url, password)
+        } catch (e: Exception) {
+            fallbackFactory.open(url, password)
+        }
 }
 
 /**

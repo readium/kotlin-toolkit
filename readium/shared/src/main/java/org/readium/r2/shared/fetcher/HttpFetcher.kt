@@ -118,12 +118,12 @@ class HttpFetcher(
             val stream = inputStream
             if (from != null && stream != null) {
                 // TODO Figure out a better way to handle this Kotlin warning
-                tryOrLog<Nothing> {
+                tryOrLog {
                     val bytesToSkip = from - (inputStreamStart + stream.count)
                     if (bytesToSkip >= 0) {
                         stream.skip(bytesToSkip)
+                        return Try.success(stream)
                     }
-                    return Try.success(stream)
                 }
             }
             tryOrLog { inputStream?.close() }

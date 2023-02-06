@@ -23,7 +23,9 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import java.net.URL
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentBookshelfBinding
 import org.readium.r2.testapp.domain.model.Book
@@ -111,15 +113,18 @@ class BookshelfFragment : Fragment() {
                         urlDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                             if (TextUtils.isEmpty(urlEditText.text)) {
                                 urlEditText.error = getString(R.string.invalid_url)
-                            } else if (!URLUtil.isValidUrl(urlEditText.text.toString())) {
-                                urlEditText.error = getString(R.string.invalid_url)
-                            } else {
-                                val url = urlEditText.text.toString()
-                                val uri = Uri.parse(url)
-                                binding.bookshelfProgressBar.visibility = View.VISIBLE
-                                bookshelfViewModel.addPublicationFromUri(uri)
-                                urlDialog.dismiss()
+                                return@setOnClickListener
                             }
+
+                            val url = tryOrNull { URL(urlEditText.text.toString()) }
+                            if (url == null || !URLUtil.isValidUrl(urlEditText.text.toString())) {
+                                urlEditText.error = getString(R.string.invalid_url)
+                                return@setOnClickListener
+                            }
+
+                            binding.bookshelfProgressBar.visibility = View.VISIBLE
+                            bookshelfViewModel.addRemotePublication(url)
+                            urlDialog.dismiss()
                         }
                     }
                 }

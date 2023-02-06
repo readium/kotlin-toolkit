@@ -12,6 +12,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -70,23 +71,37 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             app.bookRepository
                 .addBook(uri)
-                .onFailure { exception ->
-                    val errorMessage = when (exception) {
-                        is BookRepository.ImportException.UnableToOpenPublication ->
-                            exception.exception.getUserMessage(app)
-                        BookRepository.ImportException.ImportDatabaseFailed ->
-                            app.getString(R.string.unable_add_pub_database)
-                        is BookRepository.ImportException.LcpAcquisitionFailed ->
-                            "Error: " + exception.message
-                        BookRepository.ImportException.IOException ->
-                            app.getString(R.string.unexpected_io_exception)
-                    }
-                    channel.send(Event.ImportPublicationError(errorMessage))
-                }
-                .onSuccess {
-                    channel.send(Event.ImportPublicationSuccess)
-                }
+                .exceptionOrNull()
+                .let { sendImportFeedback(it) }
         }
+
+    fun addRemotePublication(url: URL) =
+        viewModelScope.launch {
+            app.bookRepository
+                .addBook(url)
+                .exceptionOrNull()
+                .let { sendImportFeedback(it) }
+        }
+
+    private fun sendImportFeedback(exception: BookRepository.ImportException?) {
+        if (exception == null) {
+            channel.send(Event.ImportPublicationSuccess)
+        } else {
+            val errorMessage = when (exception) {
+                is BookRepository.ImportException.UnableToOpenPublication ->
+                    exception.exception.getUserMessage(app)
+                BookRepository.ImportException.ImportDatabaseFailed ->
+                    app.getString(R.string.unable_add_pub_database)
+                is BookRepository.ImportException.LcpAcquisitionFailed ->
+                    "Error: " + exception.message
+                BookRepository.ImportException.IOException ->
+                    app.getString(R.string.unexpected_io_exception)
+                is BookRepository.ImportException.UnsupportedProtocol ->
+                    app.getString(R.string.unsupported_protocol)
+            }
+            channel.send(Event.ImportPublicationError(errorMessage))
+        }
+    }
 
     fun openPublication(
         bookId: Long,

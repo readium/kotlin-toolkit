@@ -11,7 +11,6 @@ package org.readium.r2.lcp.license
 
 import java.util.*
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.LcpAuthenticating
@@ -87,10 +86,14 @@ internal sealed class Event {
     object cancelled : Event()
 }
 
-@OptIn(ExperimentalTime::class)
+/**
+ * If [ignoreInternetErrors] is true, then the validation won't fail on [LcpException.Network] errors.
+ * This should be the case with writable licenses (such as local ones) but not with read-only licences.
+ */
 internal class LicenseValidation(
     var authentication: LcpAuthenticating?,
     val allowUserInteraction: Boolean,
+    val ignoreInternetErrors: Boolean,
     val sender: Any?,
     val crl: CRLService,
     val device: DeviceService,
@@ -159,8 +162,13 @@ internal class LicenseValidation(
                 transitionTo(State.validateStatus(license, it.data))
             }
             on<Event.failed> {
-                if (DEBUG) Timber.d("State.checkLicenseStatus(license, null)")
-                transitionTo(State.checkLicenseStatus(license, null))
+                if (!ignoreInternetErrors && it.error is LcpException.Network) {
+                    if (DEBUG) Timber.d("State.failure(it.error)")
+                    transitionTo(State.failure(it.error))
+                } else {
+                    if (DEBUG) Timber.d("State.checkLicenseStatus(license, null)")
+                    transitionTo(State.checkLicenseStatus(license, null))
+                }
             }
         }
         state<State.validateStatus> {
