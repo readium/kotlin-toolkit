@@ -240,7 +240,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 scrollMode ->
                     goLeft(jump = true)
 
-                !this@R2BasicWebView.canScrollHorizontally(1) ->
+                !this@R2BasicWebView.canScrollHorizontally(-1) ->
                     goLeft(jump = false)
 
                 else ->
