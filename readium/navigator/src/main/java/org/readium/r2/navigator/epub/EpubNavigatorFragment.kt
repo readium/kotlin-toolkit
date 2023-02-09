@@ -923,7 +923,8 @@ class EpubNavigatorFragment internal constructor(
     )
 
     /**
-     * Returns the [Locator] to the first HTML element that begins on the current screen.
+     * Returns the [Locator] to the first HTML *block* element that is visible on the screen, even
+     * if it begins on previous screen pages.
      */
     @ExperimentalReadiumApi
     override suspend fun firstVisibleElementLocator(): Locator? {
