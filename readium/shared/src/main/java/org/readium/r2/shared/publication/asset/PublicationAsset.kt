@@ -10,6 +10,7 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /** Represents a digital medium (e.g. a file) offering access to a publication. */
@@ -30,5 +31,5 @@ interface PublicationAsset {
      */
     suspend fun createFetcher(dependencies: Dependencies, credentials: String?): Try<Fetcher, Publication.OpeningException>
 
-    data class Dependencies(val archiveFactory: ArchiveFactory)
+    data class Dependencies(val archiveFactory: ArchiveFactory, val httpClient: HttpClient)
 }

@@ -18,6 +18,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
+import timber.log.Timber
 
 /**
  * Decrypts a resource protected with LCP.
@@ -69,7 +70,14 @@ internal class LcpDecryptor(val license: LcpLicense?) {
         private val license: LcpLicense
     ) : Resource {
 
-        lateinit var _length: ResourceTry<Long>
+        private class Cache(
+            var startIndex: Int? = null,
+            val data: ByteArray = ByteArray(3 * AES_BLOCK_SIZE)
+        )
+
+        private lateinit var _length: ResourceTry<Long>
+
+        private val _cache: Cache = Cache()
 
         override suspend fun link(): Link = resource.link()
 
@@ -96,10 +104,14 @@ internal class LcpDecryptor(val license: LcpLicense?) {
                     }
             }
 
+            Timber.d("length ${_length.exceptionOrNull()} ${_length.getOrNull()}")
+            _length.onFailure { Timber.e(it) }
+
             return _length
         }
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
+            Timber.d("lcpdecryptor read $range")
             if (range == null)
                 return license.decryptFully(resource.read(), isDeflated = false)
 
@@ -112,13 +124,19 @@ internal class LcpDecryptor(val license: LcpLicense?) {
                 return Try.success(ByteArray(0))
 
             return resource.length().flatMapCatching { encryptedLength ->
-
                 // encrypted data is shifted by AES_BLOCK_SIZE because of IV and
                 // the previous block must be provided to perform XOR on intermediate blocks
                 val encryptedStart = range.first.floorMultipleOf(AES_BLOCK_SIZE.toLong())
                 val encryptedEndExclusive = (range.last + 1).ceilMultipleOf(AES_BLOCK_SIZE.toLong()) + AES_BLOCK_SIZE
 
-                resource.read(encryptedStart until encryptedEndExclusive).mapCatching { encryptedData ->
+                getEncryptedData(encryptedStart until encryptedEndExclusive).mapCatching { encryptedData ->
+                    if (encryptedData.size >= _cache.data.size) {
+                        // cache the three last encrypted block that has been read for future use
+                        val cacheStart = encryptedData.size - _cache.data.size
+                        _cache.startIndex = (encryptedEndExclusive - _cache.data.size).toInt()
+                        encryptedData.copyInto(_cache.data, 0, cacheStart)
+                    }
+
                     val bytes = license.decrypt(encryptedData)
                         .getOrElse { throw IOException("Can't decrypt the content at: ${link().href}", it) }
 
@@ -141,6 +159,22 @@ internal class LcpDecryptor(val license: LcpLicense?) {
 
                     bytes.sliceArray(sliceStart until sliceEnd)
                 }
+            }
+        }
+
+        private suspend fun getEncryptedData(range: LongRange): ResourceTry<ByteArray> {
+            val cacheStartIndex = _cache.startIndex
+                ?.takeIf { cacheStart ->
+                    val cacheEnd = cacheStart + _cache.data.size
+                    cacheStart <= range.first && cacheEnd <= range.last + 1
+                } ?: return resource.read(range)
+
+            return resource.read(range.first + _cache.data.size..range.last).map {
+                val bytes = ByteArray(range.last.toInt() - range.first.toInt() + 1)
+                val offsetInCache = (range.first - cacheStartIndex).toInt()
+                _cache.data.copyInto(bytes, 0, offsetInCache)
+                it.copyInto(bytes, _cache.data.size)
+                bytes
             }
         }
 

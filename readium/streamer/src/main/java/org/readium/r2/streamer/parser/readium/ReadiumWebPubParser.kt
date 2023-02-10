@@ -13,9 +13,11 @@ import android.content.Context
 import java.io.File
 import java.io.FileNotFoundException
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.drm.DRM
-import org.readium.r2.shared.fetcher.*
+import org.readium.r2.shared.fetcher.ArchiveFetcher
+import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.fetcher.FileFetcher
+import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
@@ -38,7 +40,6 @@ import org.readium.r2.streamer.toPublicationType
 /**
  * Parses any Readium Web Publication package or manifest, e.g. WebPub, Audiobook, DiViNa, LCPDF...
  */
-@OptIn(PdfSupport::class)
 class ReadiumWebPubParser(
     private val context: Context? = null,
     private val pdfFactory: PdfDocumentFactory<*>?,
@@ -58,28 +59,11 @@ class ReadiumWebPubParser(
         val isPackage = !mediaType.isRwpm
 
         val manifestJson =
-            if (isPackage) {
-                fetcher.readAsJsonOrNull("/manifest.json")
-            } else {
-                // For a single manifest file, reads the first (and only) file in the fetcher.
-                fetcher.links().firstOrNull()
-                    ?.let { fetcher.readAsJsonOrNull(it.href) }
-            }
+            fetcher.readAsJsonOrNull("/manifest.json")
                 ?: throw Exception("Manifest not found")
 
         val manifest = Manifest.fromJSON(manifestJson, packaged = isPackage)
             ?: throw Exception("Failed to parse the RWPM Manifest")
-
-        @Suppress("NAME_SHADOWING")
-        var fetcher = fetcher
-
-        // For a manifest, we discard the [fetcher] provided by the Streamer, because it was only
-        // used to read the manifest file. We use an [HttpFetcher] instead to serve the remote
-        // resources.
-        if (!isPackage) {
-            val baseUrl = manifest.linkWithRel("self")?.let { File(it.href).parent }
-            fetcher = HttpFetcher(httpClient, baseUrl)
-        }
 
         // Checks the requirements from the LCPDF specification.
         // https://readium.org/lcp-specs/notes/lcp-for-pdf.html

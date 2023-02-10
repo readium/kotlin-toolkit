@@ -421,7 +421,7 @@ class MediaType(
          * Resolves a format from bytes, e.g. from an HTTP response.
          */
         suspend fun ofBytes(
-            bytes: () -> ByteArray,
+            bytes: () -> ByteArray?,
             mediaType: String? = null,
             fileExtension: String? = null,
             sniffers: List<Sniffer> = MediaType.sniffers
@@ -433,7 +433,7 @@ class MediaType(
          * Resolves a format from bytes, e.g. from an HTTP response.
          */
         suspend fun ofBytes(
-            bytes: () -> ByteArray,
+            bytes: () -> ByteArray?,
             mediaTypes: List<String>,
             fileExtensions: List<String>,
             sniffers: List<Sniffer> = MediaType.sniffers

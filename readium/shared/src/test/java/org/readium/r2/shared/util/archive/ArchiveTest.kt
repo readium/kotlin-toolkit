@@ -33,7 +33,7 @@ class ArchiveTest(val archive: Archive) {
             assertNotNull(epubZip)
             val zipArchive = runBlocking { DefaultArchiveFactory().open(File(epubZip.path), password = null) }
             assertNotNull(zipArchive)
-            val apacheZipArchive = runBlocking { RemoteZipArchiveFactory().open(File(epubZip.path), password = null) }
+            val apacheZipArchive = runBlocking { RemoteZipArchiveFactory().openFile(File(epubZip.path)) }
             assertNotNull(apacheZipArchive)
 
             val epubExploded = ArchiveTest::class.java.getResource("epub")

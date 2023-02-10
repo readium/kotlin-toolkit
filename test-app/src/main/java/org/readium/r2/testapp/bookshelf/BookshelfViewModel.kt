@@ -25,6 +25,7 @@ import org.readium.r2.testapp.reader.ReaderActivityContract
 import org.readium.r2.testapp.reader.ReaderRepository
 import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
+import timber.log.Timber
 
 class BookshelfViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -113,6 +114,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
                 if (exception is ReaderRepository.CancellationException)
                     return@launch
 
+                Timber.e(exception)
                 val message = when (exception) {
                     is UserException -> exception.getUserMessage(app)
                     else -> exception.message

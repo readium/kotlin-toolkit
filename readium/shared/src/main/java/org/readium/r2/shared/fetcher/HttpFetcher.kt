@@ -36,9 +36,11 @@ import timber.log.Timber
 class HttpFetcher(
     private val client: HttpClient,
     private val baseUrl: String? = null,
+    private val links: List<Link> = emptyList(),
+    private val maxSkipBytes: Long = 8192
 ) : Fetcher {
 
-    override suspend fun links(): List<Link> = emptyList()
+    override suspend fun links(): List<Link> = links
 
     override fun get(link: Link): Resource {
         val url = link.toUrl(baseUrl)
@@ -48,7 +50,7 @@ class HttpFetcher(
             Timber.e(cause)
             FailureResource(link, error = Resource.Exception.BadRequest(cause = cause))
         } else {
-            HttpResource(client, link, url)
+            HttpResource(client, link, url, maxSkipBytes)
         }
     }
 
@@ -59,6 +61,7 @@ class HttpFetcher(
         private val client: HttpClient,
         private val link: Link,
         private val url: String,
+        private val maxSkipBytes: Long
     ) : Resource {
 
         override suspend fun link(): Link =
@@ -120,7 +123,7 @@ class HttpFetcher(
                 // TODO Figure out a better way to handle this Kotlin warning
                 tryOrLog {
                     val bytesToSkip = from - (inputStreamStart + stream.count)
-                    if (bytesToSkip >= 0) {
+                    if (bytesToSkip in 0 until maxSkipBytes) {
                         stream.skip(bytesToSkip)
                         return Try.success(stream)
                     }

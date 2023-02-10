@@ -106,7 +106,7 @@ class Streamer constructor(
 
         @Suppress("NAME_SHADOWING")
         var asset = asset
-        val dependencies = PublicationAsset.Dependencies(archiveFactory = archiveFactory)
+        val dependencies = PublicationAsset.Dependencies(archiveFactory = archiveFactory, httpClient = httpClient)
         var fetcher = asset.createFetcher(dependencies, credentials = credentials)
             .getOrThrow()
 

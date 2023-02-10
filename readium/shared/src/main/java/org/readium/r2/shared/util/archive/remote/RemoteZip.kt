@@ -16,10 +16,13 @@ import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.remote.compress.archivers.zip.ZipArchiveEntry
 import org.readium.r2.shared.util.archive.remote.compress.archivers.zip.ZipFile
 import org.readium.r2.shared.util.archive.remote.jvm.SeekableByteChannel
+import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.io.CountingInputStream
 
-internal class RemoteZip(private val archive: ZipFile) : Archive {
+internal class RemoteZip(
+    private val archive: ZipFile
+) : Archive {
 
     private inner class Entry(private val entry: ZipArchiveEntry) : Archive.Entry {
         override val path: String get() = entry.name
@@ -58,8 +61,16 @@ internal class RemoteZip(private val archive: ZipFile) : Archive {
          * requested in order.
          *
          * See this issue for more info: https://github.com/readium/r2-shared-kotlin/issues/129
+         *
+         * In case of a stored entry, we create a new stream starting at the desired index in order
+         * to prevent downloading of data until [fromIndex].
+         *
          */
         private fun stream(fromIndex: Long): CountingInputStream {
+            if (entry.method == ZipArchiveEntry.STORED && fromIndex < entry.size) {
+                return CountingInputStream(archive.getRawInputStream(entry, fromIndex), fromIndex)
+            }
+
             // Reuse the current stream if it didn't exceed the requested index.
             stream
                 ?.takeIf { it.count <= fromIndex }
@@ -96,26 +107,35 @@ internal class RemoteZip(private val archive: ZipFile) : Archive {
 }
 
 class RemoteZipArchiveFactory(
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient = DefaultHttpClient()
 ) : ArchiveFactory {
 
     override suspend fun open(file: File, password: String?): Archive = withContext(Dispatchers.IO) {
-        val channel = BufferedReadableChannel(FileChannelAdapter(file, "r"), DEFAULT_BUFFER_SIZE)
-        RemoteZip(ZipFile(channel))
+        throw Exception("RemoteZipArchiveFactory doesn't support files.")
     }
 
     override suspend fun open(url: URL, password: String?): Archive = withContext(Dispatchers.IO) {
-        var channel: SeekableByteChannel = HttpChannel(url.toString(), httpClient)
+        val httpChannel = HttpChannel(url.toString(), httpClient)
+        val channel = wrapBaseChannel(httpChannel)
+        RemoteZip(ZipFile(channel))
+    }
+
+    internal fun openFile(file: File): Archive {
+        val fileChannel = FileChannelAdapter(file, "r")
+        val channel = wrapBaseChannel(fileChannel)
+        return RemoteZip(ZipFile(channel))
+    }
+
+    private fun wrapBaseChannel(channel: SeekableByteChannel): SeekableByteChannel {
         val size = channel.size()
-        channel = if (size < CACHE_ALL_MAX_SIZE) {
+        return if (size < CACHE_ALL_MAX_SIZE) {
             CachingReadableChannel(channel, 0)
         } else {
             val cacheStart = size - CACHED_TAIL_SIZE
             val cachingChannel = CachingReadableChannel(channel, cacheStart)
             cachingChannel.cache()
-            BufferedReadableChannel(cachingChannel, REMOTE_BUFFER_SIZE)
+            BufferedReadableChannel(cachingChannel, DEFAULT_BUFFER_SIZE)
         }
-        RemoteZip(ZipFile(channel))
     }
 
     companion object {
@@ -123,7 +143,5 @@ class RemoteZipArchiveFactory(
         private const val CACHE_ALL_MAX_SIZE = 5242880
 
         private const val CACHED_TAIL_SIZE = 65557
-
-        private const val REMOTE_BUFFER_SIZE = 8192
     }
 }

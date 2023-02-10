@@ -27,6 +27,7 @@ import timber.log.Timber
 class HttpChannel(
     private val url: String,
     private val client: HttpClient,
+    private val maxSkipBytes: Long = 8192
 ) : SeekableByteChannel {
 
     private var position: Long = 0
@@ -57,13 +58,15 @@ class HttpChannel(
      * direction.
      */
     private suspend fun stream(from: Long? = null): Try<InputStream, HttpException> {
+        Timber.d("getStream")
         val stream = inputStream
         if (from != null && stream != null) {
             // TODO Figure out a better way to handle this Kotlin warning
             tryOrLog {
                 val bytesToSkip = from - (inputStreamStart + stream.count)
-                if (bytesToSkip >= 0) {
+                if (bytesToSkip in 0 until maxSkipBytes) {
                     stream.skip(bytesToSkip)
+                    Timber.d("reusing stream")
                     return Try.success(stream)
                 }
             }
@@ -83,7 +86,6 @@ class HttpChannel(
                 Timber.d("responseCode ${it.response.statusCode}")
                 Timber.d("response ${it.response}")
                 Timber.d("responseHeaders ${it.response.headers}")
-                Timber.d("streamAvailable ${it.body.available()}")
                 CountingInputStream(it.body)
             }
             .onSuccess {
@@ -111,11 +113,8 @@ class HttpChannel(
                         return@withContext -1
                     }
 
-                    // Timber.d("stream ${stream()}")
                     Timber.d("position $position")
-                    Timber.d("size $size")
                     val available = size - position
-                    Timber.d("available $available")
                     val buffer = ByteArray(dst.remaining().coerceAtMost(available.toInt()))
                     Timber.d("bufferSize ${buffer.size}")
                     val read = stream(position)

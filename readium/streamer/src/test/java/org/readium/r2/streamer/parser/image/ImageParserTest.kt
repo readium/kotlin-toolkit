@@ -21,6 +21,7 @@ import org.readium.r2.shared.publication.asset.FileAsset
 import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
+import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.streamer.parseBlocking
 
 class ImageParserTest {
@@ -40,7 +41,8 @@ class ImageParserTest {
     }
 
     private fun fetcherForAsset(asset: PublicationAsset): Fetcher = runBlocking {
-        asset.createFetcher(PublicationAsset.Dependencies(DefaultArchiveFactory()), credentials = null).getOrThrow()
+        val dependencies = PublicationAsset.Dependencies(DefaultArchiveFactory(), DefaultHttpClient())
+        asset.createFetcher(dependencies, credentials = null).getOrThrow()
     }
 
     @Test

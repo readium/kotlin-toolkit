@@ -19,7 +19,6 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
-        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -62,8 +61,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.jsoup)
-
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.2.2")
 
     // Tests
     testImplementation(libs.junit)

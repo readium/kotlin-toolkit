@@ -18,9 +18,12 @@ import org.readium.r2.shared.extensions.requireLengthFitInt
  * An [InputStream] counting the number of bytes read from a wrapped [inputStream].
  */
 @InternalReadiumApi
-class CountingInputStream(inputStream: InputStream) : FilterInputStream(inputStream) {
+class CountingInputStream(
+    inputStream: InputStream,
+    initialCount: Long = 0
+) : FilterInputStream(inputStream) {
 
-    var count: Long = 0
+    var count: Long = initialCount
         private set
 
     private var mark: Long = -1

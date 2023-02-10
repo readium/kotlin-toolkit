@@ -829,6 +829,39 @@ public class ZipFile implements Closeable {
         return createBoundedInputStream(start, ze.getCompressedSize());
     }
 
+    // Readium-added
+    /**
+     * <p></p>Gets the raw stream of the stored archive entry starting from fromIndex.</p>
+     *
+     * <p>This method does not relate to how/if we understand the payload in the
+     * stream, since we really only intend to move it on to somewhere else.</p>
+     *
+     * @param ze The stored entry to get the stream for
+     * @param fromIndex The index in the entry that the stream will start from
+     * @return The raw input stream containing data.
+     * @throws IOException if there is a problem reading data offset.
+     */
+    public InputStream getRawInputStream(final ZipArchiveEntry ze, final long fromIndex) throws IOException {
+        if (!(ze instanceof Entry)) {
+            return null;
+        }
+
+        final long start = getDataOffset(ze);
+        if (start == EntryStreamOffsets.OFFSET_UNKNOWN) {
+            return null;
+        }
+
+        if (ZipMethod.getMethodByCode(ze.getMethod()) != ZipMethod.STORED) {
+            throw new IllegalArgumentException("Cannot begin a stream at a specific index in compressed entries.");
+        }
+
+        if (fromIndex >= ze.getSize()) {
+            throw new IllegalArgumentException("fromIndex out of bounds.");
+        }
+
+        return createBoundedInputStream(start + fromIndex, ze.getSize() - fromIndex);
+    }
+
     /**
      * Gets the entry's content as a String if isUnixSymlink()
      * returns true for it, otherwise returns null.

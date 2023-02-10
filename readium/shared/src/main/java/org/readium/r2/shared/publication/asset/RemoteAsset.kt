@@ -7,51 +7,75 @@
 package org.readium.r2.shared.publication.asset
 
 import java.net.URL
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import org.readium.r2.shared.extensions.extension
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.fetcher.HttpFetcher
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.http.HttpException
 import org.readium.r2.shared.util.mediatype.MediaType
-import timber.log.Timber
 
 /**
  * Represents a publication accessible remotely.
  */
 class RemoteAsset(
     val url: URL,
-    private val knownMediaType: MediaType
+    private val knownMediaType: MediaType?,
+    private val mediaTypeHint: String?
 ) : PublicationAsset {
+
+    /**
+     * Creates a [RemoteAsset] from a [URL] and an optional media type, when known.
+     */
+    constructor(url: URL, mediaType: MediaType? = null) :
+        this(url, knownMediaType = mediaType, mediaTypeHint = null)
+
+    /**
+     * Creates a [RemoteAsset] from a [URL] and an optional media type hint.
+     *
+     * Providing a media type hint will improve performances when sniffing the media type.
+     */
+    constructor(url: URL, mediaTypeHint: String?) :
+        this(url, knownMediaType = null, mediaTypeHint = mediaTypeHint)
+
+    override suspend fun mediaType(): MediaType {
+        if (!::_mediaType.isInitialized) {
+
+            val bytes = {
+                tryOrNull { url.openConnection().getInputStream().use { it.readBytes() } }
+            }
+
+            _mediaType = knownMediaType
+                ?: MediaType.ofBytes(bytes, mediaType = mediaTypeHint, fileExtension = url.extension)
+                ?: MediaType.BINARY
+        }
+
+        return _mediaType
+    }
+
+    private lateinit var _mediaType: MediaType
 
     override val name: String =
         url.file
 
-    override suspend fun mediaType(): MediaType {
-        return knownMediaType
-    }
-
     override suspend fun createFetcher(
         dependencies: PublicationAsset.Dependencies,
         credentials: String?
-    ): Try<Fetcher, Publication.OpeningException> = withContext(Dispatchers.IO) {
-        try {
-            val archive = dependencies.archiveFactory.open(url, password = null)
-            val fetcher = ArchiveFetcher(archive)
-            Try.success(fetcher)
-        } catch (e: HttpException) {
-            val openingException = when (e.kind) {
-                HttpException.Kind.Unauthorized -> Publication.OpeningException.IncorrectCredentials
-                HttpException.Kind.Forbidden -> Publication.OpeningException.Forbidden(e)
-                HttpException.Kind.NotFound -> Publication.OpeningException.NotFound(e)
-                else -> Publication.OpeningException.Unavailable(e)
-            }
-            Try.failure(openingException)
-        } catch (e: Exception) {
-            Timber.e(e)
-            Try.failure(Publication.OpeningException.UnsupportedFormat(e))
-        }
+    ): Try<Fetcher, Publication.OpeningException> {
+        ArchiveFetcher.fromUrl(url, dependencies.archiveFactory)
+            ?.let { return Try.success(it) }
+
+        val httpFetcher = HttpFetcher(
+            client = dependencies.httpClient,
+            baseUrl = url.toString(),
+            links = listOf(
+                Link(href = url.toString(), type = mediaType().toString())
+            )
+        )
+
+        return Try.success(httpFetcher)
     }
 
     override fun toString(): String = "RemoteAsset($url)"

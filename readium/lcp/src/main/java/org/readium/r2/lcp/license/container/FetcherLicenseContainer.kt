@@ -10,6 +10,8 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.util.use
 
 /**
  * Access to a License Document stored in a [Fetcher].
@@ -19,19 +21,20 @@ internal class FetcherLicenseContainer(
     private val entryPath: String,
 ) : LicenseContainer {
 
-    override fun read(): ByteArray {
-        val link = try {
-            runBlocking { fetcher.links().first { it.href == entryPath } }
-        } catch (e: Exception) {
-            throw LcpException.Container.FileNotFound(entryPath)
+    override fun read(): ByteArray =
+        runBlocking {
+            fetcher.get(entryPath).use { resource ->
+                resource.read()
+                    .mapFailure { it.toLcpException() }
+                    .getOrThrow()
+            }
         }
 
-        return try {
-            runBlocking { fetcher.get(link).read().getOrThrow() }
-        } catch (e: Exception) {
-            throw LcpException.Container.ReadFailed(entryPath)
+    private fun Resource.Exception.toLcpException() =
+        when (this) {
+            is Resource.Exception.NotFound -> LcpException.Container.FileNotFound(entryPath)
+            else -> LcpException.Container.ReadFailed(entryPath)
         }
-    }
 
     override fun write(license: LicenseDocument) {
         throw LcpException.Container.WriteFailed(entryPath)
