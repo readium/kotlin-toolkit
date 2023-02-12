@@ -56,13 +56,11 @@ class ReadiumWebPubParser(
         if (!mediaType.isReadiumWebPubProfile)
             return null
 
-        val isPackage = !mediaType.isRwpm
-
         val manifestJson =
             fetcher.readAsJsonOrNull("/manifest.json")
                 ?: throw Exception("Manifest not found")
 
-        val manifest = Manifest.fromJSON(manifestJson, packaged = isPackage)
+        val manifest = Manifest.fromJSON(manifestJson, packaged = !mediaType.isRwpm)
             ?: throw Exception("Failed to parse the RWPM Manifest")
 
         // Checks the requirements from the LCPDF specification.

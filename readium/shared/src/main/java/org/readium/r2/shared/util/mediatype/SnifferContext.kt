@@ -130,7 +130,7 @@ class SnifferContext internal constructor(
             loadedContentAsArchive = true
             _contentAsArchive = withContext(Dispatchers.IO) {
                 (content as? SnifferFileContent)?.let {
-                    DefaultArchiveFactory().open(it.file, password = null)
+                    tryOrNull { DefaultArchiveFactory().open(it.file, password = null) }
                 }
             }
         }

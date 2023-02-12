@@ -13,7 +13,7 @@ import java.io.File
 import java.io.InputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.extensions.tryOrNull
 import timber.log.Timber
 
 /** Provides an access to a file's content to sniff its format. */
@@ -61,25 +61,24 @@ internal class SnifferFileContent(val file: File) : SnifferContent {
 }
 
 /** Used to sniff a bytes array. */
-internal class SnifferBytesContent(val getBytes: () -> ByteArray?) : SnifferContent {
+internal class SnifferBytesContent(val getBytes: () -> ByteArray) : SnifferContent {
 
-    private lateinit var _bytes: Try<ByteArray, Exception>
+    private lateinit var _bytes: ByteArray
 
-    private suspend fun bytes(): ByteArray? {
+    private suspend fun bytes(): ByteArray {
         if (!this::_bytes.isInitialized) {
             withContext(Dispatchers.IO) {
                 _bytes = getBytes()
-                    ?.let { Try.success(it) }
-                    ?: Try.failure(Exception("Cannot get content."))
             }
         }
-        return _bytes.getOrNull()
+        return _bytes
     }
 
-    override suspend fun read(): ByteArray? = bytes()
+    override suspend fun read(): ByteArray? =
+        tryOrNull { bytes() }
 
     override suspend fun stream(): InputStream? =
-        bytes()?.let { ByteArrayInputStream(it) }
+        tryOrNull { ByteArrayInputStream(bytes()) }
 }
 
 /** Used to sniff a content URI. */

@@ -32,12 +32,12 @@ import timber.log.Timber
  *
  * @param client HTTP client used to perform HTTP requests.
  * @param baseUrl Base URL from which relative HREF are served.
+ * @param links A set of links that are known to be available through this fetcher.
  */
 class HttpFetcher(
     private val client: HttpClient,
     private val baseUrl: String? = null,
     private val links: List<Link> = emptyList(),
-    private val maxSkipBytes: Long = 8192
 ) : Fetcher {
 
     override suspend fun links(): List<Link> = links
@@ -50,7 +50,7 @@ class HttpFetcher(
             Timber.e(cause)
             FailureResource(link, error = Resource.Exception.BadRequest(cause = cause))
         } else {
-            HttpResource(client, link, url, maxSkipBytes)
+            HttpResource(client, link, url, MAX_SKIP_BYTES)
         }
     }
 
@@ -114,13 +114,12 @@ class HttpFetcher(
         /**
          * Returns an HTTP stream for the resource, starting at the [from] byte offset.
          *
-         * The stream is cached and reused for next calls, if the next [from] offset is in a forward
-         * direction.
+         * The stream is cached and reused for next calls, if the next [from] offset is not too far
+         * and in a forward direction.
          */
         private suspend fun stream(from: Long? = null): ResourceTry<InputStream> {
             val stream = inputStream
             if (from != null && stream != null) {
-                // TODO Figure out a better way to handle this Kotlin warning
                 tryOrLog {
                     val bytesToSkip = from - (inputStreamStart + stream.count)
                     if (bytesToSkip in 0 until maxSkipBytes) {
@@ -162,5 +161,10 @@ class HttpFetcher(
                 Kind.MalformedResponse, Kind.ClientError, Kind.ServerError, Kind.Other ->
                     Resource.Exception.Other(e)
             }
+    }
+
+    companion object {
+
+        private const val MAX_SKIP_BYTES: Long = 8192
     }
 }

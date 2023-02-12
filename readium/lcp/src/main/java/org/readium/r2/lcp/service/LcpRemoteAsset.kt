@@ -15,6 +15,9 @@ import org.readium.r2.shared.publication.asset.RemoteAsset
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
 
+/**
+ * A compound asset built from a LCP license file and a URL to access the publication.
+ */
 internal class LcpRemoteAsset(
     private val remoteAsset: RemoteAsset,
     val licenseFile: File

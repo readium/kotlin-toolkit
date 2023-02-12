@@ -8,6 +8,7 @@ package org.readium.r2.lcp
 
 import org.readium.r2.lcp.auth.LcpPassphraseAuthentication
 import org.readium.r2.lcp.service.LcpRemoteAsset
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.publication.ContentProtection
@@ -72,7 +73,7 @@ internal class LcpContentProtection(
         val newAsset = when (originalAsset) {
             is LcpRemoteAsset -> {
                 // Try to update the asset with the new license
-                val remoteAsset = license.getOrNull()?.license?.remoteAsset
+                val remoteAsset = tryOrNull { license.getOrNull()?.license?.remoteAsset }
                     ?: RemoteAsset(originalAsset.url, originalAsset.mediaType())
                 LcpRemoteAsset(remoteAsset, originalAsset.licenseFile)
             }

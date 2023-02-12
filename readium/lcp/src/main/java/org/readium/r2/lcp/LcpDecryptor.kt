@@ -111,7 +111,6 @@ internal class LcpDecryptor(val license: LcpLicense?) {
         }
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
-            Timber.d("lcpdecryptor read $range")
             if (range == null)
                 return license.decryptFully(resource.read(), isDeflated = false)
 
@@ -131,7 +130,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
 
                 getEncryptedData(encryptedStart until encryptedEndExclusive).mapCatching { encryptedData ->
                     if (encryptedData.size >= _cache.data.size) {
-                        // cache the three last encrypted block that has been read for future use
+                        // cache the three last encrypted blocks that have been read for future use
                         val cacheStart = encryptedData.size - _cache.data.size
                         _cache.startIndex = (encryptedEndExclusive - _cache.data.size).toInt()
                         encryptedData.copyInto(_cache.data, 0, cacheStart)

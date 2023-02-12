@@ -11,7 +11,6 @@ package org.readium.r2.lcp.service
 
 import android.content.Context
 import java.io.File
-import java.net.URL
 import kotlin.coroutines.resume
 import kotlinx.coroutines.*
 import org.readium.r2.lcp.LcpAuthenticating
@@ -27,7 +26,6 @@ import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
@@ -83,24 +81,6 @@ internal class LicensesService(
             Try.failure(LcpException.wrap(e))
         }
 
-    suspend fun retrieveLicense(
-        url: URL,
-        authentication: LcpAuthenticating,
-        allowUserInteraction: Boolean,
-        archiveFactory: ArchiveFactory,
-        mediaType: MediaType,
-        sender: Any?
-    ): Try<LcpLicense, LcpException> =
-        try {
-            val container = withContext(Dispatchers.IO) {
-                createLicenseContainer(url, mediaType, archiveFactory)
-            }
-            val license = retrieveLicense(container, authentication, allowUserInteraction, false, sender)
-            Try.success(license)
-        } catch (e: Exception) {
-            Try.failure(LcpException.wrap(e))
-        }
-
     override suspend fun retrieveLicense(
         fetcher: Fetcher,
         mediaType: MediaType,
@@ -109,9 +89,7 @@ internal class LicensesService(
         sender: Any?
     ): Try<LcpLicense, LcpException> =
         try {
-            val container = withContext(Dispatchers.IO) {
-                createLicenseContainer(fetcher, mediaType)
-            }
+            val container = createLicenseContainer(fetcher, mediaType)
             val license = retrieveLicense(container, authentication, allowUserInteraction, false, sender)
             Try.success(license)
         } catch (e: Exception) {
@@ -215,6 +193,7 @@ internal class LicensesService(
             }
             error?.let { throw error }
 
+            // Both error and documents can be null if the user cancelled the passphrase prompt.
             if (documents == null) {
                 throw CancellationException("License validation was interrupted.")
             }

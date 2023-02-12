@@ -61,7 +61,6 @@ class HttpChannel(
         Timber.d("getStream")
         val stream = inputStream
         if (from != null && stream != null) {
-            // TODO Figure out a better way to handle this Kotlin warning
             tryOrLog {
                 val bytesToSkip = from - (inputStreamStart + stream.count)
                 if (bytesToSkip in 0 until maxSkipBytes) {

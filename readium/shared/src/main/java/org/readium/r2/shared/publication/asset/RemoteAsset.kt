@@ -8,7 +8,6 @@ package org.readium.r2.shared.publication.asset
 
 import java.net.URL
 import org.readium.r2.shared.extensions.extension
-import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.HttpFetcher
@@ -42,11 +41,7 @@ class RemoteAsset(
 
     override suspend fun mediaType(): MediaType {
         if (!::_mediaType.isInitialized) {
-
-            val bytes = {
-                tryOrNull { url.openConnection().getInputStream().use { it.readBytes() } }
-            }
-
+            val bytes = { url.openConnection().getInputStream().use { it.readBytes() } }
             _mediaType = knownMediaType
                 ?: MediaType.ofBytes(bytes, mediaType = mediaTypeHint, fileExtension = url.extension)
                 ?: MediaType.BINARY

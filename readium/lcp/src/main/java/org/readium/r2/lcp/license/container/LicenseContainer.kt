@@ -9,13 +9,10 @@
 
 package org.readium.r2.lcp.license.container
 
-import java.net.URL
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.util.archive.ArchiveFactory
-import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.shared.util.mediatype.MediaType
 
 private const val LICENSE_IN_EPUB = "META-INF/license.lcpl"
@@ -61,22 +58,4 @@ internal fun createLicenseContainer(
         else -> LICENSE_IN_RPF.addPrefix("/")
     }
     return FetcherLicenseContainer(fetcher, licensePath)
-}
-
-internal suspend fun createLicenseContainer(
-    url: URL,
-    mediaType: MediaType,
-    archiveFactory: ArchiveFactory = DefaultArchiveFactory()
-): LicenseContainer {
-    val licensePath = when (mediaType) {
-        MediaType.EPUB -> LICENSE_IN_EPUB
-        // Assuming it's a Readium WebPub package (e.g. audiobook, LCPDF, etc.) as a fallback
-        else -> LICENSE_IN_RPF
-    }
-    return try {
-        val archive = archiveFactory.open(url, password = null)
-        ArchiveLicenseContainer(archive, licensePath)
-    } catch (e: Exception) {
-        throw LcpException.Container.OpenFailed
-    }
 }

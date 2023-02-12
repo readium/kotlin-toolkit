@@ -111,6 +111,9 @@ interface LcpService {
     fun contentProtection(authentication: LcpAuthenticating = LcpDialogAuthentication()): ContentProtection =
         LcpContentProtection(this, authentication)
 
+    /**
+     * Builds a [PublicationAsset] to open a LCP-protected publication from its license file.
+     */
     fun remoteAssetForLicense(license: File): Try<PublicationAsset, LcpException>
 
     /**

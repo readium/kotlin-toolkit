@@ -86,8 +86,7 @@ class FileAsset private constructor(
                 .mapFailure { Publication.OpeningException.ParsingFailed(it) }
                 .getOrElse { return Try.failure(it) }
 
-            val manifestHref = "/manifest.json"
-            val fileFetcher = FileFetcher(href = manifestHref, file = file)
+            val fileFetcher = FileFetcher(href = "/manifest.json", file = file)
             val baseUrl = manifest.linkWithRel("self")?.let { File(it.href).parent }
             val httpFetcher = HttpFetcher(dependencies.httpClient, baseUrl)
             return Try.success(RoutingFetcher(fileFetcher, httpFetcher))
@@ -96,14 +95,17 @@ class FileAsset private constructor(
         return Try.success(FileFetcher(href = "/${file.name}", file = file))
     }
 
-    private fun File.readAsRwpm(packaged: Boolean): Try<Manifest, Exception> {
-        val bytes = file.readBytes()
-        val string = String(bytes, Charset.defaultCharset())
-        val json = JSONObject(string)
-        val manifest = Manifest.fromJSON(json, packaged = packaged)
-            ?: return Try.failure(Exception("Failed to parse the RWPM Manifest"))
-        return Try.success(manifest)
-    }
+    private fun File.readAsRwpm(packaged: Boolean): Try<Manifest, Exception> =
+        try {
+            val bytes = readBytes()
+            val string = String(bytes, Charset.defaultCharset())
+            val json = JSONObject(string)
+            val manifest = Manifest.fromJSON(json, packaged = packaged)
+                ?: throw Exception("Failed to parse the RWPM Manifest")
+            Try.success(manifest)
+        } catch (e: Exception) {
+            Try.failure(e)
+        }
 
     override fun toString(): String = "FileAsset(${file.path})"
 }
