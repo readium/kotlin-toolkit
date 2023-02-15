@@ -7,6 +7,9 @@
 package org.readium.r2.navigator.media3.tts.android
 
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeech.ERROR
 import android.speech.tts.TextToSpeech.QUEUE_ADD
@@ -54,6 +57,30 @@ class AndroidTtsEngine private constructor(
                 AndroidTtsEngine(engine, metadata, defaultVoiceProvider, initialPreferences)
             else
                 null
+        }
+
+        /**
+         * Starts the activity to install additional voice data.
+         */
+        fun requestInstallVoice(context: Context) {
+            val intent = Intent()
+                .setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA)
+                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+            val availableActivities =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    context.packageManager.queryIntentActivities(
+                        intent,
+                        PackageManager.ResolveInfoFlags.of(0)
+                    )
+                } else {
+                    @Suppress("Deprecation")
+                    context.packageManager.queryIntentActivities(intent, 0)
+                }
+
+            if (availableActivities.isNotEmpty()) {
+                context.startActivity(intent)
+            }
         }
     }
 

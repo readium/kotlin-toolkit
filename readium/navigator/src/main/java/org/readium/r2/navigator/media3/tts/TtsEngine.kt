@@ -38,7 +38,7 @@ interface TtsEngine<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
         /**
          * The voice's language.
-         * */
+         */
         val language: Language
     }
 
@@ -83,7 +83,7 @@ interface TtsEngine<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         fun onDone(requestId: String)
 
         /**
-         * Called when an error has occurred during processing of te utterance with the given id.
+         * Called when an error has occurred during processing of the utterance with the given id.
          */
         fun onError(requestId: String, error: E)
     }
@@ -94,7 +94,7 @@ interface TtsEngine<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     val voices: Set<V>
 
     /**
-     * Submits a new speak request.
+     * Enqueues a new speak request.
      */
     fun speak(requestId: String, text: String, language: Language?)
 

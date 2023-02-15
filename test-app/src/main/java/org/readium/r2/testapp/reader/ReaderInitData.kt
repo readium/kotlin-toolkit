@@ -15,12 +15,12 @@ import org.readium.navigator.media2.ExperimentalMedia2
 import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.epub.EpubPreferences
+import org.readium.r2.navigator.media3.tts.AndroidTtsNavigatorFactory
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
 import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.*
 import org.readium.r2.testapp.reader.preferences.PreferencesManager
-import org.readium.r2.testapp.reader.tts.AndroidTtsNavigatorFactory
 import org.readium.r2.testapp.reader.tts.TtsServiceFacade
 
 sealed class ReaderInitData {

@@ -56,7 +56,7 @@ class MediaService : LifecycleMedia2SessionService() {
 
         @OptIn(FlowPreview::class)
         fun bindNavigator(navigator: MediaNavigator, bookId: Long) {
-            val activityIntent = createSessionActivityIntent(bookId)
+            val activityIntent = createSessionActivityIntent()
             mediaNavigator = navigator
             mediaSession = navigator.session(applicationContext, activityIntent)
                 .also { addSession(it) }
@@ -71,7 +71,7 @@ class MediaService : LifecycleMedia2SessionService() {
                 .launchIn(lifecycleScope)
         }
 
-        private fun createSessionActivityIntent(bookId: Long): PendingIntent {
+        private fun createSessionActivityIntent(): PendingIntent {
             // This intent will be triggered when the notification is clicked.
             var flags = PendingIntent.FLAG_UPDATE_CURRENT
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

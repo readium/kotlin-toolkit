@@ -4,14 +4,14 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.media3.tts
+package org.readium.r2.navigator.media3.tts.session
 
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Timeline
 import java.util.*
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-internal class TtsSessionTimeline(
+internal class TtsTimeline(
     private val mediaItems: List<MediaItem>,
 ) : Timeline() {
 

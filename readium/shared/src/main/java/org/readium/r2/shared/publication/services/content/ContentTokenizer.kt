@@ -23,6 +23,8 @@ fun interface ContentTokenizer : Tokenizer<Content.Element, Content.Element>
  * portions.
  *
  * @param contextSnippetLength Length of `before` and `after` snippets in the produced [Locator]s.
+ * @param overrideContentLanguage If true, let [language] override language information that could be available in
+ *   content. If false, [language] will be used only as a default when there is no data-specific information.
  */
 @ExperimentalReadiumApi
 class TextContentTokenizer(

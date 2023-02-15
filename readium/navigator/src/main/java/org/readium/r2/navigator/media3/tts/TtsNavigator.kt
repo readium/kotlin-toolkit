@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.media3.api.MediaMetadataProvider
 import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.media3.api.SynchronizedMediaNavigator
+import org.readium.r2.navigator.media3.tts.session.TtsSessionAdapter
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.mapStateIn
@@ -131,8 +132,8 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         override val text: String,
         override val position: Position,
         override val range: IntRange?,
-        override val utteranceHighlight: Locator,
-        override val tokenHighlight: Locator?
+        override val utteranceLocator: Locator,
+        override val tokenLocator: Locator?
     ) : SynchronizedMediaNavigator.Utterance<Position>
 
     sealed class Error : MediaNavigator.Error {
@@ -184,7 +185,7 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     }
 
     override val currentLocator: StateFlow<Locator> =
-        utterance.mapStateIn(coroutineScope) { it.tokenHighlight ?: it.utteranceHighlight }
+        utterance.mapStateIn(coroutineScope) { it.tokenLocator ?: it.utteranceLocator }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         player.go(locator)
@@ -258,8 +259,8 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             text = text,
             position = position.toPosition(),
             range = range,
-            utteranceHighlight = utteranceHighlight,
-            tokenHighlight = tokenHighlight,
+            utteranceLocator = utteranceHighlight,
+            tokenLocator = tokenHighlight,
         )
     }
 }

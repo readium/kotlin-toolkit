@@ -1,8 +1,10 @@
 package org.readium.r2.testapp.reader.tts
 
 import android.app.Application
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.readium.r2.navigator.media3.tts.AndroidTtsNavigator
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
@@ -28,28 +30,21 @@ class TtsServiceFacade(
         bookId: Long,
         navigator: AndroidTtsNavigator
     ): TtsService.Session = mutex.withLock {
-        startService()
-        val binderNow = checkNotNull(binder)
-        binderNow.openSession(navigator, bookId)
-    }
+        try {
+            if (binder == null) {
+                TtsService.start(application)
+                binder = TtsService.bind(application)
+            }
 
-    private suspend fun startService() {
-        if (binder != null)
-            return
-
-        TtsService.start(application)
-        binder = TtsService.bind(application)
+            binder!!.openSession(navigator, bookId)
+        } catch (e: CancellationException) {
+            TtsService.stop(application)
+            throw e
+        }
     }
 
     suspend fun closeSession() = mutex.withLock {
         binder?.closeSession()
-        stopService()
-    }
-
-    private fun stopService() {
-        if (binder == null)
-            return
-
         binder = null
         TtsService.stop(application)
     }

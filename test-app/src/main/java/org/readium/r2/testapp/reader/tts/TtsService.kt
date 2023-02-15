@@ -6,29 +6,27 @@
 
 package org.readium.r2.testapp.reader.tts
 
-import android.app.*
+import android.app.Application
+import android.app.PendingIntent
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.graphics.Color
 import android.os.Build
 import android.os.IBinder
-import androidx.annotation.RequiresApi
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaSessionService
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.sample
+import org.readium.r2.navigator.media3.tts.AndroidTtsNavigator
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.testapp.utils.LifecycleMedia3SessionService
 import timber.log.Timber
 
 @OptIn(ExperimentalReadiumApi::class)
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-class TtsService : LifecycleMedia3SessionService() {
+class TtsService : MediaSessionService() {
 
     class Session(
         val bookId: Long,
@@ -60,7 +58,7 @@ class TtsService : LifecycleMedia3SessionService() {
             navigator: AndroidTtsNavigator,
             bookId: Long
         ): Session {
-            val activityIntent = createSessionActivityIntent(bookId)
+            val activityIntent = createSessionActivityIntent()
             val mediaSession = MediaSession.Builder(applicationContext, navigator.asPlayer())
                 .setSessionActivity(activityIntent)
                 .setId(bookId.toString())
@@ -90,7 +88,7 @@ class TtsService : LifecycleMedia3SessionService() {
             return session
         }
 
-        private fun createSessionActivityIntent(bookId: Long): PendingIntent {
+        private fun createSessionActivityIntent(): PendingIntent {
             // This intent will be triggered when the notification is clicked.
             var flags = PendingIntent.FLAG_UPDATE_CURRENT
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -105,44 +103,6 @@ class TtsService : LifecycleMedia3SessionService() {
 
     private val binder by lazy {
         Binder()
-    }
-
-    override fun onCreate() {
-        super.onCreate()
-        Timber.d("TtsService created.")
-        // val initialNotification = createInitialNotification()
-        // startForeground(1, initialNotification)
-    }
-
-    private fun createInitialNotification(): Notification {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationChannelId = createNotificationChannel()
-            Notification.Builder(this, notificationChannelId)
-                .setContentTitle("R2 testapp")
-                .setContentText("rgergergergg")
-                .setAutoCancel(true)
-                .build()
-        } else {
-            NotificationCompat.Builder(this)
-                .setContentTitle("R2 testapp")
-                .setContentText("grgrgrgrg")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setAutoCancel(true)
-                .build()
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun createNotificationChannel(): String {
-        val notificationChannelId = "example.permanence"
-        val channelName = "Background Service"
-        val channel = NotificationChannel(notificationChannelId, channelName, NotificationManager.IMPORTANCE_NONE)
-        channel.lightColor = Color.BLUE
-        channel.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.createNotificationChannel(channel)
-        return notificationChannelId
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -162,16 +122,6 @@ class TtsService : LifecycleMedia3SessionService() {
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
         return binder.session?.mediaSession
-    }
-
-    override fun onUpdateNotification(session: MediaSession) {
-        Timber.d("onUpdateNotification")
-        super.onUpdateNotification(session)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Timber.d("MediaService destroyed.")
     }
 
     override fun onTaskRemoved(rootIntent: Intent) {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.readium.r2.navigator.media3.tts
+package org.readium.r2.navigator.media3.tts.session
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -28,7 +28,7 @@ import androidx.media3.common.util.Util
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 /** A manager that wraps [AudioManager] to control/listen audio stream volume.  */ /* package */
-internal class TtsStreamVolumeManager(context: Context, eventHandler: Handler, listener: Listener) {
+internal class StreamVolumeManager(context: Context, eventHandler: Handler, listener: Listener) {
     /** A listener for changes in the manager.  */
     interface Listener {
         /** Called when the audio stream type is changed.  */

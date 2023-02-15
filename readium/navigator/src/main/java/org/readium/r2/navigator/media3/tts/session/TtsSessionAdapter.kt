@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.navigator.media3.tts
+package org.readium.r2.navigator.media3.tts.session
 
 import android.app.Application
 import android.os.Handler
@@ -27,9 +27,14 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import org.readium.r2.navigator.media3.tts.TtsEngine
+import org.readium.r2.navigator.media3.tts.TtsPlayer
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Resource
 
+/**
+ * Adapts the [TtsPlayer] to media3 [Player] interface.
+ */
 @ExperimentalReadiumApi
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 internal class TtsSessionAdapter<E : TtsEngine.Error>(
@@ -46,6 +51,9 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     private val coroutineScope: CoroutineScope =
         MainScope()
 
+    private val eventHandler: Handler =
+        Handler(applicationLooper)
+
     private val window: Timeline.Window =
         Timeline.Window()
 
@@ -55,20 +63,45 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     private var lastPlaybackParameters: PlaybackParameters =
         playbackParametersState.value
 
-    private val volumeManager = TtsStreamVolumeManager(
+    private val streamVolumeManager = StreamVolumeManager(
         application,
         Handler(applicationLooper),
         StreamVolumeManagerListener()
     )
 
+    init {
+        streamVolumeManager.setStreamType(Util.getStreamTypeForAudioUsage(audioAttributes.usage))
+    }
+
+    private val audioFocusManager = AudioFocusManager(
+        application,
+        eventHandler,
+        AudioFocusManagerListener()
+    )
+
+    init {
+        audioFocusManager.setAudioAttributes(audioAttributes)
+    }
+
+    private val audioBecomingNoisyManager = AudioBecomingNoisyManager(
+        application,
+        eventHandler,
+        AudioBecomingNoisyManagerListener()
+    )
+
+    init {
+        audioBecomingNoisyManager.setEnabled(true)
+    }
+
     private var deviceInfo: DeviceInfo =
-        createDeviceInfo(volumeManager)
+        createDeviceInfo(streamVolumeManager)
 
     init {
         ttsPlayer.playback
             .onEach { playback ->
                 notifyListenersPlaybackChanged(lastPlayback, playback)
                 lastPlayback = playback
+                audioFocusManager.updateAudioFocus(playback.playWhenReady, playback.state.playerCode)
             }.launchIn(coroutineScope)
 
         playbackParametersState
@@ -396,7 +429,11 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     override fun stop(reset: Boolean) {}
 
     override fun release() {
-        // Do nothing. This object does not own the TtsPlayer instance.
+        streamVolumeManager.release()
+        audioFocusManager.release()
+        audioBecomingNoisyManager.setEnabled(false)
+        eventHandler.removeCallbacksAndMessages(null)
+        // This object does not own the TtsPlayer instance, do not close it.
     }
 
     override fun getCurrentTracks(): Tracks {
@@ -434,7 +471,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     override fun getCurrentTimeline(): Timeline {
         // MediaNotificationManager requires a non-empty timeline to start foreground playing.
-        return TtsSessionTimeline(mediaItems)
+        return TtsTimeline(mediaItems)
     }
 
     override fun getCurrentPeriodIndex(): Int {
@@ -656,27 +693,27 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun getDeviceVolume(): Int {
-        return volumeManager.getVolume()
+        return streamVolumeManager.getVolume()
     }
 
     override fun isDeviceMuted(): Boolean {
-        return volumeManager.isMuted()
+        return streamVolumeManager.isMuted()
     }
 
     override fun setDeviceVolume(volume: Int) {
-        volumeManager.setVolume(volume)
+        streamVolumeManager.setVolume(volume)
     }
 
     override fun increaseDeviceVolume() {
-        volumeManager.increaseVolume()
+        streamVolumeManager.increaseVolume()
     }
 
     override fun decreaseDeviceVolume() {
-        volumeManager.decreaseVolume()
+        streamVolumeManager.decreaseVolume()
     }
 
     override fun setDeviceMuted(muted: Boolean) {
-        volumeManager.setMuted(muted)
+        streamVolumeManager.setMuted(muted)
     }
 
     private fun notifyListenersPlaybackChanged(
@@ -755,7 +792,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         }
     }
 
-    private fun createDeviceInfo(streamVolumeManager: TtsStreamVolumeManager): DeviceInfo {
+    private fun createDeviceInfo(streamVolumeManager: StreamVolumeManager): DeviceInfo {
         val newDeviceInfo = DeviceInfo(
             DeviceInfo.PLAYBACK_TYPE_LOCAL,
             streamVolumeManager.minVolume,
@@ -774,9 +811,10 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         return if (repeatMode == REPEAT_MODE_ONE) REPEAT_MODE_OFF else repeatMode
     }
 
-    private inner class StreamVolumeManagerListener : TtsStreamVolumeManager.Listener {
+    private inner class StreamVolumeManagerListener : StreamVolumeManager.Listener {
+
         override fun onStreamTypeChanged(streamType: @StreamType Int) {
-            val newDeviceInfo = createDeviceInfo(volumeManager)
+            val newDeviceInfo = createDeviceInfo(streamVolumeManager)
             if (newDeviceInfo != deviceInfo) {
                 listeners.sendEvent(
                     EVENT_DEVICE_INFO_CHANGED
@@ -797,6 +835,25 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
                     streamMuted
                 )
             }
+        }
+    }
+
+    private inner class AudioFocusManagerListener : AudioFocusManager.PlayerControl {
+
+        override fun setVolumeMultiplier(volumeMultiplier: Float) {
+            // Do nothing as we're not supposed to duck volume with
+            // contentType == C.AUDIO_CONTENT_TYPE_SPEECH
+        }
+
+        override fun executePlayerCommand(playerCommand: Int) {
+            playWhenReady = playWhenReady && playerCommand != AudioFocusManager.PLAYER_COMMAND_DO_NOT_PLAY
+        }
+    }
+
+    private inner class AudioBecomingNoisyManagerListener : AudioBecomingNoisyManager.EventListener {
+
+        override fun onAudioBecomingNoisy() {
+            playWhenReady = false
         }
     }
 

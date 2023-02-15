@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 
+/**
+ * A [MediaNavigator] aware of the utterances that are being read aloud.
+ */
 @ExperimentalReadiumApi
 interface SynchronizedMediaNavigator<P : MediaNavigator.Position, E : MediaNavigator.Error> :
     MediaNavigator<P, E> {
@@ -21,9 +24,9 @@ interface SynchronizedMediaNavigator<P : MediaNavigator.Position, E : MediaNavig
 
         val range: IntRange?
 
-        val utteranceHighlight: Locator
+        val utteranceLocator: Locator
 
-        val tokenHighlight: Locator?
+        val tokenLocator: Locator?
     }
 
     val utterance: StateFlow<Utterance<P>>

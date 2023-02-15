@@ -197,6 +197,7 @@
 
             <intent-filter>
                 <action android:name="androidx.media3.session.MediaSessionService"/>
+                <action android:name="android.media.session.MediaSessionService" />
             </intent-filter>
         </service>
 

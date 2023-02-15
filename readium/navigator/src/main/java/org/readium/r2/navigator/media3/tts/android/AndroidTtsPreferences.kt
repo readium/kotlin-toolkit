@@ -12,7 +12,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
 
 /**
- * Preferences for the TTS navigator with the Android built-in engine.
+ * Preferences for the the Android built-in TTS engine.
  *
  *  @param language Language of the publication content.
  *  @param pitch Playback pitch rate.

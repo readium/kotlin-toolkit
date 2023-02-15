@@ -4,10 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.testapp.reader.tts
+package org.readium.r2.navigator.media3.tts
 
-import org.readium.r2.navigator.media3.tts.TtsNavigator
-import org.readium.r2.navigator.media3.tts.TtsNavigatorFactory
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferencesEditor

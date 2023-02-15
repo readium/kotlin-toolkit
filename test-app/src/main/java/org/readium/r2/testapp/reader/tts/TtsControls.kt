@@ -73,8 +73,7 @@ fun TtsControls(
             speed = editor.speed,
             pitch = editor.pitch,
             language = editor.language,
-            voices = editor.voices,
-            availableVoices = availableVoices,
+            voice = editor.voice(availableVoices),
             commit = commit,
             onDismiss = { showSettings = false }
         )
@@ -142,8 +141,7 @@ private fun TtsPreferencesDialog(
     speed: RangePreference<Double>,
     pitch: RangePreference<Double>,
     language: Preference<Language?>,
-    voices: Preference<Map<Language, String>>,
-    availableVoices: Set<AndroidTtsEngine.Voice>,
+    voice: EnumPreference<String?>,
     commit: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -186,28 +184,7 @@ private fun TtsPreferencesDialog(
 
                 MenuItem(
                     title = stringResource(R.string.tts_voice),
-                    preference = voices.map(
-                        from = { voices ->
-                            language.effectiveValue?.let { voices[it.removeRegion()] }
-                        },
-                        to = { voice ->
-                            buildMap {
-                                voices.value?.let { putAll(it) }
-                                language.effectiveValue?.let {
-                                    val withoutRegion = it.removeRegion()
-                                    if (voice == null) {
-                                        remove(withoutRegion)
-                                    } else {
-                                        put(withoutRegion, voice)
-                                    }
-                                }
-                            }
-                        }
-                    ).withSupportedValues(
-                        availableVoices
-                            .filter { it.language.removeRegion() == language.effectiveValue }
-                            .map { it.name }
-                    ),
+                    preference = voice,
                     formatValue = { it ?: context.getString(R.string.defaultValue) },
                     commit = commit
                 )
@@ -215,3 +192,41 @@ private fun TtsPreferencesDialog(
         }
     )
 }
+
+/**
+ * [AndroidTtsPreferencesEditor] supports choosing voices for any language or region.
+ * For this test app, we've chosen to present to the user only the voice for the
+ * TTS default language and to ignore regions.
+ */
+private fun AndroidTtsPreferencesEditor.voice(
+    availableVoices: Set<AndroidTtsEngine.Voice>
+): EnumPreference<String?> {
+
+    // Recomposition will be triggered higher if the value changes.
+    val currentLanguage = language.effectiveValue?.removeRegion()
+
+    return voices.map(
+        from = { voices ->
+            currentLanguage?.let { voices[it] }
+        },
+        to = { voice ->
+            currentLanguage
+                ?.let { voices.value.orEmpty().update(it, voice) }
+                ?: voices.value.orEmpty()
+        }
+    ).withSupportedValues(
+        availableVoices
+            .filter { it.language.removeRegion() == currentLanguage }
+            .map { it.name }
+    )
+}
+
+private fun <K, V> Map<K, V>.update(key: K, value: V?): Map<K, V> =
+    buildMap {
+        putAll(this@update)
+        if (value == null) {
+            remove(key)
+        } else {
+            put(key, value)
+        }
+    }

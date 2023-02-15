@@ -41,8 +41,11 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.navigator.util.EdgeTapNavigation
+import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentReaderBinding
@@ -58,7 +61,7 @@ import org.readium.r2.testapp.utils.extensions.throttleLatest
  *
  * Provides common menu items and saves last location on stop.
  */
-@OptIn(ExperimentalDecorator::class)
+@OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class)
 abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.Listener {
 
     protected var binding: FragmentReaderBinding by viewLifecycle()
@@ -79,6 +82,11 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
      */
     private var disableTouches by mutableStateOf(false)
 
+    /**
+     * When true, the fragment won't save progression.
+     * This is useful in the case where the TTS is on and a service is saving progression
+     * in background.
+     */
     private var preventProgressionSaving: Boolean = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -239,8 +247,13 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                 getString(R.string.tts_error_language_support_incomplete, language.locale.displayLanguage)
             )
         ) {
-            tts.requestInstallVoice(activity)
+            AndroidTtsEngine.requestInstallVoice(activity)
         }
+    }
+
+    override fun go(locator: Locator, animated: Boolean) {
+        model.tts?.stop()
+        super.go(locator, animated)
     }
 
     override fun onDestroyView() {
@@ -262,10 +275,6 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.tts -> checkNotNull(model.tts).start(navigator)
-            R.id.toc -> {
-                model.tts?.stop()
-                super.onOptionsItemSelected(item)
-            }
             else -> return super.onOptionsItemSelected(item)
         }
         return true

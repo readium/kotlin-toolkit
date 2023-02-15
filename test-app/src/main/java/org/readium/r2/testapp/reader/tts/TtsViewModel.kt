@@ -6,17 +6,14 @@
 
 package org.readium.r2.testapp.reader.tts
 
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
-import android.speech.tts.TextToSpeech
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.media3.api.MediaNavigator
+import org.readium.r2.navigator.media3.tts.AndroidTtsNavigator
+import org.readium.r2.navigator.media3.tts.AndroidTtsNavigatorFactory
 import org.readium.r2.navigator.media3.tts.TtsNavigator
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
@@ -101,7 +98,7 @@ class TtsViewModel private constructor(
         MutableStateFlow(navigatorNow?.currentLocator?.value)
 
     private val _highlight: MutableStateFlow<Locator?> =
-        MutableStateFlow(navigatorNow?.utterance?.value?.utteranceHighlight)
+        MutableStateFlow(navigatorNow?.utterance?.value?.utteranceLocator)
 
     private val _events: Channel<Event> =
         Channel(Channel.BUFFERED)
@@ -185,7 +182,7 @@ class TtsViewModel private constructor(
 
         ttsSession.navigator.utterance
             .onEach { utterance ->
-                _highlight.value = utterance.utteranceHighlight
+                _highlight.value = utterance.utteranceLocator
             }.launchIn(scope)
 
         preferencesManager.preferences
@@ -228,29 +225,6 @@ class TtsViewModel private constructor(
     fun commit() {
         viewModelScope.launch {
             preferencesManager.setPreferences(editor.value.preferences)
-        }
-    }
-    /**
-     * Starts the activity to install additional voice data.
-     */
-    fun requestInstallVoice(context: Context) {
-        val intent = Intent()
-            .setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA)
-            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-        val availableActivities =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                context.packageManager.queryIntentActivities(
-                    intent,
-                    PackageManager.ResolveInfoFlags.of(0)
-                )
-            } else {
-                @Suppress("Deprecation")
-                context.packageManager.queryIntentActivities(intent, 0)
-            }
-
-        if (availableActivities.isNotEmpty()) {
-            context.startActivity(intent)
         }
     }
 
