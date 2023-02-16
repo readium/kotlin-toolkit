@@ -23,6 +23,7 @@ import org.readium.r2.shared.util.Language
 class AndroidTtsPreferencesEditor(
     initialPreferences: AndroidTtsPreferences,
     publicationMetadata: Metadata,
+    defaults: AndroidTtsDefaults,
 ) : PreferencesEditor<AndroidTtsPreferences> {
 
     private data class State(
@@ -31,7 +32,7 @@ class AndroidTtsPreferencesEditor(
     )
 
     private val settingsResolver: AndroidTtsSettingsResolver =
-        AndroidTtsSettingsResolver(publicationMetadata)
+        AndroidTtsSettingsResolver(publicationMetadata, defaults)
 
     private var state: State =
         initialPreferences.toState()

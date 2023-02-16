@@ -19,7 +19,8 @@ import org.readium.r2.shared.publication.Publication
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class AndroidTtsEngineProvider(
     private val context: Context,
-    private val defaultVoiceProvider: AndroidTtsEngine.DefaultVoiceProvider? = null
+    private val defaults: AndroidTtsDefaults = AndroidTtsDefaults(),
+    private val voiceSelector: AndroidTtsEngine.VoiceSelector = AndroidTtsEngine.VoiceSelector { _, _ -> null }
 ) : TtsEngineProvider<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsPreferencesEditor,
         AndroidTtsEngine.Error, AndroidTtsEngine.Voice> {
 
@@ -27,10 +28,13 @@ class AndroidTtsEngineProvider(
         publication: Publication,
         initialPreferences: AndroidTtsPreferences
     ): AndroidTtsEngine? {
+        val settingsResolver =
+            AndroidTtsSettingsResolver(publication.metadata, defaults)
+
         return AndroidTtsEngine(
             context,
-            publication.metadata,
-            defaultVoiceProvider,
+            settingsResolver,
+            voiceSelector,
             initialPreferences
         )
     }
@@ -39,13 +43,13 @@ class AndroidTtsEngineProvider(
         metadata: Metadata,
         preferences: AndroidTtsPreferences
     ): AndroidTtsSettings =
-        AndroidTtsSettingsResolver(metadata).settings(preferences)
+        AndroidTtsSettingsResolver(metadata, defaults).settings(preferences)
 
     override fun createPreferencesEditor(
         publication: Publication,
         initialPreferences: AndroidTtsPreferences
     ): AndroidTtsPreferencesEditor =
-        AndroidTtsPreferencesEditor(initialPreferences, publication.metadata)
+        AndroidTtsPreferencesEditor(initialPreferences, publication.metadata, defaults)
 
     override fun createEmptyPreferences(): AndroidTtsPreferences =
         AndroidTtsPreferences()

@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.readium.r2.navigator.media3.tts.TtsEngine
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.util.Language
 
 /**
@@ -31,8 +30,8 @@ import org.readium.r2.shared.util.Language
 @ExperimentalReadiumApi
 class AndroidTtsEngine private constructor(
     private val engine: TextToSpeech,
-    metadata: Metadata,
-    private val defaultVoiceProvider: DefaultVoiceProvider?,
+    private val settingsResolver: SettingsResolver,
+    private val voiceSelector: VoiceSelector,
     initialPreferences: AndroidTtsPreferences
 ) : TtsEngine<AndroidTtsSettings, AndroidTtsPreferences,
         AndroidTtsEngine.Error, AndroidTtsEngine.Voice> {
@@ -41,8 +40,8 @@ class AndroidTtsEngine private constructor(
 
         suspend operator fun invoke(
             context: Context,
-            metadata: Metadata,
-            defaultVoiceProvider: DefaultVoiceProvider?,
+            settingsResolver: SettingsResolver,
+            voiceSelector: VoiceSelector,
             initialPreferences: AndroidTtsPreferences
         ): AndroidTtsEngine? {
 
@@ -54,7 +53,7 @@ class AndroidTtsEngine private constructor(
             val engine = TextToSpeech(context, listener)
 
             return if (init.await())
-                AndroidTtsEngine(engine, metadata, defaultVoiceProvider, initialPreferences)
+                AndroidTtsEngine(engine, settingsResolver, voiceSelector, initialPreferences)
             else
                 null
         }
@@ -84,9 +83,20 @@ class AndroidTtsEngine private constructor(
         }
     }
 
-    fun interface DefaultVoiceProvider {
+    fun interface SettingsResolver {
 
-        fun chooseVoice(language: Language?, availableVoices: Set<Voice>): Voice?
+        /**
+         * Computes a set of engine settings from the engine preferences.
+         */
+        fun settings(preferences: AndroidTtsPreferences): AndroidTtsSettings
+    }
+
+    fun interface VoiceSelector {
+
+        /**
+         * Selects a voice for the given [language].
+         */
+        fun voice(language: Language?, availableVoices: Set<Voice>): Voice?
     }
 
     class Error(code: Int) : TtsEngine.Error {
@@ -145,9 +155,6 @@ class AndroidTtsEngine private constructor(
             Lowest, Low, Normal, High, Highest
         }
     }
-
-    private val settingsResolver: AndroidTtsSettingsResolver =
-        AndroidTtsSettingsResolver(metadata)
 
     private val _settings: MutableStateFlow<AndroidTtsSettings> =
         MutableStateFlow(settingsResolver.settings(initialPreferences))
@@ -233,8 +240,8 @@ class AndroidTtsEngine private constructor(
     }
 
     private fun defaultVoice(language: Language?, voices: Set<Voice>): AndroidVoice? =
-        defaultVoiceProvider
-            ?.chooseVoice(language, voices)
+        voiceSelector
+            .voice(language, voices)
             ?.let { voiceForName(it.name) }
 
     private fun voiceForName(name: String) =

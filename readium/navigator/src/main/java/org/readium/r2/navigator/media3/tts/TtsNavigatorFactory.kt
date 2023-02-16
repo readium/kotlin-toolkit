@@ -38,11 +38,14 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
             publication: Publication,
             tokenizerFactory: (defaultLanguage: Language?) -> ContentTokenizer = defaultTokenizerFactory,
             metadataProvider: MediaMetadataProvider = defaultMediaMetadataProvider,
-            defaultVoiceProvider: AndroidTtsEngine.DefaultVoiceProvider? = null
+            voiceSelector: (Language?, Set<AndroidTtsEngine.Voice>) -> AndroidTtsEngine.Voice? = defaultVoiceSelector,
         ): TtsNavigatorFactory<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsPreferencesEditor,
             AndroidTtsEngine.Error, AndroidTtsEngine.Voice>? {
 
-            val engineProvider = AndroidTtsEngineProvider(application, defaultVoiceProvider)
+            val engineProvider = AndroidTtsEngineProvider(
+                context = application,
+                voiceSelector = voiceSelector
+            )
 
             return createNavigatorFactory(
                 application,
@@ -107,6 +110,9 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
 
         val defaultMediaMetadataProvider: MediaMetadataProvider =
             MediaMetadataProvider { publication -> DefaultMediaMetadataFactory(publication) }
+
+        val defaultVoiceSelector: (Language?, Set<AndroidTtsEngine.Voice>) -> AndroidTtsEngine.Voice? =
+            { _, _ -> null }
     }
 
     suspend fun createNavigator(

@@ -14,18 +14,20 @@ import org.readium.r2.shared.util.Language
 @ExperimentalReadiumApi
 internal class AndroidTtsSettingsResolver(
     private val metadata: Metadata,
-) {
+    private val defaults: AndroidTtsDefaults
+) : AndroidTtsEngine.SettingsResolver {
 
-    fun settings(preferences: AndroidTtsPreferences): AndroidTtsSettings {
+    override fun settings(preferences: AndroidTtsPreferences): AndroidTtsSettings {
         val language = preferences.language
             ?: metadata.language
+            ?: defaults.language
             ?: Language(Locale.current.toLanguageTag())
 
         return AndroidTtsSettings(
             language = language,
             voices = preferences.voices ?: emptyMap(),
-            pitch = preferences.pitch ?: 1.0,
-            speed = preferences.speed ?: 1.0,
+            pitch = preferences.pitch ?: defaults.pitch ?: 1.0,
+            speed = preferences.speed ?: defaults.speed ?: 1.0,
         )
     }
 }
