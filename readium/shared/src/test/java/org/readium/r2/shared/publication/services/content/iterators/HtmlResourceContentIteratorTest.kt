@@ -140,22 +140,24 @@ class HtmlResourceContentIteratorTest {
     )
 
     private fun locator(
-        selector: String,
+        selector: String? = null,
         before: String? = null,
         highlight: String? = null,
         after: String? = null
     ): Locator =
         locator.copy(
-            locations = Locator.Locations(otherLocations = mapOf("cssSelector" to selector)),
+            locations = Locator.Locations(otherLocations = buildMap {
+                selector?.let { put("cssSelector", it) }
+            }),
             text = Locator.Text(before = before, highlight = highlight, after = after)
         )
 
-    private fun iterator(startLocator: Locator = locator): HtmlResourceContentIterator =
+    private fun iterator(html: String, startLocator: Locator = locator): HtmlResourceContentIterator =
         HtmlResourceContentIterator(StringResource(link, html), startLocator)
 
     @Test
     fun `cannot call previous() without first hasPrevious()`() = runTest {
-        val iter = iterator()
+        val iter = iterator(html)
         iter.hasNext(); iter.next()
 
         assertFailsWith(IllegalStateException::class) { iter.previous() }
@@ -165,7 +167,7 @@ class HtmlResourceContentIteratorTest {
 
     @Test
     fun `cannot call next() without first hasNext()`() = runTest {
-        val iter = iterator()
+        val iter = iterator(html)
         assertFailsWith(IllegalStateException::class) { iter.next() }
         iter.hasNext()
         iter.next()
@@ -173,7 +175,7 @@ class HtmlResourceContentIteratorTest {
 
     @Test
     fun `iterate from start to finish`() = runTest {
-        val iter = iterator()
+        val iter = iterator(html)
         val res = mutableListOf<Content.Element>()
         while (iter.hasNext()) {
             res.add(iter.next())
@@ -183,20 +185,20 @@ class HtmlResourceContentIteratorTest {
 
     @Test
     fun `previous() is null from the beginning`() = runTest {
-        val iter = iterator()
+        val iter = iterator(html)
         assertFalse(iter.hasPrevious())
     }
 
     @Test
     fun `next() returns the first element from the beginning`() = runTest {
-        val iter = iterator()
+        val iter = iterator(html)
         assertTrue(iter.hasNext())
         assertEquals(elements[0], iter.next())
     }
 
     @Test
     fun `next() then previous() returns the first element`() = runTest {
-        val iter = iterator()
+        val iter = iterator(html)
         assertTrue(iter.hasNext())
         assertEquals(elements[0], iter.next())
         assertTrue(iter.hasPrevious())
@@ -205,7 +207,7 @@ class HtmlResourceContentIteratorTest {
 
     @Test
     fun `calling hasPrevious() several times doesn't move the index`() = runTest {
-        val iter = iterator()
+        val iter = iterator(html)
         iter.hasNext(); iter.next()
         assertTrue(iter.hasPrevious())
         assertTrue(iter.hasPrevious())
@@ -215,7 +217,7 @@ class HtmlResourceContentIteratorTest {
 
     @Test
     fun `calling hasNext() several times doesn't move the index`() = runTest {
-        val iter = iterator()
+        val iter = iterator(html)
         assertTrue(iter.hasNext())
         assertTrue(iter.hasNext())
         assertTrue(iter.hasNext())
@@ -224,7 +226,7 @@ class HtmlResourceContentIteratorTest {
 
     @Test
     fun `starting from a CSS selector`() = runTest {
-        val iter = iterator(locator(selector = "#pgepubid00498 > p:nth-child(3)"))
+        val iter = iterator(html, locator(selector = "#pgepubid00498 > p:nth-child(3)"))
         val res = mutableListOf<Content.Element>()
         while (iter.hasNext()) {
             res.add(iter.next())
@@ -234,8 +236,45 @@ class HtmlResourceContentIteratorTest {
 
     @Test
     fun `calling previous() when starting from a CSS selector`() = runTest {
-        val iter = iterator(locator(selector = "#pgepubid00498 > p:nth-child(3)"))
+        val iter = iterator(html, locator(selector = "#pgepubid00498 > p:nth-child(3)"))
         assertTrue(iter.hasPrevious())
         assertEquals(elements[1], iter.previous())
+    }
+
+    @Test
+    fun `starting from a CSS selector to a block element containing an inline element`() = runTest {
+        val nbspHtml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr">
+            <body>
+                <p>Tout au loin sur la chaussée, aussi loin qu’on pouvait voir</p>
+                <p>Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient <span>[...]</span> On buvait de la bière sucrée.</p>
+            </body>
+            </html>
+            """
+
+        val iter = iterator(nbspHtml, locator(selector = ":root > :nth-child(2) > :nth-child(2)"))
+        assertTrue(iter.hasNext())
+        assertEquals(
+            TextElement(
+                locator = locator(
+                    selector = "html > body > p:nth-child(2)",
+                    highlight = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée."
+                ),
+                role = TextElement.Role.Body,
+                segments = listOf(
+                    Segment(
+                        locator = locator(
+                            selector = "html > body > p:nth-child(2)",
+                            before = "oin sur la chaussée, aussi loin qu’on pouvait voir",
+                            highlight = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée.",
+                        ),
+                        text = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée.",
+                        attributes = listOf(Attribute(LANGUAGE, Language("fr")))
+                    )
+                )
+            ),
+            iter.next()
+        )
     }
 }

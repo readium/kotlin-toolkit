@@ -149,7 +149,6 @@ class HtmlResourceContentIterator(
 
         private val elements = mutableListOf<Content.Element>()
         private var startIndex = 0
-        private var currentElement: Element? = null
 
         private val segmentsAcc = mutableListOf<TextElement.Segment>()
         private var textAcc = StringBuilder()
@@ -160,6 +159,9 @@ class HtmlResourceContentIterator(
         private var currentCssSelector: String? = null
         private var ignoredNode: Node? = null
 
+        /** LIFO stack of the current element's block ancestors. */
+        private val breadcrumbs = mutableListOf<Element>()
+
         override fun head(node: Node, depth: Int) {
             if (ignoredNode != null) return
 
@@ -169,7 +171,6 @@ class HtmlResourceContentIterator(
             }
 
             if (node is Element) {
-                currentElement = node
 
                 val tag = node.normalName()
 
@@ -207,6 +208,8 @@ class HtmlResourceContentIterator(
                         }
                     }
                     node.isBlock -> {
+                        breadcrumbs.add(node)
+
                         segmentsAcc.clear()
                         textAcc.clear()
                         rawTextAcc = ""
@@ -232,7 +235,9 @@ class HtmlResourceContentIterator(
                 appendNormalisedText(node)
             } else if (node is Element) {
                 if (node.isBlock) {
+                    assert(breadcrumbs.last() == node)
                     flushText()
+                    breadcrumbs.removeLast()
                 }
             }
         }
@@ -249,7 +254,7 @@ class HtmlResourceContentIterator(
             flushSegment()
             if (segmentsAcc.isEmpty()) return
 
-            if (startElement != null && currentElement == startElement) {
+            if (startElement != null && breadcrumbs.lastOrNull() == startElement) {
                 startIndex = elements.size
             }
             elements.add(
