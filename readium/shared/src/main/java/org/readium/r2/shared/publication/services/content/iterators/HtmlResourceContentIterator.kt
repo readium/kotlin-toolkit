@@ -27,7 +27,7 @@ import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
 
-// FIXME: Support custom skipped elements
+// FIXME: Support custom skipped elements?
 
 /**
  * Iterates an HTML [resource], starting from the given [locator].
@@ -57,46 +57,49 @@ class HtmlResourceContentIterator(
     /**
      * [Content.Element] loaded with [hasPrevious] or [hasNext], associated with the move delta.
      */
-    private data class ContentWithDelta(
+    private data class ElementWithDelta(
         val element: Content.Element,
         val delta: Int
     )
 
-    private var currentElement: ContentWithDelta? = null
+    private var requestedElement: ElementWithDelta? = null
 
     override suspend fun hasPrevious(): Boolean {
-        currentElement = nextBy(-1)
-        return currentElement != null
+        if (requestedElement?.delta == -1) return true
+
+        val index = currentIndex() - 1
+        val element = elements().elements.getOrNull(index) ?: return false
+        currentIndex = index
+        requestedElement = ElementWithDelta(element, -1)
+        return true
     }
 
     override fun previous(): Content.Element =
-        currentElement
+        requestedElement
             ?.takeIf { it.delta == -1 }?.element
+            ?.also { requestedElement = null }
             ?: throw IllegalStateException("Called previous() without a successful call to hasPrevious() first")
 
     override suspend fun hasNext(): Boolean {
-        currentElement = nextBy(+1)
-        return currentElement != null
+        if (requestedElement?.delta == 1) return true
+
+        val index = currentIndex()
+        val element = elements().elements.getOrNull(index) ?: return false
+        currentIndex = index + 1
+        requestedElement = ElementWithDelta(element, +1)
+        return true
     }
 
     override fun next(): Content.Element =
-        currentElement
-            ?.takeIf { it.delta == +1 }?.element
+        requestedElement
+            ?.takeIf { it.delta == 1 }?.element
+            ?.also { requestedElement = null }
             ?: throw IllegalStateException("Called next() without a successful call to hasNext() first")
 
-    private suspend fun nextBy(delta: Int): ContentWithDelta? {
-        val elements = elements()
-        val index = currentIndex?.let { it + delta }
-            ?: elements.startIndex
-
-        val content = elements.elements.getOrNull(index)
-            ?: return null
-
-        currentIndex = index
-        return ContentWithDelta(content, delta)
-    }
-
     private var currentIndex: Int? = null
+
+    private suspend fun currentIndex(): Int =
+        currentIndex ?: elements().startIndex
 
     private suspend fun elements(): ParsedElements =
         parsedElements
@@ -123,7 +126,7 @@ class HtmlResourceContentIterator(
     }
 
     /**
-     * Holds the result of parsing the HTML resource into a list of [ContentElement].
+     * Holds the result of parsing the HTML resource into a list of `ContentElement`.
      *
      * The [startIndex] will be calculated from the element matched by the base [locator], if
      * possible. Defaults to 0.
@@ -183,7 +186,7 @@ class HtmlResourceContentIterator(
 
                         if (href != null) {
                             elements.add(
-                                Content.ImageElement(
+                                ImageElement(
                                     locator = baseLocator.copy(
                                         locations = Locator.Locations(
                                             otherLocations = buildMap {
