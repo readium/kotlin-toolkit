@@ -18,11 +18,11 @@ import org.readium.r2.shared.publication.Publication
 @ExperimentalReadiumApi
 class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>, E : AudioEngine.Error>(
     private val mediaEngine: AudioEngine<S, P, E>
-) : MediaNavigator<AudioNavigator.Position, AudioNavigator.Error>, Configurable<S, P> by mediaEngine {
+) : MediaNavigator<AudioNavigator.Position>, Configurable<S, P> by mediaEngine {
 
     class Position : MediaNavigator.Position
 
-    class Error : MediaNavigator.Error
+    class Error : MediaNavigator.State.Error
 
     override val publication: Publication
         get() = TODO("Not yet implemented")
@@ -50,7 +50,7 @@ class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>,
         TODO("Not yet implemented")
     }
 
-    override val playback: StateFlow<MediaNavigator.Playback<Error>>
+    override val playback: StateFlow<MediaNavigator.Playback>
         get() = TODO("Not yet implemented")
 
     override val position: StateFlow<Position>

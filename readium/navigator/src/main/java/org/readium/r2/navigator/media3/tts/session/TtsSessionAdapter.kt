@@ -236,7 +236,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun getPlayerError(): PlaybackException? {
-        return lastPlayback.error?.toPlaybackException()
+        return (lastPlayback.state as? TtsPlayer.State.Error)?.toPlaybackException()
     }
 
     override fun play() {
@@ -721,20 +721,20 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         playbackInfo: TtsPlayer.Playback,
         // playWhenReadyChangeReason: @Player.PlayWhenReadyChangeReason Int,
     ) {
-        if (previousPlaybackInfo.error != playbackInfo.error) {
+        if (previousPlaybackInfo.state as? TtsPlayer.State.Error != playbackInfo.state as? Error) {
             listeners.queueEvent(
                 EVENT_PLAYER_ERROR
             ) { listener: Listener ->
                 listener.onPlayerErrorChanged(
-                    playbackInfo.error?.toPlaybackException()
+                    (playbackInfo.state as? TtsPlayer.State.Error)?.toPlaybackException()
                 )
             }
-            if (playbackInfo.error != null) {
+            if (playbackInfo.state is TtsPlayer.State.Error) {
                 listeners.queueEvent(
                     EVENT_PLAYER_ERROR
                 ) { listener: Listener ->
                     listener.onPlayerError(
-                        playbackInfo.error.toPlaybackException()
+                        playbackInfo.state.toPlaybackException()
                     )
                 }
             }
@@ -756,7 +756,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
             ) { listener: Listener ->
                 listener.onPlayWhenReadyChanged(
                     playbackInfo.playWhenReady,
-                    if (playbackInfo.state == TtsPlayer.Playback.State.Ended)
+                    if (playbackInfo.state == TtsPlayer.State.Ended)
                         PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM
                     else
                         PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST
@@ -803,7 +803,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     private fun isPlaying(playbackInfo: TtsPlayer.Playback): Boolean {
-        return (playbackInfo.state == TtsPlayer.Playback.State.Ready && playbackInfo.playWhenReady)
+        return (playbackInfo.state == TtsPlayer.State.Ready && playbackInfo.playWhenReady)
     }
 
     private fun getRepeatModeForNavigation(): @RepeatMode Int {
@@ -857,16 +857,16 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         }
     }
 
-    private val TtsPlayer.Playback.State.playerCode get() = when (this) {
-        TtsPlayer.Playback.State.Ready -> STATE_READY
-        TtsPlayer.Playback.State.Ended -> STATE_ENDED
-        TtsPlayer.Playback.State.Error -> STATE_IDLE
+    private val TtsPlayer.State.playerCode get() = when (this) {
+        TtsPlayer.State.Ready -> STATE_READY
+        TtsPlayer.State.Ended -> STATE_ENDED
+        is TtsPlayer.State.Error -> STATE_IDLE
     }
 
     @Suppress("Unchecked_cast")
-    private fun TtsPlayer.Error.toPlaybackException(): PlaybackException = when (this) {
-        is TtsPlayer.Error.EngineError<*> -> mapEngineError(error as E)
-        is TtsPlayer.Error.ContentError -> when (exception) {
+    private fun TtsPlayer.State.Error.toPlaybackException(): PlaybackException = when (this) {
+        is TtsPlayer.State.Error.EngineError<*> -> mapEngineError(error as E)
+        is TtsPlayer.State.Error.ContentError -> when (exception) {
             is Resource.Exception.BadRequest ->
                 PlaybackException(exception.message, exception.cause, ERROR_CODE_IO_BAD_HTTP_STATUS)
             is Resource.Exception.NotFound ->

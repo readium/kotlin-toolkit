@@ -172,12 +172,17 @@ class TtsViewModel private constructor(
 
         ttsSession.navigator.playback
             .onEach { playback ->
-                if (playback.state == MediaNavigator.State.Ended) {
-                    stop()
-                }
-
                 _isPlaying.value = playback.playWhenReady
-                playback.error?.let { onPlaybackError(it) }
+                when (playback.state) {
+                    is MediaNavigator.State.Ended -> {
+                        stop()
+                    }
+                    is MediaNavigator.State.Error -> {
+                        onPlaybackError(playback.state as TtsNavigator.State.Error)
+                    }
+                    is MediaNavigator.State.Ready -> {}
+                    is MediaNavigator.State.Buffering -> {}
+                }
             }.launchIn(scope)
 
         ttsSession.navigator.utterance
@@ -238,12 +243,12 @@ class TtsViewModel private constructor(
         }
     }
 
-    private fun onPlaybackError(error: TtsNavigator.Error) {
+    private fun onPlaybackError(error: TtsNavigator.State.Error) {
         val exception = when (error) {
-            is TtsNavigator.Error.ContentError -> {
+            is TtsNavigator.State.Error.ContentError -> {
                 UserException(R.string.tts_error_other, cause = error.exception)
             }
-            is TtsNavigator.Error.EngineError<*> -> {
+            is TtsNavigator.State.Error.EngineError<*> -> {
                 when ((error.error as AndroidTtsEngine.Error).kind) {
                     AndroidTtsEngine.Error.Kind.Network ->
                         UserException(R.string.tts_error_network)

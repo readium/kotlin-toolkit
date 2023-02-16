@@ -27,6 +27,9 @@ import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.content.ContentTokenizer
 import org.readium.r2.shared.util.Language
 
+/**
+ * A navigator to read aloud a [Publication] with a TTS engine.
+ */
 @ExperimentalReadiumApi
 class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     E : TtsEngine.Error, V : TtsEngine.Voice> private constructor(
@@ -34,7 +37,7 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     override val publication: Publication,
     private val player: TtsPlayer<S, P, E, V>,
     private val sessionAdapter: TtsSessionAdapter<E>,
-) : SynchronizedMediaNavigator<TtsNavigator.Position, TtsNavigator.Error>, Configurable<S, P> by player {
+) : SynchronizedMediaNavigator<TtsNavigator.Position>, Configurable<S, P> by player {
 
     companion object {
 
@@ -136,17 +139,24 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         override val tokenLocator: Locator?
     ) : SynchronizedMediaNavigator.Utterance<Position>
 
-    sealed class Error : MediaNavigator.Error {
+    sealed class State {
 
-        data class EngineError<E : TtsEngine.Error> (val error: E) : Error()
+        object Ready : MediaNavigator.State.Ready
 
-        data class ContentError(val exception: Exception) : Error()
+        object Ended : MediaNavigator.State.Ended
+
+        sealed class Error : MediaNavigator.State.Error {
+
+            data class EngineError<E : TtsEngine.Error> (val error: E) : Error()
+
+            data class ContentError(val exception: Exception) : Error()
+        }
     }
 
     val voices: Set<V> get() =
         player.voices
 
-    override val playback: StateFlow<MediaNavigator.Playback<Error>> =
+    override val playback: StateFlow<MediaNavigator.Playback> =
         player.playback.mapStateIn(coroutineScope) { it.toPlayback() }
 
     override val utterance: StateFlow<Utterance> =
@@ -211,20 +221,19 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         MediaNavigator.Playback(
             state = state.toState(),
             playWhenReady = playWhenReady,
-            error = error?.toError()
         )
 
-    private fun TtsPlayer.Playback.State.toState() =
+    private fun TtsPlayer.State.toState() =
         when (this) {
-            TtsPlayer.Playback.State.Ready -> MediaNavigator.State.Ready
-            TtsPlayer.Playback.State.Ended -> MediaNavigator.State.Ended
-            TtsPlayer.Playback.State.Error -> MediaNavigator.State.Error
+            TtsPlayer.State.Ready -> State.Ready
+            TtsPlayer.State.Ended -> State.Ended
+            is TtsPlayer.State.Error -> this.toError()
         }
 
-    private fun TtsPlayer.Error.toError(): Error =
+    private fun TtsPlayer.State.Error.toError(): State.Error =
         when (this) {
-            is TtsPlayer.Error.ContentError -> Error.ContentError(exception)
-            is TtsPlayer.Error.EngineError<*> -> Error.EngineError(error)
+            is TtsPlayer.State.Error.ContentError -> State.Error.ContentError(exception)
+            is TtsPlayer.State.Error.EngineError<*> -> State.Error.EngineError(error)
         }
 
     private fun TtsPlayer.Utterance.Position.toPosition(): Position =

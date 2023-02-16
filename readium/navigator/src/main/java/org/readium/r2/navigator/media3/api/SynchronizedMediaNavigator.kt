@@ -14,8 +14,8 @@ import org.readium.r2.shared.publication.Locator
  * A [MediaNavigator] aware of the utterances that are being read aloud.
  */
 @ExperimentalReadiumApi
-interface SynchronizedMediaNavigator<P : MediaNavigator.Position, E : MediaNavigator.Error> :
-    MediaNavigator<P, E> {
+interface SynchronizedMediaNavigator<P : MediaNavigator.Position> :
+    MediaNavigator<P> {
 
     interface Utterance<P : MediaNavigator.Position> {
         val text: String

@@ -77,25 +77,36 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         }
     }
 
-    sealed class Error {
+    /**
+     * State of the player.
+     */
+    sealed interface State {
 
-        data class EngineError<E : TtsEngine.Error> (val error: E) : Error()
+        /**
+         * The player is ready to play.
+         */
+        object Ready : State
 
-        data class ContentError(val exception: Exception) : Error()
+        /**
+         * The end of the media has been reached.
+         */
+        object Ended : State
+
+        /**
+         * The player cannot play because an error occurred.
+         */
+        sealed class Error : State {
+
+            data class EngineError<E : TtsEngine.Error> (val error: E) : Error()
+
+            data class ContentError(val exception: Exception) : Error()
+        }
     }
 
     data class Playback(
         val state: State,
         val playWhenReady: Boolean,
-        val error: Error?
-    ) {
-
-        enum class State {
-            Ready,
-            Ended,
-            Error;
-        }
-    }
+    )
 
     data class Utterance(
         val text: String,
@@ -133,9 +144,8 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     private val playbackMutable: MutableStateFlow<Playback> =
         MutableStateFlow(
             Playback(
-                state = if (initialWindow.ended) Playback.State.Ended else Playback.State.Ready,
-                playWhenReady = false,
-                error = null
+                state = if (initialWindow.ended) State.Ended else State.Ready,
+                playWhenReady = false
             )
         )
 
@@ -204,7 +214,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     }
 
     private suspend fun tryRecoverAsync() = mutex.withLock {
-        playbackMutable.value = playbackMutable.value.copy(error = null)
+        playbackMutable.value = playbackMutable.value.copy(state = State.Ready)
         utteranceMutable.value = utteranceMutable.value.copy(range = null)
         playbackJob?.join()
         playIfReadyAndNotPaused()
@@ -246,8 +256,8 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private suspend fun restartUtteranceAsync() = mutex.withLock {
         playbackJob?.cancel()
-        if (playbackMutable.value.state == Playback.State.Ended) {
-            playbackMutable.value = playbackMutable.value.copy(state = Playback.State.Ready)
+        if (playbackMutable.value.state == State.Ended) {
+            playbackMutable.value = playbackMutable.value.copy(state = State.Ready)
         }
         utteranceMutable.value = utteranceMutable.value.copy(range = null)
         playbackJob?.join()
@@ -338,7 +348,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private fun playIfReadyAndNotPaused() {
         check(playbackJob?.isCompleted ?: true)
-        if (playback.value.playWhenReady && playback.value.state == Playback.State.Ready) {
+        if (playback.value.playWhenReady && playback.value.state == State.Ready) {
             playbackJob = coroutineScope.launch {
                 playContinuous()
             }
@@ -400,8 +410,8 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             nextUtterance = nextUtterance
         )
         utteranceMutable.value = utteranceWindow.currentUtterance.ttsPlayerUtterance()
-        if (playbackMutable.value.state == Playback.State.Ended) {
-            playbackMutable.value = playbackMutable.value.copy(state = Playback.State.Ready)
+        if (playbackMutable.value.state == State.Ended) {
+            playbackMutable.value = playbackMutable.value.copy(state = State.Ready)
         }
     }
 
@@ -420,7 +430,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private fun onEndReached() {
         playbackMutable.value = playbackMutable.value.copy(
-            state = Playback.State.Ended,
+            state = State.Ended,
         )
     }
 
@@ -443,16 +453,14 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private fun onEngineError(error: E) {
         playbackMutable.value = playbackMutable.value.copy(
-            state = Playback.State.Error,
-            error = Error.EngineError(error)
+            state = State.Error.EngineError(error)
         )
         playbackJob?.cancel()
     }
 
     private fun onContentError(exception: Exception) {
         playbackMutable.value = playbackMutable.value.copy(
-            state = Playback.State.Error,
-            error = Error.ContentError(exception)
+            state = State.Error.ContentError(exception)
         )
         playbackJob?.cancel()
     }
@@ -474,7 +482,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     }
 
     private fun isPlaying() =
-        playbackMutable.value.playWhenReady && playback.value.state == Playback.State.Ready
+        playbackMutable.value.playWhenReady && playback.value.state == State.Ready
 
     private fun TtsContentIterator.Utterance.ttsPlayerUtterance(): Utterance =
         Utterance(
