@@ -7,18 +7,17 @@
 package org.readium.r2.navigator.media3.tts
 
 import android.app.Application
-import org.readium.r2.navigator.media3.api.DefaultMediaMetadataFactory
+import org.readium.r2.navigator.media3.api.DefaultMediaMetadataProvider
 import org.readium.r2.navigator.media3.api.MediaMetadataProvider
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngineProvider
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferencesEditor
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsSettings
+import org.readium.r2.navigator.media3.tts.android.*
 import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.services.content.*
+import org.readium.r2.shared.publication.services.content.Content
+import org.readium.r2.shared.publication.services.content.ContentTokenizer
+import org.readium.r2.shared.publication.services.content.TextContentTokenizer
+import org.readium.r2.shared.publication.services.content.content
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.tokenizer.TextUnit
 
@@ -109,7 +108,7 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
         }
 
         val defaultMediaMetadataProvider: MediaMetadataProvider =
-            MediaMetadataProvider { publication -> DefaultMediaMetadataFactory(publication) }
+            DefaultMediaMetadataProvider()
 
         val defaultVoiceSelector: (Language?, Set<AndroidTtsEngine.Voice>) -> AndroidTtsEngine.Voice? =
             { _, _ -> null }

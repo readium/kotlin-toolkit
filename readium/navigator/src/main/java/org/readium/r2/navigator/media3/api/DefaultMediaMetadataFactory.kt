@@ -14,21 +14,30 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import org.readium.r2.shared.publication.Publication
 
+/**
+ * Builds media metadata using the given title, author and cover,
+ * and fall back on what is in the publication.
+ */
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 internal class DefaultMediaMetadataFactory(
-    private val publication: Publication
+    private val publication: Publication,
+    title: String? = null,
+    author: String? = null,
+    cover: ByteArray? = null
 ) : MediaMetadataFactory {
 
     private val coroutineScope =
         CoroutineScope(Dispatchers.Default)
 
+    private val title: String =
+        title ?: publication.metadata.title
+
     private val authors: String? =
-        publication.metadata.authors
-            .joinToString(", ") { it.name }
-            .takeIf { it.isNotBlank() }
+        author ?: publication.metadata.authors
+            .firstOrNull { it.name.isNotBlank() }?.name
 
     private val cover: Deferred<ByteArray?> = coroutineScope.async {
-        publication.linkWithRel("cover")
+        cover ?: publication.linkWithRel("cover")
             ?.let { publication.get(it) }
             ?.read()
             ?.getOrNull()
@@ -36,7 +45,7 @@ internal class DefaultMediaMetadataFactory(
 
     override suspend fun publicationMetadata(): MediaMetadata {
         val builder = MediaMetadata.Builder()
-            .setTitle(publication.metadata.title)
+            .setTitle(title)
             .setTotalTrackCount(publication.readingOrder.size)
 
         authors
@@ -49,13 +58,9 @@ internal class DefaultMediaMetadataFactory(
     }
 
     override suspend fun resourceMetadata(index: Int): MediaMetadata {
-
         val builder = MediaMetadata.Builder()
-        val link = publication.readingOrder[index]
-
-        builder.setTrackNumber(index)
-        builder.setTitle(link.title)
-        builder.setTitle(publication.metadata.title)
+            .setTrackNumber(index)
+            .setTitle(title)
 
         authors
             ?.let { builder.setArtist(it) }
