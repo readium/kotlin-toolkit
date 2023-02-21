@@ -189,12 +189,12 @@ class AndroidTtsEngine private constructor(
     }
 
     override fun speak(
-        requestId: String,
+        requestId: TtsEngine.RequestId,
         text: String,
         language: Language?
     ) {
         engine.setupVoice(settings.value, language, voices)
-        val queued = engine.speak(text, QUEUE_ADD, null, requestId)
+        val queued = engine.speak(text, QUEUE_ADD, null, requestId.id)
         if (queued == ERROR) {
             utteranceListener?.onError(requestId, Error(Error.Kind.Unknown.code))
         }
@@ -280,21 +280,22 @@ class AndroidTtsEngine private constructor(
         private val listener: TtsEngine.Listener<Error>?
     ) : UtteranceProgressListener() {
         override fun onStart(utteranceId: String) {
-            listener?.onStart(utteranceId)
+            listener?.onStart(TtsEngine.RequestId(utteranceId))
         }
 
         override fun onStop(utteranceId: String, interrupted: Boolean) {
             listener?.let {
+                val requestId = TtsEngine.RequestId(utteranceId)
                 if (interrupted) {
-                    it.onInterrupted(utteranceId)
+                    it.onInterrupted(requestId)
                 } else {
-                    it.onFlushed(utteranceId)
+                    it.onFlushed(requestId)
                 }
             }
         }
 
         override fun onDone(utteranceId: String) {
-            listener?.onDone(utteranceId)
+            listener?.onDone(TtsEngine.RequestId(utteranceId))
         }
 
         @Deprecated("Deprecated in the interface", ReplaceWith("onError(utteranceId, -1)"))
@@ -304,13 +305,13 @@ class AndroidTtsEngine private constructor(
 
         override fun onError(utteranceId: String, errorCode: Int) {
             listener?.onError(
-                utteranceId,
+                TtsEngine.RequestId(utteranceId),
                 Error(errorCode)
             )
         }
 
         override fun onRangeStart(utteranceId: String, start: Int, end: Int, frame: Int) {
-            listener?.onRange(utteranceId, start until end)
+            listener?.onRange(TtsEngine.RequestId(utteranceId), start until end)
         }
     }
 }

@@ -48,6 +48,12 @@ interface TtsEngine<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     interface Error
 
     /**
+     * An id to identify a request to speak.
+     */
+    @JvmInline
+    value class RequestId(val id: String)
+
+    /**
      * TTS engine callbacks.
      */
     interface Listener<E : Error> {
@@ -55,7 +61,7 @@ interface TtsEngine<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         /**
          * Called when the utterance with the given id starts as perceived by the caller.
          */
-        fun onStart(requestId: String)
+        fun onStart(requestId: RequestId)
 
         /**
          * Called when the [TtsEngine] is about to speak the specified [range] of the utterance with
@@ -63,29 +69,29 @@ interface TtsEngine<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
          *
          * This callback may not be called if the [TtsEngine] does not provide range information.
          */
-        fun onRange(requestId: String, range: IntRange)
+        fun onRange(requestId: RequestId, range: IntRange)
 
         /**
          * Called if the utterance with the given id has been stopped while in progress
          * by a call to [stop].
          */
-        fun onInterrupted(requestId: String)
+        fun onInterrupted(requestId: RequestId)
 
         /**
          * Called when the utterance with the given id has been flushed from the synthesis queue
          * by a call to [stop].
          */
-        fun onFlushed(requestId: String)
+        fun onFlushed(requestId: RequestId)
 
         /**
          * Called when the utterance with the given id has successfully completed processing.
          */
-        fun onDone(requestId: String)
+        fun onDone(requestId: RequestId)
 
         /**
          * Called when an error has occurred during processing of the utterance with the given id.
          */
-        fun onError(requestId: String, error: E)
+        fun onError(requestId: RequestId, error: E)
     }
 
     /**
@@ -96,7 +102,7 @@ interface TtsEngine<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     /**
      * Enqueues a new speak request.
      */
-    fun speak(requestId: String, text: String, language: Language?)
+    fun speak(requestId: RequestId, text: String, language: Language?)
 
     /**
      * Stops the [TtsEngine].

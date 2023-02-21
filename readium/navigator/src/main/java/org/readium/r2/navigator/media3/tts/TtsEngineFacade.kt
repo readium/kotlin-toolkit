@@ -35,7 +35,7 @@ internal class TtsEngineFacade<S : TtsEngine.Settings, P : TtsEngine.Preferences
         suspendCancellableCoroutine { continuation ->
             continuation.invokeOnCancellation { engine.stop() }
             currentTask?.continuation?.cancel()
-            val id = UUID.randomUUID().toString()
+            val id = TtsEngine.RequestId(UUID.randomUUID().toString())
             currentTask = UtteranceTask(id, continuation, onRange)
             engine.speak(id, text, language)
         }
@@ -46,24 +46,24 @@ internal class TtsEngineFacade<S : TtsEngine.Settings, P : TtsEngine.Preferences
     }
 
     private data class UtteranceTask<E : TtsEngine.Error>(
-        val requestId: String,
+        val requestId: TtsEngine.RequestId,
         val continuation: CancellableContinuation<E?>,
         val onRange: (IntRange) -> Unit
     )
 
     private inner class EngineListener : TtsEngine.Listener<E> {
 
-        override fun onStart(requestId: String) {
+        override fun onStart(requestId: TtsEngine.RequestId) {
         }
 
-        override fun onRange(requestId: String, range: IntRange) {
+        override fun onRange(requestId: TtsEngine.RequestId, range: IntRange) {
             currentTask
                 ?.takeIf { it.requestId == requestId }
                 ?.onRange
                 ?.invoke(range)
         }
 
-        override fun onInterrupted(requestId: String) {
+        override fun onInterrupted(requestId: TtsEngine.RequestId) {
             currentTask
                 ?.takeIf { it.requestId == requestId }
                 ?.continuation
@@ -71,7 +71,7 @@ internal class TtsEngineFacade<S : TtsEngine.Settings, P : TtsEngine.Preferences
             currentTask = null
         }
 
-        override fun onFlushed(requestId: String) {
+        override fun onFlushed(requestId: TtsEngine.RequestId) {
             currentTask
                 ?.takeIf { it.requestId == requestId }
                 ?.continuation
@@ -79,7 +79,7 @@ internal class TtsEngineFacade<S : TtsEngine.Settings, P : TtsEngine.Preferences
             currentTask = null
         }
 
-        override fun onDone(requestId: String) {
+        override fun onDone(requestId: TtsEngine.RequestId) {
             currentTask
                 ?.takeIf { it.requestId == requestId }
                 ?.continuation
@@ -87,7 +87,7 @@ internal class TtsEngineFacade<S : TtsEngine.Settings, P : TtsEngine.Preferences
             currentTask = null
         }
 
-        override fun onError(requestId: String, error: E) {
+        override fun onError(requestId: TtsEngine.RequestId, error: E) {
             currentTask
                 ?.takeIf { it.requestId == requestId }
                 ?.continuation
