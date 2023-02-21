@@ -44,7 +44,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
             val ttsEngineFacade =
                 TtsEngineFacade(
-                    engine,
+                    engine
                 )
 
             return TtsPlayer(
@@ -487,6 +487,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         lastPreferences = preferences
         engineFacade.submitPreferences(preferences)
         contentIterator.language = engineFacade.settings.value.language
+        contentIterator.overrideContentLanguage = engineFacade.settings.value.overrideContentLanguage
     }
 
     private fun isPlaying() =

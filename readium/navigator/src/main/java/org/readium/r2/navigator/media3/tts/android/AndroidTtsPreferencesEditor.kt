@@ -74,7 +74,7 @@ class AndroidTtsPreferencesEditor(
             valueFormatter = { "${it.format(2)}x" },
         )
 
-    val voices: Preference<Map<Language, String>> =
+    val voices: Preference<Map<Language, AndroidTtsEngine.Voice.Id>> =
         PreferenceDelegate(
             getValue = { preferences.voices },
             getEffectiveValue = { state.settings.voices },

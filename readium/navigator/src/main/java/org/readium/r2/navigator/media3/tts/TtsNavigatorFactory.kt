@@ -17,10 +17,10 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.content.Content
-import org.readium.r2.shared.publication.services.content.ContentTokenizer
-import org.readium.r2.shared.publication.services.content.TextContentTokenizer
 import org.readium.r2.shared.publication.services.content.content
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.tokenizer.DefaultTextContentTokenizer
+import org.readium.r2.shared.util.tokenizer.TextTokenizer
 import org.readium.r2.shared.util.tokenizer.TextUnit
 
 @ExperimentalReadiumApi
@@ -29,7 +29,7 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
     private val application: Application,
     private val publication: Publication,
     private val ttsEngineProvider: TtsEngineProvider<S, P, E, F, V>,
-    private val tokenizerFactory: (defaultLanguage: Language?) -> ContentTokenizer,
+    private val tokenizerFactory: (language: Language?) -> TextTokenizer,
     private val metadataProvider: MediaMetadataProvider
 ) {
     companion object {
@@ -37,7 +37,7 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
         suspend operator fun invoke(
             application: Application,
             publication: Publication,
-            tokenizerFactory: (defaultLanguage: Language?) -> ContentTokenizer = defaultTokenizerFactory,
+            tokenizerFactory: (language: Language?) -> TextTokenizer = defaultTokenizerFactory,
             metadataProvider: MediaMetadataProvider = defaultMediaMetadataProvider,
             defaults: AndroidTtsDefaults = AndroidTtsDefaults(),
             voiceSelector: (Language?, Set<AndroidTtsEngine.Voice>) -> AndroidTtsEngine.Voice? = defaultVoiceSelector,
@@ -65,7 +65,7 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
             application: Application,
             publication: Publication,
             ttsEngineProvider: TtsEngineProvider<S, P, E, F, V>,
-            tokenizerFactory: (defaultLanguage: Language?) -> ContentTokenizer = defaultTokenizerFactory,
+            tokenizerFactory: (language: Language?) -> TextTokenizer = defaultTokenizerFactory,
             metadataProvider: MediaMetadataProvider = defaultMediaMetadataProvider
         ): TtsNavigatorFactory<S, P, E, F, V>? {
 
@@ -83,7 +83,7 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
             application: Application,
             publication: Publication,
             ttsEngineProvider: TtsEngineProvider<S, P, E, F, V>,
-            tokenizerFactory: (defaultLanguage: Language?) -> ContentTokenizer,
+            tokenizerFactory: (language: Language?) -> TextTokenizer,
             metadataProvider: MediaMetadataProvider
         ): TtsNavigatorFactory<S, P, E, F, V>? {
 
@@ -104,12 +104,8 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
         /**
          * The default content tokenizer will split the [Content.Element] items into individual sentences.
          */
-        val defaultTokenizerFactory: (Language?) -> ContentTokenizer = { language ->
-            TextContentTokenizer(
-                unit = TextUnit.Sentence,
-                language = language,
-                overrideContentLanguage = false
-            )
+        val defaultTokenizerFactory: (Language?) -> TextTokenizer = { language ->
+            DefaultTextContentTokenizer(TextUnit.Sentence, language)
         }
 
         val defaultMediaMetadataProvider: MediaMetadataProvider =

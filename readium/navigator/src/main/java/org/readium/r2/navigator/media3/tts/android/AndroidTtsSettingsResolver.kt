@@ -28,6 +28,7 @@ internal class AndroidTtsSettingsResolver(
             voices = preferences.voices ?: emptyMap(),
             pitch = preferences.pitch ?: defaults.pitch ?: 1.0,
             speed = preferences.speed ?: defaults.speed ?: 1.0,
+            overrideContentLanguage = preferences.language != null
         )
     }
 }

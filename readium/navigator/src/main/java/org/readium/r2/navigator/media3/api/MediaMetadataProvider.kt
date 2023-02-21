@@ -11,7 +11,7 @@ import org.readium.r2.shared.publication.Publication
 /**
  *  To be implemented to use a custom [MediaMetadataFactory].
  */
-interface MediaMetadataProvider {
+fun interface MediaMetadataProvider {
 
     fun createMetadataFactory(publication: Publication): MediaMetadataFactory
 }

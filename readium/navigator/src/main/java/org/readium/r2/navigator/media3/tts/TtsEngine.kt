@@ -32,6 +32,11 @@ interface TtsEngine<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
          * The default language to use when no language information is passed to [speak].
          */
         val language: Language?
+
+        /**
+         * Whether language information in content should be superseded by [language].
+         */
+        val overrideContentLanguage: Boolean
     }
 
     interface Voice {

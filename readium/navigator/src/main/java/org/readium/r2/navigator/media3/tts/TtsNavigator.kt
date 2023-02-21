@@ -24,8 +24,8 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.content.ContentService
-import org.readium.r2.shared.publication.services.content.ContentTokenizer
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.tokenizer.TextTokenizer
 
 /**
  * A navigator to read aloud a [Publication] with a TTS engine.
@@ -46,7 +46,7 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             application: Application,
             publication: Publication,
             ttsEngineProvider: TtsEngineProvider<S, P, *, E, V>,
-            tokenizerFactory: (defaultLanguage: Language?) -> ContentTokenizer,
+            tokenizerFactory: (language: Language?) -> TextTokenizer,
             metadataProvider: MediaMetadataProvider,
             listener: Listener,
             initialPreferences: P? = null,

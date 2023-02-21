@@ -56,6 +56,7 @@ class TtsService : MediaSessionService() {
             sessionMutable.value = null
         }
 
+        @OptIn(FlowPreview::class)
         fun openSession(
             navigator: AndroidTtsNavigator,
             bookId: Long

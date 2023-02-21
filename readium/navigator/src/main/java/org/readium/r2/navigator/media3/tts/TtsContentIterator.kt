@@ -13,9 +13,10 @@ import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.publication.services.content.ContentService
-import org.readium.r2.shared.publication.services.content.ContentTokenizer
+import org.readium.r2.shared.publication.services.content.TextContentTokenizer
 import org.readium.r2.shared.util.CursorList
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.tokenizer.TextTokenizer
 
 @ExperimentalReadiumApi
 
@@ -26,7 +27,7 @@ import org.readium.r2.shared.util.Language
  */
 internal class TtsContentIterator(
     private val publication: Publication,
-    private val tokenizerFactory: (language: Language?) -> ContentTokenizer,
+    private val tokenizerFactory: (language: Language?) -> TextTokenizer,
     initialLocator: Locator?
 ) {
     data class Utterance(
@@ -64,6 +65,14 @@ internal class TtsContentIterator(
      */
     var language: Language? =
         null
+
+    /**
+     * Whether language information in content should be superseded by [language] while tokenizing.
+     *
+     * Modifying this property is not immediate, the new value will be applied as soon as possible.
+     */
+    var overrideContentLanguage: Boolean =
+        false
 
     val resourceCount: Int =
         publication.readingOrder.size
@@ -158,8 +167,12 @@ internal class TtsContentIterator(
      * This is used to split a paragraph into sentences, for example.
      */
     private fun Content.Element.tokenize(): List<Content.Element> {
-        val language = this@tokenize.language ?: this@TtsContentIterator.language
-        return tokenizerFactory(language).tokenize(this)
+        val contentTokenizer = TextContentTokenizer(
+            language = this@TtsContentIterator.language,
+            textTokenizerFactory = tokenizerFactory,
+            overrideContentLanguage = overrideContentLanguage
+        )
+        return contentTokenizer.tokenize(this)
     }
 
     /**

@@ -141,7 +141,7 @@ private fun TtsPreferencesDialog(
     speed: RangePreference<Double>,
     pitch: RangePreference<Double>,
     language: Preference<Language?>,
-    voice: EnumPreference<String?>,
+    voice: EnumPreference<AndroidTtsEngine.Voice.Id?>,
     commit: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -185,7 +185,7 @@ private fun TtsPreferencesDialog(
                 MenuItem(
                     title = stringResource(R.string.tts_voice),
                     preference = voice,
-                    formatValue = { it ?: context.getString(R.string.defaultValue) },
+                    formatValue = { it?.value ?: context.getString(R.string.defaultValue) },
                     commit = commit
                 )
             }
@@ -200,7 +200,7 @@ private fun TtsPreferencesDialog(
  */
 private fun AndroidTtsPreferencesEditor.voice(
     availableVoices: Set<AndroidTtsEngine.Voice>
-): EnumPreference<String?> {
+): EnumPreference<AndroidTtsEngine.Voice.Id?> {
 
     // Recomposition will be triggered higher if the value changes.
     val currentLanguage = language.effectiveValue?.removeRegion()
@@ -217,7 +217,7 @@ private fun AndroidTtsPreferencesEditor.voice(
     ).withSupportedValues(
         availableVoices
             .filter { it.language.removeRegion() == currentLanguage }
-            .map { it.name }
+            .map { it.id }
     )
 }
 

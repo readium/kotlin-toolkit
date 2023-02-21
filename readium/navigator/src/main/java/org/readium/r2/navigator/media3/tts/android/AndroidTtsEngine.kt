@@ -11,9 +11,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.speech.tts.TextToSpeech
+import android.speech.tts.TextToSpeech.*
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice as AndroidVoice
-import android.speech.tts.TextToSpeech.*
 import android.speech.tts.Voice.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -140,17 +140,21 @@ class AndroidTtsEngine private constructor(
     /**
      * Represents a voice provided by the TTS engine which can speak an utterance.
      *
-     * @param name Unique and stable identifier for this voice
+     * @param id Unique and stable identifier for this voice
      * @param language Language (and region) this voice belongs to.
      * @param quality Voice quality.
      * @param requiresNetwork Indicates whether using this voice requires an Internet connection.
      */
     data class Voice(
-        val name: String,
+        val id: Id,
         override val language: Language,
         val quality: Quality = Quality.Normal,
         val requiresNetwork: Boolean = false,
     ) : TtsEngine.Voice {
+
+        @kotlinx.serialization.Serializable
+        @JvmInline
+        value class Id(val value: String)
 
         enum class Quality {
             Lowest, Low, Normal, High, Highest
@@ -228,6 +232,7 @@ class AndroidTtsEngine private constructor(
         voices: Set<Voice>
     ) {
         val language = utteranceLanguage
+            .takeUnless { settings.overrideContentLanguage }
             ?: settings.language
 
         when (engine.isLanguageAvailable(language.locale)) {
@@ -237,11 +242,11 @@ class AndroidTtsEngine private constructor(
 
         val preferredVoiceWithRegion =
             settings.voices[language]
-                ?.let { voiceForName(it) }
+                ?.let { voiceForName(it.value) }
 
         val preferredVoiceWithoutRegion =
             settings.voices[language.removeRegion()]
-                ?.let { voiceForName(it) }
+                ?.let { voiceForName(it.value) }
 
         val voice = preferredVoiceWithRegion
             ?: preferredVoiceWithoutRegion
@@ -255,7 +260,7 @@ class AndroidTtsEngine private constructor(
     private fun defaultVoice(language: Language?, voices: Set<Voice>): AndroidVoice? =
         voiceSelector
             .voice(language, voices)
-            ?.let { voiceForName(it.name) }
+            ?.let { voiceForName(it.id.value) }
 
     private fun voiceForName(name: String) =
         engine.voices
@@ -263,7 +268,7 @@ class AndroidTtsEngine private constructor(
 
     private fun AndroidVoice.toTtsEngineVoice() =
         Voice(
-            name = name,
+            id = Voice.Id(name),
             language = Language(locale),
             quality = when (quality) {
                 QUALITY_VERY_HIGH -> Voice.Quality.Highest
