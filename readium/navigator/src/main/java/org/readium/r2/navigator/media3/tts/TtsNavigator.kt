@@ -57,8 +57,9 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
                 return null
             }
 
-            val actualInitialPreferences = initialPreferences
-                ?: ttsEngineProvider.createEmptyPreferences()
+            val actualInitialPreferences =
+                initialPreferences
+                    ?: ttsEngineProvider.createEmptyPreferences()
 
             val contentIterator =
                 TtsContentIterator(publication, tokenizerFactory, initialLocator)
@@ -120,8 +121,6 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     interface Listener {
 
         fun onStopRequested()
-
-        fun onMissingLanguageData(language: Language)
     }
 
     data class Position(

@@ -20,6 +20,7 @@ import org.readium.r2.shared.publication.Publication
 class AndroidTtsEngineProvider(
     private val context: Context,
     private val defaults: AndroidTtsDefaults = AndroidTtsDefaults(),
+    private val listener: AndroidTtsEngine.Listener? = null,
     private val voiceSelector: AndroidTtsEngine.VoiceSelector = AndroidTtsEngine.VoiceSelector { _, _ -> null }
 ) : TtsEngineProvider<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsPreferencesEditor,
         AndroidTtsEngine.Error, AndroidTtsEngine.Voice> {
@@ -35,6 +36,7 @@ class AndroidTtsEngineProvider(
             context,
             settingsResolver,
             voiceSelector,
+            listener,
             initialPreferences
         )
     }

@@ -42,9 +42,17 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             val initialContext = tryOrNull { contentIterator.startContext() }
                 ?: return null
 
-            val ttsEngineFacade = TtsEngineFacade(engine)
+            val ttsEngineFacade =
+                TtsEngineFacade(
+                    engine,
+                )
 
-            return TtsPlayer(ttsEngineFacade, contentIterator, initialContext, initialPreferences)
+            return TtsPlayer(
+                ttsEngineFacade,
+                contentIterator,
+                initialContext,
+                initialPreferences
+            )
         }
 
         private suspend fun TtsContentIterator.startContext(): UtteranceWindow? {

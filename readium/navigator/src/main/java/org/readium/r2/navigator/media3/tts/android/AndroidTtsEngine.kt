@@ -11,10 +11,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.speech.tts.TextToSpeech
-import android.speech.tts.TextToSpeech.ERROR
-import android.speech.tts.TextToSpeech.QUEUE_ADD
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice as AndroidVoice
+import android.speech.tts.TextToSpeech.*
 import android.speech.tts.Voice.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +31,7 @@ class AndroidTtsEngine private constructor(
     private val engine: TextToSpeech,
     private val settingsResolver: SettingsResolver,
     private val voiceSelector: VoiceSelector,
+    private val listener: Listener?,
     initialPreferences: AndroidTtsPreferences
 ) : TtsEngine<AndroidTtsSettings, AndroidTtsPreferences,
         AndroidTtsEngine.Error, AndroidTtsEngine.Voice> {
@@ -42,18 +42,19 @@ class AndroidTtsEngine private constructor(
             context: Context,
             settingsResolver: SettingsResolver,
             voiceSelector: VoiceSelector,
+            listener: Listener?,
             initialPreferences: AndroidTtsPreferences
         ): AndroidTtsEngine? {
 
             val init = CompletableDeferred<Boolean>()
 
-            val listener = TextToSpeech.OnInitListener { status ->
-                init.complete(status == TextToSpeech.SUCCESS)
+            val initListener = OnInitListener { status ->
+                init.complete(status == SUCCESS)
             }
-            val engine = TextToSpeech(context, listener)
+            val engine = TextToSpeech(context, initListener)
 
             return if (init.await())
-                AndroidTtsEngine(engine, settingsResolver, voiceSelector, initialPreferences)
+                AndroidTtsEngine(engine, settingsResolver, voiceSelector, listener, initialPreferences)
             else
                 null
         }
@@ -63,7 +64,7 @@ class AndroidTtsEngine private constructor(
          */
         fun requestInstallVoice(context: Context) {
             val intent = Intent()
-                .setAction(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA)
+                .setAction(Engine.ACTION_INSTALL_TTS_DATA)
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
             val availableActivities =
@@ -156,10 +157,17 @@ class AndroidTtsEngine private constructor(
         }
     }
 
+    interface Listener {
+
+        fun onMissingData(language: Language)
+
+        fun onLanguageNotSupported(language: Language)
+    }
+
     private val _settings: MutableStateFlow<AndroidTtsSettings> =
         MutableStateFlow(settingsResolver.settings(initialPreferences))
 
-    private var listener: TtsEngine.Listener<Error>? =
+    private var utteranceListener: TtsEngine.Listener<Error>? =
         null
 
     override val voices: Set<Voice> get() =
@@ -173,9 +181,9 @@ class AndroidTtsEngine private constructor(
     ) {
         if (listener == null) {
             engine.setOnUtteranceProgressListener(null)
-            this@AndroidTtsEngine.listener = null
+            this@AndroidTtsEngine.utteranceListener = null
         } else {
-            this@AndroidTtsEngine.listener = listener
+            this@AndroidTtsEngine.utteranceListener = listener
             engine.setOnUtteranceProgressListener(UtteranceListener(listener))
         }
     }
@@ -188,7 +196,7 @@ class AndroidTtsEngine private constructor(
         engine.setupVoice(settings.value, language, voices)
         val queued = engine.speak(text, QUEUE_ADD, null, requestId)
         if (queued == ERROR) {
-            listener?.onError(requestId, Error(Error.Kind.Unknown.code))
+            utteranceListener?.onError(requestId, Error(Error.Kind.Unknown.code))
         }
     }
 
@@ -221,6 +229,11 @@ class AndroidTtsEngine private constructor(
     ) {
         val language = utteranceLanguage
             ?: settings.language
+
+        when (engine.isLanguageAvailable(language.locale)) {
+            LANG_MISSING_DATA -> listener?.onMissingData(language)
+            LANG_NOT_SUPPORTED -> listener?.onLanguageNotSupported(language)
+        }
 
         val preferredVoiceWithRegion =
             settings.voices[language]

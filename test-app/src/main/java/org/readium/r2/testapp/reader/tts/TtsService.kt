@@ -17,9 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.sample
+import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.media3.tts.AndroidTtsNavigator
 import org.readium.r2.shared.ExperimentalReadiumApi
 import timber.log.Timber
@@ -44,20 +42,24 @@ class TtsService : MediaSessionService() {
         private val app: org.readium.r2.testapp.Application
             get() = application as org.readium.r2.testapp.Application
 
-        var session: Session? = null
+        private val sessionMutable: MutableStateFlow<Session?> =
+            MutableStateFlow(null)
+
+        val session: StateFlow<Session?> =
+            sessionMutable.asStateFlow()
 
         fun closeSession() {
             stopForeground(true)
-            session?.mediaSession?.release()
-            session?.navigator?.close()
-            session?.coroutineScope?.cancel()
-            session = null
+            session.value?.mediaSession?.release()
+            session.value?.navigator?.close()
+            session.value?.coroutineScope?.cancel()
+            sessionMutable.value = null
         }
 
         fun openSession(
             navigator: AndroidTtsNavigator,
             bookId: Long
-        ): Session {
+        ) {
             val activityIntent = createSessionActivityIntent()
             val mediaSession = MediaSession.Builder(applicationContext, navigator.asPlayer())
                 .setSessionActivity(activityIntent)
@@ -72,7 +74,7 @@ class TtsService : MediaSessionService() {
                 mediaSession
             )
 
-            this@Binder.session = session
+            sessionMutable.value = session
 
             /*
              * Launch a job for saving progression even when playback is going on in the background
@@ -84,8 +86,6 @@ class TtsService : MediaSessionService() {
                     Timber.d("Saving TTS progression $locator")
                     app.bookRepository.saveProgression(locator, bookId)
                 }.launchIn(session.coroutineScope)
-
-            return session
         }
 
         private fun createSessionActivityIntent(): PendingIntent {
@@ -121,7 +121,7 @@ class TtsService : MediaSessionService() {
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
-        return binder.session?.mediaSession
+        return binder.session.value?.mediaSession
     }
 
     override fun onTaskRemoved(rootIntent: Intent) {
