@@ -104,14 +104,14 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
         /**
          * The default content tokenizer will split the [Content.Element] items into individual sentences.
          */
-        val defaultTokenizerFactory: (Language?) -> TextTokenizer = { language ->
+        private val defaultTokenizerFactory: (Language?) -> TextTokenizer = { language ->
             DefaultTextContentTokenizer(TextUnit.Sentence, language)
         }
 
-        val defaultMediaMetadataProvider: MediaMetadataProvider =
+        private val defaultMediaMetadataProvider: MediaMetadataProvider =
             DefaultMediaMetadataProvider()
 
-        val defaultVoiceSelector: (Language?, Set<AndroidTtsEngine.Voice>) -> AndroidTtsEngine.Voice? =
+        private val defaultVoiceSelector: (Language?, Set<AndroidTtsEngine.Voice>) -> AndroidTtsEngine.Voice? =
             { _, _ -> null }
     }
 
