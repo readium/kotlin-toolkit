@@ -6,9 +6,11 @@
 
 package org.readium.r2.testapp.reader.tts
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.media3.api.MediaNavigator
@@ -17,7 +19,7 @@ import org.readium.r2.navigator.media3.tts.AndroidTtsNavigatorFactory
 import org.readium.r2.navigator.media3.tts.TtsNavigator
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
-import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferencesEditor
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsSettings
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
@@ -27,6 +29,7 @@ import org.readium.r2.testapp.R
 import org.readium.r2.testapp.reader.ReaderInitData
 import org.readium.r2.testapp.reader.VisualReaderInitData
 import org.readium.r2.testapp.reader.preferences.PreferencesManager
+import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 import org.readium.r2.testapp.utils.extensions.mapStateIn
 
 /**
@@ -42,7 +45,6 @@ class TtsViewModel private constructor(
     private val ttsNavigatorFactory: AndroidTtsNavigatorFactory,
     private val ttsServiceFacade: TtsServiceFacade,
     private val preferencesManager: PreferencesManager<AndroidTtsPreferences>,
-    private val createPreferencesEditor: (AndroidTtsPreferences) -> AndroidTtsPreferencesEditor
 ) : TtsNavigator.Listener {
 
     companion object {
@@ -64,8 +66,7 @@ class TtsViewModel private constructor(
                 publication = readerInitData.publication,
                 ttsNavigatorFactory = readerInitData.ttsInitData.ttsNavigatorFactory,
                 ttsServiceFacade = readerInitData.ttsInitData.ttsServiceFacade,
-                preferencesManager = readerInitData.ttsInitData.preferencesManager,
-                createPreferencesEditor = readerInitData.ttsInitData.ttsNavigatorFactory::createTtsPreferencesEditor
+                preferencesManager = readerInitData.ttsInitData.preferencesManager
             )
         }
     }
@@ -91,8 +92,15 @@ class TtsViewModel private constructor(
     val events: Flow<Event> =
         _events.receiveAsFlow()
 
-    val editor: StateFlow<AndroidTtsPreferencesEditor> = preferencesManager.preferences
-        .mapStateIn(viewModelScope, createPreferencesEditor)
+    val preferencesModel: UserPreferencesViewModel<AndroidTtsSettings, AndroidTtsPreferences>
+        get() = UserPreferencesViewModel(
+            viewModelScope = viewModelScope,
+            bookId = bookId,
+            preferencesManager = preferencesManager
+        ) { preferences ->
+            val baseEditor = ttsNavigatorFactory.createTtsPreferencesEditor(preferences)
+            TtsPreferencesEditor(baseEditor, voices)
+        }
 
     val showControls: StateFlow<Boolean> =
         ttsServiceFacade.session.mapStateIn(viewModelScope) {
@@ -193,12 +201,6 @@ class TtsViewModel private constructor(
 
     fun next() {
         navigatorNow?.goForward()
-    }
-
-    fun commit() {
-        viewModelScope.launch {
-            preferencesManager.setPreferences(editor.value.preferences)
-        }
     }
 
     override fun onStopRequested() {

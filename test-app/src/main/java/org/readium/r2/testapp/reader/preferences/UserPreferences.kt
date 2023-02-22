@@ -21,11 +21,16 @@ import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
 import org.readium.r2.navigator.epub.EpubPreferencesEditor
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.navigator.preferences.TextAlign as ReadiumTextAlign
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.LITERATA
+import org.readium.r2.testapp.R
 import org.readium.r2.testapp.reader.ReaderViewModel
+import org.readium.r2.testapp.reader.tts.TtsPreferencesEditor
 import org.readium.r2.testapp.shared.views.*
 import org.readium.r2.testapp.utils.compose.DropdownMenuButton
 
@@ -33,25 +38,30 @@ import org.readium.r2.testapp.utils.compose.DropdownMenuButton
  * Stateful user settings component paired with a [ReaderViewModel].
  */
 @Composable
-fun UserPreferences(model: UserPreferencesViewModel<*, *>) {
+fun UserPreferences(
+    model: UserPreferencesViewModel<*, *>,
+    title: String
+) {
     val editor by model.editor.collectAsState()
 
     UserPreferences(
         editor = editor,
-        commit = model::commit
+        commit = model::commit,
+        title = title
     )
 }
 
 @Composable
 private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPreferences(
     editor: E,
-    commit: () -> Unit
+    commit: () -> Unit,
+    title: String
 ) {
     Column(
         modifier = Modifier.padding(vertical = 24.dp)
     ) {
         Text(
-            text = "User settings",
+            text = title,
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.h6,
             modifier = Modifier
@@ -124,7 +134,50 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
                             spread = editor.spread,
                         )
                 }
+            is TtsPreferencesEditor ->
+                TtsUserPreferences(
+                    commit = commit,
+                    language = editor.language,
+                    voice = editor.voice,
+                    speed = editor.speed,
+                    pitch = editor.pitch
+                )
         }
+    }
+}
+
+@Composable
+private fun ColumnScope.TtsUserPreferences(
+    commit: () -> Unit,
+    language: Preference<Language?>,
+    voice: EnumPreference<AndroidTtsEngine.Voice.Id?>,
+    speed: RangePreference<Double>,
+    pitch: RangePreference<Double>
+) {
+    Column {
+        StepperItem(
+            title = stringResource(R.string.speed_rate),
+            preference = speed,
+            commit = commit
+        )
+        StepperItem(
+            title = stringResource(R.string.pitch_rate),
+            preference = pitch,
+            commit = commit
+        )
+        LanguageItem(
+            preference = language,
+            commit = commit
+        )
+
+        val context = LocalContext.current
+
+        MenuItem(
+            title = stringResource(R.string.tts_voice),
+            preference = voice,
+            formatValue = { it?.value ?: context.getString(R.string.defaultValue) },
+            commit = commit
+        )
     }
 }
 

@@ -50,6 +50,7 @@ import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentReaderBinding
 import org.readium.r2.testapp.domain.model.Highlight
+import org.readium.r2.testapp.reader.preferences.UserPreferencesBottomSheetDialogFragment
 import org.readium.r2.testapp.reader.tts.TtsControls
 import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.utils.*
@@ -132,6 +133,10 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         model.tts?.let { tts ->
             TtsControls(
                 model = tts,
+                onPreferences = {
+                    UserPreferencesBottomSheetDialogFragment(tts.preferencesModel, "TTS Settings")
+                        .show(childFragmentManager, "TtsSettings")
+                },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(8.dp)
