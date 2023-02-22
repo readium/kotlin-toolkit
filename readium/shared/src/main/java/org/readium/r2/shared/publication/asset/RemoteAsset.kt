@@ -41,7 +41,7 @@ class RemoteAsset(
 
     override suspend fun mediaType(): MediaType {
         if (!::_mediaType.isInitialized) {
-            val bytes = { url.openConnection().getInputStream().use { it.readBytes() } }
+            val bytes = { url.readBytes() }
             _mediaType = knownMediaType
                 ?: MediaType.ofBytes(bytes, mediaType = mediaTypeHint, fileExtension = url.extension)
                 ?: MediaType.BINARY

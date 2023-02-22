@@ -117,6 +117,11 @@ interface LcpService {
     fun remoteAssetForLicense(license: File): Try<PublicationAsset, LcpException>
 
     /**
+     * Builds a [PublicationAsset] to open a LCP-protected publication from its license.
+     */
+    fun remoteAssetForLicense(license: ByteArray): Try<PublicationAsset, LcpException>
+
+    /**
      * Information about an acquired publication protected with LCP.
      *
      * @param localFile Path to the downloaded publication. You must move this file to the user

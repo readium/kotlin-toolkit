@@ -41,6 +41,7 @@ class Readium(context: Context) {
         ),
         // Only required if you want to support PDF files using the PDFium adapter.
         pdfFactory = PdfiumDocumentFactory(context),
+        // Build a composite archive factory to enable remote zip reading.
         archiveFactory = CompositeArchiveFactory(
             primaryFactory = DefaultArchiveFactory(),
             fallbackFactory = RemoteZipArchiveFactory(httpClient = DefaultHttpClient())

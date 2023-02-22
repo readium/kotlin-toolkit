@@ -8,7 +8,7 @@ package org.readium.r2.testapp.reader
 
 import android.app.Activity
 import android.app.Application
-import android.net.Uri
+import android.webkit.URLUtil
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences as JetpackPreferences
 import java.io.File
@@ -28,7 +28,6 @@ import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.protectionError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.MediaService
 import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.bookshelf.BookRepository
@@ -75,9 +74,8 @@ class ReaderRepository(
         val book = bookRepository.get(bookId)
             ?: throw Exception("Cannot find book in database.")
 
-        val uri = Uri.parse(book.href)
-        val asset = if (uri.isAbsolute) {
-            val mediaType = checkNotNull(MediaType.of(book.type))
+        val asset = if (URLUtil.isNetworkUrl(book.href)) {
+            val mediaType = checkNotNull(book.mediaType())
             RemoteAsset(URL(book.href), mediaType)
         } else {
             val file = File(book.href)

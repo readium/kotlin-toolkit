@@ -46,6 +46,15 @@ internal class LicensesService(
 
     override fun remoteAssetForLicense(license: File): Try<PublicationAsset, LcpException> {
         return try {
+            val asset = remoteAssetForLicenseThrowing(license.readBytes())
+            Try.success(asset)
+        } catch (e: Exception) {
+            Try.failure(LcpException.wrap(e))
+        }
+    }
+
+    override fun remoteAssetForLicense(license: ByteArray): Try<PublicationAsset, LcpException> {
+        return try {
             val asset = remoteAssetForLicenseThrowing(license)
             Try.success(asset)
         } catch (e: Exception) {
@@ -53,8 +62,8 @@ internal class LicensesService(
         }
     }
 
-    private fun remoteAssetForLicenseThrowing(license: File): PublicationAsset {
-        val licenseDoc = LicenseDocument(license.readBytes())
+    private fun remoteAssetForLicenseThrowing(license: ByteArray): PublicationAsset {
+        val licenseDoc = LicenseDocument(license)
         return licenseDoc.remoteAsset
     }
 

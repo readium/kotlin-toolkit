@@ -22,6 +22,7 @@ interface ArchiveFactory {
     /** Opens an archive from a local [file]. */
     suspend fun open(file: File, password: String?): Archive
 
+    /** Opens an archive from a local or remote [URL]. */
     suspend fun open(url: URL, password: String?): Archive =
         if (url.protocol == "file") {
             open(File(url.path), password)

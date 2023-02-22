@@ -18,7 +18,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
-import timber.log.Timber
 
 /**
  * Decrypts a resource protected with LCP.
@@ -86,7 +85,15 @@ internal class LcpDecryptor(val license: LcpLicense?) {
             if (::_length.isInitialized)
                 return _length
 
-            _length = resource.length().flatMapCatching { length ->
+            _length = resource.link().properties.encryption?.originalLength
+                ?.let { Try.success(it) }
+                ?: lengthFromPadding()
+
+            return _length
+        }
+
+        private suspend fun lengthFromPadding(): ResourceTry<Long> =
+            resource.length().flatMapCatching { length ->
                 if (length < 2 * AES_BLOCK_SIZE) {
                     throw Exception("Invalid CBC-encrypted stream")
                 }
@@ -103,12 +110,6 @@ internal class LcpDecryptor(val license: LcpLicense?) {
                             decryptedBytes.last().toInt() // Minus padding size
                     }
             }
-
-            Timber.d("length ${_length.exceptionOrNull()} ${_length.getOrNull()}")
-            _length.onFailure { Timber.e(it) }
-
-            return _length
-        }
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
             if (range == null)
