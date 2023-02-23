@@ -51,7 +51,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install dependencies
-        run: make install
+        run: yarn --cwd "$scripts" install --frozen-lockfile
       - name: Lint
         run: yarn --cwd "$scripts" run lint
       - name: Check formatting
