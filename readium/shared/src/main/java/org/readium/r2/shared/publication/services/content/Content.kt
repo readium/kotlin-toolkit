@@ -245,7 +245,6 @@ interface Content {
 
     /**
      * Extracts the full raw text, or returns null if no text content can be found.
-     *
      * @param separator Separator to use between individual elements. Defaults to newline.
      */
     suspend fun text(separator: String = "\n"): String? =

@@ -65,8 +65,8 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         fun onProgressionChanged()
         fun onHighlightActivated(id: String)
         fun onHighlightAnnotationMarkActivated(id: String)
-        fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
-        fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
+        fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean = false
+        fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean = false
 
         /**
          * Returns the custom [ActionMode.Callback] to be used with the text selection menu.
@@ -75,15 +75,23 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
         @InternalReadiumApi
         fun javascriptInterfacesForResource(link: Link): Map<String, Any?> = emptyMap()
-
         @InternalReadiumApi
         fun shouldOverrideUrlLoading(webView: WebView, request: WebResourceRequest): Boolean = false
-
         @InternalReadiumApi
         fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? = null
-
         @InternalReadiumApi
         fun resourceAtUrl(url: String): Resource? = null
+
+        /**
+         * Requests to load the next resource in the reading order.
+         *
+         * @param jump Indicates whether it's a discontinuous jump from the current locator. Used
+         * for scroll mode.
+         */
+        @InternalReadiumApi
+        fun goToNextResource(jump: Boolean, animated: Boolean): Boolean = false
+        @InternalReadiumApi
+        fun goToPreviousResource(jump: Boolean, animated: Boolean): Boolean = false
     }
 
     var listener: Listener? = null
@@ -183,22 +191,31 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             val listener = listener ?: return@launch
             listener.onScroll()
 
-            fun goRight() {
+            val isRtl = (listener.readingProgression == ReadingProgression.RTL)
+
+            fun goRight(jump: Boolean) {
                 if (listener.readingProgression == ReadingProgression.RTL) {
-                    listener.goBackward(animated = animated)
+                    listener.goBackward(animated = animated) // Legacy
+                    listener.goToPreviousResource(jump = jump, animated = animated)
                 } else {
-                    listener.goForward(animated = animated)
+                    listener.goForward(animated = animated) // Legacy
+                    listener.goToNextResource(jump = jump, animated = animated)
                 }
             }
 
-            if (scrollMode || !this@R2BasicWebView.canScrollHorizontally(1)) {
-                goRight()
-            } else {
-                runJavaScript("readium.scrollRight();") { success ->
-                    if (!success.toBoolean()) {
-                        goRight()
+            when {
+                scrollMode ->
+                    goRight(jump = true)
+
+                !this@R2BasicWebView.canScrollHorizontally(1) ->
+                    goRight(jump = false)
+
+                else ->
+                    runJavaScript("readium.scrollRight();") { success ->
+                        if (!success.toBoolean()) {
+                            goRight(jump = false)
+                        }
                     }
-                }
             }
         }
     }
@@ -209,22 +226,29 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             val listener = listener ?: return@launch
             listener.onScroll()
 
-            fun goLeft() {
+            fun goLeft(jump: Boolean) {
                 if (listener.readingProgression == ReadingProgression.RTL) {
-                    listener.goForward(animated = animated)
+                    listener.goForward(animated = animated) // legacy
+                    listener.goToNextResource(jump = jump, animated = animated)
                 } else {
-                    listener.goBackward(animated = animated)
+                    listener.goBackward(animated = animated) // legacy
+                    listener.goToPreviousResource(jump = jump, animated = animated)
                 }
             }
 
-            if (scrollMode || !this@R2BasicWebView.canScrollHorizontally(-1)) {
-                goLeft()
-            } else {
-                runJavaScript("readium.scrollLeft();") { success ->
-                    if (!success.toBoolean()) {
-                        goLeft()
+            when {
+                scrollMode ->
+                    goLeft(jump = true)
+
+                !this@R2BasicWebView.canScrollHorizontally(-1) ->
+                    goLeft(jump = false)
+
+                else ->
+                    runJavaScript("readium.scrollLeft();") { success ->
+                        if (!success.toBoolean()) {
+                            goLeft(jump = false)
+                        }
                     }
-                }
             }
         }
     }
