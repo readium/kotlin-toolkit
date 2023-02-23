@@ -157,7 +157,7 @@ class HtmlResourceContentIterator(
 
         private val segmentsAcc = mutableListOf<TextElement.Segment>()
         private var textAcc = StringBuilder()
-        private var wholeRawTextAcc: String = ""
+        private var wholeRawTextAcc: String? = null
         private var elementRawTextAcc: String = ""
         private var rawTextAcc: String = ""
         private var currentLanguage: String? = null
@@ -290,7 +290,10 @@ class HtmlResourceContentIterator(
                                 }
                             }
                         ),
-                        text = Locator.Text(highlight = elementRawTextAcc)
+                        text = Locator.Text(
+                            before = segmentsAcc.firstOrNull()?.locator?.text?.before,
+                            highlight = elementRawTextAcc,
+                        )
                     ),
                     role = TextElement.Role.Body,
                     segments = segmentsAcc.toList()
@@ -327,7 +330,7 @@ class HtmlResourceContentIterator(
                             ),
                             text = Locator.Text(
                                 highlight = rawTextAcc,
-                                before = wholeRawTextAcc.takeLast(beforeMaxLength)
+                                before = wholeRawTextAcc?.takeLast(beforeMaxLength)
                             )
                         ),
                         text = text,
@@ -340,8 +343,10 @@ class HtmlResourceContentIterator(
                 )
             }
 
-            wholeRawTextAcc += rawTextAcc
-            elementRawTextAcc += rawTextAcc
+            if (rawTextAcc != "") {
+                wholeRawTextAcc = (wholeRawTextAcc ?: "") + rawTextAcc
+                elementRawTextAcc += rawTextAcc
+            }
             rawTextAcc = ""
             textAcc.clear()
         }

@@ -52,6 +52,7 @@ class HtmlResourceContentIteratorTest {
         TextElement(
             locator = locator(
                 selector = "#pgepubid00498 > div.center",
+                before = null,
                 highlight = "171"
             ),
             role = TextElement.Role.Body,
@@ -59,7 +60,7 @@ class HtmlResourceContentIteratorTest {
                 Segment(
                     locator = locator(
                         selector = "#pgepubid00498 > div.center",
-                        before = "",
+                        before = null,
                         highlight = "171"
                     ),
                     text = "171",
@@ -70,6 +71,7 @@ class HtmlResourceContentIteratorTest {
         TextElement(
             locator = locator(
                 selector = "#pgepubid00498 > h3",
+                before = "171",
                 highlight = "INTRODUCTORY"
             ),
             role = TextElement.Role.Body,
@@ -88,6 +90,7 @@ class HtmlResourceContentIteratorTest {
         TextElement(
             locator = locator(
                 selector = "#pgepubid00498 > p:nth-child(3)",
+                before = "171INTRODUCTORY",
                 highlight = "The difficulties of classification are very apparent here, and once more it must be noted that illustrative and practical purposes rather than logical ones are served by the arrangement adopted. The modern fanciful story is here placed next to the real folk story instead of after all the groups of folk products. The Hebrew stories at the beginning belong quite as well, perhaps even better, in Section V, while the stories at the end of Section VI shade off into the more modern types of short tales."
             ),
             role = TextElement.Role.Body,
@@ -106,6 +109,7 @@ class HtmlResourceContentIteratorTest {
         TextElement(
             locator = locator(
                 selector = "#pgepubid00498 > p:nth-child(4)",
+                before = "ade off into the more modern types of short tales.",
                 highlight = "The child's natural literature. The world has lost certain secrets as the price of an advancing civilization."
             ),
             role = TextElement.Role.Body,
@@ -124,6 +128,7 @@ class HtmlResourceContentIteratorTest {
         TextElement(
             locator = locator(
                 selector = "#pgepubid00498 > p:nth-child(5)",
+                before = "secrets as the price of an advancing civilization.",
                 highlight = "Without discussing the limits of the culture-epoch theory of human development as a complete guide in education, it is clear that the young child passes through a period when his mind looks out upon the world in a manner analogous to that of the folk as expressed in their literature."
             ),
             role = TextElement.Role.Body,
@@ -259,6 +264,7 @@ class HtmlResourceContentIteratorTest {
             TextElement(
                 locator = locator(
                     selector = "html > body > p:nth-child(2)",
+                    before = "oin sur la chaussée, aussi loin qu’on pouvait voir",
                     highlight = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée."
                 ),
                 role = TextElement.Role.Body,
