@@ -28,8 +28,8 @@ interface Properties : Cssable {
         }
 
         return props
-            .map { (key, value) -> "$key: $value" }
-            .joinToString(";\n") + ";\n"
+            .map { (key, value) -> "$key: $value !important;" }
+            .joinToString("\n") + "\n"
     }
 }
 
