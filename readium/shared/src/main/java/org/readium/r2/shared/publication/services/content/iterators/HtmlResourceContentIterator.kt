@@ -36,11 +36,14 @@ import org.readium.r2.shared.util.use
  * [Locator.Locations] object.
  *
  * If you want to start from the end of the resource, the [locator] must have a `progression` of 1.0.
+ *
+ * Locators will contain a `before` context of up to `beforeMaxLength` characters.
  */
 @ExperimentalReadiumApi
 class HtmlResourceContentIterator(
     private val resource: Resource,
-    private val locator: Locator
+    private val locator: Locator,
+    private val beforeMaxLength: Int = 50
 ) : Content.Iterator {
 
     companion object {
@@ -119,7 +122,8 @@ class HtmlResourceContentIterator(
                 // The JS third-party library used to generate the CSS Selector sometimes adds
                 // :root >, which doesn't work with JSoup.
                 tryOrNull { body.selectFirst(it.removePrefix(":root > ")) }
-            }
+            },
+            beforeMaxLength = beforeMaxLength
         )
         NodeTraversor.traverse(contentParser, body)
         return contentParser.result()
@@ -139,6 +143,7 @@ class HtmlResourceContentIterator(
     private class ContentParser(
         private val baseLocator: Locator,
         private val startElement: Element?,
+        private val beforeMaxLength: Int
     ) : NodeVisitor {
 
         fun result() = ParsedElements(
@@ -157,19 +162,11 @@ class HtmlResourceContentIterator(
         private var rawTextAcc: String = ""
         private var currentLanguage: String? = null
         private var currentCssSelector: String? = null
-        private var ignoredNode: Node? = null
 
         /** LIFO stack of the current element's block ancestors. */
         private val breadcrumbs = mutableListOf<Element>()
 
         override fun head(node: Node, depth: Int) {
-            if (ignoredNode != null) return
-
-            if (node.isHidden) {
-                ignoredNode = node
-                return
-            }
-
             if (node is Element) {
                 if (node.isBlock) {
                     breadcrumbs.add(node)
@@ -250,10 +247,6 @@ class HtmlResourceContentIterator(
         }
 
         override fun tail(node: Node, depth: Int) {
-            if (ignoredNode == node) {
-                ignoredNode = null
-            }
-
             if (node is TextNode) {
                 val language = node.language
                 if (currentLanguage != language) {
@@ -334,7 +327,7 @@ class HtmlResourceContentIterator(
                             ),
                             text = Locator.Text(
                                 highlight = rawTextAcc,
-                                before = wholeRawTextAcc.takeLast(50) // FIXME: custom length
+                                before = wholeRawTextAcc.takeLast(beforeMaxLength)
                             )
                         ),
                         text = text,
@@ -354,9 +347,6 @@ class HtmlResourceContentIterator(
         }
     }
 }
-
-// FIXME: Setup ignore conditions
-private val Node.isHidden: Boolean get() = false
 
 private val Node.language: String? get() =
     attr("xml:lang").takeUnless { it.isBlank() }
