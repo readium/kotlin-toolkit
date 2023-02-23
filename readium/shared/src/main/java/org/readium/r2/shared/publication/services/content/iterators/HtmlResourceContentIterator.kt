@@ -171,30 +171,34 @@ class HtmlResourceContentIterator(
             }
 
             if (node is Element) {
+                if (node.isBlock) {
+                    breadcrumbs.add(node)
+                }
 
                 val tag = node.normalName()
+
+                val elementLocator: Locator by lazy {
+                    baseLocator.copy(
+                        locations = Locator.Locations(
+                            otherLocations = buildMap {
+                                put("cssSelector", node.cssSelector() as Any)
+                            }
+                        )
+                    )
+                }
 
                 when {
                     tag == "br" -> {
                         flushText()
                     }
+
                     tag == "img" -> {
                         flushText()
 
-                        val href = node.attr("src")
-                            .takeIf { it.isNotBlank() }
-                            ?.let { Href(it, baseLocator.href).string }
-
-                        if (href != null) {
+                        node.srcRelativeToHref(baseLocator.href)?.let { href ->
                             elements.add(
                                 ImageElement(
-                                    locator = baseLocator.copy(
-                                        locations = Locator.Locations(
-                                            otherLocations = buildMap {
-                                                put("cssSelector", node.cssSelector() as Any)
-                                            }
-                                        )
-                                    ),
+                                    locator = elementLocator,
                                     embeddedLink = Link(href = href),
                                     caption = null, // FIXME: Get the caption from figcaption
                                     attributes = buildList {
@@ -207,9 +211,35 @@ class HtmlResourceContentIterator(
                             )
                         }
                     }
-                    node.isBlock -> {
-                        breadcrumbs.add(node)
 
+                    tag == "audio" || tag == "video" -> {
+                        flushText()
+
+                        val href = node.srcRelativeToHref(baseLocator.href)
+                        val link: Link? =
+                            if (href != null) {
+                                Link(href = href)
+                            } else {
+                                val sources = node.select("source")
+                                    .mapNotNull { source ->
+                                        source.srcRelativeToHref(baseLocator.href)?.let { href ->
+                                            Link(href = href, type = source.attr("type").takeUnless { it.isBlank() })
+                                        }
+                                    }
+
+                                sources.firstOrNull()?.copy(alternates = sources.drop(1))
+                            }
+
+                        if (link != null) {
+                            when (tag) {
+                                "audio" -> elements.add(AudioElement(locator = elementLocator, embeddedLink = link, attributes = emptyList()))
+                                "video" -> elements.add(VideoElement(locator = elementLocator, embeddedLink = link, attributes = emptyList()))
+                                else -> {}
+                            }
+                        }
+                    }
+
+                    node.isBlock -> {
                         segmentsAcc.clear()
                         textAcc.clear()
                         rawTextAcc = ""
@@ -332,3 +362,8 @@ private val Node.language: String? get() =
     attr("xml:lang").takeUnless { it.isBlank() }
         ?: attr("lang").takeUnless { it.isBlank() }
         ?: parent()?.language
+
+private fun Node.srcRelativeToHref(baseHref: String): String? =
+    attr("src")
+        .takeIf { it.isNotBlank() }
+        ?.let { Href(it, baseHref).string }

@@ -2,9 +2,9 @@
 
 package org.readium.r2.shared.publication.services.content.iterators
 
-import kotlin.test.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -13,17 +13,19 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.publication.services.content.Content.Attribute
+import org.readium.r2.shared.publication.services.content.Content.AttributeKey.Companion.ACCESSIBILITY_LABEL
 import org.readium.r2.shared.publication.services.content.Content.AttributeKey.Companion.LANGUAGE
 import org.readium.r2.shared.publication.services.content.Content.TextElement
 import org.readium.r2.shared.publication.services.content.Content.TextElement.Segment
 import org.readium.r2.shared.util.Language
 import org.robolectric.RobolectricTestRunner
 
+@OptIn(ExperimentalReadiumApi::class)
 @RunWith(RobolectricTestRunner::class)
 class HtmlResourceContentIteratorTest {
 
-    private val link = Link(href = "res.xhtml", type = "application/xhtml+xml")
-    private val locator = Locator(href = "res.xhtml", type = "application/xhtml+xml")
+    private val link = Link(href = "/dir/res.xhtml", type = "application/xhtml+xml")
+    private val locator = Locator(href = "/dir/res.xhtml", type = "application/xhtml+xml")
 
     private val html = """
         <?xml version="1.0" encoding="UTF-8"?>
@@ -155,12 +157,19 @@ class HtmlResourceContentIteratorTest {
     private fun iterator(html: String, startLocator: Locator = locator): HtmlResourceContentIterator =
         HtmlResourceContentIterator(StringResource(link, html), startLocator)
 
+    private suspend fun HtmlResourceContentIterator.elements(): List<Content.Element> =
+        buildList {
+            while (hasNext()) {
+                add(next())
+            }
+        }
+
     @Test
     fun `cannot call previous() without first hasPrevious()`() = runTest {
         val iter = iterator(html)
         iter.hasNext(); iter.next()
 
-        assertFailsWith(IllegalStateException::class) { iter.previous() }
+        assertThrows(IllegalStateException::class.java) { iter.previous() }
         iter.hasPrevious()
         iter.previous()
     }
@@ -168,19 +177,14 @@ class HtmlResourceContentIteratorTest {
     @Test
     fun `cannot call next() without first hasNext()`() = runTest {
         val iter = iterator(html)
-        assertFailsWith(IllegalStateException::class) { iter.next() }
+        assertThrows(IllegalStateException::class.java) { iter.next() }
         iter.hasNext()
         iter.next()
     }
 
     @Test
     fun `iterate from start to finish`() = runTest {
-        val iter = iterator(html)
-        val res = mutableListOf<Content.Element>()
-        while (iter.hasNext()) {
-            res.add(iter.next())
-        }
-        assertContentEquals(elements, res)
+        assertEquals(elements, iterator(html).elements())
     }
 
     @Test
@@ -227,11 +231,7 @@ class HtmlResourceContentIteratorTest {
     @Test
     fun `starting from a CSS selector`() = runTest {
         val iter = iterator(html, locator(selector = "#pgepubid00498 > p:nth-child(3)"))
-        val res = mutableListOf<Content.Element>()
-        while (iter.hasNext()) {
-            res.add(iter.next())
-        }
-        assertContentEquals(elements.subList(2, elements.size), res)
+        assertEquals(elements.subList(2, elements.size), iter.elements())
     }
 
     @Test
@@ -275,6 +275,125 @@ class HtmlResourceContentIteratorTest {
                 )
             ),
             iter.next()
+        )
+    }
+
+    @Test
+    fun `iterating over image elements`() = runTest {
+        val html = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <html xmlns="http://www.w3.org/1999/xhtml">
+            <body>
+                <img src="image.png"/>
+                <img src="../cover.jpg" alt="Accessibility description" />
+            </body>
+            </html>
+            """
+
+        assertEquals(
+            listOf(
+                Content.ImageElement(
+                    locator = locator(
+                        selector = "html > body > img:nth-child(1)"
+                    ),
+                    embeddedLink = Link(href = "/dir/image.png"),
+                    caption = null,
+                    attributes = emptyList()
+                ),
+                Content.ImageElement(
+                    locator = locator(
+                        selector = "html > body > img:nth-child(2)"
+                    ),
+                    embeddedLink = Link(href = "/cover.jpg"),
+                    caption = null,
+                    attributes = listOf(Attribute(ACCESSIBILITY_LABEL, "Accessibility description"))
+                )
+            ),
+            iterator(html).elements()
+        )
+    }
+
+    @Test
+    fun `iterating over audio elements`() = runTest {
+        val html = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <html xmlns="http://www.w3.org/1999/xhtml">
+            <body>
+                <audio src="audio.mp3" />
+                <audio>
+                    <source src="audio.mp3" type="audio/mp3" />
+                    <source src="audio.ogg" type="audio/ogg" />
+                </audio>
+            </body>
+            </html>
+            """
+
+        assertEquals(
+            listOf(
+                Content.AudioElement(
+                    locator = locator(
+                        selector = "html > body > audio:nth-child(1)"
+                    ),
+                    embeddedLink = Link(href = "/dir/audio.mp3"),
+                    attributes = emptyList()
+                ),
+                Content.AudioElement(
+                    locator = locator(
+                        selector = "html > body > audio:nth-child(2)"
+                    ),
+                    embeddedLink = Link(
+                        href = "/dir/audio.mp3",
+                        type = "audio/mp3",
+                        alternates = listOf(
+                            Link(href = "/dir/audio.ogg", type = "audio/ogg")
+                        )
+                    ),
+                    attributes = emptyList()
+                )
+            ),
+            iterator(html).elements()
+        )
+    }
+
+    @Test
+    fun `iterating over video elements`() = runTest {
+        val html = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <html xmlns="http://www.w3.org/1999/xhtml">
+            <body>
+                <video src="video.mp4" />
+                <video>
+                    <source src="video.mp4" type="video/mp4" />
+                    <source src="video.m4v" type="video/x-m4v" />
+                </video>
+            </body>
+            </html>
+            """
+
+        assertEquals(
+            listOf(
+                Content.VideoElement(
+                    locator = locator(
+                        selector = "html > body > video:nth-child(1)"
+                    ),
+                    embeddedLink = Link(href = "/dir/video.mp4"),
+                    attributes = emptyList()
+                ),
+                Content.VideoElement(
+                    locator = locator(
+                        selector = "html > body > video:nth-child(2)"
+                    ),
+                    embeddedLink = Link(
+                        href = "/dir/video.mp4",
+                        type = "video/mp4",
+                        alternates = listOf(
+                            Link(href = "/dir/video.m4v", type = "video/x-m4v")
+                        )
+                    ),
+                    attributes = emptyList()
+                )
+            ),
+            iterator(html).elements()
         )
     }
 }
