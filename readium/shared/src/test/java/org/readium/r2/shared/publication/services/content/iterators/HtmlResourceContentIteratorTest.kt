@@ -153,9 +153,11 @@ class HtmlResourceContentIteratorTest {
         after: String? = null
     ): Locator =
         locator.copy(
-            locations = Locator.Locations(otherLocations = buildMap {
-                selector?.let { put("cssSelector", it) }
-            }),
+            locations = Locator.Locations(
+                otherLocations = buildMap {
+                    selector?.let { put("cssSelector", it) }
+                }
+            ),
             text = Locator.Text(before = before, highlight = highlight, after = after)
         )
 

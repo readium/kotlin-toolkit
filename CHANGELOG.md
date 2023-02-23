@@ -21,12 +21,16 @@ All notable changes to this project will be documented in this file. Take a look
 
 * The EPUB content iterator now returns `audio` and `video` elements.
 
-#### Changed
+### Changed
+
+#### Navigator
 
 * `EpubNavigatorFragment.firstVisibleElementLocator()` now returns the first *block* element that is visible on the screen, even if it starts on previous pages.
     * This is used to make sure the user will not miss any context when restoring a TTS session in the middle of a resource.
 
-#### Fixed
+### Fixed
+
+#### Streamer
 
 * Fix issue with the TTS starting from the beginning of the chapter instead of the current position.
 
