@@ -17,10 +17,18 @@ All notable changes to this project will be documented in this file. Take a look
 * Scroll mode: jumping between two EPUB resources with a horizontal swipe triggers the `Navigator.Listener.onJumpToLocator()` callback.
     * This can be used to allow the user to go back to their previous location if they swiped across chapters by mistake.
 
+#### Streamer
+
+* The EPUB content iterator now returns `audio` and `video` elements.
+
 #### Changed
 
 * `EpubNavigatorFragment.firstVisibleElementLocator()` now returns the first *block* element that is visible on the screen, even if it starts on previous pages.
     * This is used to make sure the user will not miss any context when restoring a TTS session in the middle of a resource.
+
+#### Fixed
+
+* Fix issue with the TTS starting from the beginning of the chapter instead of the current position.
 
 ## [2.3.0]
 
