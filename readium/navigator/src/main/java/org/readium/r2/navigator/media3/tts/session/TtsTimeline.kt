@@ -6,6 +6,7 @@
 
 package org.readium.r2.navigator.media3.tts.session
 
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Timeline
 import java.util.*
@@ -15,7 +16,7 @@ internal class TtsTimeline(
     private val mediaItems: List<MediaItem>,
 ) : Timeline() {
 
-    private val uuids = (0 until windowCount)
+    private val uuids = mediaItems.indices
         .map { UUID.randomUUID() }
 
     override fun getWindowCount(): Int {
@@ -49,6 +50,8 @@ internal class TtsTimeline(
 
     override fun getIndexOfPeriod(uid: Any): Int {
         return uuids.indexOfFirst { it == uid }
+            .takeUnless { it == -1 }
+            ?: C.INDEX_UNSET
     }
 
     override fun getUidOfPeriod(periodIndex: Int): Any {

@@ -7,34 +7,48 @@
 package org.readium.r2.navigator.media3.exoplayer
 
 import android.app.Application
-import androidx.media3.common.AudioAttributes
-import androidx.media3.common.C
-import androidx.media3.common.Player
+import androidx.media3.common.*
 import androidx.media3.datasource.DataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.media3.audio.AudioEngine
+import org.readium.r2.navigator.media3.audio.AudioNavigator
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Publication
 
+/**
+ * An [AudioEngine] based on Media3 ExoPlayer.
+ */
 @ExperimentalReadiumApi
+@OptIn(ExperimentalCoroutinesApi::class)
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class ExoPlayerEngine(
-    private val application: Application,
-    private val publication: Publication,
     private val exoPlayer: ExoPlayer,
+    private val settingsResolver: SettingsResolver,
+    private val positionRefreshRate: Double,
+    initialPreferences: ExoPlayerPreferences
 ) : AudioEngine<ExoPlayerSettings, ExoPlayerPreferences, ExoPlayerEngine.Error> {
 
     companion object {
 
-        private fun createExoPlayer(
+        suspend operator fun invoke(
             application: Application,
-            publication: Publication,
-        ): ExoPlayer {
-            val dataSourceFactory: DataSource.Factory = ExoPlayerDataSource.Factory(publication)
-            return ExoPlayer.Builder(application)
+            settingsResolver: SettingsResolver,
+            dataSourceFactory: DataSource.Factory,
+            playlist: Playlist,
+            positionRefreshRate: Double,
+            initialIndex: Int,
+            initialPosition: Duration,
+            initialPreferences: ExoPlayerPreferences
+        ): ExoPlayerEngine {
+            val exoPlayer = ExoPlayer.Builder(application)
                 .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
                 .setAudioAttributes(
                     AudioAttributes.Builder()
@@ -45,34 +59,143 @@ class ExoPlayerEngine(
                 )
                 .setHandleAudioBecomingNoisy(true)
                 .build()
+
+            exoPlayer.setMediaItems(
+                playlist.items.map { item ->
+                    MediaItem.Builder()
+                        .setUri(item.uri)
+                        .setMediaMetadata(item.mediaMetadata)
+                        .build()
+                }
+            )
+
+            exoPlayer.playlistMetadata = playlist.mediaMetadata
+
+            exoPlayer.seekTo(initialIndex, initialPosition.inWholeMilliseconds)
+
+            prepareExoPlayer(exoPlayer)
+
+            return ExoPlayerEngine(
+                exoPlayer,
+                settingsResolver,
+                positionRefreshRate,
+                initialPreferences
+            )
+        }
+
+        private suspend fun prepareExoPlayer(player: ExoPlayer) {
+            lateinit var listener: Player.Listener
+            suspendCancellableCoroutine { continuation ->
+                listener = object : Player.Listener {
+                    override fun onPlaybackStateChanged(playbackState: Int) {
+                        when (playbackState) {
+                            Player.STATE_READY -> continuation.resume(Unit) {}
+                            Player.STATE_IDLE -> if (player.playerError != null) {
+                                continuation.resume(Unit) {}
+                            }
+                            else -> {}
+                        }
+                    }
+                }
+                continuation.invokeOnCancellation { player.removeListener(listener) }
+                player.addListener(listener)
+                player.prepare()
+            }
+            player.removeListener(listener)
+        }
+    }
+
+    data class Playlist(
+        val mediaMetadata: MediaMetadata,
+        val duration: Duration?,
+        val items: List<Item>
+    ) {
+        data class Item(
+            val uri: String,
+            val mediaMetadata: MediaMetadata,
+            val duration: Duration?
+        )
+    }
+
+    fun interface SettingsResolver {
+
+        /**
+         * Computes a set of engine settings from the engine preferences.
+         */
+        fun settings(preferences: ExoPlayerPreferences): ExoPlayerSettings
+    }
+
+    private inner class Listener : Player.Listener {
+
+        override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {
+            submitPreferences(
+                ExoPlayerPreferences(
+                    pitch = playbackParameters.pitch.toDouble(),
+                    speed = playbackParameters.speed.toDouble()
+                )
+            )
+        }
+
+        override fun onEvents(player: Player, events: Player.Events) {
+            _playback.value = exoPlayer.playback
+            _position.value = exoPlayer.position
         }
     }
 
     class Error : AudioEngine.Error
 
+    private val coroutineScope: CoroutineScope =
+        MainScope()
+
+    init {
+        exoPlayer.addListener(Listener())
+    }
+
+    private val _settings: MutableStateFlow<ExoPlayerSettings> =
+        MutableStateFlow(settingsResolver.settings(initialPreferences))
+
+    private val _playback: MutableStateFlow<AudioEngine.Playback<Error>> =
+        MutableStateFlow(exoPlayer.playback)
+
+    private val _position: MutableStateFlow<AudioEngine.Position> =
+        MutableStateFlow(exoPlayer.position)
+
+    init {
+        coroutineScope.launch {
+            val positionRefreshDelay = (1.0 / positionRefreshRate).seconds
+            while (isActive) {
+                delay(positionRefreshDelay)
+                _position.value = exoPlayer.position
+            }
+        }
+
+        submitPreferences(initialPreferences)
+    }
+
     override val playback: StateFlow<AudioEngine.Playback<Error>>
-        get() = TODO("Not yet implemented")
+        get() = _playback.asStateFlow()
 
     override val position: StateFlow<AudioEngine.Position>
-        get() = TODO("Not yet implemented")
+        get() = _position.asStateFlow()
 
     override val settings: StateFlow<ExoPlayerSettings>
-        get() = TODO("Not yet implemented")
+        get() = _settings.asStateFlow()
 
     override fun play() {
-        TODO("Not yet implemented")
+        exoPlayer.play()
     }
 
     override fun pause() {
-        TODO("Not yet implemented")
+        exoPlayer.pause()
     }
 
-    override fun seek(index: Long, position: Duration) {
-        TODO("Not yet implemented")
+    override fun seek(index: Int, position: Duration) {
+        exoPlayer.seekTo(index, position.inWholeMilliseconds)
     }
 
     override fun close() {
-        TODO("Not yet implemented")
+        coroutineScope.cancel()
+        exoPlayer.release()
     }
 
     override fun asPlayer(): Player {
@@ -80,6 +203,31 @@ class ExoPlayerEngine(
     }
 
     override fun submitPreferences(preferences: ExoPlayerPreferences) {
-        TODO("Not yet implemented")
+        val newSettings = settingsResolver.settings(preferences)
+        exoPlayer.playbackParameters = PlaybackParameters(
+            newSettings.speed.toFloat(), newSettings.pitch.toFloat()
+        )
     }
+
+    private val ExoPlayer.playback: AudioEngine.Playback<Error> get() =
+        AudioEngine.Playback(
+            state = engineState,
+            playWhenReady = playWhenReady
+        )
+
+    private val ExoPlayer.engineState: MediaNavigator.State get() =
+        when (this.playbackState) {
+            Player.STATE_READY -> AudioNavigator.State.Ready
+            Player.STATE_BUFFERING -> AudioNavigator.State.Buffering
+            Player.STATE_ENDED -> AudioNavigator.State.Ended
+            else -> AudioNavigator.State.Error()
+        }
+
+    private val ExoPlayer.position: AudioEngine.Position get() =
+        AudioEngine.Position(
+            index = currentMediaItemIndex,
+            position = currentPosition.milliseconds,
+            duration = duration.takeIf { it != C.TIME_UNSET }?.milliseconds,
+            buffered = bufferedPosition.milliseconds
+        )
 }

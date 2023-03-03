@@ -41,7 +41,6 @@ class TtsPreferencesEditor(
      * TTS default language and to ignore regions.
      */
     val voice: EnumPreference<AndroidTtsEngine.Voice.Id?> = run {
-        // Recomposition will be triggered higher if the value changes.
         val currentLanguage = language.effectiveValue?.removeRegion()
 
         editor.voices.map(

@@ -65,12 +65,13 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     private val streamVolumeManager = StreamVolumeManager(
         application,
-        Handler(applicationLooper),
+        eventHandler,
         StreamVolumeManagerListener()
     )
 
     init {
-        streamVolumeManager.setStreamType(Util.getStreamTypeForAudioUsage(audioAttributes.usage))
+        val streamType = Util.getStreamTypeForAudioUsage(audioAttributes.usage)
+        streamVolumeManager.setStreamType(streamType)
     }
 
     private val audioFocusManager = AudioFocusManager(
@@ -115,8 +116,8 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         ListenerSet(
             applicationLooper,
             Clock.DEFAULT,
-        ) { listener: Listener, flags: FlagSet? ->
-            listener.onEvents(this, Events(flags!!))
+        ) { listener: Listener, flags: FlagSet ->
+            listener.onEvents(this, Events(flags))
         }
 
     private val permanentAvailableCommands =
@@ -458,7 +459,6 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun setPlaylistMetadata(mediaMetadata: MediaMetadata) {
-        throw NotImplementedError()
     }
 
     override fun getCurrentManifest(): Any? {
@@ -756,10 +756,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
             ) { listener: Listener ->
                 listener.onPlayWhenReadyChanged(
                     playbackInfo.playWhenReady,
-                    if (playbackInfo.state == TtsPlayer.State.Ended)
-                        PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM
-                    else
-                        PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST
+                    PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST
                     // PLAYBACK_SUPPRESSION_REASON_NONE
                     // playWhenReadyChangeReason
                 )

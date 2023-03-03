@@ -13,6 +13,9 @@ import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 
+/**
+ * An audio engine.
+ */
 @ExperimentalReadiumApi
 interface AudioEngine<S : Configurable.Settings, P : Configurable.Preferences<P>, E : AudioEngine.Error> :
     Configurable<S, P> {
@@ -22,12 +25,13 @@ interface AudioEngine<S : Configurable.Settings, P : Configurable.Preferences<P>
     data class Playback<E : Error>(
         val state: MediaNavigator.State,
         val playWhenReady: Boolean,
-        val error: E?
     )
 
     data class Position(
         val index: Int,
-        val duration: Duration
+        val position: Duration,
+        val duration: Duration?,
+        val buffered: Duration?
     )
 
     val playback: StateFlow<Playback<E>>
@@ -38,7 +42,7 @@ interface AudioEngine<S : Configurable.Settings, P : Configurable.Preferences<P>
 
     fun pause()
 
-    fun seek(index: Long, position: Duration)
+    fun seek(index: Int, position: Duration)
 
     fun close()
 

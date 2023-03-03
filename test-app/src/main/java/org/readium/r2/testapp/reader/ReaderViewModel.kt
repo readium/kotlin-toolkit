@@ -75,7 +75,6 @@ class ReaderViewModel(
 
     fun close() {
         viewModelScope.launch {
-            tts?.stop()
             readerRepository.close(bookId)
         }
     }

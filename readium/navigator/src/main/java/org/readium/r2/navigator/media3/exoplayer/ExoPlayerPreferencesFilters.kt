@@ -16,7 +16,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 object ExoPlayerSharedPreferencesFilter : PreferencesFilter<ExoPlayerPreferences> {
 
     override fun filter(preferences: ExoPlayerPreferences): ExoPlayerPreferences =
-        preferences.copy()
+        preferences
 }
 
 /**

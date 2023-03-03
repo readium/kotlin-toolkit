@@ -29,7 +29,9 @@ sealed class ExoPlayerDataSourceException(message: String, cause: Throwable?) : 
  * An ExoPlayer's [DataSource] which retrieves resources from a [Publication].
  */
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-internal class ExoPlayerDataSource internal constructor(private val publication: Publication) : BaseDataSource(/* isNetwork = */ true) {
+internal class ExoPlayerDataSource internal constructor(
+    private val publication: Publication
+) : BaseDataSource(/* isNetwork = */ true) {
 
     class Factory(
         private val publication: Publication,

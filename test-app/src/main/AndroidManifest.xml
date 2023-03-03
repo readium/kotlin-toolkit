@@ -16,6 +16,12 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+
     <!-- android:networkSecurityConfig is required for r2-lcp-kotlin and r2-navigator-kotlin -->
     <application
         android:name=".Application"
@@ -189,7 +195,7 @@
             android:name=".reader.ReaderActivity"
             android:label="Reader" />
 
-        <service android:name=".reader.tts.TtsService"
+        <service android:name=".reader.MediaService"
             android:enabled="true"
             android:exported="true"
             android:foregroundServiceType="mediaPlayback"
@@ -197,17 +203,8 @@
 
             <intent-filter>
                 <action android:name="androidx.media3.session.MediaSessionService"/>
-                <action android:name="android.media.session.MediaSessionService" />
-            </intent-filter>
-        </service>
-
-        <service android:name=".reader.MediaService"
-            android:enabled="true"
-            android:exported="true"
-            tools:ignore="ExportedService">
-
-            <intent-filter>
                 <action android:name="androidx.media2.session.MediaSessionService"/>
+                <action android:name="android.media.session.MediaSessionService" />
             </intent-filter>
         </service>
 

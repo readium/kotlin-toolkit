@@ -11,17 +11,17 @@ package org.readium.r2.testapp.reader
 import org.readium.adapters.pdfium.navigator.PdfiumPreferences
 import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
 import org.readium.adapters.pdfium.navigator.PdfiumSettings
-import org.readium.navigator.media2.ExperimentalMedia2
-import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.epub.EpubPreferences
+import org.readium.r2.navigator.media3.exoplayer.ExoPlayerNavigator
+import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferences
+import org.readium.r2.navigator.media3.exoplayer.ExoPlayersNavigatorFactory
 import org.readium.r2.navigator.media3.tts.AndroidTtsNavigatorFactory
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
 import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.*
 import org.readium.r2.testapp.reader.preferences.PreferencesManager
-import org.readium.r2.testapp.reader.tts.TtsServiceFacade
 
 sealed class ReaderInitData {
     abstract val bookId: Long
@@ -31,7 +31,7 @@ sealed class ReaderInitData {
 sealed class VisualReaderInitData(
     override val bookId: Long,
     override val publication: Publication,
-    var initialLocation: Locator?,
+    val initialLocation: Locator?,
     val ttsInitData: TtsInitData?,
 ) : ReaderInitData()
 
@@ -60,14 +60,18 @@ class PdfReaderInitData(
     ttsInitData: TtsInitData?,
 ) : VisualReaderInitData(bookId, publication, initialLocation, ttsInitData)
 
-@OptIn(ExperimentalMedia2::class)
+class TtsInitData(
+    val mediaServiceFacade: MediaServiceFacade,
+    val navigatorFactory: AndroidTtsNavigatorFactory,
+    val preferencesManager: PreferencesManager<AndroidTtsPreferences>,
+)
+
 class MediaReaderInitData(
     override val bookId: Long,
     override val publication: Publication,
-    val mediaNavigator: MediaNavigator,
-    val sessionBinder: MediaService.Binder
-    // val preferencesManager: PreferencesManager<ExoPlayerPreferences>,
-    // val navigatorFactory: PlayerNavigatorFactory<ExoPlayerSettings, ExoPlayerPreferences, ExoPlayerPreferencesEditor>
+    val mediaNavigator: ExoPlayerNavigator,
+    val preferencesManager: PreferencesManager<ExoPlayerPreferences>,
+    val navigatorFactory: ExoPlayersNavigatorFactory
 ) : ReaderInitData()
 
 class DummyReaderInitData(
@@ -79,9 +83,3 @@ class DummyReaderInitData(
         )
     )
 }
-
-class TtsInitData(
-    val ttsServiceFacade: TtsServiceFacade,
-    val ttsNavigatorFactory: AndroidTtsNavigatorFactory,
-    val preferencesManager: PreferencesManager<AndroidTtsPreferences>,
-)
