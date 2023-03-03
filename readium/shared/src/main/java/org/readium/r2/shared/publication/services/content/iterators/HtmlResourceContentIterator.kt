@@ -116,21 +116,19 @@ class HtmlResourceContentIterator(
     private var parsedElements: ParsedElements? = null
 
     private suspend fun parseElements(): ParsedElements {
-        val body = resource.use { res ->
+        val document = resource.use { res ->
             val html = res.readAsString().getOrThrow()
             Jsoup.parse(html)
-        }.body()
+        }
 
         val contentParser = ContentParser(
             baseLocator = locator,
             startElement = locator.locations.cssSelector?.let {
-                // The JS third-party library used to generate the CSS Selector sometimes adds
-                // :root >, which doesn't work with JSoup.
-                tryOrNull { body.selectFirst(it.removePrefix(":root > ")) }
+                tryOrNull { document.selectFirst(it) }
             },
             beforeMaxLength = beforeMaxLength
         )
-        NodeTraversor.traverse(contentParser, body)
+        NodeTraversor.traverse(contentParser, document.body())
         return contentParser.result()
     }
 

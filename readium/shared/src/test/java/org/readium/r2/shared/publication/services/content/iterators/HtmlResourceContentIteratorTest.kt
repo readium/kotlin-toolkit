@@ -299,6 +299,45 @@ class HtmlResourceContentIteratorTest {
     }
 
     @Test
+    fun `starting from a CSS selector using the root selector`() = runTest {
+        val nbspHtml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr">
+            <head></head>
+            <body>
+                <p>Tout au loin sur la chaussée, aussi loin qu’on pouvait voir</p>
+                <p>Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient <span>[...]</span> On buvait de la bière sucrée.</p>
+            </body>
+            </html>
+            """
+
+        val iter = iterator(nbspHtml, locator(selector = ":root > :nth-child(2) > :nth-child(2)"))
+        assertTrue(iter.hasNext())
+        assertEquals(
+            TextElement(
+                locator = locator(
+                    selector = "html > body > p:nth-child(2)",
+                    before = "oin sur la chaussée, aussi loin qu’on pouvait voir",
+                    highlight = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée."
+                ),
+                role = TextElement.Role.Body,
+                segments = listOf(
+                    Segment(
+                        locator = locator(
+                            selector = "html > body > p:nth-child(2)",
+                            before = "oin sur la chaussée, aussi loin qu’on pouvait voir",
+                            highlight = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée.",
+                        ),
+                        text = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée.",
+                        attributes = listOf(Attribute(LANGUAGE, Language("fr")))
+                    )
+                )
+            ),
+            iter.next()
+        )
+    }
+
+    @Test
     fun `iterating over image elements`() = runTest {
         val html = """
             <?xml version="1.0" encoding="UTF-8"?>
