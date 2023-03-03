@@ -189,16 +189,27 @@
             android:name=".reader.ReaderActivity"
             android:label="Reader" />
 
-        <service android:name=".MediaService"
+        <service android:name=".reader.tts.TtsService"
+            android:enabled="true"
+            android:exported="true"
+            android:foregroundServiceType="mediaPlayback"
+            tools:ignore="ExportedService">
+
+            <intent-filter>
+                <action android:name="androidx.media3.session.MediaSessionService"/>
+                <action android:name="android.media.session.MediaSessionService" />
+            </intent-filter>
+        </service>
+
+        <service android:name=".reader.MediaService"
             android:enabled="true"
             android:exported="true"
             tools:ignore="ExportedService">
 
             <intent-filter>
-                <action android:name="androidx.media2.session.MediaSessionService" />
+                <action android:name="androidx.media2.session.MediaSessionService"/>
             </intent-filter>
         </service>
-
 
     </application>
 

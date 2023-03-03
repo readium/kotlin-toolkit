@@ -35,19 +35,22 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.navigator.util.EdgeTapNavigation
+import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentReaderBinding
 import org.readium.r2.testapp.domain.model.Highlight
+import org.readium.r2.testapp.reader.preferences.UserPreferencesBottomSheetDialogFragment
 import org.readium.r2.testapp.reader.tts.TtsControls
 import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.utils.*
@@ -59,7 +62,7 @@ import org.readium.r2.testapp.utils.extensions.throttleLatest
  *
  * Provides common menu items and saves last location on stop.
  */
-@OptIn(ExperimentalDecorator::class)
+@OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class)
 abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.Listener {
 
     protected var binding: FragmentReaderBinding by viewLifecycle()
@@ -79,6 +82,13 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
      * When true, the user won't be able to interact with the navigator.
      */
     private var disableTouches by mutableStateOf(false)
+
+    /**
+     * When true, the fragment won't save progression.
+     * This is useful in the case where the TTS is on and a service is saving progression
+     * in background.
+     */
+    private var preventProgressionSaving: Boolean = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -123,6 +133,10 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         model.tts?.let { tts ->
             TtsControls(
                 model = tts,
+                onPreferences = {
+                    UserPreferencesBottomSheetDialogFragment(tts.preferencesModel, "TTS Settings")
+                        .show(childFragmentManager, "TtsSettings")
+                },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(8.dp)
@@ -134,7 +148,11 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 navigator.currentLocator
-                    .onEach { model.saveProgression(it) }
+                    .onEach {
+                        if (!preventProgressionSaving) {
+                            model.saveProgression(it)
+                        }
+                    }
                     .launchIn(this)
 
                 setupHighlights(this)
@@ -179,19 +197,9 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                 }
                 .launchIn(scope)
 
-            // Navigate to the currently spoken utterance.
-            state.map { it.playingUtterance }
-                .filterNotNull()
-                // Prevent jumping to many locations when the user skips repeatedly forward/backward.
-                .throttleLatest(500.milliseconds)
-                .onEach { locator ->
-                    navigator.go(locator, animated = false)
-                }
-                .launchIn(scope)
-
             // Navigate to the currently spoken word.
             // This will automatically turn pages when needed.
-            state.map { it.playingWordRange }
+            position
                 .filterNotNull()
                 // Improve performances by throttling the moves to maximum one per second.
                 .throttleLatest(1.seconds)
@@ -202,8 +210,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
             // Prevent interacting with the publication (including page turns) while the TTS is
             // playing.
-            state.map { it.isPlaying }
-                .distinctUntilChanged()
+            isPlaying
                 .onEach { isPlaying ->
                     disableTouches = isPlaying
                 }
@@ -211,8 +218,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
             // Highlight the currently spoken utterance.
             (navigator as? DecorableNavigator)?.let { navigator ->
-                state.map { it.playingUtterance }
-                    .distinctUntilChanged()
+                highlight
                     .onEach { locator ->
                         val decoration = locator?.let {
                             Decoration(
@@ -225,6 +231,12 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                     }
                     .launchIn(scope)
             }
+
+            showControls
+                .onEach { showControls ->
+                    preventProgressionSaving = showControls
+                }
+                .launchIn(scope)
         }
     }
 
@@ -240,19 +252,18 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                 getString(R.string.tts_error_language_support_incomplete, language.locale.displayLanguage)
             )
         ) {
-            tts.requestInstallVoice(activity)
+            AndroidTtsEngine.requestInstallVoice(activity)
         }
+    }
+
+    override fun go(locator: Locator, animated: Boolean) {
+        model.tts?.stop()
+        super.go(locator, animated)
     }
 
     override fun onDestroyView() {
         (navigator as? DecorableNavigator)?.removeDecorationListener(decorationListener)
         super.onDestroyView()
-    }
-
-    override fun onStop() {
-        super.onStop()
-
-        model.tts?.pause()
     }
 
     override fun onHiddenChanged(hidden: Boolean) {

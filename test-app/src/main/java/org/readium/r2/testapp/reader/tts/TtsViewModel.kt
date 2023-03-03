@@ -6,38 +6,46 @@
 
 package org.readium.r2.testapp.reader.tts
 
-import android.content.Context
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.VisualNavigator
-import org.readium.r2.navigator.tts.AndroidTtsEngine
-import org.readium.r2.navigator.tts.PublicationSpeechSynthesizer
-import org.readium.r2.navigator.tts.PublicationSpeechSynthesizer.Configuration
-import org.readium.r2.navigator.tts.PublicationSpeechSynthesizer.State as TtsState
-import org.readium.r2.navigator.tts.TtsEngine
-import org.readium.r2.navigator.tts.TtsEngine.Voice
-import org.readium.r2.shared.DelicateReadiumApi
+import org.readium.r2.navigator.media3.api.MediaNavigator
+import org.readium.r2.navigator.media3.tts.AndroidTtsNavigator
+import org.readium.r2.navigator.media3.tts.AndroidTtsNavigatorFactory
+import org.readium.r2.navigator.media3.tts.TtsNavigator
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsSettings
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.reader.ReaderInitData
+import org.readium.r2.testapp.reader.VisualReaderInitData
+import org.readium.r2.testapp.reader.preferences.PreferencesManager
+import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
+import org.readium.r2.testapp.utils.extensions.mapStateIn
 
 /**
- * View model controlling a [PublicationSpeechSynthesizer] to read a publication aloud.
+ * View model controlling a [TtsNavigator] to read a publication aloud.
  *
- * Note: This is not an Android [ViewModel], but it is a component of [ReaderViewModel].
+ * Note: This is not an Android ViewModel, but it is a component of ReaderViewModel.
  */
-@OptIn(ExperimentalReadiumApi::class)
+@OptIn(ExperimentalReadiumApi::class, ExperimentalCoroutinesApi::class)
 class TtsViewModel private constructor(
-    private val synthesizer: PublicationSpeechSynthesizer<AndroidTtsEngine>,
-    private val scope: CoroutineScope
-) {
+    private val viewModelScope: CoroutineScope,
+    private val bookId: Long,
+    private val publication: Publication,
+    private val ttsNavigatorFactory: AndroidTtsNavigatorFactory,
+    private val ttsServiceFacade: TtsServiceFacade,
+    private val preferencesManager: PreferencesManager<AndroidTtsPreferences>,
+) : TtsNavigator.Listener {
 
     companion object {
         /**
@@ -45,45 +53,27 @@ class TtsViewModel private constructor(
          * TTS engine.
          */
         operator fun invoke(
-            context: Context,
-            publication: Publication,
-            scope: CoroutineScope
-        ): TtsViewModel? =
-            PublicationSpeechSynthesizer(context, publication)
-                ?.let { TtsViewModel(it, scope) }
+            viewModelScope: CoroutineScope,
+            readerInitData: ReaderInitData,
+        ): TtsViewModel? {
+            if (readerInitData !is VisualReaderInitData || readerInitData.ttsInitData == null) {
+                return null
+            }
+
+            return TtsViewModel(
+                viewModelScope = viewModelScope,
+                bookId = readerInitData.bookId,
+                publication = readerInitData.publication,
+                ttsNavigatorFactory = readerInitData.ttsInitData.ttsNavigatorFactory,
+                ttsServiceFacade = readerInitData.ttsInitData.ttsServiceFacade,
+                preferencesManager = readerInitData.ttsInitData.preferencesManager
+            )
+        }
     }
-
-    /**
-     * @param showControls Whether the TTS was enabled by the user.
-     * @param isPlaying Whether the TTS is currently speaking.
-     * @param playingWordRange Locator to the currently spoken word.
-     * @param playingUtterance Locator for the currently spoken utterance (e.g. sentence).
-     * @param settings Current user settings and their constraints.
-     */
-    data class State(
-        val showControls: Boolean = false,
-        val isPlaying: Boolean = false,
-        val playingWordRange: Locator? = null,
-        val playingUtterance: Locator? = null,
-        val settings: Settings = Settings()
-    )
-
-    /**
-     * @param config Currently selected user settings.
-     * @param rateRange Supported range for the rate setting.
-     * @param availableLanguages Languages supported by the TTS engine.
-     * @param availableVoices Voices supported by the TTS engine, for the selected language.
-     */
-    data class Settings(
-        val config: Configuration = Configuration(),
-        val rateRange: ClosedRange<Double> = 1.0..1.0,
-        val availableLanguages: List<Language> = emptyList(),
-        val availableVoices: List<Voice> = emptyList(),
-    )
 
     sealed class Event {
         /**
-         * Emitted when the [PublicationSpeechSynthesizer] fails with an error.
+         * Emitted when the [TtsNavigator] fails with an error.
          */
         class OnError(val error: UserException) : Event()
 
@@ -93,194 +83,147 @@ class TtsViewModel private constructor(
         class OnMissingVoiceData(val language: Language) : Event()
     }
 
-    /**
-     * Current state of the view model.
-     */
-    val state: StateFlow<State>
+    private val navigatorNow: AndroidTtsNavigator? get() =
+        ttsServiceFacade.session.value?.navigator
 
-    private val _events: Channel<Event> = Channel(Channel.BUFFERED)
-    val events: Flow<Event> = _events.receiveAsFlow()
+    private val _events: Channel<Event> =
+        Channel(Channel.BUFFERED)
 
-    /**
-     * Indicates whether the TTS is in the Stopped state.
-     */
-    private val isStopped: StateFlow<Boolean>
+    val events: Flow<Event> =
+        _events.receiveAsFlow()
+
+    val preferencesModel: UserPreferencesViewModel<AndroidTtsSettings, AndroidTtsPreferences>
+        get() = UserPreferencesViewModel(
+            viewModelScope = viewModelScope,
+            bookId = bookId,
+            preferencesManager = preferencesManager
+        ) { preferences ->
+            val baseEditor = ttsNavigatorFactory.createTtsPreferencesEditor(preferences)
+            TtsPreferencesEditor(baseEditor, voices)
+        }
+
+    val showControls: StateFlow<Boolean> =
+        ttsServiceFacade.session.mapStateIn(viewModelScope) {
+            it != null
+        }
+
+    val isPlaying: StateFlow<Boolean> =
+        ttsServiceFacade.session.flatMapLatest { session ->
+            session?.navigator?.playback?.map { playback -> playback.playWhenReady }
+                ?: MutableStateFlow(false)
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    val position: StateFlow<Locator?> =
+        ttsServiceFacade.session.flatMapLatest { session ->
+            session?.navigator?.currentLocator ?: MutableStateFlow(null)
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    val highlight: StateFlow<Locator?> =
+        ttsServiceFacade.session.flatMapLatest { session ->
+            session?.navigator?.utterance?.map { it.utteranceLocator }
+                ?: MutableStateFlow(null)
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    val voices: Set<AndroidTtsEngine.Voice> get() =
+        ttsServiceFacade.session.value?.navigator?.voices.orEmpty()
 
     init {
-        synthesizer.listener = SynthesizerListener()
+        ttsServiceFacade.session
+            .flatMapLatest { it?.navigator?.playback ?: MutableStateFlow(null) }
+            .onEach { playback ->
+                when (playback?.state) {
+                    null -> {
+                    }
+                    is MediaNavigator.State.Ended -> {
+                        stop()
+                    }
+                    is MediaNavigator.State.Error -> {
+                        onPlaybackError(playback.state as TtsNavigator.State.Error)
+                    }
+                    is MediaNavigator.State.Ready -> {}
+                    is MediaNavigator.State.Buffering -> {}
+                }
+            }.launchIn(viewModelScope)
 
-        // Automatically close the TTS when reaching the Stopped state.
-        isStopped = synthesizer.state
-            .map { it == PublicationSpeechSynthesizer.State.Stopped }
-            .stateIn(scope, SharingStarted.Lazily, initialValue = true)
-
-        // Supported voices grouped by their language.
-        val voicesByLanguage: Flow<Map<Language, List<Voice>>> =
-            synthesizer.availableVoices
-                .map { voices -> voices.groupBy { it.language } }
-
-        // All supported languages.
-        val languages: Flow<List<Language>> = voicesByLanguage
-            .map { voices ->
-                voices.keys.sortedBy { it.locale.displayName }
-            }
-
-        // Supported voices for the language selected in the synthesizer configuration.
-        val voicesForSelectedLanguage: Flow<List<Voice>> =
-            combine(
-                synthesizer.config.map { it.defaultLanguage },
-                voicesByLanguage,
-            ) { language, voices ->
-                language
-                    ?.let { voices[it] }
-                    ?.sortedBy { it.name ?: it.id }
-                    ?: emptyList()
-            }
-
-        // Settings model for the current configuration.
-        val settings: Flow<Settings> = combine(
-            synthesizer.config,
-            languages,
-            voicesForSelectedLanguage,
-        ) { config, langs, voices ->
-            Settings(
-                config = config,
-                rateRange = synthesizer.rateMultiplierRange,
-                availableLanguages = langs,
-                availableVoices = voices
-            )
-        }
-
-        // Current view model state.
-        state = combine(
-            isStopped,
-            synthesizer.state,
-            settings
-        ) { isStopped, state, currentSettings ->
-            val playing = (state as? TtsState.Playing)
-            val paused = (state as? TtsState.Paused)
-
-            State(
-                showControls = !isStopped,
-                isPlaying = (playing != null),
-                playingWordRange = playing?.range,
-                playingUtterance = (playing?.utterance ?: paused?.utterance)?.locator,
-                settings = currentSettings
-            )
-        }.stateIn(scope, SharingStarted.Eagerly, initialValue = State())
-    }
-
-    fun onCleared() {
-        runBlocking {
-            synthesizer.close()
-        }
+        preferencesManager.preferences
+            .onEach { ttsServiceFacade.session.value?.navigator?.submitPreferences(it) }
+            .launchIn(viewModelScope)
     }
 
     /**
      * Starts the TTS using the first visible locator in the given [navigator].
      */
     fun start(navigator: Navigator) {
-        if (!isStopped.value) return
+        viewModelScope.launch {
+            if (ttsServiceFacade.session.value != null)
+                return@launch
 
-        scope.launch {
-            val start = (navigator as? VisualNavigator)?.firstVisibleElementLocator()
-            synthesizer.start(fromLocator = start)
+            openSession(navigator)
         }
+    }
+
+    private suspend fun openSession(navigator: Navigator) {
+        val start = (navigator as? VisualNavigator)?.firstVisibleElementLocator()
+
+        val ttsNavigator = ttsNavigatorFactory.createNavigator(
+            this,
+            preferencesManager.preferences.value,
+            start
+        ) ?: run {
+            val exception = UserException(R.string.tts_error_initialization)
+            _events.send(Event.OnError(exception))
+            return
+        }
+
+        // playWhenReady must be true for the MediaSessionService to call Service.startForeground
+        // and prevent crashing
+        ttsNavigator.play()
+        ttsServiceFacade.openSession(bookId, ttsNavigator)
     }
 
     fun stop() {
-        if (isStopped.value) return
-        synthesizer.stop()
+        viewModelScope.launch {
+            ttsServiceFacade.closeSession()
+        }
     }
 
-    fun pauseOrResume() {
-        synthesizer.pauseOrResume()
+    fun play() {
+        navigatorNow?.play()
     }
 
     fun pause() {
-        synthesizer.pause()
+        navigatorNow?.pause()
     }
 
     fun previous() {
-        synthesizer.previous()
+        navigatorNow?.goBackward()
     }
 
     fun next() {
-        synthesizer.next()
+        navigatorNow?.goForward()
     }
 
-    fun setConfig(config: Configuration) {
-        synthesizer.setConfig(config)
+    override fun onStopRequested() {
+        stop()
     }
 
-    /**
-     * Starts the activity to install additional voice data.
-     */
-    @OptIn(DelicateReadiumApi::class)
-    fun requestInstallVoice(context: Context) {
-        synthesizer.engine.requestInstallMissingVoice(context)
-    }
-
-    private inner class SynthesizerListener : PublicationSpeechSynthesizer.Listener {
-        override fun onUtteranceError(
-            utterance: PublicationSpeechSynthesizer.Utterance,
-            error: PublicationSpeechSynthesizer.Exception
-        ) {
-            scope.launch {
-                // The synthesizer is paused when encountering an error while playing an
-                // utterance. Here we will skip to the next utterance unless the exception is
-                // recoverable.
-                val shouldContinuePlayback = !handleTtsException(error)
-                if (shouldContinuePlayback) {
-                    next()
+    private fun onPlaybackError(error: TtsNavigator.State.Error) {
+        val exception = when (error) {
+            is TtsNavigator.State.Error.ContentError -> {
+                UserException(R.string.tts_error_other, cause = error.exception)
+            }
+            is TtsNavigator.State.Error.EngineError<*> -> {
+                when ((error.error as AndroidTtsEngine.Error).kind) {
+                    AndroidTtsEngine.Error.Kind.Network ->
+                        UserException(R.string.tts_error_network)
+                    else ->
+                        UserException(R.string.tts_error_other)
                 }
             }
         }
 
-        override fun onError(error: PublicationSpeechSynthesizer.Exception) {
-            scope.launch {
-                handleTtsException(error)
-            }
+        viewModelScope.launch {
+            _events.send(Event.OnError(exception))
         }
-
-        /**
-         * Handles the given error and returns whether it was recovered from.
-         */
-        private suspend fun handleTtsException(error: PublicationSpeechSynthesizer.Exception): Boolean =
-            when (error) {
-                is PublicationSpeechSynthesizer.Exception.Engine -> when (val err = error.error) {
-                    // The `LanguageSupportIncomplete` exception is a special case. We can recover from
-                    // it by asking the user to download the missing voice data.
-                    is TtsEngine.Exception.LanguageSupportIncomplete -> {
-                        _events.send(Event.OnMissingVoiceData(err.language))
-                        true
-                    }
-
-                    else -> {
-                        _events.send(Event.OnError(err.toUserException()))
-                        false
-                    }
-                }
-            }
-
-        private fun TtsEngine.Exception.toUserException(): UserException =
-            when (this) {
-                is TtsEngine.Exception.InitializationFailed ->
-                    UserException(R.string.tts_error_initialization)
-                is TtsEngine.Exception.LanguageNotSupported ->
-                    UserException(
-                        R.string.tts_error_language_not_supported,
-                        language.locale.displayName
-                    )
-                is TtsEngine.Exception.LanguageSupportIncomplete ->
-                    UserException(
-                        R.string.tts_error_language_support_incomplete,
-                        language.locale.displayName
-                    )
-                is TtsEngine.Exception.Network ->
-                    UserException(R.string.tts_error_network)
-                is TtsEngine.Exception.Other ->
-                    UserException(R.string.tts_error_other)
-            }
     }
 }

@@ -175,6 +175,7 @@ class HtmlResourceContentIteratorTest {
     fun `cannot call previous() without first hasPrevious()`() = runTest {
         val iter = iterator(html)
         iter.hasNext(); iter.next()
+        iter.hasNext(); iter.next()
 
         assertThrows(IllegalStateException::class.java) { iter.previous() }
         iter.hasPrevious()
@@ -208,10 +209,20 @@ class HtmlResourceContentIteratorTest {
     }
 
     @Test
-    fun `next() then previous() returns the first element`() = runTest {
+    fun `next() then previous() returns null`() = runTest {
         val iter = iterator(html)
         assertTrue(iter.hasNext())
         assertEquals(elements[0], iter.next())
+        assertFalse(iter.hasPrevious())
+    }
+
+    @Test
+    fun `next() twice then previous() returns the first element`() = runTest {
+        val iter = iterator(html)
+        assertTrue(iter.hasNext())
+        assertEquals(elements[0], iter.next())
+        assertTrue(iter.hasNext())
+        assertEquals(elements[1], iter.next())
         assertTrue(iter.hasPrevious())
         assertEquals(elements[0], iter.previous())
     }
@@ -219,6 +230,7 @@ class HtmlResourceContentIteratorTest {
     @Test
     fun `calling hasPrevious() several times doesn't move the index`() = runTest {
         val iter = iterator(html)
+        iter.hasNext(); iter.next()
         iter.hasNext(); iter.next()
         assertTrue(iter.hasPrevious())
         assertTrue(iter.hasPrevious())
@@ -253,6 +265,45 @@ class HtmlResourceContentIteratorTest {
         val nbspHtml = """
             <?xml version="1.0" encoding="UTF-8"?>
             <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr">
+            <body>
+                <p>Tout au loin sur la chaussée, aussi loin qu’on pouvait voir</p>
+                <p>Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient <span>[...]</span> On buvait de la bière sucrée.</p>
+            </body>
+            </html>
+            """
+
+        val iter = iterator(nbspHtml, locator(selector = ":root > :nth-child(2) > :nth-child(2)"))
+        assertTrue(iter.hasNext())
+        assertEquals(
+            TextElement(
+                locator = locator(
+                    selector = "html > body > p:nth-child(2)",
+                    before = "oin sur la chaussée, aussi loin qu’on pouvait voir",
+                    highlight = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée."
+                ),
+                role = TextElement.Role.Body,
+                segments = listOf(
+                    Segment(
+                        locator = locator(
+                            selector = "html > body > p:nth-child(2)",
+                            before = "oin sur la chaussée, aussi loin qu’on pouvait voir",
+                            highlight = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée.",
+                        ),
+                        text = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée.",
+                        attributes = listOf(Attribute(LANGUAGE, Language("fr")))
+                    )
+                )
+            ),
+            iter.next()
+        )
+    }
+
+    @Test
+    fun `starting from a CSS selector using the root selector`() = runTest {
+        val nbspHtml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr">
+            <head></head>
             <body>
                 <p>Tout au loin sur la chaussée, aussi loin qu’on pouvait voir</p>
                 <p>Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient <span>[...]</span> On buvait de la bière sucrée.</p>

@@ -77,7 +77,9 @@ abstract class BaseReaderFragment : Fragment() {
                 model.insertBookmark(navigator.currentLocator.value)
             }
             R.id.settings -> {
-                UserPreferencesBottomSheetDialogFragment().show(childFragmentManager, "Settings")
+                val settingsModel = checkNotNull(model.settings)
+                UserPreferencesBottomSheetDialogFragment(settingsModel, "User Settings")
+                    .show(childFragmentManager, "Settings")
             }
             R.id.drm -> {
                 model.activityChannel.send(ReaderViewModel.Event.OpenDrmManagementRequested)

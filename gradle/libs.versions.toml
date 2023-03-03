@@ -23,6 +23,7 @@ androidx-lifecycle = "2.5.1"
 androidx-lifecycle-extensions = "2.2.0"
 androidx-media = "1.6.0"
 androidx-media2 = "1.2.1"
+androidx-media3 = "1.0.0-rc01"
 androidx-navigation = "2.5.2"
 androidx-paging = "3.1.1"
 androidx-recyclerview = "1.2.1"
@@ -87,6 +88,9 @@ androidx-lifecycle-vmsavedstate = { group = "androidx.lifecycle", name = "lifecy
 androidx-media = { group = "androidx.media", name = "media", version.ref = "androidx-media" }
 androidx-media2-session = { group = "androidx.media2", name = "media2-session", version.ref = "androidx-media2" }
 androidx-media2-player = { group = "androidx.media2", name = "media2-player", version.ref = "androidx-media2" }
+androidx-media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "androidx-media3" }
+androidx-media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "androidx-media3" }
+androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "androidx-media3" }
 androidx-navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "androidx-navigation" }
 androidx-navigation-ui = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "androidx-navigation" }
 androidx-paging = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "androidx-paging" }
@@ -138,6 +142,7 @@ coroutines = ["kotlinx-coroutines-core", "kotlinx-coroutines-android"]
 exoplayer = ["google-exoplayer-core", "google-exoplayer-ui", "google-exoplayer-mediasession", "google-exoplayer-workmanager", "google-exoplayer-extension-media2"]
 lifecycle = ["androidx-lifecycle-common", "androidx-lifecycle-extensions", "androidx-lifecycle-livedata", "androidx-lifecycle-runtime", "androidx-lifecycle-viewmodel", "androidx-lifecycle-vmsavedstate", "androidx-lifecycle-viewmodel-compose"]
 media2 = ["androidx-media2-session", "androidx-media2-player"]
+media3 = ["androidx-media3-session", "androidx-media3-common", "androidx-media3-exoplayer"]
 navigation = ["androidx-navigation-fragment", "androidx-navigation-ui"]
 room = ["androidx-room-runtime", "androidx-room-ktx"]
 test-frameworks = ["junit", "androidx-ext-junit", "androidx-expresso-core", "robolectric", "kotlin-junit", "assertj", "kotlinx-coroutines-test"]

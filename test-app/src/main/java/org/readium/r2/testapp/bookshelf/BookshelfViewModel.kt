@@ -110,11 +110,6 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             }
     }
 
-    fun closePublication(bookId: Long) = viewModelScope.launch {
-        val readerRepository = app.readerRepository.await()
-        readerRepository.close(bookId)
-    }
-
     sealed class Event {
 
         object ImportPublicationSuccess : Event()

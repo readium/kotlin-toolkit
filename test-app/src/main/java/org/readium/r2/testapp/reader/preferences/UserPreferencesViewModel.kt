@@ -10,14 +10,21 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.readium.adapters.pdfium.navigator.PdfiumPreferences
 import org.readium.adapters.pdfium.navigator.PdfiumSettings
-import org.readium.r2.navigator.epub.*
-import org.readium.r2.navigator.preferences.*
+import org.readium.r2.navigator.epub.EpubPreferences
+import org.readium.r2.navigator.epub.EpubSettings
+import org.readium.r2.navigator.preferences.Configurable
+import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.testapp.reader.*
+import org.readium.r2.testapp.reader.EpubReaderInitData
+import org.readium.r2.testapp.reader.PdfReaderInitData
+import org.readium.r2.testapp.reader.ReaderInitData
+import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.extensions.mapStateIn
 
 /**

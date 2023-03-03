@@ -9,18 +9,15 @@ package org.readium.r2.testapp.reader.preferences
 import android.app.Dialog
 import android.os.Bundle
 import androidx.compose.runtime.Composable
-import androidx.fragment.app.activityViewModels
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.testapp.reader.ReaderViewModel
 import org.readium.r2.testapp.utils.compose.ComposeBottomSheetDialogFragment
 
-@OptIn(ExperimentalReadiumApi::class)
-class UserPreferencesBottomSheetDialogFragment : ComposeBottomSheetDialogFragment(
+class UserPreferencesBottomSheetDialogFragment(
+    private val model: UserPreferencesViewModel<*, *>,
+    private val title: String
+) : ComposeBottomSheetDialogFragment(
     isScrollable = true
 ) {
-    private val model: ReaderViewModel by activityViewModels()
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
         (super.onCreateDialog(savedInstanceState) as BottomSheetDialog).apply {
             // Reduce the dim to see the impact of the settings on the page.
@@ -34,7 +31,6 @@ class UserPreferencesBottomSheetDialogFragment : ComposeBottomSheetDialogFragmen
 
     @Composable
     override fun Content() {
-        val settingsModel = checkNotNull(model.settings)
-        UserPreferences(settingsModel)
+        UserPreferences(model, title)
     }
 }

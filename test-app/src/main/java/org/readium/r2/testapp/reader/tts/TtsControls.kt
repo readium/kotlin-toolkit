@@ -4,82 +4,64 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.r2.testapp.reader.tts
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.Card
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import java.text.DecimalFormat
-import org.readium.r2.navigator.tts.PublicationSpeechSynthesizer.Configuration
-import org.readium.r2.navigator.tts.TtsEngine.Voice
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.R
-import org.readium.r2.testapp.shared.views.SelectorListItem
 import org.readium.r2.testapp.utils.extensions.asStateWhenStarted
 
 /**
  * TTS controls bar displayed at the bottom of the screen when speaking a publication.
  */
-@OptIn(ExperimentalReadiumApi::class)
 @Composable
-fun TtsControls(model: TtsViewModel, modifier: Modifier = Modifier) {
-    val showControls by model.state.asStateWhenStarted { it.showControls }
-    val isPlaying by model.state.asStateWhenStarted { it.isPlaying }
-    val settings by model.state.asStateWhenStarted { it.settings }
+fun TtsControls(
+    model: TtsViewModel,
+    onPreferences: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val showControls by model.showControls.asStateWhenStarted()
+    val isPlaying by model.isPlaying.asStateWhenStarted()
 
     if (showControls) {
         TtsControls(
             playing = isPlaying,
-            availableRates = listOf(0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0)
-                .filter { it in settings.rateRange },
-            availableLanguages = settings.availableLanguages,
-            availableVoices = settings.availableVoices,
-            config = settings.config,
-            onConfigChange = model::setConfig,
-            onPlayPause = model::pauseOrResume,
+            onPlayPause = { if (isPlaying) model.pause() else model.play() },
             onStop = model::stop,
             onPrevious = model::previous,
             onNext = model::next,
+            onPreferences = onPreferences,
             modifier = modifier
         )
     }
 }
 
-@OptIn(ExperimentalReadiumApi::class)
 @Composable
 fun TtsControls(
     playing: Boolean,
-    availableRates: List<Double>,
-    availableLanguages: List<Language>,
-    availableVoices: List<Voice>,
-    config: Configuration?,
-    onConfigChange: (Configuration) -> Unit,
     onPlayPause: () -> Unit,
     onStop: () -> Unit,
     onPrevious: () -> Unit,
     onNext: () -> Unit,
+    onPreferences: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var showSettings by remember { mutableStateOf(false) }
-
-    if (config != null && showSettings) {
-        TtsSettingsDialog(
-            availableRates = availableRates,
-            availableLanguages = availableLanguages,
-            availableVoices = availableVoices,
-            config = config,
-            onConfigChange = onConfigChange,
-            onDismiss = { showSettings = false }
-        )
-    }
-
     Card(
         modifier = modifier
     ) {
@@ -127,7 +109,7 @@ fun TtsControls(
 
             Spacer(modifier = Modifier.size(8.dp))
 
-            IconButton(onClick = { showSettings = true }) {
+            IconButton(onClick = onPreferences) {
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = stringResource(R.string.tts_settings)
@@ -135,61 +117,4 @@ fun TtsControls(
             }
         }
     }
-}
-
-@OptIn(ExperimentalReadiumApi::class)
-@Composable
-private fun TtsSettingsDialog(
-    availableRates: List<Double>,
-    availableLanguages: List<Language>,
-    availableVoices: List<Voice>,
-    config: Configuration,
-    onConfigChange: (Configuration) -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text(text = stringResource(R.string.close))
-            }
-        },
-        title = { Text(stringResource(R.string.tts_settings)) },
-        text = {
-            Column {
-                if (availableRates.size > 1) {
-                    SelectorListItem(
-                        label = stringResource(R.string.tts_rate),
-                        values = availableRates,
-                        selection = config.rateMultiplier,
-                        titleForValue = { rate ->
-                            DecimalFormat("x#.##").format(rate)
-                        },
-                        onSelected = {
-                            onConfigChange(config.copy(rateMultiplier = it))
-                        }
-                    )
-                }
-
-                SelectorListItem(
-                    label = stringResource(R.string.language),
-                    values = availableLanguages,
-                    selection = config.defaultLanguage,
-                    titleForValue = { language ->
-                        language?.locale?.displayName
-                            ?: stringResource(R.string.auto)
-                    },
-                    onSelected = { onConfigChange(config.copy(defaultLanguage = it, voiceId = null)) }
-                )
-
-                SelectorListItem(
-                    label = stringResource(R.string.tts_voice),
-                    values = availableVoices,
-                    selection = availableVoices.firstOrNull { it.id == config.voiceId },
-                    titleForValue = { it?.name ?: it?.id ?: stringResource(R.string.auto) },
-                    onSelected = { onConfigChange(config.copy(voiceId = it?.id)) }
-                )
-            }
-        }
-    )
 }

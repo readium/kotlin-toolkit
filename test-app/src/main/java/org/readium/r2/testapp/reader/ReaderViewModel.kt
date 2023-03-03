@@ -37,19 +37,25 @@ import org.readium.r2.testapp.reader.tts.TtsViewModel
 import org.readium.r2.testapp.search.SearchPagingSource
 import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.createViewModelFactory
+import timber.log.Timber
 
 @OptIn(Search::class, ExperimentalDecorator::class, ExperimentalCoroutinesApi::class)
 class ReaderViewModel(
-    application: Application,
-    val readerInitData: ReaderInitData,
+    private val bookId: Long,
+    private val readerRepository: ReaderRepository,
     private val bookRepository: BookRepository,
 ) : ViewModel() {
 
+    val readerInitData =
+        try {
+            checkNotNull(readerRepository[bookId])
+        } catch (e: Exception) {
+            // Fallbacks on a dummy Publication to avoid crashing the app until the Activity finishes.
+            DummyReaderInitData(bookId)
+        }
+
     val publication: Publication =
         readerInitData.publication
-
-    val bookId: Long =
-        readerInitData.bookId
 
     val activityChannel: EventChannel<Event> =
         EventChannel(Channel(Channel.BUFFERED), viewModelScope)
@@ -58,9 +64,8 @@ class ReaderViewModel(
         EventChannel(Channel(Channel.BUFFERED), viewModelScope)
 
     val tts: TtsViewModel? = TtsViewModel(
-        context = application,
-        publication = readerInitData.publication,
-        scope = viewModelScope
+        viewModelScope = viewModelScope,
+        readerInitData = readerInitData
     )
 
     val settings: UserPreferencesViewModel<*, *>? = UserPreferencesViewModel(
@@ -68,12 +73,15 @@ class ReaderViewModel(
         readerInitData = readerInitData
     )
 
-    override fun onCleared() {
-        super.onCleared()
-        tts?.onCleared()
+    fun close() {
+        viewModelScope.launch {
+            tts?.stop()
+            readerRepository.close(bookId)
+        }
     }
 
     fun saveProgression(locator: Locator) = viewModelScope.launch {
+        Timber.v("Saving locator for book $bookId: $locator.")
         bookRepository.saveProgression(locator, bookId)
     }
 
@@ -255,16 +263,10 @@ class ReaderViewModel(
     companion object {
         fun createFactory(application: Application, arguments: ReaderActivityContract.Arguments) =
             createViewModelFactory {
-                val readerInitData =
-                    try {
-                        val readerRepository = application.readerRepository.getCompleted()
-                        checkNotNull(readerRepository[arguments.bookId])
-                    } catch (e: Exception) {
-                        // Fallbacks on a dummy Publication to avoid crashing the app until the Activity finishes.
-                        DummyReaderInitData(arguments.bookId)
-                    }
+                val readerRepository =
+                    application.readerRepository.getCompleted()
 
-                ReaderViewModel(application, readerInitData, application.bookRepository)
+                ReaderViewModel(arguments.bookId, readerRepository, application.bookRepository)
             }
     }
 }

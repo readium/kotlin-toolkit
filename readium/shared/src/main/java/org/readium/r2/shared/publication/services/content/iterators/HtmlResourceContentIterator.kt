@@ -65,44 +65,49 @@ class HtmlResourceContentIterator(
         val delta: Int
     )
 
-    private var requestedElement: ElementWithDelta? = null
+    private var currentElement: ElementWithDelta? = null
 
     override suspend fun hasPrevious(): Boolean {
-        if (requestedElement?.delta == -1) return true
+        if (currentElement?.delta == -1) return true
 
-        val index = currentIndex() - 1
-        val element = elements().elements.getOrNull(index) ?: return false
+        val elements = elements()
+        val index = (currentIndex ?: elements.startIndex) - 1
+
+        val content = elements.elements.getOrNull(index)
+            ?: return false
+
         currentIndex = index
-        requestedElement = ElementWithDelta(element, -1)
+        currentElement = ElementWithDelta(content, -1)
         return true
     }
 
     override fun previous(): Content.Element =
-        requestedElement
+        currentElement
             ?.takeIf { it.delta == -1 }?.element
-            ?.also { requestedElement = null }
+            ?.also { currentElement = null }
             ?: throw IllegalStateException("Called previous() without a successful call to hasPrevious() first")
 
     override suspend fun hasNext(): Boolean {
-        if (requestedElement?.delta == 1) return true
+        if (currentElement?.delta == +1) return true
 
-        val index = currentIndex()
-        val element = elements().elements.getOrNull(index) ?: return false
-        currentIndex = index + 1
-        requestedElement = ElementWithDelta(element, +1)
+        val elements = elements()
+        val index = (currentIndex ?: (elements.startIndex - 1)) + 1
+
+        val content = elements.elements.getOrNull(index)
+            ?: return false
+
+        currentIndex = index
+        currentElement = ElementWithDelta(content, +1)
         return true
     }
 
     override fun next(): Content.Element =
-        requestedElement
-            ?.takeIf { it.delta == 1 }?.element
-            ?.also { requestedElement = null }
+        currentElement
+            ?.takeIf { it.delta == +1 }?.element
+            ?.also { currentElement = null }
             ?: throw IllegalStateException("Called next() without a successful call to hasNext() first")
 
     private var currentIndex: Int? = null
-
-    private suspend fun currentIndex(): Int =
-        currentIndex ?: elements().startIndex
 
     private suspend fun elements(): ParsedElements =
         parsedElements
@@ -111,26 +116,24 @@ class HtmlResourceContentIterator(
     private var parsedElements: ParsedElements? = null
 
     private suspend fun parseElements(): ParsedElements {
-        val body = resource.use { res ->
+        val document = resource.use { res ->
             val html = res.readAsString().getOrThrow()
             Jsoup.parse(html)
-        }.body()
+        }
 
         val contentParser = ContentParser(
             baseLocator = locator,
             startElement = locator.locations.cssSelector?.let {
-                // The JS third-party library used to generate the CSS Selector sometimes adds
-                // :root >, which doesn't work with JSoup.
-                tryOrNull { body.selectFirst(it.removePrefix(":root > ")) }
+                tryOrNull { document.selectFirst(it) }
             },
             beforeMaxLength = beforeMaxLength
         )
-        NodeTraversor.traverse(contentParser, body)
+        NodeTraversor.traverse(contentParser, document.body())
         return contentParser.result()
     }
 
     /**
-     * Holds the result of parsing the HTML resource into a list of `ContentElement`.
+     * Holds the result of parsing the HTML resource into a list of [Content.Element].
      *
      * The [startIndex] will be calculated from the element matched by the base [locator], if
      * possible. Defaults to 0.
@@ -148,7 +151,7 @@ class HtmlResourceContentIterator(
 
         fun result() = ParsedElements(
             elements = elements,
-            startIndex = if (baseLocator.locations.progression == 1.0) elements.size - 1
+            startIndex = if (baseLocator.locations.progression == 1.0) elements.size
             else startIndex
         )
 
