@@ -283,11 +283,12 @@ class HtmlResourceContentIterator(
 
         private fun flushText() {
             flushSegment()
-            if (segmentsAcc.isEmpty()) return
 
-            if (startElement != null && breadcrumbs.lastOrNull() == startElement) {
+            if (startIndex == 0 && startElement != null && breadcrumbs.lastOrNull() == startElement) {
                 startIndex = elements.size
             }
+
+            if (segmentsAcc.isEmpty()) return
 
             // Trim the end of the last segment's text to get a cleaner output for the TextElement.
             // Only whitespaces between the segments are meaningful.
