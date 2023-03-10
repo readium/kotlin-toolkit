@@ -455,4 +455,88 @@ class HtmlResourceContentIteratorTest {
             iterator(html).elements()
         )
     }
+
+    @Test
+    fun `iterating over an element containing both a text node and child elements`() = runTest {
+        val html = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <html xmlns="http://www.w3.org/1999/xhtml">
+            <body>
+                <ol class="decimal" id="c06-list-0001">
+                    <li id="c06-li-0001">Let&#39;s start at the top&#8212;the <i>source of ideas</i>.
+                        <aside><div class="top hr"><hr/></div>
+                        <section class="feature1">
+                            <p id="c06-para-0019"><i>While almost everyone today claims to be Agile, what I&#39;ve just described is very much a <i>waterfall</i> process.</i></p>
+                        </section>
+                        Trailing text
+                    </li>
+                </ol>
+            </body>
+            </html>
+            """
+
+        assertEquals(
+            listOf(
+                TextElement(
+                    locator = locator(
+                        selector = "#c06-li-0001",
+                        highlight = "Let's start at the top—the source of ideas."
+                    ),
+                    role = TextElement.Role.Body,
+                    segments = listOf(
+                        Segment(
+                            locator = locator(
+                                selector = "#c06-li-0001",
+                                highlight = "Let's start at the top—the source of ideas."
+                            ),
+                            text = "Let's start at the top—the source of ideas.",
+                            attributes = emptyList()
+                        ),
+                    ),
+                    attributes = emptyList()
+                ),
+                TextElement(
+                    locator = locator(
+                        selector = "#c06-para-0019",
+                        before = " top—the source of ideas.\n                        ",
+                        highlight = "While almost everyone today claims to be Agile, what I've just described is very much a waterfall process."
+                    ),
+                    role = TextElement.Role.Body,
+                    segments = listOf(
+                        Segment(
+                            locator = locator(
+                                selector = "#c06-para-0019",
+                                before = " top—the source of ideas.\n                        ",
+                                highlight = "While almost everyone today claims to be Agile, what I've just described is very much a waterfall process."
+                            ),
+                            text = "While almost everyone today claims to be Agile, what I've just described is very much a waterfall process.",
+                            attributes = emptyList()
+                        )
+                    ),
+                    attributes = emptyList()
+                ),
+                TextElement(
+                    locator = locator(
+                        selector = "#c06-para-0019",
+                        before = "e just described is very much a waterfall process.\n                        \n                        ",
+                        highlight = "Trailing text"
+                    ),
+                    role = TextElement.Role.Body,
+                    segments = listOf(
+                        Segment(
+                            locator = locator(
+                                selector = "#c06-para-0019",
+                                before = "e just described is very much a waterfall process.\n                        ",
+                                highlight = "Trailing text"
+                            ),
+                            text = "Trailing text",
+                            attributes = emptyList()
+                        )
+                    ),
+                    attributes = emptyList()
+                )
+            ),
+            iterator(html).elements()
+        )
+    }
 }
