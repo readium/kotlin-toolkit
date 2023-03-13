@@ -158,12 +158,19 @@ class HtmlResourceContentIterator(
         private val elements = mutableListOf<Content.Element>()
         private var startIndex = 0
 
+        /** Segments accumulated for the current element. */
         private val segmentsAcc = mutableListOf<TextElement.Segment>()
+        /** Text since the beginning of the current segment, after coalescing whitespaces. */
         private var textAcc = StringBuilder()
+        /** Text content since the beginning of the resource, including whitespaces. */
         private var wholeRawTextAcc: String? = null
+        /** Text content since the beginning of the current element, including whitespaces. */
         private var elementRawTextAcc: String = ""
+        /** Text content since the beginning of the current segment, including whitespaces. */
         private var rawTextAcc: String = ""
+        /** Language of the current segment. */
         private var currentLanguage: String? = null
+        /** CSS selector of the current element. */
         private var currentCssSelector: String? = null
 
         /** LIFO stack of the current element's block ancestors. */
@@ -240,9 +247,7 @@ class HtmlResourceContentIterator(
                     }
 
                     node.isBlock -> {
-                        segmentsAcc.clear()
-                        textAcc.clear()
-                        rawTextAcc = ""
+                        flushText()
                         currentCssSelector = node.cssSelector()
                     }
                 }
@@ -250,7 +255,7 @@ class HtmlResourceContentIterator(
         }
 
         override fun tail(node: Node, depth: Int) {
-            if (node is TextNode) {
+            if (node is TextNode && node.wholeText.isNotBlank()) {
                 val language = node.language
                 if (currentLanguage != language) {
                     flushSegment()
@@ -278,11 +283,17 @@ class HtmlResourceContentIterator(
 
         private fun flushText() {
             flushSegment()
-            if (segmentsAcc.isEmpty()) return
 
-            if (startElement != null && breadcrumbs.lastOrNull() == startElement) {
+            if (startIndex == 0 && startElement != null && breadcrumbs.lastOrNull() == startElement) {
                 startIndex = elements.size
             }
+
+            if (segmentsAcc.isEmpty()) return
+
+            // Trim the end of the last segment's text to get a cleaner output for the TextElement.
+            // Only whitespaces between the segments are meaningful.
+            segmentsAcc[segmentsAcc.size - 1] = segmentsAcc.last().run { copy(text = text.trimEnd()) }
+
             elements.add(
                 Content.TextElement(
                     locator = baseLocator.copy(
@@ -293,9 +304,9 @@ class HtmlResourceContentIterator(
                                 }
                             }
                         ),
-                        text = Locator.Text(
-                            before = segmentsAcc.firstOrNull()?.locator?.text?.before,
-                            highlight = elementRawTextAcc,
+                        text = Locator.Text.trimmingText(
+                            elementRawTextAcc,
+                            before = segmentsAcc.firstOrNull()?.locator?.text?.before
                         )
                     ),
                     role = TextElement.Role.Body,
@@ -331,8 +342,8 @@ class HtmlResourceContentIterator(
                                     }
                                 }
                             ),
-                            text = Locator.Text(
-                                highlight = rawTextAcc,
+                            text = Locator.Text.trimmingText(
+                                rawTextAcc,
                                 before = wholeRawTextAcc?.takeLast(beforeMaxLength)
                             )
                         ),
@@ -355,6 +366,13 @@ class HtmlResourceContentIterator(
         }
     }
 }
+
+private fun Locator.Text.Companion.trimmingText(text: String, before: String?): Locator.Text =
+    Locator.Text(
+        before = ((before ?: "") + text.takeWhile { it.isWhitespace() }).takeUnless { it.isBlank() },
+        highlight = text.trim(),
+        after = text.takeLastWhile { it.isWhitespace() }.takeUnless { it.isBlank() }
+    )
 
 private val Node.language: String? get() =
     attr("xml:lang").takeUnless { it.isBlank() }
