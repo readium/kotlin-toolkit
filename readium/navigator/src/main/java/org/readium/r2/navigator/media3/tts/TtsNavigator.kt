@@ -37,7 +37,7 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     override val publication: Publication,
     private val player: TtsPlayer<S, P, E, V>,
     private val sessionAdapter: TtsSessionAdapter<E>,
-) : SynchronizedMediaNavigator<TtsNavigator.Position>, Configurable<S, P> by player {
+) : SynchronizedMediaNavigator<TtsNavigator.Position, TtsNavigator.Position>, Configurable<S, P> by player {
 
     companion object {
 
@@ -128,7 +128,7 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         val cssSelector: String,
         val textBefore: String?,
         val textAfter: String?,
-    ) : MediaNavigator.Position
+    ) : MediaNavigator.Position, SynchronizedMediaNavigator.Utterance.Position
 
     data class Utterance(
         override val text: String,
@@ -178,12 +178,20 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         player.go(locator)
     }
 
-    fun previousUtterance() {
+    override fun previousUtterance() {
         player.previousUtterance()
     }
 
-    fun nextUtterance() {
+    override fun nextUtterance() {
         player.nextUtterance()
+    }
+
+    override fun hasPreviousUtterance(): Boolean {
+        return player.hasPreviousUtterance()
+    }
+
+    override fun hasNextUtterance(): Boolean {
+        return player.hasNextUtterance()
     }
 
     override fun asPlayer(): Player =

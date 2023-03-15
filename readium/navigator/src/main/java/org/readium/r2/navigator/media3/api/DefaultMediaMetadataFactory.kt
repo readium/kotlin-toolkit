@@ -6,13 +6,16 @@
 
 package org.readium.r2.navigator.media3.api
 
+import android.graphics.Bitmap
+import android.net.Uri
+import android.util.Size
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MediaMetadata.PICTURE_TYPE_FRONT_COVER
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import java.io.ByteArrayOutputStream
+import kotlinx.coroutines.*
+import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.services.coverFitting
 
 /**
  * Builds media metadata using the given title, author and cover,
@@ -23,7 +26,7 @@ internal class DefaultMediaMetadataFactory(
     private val publication: Publication,
     title: String? = null,
     author: String? = null,
-    cover: ByteArray? = null
+    private val cover: Uri? = null
 ) : MediaMetadataFactory {
 
     private val coroutineScope =
@@ -32,15 +35,18 @@ internal class DefaultMediaMetadataFactory(
     private val title: String =
         title ?: publication.metadata.title
 
-    private val authors: String? =
+    private val author: String? =
         author ?: publication.metadata.authors
             .firstOrNull { it.name.isNotBlank() }?.name
 
-    private val cover: Deferred<ByteArray?> = coroutineScope.async {
-        cover ?: publication.linkWithRel("cover")
-            ?.let { publication.get(it) }
-            ?.read()
-            ?.getOrNull()
+    private val coverBytes: Deferred<ByteArray?> = coroutineScope.async(start = CoroutineStart.LAZY) {
+        tryOrNull {
+            val byteStream = ByteArrayOutputStream(4096)
+            // byte array will go cross processes and should be kept small
+            publication.coverFitting(Size(400, 400))
+                ?.compress(Bitmap.CompressFormat.PNG, 80, byteStream)
+            byteStream.toByteArray()
+        }
     }
 
     override suspend fun publicationMetadata(): MediaMetadata {
@@ -48,11 +54,10 @@ internal class DefaultMediaMetadataFactory(
             .setTitle(title)
             .setTotalTrackCount(publication.readingOrder.size)
 
-        authors
+        author
             ?.let { builder.setArtist(it) }
 
-        cover.await()
-            ?.let { builder.maybeSetArtworkData(it, PICTURE_TYPE_FRONT_COVER) }
+        putCover(builder)
 
         return builder.build()
     }
@@ -62,12 +67,20 @@ internal class DefaultMediaMetadataFactory(
             .setTrackNumber(index)
             .setTitle(title)
 
-        authors
+        author
             ?.let { builder.setArtist(it) }
 
-        cover.await()
-            ?.let { builder.maybeSetArtworkData(it, PICTURE_TYPE_FRONT_COVER) }
+        putCover(builder)
 
         return builder.build()
+    }
+
+    private suspend fun putCover(builder: MediaMetadata.Builder) {
+        cover
+            ?.let { builder.setArtworkUri(it) }
+            ?: run {
+                coverBytes.await()
+                    ?.let { builder.setArtworkData(it, PICTURE_TYPE_FRONT_COVER) }
+            }
     }
 }
