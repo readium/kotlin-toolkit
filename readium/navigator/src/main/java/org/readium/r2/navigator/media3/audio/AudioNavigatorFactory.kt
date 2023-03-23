@@ -42,8 +42,8 @@ class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferen
     suspend fun createNavigator(
         initialPreferences: P? = null,
         initialLocator: Locator? = null
-    ): AudioNavigator<S, P, F>? {
-        return AudioNavigator(
+    ): AudioBookNavigator<S, P, F>? {
+        return AudioBookNavigator(
             publication,
             audioEngineProvider,
             initialPreferences,

@@ -14,7 +14,7 @@ import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 
 /**
- * To be implemented by adapters for third-party audio engines which can be used with [AudioNavigator].
+ * To be implemented by adapters for third-party audio engines which can be used with [AudioBookNavigator].
  */
 @ExperimentalReadiumApi
 interface AudioEngineProvider<S : Configurable.Settings, P : Configurable.Preferences<P>,

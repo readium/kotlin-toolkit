@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.media3.api.MediaNavigator
-import org.readium.r2.navigator.media3.audio.AudioNavigator
+import org.readium.r2.navigator.media3.audio.AudioBookNavigator
 import org.readium.r2.navigator.media3.exoplayer.ExoPlayerNavigator
 import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferences
 import org.readium.r2.navigator.media3.exoplayer.ExoPlayerSettings
@@ -107,14 +107,14 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
         )
     }
 
-    private fun onPositionChanged(position: AudioNavigator.Position) {
+    private fun onPositionChanged(position: AudioBookNavigator.Position) {
         Timber.v("onPositionChanged $position")
         if (seekingItem == null) {
             updateTimeline(position)
         }
     }
 
-    private fun updateTimeline(position: AudioNavigator.Position) {
+    private fun updateTimeline(position: AudioBookNavigator.Position) {
         binding.timelineBar.max = position.item.duration?.inWholeSeconds?.toInt() ?: 0
         binding.timelineDuration.text = position.item.duration?.formatElapsedTime()
         binding.timelineBar.progress = position.offset.inWholeSeconds.toInt()

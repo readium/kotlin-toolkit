@@ -41,7 +41,7 @@ class MediaServiceFacade(
 
     suspend fun openSession(
         bookId: Long,
-        navigator: MediaNavigator<*>
+        navigator: MediaNavigator
     ) = mutex.withLock {
         if (session.value != null) {
             throw CancellationException("A session is already running.")

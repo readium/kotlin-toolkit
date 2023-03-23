@@ -106,6 +106,7 @@ class TtsViewModel private constructor(
             preferencesManager = preferencesManager
         ) { preferences ->
             val baseEditor = ttsNavigatorFactory.createTtsPreferencesEditor(preferences)
+            val voices = navigatorNow?.voices.orEmpty()
             TtsPreferencesEditor(baseEditor, voices)
         }
 
@@ -127,12 +128,9 @@ class TtsViewModel private constructor(
 
     val highlight: StateFlow<Locator?> =
         mediaServiceFacade.session.flatMapLatest { session ->
-            session?.ttsNavigator?.utterance?.map { it.utteranceLocator }
+            session?.ttsNavigator?.position?.map { it.utteranceLocator }
                 ?: MutableStateFlow(null)
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
-
-    val voices: Set<AndroidTtsEngine.Voice> get() =
-        navigatorNow?.voices.orEmpty()
 
     init {
         mediaServiceFacade.session

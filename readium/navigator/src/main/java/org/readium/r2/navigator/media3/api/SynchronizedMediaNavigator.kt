@@ -14,25 +14,41 @@ import org.readium.r2.shared.publication.Locator
  * A [MediaNavigator] aware of the utterances that are being read aloud.
  */
 @ExperimentalReadiumApi
-interface SynchronizedMediaNavigator<P : MediaNavigator.Position,
-    U : SynchronizedMediaNavigator.Utterance.Position> :
-    MediaNavigator<P> {
+interface SynchronizedMediaNavigator<P : SynchronizedMediaNavigator.Position> : MediaNavigator {
 
-    interface Utterance<U : Utterance.Position> {
+    interface Position : MediaNavigator.Position {
+
         val text: String
 
-        val position: U
+        val textBefore: String?
+
+        val textAfter: String?
 
         val range: IntRange?
 
         val utteranceLocator: Locator
 
         val tokenLocator: Locator?
-
-        interface Position
     }
 
-    val utterance: StateFlow<Utterance<U>>
+    interface Resource : MediaNavigator.Resource {
+        val utterance: String
+
+        val range: IntRange?
+    }
+
+    interface ReadingOrder : MediaNavigator.ReadingOrder {
+
+        override val items: List<Item>
+
+        interface Item : MediaNavigator.ReadingOrder.Item
+    }
+
+    override val position: StateFlow<P>
+
+    override val resource: StateFlow<Resource>
+
+    override val readingOrder: ReadingOrder
 
     fun previousUtterance()
 

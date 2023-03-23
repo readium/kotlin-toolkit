@@ -14,6 +14,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.extensions.sum
 import org.readium.r2.navigator.extensions.time
+import org.readium.r2.navigator.media3.api.AudioNavigator
 import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -22,17 +23,18 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
+import org.readium.r2.shared.util.Href
 import timber.log.Timber
 
 @ExperimentalReadiumApi
 @OptIn(ExperimentalTime::class)
-class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>,
+class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>,
     E : AudioEngine.Error> private constructor(
     override val publication: Publication,
     private val audioEngine: AudioEngine<S, P, E>,
-    private val playlist: Playlist,
+    override val readingOrder: ReadingOrder,
     private val configuration: Configuration
-) : MediaNavigator<AudioNavigator.Position>, Configurable<S, P> by audioEngine {
+) : AudioNavigator<AudioBookNavigator.Position>, Configurable<S, P> by audioEngine {
 
     companion object {
 
@@ -43,10 +45,10 @@ class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>,
             initialPreferences: P? = null,
             initialLocator: Locator? = null,
             configuration: Configuration = Configuration()
-        ): AudioNavigator<S, P, E>? {
-            val playlist = Playlist(
+        ): AudioBookNavigator<S, P, E>? {
+            val readingOrder = ReadingOrder(
                 publication.metadata.duration?.seconds,
-                publication.readingOrder.map { Playlist.Item(it.href, it.duration?.seconds) }
+                publication.readingOrder.map { ReadingOrder.Item(Href(it.href), it.duration?.seconds) }
             )
 
             val actualInitialLocator = initialLocator
@@ -59,7 +61,7 @@ class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>,
                     initialPreferences ?: audioEngineProvider.createEmptyPreferences()
                 ) ?: return null
 
-            return AudioNavigator(publication, audioEngine, playlist, configuration)
+            return AudioBookNavigator(publication, audioEngine, readingOrder, configuration)
         }
     }
 
@@ -73,7 +75,7 @@ class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>,
         val item: Item,
         val offset: Duration,
         val buffered: Duration?
-    ) : MediaNavigator.Position {
+    ) : AudioNavigator.Position {
 
         data class Item(
             val index: Int,
@@ -81,15 +83,22 @@ class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>,
         )
     }
 
-    private data class Playlist(
-        val duration: Duration?,
-        val items: List<Item>
-    ) {
+    data class ReadingOrder(
+        override val duration: Duration?,
+        override val items: List<Item>
+    ) : AudioNavigator.ReadingOrder {
+
         data class Item(
-            val href: String,
-            val duration: Duration?
-        )
+            override val href: Href,
+            override val duration: Duration?
+        ) : AudioNavigator.ReadingOrder.Item
     }
+
+    data class Resource(
+        override val index: Int,
+        override val position: Duration,
+        override val buffered: Duration?,
+    ) : AudioNavigator.Resource
 
     sealed class State {
 
@@ -108,15 +117,15 @@ class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>,
     override val currentLocator: StateFlow<Locator> =
         audioEngine.position.mapStateIn(coroutineScope) { (index, position) ->
             val link = publication.readingOrder[index]
-            val item = playlist.items[index]
-            val itemStartPosition = playlist.items
+            val item = readingOrder.items[index]
+            val itemStartPosition = readingOrder.items
                 .slice(0 until index)
                 .mapNotNull { it.duration }
-                .takeIf { it.size == playlist.items.size }
+                .takeIf { it.size == readingOrder.items.size }
                 ?.sum()
             val totalProgression =
                 if (itemStartPosition == null) null
-                else playlist.duration?.let { (itemStartPosition + position) / it }
+                else readingOrder.duration?.let { (itemStartPosition + position) / it }
 
             val locator = requireNotNull(publication.locatorFromLink(link))
             locator.copyWithLocations(
@@ -134,6 +143,11 @@ class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>,
     override val position: StateFlow<Position> =
         audioEngine.position.mapStateIn(coroutineScope) {
             Position(Position.Item(it.index, it.duration), it.position, it.buffered)
+        }
+
+    override val resource: StateFlow<Resource> =
+        audioEngine.position.mapStateIn(coroutineScope) {
+            Resource(it.index, it.position, it.buffered)
         }
 
     override fun play() {
@@ -157,9 +171,9 @@ class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>,
     }
 
     private fun seekBy(offset: Duration) {
-        playlist.items
+        readingOrder.items
             .mapNotNull { it.duration }
-            .takeIf { it.size == playlist.items.size }
+            .takeIf { it.size == readingOrder.items.size }
             ?.let { smartSeekBy(offset, it) }
             ?: dumbSeekBy(offset)
     }

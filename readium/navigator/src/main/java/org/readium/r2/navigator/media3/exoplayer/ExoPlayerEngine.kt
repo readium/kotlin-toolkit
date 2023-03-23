@@ -19,8 +19,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.readium.r2.navigator.media3.api.MediaNavigator
+import org.readium.r2.navigator.media3.audio.AudioBookNavigator
 import org.readium.r2.navigator.media3.audio.AudioEngine
-import org.readium.r2.navigator.media3.audio.AudioNavigator
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
@@ -217,10 +217,10 @@ class ExoPlayerEngine(
 
     private val ExoPlayer.engineState: MediaNavigator.State get() =
         when (this.playbackState) {
-            Player.STATE_READY -> AudioNavigator.State.Ready
-            Player.STATE_BUFFERING -> AudioNavigator.State.Buffering
-            Player.STATE_ENDED -> AudioNavigator.State.Ended
-            else -> AudioNavigator.State.Error()
+            Player.STATE_READY -> AudioBookNavigator.State.Ready
+            Player.STATE_BUFFERING -> AudioBookNavigator.State.Buffering
+            Player.STATE_ENDED -> AudioBookNavigator.State.Ended
+            else -> AudioBookNavigator.State.Error()
         }
 
     private val ExoPlayer.position: AudioEngine.Position get() =
