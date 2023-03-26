@@ -448,6 +448,11 @@ public class ZipFile implements Closeable {
         this(channel, "unknown archive", encoding, true);
     }
 
+    public ZipFile(final SeekableByteChannel channel, final boolean ignoreLocalFileHeader)
+            throws IOException {
+        this(channel, "unknown archive", ZipEncodingHelper.UTF8, true, false, ignoreLocalFileHeader);
+    }
+
     /**
      * Opens the given channel for reading, assuming the specified
      * encoding for file names.

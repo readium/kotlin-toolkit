@@ -117,7 +117,7 @@ class RemoteZipArchiveFactory(
     override suspend fun open(url: URL, password: String?): Archive = withContext(Dispatchers.IO) {
         val httpChannel = HttpChannel(url.toString(), httpClient)
         val channel = wrapBaseChannel(httpChannel)
-        RemoteZip(ZipFile(channel))
+        RemoteZip(ZipFile(channel, true))
     }
 
     internal fun openFile(file: File): Archive {
