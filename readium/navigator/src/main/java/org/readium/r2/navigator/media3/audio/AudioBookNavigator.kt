@@ -6,12 +6,14 @@
 
 package org.readium.r2.navigator.media3.audio
 
+import android.os.Build
 import androidx.media3.common.Player
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.extensions.sum
 import org.readium.r2.navigator.extensions.time
 import org.readium.r2.navigator.media3.api.AudioNavigator
@@ -22,7 +24,6 @@ import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.util.Href
 import timber.log.Timber
 
@@ -42,14 +43,18 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
             E : AudioEngine.Error> invoke(
             publication: Publication,
             audioEngineProvider: AudioEngineProvider<S, P, *, E>,
+            readingOrder: List<Link> = publication.readingOrder,
             initialPreferences: P? = null,
             initialLocator: Locator? = null,
             configuration: Configuration = Configuration()
         ): AudioBookNavigator<S, P, E>? {
-            val readingOrder = ReadingOrder(
-                publication.metadata.duration?.seconds,
-                publication.readingOrder.map { ReadingOrder.Item(Href(it.href), it.duration?.seconds) }
-            )
+            val items = readingOrder.map { ReadingOrder.Item(Href(it.href), duration(it, publication)) }
+            val totalDuration = publication.metadata.duration?.seconds
+                ?: items.mapNotNull { it.duration }
+                    .takeIf { it.size == items.size }
+                    ?.sum()
+
+            val actualReadingOrder = ReadingOrder(totalDuration, items)
 
             val actualInitialLocator = initialLocator
                 ?: publication.locatorFromLink(publication.readingOrder[0])!!
@@ -61,7 +66,18 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
                     initialPreferences ?: audioEngineProvider.createEmptyPreferences()
                 ) ?: return null
 
-            return AudioBookNavigator(publication, audioEngine, readingOrder, configuration)
+            return AudioBookNavigator(publication, audioEngine, actualReadingOrder, configuration)
+        }
+
+        private fun duration(link: Link, publication: Publication): Duration? {
+            var duration: Duration? = link.duration?.seconds
+
+            if (duration == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val resource = publication.get(link)
+                duration = MetadataRetriever(resource).duration()
+            }
+
+            return duration
         }
     }
 
@@ -116,7 +132,7 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
 
     override val currentLocator: StateFlow<Locator> =
         audioEngine.position.mapStateIn(coroutineScope) { (index, position) ->
-            val link = publication.readingOrder[index]
+            val link = requireNotNull(publication.linkWithHref(readingOrder.items[index].href.string))
             val item = readingOrder.items[index]
             val itemStartPosition = readingOrder.items
                 .slice(0 until index)
@@ -208,7 +224,8 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
     }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        val itemIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
+        val itemIndex = readingOrder.items.indexOfFirst { it.href.string == locator.href }
+            .takeUnless { it == -1 }
             ?: return false
         val position = locator.locations.time ?: Duration.ZERO
         Timber.v("Go to locator $locator")

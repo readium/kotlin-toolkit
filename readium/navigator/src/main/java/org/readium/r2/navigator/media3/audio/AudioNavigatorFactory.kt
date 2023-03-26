@@ -46,8 +46,8 @@ class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferen
         return AudioBookNavigator(
             publication,
             audioEngineProvider,
-            initialPreferences,
-            initialLocator
+            initialPreferences = initialPreferences,
+            initialLocator = initialLocator
         )
     }
 

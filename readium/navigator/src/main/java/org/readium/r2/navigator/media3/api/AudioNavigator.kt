@@ -14,7 +14,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * A [MediaNavigator] playing audio files.
  */
 @ExperimentalReadiumApi
-interface AudioNavigator<P : AudioNavigator.Position> : MediaNavigator {
+interface AudioNavigator<P : AudioNavigator.Position> : MediaNavigator<P> {
 
     interface Position : MediaNavigator.Position
 

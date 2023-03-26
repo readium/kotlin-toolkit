@@ -14,7 +14,7 @@ import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Href
 
 @ExperimentalReadiumApi
-interface MediaNavigator : Navigator, Closeable {
+interface MediaNavigator<P : MediaNavigator.Position> : Navigator, Closeable {
 
     /**
      *  Marker interface for the [position] flow.
@@ -63,7 +63,7 @@ interface MediaNavigator : Navigator, Closeable {
      */
     val playback: StateFlow<Playback>
 
-    val position: StateFlow<Position>
+    val position: StateFlow<P>
 
     val resource: StateFlow<Resource>
 

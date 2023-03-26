@@ -28,7 +28,7 @@ class MediaService : MediaSessionService() {
 
     class Session(
         val bookId: Long,
-        val navigator: MediaNavigator,
+        val navigator: MediaNavigator<*>,
         val mediaSession: MediaSession,
     ) {
         val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -57,7 +57,7 @@ class MediaService : MediaSessionService() {
         }
 
         fun openSession(
-            navigator: MediaNavigator,
+            navigator: MediaNavigator<*>,
             bookId: Long
         ) {
             val activityIntent = createSessionActivityIntent()

@@ -1,4 +1,4 @@
-package org.readium.r2.navigator
+package org.readium.r2.navigator.audio
 
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
