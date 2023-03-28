@@ -51,7 +51,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
     override lateinit var publication: Publication
     override lateinit var publicationIdentifier: String
     override var bookId: Long = -1
-    protected lateinit var baseUrl: String
+    protected var baseUrl: String? = null
 
     override var allowToggleActionBar = true
 
@@ -88,7 +88,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         publicationPath = intent.getStringExtra("publicationPath") ?: throw Exception("publicationPath required")
         publicationFileName = intent.getStringExtra("publicationFileName") ?: throw Exception("publicationFileName required")
         publicationIdentifier = publication.metadata.identifier ?: publication.metadata.title
-        baseUrl = intent.getStringExtra("baseUrl") ?: throw Exception("Intent extra `baseUrl` is required. Provide the URL returned by Server.addPublication()")
+        baseUrl = intent.getStringExtra("baseUrl")
 
         val initialLocator = intent.getParcelableExtra("locator") as? Locator
 
