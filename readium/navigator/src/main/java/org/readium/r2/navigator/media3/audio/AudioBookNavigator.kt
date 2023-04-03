@@ -20,6 +20,7 @@ import org.readium.r2.navigator.media3.api.AudioNavigator
 import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.extensions.combineStateIn
 import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -110,11 +111,13 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
         ) : AudioNavigator.ReadingOrder.Item
     }
 
-    data class Resource(
+    data class Playback(
+        override val state: MediaNavigator.State,
+        override val playWhenReady: Boolean,
         override val index: Int,
-        override val position: Duration,
+        override val offset: Duration,
         override val buffered: Duration?,
-    ) : AudioNavigator.Resource
+    ) : AudioNavigator.Playback
 
     sealed class State {
 
@@ -151,19 +154,20 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
             )
         }
 
-    override val playback: StateFlow<MediaNavigator.Playback> =
-        audioEngine.playback.mapStateIn(coroutineScope) {
-            MediaNavigator.Playback(it.state, it.playWhenReady)
+    override val playback: StateFlow<Playback> =
+        audioEngine.playback.combineStateIn(coroutineScope, audioEngine.position) { playback, position ->
+            Playback(
+                playback.state,
+                playback.playWhenReady,
+                position.index,
+                position.position,
+                position.buffered
+            )
         }
 
     override val position: StateFlow<Position> =
         audioEngine.position.mapStateIn(coroutineScope) {
             Position(Position.Item(it.index, it.duration), it.position, it.buffered)
-        }
-
-    override val resource: StateFlow<Resource> =
-        audioEngine.position.mapStateIn(coroutineScope) {
-            Resource(it.index, it.position, it.buffered)
         }
 
     override fun play() {

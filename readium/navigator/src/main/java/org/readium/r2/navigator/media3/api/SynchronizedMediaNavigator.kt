@@ -31,7 +31,8 @@ interface SynchronizedMediaNavigator<P : SynchronizedMediaNavigator.Position> : 
         val tokenLocator: Locator?
     }
 
-    interface Resource : MediaNavigator.Resource {
+    interface Playback : MediaNavigator.Playback {
+
         val utterance: String
 
         val range: IntRange?
@@ -45,8 +46,6 @@ interface SynchronizedMediaNavigator<P : SynchronizedMediaNavigator.Position> : 
     }
 
     override val position: StateFlow<P>
-
-    override val resource: StateFlow<Resource>
 
     override val readingOrder: ReadingOrder
 

@@ -18,9 +18,9 @@ interface AudioNavigator<P : AudioNavigator.Position> : MediaNavigator<P> {
 
     interface Position : MediaNavigator.Position
 
-    interface Resource : MediaNavigator.Resource {
+    interface Playback: MediaNavigator.Playback {
 
-        val position: Duration
+        val offset: Duration
 
         val buffered: Duration?
     }
@@ -40,6 +40,4 @@ interface AudioNavigator<P : AudioNavigator.Position> : MediaNavigator<P> {
     override val position: StateFlow<P>
 
     override val readingOrder: ReadingOrder
-
-    override val resource: StateFlow<Resource>
 }

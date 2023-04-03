@@ -19,6 +19,7 @@ import org.readium.r2.navigator.media3.api.SynchronizedMediaNavigator
 import org.readium.r2.navigator.media3.tts.session.TtsSessionAdapter
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.extensions.combineStateIn
 import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
@@ -135,11 +136,13 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         override val tokenLocator: Locator?,
     ) : SynchronizedMediaNavigator.Position
 
-    data class Resource(
+    data class Playback(
+        override val state: MediaNavigator.State,
+        override val playWhenReady: Boolean,
         override val index: Int,
         override val utterance: String,
-        override val range: IntRange?
-    ) : SynchronizedMediaNavigator.Resource
+        override val range: IntRange?,
+    ) : SynchronizedMediaNavigator.Playback
 
     data class ReadingOrder(
         override val items: List<Item>
@@ -172,21 +175,14 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             items = publication.readingOrder.map { ReadingOrder.Item(Href(it.href)) }
         )
 
-    override val playback: StateFlow<MediaNavigator.Playback> =
-        player.playback.mapStateIn(coroutineScope) { it.toPlayback() }
+    override val playback: StateFlow<Playback> =
+        player.playback.combineStateIn(coroutineScope, player.utterance) { playback, utterance ->
+            navigatorPlayback(playback, utterance)
+        }
 
     override val position: StateFlow<Position> =
         player.utterance.mapStateIn(coroutineScope) { playerUtterance ->
             playerUtterance.toPosition()
-        }
-
-    override val resource: StateFlow<Resource> =
-        player.utterance.mapStateIn(coroutineScope) { playerUtterance ->
-            Resource(
-                index = playerUtterance.position.resourceIndex,
-                utterance = playerUtterance.text,
-                range = playerUtterance.range
-            )
         }
 
     override fun play() {
@@ -247,10 +243,13 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         return true
     }
 
-    private fun TtsPlayer.Playback.toPlayback() =
-        MediaNavigator.Playback(
-            state = state.toState(),
-            playWhenReady = playWhenReady,
+    private fun navigatorPlayback(playback: TtsPlayer.Playback, utterance: TtsPlayer.Utterance) =
+        Playback(
+            state = playback.state.toState(),
+            playWhenReady = playback.playWhenReady,
+            index = utterance.position.resourceIndex,
+            utterance = utterance.text,
+            range = utterance.range
         )
 
     private fun TtsPlayer.State.toState() =

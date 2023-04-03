@@ -39,13 +39,15 @@ class SyncAudioNavigator<S : Configurable.Settings, P : Configurable.Preferences
         override val tokenLocator: Locator?,
     ) : AudioNavigator.Position, SynchronizedMediaNavigator.Position
 
-    data class Resource(
-        override val position: Duration,
-        override val buffered: Duration?,
+    data class Playback(
+        override val state: MediaNavigator.State,
+        override val playWhenReady: Boolean,
         override val index: Int,
+        override val offset: Duration,
+        override val buffered: Duration?,
         override val utterance: String,
-        override val range: IntRange?
-    ) : AudioNavigator.Resource, SynchronizedMediaNavigator.Resource
+        override val range: IntRange?,
+    ) : AudioNavigator.Playback, SynchronizedMediaNavigator.Playback
 
     data class ReadingOrder(
         override val duration: Duration?,
@@ -71,9 +73,6 @@ class SyncAudioNavigator<S : Configurable.Settings, P : Configurable.Preferences
         get() = TODO("Not yet implemented")
 
     override val readingOrder: ReadingOrder
-        get() = TODO("Not yet implemented")
-
-    override val resource: StateFlow<Resource>
         get() = TODO("Not yet implemented")
 
     override fun play() {

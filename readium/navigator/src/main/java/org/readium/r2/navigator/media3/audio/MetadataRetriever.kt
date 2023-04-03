@@ -28,7 +28,6 @@ internal class MetadataRetriever(
                 setDataSource(ResourceMediaDataSource(resource))
             }
 
-
     fun duration(): Duration? =
         retriever.extractMetadata(METADATA_KEY_DURATION)
             ?.toIntOrNull()

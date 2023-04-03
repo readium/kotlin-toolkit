@@ -53,10 +53,13 @@ interface MediaNavigator<P : MediaNavigator.Position> : Navigator, Closeable {
      * @param state The current state.
      * @param playWhenReady If the navigator should play as soon as the state is Ready.
      */
-    data class Playback(
-        val state: State,
+    interface Playback {
+        val state: State
+
         val playWhenReady: Boolean
-    )
+
+        val index: Int
+    }
 
     /**
      * Indicates the current state of the playback.
@@ -64,8 +67,6 @@ interface MediaNavigator<P : MediaNavigator.Position> : Navigator, Closeable {
     val playback: StateFlow<Playback>
 
     val position: StateFlow<P>
-
-    val resource: StateFlow<Resource>
 
     val readingOrder: ReadingOrder
 
@@ -77,11 +78,6 @@ interface MediaNavigator<P : MediaNavigator.Position> : Navigator, Closeable {
 
             val href: Href
         }
-    }
-
-    interface Resource {
-
-        val index: Int
     }
 
     /**
