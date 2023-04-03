@@ -128,7 +128,7 @@ class TtsViewModel private constructor(
 
     val highlight: StateFlow<Locator?> =
         mediaServiceFacade.session.flatMapLatest { session ->
-            session?.ttsNavigator?.position?.map { it.utteranceLocator }
+            session?.ttsNavigator?.location?.map { it.utteranceLocator }
                 ?: MutableStateFlow(null)
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 

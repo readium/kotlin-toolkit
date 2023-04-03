@@ -24,20 +24,21 @@ import org.readium.r2.shared.util.Href
 @ExperimentalReadiumApi
 class SyncAudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>, E : AudioEngine.Error>(
     private val audioNavigator: AudioBookNavigator<S, P, E>,
-) : AudioNavigator<SyncAudioNavigator.Position>,
-    SynchronizedMediaNavigator<SyncAudioNavigator.Position>,
+) : AudioNavigator<SyncAudioNavigator.Location, SyncAudioNavigator.Playback, SyncAudioNavigator.ReadingOrder>,
+    SynchronizedMediaNavigator<SyncAudioNavigator.Location, SyncAudioNavigator.Playback, SyncAudioNavigator.ReadingOrder>,
     Configurable<S, P> {
 
-    data class Position(
+    data class Location(
         val resourceIndex: Int,
         val fragment: String,
         override val textBefore: String?,
         override val textAfter: String?,
-        override val text: String,
+        override val utterance: String,
         override val range: IntRange?,
         override val utteranceLocator: Locator,
         override val tokenLocator: Locator?,
-    ) : AudioNavigator.Position, SynchronizedMediaNavigator.Position
+    ) : AudioNavigator.Location,
+        SynchronizedMediaNavigator.Location
 
     data class Playback(
         override val state: MediaNavigator.State,
@@ -55,7 +56,7 @@ class SyncAudioNavigator<S : Configurable.Settings, P : Configurable.Preferences
     ) : AudioNavigator.ReadingOrder, SynchronizedMediaNavigator.ReadingOrder {
 
         data class Item(
-            override val href: Href,
+            val href: Href,
             override val duration: Duration?
         ) : AudioNavigator.ReadingOrder.Item, SynchronizedMediaNavigator.ReadingOrder.Item
     }
@@ -66,10 +67,10 @@ class SyncAudioNavigator<S : Configurable.Settings, P : Configurable.Preferences
     override val currentLocator: StateFlow<Locator> =
         audioNavigator.currentLocator
 
-    override val playback: StateFlow<MediaNavigator.Playback> =
-        audioNavigator.playback
+    override val playback: StateFlow<Playback>
+        get() = TODO("Not yet implemented")
 
-    override val position: StateFlow<Position>
+    override val location: StateFlow<Location>
         get() = TODO("Not yet implemented")
 
     override val readingOrder: ReadingOrder

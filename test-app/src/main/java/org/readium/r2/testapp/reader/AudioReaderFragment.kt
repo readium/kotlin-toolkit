@@ -83,7 +83,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
             .onEach { onPlaybackChanged(it) }
             .launchIn(viewLifecycleOwner.lifecycleScope)
 
-        navigator.position
+        navigator.location
             .onEach { onPositionChanged(it) }
             .launchIn(viewLifecycleOwner.lifecycleScope)
     }
@@ -107,14 +107,14 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
         )
     }
 
-    private fun onPositionChanged(position: AudioBookNavigator.Position) {
+    private fun onPositionChanged(position: AudioBookNavigator.Location) {
         Timber.v("onPositionChanged $position")
         if (seekingItem == null) {
             updateTimeline(position)
         }
     }
 
-    private fun updateTimeline(position: AudioBookNavigator.Position) {
+    private fun updateTimeline(position: AudioBookNavigator.Location) {
         binding.timelineBar.max = position.item.duration?.inWholeSeconds?.toInt() ?: 0
         binding.timelineDuration.text = position.item.duration?.formatElapsedTime()
         binding.timelineBar.progress = position.offset.inWholeSeconds.toInt()
@@ -159,7 +159,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
 
     override fun onStartTrackingTouch(seekBar: SeekBar) {
         Timber.d("onStartTrackingTouch")
-        seekingItem = navigator.position.value.item.index
+        seekingItem = navigator.location.value.item.index
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar) {
@@ -168,7 +168,7 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
             lifecycleScope.launch {
                 navigator.seek(index, seekBar.progress.seconds)
                 // Some timeline updates might have been missed during seeking.
-                val positionNow = navigator.position.value
+                val positionNow = navigator.location.value
                 updateTimeline(positionNow)
                 seekingItem = null
             }

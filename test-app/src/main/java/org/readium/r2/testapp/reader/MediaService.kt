@@ -23,12 +23,15 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import timber.log.Timber
 
 @OptIn(ExperimentalReadiumApi::class)
+typealias AnyMediaNavigator = MediaNavigator<*, *, *>
+
+@OptIn(ExperimentalReadiumApi::class)
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class MediaService : MediaSessionService() {
 
     class Session(
         val bookId: Long,
-        val navigator: MediaNavigator<*>,
+        val navigator: MediaNavigator<*, *, *>,
         val mediaSession: MediaSession,
     ) {
         val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -57,7 +60,7 @@ class MediaService : MediaSessionService() {
         }
 
         fun openSession(
-            navigator: MediaNavigator<*>,
+            navigator: AnyMediaNavigator,
             bookId: Long
         ) {
             val activityIntent = createSessionActivityIntent()

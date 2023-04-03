@@ -36,7 +36,8 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
     private val audioEngine: AudioEngine<S, P, E>,
     override val readingOrder: ReadingOrder,
     private val configuration: Configuration
-) : AudioNavigator<AudioBookNavigator.Position>, Configurable<S, P> by audioEngine {
+) : AudioNavigator<AudioBookNavigator.Location, AudioBookNavigator.Playback, AudioBookNavigator.ReadingOrder>,
+    Configurable<S, P> by audioEngine {
 
     companion object {
 
@@ -88,11 +89,11 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
         val skipBackwardInterval: Duration = 30.seconds,
     )
 
-    data class Position(
+    data class Location(
         val item: Item,
         val offset: Duration,
         val buffered: Duration?
-    ) : AudioNavigator.Position {
+    ) : AudioNavigator.Location {
 
         data class Item(
             val index: Int,
@@ -106,7 +107,7 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
     ) : AudioNavigator.ReadingOrder {
 
         data class Item(
-            override val href: Href,
+            val href: Href,
             override val duration: Duration?
         ) : AudioNavigator.ReadingOrder.Item
     }
@@ -165,9 +166,9 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
             )
         }
 
-    override val position: StateFlow<Position> =
+    override val location: StateFlow<Location> =
         audioEngine.position.mapStateIn(coroutineScope) {
-            Position(Position.Item(it.index, it.duration), it.position, it.buffered)
+            Location(Location.Item(it.index, it.duration), it.position, it.buffered)
         }
 
     override fun play() {
