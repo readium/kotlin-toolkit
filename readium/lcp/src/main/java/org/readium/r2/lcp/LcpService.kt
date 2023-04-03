@@ -27,6 +27,10 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.archive.DefaultArchiveFactory
+import org.readium.r2.shared.util.http.DefaultHttpClient
+import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -114,12 +118,12 @@ interface LcpService {
     /**
      * Builds a [PublicationAsset] to open a LCP-protected publication from its license file.
      */
-    fun remoteAssetForLicense(license: File): Try<PublicationAsset, LcpException>
+    suspend fun remoteAssetForLicense(license: File): Try<PublicationAsset, LcpException>
 
     /**
      * Builds a [PublicationAsset] to open a LCP-protected publication from its license.
      */
-    fun remoteAssetForLicense(license: ByteArray): Try<PublicationAsset, LcpException>
+    suspend fun remoteAssetForLicense(license: ByteArray): Try<PublicationAsset, LcpException>
 
     /**
      * Information about an acquired publication protected with LCP.
@@ -142,7 +146,11 @@ interface LcpService {
         /**
          * LCP service factory.
          */
-        operator fun invoke(context: Context): LcpService? {
+        operator fun invoke(
+            context: Context,
+            archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
+            httpClient: HttpClient = DefaultHttpClient()
+        ): LcpService? {
             if (!LcpClient.isAvailable())
                 return null
 
@@ -154,7 +162,16 @@ interface LcpService {
             val device = DeviceService(repository = deviceRepository, network = network, context = context)
             val crl = CRLService(network = network, context = context)
             val passphrases = PassphrasesService(repository = passphraseRepository)
-            return LicensesService(licenses = licenseRepository, crl = crl, device = device, network = network, passphrases = passphrases, context = context)
+            return LicensesService(
+                licenses = licenseRepository,
+                crl = crl,
+                device = device,
+                network = network,
+                passphrases = passphrases,
+                context = context,
+                archiveFactory = archiveFactory,
+                httpClient = httpClient
+            )
         }
 
         @Deprecated("Use `LcpService()` instead", ReplaceWith("LcpService(context)"), level = DeprecationLevel.ERROR)

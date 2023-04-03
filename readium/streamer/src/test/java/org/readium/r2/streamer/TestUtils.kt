@@ -14,6 +14,7 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.streamer.parser.PublicationParser
 
 internal fun Resource.readBlocking(range: LongRange? = null) = runBlocking { read(range) }
 

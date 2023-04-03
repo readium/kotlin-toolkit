@@ -43,17 +43,15 @@ internal class FallbackContentProtection : ContentProtection {
 
     override suspend fun open(
         asset: PublicationAsset,
-        fetcher: Fetcher,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
     ): Try<ContentProtection.ProtectedAsset, Publication.OpeningException>? {
-        val scheme: Scheme = sniffScheme(fetcher, asset.mediaType())
+        val scheme: Scheme = sniffScheme(asset.fetcher, asset.mediaType)
             ?: return null
 
         val protectedFile = ContentProtection.ProtectedAsset(
             asset = asset,
-            fetcher = fetcher,
             onCreatePublication = {
                 servicesBuilder.contentProtectionServiceFactory = Service.createFactory(scheme)
             }

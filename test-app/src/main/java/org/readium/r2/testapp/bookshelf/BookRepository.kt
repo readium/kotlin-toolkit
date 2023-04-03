@@ -23,12 +23,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.joda.time.DateTime
 import org.readium.r2.lcp.LcpService
-import org.readium.r2.shared.extensions.mediaType
+import org.readium.r2.shared.extensions.extension
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.asset.FileAsset
-import org.readium.r2.shared.publication.asset.RemoteAsset
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.util.Try
@@ -162,13 +160,15 @@ class BookRepository(
             return Try.failure(ImportException.UnsupportedProtocol(url.protocol))
         }
 
-        val asset = RemoteAsset(url)
+        val bytes = { url.readBytes() }
+        val mediaType = MediaType.ofBytes(bytes, fileExtension = url.extension)
+                ?: MediaType.BINARY
 
-        streamer.open(asset, allowUserInteraction = false)
+        streamer.open(url, mediaType, allowUserInteraction = false)
             .onSuccess { publication ->
                 val id = insertBookIntoDatabase(
                     url.toString(),
-                    asset.mediaType(),
+                    mediaType,
                     publication
                 )
                 if (id == -1L)
@@ -188,18 +188,21 @@ class BookRepository(
         tempFile: File,
         coverUrl: String? = null
     ): Try<Unit, ImportException> {
-        val sourceMediaType = tempFile.mediaType()
-        val publicationAsset: FileAsset =
-            if (sourceMediaType != MediaType.LCP_LICENSE_DOCUMENT)
-                FileAsset(tempFile, sourceMediaType)
-            else {
+        val sourceMediaType = MediaType.ofFile(tempFile)
+
+        val (publicationFile, mediaType) =
+            if (sourceMediaType != MediaType.LCP_LICENSE_DOCUMENT) {
+                tempFile to sourceMediaType
+            } else {
                 lcpService
-                    .flatMap { it.acquirePublication(tempFile) }
+                    .flatMap {
+                       it.acquirePublication(tempFile)
+                    }
                     .fold(
                         {
-                            val mediaType =
-                                MediaType.of(fileExtension = File(it.suggestedFilename).extension)
-                            FileAsset(it.localFile, mediaType)
+                            val file = it.localFile
+                            val mediaType = MediaType.of(fileExtension = File(it.suggestedFilename).extension)
+                            file to mediaType
                         },
                         {
                             tryOrNull { tempFile.delete() }
@@ -208,23 +211,30 @@ class BookRepository(
                     )
             }
 
-        val mediaType = publicationAsset.mediaType()
+        if (mediaType == null) {
+            val exception = Publication.OpeningException.UnsupportedFormat(
+                Exception("Unsupported media type")
+            )
+            return Try.failure(ImportException.UnableToOpenPublication(exception))
+        }
+
         val fileName = "${UUID.randomUUID()}.${mediaType.fileExtension}"
-        val libraryAsset = FileAsset(File(storageDir, fileName), mediaType)
+        val libraryFile = File(storageDir, fileName)
+        val libraryUrl = libraryFile.toURI().toURL()!!
 
         try {
-            publicationAsset.file.moveTo(libraryAsset.file)
+            publicationFile.moveTo(libraryFile)
         } catch (e: Exception) {
             Timber.d(e)
-            tryOrNull { publicationAsset.file.delete() }
+            tryOrNull { libraryFile.delete() }
             return Try.failure(ImportException.IOException)
         }
 
-        streamer.open(libraryAsset, allowUserInteraction = false)
+        streamer.open(libraryUrl, mediaType, allowUserInteraction = false)
             .onSuccess { publication ->
                 val id = insertBookIntoDatabase(
-                    libraryAsset.file.path,
-                    libraryAsset.mediaType(),
+                    libraryUrl.toString(),
+                    mediaType,
                     publication
                 )
                 if (id == -1L)
@@ -237,7 +247,7 @@ class BookRepository(
                 Try.success(Unit)
             }
             .onFailure {
-                tryOrNull { libraryAsset.file.delete() }
+                tryOrNull { libraryFile.delete() }
                 Timber.d(it)
                 return Try.failure(ImportException.UnableToOpenPublication(it))
             }

@@ -25,7 +25,10 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.shared.publication.asset.RemoteAsset
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
@@ -35,7 +38,9 @@ internal class LicensesService(
     private val device: DeviceService,
     private val network: NetworkService,
     private val passphrases: PassphrasesService,
-    private val context: Context
+    private val context: Context,
+    private val archiveFactory: ArchiveFactory,
+    private val httpClient: HttpClient
 ) : LcpService, CoroutineScope by MainScope() {
 
     override suspend fun isLcpProtected(file: File): Boolean =
@@ -44,16 +49,15 @@ internal class LicensesService(
             true
         }
 
-    override fun remoteAssetForLicense(license: File): Try<PublicationAsset, LcpException> {
+    override suspend fun remoteAssetForLicense(license: File): Try<PublicationAsset, LcpException> {
         return try {
-            val asset = remoteAssetForLicenseThrowing(license.readBytes())
-            Try.success(asset)
+            remoteAssetForLicense(license.readBytes())
         } catch (e: Exception) {
             Try.failure(LcpException.wrap(e))
         }
     }
 
-    override fun remoteAssetForLicense(license: ByteArray): Try<PublicationAsset, LcpException> {
+    override suspend fun remoteAssetForLicense(license: ByteArray): Try<PublicationAsset, LcpException> {
         return try {
             val asset = remoteAssetForLicenseThrowing(license)
             Try.success(asset)
@@ -62,9 +66,19 @@ internal class LicensesService(
         }
     }
 
-    private fun remoteAssetForLicenseThrowing(license: ByteArray): PublicationAsset {
+    private suspend fun remoteAssetForLicenseThrowing(license: ByteArray): PublicationAsset {
         val licenseDoc = LicenseDocument(license)
-        return licenseDoc.remoteAsset
+        //TODO: get an updated version of the license without asking passphrase
+
+        val link = checkNotNull(licenseDoc.link(LicenseDocument.Rel.publication))
+        val url = try {
+            link.url
+        } catch (e: Exception) {
+            throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.rawValue)
+        }
+        return RemoteAsset.Factory(archiveFactory, httpClient)
+            .createAsset(url, link.mediaType)
+            .getOrThrow()
     }
 
     override suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit): Try<LcpService.AcquiredPublication, LcpException> =

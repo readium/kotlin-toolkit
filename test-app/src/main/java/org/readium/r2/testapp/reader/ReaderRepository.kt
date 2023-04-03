@@ -6,12 +6,10 @@
 
 package org.readium.r2.testapp.reader
 
+import androidx.datastore.preferences.core.Preferences as JetpackPreferences
 import android.app.Activity
 import android.app.Application
-import android.webkit.URLUtil
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences as JetpackPreferences
-import java.io.File
 import java.net.URL
 import org.json.JSONObject
 import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider
@@ -22,8 +20,6 @@ import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.asset.FileAsset
-import org.readium.r2.shared.publication.asset.RemoteAsset
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.protectionError
 import org.readium.r2.shared.util.Try
@@ -74,15 +70,10 @@ class ReaderRepository(
         val book = bookRepository.get(bookId)
             ?: throw Exception("Cannot find book in database.")
 
-        val asset = if (URLUtil.isNetworkUrl(book.href)) {
-            val mediaType = checkNotNull(book.mediaType())
-            RemoteAsset(URL(book.href), mediaType)
-        } else {
-            val file = File(book.href)
-            FileAsset(file)
-        }
-
-        val publication = readium.streamer.open(asset, allowUserInteraction = true, sender = activity)
+        val publication = readium.streamer.open(
+            URL(book.href), book.mediaType(),
+            allowUserInteraction = true, sender = activity
+        )
             .getOrThrow()
 
         // The publication is protected with a DRM and not unlocked.

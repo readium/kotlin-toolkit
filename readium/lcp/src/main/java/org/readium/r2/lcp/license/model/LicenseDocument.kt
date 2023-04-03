@@ -23,7 +23,6 @@ import org.readium.r2.lcp.license.model.components.lcp.User
 import org.readium.r2.lcp.service.URLParameters
 import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.optNullableString
-import org.readium.r2.shared.publication.asset.RemoteAsset
 import org.readium.r2.shared.util.mediatype.MediaType
 
 class LicenseDocument(val data: ByteArray) {
@@ -88,16 +87,4 @@ class LicenseDocument(val data: ByteArray) {
 
     val description: String
         get() = "License($id)"
-
-    internal val remoteAsset: RemoteAsset
-        get() {
-            val link = checkNotNull(link(Rel.publication))
-            val url = try {
-                link.url
-            } catch (e: Exception) {
-                throw LcpException.Parsing.Url(rel = Rel.publication.rawValue)
-            }
-            val mediaType = link.mediaType
-            return RemoteAsset(url, mediaType)
-        }
 }

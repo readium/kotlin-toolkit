@@ -10,19 +10,23 @@
 package org.readium.r2.streamer
 
 import android.content.Context
+import java.net.URL
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.shared.publication.asset.PublicationAssetFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
+import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.streamer.parser.FallbackContentProtection
+import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioParser
 import org.readium.r2.streamer.parser.epub.EpubParser
 import org.readium.r2.streamer.parser.epub.setLayoutStyle
@@ -60,10 +64,26 @@ class Streamer constructor(
     private val httpClient: DefaultHttpClient = DefaultHttpClient(),
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
-    private val context = context.applicationContext
 
     private val contentProtections: List<ContentProtection> =
         contentProtections + listOf(FallbackContentProtection())
+
+    private val assetFactory: PublicationAssetFactory =
+        PublicationAssetFactory(archiveFactory, httpClient)
+
+    suspend fun open(
+        url: URL,
+        mediaType: MediaType,
+        credentials: String? = null,
+        allowUserInteraction: Boolean,
+        sender: Any? = null,
+        onCreatePublication: Publication.Builder.() -> Unit = {},
+        warnings: WarningLogger? = null
+    ): PublicationTry<Publication> =
+        assetFactory
+            .createAsset(url, mediaType)
+            .flatMap { asset -> open(asset, credentials, allowUserInteraction, sender, onCreatePublication, warnings) }
+
 
     /**
      * Parses a [Publication] from the given asset.
@@ -104,27 +124,18 @@ class Streamer constructor(
         warnings: WarningLogger? = null
     ): PublicationTry<Publication> = try {
 
-        @Suppress("NAME_SHADOWING")
-        var asset = asset
-        val dependencies = PublicationAsset.Dependencies(archiveFactory = archiveFactory, httpClient = httpClient)
-        var fetcher = asset.createFetcher(dependencies, credentials = credentials)
-            .getOrThrow()
-
         val protectedAsset = contentProtections
             .lazyMapFirstNotNullOrNull {
-                it.open(asset, fetcher, credentials, allowUserInteraction, sender)
+                it.open(asset, credentials, allowUserInteraction, sender)
             }
             ?.getOrThrow()
 
-        if (protectedAsset != null) {
-            asset = protectedAsset.asset
-            fetcher = protectedAsset.fetcher
-        }
+        val newAsset = protectedAsset?.asset ?: asset
 
         val builder = parsers
             .lazyMapFirstNotNullOrNull {
                 try {
-                    it.parse(asset, fetcher, warnings)
+                    it.parse(newAsset, warnings)
                 } catch (e: Exception) {
                     throw Publication.OpeningException.ParsingFailed(e)
                 }
@@ -138,7 +149,7 @@ class Streamer constructor(
         builder.apply(onCreatePublication)
 
         val publication = builder.build()
-            .apply { addLegacyProperties(asset.mediaType()) }
+            .apply { addLegacyProperties(asset.mediaType) }
 
         Try.success(publication)
     } catch (e: Publication.OpeningException) {
@@ -149,7 +160,7 @@ class Streamer constructor(
         listOfNotNull(
             EpubParser(),
             pdfFactory?.let { PdfParser(context, it) },
-            ReadiumWebPubParser(context, pdfFactory, httpClient),
+            ReadiumWebPubParser(context, pdfFactory),
             ImageParser(),
             AudioParser()
         )

@@ -43,7 +43,6 @@ interface ContentProtection {
      */
     suspend fun open(
         asset: PublicationAsset,
-        fetcher: Fetcher,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
@@ -75,7 +74,6 @@ interface ContentProtection {
      */
     data class ProtectedAsset(
         val asset: PublicationAsset,
-        val fetcher: Fetcher,
         val onCreatePublication: Publication.Builder.() -> Unit = {}
     )
 

@@ -61,7 +61,7 @@ data class Book(
             return url
         }
 
-    suspend fun mediaType(): MediaType? = MediaType.of(type)
+    suspend fun mediaType(): MediaType = MediaType.of(type)!!
 
     companion object {
 

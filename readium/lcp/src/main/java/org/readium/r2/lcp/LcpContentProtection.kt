@@ -7,9 +7,6 @@
 package org.readium.r2.lcp
 
 import org.readium.r2.lcp.auth.LcpPassphraseAuthentication
-import org.readium.r2.lcp.service.LcpRemoteAsset
-import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
@@ -26,20 +23,18 @@ internal class LcpContentProtection(
 
     override suspend fun open(
         asset: PublicationAsset,
-        fetcher: Fetcher,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
     ): Try<ContentProtection.ProtectedAsset, Publication.OpeningException>? {
-        val license = retrieveLicense(asset, fetcher, credentials, allowUserInteraction, sender)
+        val license = retrieveLicense(asset, credentials, allowUserInteraction, sender)
             ?: return null
-        return createProtectedAsset(asset, license, fetcher)
+        return createProtectedAsset(asset, license)
     }
 
     /* Returns null if the publication is not protected by LCP. */
     private suspend fun retrieveLicense(
         asset: PublicationAsset,
-        fetcher: Fetcher,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
@@ -53,9 +48,7 @@ internal class LcpContentProtection(
             is FileAsset ->
                 lcpService.retrieveLicense(asset.file, authentication, allowUserInteraction, sender)
             is RemoteAsset ->
-                lcpService.retrieveLicense(fetcher, asset.mediaType(), authentication, allowUserInteraction, sender)
-            is LcpRemoteAsset ->
-                lcpService.retrieveLicense(asset.licenseFile, authentication, allowUserInteraction, sender)
+                lcpService.retrieveLicense(asset.fetcher, asset.mediaType, authentication, allowUserInteraction, sender)
             else ->
                 null
         }
@@ -65,28 +58,31 @@ internal class LcpContentProtection(
         }
     }
 
-    private suspend fun createProtectedAsset(
+    private fun createProtectedAsset(
         originalAsset: PublicationAsset,
         license: Try<LcpLicense, LcpException>,
-        fetcher: Fetcher
     ): Try<ContentProtection.ProtectedAsset, Publication.OpeningException> {
-        val newAsset = when (originalAsset) {
-            is LcpRemoteAsset -> {
-                // Try to update the asset with the new license
-                val remoteAsset = tryOrNull { license.getOrNull()?.license?.remoteAsset }
-                    ?: RemoteAsset(originalAsset.url, originalAsset.mediaType())
-                LcpRemoteAsset(remoteAsset, originalAsset.licenseFile)
-            }
-            else ->
-                originalAsset
-        }
-
         val serviceFactory = LcpContentProtectionService
             .createFactory(license.getOrNull(), license.exceptionOrNull())
 
+        val newFetcher = TransformingFetcher(
+            originalAsset.fetcher,
+            LcpDecryptor(license.getOrNull())::transform
+        )
+
+        val newAsset = when (originalAsset) {
+            is FileAsset -> {
+                originalAsset.copy(fetcher = newFetcher)
+            }
+            is RemoteAsset -> {
+                originalAsset.copy(fetcher = newFetcher)
+            }
+            else -> throw IllegalStateException()
+        }
+
+
         val protectedFile = ContentProtection.ProtectedAsset(
             asset = newAsset,
-            fetcher = TransformingFetcher(fetcher, LcpDecryptor(license.getOrNull())::transform),
             onCreatePublication = {
                 servicesBuilder.contentProtectionServiceFactory = serviceFactory
             }

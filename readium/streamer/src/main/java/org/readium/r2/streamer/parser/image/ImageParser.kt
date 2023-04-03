@@ -1,10 +1,7 @@
 /*
- * Module: r2-streamer-kotlin
- * Developers: Quentin Gliosca
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.streamer.parser.image
@@ -16,7 +13,7 @@ import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.streamer.PublicationParser
+import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
 import org.readium.r2.streamer.extensions.lowercasedExtension
@@ -29,16 +26,12 @@ import org.readium.r2.streamer.extensions.lowercasedExtension
  */
 class ImageParser : PublicationParser {
 
-    override suspend fun parse(
-        asset: PublicationAsset,
-        fetcher: Fetcher,
-        warnings: WarningLogger?
-    ): Publication.Builder? {
+    override suspend fun parse(asset: PublicationAsset, warnings: WarningLogger?): Publication.Builder? {
 
-        if (!accepts(asset, fetcher))
+        if (!accepts(asset.mediaType, asset.fetcher))
             return null
 
-        val readingOrder = fetcher.links()
+        val readingOrder = asset.fetcher.links()
             .filter { !File(it.href).isHiddenOrThumbs && it.mediaType.isBitmap }
             .sortedBy(Link::href)
             .toMutableList()
@@ -46,7 +39,7 @@ class ImageParser : PublicationParser {
         if (readingOrder.isEmpty())
             throw Exception("No bitmap found in the publication.")
 
-        val title = fetcher.guessTitle() ?: asset.name
+        val title = asset.fetcher.guessTitle() ?: asset.name
 
         // First valid resource is the cover.
         readingOrder[0] = readingOrder[0].copy(rels = setOf("cover"))
@@ -61,15 +54,15 @@ class ImageParser : PublicationParser {
 
         return Publication.Builder(
             manifest = manifest,
-            fetcher = fetcher,
+            fetcher = asset.fetcher,
             servicesBuilder = Publication.ServicesBuilder(
                 positions = PerResourcePositionsService.createFactory(fallbackMediaType = "image/*")
             )
         )
     }
 
-    private suspend fun accepts(asset: PublicationAsset, fetcher: Fetcher): Boolean {
-        if (asset.mediaType() == MediaType.CBZ)
+    private suspend fun accepts(mediaType: MediaType, fetcher: Fetcher): Boolean {
+        if (mediaType == MediaType.CBZ)
             return true
 
         val allowedExtensions = listOf("acbf", "txt", "xml")

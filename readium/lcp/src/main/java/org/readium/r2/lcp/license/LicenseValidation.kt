@@ -60,7 +60,11 @@ internal sealed class State {
     data class fetchStatus(val license: LicenseDocument) : State()
     data class validateStatus(val license: LicenseDocument, val data: ByteArray) : State()
     data class fetchLicense(val license: LicenseDocument, val status: StatusDocument) : State()
-    data class checkLicenseStatus(val license: LicenseDocument, val status: StatusDocument?, val statusDocumentTakesPrecedence: Boolean) : State()
+    data class checkLicenseStatus(
+        val license: LicenseDocument,
+        val status: StatusDocument?,
+        val statusDocumentTakesPrecedence: Boolean
+    ) : State()
     data class retrievePassphrase(val license: LicenseDocument, val status: StatusDocument?) : State()
     data class validateIntegrity(
         val license: LicenseDocument,
@@ -351,7 +355,11 @@ internal class LicenseValidation(
         raise(Event.retrievedLicenseData(data))
     }
 
-    private fun checkLicenseStatus(license: LicenseDocument, status: StatusDocument?, statusDocumentTakesPrecedence: Boolean) {
+    private fun checkLicenseStatus(
+        license: LicenseDocument,
+        status: StatusDocument?,
+        statusDocumentTakesPrecedence: Boolean
+    ) {
         var error: LcpException.LicenseStatus? = null
         val now = Date()
         val start = license.rights.start ?: now
