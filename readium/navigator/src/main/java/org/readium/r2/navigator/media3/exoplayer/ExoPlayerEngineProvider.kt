@@ -33,8 +33,7 @@ class ExoPlayerEngineProvider(
     private val metadataProvider: MediaMetadataProvider = DefaultMediaMetadataProvider(),
     private val defaults: ExoPlayerDefaults = ExoPlayerDefaults(),
     private val positionRefreshRate: Double = 2.0, // Hz
-) : AudioEngineProvider<ExoPlayerSettings, ExoPlayerPreferences,
-        ExoPlayerPreferencesEditor, ExoPlayerEngine.Error> {
+) : AudioEngineProvider<ExoPlayerSettings, ExoPlayerPreferences, ExoPlayerPreferencesEditor> {
 
     override suspend fun createEngine(
         publication: Publication,

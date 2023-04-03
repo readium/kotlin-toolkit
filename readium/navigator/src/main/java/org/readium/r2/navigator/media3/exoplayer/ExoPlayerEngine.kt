@@ -9,6 +9,7 @@ package org.readium.r2.navigator.media3.exoplayer
 import android.app.Application
 import androidx.media3.common.*
 import androidx.media3.datasource.DataSource
+import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import kotlin.time.Duration
@@ -34,7 +35,7 @@ class ExoPlayerEngine(
     private val settingsResolver: SettingsResolver,
     private val positionRefreshRate: Double,
     initialPreferences: ExoPlayerPreferences
-) : AudioEngine<ExoPlayerSettings, ExoPlayerPreferences, ExoPlayerEngine.Error> {
+) : AudioEngine<ExoPlayerSettings, ExoPlayerPreferences> {
 
     companion object {
 
@@ -138,11 +139,10 @@ class ExoPlayerEngine(
 
         override fun onEvents(player: Player, events: Player.Events) {
             _playback.value = exoPlayer.playback
-            _position.value = exoPlayer.position
         }
     }
 
-    class Error : AudioEngine.Error
+    data class Error(val error: ExoPlaybackException) : AudioEngine.Error
 
     private val coroutineScope: CoroutineScope =
         MainScope()
@@ -154,29 +154,23 @@ class ExoPlayerEngine(
     private val _settings: MutableStateFlow<ExoPlayerSettings> =
         MutableStateFlow(settingsResolver.settings(initialPreferences))
 
-    private val _playback: MutableStateFlow<AudioEngine.Playback<Error>> =
+    private val _playback: MutableStateFlow<AudioEngine.Playback> =
         MutableStateFlow(exoPlayer.playback)
-
-    private val _position: MutableStateFlow<AudioEngine.Position> =
-        MutableStateFlow(exoPlayer.position)
 
     init {
         coroutineScope.launch {
             val positionRefreshDelay = (1.0 / positionRefreshRate).seconds
             while (isActive) {
                 delay(positionRefreshDelay)
-                _position.value = exoPlayer.position
+                _playback.value = exoPlayer.playback
             }
         }
 
         submitPreferences(initialPreferences)
     }
 
-    override val playback: StateFlow<AudioEngine.Playback<Error>>
+    override val playback: StateFlow<AudioEngine.Playback>
         get() = _playback.asStateFlow()
-
-    override val position: StateFlow<AudioEngine.Position>
-        get() = _position.asStateFlow()
 
     override val settings: StateFlow<ExoPlayerSettings>
         get() = _settings.asStateFlow()
@@ -209,25 +203,20 @@ class ExoPlayerEngine(
         )
     }
 
-    private val ExoPlayer.playback: AudioEngine.Playback<Error> get() =
+    private val ExoPlayer.playback: AudioEngine.Playback get() =
         AudioEngine.Playback(
             state = engineState,
-            playWhenReady = playWhenReady
-        )
-
-    private val ExoPlayer.engineState: MediaNavigator.State get() =
-        when (this.playbackState) {
-            Player.STATE_READY -> AudioBookNavigator.State.Ready
-            Player.STATE_BUFFERING -> AudioBookNavigator.State.Buffering
-            Player.STATE_ENDED -> AudioBookNavigator.State.Ended
-            else -> AudioBookNavigator.State.Error()
-        }
-
-    private val ExoPlayer.position: AudioEngine.Position get() =
-        AudioEngine.Position(
+            playWhenReady = playWhenReady,
             index = currentMediaItemIndex,
-            position = currentPosition.milliseconds,
-            duration = duration.takeIf { it != C.TIME_UNSET }?.milliseconds,
+            offset = currentPosition.milliseconds,
             buffered = bufferedPosition.milliseconds
         )
+
+    private val ExoPlayer.engineState: AudioEngine.State get() =
+        when (this.playbackState) {
+            Player.STATE_READY -> AudioEngine.State.Ready
+            Player.STATE_BUFFERING -> AudioEngine.State.Buffering
+            Player.STATE_ENDED -> AudioEngine.State.Ended
+            else -> AudioEngine.State.Error(Error(playerError!!))
+        }
 }

@@ -11,9 +11,8 @@ import kotlin.time.Duration
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.media3.api.AudioNavigator
 import org.readium.r2.navigator.media3.api.MediaNavigator
-import org.readium.r2.navigator.media3.api.SynchronizedMediaNavigator
+import org.readium.r2.navigator.media3.api.TextAwareMediaNavigator
 import org.readium.r2.navigator.media3.audio.AudioBookNavigator
-import org.readium.r2.navigator.media3.audio.AudioEngine
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
@@ -22,10 +21,10 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Href
 
 @ExperimentalReadiumApi
-class SyncAudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>, E : AudioEngine.Error>(
-    private val audioNavigator: AudioBookNavigator<S, P, E>,
-) : AudioNavigator<SyncAudioNavigator.Location, SyncAudioNavigator.Playback, SyncAudioNavigator.ReadingOrder>,
-    SynchronizedMediaNavigator<SyncAudioNavigator.Location, SyncAudioNavigator.Playback, SyncAudioNavigator.ReadingOrder>,
+class GuidedAudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>>(
+    private val audioNavigator: AudioBookNavigator<S, P>,
+) : AudioNavigator<GuidedAudioNavigator.Location, GuidedAudioNavigator.Playback, GuidedAudioNavigator.ReadingOrder>,
+    TextAwareMediaNavigator<GuidedAudioNavigator.Location, GuidedAudioNavigator.Playback, GuidedAudioNavigator.ReadingOrder>,
     Configurable<S, P> {
 
     data class Location(
@@ -38,7 +37,7 @@ class SyncAudioNavigator<S : Configurable.Settings, P : Configurable.Preferences
         override val utteranceLocator: Locator,
         override val tokenLocator: Locator?,
     ) : AudioNavigator.Location,
-        SynchronizedMediaNavigator.Location
+        TextAwareMediaNavigator.Location
 
     data class Playback(
         override val state: MediaNavigator.State,
@@ -48,17 +47,17 @@ class SyncAudioNavigator<S : Configurable.Settings, P : Configurable.Preferences
         override val buffered: Duration?,
         override val utterance: String,
         override val range: IntRange?,
-    ) : AudioNavigator.Playback, SynchronizedMediaNavigator.Playback
+    ) : AudioNavigator.Playback, TextAwareMediaNavigator.Playback
 
     data class ReadingOrder(
         override val duration: Duration?,
         override val items: List<Item>
-    ) : AudioNavigator.ReadingOrder, SynchronizedMediaNavigator.ReadingOrder {
+    ) : AudioNavigator.ReadingOrder, TextAwareMediaNavigator.ReadingOrder {
 
         data class Item(
             val href: Href,
             override val duration: Duration?
-        ) : AudioNavigator.ReadingOrder.Item, SynchronizedMediaNavigator.ReadingOrder.Item
+        ) : AudioNavigator.ReadingOrder.Item, TextAwareMediaNavigator.ReadingOrder.Item
     }
 
     override val publication: Publication =

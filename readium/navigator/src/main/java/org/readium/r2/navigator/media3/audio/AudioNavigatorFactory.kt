@@ -14,19 +14,19 @@ import org.readium.r2.shared.publication.Publication
 
 @ExperimentalReadiumApi
 class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferences<P>,
-    E : PreferencesEditor<P>, F : AudioEngine.Error> private constructor(
+    E : PreferencesEditor<P>> private constructor(
     private val publication: Publication,
-    private val audioEngineProvider: AudioEngineProvider<S, P, E, F>,
+    private val audioEngineProvider: AudioEngineProvider<S, P, E>,
 ) {
 
     companion object {
 
         @Suppress("RedundantSuspendModifier")
         suspend operator fun <S : Configurable.Settings, P : Configurable.Preferences<P>,
-            E : PreferencesEditor<P>, F : AudioEngine.Error> invoke(
+            E : PreferencesEditor<P>> invoke(
             publication: Publication,
-            audioEngineProvider: AudioEngineProvider<S, P, E, F>,
-        ): AudioNavigatorFactory<S, P, E, F>? {
+            audioEngineProvider: AudioEngineProvider<S, P, E>,
+        ): AudioNavigatorFactory<S, P, E>? {
             if (!publication.conformsTo(Publication.Profile.AUDIOBOOK) ||
                 publication.readingOrder.isEmpty()
             ) {
@@ -42,7 +42,7 @@ class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferen
     suspend fun createNavigator(
         initialPreferences: P? = null,
         initialLocator: Locator? = null
-    ): AudioBookNavigator<S, P, F>? {
+    ): AudioBookNavigator<S, P>? {
         return AudioBookNavigator(
             publication,
             audioEngineProvider,

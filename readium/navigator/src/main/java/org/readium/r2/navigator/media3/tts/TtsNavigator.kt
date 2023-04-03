@@ -15,7 +15,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.media3.api.MediaMetadataProvider
 import org.readium.r2.navigator.media3.api.MediaNavigator
-import org.readium.r2.navigator.media3.api.SynchronizedMediaNavigator
+import org.readium.r2.navigator.media3.api.TextAwareMediaNavigator
 import org.readium.r2.navigator.media3.tts.session.TtsSessionAdapter
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -39,7 +39,7 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     override val publication: Publication,
     private val player: TtsPlayer<S, P, E, V>,
     private val sessionAdapter: TtsSessionAdapter<E>,
-) : SynchronizedMediaNavigator<TtsNavigator.Location, TtsNavigator.Playback, TtsNavigator.ReadingOrder>,
+) : TextAwareMediaNavigator<TtsNavigator.Location, TtsNavigator.Playback, TtsNavigator.ReadingOrder>,
     Configurable<S, P> by player {
 
     companion object {
@@ -135,7 +135,7 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         override val textAfter: String?,
         override val utteranceLocator: Locator,
         override val tokenLocator: Locator?,
-    ) : SynchronizedMediaNavigator.Location
+    ) : TextAwareMediaNavigator.Location
 
     data class Playback(
         override val state: MediaNavigator.State,
@@ -143,15 +143,15 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         override val index: Int,
         override val utterance: String,
         override val range: IntRange?,
-    ) : SynchronizedMediaNavigator.Playback
+    ) : TextAwareMediaNavigator.Playback
 
     data class ReadingOrder(
         override val items: List<Item>
-    ) : SynchronizedMediaNavigator.ReadingOrder {
+    ) : TextAwareMediaNavigator.ReadingOrder {
 
         data class Item(
             val href: Href
-        ) : SynchronizedMediaNavigator.ReadingOrder.Item
+        ) : TextAwareMediaNavigator.ReadingOrder.Item
     }
 
     sealed class State {

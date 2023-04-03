@@ -18,13 +18,13 @@ import org.readium.r2.shared.publication.Publication
  */
 @ExperimentalReadiumApi
 interface AudioEngineProvider<S : Configurable.Settings, P : Configurable.Preferences<P>,
-    E : PreferencesEditor<P>, F : AudioEngine.Error> {
+    E : PreferencesEditor<P>> {
 
     suspend fun createEngine(
         publication: Publication,
         initialLocator: Locator,
         initialPreferences: P
-    ): AudioEngine<S, P, F>?
+    ): AudioEngine<S, P>?
 
     /**
      * Creates settings for [metadata] and [preferences].

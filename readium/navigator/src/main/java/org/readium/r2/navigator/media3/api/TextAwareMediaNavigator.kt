@@ -14,8 +14,8 @@ import org.readium.r2.shared.publication.Locator
  * A [MediaNavigator] aware of the utterances being read aloud.
  */
 @ExperimentalReadiumApi
-interface SynchronizedMediaNavigator<L : SynchronizedMediaNavigator.Location, P : SynchronizedMediaNavigator.Playback,
-    R : SynchronizedMediaNavigator.ReadingOrder> : MediaNavigator<L, P, R> {
+interface TextAwareMediaNavigator<L : TextAwareMediaNavigator.Location, P : TextAwareMediaNavigator.Playback,
+    R : TextAwareMediaNavigator.ReadingOrder> : MediaNavigator<L, P, R> {
 
     /**
      * Location of the navigator.
