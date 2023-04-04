@@ -37,7 +37,6 @@ internal class MetadataRetriever(
         runBlocking { resource.close() }
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     class ResourceMediaDataSource(
         private val resource: Resource
     ) : MediaDataSource() {

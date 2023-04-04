@@ -129,4 +129,8 @@ class GuidedAudioNavigator<S : Configurable.Settings, P : Configurable.Preferenc
     override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
         TODO("Not yet implemented")
     }
+
+    override fun seek(index: Int, offset: Duration) {
+        TODO("Not yet implemented")
+    }
 }

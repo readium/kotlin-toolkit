@@ -23,11 +23,12 @@ import kotlin.time.DurationUnit
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.readium.r2.navigator.media3.api.AudioNavigator
 import org.readium.r2.navigator.media3.api.MediaNavigator
-import org.readium.r2.navigator.media3.audio.AudioBookNavigator
 import org.readium.r2.navigator.media3.exoplayer.ExoPlayerNavigator
 import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferences
 import org.readium.r2.navigator.media3.exoplayer.ExoPlayerSettings
+import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.services.cover
@@ -40,7 +41,7 @@ import timber.log.Timber
 @OptIn(ExperimentalReadiumApi::class)
 class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListener {
 
-    override lateinit var navigator: ExoPlayerNavigator
+    override lateinit var navigator: AudioNavigator<*, *, *>
 
     private var binding: FragmentAudiobookBinding by viewLifecycle()
     private var seekingItem: Int? = null
@@ -68,8 +69,12 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
         super.onViewCreated(view, savedInstanceState)
 
         @Suppress("Unchecked_cast")
-        (model.settings as UserPreferencesViewModel<ExoPlayerSettings, ExoPlayerPreferences>)
-            .bind(navigator, viewLifecycleOwner)
+        (navigator as? Configurable<ExoPlayerSettings, ExoPlayerPreferences>)
+            ?.let { navigator ->
+                @Suppress("Unchecked_cast")
+                (model.settings as UserPreferencesViewModel<ExoPlayerSettings, ExoPlayerPreferences>)
+                    .bind(navigator, viewLifecycleOwner)
+            }
 
         binding.publicationTitle.text = model.publication.metadata.title
 
@@ -82,13 +87,9 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
         navigator.playback
             .onEach { onPlaybackChanged(it) }
             .launchIn(viewLifecycleOwner.lifecycleScope)
-
-        navigator.location
-            .onEach { onPositionChanged(it) }
-            .launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
-    private fun onPlaybackChanged(playback: MediaNavigator.Playback) {
+    private fun onPlaybackChanged(playback: AudioNavigator.Playback) {
         Timber.v("onPlaybackChanged $playback")
         if (playback.state is MediaNavigator.State.Error) {
             onPlayerError()
@@ -105,21 +106,19 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
             else
                 R.drawable.ic_baseline_play_arrow_24
         )
-    }
 
-    private fun onPositionChanged(position: AudioBookNavigator.Location) {
-        Timber.v("onPositionChanged $position")
         if (seekingItem == null) {
-            updateTimeline(position)
+            updateTimeline(playback)
         }
     }
 
-    private fun updateTimeline(position: AudioBookNavigator.Location) {
-        binding.timelineBar.max = position.item.duration?.inWholeSeconds?.toInt() ?: 0
-        binding.timelineDuration.text = position.item.duration?.formatElapsedTime()
-        binding.timelineBar.progress = position.offset.inWholeSeconds.toInt()
-        binding.timelinePosition.text = position.offset.formatElapsedTime()
-        binding.timelineBar.secondaryProgress = position.buffered?.inWholeSeconds?.toInt() ?: 0
+    private fun updateTimeline(playback: AudioNavigator.Playback) {
+        val currentItem = navigator.readingOrder.items[playback.index]
+        binding.timelineBar.max = currentItem.duration?.inWholeSeconds?.toInt() ?: 0
+        binding.timelineDuration.text = currentItem.duration?.formatElapsedTime()
+        binding.timelineBar.progress = playback.offset.inWholeSeconds.toInt()
+        binding.timelinePosition.text = playback.offset.formatElapsedTime()
+        binding.timelineBar.secondaryProgress = playback.buffered?.inWholeSeconds?.toInt() ?: 0
     }
 
     private fun Duration.formatElapsedTime(): String =
@@ -159,20 +158,13 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
 
     override fun onStartTrackingTouch(seekBar: SeekBar) {
         Timber.d("onStartTrackingTouch")
-        seekingItem = navigator.location.value.item.index
+        seekingItem = navigator.playback.value.index
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar) {
         Timber.d("onStopTrackingTouch")
-        seekingItem?.let { index ->
-            lifecycleScope.launch {
-                navigator.seek(index, seekBar.progress.seconds)
-                // Some timeline updates might have been missed during seeking.
-                val positionNow = navigator.location.value
-                updateTimeline(positionNow)
-                seekingItem = null
-            }
-        }
+        navigator.seek(checkNotNull(seekingItem), seekBar.progress.seconds)
+        seekingItem = null
     }
 
     private fun onPlayPause(@Suppress("UNUSED_PARAMETER") view: View) {

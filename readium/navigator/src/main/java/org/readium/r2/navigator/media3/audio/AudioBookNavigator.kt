@@ -87,16 +87,9 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
     )
 
     data class Location(
-        val item: Item,
+        val index: Int,
         val offset: Duration,
-        val buffered: Duration?
-    ) : AudioNavigator.Location {
-
-        data class Item(
-            val index: Int,
-            val duration: Duration?
-        )
-    }
+    ) : AudioNavigator.Location
 
     data class ReadingOrder(
         override val duration: Duration?,
@@ -166,8 +159,7 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
 
     override val location: StateFlow<Location> =
         audioEngine.playback.mapStateIn(coroutineScope) {
-            val item = readingOrder.items[it.index]
-            Location(Location.Item(it.index, item.duration), it.offset, it.buffered)
+            Location(it.index, it.offset)
         }
 
     override fun play() {
@@ -178,8 +170,8 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
         audioEngine.pause()
     }
 
-    fun seek(index: Int, position: Duration) {
-        audioEngine.seek(index, position)
+    override fun seek(index: Int, offset: Duration) {
+        audioEngine.seek(index, offset)
     }
 
     fun seekForward() {
@@ -255,8 +247,8 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
     private fun AudioEngine.State.toState(): MediaNavigator.State =
         when (this) {
             is AudioEngine.State.Ready -> State.Ready
-                is AudioEngine.State.Ended -> State.Ended
-                    is AudioEngine.State.Buffering -> State.Buffering
-                        is AudioEngine.State.Error -> State.Error(error)
+            is AudioEngine.State.Ended -> State.Ended
+            is AudioEngine.State.Buffering -> State.Buffering
+            is AudioEngine.State.Error -> State.Error(error)
         }
 }

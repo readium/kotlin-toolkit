@@ -19,8 +19,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import org.readium.r2.navigator.media3.api.MediaNavigator
-import org.readium.r2.navigator.media3.audio.AudioBookNavigator
 import org.readium.r2.navigator.media3.audio.AudioEngine
 import org.readium.r2.shared.ExperimentalReadiumApi
 

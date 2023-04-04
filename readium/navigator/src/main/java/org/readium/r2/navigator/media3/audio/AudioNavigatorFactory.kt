@@ -27,9 +27,7 @@ class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferen
             publication: Publication,
             audioEngineProvider: AudioEngineProvider<S, P, E>,
         ): AudioNavigatorFactory<S, P, E>? {
-            if (!publication.conformsTo(Publication.Profile.AUDIOBOOK) ||
-                publication.readingOrder.isEmpty()
-            ) {
+            if (!publication.conformsTo(Publication.Profile.AUDIOBOOK)) {
                 return null
             }
 
@@ -44,8 +42,8 @@ class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferen
         initialLocator: Locator? = null
     ): AudioBookNavigator<S, P>? {
         return AudioBookNavigator(
-            publication,
-            audioEngineProvider,
+            publication = publication,
+            audioEngineProvider = audioEngineProvider,
             initialPreferences = initialPreferences,
             initialLocator = initialLocator
         )

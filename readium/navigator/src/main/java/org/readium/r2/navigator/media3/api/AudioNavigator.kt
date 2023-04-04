@@ -14,7 +14,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * A [MediaNavigator] which can play audio files.
  */
 @ExperimentalReadiumApi
-interface AudioNavigator<L : AudioNavigator.Location, P : MediaNavigator.Playback,
+interface AudioNavigator<L : AudioNavigator.Location, P : AudioNavigator.Playback,
     R : AudioNavigator.ReadingOrder> : MediaNavigator<L, P, R> {
 
     /**
@@ -66,6 +66,11 @@ interface AudioNavigator<L : AudioNavigator.Location, P : MediaNavigator.Playbac
     }
 
     /**
+     * Current state of the playback.
+     */
+    override val playback: StateFlow<P>
+
+    /**
      * Current location of the navigator.
      */
     override val location: StateFlow<L>
@@ -74,4 +79,10 @@ interface AudioNavigator<L : AudioNavigator.Location, P : MediaNavigator.Playbac
      * Reading order being read by this navigator.
      */
     override val readingOrder: R
+
+
+    /**
+     * Seeks to [offset] in the item at [index].
+     */
+    fun seek(index: Int, offset: Duration)
 }
