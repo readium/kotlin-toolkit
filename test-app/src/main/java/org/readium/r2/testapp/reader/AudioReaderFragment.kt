@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.media3.api.AudioNavigator
 import org.readium.r2.navigator.media3.api.MediaNavigator
-import org.readium.r2.navigator.media3.exoplayer.ExoPlayerNavigator
 import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferences
 import org.readium.r2.navigator.media3.exoplayer.ExoPlayerSettings
 import org.readium.r2.navigator.preferences.Configurable
