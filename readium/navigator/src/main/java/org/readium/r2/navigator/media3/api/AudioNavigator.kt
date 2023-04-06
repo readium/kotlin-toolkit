@@ -18,9 +18,15 @@ interface AudioNavigator<L : AudioNavigator.Location, P : AudioNavigator.Playbac
     R : AudioNavigator.ReadingOrder> : MediaNavigator<L, P, R> {
 
     /**
-     *  Marker interface for the type of locations supported by this navigator.
+     * Location of the navigator.
      */
-    interface Location : MediaNavigator.Location
+    interface Location : MediaNavigator.Location {
+
+        /**
+         * The duration offset in the resource.
+         */
+        val offset: Duration
+    }
 
     /**
      * State of the playback.

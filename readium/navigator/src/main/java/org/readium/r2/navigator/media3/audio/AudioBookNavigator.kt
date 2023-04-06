@@ -87,8 +87,8 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
     )
 
     data class Location(
-        val index: Int,
-        val offset: Duration,
+        override val href: Href,
+        override val offset: Duration,
     ) : AudioNavigator.Location
 
     data class ReadingOrder(
@@ -159,7 +159,8 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
 
     override val location: StateFlow<Location> =
         audioEngine.playback.mapStateIn(coroutineScope) {
-            Location(it.index, it.offset)
+            val currentItem = readingOrder.items[it.index]
+            Location(currentItem.href, it.offset)
         }
 
     override fun play() {

@@ -127,7 +127,7 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     }
 
     data class Location(
-        val index: Int,
+        override val href: Href,
         val cssSelector: String,
         override val utterance: String,
         override val range: IntRange?,
@@ -268,8 +268,10 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private fun TtsPlayer.Utterance.toPosition(): Location {
 
+        val currentLink = publication.readingOrder[position.resourceIndex]
+
         val utteranceHighlight = publication
-            .locatorFromLink(publication.readingOrder[position.resourceIndex])!!
+            .locatorFromLink(currentLink)!!
             .copyWithLocations(
                 progression = null,
                 otherLocations = buildMap {
@@ -288,7 +290,7 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             ?.let { utteranceHighlight.copy(text = utteranceHighlight.text.substring(it)) }
 
         return Location(
-            index = position.resourceIndex,
+            href = Href(currentLink.href),
             cssSelector = position.cssSelector,
             textBefore = position.textBefore,
             textAfter = position.textAfter,

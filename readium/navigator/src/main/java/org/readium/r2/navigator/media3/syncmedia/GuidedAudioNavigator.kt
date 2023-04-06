@@ -28,7 +28,8 @@ class GuidedAudioNavigator<S : Configurable.Settings, P : Configurable.Preferenc
     Configurable<S, P> {
 
     data class Location(
-        val resourceIndex: Int,
+        override val href: Href,
+        override val offset: Duration,
         val fragment: String,
         override val textBefore: String?,
         override val textAfter: String?,

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Closeable
+import org.readium.r2.shared.util.Href
 
 /**
  * A [Navigator] which can play multimedia content.
@@ -20,9 +21,12 @@ interface MediaNavigator<L : MediaNavigator.Location, P : MediaNavigator.Playbac
     R : MediaNavigator.ReadingOrder> : Navigator, Closeable {
 
     /**
-     *  Marker interface for the type of locations supported by this navigator.
+     *  Location of the navigator.
      */
-    interface Location
+    interface Location {
+
+        val href: Href
+    }
 
     /**
      * State of the player.
