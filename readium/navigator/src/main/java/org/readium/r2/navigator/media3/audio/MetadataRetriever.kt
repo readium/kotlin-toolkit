@@ -31,6 +31,7 @@ internal class MetadataRetriever(
     fun duration(): Duration? =
         retriever.extractMetadata(METADATA_KEY_DURATION)
             ?.toIntOrNull()
+            ?.takeUnless { it == 0 }
             ?.milliseconds
 
     fun close() {

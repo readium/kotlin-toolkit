@@ -31,6 +31,10 @@ class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferen
                 return null
             }
 
+            if (publication.readingOrder.any { it.duration == 0.0 }) {
+                return null
+            }
+
             return AudioNavigatorFactory(
                 publication, audioEngineProvider
             )
@@ -40,8 +44,8 @@ class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferen
     suspend fun createNavigator(
         initialPreferences: P? = null,
         initialLocator: Locator? = null
-    ): AudioBookNavigator<S, P>? {
-        return AudioBookNavigator(
+    ): AudiobookNavigator<S, P>? {
+        return AudiobookNavigator(
             publication = publication,
             audioEngineProvider = audioEngineProvider,
             initialPreferences = initialPreferences,

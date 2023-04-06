@@ -29,12 +29,12 @@ import timber.log.Timber
 
 @ExperimentalReadiumApi
 @OptIn(ExperimentalTime::class)
-class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>> private constructor(
+class AudiobookNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>> private constructor(
     override val publication: Publication,
     private val audioEngine: AudioEngine<S, P>,
     override val readingOrder: ReadingOrder,
     private val configuration: Configuration
-) : AudioNavigator<AudioBookNavigator.Location, AudioBookNavigator.Playback, AudioBookNavigator.ReadingOrder>,
+) : AudioNavigator<AudiobookNavigator.Location, AudiobookNavigator.Playback, AudiobookNavigator.ReadingOrder>,
     Configurable<S, P> by audioEngine {
 
     companion object {
@@ -46,7 +46,11 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
             initialPreferences: P? = null,
             initialLocator: Locator? = null,
             configuration: Configuration = Configuration()
-        ): AudioBookNavigator<S, P>? {
+        ): AudiobookNavigator<S, P>? {
+            if (readingOrder.isEmpty()) {
+                return null
+            }
+
             val items = readingOrder.map { ReadingOrder.Item(Href(it.href), duration(it, publication)) }
             val totalDuration = publication.metadata.duration?.seconds
                 ?: items.mapNotNull { it.duration }
@@ -65,11 +69,12 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
                     initialPreferences ?: audioEngineProvider.createEmptyPreferences()
                 ) ?: return null
 
-            return AudioBookNavigator(publication, audioEngine, actualReadingOrder, configuration)
+            return AudiobookNavigator(publication, audioEngine, actualReadingOrder, configuration)
         }
 
         private fun duration(link: Link, publication: Publication): Duration? {
             var duration: Duration? = link.duration?.seconds
+                .takeUnless { it == Duration.ZERO }
 
             if (duration == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val resource = publication.get(link)
@@ -81,7 +86,6 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
     }
 
     data class Configuration(
-        val positionRefreshRate: Double = 2.0, // Hz
         val skipForwardInterval: Duration = 30.seconds,
         val skipBackwardInterval: Duration = 30.seconds,
     )
@@ -183,7 +187,7 @@ class AudioBookNavigator<S : Configurable.Settings, P : Configurable.Preferences
         seekBy(-configuration.skipBackwardInterval)
     }
 
-    private fun seekBy(offset: Duration) {
+    fun seekBy(offset: Duration) {
         readingOrder.items
             .mapNotNull { it.duration }
             .takeIf { it.size == readingOrder.items.size }

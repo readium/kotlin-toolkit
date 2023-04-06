@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.media3.api.AudioNavigator
 import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.media3.api.TextAwareMediaNavigator
-import org.readium.r2.navigator.media3.audio.AudioBookNavigator
+import org.readium.r2.navigator.media3.audio.AudiobookNavigator
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.Href
 
 @ExperimentalReadiumApi
 class GuidedAudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>>(
-    private val audioNavigator: AudioBookNavigator<S, P>,
+    private val audioNavigator: AudiobookNavigator<S, P>,
 ) : AudioNavigator<GuidedAudioNavigator.Location, GuidedAudioNavigator.Playback, GuidedAudioNavigator.ReadingOrder>,
     TextAwareMediaNavigator<GuidedAudioNavigator.Location, GuidedAudioNavigator.Playback, GuidedAudioNavigator.ReadingOrder>,
     Configurable<S, P> {

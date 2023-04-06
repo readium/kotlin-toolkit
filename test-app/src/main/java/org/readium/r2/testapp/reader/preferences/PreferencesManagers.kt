@@ -29,8 +29,6 @@ import org.readium.r2.navigator.epub.EpubPublicationPreferencesFilter
 import org.readium.r2.navigator.epub.EpubSharedPreferencesFilter
 import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferences
 import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferencesSerializer
-import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPublicationPreferencesFilter
-import org.readium.r2.navigator.media3.exoplayer.ExoPlayerSharedPreferencesFilter
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferencesSerializer
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsPublicationPreferencesFilter
@@ -144,8 +142,8 @@ class ExoPlayerPreferencesManagerFactory(
 ) : PreferencesManagerFactory<ExoPlayerPreferences>(
     dataStore = dataStore,
     klass = ExoPlayerPreferences::class,
-    sharedPreferencesFilter = ExoPlayerSharedPreferencesFilter,
-    publicationPreferencesFilter = ExoPlayerPublicationPreferencesFilter,
+    sharedPreferencesFilter = { preferences -> preferences },
+    publicationPreferencesFilter = { ExoPlayerPreferences() },
     preferencesSerializer = ExoPlayerPreferencesSerializer(),
     emptyPreferences = ExoPlayerPreferences()
 )
