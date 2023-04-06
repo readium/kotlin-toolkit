@@ -31,7 +31,7 @@ class MediaService : MediaSessionService() {
 
     class Session(
         val bookId: Long,
-        val navigator: MediaNavigator<*, *, *>,
+        val navigator: AnyMediaNavigator,
         val mediaSession: MediaSession,
     ) {
         val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)

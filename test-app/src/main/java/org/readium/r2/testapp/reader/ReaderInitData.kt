@@ -14,8 +14,8 @@ import org.readium.adapters.pdfium.navigator.PdfiumSettings
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.epub.EpubPreferences
 import org.readium.r2.navigator.media3.exoplayer.ExoPlayerNavigator
+import org.readium.r2.navigator.media3.exoplayer.ExoPlayerNavigatorFactory
 import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferences
-import org.readium.r2.navigator.media3.exoplayer.ExoPlayersNavigatorFactory
 import org.readium.r2.navigator.media3.tts.AndroidTtsNavigatorFactory
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
 import org.readium.r2.navigator.pdf.PdfNavigatorFactory
@@ -71,7 +71,7 @@ class MediaReaderInitData(
     override val publication: Publication,
     val mediaNavigator: ExoPlayerNavigator,
     val preferencesManager: PreferencesManager<ExoPlayerPreferences>,
-    val navigatorFactory: ExoPlayersNavigatorFactory
+    val navigatorFactory: ExoPlayerNavigatorFactory
 ) : ReaderInitData()
 
 class DummyReaderInitData(

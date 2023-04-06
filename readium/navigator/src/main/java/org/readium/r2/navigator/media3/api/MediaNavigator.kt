@@ -20,7 +20,7 @@ interface MediaNavigator<L : MediaNavigator.Location, P : MediaNavigator.Playbac
     R : MediaNavigator.ReadingOrder> : Navigator, Closeable {
 
     /**
-     *  Marker interface for the [Location] flow.
+     *  Marker interface for the type of locations supported by this navigator.
      */
     interface Location
 

@@ -89,7 +89,6 @@ interface TextAwareMediaNavigator<L : TextAwareMediaNavigator.Location, P : Text
      * Current state of the playback.
      */
     override val playback: StateFlow<P>
-        get() = TODO("Not yet implemented")
 
     /**
      * Current location of the navigator.

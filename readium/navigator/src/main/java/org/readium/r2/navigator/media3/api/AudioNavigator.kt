@@ -18,7 +18,7 @@ interface AudioNavigator<L : AudioNavigator.Location, P : AudioNavigator.Playbac
     R : AudioNavigator.ReadingOrder> : MediaNavigator<L, P, R> {
 
     /**
-     *  Marker interface for the [Location] flow.
+     *  Marker interface for the type of locations supported by this navigator.
      */
     interface Location : MediaNavigator.Location
 
@@ -54,7 +54,7 @@ interface AudioNavigator<L : AudioNavigator.Location, P : AudioNavigator.Playbac
         override val items: List<Item>
 
         /**
-         * A piece of the content to play..
+         * A piece of the content to play.
          */
         interface Item : MediaNavigator.ReadingOrder.Item {
 
