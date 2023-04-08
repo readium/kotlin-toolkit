@@ -88,6 +88,21 @@ interface AudioEngine<S : Configurable.Settings, P : Configurable.Preferences<P>
     fun seek(index: Int, position: Duration)
 
     /**
+     * Seeks by [offset] either forward or backward if [offset] is negative.
+     */
+    fun seekBy(offset: Duration)
+
+    /**
+     * Seeks by a small increment forward.
+     */
+    fun seekForward()
+
+    /**
+     * Seeks by a small increment backward.
+     */
+    fun seekBackward()
+
+    /**
      * Closes the player.
      */
     fun close()

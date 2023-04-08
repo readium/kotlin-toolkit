@@ -33,7 +33,6 @@ class AudiobookNavigator<S : Configurable.Settings, P : Configurable.Preferences
     override val publication: Publication,
     private val audioEngine: AudioEngine<S, P>,
     override val readingOrder: ReadingOrder,
-    private val configuration: Configuration
 ) : AudioNavigator<AudiobookNavigator.Location, AudiobookNavigator.Playback, AudiobookNavigator.ReadingOrder>,
     Configurable<S, P> by audioEngine {
 
@@ -45,7 +44,6 @@ class AudiobookNavigator<S : Configurable.Settings, P : Configurable.Preferences
             readingOrder: List<Link> = publication.readingOrder,
             initialPreferences: P? = null,
             initialLocator: Locator? = null,
-            configuration: Configuration = Configuration()
         ): AudiobookNavigator<S, P>? {
             if (readingOrder.isEmpty()) {
                 return null
@@ -69,7 +67,7 @@ class AudiobookNavigator<S : Configurable.Settings, P : Configurable.Preferences
                     initialPreferences ?: audioEngineProvider.createEmptyPreferences()
                 ) ?: return null
 
-            return AudiobookNavigator(publication, audioEngine, actualReadingOrder, configuration)
+            return AudiobookNavigator(publication, audioEngine, actualReadingOrder)
         }
 
         private fun duration(link: Link, publication: Publication): Duration? {
@@ -84,11 +82,6 @@ class AudiobookNavigator<S : Configurable.Settings, P : Configurable.Preferences
             return duration
         }
     }
-
-    data class Configuration(
-        val skipForwardInterval: Duration = 30.seconds,
-        val skipBackwardInterval: Duration = 30.seconds,
-    )
 
     data class Location(
         override val href: Href,
@@ -180,40 +173,15 @@ class AudiobookNavigator<S : Configurable.Settings, P : Configurable.Preferences
     }
 
     fun seekForward() {
-        seekBy(configuration.skipForwardInterval)
+        audioEngine.seekForward()
     }
 
     fun seekBackward() {
-        seekBy(-configuration.skipBackwardInterval)
+        audioEngine.seekBackward()
     }
 
     fun seekBy(offset: Duration) {
-        readingOrder.items
-            .mapNotNull { it.duration }
-            .takeIf { it.size == readingOrder.items.size }
-            ?.let { smartSeekBy(offset, it) }
-            ?: dumbSeekBy(offset)
-    }
-
-    private fun smartSeekBy(
-        offset: Duration,
-        durations: List<Duration>
-    ) {
-        val (newIndex, newPosition) =
-            SmartSeeker.dispatchSeek(
-                offset,
-                audioEngine.playback.value.offset,
-                audioEngine.playback.value.index,
-                durations
-            )
-        Timber.v("Smart seeking by $offset resolved to item $newIndex position $newPosition")
-        audioEngine.seek(newIndex, newPosition)
-    }
-
-    private fun dumbSeekBy(offset: Duration) {
-        val newIndex = audioEngine.playback.value.index
-        val newPosition = audioEngine.playback.value.offset + offset
-        audioEngine.seek(newIndex, newPosition)
+        audioEngine.seekBy(offset)
     }
 
     override fun close() {

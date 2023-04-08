@@ -21,6 +21,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.readium.r2.navigator.media3.audio.AudioEngine
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.units.Hz
+import org.readium.r2.shared.units.hz
 
 /**
  * An [AudioEngine] based on Media3 ExoPlayer.
@@ -28,10 +30,10 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 @ExperimentalReadiumApi
 @OptIn(ExperimentalCoroutinesApi::class)
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-class ExoPlayerEngine(
-    private val exoPlayer: ExoPlayer,
+class ExoPlayerEngine private constructor(
+    private val exoPlayer: ExoAudiobookPlayer,
     private val settingsResolver: SettingsResolver,
-    private val positionRefreshRate: Double,
+    private val configuration: Configuration,
     initialPreferences: ExoPlayerPreferences
 ) : AudioEngine<ExoPlayerSettings, ExoPlayerPreferences> {
 
@@ -42,7 +44,7 @@ class ExoPlayerEngine(
             settingsResolver: SettingsResolver,
             dataSourceFactory: DataSource.Factory,
             playlist: Playlist,
-            positionRefreshRate: Double,
+            configuration: Configuration,
             initialIndex: Int,
             initialPosition: Duration,
             initialPreferences: ExoPlayerPreferences
@@ -57,6 +59,8 @@ class ExoPlayerEngine(
                     true
                 )
                 .setHandleAudioBecomingNoisy(true)
+                .setSeekBackIncrementMs(configuration.seekBackwardIncrement.inWholeMilliseconds)
+                .setSeekForwardIncrementMs(configuration.seekForwardIncrement.inWholeMilliseconds)
                 .build()
 
             exoPlayer.setMediaItems(
@@ -68,16 +72,28 @@ class ExoPlayerEngine(
                 }
             )
 
+            val durations: List<Duration>? =
+                playlist.items.mapNotNull { it.duration }
+                    .takeIf { it.size == playlist.items.size }
+
             exoPlayer.playlistMetadata = playlist.mediaMetadata
 
             exoPlayer.seekTo(initialIndex, initialPosition.inWholeMilliseconds)
 
             prepareExoPlayer(exoPlayer)
 
+            val customizedPlayer =
+                ExoAudiobookPlayer(
+                    exoPlayer,
+                    durations,
+                    configuration.seekForwardIncrement,
+                    configuration.seekBackwardIncrement
+                )
+
             return ExoPlayerEngine(
-                exoPlayer,
+                customizedPlayer,
                 settingsResolver,
-                positionRefreshRate,
+                configuration,
                 initialPreferences
             )
         }
@@ -103,6 +119,12 @@ class ExoPlayerEngine(
             player.removeListener(listener)
         }
     }
+
+    data class Configuration(
+        val positionRefreshRate: Hz = 2.0.hz,
+        val seekBackwardIncrement: Duration = 15.seconds,
+        val seekForwardIncrement: Duration = 30.seconds
+    )
 
     data class Playlist(
         val mediaMetadata: MediaMetadata,
@@ -157,7 +179,7 @@ class ExoPlayerEngine(
 
     init {
         coroutineScope.launch {
-            val positionRefreshDelay = (1.0 / positionRefreshRate).seconds
+            val positionRefreshDelay = (1.0 / configuration.positionRefreshRate.value).seconds
             while (isActive) {
                 delay(positionRefreshDelay)
                 _playback.value = exoPlayer.playback
@@ -185,6 +207,18 @@ class ExoPlayerEngine(
         exoPlayer.seekTo(index, position.inWholeMilliseconds)
     }
 
+    override fun seekBy(offset: Duration) {
+        exoPlayer.seekBy(offset)
+    }
+
+    override fun seekForward() {
+        exoPlayer.seekForward()
+    }
+
+    override fun seekBackward() {
+        exoPlayer.seekBack()
+    }
+
     override fun close() {
         coroutineScope.cancel()
         exoPlayer.release()
@@ -201,7 +235,7 @@ class ExoPlayerEngine(
         )
     }
 
-    private val ExoPlayer.playback: AudioEngine.Playback get() =
+    private val ExoAudiobookPlayer.playback: AudioEngine.Playback get() =
         AudioEngine.Playback(
             state = engineState,
             playWhenReady = playWhenReady,
@@ -210,7 +244,7 @@ class ExoPlayerEngine(
             buffered = bufferedPosition.milliseconds
         )
 
-    private val ExoPlayer.engineState: AudioEngine.State get() =
+    private val ExoAudiobookPlayer.engineState: AudioEngine.State get() =
         when (this.playbackState) {
             Player.STATE_READY -> AudioEngine.State.Ready
             Player.STATE_BUFFERING -> AudioEngine.State.Buffering
