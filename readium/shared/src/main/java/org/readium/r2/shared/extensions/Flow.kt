@@ -7,10 +7,7 @@
 package org.readium.r2.shared.extensions
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import org.readium.r2.shared.InternalReadiumApi
 
 /**
@@ -27,4 +24,21 @@ fun <T, M> StateFlow<T>.mapStateIn(
             coroutineScope,
             SharingStarted.Eagerly,
             transform(value)
+        )
+
+/**
+ * Transforms the values of two [StateFlow]s and stores the result in a new [StateFlow] using the
+ * given [coroutineScope].
+ */
+@InternalReadiumApi
+fun <T1, T2, R> StateFlow<T1>.combineStateIn(
+    coroutineScope: CoroutineScope,
+    flow: StateFlow<T2>,
+    transform: (a: T1, b: T2) -> R
+): StateFlow<R> =
+    this.combine(flow, transform)
+        .stateIn(
+            coroutineScope,
+            SharingStarted.Eagerly,
+            transform(value, flow.value)
         )

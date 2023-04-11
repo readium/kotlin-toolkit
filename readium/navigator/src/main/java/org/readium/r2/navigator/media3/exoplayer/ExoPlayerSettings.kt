@@ -9,7 +9,13 @@ package org.readium.r2.navigator.media3.exoplayer
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 
+/**
+ * Settings values of the ExoPlayer engine.
+ *
+ * @see ExoPlayerPreferences
+ */
 @ExperimentalReadiumApi
 data class ExoPlayerSettings(
-    val rateMultiplier: Double
+    val pitch: Double,
+    val speed: Double
 ) : Configurable.Settings

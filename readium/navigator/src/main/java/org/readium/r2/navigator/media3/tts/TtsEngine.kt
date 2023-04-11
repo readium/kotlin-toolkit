@@ -56,7 +56,7 @@ interface TtsEngine<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
      * An id to identify a request to speak.
      */
     @JvmInline
-    value class RequestId(val id: String)
+    value class RequestId(val value: String)
 
     /**
      * TTS engine callbacks.

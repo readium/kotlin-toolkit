@@ -13,9 +13,9 @@ import androidx.datastore.preferences.core.Preferences as JetpackPreferences
 import java.io.File
 import org.json.JSONObject
 import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider
-import org.readium.navigator.media2.ExperimentalMedia2
-import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
+import org.readium.r2.navigator.media3.audio.AudioNavigatorFactory
+import org.readium.r2.navigator.media3.exoplayer.ExoPlayerEngineProvider
 import org.readium.r2.navigator.media3.tts.TtsNavigatorFactory
 import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -25,13 +25,12 @@ import org.readium.r2.shared.publication.asset.FileAsset
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.protectionError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.reader.preferences.AndroidTtsPreferencesManagerFactory
 import org.readium.r2.testapp.reader.preferences.EpubPreferencesManagerFactory
+import org.readium.r2.testapp.reader.preferences.ExoPlayerPreferencesManagerFactory
 import org.readium.r2.testapp.reader.preferences.PdfiumPreferencesManagerFactory
-import org.readium.r2.testapp.reader.tts.TtsServiceFacade
 import timber.log.Timber
 
 /**
@@ -53,8 +52,8 @@ class ReaderRepository(
     private val repository: MutableMap<Long, ReaderInitData> =
         mutableMapOf()
 
-    private val ttsServiceFacade: TtsServiceFacade =
-        TtsServiceFacade(application)
+    private val mediaServiceFacade: MediaServiceFacade =
+        MediaServiceFacade(application)
 
     operator fun get(bookId: Long): ReaderInitData? =
         repository[bookId]
@@ -107,26 +106,7 @@ class ReaderRepository(
         repository[bookId] = readerInitData
     }
 
-    @OptIn(ExperimentalMedia2::class)
     private suspend fun openAudio(
-        bookId: Long,
-        publication: Publication,
-        initialLocator: Locator?
-    ): MediaReaderInitData {
-
-        val navigator = MediaNavigator.create(
-            application,
-            publication,
-            initialLocator
-        ).getOrElse { throw Exception("Cannot open audiobook.") }
-
-        MediaService.start(application)
-        val mediaBinder = MediaService.bind(application)
-        mediaBinder.bindNavigator(navigator, bookId)
-        return MediaReaderInitData(bookId, publication, navigator, mediaBinder)
-    }
-
-    /* private suspend fun openAudio(
         bookId: Long,
         publication: Publication,
         initialLocator: Locator?
@@ -134,31 +114,21 @@ class ReaderRepository(
 
         val preferencesManager = ExoPlayerPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)
-        val mediaEngine = ExoPlayerEngineProvider(application)
         val initialPreferences = preferencesManager.preferences.value
-        val actualInitialLocator = initialLocator
-            ?: publication.locatorFromLink(publication.readingOrder[0])!!
 
-        val navigatorFactory = PlayerNavigatorFactory(
+        val navigatorFactory = AudioNavigatorFactory(
             publication,
-            mediaEngine,
-            DefaultMetadataProvider(),
+            ExoPlayerEngineProvider(application),
+        ) ?: throw Exception("Cannot open audiobook.")
+
+        val navigator = navigatorFactory.createNavigator(
             initialPreferences,
-            actualInitialLocator,
-        )
-
-        val navigator = navigatorFactory.getMediaNavigator()
-            .getOrElse { throw Exception("Cannot open audiobook.") }
-
-        val navigator = MediaNavigator.create(
-            application,
-            publication,
             initialLocator
-        ).getOrElse { throw Exception("Cannot open audiobook.") }
+        ) ?: throw Exception("Cannot open audiobook.")
 
-        mediaBinder.bindNavigator(navigator, bookId)
-        return MediaReaderInitData(bookId, publication,, preferencesManager, navigatorFactory)
-    } */
+        mediaServiceFacade.openSession(bookId, navigator)
+        return MediaReaderInitData(bookId, publication, navigator, preferencesManager, navigatorFactory)
+    }
 
     private suspend fun openEpub(
         bookId: Long,
@@ -216,19 +186,18 @@ class ReaderRepository(
         val preferencesManager = AndroidTtsPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)
         val navigatorFactory = TtsNavigatorFactory(application, publication) ?: return null
-        return TtsInitData(ttsServiceFacade, navigatorFactory, preferencesManager)
+        return TtsInitData(mediaServiceFacade, navigatorFactory, preferencesManager)
     }
 
     suspend fun close(bookId: Long) {
-        Timber.d("Closing Publication")
+        Timber.v("Closing Publication $bookId.")
         when (val initData = repository.remove(bookId)) {
             is MediaReaderInitData -> {
-                initData.sessionBinder.closeNavigator()
-                MediaService.stop(application)
+                mediaServiceFacade.closeSession()
                 initData.publication.close()
             }
             is VisualReaderInitData -> {
-                initData.ttsInitData?.ttsServiceFacade?.closeSession()
+                mediaServiceFacade.closeSession()
                 initData.publication.close()
             }
             null, is DummyReaderInitData -> {

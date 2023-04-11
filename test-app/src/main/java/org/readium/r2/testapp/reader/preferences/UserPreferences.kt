@@ -15,12 +15,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
 import org.readium.r2.navigator.epub.EpubPreferencesEditor
+import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferencesEditor
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.navigator.preferences.TextAlign as ReadiumTextAlign
@@ -135,10 +135,16 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
                         )
                 }
             is TtsPreferencesEditor ->
-                TtsUserPreferences(
+                MediaUserPreferences(
                     commit = commit,
                     language = editor.language,
                     voice = editor.voice,
+                    speed = editor.speed,
+                    pitch = editor.pitch
+                )
+            is ExoPlayerPreferencesEditor ->
+                MediaUserPreferences(
+                    commit = commit,
                     speed = editor.speed,
                     pitch = editor.pitch
                 )
@@ -147,37 +153,44 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
 }
 
 @Composable
-private fun ColumnScope.TtsUserPreferences(
+private fun MediaUserPreferences(
     commit: () -> Unit,
-    language: Preference<Language?>,
-    voice: EnumPreference<AndroidTtsEngine.Voice.Id?>,
-    speed: RangePreference<Double>,
-    pitch: RangePreference<Double>
+    language: Preference<Language?>? = null,
+    voice: EnumPreference<AndroidTtsEngine.Voice.Id?>? = null,
+    speed: RangePreference<Double>? = null,
+    pitch: RangePreference<Double>? = null
 ) {
     Column {
-        StepperItem(
-            title = stringResource(R.string.speed_rate),
-            preference = speed,
-            commit = commit
-        )
-        StepperItem(
-            title = stringResource(R.string.pitch_rate),
-            preference = pitch,
-            commit = commit
-        )
-        LanguageItem(
-            preference = language,
-            commit = commit
-        )
+        if (speed != null) {
+            StepperItem(
+                title = stringResource(R.string.speed_rate),
+                preference = speed,
+                commit = commit
+            )
+        }
 
-        val context = LocalContext.current
+        if (pitch != null) {
+            StepperItem(
+                title = stringResource(R.string.pitch_rate),
+                preference = pitch,
+                commit = commit
+            )
+        }
+        if (language != null) {
+            LanguageItem(
+                preference = language,
+                commit = commit
+            )
+        }
 
-        MenuItem(
-            title = stringResource(R.string.tts_voice),
-            preference = voice,
-            formatValue = { it?.value ?: context.getString(R.string.defaultValue) },
-            commit = commit
-        )
+        if (voice != null) {
+            MenuItem(
+                title = stringResource(R.string.tts_voice),
+                preference = voice,
+                formatValue = { it?.value ?: "Default" },
+                commit = commit
+            )
+        }
     }
 }
 
@@ -185,7 +198,7 @@ private fun ColumnScope.TtsUserPreferences(
  * User settings for a publication with a fixed layout, such as fixed-layout EPUB, PDF or comic book.
  */
 @Composable
-private fun ColumnScope.FixedLayoutUserPreferences(
+private fun FixedLayoutUserPreferences(
     commit: () -> Unit,
     language: Preference<Language?>? = null,
     readingProgression: EnumPreference<ReadingProgression>? = null,
@@ -198,12 +211,6 @@ private fun ColumnScope.FixedLayoutUserPreferences(
     pageSpacing: RangePreference<Double>? = null
 ) {
     if (language != null || readingProgression != null) {
-        fun reset() {
-            language?.clear()
-            readingProgression?.clear()
-            commit()
-        }
-
         if (language != null) {
             LanguageItem(
                 preference = language,
@@ -305,7 +312,7 @@ private fun ColumnScope.FixedLayoutUserPreferences(
  * a reflowable EPUB, HTML document or PDF with reflow mode enabled.
  */
 @Composable
-private fun ColumnScope.ReflowableUserPreferences(
+private fun ReflowableUserPreferences(
     commit: () -> Unit,
     backgroundColor: Preference<Color>? = null,
     columnCount: EnumPreference<ColumnCount>? = null,
@@ -333,13 +340,6 @@ private fun ColumnScope.ReflowableUserPreferences(
     wordSpacing: RangePreference<Double>? = null,
 ) {
     if (language != null || readingProgression != null || verticalText != null) {
-        fun reset() {
-            language?.clear()
-            readingProgression?.clear()
-            verticalText?.clear()
-            commit()
-        }
-
         if (language != null) {
             LanguageItem(
                 preference = language,

@@ -4,8 +4,6 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:OptIn(ExperimentalReadiumApi::class)
-
 package org.readium.r2.testapp.reader.tts
 
 import androidx.compose.foundation.layout.Arrangement
@@ -23,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.utils.extensions.asStateWhenStarted
 

@@ -7,17 +7,17 @@
 package org.readium.r2.navigator.media3.exoplayer
 
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Metadata
 
 @ExperimentalReadiumApi
 internal class ExoPlayerSettingsResolver(
-    private val metadata: Metadata,
-) {
+    private val defaults: ExoPlayerDefaults
+) : ExoPlayerEngine.SettingsResolver {
 
-    fun settings(preferences: ExoPlayerPreferences): ExoPlayerSettings {
+    override fun settings(preferences: ExoPlayerPreferences): ExoPlayerSettings {
 
         return ExoPlayerSettings(
-            rateMultiplier = preferences.rateMultiplier ?: 1.0,
+            pitch = preferences.pitch ?: defaults.pitch ?: 1.0,
+            speed = preferences.speed ?: defaults.speed ?: 1.0,
         )
     }
 }

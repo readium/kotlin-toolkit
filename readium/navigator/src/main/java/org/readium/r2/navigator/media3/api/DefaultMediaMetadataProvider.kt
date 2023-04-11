@@ -6,6 +6,7 @@
 
 package org.readium.r2.navigator.media3.api
 
+import android.net.Uri
 import org.readium.r2.shared.publication.Publication
 
 /**
@@ -15,7 +16,7 @@ import org.readium.r2.shared.publication.Publication
 class DefaultMediaMetadataProvider(
     private val title: String? = null,
     private val author: String? = null,
-    private val cover: ByteArray? = null
+    private val cover: Uri? = null
 ) : MediaMetadataProvider {
 
     override fun createMetadataFactory(publication: Publication): MediaMetadataFactory {

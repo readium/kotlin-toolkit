@@ -6,6 +6,7 @@
 
 package org.readium.r2.navigator.media3.tts.android
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -15,7 +16,7 @@ import android.speech.tts.TextToSpeech.*
 import android.speech.tts.UtteranceProgressListener
 import android.speech.tts.Voice as AndroidVoice
 import android.speech.tts.Voice.*
-import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,15 +24,25 @@ import org.readium.r2.navigator.media3.tts.TtsEngine
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
 
+/*
+ * On some Android implementations (i.e. on Oppo A9 2020 running Android 11),
+ * the TextToSpeech instance is often disconnected from the underlying service when the playback
+ * is paused and the app moves to the background. So we try to reset the TextToSpeech before
+ * actually returning an error. In the meantime, requests to the engine are queued
+ * into [pendingRequests].
+ */
+
 /**
  * Default [TtsEngine] implementation using Android's native text to speech engine.
  */
 @ExperimentalReadiumApi
 class AndroidTtsEngine private constructor(
-    private val engine: TextToSpeech,
+    private val context: Context,
+    engine: TextToSpeech,
     private val settingsResolver: SettingsResolver,
     private val voiceSelector: VoiceSelector,
     private val listener: Listener?,
+    override val voices: Set<Voice>,
     initialPreferences: AndroidTtsPreferences
 ) : TtsEngine<AndroidTtsSettings, AndroidTtsPreferences,
         AndroidTtsEngine.Error, AndroidTtsEngine.Voice> {
@@ -45,23 +56,41 @@ class AndroidTtsEngine private constructor(
             listener: Listener?,
             initialPreferences: AndroidTtsPreferences
         ): AndroidTtsEngine? {
+            val textToSpeech = initializeTextToSpeech(context)
+                ?: return null
 
+            val voices = textToSpeech.voices
+                ?.map { it.toTtsEngineVoice() }
+                ?.toSet()
+                .orEmpty()
+
+            return AndroidTtsEngine(
+                context,
+                textToSpeech,
+                settingsResolver,
+                voiceSelector,
+                listener,
+                voices,
+                initialPreferences
+            )
+        }
+
+        private suspend fun initializeTextToSpeech(
+            context: Context
+        ): TextToSpeech? {
             val init = CompletableDeferred<Boolean>()
 
             val initListener = OnInitListener { status ->
                 init.complete(status == SUCCESS)
             }
             val engine = TextToSpeech(context, initListener)
-
-            return if (init.await())
-                AndroidTtsEngine(engine, settingsResolver, voiceSelector, listener, initialPreferences)
-            else
-                null
+            return if (init.await()) engine else null
         }
 
         /**
          * Starts the activity to install additional voice data.
          */
+        @SuppressLint("QueryPermissionsNeeded")
         fun requestInstallVoice(context: Context) {
             val intent = Intent()
                 .setAction(Engine.ACTION_INSTALL_TTS_DATA)
@@ -82,6 +111,21 @@ class AndroidTtsEngine private constructor(
                 context.startActivity(intent)
             }
         }
+
+        private fun AndroidVoice.toTtsEngineVoice() =
+            Voice(
+                id = Voice.Id(name),
+                language = Language(locale),
+                quality = when (quality) {
+                    QUALITY_VERY_HIGH -> Voice.Quality.Highest
+                    QUALITY_HIGH -> Voice.Quality.High
+                    QUALITY_NORMAL -> Voice.Quality.Normal
+                    QUALITY_LOW -> Voice.Quality.Low
+                    QUALITY_VERY_LOW -> Voice.Quality.Lowest
+                    else -> throw IllegalStateException("Unexpected voice quality.")
+                },
+                requiresNetwork = isNetworkConnectionRequired
+            )
     }
 
     fun interface SettingsResolver {
@@ -168,28 +212,59 @@ class AndroidTtsEngine private constructor(
         fun onLanguageNotSupported(language: Language)
     }
 
+    private data class Request(
+        val id: TtsEngine.RequestId,
+        val text: String,
+        val language: Language?
+    )
+
+    private sealed class State {
+
+        data class EngineAvailable(
+            val engine: TextToSpeech
+        ) : State()
+
+        data class WaitingForService(
+            val pendingRequests: MutableList<Request> = mutableListOf(),
+        ) : State()
+
+        data class Error(
+            val error: AndroidTtsEngine.Error
+        ) : State()
+    }
+
+    private val coroutineScope: CoroutineScope =
+        MainScope()
+
     private val _settings: MutableStateFlow<AndroidTtsSettings> =
         MutableStateFlow(settingsResolver.settings(initialPreferences))
+            .apply { engine.setupPitchAndSpeed(value) }
 
     private var utteranceListener: TtsEngine.Listener<Error>? =
         null
 
-    override val voices: Set<Voice> get() =
-        engine.voices
-            ?.map { it.toTtsEngineVoice() }
-            ?.toSet()
-            .orEmpty()
+    private var state: State =
+        State.EngineAvailable(engine)
+
+    private var isClosed: Boolean =
+        false
+
+    override val settings: StateFlow<AndroidTtsSettings> =
+        _settings.asStateFlow()
+
+    override fun submitPreferences(preferences: AndroidTtsPreferences) {
+        val newSettings = settingsResolver.settings(preferences)
+        _settings.value = newSettings
+        (state as? State.EngineAvailable)
+            ?.engine?.setupPitchAndSpeed(newSettings)
+    }
 
     override fun setListener(
         listener: TtsEngine.Listener<Error>?
     ) {
-        if (listener == null) {
-            engine.setOnUtteranceProgressListener(null)
-            this@AndroidTtsEngine.utteranceListener = null
-        } else {
-            this@AndroidTtsEngine.utteranceListener = listener
-            engine.setOnUtteranceProgressListener(UtteranceListener(listener))
-        }
+        utteranceListener = listener
+        (state as? State.EngineAvailable)
+            ?.let { setupListener(it.engine) }
     }
 
     override fun speak(
@@ -197,28 +272,116 @@ class AndroidTtsEngine private constructor(
         text: String,
         language: Language?
     ) {
-        engine.setupVoice(settings.value, language, voices)
-        val queued = engine.speak(text, QUEUE_ADD, null, requestId.id)
-        if (queued == ERROR) {
-            utteranceListener?.onError(requestId, Error(Error.Kind.Unknown.code))
+        check(!isClosed) { "Engine is closed." }
+        val request = Request(requestId, text, language)
+
+        when (val stateNow = state) {
+            is State.WaitingForService -> {
+                stateNow.pendingRequests.add(request)
+            }
+            is State.Error -> {
+                tryReconnect(request)
+            }
+            is State.EngineAvailable -> {
+                val result = doSpeak(stateNow.engine, request)
+                if (result == ERROR) {
+                    cleanEngine(stateNow.engine)
+                    tryReconnect(request)
+                }
+            }
         }
     }
 
     override fun stop() {
-        engine.stop()
+        when (val stateNow = state) {
+            is State.EngineAvailable -> {
+                stateNow.engine.stop()
+            }
+            is State.Error -> {
+                // Do nothing
+            }
+            is State.WaitingForService -> {
+                for (request in stateNow.pendingRequests) {
+                    utteranceListener?.onFlushed(request.id)
+                }
+                stateNow.pendingRequests.clear()
+            }
+        }
     }
 
     override fun close() {
-        engine.shutdown()
+        if (isClosed) {
+            return
+        }
+
+        isClosed = true
+        coroutineScope.cancel()
+
+        when (val stateNow = state) {
+            is State.EngineAvailable -> {
+                cleanEngine(stateNow.engine)
+            }
+            is State.Error -> {
+                // Do nothing
+            }
+            is State.WaitingForService -> {
+                // Do nothing
+            }
+        }
     }
 
-    override val settings: StateFlow<AndroidTtsSettings> =
-        _settings.asStateFlow()
+    private fun doSpeak(
+        engine: TextToSpeech,
+        request: Request
+    ): Int {
+        engine.setupVoice(settings.value, request.language, voices)
+        return engine.speak(request.text, QUEUE_ADD, null, request.id.value)
+    }
 
-    override fun submitPreferences(preferences: AndroidTtsPreferences) {
-        val newSettings = settingsResolver.settings(preferences)
-        engine.setupPitchAndSpeed(newSettings)
-        _settings.value = newSettings
+    private fun setupListener(engine: TextToSpeech) {
+        if (utteranceListener == null) {
+            engine.setOnUtteranceProgressListener(null)
+        } else {
+            engine.setOnUtteranceProgressListener(UtteranceListener(utteranceListener))
+        }
+    }
+
+    private fun onReconnectionSucceeded(engine: TextToSpeech) {
+        val previousState = state as State.WaitingForService
+        setupListener(engine)
+        engine.setupPitchAndSpeed(_settings.value)
+        state = State.EngineAvailable(engine)
+        if (isClosed) {
+            engine.shutdown()
+        } else {
+            for (request in previousState.pendingRequests) {
+                doSpeak(engine, request)
+            }
+        }
+    }
+
+    private fun onReconnectionFailed() {
+        val previousState = state as State.WaitingForService
+        val error = Error(Error.Kind.Service.code)
+        state = State.Error(error)
+
+        for (request in previousState.pendingRequests) {
+            utteranceListener?.onError(request.id, error)
+        }
+    }
+
+    private fun tryReconnect(request: Request) {
+        state = State.WaitingForService(mutableListOf(request))
+        coroutineScope.launch {
+            initializeTextToSpeech(context)
+                ?.let { onReconnectionSucceeded(it) }
+                ?: onReconnectionFailed()
+        }
+    }
+
+    private fun cleanEngine(engine: TextToSpeech) {
+        engine.setOnUtteranceProgressListener(null)
+        engine.shutdown()
     }
 
     private fun TextToSpeech.setupPitchAndSpeed(settings: AndroidTtsSettings) {
@@ -235,7 +398,7 @@ class AndroidTtsEngine private constructor(
             .takeUnless { settings.overrideContentLanguage }
             ?: settings.language
 
-        when (engine.isLanguageAvailable(language.locale)) {
+        when (isLanguageAvailable(language.locale)) {
             LANG_MISSING_DATA -> listener?.onMissingData(language)
             LANG_NOT_SUPPORTED -> listener?.onLanguageNotSupported(language)
         }
@@ -250,36 +413,19 @@ class AndroidTtsEngine private constructor(
 
         val voice = preferredVoiceWithRegion
             ?: preferredVoiceWithoutRegion
-            ?: defaultVoice(language, voices)
+            ?: run {
+                voiceSelector
+                    .voice(language, voices)
+                    ?.let { voiceForName(it.id.value) }
+            }
 
         voice
-            ?.let { engine.voice = it }
-            ?: run { engine.language = language.locale }
+            ?.let { this.voice = it }
+            ?: run { this.language = language.locale }
     }
 
-    private fun defaultVoice(language: Language?, voices: Set<Voice>): AndroidVoice? =
-        voiceSelector
-            .voice(language, voices)
-            ?.let { voiceForName(it.id.value) }
-
-    private fun voiceForName(name: String) =
-        engine.voices
-            .firstOrNull { it.name == name }
-
-    private fun AndroidVoice.toTtsEngineVoice() =
-        Voice(
-            id = Voice.Id(name),
-            language = Language(locale),
-            quality = when (quality) {
-                QUALITY_VERY_HIGH -> Voice.Quality.Highest
-                QUALITY_HIGH -> Voice.Quality.High
-                QUALITY_NORMAL -> Voice.Quality.Normal
-                QUALITY_LOW -> Voice.Quality.Low
-                QUALITY_VERY_LOW -> Voice.Quality.Lowest
-                else -> throw IllegalStateException("Unexpected voice quality.")
-            },
-            requiresNetwork = isNetworkConnectionRequired
-        )
+    private fun TextToSpeech.voiceForName(name: String) =
+        voices.firstOrNull { it.name == name }
 
     class UtteranceListener(
         private val listener: TtsEngine.Listener<Error>?

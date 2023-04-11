@@ -9,14 +9,22 @@ package org.readium.r2.navigator.media3.exoplayer
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 
+/**
+ * Preferences for the the ExoPlayer engine.
+ *
+ *  @param pitch Playback pitch rate.
+ *  @param speed Playback speed rate.
+ */
 @ExperimentalReadiumApi
 @kotlinx.serialization.Serializable
 data class ExoPlayerPreferences(
-    val rateMultiplier: Double? = null,
+    val pitch: Double? = null,
+    val speed: Double? = null,
 ) : Configurable.Preferences<ExoPlayerPreferences> {
 
     override fun plus(other: ExoPlayerPreferences): ExoPlayerPreferences =
         ExoPlayerPreferences(
-            rateMultiplier = other.rateMultiplier ?: rateMultiplier,
+            pitch = other.pitch ?: pitch,
+            speed = other.speed ?: speed,
         )
 }

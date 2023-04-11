@@ -9,14 +9,22 @@ package org.readium.r2.navigator.media3.audio
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 
+/**
+ * To be implemented by adapters for third-party audio engines which can be used with [AudiobookNavigator].
+ */
 @ExperimentalReadiumApi
 interface AudioEngineProvider<S : Configurable.Settings, P : Configurable.Preferences<P>,
-    E : PreferencesEditor<P>, F : AudioEngine.Error> {
+    E : PreferencesEditor<P>> {
 
-    suspend fun createEngine(publication: Publication): AudioEngine<S, P, F>
+    suspend fun createEngine(
+        publication: Publication,
+        initialLocator: Locator,
+        initialPreferences: P
+    ): AudioEngine<S, P>?
 
     /**
      * Creates settings for [metadata] and [preferences].

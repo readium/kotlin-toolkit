@@ -11,14 +11,22 @@ import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Closeable
+import org.readium.r2.shared.util.Href
 
+/**
+ * A [Navigator] which can play multimedia content.
+ */
 @ExperimentalReadiumApi
-interface MediaNavigator<P : MediaNavigator.Position> : Navigator, Closeable {
+interface MediaNavigator<L : MediaNavigator.Location, P : MediaNavigator.Playback,
+    R : MediaNavigator.ReadingOrder> : Navigator, Closeable {
 
     /**
-     *  Marker interface for the [position] flow.
+     *  Location of the navigator.
      */
-    interface Position
+    interface Location {
+
+        val href: Href
+    }
 
     /**
      * State of the player.
@@ -48,21 +56,55 @@ interface MediaNavigator<P : MediaNavigator.Position> : Navigator, Closeable {
 
     /**
      * State of the playback.
-     *
-     * @param state The current state.
-     * @param playWhenReady If the navigator should play as soon as the state is Ready.
      */
-    data class Playback(
-        val state: State,
+    interface Playback {
+
+        /**
+         * The current state.
+         */
+        val state: State
+
+        /**
+         * Indicates if the navigator should play as soon as the state is Ready.
+         */
         val playWhenReady: Boolean
-    )
+
+        /**
+         * Index of the reading order item currently being played.
+         */
+        val index: Int
+    }
 
     /**
-     * Indicates the current state of the playback.
+     * Data about the content to play.
      */
-    val playback: StateFlow<Playback>
+    interface ReadingOrder {
 
-    val position: StateFlow<P>
+        /**
+         * List of items to play.
+         */
+        val items: List<Item>
+
+        /**
+         * A piece of the content to play.
+         */
+        interface Item
+    }
+
+    /**
+     * Current state of the playback.
+     */
+    val playback: StateFlow<P>
+
+    /**
+     * Current location of the navigator.
+     */
+    val location: StateFlow<L>
+
+    /**
+     * Reading order being read by this navigator.
+     */
+    val readingOrder: R
 
     /**
      * Resumes the playback at the current location.

@@ -6,6 +6,11 @@
 
 package org.readium.r2.navigator.media3.tts
 
+import android.media.AudioAttributes
+import android.media.AudioFormat
+import android.media.AudioManager
+import android.media.AudioTrack
+import android.os.Build
 import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -185,8 +190,46 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     fun play() {
         coroutineScope.launch {
+            // WORKAROUND to get the media buttons correctly working.
+            fakePlayingAudio()
+
             playAsync()
         }
+    }
+
+    private fun fakePlayingAudio() {
+        val audioAttributes =
+            AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build()
+
+        val audioFormat =
+            AudioFormat.Builder()
+                .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                .setSampleRate(44100)
+                .setChannelMask(AudioFormat.CHANNEL_OUT_STEREO)
+                .build()
+
+        val bufferSize = 8092
+
+        val audioTrack =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                AudioTrack.Builder()
+                    .setAudioAttributes(audioAttributes)
+                    .setAudioFormat(audioFormat)
+                    .setBufferSizeInBytes(bufferSize)
+                    .build()
+            } else {
+                AudioTrack(
+                    audioAttributes,
+                    audioFormat,
+                    bufferSize,
+                    AudioTrack.MODE_STATIC,
+                    AudioManager.AUDIO_SESSION_ID_GENERATE
+                )
+            }
+        audioTrack.play()
     }
 
     private suspend fun playAsync() = mutex.withLock {
