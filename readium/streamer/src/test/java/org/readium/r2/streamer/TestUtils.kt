@@ -10,7 +10,6 @@
 package org.readium.r2.streamer
 
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.PublicationAsset

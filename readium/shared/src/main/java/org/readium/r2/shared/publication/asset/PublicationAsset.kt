@@ -24,15 +24,5 @@ interface PublicationAsset {
      */
     val mediaType: MediaType
 
-
     val fetcher: Fetcher
 }
-
-    /* /**
-     * Creates a fetcher used to access the asset's content.
-     */
-    suspend fun createFetcher(dependencies: Dependencies, credentials: String?): Try<Fetcher, Publication.OpeningException>
-
-    data class Dependencies(val archiveFactory: ArchiveFactory, val httpClient: HttpClient)
-}
-*/

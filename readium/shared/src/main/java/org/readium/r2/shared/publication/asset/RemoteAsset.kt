@@ -33,8 +33,11 @@ data class RemoteAsset(
         private val archiveFactory: ArchiveFactory,
         private val httpClient: HttpClient
     ) {
-        suspend fun createAsset(url: URL, mediaType: MediaType? = null, mediaTypeHint: String? = null)
-            : Try<PublicationAsset, Publication.OpeningException> {
+        suspend fun createAsset(
+            url: URL,
+            mediaType: MediaType? = null,
+            mediaTypeHint: String? = null
+        ) : Try<PublicationAsset, Publication.OpeningException> {
             val actualMediaType = mediaType
                 ?: MediaType.ofBytes({ url.readBytes() }, mediaType = mediaTypeHint, fileExtension = url.extension)
                 ?: MediaType.BINARY

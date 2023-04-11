@@ -162,7 +162,7 @@ class BookRepository(
 
         val bytes = { url.readBytes() }
         val mediaType = MediaType.ofBytes(bytes, fileExtension = url.extension)
-                ?: MediaType.BINARY
+            ?: MediaType.BINARY
 
         streamer.open(url, mediaType, allowUserInteraction = false)
             .onSuccess { publication ->
@@ -196,7 +196,7 @@ class BookRepository(
             } else {
                 lcpService
                     .flatMap {
-                       it.acquirePublication(tempFile)
+                        it.acquirePublication(tempFile)
                     }
                     .fold(
                         {

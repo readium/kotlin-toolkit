@@ -18,8 +18,11 @@ class PublicationAssetFactory(
 
     private val remoteAssetFactory = RemoteAsset.Factory(archiveFactory, httpClient)
 
-    suspend fun createAsset(url: URL, mediaType: MediaType? = null, mediaTypeHint: String? = null)
-    : Try<PublicationAsset, Publication.OpeningException> {
+    suspend fun createAsset(
+        url: URL,
+        mediaType: MediaType? = null,
+        mediaTypeHint: String? = null
+    ): Try<PublicationAsset, Publication.OpeningException> {
         return when (url.protocol) {
             "file" -> fileAssetFactory.createAsset(File(url.file), mediaType, mediaTypeHint)
             "http" -> remoteAssetFactory.createAsset(url, mediaType, mediaTypeHint)

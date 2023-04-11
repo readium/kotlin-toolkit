@@ -80,7 +80,6 @@ internal class LcpContentProtection(
             else -> throw IllegalStateException()
         }
 
-
         val protectedFile = ContentProtection.ProtectedAsset(
             asset = newAsset,
             onCreatePublication = {

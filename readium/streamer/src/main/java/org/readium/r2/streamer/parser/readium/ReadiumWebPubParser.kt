@@ -14,8 +14,8 @@ import org.readium.r2.shared.publication.services.*
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
-import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.extensions.readAsJsonOrNull
+import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioLocatorService
 
 /**
@@ -43,7 +43,8 @@ class ReadiumWebPubParser(
         // https://readium.org/lcp-specs/notes/lcp-for-pdf.html
         val readingOrder = manifest.readingOrder
         if (mediaType == MediaType.LCP_PROTECTED_PDF &&
-            (readingOrder.isEmpty() || !readingOrder.all { it.mediaType.matches(MediaType.PDF) })) {
+            (readingOrder.isEmpty() || !readingOrder.all { it.mediaType.matches(MediaType.PDF) })
+        ) {
             throw Exception("Invalid LCP Protected PDF.")
         }
 

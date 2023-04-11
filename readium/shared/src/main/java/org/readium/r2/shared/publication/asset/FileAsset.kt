@@ -33,13 +33,16 @@ data class FileAsset(
         private val httpClient: HttpClient
     ) {
 
-        suspend fun createAsset(file: File, mediaType: MediaType? = null, mediaTypeHint: String? = null)
-            : Try<PublicationAsset, Publication.OpeningException> {
+        suspend fun createAsset(
+            file: File,
+            mediaType: MediaType? = null,
+            mediaTypeHint: String? = null
+        ): Try<PublicationAsset, Publication.OpeningException> {
             val actualMediaType = mediaType
                 ?: MediaType.ofFile(file, mediaType = mediaTypeHint)
                 ?: MediaType.BINARY
             return createFetcher(file, actualMediaType)
-                .map { fetcher -> FileAsset(file, actualMediaType, fetcher)  }
+                .map { fetcher -> FileAsset(file, actualMediaType, fetcher) }
         }
 
         private suspend fun createFetcher(file: File, mediaType: MediaType): Try<Fetcher, Publication.OpeningException> {

@@ -68,7 +68,7 @@ internal class LicensesService(
 
     private suspend fun remoteAssetForLicenseThrowing(license: ByteArray): PublicationAsset {
         val licenseDoc = LicenseDocument(license)
-        //TODO: get an updated version of the license without asking passphrase
+        // TODO: get an updated version of the license without asking passphrase
 
         val link = checkNotNull(licenseDoc.link(LicenseDocument.Rel.publication))
         val url = try {

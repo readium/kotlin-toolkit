@@ -84,7 +84,6 @@ class Streamer constructor(
             .createAsset(url, mediaType)
             .flatMap { asset -> open(asset, credentials, allowUserInteraction, sender, onCreatePublication, warnings) }
 
-
     /**
      * Parses a [Publication] from the given asset.
      *

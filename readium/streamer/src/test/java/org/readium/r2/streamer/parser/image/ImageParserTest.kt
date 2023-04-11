@@ -38,7 +38,7 @@ class ImageParserTest {
         val path = pathForResource("futuristic_tales.jpg")
         val file = File(path)
         val fetcher = FileFetcher("/image.jpg", file)
-        FileAsset(file, MediaType.JPEG,fetcher)
+        FileAsset(file, MediaType.JPEG, fetcher)
     }
     private fun pathForResource(resource: String): String {
         val path = ImageParserTest::class.java.getResource(resource)?.path
