@@ -27,6 +27,12 @@ import org.readium.r2.navigator.epub.EpubPreferences
 import org.readium.r2.navigator.epub.EpubPreferencesSerializer
 import org.readium.r2.navigator.epub.EpubPublicationPreferencesFilter
 import org.readium.r2.navigator.epub.EpubSharedPreferencesFilter
+import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferences
+import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferencesSerializer
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferencesSerializer
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsPublicationPreferencesFilter
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsSharedPreferencesFilter
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesFilter
 import org.readium.r2.navigator.preferences.PreferencesSerializer
@@ -129,4 +135,26 @@ class PdfiumPreferencesManagerFactory(
     publicationPreferencesFilter = PdfiumPublicationPreferencesFilter,
     preferencesSerializer = PdfiumPreferencesSerializer(),
     emptyPreferences = PdfiumPreferences()
+)
+
+class ExoPlayerPreferencesManagerFactory(
+    dataStore: DataStore<Preferences>
+) : PreferencesManagerFactory<ExoPlayerPreferences>(
+    dataStore = dataStore,
+    klass = ExoPlayerPreferences::class,
+    sharedPreferencesFilter = { preferences -> preferences },
+    publicationPreferencesFilter = { ExoPlayerPreferences() },
+    preferencesSerializer = ExoPlayerPreferencesSerializer(),
+    emptyPreferences = ExoPlayerPreferences()
+)
+
+class AndroidTtsPreferencesManagerFactory(
+    dataStore: DataStore<Preferences>
+) : PreferencesManagerFactory<AndroidTtsPreferences>(
+    dataStore = dataStore,
+    klass = AndroidTtsPreferences::class,
+    sharedPreferencesFilter = AndroidTtsSharedPreferencesFilter,
+    publicationPreferencesFilter = AndroidTtsPublicationPreferencesFilter,
+    preferencesSerializer = AndroidTtsPreferencesSerializer(),
+    emptyPreferences = AndroidTtsPreferences()
 )

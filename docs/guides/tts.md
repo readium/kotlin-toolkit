@@ -14,6 +14,8 @@ Text-to-speech can be used to read aloud a publication using a synthetic voice. 
 
 ## Reading a publication aloud
 
+Apps targeting Android 11 that use text-to-speech should declare INTENT_ACTION_TTS_SERVICE in the queries elements of their manifest.
+
 To read a publication, you need to create an instance of `PublicationSpeechSynthesizer`. It orchestrates the rendition of a publication by iterating through its content, splitting it into individual utterances using a `ContentTokenizer`, then using a `TtsEngine` to read them aloud. Not all publications can be read using TTS, therefore the constructor returns a nullable object. You can also check whether a publication can be played beforehand using `PublicationSpeechSynthesizer.canSpeak(publication)`.
 
 ```kotlin

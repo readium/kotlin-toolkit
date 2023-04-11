@@ -9,7 +9,6 @@ package org.readium.r2.testapp.bookshelf
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,7 +23,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import java.net.URL
-import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentBookshelfBinding
@@ -68,11 +66,6 @@ class BookshelfFragment : Fragment() {
                 }
             }
 
-        readerLauncher =
-            registerForActivityResult(ReaderActivityContract()) { input ->
-                input?.let { tryOrLog { bookshelfViewModel.closePublication(input.bookId) } }
-            }
-
         binding.bookshelfBookList.apply {
             setHasFixedSize(true)
             layoutManager = GridAutoFitLayoutManager(requireContext(), 120)
@@ -111,11 +104,6 @@ class BookshelfFragment : Fragment() {
                             .setPositiveButton(getString(R.string.ok), null)
                             .show()
                         urlDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                            if (TextUtils.isEmpty(urlEditText.text)) {
-                                urlEditText.error = getString(R.string.invalid_url)
-                                return@setOnClickListener
-                            }
-
                             val url = tryOrNull { URL(urlEditText.text.toString()) }
                             if (url == null || !URLUtil.isValidUrl(urlEditText.text.toString())) {
                                 urlEditText.error = getString(R.string.invalid_url)
@@ -152,7 +140,8 @@ class BookshelfFragment : Fragment() {
                 }
 
                 is BookshelfViewModel.Event.LaunchReader -> {
-                    readerLauncher.launch(event.arguments)
+                    val intent = ReaderActivityContract().createIntent(requireContext(), event.arguments)
+                    startActivity(intent)
                     null
                 }
             }

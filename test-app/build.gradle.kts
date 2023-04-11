@@ -103,6 +103,7 @@ dependencies {
     implementation(libs.jsoup)
 
     implementation(libs.bundles.media2)
+    implementation(libs.bundles.media3)
 
     implementation("readium:liblcp:1.0.0@aar")
 

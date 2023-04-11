@@ -13,9 +13,10 @@ import androidx.datastore.core.DataStore
 import java.net.URL
 import org.json.JSONObject
 import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider
-import org.readium.navigator.media2.ExperimentalMedia2
-import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
+import org.readium.r2.navigator.media3.audio.AudioNavigatorFactory
+import org.readium.r2.navigator.media3.exoplayer.ExoPlayerEngineProvider
+import org.readium.r2.navigator.media3.tts.TtsNavigatorFactory
 import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
@@ -23,25 +24,25 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.protectionError
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.testapp.MediaService
 import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.bookshelf.BookRepository
+import org.readium.r2.testapp.reader.preferences.AndroidTtsPreferencesManagerFactory
 import org.readium.r2.testapp.reader.preferences.EpubPreferencesManagerFactory
+import org.readium.r2.testapp.reader.preferences.ExoPlayerPreferencesManagerFactory
 import org.readium.r2.testapp.reader.preferences.PdfiumPreferencesManagerFactory
+import timber.log.Timber
 
 /**
  * Open and store publications in order for them to be listened or read.
  *
  * Ensure you call [open] before any attempt to start a [ReaderActivity].
  * Pass the method result to the activity to enable it to know which current publication it must
- * retrieve from this rep+ository - media or visual.
+ * retrieve from this repository - media or visual.
  */
-@OptIn(ExperimentalMedia2::class, ExperimentalReadiumApi::class)
+@OptIn(ExperimentalReadiumApi::class)
 class ReaderRepository(
     private val application: Application,
     private val readium: Readium,
-    private val mediaBinder: MediaService.Binder,
     private val bookRepository: BookRepository,
     private val preferencesDataStore: DataStore<JetpackPreferences>,
 ) {
@@ -49,6 +50,9 @@ class ReaderRepository(
 
     private val repository: MutableMap<Long, ReaderInitData> =
         mutableMapOf()
+
+    private val mediaServiceFacade: MediaServiceFacade =
+        MediaServiceFacade(application)
 
     operator fun get(bookId: Long): ReaderInitData? =
         repository[bookId]
@@ -100,20 +104,28 @@ class ReaderRepository(
         repository[bookId] = readerInitData
     }
 
-    @OptIn(ExperimentalMedia2::class)
     private suspend fun openAudio(
         bookId: Long,
         publication: Publication,
         initialLocator: Locator?
     ): MediaReaderInitData {
-        val navigator = MediaNavigator.create(
-            application,
-            publication,
-            initialLocator
-        ).getOrElse { throw Exception("Cannot open audiobook.") }
 
-        mediaBinder.bindNavigator(navigator, bookId)
-        return MediaReaderInitData(bookId, publication, navigator)
+        val preferencesManager = ExoPlayerPreferencesManagerFactory(preferencesDataStore)
+            .createPreferenceManager(bookId)
+        val initialPreferences = preferencesManager.preferences.value
+
+        val navigatorFactory = AudioNavigatorFactory(
+            publication,
+            ExoPlayerEngineProvider(application),
+        ) ?: throw Exception("Cannot open audiobook.")
+
+        val navigator = navigatorFactory.createNavigator(
+            initialPreferences,
+            initialLocator
+        ) ?: throw Exception("Cannot open audiobook.")
+
+        mediaServiceFacade.openSession(bookId, navigator)
+        return MediaReaderInitData(bookId, publication, navigator, preferencesManager, navigatorFactory)
     }
 
     private suspend fun openEpub(
@@ -125,10 +137,11 @@ class ReaderRepository(
         val preferencesManager = EpubPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)
         val navigatorFactory = EpubNavigatorFactory(publication)
+        val ttsInitData = getTtsInitData(bookId, publication)
 
         return EpubReaderInitData(
             bookId, publication, initialLocator,
-            preferencesManager, navigatorFactory
+            preferencesManager, navigatorFactory, ttsInitData
         )
     }
 
@@ -142,14 +155,16 @@ class ReaderRepository(
             .createPreferenceManager(bookId)
         val pdfEngine = PdfiumEngineProvider()
         val navigatorFactory = PdfNavigatorFactory(publication, pdfEngine)
+        val ttsInitData = getTtsInitData(bookId, publication)
 
         return PdfReaderInitData(
             bookId, publication, initialLocator,
-            preferencesManager, navigatorFactory
+            preferencesManager, navigatorFactory,
+            ttsInitData
         )
     }
 
-    private fun openImage(
+    private suspend fun openImage(
         bookId: Long,
         publication: Publication,
         initialLocator: Locator?
@@ -157,16 +172,30 @@ class ReaderRepository(
         return ImageReaderInitData(
             bookId = bookId,
             publication = publication,
-            initialLocation = initialLocator
+            initialLocation = initialLocator,
+            ttsInitData = getTtsInitData(bookId, publication)
         )
     }
 
-    fun close(bookId: Long) {
+    private suspend fun getTtsInitData(
+        bookId: Long,
+        publication: Publication,
+    ): TtsInitData? {
+        val preferencesManager = AndroidTtsPreferencesManagerFactory(preferencesDataStore)
+            .createPreferenceManager(bookId)
+        val navigatorFactory = TtsNavigatorFactory(application, publication) ?: return null
+        return TtsInitData(mediaServiceFacade, navigatorFactory, preferencesManager)
+    }
+
+    suspend fun close(bookId: Long) {
+        Timber.v("Closing Publication $bookId.")
         when (val initData = repository.remove(bookId)) {
             is MediaReaderInitData -> {
-                mediaBinder.closeNavigator()
+                mediaServiceFacade.closeSession()
+                initData.publication.close()
             }
             is VisualReaderInitData -> {
+                mediaServiceFacade.closeSession()
                 initData.publication.close()
             }
             null, is DummyReaderInitData -> {

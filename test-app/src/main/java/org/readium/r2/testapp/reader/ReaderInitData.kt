@@ -11,10 +11,13 @@ package org.readium.r2.testapp.reader
 import org.readium.adapters.pdfium.navigator.PdfiumPreferences
 import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
 import org.readium.adapters.pdfium.navigator.PdfiumSettings
-import org.readium.navigator.media2.ExperimentalMedia2
-import org.readium.navigator.media2.MediaNavigator
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
 import org.readium.r2.navigator.epub.EpubPreferences
+import org.readium.r2.navigator.media3.exoplayer.ExoPlayerNavigator
+import org.readium.r2.navigator.media3.exoplayer.ExoPlayerNavigatorFactory
+import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferences
+import org.readium.r2.navigator.media3.tts.AndroidTtsNavigatorFactory
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsPreferences
 import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.*
@@ -29,35 +32,46 @@ sealed class VisualReaderInitData(
     override val bookId: Long,
     override val publication: Publication,
     val initialLocation: Locator?,
+    val ttsInitData: TtsInitData?,
 ) : ReaderInitData()
 
 class ImageReaderInitData(
     bookId: Long,
     publication: Publication,
-    initialLocation: Locator?
-) : VisualReaderInitData(bookId, publication, initialLocation)
+    initialLocation: Locator?,
+    ttsInitData: TtsInitData?,
+) : VisualReaderInitData(bookId, publication, initialLocation, ttsInitData)
 
 class EpubReaderInitData(
     bookId: Long,
     publication: Publication,
     initialLocation: Locator?,
     val preferencesManager: PreferencesManager<EpubPreferences>,
-    val navigatorFactory: EpubNavigatorFactory
-) : VisualReaderInitData(bookId, publication, initialLocation)
+    val navigatorFactory: EpubNavigatorFactory,
+    ttsInitData: TtsInitData?,
+) : VisualReaderInitData(bookId, publication, initialLocation, ttsInitData)
 
 class PdfReaderInitData(
     bookId: Long,
     publication: Publication,
     initialLocation: Locator?,
     val preferencesManager: PreferencesManager<PdfiumPreferences>,
-    val navigatorFactory: PdfNavigatorFactory<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>
-) : VisualReaderInitData(bookId, publication, initialLocation)
+    val navigatorFactory: PdfNavigatorFactory<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor>,
+    ttsInitData: TtsInitData?,
+) : VisualReaderInitData(bookId, publication, initialLocation, ttsInitData)
 
-@ExperimentalMedia2
+class TtsInitData(
+    val mediaServiceFacade: MediaServiceFacade,
+    val navigatorFactory: AndroidTtsNavigatorFactory,
+    val preferencesManager: PreferencesManager<AndroidTtsPreferences>,
+)
+
 class MediaReaderInitData(
     override val bookId: Long,
     override val publication: Publication,
-    val mediaNavigator: MediaNavigator,
+    val mediaNavigator: ExoPlayerNavigator,
+    val preferencesManager: PreferencesManager<ExoPlayerPreferences>,
+    val navigatorFactory: ExoPlayerNavigatorFactory
 ) : ReaderInitData()
 
 class DummyReaderInitData(

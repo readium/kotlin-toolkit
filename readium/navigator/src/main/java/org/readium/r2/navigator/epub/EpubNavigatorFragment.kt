@@ -763,11 +763,13 @@ class EpubNavigatorFragment internal constructor(
             r2Activity?.highlightAnnotationMarkActivated(id)
         }
 
-        override fun goForward(animated: Boolean, completion: () -> Unit): Boolean =
-            goToNextResource(animated, completion)
+        override fun goToPreviousResource(jump: Boolean, animated: Boolean): Boolean {
+            return this@EpubNavigatorFragment.goToPreviousResource(jump = jump, animated = animated)
+        }
 
-        override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean =
-            goToPreviousResource(animated, completion)
+        override fun goToNextResource(jump: Boolean, animated: Boolean): Boolean {
+            return this@EpubNavigatorFragment.goToNextResource(jump = jump, animated = animated)
+        }
 
         override val selectionActionModeCallback: ActionMode.Callback?
             get() = config.selectionActionModeCallback
@@ -791,7 +793,7 @@ class EpubNavigatorFragment internal constructor(
 
     override fun goForward(animated: Boolean, completion: () -> Unit): Boolean {
         if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
-            return goToNextResource(animated, completion)
+            return goToNextResource(jump = false, animated = animated, completion)
         }
 
         val webView = currentReflowablePageFragment?.webView ?: return false
@@ -809,7 +811,7 @@ class EpubNavigatorFragment internal constructor(
 
     override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
         if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
-            return goToPreviousResource(animated, completion)
+            return goToPreviousResource(jump = false, animated = animated, completion)
         }
 
         val webView = currentReflowablePageFragment?.webView ?: return false
@@ -825,10 +827,14 @@ class EpubNavigatorFragment internal constructor(
         return true
     }
 
-    private fun goToNextResource(animated: Boolean, completion: () -> Unit): Boolean {
+    private fun goToNextResource(jump: Boolean, animated: Boolean, completion: () -> Unit = {}): Boolean {
         val adapter = resourcePager.adapter ?: return false
         if (resourcePager.currentItem >= adapter.count - 1) {
             return false
+        }
+
+        if (jump) {
+            locatorToNextResource()?.let { listener?.onJumpToLocator(it) }
         }
 
         resourcePager.setCurrentItem(resourcePager.currentItem + 1, animated)
@@ -845,9 +851,13 @@ class EpubNavigatorFragment internal constructor(
         return true
     }
 
-    private fun goToPreviousResource(animated: Boolean, completion: () -> Unit): Boolean {
+    private fun goToPreviousResource(jump: Boolean, animated: Boolean, completion: () -> Unit = {}): Boolean {
         if (resourcePager.currentItem <= 0) {
             return false
+        }
+
+        if (jump) {
+            locatorToPreviousResource()?.let { listener?.onJumpToLocator(it) }
         }
 
         resourcePager.setCurrentItem(resourcePager.currentItem - 1, animated)
@@ -863,6 +873,16 @@ class EpubNavigatorFragment internal constructor(
         viewLifecycleOwner.lifecycleScope.launch { completion() }
         return true
     }
+
+    private fun locatorToPreviousResource(): Locator? =
+        locatorToResourceAtIndex(resourcePager.currentItem - 1)
+
+    private fun locatorToNextResource(): Locator? =
+        locatorToResourceAtIndex(resourcePager.currentItem + 1)
+
+    private fun locatorToResourceAtIndex(index: Int): Locator? =
+        publication.readingOrder.getOrNull(index)
+            ?.let { publication.locatorFromLink(it) }
 
     private val r2PagerAdapter: R2PagerAdapter?
         get() = if (::resourcePager.isInitialized) resourcePager.adapter as? R2PagerAdapter

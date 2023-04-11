@@ -197,6 +197,9 @@ interface Content {
 
     /**
      * Iterates through a list of [Element] items asynchronously.
+     *
+     * [hasNext] and [hasPrevious] refer to the last element computed by a previous call
+     * to any of both methods.
      */
     @ExperimentalReadiumApi
     interface Iterator {
@@ -242,7 +245,6 @@ interface Content {
 
     /**
      * Extracts the full raw text, or returns null if no text content can be found.
-     *
      * @param separator Separator to use between individual elements. Defaults to newline.
      */
     suspend fun text(separator: String = "\n"): String? =

@@ -10,12 +10,18 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.readium.adapters.pdfium.navigator.PdfiumPreferences
 import org.readium.adapters.pdfium.navigator.PdfiumSettings
-import org.readium.r2.navigator.epub.*
-import org.readium.r2.navigator.preferences.*
+import org.readium.r2.navigator.epub.EpubPreferences
+import org.readium.r2.navigator.epub.EpubSettings
+import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferences
+import org.readium.r2.navigator.media3.exoplayer.ExoPlayerSettings
+import org.readium.r2.navigator.preferences.Configurable
+import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.testapp.reader.*
 import org.readium.r2.testapp.utils.extensions.mapStateIn
@@ -29,8 +35,8 @@ import org.readium.r2.testapp.utils.extensions.mapStateIn
  */
 @OptIn(ExperimentalReadiumApi::class)
 class UserPreferencesViewModel<S : Configurable.Settings, P : Configurable.Preferences<P>>(
-    private val bookId: Long,
     private val viewModelScope: CoroutineScope,
+    private val bookId: Long,
     private val preferencesManager: PreferencesManager<P>,
     private val createPreferencesEditor: (P) -> PreferencesEditor<P>
 ) {
@@ -61,14 +67,20 @@ class UserPreferencesViewModel<S : Configurable.Settings, P : Configurable.Prefe
             when (readerInitData) {
                 is EpubReaderInitData -> with(readerInitData) {
                     UserPreferencesViewModel<EpubSettings, EpubPreferences>(
-                        bookId, viewModelScope, preferencesManager,
+                        viewModelScope, bookId, preferencesManager,
                         createPreferencesEditor = navigatorFactory::createPreferencesEditor
                     )
                 }
                 is PdfReaderInitData -> with(readerInitData) {
                     UserPreferencesViewModel<PdfiumSettings, PdfiumPreferences>(
-                        bookId, viewModelScope, preferencesManager,
+                        viewModelScope, bookId, preferencesManager,
                         createPreferencesEditor = navigatorFactory::createPreferencesEditor
+                    )
+                }
+                is MediaReaderInitData -> with(readerInitData) {
+                    UserPreferencesViewModel<ExoPlayerSettings, ExoPlayerPreferences>(
+                        viewModelScope, bookId, preferencesManager,
+                        createPreferencesEditor = navigatorFactory::createAudioPreferencesEditor
                     )
                 }
                 else -> null

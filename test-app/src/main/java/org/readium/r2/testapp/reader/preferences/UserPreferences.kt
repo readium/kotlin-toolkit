@@ -8,57 +8,60 @@
 
 package org.readium.r2.testapp.reader.preferences
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import java.util.*
 import org.readium.adapters.pdfium.navigator.PdfiumPreferencesEditor
 import org.readium.r2.navigator.epub.EpubPreferencesEditor
+import org.readium.r2.navigator.media3.exoplayer.ExoPlayerPreferencesEditor
+import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.preferences.*
-import org.readium.r2.navigator.preferences.Color as ReadiumColor
 import org.readium.r2.navigator.preferences.TextAlign as ReadiumTextAlign
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Language
 import org.readium.r2.testapp.LITERATA
+import org.readium.r2.testapp.R
 import org.readium.r2.testapp.reader.ReaderViewModel
-import org.readium.r2.testapp.utils.compose.ColorPicker
+import org.readium.r2.testapp.reader.tts.TtsPreferencesEditor
+import org.readium.r2.testapp.shared.views.*
 import org.readium.r2.testapp.utils.compose.DropdownMenuButton
-import org.readium.r2.testapp.utils.compose.ToggleButtonGroup
 
 /**
  * Stateful user settings component paired with a [ReaderViewModel].
  */
 @Composable
-fun UserPreferences(model: UserPreferencesViewModel<*, *>) {
+fun UserPreferences(
+    model: UserPreferencesViewModel<*, *>,
+    title: String
+) {
     val editor by model.editor.collectAsState()
 
     UserPreferences(
         editor = editor,
-        commit = model::commit
+        commit = model::commit,
+        title = title
     )
 }
 
 @Composable
 private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPreferences(
     editor: E,
-    commit: () -> Unit
+    commit: () -> Unit,
+    title: String
 ) {
     Column(
         modifier = Modifier.padding(vertical = 24.dp)
     ) {
         Text(
-            text = "User settings",
+            text = title,
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.h6,
             modifier = Modifier
@@ -131,6 +134,62 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
                             spread = editor.spread,
                         )
                 }
+            is TtsPreferencesEditor ->
+                MediaUserPreferences(
+                    commit = commit,
+                    language = editor.language,
+                    voice = editor.voice,
+                    speed = editor.speed,
+                    pitch = editor.pitch
+                )
+            is ExoPlayerPreferencesEditor ->
+                MediaUserPreferences(
+                    commit = commit,
+                    speed = editor.speed,
+                    pitch = editor.pitch
+                )
+        }
+    }
+}
+
+@Composable
+private fun MediaUserPreferences(
+    commit: () -> Unit,
+    language: Preference<Language?>? = null,
+    voice: EnumPreference<AndroidTtsEngine.Voice.Id?>? = null,
+    speed: RangePreference<Double>? = null,
+    pitch: RangePreference<Double>? = null
+) {
+    Column {
+        if (speed != null) {
+            StepperItem(
+                title = stringResource(R.string.speed_rate),
+                preference = speed,
+                commit = commit
+            )
+        }
+
+        if (pitch != null) {
+            StepperItem(
+                title = stringResource(R.string.pitch_rate),
+                preference = pitch,
+                commit = commit
+            )
+        }
+        if (language != null) {
+            LanguageItem(
+                preference = language,
+                commit = commit
+            )
+        }
+
+        if (voice != null) {
+            MenuItem(
+                title = stringResource(R.string.tts_voice),
+                preference = voice,
+                formatValue = { it?.value ?: "Default" },
+                commit = commit
+            )
         }
     }
 }
@@ -139,11 +198,11 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
  * User settings for a publication with a fixed layout, such as fixed-layout EPUB, PDF or comic book.
  */
 @Composable
-private fun ColumnScope.FixedLayoutUserPreferences(
+private fun FixedLayoutUserPreferences(
     commit: () -> Unit,
     language: Preference<Language?>? = null,
     readingProgression: EnumPreference<ReadingProgression>? = null,
-    backgroundColor: Preference<ReadiumColor>? = null,
+    backgroundColor: Preference<Color>? = null,
     scroll: Preference<Boolean>? = null,
     scrollAxis: EnumPreference<Axis>? = null,
     fit: EnumPreference<Fit>? = null,
@@ -152,12 +211,6 @@ private fun ColumnScope.FixedLayoutUserPreferences(
     pageSpacing: RangePreference<Double>? = null
 ) {
     if (language != null || readingProgression != null) {
-        fun reset() {
-            language?.clear()
-            readingProgression?.clear()
-            commit()
-        }
-
         if (language != null) {
             LanguageItem(
                 preference = language,
@@ -259,9 +312,9 @@ private fun ColumnScope.FixedLayoutUserPreferences(
  * a reflowable EPUB, HTML document or PDF with reflow mode enabled.
  */
 @Composable
-private fun ColumnScope.ReflowableUserPreferences(
+private fun ReflowableUserPreferences(
     commit: () -> Unit,
-    backgroundColor: Preference<ReadiumColor>? = null,
+    backgroundColor: Preference<Color>? = null,
     columnCount: EnumPreference<ColumnCount>? = null,
     fontFamily: Preference<FontFamily?>? = null,
     fontSize: RangePreference<Double>? = null,
@@ -279,7 +332,7 @@ private fun ColumnScope.ReflowableUserPreferences(
     readingProgression: EnumPreference<ReadingProgression>? = null,
     scroll: Preference<Boolean>? = null,
     textAlign: EnumPreference<ReadiumTextAlign?>? = null,
-    textColor: Preference<ReadiumColor>? = null,
+    textColor: Preference<Color>? = null,
     textNormalization: Preference<Boolean>? = null,
     theme: EnumPreference<Theme>? = null,
     typeScale: RangePreference<Double>? = null,
@@ -287,13 +340,6 @@ private fun ColumnScope.ReflowableUserPreferences(
     wordSpacing: RangePreference<Double>? = null,
 ) {
     if (language != null || readingProgression != null || verticalText != null) {
-        fun reset() {
-            language?.clear()
-            readingProgression?.clear()
-            verticalText?.clear()
-            commit()
-        }
-
         if (language != null) {
             LanguageItem(
                 preference = language,
@@ -411,6 +457,7 @@ private fun ColumnScope.ReflowableUserPreferences(
                 title = "Typeface",
                 preference = fontFamily
                     .withSupportedValues(
+                        null,
                         FontFamily.LITERATA,
                         FontFamily.SANS_SERIF,
                         FontFamily.IA_WRITER_DUOSPACE,
@@ -545,378 +592,6 @@ private fun ColumnScope.ReflowableUserPreferences(
             }
         }
     }
-}
-
-/**
- * Component for an [EnumPreference] displayed as a group of mutually exclusive buttons.
- * This works best with a small number of enum values.
- */
-@Composable
-private fun <T> ButtonGroupItem(
-    title: String,
-    preference: EnumPreference<T>,
-    commit: () -> Unit,
-    formatValue: (T) -> String
-) {
-    ButtonGroupItem(
-        title = title,
-        options = preference.supportedValues,
-        isActive = preference.isEffective,
-        activeOption = preference.effectiveValue,
-        selectedOption = preference.value,
-        formatValue = formatValue,
-        onClear = { preference.clear(); commit() }
-            .takeIf { preference.value != null },
-        onSelectedOptionChanged = { newValue ->
-            if (newValue == preference.value) {
-                preference.clear()
-            } else {
-                preference.set(newValue)
-            }
-            commit()
-        }
-    )
-}
-
-/**
- * Group of mutually exclusive buttons.
- */
-@Composable
-private fun <T> ButtonGroupItem(
-    title: String,
-    options: List<T>,
-    isActive: Boolean,
-    activeOption: T,
-    selectedOption: T?,
-    formatValue: (T) -> String,
-    onClear: (() -> Unit)?,
-    onSelectedOptionChanged: (T) -> Unit,
-) {
-    Item(title, isActive = isActive, onClear = onClear) {
-        ToggleButtonGroup(
-            options = options,
-            activeOption = activeOption,
-            selectedOption = selectedOption,
-            onSelectOption = { option -> onSelectedOptionChanged(option) }
-        ) { option ->
-            Text(
-                text = formatValue(option),
-                style = MaterialTheme.typography.caption
-            )
-        }
-    }
-}
-
-/**
- * Component for an [EnumPreference] displayed as a dropdown menu.
- */
-@Composable
-private fun <T> MenuItem(
-    title: String,
-    preference: EnumPreference<T>,
-    commit: () -> Unit,
-    formatValue: (T?) -> String
-) {
-    MenuItem(
-        title = title,
-        value = preference.value ?: preference.effectiveValue,
-        values = listOf(null) + preference.supportedValues,
-        isActive = preference.isEffective,
-        formatValue = formatValue,
-        onClear = { preference.clear(); commit() }
-            .takeIf { preference.value != null },
-        onValueChanged = { value ->
-            preference.set(value)
-            commit()
-        }
-    )
-}
-
-/**
- * Dropdown menu.
- */
-@Composable
-private fun <T> MenuItem(
-    title: String,
-    value: T,
-    values: List<T>,
-    isActive: Boolean,
-    formatValue: (T) -> String,
-    onValueChanged: (T) -> Unit,
-    onClear: (() -> Unit)?
-) {
-    Item(title, isActive = isActive, onClear = onClear) {
-        DropdownMenuButton(
-            text = {
-                Text(
-                    text = formatValue(value),
-                    style = MaterialTheme.typography.caption
-                )
-            }
-        ) { dismiss ->
-            for (value in values) {
-                DropdownMenuItem(
-                    onClick = {
-                        dismiss()
-                        onValueChanged(value)
-                    }
-                ) {
-                    Text(formatValue(value))
-                }
-            }
-        }
-    }
-}
-
-/**
- * Component for a [RangePreference] with decrement and increment buttons.
- */
-@Composable
-private fun <T : Comparable<T>> StepperItem(
-    title: String,
-    preference: RangePreference<T>,
-    commit: () -> Unit
-) {
-    StepperItem(
-        title = title,
-        isActive = preference.isEffective,
-        value = preference.value ?: preference.effectiveValue,
-        formatValue = preference::formatValue,
-        onDecrement = { preference.decrement(); commit() },
-        onIncrement = { preference.increment(); commit() },
-        onClear = { preference.clear(); commit() }
-            .takeIf { preference.value != null },
-    )
-}
-
-/**
- * Component for a [RangePreference] with decrement and increment buttons.
- */
-@Composable
-private fun <T> StepperItem(
-    title: String,
-    isActive: Boolean,
-    value: T,
-    formatValue: (T) -> String,
-    onDecrement: () -> Unit,
-    onIncrement: () -> Unit,
-    onClear: (() -> Unit)?
-) {
-    Item(title, isActive = isActive, onClear = onClear) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            IconButton(
-                onClick = onDecrement,
-                content = {
-                    Icon(Icons.Default.Remove, contentDescription = "Less")
-                }
-            )
-
-            Text(
-                text = formatValue(value),
-                modifier = Modifier.widthIn(min = 30.dp),
-                textAlign = TextAlign.Center
-            )
-
-            IconButton(
-                onClick = onIncrement,
-                content = {
-                    Icon(Icons.Default.Add, contentDescription = "More")
-                }
-            )
-        }
-    }
-}
-
-/**
- * Component for a boolean [Preference].
- */
-@Composable
-private fun SwitchItem(
-    title: String,
-    preference: Preference<Boolean>,
-    commit: () -> Unit
-) {
-    SwitchItem(
-        title = title,
-        value = preference.value ?: preference.effectiveValue,
-        isActive = preference.isEffective,
-        onCheckedChange = { preference.set(it); commit() },
-        onToggle = { preference.toggle(); commit() },
-        onClear = { preference.clear(); commit() }
-            .takeIf { preference.value != null },
-    )
-}
-
-/**
- * Switch
- */
-@Composable
-private fun SwitchItem(
-    title: String,
-    value: Boolean,
-    isActive: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    onToggle: () -> Unit,
-    onClear: (() -> Unit)?
-) {
-    Item(
-        title = title,
-        isActive = isActive,
-        onClick = onToggle,
-        onClear = onClear
-    ) {
-        Switch(
-            checked = value,
-            onCheckedChange = onCheckedChange
-        )
-    }
-}
-
-/**
- * Component for a [Preference<ReadiumColor>].
- */
-@Composable
-private fun ColorItem(
-    title: String,
-    preference: Preference<ReadiumColor>,
-    commit: () -> Unit
-) {
-    ColorItem(
-        title = title,
-        isActive = preference.isEffective,
-        value = preference.value ?: preference.effectiveValue,
-        noValueSelected = preference.value == null,
-        onColorChanged = { preference.set(it); commit() },
-        onClear = { preference.clear(); commit() }
-            .takeIf { preference.value != null }
-    )
-}
-
-/**
- * Color picker
- */
-@Composable
-private fun ColorItem(
-    title: String,
-    isActive: Boolean,
-    value: ReadiumColor,
-    noValueSelected: Boolean,
-    onColorChanged: (ReadiumColor?) -> Unit,
-    onClear: (() -> Unit)?
-) {
-    var isPicking by remember { mutableStateOf(false) }
-
-    Item(
-        title = title,
-        isActive = isActive,
-        onClick = { isPicking = true },
-        onClear = onClear
-    ) {
-        val color = Color(value.int)
-
-        OutlinedButton(
-            onClick = { isPicking = true },
-            colors = ButtonDefaults.buttonColors(backgroundColor = color)
-        ) {
-            if (noValueSelected) {
-                Icon(
-                    imageVector = Icons.Default.Palette,
-                    contentDescription = "Change color",
-                    tint = if (color.luminance() > 0.5) Color.Black else Color.White
-                )
-            }
-        }
-
-        if (isPicking) {
-            Dialog(
-                onDismissRequest = { isPicking = false }
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.End
-                ) {
-                    ColorPicker { color ->
-                        isPicking = false
-                        onColorChanged(ReadiumColor(color))
-                    }
-                    Button(
-                        onClick = {
-                            isPicking = false
-                            onColorChanged(null)
-                        }
-                    ) {
-                        Text("Clear")
-                    }
-                }
-            }
-        }
-    }
-}
-
-/**
- * Component for a [Preference<Language?>]`.
- */
-@Composable
-fun LanguageItem(
-    preference: Preference<Language?>,
-    commit: () -> Unit
-) {
-    val languages = remember {
-        Locale.getAvailableLocales()
-            .map { Language(it).removeRegion() }
-            .distinct()
-            .sortedBy { it.locale.displayName }
-    }
-
-    MenuItem(
-        title = "Language",
-        isActive = preference.isEffective,
-        value = preference.value ?: preference.effectiveValue,
-        values = languages,
-        formatValue = { it?.locale?.displayName ?: "Unknown" },
-        onClear = { preference.clear(); commit() }
-            .takeIf { preference.value != null },
-        onValueChanged = { value ->
-            preference.set(value)
-            commit()
-        }
-    )
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-private fun Item(
-    title: String,
-    isActive: Boolean = true,
-    onClick: (() -> Unit)? = null,
-    onClear: (() -> Unit)? = null,
-    content: @Composable () -> Unit
-) {
-    ListItem(
-        modifier =
-        if (onClick != null) Modifier.clickable(onClick = onClick)
-        else Modifier,
-        text = {
-            val alpha = if (isActive) 1.0f else ContentAlpha.disabled
-            CompositionLocalProvider(LocalContentAlpha provides alpha) {
-                Text(title)
-            }
-        },
-        trailing = {
-            Row {
-                content()
-
-                IconButton(onClick = onClear ?: {}, enabled = onClear != null) {
-                    Icon(
-                        Icons.Default.Backspace,
-                        contentDescription = "Clear"
-                    )
-                }
-            }
-        }
-    )
 }
 
 @Composable
