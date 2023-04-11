@@ -15,54 +15,56 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
-import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.fetcher.ArchiveFetcher
+import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
-import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.firstWithRel
-import org.readium.r2.shared.util.archive.DefaultArchiveFactory
-import org.readium.r2.shared.util.http.DefaultHttpClient
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.parseBlocking
 
 class ImageParserTest {
 
     private val parser = ImageParser()
 
-    private val cbzAsset = assetForResource("futuristic_tales.cbz")
-    private val cbzFetcher = fetcherForAsset(cbzAsset)
-
-    private val jpgAsset = assetForResource("futuristic_tales.jpg")
-    private val jpgFetcher = fetcherForAsset(jpgAsset)
-
-    private fun assetForResource(resource: String): PublicationAsset {
-        val path = ImageParserTest::class.java.getResource(resource)?.path
-        assertNotNull(path)
-        return FileAsset(File(path!!))
+    private val cbzAsset = runBlocking {
+        val path = pathForResource("futuristic_tales.cbz")
+        val file = File(path)
+        val fetcher = checkNotNull(ArchiveFetcher.fromPath(path))
+        FileAsset(file, MediaType.CBZ, fetcher)
     }
 
-    private fun fetcherForAsset(asset: PublicationAsset): Fetcher = runBlocking {
-        val dependencies = PublicationAsset.Dependencies(DefaultArchiveFactory(), DefaultHttpClient())
-        asset.createFetcher(dependencies, credentials = null).getOrThrow()
+    private val jpgAsset = run {
+        val path = pathForResource("futuristic_tales.jpg")
+        val file = File(path)
+        val fetcher = FileFetcher("/image.jpg", file)
+        FileAsset(file, MediaType.JPEG,fetcher)
+    }
+    private fun pathForResource(resource: String): String {
+        val path = ImageParserTest::class.java.getResource(resource)?.path
+        assertNotNull(path)
+        return path!!
     }
 
     @Test
     fun `CBZ is accepted`() {
-        assertNotNull(parser.parseBlocking(cbzAsset, cbzFetcher))
+        assertNotNull(parser.parseBlocking(cbzAsset))
     }
 
     @Test
     fun `JPG is accepted`() {
-        assertNotNull(parser.parseBlocking(jpgAsset, jpgFetcher))
+        assertNotNull(parser.parseBlocking(jpgAsset))
     }
 
     @Test
     fun `conformsTo contains the Divina profile`() {
-        assertEquals(setOf(Publication.Profile.DIVINA), parser.parseBlocking(cbzAsset, cbzFetcher)?.manifest?.metadata?.conformsTo)
+        val manifest = parser.parseBlocking(cbzAsset)?.manifest
+        assertEquals(setOf(Publication.Profile.DIVINA), manifest?.metadata?.conformsTo)
     }
 
     @Test
     fun `readingOrder is sorted alphabetically`() {
-        val builder = parser.parseBlocking(cbzAsset, cbzFetcher)
+        val builder = parser.parseBlocking(cbzAsset)
         assertNotNull(builder)
         val readingOrder = builder!!.manifest.readingOrder
             .map { it.href.removePrefix("/Cory Doctorow's Futuristic Tales of the Here and Now") }
@@ -72,7 +74,7 @@ class ImageParserTest {
 
     @Test
     fun `the cover is the first item in the readingOrder`() {
-        val builder = parser.parseBlocking(cbzAsset, cbzFetcher)
+        val builder = parser.parseBlocking(cbzAsset)
         assertNotNull(builder)
         with(builder!!.manifest.readingOrder) {
             assertEquals(
@@ -84,7 +86,7 @@ class ImageParserTest {
 
     @Test
     fun `title is based on archive's root directory when any`() {
-        val builder = parser.parseBlocking(cbzAsset, cbzFetcher)
+        val builder = parser.parseBlocking(cbzAsset)
         assertNotNull(builder)
         assertEquals("Cory Doctorow's Futuristic Tales of the Here and Now", builder!!.manifest.metadata.title)
     }
