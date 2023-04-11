@@ -442,7 +442,8 @@ class Publication(
         /**
          * Unsupported protocol
          */
-        class UnsupportedProtocol(cause: Throwable? = null): OpeningException(R.string.r2_shared_publication_opening_exception_unsupported_protocol, cause)
+        class UnsupportedProtocol(cause: Throwable? = null) :
+            OpeningException(R.string.r2_shared_publication_opening_exception_unsupported_protocol, cause)
 
         /**
          * The publication file was not found on the file system.

@@ -25,9 +25,9 @@ import org.readium.r2.shared.publication.services.search.StringSearchService
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.extensions.readAsXmlOrNull
+import org.readium.r2.streamer.parser.PublicationParser
 
 @Suppress("DEPRECATION")
 object EPUBConstant {

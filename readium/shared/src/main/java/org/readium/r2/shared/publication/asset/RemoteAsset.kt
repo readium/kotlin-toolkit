@@ -37,7 +37,7 @@ data class RemoteAsset(
             url: URL,
             mediaType: MediaType? = null,
             mediaTypeHint: String? = null
-        ) : Try<PublicationAsset, Publication.OpeningException> {
+        ): Try<PublicationAsset, Publication.OpeningException> {
             val actualMediaType = mediaType
                 ?: MediaType.ofBytes({ url.readBytes() }, mediaType = mediaTypeHint, fileExtension = url.extension)
                 ?: MediaType.BINARY
