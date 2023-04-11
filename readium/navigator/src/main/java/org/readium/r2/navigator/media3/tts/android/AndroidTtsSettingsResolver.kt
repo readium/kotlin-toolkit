@@ -6,7 +6,7 @@
 
 package org.readium.r2.navigator.media3.tts.android
 
-import androidx.compose.ui.text.intl.Locale
+import java.util.*
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.util.Language
@@ -21,7 +21,7 @@ internal class AndroidTtsSettingsResolver(
         val language = preferences.language
             ?: metadata.language
             ?: defaults.language
-            ?: Language(Locale.current.toLanguageTag())
+            ?: Language(Locale.getDefault())
 
         return AndroidTtsSettings(
             language = language,
