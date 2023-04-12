@@ -7,6 +7,7 @@
 package org.readium.r2.lcp
 
 import org.readium.r2.lcp.auth.LcpPassphraseAuthentication
+import org.readium.r2.lcp.service.LcpLicensedAsset
 import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
@@ -49,6 +50,10 @@ internal class LcpContentProtection(
                 lcpService.retrieveLicense(asset.file, authentication, allowUserInteraction, sender)
             is RemoteAsset ->
                 lcpService.retrieveLicense(asset.fetcher, asset.mediaType, authentication, allowUserInteraction, sender)
+            is LcpLicensedAsset ->
+                asset.license
+                    ?.let { Try.success(it) }
+                    ?: lcpService.retrieveLicense(asset.licenseFile, authentication, allowUserInteraction, sender)
             else ->
                 null
         }
@@ -75,6 +80,9 @@ internal class LcpContentProtection(
                 originalAsset.copy(fetcher = newFetcher)
             }
             is RemoteAsset -> {
+                originalAsset.copy(fetcher = newFetcher)
+            }
+            is LcpLicensedAsset -> {
                 originalAsset.copy(fetcher = newFetcher)
             }
             else -> throw IllegalStateException()

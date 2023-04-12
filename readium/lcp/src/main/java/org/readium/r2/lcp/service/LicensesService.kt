@@ -17,6 +17,7 @@ import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.LcpService
+import org.readium.r2.lcp.auth.LcpDumbAuthentication
 import org.readium.r2.lcp.license.License
 import org.readium.r2.lcp.license.LicenseValidation
 import org.readium.r2.lcp.license.container.LicenseContainer
@@ -51,24 +52,18 @@ internal class LicensesService(
 
     override suspend fun remoteAssetForLicense(license: File): Try<PublicationAsset, LcpException> {
         return try {
-            remoteAssetForLicense(license.readBytes())
+            Try.success(remoteAssetForLicenseThrowing(license))
         } catch (e: Exception) {
             Try.failure(LcpException.wrap(e))
         }
     }
 
-    override suspend fun remoteAssetForLicense(license: ByteArray): Try<PublicationAsset, LcpException> {
-        return try {
-            val asset = remoteAssetForLicenseThrowing(license)
-            Try.success(asset)
-        } catch (e: Exception) {
-            Try.failure(LcpException.wrap(e))
-        }
-    }
+    private suspend fun remoteAssetForLicenseThrowing(licenseFile: File): PublicationAsset {
+        // Update the license file to get a fresh publication URL.
+        val license = retrieveLicense(licenseFile, LcpDumbAuthentication(), false)
+            .getOrThrow()
 
-    private suspend fun remoteAssetForLicenseThrowing(license: ByteArray): PublicationAsset {
-        val licenseDoc = LicenseDocument(license)
-        // TODO: get an updated version of the license without asking passphrase
+        val licenseDoc = LicenseDocument(licenseFile.readBytes())
 
         val link = checkNotNull(licenseDoc.link(LicenseDocument.Rel.publication))
         val url = try {
@@ -76,9 +71,17 @@ internal class LicensesService(
         } catch (e: Exception) {
             throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.rawValue)
         }
-        return RemoteAsset.Factory(archiveFactory, httpClient)
+        val baseAsset = RemoteAsset.Factory(archiveFactory, httpClient)
             .createAsset(url, link.mediaType)
             .getOrThrow()
+
+        return LcpLicensedAsset(
+            baseAsset.name,
+            baseAsset.mediaType,
+            baseAsset.fetcher,
+            licenseFile,
+            license
+        )
     }
 
     override suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit): Try<LcpService.AcquiredPublication, LcpException> =
