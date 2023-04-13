@@ -61,9 +61,10 @@ internal class LicensesService(
     private suspend fun remoteAssetForLicenseThrowing(licenseFile: File): PublicationAsset {
         // Update the license file to get a fresh publication URL.
         val license = retrieveLicense(licenseFile, LcpDumbAuthentication(), false)
-            .getOrThrow()
+            .getOrNull()
 
-        val licenseDoc = LicenseDocument(licenseFile.readBytes())
+        val licenseDoc = license?.license
+            ?: LicenseDocument(licenseFile.readBytes())
 
         val link = checkNotNull(licenseDoc.link(LicenseDocument.Rel.publication))
         val url = try {

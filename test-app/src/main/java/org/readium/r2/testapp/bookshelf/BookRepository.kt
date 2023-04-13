@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 import org.joda.time.DateTime
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.shared.extensions.extension
+import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -47,8 +48,11 @@ class BookRepository(
     private val booksDao: BooksDao,
     private val storageDir: File,
     private val lcpService: Try<LcpService, Exception>,
-    private val streamer: Streamer
+    private val streamer: Streamer,
 ) {
+    private val coverDir: File =
+        File(storageDir, "covers/")
+            .apply { if (!exists()) mkdirs() }
 
     fun books(): LiveData<List<Book>> = booksDao.getAllBooks()
 
@@ -107,7 +111,8 @@ class BookRepository(
     private suspend fun insertBookIntoDatabase(
         href: String,
         mediaType: MediaType,
-        publication: Publication
+        publication: Publication,
+        cover: String
     ): Long {
         val book = Book(
             creation = DateTime().toDate().time,
@@ -116,7 +121,8 @@ class BookRepository(
             href = href,
             identifier = publication.metadata.identifier ?: "",
             type = mediaType.toString(),
-            progression = "{}"
+            progression = "{}",
+            cover = cover
         )
         return booksDao.insertBook(book)
     }
@@ -146,45 +152,24 @@ class BookRepository(
         ) : ImportException()
     }
 
-    suspend fun addBook(
+    suspend fun addContentBook(
         contentUri: Uri
     ): Try<Unit, ImportException> =
         contentUri.copyToTempFile(context, storageDir)
             .mapFailure { ImportException.IOException }
-            .map { addBook(it) }
+            .map { addLocalBook(it) }
 
-    suspend fun addBook(
+    suspend fun addRemoteBook(
         url: URL
     ): Try<Unit, ImportException> {
-        if (!url.protocol.startsWith("http")) {
-            return Try.failure(ImportException.UnsupportedProtocol(url.protocol))
-        }
-
         val bytes = { url.readBytes() }
         val mediaType = MediaType.ofBytes(bytes, fileExtension = url.extension)
             ?: MediaType.BINARY
 
-        streamer.open(url, mediaType, allowUserInteraction = false)
-            .onSuccess { publication ->
-                val id = insertBookIntoDatabase(
-                    url.toString(),
-                    mediaType,
-                    publication
-                )
-                if (id == -1L)
-                    return Try.failure(ImportException.ImportDatabaseFailed)
-
-                Try.success(Unit)
-            }
-            .onFailure {
-                Timber.e(it)
-                return Try.failure(ImportException.UnableToOpenPublication(it))
-            }
-
-        return Try.success(Unit)
+        return addBook(url, mediaType)
     }
 
-    suspend fun addBook(
+    suspend fun addLocalBook(
         tempFile: File,
         coverUrl: String? = null
     ): Try<Unit, ImportException> {
@@ -230,24 +215,39 @@ class BookRepository(
             return Try.failure(ImportException.IOException)
         }
 
-        streamer.open(libraryUrl, mediaType, allowUserInteraction = false)
-            .onSuccess { publication ->
-                val id = insertBookIntoDatabase(
-                    libraryUrl.toString(),
-                    mediaType,
-                    publication
-                )
-                if (id == -1L)
-                    return Try.failure(ImportException.ImportDatabaseFailed)
+        return addBook(
+            libraryUrl, mediaType, coverUrl
+        ).onFailure {
+            tryOrNull { libraryFile.delete() }
+        }
+    }
 
-                val cover: Bitmap? = coverUrl
+    private suspend fun addBook(
+        url: URL,
+        mediaType: MediaType,
+        coverUrl: String? = null,
+    ): Try<Unit, ImportException> {
+        streamer.open(url, mediaType, allowUserInteraction = false)
+            .onSuccess { publication ->
+                val coverBitmap: Bitmap? = coverUrl
                     ?.let { getBitmapFromURL(it) }
                     ?: publication.cover()
-                storeCoverImage(cover, id.toString())
-                Try.success(Unit)
+                val coverFile =
+                    tryOrNull { storeCover(coverBitmap) }
+                        ?: return Try.failure(ImportException.IOException)
+
+                val id = insertBookIntoDatabase(
+                    url.toString(),
+                    mediaType,
+                    publication,
+                    coverFile.path
+                )
+                if (id == -1L) {
+                    coverFile.delete()
+                    return Try.failure(ImportException.ImportDatabaseFailed)
+                }
             }
             .onFailure {
-                tryOrNull { libraryFile.delete() }
                 Timber.d(it)
                 return Try.failure(ImportException.UnableToOpenPublication(it))
             }
@@ -255,20 +255,15 @@ class BookRepository(
         return Try.success(Unit)
     }
 
-    private suspend fun storeCoverImage(cover: Bitmap?, imageName: String) =
+    private suspend fun storeCover(cover: Bitmap?): File =
         withContext(Dispatchers.IO) {
-            // TODO Figure out where to store these cover images
-            val coverImageDir = File(storageDir, "covers/")
-            if (!coverImageDir.exists()) {
-                coverImageDir.mkdirs()
-            }
-            val coverImageFile = File(storageDir, "covers/$imageName.png")
-
+            val coverImageFile = File(coverDir, "${UUID.randomUUID()}.png")
             val resized = cover?.let { Bitmap.createScaledBitmap(it, 120, 200, true) }
             val fos = FileOutputStream(coverImageFile)
             resized?.compress(Bitmap.CompressFormat.PNG, 80, fos)
             fos.flush()
             fos.close()
+            coverImageFile
         }
 
     private suspend fun getBitmapFromURL(src: String): Bitmap? =
@@ -287,8 +282,12 @@ class BookRepository(
         }
 
     suspend fun deleteBook(book: Book) {
-        book.id?.let { deleteBookFromDatabase(it) }
-        tryOrNull { File(book.href).delete() }
-        tryOrNull { File(storageDir, "covers/${book.id}.png").delete() }
+        val id = book.id!!
+        val url = URL(book.href)
+        if (url.protocol == "file") {
+            tryOrLog { File(url.path).delete() }
+        }
+        File(book.cover).delete()
+        deleteBookFromDatabase(id)
     }
 }

@@ -36,7 +36,6 @@ class BookshelfFragment : Fragment() {
     private val bookshelfViewModel: BookshelfViewModel by activityViewModels()
     private lateinit var bookshelfAdapter: BookshelfAdapter
     private lateinit var documentPickerLauncher: ActivityResultLauncher<String>
-    private lateinit var readerLauncher: ActivityResultLauncher<ReaderActivityContract.Arguments>
     private var binding: FragmentBookshelfBinding by viewLifecycle()
 
     override fun onCreateView(

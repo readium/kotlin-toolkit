@@ -54,7 +54,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
                     val file =
                         app.assets.open("Samples/$element").copyToTempFile(app.storageDir)
                     if (file != null)
-                        app.bookRepository.addBook(file)
+                        app.bookRepository.addLocalBook(file)
                     else if (BuildConfig.DEBUG)
                         error("Unable to load sample into the library")
                 }
@@ -71,18 +71,24 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     fun addPublicationFromUri(uri: Uri) =
         viewModelScope.launch {
             app.bookRepository
-                .addBook(uri)
+                .addContentBook(uri)
                 .exceptionOrNull()
                 .let { sendImportFeedback(it) }
         }
 
-    fun addRemotePublication(url: URL) =
+    fun addRemotePublication(url: URL) {
         viewModelScope.launch {
-            app.bookRepository
-                .addBook(url)
-                .exceptionOrNull()
-                .let { sendImportFeedback(it) }
+            val exception =
+                if (!url.protocol.startsWith("http")) {
+                    BookRepository.ImportException.UnsupportedProtocol(url.protocol)
+                } else {
+                    app.bookRepository
+                        .addRemoteBook(url)
+                        .exceptionOrNull()
+                }
+            sendImportFeedback(exception)
         }
+    }
 
     private fun sendImportFeedback(exception: BookRepository.ImportException?) {
         if (exception == null) {
