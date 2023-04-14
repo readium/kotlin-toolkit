@@ -24,5 +24,8 @@ interface PublicationAsset {
      */
     val mediaType: MediaType
 
+    /**
+     * [Fetcher] to provide access to the asset content.
+     */
     val fetcher: Fetcher
 }

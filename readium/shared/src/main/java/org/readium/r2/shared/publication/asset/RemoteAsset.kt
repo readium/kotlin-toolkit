@@ -19,6 +19,9 @@ import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.mediatype.MediaType
 
+/**
+ * A [PublicationAsset] built for a remote publication.
+ */
 data class RemoteAsset(
     val url: URL,
     override val mediaType: MediaType,

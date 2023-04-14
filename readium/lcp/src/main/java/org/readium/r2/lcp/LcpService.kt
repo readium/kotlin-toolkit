@@ -87,7 +87,8 @@ interface LcpService {
 
     /**
      * Opens the LCP license of a protected publication, to access its DRM metadata and decipher
-     * its content.
+     * its content. For security reasons, you'll get an exception if the license points to a
+     * a LSD server that cannot be reached, for instance because no Internet gateway is available.
      *
      * @param authentication Used to retrieve the user passphrase if it is not already known.
      *        The request will be cancelled if no passphrase is found in the LCP passphrase storage

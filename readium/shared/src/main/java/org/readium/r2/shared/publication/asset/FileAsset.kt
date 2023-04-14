@@ -19,6 +19,9 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.mediatype.MediaType
 
+/**
+ * A [PublicationAsset] built from a [File].
+ */
 data class FileAsset(
     val file: File,
     override val mediaType: MediaType,

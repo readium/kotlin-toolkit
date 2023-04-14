@@ -1,3 +1,9 @@
+/*
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.shared.publication.asset
 
 import java.io.File
@@ -10,6 +16,9 @@ import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.mediatype.MediaType
 
+/**
+ * A factory for various [PublicationAsset]s.
+ */
 class PublicationAssetFactory(
     val archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
     val httpClient: HttpClient = DefaultHttpClient()
@@ -18,6 +27,15 @@ class PublicationAssetFactory(
 
     private val remoteAssetFactory = RemoteAsset.Factory(archiveFactory, httpClient)
 
+    /**
+     * Creates an asset for a publication available at [url].
+     *
+     * Supported protocols are: file, http and https.
+     *
+     * @param url the url at which the publication is available
+     * @param mediaType the publication media type if known
+     * @param mediaTypeHint a hint to guess the media type of the publication.
+     */
     suspend fun createAsset(
         url: URL,
         mediaType: MediaType? = null,
