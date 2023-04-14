@@ -9,8 +9,6 @@
         <domain includeSubdomains="false">127.0.0.1</domain>
         <domain includeSubdomains="false">localhost</domain>
 
-        <domain includeSubdomains="false">192.168.1.148</domain>
-
         <!--
         Required with r2-lcp-kotlin
         The CRL is served from an HTTP server, so we need to explicitly allow clear-text traffic on

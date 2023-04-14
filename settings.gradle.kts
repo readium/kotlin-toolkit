@@ -36,13 +36,6 @@ dependencyResolutionManagement {
         maven(url = "https://jcenter.bintray.com")
         maven(url = "https://s3.amazonaws.com/repo.commonsware.com")
         maven(url = "https://customers.pspdfkit.com/maven")
-        ivy {
-            url = uri("https://liblcp.dita.digital")
-            patternLayout {
-                artifact("/[organisation]/[module]/android/aar/test/[revision].[ext]")
-            }
-            metadataSources { artifact() }
-        }
     }
 }
 
