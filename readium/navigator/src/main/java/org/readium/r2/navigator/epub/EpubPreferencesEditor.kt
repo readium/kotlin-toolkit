@@ -144,7 +144,10 @@ class EpubPreferencesEditor internal constructor(
     val hyphens: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.hyphens },
-            getEffectiveValue = { state.settings.hyphens ?: false },
+            getEffectiveValue = {
+                state.settings.hyphens
+                    ?: (state.settings.textAlign == TextAlign.JUSTIFY)
+            },
             getIsEffective = ::isHyphensEffective,
             updateValue = { value -> updateValues { it.copy(hyphens = value) } },
         )
@@ -471,7 +474,7 @@ class EpubPreferencesEditor internal constructor(
     private fun isHyphensEffective() = layout == EpubLayout.REFLOWABLE &&
         state.layout.stylesheets == Layout.Stylesheets.Default &&
         !state.settings.publisherStyles &&
-        preferences.hyphens != null
+        (preferences.hyphens != null || state.settings.textAlign == TextAlign.JUSTIFY)
 
     private fun isLetterSpacingEffective() = layout == EpubLayout.REFLOWABLE &&
         state.layout.stylesheets == Layout.Stylesheets.Default &&
