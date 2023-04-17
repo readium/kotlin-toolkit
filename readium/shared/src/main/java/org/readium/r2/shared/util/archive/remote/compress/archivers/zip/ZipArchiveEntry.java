@@ -26,7 +26,6 @@ package org.readium.r2.shared.util.archive.remote.compress.archivers.zip;
 import org.readium.r2.shared.util.archive.remote.compress.archivers.ArchiveEntry;
 import org.readium.r2.shared.util.archive.remote.compress.archivers.EntryStreamOffsets;
 import org.readium.r2.shared.util.archive.remote.compress.utils.ByteUtils;
-import org.readium.r2.shared.util.archive.remote.compress.utils.TimeUtils;
 
 import java.io.File;
 import java.nio.file.attribute.FileTime;
@@ -233,15 +232,6 @@ public class ZipArchiveEntry extends java.util.zip.ZipEntry implements ArchiveEn
     private static final int SHORT_MASK = 0xFFFF;
 
     private static final int SHORT_SHIFT = 16;
-
-    private static boolean canConvertToInfoZipExtendedTimestamp(
-            final FileTime lastModifiedTime,
-            final FileTime lastAccessTime,
-            final FileTime creationTime) {
-        return TimeUtils.isUnixTime(lastModifiedTime)
-                && TimeUtils.isUnixTime(lastAccessTime)
-                && TimeUtils.isUnixTime(creationTime);
-    }
 
     /**
      * The {@link java.util.zip.ZipEntry} base class only supports
@@ -465,11 +455,21 @@ public class ZipArchiveEntry extends java.util.zip.ZipEntry implements ArchiveEn
     }
 
     private ZipExtraField findMatching(final ZipShort headerId, final List<ZipExtraField> fs) {
-        return fs.stream().filter(f -> headerId.equals(f.getHeaderId())).findFirst().orElse(null);
+        for (ZipExtraField field: fs) {
+            if (headerId.equals(field.getHeaderId())) {
+                return field;
+            }
+        }
+        return null;
     }
 
     private ZipExtraField findUnparseable(final List<ZipExtraField> fs) {
-        return fs.stream().filter(UnparseableExtraFieldData.class::isInstance).findFirst().orElse(null);
+        for (ZipExtraField field: fs) {
+            if (field instanceof UnparseableExtraFieldData) {
+                return field;
+            }
+        }
+        return null;
     }
 
     /**
@@ -608,7 +608,7 @@ public class ZipArchiveEntry extends java.util.zip.ZipEntry implements ArchiveEn
             parsingBehavior)));
         final List<ZipExtraField> merged = new ArrayList<>();
         for (final ZipExtraField l : localFields) {
-            ZipExtraField c = null;
+            ZipExtraField c;
             if (l instanceof UnparseableExtraFieldData) {
                 c = findUnparseable(centralFields);
             } else {
@@ -796,17 +796,6 @@ public class ZipArchiveEntry extends java.util.zip.ZipEntry implements ArchiveEn
             (int) ((getExternalAttributes() >> SHORT_SHIFT) & SHORT_MASK);
     }
 
-    /**
-     * Looks up extra field data that couldn't be parsed correctly.
-     *
-     * @return null if no such field exists.
-     *
-     * @since 1.1
-     */
-    public UnparseableExtraFieldData getUnparseableExtraFieldData() {
-        return unparseableExtra;
-    }
-
     private ZipExtraField[] getUnparseableOnly() {
         return unparseableExtra == null ? ExtraFieldUtils.EMPTY_ZIP_EXTRA_FIELD_ARRAY : new ZipExtraField[] { unparseableExtra };
     }
@@ -959,19 +948,6 @@ public class ZipArchiveEntry extends java.util.zip.ZipEntry implements ArchiveEn
             throw new NoSuchElementException();
         }
         internalRemoveExtraField(type);
-        setExtra();
-    }
-
-    /**
-     * Removes unparseable extra field data.
-     *
-     * @since 1.1
-     */
-    public void removeUnparseableExtraFieldData() {
-        if (unparseableExtra == null) {
-            throw new NoSuchElementException();
-        }
-        unparseableExtra = null;
         setExtra();
     }
 

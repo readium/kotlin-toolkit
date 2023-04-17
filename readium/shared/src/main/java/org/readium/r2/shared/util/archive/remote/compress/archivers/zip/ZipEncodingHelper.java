@@ -90,6 +90,11 @@ public abstract class ZipEncodingHelper {
         if (UTF_8.name().equalsIgnoreCase(actual)) {
             return true;
         }
-        return UTF_8.aliases().stream().anyMatch(alias -> alias.equalsIgnoreCase(actual));
+        for (String alias: UTF_8.aliases()) {
+            if (alias.equalsIgnoreCase(actual)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
