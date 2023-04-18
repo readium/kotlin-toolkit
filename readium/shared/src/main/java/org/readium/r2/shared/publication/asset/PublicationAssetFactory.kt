@@ -43,7 +43,7 @@ class PublicationAssetFactory(
     ): Try<PublicationAsset, Publication.OpeningException> {
         return when (url.protocol) {
             "file" -> fileAssetFactory.createAsset(File(url.file), mediaType, mediaTypeHint)
-            "http" -> remoteAssetFactory.createAsset(url, mediaType, mediaTypeHint)
+            "http", "https" -> remoteAssetFactory.createAsset(url, mediaType, mediaTypeHint)
             else -> throw IllegalArgumentException("Protocol not supported.")
         }
     }

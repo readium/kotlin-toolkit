@@ -157,7 +157,7 @@ class BookRepository(
     ): Try<Unit, ImportException> =
         contentUri.copyToTempFile(context, storageDir)
             .mapFailure { ImportException.IOException }
-            .map { addLocalBook(it) }
+            .flatMap { addLocalBook(it) }
 
     suspend fun addRemoteBook(
         url: URL
