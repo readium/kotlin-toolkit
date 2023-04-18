@@ -38,15 +38,10 @@ data class FileAsset(
 
         suspend fun createAsset(
             file: File,
-            mediaType: MediaType? = null,
-            mediaTypeHint: String? = null
-        ): Try<PublicationAsset, Publication.OpeningException> {
-            val actualMediaType = mediaType
-                ?: MediaType.ofFile(file, mediaType = mediaTypeHint)
-                ?: MediaType.BINARY
-            return createFetcher(file, actualMediaType)
-                .map { fetcher -> FileAsset(file, actualMediaType, fetcher) }
-        }
+            mediaType: MediaType
+        ): Try<PublicationAsset, Publication.OpeningException> =
+            createFetcher(file, mediaType)
+                .map { fetcher -> FileAsset(file, mediaType, fetcher) }
 
         private suspend fun createFetcher(file: File, mediaType: MediaType): Try<Fetcher, Publication.OpeningException> {
             return try {

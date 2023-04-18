@@ -76,6 +76,15 @@ internal class LcpDecryptor(val license: LcpLicense?) {
 
         private lateinit var _length: ResourceTry<Long>
 
+        /*
+        * Decryption needs to look around the data strictly matching the content to decipher.
+        * That means that in case of contiguous read requests, data fetched from the underlying
+        * resource are not contiguous. Every request to the underlying resource starts slightly
+        * before the end of the previous one. This is an issue with remote publications because
+        * you have to make a new HTTP request every time instead of reusing the previous one.
+        * To alleviate this, we cache the three last bytes read in each call and reuse them
+        * in the next call if possible.
+        */
         private val _cache: Cache = Cache()
 
         override suspend fun link(): Link = resource.link()

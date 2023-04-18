@@ -8,7 +8,6 @@ package org.readium.r2.shared.publication.asset
 
 import java.net.URL
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.extensions.extension
 import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.HttpFetcher
@@ -38,21 +37,17 @@ data class RemoteAsset(
     ) {
         suspend fun createAsset(
             url: URL,
-            mediaType: MediaType? = null,
-            mediaTypeHint: String? = null
-        ): Try<PublicationAsset, Publication.OpeningException> {
-            val actualMediaType = mediaType
-                ?: MediaType.ofBytes({ url.readBytes() }, mediaType = mediaTypeHint, fileExtension = url.extension)
-                ?: MediaType.BINARY
-
-            return createFetcher(url, actualMediaType)
-                .map { fetcher -> RemoteAsset(url, actualMediaType, fetcher) }
-        }
+            mediaType: MediaType,
+        ): Try<PublicationAsset, Publication.OpeningException> =
+            createFetcher(url, mediaType)
+                .map { fetcher -> RemoteAsset(url, mediaType, fetcher) }
 
         private suspend fun createFetcher(url: URL, mediaType: MediaType): Try<Fetcher, Publication.OpeningException> {
             ArchiveFetcher.fromUrl(url, archiveFactory)
                 ?.let { return Try.success(it) }
 
+            // This enables support for both exploded containers (thanks to baseUrl) and
+            // single-file publications (thanks to links).
             val httpFetcher = HttpFetcher(
                 client = httpClient,
                 baseUrl = url.toString(),

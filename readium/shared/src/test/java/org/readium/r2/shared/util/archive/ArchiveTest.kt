@@ -19,7 +19,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import org.readium.r2.shared.util.archive.remote.RemoteZipArchiveFactory
+import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
 
 @RunWith(Parameterized::class)
 class ArchiveTest(val archive: Archive) {
@@ -33,7 +33,7 @@ class ArchiveTest(val archive: Archive) {
             assertNotNull(epubZip)
             val zipArchive = runBlocking { DefaultArchiveFactory().open(File(epubZip.path), password = null) }
             assertNotNull(zipArchive)
-            val apacheZipArchive = runBlocking { RemoteZipArchiveFactory().openFile(File(epubZip.path)) }
+            val apacheZipArchive = runBlocking { ChannelZipArchiveFactory().openFile(File(epubZip.path)) }
             assertNotNull(apacheZipArchive)
 
             val epubExploded = ArchiveTest::class.java.getResource("epub")

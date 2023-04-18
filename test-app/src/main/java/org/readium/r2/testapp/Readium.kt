@@ -14,7 +14,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.CompositeArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
-import org.readium.r2.shared.util.archive.remote.RemoteZipArchiveFactory
+import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.streamer.Streamer
 
@@ -44,7 +44,7 @@ class Readium(context: Context) {
         // Build a composite archive factory to enable remote zip reading.
         archiveFactory = CompositeArchiveFactory(
             primaryFactory = DefaultArchiveFactory(),
-            fallbackFactory = RemoteZipArchiveFactory(httpClient = DefaultHttpClient())
+            fallbackFactory = ChannelZipArchiveFactory(httpClient = DefaultHttpClient())
         )
     )
 }
