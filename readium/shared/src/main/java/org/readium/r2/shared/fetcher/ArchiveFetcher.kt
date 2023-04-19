@@ -10,7 +10,6 @@
 package org.readium.r2.shared.fetcher
 
 import java.io.File
-import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.addPrefix
@@ -19,6 +18,7 @@ import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
@@ -50,7 +50,7 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
                 tryOrNull { ArchiveFetcher(archiveFactory.open(File(path), password = null)) }
             }
 
-        suspend fun fromUrl(url: URL, archiveFactory: ArchiveFactory = DefaultArchiveFactory()): ArchiveFetcher? =
+        suspend fun fromUrl(url: Url, archiveFactory: ArchiveFactory = DefaultArchiveFactory()): ArchiveFetcher? =
             withContext(Dispatchers.IO) {
                 tryOrNull { ArchiveFetcher(archiveFactory.open(url, password = null)) }
             }

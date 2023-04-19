@@ -29,6 +29,15 @@ dependencies {
 }
 ```
 
+### Publication assets
+
+In most cases, you no longer need to manually create a `PublicationAsset` to open a publication with
+the streamer. You can use the overloaded open method taking a `Url` as argument instead.
+
+```kotlin
+streamer.open(file.toUrl(), ...)
+```
+
 ## 2.3.0
 
 ### `Decoration.extras`

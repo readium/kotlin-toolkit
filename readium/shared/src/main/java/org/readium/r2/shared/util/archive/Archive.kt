@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.Url
 
 interface ArchiveFactory {
 
@@ -23,7 +24,7 @@ interface ArchiveFactory {
     suspend fun open(file: File, password: String?): Archive
 
     /** Opens an archive from a local or remote [URL]. */
-    suspend fun open(url: URL, password: String?): Archive =
+    suspend fun open(url: Url, password: String?): Archive =
         if (url.protocol == "file") {
             open(File(url.path), password)
         } else {
@@ -58,7 +59,7 @@ class CompositeArchiveFactory(
             fallbackFactory.open(file, password)
         }
 
-    override suspend fun open(url: URL, password: String?): Archive =
+    override suspend fun open(url: Url, password: String?): Archive =
         try {
             primaryFactory.open(url, password)
         } catch (e: Exception) {

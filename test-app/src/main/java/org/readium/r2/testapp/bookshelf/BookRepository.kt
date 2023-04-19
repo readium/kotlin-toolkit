@@ -23,15 +23,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.joda.time.DateTime
 import org.readium.r2.lcp.LcpService
-import org.readium.r2.shared.extensions.extension
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.cover
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.util.*
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.Streamer
 import org.readium.r2.testapp.db.BooksDao
@@ -160,7 +158,7 @@ class BookRepository(
             .flatMap { addLocalBook(it) }
 
     suspend fun addRemoteBook(
-        url: URL
+        url: Url
     ): Try<Unit, ImportException> {
         val bytes = { url.readBytes() }
         val mediaType = MediaType.ofBytes(bytes, fileExtension = url.extension)
@@ -205,7 +203,7 @@ class BookRepository(
 
         val fileName = "${UUID.randomUUID()}.${mediaType.fileExtension}"
         val libraryFile = File(storageDir, fileName)
-        val libraryUrl = libraryFile.toURI().toURL()!!
+        val libraryUrl = libraryFile.toUrl()
 
         try {
             publicationFile.moveTo(libraryFile)
@@ -223,7 +221,7 @@ class BookRepository(
     }
 
     private suspend fun addBook(
-        url: URL,
+        url: Url,
         mediaType: MediaType,
         coverUrl: String? = null,
     ): Try<Unit, ImportException> {

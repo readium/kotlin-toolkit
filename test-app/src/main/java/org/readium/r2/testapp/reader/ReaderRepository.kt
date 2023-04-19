@@ -10,7 +10,6 @@ import android.app.Activity
 import android.app.Application
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences as JetpackPreferences
-import java.net.URL
 import org.json.JSONObject
 import org.readium.adapters.pdfium.navigator.PdfiumEngineProvider
 import org.readium.r2.navigator.epub.EpubNavigatorFactory
@@ -24,6 +23,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.protectionError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.reader.preferences.AndroidTtsPreferencesManagerFactory
@@ -75,7 +75,7 @@ class ReaderRepository(
             ?: throw Exception("Cannot find book in database.")
 
         val publication = readium.streamer.open(
-            URL(book.href), book.mediaType(),
+            Url(book.href)!!, book.mediaType(),
             allowUserInteraction = true, sender = activity
         )
             .getOrThrow()

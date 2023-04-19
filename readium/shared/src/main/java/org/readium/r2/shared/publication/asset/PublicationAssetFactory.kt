@@ -6,9 +6,9 @@
 
 package org.readium.r2.shared.publication.asset
 
-import java.net.URL
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -20,7 +20,7 @@ interface PublicationAssetFactory {
      * Creates a [PublicationAsset] for a publication with media type [mediaType] available at [url].
      */
     suspend fun createAsset(
-        url: URL,
+        url: Url,
         mediaType: MediaType
     ): Try<PublicationAsset, Publication.OpeningException>
 }

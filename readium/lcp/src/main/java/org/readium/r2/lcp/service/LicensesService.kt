@@ -28,6 +28,7 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.asset.RemoteAsset
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -68,7 +69,7 @@ internal class LicensesService(
 
         val link = checkNotNull(licenseDoc.link(LicenseDocument.Rel.publication))
         val url = try {
-            link.url
+            Url(link.url.toString()) ?: throw IllegalStateException()
         } catch (e: Exception) {
             throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.rawValue)
         }

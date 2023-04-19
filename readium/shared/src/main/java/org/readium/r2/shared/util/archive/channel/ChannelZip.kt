@@ -7,10 +7,10 @@
 package org.readium.r2.shared.util.archive.channel
 
 import java.io.File
-import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.readFully
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArchiveEntry
@@ -119,7 +119,7 @@ class ChannelZipArchiveFactory(
         throw Exception("RemoteZipArchiveFactory doesn't support files.")
     }
 
-    override suspend fun open(url: URL, password: String?): Archive = withContext(Dispatchers.IO) {
+    override suspend fun open(url: Url, password: String?): Archive = withContext(Dispatchers.IO) {
         val httpChannel = HttpChannel(url.toString(), httpClient)
         val channel = wrapBaseChannel(httpChannel)
         ChannelZip(ZipFile(channel, true))

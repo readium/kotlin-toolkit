@@ -12,12 +12,12 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.UserException
+import org.readium.r2.shared.util.Url
 import org.readium.r2.testapp.BuildConfig
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.domain.model.Book
@@ -76,7 +76,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
                 .let { sendImportFeedback(it) }
         }
 
-    fun addRemotePublication(url: URL) {
+    fun addRemotePublication(url: Url) {
         viewModelScope.launch {
             val exception =
                 if (!url.protocol.startsWith("http")) {

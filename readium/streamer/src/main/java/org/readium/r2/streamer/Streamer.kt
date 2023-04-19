@@ -10,7 +10,6 @@
 package org.readium.r2.streamer
 
 import android.content.Context
-import java.net.URL
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.ContentProtection
@@ -19,6 +18,7 @@ import org.readium.r2.shared.publication.asset.DefaultPublicationAssetFactory
 import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.asset.PublicationAssetFactory
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.shared.util.flatMap
@@ -106,7 +106,7 @@ class Streamer constructor(
      *   [Publication.OpeningException] in case of failure.
      */
     suspend fun open(
-        url: URL,
+        url: Url,
         mediaType: MediaType,
         credentials: String? = null,
         allowUserInteraction: Boolean,
