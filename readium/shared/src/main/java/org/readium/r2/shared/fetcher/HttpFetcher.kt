@@ -135,6 +135,19 @@ class HttpFetcher(
             }
 
             return client.stream(request)
+                .fold(
+                    { response ->
+                        if (response.response.statusCode == 206) {
+                            Try.success(response)
+                        } else {
+                            val exception = Exception("Server seems not to support range requests.")
+                            Try.failure(HttpException.wrap(exception))
+                        }
+                    },
+                    { exception ->
+                        Try.failure(exception)
+                    }
+                )
                 .map { CountingInputStream(it.body) }
                 .mapFailure { Resource.Exception.wrapHttp(it) }
                 .onSuccess {
