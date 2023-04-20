@@ -71,7 +71,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                 url.downloadTo(dest)
             }.flatMap {
                 val opdsCover = publication.images.firstOrNull()?.href
-                app.bookRepository.addBook(dest, opdsCover)
+                app.bookRepository.addLocalBook(dest, opdsCover)
             }.onSuccess {
                 detailChannel.send(Event.DetailEvent.ImportPublicationSuccess)
             }.onFailure {

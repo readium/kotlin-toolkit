@@ -7,15 +7,14 @@
 package org.readium.r2.shared.publication.asset
 
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /** Represents a digital medium (e.g. a file) offering access to a publication. */
 interface PublicationAsset {
 
-    /** Name of the asset, e.g. a filename. */
+    /**
+     * Name of the asset, e.g. a filename.
+     */
     val name: String
 
     /**
@@ -23,12 +22,10 @@ interface PublicationAsset {
      *
      * If unknown, fallback on `MediaType.BINARY`.
      */
-    suspend fun mediaType(): MediaType
+    val mediaType: MediaType
 
     /**
-     * Creates a fetcher used to access the asset's content.
+     * [Fetcher] to provide access to the asset content.
      */
-    suspend fun createFetcher(dependencies: Dependencies, credentials: String?): Try<Fetcher, Publication.OpeningException>
-
-    data class Dependencies(val archiveFactory: ArchiveFactory)
+    val fetcher: Fetcher
 }

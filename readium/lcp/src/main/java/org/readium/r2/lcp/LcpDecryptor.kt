@@ -69,7 +69,23 @@ internal class LcpDecryptor(val license: LcpLicense?) {
         private val license: LcpLicense
     ) : Resource {
 
-        lateinit var _length: ResourceTry<Long>
+        private class Cache(
+            var startIndex: Int? = null,
+            val data: ByteArray = ByteArray(3 * AES_BLOCK_SIZE)
+        )
+
+        private lateinit var _length: ResourceTry<Long>
+
+        /*
+        * Decryption needs to look around the data strictly matching the content to decipher.
+        * That means that in case of contiguous read requests, data fetched from the underlying
+        * resource are not contiguous. Every request to the underlying resource starts slightly
+        * before the end of the previous one. This is an issue with remote publications because
+        * you have to make a new HTTP request every time instead of reusing the previous one.
+        * To alleviate this, we cache the three last bytes read in each call and reuse them
+        * in the next call if possible.
+        */
+        private val _cache: Cache = Cache()
 
         override suspend fun link(): Link = resource.link()
 
@@ -78,7 +94,15 @@ internal class LcpDecryptor(val license: LcpLicense?) {
             if (::_length.isInitialized)
                 return _length
 
-            _length = resource.length().flatMapCatching { length ->
+            _length = resource.link().properties.encryption?.originalLength
+                ?.let { Try.success(it) }
+                ?: lengthFromPadding()
+
+            return _length
+        }
+
+        private suspend fun lengthFromPadding(): ResourceTry<Long> =
+            resource.length().flatMapCatching { length ->
                 if (length < 2 * AES_BLOCK_SIZE) {
                     throw Exception("Invalid CBC-encrypted stream")
                 }
@@ -96,9 +120,6 @@ internal class LcpDecryptor(val license: LcpLicense?) {
                     }
             }
 
-            return _length
-        }
-
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
             if (range == null)
                 return license.decryptFully(resource.read(), isDeflated = false)
@@ -112,13 +133,19 @@ internal class LcpDecryptor(val license: LcpLicense?) {
                 return Try.success(ByteArray(0))
 
             return resource.length().flatMapCatching { encryptedLength ->
-
                 // encrypted data is shifted by AES_BLOCK_SIZE because of IV and
                 // the previous block must be provided to perform XOR on intermediate blocks
                 val encryptedStart = range.first.floorMultipleOf(AES_BLOCK_SIZE.toLong())
                 val encryptedEndExclusive = (range.last + 1).ceilMultipleOf(AES_BLOCK_SIZE.toLong()) + AES_BLOCK_SIZE
 
-                resource.read(encryptedStart until encryptedEndExclusive).mapCatching { encryptedData ->
+                getEncryptedData(encryptedStart until encryptedEndExclusive).mapCatching { encryptedData ->
+                    if (encryptedData.size >= _cache.data.size) {
+                        // cache the three last encrypted blocks that have been read for future use
+                        val cacheStart = encryptedData.size - _cache.data.size
+                        _cache.startIndex = (encryptedEndExclusive - _cache.data.size).toInt()
+                        encryptedData.copyInto(_cache.data, 0, cacheStart)
+                    }
+
                     val bytes = license.decrypt(encryptedData)
                         .getOrElse { throw IOException("Can't decrypt the content at: ${link().href}", it) }
 
@@ -141,6 +168,22 @@ internal class LcpDecryptor(val license: LcpLicense?) {
 
                     bytes.sliceArray(sliceStart until sliceEnd)
                 }
+            }
+        }
+
+        private suspend fun getEncryptedData(range: LongRange): ResourceTry<ByteArray> {
+            val cacheStartIndex = _cache.startIndex
+                ?.takeIf { cacheStart ->
+                    val cacheEnd = cacheStart + _cache.data.size
+                    cacheStart <= range.first && cacheEnd <= range.last + 1
+                } ?: return resource.read(range)
+
+            return resource.read(range.first + _cache.data.size..range.last).map {
+                val bytes = ByteArray(range.last.toInt() - range.first.toInt() + 1)
+                val offsetInCache = (range.first - cacheStartIndex).toInt()
+                _cache.data.copyInto(bytes, 0, offsetInCache)
+                it.copyInto(bytes, _cache.data.size)
+                bytes
             }
         }
 

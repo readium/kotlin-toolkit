@@ -11,7 +11,6 @@ package org.readium.r2.lcp.license
 
 import java.util.*
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.LcpAuthenticating
@@ -61,7 +60,11 @@ internal sealed class State {
     data class fetchStatus(val license: LicenseDocument) : State()
     data class validateStatus(val license: LicenseDocument, val data: ByteArray) : State()
     data class fetchLicense(val license: LicenseDocument, val status: StatusDocument) : State()
-    data class checkLicenseStatus(val license: LicenseDocument, val status: StatusDocument?) : State()
+    data class checkLicenseStatus(
+        val license: LicenseDocument,
+        val status: StatusDocument?,
+        val statusDocumentTakesPrecedence: Boolean
+    ) : State()
     data class retrievePassphrase(val license: LicenseDocument, val status: StatusDocument?) : State()
     data class validateIntegrity(
         val license: LicenseDocument,
@@ -87,10 +90,14 @@ internal sealed class Event {
     object cancelled : Event()
 }
 
-@OptIn(ExperimentalTime::class)
+/**
+ * If [ignoreInternetErrors] is true, then the validation won't fail on [LcpException.Network] errors.
+ * This should be the case with writable licenses (such as local ones) but not with read-only licences.
+ */
 internal class LicenseValidation(
     var authentication: LcpAuthenticating?,
     val allowUserInteraction: Boolean,
+    val ignoreInternetErrors: Boolean,
     val sender: Any?,
     val crl: CRLService,
     val device: DeviceService,
@@ -142,7 +149,7 @@ internal class LicenseValidation(
             on<Event.validatedLicense> {
                 status?.let { status ->
                     if (DEBUG) Timber.d("State.checkLicenseStatus(it.license, status)")
-                    transitionTo(State.checkLicenseStatus(it.license, status))
+                    transitionTo(State.checkLicenseStatus(it.license, status, false))
                 } ?: run {
                     if (DEBUG) Timber.d("State.fetchStatus(it.license)")
                     transitionTo(State.fetchStatus(it.license))
@@ -159,8 +166,13 @@ internal class LicenseValidation(
                 transitionTo(State.validateStatus(license, it.data))
             }
             on<Event.failed> {
-                if (DEBUG) Timber.d("State.checkLicenseStatus(license, null)")
-                transitionTo(State.checkLicenseStatus(license, null))
+                if (!ignoreInternetErrors && it.error is LcpException.Network) {
+                    if (DEBUG) Timber.d("State.failure(it.error)")
+                    transitionTo(State.failure(it.error))
+                } else {
+                    if (DEBUG) Timber.d("State.checkLicenseStatus(license, null)")
+                    transitionTo(State.checkLicenseStatus(license, null, false))
+                }
             }
         }
         state<State.validateStatus> {
@@ -170,12 +182,12 @@ internal class LicenseValidation(
                     transitionTo(State.fetchLicense(license, it.status))
                 } else {
                     if (DEBUG) Timber.d("State.checkLicenseStatus(license, it.status)")
-                    transitionTo(State.checkLicenseStatus(license, it.status))
+                    transitionTo(State.checkLicenseStatus(license, it.status, false))
                 }
             }
             on<Event.failed> {
                 if (DEBUG) Timber.d("State.checkLicenseStatus(license, null)")
-                transitionTo(State.checkLicenseStatus(license, null))
+                transitionTo(State.checkLicenseStatus(license, null, false))
             }
         }
         state<State.fetchLicense> {
@@ -185,7 +197,7 @@ internal class LicenseValidation(
             }
             on<Event.failed> {
                 if (DEBUG) Timber.d("State.checkLicenseStatus(license, status)")
-                transitionTo(State.checkLicenseStatus(license, status))
+                transitionTo(State.checkLicenseStatus(license, status, true))
             }
         }
         state<State.checkLicenseStatus> {
@@ -280,7 +292,7 @@ internal class LicenseValidation(
                     is State.fetchStatus -> fetchStatus(state.license)
                     is State.validateStatus -> validateStatus(state.data)
                     is State.fetchLicense -> fetchLicense(state.status)
-                    is State.checkLicenseStatus -> checkLicenseStatus(state.license, state.status)
+                    is State.checkLicenseStatus -> checkLicenseStatus(state.license, state.status, state.statusDocumentTakesPrecedence)
                     is State.retrievePassphrase -> requestPassphrase(state.license)
                     is State.validateIntegrity -> validateIntegrity(state.license, state.passphrase)
                     is State.registerDevice -> registerDevice(state.documents.license, state.link)
@@ -321,8 +333,9 @@ internal class LicenseValidation(
 
     private suspend fun fetchStatus(license: LicenseDocument) {
         val url = license.url(LicenseDocument.Rel.status, preferredType = MediaType.LCP_STATUS_DOCUMENT).toString()
-        // Short timeout to avoid blocking the License, since the LSD is optional.
-        val data = network.fetch(url, timeout = 5.seconds, headers = mapOf("Accept" to MediaType.LCP_STATUS_DOCUMENT.toString()))
+        // Short timeout to avoid blocking the License, when the LSD is optional.
+        val timeout = 5.seconds.takeIf { ignoreInternetErrors }
+        val data = network.fetch(url, timeout = timeout, headers = mapOf("Accept" to MediaType.LCP_STATUS_DOCUMENT.toString()))
             .getOrElse { throw LcpException.Network(it) }
 
         raise(Event.retrievedStatusData(data))
@@ -342,12 +355,22 @@ internal class LicenseValidation(
         raise(Event.retrievedLicenseData(data))
     }
 
-    private fun checkLicenseStatus(license: LicenseDocument, status: StatusDocument?) {
+    private fun checkLicenseStatus(
+        license: LicenseDocument,
+        status: StatusDocument?,
+        statusDocumentTakesPrecedence: Boolean
+    ) {
         var error: LcpException.LicenseStatus? = null
         val now = Date()
         val start = license.rights.start ?: now
         val end = license.rights.end ?: now
-        if (start > now || now > end) {
+        val isLicenseExpired = (start > now || now > end)
+        val isStatusValid = status?.status in listOf(null, StatusDocument.Status.active, StatusDocument.Status.ready)
+
+        // We only check the Status Document's status if the License itself is expired, to get a proper status error message.
+        // But in the case where the Status Document takes precedence (eg. after a failed License update),
+        // then we also check the status validity.
+        if (isLicenseExpired || statusDocumentTakesPrecedence && !isStatusValid) {
             error = if (status != null) {
                 val date = status.statusUpdated
                 when (status.status) {

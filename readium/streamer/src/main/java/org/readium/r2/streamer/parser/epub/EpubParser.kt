@@ -8,8 +8,6 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import java.io.File
-import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.Search
@@ -19,7 +17,6 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.asset.FileAsset
 import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.services.content.DefaultContentService
@@ -28,15 +25,9 @@ import org.readium.r2.shared.publication.services.search.StringSearchService
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.use
-import org.readium.r2.streamer.PublicationParser
 import org.readium.r2.streamer.container.Container
-import org.readium.r2.streamer.container.ContainerError
-import org.readium.r2.streamer.container.PublicationContainer
-import org.readium.r2.streamer.extensions.fromArchiveOrDirectory
 import org.readium.r2.streamer.extensions.readAsXmlOrNull
-import org.readium.r2.streamer.fetcher.LcpDecryptor
-import org.readium.r2.streamer.parser.PubBox
+import org.readium.r2.streamer.parser.PublicationParser
 
 @Suppress("DEPRECATION")
 object EPUBConstant {
@@ -85,34 +76,30 @@ object EPUBConstant {
  * @param reflowablePositionsStrategy Strategy used to calculate the number of positions in a
  *        reflowable resource.
  */
+@OptIn(ExperimentalReadiumApi::class, Search::class)
 class EpubParser(
     private val reflowablePositionsStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.recommended
-) : PublicationParser, org.readium.r2.streamer.parser.PublicationParser {
+) : PublicationParser {
 
-    override suspend fun parse(asset: PublicationAsset, fetcher: Fetcher, warnings: WarningLogger?): Publication.Builder? =
-        _parse(asset, fetcher, asset.name)
-
-    @OptIn(Search::class, ExperimentalReadiumApi::class)
-    suspend fun _parse(asset: PublicationAsset, fetcher: Fetcher, fallbackTitle: String): Publication.Builder? {
-
-        if (asset.mediaType() != MediaType.EPUB)
+    override suspend fun parse(asset: PublicationAsset, warnings: WarningLogger?): Publication.Builder? {
+        if (asset.mediaType != MediaType.EPUB)
             return null
 
-        val opfPath = getRootFilePath(fetcher).addPrefix("/")
-        val opfXmlDocument = fetcher.get(opfPath).readAsXml().getOrThrow()
+        val opfPath = getRootFilePath(asset.fetcher).addPrefix("/")
+        val opfXmlDocument = asset.fetcher.get(opfPath).readAsXml().getOrThrow()
         val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath)
             ?: throw Exception("Invalid OPF file.")
 
         val manifest = ManifestAdapter(
-            fallbackTitle = fallbackTitle,
+            fallbackTitle = asset.name,
             packageDocument = packageDocument,
-            navigationData = parseNavigationData(packageDocument, fetcher),
-            encryptionData = parseEncryptionData(fetcher),
-            displayOptions = parseDisplayOptions(fetcher)
+            navigationData = parseNavigationData(packageDocument, asset.fetcher),
+            encryptionData = parseEncryptionData(asset.fetcher),
+            displayOptions = parseDisplayOptions(asset.fetcher)
         ).adapt()
 
         @Suppress("NAME_SHADOWING")
-        var fetcher = fetcher
+        var fetcher = asset.fetcher
         manifest.metadata.identifier?.let {
             fetcher = TransformingFetcher(fetcher, EpubDeobfuscator(it)::transform)
         }
@@ -130,50 +117,6 @@ class EpubParser(
                 ),
             )
         )
-    }
-
-    override fun parse(
-        fileAtPath: String,
-        fallbackTitle: String
-    ): PubBox? = runBlocking {
-
-        val file = File(fileAtPath)
-        val asset = FileAsset(file)
-
-        var fetcher = Fetcher.fromArchiveOrDirectory(fileAtPath)
-            ?: throw ContainerError.missingFile(fileAtPath)
-
-        val drm = if (fetcher.isProtectedWithLcp()) DRM(DRM.Brand.lcp) else null
-        if (drm?.brand == DRM.Brand.lcp) {
-            fetcher = TransformingFetcher(fetcher, LcpDecryptor(drm)::transform)
-        }
-
-        val builder = try {
-            _parse(asset, fetcher, fallbackTitle)
-        } catch (e: Exception) {
-            return@runBlocking null
-        } ?: return@runBlocking null
-
-        val publication = builder.build()
-            .apply {
-                @Suppress("DEPRECATION")
-                type = Publication.TYPE.EPUB
-
-                // This might need to be moved as it's not really about parsing the EPUB but it
-                // sets values needed (in UserSettings & ContentFilter)
-                setLayoutStyle()
-            }
-
-        val container = PublicationContainer(
-            publication = publication,
-            path = file.canonicalPath,
-            mediaType = MediaType.EPUB,
-            drm = drm
-        ).apply {
-            rootFile.rootFilePath = getRootFilePath(fetcher)
-        }
-
-        PubBox(publication, container)
     }
 
     private suspend fun getRootFilePath(fetcher: Fetcher): String =
@@ -254,6 +197,3 @@ internal fun Publication.setLayoutStyle() {
         ReadiumCssLayout.CJK_HORIZONTAL -> EPUBConstant.cjkHorizontalPreset
     }
 }
-
-private suspend fun Fetcher.isProtectedWithLcp(): Boolean =
-    get("/META-INF/license.lcpl").use { it.length().isSuccess }

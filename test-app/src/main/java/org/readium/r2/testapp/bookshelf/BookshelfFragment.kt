@@ -9,7 +9,6 @@ package org.readium.r2.testapp.bookshelf
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,6 +22,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import org.readium.r2.shared.util.Url
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.FragmentBookshelfBinding
 import org.readium.r2.testapp.domain.model.Book
@@ -102,17 +102,15 @@ class BookshelfFragment : Fragment() {
                             .setPositiveButton(getString(R.string.ok), null)
                             .show()
                         urlDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                            if (TextUtils.isEmpty(urlEditText.text)) {
+                            val url = Url(urlEditText.text.toString())
+                            if (url == null || !URLUtil.isValidUrl(urlEditText.text.toString())) {
                                 urlEditText.error = getString(R.string.invalid_url)
-                            } else if (!URLUtil.isValidUrl(urlEditText.text.toString())) {
-                                urlEditText.error = getString(R.string.invalid_url)
-                            } else {
-                                val url = urlEditText.text.toString()
-                                val uri = Uri.parse(url)
-                                binding.bookshelfProgressBar.visibility = View.VISIBLE
-                                bookshelfViewModel.addPublicationFromUri(uri)
-                                urlDialog.dismiss()
+                                return@setOnClickListener
                             }
+
+                            binding.bookshelfProgressBar.visibility = View.VISIBLE
+                            bookshelfViewModel.addRemotePublication(url)
+                            urlDialog.dismiss()
                         }
                     }
                 }

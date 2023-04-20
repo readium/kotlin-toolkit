@@ -23,8 +23,15 @@ import org.readium.r2.lcp.service.LicensesService
 import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.PassphrasesRepository
 import org.readium.r2.lcp.service.PassphrasesService
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.ContentProtection
+import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.archive.DefaultArchiveFactory
+import org.readium.r2.shared.util.http.DefaultHttpClient
+import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Service used to acquire and open publications protected with LCP.
@@ -76,7 +83,28 @@ interface LcpService {
         authentication: LcpAuthenticating = LcpDialogAuthentication(),
         allowUserInteraction: Boolean,
         sender: Any? = null
-    ): Try<LcpLicense, LcpException>?
+    ): Try<LcpLicense, LcpException>
+
+    /**
+     * Opens the LCP license of a protected publication, to access its DRM metadata and decipher
+     * its content. As the updated license cannot be stored through a [Fetcher],
+     * you'll get an exception if the license points to a LSD server that cannot be reached,
+     * for instance because no Internet gateway is available.
+     *
+     * @param authentication Used to retrieve the user passphrase if it is not already known.
+     *        The request will be cancelled if no passphrase is found in the LCP passphrase storage
+     *        and the provided [authentication].
+     * @param allowUserInteraction Indicates whether the user can be prompted for their passphrase.
+     * @param sender Free object that can be used by reading apps to give some UX context when
+     *        presenting dialogs with [LcpAuthenticating].
+     */
+    suspend fun retrieveLicense(
+        fetcher: Fetcher,
+        mediaType: MediaType,
+        authentication: LcpAuthenticating = LcpDialogAuthentication(),
+        allowUserInteraction: Boolean,
+        sender: Any? = null
+    ): Try<LcpLicense, LcpException>
 
     /**
      * Creates a [ContentProtection] instance which can be used with a Streamer to unlock
@@ -88,6 +116,11 @@ interface LcpService {
      */
     fun contentProtection(authentication: LcpAuthenticating = LcpDialogAuthentication()): ContentProtection =
         LcpContentProtection(this, authentication)
+
+    /**
+     * Builds a [PublicationAsset] to open a LCP-protected publication from its license file.
+     */
+    suspend fun remoteAssetForLicense(license: File): Try<PublicationAsset, LcpException>
 
     /**
      * Information about an acquired publication protected with LCP.
@@ -110,7 +143,11 @@ interface LcpService {
         /**
          * LCP service factory.
          */
-        operator fun invoke(context: Context): LcpService? {
+        operator fun invoke(
+            context: Context,
+            archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
+            httpClient: HttpClient = DefaultHttpClient()
+        ): LcpService? {
             if (!LcpClient.isAvailable())
                 return null
 
@@ -122,7 +159,16 @@ interface LcpService {
             val device = DeviceService(repository = deviceRepository, network = network, context = context)
             val crl = CRLService(network = network, context = context)
             val passphrases = PassphrasesService(repository = passphraseRepository)
-            return LicensesService(licenses = licenseRepository, crl = crl, device = device, network = network, passphrases = passphrases, context = context)
+            return LicensesService(
+                licenses = licenseRepository,
+                crl = crl,
+                device = device,
+                network = network,
+                passphrases = passphrases,
+                context = context,
+                archiveFactory = archiveFactory,
+                httpClient = httpClient
+            )
         }
 
         @Deprecated("Use `LcpService()` instead", ReplaceWith("LcpService(context)"), level = DeprecationLevel.ERROR)
@@ -151,7 +197,13 @@ interface LcpService {
         completion: (LcpLicense?, LcpException?) -> Unit
     ) {
         GlobalScope.launch {
-            val result = retrieveLicense(File(publication), authentication ?: LcpDialogAuthentication(), allowUserInteraction = true)
+            val result =
+                try {
+                    retrieveLicense(File(publication), authentication ?: LcpDialogAuthentication(), allowUserInteraction = true)
+                } catch (e: CancellationException) {
+                    null
+                }
+
             if (result == null) {
                 completion(null, null)
             } else {

@@ -14,15 +14,20 @@ import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.asset.DefaultPublicationAssetFactory
 import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.shared.publication.asset.PublicationAssetFactory
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
+import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.streamer.parser.FallbackContentProtection
+import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioParser
 import org.readium.r2.streamer.parser.epub.EpubParser
 import org.readium.r2.streamer.parser.epub.setLayoutStyle
@@ -43,9 +48,13 @@ internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningE
  * @param context Application context.
  * @param parsers Parsers used to open a publication, in addition to the default parsers.
  * @param ignoreDefaultParsers When true, only parsers provided in parsers will be used.
- * @param archiveFactory Opens an archive (e.g. ZIP, RAR), optionally protected by credentials.
+ * @param archiveFactory Opens an archive (e.g. ZIP, RAR), optionally protected by credentials. If
+ *  you use the default [PublicationAssetFactory], your [ArchiveFactory] must support the protocols
+ *  you want to open archive publications through.
  * @param pdfFactory Parses a PDF document, optionally protected by password.
  * @param httpClient Service performing HTTP requests.
+ * @param publicationAssetFactory Builds publication assets through various protocols. The default one
+ *  supports protocols file, http and https.
  * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
  *   the [Manifest], the root [Fetcher] or the list of service factories of a [Publication].
  */
@@ -58,12 +67,56 @@ class Streamer constructor(
     private val archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
     private val pdfFactory: PdfDocumentFactory<*>? = null,
     private val httpClient: DefaultHttpClient = DefaultHttpClient(),
+    private val publicationAssetFactory: PublicationAssetFactory =
+        DefaultPublicationAssetFactory(archiveFactory, httpClient),
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
-    private val context = context.applicationContext
 
     private val contentProtections: List<ContentProtection> =
         contentProtections + listOf(FallbackContentProtection())
+
+    /**
+     * Parses a [Publication] available at [url].
+     *
+     * If you are opening the publication to render it in a Navigator, you must set [allowUserInteraction]
+     * to true to prompt the user for its credentials when the publication is protected. However,
+     * set it to false if you just want to import the [Publication] without reading its content, to
+     * avoid prompting the user.
+     *
+     * When using Content Protections, you can use [sender] to provide a free object which can be
+     * used to give some context. For example, it could be the source Activity or Fragment which
+     * would be used to present a credentials dialog.
+     *
+     * The [warnings] logger can be used to observe non-fatal parsing warnings, caused by
+     * publication authoring mistakes. This can be useful to warn users of potential rendering
+     * issues.
+     *
+     * @param url Publication url. Supported protocols depend on your [PublicationAssetFactory].
+     * @param credentials Credentials that Content Protections can use to attempt to unlock a
+     *   publication, for example a password.
+     * @param allowUserInteraction Indicates whether the user can be prompted, for example for its
+     *   credentials.
+     * @param sender Free object that can be used by reading apps to give some UX context when
+     *   presenting dialogs.
+     * @param onCreatePublication Transformation which will be applied on the Publication Builder.
+     *   It can be used to modify the [Manifest], the root [Fetcher] or the list of service
+     *   factories of the [Publication].
+     * @param warnings Logger used to broadcast non-fatal parsing warnings.
+     * @return Null if the asset was not recognized by any parser, or a
+     *   [Publication.OpeningException] in case of failure.
+     */
+    suspend fun open(
+        url: Url,
+        mediaType: MediaType,
+        credentials: String? = null,
+        allowUserInteraction: Boolean,
+        sender: Any? = null,
+        onCreatePublication: Publication.Builder.() -> Unit = {},
+        warnings: WarningLogger? = null
+    ): PublicationTry<Publication> =
+        publicationAssetFactory
+            .createAsset(url, mediaType)
+            .flatMap { asset -> open(asset, credentials, allowUserInteraction, sender, onCreatePublication, warnings) }
 
     /**
      * Parses a [Publication] from the given asset.
@@ -104,26 +157,18 @@ class Streamer constructor(
         warnings: WarningLogger? = null
     ): PublicationTry<Publication> = try {
 
-        @Suppress("NAME_SHADOWING")
-        var asset = asset
-        var fetcher = asset.createFetcher(PublicationAsset.Dependencies(archiveFactory = archiveFactory), credentials = credentials)
-            .getOrThrow()
-
         val protectedAsset = contentProtections
             .lazyMapFirstNotNullOrNull {
-                it.open(asset, fetcher, credentials, allowUserInteraction, sender)
+                it.open(asset, credentials, allowUserInteraction, sender)
             }
             ?.getOrThrow()
 
-        if (protectedAsset != null) {
-            asset = protectedAsset.asset
-            fetcher = protectedAsset.fetcher
-        }
+        val newAsset = protectedAsset?.asset ?: asset
 
         val builder = parsers
             .lazyMapFirstNotNullOrNull {
                 try {
-                    it.parse(asset, fetcher, warnings)
+                    it.parse(newAsset, warnings)
                 } catch (e: Exception) {
                     throw Publication.OpeningException.ParsingFailed(e)
                 }
@@ -137,7 +182,7 @@ class Streamer constructor(
         builder.apply(onCreatePublication)
 
         val publication = builder.build()
-            .apply { addLegacyProperties(asset.mediaType()) }
+            .apply { addLegacyProperties(asset.mediaType) }
 
         Try.success(publication)
     } catch (e: Publication.OpeningException) {
@@ -148,7 +193,7 @@ class Streamer constructor(
         listOfNotNull(
             EpubParser(),
             pdfFactory?.let { PdfParser(context, it) },
-            ReadiumWebPubParser(context, pdfFactory, httpClient),
+            ReadiumWebPubParser(context, pdfFactory),
             ImageParser(),
             AudioParser()
         )

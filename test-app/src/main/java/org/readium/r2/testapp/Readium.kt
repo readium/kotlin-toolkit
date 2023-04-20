@@ -12,6 +12,10 @@ import org.readium.r2.lcp.LcpService
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.archive.CompositeArchiveFactory
+import org.readium.r2.shared.util.archive.DefaultArchiveFactory
+import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
+import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.streamer.Streamer
 
 /**
@@ -36,7 +40,12 @@ class Readium(context: Context) {
             lcpService.getOrNull()?.contentProtection()
         ),
         // Only required if you want to support PDF files using the PDFium adapter.
-        pdfFactory = PdfiumDocumentFactory(context)
+        pdfFactory = PdfiumDocumentFactory(context),
+        // Build a composite archive factory to enable remote zip reading.
+        archiveFactory = CompositeArchiveFactory(
+            primaryFactory = DefaultArchiveFactory(),
+            fallbackFactory = ChannelZipArchiveFactory(httpClient = DefaultHttpClient())
+        )
     )
 }
 

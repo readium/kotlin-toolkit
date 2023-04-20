@@ -17,13 +17,20 @@ import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.LcpService
+import org.readium.r2.lcp.auth.LcpDumbAuthentication
 import org.readium.r2.lcp.license.License
 import org.readium.r2.lcp.license.LicenseValidation
 import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.tryOr
+import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.shared.publication.asset.RemoteAsset
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
@@ -33,7 +40,9 @@ internal class LicensesService(
     private val device: DeviceService,
     private val network: NetworkService,
     private val passphrases: PassphrasesService,
-    private val context: Context
+    private val context: Context,
+    private val archiveFactory: ArchiveFactory,
+    private val httpClient: HttpClient
 ) : LcpService, CoroutineScope by MainScope() {
 
     override suspend fun isLcpProtected(file: File): Boolean =
@@ -41,6 +50,41 @@ internal class LicensesService(
             createLicenseContainer(file.path).read()
             true
         }
+
+    override suspend fun remoteAssetForLicense(license: File): Try<PublicationAsset, LcpException> {
+        return try {
+            Try.success(remoteAssetForLicenseThrowing(license))
+        } catch (e: Exception) {
+            Try.failure(LcpException.wrap(e))
+        }
+    }
+
+    private suspend fun remoteAssetForLicenseThrowing(licenseFile: File): PublicationAsset {
+        // Update the license file to get a fresh publication URL.
+        val license = retrieveLicense(licenseFile, LcpDumbAuthentication(), false)
+            .getOrNull()
+
+        val licenseDoc = license?.license
+            ?: LicenseDocument(licenseFile.readBytes())
+
+        val link = checkNotNull(licenseDoc.link(LicenseDocument.Rel.publication))
+        val url = try {
+            Url(link.url.toString()) ?: throw IllegalStateException()
+        } catch (e: Exception) {
+            throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.rawValue)
+        }
+        val baseAsset = RemoteAsset.Factory(archiveFactory, httpClient)
+            .createAsset(url, link.mediaType)
+            .getOrThrow()
+
+        return LcpLicensedAsset(
+            baseAsset.name,
+            baseAsset.mediaType,
+            baseAsset.fetcher,
+            licenseFile,
+            license
+        )
+    }
 
     override suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit): Try<LcpService.AcquiredPublication, LcpException> =
         try {
@@ -56,29 +100,70 @@ internal class LicensesService(
         authentication: LcpAuthenticating,
         allowUserInteraction: Boolean,
         sender: Any?
-    ): Try<LcpLicense, LcpException>? =
+    ): Try<LcpLicense, LcpException> =
         try {
             val container = createLicenseContainer(file.path)
-            // WARNING: Using the Default dispatcher in the state machine code is critical. If we were using the Main Dispatcher,
-            // calling runBlocking in LicenseValidation.handle would block the main thread and cause a severe issue
-            // with LcpAuthenticating.retrievePassphrase. Specifically, the interaction of runBlocking and suspendCoroutine
-            // blocks the current thread before the passphrase popup has been showed until some button not yet showed is clicked.
-            val license = withContext(Dispatchers.Default) { retrieveLicense(container, authentication, allowUserInteraction, sender) }
-            Timber.d("license retrieved ${license?.license}")
+            val license = retrieveLicense(container, authentication, allowUserInteraction, true, sender)
+            Try.success(license)
+        } catch (e: Exception) {
+            Try.failure(LcpException.wrap(e))
+        }
 
-            license?.let { Try.success(it) }
+    override suspend fun retrieveLicense(
+        fetcher: Fetcher,
+        mediaType: MediaType,
+        authentication: LcpAuthenticating,
+        allowUserInteraction: Boolean,
+        sender: Any?
+    ): Try<LcpLicense, LcpException> =
+        try {
+            val container = createLicenseContainer(fetcher, mediaType)
+            val license = retrieveLicense(container, authentication, allowUserInteraction, false, sender)
+            Try.success(license)
         } catch (e: Exception) {
             Try.failure(LcpException.wrap(e))
         }
 
     private suspend fun retrieveLicense(
         container: LicenseContainer,
+        authentication: LcpAuthenticating,
+        allowUserInteraction: Boolean,
+        ignoreInternetErrors: Boolean,
+        sender: Any?
+    ): LcpLicense {
+        // WARNING: Using the Default dispatcher in the state machine code is critical. If we were using the Main Dispatcher,
+        // calling runBlocking in LicenseValidation.handle would block the main thread and cause a severe issue
+        // with LcpAuthenticating.retrievePassphrase. Specifically, the interaction of runBlocking and suspendCoroutine
+        // blocks the current thread before the passphrase popup has been showed until some button not yet showed is clicked.
+        val license = withContext(Dispatchers.Default) {
+            retrieveLicenseUnsafe(
+                container,
+                authentication,
+                allowUserInteraction,
+                ignoreInternetErrors,
+                sender
+            )
+        }
+        Timber.d("license retrieved ${license.license}")
+
+        return license
+    }
+
+    private suspend fun retrieveLicenseUnsafe(
+        container: LicenseContainer,
         authentication: LcpAuthenticating?,
         allowUserInteraction: Boolean,
+        ignoreInternetErrors: Boolean,
         sender: Any?
-    ): License? =
+    ): License =
         suspendCancellableCoroutine { cont ->
-            retrieveLicense(container, authentication, allowUserInteraction, sender) { license ->
+            retrieveLicense(
+                container,
+                authentication,
+                allowUserInteraction,
+                ignoreInternetErrors,
+                sender
+            ) { license ->
                 if (cont.isActive) {
                     cont.resume(license)
                 }
@@ -89,8 +174,9 @@ internal class LicensesService(
         container: LicenseContainer,
         authentication: LcpAuthenticating?,
         allowUserInteraction: Boolean,
+        ignoreInternetErrors: Boolean,
         sender: Any?,
-        completion: (License?) -> Unit
+        completion: (License) -> Unit
     ) {
 
         var initialData = container.read()
@@ -99,7 +185,8 @@ internal class LicensesService(
         val validation = LicenseValidation(
             authentication = authentication, crl = this.crl,
             device = this.device, network = this.network, passphrases = this.passphrases, context = this.context,
-            allowUserInteraction = allowUserInteraction, sender = sender
+            allowUserInteraction = allowUserInteraction, ignoreInternetErrors = ignoreInternetErrors,
+            sender = sender
         ) { licenseDocument ->
             try {
                 launch {
@@ -134,8 +221,9 @@ internal class LicensesService(
             }
             error?.let { throw error }
 
-            if (documents == null && error == null) {
-                completion(null)
+            // Both error and documents can be null if the user cancelled the passphrase prompt.
+            if (documents == null) {
+                throw CancellationException("License validation was interrupted.")
             }
         }
     }

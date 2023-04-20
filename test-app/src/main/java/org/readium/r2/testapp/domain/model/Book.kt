@@ -6,13 +6,9 @@
 
 package org.readium.r2.testapp.domain.model
 
-import android.net.Uri
-import android.os.Build
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.net.URI
-import java.nio.file.Paths
 import org.readium.r2.shared.util.mediatype.MediaType
 
 @Entity(tableName = Book.TABLE_NAME)
@@ -33,35 +29,12 @@ data class Book(
     @ColumnInfo(name = PROGRESSION)
     val progression: String? = null,
     @ColumnInfo(name = TYPE)
-    val type: String
+    val type: String,
+    @ColumnInfo(name = COVER)
+    val cover: String,
 ) {
 
-    val fileName: String?
-        get() {
-            val url = URI(href)
-            if (!url.scheme.isNullOrEmpty() && url.isAbsolute) {
-                val uri = Uri.parse(href)
-                return uri.lastPathSegment
-            }
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val path = Paths.get(href)
-                path.fileName.toString()
-            } else {
-                val uri = Uri.parse(href)
-                uri.lastPathSegment
-            }
-        }
-
-    val url: URI?
-        get() {
-            val url = URI(href)
-            if (url.isAbsolute && url.scheme.isNullOrEmpty()) {
-                return null
-            }
-            return url
-        }
-
-    suspend fun mediaType(): MediaType? = MediaType.of(type)
+    suspend fun mediaType(): MediaType = MediaType.of(type)!!
 
     companion object {
 
@@ -74,5 +47,6 @@ data class Book(
         const val IDENTIFIER = "identifier"
         const val PROGRESSION = "progression"
         const val TYPE = "type"
+        const val COVER = "cover"
     }
 }
