@@ -35,20 +35,52 @@ data class RemoteAsset(
         private val archiveFactory: ArchiveFactory,
         private val httpClient: HttpClient
     ) {
-        suspend fun createAsset(
+
+        suspend fun createAssetForPackagedPublication(
             url: Url,
-            mediaType: MediaType,
-        ): Try<PublicationAsset, Publication.OpeningException> =
-            createFetcher(url, mediaType)
-                .map { fetcher -> RemoteAsset(url, mediaType, fetcher) }
+            mediaType: MediaType
+        ) : Try<PublicationAsset, Publication.OpeningException> {
 
-        private suspend fun createFetcher(url: Url, mediaType: MediaType): Try<Fetcher, Publication.OpeningException> {
-            ArchiveFetcher.fromUrl(url, archiveFactory)
-                ?.let { return Try.success(it) }
+            return ArchiveFetcher.create(url, archiveFactory)
+                .map { fetcher ->
+                    RemoteAsset(
+                        url = url,
+                        mediaType = mediaType,
+                        fetcher = fetcher
+                    )
+                }.mapFailure { error ->
+                    when (error) {
+                        else -> Publication.OpeningException.Unavailable()
+                    }
+                }
+        }
 
-            // This enables support for both exploded containers (thanks to baseUrl) and
-            // single-file publications (thanks to links).
-            val httpFetcher = HttpFetcher(
+        suspend fun createAssetForExplodedPublication(
+            url: Url,
+            mediaType: MediaType
+        ) : Try<PublicationAsset, Publication.OpeningException> {
+            val fetcher =
+                HttpFetcher(
+                    client = httpClient,
+                    baseUrl = url.toString(),
+                    links = emptyList()
+                )
+
+            val asset =
+                RemoteAsset(
+                    url = url,
+                    mediaType = mediaType,
+                    fetcher = fetcher
+                )
+
+            return Try.success(asset)
+        }
+
+        suspend fun createAssetForWebpubManifest(
+            url: Url,
+            mediaType: MediaType
+        ) : Try<PublicationAsset, Publication.OpeningException> {
+            val fetcher = HttpFetcher(
                 client = httpClient,
                 baseUrl = url.toString(),
                 links = listOf(
@@ -56,7 +88,36 @@ data class RemoteAsset(
                 )
             )
 
-            return Try.success(httpFetcher)
+            val asset =
+                RemoteAsset(
+                    url = url,
+                    mediaType = mediaType,
+                    fetcher = fetcher
+                )
+
+            return Try.success(asset)
+        }
+
+        suspend fun createAssetForPublicationFile(
+            url: Url,
+            mediaType: MediaType
+        ) : Try<PublicationAsset, Publication.OpeningException> {
+            val fetcher = HttpFetcher(
+                client = httpClient,
+                baseUrl = null,
+                links = listOf(
+                    Link(href = url.toString(), type = mediaType.toString())
+                )
+            )
+
+            val asset =
+                RemoteAsset(
+                    url = url,
+                    mediaType = mediaType,
+                    fetcher = fetcher
+                )
+
+            return Try.success(asset)
         }
     }
 }

@@ -14,7 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.tryOr
-import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.util.Try
@@ -45,14 +44,22 @@ class ArchiveFetcher private constructor(private val archive: Archive) : Fetcher
 
     companion object {
 
-        suspend fun fromPath(path: String, archiveFactory: ArchiveFactory = DefaultArchiveFactory()): ArchiveFetcher? =
+        suspend fun create(
+            path: String,
+            archiveFactory: ArchiveFactory = DefaultArchiveFactory()
+        ): Try<ArchiveFetcher, Exception> =
             withContext(Dispatchers.IO) {
-                tryOrNull { ArchiveFetcher(archiveFactory.open(File(path), password = null)) }
+                archiveFactory.open(File(path), password = null)
+                    .map { ArchiveFetcher(it) }
             }
 
-        suspend fun fromUrl(url: Url, archiveFactory: ArchiveFactory = DefaultArchiveFactory()): ArchiveFetcher? =
+        suspend fun create(
+            url: Url,
+            archiveFactory: ArchiveFactory = DefaultArchiveFactory()
+        ): Try<ArchiveFetcher, Exception> =
             withContext(Dispatchers.IO) {
-                tryOrNull { ArchiveFetcher(archiveFactory.open(url, password = null)) }
+                archiveFactory.open(url, password = null)
+                    .map { ArchiveFetcher(it) }
             }
     }
 

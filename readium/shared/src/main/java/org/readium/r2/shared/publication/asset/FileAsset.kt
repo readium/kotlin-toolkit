@@ -15,9 +15,11 @@ import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.archive.ExplodedArchiveFactory
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.toUrl
 
 /**
  * A [PublicationAsset] built from a [File].
@@ -36,12 +38,57 @@ data class FileAsset(
         private val httpClient: HttpClient
     ) {
 
-        suspend fun createAsset(
+        suspend fun createAssetForPackagedPublication(
             file: File,
             mediaType: MediaType
-        ): Try<PublicationAsset, Publication.OpeningException> =
-            createFetcher(file, mediaType)
-                .map { fetcher -> FileAsset(file, mediaType, fetcher) }
+        ): Try<PublicationAsset, Publication.OpeningException> {
+            return ArchiveFetcher.create(file.toUrl(), archiveFactory)
+                .map { fetcher ->
+                    FileAsset(
+                        file = file,
+                        mediaType = mediaType,
+                        fetcher = fetcher
+                    )
+                }.mapFailure { error ->
+                    when (error) {
+
+                    }
+                }
+        }
+
+        suspend fun createAssetForExplodedPublication(
+            file: File,
+            mediaType: MediaType
+        ): Try<PublicationAsset, Publication.OpeningException> {
+
+
+        }
+
+        suspend fun createAssetForWebpubManifest(
+            file: File,
+            mediaType: MediaType
+        ): Try<PublicationAsset, Publication.OpeningException> {
+            val manifest = file.readAsRwpm(packaged = false)
+                .mapFailure { Publication.OpeningException.ParsingFailed(it) }
+                .getOrElse { return Try.failure(it) }
+
+            val baseUrl =
+                manifest.linkWithRel("self")?.let { File(it.href).parent }
+
+            val fetcher =
+                RoutingFetcher(
+                    local = FileFetcher(href = "/manifest.json", file = file),
+                    remote = HttpFetcher(httpClient, baseUrl)
+            )
+
+            val asset =
+                FileAsset(
+                    file = file,
+                    mediaType = mediaType,
+                    fetcher = fetcher
+                )
+            return Try.success(asset)
+        }
 
         private suspend fun createFetcher(file: File, mediaType: MediaType): Try<Fetcher, Publication.OpeningException> {
             return try {
@@ -58,7 +105,7 @@ data class FileAsset(
         }
 
         private suspend fun createFetcherForFile(file: File, mediaType: MediaType): Try<Fetcher, Publication.OpeningException> {
-            ArchiveFetcher.fromPath(file.path, archiveFactory)
+            ArchiveFetcher.create(file.toUrl(), archiveFactory)
                 ?.let { return Try.success(it) }
 
             if (mediaType.isRwpm) {

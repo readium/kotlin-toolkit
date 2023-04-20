@@ -16,20 +16,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.toUrl
 
 interface ArchiveFactory {
 
     /** Opens an archive from a local [file]. */
-    suspend fun open(file: File, password: String?): Archive
+    suspend fun open(file: File, password: String?): Try<Archive, Exception> =
+        open(file.toUrl(), password)
 
     /** Opens an archive from a local or remote [URL]. */
-    suspend fun open(url: Url, password: String?): Archive =
-        if (url.protocol == "file") {
-            open(File(url.path), password)
-        } else {
-            throw IOException("Cannot access ZIP archives through protocol ${url.protocol}.")
-        }
+    suspend fun open(url: Url, password: String?): Try<Archive, Exception>
 }
 
 class DefaultArchiveFactory : ArchiveFactory {
@@ -37,13 +35,21 @@ class DefaultArchiveFactory : ArchiveFactory {
     private val javaZipFactory by lazy { JavaZipArchiveFactory() }
     private val explodedArchiveFactory by lazy { ExplodedArchiveFactory() }
 
-    /** Opens a ZIP or exploded archive. */
-    override suspend fun open(file: File, password: String?): Archive = withContext(Dispatchers.IO) {
-        if (tryOr(false) { file.isDirectory }) {
-            explodedArchiveFactory.open(file, password)
+    override suspend fun open(url: Url, password: String?): Try<Archive, Exception> =
+        if (url.protocol == "file") {
+            openFile(File(url.path), password)
         } else {
-            javaZipFactory.open(file, password)
+            throw IOException("Cannot access ZIP archives through protocol ${url.protocol}.")
         }
+
+    /** Opens a ZIP or exploded archive. */
+    private suspend fun openFile(file: File, password: String?): Try<Archive, Exception> =
+        withContext(Dispatchers.IO) {
+            if (tryOr(false) { file.isDirectory }) {
+                explodedArchiveFactory.open(file, password)
+            } else {
+                javaZipFactory.open(file, password)
+            }
     }
 }
 
@@ -52,14 +58,7 @@ class CompositeArchiveFactory(
     private val fallbackFactory: ArchiveFactory
 ) : ArchiveFactory {
 
-    override suspend fun open(file: File, password: String?): Archive =
-        try {
-            primaryFactory.open(file, password)
-        } catch (e: Exception) {
-            fallbackFactory.open(file, password)
-        }
-
-    override suspend fun open(url: Url, password: String?): Archive =
+    override suspend fun open(url: Url, password: String?): Try<Archive, Exception> =
         try {
             primaryFactory.open(url, password)
         } catch (e: Exception) {

@@ -10,6 +10,7 @@ import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.readFully
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.ArchiveFactory
@@ -115,15 +116,20 @@ class ChannelZipArchiveFactory(
     private val httpClient: HttpClient = DefaultHttpClient()
 ) : ArchiveFactory {
 
-    override suspend fun open(file: File, password: String?): Archive = withContext(Dispatchers.IO) {
-        throw Exception("RemoteZipArchiveFactory doesn't support files.")
-    }
+    override suspend fun open(url: Url, password: String?): Try<Archive, Exception> =
+        withContext(Dispatchers.IO) {            
+            try {
+                if (url.protocol !in listOf("http", "https")) {
+                    throw Exception("Unsupported protocol.")
+                }
 
-    override suspend fun open(url: Url, password: String?): Archive = withContext(Dispatchers.IO) {
-        val httpChannel = HttpChannel(url.toString(), httpClient)
-        val channel = wrapBaseChannel(httpChannel)
-        ChannelZip(ZipFile(channel, true))
-    }
+                val httpChannel = HttpChannel(url.toString(), httpClient)
+                val channel = wrapBaseChannel(httpChannel)
+                Try.success(ChannelZip(ZipFile(channel, true)))
+            } catch (e: Exception) {
+                Try.failure(e)
+            }
+        }
 
     internal fun openFile(file: File): Archive {
         val fileChannel = FileChannelAdapter(file, "r")

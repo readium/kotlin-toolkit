@@ -11,13 +11,14 @@
 
 package org.readium.r2.shared.util.archive
 
-import java.io.File
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.readFully
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.io.CountingInputStream
 
 @OptIn(InternalReadiumApi::class)
@@ -99,7 +100,18 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
 
 internal class JavaZipArchiveFactory : ArchiveFactory {
 
-    override suspend fun open(file: File, password: String?): Archive = withContext(Dispatchers.IO) {
-        JavaZip(ZipFile(file))
+    override suspend fun open(url: Url, password: String?): Try<Archive, Exception> =
+        withContext(Dispatchers.IO) {
+            try {
+                if (url.protocol != "file") {
+                    throw Exception("Unsupported protocol.")
+                }
+
+                val archive = JavaZip(ZipFile(url.path))
+                Try.success(archive)
+            } catch (e: Exception) {
+                Try.failure(e)
+            }
+
     }
 }
