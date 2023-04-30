@@ -188,8 +188,8 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
 
     private fun initWebPager() {
         setWillNotDraw(false)
-        descendantFocusability = ViewGroup.FOCUS_AFTER_DESCENDANTS
-        isFocusable = true
+//        descendantFocusability = ViewGroup.FOCUS_AFTER_DESCENDANTS
+//        isFocusable = true
         val context = context
         mScroller = Scroller(context, sInterpolator)
         val configuration = ViewConfiguration.get(context)
