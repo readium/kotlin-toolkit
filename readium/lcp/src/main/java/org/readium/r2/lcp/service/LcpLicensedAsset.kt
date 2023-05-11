@@ -10,12 +10,19 @@ import java.io.File
 import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 data class LcpLicensedAsset(
-    override val name: String,
+    val url: Url,
     override val mediaType: MediaType,
-    override val fetcher: Fetcher,
     val licenseFile: File,
     val license: LcpLicense?
-) : PublicationAsset
+) : PublicationAsset {
+
+    override val name: String =
+        url.file
+
+    override val assetType: PublicationAsset.Type =
+        PublicationAsset.Type.PackagedPublication
+}

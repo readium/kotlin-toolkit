@@ -465,6 +465,8 @@ class Publication(
          * `restricted` state (e.g. for a password-protected ZIP).
          */
         object IncorrectCredentials : OpeningException(R.string.r2_shared_publication_opening_exception_incorrect_credentials)
+
+        class OutOfMemory(override val cause: OutOfMemoryError) : OpeningException(R.string.r2_shared_resource_exception_out_of_memory)
     }
 
     /**

@@ -9,7 +9,7 @@ package org.readium.r2.streamer.parser.audio
 import java.io.File
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.extensions.guessTitle
@@ -25,12 +25,17 @@ import org.readium.r2.streamer.parser.PublicationParser
  */
 class AudioParser : PublicationParser {
 
-    override suspend fun parse(asset: PublicationAsset, warnings: WarningLogger?): Publication.Builder? {
+    override suspend fun parse(
+        mediaType: MediaType,
+        fetcher: Fetcher,
+        assetName: String,
+        warnings: WarningLogger?
+    ): Try<Publication.Builder, PublicationParser.Error> {
 
-        if (!accepts(asset.mediaType, asset.fetcher))
-            return null
+        if (!accepts(mediaType, fetcher))
+            return Try.failure(PublicationParser.Error.FormatNotSupported)
 
-        val readingOrder = asset.fetcher.links()
+        val readingOrder = fetcher.links()
             .filter { link -> with(File(link.href)) { lowercasedExtension in audioExtensions && !isHiddenOrThumbs } }
             .sortedBy(Link::href)
             .toMutableList()
@@ -38,7 +43,7 @@ class AudioParser : PublicationParser {
         if (readingOrder.isEmpty())
             throw Exception("No audio file found in the publication.")
 
-        val title = asset.fetcher.guessTitle() ?: asset.name
+        val title = fetcher.guessTitle() ?: assetName
 
         val manifest = Manifest(
             metadata = Metadata(
@@ -48,13 +53,15 @@ class AudioParser : PublicationParser {
             readingOrder = readingOrder
         )
 
-        return Publication.Builder(
+        val publicationBuilder = Publication.Builder(
             manifest = manifest,
-            fetcher = asset.fetcher,
+            fetcher = fetcher,
             servicesBuilder = Publication.ServicesBuilder(
                 locator = AudioLocatorService.createFactory()
             )
         )
+
+        return Try.success(publicationBuilder)
     }
 
     private suspend fun accepts(mediaType: MediaType, fetcher: Fetcher): Boolean {

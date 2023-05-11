@@ -14,17 +14,19 @@ import org.readium.r2.shared.Search
 import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.services.content.DefaultContentService
 import org.readium.r2.shared.publication.services.content.iterators.HtmlResourceContentIterator
 import org.readium.r2.shared.publication.services.search.StringSearchService
 import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.extensions.readAsXmlOrNull
 import org.readium.r2.streamer.parser.PublicationParser
@@ -32,7 +34,7 @@ import org.readium.r2.streamer.parser.PublicationParser
 @Suppress("DEPRECATION")
 object EPUBConstant {
 
-    @Deprecated("Use [MediaType.EPUB.toString()] instead", replaceWith = ReplaceWith("MediaType.EPUB.toString()"))
+    @Deprecated("Use [MediaType.EPUB.toString()] instead", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("MediaType.EPUB.toString()"))
     val mimetype: String get() = MediaType.EPUB.toString()
 
     internal val ltrPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
@@ -65,6 +67,7 @@ object EPUBConstant {
         ReadiumCSSName.ref("letterSpacing") to false
     )
 
+    @Deprecated("Use the new Settings API", level = DeprecationLevel.ERROR)
     val forceScrollPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
         ReadiumCSSName.ref("scroll") to true
     )
@@ -81,25 +84,57 @@ class EpubParser(
     private val reflowablePositionsStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.recommended
 ) : PublicationParser {
 
-    override suspend fun parse(asset: PublicationAsset, warnings: WarningLogger?): Publication.Builder? {
-        if (asset.mediaType != MediaType.EPUB)
-            return null
+    override suspend fun parse(
+        mediaType: MediaType,
+        fetcher: Fetcher,
+        assetName: String,
+        warnings: WarningLogger?
+    ): Try<Publication.Builder, PublicationParser.Error> =
+        try {
+            val builder = parseThrowing(mediaType, fetcher, assetName)
+            Try.success(builder)
+        } catch (e: Exception) {
+            val error = wrapException(e)
+            Try.failure(error)
+        }
 
-        val opfPath = getRootFilePath(asset.fetcher).addPrefix("/")
-        val opfXmlDocument = asset.fetcher.get(opfPath).readAsXml().getOrThrow()
+    private fun wrapException(e: Exception): PublicationParser.Error =
+        when (e) {
+            is PublicationParser.Error -> e
+            is Resource.Exception -> when (e) {
+                is Resource.Exception.NotFound ->
+                    PublicationParser.Error.ParsingFailed(e)
+                is Resource.Exception.OutOfMemory ->
+                    PublicationParser.Error.OutOfMemory(e.cause)
+                else -> PublicationParser.Error.IO(e)
+            }
+            else ->
+                throw IllegalStateException(Exception("Unexpected exception", e))
+        }
+
+    private suspend fun parseThrowing(
+        mediaType: MediaType,
+        fetcher: Fetcher,
+        assetName: String,
+    ): Publication.Builder {
+        if (mediaType != MediaType.EPUB)
+            throw PublicationParser.Error.FormatNotSupported
+
+        val opfPath = getRootFilePath(fetcher).addPrefix("/")
+        val opfXmlDocument = fetcher.get(opfPath).readAsXml().getOrThrow()
         val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath)
-            ?: throw Exception("Invalid OPF file.")
+            ?: throw PublicationParser.Error.ParsingFailed(Exception("Invalid OPF file."))
 
         val manifest = ManifestAdapter(
-            fallbackTitle = asset.name,
+            fallbackTitle = assetName,
             packageDocument = packageDocument,
-            navigationData = parseNavigationData(packageDocument, asset.fetcher),
-            encryptionData = parseEncryptionData(asset.fetcher),
-            displayOptions = parseDisplayOptions(asset.fetcher)
+            navigationData = parseNavigationData(packageDocument, fetcher),
+            encryptionData = parseEncryptionData(fetcher),
+            displayOptions = parseDisplayOptions(fetcher)
         ).adapt()
 
         @Suppress("NAME_SHADOWING")
-        var fetcher = asset.fetcher
+        var fetcher = fetcher
         manifest.metadata.identifier?.let {
             fetcher = TransformingFetcher(fetcher, EpubDeobfuscator(it)::transform)
         }
@@ -120,11 +155,14 @@ class EpubParser(
     }
 
     private suspend fun getRootFilePath(fetcher: Fetcher): String =
-        fetcher.readAsXmlOrNull("/META-INF/container.xml")
-            ?.getFirst("rootfiles", Namespaces.OPC)
+        fetcher.get("/META-INF/container.xml")
+            .use { it.readAsXml().getOrThrow() }
+            .getFirst("rootfiles", Namespaces.OPC)
             ?.getFirst("rootfile", Namespaces.OPC)
             ?.getAttr("full-path")
-            ?: throw Exception("Unable to find an OPF file.")
+            ?: throw PublicationParser.Error.ParsingFailed(
+                Exception("Unable to find an OPF file.")
+            )
 
     private suspend fun parseEncryptionData(fetcher: Fetcher): Map<String, Encryption> =
         fetcher.readAsXmlOrNull("/META-INF/encryption.xml")

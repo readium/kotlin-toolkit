@@ -14,11 +14,11 @@ import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.asset.DefaultFetcherFactory
+import org.readium.r2.shared.publication.asset.FetcherFactory
 import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.ArchiveFactory
-import org.readium.r2.shared.util.archive.DefaultArchiveFactory
-import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
@@ -58,10 +58,9 @@ class Streamer constructor(
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
     contentProtections: List<ContentProtection> = emptyList(),
-    private val archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
     private val pdfFactory: PdfDocumentFactory<*>? = null,
-    private val httpClient: DefaultHttpClient = DefaultHttpClient(),
-    private val onCreatePublication: Publication.Builder.() -> Unit = {}
+    private val fetcherFactory: FetcherFactory = DefaultFetcherFactory(),
+    private val onCreatePublication: Publication.Builder.() -> Unit = {},
 ) {
 
     private val contentProtections: List<ContentProtection> =
@@ -106,21 +105,21 @@ class Streamer constructor(
         warnings: WarningLogger? = null
     ): PublicationTry<Publication> = try {
 
+        val fetcher = fetcherFactory.createFetcher(asset)
+            .getOrThrow()
+
         val protectedAsset = contentProtections
             .lazyMapFirstNotNullOrNull {
-                it.open(asset, credentials, allowUserInteraction, sender)
+                it.open(asset, fetcher, credentials, allowUserInteraction, sender)
             }
             ?.getOrThrow()
 
-        val newAsset = protectedAsset?.asset ?: asset
-
         val builder = parsers
-            .lazyMapFirstNotNullOrNull {
-                try {
-                    it.parse(newAsset, warnings)
-                } catch (e: Exception) {
-                    throw Publication.OpeningException.ParsingFailed(e)
-                }
+            .lazyMapFirstNotNullOrNull { parser ->
+                parser.parse(asset.mediaType, protectedAsset?.fetcher ?: fetcher, asset.name, warnings)
+                    .takeUnless { it.exceptionOrNull() == PublicationParser.Error.FormatNotSupported }
+                    ?.mapFailure { wrapParserException(it) }
+                    ?.getOrThrow()
             } ?: throw Publication.OpeningException.UnsupportedFormat(Exception("Cannot find a parser for this asset"))
 
         // Transform from the Content Protection.
@@ -150,6 +149,18 @@ class Streamer constructor(
 
     private val parsers: List<PublicationParser> = parsers +
         if (!ignoreDefaultParsers) defaultParsers else emptyList()
+
+    private fun wrapParserException(e: PublicationParser.Error): Publication.OpeningException =
+        when (e) {
+            PublicationParser.Error.FormatNotSupported ->
+                Publication.OpeningException.UnsupportedFormat()
+            is PublicationParser.Error.IO ->
+                Publication.OpeningException.Unavailable(e)
+            is PublicationParser.Error.OutOfMemory ->
+                Publication.OpeningException.OutOfMemory(e.cause)
+            is PublicationParser.Error.ParsingFailed ->
+                Publication.OpeningException.ParsingFailed(e)
+        }
 
     @Suppress("UNCHECKED_CAST")
     private suspend fun <T, R> List<T>.lazyMapFirstNotNullOrNull(transform: suspend (T) -> R): R? {

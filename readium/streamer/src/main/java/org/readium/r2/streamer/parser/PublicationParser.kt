@@ -6,10 +6,11 @@
 
 package org.readium.r2.streamer.parser
 
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  *  Parses a Publication from an asset.
@@ -25,17 +26,21 @@ interface PublicationParser {
      * debug their publications.
      */
     suspend fun parse(
-        asset: PublicationAsset,
+        mediaType: MediaType,
+        fetcher: Fetcher,
+        assetName: String,
         warnings: WarningLogger? = null
     ): Try<Publication.Builder, Error>
 
 
     sealed class Error : Exception() {
 
-        object NotSupported : Error()
+        object FormatNotSupported : Error()
 
-        data class ParsingFailed(override val cause: Throwable) : Error()
+        class ParsingFailed(override val cause: Throwable) : Error()
 
-        data class Unavailable(override val cause: Throwable) : Error()
+        class IO(override val cause: Throwable) : Error()
+
+        class OutOfMemory(override val cause: OutOfMemoryError) : Error()
     }
 }

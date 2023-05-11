@@ -166,8 +166,8 @@ interface Resource : SuspendingCloseable {
          *
          * Used when the requested range is too large to be read in memory.
          */
-        class OutOfMemory(cause: OutOfMemoryError) :
-            Exception(R.string.r2_shared_resource_exception_out_of_memory, cause)
+        class OutOfMemory(override val cause: OutOfMemoryError) :
+            Exception(R.string.r2_shared_resource_exception_out_of_memory)
 
         /**
          * The request was cancelled by the caller.

@@ -15,6 +15,9 @@ import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOr
+import org.readium.r2.shared.fetcher.FileFetcher
+import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -22,25 +25,17 @@ import org.readium.r2.shared.util.toUrl
 
 interface ArchiveFactory {
 
+    suspend fun open(resource: Resource, password: String?): Try<Archive, Exception>
+
     /** Opens an archive from a local [file]. */
     suspend fun open(file: File, password: String?): Try<Archive, Exception> =
-        open(file.toUrl(), password)
-
-    /** Opens an archive from a local or remote [URL]. */
-    suspend fun open(url: Url, password: String?): Try<Archive, Exception>
+        open(FileFetcher.FileResource(Link(href = file.path)), password)
 }
 
 class DefaultArchiveFactory : ArchiveFactory {
 
     private val javaZipFactory by lazy { JavaZipArchiveFactory() }
     private val explodedArchiveFactory by lazy { ExplodedArchiveFactory() }
-
-    override suspend fun open(url: Url, password: String?): Try<Archive, Exception> =
-        if (url.protocol == "file") {
-            openFile(File(url.path), password)
-        } else {
-            throw IOException("Cannot access ZIP archives through protocol ${url.protocol}.")
-        }
 
     /** Opens a ZIP or exploded archive. */
     private suspend fun openFile(file: File, password: String?): Try<Archive, Exception> =
@@ -50,6 +45,10 @@ class DefaultArchiveFactory : ArchiveFactory {
             } else {
                 javaZipFactory.open(file, password)
             }
+    }
+
+    override suspend fun open(resource: Resource, password: String?): Try<Archive, Exception> {
+
     }
 }
 

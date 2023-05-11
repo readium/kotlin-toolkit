@@ -26,7 +26,6 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.asset.PublicationAsset
-import org.readium.r2.shared.publication.asset.RemoteAsset
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveFactory
@@ -73,14 +72,10 @@ internal class LicensesService(
         } catch (e: Exception) {
             throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.rawValue)
         }
-        val baseAsset = RemoteAsset.Factory(archiveFactory, httpClient)
-            .createAsset(url, link.mediaType)
-            .getOrThrow()
 
         return LcpLicensedAsset(
-            baseAsset.name,
-            baseAsset.mediaType,
-            baseAsset.fetcher,
+            url,
+            link.mediaType,
             licenseFile,
             license
         )

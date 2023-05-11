@@ -7,10 +7,11 @@
 package org.readium.r2.streamer.parser.readium
 
 import android.content.Context
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.*
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
@@ -26,14 +27,18 @@ class ReadiumWebPubParser(
     private val pdfFactory: PdfDocumentFactory<*>?,
 ) : PublicationParser {
 
-    override suspend fun parse(asset: PublicationAsset, warnings: WarningLogger?): Publication.Builder? {
-        val mediaType = asset.mediaType
+    override suspend fun parse(
+        mediaType: MediaType,
+        fetcher: Fetcher,
+        assetName: String,
+        warnings: WarningLogger?
+    ): Try<Publication.Builder, PublicationParser.Error> {
 
         if (!mediaType.isReadiumWebPublication)
-            return null
+            return Try.failure(PublicationParser.Error.FormatNotSupported)
 
         val manifestJson =
-            asset.fetcher.readAsJsonOrNull("/manifest.json")
+            fetcher.readAsJsonOrNull("/manifest.json")
                 ?: throw Exception("Manifest not found")
 
         val manifest = Manifest.fromJSON(manifestJson, packaged = !mediaType.isRwpm)
@@ -63,7 +68,8 @@ class ReadiumWebPubParser(
             }
         }
 
-        return Publication.Builder(manifest, asset.fetcher, servicesBuilder)
+        val publicationBuilder = Publication.Builder(manifest, fetcher, servicesBuilder)
+        return Try.success(publicationBuilder)
     }
 }
 
