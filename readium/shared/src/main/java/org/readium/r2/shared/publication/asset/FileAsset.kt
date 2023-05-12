@@ -11,16 +11,15 @@ import java.io.FileNotFoundException
 import java.nio.charset.Charset
 import org.json.JSONObject
 import org.readium.r2.shared.fetcher.*
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.ExplodedArchive
-import org.readium.r2.shared.util.archive.ExplodedArchiveFactory
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.toUrl
 
 /**
  * A [PublicationAsset] built from a [File].
@@ -56,7 +55,7 @@ class FileFetcherFactory(
             PublicationAsset.Type.PackagedPublication ->
                 createFetcherForPackagedPublication(file, mediaType)
             PublicationAsset.Type.ExplodedPublication ->
-                createFetcherForExplodedPublication(file, mediaType)
+                createFetcherForExplodedPublication(file)
             PublicationAsset.Type.Content ->
                 createFetcherForContentFile(file)
         }
@@ -65,12 +64,13 @@ class FileFetcherFactory(
         file: File,
         mediaType: MediaType
     ): Try<Fetcher, Publication.OpeningException> {
-        return ArchiveFetcher.create(file.toUrl(), archiveFactory)
-            .mapFailure { error ->
-                when (error) {
-
-                }
-            }
+        val resource = FileFetcher.FileResource(
+            Link(href = file.path, type = mediaType.toString()),
+            file
+        )
+        return archiveFactory.open(resource, password = null)
+            .mapFailure { Publication.OpeningException.ParsingFailed(it)  }
+            .map { archive -> ArchiveFetcher(archive)  }
     }
 
     private fun createFetcherForExplodedPublication(

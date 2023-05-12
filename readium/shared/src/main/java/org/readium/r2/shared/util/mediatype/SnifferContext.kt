@@ -20,7 +20,7 @@ import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.util.archive.Archive
-import org.readium.r2.shared.util.archive.DefaultArchiveFactory
+import org.readium.r2.shared.util.archive.ArchiveFactory
 import timber.log.Timber
 
 /**
@@ -32,6 +32,7 @@ import timber.log.Timber
  * @param fileExtensions File extension hints.
  */
 class SnifferContext internal constructor(
+    private val archiveFactory: ArchiveFactory,
     private val content: SnifferContent? = null,
     mediaTypes: List<String> = emptyList(),
     fileExtensions: List<String> = emptyList()
@@ -49,7 +50,7 @@ class SnifferContext internal constructor(
 
     /** Finds the first [Charset] declared in the media types' `charset` parameter. */
     val charset: Charset? by lazy {
-        this.mediaTypes.mapNotNull { it.charset }.firstOrNull()
+        this.mediaTypes.firstNotNullOfOrNull { it.charset }
     }
 
     /** Returns whether this context has any of the given file extensions, ignoring case. */
@@ -128,10 +129,17 @@ class SnifferContext internal constructor(
     suspend fun contentAsArchive(): Archive? {
         if (!loadedContentAsArchive) {
             loadedContentAsArchive = true
-            _contentAsArchive = withContext(Dispatchers.IO) {
-                (content as? SnifferFileContent)?.let {
-                    tryOrNull { DefaultArchiveFactory().open(it.file, password = null) }
-                }
+            _contentAsArchive =
+                withContext(Dispatchers.IO) {
+                    when (content) {
+                        is SnifferResourceContent ->
+                            archiveFactory.open(content.resource, password = null)
+                                .getOrNull()
+                        is SnifferFileContent ->
+                            archiveFactory.open(content.file, password = null)
+                                .getOrNull()
+                        else -> null
+                    }
             }
         }
 

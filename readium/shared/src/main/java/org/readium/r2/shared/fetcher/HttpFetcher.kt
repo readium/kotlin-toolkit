@@ -57,11 +57,11 @@ class HttpFetcher(
     override suspend fun close() {}
 
     /** Provides access to an external URL. */
-    private class HttpResource(
+    class HttpResource(
         private val client: HttpClient,
         private val link: Link,
         private val url: String,
-        private val maxSkipBytes: Long
+        private val maxSkipBytes: Long = MAX_SKIP_BYTES
     ) : Resource {
 
         override suspend fun link(): Link =

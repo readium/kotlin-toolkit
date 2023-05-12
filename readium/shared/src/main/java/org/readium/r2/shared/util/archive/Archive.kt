@@ -10,18 +10,12 @@
 package org.readium.r2.shared.util.archive
 
 import java.io.File
-import java.io.IOException
-import java.net.URL
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.toUrl
+import org.readium.r2.shared.util.tryRecover
 
 interface ArchiveFactory {
 
@@ -29,26 +23,17 @@ interface ArchiveFactory {
 
     /** Opens an archive from a local [file]. */
     suspend fun open(file: File, password: String?): Try<Archive, Exception> =
-        open(FileFetcher.FileResource(Link(href = file.path)), password)
+        open(FileFetcher.FileResource(Link(href = file.path), file), password)
 }
 
 class DefaultArchiveFactory : ArchiveFactory {
 
-    private val javaZipFactory by lazy { JavaZipArchiveFactory() }
-    private val explodedArchiveFactory by lazy { ExplodedArchiveFactory() }
-
-    /** Opens a ZIP or exploded archive. */
-    private suspend fun openFile(file: File, password: String?): Try<Archive, Exception> =
-        withContext(Dispatchers.IO) {
-            if (tryOr(false) { file.isDirectory }) {
-                explodedArchiveFactory.open(file, password)
-            } else {
-                javaZipFactory.open(file, password)
-            }
-    }
+    private val javaZipFactory = JavaZipArchiveFactory()
 
     override suspend fun open(resource: Resource, password: String?): Try<Archive, Exception> {
-
+        return resource.file
+            ?.let { javaZipFactory.open(it, password) }
+            ?: Try.failure(Exception("Resource unsupported"))
     }
 }
 
@@ -57,12 +42,10 @@ class CompositeArchiveFactory(
     private val fallbackFactory: ArchiveFactory
 ) : ArchiveFactory {
 
-    override suspend fun open(url: Url, password: String?): Try<Archive, Exception> =
-        try {
-            primaryFactory.open(url, password)
-        } catch (e: Exception) {
-            fallbackFactory.open(url, password)
-        }
+    override suspend fun open(resource: Resource, password: String?): Try<Archive, Exception> {
+        return primaryFactory.open(resource, password)
+            .tryRecover { fallbackFactory.open(resource, password) }
+    }
 }
 
 /**

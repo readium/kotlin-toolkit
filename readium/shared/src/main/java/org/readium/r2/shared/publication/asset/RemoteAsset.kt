@@ -43,7 +43,7 @@ class RemoteFetcherFactory(
             PublicationAsset.Type.Manifest ->
                 createFetcherForManifest(asset.url, asset.mediaType)
             PublicationAsset.Type.PackagedPublication ->
-                createFetcherForPackagedPublication(asset.url)
+                createFetcherForPackagedPublication(asset.url, asset.mediaType)
             PublicationAsset.Type.ExplodedPublication ->
                 createFetcherForExplodedPublication(asset.url)
             PublicationAsset.Type.Content ->
@@ -51,15 +51,17 @@ class RemoteFetcherFactory(
         }
 
     private suspend fun createFetcherForPackagedPublication(
-        url: Url
+        url: Url,
+        mediaType: MediaType,
     ) : Try<Fetcher, Publication.OpeningException> {
-
-        return ArchiveFetcher.create(url, archiveFactory)
-            .mapFailure { error ->
-                when (error) {
-                    else -> Publication.OpeningException.Unavailable()
-                }
-            }
+        val resource = HttpFetcher.HttpResource(
+            httpClient,
+            Link(href = url.toString(), type = mediaType.toString()),
+            url.toString()
+        )
+        return archiveFactory.open(resource, password = null)
+            .mapFailure { Publication.OpeningException.ParsingFailed(it) }
+            .map { ArchiveFetcher(it) }
     }
 
     private fun createFetcherForExplodedPublication(

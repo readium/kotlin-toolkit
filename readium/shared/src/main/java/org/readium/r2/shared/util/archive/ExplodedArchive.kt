@@ -65,9 +65,9 @@ internal class ExplodedArchive(private val directory: File) : Archive {
     override suspend fun close() {}
 }
 
-internal class ExplodedArchiveFactory : ArchiveFactory {
+internal class ExplodedArchiveFactory {
 
-    override suspend fun open(url: Url, password: String?): Try<Archive, Exception> =
+    suspend fun open(url: Url, password: String?): Try<Archive, Exception> =
         withContext(Dispatchers.IO) {
             try {
                 if (url.protocol != "file") {
@@ -75,6 +75,15 @@ internal class ExplodedArchiveFactory : ArchiveFactory {
                 }
 
                 val file = File(url.path)
+                open(file, password)
+            } catch (e: Exception) {
+                Try.failure(e)
+            }
+        }
+
+    suspend fun open(file: File, password: String?): Try<Archive, Exception> =
+        withContext(Dispatchers.IO) {
+            try {
                 if (!file.isDirectory) {
                     throw Exception("Url is not a directory.")
 

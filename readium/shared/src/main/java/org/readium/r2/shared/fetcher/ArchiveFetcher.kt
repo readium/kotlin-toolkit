@@ -17,7 +17,6 @@ import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
@@ -54,11 +53,11 @@ class ArchiveFetcher internal constructor(private val archive: Archive) : Fetche
             }
 
         suspend fun create(
-            url: Url,
+            resource: Resource,
             archiveFactory: ArchiveFactory = DefaultArchiveFactory()
         ): Try<ArchiveFetcher, Exception> =
             withContext(Dispatchers.IO) {
-                archiveFactory.open(url, password = null)
+                archiveFactory.open(resource, password = null)
                     .map { ArchiveFetcher(it) }
             }
     }

@@ -14,7 +14,6 @@ import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
 import org.readium.r2.shared.publication.asset.PublicationAsset
-import org.readium.r2.shared.publication.asset.RemoteAsset
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.util.Try
 
@@ -51,17 +50,15 @@ internal class LcpContentProtection(
         val license = when (asset) {
             is FileAsset ->
                 lcpService.retrieveLicense(asset.file, authentication, allowUserInteraction, sender)
-            is RemoteAsset ->
-                lcpService.retrieveLicense(fetcher, asset.mediaType, authentication, allowUserInteraction, sender)
             is LcpLicensedAsset ->
                 asset.license
                     ?.let { Try.success(it) }
                     ?: lcpService.retrieveLicense(asset.licenseFile, authentication, allowUserInteraction, sender)
             else ->
-                null
+                lcpService.retrieveLicense(fetcher, asset.mediaType, authentication, allowUserInteraction, sender)
         }
 
-        return license?.takeUnless { result ->
+        return license.takeUnless { result ->
             result is Try.Failure<*, *> && result.exception is LcpException.Container
         }
     }

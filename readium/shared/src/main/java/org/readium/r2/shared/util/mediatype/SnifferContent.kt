@@ -14,6 +14,8 @@ import java.io.InputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.ResourceInputStream
 import timber.log.Timber
 
 /** Provides an access to a file's content to sniff its format. */
@@ -29,6 +31,16 @@ internal interface SnifferContent {
      * the file.
      */
     suspend fun stream(): InputStream?
+}
+
+internal class SnifferResourceContent(val resource: Resource) : SnifferContent {
+
+    override suspend fun read(): ByteArray? {
+        return resource.read().getOrNull()
+    }
+
+    override suspend fun stream(): InputStream =
+        ResourceInputStream(resource)
 }
 
 /** Used to sniff a local file. */

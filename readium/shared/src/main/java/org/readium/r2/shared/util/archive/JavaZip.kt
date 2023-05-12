@@ -11,6 +11,7 @@
 
 package org.readium.r2.shared.util.archive
 
+import java.io.File
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
@@ -98,9 +99,9 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
     }
 }
 
-internal class JavaZipArchiveFactory : ArchiveFactory {
+internal class JavaZipArchiveFactory {
 
-    override suspend fun open(url: Url, password: String?): Try<Archive, Exception> =
+    suspend fun open(url: Url, password: String?): Try<Archive, Exception> =
         withContext(Dispatchers.IO) {
             try {
                 if (url.protocol != "file") {
@@ -112,6 +113,15 @@ internal class JavaZipArchiveFactory : ArchiveFactory {
             } catch (e: Exception) {
                 Try.failure(e)
             }
-
     }
+
+    suspend fun open(file: File, password: String?): Try<Archive, Exception> =
+        withContext(Dispatchers.IO) {
+            try {
+                val archive = JavaZip(ZipFile(file))
+                Try.success(archive)
+            } catch (e: Exception) {
+                Try.failure(e)
+            }
+        }
 }
