@@ -14,12 +14,13 @@ import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.asset.DefaultFetcherFactory
-import org.readium.r2.shared.publication.asset.FetcherFactory
-import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.shared.publication.asset.AssetFactory
+import org.readium.r2.shared.publication.asset.DefaultAssetFactory
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.mediatype.AssetType
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.streamer.parser.FallbackContentProtection
@@ -59,7 +60,7 @@ class Streamer constructor(
     ignoreDefaultParsers: Boolean = false,
     contentProtections: List<ContentProtection> = emptyList(),
     private val pdfFactory: PdfDocumentFactory<*>? = null,
-    private val fetcherFactory: FetcherFactory = DefaultFetcherFactory(),
+    private val assetFactory: AssetFactory = DefaultAssetFactory(),
     private val onCreatePublication: Publication.Builder.() -> Unit = {},
 ) {
 
@@ -82,7 +83,7 @@ class Streamer constructor(
      * publication authoring mistakes. This can be useful to warn users of potential rendering
      * issues.
      *
-     * @param asset Digital medium (e.g. a file) used to access the publication.
+     * @param source Digital medium (e.g. a file) used to access the publication.
      * @param credentials Credentials that Content Protections can use to attempt to unlock a
      *   publication, for example a password.
      * @param allowUserInteraction Indicates whether the user can be prompted, for example for its
@@ -97,7 +98,9 @@ class Streamer constructor(
      *   [Publication.OpeningException] in case of failure.
      */
     suspend fun open(
-        asset: PublicationAsset,
+        url: Url,
+        mediaType: MediaType,
+        assetType: AssetType,
         credentials: String? = null,
         allowUserInteraction: Boolean,
         sender: Any? = null,
@@ -105,18 +108,32 @@ class Streamer constructor(
         warnings: WarningLogger? = null
     ): PublicationTry<Publication> = try {
 
-        val fetcher = fetcherFactory.createFetcher(asset)
-            .getOrThrow()
-
-        val protectedAsset = contentProtections
-            .lazyMapFirstNotNullOrNull {
-                it.open(asset, fetcher, credentials, allowUserInteraction, sender)
-            }
+        val asset = assetFactory.createAsset(url, mediaType, assetType)
+            .takeUnless { it.exceptionOrNull() is Publication.OpeningException.UnsupportedFormat }
             ?.getOrThrow()
+
+        val protectedAsset =
+            if (asset == null) {
+                contentProtections
+                    .lazyMapFirstNotNullOrNull {
+                        it.open(url, mediaType, assetType, credentials, allowUserInteraction, sender)
+                    }
+                    ?.getOrThrow()
+            } else {
+                contentProtections
+                    .lazyMapFirstNotNullOrNull {
+                        it.open(asset, credentials, allowUserInteraction, sender)
+                    }
+                    ?.getOrThrow()
+            }
+
+        val finalAsset = protectedAsset?.asset
+            ?: asset
+            ?: throw Publication.OpeningException.UnsupportedFormat()
 
         val builder = parsers
             .lazyMapFirstNotNullOrNull { parser ->
-                parser.parse(asset.mediaType, protectedAsset?.fetcher ?: fetcher, asset.name, warnings)
+                parser.parse(finalAsset, warnings)
                     .takeUnless { it.exceptionOrNull() == PublicationParser.Error.FormatNotSupported }
                     ?.mapFailure { wrapParserException(it) }
                     ?.getOrThrow()
@@ -130,7 +147,7 @@ class Streamer constructor(
         builder.apply(onCreatePublication)
 
         val publication = builder.build()
-            .apply { addLegacyProperties(asset.mediaType) }
+            .apply { addLegacyProperties(finalAsset.mediaType) }
 
         Try.success(publication)
     } catch (e: Publication.OpeningException) {

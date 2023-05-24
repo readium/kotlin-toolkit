@@ -6,6 +6,7 @@
 
 package org.readium.r2.shared.publication.asset
 
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /** Represents a digital medium (e.g. a file) offering access to a publication. */
@@ -23,12 +24,5 @@ interface PublicationAsset {
      */
     val mediaType: MediaType
 
-    val assetType: Type
-
-    enum class Type {
-        Manifest,
-        PackagedPublication,
-        ExplodedPublication,
-        Content
-    }
+    val fetcher: Fetcher
 }

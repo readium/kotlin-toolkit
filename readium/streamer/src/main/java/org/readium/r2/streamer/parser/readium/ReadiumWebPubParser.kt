@@ -7,9 +7,9 @@
 package org.readium.r2.streamer.parser.readium
 
 import android.content.Context
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.*
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -28,26 +28,24 @@ class ReadiumWebPubParser(
 ) : PublicationParser {
 
     override suspend fun parse(
-        mediaType: MediaType,
-        fetcher: Fetcher,
-        assetName: String,
+        asset: PublicationAsset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
 
-        if (!mediaType.isReadiumWebPublication)
+        if (!asset.mediaType.isReadiumWebPublication)
             return Try.failure(PublicationParser.Error.FormatNotSupported)
 
         val manifestJson =
-            fetcher.readAsJsonOrNull("/manifest.json")
+            asset.fetcher.readAsJsonOrNull("/manifest.json")
                 ?: throw Exception("Manifest not found")
 
-        val manifest = Manifest.fromJSON(manifestJson, packaged = !mediaType.isRwpm)
+        val manifest = Manifest.fromJSON(manifestJson, packaged = !asset.mediaType.isRwpm)
             ?: throw Exception("Failed to parse the RWPM Manifest")
 
         // Checks the requirements from the LCPDF specification.
         // https://readium.org/lcp-specs/notes/lcp-for-pdf.html
         val readingOrder = manifest.readingOrder
-        if (mediaType == MediaType.LCP_PROTECTED_PDF &&
+        if (asset.mediaType == MediaType.LCP_PROTECTED_PDF &&
             (readingOrder.isEmpty() || !readingOrder.all { it.mediaType.matches(MediaType.PDF) })
         ) {
             throw Exception("Invalid LCP Protected PDF.")
@@ -56,7 +54,7 @@ class ReadiumWebPubParser(
         val servicesBuilder = Publication.ServicesBuilder().apply {
             cacheServiceFactory = InMemoryCacheService.createFactory(context)
 
-            when (mediaType) {
+            when (asset.mediaType) {
                 MediaType.LCP_PROTECTED_PDF ->
                     positionsServiceFactory = pdfFactory?.let { LcpdfPositionsService.create(it) }
 
@@ -68,7 +66,7 @@ class ReadiumWebPubParser(
             }
         }
 
-        val publicationBuilder = Publication.Builder(manifest, fetcher, servicesBuilder)
+        val publicationBuilder = Publication.Builder(manifest, asset.fetcher, servicesBuilder)
         return Try.success(publicationBuilder)
     }
 }

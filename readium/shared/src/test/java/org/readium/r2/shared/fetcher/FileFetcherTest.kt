@@ -22,6 +22,7 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.lengthBlocking
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.readBlocking
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 
@@ -35,7 +36,10 @@ class FileFetcherTest {
         assertNotNull(text)
         val directory = FileFetcherTest::class.java.getResource("directory")
         assertNotNull(directory)
-        fetcher = FileFetcher(mapOf("/file_href" to File(text.path), "/dir_href" to File(directory.path)))
+        fetcher = FileFetcher(
+            mapOf("/file_href" to File(text.path), "/dir_href" to File(directory.path)),
+            MediaTypeRetriever()
+        )
     }
 
     @Test

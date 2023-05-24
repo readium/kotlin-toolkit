@@ -43,7 +43,7 @@ class ResourceChannel(
 
             withContext(Dispatchers.IO) {
                 val size = resource.length()
-                    .getOrElse {  throw IOException("Server didn't provide content length.", it) }
+                    .getOrElse { throw IOException("Server didn't provide content length.", it) }
 
                 if (position >= size) {
                     return@withContext - 1

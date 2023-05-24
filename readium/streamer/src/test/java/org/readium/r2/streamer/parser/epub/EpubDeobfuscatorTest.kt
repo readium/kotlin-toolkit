@@ -22,6 +22,7 @@ import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.streamer.readBlocking
 import org.robolectric.RobolectricTestRunner
 
@@ -39,7 +40,7 @@ class EpubDeobfuscatorTest {
             ?.path
             ?.let { File(it).parentFile }
         assertNotNull(deobfuscationDir)
-        fetcher = FileFetcher("/deobfuscation", deobfuscationDir!!)
+        fetcher = FileFetcher("/deobfuscation", deobfuscationDir!!, MediaTypeRetriever())
 
         val fontResult = fetcher.get(Link(href = "/deobfuscation/cut-cut.woff")).readBlocking()
         assert(fontResult.isSuccess)

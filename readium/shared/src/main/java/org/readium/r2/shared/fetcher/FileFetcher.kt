@@ -21,7 +21,7 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.isLazyInitialized
-import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import timber.log.Timber
 
 /**
@@ -30,10 +30,14 @@ import timber.log.Timber
  * [paths] contains the reachable local paths, indexed by the exposed HREF. Sub-paths are reachable
  * as well, to be able to access a whole directory.
  */
-class FileFetcher(private val paths: Map<String, File>) : Fetcher {
+class FileFetcher(
+    private val paths: Map<String, File>,
+    private val mediaTypeRetriever: MediaTypeRetriever
+) : Fetcher {
 
     /** Provides access to the given local [file] at [href]. */
-    constructor(href: String, file: File) : this(mapOf(href to file))
+    constructor(href: String, file: File, mediaTypeRetriever: MediaTypeRetriever) :
+        this(mapOf(href to file), mediaTypeRetriever)
 
     private val openedResources: MutableList<WeakReference<Resource>> = LinkedList()
 
@@ -46,7 +50,7 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
                     } else {
                         Link(
                             href = File(href, it.canonicalPath.removePrefix(file.canonicalPath)).canonicalPath,
-                            type = MediaType.ofFile(file, fileExtension = it.extension)?.toString()
+                            type = mediaTypeRetriever.ofFile(file, fileExtension = it.extension)?.toString()
                         )
                     }
                 }

@@ -79,8 +79,8 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     fun addRemotePublication(url: Url) {
         viewModelScope.launch {
             val exception =
-                if (!url.protocol.startsWith("http")) {
-                    BookRepository.ImportException.UnsupportedProtocol(url.protocol)
+                if (!url.scheme.startsWith("http")) {
+                    BookRepository.ImportException.UnsupportedProtocol(url.scheme)
                 } else {
                     app.bookRepository
                         .addRemoteBook(url)

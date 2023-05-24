@@ -33,8 +33,8 @@ object Sniffers {
      * The sniffers order is important, because some formats are subsets of other formats.
      */
     val all: List<Sniffer> = listOf(
-        ::xhtml, ::html, ::opds, ::lcpLicense, ::bitmap, ::webpub, ::w3cWPUB, ::epub, ::lpf, ::archive,
-        ::pdf, ::json
+        ::xhtml, ::html, ::opds, ::lcpLicense, ::bitmap, ::webpubManifest, ::webpub, ::w3cWPUB,
+        ::epub, ::lpf, ::archive, ::pdf, ::json
     )
 
     /**
@@ -46,6 +46,11 @@ object Sniffers {
         if (context.hasFileExtension("xht", "xhtml") || context.hasMediaType("application/xhtml+xml")) {
             return MediaType.XHTML
         }
+
+        if (context !is ResourceSnifferContext) {
+            return null
+        }
+
         context.contentAsXml()?.let {
             if (it.name.lowercase(Locale.ROOT) == "html" && it.namespace.lowercase(Locale.ROOT).contains("xhtml")) {
                 return MediaType.XHTML
@@ -59,6 +64,11 @@ object Sniffers {
         if (context.hasFileExtension("htm", "html") || context.hasMediaType("text/html")) {
             return MediaType.HTML
         }
+
+        if (context !is ResourceSnifferContext) {
+            return null
+        }
+
         // [contentAsXml] will fail if the HTML is not a proper XML document, hence the doctype check.
         if (
             context.contentAsXml()?.name?.lowercase(Locale.ROOT) == "html" ||
@@ -78,6 +88,25 @@ object Sniffers {
         if (context.hasMediaType("application/atom+xml;profile=opds-catalog")) {
             return MediaType.OPDS1
         }
+
+        // OPDS 2
+        if (context.hasMediaType("application/opds+json")) {
+            return MediaType.OPDS2
+        }
+        if (context.hasMediaType("application/opds-publication+json")) {
+            return MediaType.OPDS2_PUBLICATION
+        }
+
+        // OPDS Authentication Document.
+        if (context.hasMediaType("application/opds-authentication+json") || context.hasMediaType("application/vnd.opds.authentication.v1.0+json")) {
+            return MediaType.OPDS_AUTHENTICATION
+        }
+
+        if (context !is ResourceSnifferContext) {
+            return null
+        }
+
+        // OPDS 1
         context.contentAsXml()?.let { xml ->
             if (xml.namespace == "http://www.w3.org/2005/Atom") {
                 if (xml.name == "feed") {
@@ -89,12 +118,6 @@ object Sniffers {
         }
 
         // OPDS 2
-        if (context.hasMediaType("application/opds+json")) {
-            return MediaType.OPDS2
-        }
-        if (context.hasMediaType("application/opds-publication+json")) {
-            return MediaType.OPDS2_PUBLICATION
-        }
         context.contentAsRwpm()?.let { rwpm ->
             if (rwpm.linkWithRel("self")?.mediaType?.matches("application/opds+json") == true) {
                 return MediaType.OPDS2
@@ -105,9 +128,6 @@ object Sniffers {
         }
 
         // OPDS Authentication Document.
-        if (context.hasMediaType("application/opds-authentication+json") || context.hasMediaType("application/vnd.opds.authentication.v1.0+json")) {
-            return MediaType.OPDS_AUTHENTICATION
-        }
         if (context.containsJsonKeys("id", "title", "authentication")) {
             return MediaType.OPDS_AUTHENTICATION
         }
@@ -120,6 +140,11 @@ object Sniffers {
         if (context.hasFileExtension("lcpl") || context.hasMediaType("application/vnd.readium.lcp.license.v1.0+json")) {
             return MediaType.LCP_LICENSE_DOCUMENT
         }
+
+        if (context !is ResourceSnifferContext) {
+            return null
+        }
+
         if (context.containsJsonKeys("id", "issued", "provider", "encryption")) {
             return MediaType.LCP_LICENSE_DOCUMENT
         }
@@ -156,27 +181,53 @@ object Sniffers {
         return null
     }
 
+    /** Sniffs a Readium Web Manifest. */
+    suspend fun webpubManifest(context: SnifferContext): MediaType? {
+        if (context.hasMediaType("application/audiobook+json")) {
+            return MediaType.READIUM_AUDIOBOOK_MANIFEST
+        }
+
+        if (context.hasMediaType("application/divina+json")) {
+            return MediaType.DIVINA_MANIFEST
+        }
+
+        if (context.hasMediaType("application/webpub+json")) {
+            return MediaType.READIUM_WEBPUB_MANIFEST
+        }
+
+        if (context !is ResourceSnifferContext) {
+            return null
+        }
+
+        val manifest: Manifest =
+            context.contentAsRwpm() ?: return null
+
+        if (manifest.conformsTo(Publication.Profile.AUDIOBOOK)) {
+            return MediaType.READIUM_AUDIOBOOK_MANIFEST
+        }
+
+        if (manifest.conformsTo(Publication.Profile.DIVINA)) {
+            return MediaType.DIVINA_MANIFEST
+        }
+        if (manifest.linkWithRel("self")?.mediaType?.matches("application/webpub+json") == true) {
+            return MediaType.READIUM_WEBPUB_MANIFEST
+        }
+
+        return null
+    }
+
     /** Sniffs a Readium Web Publication, protected or not by LCP. */
     suspend fun webpub(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("audiobook") || context.hasMediaType("application/audiobook+zip")) {
             return MediaType.READIUM_AUDIOBOOK
         }
-        if (context.hasMediaType("application/audiobook+json")) {
-            return MediaType.READIUM_AUDIOBOOK_MANIFEST
-        }
 
         if (context.hasFileExtension("divina") || context.hasMediaType("application/divina+zip")) {
             return MediaType.DIVINA
         }
-        if (context.hasMediaType("application/divina+json")) {
-            return MediaType.DIVINA_MANIFEST
-        }
 
         if (context.hasFileExtension("webpub") || context.hasMediaType("application/webpub+zip")) {
             return MediaType.READIUM_WEBPUB
-        }
-        if (context.hasMediaType("application/webpub+json")) {
-            return MediaType.READIUM_WEBPUB_MANIFEST
         }
 
         if (context.hasFileExtension("lcpa") || context.hasMediaType("application/audiobook+lcp")) {
@@ -186,17 +237,15 @@ object Sniffers {
             return MediaType.LCP_PROTECTED_PDF
         }
 
-        // Reads a RWPM, either from a manifest.json file, or from a manifest.json archive entry, if
-        // the file is an archive.
-        var isManifest = true
+        if (context !is PackageSnifferContext) {
+            return null
+        }
+
+        // Reads a RWPM from a manifest.json archive entry.
         val manifest: Manifest? =
             try {
-                // manifest.json
-                context.contentAsRwpm()
-                    // Archive package
-                    ?: context.readArchiveEntryAt("manifest.json")
-                        ?.let { Manifest.fromJSON(JSONObject(String(it))) }
-                        ?.also { isManifest = false }
+                context.readArchiveEntryAt("manifest.json")
+                    ?.let { Manifest.fromJSON(JSONObject(String(it))) }
             } catch (e: Exception) {
                 null
             }
@@ -205,17 +254,16 @@ object Sniffers {
             val isLcpProtected = context.containsArchiveEntryAt("license.lcpl")
 
             if (manifest.conformsTo(Publication.Profile.AUDIOBOOK)) {
-                return if (isManifest) MediaType.READIUM_AUDIOBOOK_MANIFEST
-                else (if (isLcpProtected) MediaType.LCP_PROTECTED_AUDIOBOOK else MediaType.READIUM_AUDIOBOOK)
+                return if (isLcpProtected) MediaType.LCP_PROTECTED_AUDIOBOOK else MediaType.READIUM_AUDIOBOOK
             }
             if (manifest.conformsTo(Publication.Profile.DIVINA)) {
-                return if (isManifest) MediaType.DIVINA_MANIFEST else MediaType.DIVINA
+                return MediaType.DIVINA
             }
             if (isLcpProtected && manifest.conformsTo(Publication.Profile.PDF)) {
                 return MediaType.LCP_PROTECTED_PDF
             }
             if (manifest.linkWithRel("self")?.mediaType?.matches("application/webpub+json") == true) {
-                return if (isManifest) MediaType.READIUM_WEBPUB_MANIFEST else MediaType.READIUM_WEBPUB
+                return MediaType.READIUM_WEBPUB
             }
         }
 
@@ -224,6 +272,10 @@ object Sniffers {
 
     /** Sniffs a W3C Web Publication Manifest. */
     suspend fun w3cWPUB(context: SnifferContext): MediaType? {
+        if (context !is ResourceSnifferContext) {
+            return null
+        }
+
         // Somehow, [JSONObject] can't access JSON-LD keys such as `@context`.
         val content = context.contentAsString() ?: ""
         if (content.contains("@context") && content.contains("https://www.w3.org/ns/wp-context")) {
@@ -241,6 +293,10 @@ object Sniffers {
     suspend fun epub(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("epub") || context.hasMediaType("application/epub+zip")) {
             return MediaType.EPUB
+        }
+
+        if (context !is PackageSnifferContext) {
+            return null
         }
 
         val mimetype = context.readArchiveEntryAt("mimetype")
@@ -263,6 +319,11 @@ object Sniffers {
         if (context.hasFileExtension("lpf") || context.hasMediaType("application/lpf+zip")) {
             return MediaType.LPF
         }
+
+        if (context !is PackageSnifferContext) {
+            return null
+        }
+
         if (context.containsArchiveEntryAt("index.html")) {
             return MediaType.LPF
         }
@@ -313,22 +374,24 @@ object Sniffers {
             return MediaType.ZAB
         }
 
-        if (context.contentAsArchive() != null) {
-            fun isIgnored(file: File): Boolean =
-                file.name.startsWith(".") || file.name == "Thumbs.db"
+        if (context !is PackageSnifferContext) {
+            return null
+        }
 
-            suspend fun archiveContainsOnlyExtensions(fileExtensions: List<String>): Boolean =
-                context.archiveEntriesAllSatisfy { entry ->
-                    val file = File(entry.path)
-                    isIgnored(file) || fileExtensions.contains(file.extension.lowercase(Locale.ROOT))
-                }
+        fun isIgnored(file: File): Boolean =
+            file.name.startsWith(".") || file.name == "Thumbs.db"
 
-            if (archiveContainsOnlyExtensions(CBZ_EXTENSIONS)) {
-                return MediaType.CBZ
+        suspend fun archiveContainsOnlyExtensions(fileExtensions: List<String>): Boolean =
+            context.archiveEntriesAllSatisfy { entry ->
+                val file = File(entry.path)
+                isIgnored(file) || fileExtensions.contains(file.extension.lowercase(Locale.ROOT))
             }
-            if (archiveContainsOnlyExtensions(ZAB_EXTENSIONS)) {
-                return MediaType.ZAB
-            }
+
+        if (archiveContainsOnlyExtensions(CBZ_EXTENSIONS)) {
+            return MediaType.CBZ
+        }
+        if (archiveContainsOnlyExtensions(ZAB_EXTENSIONS)) {
+            return MediaType.ZAB
         }
 
         return null
@@ -343,6 +406,11 @@ object Sniffers {
         if (context.hasFileExtension("pdf") || context.hasMediaType("application/pdf")) {
             return MediaType.PDF
         }
+
+        if (context !is ResourceSnifferContext) {
+            return null
+        }
+
         if (context.read(0L until 5L)?.toString(Charsets.UTF_8) == "%PDF-") {
             return MediaType.PDF
         }
@@ -355,9 +423,15 @@ object Sniffers {
         if (context.hasMediaType("application/problem+json")) {
             return MediaType.JSON_PROBLEM_DETAILS
         }
+
         if (context.hasMediaType("application/json")) {
             return MediaType.JSON
         }
+
+        if (context !is ResourceSnifferContext) {
+            return null
+        }
+
         if (context.contentAsJson() != null) {
             return MediaType.JSON
         }
@@ -396,8 +470,12 @@ object Sniffers {
             return sniffExtension(extension) ?: continue
         }
 
+        if (context !is ResourceSnifferContext) {
+            return null
+        }
+
         return withContext(Dispatchers.IO) {
-            context.stream()
+            context.contentAsStream()
                 ?.let { URLConnection.guessContentTypeFromStream(it) }
                 ?.let { sniffType(it) }
         }

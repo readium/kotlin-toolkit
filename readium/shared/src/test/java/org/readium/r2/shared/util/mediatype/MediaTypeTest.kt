@@ -1,7 +1,6 @@
 package org.readium.r2.shared.util.mediatype
 
 import kotlin.test.*
-import kotlinx.coroutines.runBlocking
 import org.junit.Test
 
 class MediaTypeTest {
@@ -114,13 +113,6 @@ class MediaTypeTest {
     fun `charset value is canonicalized`() {
         assertEquals("US-ASCII", MediaType.parse("text/html;charset=ascii")?.parameters?.get("charset"))
         assertEquals("UNKNOWN", MediaType.parse("text/html;charset=unknown")?.parameters?.get("charset"))
-    }
-
-    @Test
-    fun `canonicalize media type`() = runBlocking {
-        assertEquals(MediaType.parse("text/html", fileExtension = "html")!!, MediaType.parse("text/html;charset=utf-8")!!.canonicalMediaType())
-        assertEquals(MediaType.parse("application/atom+xml;profile=opds-catalog")!!, MediaType.parse("application/atom+xml;profile=opds-catalog;charset=utf-8")!!.canonicalMediaType())
-        assertEquals(MediaType.parse("application/unknown;charset=utf-8")!!, MediaType.parse("application/unknown;charset=utf-8")!!.canonicalMediaType())
     }
 
     @Test

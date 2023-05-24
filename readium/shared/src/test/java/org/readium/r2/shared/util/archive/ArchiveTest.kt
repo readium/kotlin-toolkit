@@ -22,23 +22,34 @@ import org.junit.runners.Parameterized
 import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
 
 @RunWith(Parameterized::class)
-class ArchiveTest(val archive: Archive) {
+class ArchiveTest(val archive: Package) {
 
     companion object {
 
         @Parameterized.Parameters
         @JvmStatic
-        fun archives(): List<Archive> {
+        fun archives(): List<Package> {
             val epubZip = ArchiveTest::class.java.getResource("epub.epub")
             assertNotNull(epubZip)
-            val zipArchive = runBlocking { DefaultArchiveFactory().open(File(epubZip.path), password = null) }
+            val zipArchive = runBlocking {
+                DefaultArchiveFactory()
+                    .open(File(epubZip.path), password = null)
+                    .getOrNull()
+            }
             assertNotNull(zipArchive)
-            val apacheZipArchive = runBlocking { ChannelZipArchiveFactory().openFile(File(epubZip.path)) }
+            val apacheZipArchive = runBlocking {
+                ChannelZipArchiveFactory()
+                    .openFile(File(epubZip.path))
+            }
             assertNotNull(apacheZipArchive)
 
             val epubExploded = ArchiveTest::class.java.getResource("epub")
             assertNotNull(epubExploded)
-            val explodedArchive = runBlocking { DefaultArchiveFactory().open(File(epubExploded.path), password = null) }
+            val explodedArchive = runBlocking {
+                ExplodedArchiveFactory()
+                    .open(File(epubExploded.path))
+                    .getOrNull()
+            }
             assertNotNull(explodedArchive)
 
             return listOf(zipArchive, apacheZipArchive, explodedArchive)

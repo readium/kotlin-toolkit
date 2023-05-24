@@ -23,9 +23,10 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.io.CountingInputStream
 
 @OptIn(InternalReadiumApi::class)
-internal class JavaZip(private val archive: ZipFile) : Archive {
+internal class JavaZip(private val archive: ZipFile) :
+    Package {
 
-    private inner class Entry(private val entry: ZipEntry) : Archive.Entry {
+    private inner class Entry(private val entry: ZipEntry) : Package.Entry {
         override val path: String get() = entry.name
 
         override val length: Long? get() = entry.size.takeUnless { it == -1L }
@@ -84,10 +85,10 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
         }
     }
 
-    override suspend fun entries(): List<Archive.Entry> =
+    override suspend fun entries(): List<Package.Entry> =
         archive.entries().toList().filterNot { it.isDirectory }.mapNotNull { Entry(it) }
 
-    override suspend fun entry(path: String): Archive.Entry {
+    override suspend fun entry(path: String): Package.Entry {
         val entry = archive.getEntry(path)
             ?: throw Exception("No file entry at path $path.")
 
@@ -101,10 +102,10 @@ internal class JavaZip(private val archive: ZipFile) : Archive {
 
 internal class JavaZipArchiveFactory {
 
-    suspend fun open(url: Url, password: String?): Try<Archive, Exception> =
+    suspend fun open(url: Url): Try<Package, Exception> =
         withContext(Dispatchers.IO) {
             try {
-                if (url.protocol != "file") {
+                if (url.scheme != "file") {
                     throw Exception("Unsupported protocol.")
                 }
 
@@ -113,9 +114,9 @@ internal class JavaZipArchiveFactory {
             } catch (e: Exception) {
                 Try.failure(e)
             }
-    }
+        }
 
-    suspend fun open(file: File, password: String?): Try<Archive, Exception> =
+    suspend fun open(file: File): Try<Package, Exception> =
         withContext(Dispatchers.IO) {
             try {
                 val archive = JavaZip(ZipFile(file))

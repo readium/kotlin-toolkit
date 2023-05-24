@@ -15,7 +15,9 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.mediatype.AssetType
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * A [PublicationAsset] built for a remote publication.
@@ -24,36 +26,43 @@ import org.readium.r2.shared.util.mediatype.MediaType
 data class RemoteAsset(
     val url: Url,
     override val mediaType: MediaType,
-    override val assetType: PublicationAsset.Type
+    override val fetcher: Fetcher
 ) : PublicationAsset {
 
     override val name: String =
         url.file
 }
 
-class RemoteFetcherFactory(
+class RemoteAssetFactory(
     private val archiveFactory: ArchiveFactory,
-    private val httpClient: HttpClient
-) {
+    private val httpClient: HttpClient,
+    private val mediaTypeRetriever: MediaTypeRetriever
+) : AssetFactory {
 
-    suspend fun createFetcher(
-        asset: RemoteAsset,
-    ) : Try<Fetcher, Publication.OpeningException> =
-        when (asset.assetType) {
-            PublicationAsset.Type.Manifest ->
-                createFetcherForManifest(asset.url, asset.mediaType)
-            PublicationAsset.Type.PackagedPublication ->
-                createFetcherForPackagedPublication(asset.url, asset.mediaType)
-            PublicationAsset.Type.ExplodedPublication ->
-                createFetcherForExplodedPublication(asset.url)
-            PublicationAsset.Type.Content ->
-                createFetcherForContentFile(asset.url, asset.mediaType)
+    override suspend fun createAsset(
+        url: Url,
+        mediaType: MediaType,
+        assetType: AssetType
+    ): Try<RemoteAsset, Publication.OpeningException> =
+        when (assetType) {
+            AssetType.Archive ->
+                createFetcherForPackagedPublication(url, mediaType)
+            AssetType.Directory ->
+                createFetcherForExplodedPublication(url)
+            AssetType.File ->
+                createFetcherForFile(url, mediaType)
+        }.map { fetcher ->
+            RemoteAsset(
+                url,
+                mediaType,
+                fetcher
+            )
         }
 
     private suspend fun createFetcherForPackagedPublication(
         url: Url,
         mediaType: MediaType,
-    ) : Try<Fetcher, Publication.OpeningException> {
+    ): Try<Fetcher, Publication.OpeningException> {
         val resource = HttpFetcher.HttpResource(
             httpClient,
             Link(href = url.toString(), type = mediaType.toString()),
@@ -61,12 +70,12 @@ class RemoteFetcherFactory(
         )
         return archiveFactory.open(resource, password = null)
             .mapFailure { Publication.OpeningException.ParsingFailed(it) }
-            .map { ArchiveFetcher(it) }
+            .map { ArchiveFetcher(it, mediaTypeRetriever) }
     }
 
     private fun createFetcherForExplodedPublication(
         url: Url
-    ) : Try<Fetcher, Publication.OpeningException> {
+    ): Try<Fetcher, Publication.OpeningException> {
         val fetcher =
             HttpFetcher(
                 client = httpClient,
@@ -76,10 +85,20 @@ class RemoteFetcherFactory(
         return Try.success(fetcher)
     }
 
+    private fun createFetcherForFile(
+        url: Url,
+        mediaType: MediaType
+    ): Try<Fetcher, Publication.OpeningException> =
+        if (mediaType.isRwpm) {
+            createFetcherForManifest(url, mediaType)
+        } else {
+            createFetcherForContentFile(url, mediaType)
+        }
+
     private fun createFetcherForManifest(
         url: Url,
         mediaType: MediaType
-    ) : Try<Fetcher, Publication.OpeningException> {
+    ): Try<Fetcher, Publication.OpeningException> {
         val fetcher = HttpFetcher(
             client = httpClient,
             baseUrl = url.toString(),
@@ -94,7 +113,7 @@ class RemoteFetcherFactory(
     private fun createFetcherForContentFile(
         url: Url,
         mediaType: MediaType
-    ) : Try<Fetcher, Publication.OpeningException> {
+    ): Try<Fetcher, Publication.OpeningException> {
         val fetcher = HttpFetcher(
             client = httpClient,
             baseUrl = null,

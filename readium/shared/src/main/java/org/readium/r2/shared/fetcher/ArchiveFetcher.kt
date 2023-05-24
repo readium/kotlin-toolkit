@@ -17,18 +17,21 @@ import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
-import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.archive.Package
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import timber.log.Timber
 
 /** Provides access to entries of an archive. */
-class ArchiveFetcher internal constructor(private val archive: Archive) : Fetcher {
+class ArchiveFetcher(
+    private val archive: Package,
+    private val mediaTypeRetriever: MediaTypeRetriever
+) : Fetcher {
 
     override suspend fun links(): List<Link> =
         tryOr(emptyList()) { archive.entries() }
-            .map { it.toLink() }
+            .map { it.toLink(mediaTypeRetriever) }
 
     override fun get(link: Link): Resource =
         EntryResource(link, archive)
@@ -45,28 +48,30 @@ class ArchiveFetcher internal constructor(private val archive: Archive) : Fetche
 
         suspend fun create(
             path: String,
-            archiveFactory: ArchiveFactory = DefaultArchiveFactory()
+            archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
         ): Try<ArchiveFetcher, Exception> =
             withContext(Dispatchers.IO) {
                 archiveFactory.open(File(path), password = null)
-                    .map { ArchiveFetcher(it) }
+                    .map { ArchiveFetcher(it, mediaTypeRetriever) }
             }
 
         suspend fun create(
             resource: Resource,
-            archiveFactory: ArchiveFactory = DefaultArchiveFactory()
+            archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
         ): Try<ArchiveFetcher, Exception> =
             withContext(Dispatchers.IO) {
                 archiveFactory.open(resource, password = null)
-                    .map { ArchiveFetcher(it) }
+                    .map { ArchiveFetcher(it, mediaTypeRetriever) }
             }
     }
 
-    private class EntryResource(val originalLink: Link, val archive: Archive) : Resource {
+    private class EntryResource(val originalLink: Link, val archive: Package) : Resource {
 
-        private lateinit var _entry: ResourceTry<Archive.Entry>
+        private lateinit var _entry: ResourceTry<Package.Entry>
 
-        suspend fun entry(): ResourceTry<Archive.Entry> {
+        suspend fun entry(): ResourceTry<Package.Entry> {
             if (!::_entry.isInitialized) {
                 _entry = try {
                     Try.success(findEntry(originalLink))
@@ -78,7 +83,7 @@ class ArchiveFetcher internal constructor(private val archive: Archive) : Fetche
             return _entry
         }
 
-        suspend fun findEntry(link: Link): Archive.Entry {
+        suspend fun findEntry(link: Link): Package.Entry {
             val href = link.href.removePrefix("/")
             return try {
                 archive.entry(href)
@@ -116,15 +121,15 @@ class ArchiveFetcher internal constructor(private val archive: Archive) : Fetche
     }
 }
 
-private suspend fun Archive.Entry.toLink(): Link {
+private suspend fun Package.Entry.toLink(mediaTypeRetriever: MediaTypeRetriever): Link {
     return Link(
         href = path.addPrefix("/"),
-        type = MediaType.of(fileExtension = File(path).extension)?.toString(),
+        type = mediaTypeRetriever.of(fileExtension = File(path).extension)?.toString(),
         properties = Properties(toLinkProperties())
     )
 }
 
-private fun Archive.Entry.toLinkProperties(): Map<String, Any> {
+private fun Package.Entry.toLinkProperties(): Map<String, Any> {
     val properties = mutableMapOf<String, Any>(
         "archive" to mapOf(
             "entryLength" to (compressedLength ?: length ?: 0),

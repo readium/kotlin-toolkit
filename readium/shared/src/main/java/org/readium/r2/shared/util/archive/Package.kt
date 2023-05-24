@@ -19,10 +19,10 @@ import org.readium.r2.shared.util.tryRecover
 
 interface ArchiveFactory {
 
-    suspend fun open(resource: Resource, password: String?): Try<Archive, Exception>
+    suspend fun open(resource: Resource, password: String?): Try<Package, Exception>
 
     /** Opens an archive from a local [file]. */
-    suspend fun open(file: File, password: String?): Try<Archive, Exception> =
+    suspend fun open(file: File, password: String?): Try<Package, Exception> =
         open(FileFetcher.FileResource(Link(href = file.path), file), password)
 }
 
@@ -30,9 +30,9 @@ class DefaultArchiveFactory : ArchiveFactory {
 
     private val javaZipFactory = JavaZipArchiveFactory()
 
-    override suspend fun open(resource: Resource, password: String?): Try<Archive, Exception> {
+    override suspend fun open(resource: Resource, password: String?): Try<Package, Exception> {
         return resource.file
-            ?.let { javaZipFactory.open(it, password) }
+            ?.let { javaZipFactory.open(it) }
             ?: Try.failure(Exception("Resource unsupported"))
     }
 }
@@ -42,7 +42,7 @@ class CompositeArchiveFactory(
     private val fallbackFactory: ArchiveFactory
 ) : ArchiveFactory {
 
-    override suspend fun open(resource: Resource, password: String?): Try<Archive, Exception> {
+    override suspend fun open(resource: Resource, password: String?): Try<Package, Exception> {
         return primaryFactory.open(resource, password)
             .tryRecover { fallbackFactory.open(resource, password) }
     }
@@ -51,7 +51,7 @@ class CompositeArchiveFactory(
 /**
  * Represents an immutable archive.
  */
-interface Archive : SuspendingCloseable {
+interface Package : SuspendingCloseable {
 
     /**
      * Holds an archive entry's metadata.

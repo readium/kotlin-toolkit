@@ -12,8 +12,8 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.archive.Archive
 import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.archive.Package
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArchiveEntry
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipFile
 import org.readium.r2.shared.util.archive.channel.jvm.SeekableByteChannel
@@ -23,9 +23,9 @@ import org.readium.r2.shared.util.io.CountingInputStream
 
 internal class ChannelZip(
     private val archive: ZipFile
-) : Archive {
+) : Package {
 
-    private inner class Entry(private val entry: ZipArchiveEntry) : Archive.Entry {
+    private inner class Entry(private val entry: ZipArchiveEntry) : Package.Entry {
         override val path: String get() = entry.name
 
         override val length: Long? get() = entry.size.takeUnless { it == -1L }
@@ -92,10 +92,10 @@ internal class ChannelZip(
         }
     }
 
-    override suspend fun entries(): List<Archive.Entry> =
+    override suspend fun entries(): List<Package.Entry> =
         archive.entries.toList().filterNot { it.isDirectory }.mapNotNull { Entry(it) }
 
-    override suspend fun entry(path: String): Archive.Entry {
+    override suspend fun entry(path: String): Package.Entry {
         val entry = archive.getEntry(path)
             ?: throw Exception("No file entry at path $path.")
 
@@ -116,16 +116,16 @@ class ChannelZipArchiveFactory(
     private val httpClient: HttpClient = DefaultHttpClient()
 ) : ArchiveFactory {
 
-    override suspend fun open(resource: Resource, password: String?): Try<Archive, Exception> =
+    override suspend fun open(resource: Resource, password: String?): Try<Package, Exception> =
         try {
             val resourceChannel = ResourceChannel(resource)
             val channel = wrapBaseChannel(resourceChannel)
             Try.success(ChannelZip(ZipFile(channel, true)))
         } catch (e: Exception) {
-               Try.failure(e)
+            Try.failure(e)
         }
 
-    internal fun openFile(file: File): Archive {
+    internal fun openFile(file: File): Package {
         val fileChannel = FileChannelAdapter(file, "r")
         val channel = wrapBaseChannel(fileChannel)
         return ChannelZip(ZipFile(channel))

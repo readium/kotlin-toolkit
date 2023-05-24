@@ -15,6 +15,8 @@ import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.AssetType
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.extensions.readAsJsonOrNull
 import org.readium.r2.streamer.extensions.readAsXmlOrNull
@@ -43,17 +45,15 @@ internal class FallbackContentProtection : ContentProtection {
 
     override suspend fun open(
         asset: PublicationAsset,
-        fetcher: Fetcher,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
     ): Try<ContentProtection.ProtectedAsset, Publication.OpeningException>? {
-        val scheme: Scheme = sniffScheme(fetcher, asset.mediaType)
+        val scheme: Scheme = sniffScheme(asset.fetcher, asset.mediaType)
             ?: return null
 
         val protectedFile = ContentProtection.ProtectedAsset(
             asset = asset,
-            fetcher = fetcher,
             onCreatePublication = {
                 servicesBuilder.contentProtectionServiceFactory = Service.createFactory(scheme)
             }
@@ -61,6 +61,15 @@ internal class FallbackContentProtection : ContentProtection {
 
         return Try.success(protectedFile)
     }
+
+    override suspend fun open(
+        url: Url,
+        mediaType: MediaType,
+        assetType: AssetType,
+        credentials: String?,
+        allowUserInteraction: Boolean,
+        sender: Any?
+    ): Try<ContentProtection.ProtectedAsset, Publication.OpeningException>? = null
 
     internal suspend fun sniffScheme(fetcher: Fetcher, mediaType: MediaType): Scheme? =
         when {

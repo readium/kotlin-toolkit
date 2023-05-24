@@ -10,28 +10,20 @@ import android.content.ContentResolver
 import android.net.Uri
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
-import org.readium.r2.shared.extensions.queryProjection
 import java.io.File
-import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.toUrl
 
 class AssetRetriever(
-    private val protocols: (Url) -> Resource?,
-    private val archiveFactory: ArchiveFactory
+    protocols: List<Protocol>,
+    archiveFactory: ArchiveFactory,
+    private val sniffers: List<Sniffer> = MediaType.sniffers
 ) {
 
-    /**
-     * Resolves a format from file extension and media type hints, without checking the actual
-     * content.
-     */
-    suspend fun of(
-        mediaTypes: List<String>,
-        fileExtensions: List<String>,
-        sniffers: List<Sniffer> = MediaType.sniffers
-    ): MediaType? {
-        return of(content = null, mediaTypes = mediaTypes, fileExtensions = fileExtensions, sniffers = sniffers)
-    }
+    private val snifferContextFactory: SnifferContextFactory =
+        SnifferContextFactory(protocols, archiveFactory)
 
     /**
      * Resolves a format from a local file path.
@@ -40,21 +32,8 @@ class AssetRetriever(
         file: File,
         mediaType: String? = null,
         fileExtension: String? = null,
-        sniffers: List<Sniffer> = MediaType.sniffers
-    ): MediaType? {
-        return ofFile(file, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension), sniffers = sniffers)
-    }
-
-    /**
-     * Resolves a format from a local file path.
-     */
-    suspend fun ofFile(
-        file: File,
-        mediaTypes: List<String>,
-        fileExtensions: List<String>,
-        sniffers: List<Sniffer> = MediaType.sniffers
-    ): MediaType? {
-        return of(content = SnifferFileContent(file), mediaTypes = mediaTypes, fileExtensions = listOf(file.extension) + fileExtensions, sniffers = sniffers)
+    ): AssetDescription? {
+        return ofFile(file, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension))
     }
 
     /**
@@ -64,9 +43,8 @@ class AssetRetriever(
         path: String,
         mediaType: String? = null,
         fileExtension: String? = null,
-        sniffers: List<Sniffer> = MediaType.sniffers
-    ): MediaType? {
-        return ofFile(File(path), mediaType = mediaType, fileExtension = fileExtension, sniffers = sniffers)
+    ): AssetDescription? {
+        return ofFile(File(path), mediaType = mediaType, fileExtension = fileExtension)
     }
 
     /**
@@ -76,33 +54,23 @@ class AssetRetriever(
         path: String,
         mediaTypes: List<String>,
         fileExtensions: List<String>,
-        sniffers: List<Sniffer> = MediaType.sniffers
-    ): MediaType? {
-        return ofFile(File(path), mediaTypes = mediaTypes, fileExtensions = fileExtensions, sniffers = sniffers)
+    ): AssetDescription? {
+        return ofFile(File(path), mediaTypes = mediaTypes, fileExtensions = fileExtensions)
     }
 
     /**
-     * Resolves a format from bytes, e.g. from an HTTP response.
+     * Resolves a format from a local file path.
      */
-    suspend fun ofBytes(
-        bytes: () -> ByteArray,
-        mediaType: String? = null,
-        fileExtension: String? = null,
-        sniffers: List<Sniffer> = MediaType.sniffers
-    ): MediaType? {
-        return ofBytes(bytes, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension), sniffers = sniffers)
-    }
-
-    /**
-     * Resolves a format from bytes, e.g. from an HTTP response.
-     */
-    suspend fun ofBytes(
-        bytes: () -> ByteArray,
+    suspend fun ofFile(
+        file: File,
         mediaTypes: List<String>,
         fileExtensions: List<String>,
-        sniffers: List<Sniffer> = MediaType.sniffers
-    ): MediaType? {
-        return of(content = SnifferBytesContent(bytes), mediaTypes = mediaTypes, fileExtensions = fileExtensions, sniffers = sniffers)
+    ): AssetDescription? {
+        val context = snifferContextFactory
+            .createContext(file.toUrl(), mediaTypes, fileExtensions)
+            ?: return null
+
+        return ofClosing(context)
     }
 
     /**
@@ -114,9 +82,8 @@ class AssetRetriever(
         contentResolver: ContentResolver,
         mediaType: String? = null,
         fileExtension: String? = null,
-        sniffers: List<Sniffer> = MediaType.sniffers
-    ): MediaType? {
-        return ofUri(uri, contentResolver, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension), sniffers = sniffers)
+    ): AssetDescription? {
+        return ofUri(uri, contentResolver, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension))
     }
 
     /**
@@ -128,8 +95,7 @@ class AssetRetriever(
         contentResolver: ContentResolver,
         mediaTypes: List<String>,
         fileExtensions: List<String>,
-        sniffers: List<Sniffer> = MediaType.sniffers
-    ): MediaType? {
+    ): AssetDescription? {
         val allMediaTypes = mediaTypes.toMutableList()
         val allFileExtensions = fileExtensions.toMutableList()
 
@@ -147,9 +113,44 @@ class AssetRetriever(
             }
         }
 
-        val content = SnifferUriContent(uri = uri, contentResolver = contentResolver)
-        return of(content = content, mediaTypes = allMediaTypes, fileExtensions = allFileExtensions, sniffers = sniffers)
+        val url = uri.toUrl()
+            ?: return null
+
+        val context = snifferContextFactory
+            .createContext(url, allMediaTypes, allFileExtensions)
+            ?: return null
+
+        return ofClosing(context)
     }
+
+    suspend fun ofUrl(
+        url: Url,
+        mediaType: String? = null,
+        fileExtension: String? = null
+    ): AssetDescription? {
+        return ofUrl(url, listOfNotNull(mediaType), listOfNotNull(fileExtension))
+    }
+
+    private suspend fun ofUrl(
+        url: Url,
+        mediaTypes: List<String>,
+        fileExtensions: List<String>
+    ): AssetDescription? {
+        val context = snifferContextFactory
+            .createContext(url, mediaTypes, fileExtensions)
+            ?: return null
+
+        return ofClosing(context)
+    }
+
+    private suspend fun ofClosing(
+        context: SnifferContext,
+    ): AssetDescription? =
+        try {
+            of(context)
+        } finally {
+            context.release()
+        }
 
     /**
      * Resolves a media type from a sniffer context.
@@ -160,71 +161,37 @@ class AssetRetriever(
      *  - Heavy Sniffing reads the bytes to perform more advanced sniffing.
      */
     private suspend fun of(
-        content: SnifferContent?,
-        mediaTypes: List<String>,
-        fileExtensions: List<String>,
-        sniffers: List<Sniffer>
-    ): MediaType? {
-        // Light sniffing with only media type hints
-        if (mediaTypes.isNotEmpty()) {
-            val context = SnifferContext(
-                archiveFactory = archiveFactory,
-                mediaTypes = mediaTypes
-            )
-            for (sniffer in sniffers) {
-                val mediaType = sniffer(context)
-                if (mediaType != null) {
-                    return mediaType
-                }
-            }
+        context: SnifferContext,
+    ): AssetDescription? {
+
+        val type = when {
+            (context is PackageSnifferContext) ->
+                AssetType.Archive
+            (context is ResourceSnifferContext) ->
+                AssetType.File
+            else ->
+                AssetType.Directory
         }
 
-        // Light sniffing with both media type hints and file extensions
-        if (fileExtensions.isNotEmpty()) {
-            val context = SnifferContext(
-                archiveFactory = archiveFactory,
-                mediaTypes = mediaTypes,
-                fileExtensions = fileExtensions
-            )
-            for (sniffer in sniffers) {
-                val mediaType = sniffer(context)
-                if (mediaType != null) {
-                    return mediaType
-                }
-            }
-        }
+        var mediaType: MediaType? = null
 
-        // Heavy sniffing
-        if (content != null) {
-            val context = SnifferContext(
-                archiveFactory = archiveFactory,
-                content = content,
-                mediaTypes = mediaTypes,
-                fileExtensions = fileExtensions
-            )
-            for (sniffer in sniffers) {
-                val mediaType = sniffer(context)
-                if (mediaType != null) {
-                    return mediaType
-                }
-            }
+        for (sniffer in sniffers) {
+            sniffer(context)?.let { mediaType = it }
         }
 
         // Falls back on the system-wide registered media types using [MimeTypeMap].
         // Note: This is done after the heavy sniffing of the provided [sniffers], because
         // otherwise it will detect JSON, XML or ZIP formats before we have a chance of sniffing
         // their content (for example, for RWPM).
-        val context = SnifferContext(
-            archiveFactory = archiveFactory,
-            content = content,
-            mediaTypes = mediaTypes,
-            fileExtensions = fileExtensions
-        )
-        Sniffers.system(context)?.let { return it }
+        Sniffers.system(context)?.let { mediaType = it }
 
         // If nothing else worked, we try to parse the first valid media type hint.
-        for (mediaType in mediaTypes) {
-            MediaType.parse(mediaType)?.let { return it }
+        for (mediaTypeHint in context.mediaTypes) {
+            MediaType.parse(mediaTypeHint.toString())?.let { mediaType = it }
+        }
+
+        if (mediaType != null) {
+            return AssetDescription(mediaType!!, type)
         }
 
         return null

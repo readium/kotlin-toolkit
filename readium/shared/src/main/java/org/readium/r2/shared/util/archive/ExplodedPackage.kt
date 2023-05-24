@@ -21,9 +21,10 @@ import org.readium.r2.shared.util.Url
 /**
  * An archive exploded on the file system as a directory.
  */
-internal class ExplodedArchive(private val directory: File) : Archive {
+internal class ExplodedPackage(private val directory: File) :
+    Package {
 
-    private inner class Entry(private val file: File) : Archive.Entry {
+    private inner class Entry(private val file: File) : Package.Entry {
 
         override val path: String get() = file.relativeTo(directory).path
 
@@ -47,13 +48,13 @@ internal class ExplodedArchive(private val directory: File) : Archive {
         override suspend fun close() {}
     }
 
-    override suspend fun entries(): List<Archive.Entry> =
+    override suspend fun entries(): List<Package.Entry> =
         directory.walk()
             .filter { it.isFile }
             .map { Entry(it) }
             .toList()
 
-    override suspend fun entry(path: String): Archive.Entry {
+    override suspend fun entry(path: String): Package.Entry {
         val file = File(directory, path)
 
         if (!directory.isParentOf(file) || !file.isFile)
@@ -67,28 +68,27 @@ internal class ExplodedArchive(private val directory: File) : Archive {
 
 internal class ExplodedArchiveFactory {
 
-    suspend fun open(url: Url, password: String?): Try<Archive, Exception> =
+    suspend fun open(url: Url): Try<Package, Exception> =
         withContext(Dispatchers.IO) {
             try {
-                if (url.protocol != "file") {
+                if (url.scheme != "file") {
                     throw Exception("Unsupported protocol.")
                 }
 
                 val file = File(url.path)
-                open(file, password)
+                open(file)
             } catch (e: Exception) {
                 Try.failure(e)
             }
         }
 
-    suspend fun open(file: File, password: String?): Try<Archive, Exception> =
+    suspend fun open(file: File): Try<Package, Exception> =
         withContext(Dispatchers.IO) {
             try {
                 if (!file.isDirectory) {
                     throw Exception("Url is not a directory.")
-
                 }
-                Try.success(ExplodedArchive(file))
+                Try.success(ExplodedPackage(file))
             } catch (e: Exception) {
                 Try.failure(e)
             }

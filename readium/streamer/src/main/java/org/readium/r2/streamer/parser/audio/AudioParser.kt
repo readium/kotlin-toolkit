@@ -9,6 +9,7 @@ package org.readium.r2.streamer.parser.audio
 import java.io.File
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -26,16 +27,14 @@ import org.readium.r2.streamer.parser.PublicationParser
 class AudioParser : PublicationParser {
 
     override suspend fun parse(
-        mediaType: MediaType,
-        fetcher: Fetcher,
-        assetName: String,
+        asset: PublicationAsset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
 
-        if (!accepts(mediaType, fetcher))
+        if (!accepts(asset.mediaType, asset.fetcher))
             return Try.failure(PublicationParser.Error.FormatNotSupported)
 
-        val readingOrder = fetcher.links()
+        val readingOrder = asset.fetcher.links()
             .filter { link -> with(File(link.href)) { lowercasedExtension in audioExtensions && !isHiddenOrThumbs } }
             .sortedBy(Link::href)
             .toMutableList()
@@ -43,7 +42,7 @@ class AudioParser : PublicationParser {
         if (readingOrder.isEmpty())
             throw Exception("No audio file found in the publication.")
 
-        val title = fetcher.guessTitle() ?: assetName
+        val title = asset.fetcher.guessTitle() ?: asset.name
 
         val manifest = Manifest(
             metadata = Metadata(
@@ -55,7 +54,7 @@ class AudioParser : PublicationParser {
 
         val publicationBuilder = Publication.Builder(
             manifest = manifest,
-            fetcher = fetcher,
+            fetcher = asset.fetcher,
             servicesBuilder = Publication.ServicesBuilder(
                 locator = AudioLocatorService.createFactory()
             )

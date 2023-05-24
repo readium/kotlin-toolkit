@@ -6,11 +6,10 @@
 
 package org.readium.r2.streamer.parser
 
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
-import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  *  Parses a Publication from an asset.
@@ -26,12 +25,9 @@ interface PublicationParser {
      * debug their publications.
      */
     suspend fun parse(
-        mediaType: MediaType,
-        fetcher: Fetcher,
-        assetName: String,
+        asset: PublicationAsset,
         warnings: WarningLogger? = null
     ): Try<Publication.Builder, Error>
-
 
     sealed class Error : Exception() {
 

@@ -16,6 +16,9 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.AssetType
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Bridge between a Content Protection technology and the Readium toolkit.
@@ -35,7 +38,15 @@ interface ContentProtection {
      */
     suspend fun open(
         asset: PublicationAsset,
-        fetcher: Fetcher,
+        credentials: String?,
+        allowUserInteraction: Boolean,
+        sender: Any?
+    ): Try<ProtectedAsset, Publication.OpeningException>?
+
+    suspend fun open(
+        url: Url,
+        mediaType: MediaType,
+        assetType: AssetType,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
@@ -58,7 +69,6 @@ interface ContentProtection {
      */
     data class ProtectedAsset(
         val asset: PublicationAsset,
-        val fetcher: Fetcher,
         val onCreatePublication: Publication.Builder.() -> Unit = {}
     )
 

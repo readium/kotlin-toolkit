@@ -7,6 +7,7 @@
 package org.readium.r2.shared.fetcher
 
 import android.webkit.MimeTypeMap
+import java.io.File
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -21,6 +22,8 @@ import org.readium.r2.shared.linkBlocking
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.readBlocking
+import org.readium.r2.shared.util.archive.JavaZipArchiveFactory
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 
@@ -32,7 +35,12 @@ class ArchiveFetcherTest {
     init {
         val epub = ArchiveFetcherTest::class.java.getResource("epub.epub")
         assertNotNull(epub)
-        val zipFetcher = runBlocking { ArchiveFetcher.fromPath(epub.path) }
+        val archive = runBlocking {
+            JavaZipArchiveFactory()
+                .open(File(epub.path))
+                .getOrThrow()
+        }
+        val zipFetcher = ArchiveFetcher(archive, MediaTypeRetriever())
         assertNotNull(zipFetcher)
         fetcher = zipFetcher
     }

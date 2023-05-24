@@ -75,7 +75,7 @@ class ResourceInputStream(
         try {
             val bytes = runBlocking { resource.read(position until (position + 1)).getOrThrow() }
             position += 1
-            return bytes.first().toInt()
+            return bytes.first().toUByte().toInt()
         } catch (e: Exception) {
             throw IOException("Can't read ResourceInputStream", e)
         }

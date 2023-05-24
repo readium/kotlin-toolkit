@@ -20,7 +20,9 @@ import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.FileAsset
 import org.readium.r2.shared.publication.firstWithRel
+import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.streamer.parseBlocking
 
 class ImageParserTest {
@@ -30,14 +32,15 @@ class ImageParserTest {
     private val cbzAsset = runBlocking {
         val path = pathForResource("futuristic_tales.cbz")
         val file = File(path)
-        val fetcher = checkNotNull(ArchiveFetcher.fromPath(path))
+        val archive = DefaultArchiveFactory().open(file, password = null).getOrThrow()
+        val fetcher = ArchiveFetcher(archive, MediaTypeRetriever())
         FileAsset(file, MediaType.CBZ, fetcher)
     }
 
     private val jpgAsset = run {
         val path = pathForResource("futuristic_tales.jpg")
         val file = File(path)
-        val fetcher = FileFetcher("/image.jpg", file)
+        val fetcher = FileFetcher("/image.jpg", file, MediaTypeRetriever())
         FileAsset(file, MediaType.JPEG, fetcher)
     }
     private fun pathForResource(resource: String): String {

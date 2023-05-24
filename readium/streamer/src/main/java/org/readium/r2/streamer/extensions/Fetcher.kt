@@ -9,17 +9,11 @@
 
 package org.readium.r2.streamer.extensions
 
-import java.io.File
 import org.json.JSONObject
-import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.fetcher.ArchiveFetcher
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.util.archive.ArchiveFactory
-import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.shared.util.use
 
 /** Returns the resource data at the given [Link]'s HREF, or throws a [Resource.Exception] */
@@ -39,21 +33,6 @@ internal suspend fun Fetcher.readAsXmlOrNull(href: String): ElementNode? =
 /** Returns the resource data as a JSON object at the given [href], or null. */
 internal suspend fun Fetcher.readAsJsonOrNull(href: String): JSONObject? =
     get(href).use { it.readAsJson().getOrNull() }
-
-/** Creates a [Fetcher] from either an archive file, or an exploded directory. **/
-internal suspend fun Fetcher.Companion.fromArchiveOrDirectory(
-    path: String,
-    archiveFactory: ArchiveFactory = DefaultArchiveFactory()
-): Fetcher? {
-    val file = File(path)
-    val isDirectory = tryOrNull { file.isDirectory } ?: return null
-
-    return if (isDirectory) {
-        FileFetcher(href = "/", file = file)
-    } else {
-        ArchiveFetcher.fromPath(path, archiveFactory)
-    }
-}
 
 internal suspend fun Fetcher.guessTitle(): String? {
     val firstLink = links().firstOrNull() ?: return null

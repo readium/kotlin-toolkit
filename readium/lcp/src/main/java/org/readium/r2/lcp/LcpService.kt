@@ -25,12 +25,9 @@ import org.readium.r2.lcp.service.PassphrasesRepository
 import org.readium.r2.lcp.service.PassphrasesService
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.ContentProtection
-import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.shared.publication.asset.AssetFactory
+import org.readium.r2.shared.publication.asset.DefaultAssetFactory
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.archive.ArchiveFactory
-import org.readium.r2.shared.util.archive.DefaultArchiveFactory
-import org.readium.r2.shared.util.http.DefaultHttpClient
-import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -114,13 +111,9 @@ interface LcpService {
      * LCP license. The default implementation [LcpDialogAuthentication] presents a dialog to the
      * user to enter their passphrase.
      */
-    fun contentProtection(authentication: LcpAuthenticating = LcpDialogAuthentication()): ContentProtection =
-        LcpContentProtection(this, authentication)
-
-    /**
-     * Builds a [PublicationAsset] to open a LCP-protected publication from its license file.
-     */
-    suspend fun remoteAssetForLicense(license: File): Try<PublicationAsset, LcpException>
+    fun contentProtection(
+        authentication: LcpAuthenticating = LcpDialogAuthentication(),
+    ): ContentProtection
 
     /**
      * Information about an acquired publication protected with LCP.
@@ -145,8 +138,7 @@ interface LcpService {
          */
         operator fun invoke(
             context: Context,
-            archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
-            httpClient: HttpClient = DefaultHttpClient()
+            assetFactory: AssetFactory = DefaultAssetFactory(),
         ): LcpService? {
             if (!LcpClient.isAvailable())
                 return null
@@ -166,8 +158,7 @@ interface LcpService {
                 network = network,
                 passphrases = passphrases,
                 context = context,
-                archiveFactory = archiveFactory,
-                httpClient = httpClient
+                assetFactory = assetFactory
             )
         }
 

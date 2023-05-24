@@ -30,6 +30,9 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.util.*
+import org.readium.r2.shared.util.mediatype.AssetDescription
+import org.readium.r2.shared.util.mediatype.AssetRetriever
+import org.readium.r2.shared.util.mediatype.AssetType
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.Streamer
 import org.readium.r2.testapp.db.BooksDao
@@ -47,6 +50,7 @@ class BookRepository(
     private val storageDir: File,
     private val lcpService: Try<LcpService, Exception>,
     private val streamer: Streamer,
+    private val assetRetriever: AssetRetriever
 ) {
     private val coverDir: File =
         File(storageDir, "covers/")
@@ -109,6 +113,7 @@ class BookRepository(
     private suspend fun insertBookIntoDatabase(
         href: String,
         mediaType: MediaType,
+        assetType: AssetType,
         publication: Publication,
         cover: String
     ): Long {
@@ -118,7 +123,8 @@ class BookRepository(
             author = publication.metadata.authorName,
             href = href,
             identifier = publication.metadata.identifier ?: "",
-            type = mediaType.toString(),
+            mediaType = mediaType,
+            assetType = assetType,
             progression = "{}",
             cover = cover
         )
@@ -160,22 +166,25 @@ class BookRepository(
     suspend fun addRemoteBook(
         url: Url
     ): Try<Unit, ImportException> {
-        val bytes = { url.readBytes() }
-        val mediaType = MediaType.ofBytes(bytes, fileExtension = url.extension)
-            ?: MediaType.BINARY
-
-        return addBook(url, mediaType)
+        val assetDescription = assetRetriever.ofUrl(url, fileExtension = url.extension)
+            ?: return Try.failure(
+                ImportException.UnableToOpenPublication(Publication.OpeningException.UnsupportedFormat())
+            )
+        return addBook(url, assetDescription)
     }
 
     suspend fun addLocalBook(
         tempFile: File,
         coverUrl: String? = null
     ): Try<Unit, ImportException> {
-        val sourceMediaType = MediaType.ofFile(tempFile)
+        val sourceAssetDescription = assetRetriever.ofFile(tempFile)
+            ?: return Try.failure(
+                ImportException.UnableToOpenPublication(Publication.OpeningException.UnsupportedFormat())
+            )
 
-        val (publicationFile, mediaType) =
-            if (sourceMediaType != MediaType.LCP_LICENSE_DOCUMENT) {
-                tempFile to sourceMediaType
+        val (publicationFile, assetDescription) =
+            if (sourceAssetDescription.mediaType != MediaType.LCP_LICENSE_DOCUMENT) {
+                tempFile to sourceAssetDescription
             } else {
                 lcpService
                     .flatMap {
@@ -184,8 +193,8 @@ class BookRepository(
                     .fold(
                         {
                             val file = it.localFile
-                            val mediaType = MediaType.of(fileExtension = File(it.suggestedFilename).extension)
-                            file to mediaType
+                            val assetDescription = assetRetriever.ofFile(file, fileExtension = File(it.suggestedFilename).extension)
+                            file to assetDescription
                         },
                         {
                             tryOrNull { tempFile.delete() }
@@ -194,14 +203,14 @@ class BookRepository(
                     )
             }
 
-        if (mediaType == null) {
+        if (assetDescription == null) {
             val exception = Publication.OpeningException.UnsupportedFormat(
                 Exception("Unsupported media type")
             )
             return Try.failure(ImportException.UnableToOpenPublication(exception))
         }
 
-        val fileName = "${UUID.randomUUID()}.${mediaType.fileExtension}"
+        val fileName = "${UUID.randomUUID()}.${sourceAssetDescription.mediaType.fileExtension}"
         val libraryFile = File(storageDir, fileName)
         val libraryUrl = libraryFile.toUrl()
 
@@ -214,7 +223,7 @@ class BookRepository(
         }
 
         return addBook(
-            libraryUrl, mediaType, coverUrl
+            libraryUrl, assetDescription, coverUrl
         ).onFailure {
             tryOrNull { libraryFile.delete() }
         }
@@ -222,10 +231,10 @@ class BookRepository(
 
     private suspend fun addBook(
         url: Url,
-        mediaType: MediaType,
+        assetDescription: AssetDescription,
         coverUrl: String? = null,
     ): Try<Unit, ImportException> {
-        streamer.open(url, mediaType, allowUserInteraction = false)
+        streamer.open(url, assetDescription.mediaType, assetDescription.assetType, allowUserInteraction = false)
             .onSuccess { publication ->
                 val coverBitmap: Bitmap? = coverUrl
                     ?.let { getBitmapFromURL(it) }
@@ -236,7 +245,8 @@ class BookRepository(
 
                 val id = insertBookIntoDatabase(
                     url.toString(),
-                    mediaType,
+                    assetDescription.mediaType,
+                    assetDescription.assetType,
                     publication,
                     coverFile.path
                 )

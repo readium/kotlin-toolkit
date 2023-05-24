@@ -12,28 +12,21 @@ import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import org.readium.r2.shared.extensions.readFully
-import org.readium.r2.shared.extensions.readRange
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.fetcher.BytesResource
+import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.ResourceInputStream
 import org.readium.r2.shared.parser.xml.ElementNode
-import org.readium.r2.shared.parser.xml.XmlParser
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.util.archive.Archive
+import org.readium.r2.shared.util.Either
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.archive.Package
 import timber.log.Timber
 
-/**
- * A companion type of [Sniffer] holding the type hints (file extensions, media types) and
- * providing an access to the file content.
- *
- * @param content Underlying content holder.
- * @param mediaTypes Media type hints.
- * @param fileExtensions File extension hints.
- */
-class SnifferContext internal constructor(
-    private val archiveFactory: ArchiveFactory,
-    private val content: SnifferContent? = null,
+sealed class SnifferContext(
     mediaTypes: List<String> = emptyList(),
     fileExtensions: List<String> = emptyList()
 ) {
@@ -46,12 +39,9 @@ class SnifferContext internal constructor(
     val fileExtensions: List<String> = fileExtensions
         .map { it.lowercase(Locale.ROOT) }
 
-    // Metadata
-
     /** Finds the first [Charset] declared in the media types' `charset` parameter. */
-    val charset: Charset? by lazy {
+    val charset: Charset? get() =
         this.mediaTypes.firstNotNullOfOrNull { it.charset }
-    }
 
     /** Returns whether this context has any of the given file extensions, ignoring case. */
     fun hasFileExtension(vararg fileExtensions: String): Boolean {
@@ -80,7 +70,30 @@ class SnifferContext internal constructor(
         return false
     }
 
-    // Content
+    abstract suspend fun release()
+}
+
+class HintSnifferContext(
+    mediaTypes: List<String> = emptyList(),
+    fileExtensions: List<String> = emptyList()
+) : SnifferContext(mediaTypes, fileExtensions) {
+
+    override suspend fun release() {}
+}
+
+/**
+ * A companion type of [Sniffer] holding the type hints (file extensions, media types) and
+ * providing an access to the file content.
+ *
+ * @param resource Underlying content holder.
+ * @param mediaTypes Media type hints.
+ * @param fileExtensions File extension hints.
+ */
+class ResourceSnifferContext internal constructor(
+    val resource: Resource,
+    mediaTypes: List<String> = emptyList(),
+    fileExtensions: List<String> = emptyList()
+) : SnifferContext(mediaTypes, fileExtensions) {
 
     /**
      * Content as plain text.
@@ -92,7 +105,9 @@ class SnifferContext internal constructor(
         try {
             if (!loadedContentAsString) {
                 loadedContentAsString = true
-                _contentAsString = content?.read()?.toString(charset ?: Charset.defaultCharset())
+                _contentAsString = resource
+                    .readAsString(charset ?: Charset.defaultCharset())
+                    .getOrNull()
             }
             _contentAsString
         } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
@@ -109,7 +124,7 @@ class SnifferContext internal constructor(
             loadedContentAsXml = true
             _contentAsXml = withContext(Dispatchers.IO) {
                 try {
-                    stream()?.let { XmlParser().parse(it) }
+                    resource.readAsXml().getOrNull()
                 } catch (e: Exception) {
                     null
                 }
@@ -121,33 +136,6 @@ class SnifferContext internal constructor(
 
     private var loadedContentAsXml: Boolean = false
     private var _contentAsXml: ElementNode? = null
-
-    /**
-     * Content as an Archive instance.
-     * Warning: Archive is only supported for a local file, for now.
-     */
-    suspend fun contentAsArchive(): Archive? {
-        if (!loadedContentAsArchive) {
-            loadedContentAsArchive = true
-            _contentAsArchive =
-                withContext(Dispatchers.IO) {
-                    when (content) {
-                        is SnifferResourceContent ->
-                            archiveFactory.open(content.resource, password = null)
-                                .getOrNull()
-                        is SnifferFileContent ->
-                            archiveFactory.open(content.file, password = null)
-                                .getOrNull()
-                        else -> null
-                    }
-            }
-        }
-
-        return _contentAsArchive
-    }
-
-    private var loadedContentAsArchive: Boolean = false
-    private var _contentAsArchive: Archive? = null
 
     /**
      * Content parsed from JSON.
@@ -169,7 +157,8 @@ class SnifferContext internal constructor(
      * A byte stream can be useful when sniffers only need to read a few bytes at the beginning of
      * the file.
      */
-    suspend fun stream(): InputStream? = content?.stream()
+    suspend fun contentAsStream(): InputStream? =
+        ResourceInputStream(resource)
 
     /**
      * Reads all the bytes or the given [range].
@@ -178,10 +167,7 @@ class SnifferContext internal constructor(
      * See https://en.wikipedia.org/wiki/List_of_file_signatures
      */
     suspend fun read(range: LongRange? = null): ByteArray? =
-        tryOrNull {
-            if (range != null) stream()?.readRange(range)
-            else stream()?.readFully()
-        }
+        resource.read(range).getOrNull()
 
     /**
      * Returns whether the content is a JSON object containing all of the given root keys.
@@ -191,17 +177,36 @@ class SnifferContext internal constructor(
         return json.keys().asSequence().toSet().containsAll(keys.toList())
     }
 
+    override suspend fun release() {
+        resource.close()
+    }
+}
+
+/**
+ * A companion type of [Sniffer] holding the type hints (file extensions, media types) and
+ * providing an access to the file content.
+ *
+ * @param resource Underlying content holder.
+ * @param mediaTypes Media type hints.
+ * @param fileExtensions File extension hints.
+ */
+class PackageSnifferContext internal constructor(
+    val _package: Package,
+    mediaTypes: List<String> = emptyList(),
+    fileExtensions: List<String> = emptyList()
+) : SnifferContext(mediaTypes, fileExtensions) {
+
     /**
      * Returns whether an Archive entry exists in this file.
      */
     internal suspend fun containsArchiveEntryAt(path: String): Boolean =
-        tryOrNull { contentAsArchive()?.entry(path) } != null
+        tryOrNull { _package.entry(path) } != null
 
     /**
      * Returns the Archive entry data at the given [path] in this file.
      */
     internal suspend fun readArchiveEntryAt(path: String): ByteArray? {
-        val archive = contentAsArchive() ?: return null
+        val archive = _package
 
         return withContext(Dispatchers.IO) {
             tryOrNull {
@@ -216,6 +221,48 @@ class SnifferContext internal constructor(
     /**
      * Returns whether all the Archive entry paths satisfy the given `predicate`.
      */
-    internal suspend fun archiveEntriesAllSatisfy(predicate: (Archive.Entry) -> Boolean): Boolean =
-        tryOr(false) { contentAsArchive()?.entries()?.all(predicate) == true }
+    internal suspend fun archiveEntriesAllSatisfy(predicate: (Package.Entry) -> Boolean): Boolean =
+        tryOr(false) { _package.entries().all(predicate) }
+
+    override suspend fun release() {
+        _package.close()
+    }
+}
+
+class SnifferContextFactory(
+    private val protocols: List<Protocol>,
+    private val archiveFactory: ArchiveFactory
+) {
+
+    suspend fun createContext(
+        url: Url,
+        mediaTypes: List<String> = emptyList(),
+        fileExtensions: List<String> = emptyList()
+    ): SnifferContext? {
+        for (protocol in protocols) {
+            protocol.open(url)?.let {
+                return when (it) {
+                    is Either.Left ->
+                        ResourceSnifferContext(it.value, mediaTypes, fileExtensions)
+                    is Either.Right ->
+                        PackageSnifferContext(it.value, mediaTypes, fileExtensions)
+                }
+            }
+        }
+
+        return null
+    }
+
+    suspend fun createContext(
+        bytes: ByteArray,
+        mediaTypes: List<String> = emptyList(),
+        fileExtensions: List<String> = emptyList(),
+    ): SnifferContext? {
+        val resource: Resource = BytesResource(Link(""), bytes)
+        return archiveFactory.open(resource, password = null)
+            .fold(
+                { PackageSnifferContext(it, mediaTypes, fileExtensions) },
+                { ResourceSnifferContext(resource, mediaTypes, fileExtensions) }
+            )
+    }
 }

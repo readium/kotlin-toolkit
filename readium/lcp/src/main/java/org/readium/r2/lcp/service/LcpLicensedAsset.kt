@@ -17,12 +17,10 @@ data class LcpLicensedAsset(
     val url: Url,
     override val mediaType: MediaType,
     val licenseFile: File,
-    val license: LcpLicense?
+    val license: LcpLicense?,
+    override val fetcher: Fetcher
 ) : PublicationAsset {
 
     override val name: String =
         url.file
-
-    override val assetType: PublicationAsset.Type =
-        PublicationAsset.Type.PackagedPublication
 }
