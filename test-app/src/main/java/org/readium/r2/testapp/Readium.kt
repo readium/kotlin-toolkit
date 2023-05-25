@@ -17,6 +17,9 @@ import org.readium.r2.shared.util.archive.CompositeArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
 import org.readium.r2.shared.util.http.DefaultHttpClient
+import org.readium.r2.shared.util.http.HttpProtocol
+import org.readium.r2.shared.util.io.ContentProtocol
+import org.readium.r2.shared.util.io.FileProtocol
 import org.readium.r2.shared.util.mediatype.*
 import org.readium.r2.streamer.Streamer
 

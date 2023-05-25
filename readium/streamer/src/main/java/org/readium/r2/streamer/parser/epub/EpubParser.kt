@@ -28,7 +28,6 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
-import org.readium.r2.streamer.container.Container
 import org.readium.r2.streamer.extensions.readAsXmlOrNull
 import org.readium.r2.streamer.parser.PublicationParser
 
@@ -212,12 +211,6 @@ class EpubParser(
                 if (optName != null && optVal != null) Pair(optName, optVal) else null
             }
             ?.toMap().orEmpty()
-    }
-
-    @Deprecated("This is done automatically in [parse], you can remove the call to [fillEncryption]", ReplaceWith(""))
-    @Suppress("Unused_parameter")
-    fun fillEncryption(container: Container, publication: Publication, drm: DRM?): Pair<Container, Publication> {
-        return Pair(container, publication)
     }
 }
 

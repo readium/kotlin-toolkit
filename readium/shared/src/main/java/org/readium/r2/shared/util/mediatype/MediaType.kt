@@ -343,6 +343,7 @@ class MediaType(
          * Resolves a format from a single file extension and media type hint, without checking the actual
          * content.
          */
+        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
         @Suppress("UNUSED_PARAMETER")
         suspend fun of(
             mediaType: String? = null,
@@ -356,6 +357,7 @@ class MediaType(
          * Resolves a format from file extension and media type hints, without checking the actual
          * content.
          */
+        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
         @Suppress("UNUSED_PARAMETER")
         suspend fun of(
             mediaTypes: List<String>,
@@ -369,6 +371,7 @@ class MediaType(
          * Resolves a format from a local file path.
          */
         @Suppress("UNUSED_PARAMETER")
+        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
         suspend fun ofFile(
             file: File,
             mediaType: String? = null,
@@ -381,6 +384,7 @@ class MediaType(
         /**
          * Resolves a format from a local file path.
          */
+        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
         @Suppress("UNUSED_PARAMETER")
         suspend fun ofFile(
             file: File,
@@ -395,6 +399,7 @@ class MediaType(
          * Resolves a format from a local file path.
          */
         @Suppress("UNUSED_PARAMETER")
+        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
         suspend fun ofFile(
             path: String,
             mediaType: String? = null,
@@ -408,6 +413,7 @@ class MediaType(
          * Resolves a format from a local file path.
          */
         @Suppress("UNUSED_PARAMETER")
+        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
         suspend fun ofFile(
             path: String,
             mediaTypes: List<String>,
@@ -421,6 +427,7 @@ class MediaType(
          * Resolves a format from bytes, e.g. from an HTTP response.
          */
         @Suppress("UNUSED_PARAMETER")
+        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
         suspend fun ofBytes(
             bytes: () -> ByteArray,
             mediaType: String? = null,
@@ -434,6 +441,7 @@ class MediaType(
          * Resolves a format from bytes, e.g. from an HTTP response.
          */
         @Suppress("UNUSED_PARAMETER")
+        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
         suspend fun ofBytes(
             bytes: () -> ByteArray,
             mediaTypes: List<String>,
@@ -448,6 +456,7 @@ class MediaType(
          * Accepts the following URI schemes: content, android.resource, file.
          */
         @Suppress("UNUSED_PARAMETER")
+        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
         suspend fun ofUri(
             uri: Uri,
             contentResolver: ContentResolver,
@@ -463,6 +472,7 @@ class MediaType(
          * Accepts the following URI schemes: content, android.resource, file.
          */
         @Suppress("UNUSED_PARAMETER")
+        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
         suspend fun ofUri(
             uri: Uri,
             contentResolver: ContentResolver,

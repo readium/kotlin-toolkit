@@ -11,13 +11,18 @@ import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
+import org.readium.r2.shared.util.io.FileProtocol
+import org.readium.r2.shared.util.io.Protocol
 import org.readium.r2.shared.util.toUrl
 
 class MediaTypeRetriever(
     protocols: List<Protocol>,
     archiveFactory: ArchiveFactory,
-    private val sniffers: List<Sniffer> = Sniffers.all.toMutableList(),
+    sniffers: List<Sniffer> = Sniffers.all.toMutableList(),
 ) {
+
+    private val internalRetriever: MediaTypeRetrieverInternal =
+        MediaTypeRetrieverInternal(sniffers)
 
     constructor(
         archiveFactory: ArchiveFactory = DefaultArchiveFactory()
@@ -180,30 +185,7 @@ class MediaTypeRetriever(
         mediaTypes: List<String>,
         fileExtensions: List<String>
     ): MediaType? {
-        // Light sniffing with only media type hints
-        if (mediaTypes.isNotEmpty()) {
-            val context = HintSnifferContext(mediaTypes = mediaTypes)
-            for (sniffer in sniffers) {
-                val mediaType = sniffer(context)
-                if (mediaType != null) {
-                    return mediaType
-                }
-            }
-        }
-
-        // Light sniffing with both media type hints and file extensions
-        if (fileExtensions.isNotEmpty()) {
-            val context = HintSnifferContext(mediaTypes = mediaTypes, fileExtensions = fileExtensions)
-            for (sniffer in sniffers) {
-                val mediaType = sniffer(context)
-                if (mediaType != null) {
-                    return mediaType
-                }
-            }
-        }
-
-        // Heavy sniffing
-        val context = content?.let {
+        val fullContext = suspend {
             when (content) {
                 is Either.Left ->
                     snifferContextFactory.createContext(
@@ -213,30 +195,10 @@ class MediaTypeRetriever(
                     )
                 is Either.Right ->
                     snifferContextFactory.createContext(content.value, mediaTypes, fileExtensions)
+                null -> null
             }
         }
 
-        if (context != null) {
-            for (sniffer in sniffers) {
-                val mediaType = sniffer(context)
-                if (mediaType != null) {
-                    return mediaType
-                }
-            }
-        }
-
-        // Falls back on the system-wide registered media types using [MimeTypeMap].
-        // Note: This is done after the heavy sniffing of the provided [sniffers], because
-        // otherwise it will detect JSON, XML or ZIP formats before we have a chance of sniffing
-        // their content (for example, for RWPM).
-        val systemContext = context ?: HintSnifferContext(mediaTypes, fileExtensions)
-        Sniffers.system(systemContext)?.let { return it }
-
-        // If nothing else worked, we try to parse the first valid media type hint.
-        for (mediaType in mediaTypes) {
-            MediaType.parse(mediaType)?.let { return it }
-        }
-
-        return null
+        return internalRetriever.of(fullContext, mediaTypes, fileExtensions)
     }
 }

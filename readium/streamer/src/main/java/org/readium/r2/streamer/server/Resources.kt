@@ -11,6 +11,7 @@ package org.readium.r2.streamer.server
 
 import org.readium.r2.shared.Injectable
 
+@Deprecated("The HTTP server is not needed anymore (see migration guide)", level = DeprecationLevel.ERROR)
 class Resources {
     val resources: MutableMap<String, Any> = mutableMapOf()
 

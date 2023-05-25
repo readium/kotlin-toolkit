@@ -29,6 +29,7 @@ import org.readium.r2.shared.publication.asset.AssetFactory
 import org.readium.r2.shared.publication.asset.DefaultAssetFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * Service used to acquire and open publications protected with LCP.
@@ -139,6 +140,7 @@ interface LcpService {
         operator fun invoke(
             context: Context,
             assetFactory: AssetFactory = DefaultAssetFactory(),
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
         ): LcpService? {
             if (!LcpClient.isAvailable())
                 return null
@@ -158,7 +160,8 @@ interface LcpService {
                 network = network,
                 passphrases = passphrases,
                 context = context,
-                assetFactory = assetFactory
+                assetFactory = assetFactory,
+                mediaTypeRetriever = mediaTypeRetriever
             )
         }
 

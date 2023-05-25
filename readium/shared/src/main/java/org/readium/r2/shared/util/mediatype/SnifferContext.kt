@@ -24,6 +24,7 @@ import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.Package
+import org.readium.r2.shared.util.io.Protocol
 import timber.log.Timber
 
 sealed class SnifferContext(

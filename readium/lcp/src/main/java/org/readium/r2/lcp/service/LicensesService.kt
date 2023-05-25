@@ -25,6 +25,7 @@ import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.asset.AssetFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import timber.log.Timber
 
 internal class LicensesService(
@@ -34,12 +35,13 @@ internal class LicensesService(
     private val network: NetworkService,
     private val passphrases: PassphrasesService,
     private val context: Context,
-    private val assetFactory: AssetFactory
+    private val assetFactory: AssetFactory,
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) : LcpService, CoroutineScope by MainScope() {
 
     override suspend fun isLcpProtected(file: File): Boolean =
         tryOr(false) {
-            createLicenseContainer(file.path).read()
+            createLicenseContainer(file.path, mediaTypeRetriever  = mediaTypeRetriever).read()
             true
         }
 
@@ -64,7 +66,7 @@ internal class LicensesService(
         sender: Any?
     ): Try<LcpLicense, LcpException> =
         try {
-            val container = createLicenseContainer(file.path)
+            val container = createLicenseContainer(file.path, mediaTypeRetriever = mediaTypeRetriever)
             val license = retrieveLicense(container, authentication, allowUserInteraction, true, sender)
             Try.success(license)
         } catch (e: Exception) {
@@ -200,7 +202,9 @@ internal class LicensesService(
         }
         Timber.i("LCP destination $destination")
 
-        val mediaType = network.download(url, destination, mediaType = link.type, onProgress = onProgress) ?: MediaType.of(mediaType = link.type) ?: MediaType.EPUB
+        val mediaType = network.download(url, destination, mediaType = link.type, onProgress = onProgress)
+            ?: mediaTypeRetriever.of(mediaType = link.type)
+            ?: MediaType.EPUB
 
         // Saves the License Document into the downloaded publication
         val container = createLicenseContainer(destination.path, mediaType)

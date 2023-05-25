@@ -14,6 +14,7 @@ import java.io.File
 import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.ArchiveFactory
+import org.readium.r2.shared.util.io.Protocol
 import org.readium.r2.shared.util.toUrl
 
 class AssetRetriever(

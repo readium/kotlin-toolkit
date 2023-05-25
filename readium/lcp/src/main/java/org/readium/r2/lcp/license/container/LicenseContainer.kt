@@ -14,6 +14,7 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 private const val LICENSE_IN_EPUB = "META-INF/license.lcpl"
 
@@ -30,9 +31,10 @@ internal interface LicenseContainer {
 
 internal suspend fun createLicenseContainer(
     filepath: String,
-    mediaTypes: List<String> = emptyList()
+    mediaTypes: List<String> = emptyList(),
+    mediaTypeRetriever: MediaTypeRetriever
 ): LicenseContainer {
-    val mediaType = MediaType.ofFile(filepath, mediaTypes = mediaTypes, fileExtensions = emptyList())
+    val mediaType = mediaTypeRetriever.ofFile(filepath, mediaTypes = mediaTypes, fileExtensions = emptyList())
         ?: throw LcpException.Container.OpenFailed
     return createLicenseContainer(filepath, mediaType)
 }
