@@ -17,8 +17,11 @@ import org.readium.r2.shared.util.Href
  * A [Navigator] which can play multimedia content.
  */
 @ExperimentalReadiumApi
-interface MediaNavigator<L : MediaNavigator.Location, P : MediaNavigator.Playback,
-    R : MediaNavigator.ReadingOrder> : Navigator, Closeable {
+interface MediaNavigator<
+    L : MediaNavigator.Location,
+    P : MediaNavigator.Playback,
+    R : MediaNavigator.ReadingOrder
+    > : Navigator, Closeable {
 
     /**
      *  Location of the navigator.
@@ -115,6 +118,17 @@ interface MediaNavigator<L : MediaNavigator.Location, P : MediaNavigator.Playbac
      * Pauses the playback.
      */
     fun pause()
+}
+
+/**
+ * A [MediaNavigator] based on the Jetpack media3 library.
+ */
+@ExperimentalReadiumApi
+interface Media3Navigator<
+    L : MediaNavigator.Location,
+    P : MediaNavigator.Playback,
+    R : MediaNavigator.ReadingOrder
+    > : MediaNavigator<L, P, R> {
 
     /**
      * Adapts this navigator to the media3 [Player] interface.

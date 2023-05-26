@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.extensions.sum
 import org.readium.r2.navigator.extensions.time
 import org.readium.r2.navigator.media3.api.AudioNavigator
+import org.readium.r2.navigator.media3.api.Media3Navigator
 import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -33,7 +34,9 @@ class AudiobookNavigator<S : Configurable.Settings, P : Configurable.Preferences
     override val publication: Publication,
     private val audioEngine: AudioEngine<S, P>,
     override val readingOrder: ReadingOrder,
-) : AudioNavigator<AudiobookNavigator.Location, AudiobookNavigator.Playback, AudiobookNavigator.ReadingOrder>,
+) :
+    Media3Navigator<AudiobookNavigator.Location, AudiobookNavigator.Playback, AudiobookNavigator.ReadingOrder>,
+    AudioNavigator<AudiobookNavigator.Location, AudiobookNavigator.Playback, AudiobookNavigator.ReadingOrder>,
     Configurable<S, P> by audioEngine {
 
     companion object {

@@ -10,6 +10,7 @@ import androidx.media3.common.Player
 import kotlin.time.Duration
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.media3.api.AudioNavigator
+import org.readium.r2.navigator.media3.api.Media3Navigator
 import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.media3.api.TextAwareMediaNavigator
 import org.readium.r2.navigator.media3.audio.AudiobookNavigator
@@ -23,7 +24,9 @@ import org.readium.r2.shared.util.Href
 @ExperimentalReadiumApi
 class GuidedAudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>>(
     private val audioNavigator: AudiobookNavigator<S, P>,
-) : AudioNavigator<GuidedAudioNavigator.Location, GuidedAudioNavigator.Playback, GuidedAudioNavigator.ReadingOrder>,
+) :
+    Media3Navigator<GuidedAudioNavigator.Location, GuidedAudioNavigator.Playback, GuidedAudioNavigator.ReadingOrder>,
+    AudioNavigator<GuidedAudioNavigator.Location, GuidedAudioNavigator.Playback, GuidedAudioNavigator.ReadingOrder>,
     TextAwareMediaNavigator<GuidedAudioNavigator.Location, GuidedAudioNavigator.Playback, GuidedAudioNavigator.ReadingOrder>,
     Configurable<S, P> {
 
