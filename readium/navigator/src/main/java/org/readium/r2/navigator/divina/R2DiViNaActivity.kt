@@ -22,14 +22,17 @@ import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.IR2Activity
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.databinding.ActivityR2DivinaBinding
 import org.readium.r2.shared.extensions.getPublication
 import org.readium.r2.shared.publication.Publication
 
-open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator.Listener {
+@Deprecated(
+    "Use ImageNavigatorFragment in your own activity to get a basic support for DiViNa.",
+    level = DeprecationLevel.ERROR
+)
+open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, VisualNavigator.Listener {
 
     /**
      * Context of this scope.
@@ -37,12 +40,12 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity, 
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main
 
-    override lateinit var preferences: SharedPreferences
-    override lateinit var publication: Publication
-    override lateinit var publicationIdentifier: String
-    override lateinit var publicationPath: String
-    override lateinit var publicationFileName: String
-    override var bookId: Long = -1
+    lateinit var preferences: SharedPreferences
+    lateinit var publication: Publication
+    lateinit var publicationIdentifier: String
+    lateinit var publicationPath: String
+    lateinit var publicationFileName: String
+    var bookId: Long = -1
 
     lateinit var divinaWebView: R2BasicWebView
 
@@ -85,7 +88,7 @@ open class R2DiViNaActivity : AppCompatActivity(), CoroutineScope, IR2Activity, 
     }
 
     @Suppress("DEPRECATION")
-    override fun toggleActionBar() {
+    fun toggleActionBar() {
         launch {
             if (supportActionBar!!.isShowing) {
                 divinaWebView.systemUiVisibility = (

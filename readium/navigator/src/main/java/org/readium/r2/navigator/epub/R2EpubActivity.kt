@@ -37,7 +37,8 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 
-open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2Highlightable, IR2TTS, CoroutineScope, VisualNavigator, EpubNavigatorFragment.Listener {
+@Deprecated("Use EpubNavigatorFragment in your own activity instead.", level = DeprecationLevel.ERROR)
+open class R2EpubActivity : AppCompatActivity(), CoroutineScope, VisualNavigator, EpubNavigatorFragment.Listener {
 
     /**
      * Context of this scope.
@@ -45,22 +46,22 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main
 
-    override lateinit var preferences: SharedPreferences
-    override lateinit var publicationPath: String
-    override lateinit var publicationFileName: String
+    lateinit var preferences: SharedPreferences
+    lateinit var publicationPath: String
+    lateinit var publicationFileName: String
     override lateinit var publication: Publication
-    override lateinit var publicationIdentifier: String
-    override var bookId: Long = -1
+    lateinit var publicationIdentifier: String
+    var bookId: Long = -1
     protected lateinit var baseUrl: String
 
-    override var allowToggleActionBar = true
+    var allowToggleActionBar = true
 
     protected var navigatorDelegate: NavigatorDelegate? = null
 
     val adapter: R2PagerAdapter get() =
         resourcePager.adapter as R2PagerAdapter
 
-    override val resourcePager: R2ViewPager get() =
+    val resourcePager: R2ViewPager get() =
         navigatorFragment().resourcePager
 
     private val currentFragment: R2EpubPageFragment? get() =
@@ -133,7 +134,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
     }
 
     @Suppress("DEPRECATION")
-    override fun toggleActionBar() {
+    fun toggleActionBar() {
         if (allowToggleActionBar) {
             if (supportActionBar!!.isShowing) {
                 resourcePager.systemUiVisibility = (
@@ -197,7 +198,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         return super.onTap(point)
     }
 
-    override fun currentSelection(callback: (Locator?) -> Unit) {
+    fun currentSelection(callback: (Locator?) -> Unit) {
         currentFragment?.webView?.getCurrentSelectionInfo {
             val selection = JSONObject(it)
             val resource = publication.readingOrder[resourcePager.currentItem]
@@ -216,7 +217,7 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         }
     }
 
-    override fun showHighlight(highlight: Highlight) {
+    fun showHighlight(highlight: Highlight) {
         currentFragment?.webView?.run {
             val colorJson = JSONObject().apply {
                 put("red", Color.red(highlight.color))
@@ -230,20 +231,20 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         }
     }
 
-    override fun showHighlights(highlights: Array<Highlight>) {
+    fun showHighlights(highlights: Array<Highlight>) {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun hideHighlightWithID(id: String) {
+    fun hideHighlightWithID(id: String) {
         currentFragment?.webView?.destroyHighlight(id)
         currentFragment?.webView?.destroyHighlight(id.replace("HIGHLIGHT", "ANNOTATION"))
     }
 
-    override fun hideAllHighlights() {
+    fun hideAllHighlights() {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun rectangleForHighlightWithID(id: String, callback: (Rect?) -> Unit) {
+    fun rectangleForHighlightWithID(id: String, callback: (Rect?) -> Unit) {
         currentFragment?.webView?.rectangleForHighlightWithID(id) {
             val rect =
                 try {
@@ -264,18 +265,18 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         }
     }
 
-    override fun rectangleForHighlightAnnotationMarkWithID(id: String): Rect? {
+    fun rectangleForHighlightAnnotationMarkWithID(id: String): Rect? {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun registerHighlightAnnotationMarkStyle(name: String, css: String) {
+    fun registerHighlightAnnotationMarkStyle(name: String, css: String) {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun highlightActivated(id: String) {
+    fun highlightActivated(id: String) {
     }
 
-    override fun highlightAnnotationMarkActivated(id: String) {
+    fun highlightAnnotationMarkActivated(id: String) {
     }
 
     fun createHighlight(color: Int, callback: (Highlight) -> Unit) {

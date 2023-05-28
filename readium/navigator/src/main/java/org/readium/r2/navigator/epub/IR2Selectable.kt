@@ -8,6 +8,7 @@ package org.readium.r2.navigator.epub
 
 import org.readium.r2.shared.publication.Locator
 
+@Deprecated("Use navigator fragments.", level = DeprecationLevel.ERROR)
 interface IR2Selectable {
     fun currentSelection(callback: (Locator?) -> Unit)
 }

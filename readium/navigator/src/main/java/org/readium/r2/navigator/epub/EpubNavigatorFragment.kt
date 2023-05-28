@@ -292,8 +292,6 @@ class EpubNavigatorFragment internal constructor(
 
     internal var navigatorDelegate: NavigatorDelegate? = null
 
-    private val r2Activity: R2EpubActivity? get() = activity as? R2EpubActivity
-
     private var _binding: ActivityR2ViewpagerBinding? = null
     private val binding get() = _binding!!
 
@@ -686,17 +684,14 @@ class EpubNavigatorFragment internal constructor(
         }
 
         override fun onPageLoaded() {
-            r2Activity?.onPageLoaded()
             paginationListener?.onPageLoaded()
             notifyCurrentLocation()
         }
 
         override fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {
-            r2Activity?.onPageChanged(pageIndex = pageIndex, totalPages = totalPages, url = url)
         }
 
         override fun onPageEnded(end: Boolean) {
-            r2Activity?.onPageEnded(end)
         }
 
         override fun javascriptInterfacesForResource(link: Link): Map<String, Any?> =
@@ -704,17 +699,6 @@ class EpubNavigatorFragment internal constructor(
 
         @Suppress("DEPRECATION")
         override fun onScroll() {
-            val activity = r2Activity ?: return
-            if (activity.supportActionBar?.isShowing == true && activity.allowToggleActionBar) {
-                resourcePager.systemUiVisibility = (
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        or View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                        or View.SYSTEM_UI_FLAG_IMMERSIVE
-                    )
-            }
         }
 
         override fun onTap(point: PointF): Boolean =
@@ -756,11 +740,11 @@ class EpubNavigatorFragment internal constructor(
         }
 
         override fun onHighlightActivated(id: String) {
-            r2Activity?.highlightActivated(id)
+
         }
 
         override fun onHighlightAnnotationMarkActivated(id: String) {
-            r2Activity?.highlightAnnotationMarkActivated(id)
+
         }
 
         override fun goToPreviousResource(jump: Boolean, animated: Boolean): Boolean {

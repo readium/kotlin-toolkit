@@ -18,7 +18,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.BuildConfig.DEBUG
-import org.readium.r2.navigator.IR2Activity
 import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
@@ -29,7 +28,8 @@ import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.isRestricted
 import timber.log.Timber
 
-open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activity, MediaPlayerCallback, VisualNavigator {
+@Deprecated("Build your own UI upon AudiobookNavigator instead.", level = DeprecationLevel.ERROR)
+open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, MediaPlayerCallback, VisualNavigator {
 
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
     private val _currentLocator = MutableStateFlow(Locator(href = "#", type = ""))
@@ -115,12 +115,12 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main
 
-    override lateinit var preferences: SharedPreferences
+    lateinit var preferences: SharedPreferences
     override lateinit var publication: Publication
-    override lateinit var publicationIdentifier: String
-    override lateinit var publicationFileName: String
-    override lateinit var publicationPath: String
-    override var bookId: Long = -1
+    lateinit var publicationIdentifier: String
+    lateinit var publicationFileName: String
+    lateinit var publicationPath: String
+    var bookId: Long = -1
 
     var currentResource = 0
 

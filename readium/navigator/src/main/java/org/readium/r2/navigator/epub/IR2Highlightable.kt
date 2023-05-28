@@ -9,6 +9,7 @@ package org.readium.r2.navigator.epub
 import android.graphics.Rect
 import org.readium.r2.shared.publication.Locator
 
+@Deprecated("Use ImageNavigatorFragment.", level = DeprecationLevel.ERROR)
 interface IR2Highlightable {
     fun showHighlight(highlight: Highlight)
 

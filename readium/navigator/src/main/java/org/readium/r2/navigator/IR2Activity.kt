@@ -14,6 +14,7 @@ import android.view.View
 import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.shared.publication.Publication
 
+@Deprecated("Use navigator fragments.", level = DeprecationLevel.ERROR)
 interface IR2Activity {
 
     val publication: Publication
@@ -38,6 +39,7 @@ interface IR2Activity {
     fun highlightAnnotationMarkActivated(id: String) {}
 }
 
+@Deprecated("Use ImageNavigatorFragment.", level = DeprecationLevel.ERROR)
 interface IR2TTS {
     fun playTextChanged(text: String) {}
     fun playStateChanged(playing: Boolean) {}

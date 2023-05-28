@@ -26,7 +26,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.IR2Activity
 import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
@@ -41,7 +40,8 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression
 
-open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, VisualNavigator, ImageNavigatorFragment.Listener {
+@Deprecated("Use ImageNavigatorFragment in your own activity instead.", level = DeprecationLevel.ERROR)
+open class R2CbzActivity : AppCompatActivity(), CoroutineScope, VisualNavigator, ImageNavigatorFragment.Listener {
 
     private val navigatorFragment: ImageNavigatorFragment
         get() = supportFragmentManager.findFragmentById(R.id.image_navigator) as ImageNavigatorFragment
@@ -85,14 +85,16 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main
 
-    override lateinit var preferences: SharedPreferences
-    override lateinit var resourcePager: R2ViewPager
-    override lateinit var publicationPath: String
+    lateinit var preferences: SharedPreferences
+    lateinit var resourcePager: R2ViewPager
+    lateinit var publicationPath: String
     override lateinit var publication: Publication
-    override lateinit var publicationIdentifier: String
-    override lateinit var publicationFileName: String
+    lateinit var publicationIdentifier: String
+    lateinit var publicationFileName: String
+    val allowToggleActionBar: Boolean
+        get() = true
 
-    override var bookId: Long = -1
+    var bookId: Long = -1
 
     var resources: List<String> = emptyList()
     lateinit var adapter: R2PagerAdapter
@@ -144,17 +146,17 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
     }
 
     @Deprecated("Use goForward instead", replaceWith = ReplaceWith("goForward()"), level = DeprecationLevel.ERROR)
-    override fun nextResource(v: View?) {
+    fun nextResource(v: View?) {
         navigatorFragment.goForward()
     }
 
     @Deprecated("Use goBackward instead", replaceWith = ReplaceWith("goBackward()"), level = DeprecationLevel.ERROR)
-    override fun previousResource(v: View?) {
+    fun previousResource(v: View?) {
         navigatorFragment.goBackward()
     }
 
     @Suppress("DEPRECATION")
-    override fun toggleActionBar() {
+    fun toggleActionBar() {
         if (allowToggleActionBar) {
             launch {
                 if (supportActionBar!!.isShowing) {
@@ -177,7 +179,7 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
         }
     }
 
-    override fun toggleActionBar(v: View?) {
+    fun toggleActionBar(v: View?) {
         toggleActionBar()
     }
 
