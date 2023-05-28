@@ -379,7 +379,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
         // Inflate the custom layout/view
-        val customView = inflater.inflate(R.layout.popup_footnote, null)
+        val customView = inflater.inflate(R.layout.readium_popup_footnote, null)
 
         // Initialize a new instance of popup window
         val mPopupWindow = PopupWindow(

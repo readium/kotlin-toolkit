@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.SimplePresentation
 import org.readium.r2.navigator.VisualNavigator
-import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
+import org.readium.r2.navigator.databinding.ReadiumActivityViewpagerBinding
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.pager.R2CbzPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
@@ -75,7 +75,7 @@ class ImageNavigatorFragment private constructor(
     internal var currentPagerPosition: Int = 0
     internal var resources: List<String> = emptyList()
 
-    private var _binding: ActivityR2ViewpagerBinding? = null
+    private var _binding: ReadiumActivityViewpagerBinding? = null
     private val binding get() = _binding!!
 
     override val readingProgression: PublicationReadingProgression =
@@ -107,7 +107,7 @@ class ImageNavigatorFragment private constructor(
         savedInstanceState: Bundle?
     ): View {
         currentActivity = requireActivity()
-        _binding = ActivityR2ViewpagerBinding.inflate(inflater, container, false)
+        _binding = ReadiumActivityViewpagerBinding.inflate(inflater, container, false)
         val view = binding.root
 
         preferences = requireContext().getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)

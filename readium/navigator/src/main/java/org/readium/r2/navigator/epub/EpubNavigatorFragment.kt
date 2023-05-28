@@ -42,7 +42,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.readium.r2.navigator.*
-import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
+import org.readium.r2.navigator.databinding.ReadiumActivityViewpagerBinding
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel.RunScriptCommand
 import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
 import org.readium.r2.navigator.epub.css.MutableFontFamilyDeclaration
@@ -292,7 +292,7 @@ class EpubNavigatorFragment internal constructor(
 
     internal var navigatorDelegate: NavigatorDelegate? = null
 
-    private var _binding: ActivityR2ViewpagerBinding? = null
+    private var _binding: ReadiumActivityViewpagerBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -301,7 +301,7 @@ class EpubNavigatorFragment internal constructor(
         savedInstanceState: Bundle?
     ): View {
         currentActivity = requireActivity()
-        _binding = ActivityR2ViewpagerBinding.inflate(inflater, container, false)
+        _binding = ReadiumActivityViewpagerBinding.inflate(inflater, container, false)
         val view = binding.root
 
         positionsByReadingOrder = runBlocking { publication.positionsByReadingOrder() }

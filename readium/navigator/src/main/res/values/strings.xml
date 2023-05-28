@@ -9,12 +9,7 @@
 
 <resources>
 
-    <string name="end_of_chapter">end of chapter</string>
-    <string name="end_of_chapter_indicator">~ ~ ~</string>
-    <string name="zero">00:00</string>
-    <string name="epub_navigator_tag">epub_navigator</string>
-    <string name="image_navigator_tag">image_navigator</string>
-    <string name="r2_media_notification_channel_name">Audiobook</string>
-    <string name="r2_media_notification_channel_description">Audiobook currently being played</string>
+    <string name="readium_media_notification_channel_name">Audiobook</string>
+    <string name="readium_media_notification_channel_description">Audiobook currently being played</string>
 
 </resources>

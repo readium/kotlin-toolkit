@@ -14,24 +14,4 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
 
-    <application>
-
-        <activity
-            android:name=".epub.R2EpubActivity"
-            android:theme="@style/AppTheme" />
-        <activity
-            android:name=".cbz.R2CbzActivity"
-            android:theme="@style/AppTheme" />
-        <activity
-            android:name=".audiobook.R2AudiobookActivity"
-            android:theme="@style/AppTheme" />
-        <activity
-            android:name=".divina.R2DiViNaActivity"
-            android:theme="@style/AppTheme" />
-        <activity
-            android:name=".pdf.R2PdfActivity"
-            android:theme="@style/AppTheme" />
-
-    </application>
-
 </manifest>

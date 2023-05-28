@@ -9,13 +9,13 @@
   -->
 
 <resources>
-    <color name="colorPrimary">#1f21b5</color>
-    <color name="colorPrimaryDark">#17188c</color>
-    <color name="colorAccent">#eceaeb</color>
-    <color name="colorAccentPrefs">#17188c</color>
+    <color name="readium_colorPrimary">#1f21b5</color>
+    <color name="readium_colorPrimaryDark">#17188c</color>
+    <color name="readium_colorAccent">#eceaeb</color>
+    <color name="readium_colorAccentPrefs">#17188c</color>
 
 
-    <color name="snackbar_background_color">@color/colorPrimaryDark</color>
-    <color name="snackbar_text_color">@color/colorAccent</color>
+    <color name="readium_snackbar_background_color">@color/readium_colorPrimaryDark</color>
+    <color name="readium_snackbar_text_color">@color/readium_colorAccent</color>
 
 </resources>
