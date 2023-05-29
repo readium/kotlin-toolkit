@@ -45,7 +45,6 @@ class EpubNavigatorFactory(
     ) = org.readium.r2.navigator.util.createFragmentFactory {
         EpubNavigatorFragment(
             publication = publication,
-            baseUrl = null,
             initialLocator = initialLocator,
             initialPreferences = initialPreferences,
             listener = listener,

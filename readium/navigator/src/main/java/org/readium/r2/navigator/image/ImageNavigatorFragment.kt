@@ -85,7 +85,7 @@ class ImageNavigatorFragment private constructor(
     override val presentation: StateFlow<VisualNavigator.Presentation> =
         MutableStateFlow(
             SimplePresentation(
-                readingProgression = when (readingProgression) {
+                readingProgression = when (publication.metadata.effectiveReadingProgression) {
                     PublicationReadingProgression.RTL -> ReadingProgression.RTL
                     else -> ReadingProgression.LTR
                 },

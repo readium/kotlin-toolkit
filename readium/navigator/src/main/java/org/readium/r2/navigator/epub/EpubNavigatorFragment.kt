@@ -89,7 +89,6 @@ typealias JavascriptInterfaceFactory = (resource: Link) -> Any?
 @OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class, DelicateReadiumApi::class)
 class EpubNavigatorFragment internal constructor(
     override val publication: Publication,
-    private val baseUrl: String?,
     private val initialLocator: Locator?,
     private val initialPreferences: EpubPreferences,
     internal val listener: Listener?,
@@ -266,8 +265,7 @@ class EpubNavigatorFragment internal constructor(
 
     private val viewModel: EpubNavigatorViewModel by viewModels {
         EpubNavigatorViewModel.createFactory(
-            requireActivity().application, publication,
-            baseUrl = baseUrl, config = this.config,
+            requireActivity().application, publication, config = this.config,
             initialPreferences = initialPreferences,
             layout = epubLayout,
             defaults = defaults
@@ -281,8 +279,8 @@ class EpubNavigatorFragment internal constructor(
     private lateinit var resourcesSingle: List<PageResource>
     private lateinit var resourcesDouble: List<PageResource>
 
-    @Deprecated("Migrate to the new Settings API (see migration guide)")
-    val preferences: SharedPreferences get() = viewModel.preferences
+    @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
+    val preferences: SharedPreferences get() = TODO()
 
     internal lateinit var publicationIdentifier: String
 
@@ -365,11 +363,6 @@ class EpubNavigatorFragment internal constructor(
         resourcePager = binding.resourcePager
         resetResourcePager()
 
-        @Suppress("DEPRECATION")
-        if (viewModel.useLegacySettings && publication.cssStyle == ReadingProgression.RTL.value) {
-            resourcePager.direction = PublicationReadingProgression.RTL
-        }
-
         resourcePager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
 
             override fun onPageSelected(position: Int) {
@@ -444,7 +437,7 @@ class EpubNavigatorFragment internal constructor(
         }
         adapter.listener = PagerAdapterListener()
         resourcePager.adapter = adapter
-        resourcePager.direction = readingProgression
+        resourcePager.direction = presentation.value.readingProgression
         resourcePager.layoutDirection = when (settings.value.readingProgression) {
             ReadingProgression.RTL -> LayoutDirection.RTL
             ReadingProgression.LTR -> LayoutDirection.LTR
@@ -676,7 +669,7 @@ class EpubNavigatorFragment internal constructor(
     @OptIn(ExperimentalDragGesture::class)
     private inner class WebViewListener : R2BasicWebView.Listener {
 
-        override val readingProgression: PublicationReadingProgression
+        override val readingProgression: ReadingProgression
             get() = viewModel.readingProgression
 
         override fun onResourceLoaded(link: Link?, webView: R2BasicWebView, url: String?) {
@@ -898,7 +891,7 @@ class EpubNavigatorFragment internal constructor(
     }
 
     override val readingProgression: PublicationReadingProgression
-        get() = viewModel.readingProgression
+        get() = TODO()
 
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
     private val _currentLocator = MutableStateFlow(
@@ -1024,7 +1017,6 @@ class EpubNavigatorFragment internal constructor(
          */
         fun createFactory(
             publication: Publication,
-            baseUrl: String? = null,
             initialLocator: Locator? = null,
             listener: Listener? = null,
             paginationListener: PaginationListener? = null,
@@ -1033,7 +1025,7 @@ class EpubNavigatorFragment internal constructor(
         ): FragmentFactory =
             createFragmentFactory {
                 EpubNavigatorFragment(
-                    publication, baseUrl, initialLocator, initialPreferences,
+                    publication, initialLocator, initialPreferences,
                     listener, paginationListener,
                     epubLayout = publication.metadata.presentation.layout ?: EpubLayout.REFLOWABLE,
                     defaults = EpubDefaults(),

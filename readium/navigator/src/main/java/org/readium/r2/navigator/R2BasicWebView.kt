@@ -42,12 +42,13 @@ import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.navigator.preferences.ReadingProgression
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 
-@OptIn(ExperimentalDecorator::class)
+@OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class)
 open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
 
     interface Listener {
@@ -96,7 +97,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
 
     var listener: Listener? = null
     internal var preferences: SharedPreferences? = null
-    internal var useLegacySettings: Boolean = false
 
     var resourceUrl: String? = null
 
@@ -286,18 +286,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         val thresholdRange = 0.0..(0.2 * clientWidth)
 
         // FIXME: Call listener.onTap if scrollLeft|Right fails
-        return when {
-            useLegacySettings && thresholdRange.contains(event.point.x) -> {
-                scrollLeft(false)
-                true
-            }
-            useLegacySettings && thresholdRange.contains(clientWidth - event.point.x) -> {
-                scrollRight(false)
-                true
-            }
-            else ->
-                runBlocking(uiScope.coroutineContext) { listener?.onTap(event.point) ?: false }
-        }
+        return runBlocking(uiScope.coroutineContext) { listener?.onTap(event.point) ?: false }
     }
 
     /**

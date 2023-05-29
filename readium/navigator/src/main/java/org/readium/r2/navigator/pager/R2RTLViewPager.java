@@ -30,11 +30,12 @@ import androidx.core.view.ViewCompat;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import org.readium.r2.shared.publication.ReadingProgression;
+import org.readium.r2.navigator.preferences.ReadingProgression;
+import org.readium.r2.shared.ExperimentalReadiumApi;
 
 import java.util.HashMap;
 
-/**
+ /**
  * <code>RtlViewPager</code> is an API-compatible implementation of <code>ViewPager</code> which
  * orders paged views according to the layout direction of the view.  In left to right mode, the
  * first view is at the left side of the carousel, and in right to left mode it is at the right
@@ -44,6 +45,7 @@ import java.util.HashMap;
  * <code>OnPageChangeListener</code>s so that clients can be agnostic to layout direction and
  * modifications are kept internal to <code>RtlViewPager</code>.
  */
+@ExperimentalReadiumApi
 public class R2RTLViewPager extends ViewPager {
     public ReadingProgression direction = ReadingProgression.LTR;
     private int mLayoutDirection = ViewCompat.LAYOUT_DIRECTION_LTR;

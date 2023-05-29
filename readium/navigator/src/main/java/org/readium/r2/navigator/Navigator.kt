@@ -178,7 +178,7 @@ interface VisualNavigator : Navigator {
     /**
      * Current reading progression direction.
      */
-    @Deprecated("Use `presentation.value.readingProgression` instead", ReplaceWith("presentation.value.readingProgression"))
+    @Deprecated("Use `presentation.value.readingProgression` instead", ReplaceWith("presentation.value.readingProgression"), level = DeprecationLevel.ERROR)
     val readingProgression: PublicationReadingProgression
 }
 

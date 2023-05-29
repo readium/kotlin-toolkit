@@ -550,7 +550,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     }
 
     override fun computeScroll() {
-        if (!useLegacySettings && scrollMode) {
+        if (scrollMode) {
             return super.computeScroll()
         }
 

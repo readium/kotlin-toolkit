@@ -55,7 +55,7 @@ class R2FXLPageFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         secondResourceUrl?.let {
             _doubleBinding = ReadiumFragmentFxllayoutDoubleBinding.inflate(inflater, container, false)
@@ -131,7 +131,6 @@ class R2FXLPageFragment : Fragment() {
             webView.listener = it.webViewListener
         }
 
-        webView.useLegacySettings = viewModel.useLegacySettings
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false
         webView.isHorizontalScrollBarEnabled = false
