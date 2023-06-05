@@ -7,7 +7,7 @@
 package org.readium.r2.shared.publication.services.content.iterators
 
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -22,7 +22,7 @@ import org.readium.r2.shared.util.Either
  */
 @ExperimentalReadiumApi
 typealias ResourceContentIteratorFactory =
-    suspend (resource: Resource, locator: Locator) -> Content.Iterator?
+    suspend (resource: Fetcher.Resource, locator: Locator) -> Content.Iterator?
 
 /**
  * A composite [Content.Iterator] which iterates through a whole [publication] and delegates the

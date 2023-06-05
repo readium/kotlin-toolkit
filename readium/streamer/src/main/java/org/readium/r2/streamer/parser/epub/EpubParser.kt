@@ -11,10 +11,8 @@ package org.readium.r2.streamer.parser.epub
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.Search
-import org.readium.r2.shared.drm.DRM
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
@@ -23,6 +21,7 @@ import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.services.content.DefaultContentService
 import org.readium.r2.shared.publication.services.content.iterators.HtmlResourceContentIterator
 import org.readium.r2.shared.publication.services.search.StringSearchService
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger

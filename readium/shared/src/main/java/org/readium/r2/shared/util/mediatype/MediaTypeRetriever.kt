@@ -7,32 +7,28 @@ import android.webkit.MimeTypeMap
 import java.io.File
 import org.readium.r2.shared.BuildConfig
 import org.readium.r2.shared.extensions.queryProjection
+import org.readium.r2.shared.resource.ArchiveFactory
+import org.readium.r2.shared.resource.ContainerFactory
+import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.archive.ArchiveFactory
 import org.readium.r2.shared.util.archive.DefaultArchiveFactory
-import org.readium.r2.shared.util.io.FileProtocol
-import org.readium.r2.shared.util.io.Protocol
+import org.readium.r2.shared.util.io.DirectoryContainerFactory
+import org.readium.r2.shared.util.io.FileResourceFactory
 import org.readium.r2.shared.util.toUrl
 
 class MediaTypeRetriever(
-    protocols: List<Protocol>,
-    archiveFactory: ArchiveFactory,
-    sniffers: List<Sniffer> = Sniffers.all.toMutableList(),
+    resourceFactory: ResourceFactory = FileResourceFactory(),
+    containerFactory: ContainerFactory = DirectoryContainerFactory(),
+    archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
+    sniffers: List<Sniffer> = Sniffers.all,
 ) {
 
     private val internalRetriever: MediaTypeRetrieverInternal =
         MediaTypeRetrieverInternal(sniffers)
 
-    constructor(
-        archiveFactory: ArchiveFactory = DefaultArchiveFactory()
-    ) : this(
-        protocols = listOf(FileProtocol(archiveFactory)),
-        archiveFactory = archiveFactory
-    )
-
     private val snifferContextFactory: SnifferContextFactory =
-        SnifferContextFactory(protocols, archiveFactory)
+        SnifferContextFactory(resourceFactory, containerFactory, archiveFactory)
 
     suspend fun canonicalMediaType(mediaType: MediaType): MediaType =
         of(mediaType = mediaType.toString()) ?: mediaType

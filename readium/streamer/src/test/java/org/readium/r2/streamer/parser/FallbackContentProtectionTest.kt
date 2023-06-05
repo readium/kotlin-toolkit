@@ -5,12 +5,12 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.shared.fetcher.FailureResource
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.ContentProtection.Scheme
-import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.resource.StringResource
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -128,19 +128,47 @@ class FallbackContentProtectionTest {
 
     private fun sniff(mediaType: MediaType, resources: Map<String, String>): Scheme? = runBlocking {
         FallbackContentProtection().sniffScheme(
-            fetcher = TestFetcher(resources),
+            container = TestContainer(resources),
             mediaType = mediaType
         )
     }
 }
 
-class TestFetcher(private val resources: Map<String, String> = emptyMap()) : Fetcher {
+class TestContainer(resources: Map<String, String> = emptyMap()) : Container {
 
-    override suspend fun links(): List<Link> = resources.map { Link(href = it.key) }
+    private val entries: Map<String, Entry> =
+        resources.mapValues { Entry(it.key, StringResource(it.value)) }
 
-    override fun get(link: Link): Resource =
-        resources[link.href]?.let { StringResource(link, it) }
-            ?: FailureResource(link, Resource.Exception.NotFound())
+    override suspend fun entries(): Iterable<Container.Entry> =
+        entries.values
+
+    override suspend fun entry(path: String): Container.Entry =
+        entries[path] ?: NotFoundEntry(path)
 
     override suspend fun close() {}
+
+    private class NotFoundEntry(
+        override val path: String
+    ) : Container.Entry {
+
+        override val compressedLength: Long? =
+            null
+
+        override suspend fun length(): ResourceTry<Long> =
+            Try.failure(Resource.Exception.NotFound())
+
+        override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+            Try.failure(Resource.Exception.NotFound())
+
+        override suspend fun close() {
+        }
+    }
+
+    private class Entry(
+        override val path: String,
+        private val resource: StringResource
+    ) : Resource by resource, Container.Entry {
+
+        override val compressedLength: Long? = null
+    }
 }

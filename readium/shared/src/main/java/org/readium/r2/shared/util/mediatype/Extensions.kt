@@ -73,7 +73,6 @@ suspend fun Response.sniffMediaType(
     return mediaTypeRetriever.of(bytes, mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
 }
 
-
 /**
 * Sniffs the media type of the file.
 *

@@ -237,7 +237,7 @@ object Sniffers {
             return MediaType.LCP_PROTECTED_PDF
         }
 
-        if (context !is PackageSnifferContext) {
+        if (context !is ContainerSnifferContext) {
             return null
         }
 
@@ -295,7 +295,7 @@ object Sniffers {
             return MediaType.EPUB
         }
 
-        if (context !is PackageSnifferContext) {
+        if (context !is ContainerSnifferContext) {
             return null
         }
 
@@ -320,7 +320,7 @@ object Sniffers {
             return MediaType.LPF
         }
 
-        if (context !is PackageSnifferContext) {
+        if (context !is ContainerSnifferContext) {
             return null
         }
 
@@ -374,7 +374,7 @@ object Sniffers {
             return MediaType.ZAB
         }
 
-        if (context !is PackageSnifferContext) {
+        if (context !is ContainerSnifferContext) {
             return null
         }
 

@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.mediatype
+package org.readium.r2.shared.asset
 
 import android.content.ContentResolver
 import android.net.Uri
@@ -12,19 +12,28 @@ import android.provider.MediaStore
 import android.webkit.MimeTypeMap
 import java.io.File
 import org.readium.r2.shared.extensions.queryProjection
+import org.readium.r2.shared.resource.ArchiveFactory
+import org.readium.r2.shared.resource.ContainerFactory
+import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.archive.ArchiveFactory
-import org.readium.r2.shared.util.io.Protocol
+import org.readium.r2.shared.util.mediatype.ContainerSnifferContext
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.ResourceSnifferContext
+import org.readium.r2.shared.util.mediatype.Sniffer
+import org.readium.r2.shared.util.mediatype.SnifferContext
+import org.readium.r2.shared.util.mediatype.SnifferContextFactory
+import org.readium.r2.shared.util.mediatype.Sniffers
 import org.readium.r2.shared.util.toUrl
 
-class AssetRetriever(
-    protocols: List<Protocol>,
+class AssetAnalyzer(
+    resourceFactory: ResourceFactory,
+    containerFactory: ContainerFactory,
     archiveFactory: ArchiveFactory,
     private val sniffers: List<Sniffer> = MediaType.sniffers
 ) {
 
     private val snifferContextFactory: SnifferContextFactory =
-        SnifferContextFactory(protocols, archiveFactory)
+        SnifferContextFactory(resourceFactory, containerFactory, archiveFactory)
 
     /**
      * Resolves a format from a local file path.
@@ -166,7 +175,7 @@ class AssetRetriever(
     ): AssetDescription? {
 
         val type = when {
-            (context is PackageSnifferContext) ->
+            (context is ContainerSnifferContext) ->
                 AssetType.Archive
             (context is ResourceSnifferContext) ->
                 AssetType.File
@@ -174,25 +183,23 @@ class AssetRetriever(
                 AssetType.Directory
         }
 
-        var mediaType: MediaType? = null
+        fun assetDescription(mediaType: MediaType): AssetDescription {
+            return AssetDescription(mediaType, type)
+        }
 
         for (sniffer in sniffers) {
-            sniffer(context)?.let { mediaType = it }
+            sniffer(context)?.let { return assetDescription(it) }
         }
 
         // Falls back on the system-wide registered media types using [MimeTypeMap].
         // Note: This is done after the heavy sniffing of the provided [sniffers], because
         // otherwise it will detect JSON, XML or ZIP formats before we have a chance of sniffing
         // their content (for example, for RWPM).
-        Sniffers.system(context)?.let { mediaType = it }
+        Sniffers.system(context)?.let { return assetDescription(it) }
 
         // If nothing else worked, we try to parse the first valid media type hint.
         for (mediaTypeHint in context.mediaTypes) {
-            MediaType.parse(mediaTypeHint.toString())?.let { mediaType = it }
-        }
-
-        if (mediaType != null) {
-            return AssetDescription(mediaType!!, type)
+            MediaType.parse(mediaTypeHint.toString())?.let { return assetDescription(it) }
         }
 
         return null

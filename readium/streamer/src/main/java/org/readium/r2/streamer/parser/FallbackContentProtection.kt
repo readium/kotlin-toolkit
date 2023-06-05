@@ -6,20 +6,22 @@
 
 package org.readium.r2.streamer.parser
 
+import org.json.JSONObject
 import org.readium.r2.shared.UserException
-import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.asset.Asset
+import org.readium.r2.shared.fetcher.ContainerFetcher
+import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.ContentProtection.Scheme
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
+import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.mediatype.AssetType
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.streamer.extensions.readAsJsonOrNull
-import org.readium.r2.streamer.extensions.readAsXmlOrNull
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.streamer.parser.epub.EncryptionParser
 import org.readium.r2.streamer.parser.epub.Namespaces
 
@@ -27,7 +29,9 @@ import org.readium.r2.streamer.parser.epub.Namespaces
  * [ContentProtection] implementation used as a fallback by the Streamer to detect known DRM
  * schemes (e.g. LCP or ADEPT), if they are not supported by the app.
  */
-internal class FallbackContentProtection : ContentProtection {
+internal class FallbackContentProtection(
+    private val mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
+) : ContentProtection {
 
     class Service(override val scheme: Scheme?) : ContentProtectionService {
 
@@ -44,16 +48,24 @@ internal class FallbackContentProtection : ContentProtection {
     }
 
     override suspend fun open(
-        asset: PublicationAsset,
+        asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
     ): Try<ContentProtection.ProtectedAsset, Publication.OpeningException>? {
-        val scheme: Scheme = sniffScheme(asset.fetcher, asset.mediaType)
+        if (asset !is Asset.Container) {
+            return null
+        }
+
+        val scheme: Scheme = sniffScheme(asset.container, asset.mediaType)
             ?: return null
 
         val protectedFile = ContentProtection.ProtectedAsset(
-            asset = asset,
+            asset = PublicationAsset(
+                asset.name,
+                asset.mediaType,
+                ContainerFetcher(asset.container, mediaTypeRetriever)
+            ),
             onCreatePublication = {
                 servicesBuilder.contentProtectionServiceFactory = Service.createFactory(scheme)
             }
@@ -62,28 +74,19 @@ internal class FallbackContentProtection : ContentProtection {
         return Try.success(protectedFile)
     }
 
-    override suspend fun open(
-        url: Url,
-        mediaType: MediaType,
-        assetType: AssetType,
-        credentials: String?,
-        allowUserInteraction: Boolean,
-        sender: Any?
-    ): Try<ContentProtection.ProtectedAsset, Publication.OpeningException>? = null
-
-    internal suspend fun sniffScheme(fetcher: Fetcher, mediaType: MediaType): Scheme? =
+    internal suspend fun sniffScheme(container: Container, mediaType: MediaType): Scheme? =
         when {
-            fetcher.readAsJsonOrNull("/license.lcpl") != null ->
+            container.entry("/license.lcpl").readAsJsonOrNull() != null ->
                 Scheme.Lcp
 
             mediaType.matches(MediaType.EPUB) -> {
-                val rightsXml = fetcher.readAsXmlOrNull("/META-INF/rights.xml")
-                val encryptionXml = fetcher.readAsXmlOrNull("/META-INF/encryption.xml")
+                val rightsXml = container.entry("/META-INF/rights.xml").readAsXmlOrNull()
+                val encryptionXml = container.entry("/META-INF/encryption.xml").readAsXmlOrNull()
                 val encryption = encryptionXml?.let { EncryptionParser.parse(it) }
 
                 when {
                     (
-                        fetcher.readAsJsonOrNull("/META-INF/license.lcpl") != null ||
+                        container.entry("/META-INF/license.lcpl").readAsJsonOrNull() != null ||
                             encryption?.any { it.value.scheme == "http://readium.org/2014/01/lcp" } == true
                         ) -> Scheme.Lcp
 
@@ -108,3 +111,9 @@ internal class FallbackContentProtection : ContentProtection {
             else -> null
         }
 }
+
+private suspend inline fun Resource.readAsJsonOrNull(): JSONObject? =
+    readAsJson().getOrNull()
+
+private suspend inline fun Resource.readAsXmlOrNull(): ElementNode? =
+    readAsXml().getOrNull()

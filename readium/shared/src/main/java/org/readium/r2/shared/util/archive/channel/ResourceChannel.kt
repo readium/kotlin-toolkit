@@ -3,7 +3,7 @@ package org.readium.r2.shared.util.archive.channel
 import java.io.IOException
 import java.nio.ByteBuffer
 import kotlinx.coroutines.*
-import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.archive.channel.jvm.ClosedChannelException
 import org.readium.r2.shared.util.archive.channel.jvm.NonWritableChannelException
 import org.readium.r2.shared.util.archive.channel.jvm.SeekableByteChannel

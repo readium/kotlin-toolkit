@@ -11,7 +11,12 @@ package org.readium.r2.lcp
 
 import android.content.Context
 import java.io.File
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.auth.LcpDialogAuthentication
 import org.readium.r2.lcp.persistence.LcpDatabase
 import org.readium.r2.lcp.service.CRLService
@@ -25,9 +30,12 @@ import org.readium.r2.lcp.service.PassphrasesRepository
 import org.readium.r2.lcp.service.PassphrasesService
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.ContentProtection
-import org.readium.r2.shared.publication.asset.AssetFactory
-import org.readium.r2.shared.publication.asset.DefaultAssetFactory
+import org.readium.r2.shared.resource.ArchiveFactory
+import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.archive.DefaultArchiveFactory
+import org.readium.r2.shared.util.io.FileResourceFactory
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
@@ -104,6 +112,14 @@ interface LcpService {
         sender: Any? = null
     ): Try<LcpLicense, LcpException>
 
+    suspend fun retrieveLicense(
+        container: Container,
+        mediaType: MediaType,
+        authentication: LcpAuthenticating,
+        allowUserInteraction: Boolean,
+        sender: Any?
+    ): Try<LcpLicense, LcpException>
+
     /**
      * Creates a [ContentProtection] instance which can be used with a Streamer to unlock
      * LCP protected publications.
@@ -139,8 +155,9 @@ interface LcpService {
          */
         operator fun invoke(
             context: Context,
-            assetFactory: AssetFactory = DefaultAssetFactory(),
-            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
+            resourceFactory: ResourceFactory = FileResourceFactory(),
+            archiveFactory: ArchiveFactory = DefaultArchiveFactory()
         ): LcpService? {
             if (!LcpClient.isAvailable())
                 return null
@@ -160,8 +177,9 @@ interface LcpService {
                 network = network,
                 passphrases = passphrases,
                 context = context,
-                assetFactory = assetFactory,
-                mediaTypeRetriever = mediaTypeRetriever
+                mediaTypeRetriever = mediaTypeRetriever,
+                resourceFactory = resourceFactory,
+                archiveFactory = archiveFactory
             )
         }
 

@@ -16,7 +16,7 @@ import org.jsoup.select.NodeTraversor
 import org.jsoup.select.NodeVisitor
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.html.cssSelector
@@ -41,7 +41,7 @@ import org.readium.r2.shared.util.use
  */
 @ExperimentalReadiumApi
 class HtmlResourceContentIterator(
-    private val resource: Resource,
+    private val resource: Fetcher.Resource,
     private val locator: Locator,
     private val beforeMaxLength: Int = 50
 ) : Content.Iterator {

@@ -4,7 +4,9 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util.mediatype
+package org.readium.r2.shared.asset
+
+import org.readium.r2.shared.util.mediatype.MediaType
 
 data class AssetDescription(
     val mediaType: MediaType,

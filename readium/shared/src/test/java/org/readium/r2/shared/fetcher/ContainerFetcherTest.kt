@@ -22,25 +22,26 @@ import org.readium.r2.shared.linkBlocking
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.readBlocking
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.archive.JavaZipArchiveFactory
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 
 @RunWith(RobolectricTestRunner::class)
-class ArchiveFetcherTest {
+class ContainerFetcherTest {
 
     private val fetcher: Fetcher
 
     init {
-        val epub = ArchiveFetcherTest::class.java.getResource("epub.epub")
+        val epub = ContainerFetcherTest::class.java.getResource("epub.epub")
         assertNotNull(epub)
         val archive = runBlocking {
             JavaZipArchiveFactory()
                 .open(File(epub.path))
                 .getOrThrow()
         }
-        val zipFetcher = ArchiveFetcher(archive, MediaTypeRetriever())
+        val zipFetcher = ContainerFetcher(archive, MediaTypeRetriever())
         assertNotNull(zipFetcher)
         fetcher = zipFetcher
     }
@@ -60,9 +61,6 @@ class ArchiveFetcherTest {
                     "isEntryCompressed" to isCompressed
                 )
             )
-            if (isCompressed) {
-                props["compressedLength"] = entryLength
-            }
 
             return Link(
                 href = href,
@@ -155,7 +153,6 @@ class ArchiveFetcherTest {
         assertJSONEquals(
             JSONObject(
                 mapOf(
-                    "compressedLength" to 595L,
                     "archive" to mapOf(
                         "entryLength" to 595L,
                         "isEntryCompressed" to true

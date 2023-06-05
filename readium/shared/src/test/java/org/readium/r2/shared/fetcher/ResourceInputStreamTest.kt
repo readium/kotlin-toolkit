@@ -6,6 +6,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
+import org.readium.r2.shared.resource.ResourceInputStream
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 class ResourceInputStreamTest {

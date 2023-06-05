@@ -12,13 +12,11 @@ package org.readium.r2.shared.publication
 import androidx.annotation.StringRes
 import org.readium.r2.shared.R
 import org.readium.r2.shared.UserException
+import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.mediatype.AssetType
-import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Bridge between a Content Protection technology and the Readium toolkit.
@@ -37,16 +35,7 @@ interface ContentProtection {
      * even in restricted mode.
      */
     suspend fun open(
-        asset: PublicationAsset,
-        credentials: String?,
-        allowUserInteraction: Boolean,
-        sender: Any?
-    ): Try<ProtectedAsset, Publication.OpeningException>?
-
-    suspend fun open(
-        url: Url,
-        mediaType: MediaType,
-        assetType: AssetType,
+        asset: Asset,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?

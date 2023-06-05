@@ -13,10 +13,22 @@ import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.TextureView
-import androidx.media3.common.*
+import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C.*
+import androidx.media3.common.DeviceInfo
+import androidx.media3.common.FlagSet
+import androidx.media3.common.IllegalSeekPositionException
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackException.*
+import androidx.media3.common.PlaybackParameters
+import androidx.media3.common.Player
 import androidx.media3.common.Player.*
+import androidx.media3.common.Timeline
+import androidx.media3.common.TrackSelectionParameters
+import androidx.media3.common.Tracks
+import androidx.media3.common.VideoSize
 import androidx.media3.common.text.CueGroup
 import androidx.media3.common.util.Clock
 import androidx.media3.common.util.ListenerSet
@@ -30,7 +42,7 @@ import kotlinx.coroutines.flow.onEach
 import org.readium.r2.navigator.media3.tts.TtsEngine
 import org.readium.r2.navigator.media3.tts.TtsPlayer
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.resource.Resource
 
 /**
  * Adapts the [TtsPlayer] to media3 [Player] interface.

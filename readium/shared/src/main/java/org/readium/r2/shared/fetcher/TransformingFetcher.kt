@@ -25,7 +25,7 @@ class TransformingFetcher(
 
     override suspend fun links(): List<Link> = fetcher.links()
 
-    override fun get(link: Link): Resource {
+    override fun get(link: Link): Fetcher.Resource {
         val resource = fetcher.get(link)
         return transformers.fold(resource) { acc, transformer -> transformer(acc) }
     }

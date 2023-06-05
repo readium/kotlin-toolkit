@@ -1,19 +1,19 @@
 package org.readium.r2.shared.util.mediatype
 
 import org.readium.r2.shared.fetcher.BytesResource
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.util.archive.Package
+import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.Resource
 
 internal class MediaTypeRetrieverInternal(
-    private val sniffers: List<Sniffer> = Sniffers.all.toMutableList(),
+    private val sniffers: List<Sniffer>,
 ) {
 
     suspend fun of(
         mediaTypes: List<String>,
         fileExtensions: List<String>
     ): MediaType? {
-        return of (null, mediaTypes, fileExtensions)
+        return of(null, mediaTypes, fileExtensions)
     }
 
     suspend fun of(
@@ -28,12 +28,12 @@ internal class MediaTypeRetrieverInternal(
     }
 
     suspend fun of(
-        _package: Package,
+        container: Container,
         mediaTypes: List<String>,
         fileExtensions: List<String>
     ): MediaType? {
         val fullContext = {
-            PackageSnifferContext(_package, mediaTypes, fileExtensions)
+            ContainerSnifferContext(container, mediaTypes, fileExtensions)
         }
         return of(fullContext, mediaTypes, fileExtensions)
     }

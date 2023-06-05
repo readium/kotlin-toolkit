@@ -10,10 +10,11 @@ import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.readFully
-import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.resource.ArchiveFactory
+import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.archive.ArchiveFactory
-import org.readium.r2.shared.util.archive.Package
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArchiveEntry
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipFile
 import org.readium.r2.shared.util.archive.channel.jvm.SeekableByteChannel
@@ -23,12 +24,15 @@ import org.readium.r2.shared.util.io.CountingInputStream
 
 internal class ChannelZip(
     private val archive: ZipFile
-) : Package {
+) : Container {
 
-    private inner class Entry(private val entry: ZipArchiveEntry) : Package.Entry {
+    private inner class Entry(private val entry: ZipArchiveEntry) : Container.Entry {
         override val path: String get() = entry.name
 
-        override val length: Long? get() = entry.size.takeUnless { it == -1L }
+        override suspend fun length(): ResourceTry<Long> =
+            entry.size.takeUnless { it == -1L }
+                ?.let { Try.success(it) }
+                ?: Try.failure(Resource.Exception.Other(UnsupportedOperationException()))
 
         override val compressedLength: Long?
             get() =
@@ -37,12 +41,18 @@ internal class ChannelZip(
                 else
                     entry.compressedSize.takeUnless { it == -1L }
 
-        override suspend fun read(range: LongRange?): ByteArray =
+        override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
             withContext(Dispatchers.IO) {
-                if (range == null)
-                    readFully()
-                else
-                    readRange(range)
+                try {
+                    val bytes =
+                        if (range == null)
+                            readFully()
+                        else
+                            readRange(range)
+                    Try.success(bytes)
+                } catch (e: Exception) {
+                    Try.failure(Resource.Exception.wrap(e))
+                }
             }
 
         private suspend fun readFully(): ByteArray =
@@ -92,10 +102,10 @@ internal class ChannelZip(
         }
     }
 
-    override suspend fun entries(): List<Package.Entry> =
+    override suspend fun entries(): List<Container.Entry> =
         archive.entries.toList().filterNot { it.isDirectory }.mapNotNull { Entry(it) }
 
-    override suspend fun entry(path: String): Package.Entry {
+    override suspend fun entry(path: String): Container.Entry {
         val entry = archive.getEntry(path)
             ?: throw Exception("No file entry at path $path.")
 
@@ -116,7 +126,7 @@ class ChannelZipArchiveFactory(
     private val httpClient: HttpClient = DefaultHttpClient()
 ) : ArchiveFactory {
 
-    override suspend fun open(resource: Resource, password: String?): Try<Package, Exception> =
+    override suspend fun create(resource: Resource, password: String?): Try<Container, Exception> =
         try {
             val resourceChannel = ResourceChannel(resource)
             val channel = wrapBaseChannel(resourceChannel)
@@ -125,7 +135,7 @@ class ChannelZipArchiveFactory(
             Try.failure(e)
         }
 
-    internal fun openFile(file: File): Package {
+    internal fun openFile(file: File): Container {
         val fileChannel = FileChannelAdapter(file, "r")
         val channel = wrapBaseChannel(fileChannel)
         return ChannelZip(ZipFile(channel))

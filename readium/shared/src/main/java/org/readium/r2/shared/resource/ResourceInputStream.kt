@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.shared.fetcher
+package org.readium.r2.shared.resource
 
 import java.io.IOException
 import java.io.InputStream

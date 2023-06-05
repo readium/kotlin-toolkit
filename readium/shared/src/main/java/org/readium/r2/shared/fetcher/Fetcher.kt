@@ -9,11 +9,26 @@
 
 package org.readium.r2.shared.fetcher
 
+import org.readium.r2.shared.fetcher.Fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.SuspendingCloseable
 
 /** Provides access to a [Resource] from a [Link]. */
 interface Fetcher : SuspendingCloseable {
+
+    /**
+     * Acts as a proxy to an actual resource by handling read access.
+     */
+    interface Resource : org.readium.r2.shared.resource.Resource {
+
+        /**
+         * Returns the link from which the resource was retrieved.
+         *
+         * It might be modified by the [Resource] to include additional metadata, e.g. the
+         * `Content-Type` HTTP header in [Link.type].
+         */
+        suspend fun link(): Link
+    }
 
     /**
      * Known resources available in the medium, such as file paths on the file system
@@ -44,9 +59,41 @@ interface Fetcher : SuspendingCloseable {
 /** A [Fetcher] providing no resources at all. */
 class EmptyFetcher : Fetcher {
 
-    override suspend fun links(): List<Link> = emptyList()
+    override suspend fun links(): List<Link> =
+        emptyList()
 
-    override fun get(link: Link): Resource = FailureResource(link, Resource.Exception.NotFound())
+    override fun get(link: Link): Resource =
+        FailureResource(link, org.readium.r2.shared.resource.Resource.Exception.NotFound())
 
     override suspend fun close() {}
+}
+
+class SingleResourceFetcher(
+    private val link: Link,
+    private val resource: Resource
+) : Fetcher {
+
+    companion object {
+
+        suspend operator fun invoke(resource: Resource): SingleResourceFetcher {
+            val link = resource.link()
+            return SingleResourceFetcher(link, resource)
+        }
+    }
+
+    override suspend fun links(): List<Link> =
+        listOf(link)
+
+    override fun get(link: Link): Resource {
+        if (link.href != this.link.href) {
+            val exception = org.readium.r2.shared.resource.Resource.Exception.NotFound()
+            return FailureResource(link, exception)
+        }
+
+        return resource
+    }
+
+    override suspend fun close() {
+        resource.close()
+    }
 }

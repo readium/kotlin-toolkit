@@ -15,9 +15,10 @@ import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.TransferListener
 import java.io.IOException
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.buffered
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.resource.Resource
 
 sealed class ExoPlayerDataSourceException(message: String, cause: Throwable?) : IOException(message, cause) {
     class NotOpened(message: String) : ExoPlayerDataSourceException(message, null)
@@ -47,7 +48,7 @@ internal class ExoPlayerDataSource internal constructor(
     }
 
     private data class OpenedResource(
-        val resource: Resource,
+        val resource: Fetcher.Resource,
         val uri: Uri,
         var position: Long,
     )

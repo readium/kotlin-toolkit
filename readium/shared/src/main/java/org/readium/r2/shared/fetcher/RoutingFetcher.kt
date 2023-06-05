@@ -10,6 +10,7 @@
 package org.readium.r2.shared.fetcher
 
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.resource.Resource
 
 /**
  * Routes requests to child fetchers, depending on a provided predicate.
@@ -33,7 +34,7 @@ class RoutingFetcher(private val routes: List<Route>) : Fetcher {
 
     override suspend fun links(): List<Link> = routes.flatMap { it.fetcher.links() }
 
-    override fun get(link: Link): Resource =
+    override fun get(link: Link): Fetcher.Resource =
         routes.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: FailureResource(link, Resource.Exception.NotFound())
 
     override suspend fun close() {

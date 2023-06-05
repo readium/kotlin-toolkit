@@ -26,7 +26,6 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.removeLastComponent
 import org.readium.r2.shared.fetcher.EmptyFetcher
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.CacheService
@@ -166,7 +165,7 @@ class Publication(
     /**
      * Returns the resource targeted by the given non-templated [link].
      */
-    fun get(link: Link): Resource {
+    fun get(link: Link): Fetcher.Resource {
         if (DEBUG) { require(!link.templated) { "You must expand templated links before calling [Publication.get]" } }
 
         services.services.forEach { service -> service.get(link)?.let { return it } }
@@ -352,7 +351,7 @@ class Publication(
          * @return The [Resource] containing the response, or null if the service doesn't recognize
          *         this request.
          */
-        fun get(link: Link): Resource? = null
+        fun get(link: Link): Fetcher.Resource? = null
 
         /**
          * Closes any opened file handles, removes temporary files, etc.

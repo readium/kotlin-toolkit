@@ -23,17 +23,22 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.joda.time.DateTime
 import org.readium.r2.lcp.LcpService
+import org.readium.r2.shared.asset.AssetAnalyzer
+import org.readium.r2.shared.asset.AssetDescription
+import org.readium.r2.shared.asset.AssetType
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.cover
-import org.readium.r2.shared.util.*
-import org.readium.r2.shared.util.mediatype.AssetDescription
-import org.readium.r2.shared.util.mediatype.AssetRetriever
-import org.readium.r2.shared.util.mediatype.AssetType
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.toUrl
+import org.readium.r2.streamer.AssetFactory
 import org.readium.r2.streamer.Streamer
 import org.readium.r2.testapp.db.BooksDao
 import org.readium.r2.testapp.domain.model.Book
@@ -50,7 +55,8 @@ class BookRepository(
     private val storageDir: File,
     private val lcpService: Try<LcpService, Exception>,
     private val streamer: Streamer,
-    private val assetRetriever: AssetRetriever
+    private val assetAnalyzer: AssetAnalyzer,
+    private val assetFactory: AssetFactory
 ) {
     private val coverDir: File =
         File(storageDir, "covers/")
@@ -166,7 +172,7 @@ class BookRepository(
     suspend fun addRemoteBook(
         url: Url
     ): Try<Unit, ImportException> {
-        val assetDescription = assetRetriever.ofUrl(url, fileExtension = url.extension)
+        val assetDescription = assetAnalyzer.ofUrl(url, fileExtension = url.extension)
             ?: return Try.failure(
                 ImportException.UnableToOpenPublication(Publication.OpeningException.UnsupportedFormat())
             )
@@ -177,7 +183,7 @@ class BookRepository(
         tempFile: File,
         coverUrl: String? = null
     ): Try<Unit, ImportException> {
-        val sourceAssetDescription = assetRetriever.ofFile(tempFile)
+        val sourceAssetDescription = assetAnalyzer.ofFile(tempFile)
             ?: return Try.failure(
                 ImportException.UnableToOpenPublication(Publication.OpeningException.UnsupportedFormat())
             )
@@ -193,7 +199,7 @@ class BookRepository(
                     .fold(
                         {
                             val file = it.localFile
-                            val assetDescription = assetRetriever.ofFile(file, fileExtension = File(it.suggestedFilename).extension)
+                            val assetDescription = assetAnalyzer.ofFile(file, fileExtension = File(it.suggestedFilename).extension)
                             file to assetDescription
                         },
                         {
@@ -234,7 +240,11 @@ class BookRepository(
         assetDescription: AssetDescription,
         coverUrl: String? = null,
     ): Try<Unit, ImportException> {
-        streamer.open(url, assetDescription.mediaType, assetDescription.assetType, allowUserInteraction = false)
+        val asset = assetFactory.createAsset(
+            url, assetDescription.mediaType, assetDescription.assetType
+        ).getOrElse { return Try.failure(ImportException.IOException) }
+
+        streamer.open(asset, allowUserInteraction = false)
             .onSuccess { publication ->
                 val coverBitmap: Bitmap? = coverUrl
                     ?.let { getBitmapFromURL(it) }

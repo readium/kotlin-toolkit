@@ -12,19 +12,16 @@ import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import org.readium.r2.shared.extensions.tryOr
-import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.fetcher.BytesResource
-import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.fetcher.ResourceInputStream
 import org.readium.r2.shared.parser.xml.ElementNode
-import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.util.Either
+import org.readium.r2.shared.resource.ArchiveFactory
+import org.readium.r2.shared.resource.BytesResource
+import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.ContainerFactory
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.ResourceFactory
+import org.readium.r2.shared.resource.ResourceInputStream
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.archive.ArchiveFactory
-import org.readium.r2.shared.util.archive.Package
-import org.readium.r2.shared.util.io.Protocol
 import timber.log.Timber
 
 sealed class SnifferContext(
@@ -191,8 +188,8 @@ class ResourceSnifferContext internal constructor(
  * @param mediaTypes Media type hints.
  * @param fileExtensions File extension hints.
  */
-class PackageSnifferContext internal constructor(
-    val _package: Package,
+class ContainerSnifferContext internal constructor(
+    val container: Container,
     mediaTypes: List<String> = emptyList(),
     fileExtensions: List<String> = emptyList()
 ) : SnifferContext(mediaTypes, fileExtensions) {
@@ -201,37 +198,38 @@ class PackageSnifferContext internal constructor(
      * Returns whether an Archive entry exists in this file.
      */
     internal suspend fun containsArchiveEntryAt(path: String): Boolean =
-        tryOrNull { _package.entry(path) } != null
+        container.entry(path).read(0 until 16L).isSuccess
 
     /**
      * Returns the Archive entry data at the given [path] in this file.
      */
     internal suspend fun readArchiveEntryAt(path: String): ByteArray? {
-        val archive = _package
+        val archive = container
 
         return withContext(Dispatchers.IO) {
-            tryOrNull {
-                val entry = archive.entry(path)
-                val bytes = entry.read()
-                entry.close()
-                bytes
-            }
+            val entry = archive.entry(path)
+            val bytes = entry.read().getOrNull()
+            entry.close()
+            bytes
         }
     }
 
     /**
      * Returns whether all the Archive entry paths satisfy the given `predicate`.
      */
-    internal suspend fun archiveEntriesAllSatisfy(predicate: (Package.Entry) -> Boolean): Boolean =
-        tryOr(false) { _package.entries().all(predicate) }
+    internal suspend fun archiveEntriesAllSatisfy(predicate: (Container.Entry) -> Boolean): Boolean =
+        container.entries()
+            ?.all(predicate)
+            ?: false
 
     override suspend fun release() {
-        _package.close()
+        container.close()
     }
 }
 
 class SnifferContextFactory(
-    private val protocols: List<Protocol>,
+    private val resourceFactory: ResourceFactory,
+    private val containerFactory: ContainerFactory,
     private val archiveFactory: ArchiveFactory
 ) {
 
@@ -240,18 +238,23 @@ class SnifferContextFactory(
         mediaTypes: List<String> = emptyList(),
         fileExtensions: List<String> = emptyList()
     ): SnifferContext? {
-        for (protocol in protocols) {
-            protocol.open(url)?.let {
-                return when (it) {
-                    is Either.Left ->
-                        ResourceSnifferContext(it.value, mediaTypes, fileExtensions)
-                    is Either.Right ->
-                        PackageSnifferContext(it.value, mediaTypes, fileExtensions)
-                }
-            }
+
+        val resource = resourceFactory.create(url)
+            .getOrNull()
+
+        if (resource == null) {
+            val container = containerFactory.create(url)
+                .getOrNull()
+                ?: return null
+
+            return ContainerSnifferContext(container, mediaTypes, fileExtensions)
         }
 
-        return null
+        return archiveFactory.create(resource, password = null)
+            .fold(
+                { ContainerSnifferContext(it, mediaTypes, fileExtensions) },
+                { ResourceSnifferContext(resource, mediaTypes, fileExtensions) }
+            )
     }
 
     suspend fun createContext(
@@ -259,10 +262,10 @@ class SnifferContextFactory(
         mediaTypes: List<String> = emptyList(),
         fileExtensions: List<String> = emptyList(),
     ): SnifferContext? {
-        val resource: Resource = BytesResource(Link(""), bytes)
-        return archiveFactory.open(resource, password = null)
+        val resource: Resource = BytesResource(bytes)
+        return archiveFactory.create(resource, password = null)
             .fold(
-                { PackageSnifferContext(it, mediaTypes, fileExtensions) },
+                { ContainerSnifferContext(it, mediaTypes, fileExtensions) },
                 { ResourceSnifferContext(resource, mediaTypes, fileExtensions) }
             )
     }

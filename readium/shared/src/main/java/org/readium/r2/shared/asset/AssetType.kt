@@ -1,4 +1,4 @@
-package org.readium.r2.shared.util.mediatype
+package org.readium.r2.shared.asset
 
 enum class AssetType {
     File,

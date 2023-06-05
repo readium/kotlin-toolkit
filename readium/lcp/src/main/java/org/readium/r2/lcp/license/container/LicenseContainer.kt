@@ -13,6 +13,7 @@ import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
@@ -60,4 +61,16 @@ internal fun createLicenseContainer(
         else -> LICENSE_IN_RPF.addPrefix("/")
     }
     return FetcherLicenseContainer(fetcher, licensePath)
+}
+
+internal fun createLicenseContainer(
+    container: Container,
+    mediaType: MediaType,
+): LicenseContainer {
+    val licensePath = when (mediaType) {
+        MediaType.EPUB -> LICENSE_IN_EPUB.addPrefix("/")
+        // Assuming it's a Readium WebPub package (e.g. audiobook, LCPDF, etc.) as a fallback
+        else -> LICENSE_IN_RPF.addPrefix("/")
+    }
+    return ContainerLicenseContainer(container, licensePath)
 }

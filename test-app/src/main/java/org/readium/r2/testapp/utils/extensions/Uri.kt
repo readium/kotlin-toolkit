@@ -16,7 +16,10 @@ import org.readium.r2.testapp.utils.ContentResolverUtil
 suspend fun Uri.copyToTempFile(context: Context, dir: File): Try<File, Exception> =
     try {
         val filename = UUID.randomUUID().toString()
-        val file = File(dir, "$filename.tmp")
+        val extension = path
+            ?.let { File(it).extension }
+            ?: "tmp"
+        val file = File(dir, "$filename.$extension")
         ContentResolverUtil.getContentInputStream(context, this, file)
         Try.success(file)
     } catch (e: Exception) {

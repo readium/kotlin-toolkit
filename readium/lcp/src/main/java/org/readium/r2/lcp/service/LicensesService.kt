@@ -12,8 +12,18 @@ package org.readium.r2.lcp.service
 import android.content.Context
 import java.io.File
 import kotlin.coroutines.resume
-import kotlinx.coroutines.*
-import org.readium.r2.lcp.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import org.readium.r2.lcp.LcpAuthenticating
+import org.readium.r2.lcp.LcpContentProtection
+import org.readium.r2.lcp.LcpException
+import org.readium.r2.lcp.LcpLicense
+import org.readium.r2.lcp.LcpService
 import org.readium.r2.lcp.license.License
 import org.readium.r2.lcp.license.LicenseValidation
 import org.readium.r2.lcp.license.container.LicenseContainer
@@ -22,7 +32,9 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.ContentProtection
-import org.readium.r2.shared.publication.asset.AssetFactory
+import org.readium.r2.shared.resource.ArchiveFactory
+import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -35,20 +47,21 @@ internal class LicensesService(
     private val network: NetworkService,
     private val passphrases: PassphrasesService,
     private val context: Context,
-    private val assetFactory: AssetFactory,
-    private val mediaTypeRetriever: MediaTypeRetriever
+    private val mediaTypeRetriever: MediaTypeRetriever,
+    private val resourceFactory: ResourceFactory,
+    private val archiveFactory: ArchiveFactory
 ) : LcpService, CoroutineScope by MainScope() {
 
     override suspend fun isLcpProtected(file: File): Boolean =
         tryOr(false) {
-            createLicenseContainer(file.path, mediaTypeRetriever  = mediaTypeRetriever).read()
+            createLicenseContainer(file.path, mediaTypeRetriever = mediaTypeRetriever).read()
             true
         }
 
     override fun contentProtection(
         authentication: LcpAuthenticating,
     ): ContentProtection =
-        LcpContentProtection(this, authentication, assetFactory)
+        LcpContentProtection(this, authentication, mediaTypeRetriever, resourceFactory, archiveFactory)
 
     override suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit): Try<LcpService.AcquiredPublication, LcpException> =
         try {
@@ -83,6 +96,21 @@ internal class LicensesService(
         try {
             val container = createLicenseContainer(fetcher, mediaType)
             val license = retrieveLicense(container, authentication, allowUserInteraction, false, sender)
+            Try.success(license)
+        } catch (e: Exception) {
+            Try.failure(LcpException.wrap(e))
+        }
+
+    override suspend fun retrieveLicense(
+        container: Container,
+        mediaType: MediaType,
+        authentication: LcpAuthenticating,
+        allowUserInteraction: Boolean,
+        sender: Any?
+    ): Try<LcpLicense, LcpException> =
+        try {
+            val licenseContainer = createLicenseContainer(container, mediaType)
+            val license = retrieveLicense(licenseContainer, authentication, allowUserInteraction, false, sender)
             Try.success(license)
         } catch (e: Exception) {
             Try.failure(LcpException.wrap(e))
