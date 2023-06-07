@@ -126,6 +126,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                 content = { Overlay() }
             )
         }
+        observeKeyEventChanges()
     }
 
     @Composable
@@ -249,7 +250,10 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
         if (
             activity.confirmDialog(
-                getString(R.string.tts_error_language_support_incomplete, language.locale.displayLanguage)
+                getString(
+                    R.string.tts_error_language_support_incomplete,
+                    language.locale.displayLanguage
+                )
             )
         ) {
             AndroidTtsEngine.requestInstallVoice(activity)
@@ -359,13 +363,14 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         }
     }
 
-    private fun showHighlightPopupWithStyle(style: Highlight.Style) = viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-        // Get the rect of the current selection to know where to position the highlight
-        // popup.
-        (navigator as? SelectableNavigator)?.currentSelection()?.rect?.let { selectionRect ->
-            showHighlightPopup(selectionRect, style)
+    private fun showHighlightPopupWithStyle(style: Highlight.Style) =
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            // Get the rect of the current selection to know where to position the highlight
+            // popup.
+            (navigator as? SelectableNavigator)?.currentSelection()?.rect?.let { selectionRect ->
+                showHighlightPopup(selectionRect, style)
+            }
         }
-    }
 
     private fun showHighlightPopup(rect: RectF, style: Highlight.Style, highlightId: Long? = null) =
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
@@ -455,54 +460,63 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
             mode?.finish()
         }
 
-    private fun showAnnotationPopup(highlightId: Long? = null) = viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-        val activity = activity ?: return@launchWhenResumed
-        val view = layoutInflater.inflate(R.layout.popup_note, null, false)
-        val note = view.findViewById<EditText>(R.id.note)
-        val alert = AlertDialog.Builder(activity)
-            .setView(view)
-            .create()
+    private fun showAnnotationPopup(highlightId: Long? = null) =
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            val activity = activity ?: return@launchWhenResumed
+            val view = layoutInflater.inflate(R.layout.popup_note, null, false)
+            val note = view.findViewById<EditText>(R.id.note)
+            val alert = AlertDialog.Builder(activity)
+                .setView(view)
+                .create()
 
-        fun dismiss() {
-            alert.dismiss()
-            mode?.finish()
-            (activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
-                .hideSoftInputFromWindow(note.applicationWindowToken, InputMethodManager.HIDE_NOT_ALWAYS)
-        }
+            fun dismiss() {
+                alert.dismiss()
+                mode?.finish()
+                (activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                    .hideSoftInputFromWindow(
+                        note.applicationWindowToken,
+                        InputMethodManager.HIDE_NOT_ALWAYS
+                    )
+            }
 
-        with(view) {
-            val highlight = highlightId?.let { model.highlightById(it) }
-            if (highlight != null) {
-                note.setText(highlight.annotation)
-                findViewById<View>(R.id.sidemark).setBackgroundColor(highlight.tint)
-                findViewById<TextView>(R.id.select_text).text = highlight.locator.text.highlight
+            with(view) {
+                val highlight = highlightId?.let { model.highlightById(it) }
+                if (highlight != null) {
+                    note.setText(highlight.annotation)
+                    findViewById<View>(R.id.sidemark).setBackgroundColor(highlight.tint)
+                    findViewById<TextView>(R.id.select_text).text = highlight.locator.text.highlight
 
-                findViewById<TextView>(R.id.positive).setOnClickListener {
-                    val text = note.text.toString()
-                    model.updateHighlightAnnotation(highlight.id, annotation = text)
-                    dismiss()
+                    findViewById<TextView>(R.id.positive).setOnClickListener {
+                        val text = note.text.toString()
+                        model.updateHighlightAnnotation(highlight.id, annotation = text)
+                        dismiss()
+                    }
+                } else {
+                    val tint = highlightTints.values.random()
+                    findViewById<View>(R.id.sidemark).setBackgroundColor(tint)
+                    val navigator = navigator as? SelectableNavigator ?: return@launchWhenResumed
+                    val selection = navigator.currentSelection() ?: return@launchWhenResumed
+                    navigator.clearSelection()
+                    findViewById<TextView>(R.id.select_text).text = selection.locator.text.highlight
+
+                    findViewById<TextView>(R.id.positive).setOnClickListener {
+                        model.addHighlight(
+                            locator = selection.locator,
+                            style = Highlight.Style.HIGHLIGHT,
+                            tint = tint,
+                            annotation = note.text.toString()
+                        )
+                        dismiss()
+                    }
                 }
-            } else {
-                val tint = highlightTints.values.random()
-                findViewById<View>(R.id.sidemark).setBackgroundColor(tint)
-                val navigator = navigator as? SelectableNavigator ?: return@launchWhenResumed
-                val selection = navigator.currentSelection() ?: return@launchWhenResumed
-                navigator.clearSelection()
-                findViewById<TextView>(R.id.select_text).text = selection.locator.text.highlight
 
-                findViewById<TextView>(R.id.positive).setOnClickListener {
-                    model.addHighlight(locator = selection.locator, style = Highlight.Style.HIGHLIGHT, tint = tint, annotation = note.text.toString())
+                findViewById<TextView>(R.id.negative).setOnClickListener {
                     dismiss()
                 }
             }
 
-            findViewById<TextView>(R.id.negative).setOnClickListener {
-                dismiss()
-            }
+            alert.show()
         }
-
-        alert.show()
-    }
 
     fun updateSystemUiVisibility() {
         if (navigatorFragment.isHidden)
@@ -521,6 +535,29 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         }
     }
 
+    private fun observeKeyEventChanges() {
+        model.keyEvent.observe(viewLifecycleOwner) {
+            handleKeyEvents(it)
+        }
+    }
+
+    private fun handleKeyEvents(keyCode: Int) {
+        when (keyCode) {
+            KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                navigator?.goForward()
+                true
+            }
+            KeyEvent.KEYCODE_SPACE -> {
+                navigator?.goForward()
+                true
+            }
+            KeyEvent.KEYCODE_DPAD_LEFT -> {
+                navigator?.goBackward()
+                true
+            }
+        }
+    }
+
     // VisualNavigator.Listener
 
     override fun onTap(point: PointF): Boolean {
@@ -531,6 +568,17 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         }
         return true
     }
+
+    override fun onNavigatorKeyDown(event: R2BasicWebView.R2KeyEvent): Boolean {
+        when (event) {
+            R2BasicWebView.R2KeyEvent.arrowRight -> handleKeyEvents(KeyEvent.KEYCODE_DPAD_RIGHT)
+            R2BasicWebView.R2KeyEvent.arrowLeft -> handleKeyEvents(KeyEvent.KEYCODE_DPAD_LEFT)
+            R2BasicWebView.R2KeyEvent.space -> handleKeyEvents(KeyEvent.KEYCODE_SPACE)
+            else -> {}
+        }
+        return true
+    }
+
 
     private val edgeTapNavigation by lazy {
         EdgeTapNavigation(

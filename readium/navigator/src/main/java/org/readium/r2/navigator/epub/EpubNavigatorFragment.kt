@@ -738,6 +738,10 @@ class EpubNavigatorFragment internal constructor(
                 offset = event.offset
             ) ?: false
 
+        override fun onNavigatorKeyDown(event: R2BasicWebView.R2KeyEvent): Boolean =
+            listener?.onNavigatorKeyDown(event) ?: false
+
+
         override fun onDecorationActivated(
             id: DecorationId,
             group: String,

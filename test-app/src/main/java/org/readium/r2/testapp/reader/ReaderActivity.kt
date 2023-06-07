@@ -8,6 +8,7 @@ package org.readium.r2.testapp.reader
 
 import android.os.Build
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.WindowManager
 import android.widget.Toast
@@ -199,6 +200,16 @@ open class ReaderActivity : AppCompatActivity() {
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+        return if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT
+            || keyCode == KeyEvent.KEYCODE_SPACE
+            || keyCode == KeyEvent.KEYCODE_DPAD_LEFT
+        ){
+            model.setEvent(keyCode)
+            true
+        } else super.onKeyUp(keyCode, event)
     }
 
     companion object {

@@ -10,6 +10,8 @@ package org.readium.r2.testapp.reader
 
 import android.graphics.Color
 import androidx.annotation.ColorInt
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.*
@@ -257,6 +259,13 @@ class ReaderViewModel(
     sealed class FeedbackEvent {
         object BookmarkSuccessfullyAdded : FeedbackEvent()
         object BookmarkFailed : FeedbackEvent()
+    }
+
+    private val _keyEvent: MutableLiveData<Int> = MutableLiveData(-1)
+    val keyEvent: LiveData<Int> get() = _keyEvent
+
+    fun setEvent(code:Int){
+        _keyEvent.value = code
     }
 
     companion object {

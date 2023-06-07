@@ -173,6 +173,18 @@ interface VisualNavigator : Navigator {
          */
         @ExperimentalDragGesture
         fun onDragEnd(startPoint: PointF, offset: PointF): Boolean = false
+
+        /**
+         * Called when the user press a key down, and it didn't trigger any internal action.
+          */
+
+        fun onNavigatorKeyDown(event: R2BasicWebView.R2KeyEvent):Boolean = false
+
+        /**
+         * Called when the user release a key up, and it didn't trigger any internal action.
+         */
+
+        fun onNavigatorKeyUp(eventCode: Int):Boolean = false
     }
 
     /**

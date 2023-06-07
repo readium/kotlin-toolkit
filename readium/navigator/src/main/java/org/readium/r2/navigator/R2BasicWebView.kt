@@ -67,6 +67,8 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         fun onHighlightAnnotationMarkActivated(id: String)
         fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean = false
         fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean = false
+        fun onNavigatorKeyDown(eventCode: R2KeyEvent): Boolean = false
+        fun onNavigatorKeyUp(eventCode: R2KeyEvent): Boolean = false
 
         /**
          * Returns the custom [ActionMode.Callback] to be used with the text selection menu.
@@ -444,6 +446,30 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     @android.webkit.JavascriptInterface
+    fun onKeyPress(eventJson: String):Boolean{
+        val jsonObject = JSONObject(eventJson)
+        val type = jsonObject.optString("type")
+        val code = jsonObject.optString("code")
+        when(type){
+            "keydown"->{
+                when(code){
+                    "ArrowRight"->listener?.onNavigatorKeyDown(R2KeyEvent.arrowRight)
+                    "ArrowLeft"->listener?.onNavigatorKeyDown(R2KeyEvent.arrowLeft)
+                    "Space"->listener?.onNavigatorKeyDown(R2KeyEvent.space)
+                }
+            }
+            "keyup"->{
+                when(code){
+                    "ArrowRight"->listener?.onNavigatorKeyUp(R2KeyEvent.arrowRight)
+                    "ArrowLeft"->listener?.onNavigatorKeyUp(R2KeyEvent.arrowLeft)
+                    "Space"->listener?.onNavigatorKeyUp(R2KeyEvent.space)
+                }
+            }
+        }
+        return true
+    }
+
+    @android.webkit.JavascriptInterface
     fun onSelectionStart() {
         isSelecting = true
     }
@@ -493,6 +519,30 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 fromJSONObject(tryOrNull { JSONObject(json) })
         }
     }
+
+    enum class R2KeyEvent {
+        // Whitespace keys.
+        enter,
+        tab,
+        space,
+
+        // Navigation keys.
+        arrowDown,
+        arrowLeft,
+        arrowRight,
+        arrowUp,
+        end,
+        home,
+        pageDown,
+        pageUp,
+
+        // Modifier keys.
+        command,
+        control,
+        option,
+        shift
+    }
+
 
     @android.webkit.JavascriptInterface
     fun getViewportWidth(): Int = width
