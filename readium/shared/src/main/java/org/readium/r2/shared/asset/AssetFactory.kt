@@ -4,10 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.streamer
+package org.readium.r2.shared.asset
 
-import org.readium.r2.shared.asset.Asset
-import org.readium.r2.shared.asset.AssetType
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.ContainerFactory
 import org.readium.r2.shared.resource.Resource
@@ -30,31 +28,31 @@ class AssetFactory(
     ): Try<Asset, Exception> =
         when (type) {
             AssetType.Archive ->
-                createAssetForPackagedPublication(url, mediaType)
+                createAssetForArchive(url, mediaType)
             AssetType.Directory ->
-                createAssetForExplodedPublication(url, mediaType)
-            AssetType.File ->
-                createAssetForContentFile(url, mediaType)
+                createAssetForDirectory(url, mediaType)
+            AssetType.Resource ->
+                createAssetForResource(url, mediaType)
         }
 
-    private suspend fun createAssetForPackagedPublication(
+    private suspend fun createAssetForArchive(
         url: Url,
         mediaType: MediaType
     ): Try<Asset.Container, Exception> {
         return resourceFactory.create(url)
             .flatMap { resource: Resource -> archiveFactory.create(resource, password = null) }
-            .map { container -> Asset.Container(url.file, mediaType, container) }
+            .map { container -> Asset.Container(url.file, mediaType, AssetType.Archive, container) }
     }
 
-    private suspend fun createAssetForExplodedPublication(
+    private suspend fun createAssetForDirectory(
         url: Url,
         mediaType: MediaType
     ): Try<Asset.Container, Exception> {
         return containerFactory.create(url)
-            .map { container -> Asset.Container(url.file, mediaType, container) }
+            .map { container -> Asset.Container(url.file, mediaType, AssetType.Directory, container) }
     }
 
-    private suspend fun createAssetForContentFile(
+    private suspend fun createAssetForResource(
         url: Url,
         mediaType: MediaType
     ): Try<Asset.Resource, Exception> {

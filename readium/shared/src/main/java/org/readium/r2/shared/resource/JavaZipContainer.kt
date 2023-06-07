@@ -9,7 +9,7 @@
 
 @file:OptIn(InternalReadiumApi::class)
 
-package org.readium.r2.shared.util.archive
+package org.readium.r2.shared.resource
 
 import java.io.File
 import java.util.zip.ZipEntry
@@ -18,10 +18,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.readFully
-import org.readium.r2.shared.resource.ArchiveFactory
-import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.io.CountingInputStream
@@ -38,9 +34,9 @@ class DefaultArchiveFactory : ArchiveFactory {
 }
 
 @OptIn(InternalReadiumApi::class)
-internal class JavaZip(private val archive: ZipFile, source: File) : Container {
+internal class JavaZipContainer(private val archive: ZipFile, source: File) : ZipContainer {
 
-    private inner class NotFoundEntry(override val path: String) : Container.Entry {
+    private inner class NotFoundEntry(override val path: String) : ZipContainer.Entry {
 
         override val compressedLength: Long? = null
 
@@ -54,7 +50,7 @@ internal class JavaZip(private val archive: ZipFile, source: File) : Container {
         }
     }
 
-    private inner class Entry(private val entry: ZipEntry) : Container.Entry {
+    private inner class Entry(private val entry: ZipEntry) : ZipContainer.Entry {
         override val path: String get() = entry.name
 
         override suspend fun length(): Try<Long, Resource.Exception> =
@@ -152,7 +148,7 @@ internal class JavaZipArchiveFactory {
 
                 val file = File(url.path)
 
-                val archive = JavaZip(ZipFile(url.path), file)
+                val archive = JavaZipContainer(ZipFile(url.path), file)
                 Try.success(archive)
             } catch (e: Exception) {
                 Try.failure(e)
@@ -162,7 +158,7 @@ internal class JavaZipArchiveFactory {
     suspend fun open(file: File): Try<Container, Exception> =
         withContext(Dispatchers.IO) {
             try {
-                val archive = JavaZip(ZipFile(file), file)
+                val archive = JavaZipContainer(ZipFile(file), file)
                 Try.success(archive)
             } catch (e: Exception) {
                 Try.failure(e)

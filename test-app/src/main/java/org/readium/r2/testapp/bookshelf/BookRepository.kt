@@ -25,6 +25,7 @@ import org.joda.time.DateTime
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.shared.asset.AssetAnalyzer
 import org.readium.r2.shared.asset.AssetDescription
+import org.readium.r2.shared.asset.AssetFactory
 import org.readium.r2.shared.asset.AssetType
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
@@ -38,7 +39,6 @@ import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUrl
-import org.readium.r2.streamer.AssetFactory
 import org.readium.r2.streamer.Streamer
 import org.readium.r2.testapp.db.BooksDao
 import org.readium.r2.testapp.domain.model.Book

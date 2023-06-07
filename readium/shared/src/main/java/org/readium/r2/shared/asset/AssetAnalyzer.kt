@@ -17,12 +17,12 @@ import org.readium.r2.shared.resource.ContainerFactory
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.ContainerSnifferContext
+import org.readium.r2.shared.util.mediatype.ContentAwareSnifferContext
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.ResourceSnifferContext
 import org.readium.r2.shared.util.mediatype.Sniffer
-import org.readium.r2.shared.util.mediatype.SnifferContext
-import org.readium.r2.shared.util.mediatype.SnifferContextFactory
 import org.readium.r2.shared.util.mediatype.Sniffers
+import org.readium.r2.shared.util.mediatype.UrlSnifferContextFactory
 import org.readium.r2.shared.util.toUrl
 
 class AssetAnalyzer(
@@ -32,8 +32,8 @@ class AssetAnalyzer(
     private val sniffers: List<Sniffer> = MediaType.sniffers
 ) {
 
-    private val snifferContextFactory: SnifferContextFactory =
-        SnifferContextFactory(resourceFactory, containerFactory, archiveFactory)
+    private val snifferContextFactory: UrlSnifferContextFactory =
+        UrlSnifferContextFactory(resourceFactory, containerFactory, archiveFactory)
 
     /**
      * Resolves a format from a local file path.
@@ -154,7 +154,7 @@ class AssetAnalyzer(
     }
 
     private suspend fun ofClosing(
-        context: SnifferContext,
+        context: ContentAwareSnifferContext,
     ): AssetDescription? =
         try {
             of(context)
@@ -171,16 +171,14 @@ class AssetAnalyzer(
      *  - Heavy Sniffing reads the bytes to perform more advanced sniffing.
      */
     private suspend fun of(
-        context: SnifferContext,
+        context: ContentAwareSnifferContext,
     ): AssetDescription? {
 
-        val type = when {
-            (context is ContainerSnifferContext) ->
-                AssetType.Archive
-            (context is ResourceSnifferContext) ->
-                AssetType.File
-            else ->
-                AssetType.Directory
+        val type = when (context) {
+            is ContainerSnifferContext ->
+                if (context.isExploded) AssetType.Directory else AssetType.Archive
+            is ResourceSnifferContext ->
+                AssetType.Resource
         }
 
         fun assetDescription(mediaType: MediaType): AssetDescription {

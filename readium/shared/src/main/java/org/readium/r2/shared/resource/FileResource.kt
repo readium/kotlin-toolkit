@@ -1,5 +1,6 @@
 package org.readium.r2.shared.resource
 
+import android.content.ContentResolver
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.RandomAccessFile
@@ -8,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.isLazyInitialized
 import timber.log.Timber
 
@@ -93,4 +95,30 @@ class FileResource(override val file: File) : Resource {
 
     override fun toString(): String =
         "${javaClass.simpleName}(${file.path})"
+}
+
+
+class FileResourceFactory : ResourceFactory {
+
+    override suspend fun create(url: Url): Try<Resource, Exception> {
+        if (url.scheme != ContentResolver.SCHEME_FILE) {
+            Try.failure(Exception("Scheme not supported"))
+        }
+
+        val file = File(url.path)
+
+        return Try.success(FileResource(file))
+    }
+}
+
+class DirectoryContainerFactory : ContainerFactory {
+
+    override suspend fun create(url: Url): Try<Container, Exception> {
+        if (url.scheme != ContentResolver.SCHEME_FILE) {
+            Try.failure(Exception("Scheme not supported"))
+        }
+
+        val file = File(url.path)
+        return Try.success(DirectoryContainer(file))
+    }
 }

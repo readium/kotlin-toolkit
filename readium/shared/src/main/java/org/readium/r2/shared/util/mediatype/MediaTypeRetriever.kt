@@ -12,9 +12,9 @@ import org.readium.r2.shared.resource.ContainerFactory
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.archive.DefaultArchiveFactory
-import org.readium.r2.shared.util.io.DirectoryContainerFactory
-import org.readium.r2.shared.util.io.FileResourceFactory
+import org.readium.r2.shared.resource.DefaultArchiveFactory
+import org.readium.r2.shared.resource.DirectoryContainerFactory
+import org.readium.r2.shared.resource.FileResourceFactory
 import org.readium.r2.shared.util.toUrl
 
 class MediaTypeRetriever(
@@ -27,8 +27,11 @@ class MediaTypeRetriever(
     private val internalRetriever: MediaTypeRetrieverInternal =
         MediaTypeRetrieverInternal(sniffers)
 
-    private val snifferContextFactory: SnifferContextFactory =
-        SnifferContextFactory(resourceFactory, containerFactory, archiveFactory)
+    private val urlSnifferContextFactory: UrlSnifferContextFactory =
+        UrlSnifferContextFactory(resourceFactory, containerFactory, archiveFactory)
+
+    private val bytesSnifferContextFactory: BytesSnifferContextFactory =
+        BytesSnifferContextFactory(archiveFactory)
 
     suspend fun canonicalMediaType(mediaType: MediaType): MediaType =
         of(mediaType = mediaType.toString()) ?: mediaType
@@ -184,13 +187,13 @@ class MediaTypeRetriever(
         val fullContext = suspend {
             when (content) {
                 is Either.Left ->
-                    snifferContextFactory.createContext(
+                    bytesSnifferContextFactory.createContext(
                         content.value.invoke(),
                         mediaTypes,
                         fileExtensions
                     )
                 is Either.Right ->
-                    snifferContextFactory.createContext(content.value, mediaTypes, fileExtensions)
+                    urlSnifferContextFactory.createContext(content.value, mediaTypes, fileExtensions)
                 null -> null
             }
         }

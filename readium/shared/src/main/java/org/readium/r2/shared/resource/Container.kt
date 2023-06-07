@@ -15,11 +15,6 @@ interface Container : SuspendingCloseable {
          * It MUST start with /.
          */
         val path: String
-
-        /**
-         *  Compressed data length.
-         */
-        val compressedLength: Long?
     }
 
     /**
@@ -32,4 +27,15 @@ interface Container : SuspendingCloseable {
 
     /** Gets the entry at the given `path`. */
     suspend fun entry(path: String): Entry
+}
+
+interface ZipContainer : Container {
+
+    interface Entry : Container.Entry {
+
+        /**
+         *  Compressed data length.
+         */
+        val compressedLength: Long?
+    }
 }

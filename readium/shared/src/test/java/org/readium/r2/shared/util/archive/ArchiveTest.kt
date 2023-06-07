@@ -20,6 +20,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.DefaultArchiveFactory
+import org.readium.r2.shared.resource.ExplodedArchiveFactory
 import org.readium.r2.shared.resource.FileResource
 import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
 

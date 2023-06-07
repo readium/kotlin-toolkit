@@ -12,17 +12,17 @@ import org.readium.r2.lcp.LcpService
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.asset.AssetAnalyzer
+import org.readium.r2.shared.asset.AssetFactory
 import org.readium.r2.shared.resource.CompositeArchiveFactory
 import org.readium.r2.shared.resource.CompositeResourceFactory
+import org.readium.r2.shared.resource.DefaultArchiveFactory
+import org.readium.r2.shared.resource.DirectoryContainerFactory
+import org.readium.r2.shared.resource.FileResourceFactory
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.archive.DefaultArchiveFactory
 import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpResourceFactory
-import org.readium.r2.shared.util.io.DirectoryContainerFactory
-import org.readium.r2.shared.util.io.FileResourceFactory
-import org.readium.r2.shared.util.mediatype.*
-import org.readium.r2.streamer.AssetFactory
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.streamer.FetcherFactory
 import org.readium.r2.streamer.Streamer
 

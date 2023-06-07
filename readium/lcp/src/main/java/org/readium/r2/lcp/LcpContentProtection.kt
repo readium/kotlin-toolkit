@@ -38,7 +38,7 @@ internal class LcpContentProtection(
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
-    ): Try<ContentProtection.ProtectedAsset, Publication.OpeningException>? {
+    ): Try<ContentProtection.Asset, Publication.OpeningException>? {
         return when (asset) {
             is Asset.Container -> openPublication(asset, credentials, allowUserInteraction, sender)
             is Asset.Resource -> openLicense(asset, credentials, allowUserInteraction, sender)
@@ -50,7 +50,7 @@ internal class LcpContentProtection(
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
-    ): Try<ContentProtection.ProtectedAsset, Publication.OpeningException>? {
+    ): Try<ContentProtection.Asset, Publication.OpeningException>? {
         val assetFile = asset.resource.file
 
         if (assetFile == null || asset.mediaType != MediaType.LCP_LICENSE_DOCUMENT) {
@@ -76,7 +76,7 @@ internal class LcpContentProtection(
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
-    ): Try<ContentProtection.ProtectedAsset, Publication.OpeningException>? {
+    ): Try<ContentProtection.Asset, Publication.OpeningException>? {
         val license = retrieveLicense(asset, credentials, allowUserInteraction, sender)
             ?: return null
 
@@ -152,7 +152,7 @@ internal class LcpContentProtection(
     private fun createProtectedAsset(
         asset: PublicationAsset,
         license: Try<LcpLicense, LcpException>,
-    ): Try<ContentProtection.ProtectedAsset, Publication.OpeningException> {
+    ): Try<ContentProtection.Asset, Publication.OpeningException> {
         val serviceFactory = LcpContentProtectionService
             .createFactory(license.getOrNull(), license.exceptionOrNull())
 
@@ -163,7 +163,7 @@ internal class LcpContentProtection(
 
         val newAsset = PublicationAsset(asset.name, asset.mediaType, newFetcher)
 
-        val protectedFile = ContentProtection.ProtectedAsset(
+        val protectedFile = ContentProtection.Asset(
             asset = newAsset,
             onCreatePublication = {
                 servicesBuilder.contentProtectionServiceFactory = serviceFactory

@@ -111,6 +111,23 @@ class Streamer constructor(
         val publicationAsset = protectedAsset?.asset
             ?: PublicationAsset(asset.name, asset.mediaType, fetcherFactory.invoke(asset, asset.mediaType).getOrThrow())
 
+        val compositeOnCreatePublication: Publication.Builder.() -> Unit = {
+            protectedAsset?.onCreatePublication?.invoke(this)
+            onCreatePublication(this)
+        }
+
+        val publication = openThrowing(publicationAsset, compositeOnCreatePublication, warnings)
+
+        Try.success(publication)
+    } catch (e: Publication.OpeningException) {
+        Try.failure(e)
+    }
+
+    private suspend fun openThrowing(
+        publicationAsset: PublicationAsset,
+        onCreatePublication: Publication.Builder.() -> Unit = {},
+        warnings: WarningLogger? = null
+    ): Publication {
         val builder = parsers
             .lazyMapFirstNotNullOrNull { parser ->
                 parser.parse(publicationAsset, warnings)
@@ -119,19 +136,13 @@ class Streamer constructor(
                     ?.getOrThrow()
             } ?: throw Publication.OpeningException.UnsupportedFormat(Exception("Cannot find a parser for this asset"))
 
-        // Transform from the Content Protection.
-        protectedAsset?.let { builder.apply(it.onCreatePublication) }
         // Transform provided by the reading app during the construction of the Streamer.
         builder.apply(this.onCreatePublication)
         // Transform provided by the reading app in `Streamer.open()`.
         builder.apply(onCreatePublication)
 
-        val publication = builder.build()
+        return builder.build()
             .apply { addLegacyProperties(publicationAsset.mediaType) }
-
-        Try.success(publication)
-    } catch (e: Publication.OpeningException) {
-        Try.failure(e)
     }
 
     private val defaultParsers: List<PublicationParser> by lazy {

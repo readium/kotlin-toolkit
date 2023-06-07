@@ -151,9 +151,6 @@ class TestContainer(resources: Map<String, String> = emptyMap()) : Container {
         override val path: String
     ) : Container.Entry {
 
-        override val compressedLength: Long? =
-            null
-
         override suspend fun length(): ResourceTry<Long> =
             Try.failure(Resource.Exception.NotFound())
 
@@ -167,8 +164,5 @@ class TestContainer(resources: Map<String, String> = emptyMap()) : Container {
     private class Entry(
         override val path: String,
         private val resource: StringResource
-    ) : Resource by resource, Container.Entry {
-
-        override val compressedLength: Long? = null
-    }
+    ) : Resource by resource, Container.Entry
 }

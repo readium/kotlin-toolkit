@@ -12,7 +12,6 @@ package org.readium.r2.shared.publication
 import androidx.annotation.StringRes
 import org.readium.r2.shared.R
 import org.readium.r2.shared.UserException
-import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.ContentProtectionService
@@ -30,16 +29,16 @@ interface ContentProtection {
     /**
      * Attempts to unlock a potentially protected publication asset.
      *
-     * @return A [ProtectedAsset] in case of success, null if the asset is not protected by this
+     * @return A [Asset] in case of success, null if the asset is not protected by this
      * technology or a [Publication.OpeningException] if the asset can't be successfully opened,
      * even in restricted mode.
      */
     suspend fun open(
-        asset: Asset,
+        asset: org.readium.r2.shared.asset.Asset,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
-    ): Try<ProtectedAsset, Publication.OpeningException>?
+    ): Try<Asset, Publication.OpeningException>?
 
     /**
      * Holds the result of opening a [PublicationAsset] with a [ContentProtection].
@@ -56,7 +55,7 @@ interface ContentProtection {
      * It can be used to modify the `Manifest`, the root [Fetcher] or the list of service factories
      * of a [Publication].
      */
-    data class ProtectedAsset(
+    data class Asset(
         val asset: PublicationAsset,
         val onCreatePublication: Publication.Builder.() -> Unit = {}
     )

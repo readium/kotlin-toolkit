@@ -14,6 +14,7 @@ import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.resource.ZipContainer
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArchiveEntry
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipFile
@@ -26,7 +27,7 @@ internal class ChannelZip(
     private val archive: ZipFile
 ) : Container {
 
-    private inner class Entry(private val entry: ZipArchiveEntry) : Container.Entry {
+    private inner class Entry(private val entry: ZipArchiveEntry) : ZipContainer.Entry {
         override val path: String get() = entry.name
 
         override suspend fun length(): ResourceTry<Long> =

@@ -11,15 +11,22 @@ sealed class Asset {
 
     abstract val mediaType: MediaType
 
+    abstract val assetType: AssetType
+
     class Resource(
         override val name: String,
         override val mediaType: MediaType,
         val resource: org.readium.r2.shared.resource.Resource
-    ) : Asset()
+    ) : Asset() {
+
+        override val assetType: AssetType =
+            AssetType.Resource
+    }
 
     class Container(
         override val name: String,
         override val mediaType: MediaType,
+        override val assetType: AssetType,
         val container: org.readium.r2.shared.resource.Container
     ) : Asset()
 }

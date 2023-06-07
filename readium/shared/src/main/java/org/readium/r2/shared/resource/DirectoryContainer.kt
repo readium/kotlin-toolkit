@@ -7,7 +7,7 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.shared.util.archive
+package org.readium.r2.shared.resource
 
 import java.io.File
 import kotlinx.coroutines.Dispatchers
@@ -15,9 +15,6 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.isParentOf
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.readRange
-import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 
@@ -35,8 +32,6 @@ internal class DirectoryContainer(private val directory: File) : Container {
         } catch (e: Exception) {
             Try.failure(Resource.Exception.wrap(e))
         }
-
-        override val compressedLength: Long? = null
 
         override suspend fun read(range: LongRange?): Try<ByteArray, Resource.Exception> {
             val stream = withContext(Dispatchers.IO) {

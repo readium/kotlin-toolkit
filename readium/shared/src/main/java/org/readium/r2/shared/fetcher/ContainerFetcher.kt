@@ -20,6 +20,7 @@ import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.resource.ZipContainer
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrDefault
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -82,7 +83,10 @@ class ContainerFetcher(
 
         override suspend fun link(): Link =
             withEntry { entry ->
-                val enhancedLink = originalLink.addProperties(entry.toLinkProperties())
+                val enhancedLink = (entry as? ZipContainer.Entry)
+                    ?.let { originalLink.addProperties(entry.toLinkProperties()) }
+                    ?: originalLink
+
                 Try.success(enhancedLink)
             }.getOrDefault(originalLink)
 
@@ -108,11 +112,11 @@ private suspend fun Container.Entry.toLink(mediaTypeRetriever: MediaTypeRetrieve
     return Link(
         href = path.addPrefix("/"),
         type = mediaTypeRetriever.of(fileExtension = File(path).extension)?.toString(),
-        properties = Properties(toLinkProperties())
+        properties = Properties((this as? ZipContainer.Entry)?.toLinkProperties().orEmpty())
     )
 }
 
-private suspend fun Container.Entry.toLinkProperties(): Map<String, Any> {
+private suspend fun ZipContainer.Entry.toLinkProperties(): Map<String, Any> {
     return mutableMapOf<String, Any>(
         "archive" to mapOf<String, Any>(
             "entryLength" to (compressedLength ?: length().getOrNull() ?: 0),

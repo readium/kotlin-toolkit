@@ -32,10 +32,10 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.DefaultArchiveFactory
+import org.readium.r2.shared.resource.FileResourceFactory
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.archive.DefaultArchiveFactory
-import org.readium.r2.shared.util.io.FileResourceFactory
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 

@@ -52,7 +52,7 @@ internal class FallbackContentProtection(
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
-    ): Try<ContentProtection.ProtectedAsset, Publication.OpeningException>? {
+    ): Try<ContentProtection.Asset, Publication.OpeningException>? {
         if (asset !is Asset.Container) {
             return null
         }
@@ -60,7 +60,7 @@ internal class FallbackContentProtection(
         val scheme: Scheme = sniffScheme(asset.container, asset.mediaType)
             ?: return null
 
-        val protectedFile = ContentProtection.ProtectedAsset(
+        val protectedFile = ContentProtection.Asset(
             asset = PublicationAsset(
                 asset.name,
                 asset.mediaType,

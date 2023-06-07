@@ -28,7 +28,6 @@ sealed class SnifferContext(
     mediaTypes: List<String> = emptyList(),
     fileExtensions: List<String> = emptyList()
 ) {
-
     /** Media type hints. */
     val mediaTypes: List<MediaType> = mediaTypes
         .mapNotNull { MediaType.parse(it) }
@@ -79,6 +78,11 @@ class HintSnifferContext(
     override suspend fun release() {}
 }
 
+sealed class ContentAwareSnifferContext(
+    mediaTypes: List<String> = emptyList(),
+    fileExtensions: List<String> = emptyList()
+) : SnifferContext(mediaTypes, fileExtensions)
+
 /**
  * A companion type of [Sniffer] holding the type hints (file extensions, media types) and
  * providing an access to the file content.
@@ -91,7 +95,7 @@ class ResourceSnifferContext internal constructor(
     val resource: Resource,
     mediaTypes: List<String> = emptyList(),
     fileExtensions: List<String> = emptyList()
-) : SnifferContext(mediaTypes, fileExtensions) {
+) : ContentAwareSnifferContext(mediaTypes, fileExtensions) {
 
     /**
      * Content as plain text.
@@ -190,9 +194,10 @@ class ResourceSnifferContext internal constructor(
  */
 class ContainerSnifferContext internal constructor(
     val container: Container,
+    val isExploded: Boolean,
     mediaTypes: List<String> = emptyList(),
     fileExtensions: List<String> = emptyList()
-) : SnifferContext(mediaTypes, fileExtensions) {
+) : ContentAwareSnifferContext(mediaTypes, fileExtensions) {
 
     /**
      * Returns whether an Archive entry exists in this file.
@@ -227,7 +232,7 @@ class ContainerSnifferContext internal constructor(
     }
 }
 
-class SnifferContextFactory(
+class UrlSnifferContextFactory(
     private val resourceFactory: ResourceFactory,
     private val containerFactory: ContainerFactory,
     private val archiveFactory: ArchiveFactory
@@ -237,35 +242,41 @@ class SnifferContextFactory(
         url: Url,
         mediaTypes: List<String> = emptyList(),
         fileExtensions: List<String> = emptyList()
-    ): SnifferContext? {
+    ): ContentAwareSnifferContext? {
 
         val resource = resourceFactory.create(url)
             .getOrNull()
+        // FIXME: only NotFound
 
         if (resource == null) {
             val container = containerFactory.create(url)
                 .getOrNull()
                 ?: return null
 
-            return ContainerSnifferContext(container, mediaTypes, fileExtensions)
+            return ContainerSnifferContext(container, true, mediaTypes, fileExtensions)
         }
 
         return archiveFactory.create(resource, password = null)
             .fold(
-                { ContainerSnifferContext(it, mediaTypes, fileExtensions) },
+                { ContainerSnifferContext(it, false, fileExtensions) },
                 { ResourceSnifferContext(resource, mediaTypes, fileExtensions) }
             )
     }
+}
+
+class BytesSnifferContextFactory(
+    private val archiveFactory: ArchiveFactory
+) {
 
     suspend fun createContext(
         bytes: ByteArray,
         mediaTypes: List<String> = emptyList(),
         fileExtensions: List<String> = emptyList(),
-    ): SnifferContext? {
+    ): ContentAwareSnifferContext? {
         val resource: Resource = BytesResource(bytes)
         return archiveFactory.create(resource, password = null)
             .fold(
-                { ContainerSnifferContext(it, mediaTypes, fileExtensions) },
+                { ContainerSnifferContext(it, false, mediaTypes, fileExtensions) },
                 { ResourceSnifferContext(resource, mediaTypes, fileExtensions) }
             )
     }

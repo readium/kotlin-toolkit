@@ -10,6 +10,7 @@ import com.github.kittinunf.fuel.core.Response
 import java.io.File
 import java.net.HttpURLConnection
 import org.readium.r2.shared.extensions.extension
+import org.readium.r2.shared.resource.DefaultArchiveFactory
 
 /**
  * Resolves the format for this [HttpURLConnection], with optional extra file extension and media type
@@ -39,7 +40,14 @@ suspend fun HttpURLConnection.sniffMediaType(
     val mediaTypeRetriever = MediaTypeRetrieverInternal(sniffers)
 
     return if (bytes != null) {
-        mediaTypeRetriever.of(bytes, mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
+        mediaTypeRetriever.of(
+            {
+                BytesSnifferContextFactory(DefaultArchiveFactory())
+                    .createContext(bytes.invoke(), mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
+            },
+            mediaTypes = allMediaTypes,
+            fileExtensions = allFileExtensions
+        )
     } else {
         mediaTypeRetriever.of(mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
     }
@@ -70,7 +78,14 @@ suspend fun Response.sniffMediaType(
 
     // TODO: The suggested filename extension, part of the HTTP header `Content-Disposition`.
 
-    return mediaTypeRetriever.of(bytes, mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
+    return mediaTypeRetriever.of(
+        {
+            BytesSnifferContextFactory(DefaultArchiveFactory())
+                .createContext(bytes.invoke(), mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
+        },
+        mediaTypes = allMediaTypes,
+        fileExtensions = allFileExtensions
+    )
 }
 
 /**
