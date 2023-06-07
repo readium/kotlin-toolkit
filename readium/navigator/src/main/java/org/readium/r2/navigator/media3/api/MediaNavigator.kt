@@ -119,19 +119,3 @@ interface MediaNavigator<
      */
     fun pause()
 }
-
-/**
- * A [MediaNavigator] based on the Jetpack media3 library.
- */
-@ExperimentalReadiumApi
-interface Media3Navigator<
-    L : MediaNavigator.Location,
-    P : MediaNavigator.Playback,
-    R : MediaNavigator.ReadingOrder
-    > : MediaNavigator<L, P, R> {
-
-    /**
-     * Adapts this navigator to the media3 [Player] interface.
-     */
-    fun asPlayer(): Player
-}

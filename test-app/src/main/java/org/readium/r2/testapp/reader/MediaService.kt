@@ -18,12 +18,13 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import org.readium.r2.navigator.media3.api.Media3Navigator
+import org.readium.r2.navigator.media3.api.Media3Adapter
+import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.shared.ExperimentalReadiumApi
 import timber.log.Timber
 
 @OptIn(ExperimentalReadiumApi::class)
-typealias AnyMedia3Navigator = Media3Navigator<*, *, *>
+typealias AnyMediaNavigator = MediaNavigator<*, *, *>
 
 @OptIn(ExperimentalReadiumApi::class)
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
@@ -31,7 +32,7 @@ class MediaService : MediaSessionService() {
 
     class Session(
         val bookId: Long,
-        val navigator: AnyMedia3Navigator,
+        val navigator: AnyMediaNavigator,
         val mediaSession: MediaSession,
     ) {
         val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -59,12 +60,12 @@ class MediaService : MediaSessionService() {
             sessionMutable.value = null
         }
 
-        fun openSession(
-            navigator: AnyMedia3Navigator,
+        fun <N> openSession(
+            navigator: N,
             bookId: Long
-        ) {
+        ) where N : AnyMediaNavigator, N : Media3Adapter {
             val activityIntent = createSessionActivityIntent()
-            val mediaSession = MediaSession.Builder(applicationContext, navigator.asPlayer())
+            val mediaSession = MediaSession.Builder(applicationContext, navigator.asMedia3Player())
                 .setSessionActivity(activityIntent)
                 .setId(bookId.toString())
                 .build()
