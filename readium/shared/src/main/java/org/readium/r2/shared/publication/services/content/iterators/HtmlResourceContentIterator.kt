@@ -424,12 +424,15 @@ class HtmlResourceContentIterator private constructor(
     }
 }
 
-private fun Locator.Text.Companion.trimmingText(text: String, before: String?): Locator.Text =
-    Locator.Text(
-        before = ((before ?: "") + text.takeWhile { it.isWhitespace() }).takeUnless { it.isBlank() },
-        highlight = text.trim(),
-        after = text.takeLastWhile { it.isWhitespace() }.takeUnless { it.isBlank() }
+private fun Locator.Text.Companion.trimmingText(text: String, before: String?): Locator.Text {
+    val leadingWhitespace = text.takeWhile { it.isWhitespace() }
+    val trailingWhitespace = text.takeLastWhile { it.isWhitespace() }
+    return Locator.Text(
+        before = ((before ?: "") + leadingWhitespace).takeUnless { it.isBlank() },
+        highlight = text.substring(leadingWhitespace.length, text.length - trailingWhitespace.length),
+        after = trailingWhitespace.takeUnless { it.isBlank() }
     )
+}
 
 private val Node.language: String? get() =
     attr("xml:lang").takeUnless { it.isBlank() }
