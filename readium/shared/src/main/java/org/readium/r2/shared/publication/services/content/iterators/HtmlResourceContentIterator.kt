@@ -19,9 +19,11 @@ import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.publication.services.content.Content.*
+import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -40,20 +42,38 @@ import org.readium.r2.shared.util.use
  * Locators will contain a `before` context of up to `beforeMaxLength` characters.
  */
 @ExperimentalReadiumApi
-class HtmlResourceContentIterator(
+class HtmlResourceContentIterator private constructor(
     private val resource: Resource,
+    private val totalProgressionRange: ClosedRange<Double>?,
     private val locator: Locator,
     private val beforeMaxLength: Int = 50
 ) : Content.Iterator {
 
-    companion object {
-        /**
-         * Creates a new factory for [HtmlResourceContentIterator].
-         */
-        fun createFactory(): ResourceContentIteratorFactory = { res, locator ->
-            if (res.link().mediaType.matchesAny(MediaType.HTML, MediaType.XHTML))
-                HtmlResourceContentIterator(res, locator)
-            else null
+    class Factory : ResourceContentIteratorFactory {
+        override suspend fun create(
+            publication: Publication,
+            readingOrderIndex: Int,
+            resource: Resource,
+            locator: Locator
+        ): Content.Iterator? {
+            if (!resource.link().mediaType.matchesAny(MediaType.HTML, MediaType.XHTML)) {
+                return null
+            }
+
+            val positions = publication.positionsByReadingOrder()
+            return HtmlResourceContentIterator(
+                resource,
+                totalProgressionRange = positions.getOrNull(readingOrderIndex)
+                    ?.firstOrNull()?.locations?.totalProgression
+                    ?.let { start ->
+                        val end = positions.getOrNull(readingOrderIndex + 1)
+                            ?.firstOrNull()?.locations?.totalProgression
+                            ?: 1.0
+
+                        start..end
+                    },
+                locator = locator
+            )
         }
     }
 
@@ -129,7 +149,44 @@ class HtmlResourceContentIterator(
             beforeMaxLength = beforeMaxLength
         )
         NodeTraversor.traverse(contentParser, document.body())
-        return contentParser.result()
+        val elements = contentParser.result()
+        val elementCount = elements.elements.size
+        if (elementCount == 0) {
+            return elements
+        }
+
+        return elements.copy(
+            elements = elements.elements.mapIndexed { index, element ->
+                val progression = index.toDouble() / elementCount
+                element.copy(
+                    progression = progression,
+                    totalProgression = totalProgressionRange?.let {
+                        totalProgressionRange.start + progression * (totalProgressionRange.endInclusive - totalProgressionRange.start)
+                    }
+                )
+            }
+        )
+    }
+
+    private fun Content.Element.copy(progression: Double?, totalProgression: Double?): Content.Element {
+        fun Locator.update(): Locator =
+            copyWithLocations(
+                progression = progression,
+                totalProgression = totalProgression
+            )
+
+        return when (this) {
+            is TextElement -> copy(
+                locator = locator.update(),
+                segments = segments.map {
+                    it.copy(locator = it.locator.update())
+                }
+            )
+            is AudioElement -> copy(locator = locator.update())
+            is VideoElement -> copy(locator = locator.update())
+            is ImageElement -> copy(locator = locator.update())
+            else -> this
+        }
     }
 
     /**
@@ -295,7 +352,7 @@ class HtmlResourceContentIterator(
             segmentsAcc[segmentsAcc.size - 1] = segmentsAcc.last().run { copy(text = text.trimEnd()) }
 
             elements.add(
-                Content.TextElement(
+                TextElement(
                     locator = baseLocator.copy(
                         locations = Locator.Locations(
                             otherLocations = buildMap {

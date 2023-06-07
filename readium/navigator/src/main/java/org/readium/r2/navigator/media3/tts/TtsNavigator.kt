@@ -273,7 +273,8 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         val utteranceHighlight = publication
             .locatorFromLink(currentLink)!!
             .copyWithLocations(
-                progression = null,
+                progression = position.progression,
+                totalProgression = position.totalProgression,
                 otherLocations = buildMap {
                     put("cssSelector", position.cssSelector)
                 }

@@ -32,6 +32,8 @@ internal class TtsContentIterator(
 ) {
     data class Utterance(
         val resourceIndex: Int,
+        val progression: Double?,
+        val totalProgression: Double?,
         val cssSelector: String,
         val text: String,
         val textBefore: String?,
@@ -190,12 +192,14 @@ internal class TtsContentIterator(
                 ?: throw IllegalStateException("Css selectors are expected in iterator locators.")
 
             return Utterance(
-                text = text,
-                language = language,
                 resourceIndex = resourceIndex,
+                progression = locator.locations.progression,
+                totalProgression = locator.locations.totalProgression,
+                cssSelector = cssSelector,
+                text = text,
                 textBefore = locator.text.before,
                 textAfter = locator.text.after,
-                cssSelector = cssSelector,
+                language = language,
             )
         }
 

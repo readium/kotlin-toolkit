@@ -129,6 +129,8 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
         data class Position(
             val resourceIndex: Int,
+            val progression: Double?,
+            val totalProgression: Double?,
             val cssSelector: String,
             val textBefore: String?,
             val textAfter: String?,
@@ -542,6 +544,8 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             range = null,
             position = Utterance.Position(
                 resourceIndex = resourceIndex,
+                progression = progression,
+                totalProgression = totalProgression,
                 cssSelector = cssSelector,
                 textAfter = textAfter,
                 textBefore = textBefore
