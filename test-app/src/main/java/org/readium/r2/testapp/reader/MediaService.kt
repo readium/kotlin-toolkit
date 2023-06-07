@@ -18,6 +18,7 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.readium.r2.navigator.media3.api.Media3Adapter
 import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.shared.ExperimentalReadiumApi
 import timber.log.Timber
@@ -59,12 +60,12 @@ class MediaService : MediaSessionService() {
             sessionMutable.value = null
         }
 
-        fun openSession(
-            navigator: AnyMediaNavigator,
+        fun <N> openSession(
+            navigator: N,
             bookId: Long
-        ) {
+        ) where N : AnyMediaNavigator, N : Media3Adapter {
             val activityIntent = createSessionActivityIntent()
-            val mediaSession = MediaSession.Builder(applicationContext, navigator.asPlayer())
+            val mediaSession = MediaSession.Builder(applicationContext, navigator.asMedia3Player())
                 .setSessionActivity(activityIntent)
                 .setId(bookId.toString())
                 .build()
