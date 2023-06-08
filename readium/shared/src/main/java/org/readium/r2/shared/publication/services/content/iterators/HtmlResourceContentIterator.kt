@@ -42,7 +42,7 @@ import org.readium.r2.shared.util.use
  * Locators will contain a `before` context of up to `beforeMaxLength` characters.
  */
 @ExperimentalReadiumApi
-class HtmlResourceContentIterator private constructor(
+class HtmlResourceContentIterator internal constructor(
     private val resource: Resource,
     private val totalProgressionRange: ClosedRange<Double>?,
     private val locator: Locator,
