@@ -10,6 +10,7 @@ import androidx.media3.common.Player
 import kotlin.time.Duration
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.media3.api.AudioNavigator
+import org.readium.r2.navigator.media3.api.Media3Adapter
 import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.media3.api.TextAwareMediaNavigator
 import org.readium.r2.navigator.media3.audio.AudiobookNavigator
@@ -23,8 +24,11 @@ import org.readium.r2.shared.util.Href
 @ExperimentalReadiumApi
 class GuidedAudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>>(
     private val audioNavigator: AudiobookNavigator<S, P>,
-) : AudioNavigator<GuidedAudioNavigator.Location, GuidedAudioNavigator.Playback, GuidedAudioNavigator.ReadingOrder>,
+) :
+    MediaNavigator<GuidedAudioNavigator.Location, GuidedAudioNavigator.Playback, GuidedAudioNavigator.ReadingOrder>,
+    AudioNavigator<GuidedAudioNavigator.Location, GuidedAudioNavigator.Playback, GuidedAudioNavigator.ReadingOrder>,
     TextAwareMediaNavigator<GuidedAudioNavigator.Location, GuidedAudioNavigator.Playback, GuidedAudioNavigator.ReadingOrder>,
+    Media3Adapter,
     Configurable<S, P> {
 
     data class Location(
@@ -84,9 +88,8 @@ class GuidedAudioNavigator<S : Configurable.Settings, P : Configurable.Preferenc
         audioNavigator.pause()
     }
 
-    override fun asPlayer(): Player {
-        return audioNavigator.asPlayer()
-    }
+    override fun asMedia3Player(): Player =
+        audioNavigator.asMedia3Player()
 
     override val settings: StateFlow<S> =
         audioNavigator.settings

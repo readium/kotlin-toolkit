@@ -6,7 +6,6 @@
 
 package org.readium.r2.navigator.media3.api
 
-import androidx.media3.common.Player
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -17,8 +16,11 @@ import org.readium.r2.shared.util.Href
  * A [Navigator] which can play multimedia content.
  */
 @ExperimentalReadiumApi
-interface MediaNavigator<L : MediaNavigator.Location, P : MediaNavigator.Playback,
-    R : MediaNavigator.ReadingOrder> : Navigator, Closeable {
+interface MediaNavigator<
+    L : MediaNavigator.Location,
+    P : MediaNavigator.Playback,
+    R : MediaNavigator.ReadingOrder
+    > : Navigator, Closeable {
 
     /**
      *  Location of the navigator.
@@ -115,9 +117,4 @@ interface MediaNavigator<L : MediaNavigator.Location, P : MediaNavigator.Playbac
      * Pauses the playback.
      */
     fun pause()
-
-    /**
-     * Adapts this navigator to the media3 [Player] interface.
-     */
-    fun asPlayer(): Player
 }
