@@ -132,7 +132,6 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     data class Location(
         override val href: Href,
-        val cssSelector: String,
         override val utterance: String,
         override val range: IntRange?,
         override val textBefore: String?,
@@ -276,15 +275,9 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
         val utteranceHighlight = publication
             .locatorFromLink(currentLink)!!
-            .copyWithLocations(
-                progression = position.progression,
-                totalProgression = position.totalProgression,
-                otherLocations = buildMap {
-                    put("cssSelector", position.cssSelector)
-                }
-            ).copy(
-                text =
-                Locator.Text(
+            .copy(
+                locations = position.locations,
+                text = Locator.Text(
                     highlight = text,
                     before = position.textBefore,
                     after = position.textAfter
@@ -296,7 +289,6 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
         return Location(
             href = Href(currentLink.href),
-            cssSelector = position.cssSelector,
             textBefore = position.textBefore,
             textAfter = position.textAfter,
             utterance = text,
