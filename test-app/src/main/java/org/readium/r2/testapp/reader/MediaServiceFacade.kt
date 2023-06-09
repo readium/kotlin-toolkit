@@ -11,6 +11,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.readium.r2.navigator.media3.api.Media3Adapter
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
@@ -38,10 +39,10 @@ class MediaServiceFacade(
     val session: StateFlow<MediaService.Session?> =
         sessionMutable.asStateFlow()
 
-    suspend fun openSession(
+    suspend fun <N> openSession(
         bookId: Long,
-        navigator: AnyMediaNavigator
-    ) = mutex.withLock {
+        navigator: N
+    ) where N : AnyMediaNavigator, N : Media3Adapter = mutex.withLock {
         if (session.value != null) {
             throw CancellationException("A session is already running.")
         }
