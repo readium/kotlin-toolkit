@@ -42,6 +42,10 @@ interface Resource : SuspendingCloseable {
      */
     val file: File? get() = null
 
+    suspend fun mediaType(): ResourceTry<String?> = ResourceTry.success(null)
+
+    suspend fun name(): ResourceTry<String?> = ResourceTry.success(null)
+
     /**
      * Returns data length from metadata if available, or calculated from reading the bytes otherwise.
      *

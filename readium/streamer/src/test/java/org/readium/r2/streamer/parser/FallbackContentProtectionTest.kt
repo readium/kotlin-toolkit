@@ -139,6 +139,9 @@ class TestContainer(resources: Map<String, String> = emptyMap()) : Container {
     private val entries: Map<String, Entry> =
         resources.mapValues { Entry(it.key, StringResource(it.value)) }
 
+    override suspend fun name(): ResourceTry<String?> =
+        Try.success(null)
+
     override suspend fun entries(): Iterable<Container.Entry> =
         entries.values
 
@@ -164,5 +167,10 @@ class TestContainer(resources: Map<String, String> = emptyMap()) : Container {
     private class Entry(
         override val path: String,
         private val resource: StringResource
-    ) : Resource by resource, Container.Entry
+    ) : Resource by resource, Container.Entry {
+
+        override suspend fun name(): ResourceTry<String?> {
+            return resource.name()
+        }
+    }
 }

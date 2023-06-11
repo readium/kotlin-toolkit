@@ -12,19 +12,7 @@ package org.readium.r2.streamer.extensions
 import org.json.JSONObject
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.parser.xml.ElementNode
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.use
-
-/** Returns the resource data at the given [Link]'s HREF, or throws a [Resource.Exception] */
-@Throws(Resource.Exception::class)
-internal suspend fun Fetcher.readBytes(link: Link): ByteArray =
-    get(link).use { it.read().getOrThrow() }
-
-/** Returns the resource data at the given [href], or throws a [Resource.Exception] */
-@Throws(Resource.Exception::class)
-internal suspend fun Fetcher.readBytes(href: String): ByteArray =
-    get(href).use { it.read().getOrThrow() }
 
 /** Returns the resource data as an XML Document at the given [href], or null. */
 internal suspend fun Fetcher.readAsXmlOrNull(href: String): ElementNode? =

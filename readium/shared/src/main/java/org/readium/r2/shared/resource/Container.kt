@@ -15,12 +15,18 @@ interface Container : SuspendingCloseable {
          * It MUST start with /.
          */
         val path: String
+
+        override suspend fun name(): ResourceTry<String?> {
+            return ResourceTry.success(File(path).name)
+        }
     }
 
     /**
      * Direct file to this container, when available.
      */
     val file: File? get() = null
+
+    suspend fun name(): ResourceTry<String?>
 
     /** List of all the archived file entries. */
     suspend fun entries(): Iterable<Entry>?

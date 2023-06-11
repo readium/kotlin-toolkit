@@ -68,7 +68,7 @@ data class Book(
         get() = when (rawAssetType) {
             "Archive" -> AssetType.Archive
             "Directory" -> AssetType.Directory
-            "File" -> AssetType.Resource
+            "Resource" -> AssetType.Resource
             else -> throw IllegalStateException("Invalid asset type $rawAssetType")
         }
 

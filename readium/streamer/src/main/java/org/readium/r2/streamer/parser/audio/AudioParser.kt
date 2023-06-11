@@ -7,8 +7,11 @@
 package org.readium.r2.streamer.parser.audio
 
 import java.io.File
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -31,7 +34,7 @@ class AudioParser : PublicationParser {
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
 
-        if (!accepts(asset.mediaType, asset.fetcher))
+        if (asset.mediaType != MediaType.ZAB && asset.mediaType.fileExtension !in audioExtensions)
             return Try.failure(PublicationParser.Error.FormatNotSupported)
 
         val readingOrder = asset.fetcher.links()
@@ -61,21 +64,6 @@ class AudioParser : PublicationParser {
         )
 
         return Try.success(publicationBuilder)
-    }
-
-    private suspend fun accepts(mediaType: MediaType, fetcher: Fetcher): Boolean {
-        if (mediaType == MediaType.ZAB)
-            return true
-
-        val allowedExtensions = audioExtensions +
-            listOf("asx", "bio", "m3u", "m3u8", "pla", "pls", "smil", "txt", "vlc", "wpl", "xspf", "zpl")
-
-        if (fetcher.links().filterNot { File(it.href).isHiddenOrThumbs }
-            .all { File(it.href).lowercasedExtension in allowedExtensions }
-        )
-            return true
-
-        return false
     }
 
     private val audioExtensions = listOf(

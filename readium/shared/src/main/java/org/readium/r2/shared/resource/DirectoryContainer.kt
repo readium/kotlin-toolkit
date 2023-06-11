@@ -54,6 +54,9 @@ internal class DirectoryContainer(private val directory: File) : Container {
         override suspend fun close() {}
     }
 
+    override suspend fun name(): ResourceTry<String> =
+        ResourceTry.success(directory.name)
+
     override suspend fun entries(): List<Container.Entry> =
         directory.walk()
             .filter { it.isFile }

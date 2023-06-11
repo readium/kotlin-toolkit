@@ -7,8 +7,11 @@
 package org.readium.r2.streamer.parser.image
 
 import java.io.File
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.util.Try
@@ -16,7 +19,6 @@ import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
-import org.readium.r2.streamer.extensions.lowercasedExtension
 import org.readium.r2.streamer.parser.PublicationParser
 
 /**
@@ -32,7 +34,7 @@ class ImageParser : PublicationParser {
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
 
-        if (!accepts(asset.mediaType, asset.fetcher))
+        if (asset.mediaType != MediaType.CBZ && !asset.mediaType.isBitmap)
             return Try.failure(PublicationParser.Error.FormatNotSupported)
 
         val readingOrder = asset.fetcher.links()
@@ -65,20 +67,5 @@ class ImageParser : PublicationParser {
         )
 
         return Try.success(publicationBuilder)
-    }
-
-    private suspend fun accepts(mediaType: MediaType, fetcher: Fetcher): Boolean {
-        if (mediaType == MediaType.CBZ)
-            return true
-
-        val allowedExtensions = listOf("acbf", "txt", "xml")
-
-        if (fetcher.links()
-            .filterNot { File(it.href).isHiddenOrThumbs }
-            .all { it.mediaType.isBitmap || File(it.href).lowercasedExtension in allowedExtensions }
-        )
-            return true
-
-        return false
     }
 }

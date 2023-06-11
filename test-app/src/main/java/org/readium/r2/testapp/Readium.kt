@@ -11,8 +11,8 @@ import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.asset.AssetAnalyzer
 import org.readium.r2.shared.asset.AssetFactory
+import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.resource.CompositeArchiveFactory
 import org.readium.r2.shared.resource.CompositeResourceFactory
 import org.readium.r2.shared.resource.DefaultArchiveFactory
@@ -45,7 +45,7 @@ class Readium(context: Context) {
 
     val containerFactory = DirectoryContainerFactory()
 
-    val assetAnalyzer = AssetAnalyzer(
+    val assetRetriever = AssetRetriever(
         resourceFactory,
         containerFactory,
         archiveFactory

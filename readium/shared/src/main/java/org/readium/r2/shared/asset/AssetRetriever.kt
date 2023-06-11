@@ -25,7 +25,7 @@ import org.readium.r2.shared.util.mediatype.Sniffers
 import org.readium.r2.shared.util.mediatype.UrlSnifferContextFactory
 import org.readium.r2.shared.util.toUrl
 
-class AssetAnalyzer(
+class AssetRetriever(
     resourceFactory: ResourceFactory,
     containerFactory: ContainerFactory,
     archiveFactory: ArchiveFactory,
@@ -42,7 +42,7 @@ class AssetAnalyzer(
         file: File,
         mediaType: String? = null,
         fileExtension: String? = null,
-    ): AssetDescription? {
+    ): Asset? {
         return ofFile(file, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension))
     }
 
@@ -53,7 +53,7 @@ class AssetAnalyzer(
         path: String,
         mediaType: String? = null,
         fileExtension: String? = null,
-    ): AssetDescription? {
+    ): Asset? {
         return ofFile(File(path), mediaType = mediaType, fileExtension = fileExtension)
     }
 
@@ -64,7 +64,7 @@ class AssetAnalyzer(
         path: String,
         mediaTypes: List<String>,
         fileExtensions: List<String>,
-    ): AssetDescription? {
+    ): Asset? {
         return ofFile(File(path), mediaTypes = mediaTypes, fileExtensions = fileExtensions)
     }
 
@@ -75,12 +75,14 @@ class AssetAnalyzer(
         file: File,
         mediaTypes: List<String>,
         fileExtensions: List<String>,
-    ): AssetDescription? {
+    ): Asset? {
         val context = snifferContextFactory
             .createContext(file.toUrl(), mediaTypes, fileExtensions)
             ?: return null
 
-        return ofClosing(context)
+        val fallbackName = file.name
+
+        return this.of(context, fallbackName)
     }
 
     /**
@@ -92,7 +94,7 @@ class AssetAnalyzer(
         contentResolver: ContentResolver,
         mediaType: String? = null,
         fileExtension: String? = null,
-    ): AssetDescription? {
+    ): Asset? {
         return ofUri(uri, contentResolver, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension))
     }
 
@@ -105,7 +107,7 @@ class AssetAnalyzer(
         contentResolver: ContentResolver,
         mediaTypes: List<String>,
         fileExtensions: List<String>,
-    ): AssetDescription? {
+    ): Asset? {
         val allMediaTypes = mediaTypes.toMutableList()
         val allFileExtensions = fileExtensions.toMutableList()
 
@@ -130,14 +132,16 @@ class AssetAnalyzer(
             .createContext(url, allMediaTypes, allFileExtensions)
             ?: return null
 
-        return ofClosing(context)
+        val fallbackName = url.file
+
+        return this.of(context, fallbackName)
     }
 
     suspend fun ofUrl(
         url: Url,
         mediaType: String? = null,
         fileExtension: String? = null
-    ): AssetDescription? {
+    ): Asset? {
         return ofUrl(url, listOfNotNull(mediaType), listOfNotNull(fileExtension))
     }
 
@@ -145,22 +149,15 @@ class AssetAnalyzer(
         url: Url,
         mediaTypes: List<String>,
         fileExtensions: List<String>
-    ): AssetDescription? {
+    ): Asset? {
         val context = snifferContextFactory
             .createContext(url, mediaTypes, fileExtensions)
             ?: return null
 
-        return ofClosing(context)
-    }
+        val fallbackName = url.file
 
-    private suspend fun ofClosing(
-        context: ContentAwareSnifferContext,
-    ): AssetDescription? =
-        try {
-            of(context)
-        } finally {
-            context.release()
-        }
+        return this.of(context, fallbackName)
+    }
 
     /**
      * Resolves a media type from a sniffer context.
@@ -172,32 +169,40 @@ class AssetAnalyzer(
      */
     private suspend fun of(
         context: ContentAwareSnifferContext,
-    ): AssetDescription? {
+        fallbackName: String
+    ): Asset? {
 
-        val type = when (context) {
-            is ContainerSnifferContext ->
-                if (context.isExploded) AssetType.Directory else AssetType.Archive
-            is ResourceSnifferContext ->
-                AssetType.Resource
-        }
-
-        fun assetDescription(mediaType: MediaType): AssetDescription {
-            return AssetDescription(mediaType, type)
+        suspend fun asset(mediaType: MediaType): Asset {
+            return when (context) {
+                is ContainerSnifferContext ->
+                    Asset.Container(
+                        context.container.name().getOrNull() ?: fallbackName,
+                        mediaType,
+                        if (context.isExploded) AssetType.Directory else AssetType.Archive,
+                        context.container
+                    )
+                is ResourceSnifferContext ->
+                    Asset.Resource(
+                        context.resource.name().getOrNull() ?: fallbackName,
+                        mediaType,
+                        context.resource
+                    )
+            }
         }
 
         for (sniffer in sniffers) {
-            sniffer(context)?.let { return assetDescription(it) }
+            sniffer(context)?.let { return asset(it) }
         }
 
         // Falls back on the system-wide registered media types using [MimeTypeMap].
         // Note: This is done after the heavy sniffing of the provided [sniffers], because
         // otherwise it will detect JSON, XML or ZIP formats before we have a chance of sniffing
         // their content (for example, for RWPM).
-        Sniffers.system(context)?.let { return assetDescription(it) }
+        Sniffers.system(context)?.let { return asset(it) }
 
         // If nothing else worked, we try to parse the first valid media type hint.
         for (mediaTypeHint in context.mediaTypes) {
-            MediaType.parse(mediaTypeHint.toString())?.let { return assetDescription(it) }
+            MediaType.parse(mediaTypeHint.toString())?.let { return asset(it) }
         }
 
         return null

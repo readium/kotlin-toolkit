@@ -1,5 +1,6 @@
 package org.readium.r2.shared.util.http
 
+import java.io.File
 import java.io.InputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -17,6 +18,22 @@ class HttpResource(
     private val url: String,
     private val maxSkipBytes: Long = MAX_SKIP_BYTES
 ) : Resource {
+
+    override suspend fun name(): ResourceTry<String?> =
+        headResponse().map {
+            it.valuesForHeader("Content-Disposition")
+                .flatMap { it.split(";") }
+                .map { it.trim() }
+                .firstOrNull { it.startsWith("filename=") }
+                ?.dropWhile { it != '=' }
+                ?.trim('=', '"')
+                ?.let { File(it).name }
+        }
+
+    override suspend fun mediaType(): ResourceTry<String?> =
+        headResponse().map {
+            it.mediaType.toString()
+        }
 
     override suspend fun length(): ResourceTry<Long> =
         headResponse().flatMap {

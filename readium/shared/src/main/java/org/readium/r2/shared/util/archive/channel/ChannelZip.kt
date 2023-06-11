@@ -24,7 +24,8 @@ import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.io.CountingInputStream
 
 internal class ChannelZip(
-    private val archive: ZipFile
+    private val archive: ZipFile,
+    private val fetchName: suspend () -> ResourceTry<String?>
 ) : Container {
 
     private inner class Entry(private val entry: ZipArchiveEntry) : ZipContainer.Entry {
@@ -103,6 +104,10 @@ internal class ChannelZip(
         }
     }
 
+    override suspend fun name(): ResourceTry<String?> {
+        return fetchName.invoke()
+    }
+
     override suspend fun entries(): List<Container.Entry> =
         archive.entries.toList().filterNot { it.isDirectory }.mapNotNull { Entry(it) }
 
@@ -131,7 +136,9 @@ class ChannelZipArchiveFactory(
         try {
             val resourceChannel = ResourceChannel(resource)
             val channel = wrapBaseChannel(resourceChannel)
-            Try.success(ChannelZip(ZipFile(channel, true)))
+            val zipFile = ZipFile(channel, true)
+            val channelZip = ChannelZip(zipFile, resource::name)
+            Try.success(channelZip)
         } catch (e: Exception) {
             Try.failure(e)
         }
@@ -139,7 +146,7 @@ class ChannelZipArchiveFactory(
     internal fun openFile(file: File): Container {
         val fileChannel = FileChannelAdapter(file, "r")
         val channel = wrapBaseChannel(fileChannel)
-        return ChannelZip(ZipFile(channel))
+        return ChannelZip(ZipFile(channel)) { Try.success(file.name) }
     }
 
     private fun wrapBaseChannel(channel: SeekableByteChannel): SeekableByteChannel {

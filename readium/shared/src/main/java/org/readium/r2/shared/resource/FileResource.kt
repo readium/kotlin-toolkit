@@ -21,6 +21,9 @@ class FileResource(override val file: File) : Resource {
         }
     }
 
+    override suspend fun name(): ResourceTry<String?> =
+        ResourceTry.success(file.name)
+
     override suspend fun close() = withContext(Dispatchers.IO) {
         if (::randomAccessFile.isLazyInitialized) {
             randomAccessFile.onSuccess {
@@ -96,7 +99,6 @@ class FileResource(override val file: File) : Resource {
     override fun toString(): String =
         "${javaClass.simpleName}(${file.path})"
 }
-
 
 class FileResourceFactory : ResourceFactory {
 

@@ -60,8 +60,7 @@ class Application : android.app.Application() {
                         storageDir,
                         readium.lcpService,
                         readium.streamer,
-                        readium.assetAnalyzer,
-                        readium.assetFactory
+                        readium.assetRetriever,
                     )
                 }
 

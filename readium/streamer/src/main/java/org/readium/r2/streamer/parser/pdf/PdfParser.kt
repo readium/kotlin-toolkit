@@ -39,7 +39,7 @@ class PdfParser(
         if (asset.mediaType != MediaType.PDF)
             return Try.failure(PublicationParser.Error.FormatNotSupported)
 
-        val fileHref = asset.fetcher.links().firstOrNull { it.mediaType == MediaType.PDF }?.href
+        val fileHref = asset.fetcher.links().firstOrNull()?.href
             ?: throw Exception("Unable to find PDF file.")
         val document = pdfFactory.open(asset.fetcher.get(fileHref), password = null)
         val tableOfContents = document.outline.toLinks(fileHref)

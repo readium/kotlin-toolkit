@@ -123,6 +123,9 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
 
     override val file: File = source
 
+    override suspend fun name(): ResourceTry<String> =
+        ResourceTry.success(file.name)
+
     override suspend fun entries(): List<Container.Entry> =
         archive.entries().toList().filterNot { it.isDirectory }.mapNotNull { Entry(it) }
 
