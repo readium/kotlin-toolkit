@@ -1,13 +1,8 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Quentin Gliosca
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
-
-@file:OptIn(InternalReadiumApi::class)
 
 package org.readium.r2.shared.resource
 
@@ -16,29 +11,29 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.io.CountingInputStream
 
-class DefaultArchiveFactory : ArchiveFactory {
+interface ZipContainer : Container {
 
-    private val javaZipFactory = JavaZipArchiveFactory()
+    interface Entry : Container.Entry {
 
-    override suspend fun create(resource: Resource, password: String?): Try<Container, Exception> {
-        return resource.file
-            ?.let { javaZipFactory.open(it) }
-            ?: Try.failure(Exception("Resource unsupported"))
+        /**
+         *  Compressed data length.
+         */
+        val compressedLength: Long?
     }
 }
 
-@OptIn(InternalReadiumApi::class)
 internal class JavaZipContainer(private val archive: ZipFile, source: File) : ZipContainer {
 
-    private inner class NotFoundEntry(override val path: String) : ZipContainer.Entry {
+    private inner class FailureEntry(override val path: String) : ZipContainer.Entry {
 
         override val compressedLength: Long? = null
+
+        override suspend fun name(): ResourceTry<String?> =
+            ResourceTry.success(File(path).name)
 
         override suspend fun length(): ResourceTry<Long> =
             Try.failure(Resource.Exception.NotFound())
@@ -51,7 +46,11 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
     }
 
     private inner class Entry(private val entry: ZipEntry) : ZipContainer.Entry {
+
         override val path: String get() = entry.name
+
+        override suspend fun name(): ResourceTry<String?> =
+            ResourceTry.success(File(path).name)
 
         override suspend fun length(): Try<Long, Resource.Exception> =
             entry.size.takeUnless { it == -1L }
@@ -132,7 +131,7 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
     override suspend fun entry(path: String): Container.Entry {
         return archive.getEntry(path)
             ?.let { Entry(it) }
-            ?: NotFoundEntry(path)
+            ?: FailureEntry(path)
     }
 
     override suspend fun close() = withContext(Dispatchers.IO) {
@@ -140,25 +139,20 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
     }
 }
 
-internal class JavaZipArchiveFactory {
+class DefaultArchiveFactory : ArchiveFactory {
 
-    suspend fun open(url: Url): Try<Container, Exception> =
-        withContext(Dispatchers.IO) {
-            try {
-                if (url.scheme != "file") {
-                    throw Exception("Unsupported protocol.")
-                }
-
-                val file = File(url.path)
-
-                val archive = JavaZipContainer(ZipFile(url.path), file)
-                Try.success(archive)
-            } catch (e: Exception) {
-                Try.failure(e)
-            }
+    override suspend fun create(resource: Resource, password: String?): Try<Container, Exception> {
+        if (password != null) {
+            return Try.failure(Exception("${javaClass.simpleName}) does not support passwords."))
         }
 
-    suspend fun open(file: File): Try<Container, Exception> =
+        return resource.file
+            ?.let { open(it) }
+            ?: Try.failure(Exception("Resource unsupported"))
+    }
+
+    // Internal for testing purpose
+    internal suspend fun open(file: File): Try<Container, Exception> =
         withContext(Dispatchers.IO) {
             try {
                 val archive = JavaZipContainer(ZipFile(file), file)

@@ -105,6 +105,7 @@ abstract class GeneratedCoverService : CoverService {
         return LazyResource {
             val cover = cover()
             val png = cover.toPng()
+
             if (png == null) {
                 val error = Exception("Unable to convert cover to PNG.")
                 FailureResource(coverLink, error)

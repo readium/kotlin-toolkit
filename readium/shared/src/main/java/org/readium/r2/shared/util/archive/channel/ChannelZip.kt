@@ -29,7 +29,11 @@ internal class ChannelZip(
 ) : Container {
 
     private inner class Entry(private val entry: ZipArchiveEntry) : ZipContainer.Entry {
+
         override val path: String get() = entry.name
+
+        override suspend fun name(): ResourceTry<String?> =
+            ResourceTry.success(File(path).name)
 
         override suspend fun length(): ResourceTry<Long> =
             entry.size.takeUnless { it == -1L }
@@ -134,6 +138,10 @@ class ChannelZipArchiveFactory(
 
     override suspend fun create(resource: Resource, password: String?): Try<Container, Exception> =
         try {
+            if (password != null) {
+                throw Exception("${javaClass.simpleName}) does not support passwords.")
+            }
+
             val resourceChannel = ResourceChannel(resource)
             val channel = wrapBaseChannel(resourceChannel)
             val zipFile = ZipFile(channel, true)

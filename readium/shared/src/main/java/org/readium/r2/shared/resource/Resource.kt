@@ -1,10 +1,7 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Quentin Gliosca
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.shared.resource
@@ -42,8 +39,14 @@ interface Resource : SuspendingCloseable {
      */
     val file: File? get() = null
 
+    /**
+     * Returns the resource media type if known.
+     */
     suspend fun mediaType(): ResourceTry<String?> = ResourceTry.success(null)
 
+    /**
+     * Returns the name of the resource if any.
+     */
     suspend fun name(): ResourceTry<String?> = ResourceTry.success(null)
 
     /**
@@ -159,6 +162,21 @@ interface Resource : SuspendingCloseable {
                 }
         }
     }
+}
+
+/** Creates a Resource that will always return the given [error]. */
+class FailureResource(private val error: Resource.Exception) : Resource {
+
+    internal constructor(cause: Throwable) : this(Resource.Exception.wrap(cause))
+
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = Try.failure(error)
+
+    override suspend fun length(): ResourceTry<Long> = Try.failure(error)
+
+    override suspend fun close() {}
+
+    override fun toString(): String =
+        "${javaClass.simpleName}($error)"
 }
 
 /**

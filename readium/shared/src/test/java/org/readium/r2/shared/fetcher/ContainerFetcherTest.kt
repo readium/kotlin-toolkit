@@ -22,7 +22,7 @@ import org.readium.r2.shared.linkBlocking
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.readBlocking
-import org.readium.r2.shared.resource.JavaZipArchiveFactory
+import org.readium.r2.shared.resource.DefaultArchiveFactory
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.robolectric.RobolectricTestRunner
@@ -37,7 +37,7 @@ class ContainerFetcherTest {
         val epub = ContainerFetcherTest::class.java.getResource("epub.epub")
         assertNotNull(epub)
         val archive = runBlocking {
-            JavaZipArchiveFactory()
+            DefaultArchiveFactory()
                 .open(File(epub.path))
                 .getOrThrow()
         }

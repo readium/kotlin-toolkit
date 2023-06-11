@@ -1,3 +1,9 @@
+/*
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.shared.resource
 
 import android.content.ContentResolver
@@ -29,7 +35,7 @@ class FileResource(override val file: File) : Resource {
             randomAccessFile.onSuccess {
                 try {
                     it.close()
-                } catch (e: java.lang.Exception) {
+                } catch (e: Exception) {
                     Timber.e(e)
                 }
             }
@@ -110,17 +116,5 @@ class FileResourceFactory : ResourceFactory {
         val file = File(url.path)
 
         return Try.success(FileResource(file))
-    }
-}
-
-class DirectoryContainerFactory : ContainerFactory {
-
-    override suspend fun create(url: Url): Try<Container, Exception> {
-        if (url.scheme != ContentResolver.SCHEME_FILE) {
-            Try.failure(Exception("Scheme not supported"))
-        }
-
-        val file = File(url.path)
-        return Try.success(DirectoryContainer(file))
     }
 }

@@ -1,5 +1,6 @@
 package org.readium.r2.streamer.parser
 
+import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -154,6 +155,9 @@ class TestContainer(resources: Map<String, String> = emptyMap()) : Container {
         override val path: String
     ) : Container.Entry {
 
+        override suspend fun name(): ResourceTry<String?> =
+            ResourceTry.success(File(path).name)
+
         override suspend fun length(): ResourceTry<Long> =
             Try.failure(Resource.Exception.NotFound())
 
@@ -167,10 +171,5 @@ class TestContainer(resources: Map<String, String> = emptyMap()) : Container {
     private class Entry(
         override val path: String,
         private val resource: StringResource
-    ) : Resource by resource, Container.Entry {
-
-        override suspend fun name(): ResourceTry<String?> {
-            return resource.name()
-        }
-    }
+    ) : Resource by resource, Container.Entry
 }

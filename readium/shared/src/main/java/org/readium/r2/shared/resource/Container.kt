@@ -1,12 +1,21 @@
+/*
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.shared.resource
 
 import java.io.File
 import org.readium.r2.shared.util.SuspendingCloseable
 
+/**
+ * A resource container as an archive or a directory.
+ */
 interface Container : SuspendingCloseable {
 
     /**
-     * Holds an archive entry's metadata.
+     * Holds a container entry's.
      */
     interface Entry : Resource {
 
@@ -16,9 +25,10 @@ interface Container : SuspendingCloseable {
          */
         val path: String
 
-        override suspend fun name(): ResourceTry<String?> {
-            return ResourceTry.success(File(path).name)
-        }
+        /**
+         * Gets the entry name if any.
+         */
+        override suspend fun name(): ResourceTry<String?>
     }
 
     /**
@@ -26,22 +36,21 @@ interface Container : SuspendingCloseable {
      */
     val file: File? get() = null
 
+    /**
+     * Gets the container name if any.
+     */
     suspend fun name(): ResourceTry<String?>
 
-    /** List of all the archived file entries. */
+    /**
+     * List of all the container entries of null if such a list is not available.
+     */
     suspend fun entries(): Iterable<Entry>?
 
-    /** Gets the entry at the given `path`. */
+    /**
+     * Returns the [Entry] at the given [path].
+     *
+     * A [Entry] is always returned, since for some cases we can't know if it exists before
+     * actually fetching it, such as HTTP. Therefore, errors are handled at the Entry level.
+     */
     suspend fun entry(path: String): Entry
-}
-
-interface ZipContainer : Container {
-
-    interface Entry : Container.Entry {
-
-        /**
-         *  Compressed data length.
-         */
-        val compressedLength: Long?
-    }
 }

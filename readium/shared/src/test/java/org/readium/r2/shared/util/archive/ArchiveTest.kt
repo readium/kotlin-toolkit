@@ -21,7 +21,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.DefaultArchiveFactory
-import org.readium.r2.shared.resource.ExplodedArchiveFactory
+import org.readium.r2.shared.resource.DirectoryContainerFactory
 import org.readium.r2.shared.resource.FileResource
 import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
 
@@ -50,8 +50,8 @@ class ArchiveTest(val archive: Container) {
             val epubExploded = ArchiveTest::class.java.getResource("epub")
             assertNotNull(epubExploded)
             val explodedArchive = runBlocking {
-                ExplodedArchiveFactory()
-                    .open(File(epubExploded.path))
+                DirectoryContainerFactory()
+                    .create(File(epubExploded.path))
                     .getOrNull()
             }
             assertNotNull(explodedArchive)

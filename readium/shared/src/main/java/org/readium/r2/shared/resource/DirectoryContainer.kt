@@ -1,105 +1,90 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Quentin Gliosca
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.shared.resource
 
+import android.content.ContentResolver
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.isParentOf
-import org.readium.r2.shared.extensions.readFully
-import org.readium.r2.shared.extensions.readRange
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 
 /**
- * An archive exploded on the file system as a directory.
+ * A file system directory as a [Container].
  */
-internal class DirectoryContainer(private val directory: File) : Container {
+internal class DirectoryContainer(
+    private val root: File,
+    private val entries: List<File>
+) : Container {
 
-    private inner class Entry(override val file: File) : Container.Entry {
+    private inner class FailureEntry(
+        override val path: String
+    ) : Container.Entry,
+        Resource by FailureResource(
+            Resource.Exception.NotFound(Exception("No file entry at path $path."))
+        )
 
-        override val path: String get() = file.relativeTo(directory).path
+    private inner class SuccessEntry(
+        override val file: File
+    ) : Container.Entry, Resource by FileResource(file) {
 
-        override suspend fun length(): ResourceTry<Long> = try {
-            Try.success(file.length())
-        } catch (e: Exception) {
-            Try.failure(Resource.Exception.wrap(e))
-        }
-
-        override suspend fun read(range: LongRange?): Try<ByteArray, Resource.Exception> {
-            val stream = withContext(Dispatchers.IO) {
-                file.inputStream()
-            }
-
-            return try {
-                val bytes = stream.use {
-                    if (range == null)
-                        it.readFully()
-                    else
-                        it.readRange(range)
-                }
-                Try.success(bytes)
-            } catch (e: Exception) {
-                Try.failure(Resource.Exception.wrap(e))
-            }
-        }
+        override val path: String get() = file.relativeTo(root).path
 
         override suspend fun close() {}
     }
 
     override suspend fun name(): ResourceTry<String> =
-        ResourceTry.success(directory.name)
+        ResourceTry.success(root.name)
 
     override suspend fun entries(): List<Container.Entry> =
-        directory.walk()
-            .filter { it.isFile }
-            .map { Entry(it) }
-            .toList()
+        entries.map { SuccessEntry(it) }.toList()
 
     override suspend fun entry(path: String): Container.Entry {
-        val file = File(directory, path)
+        val file = File(root, path)
 
-        if (!directory.isParentOf(file) || !file.isFile)
-            throw Exception("No file entry at path $path.")
-
-        return Entry(file)
+        return if (!root.isParentOf(file) || !file.isFile)
+            FailureEntry(path)
+        else
+            SuccessEntry(file)
     }
 
     override suspend fun close() {}
+
+    companion object {
+
+        suspend operator fun invoke(root: File): Try<DirectoryContainer, Exception> =
+            withContext(Dispatchers.IO) {
+                try {
+                    val entries = root.walk()
+                        .filter { it.isFile }
+                        .toList()
+                    val container = DirectoryContainer(root, entries)
+                    Try.success(container)
+                } catch (e: Exception) {
+                    Try.failure(e)
+                }
+            }
+    }
 }
 
-internal class ExplodedArchiveFactory {
+class DirectoryContainerFactory : ContainerFactory {
 
-    suspend fun open(url: Url): Try<Container, Exception> =
-        withContext(Dispatchers.IO) {
-            try {
-                if (url.scheme != "file") {
-                    throw Exception("Unsupported protocol.")
-                }
-
-                val file = File(url.path)
-                open(file)
-            } catch (e: Exception) {
-                Try.failure(e)
-            }
+    override suspend fun create(url: Url): Try<Container, Exception> {
+        if (url.scheme != ContentResolver.SCHEME_FILE) {
+            Try.failure(Exception("Scheme not supported"))
         }
 
-    suspend fun open(file: File): Try<Container, Exception> =
-        withContext(Dispatchers.IO) {
-            try {
-                if (!file.isDirectory) {
-                    throw Exception("Url is not a directory.")
-                }
-                Try.success(DirectoryContainer(file))
-            } catch (e: Exception) {
-                Try.failure(e)
-            }
-        }
+        val file = File(url.path)
+        return create(file)
+    }
+
+    // Internal for testing purpose
+    internal suspend fun create(file: File): Try<Container, Exception> {
+        return DirectoryContainer(file)
+    }
 }

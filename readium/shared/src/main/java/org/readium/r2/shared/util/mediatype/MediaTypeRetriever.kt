@@ -7,14 +7,9 @@ import android.webkit.MimeTypeMap
 import java.io.File
 import org.readium.r2.shared.BuildConfig
 import org.readium.r2.shared.extensions.queryProjection
-import org.readium.r2.shared.resource.ArchiveFactory
-import org.readium.r2.shared.resource.ContainerFactory
-import org.readium.r2.shared.resource.ResourceFactory
+import org.readium.r2.shared.resource.*
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.resource.DefaultArchiveFactory
-import org.readium.r2.shared.resource.DirectoryContainerFactory
-import org.readium.r2.shared.resource.FileResourceFactory
 import org.readium.r2.shared.util.toUrl
 
 class MediaTypeRetriever(
