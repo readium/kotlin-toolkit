@@ -20,11 +20,11 @@ sealed class BaseBytesResource(
     protected val resource: org.readium.r2.shared.resource.BytesResource
 ) : Resource by resource, Fetcher.Resource {
 
-    constructor(link: Link, bytes: suspend () -> ResourceTry<ByteArray>)
-        : this(link, org.readium.r2.shared.resource.BytesResource(bytes))
+    constructor(link: Link, bytes: suspend () -> ResourceTry<ByteArray>) :
+        this(link, org.readium.r2.shared.resource.BytesResource(bytes))
 
-    constructor(link: Link, bytes: ByteArray)
-        : this(link, { Try.success(bytes) })
+    constructor(link: Link, bytes: ByteArray) :
+        this(link, { Try.success(bytes) })
 
     override suspend fun link(): Link =
         link

@@ -29,7 +29,7 @@ sealed class BaseBytesResource(
             .coerceIn(0L until _bytes.getOrThrow().size)
             .requireLengthFitInt()
 
-        return  Try.success(_bytes.getOrThrow().sliceArray(range.map(Long::toInt)))
+        return Try.success(_bytes.getOrThrow().sliceArray(range.map(Long::toInt)))
     }
 
     override suspend fun length(): ResourceTry<Long> =

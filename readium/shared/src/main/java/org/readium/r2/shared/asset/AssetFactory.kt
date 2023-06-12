@@ -41,7 +41,7 @@ class AssetFactory(
     ): Try<Asset.Container, Exception> {
         return resourceFactory.create(url)
             .flatMap { resource: Resource -> archiveFactory.create(resource, password = null) }
-            .map { container -> Asset.Container(url.file, mediaType, AssetType.Archive, container) }
+            .map { container -> Asset.Container(url.filename, mediaType, AssetType.Archive, container) }
     }
 
     private suspend fun createAssetForDirectory(
@@ -49,7 +49,7 @@ class AssetFactory(
         mediaType: MediaType
     ): Try<Asset.Container, Exception> {
         return containerFactory.create(url)
-            .map { container -> Asset.Container(url.file, mediaType, AssetType.Directory, container) }
+            .map { container -> Asset.Container(url.filename, mediaType, AssetType.Directory, container) }
     }
 
     private suspend fun createAssetForResource(
@@ -57,6 +57,6 @@ class AssetFactory(
         mediaType: MediaType
     ): Try<Asset.Resource, Exception> {
         return resourceFactory.create(url)
-            .map { resource -> Asset.Resource(url.file, mediaType, resource) }
+            .map { resource -> Asset.Resource(url.filename, mediaType, resource) }
     }
 }

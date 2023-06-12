@@ -61,6 +61,7 @@ class Application : android.app.Application() {
                         readium.lcpService,
                         readium.streamer,
                         readium.assetRetriever,
+                        readium.assetFactory
                     )
                 }
 

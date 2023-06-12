@@ -76,7 +76,7 @@ class DirectoryContainerFactory : ContainerFactory {
 
     override suspend fun create(url: Url): Try<Container, Exception> {
         if (url.scheme != ContentResolver.SCHEME_FILE) {
-            Try.failure(Exception("Scheme not supported"))
+            return Try.failure(Exception("Scheme not supported"))
         }
 
         val file = File(url.path)

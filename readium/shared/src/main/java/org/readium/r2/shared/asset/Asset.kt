@@ -13,6 +13,8 @@ sealed class Asset {
 
     abstract val assetType: AssetType
 
+    abstract suspend fun close()
+
     class Resource(
         override val name: String,
         override val mediaType: MediaType,
@@ -21,6 +23,10 @@ sealed class Asset {
 
         override val assetType: AssetType =
             AssetType.Resource
+
+        override suspend fun close() {
+            resource.close()
+        }
     }
 
     class Container(
@@ -28,5 +34,10 @@ sealed class Asset {
         override val mediaType: MediaType,
         override val assetType: AssetType,
         val container: org.readium.r2.shared.resource.Container
-    ) : Asset()
+    ) : Asset() {
+
+        override suspend fun close() {
+            container.close()
+        }
+    }
 }

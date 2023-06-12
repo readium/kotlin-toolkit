@@ -12,6 +12,7 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.ZipContainer
@@ -27,6 +28,13 @@ internal class ChannelZip(
     private val archive: ZipFile,
     private val fetchName: suspend () -> ResourceTry<String?>
 ) : Container {
+
+    private inner class FailureEntry(
+        override val path: String
+    ) : ZipContainer.Entry, Resource by FailureResource(Resource.Exception.NotFound()) {
+
+        override val compressedLength: Long? = null
+    }
 
     private inner class Entry(private val entry: ZipArchiveEntry) : ZipContainer.Entry {
 
@@ -116,10 +124,10 @@ internal class ChannelZip(
         archive.entries.toList().filterNot { it.isDirectory }.mapNotNull { Entry(it) }
 
     override suspend fun entry(path: String): Container.Entry {
-        val entry = archive.getEntry(path)
-            ?: throw Exception("No file entry at path $path.")
-
-        return Entry(entry)
+        return archive.getEntry(path)
+            .takeUnless { it.isDirectory }
+            ?.let { Entry(it) }
+            ?: FailureEntry(path)
     }
 
     override suspend fun close() = withContext(Dispatchers.IO) {

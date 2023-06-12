@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 import org.joda.time.DateTime
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.shared.asset.Asset
+import org.readium.r2.shared.asset.AssetFactory
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.asset.AssetType
 import org.readium.r2.shared.extensions.tryOrLog
@@ -35,6 +36,7 @@ import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.Streamer
@@ -54,6 +56,7 @@ class BookRepository(
     private val lcpService: Try<LcpService, Exception>,
     private val streamer: Streamer,
     private val assetRetriever: AssetRetriever,
+    private val assetFactory: AssetFactory
 ) {
     private val coverDir: File =
         File(storageDir, "covers/")
@@ -178,26 +181,27 @@ class BookRepository(
 
     suspend fun addLocalBook(
         tempFile: File,
-        coverUrl: String? = null
+        coverUrl: String? = null,
     ): Try<Unit, ImportException> {
-        val sourceAssetDescription = assetRetriever.ofFile(tempFile)
+        val sourceAsset = assetRetriever.ofFile(tempFile)
             ?: return Try.failure(
                 ImportException.UnableToOpenPublication(Publication.OpeningException.UnsupportedFormat())
             )
 
-        val (publicationFile, assetDescription) =
-            if (sourceAssetDescription.mediaType != MediaType.LCP_LICENSE_DOCUMENT) {
-                tempFile to sourceAssetDescription
+        val (publicationTempFile, publicationTempAsset) =
+            if (sourceAsset.mediaType != MediaType.LCP_LICENSE_DOCUMENT) {
+                tempFile to sourceAsset
             } else {
                 lcpService
                     .flatMap {
+                        sourceAsset.close()
                         it.acquirePublication(tempFile)
                     }
                     .fold(
                         {
                             val file = it.localFile
-                            val assetDescription = assetRetriever.ofFile(file, fileExtension = File(it.suggestedFilename).extension)
-                            file to assetDescription
+                            val asset = assetRetriever.ofFile(file, fileExtension = File(it.suggestedFilename).extension)
+                            file to asset
                         },
                         {
                             tryOrNull { tempFile.delete() }
@@ -206,27 +210,33 @@ class BookRepository(
                     )
             }
 
-        if (assetDescription == null) {
+        if (publicationTempAsset == null) {
             val exception = Publication.OpeningException.UnsupportedFormat(
                 Exception("Unsupported media type")
             )
             return Try.failure(ImportException.UnableToOpenPublication(exception))
         }
 
-        val fileName = "${UUID.randomUUID()}.${sourceAssetDescription.mediaType.fileExtension}"
+        val fileName = "${UUID.randomUUID()}.${publicationTempAsset.mediaType.fileExtension}"
         val libraryFile = File(storageDir, fileName)
         val libraryUrl = libraryFile.toUrl()
 
         try {
-            publicationFile.moveTo(libraryFile)
+            publicationTempFile.moveTo(libraryFile)
         } catch (e: Exception) {
             Timber.d(e)
             tryOrNull { libraryFile.delete() }
             return Try.failure(ImportException.IOException)
         }
 
+        val libraryAsset = assetFactory.createAsset(
+            libraryUrl,
+            publicationTempAsset.mediaType,
+            publicationTempAsset.assetType
+        ).getOrElse { return Try.failure(ImportException.IOException) }
+
         return addBook(
-            libraryUrl, assetDescription, coverUrl
+            libraryUrl, libraryAsset, coverUrl
         ).onFailure {
             tryOrNull { libraryFile.delete() }
         }

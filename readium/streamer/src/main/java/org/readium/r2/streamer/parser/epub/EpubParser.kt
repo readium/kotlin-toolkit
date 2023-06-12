@@ -153,8 +153,8 @@ class EpubParser(
 
     private suspend fun getRootFilePath(fetcher: Fetcher): String =
         fetcher.get("/META-INF/container.xml")
-            .use { it.readAsXml().getOrThrow() }
-            .getFirst("rootfiles", Namespaces.OPC)
+            .use { it.readAsXml().getOrNull() }
+            ?.getFirst("rootfiles", Namespaces.OPC)
             ?.getFirst("rootfile", Namespaces.OPC)
             ?.getAttr("full-path")
             ?: throw PublicationParser.Error.ParsingFailed(

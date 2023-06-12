@@ -117,7 +117,7 @@ internal class LcpContentProtection(
             ContainerFetcher(container, mediaTypeRetriever)
 
         return PublicationAsset(
-            url.file,
+            url.filename,
             link.mediaType,
             fetcher
         )

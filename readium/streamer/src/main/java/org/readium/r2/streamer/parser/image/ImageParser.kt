@@ -37,13 +37,25 @@ class ImageParser : PublicationParser {
         if (asset.mediaType != MediaType.CBZ && !asset.mediaType.isBitmap)
             return Try.failure(PublicationParser.Error.FormatNotSupported)
 
-        val readingOrder = asset.fetcher.links()
-            .filter { !File(it.href).isHiddenOrThumbs && it.mediaType.isBitmap }
-            .sortedBy(Link::href)
-            .toMutableList()
+        val readingOrder =
+            if (asset.mediaType == MediaType.CBZ) {
+                asset.fetcher.links()
+                    .filter { !File(it.href).isHiddenOrThumbs && it.mediaType.isBitmap }
+                    .sortedBy(Link::href)
+                    .toMutableList()
+            } else {
+                listOfNotNull(
+                    asset.fetcher.links().firstOrNull()
+                ).toMutableList()
+            }
 
-        if (readingOrder.isEmpty())
-            throw Exception("No bitmap found in the publication.")
+        if (readingOrder.isEmpty()) {
+            return Try.failure(
+                PublicationParser.Error.ParsingFailed(
+                    Exception("No bitmap found in the publication.")
+                )
+            )
+        }
 
         val title = asset.fetcher.guessTitle() ?: asset.name
 

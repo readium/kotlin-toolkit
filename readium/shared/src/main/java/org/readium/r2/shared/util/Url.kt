@@ -27,8 +27,8 @@ value class Url internal constructor(internal val url: URL) {
     val path: String
         get() = url.path
 
-    val file: String
-        get() = url.file
+    val filename: String
+        get() = File(path).name
 
     val extension: String?
         get() = url.extension

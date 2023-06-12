@@ -34,16 +34,28 @@ class AudioParser : PublicationParser {
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
 
-        if (asset.mediaType != MediaType.ZAB && asset.mediaType.fileExtension !in audioExtensions)
+        if (asset.mediaType != MediaType.ZAB && !asset.mediaType.isAudio)
             return Try.failure(PublicationParser.Error.FormatNotSupported)
 
-        val readingOrder = asset.fetcher.links()
-            .filter { link -> with(File(link.href)) { lowercasedExtension in audioExtensions && !isHiddenOrThumbs } }
-            .sortedBy(Link::href)
-            .toMutableList()
+        val readingOrder =
+            if (asset.mediaType == MediaType.ZAB) {
+                asset.fetcher.links()
+                    .filter { link -> with(File(link.href)) { lowercasedExtension in audioExtensions && !isHiddenOrThumbs } }
+                    .sortedBy(Link::href)
+                    .toMutableList()
+            } else {
+                listOfNotNull(
+                    asset.fetcher.links().firstOrNull()
+                )
+            }
 
-        if (readingOrder.isEmpty())
-            throw Exception("No audio file found in the publication.")
+        if (readingOrder.isEmpty()) {
+            return Try.failure(
+                PublicationParser.Error.ParsingFailed(
+                    Exception("No audio file found in the publication.")
+                )
+            )
+        }
 
         val title = asset.fetcher.guessTitle() ?: asset.name
 
