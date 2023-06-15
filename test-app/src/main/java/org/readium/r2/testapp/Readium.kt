@@ -15,6 +15,7 @@ import org.readium.r2.shared.asset.AssetFactory
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.resource.CompositeArchiveFactory
 import org.readium.r2.shared.resource.CompositeResourceFactory
+import org.readium.r2.shared.resource.ContentResourceFactory
 import org.readium.r2.shared.resource.DefaultArchiveFactory
 import org.readium.r2.shared.resource.DirectoryContainerFactory
 import org.readium.r2.shared.resource.FileResourceFactory
@@ -40,7 +41,10 @@ class Readium(context: Context) {
 
     val resourceFactory = CompositeResourceFactory(
         FileResourceFactory(),
-        HttpResourceFactory(httpClient)
+        CompositeResourceFactory(
+            ContentResourceFactory(context.contentResolver),
+            HttpResourceFactory(httpClient)
+        )
     )
 
     val containerFactory = DirectoryContainerFactory()

@@ -304,8 +304,8 @@ class BookRepository(
 
     suspend fun deleteBook(book: Book) {
         val id = book.id!!
-        val url = URL(book.href)
-        if (url.protocol == "file") {
+        val url = Url(book.href)!!
+        if (url.scheme == "file") {
             tryOrLog { File(url.path).delete() }
         }
         File(book.cover).delete()

@@ -77,7 +77,7 @@ class AssetRetriever(
         fileExtensions: List<String>,
     ): Asset? {
         val context = snifferContextFactory
-            .createContext(file.toUrl(), mediaTypes,  listOf(file.extension) + fileExtensions)
+            .createContext(file.toUrl(), mediaTypes, listOf(file.extension) + fileExtensions)
             ?: return null
 
         val fallbackName = file.name

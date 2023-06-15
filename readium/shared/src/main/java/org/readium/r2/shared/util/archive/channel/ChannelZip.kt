@@ -125,7 +125,7 @@ internal class ChannelZip(
 
     override suspend fun entry(path: String): Container.Entry {
         return archive.getEntry(path)
-            .takeUnless { it.isDirectory }
+            ?.takeUnless { it.isDirectory }
             ?.let { Entry(it) }
             ?: FailureEntry(path)
     }
