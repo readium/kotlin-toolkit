@@ -32,14 +32,11 @@ import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
+import org.readium.r2.shared.publication.protection.ProtectionRetriever
 import org.readium.r2.shared.publication.services.cover
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.flatMap
-import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.*
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.toUrl
-import org.readium.r2.streamer.Streamer
+import org.readium.r2.streamer.PublicationFactory
 import org.readium.r2.testapp.db.BooksDao
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.domain.model.Bookmark
@@ -54,8 +51,9 @@ class BookRepository(
     private val booksDao: BooksDao,
     private val storageDir: File,
     private val lcpService: Try<LcpService, Exception>,
-    private val streamer: Streamer,
+    private val publicationFactory: PublicationFactory,
     private val assetRetriever: AssetRetriever,
+    private val protectionRetriever: ProtectionRetriever,
     private val assetFactory: AssetFactory
 ) {
     private val coverDir: File =
@@ -120,6 +118,7 @@ class BookRepository(
         href: String,
         mediaType: MediaType,
         assetType: AssetType,
+        drm: String?,
         publication: Publication,
         cover: String
     ): Long {
@@ -131,6 +130,7 @@ class BookRepository(
             identifier = publication.metadata.identifier ?: "",
             mediaType = mediaType,
             assetType = assetType,
+            drm = drm,
             progression = "{}",
             cover = cover
         )
@@ -247,7 +247,11 @@ class BookRepository(
         asset: Asset,
         coverUrl: String? = null,
     ): Try<Unit, ImportException> {
-        streamer.open(asset, allowUserInteraction = false)
+        val drmScheme =
+            protectionRetriever.retrieve(asset)
+                ?.uri
+
+        publicationFactory.open(asset, allowUserInteraction = false)
             .onSuccess { publication ->
                 val coverBitmap: Bitmap? = coverUrl
                     ?.let { getBitmapFromURL(it) }
@@ -260,6 +264,7 @@ class BookRepository(
                     url.toString(),
                     asset.mediaType,
                     asset.assetType,
+                    drmScheme,
                     publication,
                     coverFile.path
                 )

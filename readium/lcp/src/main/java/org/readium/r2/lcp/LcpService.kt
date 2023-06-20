@@ -28,8 +28,9 @@ import org.readium.r2.lcp.service.LicensesService
 import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.PassphrasesRepository
 import org.readium.r2.lcp.service.PassphrasesService
+import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.ContentProtection
+import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.DefaultArchiveFactory
@@ -48,6 +49,8 @@ interface LcpService {
      * Returns if the publication is protected by LCP.
      */
     suspend fun isLcpProtected(file: File): Boolean
+
+    suspend fun isLcpProtected(asset: Asset): Boolean
 
     /**
      * Acquires a protected publication from a standalone LCPL's bytes.

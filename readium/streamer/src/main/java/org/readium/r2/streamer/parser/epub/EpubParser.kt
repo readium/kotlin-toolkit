@@ -16,7 +16,6 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.services.content.DefaultContentService
 import org.readium.r2.shared.publication.services.content.iterators.HtmlResourceContentIterator
@@ -84,7 +83,7 @@ class EpubParser(
 ) : PublicationParser {
 
     override suspend fun parse(
-        asset: PublicationAsset,
+        asset: PublicationParser.Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> =
         try {

@@ -10,7 +10,6 @@ import android.content.Context
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.InMemoryCacheService
 import org.readium.r2.shared.publication.services.InMemoryCoverService
 import org.readium.r2.shared.util.Try
@@ -33,7 +32,7 @@ class PdfParser(
     private val context = context.applicationContext
 
     override suspend fun parse(
-        asset: PublicationAsset,
+        asset: PublicationParser.Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
         if (asset.mediaType != MediaType.PDF)

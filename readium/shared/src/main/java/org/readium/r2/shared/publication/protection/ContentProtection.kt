@@ -7,15 +7,17 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-package org.readium.r2.shared.publication
+package org.readium.r2.shared.publication.protection
 
 import androidx.annotation.StringRes
 import org.readium.r2.shared.R
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Bridge between a Content Protection technology and the Readium toolkit.
@@ -25,6 +27,12 @@ import org.readium.r2.shared.util.Try
  * - Create a [ContentProtectionService] publication service.
  */
 interface ContentProtection {
+
+    val scheme: Scheme
+
+    suspend fun supports(
+        asset: org.readium.r2.shared.asset.Asset
+    ): Boolean
 
     /**
      * Attempts to unlock a potentially protected publication asset.
@@ -56,7 +64,9 @@ interface ContentProtection {
      * of a [Publication].
      */
     data class Asset(
-        val asset: PublicationAsset,
+        val name: String,
+        val mediaType: MediaType,
+        val fetcher: Fetcher,
         val onCreatePublication: Publication.Builder.() -> Unit = {}
     )
 

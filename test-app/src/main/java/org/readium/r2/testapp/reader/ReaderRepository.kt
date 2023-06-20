@@ -76,11 +76,13 @@ class ReaderRepository(
 
         val asset = readium.assetFactory.createAsset(
             Url(book.href)!!, book.mediaType, book.assetType
-        )
+        ).getOrThrow()
 
-        val publication = readium.streamer.open(
-            asset.getOrThrow(),
-            allowUserInteraction = true, sender = activity
+        val publication = readium.publicationFactory.open(
+            asset,
+            drmScheme = book.drm,
+            allowUserInteraction = true,
+            sender = activity
         )
             .getOrThrow()
 

@@ -59,8 +59,9 @@ class Application : android.app.Application() {
                         dao,
                         storageDir,
                         readium.lcpService,
-                        readium.streamer,
+                        readium.publicationFactory,
                         readium.assetRetriever,
+                        readium.protectionRetriever,
                         readium.assetFactory
                     )
                 }

@@ -7,12 +7,7 @@
 package org.readium.r2.streamer.parser.image
 
 import java.io.File
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.LocalizedString
-import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.publication.Metadata
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -30,7 +25,7 @@ import org.readium.r2.streamer.parser.PublicationParser
 class ImageParser : PublicationParser {
 
     override suspend fun parse(
-        asset: PublicationAsset,
+        asset: PublicationParser.Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
 

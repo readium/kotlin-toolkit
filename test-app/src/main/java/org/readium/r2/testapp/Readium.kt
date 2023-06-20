@@ -13,6 +13,7 @@ import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.asset.AssetFactory
 import org.readium.r2.shared.asset.AssetRetriever
+import org.readium.r2.shared.publication.protection.ProtectionRetriever
 import org.readium.r2.shared.resource.CompositeArchiveFactory
 import org.readium.r2.shared.resource.CompositeResourceFactory
 import org.readium.r2.shared.resource.ContentResourceFactory
@@ -25,7 +26,7 @@ import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpResourceFactory
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.streamer.FetcherFactory
-import org.readium.r2.streamer.Streamer
+import org.readium.r2.streamer.PublicationFactory
 
 /**
  * Holds the shared Readium objects and services used by the app.
@@ -49,22 +50,16 @@ class Readium(context: Context) {
 
     val containerFactory = DirectoryContainerFactory()
 
-    val assetRetriever = AssetRetriever(
-        resourceFactory,
-        containerFactory,
-        archiveFactory
-    )
-
     val mediaTypeRetriever = MediaTypeRetriever(
         resourceFactory,
         containerFactory,
         archiveFactory
     )
 
-    val assetFactory = AssetFactory(
-        archiveFactory,
+    val assetRetriever = AssetRetriever(
         resourceFactory,
-        containerFactory
+        containerFactory,
+        archiveFactory
     )
 
     /**
@@ -75,14 +70,26 @@ class Readium(context: Context) {
         ?.let { Try.success(it) }
         ?: Try.failure(Exception("liblcp is missing on the classpath"))
 
+    val contentProtections = listOfNotNull(
+        lcpService.getOrNull()?.contentProtection()
+    )
+
+    val protectionRetriever = ProtectionRetriever(
+        contentProtections
+    )
+
+    val assetFactory = AssetFactory(
+        archiveFactory,
+        resourceFactory,
+        containerFactory
+    )
+
     /**
      * The Streamer is used to open and parse publications.
      */
-    val streamer = Streamer(
+    val publicationFactory = PublicationFactory(
         context,
-        contentProtections = listOfNotNull(
-            lcpService.getOrNull()?.contentProtection()
-        ),
+        contentProtections = contentProtections,
         // Only required if you want to support PDF files using the PDFium adapter.
         pdfFactory = PdfiumDocumentFactory(context),
         // Build a composite archive factory to enable remote zip reading.

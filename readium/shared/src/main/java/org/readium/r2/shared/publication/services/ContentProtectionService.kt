@@ -17,12 +17,12 @@ import org.readium.r2.shared.extensions.queryParameters
 import org.readium.r2.shared.fetcher.FailureResource
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.StringResource
-import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ServiceFactory
+import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.resource.Resource
 
 /**

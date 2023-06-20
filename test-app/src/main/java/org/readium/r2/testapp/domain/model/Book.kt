@@ -33,6 +33,8 @@ data class Book(
     val rawMediaType: String,
     @ColumnInfo(name = ASSET_TYPE)
     val rawAssetType: String,
+    @ColumnInfo(name = DRM)
+    val drm: String? = null,
     @ColumnInfo(name = COVER)
     val cover: String,
 ) {
@@ -47,6 +49,7 @@ data class Book(
         progression: String? = null,
         mediaType: MediaType,
         assetType: AssetType,
+        drm: String?,
         cover: String,
     ) : this(
         id = id,
@@ -58,6 +61,7 @@ data class Book(
         progression = progression,
         rawMediaType = mediaType.toString(),
         rawAssetType = assetType.toString(),
+        drm = drm,
         cover = cover,
     )
 
@@ -85,5 +89,6 @@ data class Book(
         const val MEDIA_TYPE = "media_type"
         const val ASSET_TYPE = "asset_type"
         const val COVER = "cover"
+        const val DRM = "drm"
     }
 }

@@ -6,7 +6,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.shared.publication.ContentProtection.Scheme
+import org.readium.r2.shared.publication.protection.ContentProtection.Scheme
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry

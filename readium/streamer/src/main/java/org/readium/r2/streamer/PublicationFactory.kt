@@ -13,14 +13,15 @@ import android.content.Context
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.ContentProtection
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.shared.publication.protection.AdeptFallbackContentProtection
+import org.readium.r2.shared.publication.protection.ContentProtection
+import org.readium.r2.shared.publication.protection.LcpFallbackContentProtection
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
-import org.readium.r2.streamer.parser.FallbackContentProtection
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioParser
 import org.readium.r2.streamer.parser.epub.EpubParser
@@ -34,7 +35,7 @@ internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningE
 /**
  * Opens a Publication using a list of parsers.
  *
- * The [Streamer] is configured to use Readium's default parsers, which you can bypass using
+ * The [PublicationFactory] is configured to use Readium's default parsers, which you can bypass using
  * [ignoreDefaultParsers]. However, you can provide additional [parsers] which will take precedence
  * over the default ones. This can also be used to provide an alternative configuration of a
  * default parser.
@@ -51,18 +52,22 @@ internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningE
  *   the [Manifest], the root [Fetcher] or the list of service factories of a [Publication].
  */
 @OptIn(PdfSupport::class)
-class Streamer constructor(
+class PublicationFactory constructor(
     context: Context,
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
     contentProtections: List<ContentProtection> = emptyList(),
     private val pdfFactory: PdfDocumentFactory<*>? = null,
+    mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
     private val fetcherFactory: suspend (Asset, MediaType) -> Try<Fetcher, Publication.OpeningException>,
     private val onCreatePublication: Publication.Builder.() -> Unit = {},
 ) {
 
     private val contentProtections: List<ContentProtection> =
-        contentProtections + listOf(FallbackContentProtection())
+        contentProtections + listOf(
+            LcpFallbackContentProtection(mediaTypeRetriever),
+            AdeptFallbackContentProtection(mediaTypeRetriever)
+        )
 
     /**
      * Parses a [Publication] from the given asset.
@@ -96,35 +101,46 @@ class Streamer constructor(
      */
     suspend fun open(
         asset: Asset,
+        drmScheme: String? = null,
         credentials: String? = null,
         allowUserInteraction: Boolean,
         sender: Any? = null,
         onCreatePublication: Publication.Builder.() -> Unit = {},
         warnings: WarningLogger? = null
     ): PublicationTry<Publication> = try {
+        if (drmScheme == null) {
+            val fetcher = fetcherFactory.invoke(asset, asset.mediaType).getOrThrow()
+            val parserAsset = PublicationParser.Asset(asset.name, asset.mediaType, fetcher)
+            val publication = openThrowing(parserAsset, onCreatePublication, warnings)
+            Try.success(publication)
+        } else {
+            val protectedAsset = contentProtections
+                .lazyMapFirstNotNullOrNull {
+                    it.open(asset, credentials, allowUserInteraction, sender)
+                }?.getOrThrow()
+                ?: throw Publication.OpeningException.Forbidden()
 
-        val protectedAsset = contentProtections
-            .lazyMapFirstNotNullOrNull {
-                it.open(asset, credentials, allowUserInteraction, sender)
-            }?.getOrThrow()
+            val parserAsset = PublicationParser.Asset(
+                protectedAsset.name,
+                protectedAsset.mediaType,
+                protectedAsset.fetcher
+            )
 
-        val publicationAsset = protectedAsset?.asset
-            ?: PublicationAsset(asset.name, asset.mediaType, fetcherFactory.invoke(asset, asset.mediaType).getOrThrow())
+            val compositeOnCreatePublication: Publication.Builder.() -> Unit = {
+                protectedAsset.onCreatePublication.invoke(this)
+                onCreatePublication(this)
+            }
 
-        val compositeOnCreatePublication: Publication.Builder.() -> Unit = {
-            protectedAsset?.onCreatePublication?.invoke(this)
-            onCreatePublication(this)
+            val publication = openThrowing(parserAsset, compositeOnCreatePublication, warnings)
+
+            Try.success(publication)
         }
-
-        val publication = openThrowing(publicationAsset, compositeOnCreatePublication, warnings)
-
-        Try.success(publication)
     } catch (e: Publication.OpeningException) {
         Try.failure(e)
     }
 
     private suspend fun openThrowing(
-        publicationAsset: PublicationAsset,
+        publicationAsset: PublicationParser.Asset,
         onCreatePublication: Publication.Builder.() -> Unit = {},
         warnings: WarningLogger? = null
     ): Publication {

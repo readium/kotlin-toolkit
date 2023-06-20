@@ -29,9 +29,10 @@ import org.readium.r2.lcp.license.LicenseValidation
 import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
+import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.ContentProtection
+import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.ResourceFactory
@@ -56,6 +57,18 @@ internal class LicensesService(
         tryOr(false) {
             createLicenseContainer(file.path, mediaTypeRetriever = mediaTypeRetriever).read()
             true
+        }
+
+    override suspend fun isLcpProtected(asset: Asset): Boolean =
+        tryOr(false) {
+            when (asset) {
+                is Asset.Resource ->
+                    asset.mediaType == MediaType.LCP_LICENSE_DOCUMENT
+                is Asset.Container -> {
+                    createLicenseContainer(asset.container, asset.mediaType).read()
+                    true
+                }
+            }
         }
 
     override fun contentProtection(
