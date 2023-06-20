@@ -41,7 +41,6 @@ class AndroidTtsEngine private constructor(
     engine: TextToSpeech,
     private val settingsResolver: SettingsResolver,
     private val voiceSelector: VoiceSelector,
-    private val listener: Listener?,
     override val voices: Set<Voice>,
     initialPreferences: AndroidTtsPreferences
 ) : TtsEngine<AndroidTtsSettings, AndroidTtsPreferences,
@@ -53,7 +52,6 @@ class AndroidTtsEngine private constructor(
             context: Context,
             settingsResolver: SettingsResolver,
             voiceSelector: VoiceSelector,
-            listener: Listener?,
             initialPreferences: AndroidTtsPreferences
         ): AndroidTtsEngine? {
             val textToSpeech = initializeTextToSpeech(context)
@@ -69,7 +67,6 @@ class AndroidTtsEngine private constructor(
                 textToSpeech,
                 settingsResolver,
                 voiceSelector,
-                listener,
                 voices,
                 initialPreferences
             )
@@ -144,40 +141,59 @@ class AndroidTtsEngine private constructor(
         fun voice(language: Language?, availableVoices: Set<Voice>): Voice?
     }
 
-    class Error(code: Int) : TtsEngine.Error {
+    sealed class Error : TtsEngine.Error {
 
-        val kind: Kind =
-            Kind.getOrDefault(code)
+        /** Denotes a generic operation failure. */
+        object Unknown : Error()
+
+        /** Denotes a failure caused by an invalid request. */
+        object InvalidRequest : Error()
+
+        /** Denotes a failure caused by a network connectivity problems. */
+        object Network : Error()
+
+        /** Denotes a failure caused by network timeout. */
+        object NetworkTimeout : Error()
+
+        /** Denotes a failure caused by an unfinished download of the voice data. */
+        object NotInstalledYet : Error()
+
+        /** Denotes a failure related to the output (audio device or a file). */
+        object Output : Error()
+
+        /** Denotes a failure of a TTS service. */
+        object Service : Error()
+
+        /** Denotes a failure of a TTS engine to synthesize the given input. */
+        object Synthesis : Error()
+
+        /**
+         * Denotes the language data is missing.
+         *
+         * You can open the Android settings to install the missing data with:
+         * AndroidTtsEngine.requestInstallVoice(context)
+         */
+        data class LanguageMissingData(val language: Language) : Error()
+
+        /** Denotes the language is not supported. */
+        data class LanguageNotSupported(val language: Language) : Error()
 
         /**
          * Android's TTS error code.
          * See https://developer.android.com/reference/android/speech/tts/TextToSpeech#ERROR
          */
-        enum class Kind(val code: Int) {
-            /** Denotes a generic operation failure. */
-            Unknown(-1),
-            /** Denotes a failure caused by an invalid request. */
-            InvalidRequest(-8),
-            /** Denotes a failure caused by a network connectivity problems. */
-            Network(-6),
-            /** Denotes a failure caused by network timeout. */
-            NetworkTimeout(-7),
-            /** Denotes a failure caused by an unfinished download of the voice data. */
-            NotInstalledYet(-9),
-            /** Denotes a failure related to the output (audio device or a file). */
-            Output(-5),
-            /** Denotes a failure of a TTS service. */
-            Service(-4),
-            /** Denotes a failure of a TTS engine to synthesize the given input. */
-            Synthesis(-3);
-
-            companion object {
-
-                fun getOrDefault(key: Int): Kind =
-                    values()
-                        .firstOrNull { it.code == key }
-                        ?: Unknown
-            }
+        companion object {
+            internal fun fromNativeError(code: Int): Error =
+                when (code) {
+                    ERROR_INVALID_REQUEST -> InvalidRequest
+                    ERROR_NETWORK -> Network
+                    ERROR_NETWORK_TIMEOUT -> NetworkTimeout
+                    ERROR_NOT_INSTALLED_YET -> NotInstalledYet
+                    ERROR_OUTPUT -> Output
+                    ERROR_SERVICE -> Service
+                    ERROR_SYNTHESIS -> Synthesis
+                    else -> Unknown
+                }
         }
     }
 
@@ -203,13 +219,6 @@ class AndroidTtsEngine private constructor(
         enum class Quality {
             Lowest, Low, Normal, High, Highest
         }
-    }
-
-    interface Listener {
-
-        fun onMissingData(language: Language)
-
-        fun onLanguageNotSupported(language: Language)
     }
 
     private data class Request(
@@ -334,7 +343,7 @@ class AndroidTtsEngine private constructor(
         engine: TextToSpeech,
         request: Request
     ): Int {
-        engine.setupVoice(settings.value, request.language, voices)
+        engine.setupVoice(settings.value, request.id, request.language, voices)
         return engine.speak(request.text, QUEUE_ADD, null, request.id.value)
     }
 
@@ -362,7 +371,7 @@ class AndroidTtsEngine private constructor(
 
     private fun onReconnectionFailed() {
         val previousState = state as State.WaitingForService
-        val error = Error(Error.Kind.Service.code)
+        val error = Error.Service
         state = State.Error(error)
 
         for (request in previousState.pendingRequests) {
@@ -391,6 +400,7 @@ class AndroidTtsEngine private constructor(
 
     private fun TextToSpeech.setupVoice(
         settings: AndroidTtsSettings,
+        id: TtsEngine.RequestId,
         utteranceLanguage: Language?,
         voices: Set<Voice>
     ) {
@@ -399,8 +409,8 @@ class AndroidTtsEngine private constructor(
             ?: settings.language
 
         when (isLanguageAvailable(language.locale)) {
-            LANG_MISSING_DATA -> listener?.onMissingData(language)
-            LANG_NOT_SUPPORTED -> listener?.onLanguageNotSupported(language)
+            LANG_MISSING_DATA -> utteranceListener?.onError(id, Error.LanguageMissingData(language))
+            LANG_NOT_SUPPORTED -> utteranceListener?.onError(id, Error.LanguageNotSupported(language))
         }
 
         val preferredVoiceWithRegion =
@@ -427,7 +437,7 @@ class AndroidTtsEngine private constructor(
     private fun TextToSpeech.voiceForName(name: String) =
         voices.firstOrNull { it.name == name }
 
-    class UtteranceListener(
+    private class UtteranceListener(
         private val listener: TtsEngine.Listener<Error>?
     ) : UtteranceProgressListener() {
         override fun onStart(utteranceId: String) {
@@ -457,7 +467,7 @@ class AndroidTtsEngine private constructor(
         override fun onError(utteranceId: String, errorCode: Int) {
             listener?.onError(
                 TtsEngine.RequestId(utteranceId),
-                Error(errorCode)
+                Error.fromNativeError(errorCode)
             )
         }
 

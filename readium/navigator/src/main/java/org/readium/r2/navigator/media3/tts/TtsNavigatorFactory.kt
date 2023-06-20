@@ -40,15 +40,13 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
             tokenizerFactory: (language: Language?) -> TextTokenizer = defaultTokenizerFactory,
             metadataProvider: MediaMetadataProvider = defaultMediaMetadataProvider,
             defaults: AndroidTtsDefaults = AndroidTtsDefaults(),
-            voiceSelector: (Language?, Set<AndroidTtsEngine.Voice>) -> AndroidTtsEngine.Voice? = defaultVoiceSelector,
-            listener: AndroidTtsEngine.Listener? = null
+            voiceSelector: (Language?, Set<AndroidTtsEngine.Voice>) -> AndroidTtsEngine.Voice? = defaultVoiceSelector
         ): AndroidTtsNavigatorFactory? {
 
             val engineProvider = AndroidTtsEngineProvider(
                 context = application,
                 defaults = defaults,
-                voiceSelector = voiceSelector,
-                listener = listener
+                voiceSelector = voiceSelector
             )
 
             return createNavigatorFactory(
@@ -132,7 +130,6 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
         )
     }
 
-    fun createTtsPreferencesEditor(
-        currentPreferences: P,
-    ): E = ttsEngineProvider.createPreferencesEditor(publication, currentPreferences)
+    fun createPreferencesEditor(preferences: P): E =
+        ttsEngineProvider.createPreferencesEditor(publication, preferences)
 }
