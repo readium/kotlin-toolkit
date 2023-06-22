@@ -49,7 +49,7 @@ class HttpResource(
 
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = withContext(Dispatchers.IO) {
         try {
-            stream(range?.first).map { stream ->
+            stream(range?.first.takeUnless { it == 0L }).map { stream ->
                 if (range != null) {
                     stream.read(range.count().toLong())
                 } else {
@@ -101,19 +101,15 @@ class HttpResource(
         }
 
         return client.stream(request)
-            .fold(
-                { response ->
-                    if (response.response.statusCode == 206) {
-                        Try.success(response)
-                    } else {
-                        val exception = Exception("Server seems not to support range requests.")
-                        Try.failure(HttpException.wrap(exception))
-                    }
-                },
-                { exception ->
-                    Try.failure(exception)
+            .flatMap { response ->
+                if (from != null && response.response.statusCode != 206
+                ) {
+                    val exception = Exception("Server seems not to support range requests.")
+                    Try.failure(HttpException.wrap(exception))
+                } else {
+                    Try.success(response)
                 }
-            )
+            }
             .map { CountingInputStream(it.body) }
             .mapFailure { Resource.Exception.wrapHttp(it) }
             .onSuccess {
