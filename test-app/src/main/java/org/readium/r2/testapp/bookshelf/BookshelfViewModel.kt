@@ -68,10 +68,18 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             app.bookRepository.deleteBook(book)
         }
 
-    fun addPublicationFromUri(uri: Uri) =
+    fun importPublicationFromUri(uri: Uri) =
         viewModelScope.launch {
             app.bookRepository
-                .addContentBook(uri)
+                .importBook(uri)
+                .exceptionOrNull()
+                .let { sendImportFeedback(it) }
+        }
+
+    fun addSharedStoragePublication(uri: Uri) =
+        viewModelScope.launch {
+            app.bookRepository
+                .addSharedStorageBook(Url(uri.toString())!!)
                 .exceptionOrNull()
                 .let { sendImportFeedback(it) }
         }

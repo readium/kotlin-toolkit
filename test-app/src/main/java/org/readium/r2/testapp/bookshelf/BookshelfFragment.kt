@@ -6,6 +6,7 @@
 
 package org.readium.r2.testapp.bookshelf
 
+import android.content.Intent
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
@@ -34,7 +35,8 @@ class BookshelfFragment : Fragment() {
 
     private val bookshelfViewModel: BookshelfViewModel by activityViewModels()
     private lateinit var bookshelfAdapter: BookshelfAdapter
-    private lateinit var documentPickerLauncher: ActivityResultLauncher<String>
+    private lateinit var appStoragePickerLauncher: ActivityResultLauncher<String>
+    private lateinit var sharedStoragePickerLauncher: ActivityResultLauncher<Array<String>>
     private var binding: FragmentBookshelfBinding by viewLifecycle()
 
     override fun onCreateView(
@@ -56,11 +58,21 @@ class BookshelfFragment : Fragment() {
             onBookLongClick = { book -> confirmDeleteBook(book) }
         )
 
-        documentPickerLauncher =
+        appStoragePickerLauncher =
             registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
                 uri?.let {
                     binding.bookshelfProgressBar.visibility = View.VISIBLE
-                    bookshelfViewModel.addPublicationFromUri(it)
+                    bookshelfViewModel.importPublicationFromUri(it)
+                }
+            }
+
+        sharedStoragePickerLauncher =
+            registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
+                uri?.let {
+                    val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    requireContext().contentResolver.takePersistableUriPermission(uri, takeFlags)
+                    binding.bookshelfProgressBar.visibility = View.VISIBLE
+                    bookshelfViewModel.addSharedStoragePublication(it)
                 }
             }
 
@@ -88,29 +100,32 @@ class BookshelfFragment : Fragment() {
                     dialog.cancel()
                 }
                 .setPositiveButton(getString(R.string.ok)) { _, _ ->
-                    if (selected == 0) {
-                        documentPickerLauncher.launch("*/*")
-                    } else {
-                        val urlEditText = EditText(requireContext())
-                        val urlDialog = MaterialAlertDialogBuilder(requireContext())
-                            .setTitle(getString(R.string.add_book))
-                            .setMessage(R.string.enter_url)
-                            .setView(urlEditText)
-                            .setNegativeButton(R.string.cancel) { dialog, _ ->
-                                dialog.cancel()
-                            }
-                            .setPositiveButton(getString(R.string.ok), null)
-                            .show()
-                        urlDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                            val url = Url(urlEditText.text.toString())
-                            if (url == null || !URLUtil.isValidUrl(urlEditText.text.toString())) {
-                                urlEditText.error = getString(R.string.invalid_url)
-                                return@setOnClickListener
-                            }
 
-                            binding.bookshelfProgressBar.visibility = View.VISIBLE
-                            bookshelfViewModel.addRemotePublication(url)
-                            urlDialog.dismiss()
+                    when (selected) {
+                        0 -> appStoragePickerLauncher.launch("*/*")
+                        1 -> sharedStoragePickerLauncher.launch(arrayOf("*/*"))
+                        else -> {
+                            val urlEditText = EditText(requireContext())
+                            val urlDialog = MaterialAlertDialogBuilder(requireContext())
+                                .setTitle(getString(R.string.add_book))
+                                .setMessage(R.string.enter_url)
+                                .setView(urlEditText)
+                                .setNegativeButton(R.string.cancel) { dialog, _ ->
+                                    dialog.cancel()
+                                }
+                                .setPositiveButton(getString(R.string.ok), null)
+                                .show()
+                            urlDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                                val url = Url(urlEditText.text.toString())
+                                if (url == null || !URLUtil.isValidUrl(urlEditText.text.toString())) {
+                                    urlEditText.error = getString(R.string.invalid_url)
+                                    return@setOnClickListener
+                                }
+
+                                binding.bookshelfProgressBar.visibility = View.VISIBLE
+                                bookshelfViewModel.addRemotePublication(url)
+                                urlDialog.dismiss()
+                            }
                         }
                     }
                 }

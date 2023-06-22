@@ -162,7 +162,7 @@ class BookRepository(
         ) : ImportException()
     }
 
-    suspend fun addContentBook(
+    suspend fun importBook(
         contentUri: Uri
     ): Try<Unit, ImportException> =
         contentUri.copyToTempFile(context, storageDir)
@@ -177,6 +177,22 @@ class BookRepository(
                 ImportException.UnableToOpenPublication(Publication.OpeningException.UnsupportedFormat())
             )
         return addBook(url, asset)
+    }
+
+    suspend fun addSharedStorageBook(
+        url: Url,
+        coverUrl: String? = null,
+    ): Try<Unit, ImportException> {
+        val asset = assetRetriever.ofUrl(url)
+            ?: return Try.failure(
+                ImportException.UnableToOpenPublication(
+                    Publication.OpeningException.UnsupportedFormat(
+                        Exception("Unsupported media type")
+                    )
+                )
+            )
+
+        return addBook(url, asset, coverUrl)
     }
 
     suspend fun addLocalBook(
