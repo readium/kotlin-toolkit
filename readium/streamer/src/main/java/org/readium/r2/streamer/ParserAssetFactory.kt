@@ -1,3 +1,9 @@
+/*
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.streamer
 
 import java.io.File
@@ -5,7 +11,6 @@ import java.nio.charset.Charset
 import org.json.JSONObject
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.fetcher.ContainerFetcher
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.RoutingFetcher
 import org.readium.r2.shared.fetcher.SingleResourceFetcher
 import org.readium.r2.shared.fetcher.withLink
@@ -20,44 +25,49 @@ import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpFetcher
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.streamer.parser.PublicationParser
 
-class FetcherFactory(
+internal class ParserAssetFactory(
     private val httpClient: HttpClient,
     private val mediaTypeRetriever: MediaTypeRetriever,
 ) {
 
-    suspend fun createFetcher(
+    suspend fun createParserAsset(
         asset: Asset,
-        mediaType: MediaType,
-    ): Try<Fetcher, Publication.OpeningException> {
+    ): Try<PublicationParser.Asset, Publication.OpeningException> {
         return when (asset) {
             is Asset.Container ->
-                Try.success(createFetcherForContainer(asset.container))
+                Try.success(createFetcherForContainer(asset.container, asset.mediaType, asset.name))
             is Asset.Resource ->
-                createFetcherForResource(asset.resource, mediaType, asset.name)
+                createFetcherForResource(asset.resource, asset.mediaType, asset.name)
         }
     }
 
     private fun createFetcherForContainer(
-        container: Container
-    ): Fetcher {
-        return ContainerFetcher(container, mediaTypeRetriever)
+        container: Container,
+        mediaType: MediaType,
+        assetName: String
+    ): PublicationParser.Asset {
+        val fetcher = ContainerFetcher(container, mediaTypeRetriever)
+        return PublicationParser.Asset(assetName, mediaType, fetcher)
     }
 
     private suspend fun createFetcherForResource(
         resource: Resource,
         mediaType: MediaType,
         assetName: String
-    ): Try<Fetcher, Publication.OpeningException> =
+    ): Try<PublicationParser.Asset, Publication.OpeningException> =
         if (mediaType.isRwpm) {
-            createFetcherForManifest(resource)
+            createFetcherForManifest(resource, mediaType, assetName)
         } else {
             createFetcherForContent(resource, mediaType, assetName)
         }
 
     private suspend fun createFetcherForManifest(
-        resource: Resource
-    ): Try<Fetcher, Publication.OpeningException> {
+        resource: Resource,
+        mediaType: MediaType,
+        assetName: String
+    ): Try<PublicationParser.Asset, Publication.OpeningException> {
         val manifest = resource.readAsRwpm(packaged = false)
             .mapFailure { Publication.OpeningException.ParsingFailed(it) }
             .getOrElse { return Try.failure(it) }
@@ -76,18 +86,21 @@ class FetcherFactory(
                 remote = HttpFetcher(httpClient, baseUrl)
             )
 
-        return Try.success(fetcher)
+        return Try.success(
+            PublicationParser.Asset(assetName, mediaType, fetcher)
+        )
     }
 
     private suspend fun createFetcherForContent(
         resource: Resource,
         mediaType: MediaType,
         assetName: String
-    ): Try<Fetcher, Publication.OpeningException> {
+    ): Try<PublicationParser.Asset, Publication.OpeningException> {
         val link = Link(href = "/$assetName", type = mediaType.toString())
+        val fetcher = SingleResourceFetcher(resource.withLink(link))
 
         return Try.success(
-            SingleResourceFetcher(resource.withLink(link))
+            PublicationParser.Asset(assetName, mediaType, fetcher)
         )
     }
 

@@ -16,15 +16,17 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.readium.r2.shared.fetcher.ContainerFetcher
-import org.readium.r2.shared.fetcher.FileFetcher
+import org.readium.r2.shared.fetcher.SingleResourceFetcher
+import org.readium.r2.shared.fetcher.withLink
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.resource.DefaultArchiveFactory
 import org.readium.r2.shared.resource.FileResource
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.streamer.parseBlocking
+import org.readium.r2.streamer.parser.PublicationParser
 
 class ImageParserTest {
 
@@ -36,14 +38,15 @@ class ImageParserTest {
         val resource = FileResource(file)
         val archive = DefaultArchiveFactory().create(resource, password = null).getOrThrow()
         val fetcher = ContainerFetcher(archive, MediaTypeRetriever())
-        PublicationAsset(file.name, MediaType.CBZ, fetcher)
+        PublicationParser.Asset(file.name, MediaType.CBZ, fetcher)
     }
 
-    private val jpgAsset = run {
+    private val jpgAsset = runBlocking {
         val path = pathForResource("futuristic_tales.jpg")
         val file = File(path)
-        val fetcher = FileFetcher("/image.jpg", file, MediaTypeRetriever())
-        PublicationAsset(file.name, MediaType.JPEG, fetcher)
+        val resource = FileResource(file).withLink(Link(href = "/image.jpg", type = "image/jpeg"))
+        val fetcher = SingleResourceFetcher(resource)
+        PublicationParser.Asset(file.name, MediaType.JPEG, fetcher)
     }
     private fun pathForResource(resource: String): String {
         val path = ImageParserTest::class.java.getResource(resource)?.path

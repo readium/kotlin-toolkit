@@ -25,7 +25,6 @@ import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpResourceFactory
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.streamer.FetcherFactory
 import org.readium.r2.streamer.PublicationFactory
 
 /**
@@ -92,8 +91,6 @@ class Readium(context: Context) {
         contentProtections = contentProtections,
         // Only required if you want to support PDF files using the PDFium adapter.
         pdfFactory = PdfiumDocumentFactory(context),
-        // Build a composite archive factory to enable remote zip reading.
-        fetcherFactory = FetcherFactory(httpClient, mediaTypeRetriever)::createFetcher
     )
 }
 

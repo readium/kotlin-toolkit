@@ -40,6 +40,7 @@ class LcpFallbackContentProtection(
 
     override suspend fun open(
         asset: Asset,
+        drmScheme: String,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
@@ -73,14 +74,18 @@ class LcpFallbackContentProtection(
             return false
         }
 
+        if (container.entry("/META-INF/license.lcpl").readAsJsonOrNull() != null) {
+            return true
+        }
+
         val encryptionXml = container.entry("/META-INF/encryption.xml").readAsXmlOrNull()
             ?: return false
 
         return encryptionXml
             .get("EncryptedData", EpubEncryption.ENC)
             .flatMap { it.get("KeyInfo", EpubEncryption.SIG) }
-            .flatMap { it.get("RetrievalMethod", "license.lcpl#/encryption/content_key") }
-            .isNotEmpty()
+            .flatMap { it.get("RetrievalMethod", EpubEncryption.SIG) }
+            .any { it.getAttr("URI") == "license.lcpl#/encryption/content_key" }
     }
 }
 

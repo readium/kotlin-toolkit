@@ -38,6 +38,7 @@ class AdeptFallbackContentProtection(
 
     override suspend fun open(
         asset: Asset,
+        drmScheme: String,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?

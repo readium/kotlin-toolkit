@@ -32,7 +32,7 @@ class FileFetcher(
     constructor(href: String, file: File, mediaTypeRetriever: MediaTypeRetriever) :
         this(mapOf(href to file), mediaTypeRetriever)
 
-    private val openedResources: MutableList<WeakReference<FileFetcher.FileResource>> = LinkedList()
+    private val openedResources: MutableList<WeakReference<FileResource>> = LinkedList()
 
     override suspend fun links(): List<Link> =
         paths.toSortedMap().flatMap { (href, file) ->
@@ -59,7 +59,7 @@ class FileFetcher(
                 val resourceFile = File(itemFile, linkHref.removePrefix(itemHref))
                 // Make sure that the requested resource is [path] or one of its descendant.
                 if (resourceFile.canonicalPath.startsWith(itemFile.canonicalPath)) {
-                    val resource = FileFetcher.FileResource(link, resourceFile)
+                    val resource = FileResource(link, resourceFile)
                     openedResources.add(WeakReference(resource))
                     return resource
                 }
@@ -78,8 +78,8 @@ class FileFetcher(
 
         companion object {
 
-            operator fun invoke(link: Link, file: File): FileFetcher.FileResource =
-                FileFetcher.FileResource(link, org.readium.r2.shared.resource.FileResource(file))
+            operator fun invoke(link: Link, file: File): FileResource =
+                FileResource(link, org.readium.r2.shared.resource.FileResource(file))
         }
 
         override suspend fun link(): Link = link
