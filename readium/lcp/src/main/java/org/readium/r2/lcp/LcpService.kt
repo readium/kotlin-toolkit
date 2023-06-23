@@ -35,6 +35,7 @@ import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.DefaultArchiveFactory
 import org.readium.r2.shared.resource.FileResourceFactory
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -89,6 +90,7 @@ interface LcpService {
      */
     suspend fun retrieveLicense(
         file: File,
+        mediaType: MediaType,
         authentication: LcpAuthenticating = LcpDialogAuthentication(),
         allowUserInteraction: Boolean,
         sender: Any? = null
@@ -96,7 +98,7 @@ interface LcpService {
 
     /**
      * Opens the LCP license of a protected publication, to access its DRM metadata and decipher
-     * its content. As the updated license cannot be stored through a [Fetcher],
+     * its content. As the updated license cannot be stored through a [Asset],
      * you'll get an exception if the license points to a LSD server that cannot be reached,
      * for instance because no Internet gateway is available.
      *
@@ -108,17 +110,8 @@ interface LcpService {
      *        presenting dialogs with [LcpAuthenticating].
      */
     suspend fun retrieveLicense(
-        fetcher: Fetcher,
-        mediaType: MediaType,
+        asset: Asset,
         authentication: LcpAuthenticating = LcpDialogAuthentication(),
-        allowUserInteraction: Boolean,
-        sender: Any? = null
-    ): Try<LcpLicense, LcpException>
-
-    suspend fun retrieveLicense(
-        container: Container,
-        mediaType: MediaType,
-        authentication: LcpAuthenticating,
         allowUserInteraction: Boolean,
         sender: Any?
     ): Try<LcpLicense, LcpException>
@@ -190,7 +183,7 @@ interface LcpService {
         fun create(context: Context): LcpService? = invoke(context)
     }
 
-    @Deprecated("Use `acquirePublication()` with coroutines instead", ReplaceWith("acquirePublication(lcpl)"))
+    @Deprecated("Use `acquirePublication()` with coroutines instead", ReplaceWith("acquirePublication(lcpl)"), level = DeprecationLevel.ERROR)
     @DelicateCoroutinesApi
     fun importPublication(
         lcpl: ByteArray,
@@ -204,35 +197,20 @@ interface LcpService {
         }
     }
 
-    @Deprecated("Use `retrieveLicense()` with coroutines instead", ReplaceWith("retrieveLicense(File(publication), authentication, allowUserInteraction = true)"))
+    @Deprecated("Use `retrieveLicense()` with coroutines instead", ReplaceWith("retrieveLicense(File(publication), authentication, allowUserInteraction = true)"), level = DeprecationLevel.ERROR)
     @DelicateCoroutinesApi
     fun retrieveLicense(
         publication: String,
         authentication: LcpAuthenticating?,
         completion: (LcpLicense?, LcpException?) -> Unit
     ) {
-        GlobalScope.launch {
-            val result =
-                try {
-                    retrieveLicense(File(publication), authentication ?: LcpDialogAuthentication(), allowUserInteraction = true)
-                } catch (e: CancellationException) {
-                    null
-                }
-
-            if (result == null) {
-                completion(null, null)
-            } else {
-                result
-                    .onSuccess { completion(it, null) }
-                    .onFailure { completion(null, it) }
-            }
-        }
+       TODO()
     }
 }
 
-@Deprecated("Renamed to `LcpService()`", replaceWith = ReplaceWith("LcpService(context)"))
+@Deprecated("Renamed to `LcpService()`", replaceWith = ReplaceWith("LcpService(context)"), level = DeprecationLevel.ERROR)
 fun R2MakeLCPService(context: Context): LcpService =
     LcpService(context) ?: throw Exception("liblcp is missing on the classpath")
 
-@Deprecated("Renamed to `LcpService.AcquiredPublication`", replaceWith = ReplaceWith("LcpService.AcquiredPublication"))
+@Deprecated("Renamed to `LcpService.AcquiredPublication`", replaceWith = ReplaceWith("LcpService.AcquiredPublication"), level = DeprecationLevel.ERROR)
 typealias LCPImportedPublication = LcpService.AcquiredPublication

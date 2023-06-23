@@ -9,6 +9,7 @@ package org.readium.r2.shared.util.archive.channel
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.Container
@@ -27,7 +28,7 @@ import org.readium.r2.shared.util.io.CountingInputStream
 internal class ChannelZip(
     private val archive: ZipFile,
     private val fetchName: suspend () -> ResourceTry<String?>
-) : Container {
+) : ZipContainer {
 
     private inner class FailureEntry(
         override val path: String
@@ -38,7 +39,7 @@ internal class ChannelZip(
 
     private inner class Entry(private val entry: ZipArchiveEntry) : ZipContainer.Entry {
 
-        override val path: String get() = entry.name
+        override val path: String get() = entry.name.addPrefix("/")
 
         override suspend fun name(): ResourceTry<String?> =
             ResourceTry.success(File(path).name)
@@ -124,7 +125,7 @@ internal class ChannelZip(
         archive.entries.toList().filterNot { it.isDirectory }.mapNotNull { Entry(it) }
 
     override suspend fun entry(path: String): Container.Entry {
-        return archive.getEntry(path)
+        return archive.getEntry(path.removePrefix("/"))
             ?.takeUnless { it.isDirectory }
             ?.let { Entry(it) }
             ?: FailureEntry(path)

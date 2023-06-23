@@ -31,10 +31,8 @@ import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.extensions.tryOr
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.resource.ArchiveFactory
-import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -55,7 +53,8 @@ internal class LicensesService(
 
     override suspend fun isLcpProtected(file: File): Boolean =
         tryOr(false) {
-            createLicenseContainer(file.path, mediaTypeRetriever = mediaTypeRetriever).read()
+            val mediaType = mediaTypeRetriever.ofFile(file) ?: return false
+            createLicenseContainer(file, mediaType).read()
             true
         }
 
@@ -87,12 +86,13 @@ internal class LicensesService(
 
     override suspend fun retrieveLicense(
         file: File,
+        mediaType: MediaType,
         authentication: LcpAuthenticating,
         allowUserInteraction: Boolean,
         sender: Any?
     ): Try<LcpLicense, LcpException> =
         try {
-            val container = createLicenseContainer(file.path, mediaTypeRetriever = mediaTypeRetriever)
+            val container = createLicenseContainer(file, mediaType)
             val license = retrieveLicense(container, authentication, allowUserInteraction, true, sender)
             Try.success(license)
         } catch (e: Exception) {
@@ -100,29 +100,13 @@ internal class LicensesService(
         }
 
     override suspend fun retrieveLicense(
-        fetcher: Fetcher,
-        mediaType: MediaType,
+        asset: Asset,
         authentication: LcpAuthenticating,
         allowUserInteraction: Boolean,
         sender: Any?
     ): Try<LcpLicense, LcpException> =
         try {
-            val container = createLicenseContainer(fetcher, mediaType)
-            val license = retrieveLicense(container, authentication, allowUserInteraction, false, sender)
-            Try.success(license)
-        } catch (e: Exception) {
-            Try.failure(LcpException.wrap(e))
-        }
-
-    override suspend fun retrieveLicense(
-        container: Container,
-        mediaType: MediaType,
-        authentication: LcpAuthenticating,
-        allowUserInteraction: Boolean,
-        sender: Any?
-    ): Try<LcpLicense, LcpException> =
-        try {
-            val licenseContainer = createLicenseContainer(container, mediaType)
+            val licenseContainer = createLicenseContainer(asset)
             val license = retrieveLicense(licenseContainer, authentication, allowUserInteraction, false, sender)
             Try.success(license)
         } catch (e: Exception) {
@@ -248,7 +232,7 @@ internal class LicensesService(
             ?: MediaType.EPUB
 
         // Saves the License Document into the downloaded publication
-        val container = createLicenseContainer(destination.path, mediaType)
+        val container = createLicenseContainer(destination, mediaType)
         container.write(license)
 
         return LcpService.AcquiredPublication(

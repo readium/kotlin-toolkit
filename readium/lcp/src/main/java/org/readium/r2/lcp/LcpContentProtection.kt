@@ -6,7 +6,6 @@
 
 package org.readium.r2.lcp
 
-import java.io.File
 import org.readium.r2.lcp.auth.LcpDumbAuthentication
 import org.readium.r2.lcp.auth.LcpPassphraseAuthentication
 import org.readium.r2.lcp.license.model.LicenseDocument
@@ -21,8 +20,6 @@ import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 internal class LcpContentProtection(
@@ -48,6 +45,10 @@ internal class LcpContentProtection(
         allowUserInteraction: Boolean,
         sender: Any?
     ): Try<ContentProtection.Asset, Publication.OpeningException>? {
+        if (drmScheme != scheme.uri) {
+            return null
+        }
+
         return when (asset) {
             is Asset.Container -> openPublication(asset, credentials, allowUserInteraction, sender)
             is Asset.Resource -> openLicense(asset, credentials, allowUserInteraction, sender)
@@ -59,37 +60,28 @@ internal class LcpContentProtection(
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
-    ): Try<ContentProtection.Asset, Publication.OpeningException>? {
-        val license = retrieveLicense(asset, credentials, allowUserInteraction, sender)
-            ?: return null
-
-        return createProtectedAsset(asset, license)
-    }
-
-    /* Returns null if the publication is not protected by LCP. */
-    private suspend fun retrieveLicense(
-        asset: Asset,
-        credentials: String?,
-        allowUserInteraction: Boolean,
-        sender: Any?
-    ): Try<LcpLicense, LcpException>? {
-
+    ): Try<ContentProtection.Asset, Publication.OpeningException> {
         val authentication = credentials
             ?.let { LcpPassphraseAuthentication(it, fallback = this.authentication) }
             ?: this.authentication
 
-        val license = when (asset) {
-            is Asset.Resource ->
-                asset.resource.file?.let { licenseFile ->
-                    lcpService.retrieveLicense(licenseFile, authentication, allowUserInteraction, sender)
-                }
-            is Asset.Container ->
-                lcpService.retrieveLicense(asset.container, asset.mediaType, authentication, allowUserInteraction, sender)
-        }
+        val license = retrieveLicense(asset, authentication, allowUserInteraction, sender)
+        return createProtectedAsset(asset, license)
+    }
 
-        return license.takeUnless { result ->
-            result is Try.Failure<*, *> && result.exception is LcpException.Container
-        }
+    private suspend fun retrieveLicense(
+        asset: Asset,
+        authentication: LcpAuthenticating,
+        allowUserInteraction: Boolean,
+        sender: Any?
+    ): Try<LcpLicense, LcpException> {
+        val file = (asset as? Asset.Resource)?.resource?.file
+            ?: (asset as? Asset.Container)?.container?.file
+
+        return file
+            // This is less restrictive with regard to network availability.
+            ?.let { lcpService.retrieveLicense(it, asset.mediaType, authentication,  allowUserInteraction, sender) }
+            ?:  lcpService.retrieveLicense(asset, authentication, allowUserInteraction, sender)
     }
 
     private fun createProtectedAsset(
@@ -117,38 +109,29 @@ internal class LcpContentProtection(
     }
 
     private suspend fun openLicense(
-        asset: Asset.Resource,
+        licenseAsset: Asset.Resource,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
-    ): Try<ContentProtection.Asset, Publication.OpeningException>? {
-        val assetFile = asset.resource.file
-
-        if (assetFile == null || asset.mediaType != MediaType.LCP_LICENSE_DOCUMENT) {
-            return null
-        }
-
+    ): Try<ContentProtection.Asset, Publication.OpeningException> {
         val publicationAsset = try {
-            remoteAssetForLicenseThrowing(assetFile)
+            assetForRemotePublication(licenseAsset)
         } catch (e: Exception) {
             // FIXME: random choice of exception
             val exception = Publication.OpeningException.ParsingFailed(LcpException.wrap(e))
             return Try.failure(exception)
         }
 
-        val license = retrieveLicense(asset, credentials, allowUserInteraction, sender)
-            ?: return null
-
-        return createProtectedAsset(publicationAsset, license)
+        return openPublication(publicationAsset, credentials, allowUserInteraction, sender)
     }
 
-    private suspend fun remoteAssetForLicenseThrowing(licenseFile: File): Asset.Container {
+    private suspend fun assetForRemotePublication(licenseAsset: Asset.Resource): Asset.Container {
         // Update the license file to get a fresh publication URL.
-        val license = lcpService.retrieveLicense(licenseFile, LcpDumbAuthentication(), false)
+        val license = retrieveLicense(licenseAsset, LcpDumbAuthentication(), false, null)
             .getOrNull()
 
         val licenseDoc = license?.license
-            ?: LicenseDocument(licenseFile.readBytes())
+            ?: LicenseDocument(licenseAsset.resource.read().getOrThrow())
 
         val link = checkNotNull(licenseDoc.link(LicenseDocument.Rel.publication))
         val url = try {
@@ -158,10 +141,10 @@ internal class LcpContentProtection(
         }
 
         val resource = resourceFactory.create(url)
-            .getOrElse { throw it }
+            .getOrThrow()
 
         val container = archiveFactory.create(resource, password = null)
-            .getOrElse { throw it }
+            .getOrThrow()
 
         return Asset.Container(
             url.filename,

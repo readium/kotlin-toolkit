@@ -129,7 +129,7 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         archive.entries().toList().filterNot { it.isDirectory }.mapNotNull { Entry(it) }
 
     override suspend fun entry(path: String): Container.Entry {
-        return archive.getEntry(path)
+        return archive.getEntry(path.removePrefix("/"))
             ?.let { Entry(it) }
             ?: FailureEntry(path)
     }
