@@ -58,14 +58,13 @@ internal class ParserAssetFactory(
         assetName: String
     ): Try<PublicationParser.Asset, Publication.OpeningException> =
         if (mediaType.isRwpm) {
-            createFetcherForManifest(resource, mediaType, assetName)
+            createFetcherForManifest(resource, assetName)
         } else {
             createFetcherForContent(resource, mediaType, assetName)
         }
 
     private suspend fun createFetcherForManifest(
         resource: Resource,
-        mediaType: MediaType,
         assetName: String
     ): Try<PublicationParser.Asset, Publication.OpeningException> {
         val manifest = resource.readAsRwpm(packaged = false)
@@ -87,7 +86,7 @@ internal class ParserAssetFactory(
             )
 
         return Try.success(
-            PublicationParser.Asset(assetName, mediaType, fetcher)
+            PublicationParser.Asset(assetName, MediaType.READIUM_WEBPUB, fetcher)
         )
     }
 

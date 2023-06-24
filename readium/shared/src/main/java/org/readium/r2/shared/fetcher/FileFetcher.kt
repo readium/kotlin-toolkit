@@ -43,7 +43,7 @@ class FileFetcher(
                     } else {
                         Link(
                             href = File(href, it.canonicalPath.removePrefix(file.canonicalPath)).canonicalPath,
-                            type = mediaTypeRetriever.ofFile(file, fileExtension = it.extension)?.toString()
+                            type = mediaTypeRetriever.retrieve(file, fileExtension = it.extension)?.toString()
                         )
                     }
                 }

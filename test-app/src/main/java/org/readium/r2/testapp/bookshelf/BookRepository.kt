@@ -24,7 +24,6 @@ import kotlinx.coroutines.withContext
 import org.joda.time.DateTime
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.shared.asset.Asset
-import org.readium.r2.shared.asset.AssetFactory
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.asset.AssetType
 import org.readium.r2.shared.extensions.tryOrLog
@@ -54,7 +53,6 @@ class BookRepository(
     private val publicationFactory: PublicationFactory,
     private val assetRetriever: AssetRetriever,
     private val protectionRetriever: ProtectionRetriever,
-    private val assetFactory: AssetFactory
 ) {
     private val coverDir: File =
         File(storageDir, "covers/")
@@ -172,7 +170,7 @@ class BookRepository(
     suspend fun addRemoteBook(
         url: Url
     ): Try<Unit, ImportException> {
-        val asset = assetRetriever.ofUrl(url, fileExtension = url.extension)
+        val asset = assetRetriever.retrieve(url, fileExtension = url.extension)
             ?: return Try.failure(
                 ImportException.UnableToOpenPublication(Publication.OpeningException.UnsupportedFormat())
             )
@@ -183,7 +181,7 @@ class BookRepository(
         url: Url,
         coverUrl: String? = null,
     ): Try<Unit, ImportException> {
-        val asset = assetRetriever.ofUrl(url)
+        val asset = assetRetriever.retrieve(url)
             ?: return Try.failure(
                 ImportException.UnableToOpenPublication(
                     Publication.OpeningException.UnsupportedFormat(
@@ -199,7 +197,7 @@ class BookRepository(
         tempFile: File,
         coverUrl: String? = null,
     ): Try<Unit, ImportException> {
-        val sourceAsset = assetRetriever.ofFile(tempFile)
+        val sourceAsset = assetRetriever.retrieve(tempFile)
             ?: return Try.failure(
                 ImportException.UnableToOpenPublication(Publication.OpeningException.UnsupportedFormat())
             )
@@ -211,13 +209,13 @@ class BookRepository(
                 lcpService
                     .flatMap {
                         sourceAsset.close()
-                        //FIXME: Zipfile duplicate entry with All's Well that Ends well
+                        // FIXME: Zipfile duplicate entry with All's Well that Ends well
                         it.acquirePublication(tempFile)
                     }
                     .fold(
                         {
                             val file = it.localFile
-                            val asset = assetRetriever.ofFile(file, fileExtension = File(it.suggestedFilename).extension)
+                            val asset = assetRetriever.retrieve(file, fileExtension = File(it.suggestedFilename).extension)
                             file to asset
                         },
                         {
@@ -246,7 +244,7 @@ class BookRepository(
             return Try.failure(ImportException.IOException)
         }
 
-        val libraryAsset = assetFactory.createAsset(
+        val libraryAsset = assetRetriever.retrieve(
             libraryUrl,
             publicationTempAsset.mediaType,
             publicationTempAsset.assetType

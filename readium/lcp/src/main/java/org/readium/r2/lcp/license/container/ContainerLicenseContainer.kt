@@ -10,6 +10,7 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.Resource
 
 /**
  * Access to a License Document stored in a read-only ZIP archive.
@@ -20,15 +21,16 @@ internal class ContainerLicenseContainer(
 ) : LicenseContainer {
 
     override fun read(): ByteArray {
-        val entry = try {
-            runBlocking { container.entry(entryPath) }
-        } catch (e: Exception) {
-            throw LcpException.Container.FileNotFound(entryPath)
-        }
-
         return runBlocking {
-            entry.read()
-                .mapFailure { LcpException.Container.ReadFailed(entryPath) }
+            container
+                .entry(entryPath)
+                .read()
+                .mapFailure {
+                    when (it) {
+                        is Resource.Exception.NotFound -> LcpException.Container.FileNotFound(entryPath)
+                        else -> LcpException.Container.ReadFailed(entryPath)
+                    }
+                }
                 .getOrThrow()
         }
     }

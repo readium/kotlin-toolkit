@@ -62,7 +62,6 @@ class Application : android.app.Application() {
                         readium.publicationFactory,
                         readium.assetRetriever,
                         readium.protectionRetriever,
-                        readium.assetFactory
                     )
                 }
 

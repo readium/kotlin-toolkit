@@ -56,10 +56,8 @@ interface CoverService : Publication.Service {
 
 private suspend fun Publication.coverFromManifest(): Bitmap? {
     for (link in linksWithRel("cover")) {
-        val data = get(link).read().getOrNull()
-            ?: continue
-        return BitmapFactory.decodeByteArray(data, 0, data.size)
-            ?: continue
+        val data = get(link).read().getOrNull() ?: continue
+        return BitmapFactory.decodeByteArray(data, 0, data.size) ?: continue
     }
     return null
 }

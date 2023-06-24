@@ -29,11 +29,11 @@ class AudioParser : PublicationParser {
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
 
-        if (asset.mediaType != MediaType.ZAB && !asset.mediaType.isAudio)
+        if (!asset.mediaType.matches(MediaType.ZAB) && !asset.mediaType.isAudio)
             return Try.failure(PublicationParser.Error.FormatNotSupported)
 
         val readingOrder =
-            if (asset.mediaType == MediaType.ZAB) {
+            if (asset.mediaType.matches(MediaType.ZAB)) {
                 asset.fetcher.links()
                     .filter { link -> with(File(link.href)) { lowercasedExtension in audioExtensions && !isHiddenOrThumbs } }
                     .sortedBy(Link::href)

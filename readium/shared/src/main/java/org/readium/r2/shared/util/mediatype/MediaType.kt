@@ -118,6 +118,7 @@ class MediaType(
      *
      * Non-significant parameters are also discarded.
      */
+    @Deprecated("Use MediaTypeRetriever instead", replaceWith = ReplaceWith("mediaTypeRetriever.canonicalMediaType()"), level = DeprecationLevel.ERROR)
     suspend fun canonicalMediaType(): MediaType {
         TODO()
     }

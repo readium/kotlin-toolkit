@@ -27,7 +27,6 @@ class FileResource(override val file: File) : Resource {
         }
     }
 
-
     override suspend fun name(): ResourceTry<String?> =
         ResourceTry.success(file.name)
 

@@ -11,6 +11,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.io.CountingInputStream
@@ -47,7 +48,7 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
 
     private inner class Entry(private val entry: ZipEntry) : ZipContainer.Entry {
 
-        override val path: String get() = entry.name
+        override val path: String get() = entry.name.addPrefix("/")
 
         override suspend fun name(): ResourceTry<String?> =
             ResourceTry.success(File(path).name)

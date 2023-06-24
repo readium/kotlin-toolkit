@@ -89,7 +89,7 @@ private suspend fun HttpClient.download(
                 var response = res.response
                 if (response.mediaType.matches(MediaType.BINARY)) {
                     response = response.copy(
-                        mediaType = mediaTypeRetriever.ofFile(destination) ?: response.mediaType
+                        mediaType = mediaTypeRetriever.retrieve(destination) ?: response.mediaType
                     )
                 }
                 Try.success(response)

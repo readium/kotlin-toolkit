@@ -29,11 +29,11 @@ class ImageParser : PublicationParser {
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
 
-        if (asset.mediaType != MediaType.CBZ && !asset.mediaType.isBitmap)
+        if (!asset.mediaType.matches(MediaType.CBZ) && !asset.mediaType.isBitmap)
             return Try.failure(PublicationParser.Error.FormatNotSupported)
 
         val readingOrder =
-            if (asset.mediaType == MediaType.CBZ) {
+            if (asset.mediaType.matches(MediaType.CBZ)) {
                 asset.fetcher.links()
                     .filter { !File(it.href).isHiddenOrThumbs && it.mediaType.isBitmap }
                     .sortedBy(Link::href)

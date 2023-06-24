@@ -11,7 +11,6 @@ import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.asset.AssetFactory
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.publication.protection.ProtectionRetriever
 import org.readium.r2.shared.resource.CompositeArchiveFactory
@@ -24,6 +23,7 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpResourceFactory
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.streamer.PublicationFactory
 
@@ -32,14 +32,14 @@ import org.readium.r2.streamer.PublicationFactory
  */
 class Readium(context: Context) {
 
-    val httpClient = DefaultHttpClient()
+    private val httpClient = DefaultHttpClient()
 
-    val archiveFactory = CompositeArchiveFactory(
+    private val archiveFactory = CompositeArchiveFactory(
         DefaultArchiveFactory(),
         ChannelZipArchiveFactory(httpClient)
     )
 
-    val resourceFactory = CompositeResourceFactory(
+    private val resourceFactory = CompositeResourceFactory(
         FileResourceFactory(),
         CompositeResourceFactory(
             ContentResourceFactory(context.contentResolver),
@@ -47,9 +47,9 @@ class Readium(context: Context) {
         )
     )
 
-    val containerFactory = DirectoryContainerFactory()
+    private val containerFactory = DirectoryContainerFactory()
 
-    val mediaTypeRetriever = MediaTypeRetriever(
+    private val mediaTypeRetriever = MediaTypeRetriever(
         resourceFactory,
         containerFactory,
         archiveFactory
@@ -58,7 +58,9 @@ class Readium(context: Context) {
     val assetRetriever = AssetRetriever(
         resourceFactory,
         containerFactory,
-        archiveFactory
+        archiveFactory,
+        context.contentResolver,
+        MediaType.sniffers
     )
 
     /**
@@ -69,18 +71,12 @@ class Readium(context: Context) {
         ?.let { Try.success(it) }
         ?: Try.failure(Exception("liblcp is missing on the classpath"))
 
-    val contentProtections = listOfNotNull(
+    private val contentProtections = listOfNotNull(
         lcpService.getOrNull()?.contentProtection()
     )
 
     val protectionRetriever = ProtectionRetriever(
         contentProtections
-    )
-
-    val assetFactory = AssetFactory(
-        archiveFactory,
-        resourceFactory,
-        containerFactory
     )
 
     /**

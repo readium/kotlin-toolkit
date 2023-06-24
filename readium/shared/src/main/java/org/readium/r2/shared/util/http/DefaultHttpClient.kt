@@ -18,7 +18,6 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.http.HttpRequest.Method
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.Sniffer
 import org.readium.r2.shared.util.mediatype.sniffMediaType
 import org.readium.r2.shared.util.tryRecover
 import timber.log.Timber
@@ -33,12 +32,11 @@ import timber.log.Timber
  * @param readTimeout Timeout used when reading the input stream. A null timeout is interpreted
  *        as the default value, while a timeout of zero as an infinite timeout.
  */
-class DefaultHttpClient constructor(
+class DefaultHttpClient(
     private val userAgent: String? = null,
     private val additionalHeaders: Map<String, String> = mapOf(),
     private val connectTimeout: Duration? = null,
     private val readTimeout: Duration? = null,
-    private val mediaTypeSniffers: List<Sniffer>? = null,
     var callback: Callback = object : Callback {},
 ) : HttpClient {
     companion object {

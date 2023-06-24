@@ -10,7 +10,9 @@ import org.json.JSONObject
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.fetcher.ContainerFetcher
 import org.readium.r2.shared.parser.xml.ElementNode
+import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.protection.ContentProtection.Scheme
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.resource.Container
@@ -35,7 +37,7 @@ class LcpFallbackContentProtection(
             return false
         }
 
-        return isLcp(asset.container, asset.mediaType)
+        return isLcpProtected(asset.container, asset.mediaType)
     }
 
     override suspend fun open(
@@ -49,7 +51,7 @@ class LcpFallbackContentProtection(
             return null
         }
 
-        if (!isLcp(asset.container, asset.mediaType)) {
+        if (!isLcpProtected(asset.container, asset.mediaType)) {
             return null
         }
 
@@ -65,27 +67,39 @@ class LcpFallbackContentProtection(
         return Try.success(protectedFile)
     }
 
-    private suspend fun isLcp(container: Container, mediaType: MediaType): Boolean {
-        if (container.entry("/license.lcpl").readAsJsonOrNull() != null) {
-            return true
+    private suspend fun isLcpProtected(container: Container, mediaType: MediaType): Boolean {
+        return when {
+            mediaType.matches(MediaType.READIUM_WEBPUB) -> {
+                if (container.entry("/license.lcpl").readAsJsonOrNull() != null) {
+                    return true
+                }
+
+                val manifestAsJson = container.entry("/manifest.json").readAsJsonOrNull()
+                    ?: return false
+
+                val manifest = Manifest.fromJSON(manifestAsJson)
+                    ?: return false
+
+                return manifest
+                    .readingOrder
+                    .any { it.properties.encryption?.scheme == "http://readium.org/2014/01/lcp" }
+            }
+            mediaType.matches(MediaType.EPUB) -> {
+                if (container.entry("/META-INF/license.lcpl").readAsJsonOrNull() != null) {
+                    return true
+                }
+
+                val encryptionXml = container.entry("/META-INF/encryption.xml").readAsXmlOrNull()
+                    ?: return false
+
+                return encryptionXml
+                    .get("EncryptedData", EpubEncryption.ENC)
+                    .flatMap { it.get("KeyInfo", EpubEncryption.SIG) }
+                    .flatMap { it.get("RetrievalMethod", EpubEncryption.SIG) }
+                    .any { it.getAttr("URI") == "license.lcpl#/encryption/content_key" }
+            }
+            else -> false
         }
-
-        if (!mediaType.matches(MediaType.EPUB)) {
-            return false
-        }
-
-        if (container.entry("/META-INF/license.lcpl").readAsJsonOrNull() != null) {
-            return true
-        }
-
-        val encryptionXml = container.entry("/META-INF/encryption.xml").readAsXmlOrNull()
-            ?: return false
-
-        return encryptionXml
-            .get("EncryptedData", EpubEncryption.ENC)
-            .flatMap { it.get("KeyInfo", EpubEncryption.SIG) }
-            .flatMap { it.get("RetrievalMethod", EpubEncryption.SIG) }
-            .any { it.getAttr("URI") == "license.lcpl#/encryption/content_key" }
     }
 }
 

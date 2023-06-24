@@ -11,7 +11,6 @@ package org.readium.r2.lcp
 
 import android.content.Context
 import java.io.File
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -29,13 +28,10 @@ import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.PassphrasesRepository
 import org.readium.r2.lcp.service.PassphrasesService
 import org.readium.r2.shared.asset.Asset
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.resource.ArchiveFactory
-import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.DefaultArchiveFactory
 import org.readium.r2.shared.resource.FileResourceFactory
-import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -204,7 +200,7 @@ interface LcpService {
         authentication: LcpAuthenticating?,
         completion: (LcpLicense?, LcpException?) -> Unit
     ) {
-       TODO()
+        TODO()
     }
 }
 

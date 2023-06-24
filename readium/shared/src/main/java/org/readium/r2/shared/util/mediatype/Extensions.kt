@@ -37,10 +37,10 @@ suspend fun HttpURLConnection.sniffMediaType(
 
     // TODO: The suggested filename extension, part of the HTTP header `Content-Disposition`.
 
-    val mediaTypeRetriever = MediaTypeRetrieverInternal(sniffers)
+    val mediaTypeRetriever = MediaTypeRetriever(sniffers = sniffers)
 
     return if (bytes != null) {
-        mediaTypeRetriever.of(
+        mediaTypeRetriever.doRetrieve(
             {
                 BytesSnifferContextFactory(DefaultArchiveFactory())
                     .createContext(bytes.invoke(), mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
@@ -49,7 +49,7 @@ suspend fun HttpURLConnection.sniffMediaType(
             fileExtensions = allFileExtensions
         )
     } else {
-        mediaTypeRetriever.of(mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
+        mediaTypeRetriever.retrieve(mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
     }
 }
 
@@ -73,12 +73,12 @@ suspend fun Response.sniffMediaType(
         allFileExtensions.add(0, it)
     }
 
-    val mediaTypeRetriever = MediaTypeRetrieverInternal(sniffers)
+    val mediaTypeRetriever = MediaTypeRetriever(sniffers = sniffers)
     val bytes: () -> ByteArray = { data }
 
     // TODO: The suggested filename extension, part of the HTTP header `Content-Disposition`.
 
-    return mediaTypeRetriever.of(
+    return mediaTypeRetriever.doRetrieve(
         {
             BytesSnifferContextFactory(DefaultArchiveFactory())
                 .createContext(bytes.invoke(), mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
@@ -94,4 +94,4 @@ suspend fun Response.sniffMediaType(
 * If unknown, fallback on `MediaType.BINARY`.
 */
 suspend fun File.mediaType(mediaTypeHint: String? = null): MediaType =
-    MediaTypeRetriever().ofFile(this, mediaType = mediaTypeHint) ?: MediaType.BINARY
+    MediaTypeRetriever().retrieve(this, mediaType = mediaTypeHint) ?: MediaType.BINARY

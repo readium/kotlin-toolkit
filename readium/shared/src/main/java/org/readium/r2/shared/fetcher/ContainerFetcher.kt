@@ -111,7 +111,7 @@ class ContainerFetcher(
 private suspend fun Container.Entry.toLink(mediaTypeRetriever: MediaTypeRetriever): Link {
     return Link(
         href = path.addPrefix("/"),
-        type = mediaTypeRetriever.of(fileExtension = File(path).extension)?.toString(),
+        type = mediaTypeRetriever.retrieve(fileExtension = File(path).extension)?.toString(),
         properties = Properties((this as? ZipContainer.Entry)?.toLinkProperties().orEmpty())
     )
 }

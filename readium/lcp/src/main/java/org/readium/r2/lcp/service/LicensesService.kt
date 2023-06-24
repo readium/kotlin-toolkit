@@ -53,7 +53,7 @@ internal class LicensesService(
 
     override suspend fun isLcpProtected(file: File): Boolean =
         tryOr(false) {
-            val mediaType = mediaTypeRetriever.ofFile(file) ?: return false
+            val mediaType = mediaTypeRetriever.retrieve(file) ?: return false
             createLicenseContainer(file, mediaType).read()
             true
         }
@@ -228,7 +228,7 @@ internal class LicensesService(
         Timber.i("LCP destination $destination")
 
         val mediaType = network.download(url, destination, mediaType = link.type, onProgress = onProgress)
-            ?: mediaTypeRetriever.of(mediaType = link.type)
+            ?: mediaTypeRetriever.retrieve(mediaType = link.type)
             ?: MediaType.EPUB
 
         // Saves the License Document into the downloaded publication

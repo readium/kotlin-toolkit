@@ -73,10 +73,12 @@ class ContentResource(
 
     private suspend fun readRange(range: LongRange): ResourceTry<ByteArray> =
         withStream {
-            val skipped = it.skip(range.first)
-            check(skipped == range.first)
-            val length = range.last - range.first + 1
-            it.read(length)
+            withContext(Dispatchers.IO) {
+                val skipped = it.skip(range.first)
+                check(skipped == range.first)
+                val length = range.last - range.first + 1
+                it.read(length)
+            }
         }
 
     override suspend fun length(): ResourceTry<Long> {
@@ -91,16 +93,14 @@ class ContentResource(
     }
 
     private suspend fun <T> withStream(block: suspend (InputStream) -> T): Try<T, Resource.Exception> =
-        withContext(Dispatchers.IO) {
-            ResourceTry.catching {
-                val stream = contentResolver.openInputStream(uri)
-                    ?: throw Resource.Exception.Unavailable(
-                        Exception("Content provider recently crashed.")
-                    )
-                val result = block(stream)
-                stream.close()
-                result
-            }
+        ResourceTry.catching {
+            val stream = contentResolver.openInputStream(uri)
+                ?: throw Resource.Exception.Unavailable(
+                    Exception("Content provider recently crashed.")
+                )
+            val result = block(stream)
+            stream.close()
+            result
         }
 
     private inline fun <T> Try.Companion.catching(closure: () -> T): ResourceTry<T> =

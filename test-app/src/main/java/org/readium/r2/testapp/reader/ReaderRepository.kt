@@ -74,7 +74,7 @@ class ReaderRepository(
         val book = bookRepository.get(bookId)
             ?: throw Exception("Cannot find book in database.")
 
-        val asset = readium.assetFactory.createAsset(
+        val asset = readium.assetRetriever.retrieve(
             Url(book.href)!!, book.mediaType, book.assetType
         ).getOrThrow()
 

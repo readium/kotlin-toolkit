@@ -10,6 +10,7 @@ import android.content.ContentResolver
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.isParentOf
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -33,7 +34,7 @@ internal class DirectoryContainer(
         override val file: File
     ) : Container.Entry, Resource by FileResource(file) {
 
-        override val path: String get() = file.relativeTo(root).path
+        override val path: String get() = file.relativeTo(root).path.addPrefix("/")
 
         override suspend fun close() {}
     }
