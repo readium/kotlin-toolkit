@@ -172,7 +172,7 @@ class BookRepository(
     ): Try<Unit, ImportException> {
         val asset = assetRetriever.retrieve(url, fileExtension = url.extension)
             ?: return Try.failure(
-                ImportException.UnableToOpenPublication(Publication.OpeningException.UnsupportedFormat())
+                ImportException.UnableToOpenPublication(Publication.OpeningException.UnsupportedAsset())
             )
         return addBook(url, asset)
     }
@@ -184,7 +184,7 @@ class BookRepository(
         val asset = assetRetriever.retrieve(url)
             ?: return Try.failure(
                 ImportException.UnableToOpenPublication(
-                    Publication.OpeningException.UnsupportedFormat(
+                    Publication.OpeningException.UnsupportedAsset(
                         Exception("Unsupported media type")
                     )
                 )
@@ -199,7 +199,7 @@ class BookRepository(
     ): Try<Unit, ImportException> {
         val sourceAsset = assetRetriever.retrieve(tempFile)
             ?: return Try.failure(
-                ImportException.UnableToOpenPublication(Publication.OpeningException.UnsupportedFormat())
+                ImportException.UnableToOpenPublication(Publication.OpeningException.UnsupportedAsset())
             )
 
         val (publicationTempFile, publicationTempAsset) =
@@ -226,7 +226,7 @@ class BookRepository(
             }
 
         if (publicationTempAsset == null) {
-            val exception = Publication.OpeningException.UnsupportedFormat(
+            val exception = Publication.OpeningException.UnsupportedAsset(
                 Exception("Unsupported media type")
             )
             return Try.failure(ImportException.UnableToOpenPublication(exception))

@@ -19,6 +19,7 @@ import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.use

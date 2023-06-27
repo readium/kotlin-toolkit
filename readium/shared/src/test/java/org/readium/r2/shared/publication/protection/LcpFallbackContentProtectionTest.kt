@@ -37,10 +37,10 @@ class LcpFallbackContentProtectionTest {
     }
 
     @Test
-    fun `Sniff LCP protected package`() {
+    fun `Sniff LCP protected Readium package`() {
         assertTrue(
             supports(
-                mediaType = MediaType.ZIP,
+                mediaType = MediaType.READIUM_WEBPUB,
                 resources = mapOf(
                     "/license.lcpl" to "{}"
                 )

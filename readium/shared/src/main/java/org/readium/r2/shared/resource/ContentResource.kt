@@ -25,9 +25,9 @@ class ContentResourceFactory(
     private val contentResolver: ContentResolver
 ) : ResourceFactory {
 
-    override suspend fun create(url: Url): Try<Resource, Exception> {
+    override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
         if (url.scheme != ContentResolver.SCHEME_CONTENT) {
-            return Try.failure(Exception("Scheme not supported"))
+            return Try.failure(ResourceFactory.Error.UnsupportedScheme(url.scheme))
         }
 
         val uri = Uri.parse(url.toString())

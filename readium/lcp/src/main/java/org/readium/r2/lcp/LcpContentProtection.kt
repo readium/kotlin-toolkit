@@ -17,9 +17,12 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.resource.ArchiveFactory
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 internal class LcpContentProtection(
@@ -114,18 +117,6 @@ internal class LcpContentProtection(
         allowUserInteraction: Boolean,
         sender: Any?
     ): Try<ContentProtection.Asset, Publication.OpeningException> {
-        val publicationAsset = try {
-            assetForRemotePublication(licenseAsset)
-        } catch (e: Exception) {
-            // FIXME: random choice of exception
-            val exception = Publication.OpeningException.ParsingFailed(LcpException.wrap(e))
-            return Try.failure(exception)
-        }
-
-        return openPublication(publicationAsset, credentials, allowUserInteraction, sender)
-    }
-
-    private suspend fun assetForRemotePublication(licenseAsset: Asset.Resource): Asset.Container {
         // Update the license file to get a fresh publication URL.
         val license = retrieveLicense(licenseAsset, LcpDumbAuthentication(), false, null)
             .getOrNull()
@@ -140,17 +131,56 @@ internal class LcpContentProtection(
             throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.rawValue)
         }
 
+        // FIXME : random choice of exceptions
         val resource = resourceFactory.create(url)
-            .getOrThrow()
+            .getOrElse { return Try.failure(it.wrap()) }
 
         val container = archiveFactory.create(resource, password = null)
-            .getOrThrow()
+            .getOrElse { return Try.failure(it.wrap()) }
 
-        return Asset.Container(
+        val publicationAsset = Asset.Container(
             url.filename,
             link.mediaType,
             AssetType.Archive,
             container
         )
+
+        return openPublication(publicationAsset, credentials, allowUserInteraction, sender)
     }
+
+    private fun ResourceFactory.Error.wrap(): Publication.OpeningException =
+        when (this) {
+            is ResourceFactory.Error.NotAResource ->
+                Publication.OpeningException.NotFound()
+            is ResourceFactory.Error.ResourceError ->
+                wrap()
+            is ResourceFactory.Error.UnsupportedScheme ->
+                Publication.OpeningException.UnsupportedAsset()
+        }
+
+    private fun ArchiveFactory.Error.wrap(): Publication.OpeningException =
+        when (this) {
+            ArchiveFactory.Error.FormatNotSupported -> Publication.OpeningException.UnsupportedAsset()
+            ArchiveFactory.Error.PasswordsNotSupported -> Publication.OpeningException.UnsupportedAsset()
+            is ArchiveFactory.Error.ResourceError -> wrap()
+            ArchiveFactory.Error.ResourceNotSupported -> Publication.OpeningException.UnsupportedAsset()
+        }
+
+    private fun Resource.Exception.wrap(): Publication.OpeningException =
+        when (this) {
+            is Resource.Exception.BadRequest ->
+                Publication.OpeningException.Unavailable()
+            is Resource.Exception.Forbidden ->
+                Publication.OpeningException.Forbidden()
+            is Resource.Exception.NotFound ->
+                Publication.OpeningException.NotFound()
+            Resource.Exception.Offline ->
+                Publication.OpeningException.Unavailable()
+            is Resource.Exception.OutOfMemory ->
+                Publication.OpeningException.OutOfMemory(cause)
+            is Resource.Exception.Unavailable ->
+                Publication.OpeningException.Unavailable()
+            is Resource.Exception.Other ->
+                Publication.OpeningException.Unexpected(this)
+        }
 }

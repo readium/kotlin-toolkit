@@ -436,7 +436,7 @@ class Publication(
         /**
          * The file format could not be recognized by any parser.
          */
-        class UnsupportedFormat(cause: Throwable? = null) : OpeningException(R.string.r2_shared_publication_opening_exception_unsupported_format, cause)
+        class UnsupportedAsset(cause: Throwable? = null) : OpeningException(R.string.r2_shared_publication_opening_exception_unsupported_format, cause)
 
         /**
          * The publication file was not found on the file system.
@@ -466,6 +466,8 @@ class Publication(
         object IncorrectCredentials : OpeningException(R.string.r2_shared_publication_opening_exception_incorrect_credentials)
 
         class OutOfMemory(override val cause: OutOfMemoryError) : OpeningException(R.string.r2_shared_resource_exception_out_of_memory)
+
+        class Unexpected(override val cause: Throwable) : OpeningException(R.string.r2_shared_resource_exception_unexpected)
     }
 
     /**

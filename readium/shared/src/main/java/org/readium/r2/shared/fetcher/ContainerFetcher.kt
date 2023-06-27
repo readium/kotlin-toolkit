@@ -16,7 +16,6 @@ import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
@@ -47,19 +46,6 @@ class ContainerFetcher(
         } catch (e: Exception) {
             Timber.e(e)
         }
-    }
-
-    companion object {
-
-        suspend fun create(
-            resource: Resource,
-            archiveFactory: ArchiveFactory,
-            mediaTypeRetriever: MediaTypeRetriever
-        ): Try<ContainerFetcher, Exception> =
-            withContext(Dispatchers.IO) {
-                archiveFactory.create(resource, password = null)
-                    .map { ContainerFetcher(it, mediaTypeRetriever) }
-            }
     }
 
     private class EntryResource(

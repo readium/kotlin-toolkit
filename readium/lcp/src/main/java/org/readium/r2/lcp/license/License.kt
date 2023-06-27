@@ -29,6 +29,7 @@ import org.readium.r2.shared.extensions.toIso8601String
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 

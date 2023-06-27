@@ -888,8 +888,6 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
                 PlaybackException(exception.message, exception.cause, ERROR_CODE_IO_NETWORK_CONNECTION_FAILED)
             is Resource.Exception.OutOfMemory ->
                 PlaybackException(exception.message, exception.cause, ERROR_CODE_UNSPECIFIED)
-            is Resource.Exception.Cancelled ->
-                PlaybackException(exception.message, exception.cause, ERROR_CODE_IO_UNSPECIFIED)
             is Resource.Exception.Other ->
                 PlaybackException(exception.message, exception.cause, ERROR_CODE_UNSPECIFIED)
             else ->

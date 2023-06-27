@@ -17,6 +17,7 @@ import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.channel.jvm.NonWritableChannelException
 import org.readium.r2.shared.util.archive.channel.jvm.SeekableByteChannel
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpException
 import org.readium.r2.shared.util.http.HttpRequest

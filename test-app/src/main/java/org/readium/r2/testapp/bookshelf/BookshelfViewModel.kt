@@ -16,7 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.UserException
 import org.readium.r2.shared.util.Url
 import org.readium.r2.testapp.BuildConfig
 import org.readium.r2.testapp.R
@@ -25,7 +24,6 @@ import org.readium.r2.testapp.reader.ReaderActivityContract
 import org.readium.r2.testapp.reader.ReaderRepository
 import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
-import timber.log.Timber
 
 class BookshelfViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -124,15 +122,22 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     ) = viewModelScope.launch {
         val readerRepository = app.readerRepository.await()
         readerRepository.open(bookId, activity)
-            .onFailure { exception ->
-                if (exception is ReaderRepository.CancellationException)
-                    return@launch
-
-                Timber.e(exception)
-                val message = when (exception) {
-                    is UserException -> exception.getUserMessage(app)
-                    else -> exception.message
+            .onFailure { error ->
+                val messageId = when (error) {
+                    is ReaderRepository.OpeningError.Forbidden ->
+                        R.string.r2_shared_publication_opening_exception_forbidden
+                    is ReaderRepository.OpeningError.NotFound ->
+                        R.string.r2_shared_publication_opening_exception_not_found
+                    is ReaderRepository.OpeningError.OutOfMemory ->
+                        R.string.r2_shared_resource_exception_out_of_memory
+                    is ReaderRepository.OpeningError.Unavailable ->
+                        R.string.r2_shared_publication_opening_exception_unavailable
+                    is ReaderRepository.OpeningError.Unexpected ->
+                        R.string.r2_shared_resource_exception_unexpected
+                    is ReaderRepository.OpeningError.UnsupportedPublication ->
+                        R.string.r2_shared_publication_opening_exception_unsupported_format
                 }
+                val message = activity.getString(messageId)
                 channel.send(Event.OpenPublicationError(message))
             }
             .onSuccess {

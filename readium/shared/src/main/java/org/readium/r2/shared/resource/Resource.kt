@@ -12,7 +12,6 @@ import androidx.annotation.StringRes
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.nio.charset.Charset
-import kotlinx.coroutines.CancellationException
 import org.json.JSONObject
 import org.readium.r2.shared.R
 import org.readium.r2.shared.UserException
@@ -141,13 +140,6 @@ interface Resource : SuspendingCloseable {
         class OutOfMemory(override val cause: OutOfMemoryError) :
             Exception(R.string.r2_shared_resource_exception_out_of_memory)
 
-        /**
-         * The request was cancelled by the caller.
-         *
-         * For example, when a coroutine is cancelled.
-         */
-        object Cancelled : Exception(R.string.r2_shared_resource_exception_cancelled)
-
         /** For any other error, such as HTTP 500. */
         class Other(cause: Throwable) : Exception(R.string.r2_shared_resource_exception_other, cause)
 
@@ -156,7 +148,6 @@ interface Resource : SuspendingCloseable {
             fun wrap(e: Throwable): Exception =
                 when (e) {
                     is Exception -> e
-                    is CancellationException -> Cancelled
                     is OutOfMemoryError -> OutOfMemory(e)
                     else -> Other(e)
                 }
@@ -186,7 +177,7 @@ class FailureResource(private val error: Resource.Exception) : Resource {
  */
 inline fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): ResourceTry<R> =
     try {
-        Try.success((transform(getOrThrow())))
+        map(transform)
     } catch (e: Exception) {
         Try.failure(Resource.Exception.wrap(e))
     } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.

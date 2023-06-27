@@ -18,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.buffered
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.getOrThrow
 
 internal sealed class PublicationDataSourceException(message: String, cause: Throwable?) : IOException(message, cause) {
     class NotOpened(message: String) : PublicationDataSourceException(message, null)

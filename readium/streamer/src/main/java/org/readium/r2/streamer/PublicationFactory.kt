@@ -15,6 +15,7 @@ import org.readium.r2.shared.publication.protection.AdeptFallbackContentProtecti
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.LcpFallbackContentProtection
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -188,7 +189,7 @@ class PublicationFactory constructor(
                     .takeUnless { it.exceptionOrNull() == PublicationParser.Error.FormatNotSupported }
                     ?.mapFailure { wrapParserException(it) }
                     ?.getOrThrow()
-            } ?: throw Publication.OpeningException.UnsupportedFormat(Exception("Cannot find a parser for this asset"))
+            } ?: throw Publication.OpeningException.UnsupportedAsset(Exception("Cannot find a parser for this asset"))
 
         // Transform provided by the reading app during the construction of the Streamer.
         builder.apply(this.onCreatePublication)
@@ -202,7 +203,7 @@ class PublicationFactory constructor(
     private fun wrapParserException(e: PublicationParser.Error): Publication.OpeningException =
         when (e) {
             PublicationParser.Error.FormatNotSupported ->
-                Publication.OpeningException.UnsupportedFormat()
+                Publication.OpeningException.UnsupportedAsset()
             is PublicationParser.Error.IO ->
                 Publication.OpeningException.Unavailable(e)
             is PublicationParser.Error.OutOfMemory ->

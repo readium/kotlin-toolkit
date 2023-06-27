@@ -403,7 +403,7 @@ fun Resource.withLink(link: Link): Fetcher.Resource =
  */
 inline fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): ResourceTry<R> =
     try {
-        Try.success((transform(getOrThrow())))
+        map(transform)
     } catch (e: Exception) {
         Try.failure(Resource.Exception.wrap(e))
     } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.

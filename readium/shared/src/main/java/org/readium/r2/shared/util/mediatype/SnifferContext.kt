@@ -22,6 +22,7 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.resource.ResourceInputStream
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
 
 sealed class SnifferContext(
@@ -244,23 +245,33 @@ class UrlSnifferContextFactory(
         fileExtensions: List<String> = emptyList()
     ): ContentAwareSnifferContext? {
 
-        val resource = resourceFactory.create(url)
-            .getOrNull()
-        // FIXME: only NotFound
-
-        if (resource == null) {
-            val container = containerFactory.create(url)
-                .getOrNull()
-                ?: return null
-
-            return ContainerSnifferContext(container, true, mediaTypes, fileExtensions)
-        }
+        val resource = resourceFactory
+            .create(url)
+            .getOrElse {
+                when (it) {
+                    is ResourceFactory.Error.NotAResource ->
+                        return tryCreateContainerContext(url, fileExtensions, mediaTypes)
+                    else -> return null
+                }
+            }
 
         return archiveFactory.create(resource, password = null)
             .fold(
                 { ContainerSnifferContext(it, false, fileExtensions) },
                 { ResourceSnifferContext(resource, mediaTypes, fileExtensions) }
             )
+    }
+
+    private suspend fun tryCreateContainerContext(
+        url: Url,
+        mediaTypes: List<String>,
+        fileExtensions: List<String>
+    ): ContentAwareSnifferContext? {
+        val container = containerFactory.create(url)
+            .getOrNull()
+            ?: return null
+
+        return ContainerSnifferContext(container, true, mediaTypes, fileExtensions)
     }
 }
 

@@ -15,6 +15,7 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.mapCatching
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 

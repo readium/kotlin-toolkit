@@ -9,6 +9,7 @@ package org.readium.r2.shared.resource
 import java.io.IOException
 import java.io.InputStream
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.util.getOrThrow
 
 /**
  * Input stream reading a [Resource]'s content.

@@ -8,7 +8,6 @@ package org.readium.r2.shared.publication.services.search
 
 import android.os.Parcelable
 import androidx.annotation.StringRes
-import kotlinx.coroutines.CancellationException
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.R
 import org.readium.r2.shared.Search
@@ -68,7 +67,6 @@ sealed class SearchException(content: Content, cause: Throwable? = null) : UserE
         fun wrap(e: Throwable): SearchException =
             when (e) {
                 is SearchException -> e
-                is CancellationException, is Resource.Exception.Cancelled -> Cancelled
                 is Resource.Exception -> ResourceError(e)
                 is HttpException ->
                     if (e.kind == HttpException.Kind.Cancelled) {

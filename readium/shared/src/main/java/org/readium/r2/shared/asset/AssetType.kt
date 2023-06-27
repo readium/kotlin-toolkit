@@ -7,7 +7,19 @@
 package org.readium.r2.shared.asset
 
 enum class AssetType {
+
+    /**
+     * A simple resource.
+     */
     Resource,
+
+    /**
+     * A directory container.
+     */
     Directory,
+
+    /**
+     * An archive container.
+     */
     Archive
 }

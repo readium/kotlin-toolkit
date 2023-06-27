@@ -132,7 +132,7 @@ class HttpResource(
             HttpException.Kind.NotFound ->
                 Resource.Exception.NotFound(e)
             HttpException.Kind.Cancelled ->
-                Resource.Exception.Cancelled
+                Resource.Exception.Unavailable(e)
             HttpException.Kind.MalformedResponse, HttpException.Kind.ClientError, HttpException.Kind.ServerError, HttpException.Kind.Other ->
                 Resource.Exception.Other(e)
         }

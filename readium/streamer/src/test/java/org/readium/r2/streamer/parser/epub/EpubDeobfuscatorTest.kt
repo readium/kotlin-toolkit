@@ -21,6 +21,7 @@ import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.streamer.readBlocking
 import org.robolectric.RobolectricTestRunner

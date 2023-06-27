@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.isParentOf
+import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 
@@ -55,37 +56,39 @@ internal class DirectoryContainer(
     }
 
     override suspend fun close() {}
-
-    companion object {
-
-        suspend operator fun invoke(root: File): Try<DirectoryContainer, Exception> =
-            withContext(Dispatchers.IO) {
-                try {
-                    val entries = root.walk()
-                        .filter { it.isFile }
-                        .toList()
-                    val container = DirectoryContainer(root, entries)
-                    Try.success(container)
-                } catch (e: Exception) {
-                    Try.failure(e)
-                }
-            }
-    }
 }
 
 class DirectoryContainerFactory : ContainerFactory {
 
-    override suspend fun create(url: Url): Try<Container, Exception> {
+    override suspend fun create(url: Url): Try<Container, ContainerFactory.Error> {
         if (url.scheme != ContentResolver.SCHEME_FILE) {
-            return Try.failure(Exception("Scheme not supported"))
+            return Try.failure(ContainerFactory.Error.UnsupportedScheme(url.scheme))
         }
 
         val file = File(url.path)
+
+        if (!tryOr(false) { file.isDirectory }) {
+            return Try.failure(ContainerFactory.Error.NotAContainer(url))
+        }
+
         return create(file)
     }
 
     // Internal for testing purpose
-    internal suspend fun create(file: File): Try<Container, Exception> {
-        return DirectoryContainer(file)
+    internal suspend fun create(file: File): Try<Container, ContainerFactory.Error> {
+        val entries =
+            try {
+                withContext(Dispatchers.IO) {
+                    file.walk()
+                        .filter { it.isFile }
+                        .toList()
+                }
+            } catch (e: Exception) {
+                return Try.failure(ContainerFactory.Error.Forbidden(e))
+            }
+
+        val container = DirectoryContainer(file, entries)
+
+        return Try.success(container)
     }
 }

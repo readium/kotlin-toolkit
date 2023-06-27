@@ -8,6 +8,9 @@ package org.readium.r2.shared.asset
 
 import org.readium.r2.shared.util.mediatype.MediaType
 
+/**
+ * An asset which is either a single resource or a container for several ones.
+ */
 sealed class Asset {
 
     /**
@@ -15,12 +18,28 @@ sealed class Asset {
      */
     abstract val name: String
 
+    /**
+     * Media type of the asset.
+     */
     abstract val mediaType: MediaType
 
+    /**
+     * Type of the asset source.
+     */
     abstract val assetType: AssetType
 
+    /**
+     * Releases in-memory resources related to this asset.
+     */
     abstract suspend fun close()
 
+    /**
+     * A single resource asset.
+     *
+     * @param name Name of the asset.
+     * @param mediaType Media type of the asset.
+     * @param resource Opened resource to access the asset.
+     */
     class Resource(
         override val name: String,
         override val mediaType: MediaType,
@@ -35,6 +54,14 @@ sealed class Asset {
         }
     }
 
+    /**
+     * A container asset providing access to several resources.
+     *
+     * @param name Name of the asset.
+     * @param mediaType Media type of the asset.
+     * @param assetType Type of the asset source, i.e. archive or directory.
+     * @param container Opened container to access asset resources.
+     */
     class Container(
         override val name: String,
         override val mediaType: MediaType,

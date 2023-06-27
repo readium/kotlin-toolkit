@@ -27,6 +27,7 @@ import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.publication.services.search.SearchService.Options
 import org.readium.r2.shared.util.Ref
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.getOrThrow
 import timber.log.Timber
 
 /**

@@ -24,6 +24,7 @@ import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.publication.services.content.Content.*
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
 

@@ -16,6 +16,7 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.isLazyInitialized
 import timber.log.Timber
 
@@ -108,12 +109,21 @@ class FileResource(override val file: File) : Resource {
 
 class FileResourceFactory : ResourceFactory {
 
-    override suspend fun create(url: Url): Try<Resource, Exception> {
+    override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
         if (url.scheme != ContentResolver.SCHEME_FILE) {
-            return Try.failure(Exception("Scheme not supported"))
+            return Try.failure(ResourceFactory.Error.UnsupportedScheme(url.scheme))
         }
 
         val file = File(url.path)
+
+        try {
+            if (!file.exists()) {
+                return Try.failure(ResourceFactory.Error.NotAResource(url))
+            }
+        } catch (e: Exception) {
+            val resourceError = Resource.Exception.Forbidden(e)
+            return Try.failure(ResourceFactory.Error.ResourceError(resourceError))
+        }
 
         return Try.success(FileResource(file))
     }

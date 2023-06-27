@@ -19,7 +19,13 @@ import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.flatMap
-import org.readium.r2.shared.util.mediatype.*
+import org.readium.r2.shared.util.mediatype.ContainerSnifferContext
+import org.readium.r2.shared.util.mediatype.ContentAwareSnifferContext
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.mediatype.ResourceSnifferContext
+import org.readium.r2.shared.util.mediatype.Sniffer
+import org.readium.r2.shared.util.mediatype.UrlSnifferContextFactory
 import org.readium.r2.shared.util.toUrl
 
 class AssetRetriever(
@@ -30,14 +36,43 @@ class AssetRetriever(
     private val sniffers: List<Sniffer>
 ) {
 
+    sealed class Error {
+
+        class SchemeNotSupported(
+            val scheme: String
+        ) : Error()
+
+        object NotFound : Error()
+
+        object ArchiveFormatNotSupported : Error()
+
+        object NoArchiveFactoryForResource : Error()
+
+        class Forbidden(
+            val exception: Exception
+        ) : Error()
+
+        class Unavailable(
+            val exception: Exception
+        ) : Error()
+
+        class OutOfMemory(
+            val error: OutOfMemoryError
+        ) : Error()
+
+        class Unknown(
+            val exception: Exception
+        ) : Error()
+    }
+
     /* Restore well-known asset */
 
     suspend fun retrieve(
         url: Url,
         mediaType: MediaType,
-        type: AssetType
-    ): Try<Asset, Exception> =
-        when (type) {
+        assetType: AssetType
+    ): Try<Asset, Error> =
+        when (assetType) {
             AssetType.Archive ->
                 retrieveArchiveAsset(url, mediaType)
             AssetType.Directory ->
@@ -49,27 +84,69 @@ class AssetRetriever(
     private suspend fun retrieveArchiveAsset(
         url: Url,
         mediaType: MediaType
-    ): Try<Asset.Container, Exception> {
+    ): Try<Asset.Container, Error> {
         return resourceFactory.create(url)
-            .flatMap { resource: Resource -> archiveFactory.create(resource, password = null) }
+            .mapFailure { error ->
+                when (error) {
+                    is ResourceFactory.Error.NotAResource -> Error.NotFound
+                    is ResourceFactory.Error.ResourceError -> error.exception.wrap()
+                    is ResourceFactory.Error.UnsupportedScheme -> Error.SchemeNotSupported(error.scheme)
+                }
+            }
+            .flatMap { resource: Resource ->
+                archiveFactory.create(resource, password = null)
+                    .mapFailure { error ->
+                        when (error) {
+                            is ArchiveFactory.Error.FormatNotSupported -> Error.ArchiveFormatNotSupported
+                            is ArchiveFactory.Error.ResourceError -> error.error.wrap()
+                            is ArchiveFactory.Error.ResourceNotSupported -> Error.NoArchiveFactoryForResource
+                            is ArchiveFactory.Error.PasswordsNotSupported -> Error.ArchiveFormatNotSupported
+                        }
+                    }
+            }
             .map { container -> Asset.Container(url.filename, mediaType, AssetType.Archive, container) }
     }
 
     private suspend fun retrieveDirectoryAsset(
         url: Url,
         mediaType: MediaType
-    ): Try<Asset.Container, Exception> {
+    ): Try<Asset.Container, Error> {
         return containerFactory.create(url)
             .map { container -> Asset.Container(url.filename, mediaType, AssetType.Directory, container) }
+            .mapFailure { error ->
+                when (error) {
+                    is ContainerFactory.Error.NotAContainer -> Error.NotFound
+                    is ContainerFactory.Error.Forbidden -> Error.Forbidden(error.exception)
+                    is ContainerFactory.Error.UnsupportedScheme -> Error.SchemeNotSupported(error.scheme)
+                }
+            }
     }
 
     private suspend fun retrieveResourceAsset(
         url: Url,
         mediaType: MediaType
-    ): Try<Asset.Resource, Exception> {
+    ): Try<Asset.Resource, Error> {
         return resourceFactory.create(url)
             .map { resource -> Asset.Resource(url.filename, mediaType, resource) }
+            .mapFailure { error ->
+                when (error) {
+                    is ResourceFactory.Error.NotAResource -> Error.NotFound
+                    is ResourceFactory.Error.ResourceError -> error.exception.wrap()
+                    is ResourceFactory.Error.UnsupportedScheme -> Error.SchemeNotSupported(error.scheme)
+                }
+            }
     }
+
+    private fun Resource.Exception.wrap(): Error =
+        when (this) {
+            is Resource.Exception.Forbidden -> Error.Forbidden(this)
+            is Resource.Exception.NotFound -> Error.NotFound
+            Resource.Exception.Offline -> Error.Unavailable(this)
+            is Resource.Exception.Other -> Error.Unknown(this)
+            is Resource.Exception.OutOfMemory -> Error.OutOfMemory(cause)
+            is Resource.Exception.Unavailable -> Error.Unavailable(this)
+            else -> Error.Unknown(this)
+        }
 
     /* Sniff unknown assets */
 

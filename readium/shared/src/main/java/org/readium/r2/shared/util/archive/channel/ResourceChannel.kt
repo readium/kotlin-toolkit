@@ -14,6 +14,7 @@ import org.readium.r2.shared.util.archive.channel.jvm.ClosedChannelException
 import org.readium.r2.shared.util.archive.channel.jvm.NonWritableChannelException
 import org.readium.r2.shared.util.archive.channel.jvm.SeekableByteChannel
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.getOrThrow
 
 class ResourceChannel(
     private val resource: Resource

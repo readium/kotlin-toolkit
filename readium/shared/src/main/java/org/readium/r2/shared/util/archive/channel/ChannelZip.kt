@@ -7,6 +7,7 @@
 package org.readium.r2.shared.util.archive.channel
 
 import java.io.File
+import java.util.zip.ZipException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.addPrefix
@@ -145,7 +146,7 @@ class ChannelZipArchiveFactory(
     private val httpClient: HttpClient = DefaultHttpClient()
 ) : ArchiveFactory {
 
-    override suspend fun create(resource: Resource, password: String?): Try<Container, Exception> =
+    override suspend fun create(resource: Resource, password: String?): Try<Container, ArchiveFactory.Error> =
         try {
             if (password != null) {
                 throw Exception("${javaClass.simpleName}) does not support passwords.")
@@ -156,8 +157,10 @@ class ChannelZipArchiveFactory(
             val zipFile = ZipFile(channel, true)
             val channelZip = ChannelZip(zipFile, resource::name)
             Try.success(channelZip)
-        } catch (e: Exception) {
-            Try.failure(e)
+        } catch (e: ZipException) {
+            Try.failure(ArchiveFactory.Error.FormatNotSupported)
+        } catch (e: Resource.Exception) {
+            Try.failure(ArchiveFactory.Error.ResourceError(e))
         }
 
     internal fun openFile(file: File): Container {

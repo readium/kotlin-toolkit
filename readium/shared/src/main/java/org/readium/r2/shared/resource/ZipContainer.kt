@@ -8,6 +8,7 @@ package org.readium.r2.shared.resource
 
 import java.io.File
 import java.util.zip.ZipEntry
+import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -142,24 +143,28 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
 
 class DefaultArchiveFactory : ArchiveFactory {
 
-    override suspend fun create(resource: Resource, password: String?): Try<Container, Exception> {
+    override suspend fun create(resource: Resource, password: String?): Try<Container, ArchiveFactory.Error> {
         if (password != null) {
-            return Try.failure(Exception("${javaClass.simpleName}) does not support passwords."))
+            return Try.failure(ArchiveFactory.Error.PasswordsNotSupported)
         }
 
         return resource.file
             ?.let { open(it) }
-            ?: Try.failure(Exception("Resource unsupported"))
+            ?: Try.failure(ArchiveFactory.Error.ResourceNotSupported)
     }
 
     // Internal for testing purpose
-    internal suspend fun open(file: File): Try<Container, Exception> =
+    internal suspend fun open(file: File): Try<Container, ArchiveFactory.Error> =
         withContext(Dispatchers.IO) {
             try {
                 val archive = JavaZipContainer(ZipFile(file), file)
                 Try.success(archive)
+            } catch (e: ZipException) {
+                Try.failure(ArchiveFactory.Error.FormatNotSupported)
+            } catch (e: SecurityException) {
+                Try.failure(ArchiveFactory.Error.ResourceError(Resource.Exception.Forbidden(e)))
             } catch (e: Exception) {
-                Try.failure(e)
+                Try.failure(ArchiveFactory.Error.ResourceError(Resource.Exception.wrap(e)))
             }
         }
 }

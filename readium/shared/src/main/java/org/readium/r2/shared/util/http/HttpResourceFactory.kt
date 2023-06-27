@@ -15,9 +15,9 @@ class HttpResourceFactory(
     private val httpClient: HttpClient
 ) : ResourceFactory {
 
-    override suspend fun create(url: Url): Try<Resource, Exception> {
+    override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
         if (!url.scheme.startsWith("http")) {
-            return Try.failure(Exception("Not supported scheme."))
+            return Try.failure(ResourceFactory.Error.UnsupportedScheme(url.scheme))
         }
 
         val resource = HttpResource(httpClient, url.toString())

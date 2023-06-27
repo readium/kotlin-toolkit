@@ -21,6 +21,7 @@ import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpFetcher
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -73,6 +74,13 @@ internal class ParserAssetFactory(
 
         val baseUrl =
             manifest.linkWithRel("self")?.let { File(it.href).parent }
+                ?: return Try.failure(
+                    Publication.OpeningException.ParsingFailed(Exception("No self link in the manifest."))
+                )
+
+        if (!baseUrl.startsWith("http")) {
+            Publication.OpeningException.UnsupportedAsset()
+        }
 
         val link = Link(
             href = "/manifest.json",

@@ -23,6 +23,7 @@ import org.readium.r2.shared.publication.services.search.StringSearchService
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use

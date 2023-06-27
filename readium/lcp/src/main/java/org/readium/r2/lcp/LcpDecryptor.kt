@@ -20,6 +20,7 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.getOrThrow
 
 /**
  * Decrypts a resource protected with LCP.
