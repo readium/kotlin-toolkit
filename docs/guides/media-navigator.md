@@ -64,7 +64,7 @@ audioNavigator.seek(index = 4, offset = 5.seconds)
 
 ### Text-aware Media Navigator
 
-`TextAwareMediaNavigator` specializes `MediaNavigator` for media-based resources that are synchronized with text utterances, such as sentences. It offers additional APIs and properties to determine which utterances are playing. This interface is helpful for a Text-to-speech or a Media overlays navigator.
+`TextAwareMediaNavigator` specializes `MediaNavigator` for media-based resources that are synchronized with text utterances, such as sentences. It offers additional APIs and properties to determine which utterances are playing. This interface is helpful for a text-to-speech or a Media overlays navigator.
 
 ```kotlin
 textAwareNavigator.playback

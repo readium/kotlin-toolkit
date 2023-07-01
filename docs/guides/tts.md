@@ -1,182 +1,161 @@
 # Text-to-speech
 
-:warning: The API described in this guide will be changed in the next version of the Kotlin toolkit to support background TTS playback and media notifications. It is recommended that you wait before integrating it in your app.
-
-Text-to-speech can be used to read aloud a publication using a synthetic voice. The Readium toolkit ships with a TTS implementation based on the native [Android TTS engine](https://developer.android.com/reference/android/speech/tts/TextToSpeech), but it is opened for extension if you want to use a different TTS engine.
+Text-to-speech can read aloud a publication using a synthetic voice. The Readium toolkit includes an implementation based on the [Android TTS engine](https://developer.android.com/reference/android/speech/tts/TextToSpeech), but it can be extended to use a different TTS engine.
 
 ## Glossary
 
-* **engine** – a TTS engine takes an utterance and transforms it into audio using a synthetic voice
-* **rate** - speech speed of a synthetic voice
-* **tokenizer** - algorithm splitting the publication text content into individual utterances, usually by sentences
 * **utterance** - a single piece of text played by a TTS engine, such as a sentence
+* **tokenizer** - algorithm splitting the publication text content into individual utterances, usually by sentences
+* **engine** – a TTS engine takes an utterance and transforms it into audio using a synthetic voice
 * **voice** – a synthetic voice is used by a TTS engine to speak a text using rules pertaining to the voice's language and region
 
-## Reading a publication aloud
+## Getting started
 
-Apps targeting Android 11 that use text-to-speech should declare INTENT_ACTION_TTS_SERVICE in the queries elements of their manifest.
+:warning: Apps targeting Android 11 that use the native text-to-speech must declare `INTENT_ACTION_TTS_SERVICE` in the queries elements of their manifest.
 
-To read a publication, you need to create an instance of `PublicationSpeechSynthesizer`. It orchestrates the rendition of a publication by iterating through its content, splitting it into individual utterances using a `ContentTokenizer`, then using a `TtsEngine` to read them aloud. Not all publications can be read using TTS, therefore the constructor returns a nullable object. You can also check whether a publication can be played beforehand using `PublicationSpeechSynthesizer.canSpeak(publication)`.
-
-```kotlin
-val synthesizer = PublicationSpeechSynthesizer(
-    publication = publication,
-    config = PublicationSpeechSynthesizer.Configuration(
-        rateMultiplier = 1.25
-    ),
-    listener = object : PublicationSpeechSynthesizer.Listener { ... }
-)
+```xml
+<queries>
+  <intent>
+      <action android:name="android.intent.action.TTS_SERVICE" />
+  </intent>
+</queries>
 ```
 
-Then, begin the playback from a given starting `Locator`. When missing, the playback will start from the beginning of the publication.
+The text-to-speech feature is implemented as a standalone `Navigator`, which can render any publication with a [Content Service](content.md), such as an EPUB. This means you don't need an `EpubNavigatorFragment` open to read the publication; you can use the TTS navigator in the background.
+
+To get a new instance of `TtsNavigator`, first create an `AndroidTtsNavigatorFactory` to use the default Android TTS engine.
 
 ```kotlin
-synthesizer.start()
+val factory = AndroidTtsNavigatorFactory(application, publication)
+    ?: throw Exception("This publication cannot be played with the TTS navigator")
+
+val navigator = factory.createNavigator()
+navigator.play()
 ```
 
-You should now hear the TTS engine speak the utterances from the beginning. `PublicationSpeechSynthesizer` provides the APIs necessary to control the playback from the app:
+`TtsNavigator` implements `MediaNavigator`, so you can use all the APIs available for media-based playback. Check out the [dedicated user guide](media-navigator.md) to learn how to control `TtsNavigator` and observe playback notifications.
 
-* `stop()` - stops the playback ; requires start to be called again
-* `pause()` - interrupts the playback temporarily
-* `resume()` - resumes the playback where it was paused
-* `pauseOrResume()` - toggles the pause
-* `previous()` - skips to the previous utterance
-* `next()` - skips to the next utterance
+## Configuring the Android TTS navigator
 
-Look at `TtsControls` in the Test App for an example of a view calling these APIs.
-
-:warning: Once you are done with the synthesizer, you should call `close()` to release held resources.
-
-## Observing the playback state
-
-The `PublicationSpeechSynthesizer` should be the single source of truth to represent the playback state in your user interface. You can observe the `synthesizer.state` property to keep your user interface synchronized with the playback. The possible states are:
-
-* `Stopped` when idle and waiting for a call to `start()`.
-* `Paused(utterance: Utterance)` when interrupted while playing `utterance`.
-* `Playing(utterance: Utterance, range: Locator?)` when speaking `utterance`. This state is updated repeatedly while the utterance is spoken, updating the `range` property with the portion of utterance being played (usually the current word).
-
-When pairing the `PublicationSpeechSynthesizer` with a `Navigator`, you can use the `utterance.locator` and `range` properties to highlight spoken utterances and turn pages automatically.
-
-## Configuring the TTS
-
-The `PublicationSpeechSynthesizer` offers some options to configure the TTS engine. Note that the support of each configuration option depends on the TTS engine used.
-
-Update the configuration by setting it directly. The configuration is not applied right away but for the next utterance.
+The `AndroidTtsNavigator` implements [`Configurable`](navigator-preferences.md) and provides various settings to customize the text-to-speech experience.
 
 ```kotlin
-synthesizer.setConfig(synthesizer.config.copy(
-    defaultLanguage = Language(Locale.FRENCH)
+navigator.submitPreferences(AndroidTtsPreferences(
+    language = Language("fr"),
+    pitch = 0.8f,
+    speed = 1.5f
 ))
 ```
 
-To keep your settings user interface up to date when the configuration changes, observe the `PublicationSpeechSynthesizer.config` property. Look at `TtsControls` in the Test App for an example of a TTS settings screen.
-
-### Default language
-
-The language used by the synthesizer is important, as it determines which TTS voices are used and the rules to tokenize the publication text content.
-
-By default, `PublicationSpeechSynthesizer` will use any language explicitly set on a text element (e.g. with `lang="fr"` in HTML) and fall back on the global language declared in the publication manifest. You can override the fallback language with `Configuration.defaultLanguage` which is useful when the publication language is incorrect or missing.
-
-### Speech rate
-
-The `rateMultiplier` configuration sets the speech speed as a multiplier, 1.0 being the normal speed. The available range depends on the TTS engine and can be queried with `synthesizer.rateMultiplierRange`.
+A `PreferencesEditor` is available to help you construct your user interface and modify the preferences.
 
 ```kotlin
-PublicationSpeechSynthesizer.Configuration(
-    rateMultiplier = multiplier.coerceIn(synthesizer.rateMultiplierRange)
-)
+val factory = AndroidTtsNavigatorFactory(application, publication)
+    ?: throw Exception("This publication cannot be played with the TTS navigator")
+
+val navigator = factory.createNavigator()
+
+val editor = factory.createPreferencesEditor(preferences)
+editor.pitch.increment()
+navigator.submitPreferences(editor.preferences)
 ```
 
-### Voice
+### Language preference
 
-The `voice` setting can be used to change the synthetic voice used by the engine. To get the available list, use `synthesizer.availableVoices`. Note that the available voices can change during runtime, observe `availableVoices` to keep your interface up to date.
+The language set in the preferences determines how the publication text content is tokenized – i.e. split in utterances.
 
-To restore a user-selected voice, persist the unique voice identifier returned by `voice.id`.
+By default, the TTS navigator uses any language explicitly set on a text element (e.g. `lang="fr"` in HTML) and, if none is set, it falls back on the language declared in the publication manifest. Providing an explicit language preference is useful when the publication language is incorrect or missing.
 
-Users do not expect to see all available voices at all time, as they depend on the selected language. You can group the voices by their language and filter them by the selected language using the following snippet.
+### Voices preference
 
-```kotlin
-// Supported voices grouped by their language.
-val voicesByLanguage: Flow<Map<Language, List<Voice>>> =
-    synthesizer.availableVoices
-        .map { voices -> voices.groupBy { it.language } }
+The Android TTS engine supports multiple voices. To allow users to choose their preferred voice for each language, they are stored as a dictionary `Map<Language, AndroidTtsEngine.Voice.Id?>` in `AndroidTtsPreferences`.
 
-// Supported voices for the language selected in the configuration.
-val voicesForSelectedLanguage: Flow<List<Voice>> =
-    combine(
-        synthesizer.config.map { it.defaultLanguage },
-        voicesByLanguage,
-    ) { language, voices ->
-        language
-            ?.let { voices[it] }
-            ?.sortedBy { it.name ?: it.id }
-            ?: emptyList()
-    }
-```
+Use the `voices` property of the `AndroidTtsNavigator` instance to get the full list of available voices.
 
-## Installing missing voice data
-
-:point_up: This only applies if you use the default `AndroidTtsEngine`.
-
-Sometimes the device does not have access to all the data required by a selected voice, in which case the user needs to download it manually. You can catch the `TtsEngine.Exception.LanguageSupportIncomplete` error and call `synthesizer.engine.requestInstallMissingVoice()` to start the system voice download activity.
+Users don't expect to see all available voices at once, as they depend on the selected language. To get an `EnumPreference<AndroidTtsEngine.Voice.Id?>` based on the current `language` preference, you can use the following snippet.
 
 ```kotlin
-val synthesizer = PublicationSpeechSynthesizer(context, publication)
+// We remove the region to show all the voices for a given language, no matter the region (e.g. Canada, France).
+val currentLanguage = editor.language.effectiveValue?.removeRegion()
 
-synthesizer.listener = object : PublicationSpeechSynthesizer.Listener {
-    override fun onUtteranceError( utterance: PublicationSpeechSynthesizer.Utterance, error: PublicationSpeechSynthesizer.Exception) {
-        handle(error)
-    }
+val voice: EnumPreference<AndroidTtsEngine.Voice.Id?> = editor.voices
+    .map(
+        from = { voices ->
+            currentLanguage?.let { voices[it] }
+        },
+        to = { voice ->
+            currentLanguage
+                ?.let { editor.voices.value.orEmpty().update(it, voice) }
+                ?: editor.voices.value.orEmpty()
+        }
+    )
+    .withSupportedValues(
+        navigator.voices
+            .filter { it.language.removeRegion() == currentLanguage }
+            .map { it.id }
+    )
 
-    override fun onError(error: PublicationSpeechSynthesizer.Exception) {
-        handle(error)
-    }
-
-    private fun handle(error: PublicationSpeechSynthesizer.Exception) {
-        when (error) {
-            is PublicationSpeechSynthesizer.Exception.Engine ->
-                when (val err = error.error) {
-                    is TtsEngine.Exception.LanguageSupportIncomplete -> {
-                        synthesizer.engine.requestInstallMissingVoice(context)
-                    }
-
-                    else -> {
-                        ...
-                    }
-                }
-            }
+fun <K, V> Map<K, V>.update(key: K, value: V?): Map<K, V> =
+    buildMap {
+        putAll(this@update)
+        if (value == null) {
+            remove(key)
+        } else {
+            put(key, value)
         }
     }
 ```
 
-## Synchronizing the TTS with a Navigator
+#### Installing missing voice data
 
-While `PublicationSpeechSynthesizer` is completely independent from `Navigator` and can be used to play a publication in the background, most apps prefer to render the publication while it is being read aloud. The `Locator` core model is used as a means to synchronize the synthesizer with the navigator.
+:point_up: This only applies if you use the default `AndroidTtsEngine`.
+
+If the device lacks the data necessary for the chosen voice, the user needs to manually download it. To do so, call the `AndroidTtsEngine.requestInstallVoice()` helper when the `AndroidTtsEngine.Error.LanguageMissingData` error occurs. This will launch the system voice download activity.
+
+```kotlin
+navigator.playback
+    .onEach { playback ->
+        (playback?.state as? TtsNavigator.State.Error.EngineError<*>)
+            ?.let { it.error as? AndroidTtsEngine.Error.LanguageMissingData }
+            ?.let { error ->
+                Timber.e("Missing data for language ${error.language}")
+                AndroidTtsEngine.requestInstallVoice(context)
+            }
+    }
+    .launchIn(viewModelScope)
+```
+
+## Synchronizing the TTS navigator with a visual navigator
+
+`TtsNavigator` is a standalone navigator that can be used to play a publication in the background. However, most apps prefer to display the publication while it is being read aloud. To do this, you can open the publication with a visual navigator (e.g. `EpubNavigatorFragment`) alongside the `TtsNavigator`. Then, synchronize the progression between the two navigators and use the Decorator API to highlight the spoken utterances.
+
+For concrete examples, take a look at `TtsViewModel` in the Test App.
 
 ### Starting the TTS from the visible page
 
-`PublicationSpeechSynthesizer.start()` takes a starting `Locator` for parameter. You can use it to begin the playback from the currently visible page in a `VisualNavigator` using `firstVisibleElementLocator()`.
+To start the TTS from the currently visible page, you can use the `VisualNavigator.firstVisibleElementLocator()` API to feed the initial locator of the `TtsNavigator`.
 
 ```kotlin
-val start = (navigator as? VisualNavigator)?.firstVisibleElementLocator()
-synthesizer.start(fromLocator = start)
+val ttsNavigator = ttsNavigatorFactory.createNavigator(
+    initialLocator = (navigator as? VisualNavigator)?.firstVisibleElementLocator()
+)
 ```
 
 ### Highlighting the currently spoken utterance
 
-If you want to highlight or underline the current utterance on the page, you can apply a `Decoration` on the utterance locator with a `DecorableNavigator`.
+To highlight the current utterance on the page, you can apply a `Decoration` on the utterance locator if the visual navigator implements `DecorableNavigator`.
 
 ```kotlin
-val navigator: DecorableNavigator
+val visualNavigator: DecorableNavigator
 
-synthesizer.state
-    .map { (it as? State.Playing)?.utterance }
+ttsNavigator.location
+    .map { it.utteranceLocator }
     .distinctUntilChanged()
-    .onEach { utterance ->
+    .onEach { locator ->
         navigator.applyDecorations(listOf(
             Decoration(
                 id = "tts-utterance",
-                locator = utterance.locator,
+                locator = locator,
                 style = Decoration.Style.Highlight(tint = Color.RED)
             )
         ), group = "tts")
@@ -186,47 +165,48 @@ synthesizer.state
 
 ### Turning pages automatically
 
-You can use the same technique as described above to automatically synchronize the `Navigator` with the played utterance, using `navigator.go(utterance.locator)`.
+To keep the visual navigator in sync with the utterance being played, observe the navigator's current `location` as described above and use `navigator.go(location.utteranceLocator)`.
 
-However, this will not turn pages mid-utterance, which can be annoying when speaking a long sentence spanning two pages. To address this, you can go to the `State.Playing.range` locator instead, which is updated regularly while speaking each word of an utterance. Note that jumping to the `range` locator for every word can severely impact performances. To alleviate this, you can throttle the flow using [`throttleLatest`](https://github.com/Kotlin/kotlinx.coroutines/issues/1107#issuecomment-1083076517).
+However, this won't turn pages in the middle of an utterance, which can be irritating when speaking a lengthy sentence that spans two pages. To tackle this issue, you can use `location.tokenLocator` when available. It is updated constantly while you speak each word of an utterance.
+
+Jumping to the token locator for every word can significantly reduce performance. To address this, it is recommended to use [`throttleLatest`](https://github.com/Kotlin/kotlinx.coroutines/issues/1107#issuecomment-1083076517).
+
 
 ```kotlin
-synthesizer.state
-    .filterIsInstance<State.Playing>()
-    .map { it.range ?: it.utterance.locator }
+ttsNavigator.location
     .throttleLatest(1.seconds)
+    .map { it.tokenLocator ?: it.utteranceLocator }
+    .distinctUntilChanged()
     .onEach { locator ->
         navigator.go(locator, animated = false)
     }
     .launchIn(scope)
 ```
 
-## Using a custom utterance tokenizer
+## Advanced customizations
 
-By default, the `PublicationSpeechSynthesizer` will split the publication text into sentences to create the utterances. You can customize this for finer or coarser utterances using a different tokenizer.
+### Utterance tokenizer
 
-For example, this will speak the content word-by-word:
+By default, the `TtsNavigator` splits the publication text into sentences, but you can supply your own tokenizer to customize how the text is divided.
+
+For example, this will speak the content word by word:
 
 ```kotlin
-val synthesizer = PublicationSpeechSynthesizer(context, publication,
+val navigatorFactory = TtsNavigatorFactory(
+    application, publication,
     tokenizerFactory = { language ->
-        TextContentTokenizer(
-            defaultLanguage = language,
-            unit = TextUnit.Word
-        )
+        DefaultTextContentTokenizer(unit = TextUnit.Word, language = language)
     }
 )
 ```
 
-For completely custom tokenizing or to improve the existing tokenizers, you can implement your own `ContentTokenizer`.
+### Custom TTS engine
 
-## Using a custom TTS engine
-
-`PublicationSpeechSynthesizer` can be used with any TTS engine, provided they implement the `TtsEngine` interface. Take a look at `AndroidTtsEngine` for an example implementation.
+`TtsNavigator` is compatible with any TTS engine if you provide an adapter implementing the `TtsEngine` interface. For an example, take a look at `AndroidTtsEngine`.
 
 ```kotlin
-val synthesizer = PublicationSpeechSynthesizer(publication,
-    engineFactory = { listener -> MyCustomEngine(listener) }
+val navigatorFactory = TtsNavigatorFactory(
+    application, publication,
+    engineProvider = MyEngineProvider()
 )
 ```
-
