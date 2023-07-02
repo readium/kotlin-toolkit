@@ -17,6 +17,7 @@ import org.json.JSONObject
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
+import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.lengthBlocking
 import org.readium.r2.shared.linkBlocking
 import org.readium.r2.shared.publication.Link
@@ -24,7 +25,6 @@ import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.readBlocking
 import org.readium.r2.shared.resource.DefaultArchiveFactory
 import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows

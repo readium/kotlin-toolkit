@@ -6,7 +6,7 @@
 -->
 
 <resources>
-    <string name="r2.shared.publication.opening_exception.unsupported_format">Format not supported</string>
+    <string name="r2.shared.publication.opening_exception.unsupported_asset">Format not supported</string>
     <string name="r2.shared.publication.opening_exception.not_found">File not found</string>
     <string name="r2.shared.publication.opening_exception.parsing_failed">The file is corrupted and can\'t be opened</string>
     <string name="r2.shared.publication.opening_exception.forbidden">You are not allowed to open this publication</string>

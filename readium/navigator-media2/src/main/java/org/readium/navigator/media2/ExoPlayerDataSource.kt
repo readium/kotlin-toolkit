@@ -15,10 +15,10 @@ import com.google.android.exoplayer2.upstream.DataSpec
 import com.google.android.exoplayer2.upstream.TransferListener
 import java.io.IOException
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.buffered
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.getOrThrow
 
 sealed class ExoPlayerDataSourceException(message: String, cause: Throwable?) : IOException(message, cause) {
     class NotOpened(message: String) : ExoPlayerDataSourceException(message, null)

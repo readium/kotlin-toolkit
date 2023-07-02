@@ -1,13 +1,10 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Quentin Gliosca
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util
+package org.readium.r2.shared.error
 
 /** A [Result] type which can be used as a return type. */
 sealed class Try<out Success, out Failure> {
@@ -136,4 +133,3 @@ inline fun <R, S : R, F> Try<S, F>.tryRecover(transform: (exception: F) -> Try<R
         is Try.Success -> Try.success(value)
         is Try.Failure -> transform(exception)
     }
-    

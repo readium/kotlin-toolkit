@@ -15,8 +15,8 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.opds.ParseData
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder

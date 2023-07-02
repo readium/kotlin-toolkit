@@ -7,10 +7,10 @@
 package org.readium.r2.shared.resource
 
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.requireLengthFitInt
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.getOrThrow
 
 sealed class BaseBytesResource(
     val bytes: suspend () -> Try<ByteArray, Resource.Exception>

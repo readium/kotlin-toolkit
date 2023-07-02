@@ -8,6 +8,7 @@ package org.readium.r2.testapp.reader
 
 import android.app.Activity
 import android.app.Application
+import androidx.annotation.StringRes
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences as JetpackPreferences
 import org.json.JSONObject
@@ -18,14 +19,15 @@ import org.readium.r2.navigator.media3.exoplayer.ExoPlayerEngineProvider
 import org.readium.r2.navigator.media3.tts.TtsNavigatorFactory
 import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.UserException
 import org.readium.r2.shared.asset.AssetRetriever
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.isRestricted
-import org.readium.r2.shared.publication.services.protectionError
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.testapp.PublicationError
 import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.reader.preferences.AndroidTtsPreferencesManagerFactory
@@ -48,19 +50,32 @@ class ReaderRepository(
     private val bookRepository: BookRepository,
     private val preferencesDataStore: DataStore<JetpackPreferences>,
 ) {
-    sealed class OpeningError {
+    sealed class OpeningError(
+        content: Content,
+        cause: Exception?
+    ) : UserException(content, cause) {
 
-        class Unavailable(val exception: Exception) : OpeningError()
+        constructor(@StringRes userMessageId: Int) :
+            this(Content(userMessageId), null)
 
-        class NotFound() : OpeningError()
+        constructor(cause: UserException) :
+            this(Content(cause), cause)
 
-        class OutOfMemory(val error: OutOfMemoryError) : OpeningError()
+        class PublicationError(
+            override val cause: UserException
+        ) : OpeningError(cause) {
 
-        class UnsupportedPublication() : OpeningError()
+            companion object {
 
-        class Forbidden(val exception: Exception) : OpeningError()
+                operator fun invoke(
+                    error: AssetRetriever.Error
+                ): OpeningError = PublicationError(org.readium.r2.testapp.PublicationError(error))
 
-        class Unexpected(val exception: Exception) : OpeningError()
+                operator fun invoke(
+                    error: Publication.OpeningException
+                ): OpeningError = PublicationError(org.readium.r2.testapp.PublicationError(error))
+            }
+        }
     }
 
     private val repository: MutableMap<Long, ReaderInitData> =
@@ -77,28 +92,22 @@ class ReaderRepository(
             return Try.success(Unit)
         }
 
-        val book = bookRepository.get(bookId)
-            ?: run {
-                val exception = Exception("Cannot find book in database.")
-                return Try.failure(OpeningError.Unexpected(exception))
-            }
+        val book = checkNotNull(bookRepository.get(bookId)) { "Cannot find book in database." }
 
         val asset = readium.assetRetriever.retrieve(
             Url(book.href)!!, book.mediaType, book.assetType
-        ).getOrElse { return Try.failure(mapError(it)) }
+        ).getOrElse { return Try.failure(OpeningError.PublicationError(it)) }
 
         val publication = readium.publicationFactory.open(
             asset,
             drmScheme = book.drm,
             allowUserInteraction = true,
             sender = activity
-        ).getOrElse { return Try.failure(mapError(it)) }
+        ).getOrElse { return Try.failure(OpeningError.PublicationError(it)) }
 
         // The publication is protected with a DRM and not unlocked.
         if (publication.isRestricted) {
-            val exception = publication.protectionError
-                ?: Exception("Couldn't unlock publication.")
-            return Try.failure(OpeningError.Forbidden(exception))
+            return Try.failure(OpeningError.PublicationError(PublicationError.Forbidden()))
         }
 
         val initialLocator = book.progression
@@ -114,50 +123,13 @@ class ReaderRepository(
             publication.conformsTo(Publication.Profile.DIVINA) ->
                 openImage(bookId, publication, initialLocator)
             else ->
-                Try.failure(OpeningError.UnsupportedPublication())
+                Try.failure(
+                    OpeningError.PublicationError(PublicationError.UnsupportedPublication())
+                )
         }
 
         return readerInitData.map { repository[bookId] = it }
     }
-
-    private fun mapError(error: AssetRetriever.Error): OpeningError =
-        when (error) {
-            AssetRetriever.Error.ArchiveFormatNotSupported ->
-                OpeningError.UnsupportedPublication()
-            AssetRetriever.Error.NoArchiveFactoryForResource ->
-                OpeningError.UnsupportedPublication()
-            is AssetRetriever.Error.SchemeNotSupported ->
-                OpeningError.UnsupportedPublication()
-            AssetRetriever.Error.NotFound ->
-                OpeningError.NotFound()
-            is AssetRetriever.Error.Forbidden ->
-                OpeningError.Forbidden(error.exception)
-            is AssetRetriever.Error.OutOfMemory ->
-                OpeningError.OutOfMemory(error.error)
-            is AssetRetriever.Error.Unavailable ->
-                OpeningError.Unavailable(error.exception)
-            is AssetRetriever.Error.Unknown ->
-                OpeningError.Unexpected(error.exception)
-        }
-
-    private fun mapError(error: Publication.OpeningException): OpeningError =
-        when (error) {
-            is Publication.OpeningException.Forbidden ->
-                OpeningError.Forbidden(error)
-            Publication.OpeningException.IncorrectCredentials -> TODO()
-            is Publication.OpeningException.NotFound ->
-                OpeningError.NotFound()
-            is Publication.OpeningException.OutOfMemory ->
-                OpeningError.OutOfMemory(error.cause)
-            is Publication.OpeningException.ParsingFailed ->
-                OpeningError.Unexpected(error)
-            is Publication.OpeningException.Unavailable ->
-                OpeningError.Unavailable(error)
-            is Publication.OpeningException.Unexpected ->
-                OpeningError.Unexpected(error)
-            is Publication.OpeningException.UnsupportedAsset ->
-                OpeningError.UnsupportedPublication()
-        }
 
     private suspend fun openAudio(
         bookId: Long,
@@ -172,12 +144,12 @@ class ReaderRepository(
         val navigatorFactory = AudioNavigatorFactory(
             publication,
             ExoPlayerEngineProvider(application),
-        ) ?: return Try.failure(OpeningError.UnsupportedPublication())
+        ) ?: return Try.failure(OpeningError.PublicationError(PublicationError.UnsupportedPublication()))
 
         val navigator = navigatorFactory.createNavigator(
             initialPreferences,
             initialLocator
-        ) ?: return Try.failure(OpeningError.UnsupportedPublication())
+        ) ?: return Try.failure(OpeningError.PublicationError(PublicationError.UnsupportedPublication()))
 
         mediaServiceFacade.openSession(bookId, navigator)
         val initData = MediaReaderInitData(

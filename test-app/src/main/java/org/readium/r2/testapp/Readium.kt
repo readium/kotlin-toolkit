@@ -11,7 +11,9 @@ import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.UserException
 import org.readium.r2.shared.asset.AssetRetriever
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.protection.ProtectionRetriever
 import org.readium.r2.shared.resource.CompositeArchiveFactory
 import org.readium.r2.shared.resource.CompositeResourceFactory
@@ -19,7 +21,6 @@ import org.readium.r2.shared.resource.ContentResourceFactory
 import org.readium.r2.shared.resource.DefaultArchiveFactory
 import org.readium.r2.shared.resource.DirectoryContainerFactory
 import org.readium.r2.shared.resource.FileResourceFactory
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpResourceFactory
@@ -69,7 +70,7 @@ class Readium(context: Context) {
      */
     val lcpService = LcpService(context, mediaTypeRetriever, resourceFactory, archiveFactory)
         ?.let { Try.success(it) }
-        ?: Try.failure(Exception("liblcp is missing on the classpath"))
+        ?: Try.failure(UserException("liblcp is missing on the classpath"))
 
     private val contentProtections = listOfNotNull(
         lcpService.getOrNull()?.contentProtection()

@@ -7,9 +7,9 @@
 package org.readium.r2.streamer.parser.image
 
 import java.io.File
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.extensions.guessTitle
@@ -30,7 +30,7 @@ class ImageParser : PublicationParser {
     ): Try<Publication.Builder, PublicationParser.Error> {
 
         if (!asset.mediaType.matches(MediaType.CBZ) && !asset.mediaType.isBitmap)
-            return Try.failure(PublicationParser.Error.FormatNotSupported)
+            return Try.failure(PublicationParser.Error.FormatNotSupported())
 
         val readingOrder =
             if (asset.mediaType.matches(MediaType.CBZ)) {
@@ -46,9 +46,7 @@ class ImageParser : PublicationParser {
 
         if (readingOrder.isEmpty()) {
             return Try.failure(
-                PublicationParser.Error.ParsingFailed(
-                    Exception("No bitmap found in the publication.")
-                )
+                PublicationParser.Error.ParsingFailed("No bitmap found in the publication.")
             )
         }
 

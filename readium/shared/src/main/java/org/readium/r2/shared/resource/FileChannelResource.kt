@@ -12,11 +12,11 @@ import java.nio.channels.Channels
 import java.nio.channels.FileChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.requireLengthFitInt
-import org.readium.r2.shared.util.Try
 
 class FileChannelResource(
     private val channel: FileChannel

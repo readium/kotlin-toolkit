@@ -13,14 +13,14 @@ import java.io.File
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.contains
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.flatMap
 
 /**
  * Implements the transformation of a Resource. It can be used, for example, to decrypt,

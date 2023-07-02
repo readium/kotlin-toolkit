@@ -11,6 +11,8 @@ package org.readium.r2.streamer.parser.epub
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.Search
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
@@ -20,10 +22,7 @@ import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.services.content.DefaultContentService
 import org.readium.r2.shared.publication.services.content.iterators.HtmlResourceContentIterator
 import org.readium.r2.shared.publication.services.search.StringSearchService
-import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Href
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
@@ -86,57 +85,33 @@ class EpubParser(
     override suspend fun parse(
         asset: PublicationParser.Asset,
         warnings: WarningLogger?
-    ): Try<Publication.Builder, PublicationParser.Error> =
-        try {
-            val builder = parseThrowing(asset.mediaType, asset.fetcher, asset.name)
-            Try.success(builder)
-        } catch (e: Exception) {
-            val error = wrapException(e)
-            Try.failure(error)
-        }
+    ): Try<Publication.Builder, PublicationParser.Error> {
+        if (asset.mediaType != MediaType.EPUB)
+            return Try.failure(PublicationParser.Error.FormatNotSupported())
 
-    private fun wrapException(e: Exception): PublicationParser.Error =
-        when (e) {
-            is PublicationParser.Error -> e
-            is Resource.Exception -> when (e) {
-                is Resource.Exception.NotFound ->
-                    PublicationParser.Error.ParsingFailed(e)
-                is Resource.Exception.OutOfMemory ->
-                    PublicationParser.Error.OutOfMemory(e.cause)
-                else -> PublicationParser.Error.IO(e)
-            }
-            else ->
-                throw IllegalStateException(Exception("Unexpected exception", e))
-        }
-
-    private suspend fun parseThrowing(
-        mediaType: MediaType,
-        fetcher: Fetcher,
-        assetName: String,
-    ): Publication.Builder {
-        if (mediaType != MediaType.EPUB)
-            throw PublicationParser.Error.FormatNotSupported
-
-        val opfPath = getRootFilePath(fetcher).addPrefix("/")
-        val opfXmlDocument = fetcher.get(opfPath).readAsXml().getOrThrow()
+        val opfPath = getRootFilePath(asset.fetcher)
+            .getOrElse { return Try.failure(it) }
+            .addPrefix("/")
+        val opfXmlDocument = asset.fetcher.get(opfPath).readAsXml()
+            .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
         val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath)
-            ?: throw PublicationParser.Error.ParsingFailed(Exception("Invalid OPF file."))
+            ?: return Try.failure(PublicationParser.Error.ParsingFailed("Invalid OPF file."))
 
         val manifest = ManifestAdapter(
-            fallbackTitle = assetName,
+            fallbackTitle = asset.name,
             packageDocument = packageDocument,
-            navigationData = parseNavigationData(packageDocument, fetcher),
-            encryptionData = parseEncryptionData(fetcher),
-            displayOptions = parseDisplayOptions(fetcher)
+            navigationData = parseNavigationData(packageDocument, asset.fetcher),
+            encryptionData = parseEncryptionData(asset.fetcher),
+            displayOptions = parseDisplayOptions(asset.fetcher)
         ).adapt()
 
         @Suppress("NAME_SHADOWING")
-        var fetcher = fetcher
+        var fetcher = asset.fetcher
         manifest.metadata.identifier?.let {
             fetcher = TransformingFetcher(fetcher, EpubDeobfuscator(it)::transform)
         }
 
-        return Publication.Builder(
+        val builder = Publication.Builder(
             manifest = manifest,
             fetcher = fetcher,
             servicesBuilder = Publication.ServicesBuilder(
@@ -149,17 +124,19 @@ class EpubParser(
                 ),
             )
         )
+
+        return Try.success(builder)
     }
 
-    private suspend fun getRootFilePath(fetcher: Fetcher): String =
+    private suspend fun getRootFilePath(fetcher: Fetcher): Try<String, PublicationParser.Error> =
         fetcher.get("/META-INF/container.xml")
-            .use { it.readAsXml().getOrNull() }
-            ?.getFirst("rootfiles", Namespaces.OPC)
+            .use { it.readAsXml() }
+            .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
+            .getFirst("rootfiles", Namespaces.OPC)
             ?.getFirst("rootfile", Namespaces.OPC)
             ?.getAttr("full-path")
-            ?: throw PublicationParser.Error.ParsingFailed(
-                Exception("Unable to find an OPF file.")
-            )
+            ?.let { Try.success(it) }
+            ?: Try.failure(PublicationParser.Error.ParsingFailed("Cannot successfully parse OPF."))
 
     private suspend fun parseEncryptionData(fetcher: Fetcher): Map<String, Encryption> =
         fetcher.readAsXmlOrNull("/META-INF/encryption.xml")

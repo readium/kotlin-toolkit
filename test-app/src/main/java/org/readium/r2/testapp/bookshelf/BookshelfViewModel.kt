@@ -18,10 +18,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.Url
 import org.readium.r2.testapp.BuildConfig
-import org.readium.r2.testapp.R
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.reader.ReaderActivityContract
-import org.readium.r2.testapp.reader.ReaderRepository
 import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
 
@@ -84,34 +82,18 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun addRemotePublication(url: Url) {
         viewModelScope.launch {
-            val exception =
-                if (!url.scheme.startsWith("http")) {
-                    BookRepository.ImportException.UnsupportedProtocol(url.scheme)
-                } else {
-                    app.bookRepository
-                        .addRemoteBook(url)
-                        .exceptionOrNull()
-                }
+            val exception = app.bookRepository
+                .addRemoteBook(url)
+                .exceptionOrNull()
             sendImportFeedback(exception)
         }
     }
 
-    private fun sendImportFeedback(exception: BookRepository.ImportException?) {
-        if (exception == null) {
+    private fun sendImportFeedback(error: BookRepository.ImportError?) {
+        if (error == null) {
             channel.send(Event.ImportPublicationSuccess)
         } else {
-            val errorMessage = when (exception) {
-                is BookRepository.ImportException.UnableToOpenPublication ->
-                    exception.exception.getUserMessage(app)
-                BookRepository.ImportException.ImportDatabaseFailed ->
-                    app.getString(R.string.unable_add_pub_database)
-                is BookRepository.ImportException.LcpAcquisitionFailed ->
-                    "Error: " + exception.message
-                BookRepository.ImportException.IOException ->
-                    app.getString(R.string.unexpected_io_exception)
-                is BookRepository.ImportException.UnsupportedProtocol ->
-                    app.getString(R.string.unsupported_protocol)
-            }
+            val errorMessage = error.getUserMessage(app)
             channel.send(Event.ImportPublicationError(errorMessage))
         }
     }
@@ -123,21 +105,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         val readerRepository = app.readerRepository.await()
         readerRepository.open(bookId, activity)
             .onFailure { error ->
-                val messageId = when (error) {
-                    is ReaderRepository.OpeningError.Forbidden ->
-                        R.string.r2_shared_publication_opening_exception_forbidden
-                    is ReaderRepository.OpeningError.NotFound ->
-                        R.string.r2_shared_publication_opening_exception_not_found
-                    is ReaderRepository.OpeningError.OutOfMemory ->
-                        R.string.r2_shared_resource_exception_out_of_memory
-                    is ReaderRepository.OpeningError.Unavailable ->
-                        R.string.r2_shared_publication_opening_exception_unavailable
-                    is ReaderRepository.OpeningError.Unexpected ->
-                        R.string.r2_shared_resource_exception_unexpected
-                    is ReaderRepository.OpeningError.UnsupportedPublication ->
-                        R.string.r2_shared_publication_opening_exception_unsupported_format
-                }
-                val message = activity.getString(messageId)
+                val message = error.getUserMessage(app)
                 channel.send(Event.OpenPublicationError(message))
             }
             .onSuccess {
@@ -148,14 +116,15 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
 
     sealed class Event {
 
-        object ImportPublicationSuccess : Event()
+        object ImportPublicationSuccess :
+            Event()
 
         class ImportPublicationError(
             val errorMessage: String
         ) : Event()
 
         class OpenPublicationError(
-            val errorMessage: String?
+            val errorMessage: String
         ) : Event()
 
         class LaunchReader(

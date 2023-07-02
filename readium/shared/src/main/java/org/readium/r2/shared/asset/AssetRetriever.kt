@@ -11,14 +11,16 @@ import android.net.Uri
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
 import java.io.File
+import org.readium.r2.shared.error.Error
+import org.readium.r2.shared.error.ThrowableError
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.ContainerFactory
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.ContainerSnifferContext
 import org.readium.r2.shared.util.mediatype.ContentAwareSnifferContext
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -36,33 +38,102 @@ class AssetRetriever(
     private val sniffers: List<Sniffer>
 ) {
 
-    sealed class Error {
+    sealed class Error : org.readium.r2.shared.error.Error {
 
         class SchemeNotSupported(
-            val scheme: String
-        ) : Error()
+            val scheme: String,
+            override val cause: org.readium.r2.shared.error.Error?,
+        ) : Error() {
 
-        object NotFound : Error()
+            constructor(scheme: String, exception: Exception) : this(scheme, ThrowableError(exception))
 
-        object ArchiveFormatNotSupported : Error()
+            override val message: String =
+                "Scheme $scheme is not supported."
+        }
 
-        object NoArchiveFactoryForResource : Error()
+        class NotFound(
+            val url: Url,
+            override val cause: org.readium.r2.shared.error.Error?
+        ) : Error() {
+
+            constructor(url: Url, exception: Exception) : this(url, ThrowableError(exception))
+
+            override val message: String =
+                "Asset could not be found at $url."
+        }
+
+        class InvalidAsset(
+            override val cause: org.readium.r2.shared.error.Error?
+        ) : Error() {
+
+            constructor(exception: Exception) : this(ThrowableError(exception))
+
+            override val message: String =
+                "Asset looks corrupted."
+        }
+
+        class ArchiveFormatNotSupported(
+            override val cause: org.readium.r2.shared.error.Error?
+        ) : Error() {
+
+            constructor(exception: Exception) : this(ThrowableError(exception))
+
+            override val message: String =
+                "Archive factory does not support this kind of archive."
+        }
+
+        class NoArchiveFactoryForResource(
+            override val cause: org.readium.r2.shared.error.Error?
+        ) : Error() {
+
+            constructor(exception: Exception) : this(ThrowableError(exception))
+
+            override val message: String =
+                "Archive factory does not support resources without direct access to file."
+        }
 
         class Forbidden(
-            val exception: Exception
-        ) : Error()
+            val url: Url,
+            override val cause: org.readium.r2.shared.error.Error
+        ) : Error() {
+
+            constructor(url: Url, exception: Exception) : this(url, ThrowableError(exception))
+
+            override val message: String =
+                "Access to asset at url $url is forbidden."
+        }
 
         class Unavailable(
-            val exception: Exception
-        ) : Error()
+            override val cause: org.readium.r2.shared.error.Error
+        ) : Error() {
+
+            constructor(exception: Exception) : this(ThrowableError(exception))
+
+            override val message: String =
+                "Asset seems not to be available at the moment."
+        }
 
         class OutOfMemory(
-            val error: OutOfMemoryError
-        ) : Error()
+            error: OutOfMemoryError
+        ) : Error() {
+
+            override val message: String =
+                "There is not enough memory on the device to load the asset."
+
+            override val cause: org.readium.r2.shared.error.Error =
+                ThrowableError(error)
+        }
 
         class Unknown(
-            val exception: Exception
-        ) : Error()
+            private val exception: Exception
+        ) : Error() {
+
+            override val message: String =
+                exception.message ?: "Something unexpected happened."
+
+            override val cause: org.readium.r2.shared.error.Error =
+                ThrowableError(exception)
+        }
     }
 
     /* Restore well-known asset */
@@ -88,19 +159,19 @@ class AssetRetriever(
         return resourceFactory.create(url)
             .mapFailure { error ->
                 when (error) {
-                    is ResourceFactory.Error.NotAResource -> Error.NotFound
-                    is ResourceFactory.Error.ResourceError -> error.exception.wrap()
-                    is ResourceFactory.Error.UnsupportedScheme -> Error.SchemeNotSupported(error.scheme)
+                    is ResourceFactory.Error.NotAResource -> Error.NotFound(url, error)
+                    is ResourceFactory.Error.Forbidden -> Error.Forbidden(url, error)
+                    is ResourceFactory.Error.UnsupportedScheme -> Error.SchemeNotSupported(error.scheme, error)
                 }
             }
             .flatMap { resource: Resource ->
                 archiveFactory.create(resource, password = null)
                     .mapFailure { error ->
                         when (error) {
-                            is ArchiveFactory.Error.FormatNotSupported -> Error.ArchiveFormatNotSupported
-                            is ArchiveFactory.Error.ResourceError -> error.error.wrap()
-                            is ArchiveFactory.Error.ResourceNotSupported -> Error.NoArchiveFactoryForResource
-                            is ArchiveFactory.Error.PasswordsNotSupported -> Error.ArchiveFormatNotSupported
+                            is ArchiveFactory.Error.FormatNotSupported -> Error.ArchiveFormatNotSupported(error)
+                            is ArchiveFactory.Error.ResourceReading -> error.resourceException.wrap(url)
+                            is ArchiveFactory.Error.ResourceNotSupported -> Error.NoArchiveFactoryForResource(error)
+                            is ArchiveFactory.Error.PasswordsNotSupported -> Error.ArchiveFormatNotSupported(error)
                         }
                     }
             }
@@ -115,9 +186,9 @@ class AssetRetriever(
             .map { container -> Asset.Container(url.filename, mediaType, AssetType.Directory, container) }
             .mapFailure { error ->
                 when (error) {
-                    is ContainerFactory.Error.NotAContainer -> Error.NotFound
-                    is ContainerFactory.Error.Forbidden -> Error.Forbidden(error.exception)
-                    is ContainerFactory.Error.UnsupportedScheme -> Error.SchemeNotSupported(error.scheme)
+                    is ContainerFactory.Error.NotAContainer -> Error.NotFound(url, error)
+                    is ContainerFactory.Error.Forbidden -> Error.Forbidden(url, error)
+                    is ContainerFactory.Error.UnsupportedScheme -> Error.SchemeNotSupported(error.scheme, error)
                 }
             }
     }
@@ -130,17 +201,17 @@ class AssetRetriever(
             .map { resource -> Asset.Resource(url.filename, mediaType, resource) }
             .mapFailure { error ->
                 when (error) {
-                    is ResourceFactory.Error.NotAResource -> Error.NotFound
-                    is ResourceFactory.Error.ResourceError -> error.exception.wrap()
-                    is ResourceFactory.Error.UnsupportedScheme -> Error.SchemeNotSupported(error.scheme)
+                    is ResourceFactory.Error.NotAResource -> Error.NotFound(url, error)
+                    is ResourceFactory.Error.Forbidden -> Error.Forbidden(url, error)
+                    is ResourceFactory.Error.UnsupportedScheme -> Error.SchemeNotSupported(error.scheme, error)
                 }
             }
     }
 
-    private fun Resource.Exception.wrap(): Error =
+    private fun Resource.Exception.wrap(url: Url): Error =
         when (this) {
-            is Resource.Exception.Forbidden -> Error.Forbidden(this)
-            is Resource.Exception.NotFound -> Error.NotFound
+            is Resource.Exception.Forbidden -> Error.Forbidden(url, this)
+            is Resource.Exception.NotFound -> Error.InvalidAsset(this)
             Resource.Exception.Offline -> Error.Unavailable(this)
             is Resource.Exception.Other -> Error.Unknown(this)
             is Resource.Exception.OutOfMemory -> Error.OutOfMemory(cause)

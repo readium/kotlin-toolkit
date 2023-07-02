@@ -7,11 +7,11 @@
 package org.readium.r2.shared.publication.protection
 
 import java.io.File
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.StringResource
-import org.readium.r2.shared.util.Try
 
 class TestContainer(resources: Map<String, String> = emptyMap()) : Container {
 

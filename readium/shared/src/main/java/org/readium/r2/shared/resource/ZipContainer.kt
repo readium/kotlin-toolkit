@@ -12,9 +12,9 @@ import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.io.CountingInputStream
 
 interface ZipContainer : Container {
@@ -145,12 +145,12 @@ class DefaultArchiveFactory : ArchiveFactory {
 
     override suspend fun create(resource: Resource, password: String?): Try<Container, ArchiveFactory.Error> {
         if (password != null) {
-            return Try.failure(ArchiveFactory.Error.PasswordsNotSupported)
+            return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
         }
 
         return resource.file
             ?.let { open(it) }
-            ?: Try.failure(ArchiveFactory.Error.ResourceNotSupported)
+            ?: Try.failure(ArchiveFactory.Error.ResourceNotSupported())
     }
 
     // Internal for testing purpose
@@ -160,11 +160,11 @@ class DefaultArchiveFactory : ArchiveFactory {
                 val archive = JavaZipContainer(ZipFile(file), file)
                 Try.success(archive)
             } catch (e: ZipException) {
-                Try.failure(ArchiveFactory.Error.FormatNotSupported)
+                Try.failure(ArchiveFactory.Error.FormatNotSupported(e))
             } catch (e: SecurityException) {
-                Try.failure(ArchiveFactory.Error.ResourceError(Resource.Exception.Forbidden(e)))
+                Try.failure(ArchiveFactory.Error.ResourceReading(Resource.Exception.Forbidden(e)))
             } catch (e: Exception) {
-                Try.failure(ArchiveFactory.Error.ResourceError(Resource.Exception.wrap(e)))
+                Try.failure(ArchiveFactory.Error.ResourceReading(Resource.Exception.wrap(e)))
             }
         }
 }

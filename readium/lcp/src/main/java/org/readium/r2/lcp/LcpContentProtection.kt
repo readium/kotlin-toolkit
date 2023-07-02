@@ -11,18 +11,17 @@ import org.readium.r2.lcp.auth.LcpPassphraseAuthentication
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.asset.AssetType
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrElse
+import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.fetcher.ContainerFetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.resource.ArchiveFactory
-import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 internal class LcpContentProtection(
@@ -152,35 +151,17 @@ internal class LcpContentProtection(
         when (this) {
             is ResourceFactory.Error.NotAResource ->
                 Publication.OpeningException.NotFound()
-            is ResourceFactory.Error.ResourceError ->
-                wrap()
+            is ResourceFactory.Error.Forbidden ->
+                Publication.OpeningException.Forbidden()
             is ResourceFactory.Error.UnsupportedScheme ->
                 Publication.OpeningException.UnsupportedAsset()
         }
 
     private fun ArchiveFactory.Error.wrap(): Publication.OpeningException =
         when (this) {
-            ArchiveFactory.Error.FormatNotSupported -> Publication.OpeningException.UnsupportedAsset()
-            ArchiveFactory.Error.PasswordsNotSupported -> Publication.OpeningException.UnsupportedAsset()
-            is ArchiveFactory.Error.ResourceError -> wrap()
-            ArchiveFactory.Error.ResourceNotSupported -> Publication.OpeningException.UnsupportedAsset()
-        }
-
-    private fun Resource.Exception.wrap(): Publication.OpeningException =
-        when (this) {
-            is Resource.Exception.BadRequest ->
-                Publication.OpeningException.Unavailable()
-            is Resource.Exception.Forbidden ->
-                Publication.OpeningException.Forbidden()
-            is Resource.Exception.NotFound ->
-                Publication.OpeningException.NotFound()
-            Resource.Exception.Offline ->
-                Publication.OpeningException.Unavailable()
-            is Resource.Exception.OutOfMemory ->
-                Publication.OpeningException.OutOfMemory(cause)
-            is Resource.Exception.Unavailable ->
-                Publication.OpeningException.Unavailable()
-            is Resource.Exception.Other ->
-                Publication.OpeningException.Unexpected(this)
+            is ArchiveFactory.Error.FormatNotSupported -> Publication.OpeningException.UnsupportedAsset()
+            is ArchiveFactory.Error.PasswordsNotSupported -> Publication.OpeningException.UnsupportedAsset()
+            is ArchiveFactory.Error.ResourceReading -> wrap()
+            is ArchiveFactory.Error.ResourceNotSupported -> Publication.OpeningException.UnsupportedAsset()
         }
 }

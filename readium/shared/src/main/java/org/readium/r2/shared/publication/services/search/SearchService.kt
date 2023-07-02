@@ -12,12 +12,12 @@ import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.R
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.UserException
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.LocatorCollection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.SuspendingCloseable
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.HttpException
 
 @Search

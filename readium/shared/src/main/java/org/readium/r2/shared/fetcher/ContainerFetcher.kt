@@ -12,6 +12,8 @@ package org.readium.r2.shared.fetcher
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrDefault
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.publication.Link
@@ -20,8 +22,6 @@ import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.ZipContainer
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.getOrDefault
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.use
 import timber.log.Timber

@@ -10,7 +10,7 @@ import android.content.Context
 import android.net.Uri
 import java.io.File
 import java.util.*
-import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.error.Try
 import org.readium.r2.testapp.utils.ContentResolverUtil
 
 suspend fun Uri.copyToTempFile(context: Context, dir: File): Try<File, Exception> =

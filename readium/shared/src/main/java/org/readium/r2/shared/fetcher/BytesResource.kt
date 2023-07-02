@@ -10,10 +10,10 @@
 package org.readium.r2.shared.fetcher
 
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
-import org.readium.r2.shared.util.Try
 
 sealed class BaseBytesResource(
     private val link: Link,

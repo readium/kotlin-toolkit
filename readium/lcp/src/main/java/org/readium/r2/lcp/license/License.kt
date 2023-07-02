@@ -25,11 +25,11 @@ import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LcpClient
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrElse
+import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.toIso8601String
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 

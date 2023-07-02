@@ -13,10 +13,10 @@ import java.io.RandomAccessFile
 import java.nio.channels.Channels
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.isLazyInitialized
 import timber.log.Timber
 
@@ -117,12 +117,11 @@ class FileResourceFactory : ResourceFactory {
         val file = File(url.path)
 
         try {
-            if (!file.exists()) {
+            if (!file.isFile) {
                 return Try.failure(ResourceFactory.Error.NotAResource(url))
             }
         } catch (e: Exception) {
-            val resourceError = Resource.Exception.Forbidden(e)
-            return Try.failure(ResourceFactory.Error.ResourceError(resourceError))
+            return Try.failure(ResourceFactory.Error.Forbidden(e))
         }
 
         return Try.success(FileResource(file))

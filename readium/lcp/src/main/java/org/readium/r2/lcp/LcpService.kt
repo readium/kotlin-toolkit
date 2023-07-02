@@ -28,12 +28,12 @@ import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.PassphrasesRepository
 import org.readium.r2.lcp.service.PassphrasesService
 import org.readium.r2.shared.asset.Asset
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.DefaultArchiveFactory
 import org.readium.r2.shared.resource.FileResourceFactory
 import org.readium.r2.shared.resource.ResourceFactory
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 

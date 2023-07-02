@@ -8,6 +8,8 @@
 
 package org.readium.r2.shared.util
 
+import org.readium.r2.shared.error.Try
+
 /**
  * Returns the encapsulated result of the given transform function applied to the encapsulated |Throwable] exception
  * if this instance represents failure or the original encapsulated value if it is success.

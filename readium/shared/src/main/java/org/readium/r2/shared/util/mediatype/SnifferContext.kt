@@ -12,6 +12,7 @@ import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.resource.ArchiveFactory
@@ -22,7 +23,6 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.resource.ResourceInputStream
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
 
 sealed class SnifferContext(

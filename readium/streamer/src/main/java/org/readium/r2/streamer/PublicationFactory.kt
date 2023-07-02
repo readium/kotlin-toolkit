@@ -9,13 +9,14 @@ package org.readium.r2.streamer
 import android.content.Context
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.asset.Asset
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.AdeptFallbackContentProtection
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.LcpFallbackContentProtection
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -122,34 +123,42 @@ class PublicationFactory constructor(
         sender: Any? = null,
         onCreatePublication: Publication.Builder.() -> Unit = {},
         warnings: WarningLogger? = null
-    ): PublicationTry<Publication> =
-        try {
-            val compositeOnCreatePublication: Publication.Builder.() -> Unit = {
-                this@PublicationFactory.onCreatePublication(this)
-                onCreatePublication(this)
-            }
-
-            if (drmScheme == null) {
-                val publication = openUnprotectedThrowing(asset, compositeOnCreatePublication, warnings)
-                Try.success(publication)
-            } else {
-                val publication = openProtectedThrowing(asset, drmScheme, credentials, allowUserInteraction, sender, compositeOnCreatePublication, warnings)
-                Try.success(publication)
-            }
-        } catch (e: Publication.OpeningException) {
-            Try.failure(e)
+    ): PublicationTry<Publication> {
+        val compositeOnCreatePublication: Publication.Builder.() -> Unit = {
+            this@PublicationFactory.onCreatePublication(this)
+            onCreatePublication(this)
         }
 
-    private suspend fun openUnprotectedThrowing(
+        return if (drmScheme == null) {
+            openUnprotected(
+                asset,
+                compositeOnCreatePublication,
+                warnings
+            )
+        } else {
+            openProtected(
+                asset,
+                drmScheme,
+                credentials,
+                allowUserInteraction,
+                sender,
+                compositeOnCreatePublication,
+                warnings
+            )
+        }
+    }
+
+    private suspend fun openUnprotected(
         asset: Asset,
         onCreatePublication: Publication.Builder.() -> Unit,
         warnings: WarningLogger?
-    ): Publication {
-        val parserAsset = parserAssetFactory.createParserAsset(asset).getOrThrow()
-        return openParserAssetThrowing(parserAsset, onCreatePublication, warnings)
+    ): Try<Publication, Publication.OpeningException> {
+        val parserAsset = parserAssetFactory.createParserAsset(asset)
+            .getOrElse { return Try.failure(it) }
+        return openParserAsset(parserAsset, onCreatePublication, warnings)
     }
 
-    private suspend fun openProtectedThrowing(
+    private suspend fun openProtected(
         asset: Asset,
         drmScheme: String,
         credentials: String?,
@@ -157,12 +166,12 @@ class PublicationFactory constructor(
         sender: Any?,
         onCreatePublication: Publication.Builder.() -> Unit,
         warnings: WarningLogger?
-    ): Publication {
+    ): Try<Publication, Publication.OpeningException> {
         val protectedAsset = contentProtections
             .lazyMapFirstNotNullOrNull {
                 it.open(asset, drmScheme, credentials, allowUserInteraction, sender)
-            }?.getOrThrow()
-            ?: throw Publication.OpeningException.Forbidden()
+            }?.getOrElse { return Try.failure(it) }
+            ?: return Try.failure(Publication.OpeningException.Forbidden())
 
         val parserAsset = PublicationParser.Asset(
             protectedAsset.name,
@@ -175,39 +184,60 @@ class PublicationFactory constructor(
             onCreatePublication(this)
         }
 
-        return openParserAssetThrowing(parserAsset, compositeOnCreatePublication, warnings)
+        return openParserAsset(parserAsset, compositeOnCreatePublication, warnings)
     }
 
-    private suspend fun openParserAssetThrowing(
+    private suspend fun openParserAsset(
         publicationAsset: PublicationParser.Asset,
         onCreatePublication: Publication.Builder.() -> Unit = {},
         warnings: WarningLogger? = null
-    ): Publication {
-        val builder = parsers
-            .lazyMapFirstNotNullOrNull { parser ->
-                parser.parse(publicationAsset, warnings)
-                    .takeUnless { it.exceptionOrNull() == PublicationParser.Error.FormatNotSupported }
-                    ?.mapFailure { wrapParserException(it) }
-                    ?.getOrThrow()
-            } ?: throw Publication.OpeningException.UnsupportedAsset(Exception("Cannot find a parser for this asset"))
+    ): Try<Publication, Publication.OpeningException> {
+        val builder = parse(publicationAsset, warnings)
+            .getOrElse { return Try.failure(wrapParserException(it)) }
 
         // Transform provided by the reading app during the construction of the Streamer.
         builder.apply(this.onCreatePublication)
         // Transform provided by the reading app in `Streamer.open()`.
         builder.apply(onCreatePublication)
 
-        return builder.build()
+        val publication = builder.build()
             .apply { addLegacyProperties(publicationAsset.mediaType) }
+        return Try.success(publication)
+    }
+
+    private suspend fun parse(
+        publicationAsset: PublicationParser.Asset,
+        warnings: WarningLogger?
+    ): Try<Publication.Builder, PublicationParser.Error> {
+        for (parser in parsers) {
+            val result = parser.parse(publicationAsset, warnings)
+            if (result is Try.Success ||
+                result is Try.Failure && result.exception !is PublicationParser.Error.FormatNotSupported) {
+                return result
+            }
+        }
+        return Try.failure(PublicationParser.Error.FormatNotSupported())
     }
 
     private fun wrapParserException(e: PublicationParser.Error): Publication.OpeningException =
         when (e) {
-            PublicationParser.Error.FormatNotSupported ->
-                Publication.OpeningException.UnsupportedAsset()
+            is PublicationParser.Error.FormatNotSupported ->
+                Publication.OpeningException.UnsupportedAsset("Cannot find a parser for this asset")
             is PublicationParser.Error.IO ->
-                Publication.OpeningException.Unavailable(e)
+                when (e.resourceError) {
+                    is Resource.Exception.BadRequest, is Resource.Exception.Other ->
+                        Publication.OpeningException.Unexpected(e)
+                    is Resource.Exception.Forbidden ->
+                        Publication.OpeningException.Forbidden(e)
+                    is Resource.Exception.NotFound ->
+                        Publication.OpeningException.ParsingFailed(e)
+                    is Resource.Exception.OutOfMemory ->
+                        Publication.OpeningException.OutOfMemory(e)
+                    is Resource.Exception.Unavailable, is Resource.Exception.Offline ->
+                        Publication.OpeningException.Unavailable(e)
+                }
             is PublicationParser.Error.OutOfMemory ->
-                Publication.OpeningException.OutOfMemory(e.cause)
+                Publication.OpeningException.OutOfMemory(e)
             is PublicationParser.Error.ParsingFailed ->
                 Publication.OpeningException.ParsingFailed(e)
         }

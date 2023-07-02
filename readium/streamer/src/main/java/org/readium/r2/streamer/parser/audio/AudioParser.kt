@@ -7,8 +7,12 @@
 package org.readium.r2.streamer.parser.audio
 
 import java.io.File
-import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.extensions.guessTitle
@@ -30,7 +34,7 @@ class AudioParser : PublicationParser {
     ): Try<Publication.Builder, PublicationParser.Error> {
 
         if (!asset.mediaType.matches(MediaType.ZAB) && !asset.mediaType.isAudio)
-            return Try.failure(PublicationParser.Error.FormatNotSupported)
+            return Try.failure(PublicationParser.Error.FormatNotSupported())
 
         val readingOrder =
             if (asset.mediaType.matches(MediaType.ZAB)) {
@@ -46,9 +50,7 @@ class AudioParser : PublicationParser {
 
         if (readingOrder.isEmpty()) {
             return Try.failure(
-                PublicationParser.Error.ParsingFailed(
-                    Exception("No audio file found in the publication.")
-                )
+                PublicationParser.Error.ParsingFailed("No audio file found in the publication.")
             )
         }
 

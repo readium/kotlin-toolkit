@@ -15,11 +15,11 @@ import java.nio.charset.Charset
 import org.json.JSONObject
 import org.readium.r2.shared.R
 import org.readium.r2.shared.UserException
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.util.SuspendingCloseable
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.flatMap
 
 typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Exception>
 

@@ -15,8 +15,8 @@ import java.io.IOException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.util.getOrThrow
 
 @RequiresApi(Build.VERSION_CODES.M)
 internal class MetadataRetriever(

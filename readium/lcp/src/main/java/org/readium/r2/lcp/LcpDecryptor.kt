@@ -10,6 +10,9 @@
 package org.readium.r2.lcp
 
 import java.io.IOException
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrElse
+import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.extensions.requireLengthFitInt
@@ -18,9 +21,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.getOrThrow
 
 /**
  * Decrypts a resource protected with LCP.

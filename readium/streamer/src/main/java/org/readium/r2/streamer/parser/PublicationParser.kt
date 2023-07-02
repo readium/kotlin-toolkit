@@ -6,9 +6,12 @@
 
 package org.readium.r2.streamer.parser
 
+import org.readium.r2.shared.error.SimpleError
+import org.readium.r2.shared.error.ThrowableError
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -36,14 +39,42 @@ interface PublicationParser {
         warnings: WarningLogger? = null
     ): Try<Publication.Builder, Error>
 
-    sealed class Error : Exception() {
+    sealed class Error : org.readium.r2.shared.error.Error {
 
-        object FormatNotSupported : Error()
+        class FormatNotSupported : Error() {
 
-        class ParsingFailed(override val cause: Throwable) : Error()
+            override val message: String =
+                "Asset format not supported."
 
-        class IO(override val cause: Throwable) : Error()
+            override val cause: org.readium.r2.shared.error.Error? =
+                null
+        }
 
-        class OutOfMemory(override val cause: OutOfMemoryError) : Error()
+        class ParsingFailed(override val cause: org.readium.r2.shared.error.Error?) : Error() {
+
+            constructor(message: String) : this(SimpleError(message))
+
+            override val message: String =
+                "An error occurred while parsing the publication."
+        }
+
+        class IO(
+            val resourceError: Resource.Exception
+        ) : Error() {
+
+            override val message: String =
+                "An IO error occurred."
+
+            override val cause: org.readium.r2.shared.error.Error =
+                ThrowableError(resourceError)
+        }
+
+        class OutOfMemory(
+            override val cause: org.readium.r2.shared.error.Error?
+        ) : Error() {
+
+            override val message: String =
+                "There is not enough memory on the device to parse the publication."
+        }
     }
 }

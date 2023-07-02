@@ -14,12 +14,12 @@ import java.net.URL
 import kotlin.time.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.flatMap
+import org.readium.r2.shared.error.tryRecover
 import org.readium.r2.shared.util.http.HttpRequest.Method
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.sniffMediaType
-import org.readium.r2.shared.util.tryRecover
 import timber.log.Timber
 
 /**
