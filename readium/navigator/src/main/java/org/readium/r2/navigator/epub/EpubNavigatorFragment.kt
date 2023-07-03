@@ -421,6 +421,8 @@ class EpubNavigatorFragment internal constructor(
             EpubLayout.FIXED -> Publication.TYPE.FXL
         }
         resourcePager.setBackgroundColor(viewModel.settings.value.effectiveBackgroundColor)
+        // Let the page views handle the keyboard events.
+        resourcePager.isFocusable = false
 
         parent.addView(resourcePager)
 
