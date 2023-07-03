@@ -6,7 +6,6 @@
 
 package org.readium.r2.navigator.media3.api
 
-import androidx.media3.common.Player
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.shared.ExperimentalReadiumApi

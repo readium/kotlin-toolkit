@@ -9,7 +9,6 @@ package org.readium.r2.navigator.media3.tts
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.publication.services.content.ContentService
@@ -32,7 +31,7 @@ internal class TtsContentIterator(
 ) {
     data class Utterance(
         val resourceIndex: Int,
-        val cssSelector: String,
+        val locations: Locator.Locations,
         val text: String,
         val textBefore: String?,
         val textAfter: String?,
@@ -186,16 +185,13 @@ internal class TtsContentIterator(
             val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
                 ?: throw IllegalStateException("Content Element cannot be found in readingOrder.")
 
-            val cssSelector = locator.locations.cssSelector
-                ?: throw IllegalStateException("Css selectors are expected in iterator locators.")
-
             return Utterance(
-                text = text,
-                language = language,
                 resourceIndex = resourceIndex,
+                locations = locator.locations,
+                text = text,
                 textBefore = locator.text.before,
                 textAfter = locator.text.after,
-                cssSelector = cssSelector,
+                language = language,
             )
         }
 
