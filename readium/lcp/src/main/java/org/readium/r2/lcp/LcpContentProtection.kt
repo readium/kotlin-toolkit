@@ -11,15 +11,16 @@ import org.readium.r2.lcp.auth.LcpPassphraseAuthentication
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.asset.AssetType
+import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrElse
-import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.fetcher.ContainerFetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.resource.ArchiveFactory
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -121,14 +122,23 @@ internal class LcpContentProtection(
             .getOrNull()
 
         val licenseDoc = license?.license
-            ?: LicenseDocument(licenseAsset.resource.read().getOrThrow())
+            ?: licenseAsset.resource.read()
+                .map { LicenseDocument(it) }
+                .getOrElse {
+                    return Try.failure(
+                        it.wrap()
+                    )
+                }
 
         val link = checkNotNull(licenseDoc.link(LicenseDocument.Rel.publication))
-        val url = try {
-            Url(link.url.toString()) ?: throw IllegalStateException()
-        } catch (e: Exception) {
-            throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.rawValue)
-        }
+        val url = Url(link.url.toString())
+            ?: return Try.failure(
+                Publication.OpeningException.ParsingFailed(
+                    ThrowableError(
+                        LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.rawValue)
+                    )
+                )
+            )
 
         // FIXME : random choice of exceptions
         val resource = resourceFactory.create(url)
@@ -159,9 +169,27 @@ internal class LcpContentProtection(
 
     private fun ArchiveFactory.Error.wrap(): Publication.OpeningException =
         when (this) {
-            is ArchiveFactory.Error.FormatNotSupported -> Publication.OpeningException.UnsupportedAsset()
-            is ArchiveFactory.Error.PasswordsNotSupported -> Publication.OpeningException.UnsupportedAsset()
-            is ArchiveFactory.Error.ResourceReading -> wrap()
-            is ArchiveFactory.Error.ResourceNotSupported -> Publication.OpeningException.UnsupportedAsset()
+            is ArchiveFactory.Error.FormatNotSupported ->
+                Publication.OpeningException.UnsupportedAsset()
+            is ArchiveFactory.Error.PasswordsNotSupported ->
+                Publication.OpeningException.UnsupportedAsset()
+            is ArchiveFactory.Error.ResourceReading ->
+                resourceException.wrap()
+            is ArchiveFactory.Error.ResourceNotSupported ->
+                Publication.OpeningException.UnsupportedAsset()
+        }
+
+    private fun Resource.Exception.wrap(): Publication.OpeningException =
+        when (this) {
+            is Resource.Exception.Forbidden ->
+                Publication.OpeningException.Forbidden(ThrowableError(this))
+            is Resource.Exception.NotFound ->
+                Publication.OpeningException.NotFound(ThrowableError(this))
+            Resource.Exception.Offline, is Resource.Exception.Unavailable ->
+                Publication.OpeningException.Unavailable(ThrowableError(this))
+            is Resource.Exception.Other, is Resource.Exception.BadRequest ->
+                Publication.OpeningException.Unexpected(this)
+            is Resource.Exception.OutOfMemory ->
+                Publication.OpeningException.OutOfMemory(ThrowableError(this))
         }
 }
