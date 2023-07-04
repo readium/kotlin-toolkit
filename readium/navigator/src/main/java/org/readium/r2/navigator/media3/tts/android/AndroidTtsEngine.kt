@@ -289,8 +289,7 @@ class AndroidTtsEngine private constructor(
                 tryReconnect(request)
             }
             is State.EngineAvailable -> {
-                val result = doSpeak(stateNow.engine, request)
-                if (result == ERROR) {
+                if (!doSpeak(stateNow.engine, request)) {
                     cleanEngine(stateNow.engine)
                     tryReconnect(request)
                 }
@@ -339,9 +338,9 @@ class AndroidTtsEngine private constructor(
     private fun doSpeak(
         engine: TextToSpeech,
         request: Request
-    ): Int {
-        engine.setupVoice(settings.value, request.id, request.language, voices)
-        return engine.speak(request.text, QUEUE_ADD, null, request.id.value)
+    ): Boolean {
+        return engine.setupVoice(settings.value, request.id, request.language, voices)
+            && (engine.speak(request.text, QUEUE_ADD, null, request.id.value) == SUCCESS)
     }
 
     private fun setupListener(engine: TextToSpeech) {
@@ -400,13 +399,19 @@ class AndroidTtsEngine private constructor(
         id: TtsEngine.RequestId,
         utteranceLanguage: Language?,
         voices: Set<Voice>
-    ) {
+    ): Boolean {
         var language = utteranceLanguage
             .takeUnless { settings.overrideContentLanguage }
             ?: settings.language
 
+        utteranceListener?.onError(id, Error.LanguageMissingData(language))
+        return false
+
         when (isLanguageAvailable(language.locale)) {
-            LANG_MISSING_DATA -> utteranceListener?.onError(id, Error.LanguageMissingData(language))
+            LANG_MISSING_DATA -> {
+                utteranceListener?.onError(id, Error.LanguageMissingData(language))
+                return false
+            }
             LANG_NOT_SUPPORTED -> language = Language(defaultVoice.locale)
         }
 
@@ -429,6 +434,8 @@ class AndroidTtsEngine private constructor(
         voice
             ?.let { this.voice = it }
             ?: run { this.language = language.locale }
+
+        return true
     }
 
     private fun TextToSpeech.voiceForName(name: String) =
