@@ -88,7 +88,7 @@ class AndroidTtsEngineProvider(
                 ERROR_CODE_UNSPECIFIED
         }
 
-        val message = "Android TTS engine error: $error"
+        val message = "Android TTS engine error: ${error.javaClass.simpleName}"
 
         return PlaybackException(message, null, errorCode)
     }

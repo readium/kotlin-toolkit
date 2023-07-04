@@ -20,12 +20,14 @@ You can observe the changes in the playback with the `navigator.playback` flow p
 
 `playWhenReady` indicates whether the media is playing or will start playing once the required conditions are met (e.g. buffering). You will typically use this to change the icon of a play/pause button.
 
-The actual playback status is reflected in the `state` property:
+The `state` property gives more information about the status of the playback:
 
 * `Ready` when the media is ready to be played if `playWhenReady` is true.
 * `Ended` after reaching the end of the reading order items.
 * `Buffering` if the navigator cannot play because the buffer is starved.
 * `Error` occurs when an error preventing the playback happened.
+
+By combining the two, you can determine if the media is really playing: `playWhenReady && state == Ready`.
 
 Finally, you can use the `index` property to know which `navigator.readingOrder` item is set to be played.
 

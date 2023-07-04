@@ -7,7 +7,7 @@ Text-to-speech can read aloud a publication using a synthetic voice. The Readium
 * **utterance** - a single piece of text played by a TTS engine, such as a sentence
 * **tokenizer** - algorithm splitting the publication text content into individual utterances, usually by sentences
 * **engine** – a TTS engine takes an utterance and transforms it into audio using a synthetic voice
-* **voice** – a synthetic voice is used by a TTS engine to speak a text using rules pertaining to the voice's language and region
+* **voice** – a synthetic voice is used by a TTS engine to speak a text in a way suitable for the language and region
 
 ## Getting started
 
@@ -62,7 +62,7 @@ navigator.submitPreferences(editor.preferences)
 
 ### Language preference
 
-The language set in the preferences determines how the publication text content is tokenized – i.e. split in utterances.
+The language set in the preferences determines the default voice used and how the publication text content is tokenized – i.e. split in utterances.
 
 By default, the TTS navigator uses any language explicitly set on a text element (e.g. `lang="fr"` in HTML) and, if none is set, it falls back on the language declared in the publication manifest. Providing an explicit language preference is useful when the publication language is incorrect or missing.
 
