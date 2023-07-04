@@ -224,8 +224,6 @@ class TtsViewModel private constructor(
                 when (engineError) {
                     is AndroidTtsEngine.Error.LanguageMissingData ->
                         Event.OnMissingVoiceData(engineError.language)
-                    is AndroidTtsEngine.Error.LanguageNotSupported ->
-                        Event.OnError(UserException(R.string.tts_error_language_not_supported, engineError.language.locale.displayLanguage))
                     AndroidTtsEngine.Error.Network ->
                         Event.OnError(UserException(R.string.tts_error_network))
                     else ->

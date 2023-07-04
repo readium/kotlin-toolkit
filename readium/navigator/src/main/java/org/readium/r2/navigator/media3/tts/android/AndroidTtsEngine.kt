@@ -175,9 +175,6 @@ class AndroidTtsEngine private constructor(
          */
         data class LanguageMissingData(val language: Language) : Error()
 
-        /** Denotes the language is not supported. */
-        data class LanguageNotSupported(val language: Language) : Error()
-
         /**
          * Android's TTS error code.
          * See https://developer.android.com/reference/android/speech/tts/TextToSpeech#ERROR
@@ -404,13 +401,13 @@ class AndroidTtsEngine private constructor(
         utteranceLanguage: Language?,
         voices: Set<Voice>
     ) {
-        val language = utteranceLanguage
+        var language = utteranceLanguage
             .takeUnless { settings.overrideContentLanguage }
             ?: settings.language
 
         when (isLanguageAvailable(language.locale)) {
             LANG_MISSING_DATA -> utteranceListener?.onError(id, Error.LanguageMissingData(language))
-            LANG_NOT_SUPPORTED -> utteranceListener?.onError(id, Error.LanguageNotSupported(language))
+            LANG_NOT_SUPPORTED -> language = Language(defaultVoice.locale)
         }
 
         val preferredVoiceWithRegion =

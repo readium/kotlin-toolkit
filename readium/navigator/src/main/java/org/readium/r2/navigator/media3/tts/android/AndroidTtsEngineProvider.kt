@@ -84,7 +84,6 @@ class AndroidTtsEngineProvider(
             AndroidTtsEngine.Error.Service,
             AndroidTtsEngine.Error.Synthesis,
             is AndroidTtsEngine.Error.LanguageMissingData,
-            is AndroidTtsEngine.Error.LanguageNotSupported,
             AndroidTtsEngine.Error.NotInstalledYet ->
                 ERROR_CODE_UNSPECIFIED
         }
