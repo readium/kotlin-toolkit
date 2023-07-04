@@ -145,8 +145,9 @@ internal class ExoPlayerDataSource internal constructor(
                 if (e !is InterruptedException) {
                     throw e
                 }
+            } finally {
+                openedResource = null
             }
         }
-        openedResource = null
     }
 }

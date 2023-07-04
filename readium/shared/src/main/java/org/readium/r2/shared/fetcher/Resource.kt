@@ -91,7 +91,7 @@ fun Fetcher.Resource.fallback(fallbackResourceFactory: (Resource.Exception) -> F
     FallbackResource(this, fallbackResourceFactory)
 
 /**
- * Falls back to the given alternative [resource] when the receiver fails.
+ * Falls back to the given alternative [Fetcher.Resource] when the receiver fails.
  */
 fun Fetcher.Resource.fallback(fallbackResource: Fetcher.Resource): Fetcher.Resource =
     FallbackResource(this) { fallbackResource }
@@ -377,24 +377,13 @@ class BufferingResource(
  *
  * @param resourceLength The total length of the resource, when known. This can improve performance
  *        by avoiding requesting the length from the underlying resource.
- * @param bufferSize Size of the buffer chunks to read.
+ * @param size Size of the buffer chunks to read.
  */
 fun Fetcher.Resource.buffered(
     resourceLength: Long? = null,
     size: Long = BufferingResource.DEFAULT_BUFFER_SIZE
 ) =
     BufferingResource(resource = this, resourceLength = resourceLength, bufferSize = size)
-
-private class ResourceWithLink(
-    private val link: Link,
-    private val resource: Resource
-) : Resource by resource, Fetcher.Resource {
-
-    override suspend fun link(): Link = link
-}
-
-fun Resource.withLink(link: Link): Fetcher.Resource =
-    ResourceWithLink(link, this)
 
 /**
  * Maps the result with the given [transform]

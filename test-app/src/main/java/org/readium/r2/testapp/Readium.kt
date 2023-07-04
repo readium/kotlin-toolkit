@@ -77,7 +77,8 @@ class Readium(context: Context) {
     )
 
     val protectionRetriever = ProtectionRetriever(
-        contentProtections
+        contentProtections,
+        mediaTypeRetriever
     )
 
     /**

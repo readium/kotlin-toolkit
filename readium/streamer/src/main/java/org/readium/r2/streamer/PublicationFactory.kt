@@ -211,8 +211,10 @@ class PublicationFactory constructor(
     ): Try<Publication.Builder, PublicationParser.Error> {
         for (parser in parsers) {
             val result = parser.parse(publicationAsset, warnings)
-            if (result is Try.Success ||
-                result is Try.Failure && result.exception !is PublicationParser.Error.FormatNotSupported) {
+            if (
+                result is Try.Success ||
+                result is Try.Failure && result.exception !is PublicationParser.Error.FormatNotSupported
+            ) {
                 return result
             }
         }

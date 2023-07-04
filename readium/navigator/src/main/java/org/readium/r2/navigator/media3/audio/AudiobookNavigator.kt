@@ -76,7 +76,9 @@ class AudiobookNavigator<S : Configurable.Settings, P : Configurable.Preferences
 
             if (duration == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 val resource = publication.get(link)
-                duration = MetadataRetriever(resource).duration()
+                val metadataRetriever = MetadataRetriever(resource)
+                duration = metadataRetriever.duration()
+                metadataRetriever.close()
             }
 
             return duration

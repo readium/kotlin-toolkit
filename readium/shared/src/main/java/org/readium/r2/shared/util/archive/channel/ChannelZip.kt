@@ -7,18 +7,12 @@
 package org.readium.r2.shared.util.archive.channel
 
 import java.io.File
-import java.util.zip.ZipException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
-import org.readium.r2.shared.resource.ArchiveFactory
-import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.FailureResource
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.ResourceTry
-import org.readium.r2.shared.resource.ZipContainer
+import org.readium.r2.shared.resource.*
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArchiveEntry
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipFile
 import org.readium.r2.shared.util.archive.channel.jvm.SeekableByteChannel
@@ -157,10 +151,10 @@ class ChannelZipArchiveFactory(
             val zipFile = ZipFile(channel, true)
             val channelZip = ChannelZip(zipFile, resource::name)
             Try.success(channelZip)
-        } catch (e: ZipException) {
-            Try.failure(ArchiveFactory.Error.FormatNotSupported(e))
         } catch (e: Resource.Exception) {
             Try.failure(ArchiveFactory.Error.ResourceReading(e))
+        } catch (e: Exception) {
+            Try.failure(ArchiveFactory.Error.FormatNotSupported(e))
         }
 
     internal fun openFile(file: File): Container {

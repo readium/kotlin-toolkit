@@ -32,13 +32,11 @@ class LcpFallbackContentProtection(
     override val scheme: Scheme =
         Scheme.Lcp
 
-    override suspend fun supports(asset: Asset): Boolean {
-        if (asset !is Asset.Container) {
-            return false
+    override suspend fun supports(asset: Asset): Boolean =
+        when (asset) {
+            is Asset.Container -> isLcpProtected(asset.container, asset.mediaType)
+            is Asset.Resource -> asset.mediaType.matches(MediaType.LCP_LICENSE_DOCUMENT)
         }
-
-        return isLcpProtected(asset.container, asset.mediaType)
-    }
 
     override suspend fun open(
         asset: Asset,
@@ -69,7 +67,9 @@ class LcpFallbackContentProtection(
 
     private suspend fun isLcpProtected(container: Container, mediaType: MediaType): Boolean {
         return when {
-            mediaType.matches(MediaType.READIUM_WEBPUB) -> {
+            mediaType.matches(MediaType.READIUM_WEBPUB) ||
+                mediaType.matches(MediaType.LCP_PROTECTED_PDF) ||
+                mediaType.matches(MediaType.LCP_PROTECTED_AUDIOBOOK)-> {
                 if (container.entry("/license.lcpl").readAsJsonOrNull() != null) {
                     return true
                 }

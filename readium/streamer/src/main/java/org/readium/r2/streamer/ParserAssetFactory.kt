@@ -10,15 +10,10 @@ import java.io.File
 import java.nio.charset.Charset
 import org.json.JSONObject
 import org.readium.r2.shared.asset.Asset
-import org.readium.r2.shared.error.SimpleError
-import org.readium.r2.shared.error.ThrowableError
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.getOrElse
-import org.readium.r2.shared.error.getOrThrow
+import org.readium.r2.shared.error.*
 import org.readium.r2.shared.fetcher.ContainerFetcher
+import org.readium.r2.shared.fetcher.ResourceFetcher
 import org.readium.r2.shared.fetcher.RoutingFetcher
-import org.readium.r2.shared.fetcher.SingleResourceFetcher
-import org.readium.r2.shared.fetcher.withLink
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
@@ -91,7 +86,7 @@ internal class ParserAssetFactory(
 
         val fetcher =
             RoutingFetcher(
-                local = SingleResourceFetcher(resource.withLink(link)),
+                local = ResourceFetcher(link, resource),
                 remote = HttpFetcher(httpClient, baseUrl)
             )
 
@@ -106,7 +101,7 @@ internal class ParserAssetFactory(
         assetName: String
     ): Try<PublicationParser.Asset, Publication.OpeningException> {
         val link = Link(href = "/$assetName", type = mediaType.toString())
-        val fetcher = SingleResourceFetcher(resource.withLink(link))
+        val fetcher = ResourceFetcher(link, resource)
 
         return Try.success(
             PublicationParser.Asset(assetName, mediaType, fetcher)

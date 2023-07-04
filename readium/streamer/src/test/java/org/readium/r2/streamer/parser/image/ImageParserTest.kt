@@ -16,8 +16,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.readium.r2.shared.fetcher.ContainerFetcher
-import org.readium.r2.shared.fetcher.SingleResourceFetcher
-import org.readium.r2.shared.fetcher.withLink
+import org.readium.r2.shared.fetcher.ResourceFetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.firstWithRel
@@ -44,8 +43,9 @@ class ImageParserTest {
     private val jpgAsset = runBlocking {
         val path = pathForResource("futuristic_tales.jpg")
         val file = File(path)
-        val resource = FileResource(file).withLink(Link(href = "/image.jpg", type = "image/jpeg"))
-        val fetcher = SingleResourceFetcher(resource)
+        val resource = FileResource(file)
+        val link = Link(href = "/image.jpg", type = "image/jpeg")
+        val fetcher = ResourceFetcher(link, resource)
         PublicationParser.Asset(file.name, MediaType.JPEG, fetcher)
     }
     private fun pathForResource(resource: String): String {

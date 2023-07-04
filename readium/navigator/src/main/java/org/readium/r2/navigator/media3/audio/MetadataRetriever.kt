@@ -20,7 +20,7 @@ import org.readium.r2.shared.fetcher.Fetcher
 
 @RequiresApi(Build.VERSION_CODES.M)
 internal class MetadataRetriever(
-    private val resource: Fetcher.Resource
+    resource: Fetcher.Resource
 ) {
 
     private val retriever: MediaMetadataRetriever =
@@ -36,7 +36,7 @@ internal class MetadataRetriever(
             ?.milliseconds
 
     fun close() {
-        runBlocking { resource.close() }
+        retriever.close()
     }
 
     class ResourceMediaDataSource(
