@@ -175,14 +175,16 @@ internal class LcpDecryptor(val license: LcpLicense?) {
             val cacheStartIndex = _cache.startIndex
                 ?.takeIf { cacheStart ->
                     val cacheEnd = cacheStart + _cache.data.size
-                    cacheStart <= range.first && cacheEnd <= range.last + 1
+                    range.first in cacheStart until cacheEnd && cacheEnd <= range.last + 1
                 } ?: return resource.read(range)
 
-            return resource.read(range.first + _cache.data.size..range.last).map {
-                val bytes = ByteArray(range.last.toInt() - range.first.toInt() + 1)
-                val offsetInCache = (range.first - cacheStartIndex).toInt()
+            val bytes = ByteArray(range.last.toInt() - range.first.toInt() + 1)
+            val offsetInCache = (range.first - cacheStartIndex).toInt()
+            val fromCacheLength = _cache.data.size - offsetInCache
+
+            return resource.read(range.first + fromCacheLength..range.last).map {
                 _cache.data.copyInto(bytes, 0, offsetInCache)
-                it.copyInto(bytes, _cache.data.size)
+                it.copyInto(bytes, fromCacheLength)
                 bytes
             }
         }
