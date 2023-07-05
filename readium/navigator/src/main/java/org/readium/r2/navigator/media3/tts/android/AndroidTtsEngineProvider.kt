@@ -20,7 +20,6 @@ import org.readium.r2.shared.publication.Publication
 class AndroidTtsEngineProvider(
     private val context: Context,
     private val defaults: AndroidTtsDefaults = AndroidTtsDefaults(),
-    private val listener: AndroidTtsEngine.Listener? = null,
     private val voiceSelector: AndroidTtsEngine.VoiceSelector = AndroidTtsEngine.VoiceSelector { _, _ -> null }
 ) : TtsEngineProvider<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsPreferencesEditor,
         AndroidTtsEngine.Error, AndroidTtsEngine.Voice> {
@@ -36,7 +35,6 @@ class AndroidTtsEngineProvider(
             context,
             settingsResolver,
             voiceSelector,
-            listener,
             initialPreferences
         )
     }
@@ -73,26 +71,24 @@ class AndroidTtsEngineProvider(
     }
 
     override fun mapEngineError(error: AndroidTtsEngine.Error): PlaybackException {
-        val errorCode = when (error.kind) {
-            AndroidTtsEngine.Error.Kind.Unknown ->
+        val errorCode = when (error) {
+            AndroidTtsEngine.Error.Unknown ->
                 ERROR_CODE_UNSPECIFIED
-            AndroidTtsEngine.Error.Kind.InvalidRequest ->
+            AndroidTtsEngine.Error.InvalidRequest ->
                 ERROR_CODE_IO_BAD_HTTP_STATUS
-            AndroidTtsEngine.Error.Kind.Network ->
+            AndroidTtsEngine.Error.Network ->
                 ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
-            AndroidTtsEngine.Error.Kind.NetworkTimeout ->
+            AndroidTtsEngine.Error.NetworkTimeout ->
                 ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT
-            AndroidTtsEngine.Error.Kind.NotInstalledYet ->
-                ERROR_CODE_UNSPECIFIED
-            AndroidTtsEngine.Error.Kind.Output ->
-                ERROR_CODE_UNSPECIFIED
-            AndroidTtsEngine.Error.Kind.Service ->
-                ERROR_CODE_UNSPECIFIED
-            AndroidTtsEngine.Error.Kind.Synthesis ->
+            AndroidTtsEngine.Error.Output,
+            AndroidTtsEngine.Error.Service,
+            AndroidTtsEngine.Error.Synthesis,
+            is AndroidTtsEngine.Error.LanguageMissingData,
+            AndroidTtsEngine.Error.NotInstalledYet ->
                 ERROR_CODE_UNSPECIFIED
         }
 
-        val message = "Android TTS engine error: ${error.kind.code}"
+        val message = "Android TTS engine error: ${error.javaClass.simpleName}"
 
         return PlaybackException(message, null, errorCode)
     }
