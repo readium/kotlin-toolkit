@@ -339,8 +339,8 @@ class AndroidTtsEngine private constructor(
         engine: TextToSpeech,
         request: Request
     ): Boolean {
-        return engine.setupVoice(settings.value, request.id, request.language, voices)
-            && (engine.speak(request.text, QUEUE_ADD, null, request.id.value) == SUCCESS)
+        return engine.setupVoice(settings.value, request.id, request.language, voices) &&
+            (engine.speak(request.text, QUEUE_ADD, null, request.id.value) == SUCCESS)
     }
 
     private fun setupListener(engine: TextToSpeech) {

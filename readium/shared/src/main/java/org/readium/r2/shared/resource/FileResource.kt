@@ -16,10 +16,13 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.*
+import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.isLazyInitialized
-import timber.log.Timber
 
+/**
+ * A [Resource] to access a [file].
+ */
 class FileResource(override val file: File) : Resource {
 
     private val randomAccessFile by lazy {
@@ -34,11 +37,7 @@ class FileResource(override val file: File) : Resource {
     override suspend fun close() = withContext(Dispatchers.IO) {
         if (::randomAccessFile.isLazyInitialized) {
             randomAccessFile.onSuccess {
-                try {
-                    it.close()
-                } catch (e: Exception) {
-                    Timber.e(e)
-                }
+                tryOrLog { it.close() }
             }
         }
     }
@@ -81,13 +80,11 @@ class FileResource(override val file: File) : Resource {
             ?: read().map { it.size.toLong() }
 
     private val metadataLength: Long? =
-        try {
+        tryOrNull {
             if (file.isFile)
                 file.length()
             else
                 null
-        } catch (e: Exception) {
-            null
         }
 
     private inline fun <T> Try.Companion.catching(closure: () -> T): ResourceTry<T> =

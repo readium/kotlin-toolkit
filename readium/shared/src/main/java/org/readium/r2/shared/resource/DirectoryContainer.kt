@@ -28,14 +28,15 @@ internal class DirectoryContainer(
         override val path: String
     ) : Container.Entry,
         Resource by FailureResource(
-            Resource.Exception.NotFound(Exception("No file entry at path $path."))
+            Resource.Exception.NotFound(Exception("No entry at path $path."))
         )
 
     private inner class SuccessEntry(
         override val file: File
     ) : Container.Entry, Resource by FileResource(file) {
 
-        override val path: String get() = file.relativeTo(root).path.addPrefix("/")
+        override val path: String =
+            file.relativeTo(root).path.addPrefix("/")
 
         override suspend fun close() {}
     }
@@ -47,9 +48,9 @@ internal class DirectoryContainer(
         entries.map { SuccessEntry(it) }.toList()
 
     override suspend fun entry(path: String): Container.Entry {
-        val file = File(root, path)
+        val file = File(root, path.removePrefix("/"))
 
-        return if (!root.isParentOf(file) || !file.isFile)
+        return if (!root.isParentOf(file))
             FailureEntry(path)
         else
             SuccessEntry(file)

@@ -23,13 +23,16 @@ import org.readium.r2.shared.util.mediatype.MediaType
  * Bridge between a Content Protection technology and the Readium toolkit.
  *
  * Its responsibilities are to:
- * - Unlock a publication by returning a customized [Fetcher].
+ * - Create a [Fetcher] one can access the publication through.
  * - Create a [ContentProtectionService] publication service.
  */
 interface ContentProtection {
 
     val scheme: Scheme
 
+    /**
+     * Returns if this [ContentProtection] supports the given [asset].
+     */
     suspend fun supports(
         asset: org.readium.r2.shared.asset.Asset
     ): Boolean
@@ -50,17 +53,12 @@ interface ContentProtection {
     ): Try<Asset, Publication.OpeningException>?
 
     /**
-     * Holds the result of opening a [PublicationAsset] with a [ContentProtection].
+     * Holds the result of opening an [Asset] with a [ContentProtection].
      *
-     * @property asset Protected asset which will be provided to the parsers.
-     * It is likely to be different from the asset provided to ContentProtection::open():
-     * - If the original fetcher is wrapped into a new fetcher able to decipher content.
-     * - If the original asset has a media type that can't be recognized by parsers,
-     *   the Content Protection must return an asset with the matching unprotected media type.
-     * - If the Content Protection technology needs to redirect the Streamer to a different file.
-     *   For example, this could be used to decrypt a publication to a temporary secure location.
-     *
-     * @property onCreatePublication Called on every parsed Publication.Builder.
+     * @property name Asset name
+     * @property mediaType Media type of the asset
+     * @property fetcher Fetcher to access the publication through
+     * @property onCreatePublication Called on every parsed Publication.Builder
      * It can be used to modify the `Manifest`, the root [Fetcher] or the list of service factories
      * of a [Publication].
      */

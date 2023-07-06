@@ -56,11 +56,12 @@ class FallbackResource(
     private val coroutineScope =
         CoroutineScope(Dispatchers.Default)
 
-    private val resource: Deferred<Fetcher.Resource> = coroutineScope.async {
-        when (val result = originalResource.length()) {
-            is Try.Success -> originalResource
-            is Try.Failure -> fallbackResourceFactory(result.value)
-        }
+    private val resource: Deferred<Fetcher.Resource> =
+        coroutineScope.async {
+            when (val result = originalResource.length()) {
+                is Try.Success -> originalResource
+                is Try.Failure -> fallbackResourceFactory(result.value)
+            }
     }
 
     override suspend fun link(): Link =
@@ -184,11 +185,14 @@ class LazyResource(private val factory: suspend () -> Fetcher.Resource) : Fetche
         return _resource
     }
 
-    override suspend fun link(): Link = resource().link()
+    override suspend fun link(): Link =
+        resource().link()
 
-    override suspend fun length(): ResourceTry<Long> = resource().length()
+    override suspend fun length(): ResourceTry<Long> =
+        resource().length()
 
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = resource().read(range)
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+        resource().read(range)
 
     override suspend fun close() {
         if (::_resource.isInitialized)

@@ -82,7 +82,8 @@ class FileFetcher(
                 FileResource(link, org.readium.r2.shared.resource.FileResource(file))
         }
 
-        override suspend fun link(): Link = link
+        override suspend fun link(): Link =
+            link
 
         override fun toString(): String =
             "${javaClass.simpleName}(${resource.file.path})"

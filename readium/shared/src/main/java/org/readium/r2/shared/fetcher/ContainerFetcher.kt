@@ -9,7 +9,7 @@ package org.readium.r2.shared.fetcher
 import java.io.File
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrDefault
-import org.readium.r2.shared.extensions.addPrefix
+import org.readium.r2.shared.error.tryRecover
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.resource.Container
@@ -41,21 +41,6 @@ class ContainerFetcher(
         val container: Container
     ) : Fetcher.Resource {
 
-        suspend fun <T> withEntry(block: suspend (Container.Entry) -> ResourceTry<T>): ResourceTry<T> =
-            originalLink.href
-                .removePrefix("/")
-                .let { href -> container.entry(href) }
-                .let { entry -> entry.use { block(entry) } }
-                .takeIf { result -> result.failureOrNull() !is Resource.Exception.NotFound }
-                ?: run {
-                    // Try again after removing query and fragment.
-                    originalLink.href
-                        .removePrefix("/")
-                        .takeWhile { it !in "#?" }
-                        .let { href -> container.entry(href) }
-                        .let { entry -> entry.use { block(entry) } }
-                }
-
         override suspend fun link(): Link =
             withEntry { entry ->
                 val enhancedLink = (entry as? ZipContainer.Entry)
@@ -69,14 +54,27 @@ class ContainerFetcher(
             withEntry { entry -> entry.read(range) }
 
         override suspend fun length(): ResourceTry<Long> =
-            metadataLength()?.let { Try.success(it) }
-                ?: read().map { it.size.toLong() }
+            metadataLength()
+                .tryRecover { read().map { it.size.toLong() } }
 
         override suspend fun close() {
         }
 
-        private suspend fun metadataLength(): Long? =
-            (withEntry { entry -> entry.length() }).successOrNull()
+        private suspend fun metadataLength(): ResourceTry<Long> =
+            withEntry { entry -> entry.length() }
+
+        suspend fun <T> withEntry(block: suspend (Container.Entry) -> ResourceTry<T>): ResourceTry<T> =
+            originalLink.href
+                .let { href -> container.entry(href) }
+                .let { entry -> entry.use { block(entry) } }
+                .takeIf { result -> result.failureOrNull() !is Resource.Exception.NotFound }
+                ?: run {
+                    // Try again after removing query and fragment.
+                    originalLink.href
+                        .takeWhile { it !in "#?" }
+                        .let { href -> container.entry(href) }
+                        .let { entry -> entry.use { block(entry) } }
+                }
 
         override fun toString(): String =
             "${javaClass.simpleName}(${container::class.java.simpleName}, ${originalLink.href})"
@@ -85,7 +83,7 @@ class ContainerFetcher(
 
 private suspend fun Container.Entry.toLink(mediaTypeRetriever: MediaTypeRetriever): Link {
     return Link(
-        href = path.addPrefix("/"),
+        href = path,
         type = mediaTypeRetriever.retrieve(fileExtension = File(path).extension)?.toString(),
         properties = Properties((this as? ZipContainer.Entry)?.toLinkProperties().orEmpty())
     )

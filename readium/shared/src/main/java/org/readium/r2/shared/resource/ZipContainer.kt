@@ -18,6 +18,9 @@ import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.io.CountingInputStream
 
+/**
+ * A [Container] representing a Zip archive.
+ */
 interface ZipContainer : Container {
 
     interface Entry : Container.Entry {
@@ -36,7 +39,7 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         override val compressedLength: Long? = null
 
         override suspend fun name(): ResourceTry<String?> =
-            ResourceTry.success(File(path).name)
+            Try.failure(Resource.Exception.NotFound())
 
         override suspend fun length(): ResourceTry<Long> =
             Try.failure(Resource.Exception.NotFound())
@@ -50,7 +53,8 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
 
     private inner class Entry(private val entry: ZipEntry) : ZipContainer.Entry {
 
-        override val path: String get() = entry.name.addPrefix("/")
+        override val path: String =
+            entry.name.addPrefix("/")
 
         override suspend fun name(): ResourceTry<String?> =
             ResourceTry.success(File(path).name)
@@ -60,8 +64,7 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
                 ?.let { Try.success(it) }
                 ?: Try.failure(Resource.Exception.Other(Exception("Unsupported operation")))
 
-        override val compressedLength: Long?
-            get() =
+        override val compressedLength: Long? =
                 if (entry.method == ZipEntry.STORED || entry.method == -1)
                     null
                 else
@@ -118,7 +121,7 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
 
         override suspend fun close() {
             withContext(Dispatchers.IO) {
-                stream?.close()
+                tryOrLog { stream?.close() }
             }
         }
     }
@@ -129,7 +132,9 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         ResourceTry.success(file.name)
 
     override suspend fun entries(): List<Container.Entry> =
-        archive.entries().toList().filterNot { it.isDirectory }.mapNotNull { Entry(it) }
+        archive.entries().toList()
+            .filterNot { it.isDirectory }
+            .mapNotNull { Entry(it) }
 
     override suspend fun entry(path: String): Container.Entry {
         return archive.getEntry(path.removePrefix("/"))

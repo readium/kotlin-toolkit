@@ -7,6 +7,7 @@
 package org.readium.r2.shared.util.http
 
 import android.webkit.URLUtil
+import org.readium.r2.shared.error.getOrDefault
 import org.readium.r2.shared.fetcher.FailureResource
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Link
@@ -48,7 +49,6 @@ class HttpFetcher(
     /** Provides access to an external URL. */
     class HttpResource(
         private val link: Link,
-        private val url: String,
         private val resource: org.readium.r2.shared.util.http.HttpResource
     ) : Resource by resource, Fetcher.Resource {
 
@@ -59,10 +59,12 @@ class HttpFetcher(
                 url: String,
                 client: HttpClient,
             ): HttpResource =
-                HttpResource(link, url, HttpResource(client, url))
+                HttpResource(link, HttpResource(client, url))
         }
 
         override suspend fun link(): Link =
-            link
+            link.copy(
+                type = resource.mediaType().getOrDefault(link.type)
+            )
     }
 }

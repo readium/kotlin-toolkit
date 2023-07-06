@@ -13,10 +13,9 @@ import java.nio.channels.FileChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.extensions.coerceFirstNonNegative
+import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.readFully
-import org.readium.r2.shared.extensions.requireLengthFitInt
 
 class FileChannelResource(
     private val channel: FileChannel
@@ -27,10 +26,11 @@ class FileChannelResource(
     override suspend fun name(): ResourceTry<String?> =
         ResourceTry.success(null)
 
-    override suspend fun close() =
+    override suspend fun close() {
         withContext(Dispatchers.IO) {
-            channel.close()
+            tryOrLog { channel.close() }
         }
+    }
 
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
         ResourceTry.catching {

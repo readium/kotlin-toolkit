@@ -11,15 +11,10 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.services.InMemoryCacheService
-import org.readium.r2.shared.publication.services.PerResourcePositionsService
-import org.readium.r2.shared.publication.services.cacheServiceFactory
-import org.readium.r2.shared.publication.services.locatorServiceFactory
-import org.readium.r2.shared.publication.services.positionsServiceFactory
+import org.readium.r2.shared.publication.services.*
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
-import org.readium.r2.streamer.extensions.readAsJsonOrNull
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioLocatorService
 

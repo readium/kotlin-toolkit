@@ -22,8 +22,8 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
- * [ContentProtection] implementation used as a fallback by the Streamer to detect known DRM
- * schemes (e.g. LCP or ADEPT), if they are not supported by the app.
+ * [ContentProtection] implementation used as a fallback by the Streamer to detect LCP DRM
+ * if it is not supported by the app.
  */
 class LcpFallbackContentProtection(
     private val mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()

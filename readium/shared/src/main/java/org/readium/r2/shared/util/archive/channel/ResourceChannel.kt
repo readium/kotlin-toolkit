@@ -16,7 +16,7 @@ import org.readium.r2.shared.util.archive.channel.jvm.ClosedChannelException
 import org.readium.r2.shared.util.archive.channel.jvm.NonWritableChannelException
 import org.readium.r2.shared.util.archive.channel.jvm.SeekableByteChannel
 
-class ResourceChannel(
+internal class ResourceChannel(
     private val resource: Resource
 ) : SeekableByteChannel {
 
@@ -50,7 +50,7 @@ class ResourceChannel(
 
             withContext(Dispatchers.IO) {
                 val size = resource.length()
-                    .getOrElse { throw IOException("Server didn't provide content length.", it) }
+                    .getOrElse { throw IOException("Content length not available.", it) }
 
                 if (position >= size) {
                     return@withContext - 1

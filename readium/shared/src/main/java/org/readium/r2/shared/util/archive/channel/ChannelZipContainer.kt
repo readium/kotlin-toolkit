@@ -120,7 +120,9 @@ internal class ChannelZipContainer(
     }
 
     override suspend fun entries(): List<Container.Entry> =
-        archive.entries.toList().filterNot { it.isDirectory }.mapNotNull { Entry(it) }
+        archive.entries.toList()
+            .filterNot { it.isDirectory }
+            .mapNotNull { Entry(it) }
 
     override suspend fun entry(path: String): Container.Entry {
         return archive.getEntry(path.removePrefix("/"))
@@ -130,12 +132,10 @@ internal class ChannelZipContainer(
     }
 
     override suspend fun close() {
-        tryOrLog {
             withContext(Dispatchers.IO) {
-                archive.close()
+                tryOrLog { archive.close() }
             }
         }
-    }
 }
 
 /**
@@ -147,12 +147,15 @@ class ChannelZipArchiveFactory(
     private val httpClient: HttpClient = DefaultHttpClient()
 ) : ArchiveFactory {
 
-    override suspend fun create(resource: Resource, password: String?): Try<Container, ArchiveFactory.Error> =
-        try {
-            if (password != null) {
-                throw Exception("${javaClass.simpleName}) does not support passwords.")
-            }
+    override suspend fun create(
+        resource: Resource,
+        password: String?
+    ): Try<Container, ArchiveFactory.Error> {
+        if (password != null) {
+            return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
+        }
 
+        return try {
             val resourceChannel = ResourceChannel(resource)
             val channel = wrapBaseChannel(resourceChannel)
             val zipFile = ZipFile(channel, true)
@@ -163,6 +166,7 @@ class ChannelZipArchiveFactory(
         } catch (e: Exception) {
             Try.failure(ArchiveFactory.Error.FormatNotSupported(e))
         }
+    }
 
     internal fun openFile(file: File): Container {
         val fileChannel = FileChannelAdapter(file, "r")

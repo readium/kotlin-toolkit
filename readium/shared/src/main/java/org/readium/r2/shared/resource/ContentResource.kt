@@ -21,6 +21,9 @@ import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.util.Url
 
+/**
+ * Creates [ContentResource]s.
+ */
 class ContentResourceFactory(
     private val contentResolver: ContentResolver
 ) : ResourceFactory {
@@ -38,6 +41,9 @@ class ContentResourceFactory(
     }
 }
 
+/**
+ * A [Resource] to access content [uri] thanks to a [ContentResolver].
+ */
 class ContentResource(
     private val contentResolver: ContentResolver,
     private val uri: Uri
