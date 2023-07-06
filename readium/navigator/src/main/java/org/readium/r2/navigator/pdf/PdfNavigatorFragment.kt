@@ -34,6 +34,7 @@ import org.readium.r2.shared.publication.ReadingProgression as PublicationReadin
 import org.readium.r2.navigator.input.CompositeInputListener
 import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.input.TapEvent
+import org.readium.r2.navigator.input.KeyInterceptorView
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
@@ -126,7 +127,7 @@ class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferenc
     ): View {
         val view = FragmentContainerView(inflater.context)
         view.id = R.id.readium_pdf_container
-        return view
+        return KeyInterceptorView(view, inputListener)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
