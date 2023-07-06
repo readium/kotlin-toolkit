@@ -24,7 +24,7 @@ class AssetRetriever(
     private val resourceFactory: ResourceFactory,
     private val containerFactory: ContainerFactory,
     private val archiveFactory: ArchiveFactory,
-    private val contentResolver: ContentResolver,
+    contentResolver: ContentResolver,
     sniffers: List<Sniffer>
 ) {
 

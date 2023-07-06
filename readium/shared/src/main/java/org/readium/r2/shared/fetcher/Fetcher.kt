@@ -105,7 +105,7 @@ class ResourceFetcher(
         listOf(link)
 
     override fun get(link: Link): Fetcher.Resource {
-        if (link.href.takeWhile { it in "#?" } != this.link.href) {
+        if (link.href.takeWhile { it !in "#?" } != this.link.href) {
             val exception = org.readium.r2.shared.resource.Resource.Exception.NotFound()
             return FailureResource(link, exception)
         }
