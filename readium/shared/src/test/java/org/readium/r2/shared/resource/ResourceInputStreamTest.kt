@@ -1,4 +1,4 @@
-package org.readium.r2.shared.fetcher
+package org.readium.r2.shared.resource
 
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -6,7 +6,8 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
-import org.readium.r2.shared.resource.ResourceInputStream
+import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 class ResourceInputStreamTest {
