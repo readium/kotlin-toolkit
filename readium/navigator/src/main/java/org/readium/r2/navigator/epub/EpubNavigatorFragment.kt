@@ -55,6 +55,7 @@ import org.readium.r2.navigator.input.CompositeInputListener
 import org.readium.r2.navigator.input.DragEvent
 import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.input.KeyEvent
+import org.readium.r2.navigator.input.KeyInterceptorView
 import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
@@ -307,7 +308,7 @@ class EpubNavigatorFragment internal constructor(
     ): View {
         currentActivity = requireActivity()
         _binding = ActivityR2ViewpagerBinding.inflate(inflater, container, false)
-        val view = binding.root
+        var view: View = binding.root
 
         positionsByReadingOrder = runBlocking { publication.positionsByReadingOrder() }
         positions = positionsByReadingOrder.flatten()
@@ -405,6 +406,11 @@ class EpubNavigatorFragment internal constructor(
                 notifyCurrentLocation()
             }
         })
+
+        // Fixed layout publications cannot intercept JS events yet.
+        if (publication.metadata.presentation.layout == EpubLayout.FIXED) {
+            view = KeyInterceptorView(view, this, inputListener)
+        }
 
         return view
     }
