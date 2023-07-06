@@ -148,31 +148,10 @@ interface VisualNavigator : Navigator {
         fun onTap(point: PointF): Boolean = false
 
         /**
-         * Called when the user starts dragging the content, but nothing handled the event
-         * internally.
-         *
-         * The points are relative to the navigator's view.
+         * Called when the user dragged the content, but nothing handled the event internally.
          */
-        @ExperimentalDragGesture
-        fun onDragStart(startPoint: PointF, offset: PointF): Boolean = false
-
-        /**
-         * Called when the user continues dragging the content, but nothing handled the event
-         * internally.
-         *
-         * The points are relative to the navigator's view.
-         */
-        @ExperimentalDragGesture
-        fun onDragMove(startPoint: PointF, offset: PointF): Boolean = false
-
-        /**
-         * Called when the user stops dragging the content, but nothing handled the event
-         * internally.
-         *
-         * The points are relative to the navigator's view.
-         */
-        @ExperimentalDragGesture
-        fun onDragEnd(startPoint: PointF, offset: PointF): Boolean = false
+        @ExperimentalReadiumApi
+        fun onDrag(event: DragEvent): Boolean = false
 
         /**
          * Called when the user press a key down, and it didn't trigger any internal action.

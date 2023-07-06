@@ -723,22 +723,20 @@ class EpubNavigatorFragment internal constructor(
             listener?.onTap(point.adjustedToViewport()) ?: false
 
         override fun onDragStart(event: R2BasicWebView.DragEvent): Boolean =
-            listener?.onDragStart(
-                startPoint = event.startPoint.adjustedToViewport(),
-                offset = event.offset
-            ) ?: false
+            onDrag(DragEvent.Type.Start, event)
 
         override fun onDragMove(event: R2BasicWebView.DragEvent): Boolean =
-            listener?.onDragMove(
-                startPoint = event.startPoint.adjustedToViewport(),
-                offset = event.offset
-            ) ?: false
+            onDrag(DragEvent.Type.Move, event)
 
         override fun onDragEnd(event: R2BasicWebView.DragEvent): Boolean =
-            listener?.onDragEnd(
-                startPoint = event.startPoint.adjustedToViewport(),
+            onDrag(DragEvent.Type.End, event)
+
+        private fun onDrag(type: DragEvent.Type, event: R2BasicWebView.DragEvent): Boolean =
+            listener?.onDrag(DragEvent(
+                type = type,
+                start = event.startPoint.adjustedToViewport(),
                 offset = event.offset
-            ) ?: false
+            )) ?: false
 
         override fun onNavigatorKeyDown(event: R2BasicWebView.R2KeyEvent): Boolean =
             listener?.onNavigatorKeyDown(event) ?: false

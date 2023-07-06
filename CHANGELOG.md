@@ -27,6 +27,7 @@ All notable changes to this project will be documented in this file. Take a look
 
 * `EpubNavigatorFragment.firstVisibleElementLocator()` now returns the first *block* element that is visible on the screen, even if it starts on previous pages.
     * This is used to make sure the user will not miss any context when restoring a TTS session in the middle of a resource.
+* The `VisualNavigator`'s drag listener events are merged into a single `onDrag()` event. Use `DragEvent.Type` to check the nature of the event.
 
 ### Fixed
 
