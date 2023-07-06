@@ -31,6 +31,9 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
+import org.readium.r2.navigator.input.CompositeInputListener
+import org.readium.r2.navigator.input.InputListener
+import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
@@ -96,15 +99,6 @@ class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferenc
             publication.readingOrder.count() == 1 &&
                 publication.readingOrder.first().mediaType.matches(MediaType.PDF)
         ) { "[PdfNavigatorFragment] currently supports only publications with a single PDF for reading order" }
-    }
-
-    // Configurable
-
-    @Suppress("Unchecked_cast")
-    override val settings: StateFlow<S> get() = viewModel.settings as StateFlow<S>
-
-    override fun submitPreferences(preferences: P) {
-        viewModel.submitPreferences(preferences)
     }
 
     private val viewModel: PdfNavigatorViewModel<S, P> by viewModels {
@@ -193,26 +187,24 @@ class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferenc
             viewModel.onPageChanged(pageIndex)
         }
 
-        override fun onTap(point: PointF): Boolean {
-            return listener?.onTap(point) ?: false
-        }
+        override fun onTap(point: PointF): Boolean =
+            inputListener.onTap(TapEvent(point))
 
         override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
             listener?.onResourceLoadFailed(link, error)
         }
     }
 
-    @ExperimentalReadiumApi
-    override val presentation: StateFlow<VisualNavigator.Presentation>
-        get() = settings.mapStateIn(lifecycleScope) { settings ->
-            pdfEngineProvider.computePresentation(settings)
-        }
+    // Configurable
 
-    override val readingProgression: PublicationReadingProgression
-        get() = when (presentation.value.readingProgression) {
-            ReadingProgression.LTR -> PublicationReadingProgression.LTR
-            ReadingProgression.RTL -> PublicationReadingProgression.RTL
-        }
+    @Suppress("Unchecked_cast")
+    override val settings: StateFlow<S> get() = viewModel.settings as StateFlow<S>
+
+    override fun submitPreferences(preferences: P) {
+        viewModel.submitPreferences(preferences)
+    }
+
+    // Navigator
 
     override val currentLocator: StateFlow<Locator>
         get() = viewModel.currentLocator
@@ -243,5 +235,29 @@ class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferenc
         val success = fragment.goToPageIndex(pageIndex, animated = animated)
         if (success) { completion() }
         return success
+    }
+
+    // VisualNavigator
+
+    @ExperimentalReadiumApi
+    override val presentation: StateFlow<VisualNavigator.Presentation>
+        get() = settings.mapStateIn(lifecycleScope) { settings ->
+            pdfEngineProvider.computePresentation(settings)
+        }
+
+    override val readingProgression: PublicationReadingProgression
+        get() = when (presentation.value.readingProgression) {
+            ReadingProgression.LTR -> PublicationReadingProgression.LTR
+            ReadingProgression.RTL -> PublicationReadingProgression.RTL
+        }
+
+    private val inputListener = CompositeInputListener()
+
+    override fun addInputListener(listener: InputListener) {
+        inputListener.add(listener)
+    }
+
+    override fun removeInputListener(listener: InputListener) {
+        inputListener.remove(listener)
     }
 }

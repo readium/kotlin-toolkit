@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.StateFlow
 import org.json.JSONException
 import org.json.JSONObject
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
@@ -162,6 +163,16 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
     override val presentation: StateFlow<VisualNavigator.Presentation>
         get() = navigatorFragment().presentation
 
+    @ExperimentalReadiumApi
+    override fun addInputListener(listener: InputListener) {
+        navigatorFragment().addInputListener(listener)
+    }
+
+    @ExperimentalReadiumApi
+    override fun removeInputListener(listener: InputListener) {
+        navigatorFragment().removeInputListener(listener)
+    }
+
     @Suppress("DEPRECATION")
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         navigatorFragment().go(locator, animated, completion)
@@ -190,11 +201,6 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
     override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
         return navigatorFragment().goBackward(animated, completion)
-    }
-
-    override fun onTap(point: PointF): Boolean {
-        toggleActionBar()
-        return super.onTap(point)
     }
 
     override fun currentSelection(callback: (Locator?) -> Unit) {

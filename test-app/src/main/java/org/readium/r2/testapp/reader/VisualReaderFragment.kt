@@ -41,6 +41,10 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.input.InputListener
+import org.readium.r2.navigator.input.Key
+import org.readium.r2.navigator.input.KeyboardEvent
+import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.util.BaseActionModeCallback
 import org.readium.r2.navigator.util.EdgeTapNavigation
@@ -95,6 +99,33 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
         navigatorFragment = navigator as Fragment
 
+        (navigator as VisualNavigator).addInputListener(object : InputListener {
+            override fun onTap(event: TapEvent): Boolean {
+                val navigated = edgeTapNavigation.onTap(event.point, requireView())
+
+                if (!navigated) {
+                    requireActivity().toggleSystemUi()
+                }
+                return true
+            }
+
+            override fun onKey(event: KeyboardEvent): Boolean {
+                if (event.type != KeyboardEvent.Type.Down) return false
+
+                return when (event.key) {
+                    Key.ArrowRight, Key.Space -> navigator.goForward()
+                    Key.ArrowLeft -> navigator.goBackward()
+                    else -> false
+                }
+            }
+
+            private val edgeTapNavigation by lazy {
+                EdgeTapNavigation(
+                    navigator = navigator as VisualNavigator
+                )
+            }
+        })
+
         setupObservers()
 
         childFragmentManager.addOnBackStackChangedListener {
@@ -126,7 +157,6 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                 content = { Overlay() }
             )
         }
-        observeKeyEventChanges()
     }
 
     @Composable
@@ -533,57 +563,6 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         } else {
             container.clearPadding()
         }
-    }
-
-    private fun observeKeyEventChanges() {
-        model.keyEvent.observe(viewLifecycleOwner) {
-            handleKeyEvents(it)
-        }
-    }
-
-    private fun handleKeyEvents(keyCode: Int) {
-        when (keyCode) {
-            KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                navigator?.goForward()
-                true
-            }
-            KeyEvent.KEYCODE_SPACE -> {
-                navigator?.goForward()
-                true
-            }
-            KeyEvent.KEYCODE_DPAD_LEFT -> {
-                navigator?.goBackward()
-                true
-            }
-        }
-    }
-
-    // VisualNavigator.Listener
-
-    override fun onTap(point: PointF): Boolean {
-        val navigated = edgeTapNavigation.onTap(point, requireView())
-
-        if (!navigated) {
-            requireActivity().toggleSystemUi()
-        }
-        return true
-    }
-
-    override fun onNavigatorKeyDown(event: R2BasicWebView.R2KeyEvent): Boolean {
-        when (event) {
-            R2BasicWebView.R2KeyEvent.arrowRight -> handleKeyEvents(KeyEvent.KEYCODE_DPAD_RIGHT)
-            R2BasicWebView.R2KeyEvent.arrowLeft -> handleKeyEvents(KeyEvent.KEYCODE_DPAD_LEFT)
-            R2BasicWebView.R2KeyEvent.space -> handleKeyEvents(KeyEvent.KEYCODE_SPACE)
-            else -> {}
-        }
-        return true
-    }
-
-
-    private val edgeTapNavigation by lazy {
-        EdgeTapNavigation(
-            navigator = navigator as VisualNavigator
-        )
     }
 }
 

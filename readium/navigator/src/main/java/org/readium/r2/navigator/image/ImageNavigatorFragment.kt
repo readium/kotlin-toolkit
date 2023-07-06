@@ -38,6 +38,9 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
+import org.readium.r2.navigator.input.CompositeInputListener
+import org.readium.r2.navigator.input.InputListener
+import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positions
@@ -78,25 +81,9 @@ class ImageNavigatorFragment private constructor(
     private var _binding: ActivityR2ViewpagerBinding? = null
     private val binding get() = _binding!!
 
-    override val readingProgression: PublicationReadingProgression =
-        publication.metadata.effectiveReadingProgression
-
-    @ExperimentalReadiumApi
-    override val presentation: StateFlow<VisualNavigator.Presentation> =
-        MutableStateFlow(
-            SimplePresentation(
-                readingProgression = when (readingProgression) {
-                    PublicationReadingProgression.RTL -> ReadingProgression.RTL
-                    else -> ReadingProgression.LTR
-                },
-                scroll = false,
-                axis = Axis.HORIZONTAL
-            )
-        ).asStateFlow()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         childFragmentManager.fragmentFactory = createFragmentFactory {
-            R2CbzPageFragment(publication) { x, y -> this.listener?.onTap(PointF(x, y)) }
+            R2CbzPageFragment(publication) { x, y -> inputListener.onTap(TapEvent(PointF(x, y))) }
         }
         super.onCreate(savedInstanceState)
     }
@@ -222,6 +209,34 @@ class ImageNavigatorFragment private constructor(
 
         notifyCurrentLocation()
         return current != resourcePager.currentItem
+    }
+
+    // VisualNavigator
+
+    override val readingProgression: PublicationReadingProgression =
+        publication.metadata.effectiveReadingProgression
+
+    @ExperimentalReadiumApi
+    override val presentation: StateFlow<VisualNavigator.Presentation> =
+        MutableStateFlow(
+            SimplePresentation(
+                readingProgression = when (readingProgression) {
+                    PublicationReadingProgression.RTL -> ReadingProgression.RTL
+                    else -> ReadingProgression.LTR
+                },
+                scroll = false,
+                axis = Axis.HORIZONTAL
+            )
+        ).asStateFlow()
+
+    private val inputListener = CompositeInputListener()
+
+    override fun addInputListener(listener: InputListener) {
+        inputListener.add(listener)
+    }
+
+    override fun removeInputListener(listener: InputListener) {
+        inputListener.remove(listener)
     }
 
     companion object {

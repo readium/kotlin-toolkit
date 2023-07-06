@@ -67,6 +67,10 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
+import org.readium.r2.navigator.input.CompositeInputListener
+import org.readium.r2.navigator.input.DragEvent
+import org.readium.r2.navigator.input.InputListener
+import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
@@ -241,8 +245,6 @@ class EpubNavigatorFragment internal constructor(
     init {
         require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
     }
-
-    override val presentation: StateFlow<VisualNavigator.Presentation> get() = viewModel.presentation
 
     // Configurable
 
@@ -621,6 +623,23 @@ class EpubNavigatorFragment internal constructor(
         }
     }
 
+    // VisualNavigator
+
+    override val presentation: StateFlow<VisualNavigator.Presentation> get() = viewModel.presentation
+
+    override val readingProgression: PublicationReadingProgression
+        get() = viewModel.readingProgression
+
+    private val inputListener = CompositeInputListener()
+
+    override fun addInputListener(listener: InputListener) {
+        inputListener.add(listener)
+    }
+
+    override fun removeInputListener(listener: InputListener) {
+        inputListener.remove(listener)
+    }
+
     // SelectableNavigator
 
     override suspend fun currentSelection(): Selection? {
@@ -720,7 +739,7 @@ class EpubNavigatorFragment internal constructor(
         }
 
         override fun onTap(point: PointF): Boolean =
-            listener?.onTap(point.adjustedToViewport()) ?: false
+            inputListener.onTap(TapEvent(point))
 
         override fun onDragStart(event: R2BasicWebView.DragEvent): Boolean =
             onDrag(DragEvent.Type.Start, event)
@@ -732,15 +751,14 @@ class EpubNavigatorFragment internal constructor(
             onDrag(DragEvent.Type.End, event)
 
         private fun onDrag(type: DragEvent.Type, event: R2BasicWebView.DragEvent): Boolean =
-            listener?.onDrag(DragEvent(
+            inputListener.onDrag(DragEvent(
                 type = type,
                 start = event.startPoint.adjustedToViewport(),
                 offset = event.offset
-            )) ?: false
+            ))
 
         override fun onNavigatorKeyDown(event: R2BasicWebView.R2KeyEvent): Boolean =
-            listener?.onNavigatorKeyDown(event) ?: false
-
+            false
 
         override fun onDecorationActivated(
             id: DecorationId,
@@ -916,9 +934,6 @@ class EpubNavigatorFragment internal constructor(
         }
         return null
     }
-
-    override val readingProgression: PublicationReadingProgression
-        get() = viewModel.readingProgression
 
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
     private val _currentLocator = MutableStateFlow(

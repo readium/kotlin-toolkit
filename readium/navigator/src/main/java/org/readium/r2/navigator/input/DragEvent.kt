@@ -1,9 +1,9 @@
-package org.readium.r2.navigator
+package org.readium.r2.navigator.input
 
 import android.graphics.PointF
 
 /**
- * Represents a drag event emitted by a [Navigator] from a [start] point moved by an [offset].
+ * Represents a drag event emitted by a navigator from a [start] point moved by an [offset].
  *
  * All the points are relative to the navigator view.
  */

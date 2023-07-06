@@ -19,6 +19,9 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
+import org.readium.r2.navigator.input.DragEvent
+import org.readium.r2.navigator.input.InputListener
+import org.readium.r2.navigator.input.KeyboardEvent
 
 /**
  * Base interface for a navigator rendering a publication.
@@ -110,13 +113,6 @@ interface VisualNavigator : Navigator {
     @ExperimentalReadiumApi
     val presentation: StateFlow<Presentation>
 
-    /**
-     * Returns the [Locator] to the first content element that begins on the current screen.
-     */
-    @ExperimentalReadiumApi
-    suspend fun firstVisibleElementLocator(): Locator? =
-        currentLocator.value
-
     @ExperimentalReadiumApi
     interface Presentation {
         /**
@@ -135,35 +131,37 @@ interface VisualNavigator : Navigator {
         val axis: Axis
     }
 
+    /**
+     * Returns the [Locator] to the first content element that begins on the current screen.
+     */
+    @ExperimentalReadiumApi
+    suspend fun firstVisibleElementLocator(): Locator? =
+        currentLocator.value
+
+    /**
+     * Adds a new [InputListener] to receive touch, mouse or keyboard events.
+     *
+     * Registration order is critical, as listeners may consume the events and prevent others from
+     * receiving them.
+     */
+    @ExperimentalReadiumApi
+    fun addInputListener(listener: InputListener)
+
+    /**
+     * Removes a previously registered [InputListener].
+     */
+    @ExperimentalReadiumApi
+    fun removeInputListener(listener: InputListener)
+
     interface Listener : Navigator.Listener {
-        /**
-         * Called when the user tapped the content, but nothing handled the event internally (eg.
-         * by following an internal link).
-         *
-         * Can be used in the reading app to toggle the navigation bars, or switch to the
-         * previous/next page if the tapped occurred on the edges.
-         *
-         * The [point] is relative to the navigator's view.
-         */
+        @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
         fun onTap(point: PointF): Boolean = false
-
-        /**
-         * Called when the user dragged the content, but nothing handled the event internally.
-         */
-        @ExperimentalReadiumApi
-        fun onDrag(event: DragEvent): Boolean = false
-
-        /**
-         * Called when the user press a key down, and it didn't trigger any internal action.
-          */
-
-        fun onNavigatorKeyDown(event: R2BasicWebView.R2KeyEvent):Boolean = false
-
-        /**
-         * Called when the user release a key up, and it didn't trigger any internal action.
-         */
-
-        fun onNavigatorKeyUp(eventCode: Int):Boolean = false
+        @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
+        fun onDragStart(startPoint: PointF, offset: PointF): Boolean = false
+        @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
+        fun onDragMove(startPoint: PointF, offset: PointF): Boolean = false
+        @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
+        fun onDragEnd(startPoint: PointF, offset: PointF): Boolean = false
     }
 
     /**

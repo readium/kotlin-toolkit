@@ -261,13 +261,6 @@ class ReaderViewModel(
         object BookmarkFailed : FeedbackEvent()
     }
 
-    private val _keyEvent: MutableLiveData<Int> = MutableLiveData(-1)
-    val keyEvent: LiveData<Int> get() = _keyEvent
-
-    fun setEvent(code:Int){
-        _keyEvent.value = code
-    }
-
     companion object {
         fun createFactory(application: Application, arguments: ReaderActivityContract.Arguments) =
             createViewModelFactory {

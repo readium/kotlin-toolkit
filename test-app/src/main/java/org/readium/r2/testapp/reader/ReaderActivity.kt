@@ -202,16 +202,6 @@ open class ReaderActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
-        return if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT
-            || keyCode == KeyEvent.KEYCODE_SPACE
-            || keyCode == KeyEvent.KEYCODE_DPAD_LEFT
-        ){
-            model.setEvent(keyCode)
-            true
-        } else super.onKeyUp(keyCode, event)
-    }
-
     companion object {
         const val READER_FRAGMENT_TAG = "reader"
         const val OUTLINE_FRAGMENT_TAG = "outline"
