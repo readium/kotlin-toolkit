@@ -27,6 +27,10 @@ import org.readium.r2.navigator.SimplePresentation
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
+import org.readium.r2.navigator.input.CompositeInputListener
+import org.readium.r2.navigator.input.InputListener
+import org.readium.r2.navigator.input.KeyInterceptorView
+import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.pager.R2CbzPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
@@ -38,10 +42,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
-import org.readium.r2.navigator.input.CompositeInputListener
-import org.readium.r2.navigator.input.InputListener
-import org.readium.r2.navigator.input.TapEvent
-import org.readium.r2.navigator.input.KeyInterceptorView
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positions

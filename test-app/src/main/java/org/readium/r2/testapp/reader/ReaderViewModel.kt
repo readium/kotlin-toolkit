@@ -10,8 +10,6 @@ package org.readium.r2.testapp.reader
 
 import android.graphics.Color
 import androidx.annotation.ColorInt
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.*

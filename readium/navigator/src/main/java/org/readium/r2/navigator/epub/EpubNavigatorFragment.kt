@@ -51,6 +51,11 @@ import org.readium.r2.navigator.epub.css.buildFontFamilyDeclaration
 import org.readium.r2.navigator.extensions.optRectF
 import org.readium.r2.navigator.extensions.positionsByResource
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
+import org.readium.r2.navigator.input.CompositeInputListener
+import org.readium.r2.navigator.input.DragEvent
+import org.readium.r2.navigator.input.InputListener
+import org.readium.r2.navigator.input.KeyEvent
+import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2PagerAdapter.PageResource
@@ -67,11 +72,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
-import org.readium.r2.navigator.input.CompositeInputListener
-import org.readium.r2.navigator.input.DragEvent
-import org.readium.r2.navigator.input.InputListener
-import org.readium.r2.navigator.input.KeyEvent
-import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
@@ -752,11 +752,13 @@ class EpubNavigatorFragment internal constructor(
             onDrag(DragEvent.Type.End, event)
 
         private fun onDrag(type: DragEvent.Type, event: R2BasicWebView.DragEvent): Boolean =
-            inputListener.onDrag(DragEvent(
-                type = type,
-                start = event.startPoint.adjustedToViewport(),
-                offset = event.offset
-            ))
+            inputListener.onDrag(
+                DragEvent(
+                    type = type,
+                    start = event.startPoint.adjustedToViewport(),
+                    offset = event.offset
+                )
+            )
 
         override fun onKey(event: KeyEvent): Boolean =
             inputListener.onKey(event)

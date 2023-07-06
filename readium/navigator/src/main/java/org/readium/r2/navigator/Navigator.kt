@@ -11,6 +11,7 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.media.MediaPlayback
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.ReadingProgression
@@ -19,7 +20,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
-import org.readium.r2.navigator.input.InputListener
 
 /**
  * Base interface for a navigator rendering a publication.

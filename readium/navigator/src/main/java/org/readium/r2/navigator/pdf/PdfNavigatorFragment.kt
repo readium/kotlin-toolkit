@@ -20,6 +20,10 @@ import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
+import org.readium.r2.navigator.input.CompositeInputListener
+import org.readium.r2.navigator.input.InputListener
+import org.readium.r2.navigator.input.KeyInterceptorView
+import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.navigator.preferences.ReadingProgression
@@ -31,10 +35,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
-import org.readium.r2.navigator.input.CompositeInputListener
-import org.readium.r2.navigator.input.InputListener
-import org.readium.r2.navigator.input.TapEvent
-import org.readium.r2.navigator.input.KeyInterceptorView
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber

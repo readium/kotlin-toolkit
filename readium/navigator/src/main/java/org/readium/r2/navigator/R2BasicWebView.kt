@@ -35,9 +35,9 @@ import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.safety.Safelist
 import org.readium.r2.navigator.extensions.optRectF
+import org.readium.r2.navigator.input.InputModifiers
 import org.readium.r2.navigator.input.Key
 import org.readium.r2.navigator.input.KeyEvent
-import org.readium.r2.navigator.input.InputModifiers
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.tryOrLog
@@ -513,30 +513,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 fromJSONObject(tryOrNull { JSONObject(json) })
         }
     }
-
-    enum class R2KeyEvent {
-        // Whitespace keys.
-        enter,
-        tab,
-        space,
-
-        // Navigation keys.
-        arrowDown,
-        arrowLeft,
-        arrowRight,
-        arrowUp,
-        end,
-        home,
-        pageDown,
-        pageUp,
-
-        // Modifier keys.
-        command,
-        control,
-        option,
-        shift
-    }
-
 
     @android.webkit.JavascriptInterface
     fun getViewportWidth(): Int = width

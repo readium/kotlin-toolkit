@@ -1,7 +1,5 @@
 package org.readium.r2.navigator.input
 
-import android.view.KeyEvent
-
 /**
  * Represents a set of modifiers for an input event.
  */

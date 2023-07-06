@@ -20,7 +20,7 @@ data class KeyEvent(
     }
 
     companion object {
-        operator fun invoke(type: Type, event: AndroidKeyEvent) : KeyEvent? {
+        operator fun invoke(type: Type, event: AndroidKeyEvent): KeyEvent? {
             return KeyEvent(
                 type = type,
                 key = Key(event) ?: return null,
@@ -218,7 +218,7 @@ value class Key(val code: String) {
         val AudioVolumeUp = Key("AudioVolumeUp")
         val WakeUp = Key("WakeUp")
 
-        operator fun invoke(event: AndroidKeyEvent) : Key? =
+        operator fun invoke(event: AndroidKeyEvent): Key? =
             when (event.keyCode) {
                 AndroidKeyEvent.KEYCODE_DEL -> Backspace
                 AndroidKeyEvent.KEYCODE_ENTER -> Enter
@@ -346,7 +346,7 @@ value class Key(val code: String) {
     }
 }
 
-private operator fun InputModifiers.Companion.invoke(event: android.view.KeyEvent) : InputModifiers {
+private operator fun InputModifiers.Companion.invoke(event: android.view.KeyEvent): InputModifiers {
     var modifiers = None
     if (event.isAltPressed) {
         modifiers += Alt

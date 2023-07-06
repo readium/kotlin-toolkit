@@ -22,7 +22,7 @@ interface InputListener {
 }
 
 @OptIn(ExperimentalReadiumApi::class)
-internal class CompositeInputListener: InputListener {
+internal class CompositeInputListener : InputListener {
     private val listeners = mutableListOf<InputListener>()
 
     fun add(listener: InputListener) {

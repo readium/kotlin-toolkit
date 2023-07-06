@@ -8,7 +8,6 @@ package org.readium.r2.testapp.reader
 
 import android.os.Build
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.WindowManager
 import android.widget.Toast
