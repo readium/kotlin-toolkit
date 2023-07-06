@@ -21,8 +21,20 @@ import org.readium.r2.shared.util.Either
  * Returns null if the resource media type is not supported.
  */
 @ExperimentalReadiumApi
-typealias ResourceContentIteratorFactory =
-    suspend (resource: Fetcher.Resource, locator: Locator) -> Content.Iterator?
+fun interface ResourceContentIteratorFactory {
+
+    /**
+     * Creates a [Content.Iterator] instance for the [resource], starting from the given [locator].
+     *
+     * Returns null if the resource media type is not supported.
+     */
+    suspend fun create(
+        publication: Publication,
+        readingOrderIndex: Int,
+        resource: Fetcher.Resource,
+        locator: Locator
+    ): Content.Iterator?
+}
 
 /**
  * A composite [Content.Iterator] which iterates through a whole [publication] and delegates the
@@ -146,7 +158,7 @@ class PublicationContentIterator(
 
         return resourceContentIteratorFactories
             .firstNotNullOfOrNull { factory ->
-                factory(resource, locator)
+                factory.create(publication, index, resource, locator)
             }
             ?.let { IndexedIterator(index, it) }
     }

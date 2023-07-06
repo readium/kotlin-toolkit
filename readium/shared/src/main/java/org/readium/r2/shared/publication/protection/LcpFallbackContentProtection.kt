@@ -69,7 +69,7 @@ class LcpFallbackContentProtection(
         return when {
             mediaType.matches(MediaType.READIUM_WEBPUB) ||
                 mediaType.matches(MediaType.LCP_PROTECTED_PDF) ||
-                mediaType.matches(MediaType.LCP_PROTECTED_AUDIOBOOK)-> {
+                mediaType.matches(MediaType.LCP_PROTECTED_AUDIOBOOK) -> {
                 if (container.entry("/license.lcpl").readAsJsonOrNull() != null) {
                     return true
                 }

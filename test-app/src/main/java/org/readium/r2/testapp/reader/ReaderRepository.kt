@@ -220,7 +220,10 @@ class ReaderRepository(
     ): TtsInitData? {
         val preferencesManager = AndroidTtsPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)
-        val navigatorFactory = TtsNavigatorFactory(application, publication) ?: return null
+        val navigatorFactory = TtsNavigatorFactory(
+            application,
+            publication
+        ) ?: return null
         return TtsInitData(mediaServiceFacade, navigatorFactory, preferencesManager)
     }
 

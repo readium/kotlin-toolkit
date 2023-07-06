@@ -130,11 +130,13 @@ data class Locator(
 
         fun substring(range: IntRange): Text {
             highlight ?: return this
-            return copy(
-                before = (before ?: "") + highlight.substring(0, range.first),
-                highlight = highlight.substring(range),
-                after = highlight.substring(range.last) + (after ?: "")
-            )
+            return tryOr(this) {
+                copy(
+                    before = (before ?: "") + highlight.substring(0, range.first),
+                    highlight = highlight.substring(range),
+                    after = highlight.substring(range.last) + (after ?: "")
+                )
+            }
         }
 
         companion object {
