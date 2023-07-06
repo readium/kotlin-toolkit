@@ -26,12 +26,16 @@ internal class KeyInterceptorView(
     }
 
     override fun onKeyUp(keyCode: Int, event: android.view.KeyEvent?): Boolean {
-        event?.let { listener?.onKey(KeyEvent(KeyEvent.Type.Up, it)) }
+        event
+            ?.let { KeyEvent(KeyEvent.Type.Up, it) }
+            ?.let { listener?.onKey(it) }
         return super.onKeyUp(keyCode, event)
     }
 
     override fun onKeyDown(keyCode: Int, event: android.view.KeyEvent?): Boolean {
-        event?.let { listener?.onKey(KeyEvent(KeyEvent.Type.Down, it)) }
+        event
+            ?.let { KeyEvent(KeyEvent.Type.Down, it) }
+            ?.let { listener?.onKey(it) }
         return super.onKeyDown(keyCode, event)
     }
 }

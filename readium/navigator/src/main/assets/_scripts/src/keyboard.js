@@ -12,7 +12,7 @@ window.addEventListener("keydown", (event) => {
   }
 
   preventDefault(event);
-  sendPressKeyMessage(event, "keydown");
+  sendPressKeyMessage(event, "down");
 });
 
 window.addEventListener("keyup", (event) => {
@@ -21,7 +21,7 @@ window.addEventListener("keyup", (event) => {
   }
 
   preventDefault(event);
-  sendPressKeyMessage(event, "keyup");
+  sendPressKeyMessage(event, "up");
 });
 
 function shouldIgnoreEvent(event) {
@@ -38,16 +38,18 @@ function preventDefault(event) {
   event.preventDefault();
 }
 
-function sendPressKeyMessage(event, keyType) {
+function sendPressKeyMessage(event, type) {
   if (event.repeat) return;
+
   let keyEvent = {
-    type: keyType,
+    type: type,
     code: event.code,
     key: String.fromCharCode(event.keyCode),
-    option: event.altKey,
+    alt: event.altKey,
     control: event.ctrlKey,
     shift: event.shiftKey,
-    command: event.metaKey,
+    meta: event.metaKey,
   };
-  Android.onKeyPress(JSON.stringify(keyEvent));
+
+  Android.onKey(JSON.stringify(keyEvent));
 }

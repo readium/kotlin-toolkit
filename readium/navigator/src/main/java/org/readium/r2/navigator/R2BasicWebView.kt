@@ -35,6 +35,9 @@ import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.safety.Safelist
 import org.readium.r2.navigator.extensions.optRectF
+import org.readium.r2.navigator.input.Key
+import org.readium.r2.navigator.input.KeyEvent
+import org.readium.r2.navigator.input.InputModifiers
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.tryOrLog
@@ -61,14 +64,13 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         fun onDragStart(event: DragEvent): Boolean
         fun onDragMove(event: DragEvent): Boolean
         fun onDragEnd(event: DragEvent): Boolean
+        fun onKey(event: KeyEvent): Boolean = false
         fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean = false
         fun onProgressionChanged()
         fun onHighlightActivated(id: String)
         fun onHighlightAnnotationMarkActivated(id: String)
         fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean = false
         fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean = false
-        fun onNavigatorKeyDown(eventCode: R2KeyEvent): Boolean = false
-        fun onNavigatorKeyUp(eventCode: R2KeyEvent): Boolean = false
 
         /**
          * Returns the custom [ActionMode.Callback] to be used with the text selection menu.
@@ -446,27 +448,19 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     @android.webkit.JavascriptInterface
-    fun onKeyPress(eventJson: String):Boolean{
+    fun onKey(eventJson: String): Boolean {
         val jsonObject = JSONObject(eventJson)
-        val type = jsonObject.optString("type")
-        val code = jsonObject.optString("code")
-        when(type){
-            "keydown"->{
-                when(code){
-                    "ArrowRight"->listener?.onNavigatorKeyDown(R2KeyEvent.arrowRight)
-                    "ArrowLeft"->listener?.onNavigatorKeyDown(R2KeyEvent.arrowLeft)
-                    "Space"->listener?.onNavigatorKeyDown(R2KeyEvent.space)
-                }
-            }
-            "keyup"->{
-                when(code){
-                    "ArrowRight"->listener?.onNavigatorKeyUp(R2KeyEvent.arrowRight)
-                    "ArrowLeft"->listener?.onNavigatorKeyUp(R2KeyEvent.arrowLeft)
-                    "Space"->listener?.onNavigatorKeyUp(R2KeyEvent.space)
-                }
-            }
-        }
-        return true
+        val event = KeyEvent(
+            type = when (jsonObject.optString("type")) {
+                "down" -> KeyEvent.Type.Down
+                "up" -> KeyEvent.Type.Up
+                else -> return false
+            },
+            key = Key(jsonObject.optString("code")),
+            modifiers = InputModifiers(jsonObject)
+        )
+
+        return listener?.onKey(event) ?: false
     }
 
     @android.webkit.JavascriptInterface
@@ -721,4 +715,21 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             callback2?.onGetContentRect(mode, view, outRect)
                 ?: super.onGetContentRect(mode, view, outRect)
     }
+}
+
+private operator fun InputModifiers.Companion.invoke(json: JSONObject): InputModifiers {
+    var modifiers = None
+    if (json.optBoolean("alt")) {
+        modifiers += Alt
+    }
+    if (json.optBoolean("control")) {
+        modifiers += Control
+    }
+    if (json.optBoolean("shift")) {
+        modifiers += Shift
+    }
+    if (json.optBoolean("meta")) {
+        modifiers += Meta
+    }
+    return modifiers
 }

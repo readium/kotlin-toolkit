@@ -41,6 +41,7 @@ import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.input.InputListener
+import org.readium.r2.navigator.input.InputModifiers
 import org.readium.r2.navigator.input.Key
 import org.readium.r2.navigator.input.KeyEvent
 import org.readium.r2.navigator.input.TapEvent
@@ -109,7 +110,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
             }
 
             override fun onKey(event: KeyEvent): Boolean {
-                if (event.type != KeyEvent.Type.Down) return false
+                if (event.type != KeyEvent.Type.Down || event.modifiers != InputModifiers.None) return false
 
                 return when (event.key) {
                     Key.ArrowRight, Key.Space -> navigator.goForward()

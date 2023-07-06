@@ -7,72 +7,46 @@ import android.view.KeyEvent as AndroidKeyEvent
  *
  * @param type Nature of the event.
  * @param key Key the user pressed or released.
- * @param modifiers Additional key modifiers for keyboard shortcuts.
+ * @param modifiers Additional input modifiers for keyboard shortcuts.
  */
 data class KeyEvent(
     val type: Type,
     val key: Key,
-    val modifiers: KeyModifiers
+    val modifiers: InputModifiers
 ) {
 
     enum class Type {
         Down, Up
     }
 
-    constructor(type: Type, event: AndroidKeyEvent) : this(
-        type = type,
-        key = Key(event),
-        modifiers = KeyModifiers(event)
-    )
-}
-
-@JvmInline
-value class KeyModifiers(val value: Int) {
-
     companion object {
-        val None = KeyModifiers(0)
-        val Alt = KeyModifiers(1 shl 0)
-        val Control = KeyModifiers(1 shl 1)
-        val Meta = KeyModifiers(1 shl 2)
-        val Shift = KeyModifiers(1 shl 3)
-
-        operator fun invoke(event: AndroidKeyEvent) : KeyModifiers {
-            var modifiers = None
-            if (event.isAltPressed) {
-                modifiers += Alt
-            }
-            if (event.isCtrlPressed) {
-                modifiers += Control
-            }
-            if (event.isMetaPressed) {
-                modifiers += Meta
-            }
-            if (event.isShiftPressed) {
-                modifiers += Shift
-            }
-            return modifiers
+        operator fun invoke(type: Type, event: AndroidKeyEvent) : KeyEvent? {
+            return KeyEvent(
+                type = type,
+                key = Key(event) ?: return null,
+                modifiers = InputModifiers(event)
+            )
         }
     }
-
-    fun contains(other: KeyModifiers): Boolean =
-        (value and other.value) == other.value
-
-    operator fun plus(other: KeyModifiers): KeyModifiers =
-        KeyModifiers(value or other.value)
 }
 
+/**
+ * Represents a physical key on a keyboard.
+ *
+ * See https://w3c.github.io/uievents-code/
+ */
 @JvmInline
 value class Key(val code: String) {
 
     companion object {
-        val Unknown = Key("")
 
-        val Backspace = Key("Backspace")
-        val Enter = Key("Enter")
-        val ForwardDelete = Key("ForwardDelete")
-        val Space = Key("Space")
-        val Tab = Key("Tab")
+        // Alphanumeric section
 
+        val Backquote = Key("Backquote")
+        val Backslash = Key("Backslash")
+        val BracketLeft = Key("BracketLeft")
+        val BracketRight = Key("BracketRight")
+        val Comma = Key("Comma")
         val Digit0 = Key("Digit0")
         val Digit1 = Key("Digit1")
         val Digit2 = Key("Digit2")
@@ -83,49 +57,88 @@ value class Key(val code: String) {
         val Digit7 = Key("Digit7")
         val Digit8 = Key("Digit8")
         val Digit9 = Key("Digit9")
-
-        val A = Key("A")
-        val B = Key("B")
-        val C = Key("C")
-        val D = Key("D")
-        val E = Key("E")
-        val F = Key("F")
-        val G = Key("G")
-        val H = Key("H")
-        val I = Key("I")
-        val J = Key("J")
-        val K = Key("K")
-        val L = Key("L")
-        val M = Key("M")
-        val N = Key("N")
-        val O = Key("O")
-        val P = Key("P")
-        val Q = Key("Q")
-        val R = Key("R")
-        val S = Key("S")
-        val T = Key("T")
-        val U = Key("U")
-        val V = Key("V")
-        val W = Key("W")
-        val X = Key("X")
-        val Y = Key("Y")
-        val Z = Key("Z")
-
-        val Apostrophe = Key("Apostrophe")
-        val At = Key("At")
-        val Backslash = Key("Backslash")
-        val Backtick = Key("Backtick")
-        val Comma = Key("Comma")
-        val Equals = Key("Equals")
-        val LeftBracket = Key("LeftBracket")
+        val Equal = Key("Equal")
+        val IntlBackslash = Key("IntlBackslash")
+        val IntlRo = Key("IntlRo")
+        val IntlYen = Key("IntlYen")
+        val KeyA = Key("KeyA")
+        val KeyB = Key("KeyB")
+        val KeyC = Key("KeyC")
+        val KeyD = Key("KeyD")
+        val KeyE = Key("KeyE")
+        val KeyF = Key("KeyF")
+        val KeyG = Key("KeyG")
+        val KeyH = Key("KeyH")
+        val KeyI = Key("KeyI")
+        val KeyJ = Key("KeyJ")
+        val KeyK = Key("KeyK")
+        val KeyL = Key("KeyL")
+        val KeyM = Key("KeyM")
+        val KeyN = Key("KeyN")
+        val KeyO = Key("KeyO")
+        val KeyP = Key("KeyP")
+        val KeyQ = Key("KeyQ")
+        val KeyR = Key("KeyR")
+        val KeyS = Key("KeyS")
+        val KeyT = Key("KeyT")
+        val KeyU = Key("KeyU")
+        val KeyV = Key("KeyV")
+        val KeyW = Key("KeyW")
+        val KeyX = Key("KeyX")
+        val KeyY = Key("KeyY")
+        val KeyZ = Key("KeyZ")
         val Minus = Key("Minus")
         val Period = Key("Period")
-        val Plus = Key("Plus")
-        val Pound = Key("Pound")
-        val RightBracket = Key("RightBracket")
+        val Quote = Key("Quote")
         val Semicolon = Key("Semicolon")
         val Slash = Key("Slash")
-        val Star = Key("Star")
+
+        // Function keys
+
+        val AltLeft = Key("AltLeft")
+        val AltRight = Key("AltRight")
+        val Backspace = Key("Backspace")
+        val CapsLock = Key("CapsLock")
+        val ContextMenu = Key("ContextMenu")
+        val ControlLeft = Key("ControlLeft")
+        val ControlRight = Key("ControlRight")
+        val Enter = Key("Enter")
+        val MetaLeft = Key("MetaLeft")
+        val MetaRight = Key("MetaRight")
+        val ShiftLeft = Key("ShiftLeft")
+        val ShiftRight = Key("ShiftRight")
+        val Space = Key("Space")
+        val Tab = Key("Tab")
+
+        // Function keys (Japanese and Korean keyboards)
+
+        val Convert = Key("Convert")
+        val KanaMode = Key("KanaMode")
+        val Lang1 = Key("Lang1")
+        val Lang2 = Key("Lang2")
+        val Lang3 = Key("Lang3")
+        val Lang4 = Key("Lang4")
+        val Lang5 = Key("Lang5")
+        val NonConvert = Key("NonConvert")
+
+        // Control pad section
+
+        val Delete = Key("Delete")
+        val End = Key("End")
+        val Help = Key("Help")
+        val Home = Key("Home")
+        val Insert = Key("Insert")
+        val PageDown = Key("PageDown")
+        val PageUp = Key("PageUp")
+
+        // Arrow pad section
+
+        val ArrowDown = Key("ArrowDown")
+        val ArrowLeft = Key("ArrowLeft")
+        val ArrowRight = Key("ArrowRight")
+        val ArrowUp = Key("ArrowUp")
+
+        // Numpad section
 
         val NumLock = Key("NumLock")
         val Numpad0 = Key("Numpad0")
@@ -139,30 +152,29 @@ value class Key(val code: String) {
         val Numpad8 = Key("Numpad8")
         val Numpad9 = Key("Numpad9")
         val NumpadAdd = Key("NumpadAdd")
+        val NumpadBackspace = Key("NumpadBackspace")
+        val NumpadClear = Key("NumpadClear")
+        val NumpadClearEntry = Key("NumpadClearEntry")
         val NumpadComma = Key("NumpadComma")
+        val NumpadDecimal = Key("NumpadDecimal")
         val NumpadDivide = Key("NumpadDivide")
-        val NumpadDot = Key("NumpadDot")
         val NumpadEnter = Key("NumpadEnter")
-        val NumpadEquals = Key("NumpadEquals")
-        val NumpadLeftParen = Key("NumpadLeftParen")
+        val NumpadEqual = Key("NumpadEqual")
+        val NumpadHash = Key("NumpadHash")
+        val NumpadMemoryAdd = Key("NumpadMemoryAdd")
+        val NumpadMemoryClear = Key("NumpadMemoryClear")
+        val NumpadMemoryRecall = Key("NumpadMemoryRecall")
+        val NumpadMemoryStore = Key("NumpadMemoryStore")
+        val NumpadMemorySubtract = Key("NumpadMemorySubtract")
         val NumpadMultiply = Key("NumpadMultiply")
-        val NumpadRightParen = Key("NumpadRightParen")
+        val NumpadParenLeft = Key("NumpadParenLeft")
+        val NumpadParenRight = Key("NumpadParenRight")
+        val NumpadStar = Key("NumpadStar")
         val NumpadSubtract = Key("NumpadSubtract")
 
-        val CapsLock = Key("CapsLock")
+        // Function section
+
         val Escape = Key("Escape")
-        val Function = Key("Function")
-        val Insert = Key("Insert")
-
-        val ArrowDown = Key("ArrowDown")
-        val ArrowLeft = Key("ArrowLeft")
-        val ArrowRight = Key("ArrowRight")
-        val ArrowUp = Key("ArrowUp")
-        val End = Key("End")
-        val Home = Key("Home")
-        val PageDown = Key("PageDown")
-        val PageUp = Key("PageUp")
-
         val F1 = Key("F1")
         val F2 = Key("F2")
         val F3 = Key("F3")
@@ -175,39 +187,42 @@ value class Key(val code: String) {
         val F10 = Key("F10")
         val F11 = Key("F11")
         val F12 = Key("F12")
+        val Fn = Key("Fn")
+        val FnLock = Key("FnLock")
+        val PrintScreen = Key("PrintScreen")
+        val ScrollLock = Key("ScrollLock")
+        val Pause = Key("Pause")
 
-        val BrightnessDown = Key("BrightnessDown")
-        val BrightnessUp = Key("BrightnessUp")
-        val MediaFastForward = Key("MediaFastForward")
-        val MediaNext = Key("MediaNext")
-        val MediaPause = Key("MediaPause")
-        val MediaPlay = Key("MediaPlay")
+        // Media keys
+
+        val BrowserBack = Key("BrowserBack")
+        val BrowserFavorites = Key("BrowserFavorites")
+        val BrowserForward = Key("BrowserForward")
+        val BrowserHome = Key("BrowserHome")
+        val BrowserRefresh = Key("BrowserRefresh")
+        val BrowserSearch = Key("BrowserSearch")
+        val BrowserStop = Key("BrowserStop")
+        val Eject = Key("Eject")
+        val LaunchApp1 = Key("LaunchApp1")
+        val LaunchApp2 = Key("LaunchApp2")
+        val LaunchMail = Key("LaunchMail")
         val MediaPlayPause = Key("MediaPlayPause")
-        val MediaPrevious = Key("MediaPrevious")
-        val MediaRewind = Key("MediaRewind")
-        val MediaSkipBackward = Key("MediaSkipBackward")
-        val MediaSkipForward = Key("MediaSkipForward")
+        val MediaSelect = Key("MediaSelect")
         val MediaStop = Key("MediaStop")
-        val VolumeDown = Key("VolumeDown")
-        val VolumeMute = Key("VolumeMute")
-        val VolumeUp = Key("VolumeUp")
-        val ZoomIn = Key("ZoomIn")
-        val ZoomOut = Key("ZoomOut")
+        val MediaTrackNext = Key("MediaTrackNext")
+        val MediaTrackPrevious = Key("MediaTrackPrevious")
+        val Power = Key("Power")
+        val Sleep = Key("Sleep")
+        val AudioVolumeDown = Key("AudioVolumeDown")
+        val AudioVolumeMute = Key("AudioVolumeMute")
+        val AudioVolumeUp = Key("AudioVolumeUp")
+        val WakeUp = Key("WakeUp")
 
-        val AltLeft = Key("AltLeft")
-        val AltRight = Key("AltRight")
-        val ControlLeft = Key("ControlLeft")
-        val ControlRight = Key("ControlRight")
-        val MetaLeft = Key("MetaLeft")
-        val MetaRight = Key("MetaRight")
-        val ShiftLeft = Key("ShiftLeft")
-        val ShiftRight = Key("ShiftRight")
-
-        operator fun invoke(event: AndroidKeyEvent) : Key =
+        operator fun invoke(event: AndroidKeyEvent) : Key? =
             when (event.keyCode) {
                 AndroidKeyEvent.KEYCODE_DEL -> Backspace
                 AndroidKeyEvent.KEYCODE_ENTER -> Enter
-                AndroidKeyEvent.KEYCODE_FORWARD_DEL -> ForwardDelete
+                AndroidKeyEvent.KEYCODE_FORWARD_DEL -> Delete
                 AndroidKeyEvent.KEYCODE_SPACE -> Space
                 AndroidKeyEvent.KEYCODE_TAB -> Tab
 
@@ -222,48 +237,44 @@ value class Key(val code: String) {
                 AndroidKeyEvent.KEYCODE_8 -> Digit8
                 AndroidKeyEvent.KEYCODE_9 -> Digit9
 
-                AndroidKeyEvent.KEYCODE_A -> A
-                AndroidKeyEvent.KEYCODE_B -> B
-                AndroidKeyEvent.KEYCODE_C -> C
-                AndroidKeyEvent.KEYCODE_D -> D
-                AndroidKeyEvent.KEYCODE_E -> E
-                AndroidKeyEvent.KEYCODE_F -> F
-                AndroidKeyEvent.KEYCODE_G -> G
-                AndroidKeyEvent.KEYCODE_H -> H
-                AndroidKeyEvent.KEYCODE_I -> I
-                AndroidKeyEvent.KEYCODE_J -> J
-                AndroidKeyEvent.KEYCODE_K -> K
-                AndroidKeyEvent.KEYCODE_L -> L
-                AndroidKeyEvent.KEYCODE_M -> M
-                AndroidKeyEvent.KEYCODE_N -> N
-                AndroidKeyEvent.KEYCODE_O -> O
-                AndroidKeyEvent.KEYCODE_P -> P
-                AndroidKeyEvent.KEYCODE_Q -> Q
-                AndroidKeyEvent.KEYCODE_R -> R
-                AndroidKeyEvent.KEYCODE_S -> S
-                AndroidKeyEvent.KEYCODE_T -> T
-                AndroidKeyEvent.KEYCODE_U -> U
-                AndroidKeyEvent.KEYCODE_V -> V
-                AndroidKeyEvent.KEYCODE_W -> W
-                AndroidKeyEvent.KEYCODE_X -> X
-                AndroidKeyEvent.KEYCODE_Y -> Y
-                AndroidKeyEvent.KEYCODE_Z -> Z
+                AndroidKeyEvent.KEYCODE_A -> KeyA
+                AndroidKeyEvent.KEYCODE_B -> KeyB
+                AndroidKeyEvent.KEYCODE_C -> KeyC
+                AndroidKeyEvent.KEYCODE_D -> KeyD
+                AndroidKeyEvent.KEYCODE_E -> KeyE
+                AndroidKeyEvent.KEYCODE_F -> KeyF
+                AndroidKeyEvent.KEYCODE_G -> KeyG
+                AndroidKeyEvent.KEYCODE_H -> KeyH
+                AndroidKeyEvent.KEYCODE_I -> KeyI
+                AndroidKeyEvent.KEYCODE_J -> KeyJ
+                AndroidKeyEvent.KEYCODE_K -> KeyK
+                AndroidKeyEvent.KEYCODE_L -> KeyL
+                AndroidKeyEvent.KEYCODE_M -> KeyM
+                AndroidKeyEvent.KEYCODE_N -> KeyN
+                AndroidKeyEvent.KEYCODE_O -> KeyO
+                AndroidKeyEvent.KEYCODE_P -> KeyP
+                AndroidKeyEvent.KEYCODE_Q -> KeyQ
+                AndroidKeyEvent.KEYCODE_R -> KeyR
+                AndroidKeyEvent.KEYCODE_S -> KeyS
+                AndroidKeyEvent.KEYCODE_T -> KeyT
+                AndroidKeyEvent.KEYCODE_U -> KeyU
+                AndroidKeyEvent.KEYCODE_V -> KeyV
+                AndroidKeyEvent.KEYCODE_W -> KeyW
+                AndroidKeyEvent.KEYCODE_X -> KeyX
+                AndroidKeyEvent.KEYCODE_Y -> KeyY
+                AndroidKeyEvent.KEYCODE_Z -> KeyZ
 
-                AndroidKeyEvent.KEYCODE_APOSTROPHE -> Apostrophe
-                AndroidKeyEvent.KEYCODE_AT -> At
+                AndroidKeyEvent.KEYCODE_APOSTROPHE -> Quote
                 AndroidKeyEvent.KEYCODE_BACKSLASH -> Backslash
-                AndroidKeyEvent.KEYCODE_GRAVE -> Backtick
+                AndroidKeyEvent.KEYCODE_GRAVE -> Backquote
                 AndroidKeyEvent.KEYCODE_COMMA -> Comma
-                AndroidKeyEvent.KEYCODE_EQUALS -> Equals
-                AndroidKeyEvent.KEYCODE_LEFT_BRACKET -> LeftBracket
+                AndroidKeyEvent.KEYCODE_EQUALS -> Equal
+                AndroidKeyEvent.KEYCODE_LEFT_BRACKET -> BracketLeft
                 AndroidKeyEvent.KEYCODE_MINUS -> Minus
                 AndroidKeyEvent.KEYCODE_PERIOD -> Period
-                AndroidKeyEvent.KEYCODE_PLUS -> Plus
-                AndroidKeyEvent.KEYCODE_POUND -> Pound
-                AndroidKeyEvent.KEYCODE_RIGHT_BRACKET -> RightBracket
+                AndroidKeyEvent.KEYCODE_RIGHT_BRACKET -> BracketRight
                 AndroidKeyEvent.KEYCODE_SEMICOLON -> Semicolon
                 AndroidKeyEvent.KEYCODE_SLASH -> Slash
-                AndroidKeyEvent.KEYCODE_STAR -> Star
 
                 AndroidKeyEvent.KEYCODE_NUM_LOCK -> NumLock
                 AndroidKeyEvent.KEYCODE_NUMPAD_0 -> Numpad0
@@ -279,17 +290,17 @@ value class Key(val code: String) {
                 AndroidKeyEvent.KEYCODE_NUMPAD_ADD -> NumpadAdd
                 AndroidKeyEvent.KEYCODE_NUMPAD_COMMA -> NumpadComma
                 AndroidKeyEvent.KEYCODE_NUMPAD_DIVIDE -> NumpadDivide
-                AndroidKeyEvent.KEYCODE_NUMPAD_DOT -> NumpadDot
+                AndroidKeyEvent.KEYCODE_NUMPAD_DOT -> NumpadDecimal
                 AndroidKeyEvent.KEYCODE_NUMPAD_ENTER -> NumpadEnter
-                AndroidKeyEvent.KEYCODE_NUMPAD_EQUALS -> NumpadEquals
-                AndroidKeyEvent.KEYCODE_NUMPAD_LEFT_PAREN -> NumpadLeftParen
+                AndroidKeyEvent.KEYCODE_NUMPAD_EQUALS -> NumpadEqual
+                AndroidKeyEvent.KEYCODE_NUMPAD_LEFT_PAREN -> NumpadParenLeft
                 AndroidKeyEvent.KEYCODE_NUMPAD_MULTIPLY -> NumpadMultiply
-                AndroidKeyEvent.KEYCODE_NUMPAD_RIGHT_PAREN -> NumpadRightParen
+                AndroidKeyEvent.KEYCODE_NUMPAD_RIGHT_PAREN -> NumpadParenRight
                 AndroidKeyEvent.KEYCODE_NUMPAD_SUBTRACT -> NumpadSubtract
 
                 AndroidKeyEvent.KEYCODE_CAPS_LOCK -> CapsLock
                 AndroidKeyEvent.KEYCODE_ESCAPE -> Escape
-                AndroidKeyEvent.KEYCODE_FUNCTION -> Function
+                AndroidKeyEvent.KEYCODE_FUNCTION -> Fn
                 AndroidKeyEvent.KEYCODE_INSERT -> Insert
 
                 AndroidKeyEvent.KEYCODE_DPAD_DOWN -> ArrowDown
@@ -313,23 +324,13 @@ value class Key(val code: String) {
                 AndroidKeyEvent.KEYCODE_F11 -> F11
                 AndroidKeyEvent.KEYCODE_F12 -> F12
 
-                AndroidKeyEvent.KEYCODE_BRIGHTNESS_DOWN -> BrightnessDown
-                AndroidKeyEvent.KEYCODE_BRIGHTNESS_UP -> BrightnessUp
-                AndroidKeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> MediaFastForward
-                AndroidKeyEvent.KEYCODE_MEDIA_NEXT -> MediaNext
-                AndroidKeyEvent.KEYCODE_MEDIA_PAUSE -> MediaPause
-                AndroidKeyEvent.KEYCODE_MEDIA_PLAY -> MediaPlay
+                AndroidKeyEvent.KEYCODE_MEDIA_NEXT -> MediaTrackNext
                 AndroidKeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> MediaPlayPause
-                AndroidKeyEvent.KEYCODE_MEDIA_PREVIOUS -> MediaPrevious
-                AndroidKeyEvent.KEYCODE_MEDIA_REWIND -> MediaRewind
-                AndroidKeyEvent.KEYCODE_MEDIA_SKIP_BACKWARD -> MediaSkipBackward
-                AndroidKeyEvent.KEYCODE_MEDIA_SKIP_FORWARD -> MediaSkipForward
+                AndroidKeyEvent.KEYCODE_MEDIA_PREVIOUS -> MediaTrackPrevious
                 AndroidKeyEvent.KEYCODE_MEDIA_STOP -> MediaStop
-                AndroidKeyEvent.KEYCODE_VOLUME_DOWN -> VolumeDown
-                AndroidKeyEvent.KEYCODE_VOLUME_MUTE -> VolumeMute
-                AndroidKeyEvent.KEYCODE_VOLUME_UP -> VolumeUp
-                AndroidKeyEvent.KEYCODE_ZOOM_IN -> ZoomIn
-                AndroidKeyEvent.KEYCODE_ZOOM_OUT -> ZoomOut
+                AndroidKeyEvent.KEYCODE_VOLUME_DOWN -> AudioVolumeDown
+                AndroidKeyEvent.KEYCODE_VOLUME_MUTE -> AudioVolumeMute
+                AndroidKeyEvent.KEYCODE_VOLUME_UP -> AudioVolumeUp
 
                 AndroidKeyEvent.KEYCODE_ALT_LEFT -> AltLeft
                 AndroidKeyEvent.KEYCODE_ALT_RIGHT -> AltRight
@@ -340,7 +341,24 @@ value class Key(val code: String) {
                 AndroidKeyEvent.KEYCODE_SHIFT_LEFT -> ShiftLeft
                 AndroidKeyEvent.KEYCODE_SHIFT_RIGHT -> ShiftRight
 
-                else -> Unknown
+                else -> null
             }
     }
+}
+
+private operator fun InputModifiers.Companion.invoke(event: android.view.KeyEvent) : InputModifiers {
+    var modifiers = None
+    if (event.isAltPressed) {
+        modifiers += Alt
+    }
+    if (event.isCtrlPressed) {
+        modifiers += Control
+    }
+    if (event.isMetaPressed) {
+        modifiers += Meta
+    }
+    if (event.isShiftPressed) {
+        modifiers += Shift
+    }
+    return modifiers
 }

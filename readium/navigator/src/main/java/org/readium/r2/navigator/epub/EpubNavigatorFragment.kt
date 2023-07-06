@@ -70,6 +70,7 @@ import org.readium.r2.shared.publication.ReadingProgression as PublicationReadin
 import org.readium.r2.navigator.input.CompositeInputListener
 import org.readium.r2.navigator.input.DragEvent
 import org.readium.r2.navigator.input.InputListener
+import org.readium.r2.navigator.input.KeyEvent
 import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
@@ -757,8 +758,8 @@ class EpubNavigatorFragment internal constructor(
                 offset = event.offset
             ))
 
-        override fun onNavigatorKeyDown(event: R2BasicWebView.R2KeyEvent): Boolean =
-            false
+        override fun onKey(event: KeyEvent): Boolean =
+            inputListener.onKey(event)
 
         override fun onDecorationActivated(
             id: DecorationId,
