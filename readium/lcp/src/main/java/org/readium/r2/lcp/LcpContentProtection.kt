@@ -92,11 +92,11 @@ internal class LcpContentProtection(
         license: Try<LcpLicense, LcpException>,
     ): Try<ContentProtection.Asset, Publication.OpeningException> {
         val serviceFactory = LcpContentProtectionService
-            .createFactory(license.getOrNull(), license.exceptionOrNull())
+            .createFactory(license.successOrNull(), license.failureOrNull())
 
         val fetcher = TransformingFetcher(
             ContainerFetcher(asset.container, mediaTypeRetriever),
-            LcpDecryptor(license.getOrNull())::transform
+            LcpDecryptor(license.successOrNull())::transform
         )
 
         val protectedFile = ContentProtection.Asset(
@@ -119,7 +119,7 @@ internal class LcpContentProtection(
     ): Try<ContentProtection.Asset, Publication.OpeningException> {
         // Update the license file to get a fresh publication URL.
         val license = retrieveLicense(licenseAsset, LcpDumbAuthentication(), false, null)
-            .getOrNull()
+            .successOrNull()
 
         val licenseDoc = license?.license
             ?: licenseAsset.resource.read()

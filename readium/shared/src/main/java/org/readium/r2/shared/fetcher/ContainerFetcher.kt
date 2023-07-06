@@ -1,21 +1,15 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Quentin Gliosca
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.shared.fetcher
 
 import java.io.File
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrDefault
 import org.readium.r2.shared.extensions.addPrefix
-import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.resource.Container
@@ -24,29 +18,23 @@ import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.ZipContainer
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.use
-import timber.log.Timber
 
-/** Provides access to entries of an archive. */
+/** Provides access to entries of a [Container]. */
 class ContainerFetcher(
     private val container: Container,
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : Fetcher {
 
     override suspend fun links(): List<Link> =
-        tryOr(emptyList()) { container.entries() }
+        container.entries()
             ?.map { it.toLink(mediaTypeRetriever) }
             ?: emptyList()
 
     override fun get(link: Link): Fetcher.Resource =
         EntryResource(link, container)
 
-    override suspend fun close() = withContext(Dispatchers.IO) {
-        try {
-            container.close()
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
-    }
+    override suspend fun close() =
+        container.close()
 
     private class EntryResource(
         val originalLink: Link,
@@ -58,8 +46,9 @@ class ContainerFetcher(
                 .removePrefix("/")
                 .let { href -> container.entry(href) }
                 .let { entry -> entry.use { block(entry) } }
-                .takeIf { result -> result.exceptionOrNull() !is Resource.Exception.NotFound }
+                .takeIf { result -> result.failureOrNull() !is Resource.Exception.NotFound }
                 ?: run {
+                    // Try again after removing query and fragment.
                     originalLink.href
                         .removePrefix("/")
                         .takeWhile { it !in "#?" }
@@ -87,7 +76,7 @@ class ContainerFetcher(
         }
 
         private suspend fun metadataLength(): Long? =
-            (withEntry { entry -> entry.length() }).getOrNull()
+            (withEntry { entry -> entry.length() }).successOrNull()
 
         override fun toString(): String =
             "${javaClass.simpleName}(${container::class.java.simpleName}, ${originalLink.href})"
@@ -105,7 +94,7 @@ private suspend fun Container.Entry.toLink(mediaTypeRetriever: MediaTypeRetrieve
 private suspend fun ZipContainer.Entry.toLinkProperties(): Map<String, Any> {
     return mutableMapOf<String, Any>(
         "archive" to mapOf<String, Any>(
-            "entryLength" to (compressedLength ?: length().getOrNull() ?: 0),
+            "entryLength" to (compressedLength ?: length().successOrNull() ?: 0),
             "isEntryCompressed" to (compressedLength != null)
         )
     )

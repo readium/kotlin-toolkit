@@ -66,7 +66,7 @@ class CoverServiceTest {
             res.linkBlocking()
         )
 
-        val bytes = res.readBlocking().getOrNull()
+        val bytes = res.readBlocking().successOrNull()
         assertNotNull(bytes)
 
         assertTrue(BitmapFactory.decodeByteArray(bytes, 0, bytes.size).sameAs(coverBitmap))

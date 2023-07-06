@@ -35,7 +35,7 @@ class ImageParserTest {
         val path = pathForResource("futuristic_tales.cbz")
         val file = File(path)
         val resource = FileResource(file)
-        val archive = DefaultArchiveFactory().create(resource, password = null).getOrNull()!!
+        val archive = DefaultArchiveFactory().create(resource, password = null).successOrNull()!!
         val fetcher = ContainerFetcher(archive, MediaTypeRetriever())
         PublicationParser.Asset(file.name, MediaType.CBZ, fetcher)
     }

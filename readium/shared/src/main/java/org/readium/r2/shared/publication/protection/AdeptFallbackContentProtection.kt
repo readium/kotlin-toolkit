@@ -82,4 +82,4 @@ class AdeptFallbackContentProtection(
 }
 
 private suspend inline fun Resource.readAsXmlOrNull(): ElementNode? =
-    readAsXml().getOrNull()
+    readAsXml().successOrNull()

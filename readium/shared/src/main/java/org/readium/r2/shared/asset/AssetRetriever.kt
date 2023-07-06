@@ -8,26 +8,16 @@ package org.readium.r2.shared.asset
 
 import android.content.ContentResolver
 import android.net.Uri
-import android.provider.MediaStore
-import android.webkit.MimeTypeMap
 import java.io.File
-import org.readium.r2.shared.error.Error
 import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.flatMap
-import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.ContainerFactory
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.mediatype.ContainerSnifferContext
-import org.readium.r2.shared.util.mediatype.ContentAwareSnifferContext
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import org.readium.r2.shared.util.mediatype.ResourceSnifferContext
-import org.readium.r2.shared.util.mediatype.Sniffer
-import org.readium.r2.shared.util.mediatype.UrlSnifferContextFactory
+import org.readium.r2.shared.util.mediatype.*
 import org.readium.r2.shared.util.toUrl
 
 class AssetRetriever(
@@ -35,7 +25,7 @@ class AssetRetriever(
     private val containerFactory: ContainerFactory,
     private val archiveFactory: ArchiveFactory,
     private val contentResolver: ContentResolver,
-    private val sniffers: List<Sniffer>
+    sniffers: List<Sniffer>
 ) {
 
     sealed class Error : org.readium.r2.shared.error.Error {
@@ -136,8 +126,9 @@ class AssetRetriever(
         }
     }
 
-    /* Restore well-known asset */
-
+    /**
+     * Retrieves again a well-known asset.
+     */
     suspend fun retrieve(
         url: Url,
         mediaType: MediaType,
@@ -222,13 +213,13 @@ class AssetRetriever(
     /* Sniff unknown assets */
 
     private val snifferContextFactory: UrlSnifferContextFactory =
-        UrlSnifferContextFactory(resourceFactory, containerFactory, archiveFactory)
+        UrlSnifferContextFactory(resourceFactory, containerFactory, archiveFactory, contentResolver)
 
     private val mediaTypeRetriever: MediaTypeRetriever =
         MediaTypeRetriever(resourceFactory, containerFactory, archiveFactory, contentResolver, sniffers)
 
     /**
-     * Resolves a format from a local file path.
+     * Retrieves an asset from a local file.
      */
     suspend fun retrieve(
         file: File,
@@ -239,7 +230,7 @@ class AssetRetriever(
     }
 
     /**
-     * Resolves a format from a local file path.
+     * Retrieves an asset from a local file.
      */
     suspend fun retrieve(
         file: File,
@@ -254,7 +245,7 @@ class AssetRetriever(
     }
 
     /**
-     * Resolves a format from a content URI and a [ContentResolver].
+     * Retrieves an asset from a content URI thanks to [ContentResolver].
      * Accepts the following URI schemes: content, android.resource, file.
      */
     suspend fun retrieve(
@@ -266,43 +257,22 @@ class AssetRetriever(
     }
 
     /**
-     * Resolves a format from a content URI and a [ContentResolver].
-     * Accepts the following URI schemes: content, android.resource, file.
+     * Retrieves an asset from a Uri.
      */
     suspend fun retrieve(
         uri: Uri,
         mediaTypes: List<String>,
         fileExtensions: List<String>,
     ): Asset? {
-        val allMediaTypes = mediaTypes.toMutableList()
-        val allFileExtensions = fileExtensions.toMutableList()
-
-        MimeTypeMap.getFileExtensionFromUrl(uri.toString()).ifEmpty { null }?.let {
-            allFileExtensions.add(0, it)
-        }
-
-        if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
-            contentResolver.getType(uri)
-                ?.takeUnless { MediaType.BINARY.matches(it) }
-                ?.let { allMediaTypes.add(0, it) }
-
-            contentResolver.queryProjection(uri, MediaStore.MediaColumns.DISPLAY_NAME)?.let { filename ->
-                allFileExtensions.add(0, File(filename).extension)
-            }
-        }
-
         val url = uri.toUrl()
             ?: return null
 
-        val context = snifferContextFactory
-            .createContext(url, allMediaTypes, allFileExtensions)
-            ?: return null
-
-        val fallbackName = url.filename
-
-        return retrieve(context, fallbackName)
+        return retrieve(url, mediaTypes, fileExtensions)
     }
 
+    /**
+     * Retrieves an asset from a Url.
+     */
     suspend fun retrieve(
         url: Url,
         mediaType: String? = null,
@@ -311,6 +281,9 @@ class AssetRetriever(
         return retrieve(url, listOfNotNull(mediaType), listOfNotNull(fileExtension))
     }
 
+    /**
+     * Retrieves an asset from a Url.
+     */
     private suspend fun retrieve(
         url: Url,
         mediaTypes: List<String>,
@@ -323,14 +296,6 @@ class AssetRetriever(
         return retrieve(context, url.filename)
     }
 
-    /**
-     * Resolves a media type from a sniffer context.
-     *
-     * Sniffing a media type is done in two rounds, because we want to give an opportunity to all
-     * sniffers to return a [MediaType] quickly before inspecting the content itself:
-     *  - Light Sniffing checks only the provided file extension or media type hints.
-     *  - Heavy Sniffing reads the bytes to perform more advanced sniffing.
-     */
     private suspend fun retrieve(
         context: ContentAwareSnifferContext,
         fallbackName: String
@@ -345,14 +310,14 @@ class AssetRetriever(
         return when (context) {
             is ContainerSnifferContext ->
                 Asset.Container(
-                    context.container.name().getOrNull() ?: fallbackName,
+                    context.container.name().successOrNull() ?: fallbackName,
                     mediaType,
                     if (context.isExploded) AssetType.Directory else AssetType.Archive,
                     context.container
                 )
             is ResourceSnifferContext ->
                 Asset.Resource(
-                    context.resource.name().getOrNull() ?: fallbackName,
+                    context.resource.name().successOrNull() ?: fallbackName,
                     mediaType,
                     context.resource
                 )

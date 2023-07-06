@@ -58,7 +58,7 @@ private suspend fun Publication.positionsFromManifest(): List<Locator> =
     links.firstWithMediaType(positionsLink.mediaType)
         ?.let { get(it) }
         ?.readAsString()
-        ?.getOrNull()
+        ?.successOrNull()
         ?.toJsonOrNull()
         ?.optJSONArray("positions")
         ?.mapNotNull { Locator.fromJSON(it as? JSONObject) }

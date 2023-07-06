@@ -422,7 +422,7 @@ class PublicationTest {
                 positions = { service }
             )
         )
-        assertEquals("test passed", runBlocking { publication.get(link).readAsString().getOrNull() })
+        assertEquals("test passed", runBlocking { publication.get(link).readAsString().successOrNull() })
     }
 
     @Test fun `find the first resource {Link} with the given {href}`() {

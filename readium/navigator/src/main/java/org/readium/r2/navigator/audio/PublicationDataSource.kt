@@ -84,7 +84,7 @@ internal class PublicationDataSource(private val publication: Publication) : Bas
     private fun contentLengthOf(uri: Uri, resource: Fetcher.Resource): Long? {
         cachedLengths[uri.toString()]?.let { return it }
 
-        val length = runBlocking { resource.length() }.getOrNull()
+        val length = runBlocking { resource.length() }.successOrNull()
             ?: return null
 
         cachedLengths[uri.toString()] = length

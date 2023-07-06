@@ -35,7 +35,7 @@ class ZipContainerTest(val container: Container) {
             val zipArchive = runBlocking {
                 DefaultArchiveFactory()
                     .create(FileResource(File(epubZip.path)), password = null)
-                    .getOrNull()
+                    .successOrNull()
             }
             assertNotNull(zipArchive)
             val apacheZipArchive = runBlocking {
@@ -49,7 +49,7 @@ class ZipContainerTest(val container: Container) {
             val explodedArchive = runBlocking {
                 DirectoryContainerFactory()
                     .create(File(epubExploded.path))
-                    .getOrNull()
+                    .successOrNull()
             }
             assertNotNull(explodedArchive)
 

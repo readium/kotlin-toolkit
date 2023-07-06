@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
+import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.io.CountingInputStream
 
 interface ZipContainer : Container {
@@ -136,8 +137,12 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
             ?: FailureEntry(path)
     }
 
-    override suspend fun close() = withContext(Dispatchers.IO) {
-        archive.close()
+    override suspend fun close() {
+        tryOrLog {
+            withContext(Dispatchers.IO) {
+                archive.close()
+            }
+        }
     }
 }
 

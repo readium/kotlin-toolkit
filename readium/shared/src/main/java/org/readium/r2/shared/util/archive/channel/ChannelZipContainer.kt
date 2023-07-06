@@ -12,6 +12,7 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
+import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.resource.*
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArchiveEntry
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipFile
@@ -20,7 +21,7 @@ import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.io.CountingInputStream
 
-internal class ChannelZip(
+internal class ChannelZipContainer(
     private val archive: ZipFile,
     private val fetchName: suspend () -> ResourceTry<String?>
 ) : ZipContainer {
@@ -106,8 +107,10 @@ internal class ChannelZip(
         private var stream: CountingInputStream? = null
 
         override suspend fun close() {
-            withContext(Dispatchers.IO) {
-                stream?.close()
+            tryOrLog {
+                withContext(Dispatchers.IO) {
+                    stream?.close()
+                }
             }
         }
     }
@@ -126,8 +129,12 @@ internal class ChannelZip(
             ?: FailureEntry(path)
     }
 
-    override suspend fun close() = withContext(Dispatchers.IO) {
-        archive.close()
+    override suspend fun close() {
+        tryOrLog {
+            withContext(Dispatchers.IO) {
+                archive.close()
+            }
+        }
     }
 }
 
@@ -149,7 +156,7 @@ class ChannelZipArchiveFactory(
             val resourceChannel = ResourceChannel(resource)
             val channel = wrapBaseChannel(resourceChannel)
             val zipFile = ZipFile(channel, true)
-            val channelZip = ChannelZip(zipFile, resource::name)
+            val channelZip = ChannelZipContainer(zipFile, resource::name)
             Try.success(channelZip)
         } catch (e: Resource.Exception) {
             Try.failure(ArchiveFactory.Error.ResourceReading(e))
@@ -160,7 +167,7 @@ class ChannelZipArchiveFactory(
     internal fun openFile(file: File): Container {
         val fileChannel = FileChannelAdapter(file, "r")
         val channel = wrapBaseChannel(fileChannel)
-        return ChannelZip(ZipFile(channel)) { Try.success(file.name) }
+        return ChannelZipContainer(ZipFile(channel)) { Try.success(file.name) }
     }
 
     private fun wrapBaseChannel(channel: SeekableByteChannel): SeekableByteChannel {

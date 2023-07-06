@@ -6,6 +6,10 @@
 
 package org.readium.r2.shared.util.mediatype
 
+import android.content.ContentResolver
+import android.provider.MediaStore
+import android.webkit.MimeTypeMap
+import java.io.File
 import java.io.InputStream
 import java.nio.charset.Charset
 import java.util.*
@@ -13,15 +17,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.error.getOrElse
+import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.resource.ArchiveFactory
-import org.readium.r2.shared.resource.BytesResource
-import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.ContainerFactory
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.ResourceFactory
-import org.readium.r2.shared.resource.ResourceInputStream
+import org.readium.r2.shared.resource.*
 import org.readium.r2.shared.util.Url
 import timber.log.Timber
 
@@ -110,7 +109,7 @@ class ResourceSnifferContext internal constructor(
                 loadedContentAsString = true
                 _contentAsString = resource
                     .readAsString(charset ?: Charset.defaultCharset())
-                    .getOrNull()
+                    .successOrNull()
             }
             _contentAsString
         } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
@@ -127,7 +126,7 @@ class ResourceSnifferContext internal constructor(
             loadedContentAsXml = true
             _contentAsXml = withContext(Dispatchers.IO) {
                 try {
-                    resource.readAsXml().getOrNull()
+                    resource.readAsXml().successOrNull()
                 } catch (e: Exception) {
                     null
                 }
@@ -170,7 +169,7 @@ class ResourceSnifferContext internal constructor(
      * See https://en.wikipedia.org/wiki/List_of_file_signatures
      */
     suspend fun read(range: LongRange? = null): ByteArray? =
-        resource.read(range).getOrNull()
+        resource.read(range).successOrNull()
 
     /**
      * Returns whether the content is a JSON object containing all of the given root keys.
@@ -214,7 +213,7 @@ class ContainerSnifferContext internal constructor(
 
         return withContext(Dispatchers.IO) {
             val entry = archive.entry(path)
-            val bytes = entry.read().getOrNull()
+            val bytes = entry.read().successOrNull()
             entry.close()
             bytes
         }
@@ -233,10 +232,11 @@ class ContainerSnifferContext internal constructor(
     }
 }
 
-class UrlSnifferContextFactory(
+internal class UrlSnifferContextFactory(
     private val resourceFactory: ResourceFactory,
     private val containerFactory: ContainerFactory,
-    private val archiveFactory: ArchiveFactory
+    private val archiveFactory: ArchiveFactory,
+    private val contentResolver: ContentResolver?
 ) {
 
     suspend fun createContext(
@@ -244,6 +244,22 @@ class UrlSnifferContextFactory(
         mediaTypes: List<String> = emptyList(),
         fileExtensions: List<String> = emptyList()
     ): ContentAwareSnifferContext? {
+        val allMediaTypes = mediaTypes.toMutableList()
+        val allFileExtensions = fileExtensions.toMutableList()
+
+        MimeTypeMap.getFileExtensionFromUrl(url.toString()).ifEmpty { null }?.let {
+            allFileExtensions.add(0, it)
+        }
+
+        if (url.scheme == ContentResolver.SCHEME_CONTENT && contentResolver != null) {
+            contentResolver.getType(url.uri)
+                ?.takeUnless { MediaType.BINARY.matches(it) }
+                ?.let { allMediaTypes.add(0, it) }
+
+            contentResolver.queryProjection(url.uri, MediaStore.MediaColumns.DISPLAY_NAME)?.let { filename ->
+                allFileExtensions.add(0, File(filename).extension)
+            }
+        }
 
         val resource = resourceFactory
             .create(url)
@@ -268,14 +284,14 @@ class UrlSnifferContextFactory(
         fileExtensions: List<String>
     ): ContentAwareSnifferContext? {
         val container = containerFactory.create(url)
-            .getOrNull()
+            .successOrNull()
             ?: return null
 
         return ContainerSnifferContext(container, true, mediaTypes, fileExtensions)
     }
 }
 
-class BytesSnifferContextFactory(
+internal class BytesSnifferContextFactory(
     private val archiveFactory: ArchiveFactory
 ) {
 

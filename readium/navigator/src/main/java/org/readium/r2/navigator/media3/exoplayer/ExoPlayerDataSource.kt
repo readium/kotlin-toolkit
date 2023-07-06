@@ -88,7 +88,7 @@ internal class ExoPlayerDataSource internal constructor(
     private fun contentLengthOf(uri: Uri, resource: Resource): Long? {
         cachedLengths[uri.toString()]?.let { return it }
 
-        val length = runBlocking { resource.length() }.getOrNull()
+        val length = runBlocking { resource.length() }.successOrNull()
             ?: return null
 
         cachedLengths[uri.toString()] = length

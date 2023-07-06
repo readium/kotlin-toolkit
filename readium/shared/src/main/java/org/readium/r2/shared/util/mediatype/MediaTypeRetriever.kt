@@ -8,11 +8,8 @@ package org.readium.r2.shared.util.mediatype
 
 import android.content.ContentResolver
 import android.net.Uri
-import android.provider.MediaStore
-import android.webkit.MimeTypeMap
 import java.io.File
 import org.readium.r2.shared.BuildConfig
-import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.resource.*
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Url
@@ -22,11 +19,11 @@ class MediaTypeRetriever(
     resourceFactory: ResourceFactory = FileResourceFactory(),
     containerFactory: ContainerFactory = DirectoryContainerFactory(),
     archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
-    private val contentResolver: ContentResolver? = null,
+    contentResolver: ContentResolver? = null,
     private val sniffers: List<Sniffer> = Sniffers.all,
 ) {
     private val urlSnifferContextFactory: UrlSnifferContextFactory =
-        UrlSnifferContextFactory(resourceFactory, containerFactory, archiveFactory)
+        UrlSnifferContextFactory(resourceFactory, containerFactory, archiveFactory, contentResolver)
 
     private val bytesSnifferContextFactory: BytesSnifferContextFactory =
         BytesSnifferContextFactory(archiveFactory)
@@ -35,7 +32,7 @@ class MediaTypeRetriever(
         retrieve(mediaType = mediaType.toString()) ?: mediaType
 
     /**
-     * Resolves a format from a single file extension and media type hint, without checking the actual
+     * Resolves a media type from a single file extension and media type hint, without checking the actual
      * content.
      */
     suspend fun retrieve(
@@ -45,11 +42,22 @@ class MediaTypeRetriever(
         if (BuildConfig.DEBUG && mediaType?.startsWith("/") == true) {
             throw IllegalArgumentException("The provided media type is incorrect: $mediaType. To pass a file path, you must wrap it in a File().")
         }
-        return retrieve(content = null, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension))
+        return retrieve(mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension))
     }
 
     /**
-     * Resolves a format from a local file path.
+     * Resolves a media type from file extension and media type hints without checking the actual
+     * content.
+     */
+    suspend fun retrieve(
+        mediaTypes: List<String>,
+        fileExtensions: List<String>
+    ): MediaType? {
+        return doRetrieve(null, mediaTypes, fileExtensions)
+    }
+
+    /**
+     * Resolves a media type from a local file.
      */
     suspend fun retrieve(
         file: File,
@@ -60,7 +68,7 @@ class MediaTypeRetriever(
     }
 
     /**
-     * Resolves a format from a local file path.
+     * Resolves a media type from a local file.
      */
     suspend fun retrieve(
         file: File,
@@ -71,7 +79,7 @@ class MediaTypeRetriever(
     }
 
     /**
-     * Resolves a format from bytes, e.g. from an HTTP response.
+     * Resolves a media type from bytes, e.g. from an HTTP response.
      */
     suspend fun retrieve(
         bytes: () -> ByteArray,
@@ -82,7 +90,7 @@ class MediaTypeRetriever(
     }
 
     /**
-     * Resolves a format from bytes, e.g. from an HTTP response.
+     * Resolves a media type from bytes, e.g. from an HTTP response.
      */
     suspend fun retrieve(
         bytes: () -> ByteArray,
@@ -93,8 +101,7 @@ class MediaTypeRetriever(
     }
 
     /**
-     * Resolves a format from a content URI and a [ContentResolver].
-     * Accepts the following URI schemes: content, android.resource, file.
+     * Resolves a media type from a Uri.
      */
     suspend fun retrieve(
         uri: Uri,
@@ -105,37 +112,15 @@ class MediaTypeRetriever(
     }
 
     /**
-     * Resolves a format from a content URI and a [ContentResolver].
-     * Accepts the following URI schemes: content, android.resource, file.
+     * Resolves a media type from a Uri.
      */
     suspend fun retrieve(
         uri: Uri,
         mediaTypes: List<String>,
         fileExtensions: List<String>,
     ): MediaType? {
-        if (contentResolver == null) {
-            return null
-        }
-
-        val allMediaTypes = mediaTypes.toMutableList()
-        val allFileExtensions = fileExtensions.toMutableList()
-
-        MimeTypeMap.getFileExtensionFromUrl(uri.toString()).ifEmpty { null }?.let {
-            allFileExtensions.add(0, it)
-        }
-
-        if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
-            contentResolver.getType(uri)
-                ?.takeUnless { MediaType.BINARY.matches(it) }
-                ?.let { allMediaTypes.add(0, it) }
-
-            contentResolver.queryProjection(uri, MediaStore.MediaColumns.DISPLAY_NAME)?.let { filename ->
-                allFileExtensions.add(0, File(filename).extension)
-            }
-        }
-
         val url = uri.toUrl() ?: return null
-        return retrieve(content = Either.Right(url), mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
+        return retrieve(content = Either.Right(url), mediaTypes = mediaTypes, fileExtensions = fileExtensions)
     }
 
     /**
@@ -160,19 +145,16 @@ class MediaTypeRetriever(
                         fileExtensions
                     )
                 is Either.Right ->
-                    urlSnifferContextFactory.createContext(content.value, mediaTypes, fileExtensions)
+                    urlSnifferContextFactory.createContext(
+                        content.value,
+                        mediaTypes,
+                        fileExtensions
+                    )
                 null -> null
             }
         }
 
         return doRetrieve(fullContext, mediaTypes, fileExtensions)
-    }
-
-    suspend fun retrieve(
-        mediaTypes: List<String>,
-        fileExtensions: List<String>
-    ): MediaType? {
-        return doRetrieve(null, mediaTypes, fileExtensions)
     }
 
     /**

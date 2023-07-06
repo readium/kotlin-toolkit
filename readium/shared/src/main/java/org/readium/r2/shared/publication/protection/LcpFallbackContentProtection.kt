@@ -104,7 +104,7 @@ class LcpFallbackContentProtection(
 }
 
 private suspend inline fun Resource.readAsJsonOrNull(): JSONObject? =
-    readAsJson().getOrNull()
+    readAsJson().successOrNull()
 
 private suspend inline fun Resource.readAsXmlOrNull(): ElementNode? =
-    readAsXml().getOrNull()
+    readAsXml().successOrNull()

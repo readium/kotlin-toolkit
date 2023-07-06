@@ -22,7 +22,7 @@ class BufferingResourceTest {
 
     @Test
     fun `get length`() = runBlocking {
-        assertEquals(161291, sut().length().getOrNull())
+        assertEquals(161291, sut().length().successOrNull())
     }
 
     @Test
@@ -128,7 +128,7 @@ class BufferingResourceTest {
     private fun testRead(sut: BufferingResource, range: LongRange? = null) {
         runBlocking {
             val res = sut.read(range)
-            val readData = res.getOrNull()
+            val readData = res.successOrNull()
             assertNotNull(readData)
             if (range != null) {
                 val expected = data.copyOfRange(range.first.toInt(), range.last.toInt() + 1)

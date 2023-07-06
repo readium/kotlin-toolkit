@@ -69,6 +69,10 @@ sealed class Asset {
         val container: org.readium.r2.shared.resource.Container
     ) : Asset() {
 
+        init {
+            require(assetType != AssetType.Resource)
+        }
+
         override suspend fun close() {
             container.close()
         }

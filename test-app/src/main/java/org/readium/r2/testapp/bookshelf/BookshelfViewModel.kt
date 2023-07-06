@@ -68,7 +68,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             app.bookRepository
                 .importBook(uri)
-                .exceptionOrNull()
+                .failureOrNull()
                 .let { sendImportFeedback(it) }
         }
 
@@ -76,7 +76,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             app.bookRepository
                 .addSharedStorageBook(Url(uri.toString())!!)
-                .exceptionOrNull()
+                .failureOrNull()
                 .let { sendImportFeedback(it) }
         }
 
@@ -84,7 +84,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             val exception = app.bookRepository
                 .addRemoteBook(url)
-                .exceptionOrNull()
+                .failureOrNull()
             sendImportFeedback(exception)
         }
     }
