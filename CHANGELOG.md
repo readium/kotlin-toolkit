@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file. Take a look
     * `WebSettings.textZoom` will work with more publications than `--USER__fontSize`, even the ones poorly authored. However the page width is not adjusted when changing the font size to keep the optimal line length.
 * Scroll mode: jumping between two EPUB resources with a horizontal swipe triggers the `Navigator.Listener.onJumpToLocator()` callback.
     * This can be used to allow the user to go back to their previous location if they swiped across chapters by mistake.
+* Support for keyboard events in the EPUB, PDF and image navigators. See `VisualNavigator.addInputListener()`.
 
 #### Streamer
 
@@ -27,7 +28,8 @@ All notable changes to this project will be documented in this file. Take a look
 
 * `EpubNavigatorFragment.firstVisibleElementLocator()` now returns the first *block* element that is visible on the screen, even if it starts on previous pages.
     * This is used to make sure the user will not miss any context when restoring a TTS session in the middle of a resource.
-* The `VisualNavigator`'s drag listener events are merged into a single `onDrag()` event. Use `DragEvent.Type` to check the nature of the event.
+* The `VisualNavigator`'s drag and tap listener events are moved to a new `addInputListener()` API.
+* The new `DirectionalNavigationAdapter` component replaces `EdgeTapNavigation`, helping you turn pages with the arrow and space keyboard keys, or taps on the edge of the screen.
 
 ### Fixed
 
