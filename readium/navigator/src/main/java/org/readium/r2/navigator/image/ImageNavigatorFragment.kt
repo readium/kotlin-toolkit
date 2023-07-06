@@ -84,7 +84,7 @@ class ImageNavigatorFragment private constructor(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         childFragmentManager.fragmentFactory = createFragmentFactory {
-            R2CbzPageFragment(publication) { x, y -> inputListener.onTap(TapEvent(PointF(x, y))) }
+            R2CbzPageFragment(publication) { x, y -> inputListener.onTap(this, TapEvent(PointF(x, y))) }
         }
         super.onCreate(savedInstanceState)
     }
@@ -132,7 +132,7 @@ class ImageNavigatorFragment private constructor(
             go(initialLocator)
         }
 
-        return KeyInterceptorView(view, inputListener)
+        return KeyInterceptorView(view, this, inputListener)
     }
 
     override fun onStart() {
@@ -213,6 +213,9 @@ class ImageNavigatorFragment private constructor(
     }
 
     // VisualNavigator
+
+    override val publicationView: View
+        get() = requireView()
 
     override val readingProgression: PublicationReadingProgression =
         publication.metadata.effectiveReadingProgression

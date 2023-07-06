@@ -154,6 +154,9 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         }
     }
 
+    override val publicationView: View
+        get() = navigatorFragment().publicationView
+
     @Deprecated("Use `presentation.value.readingProgression` instead", replaceWith = ReplaceWith("presentation.value.readingProgression"))
     override val readingProgression: ReadingProgression
         get() = navigatorFragment().readingProgression

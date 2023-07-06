@@ -1,5 +1,6 @@
 package org.readium.r2.navigator.input
 
+import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
@@ -8,17 +9,17 @@ interface InputListener {
      * Called when the user tapped the content, but nothing handled the event internally (eg.
      * by following an internal link).
      */
-    fun onTap(event: TapEvent): Boolean = false
+    fun onTap(navigator: VisualNavigator, event: TapEvent): Boolean = false
 
     /**
      * Called when the user dragged the content, but nothing handled the event internally.
      */
-    fun onDrag(event: DragEvent): Boolean = false
+    fun onDrag(navigator: VisualNavigator, event: DragEvent): Boolean = false
 
     /**
      * Called when the user pressed or released a key, but nothing handled the event internally.
      */
-    fun onKey(event: KeyEvent): Boolean = false
+    fun onKey(navigator: VisualNavigator, event: KeyEvent): Boolean = false
 }
 
 @OptIn(ExperimentalReadiumApi::class)
@@ -33,12 +34,12 @@ internal class CompositeInputListener : InputListener {
         listeners.remove(listener)
     }
 
-    override fun onTap(event: TapEvent): Boolean =
-        listeners.any { it.onTap(event) }
+    override fun onTap(navigator: VisualNavigator, event: TapEvent): Boolean =
+        listeners.any { it.onTap(navigator, event) }
 
-    override fun onDrag(event: DragEvent): Boolean =
-        listeners.any { it.onDrag(event) }
+    override fun onDrag(navigator: VisualNavigator, event: DragEvent): Boolean =
+        listeners.any { it.onDrag(navigator, event) }
 
-    override fun onKey(event: KeyEvent): Boolean =
-        listeners.any { it.onKey(event) }
+    override fun onKey(navigator: VisualNavigator, event: KeyEvent): Boolean =
+        listeners.any { it.onKey(navigator, event) }
 }

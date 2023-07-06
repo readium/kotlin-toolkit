@@ -56,6 +56,9 @@ open class R2CbzActivity : AppCompatActivity(), CoroutineScope, IR2Activity, Vis
     override val currentLocator: StateFlow<Locator>
         get() = navigatorFragment.currentLocator
 
+    override val publicationView: View
+        get() = navigatorFragment.publicationView
+
     @ExperimentalReadiumApi
     override val presentation: StateFlow<VisualNavigator.Presentation>
         get() = navigatorFragment.presentation

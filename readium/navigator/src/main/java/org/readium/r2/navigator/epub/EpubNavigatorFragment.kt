@@ -626,6 +626,9 @@ class EpubNavigatorFragment internal constructor(
 
     // VisualNavigator
 
+    override val publicationView: View
+        get() = requireView()
+
     override val presentation: StateFlow<VisualNavigator.Presentation> get() = viewModel.presentation
 
     override val readingProgression: PublicationReadingProgression
@@ -740,7 +743,7 @@ class EpubNavigatorFragment internal constructor(
         }
 
         override fun onTap(point: PointF): Boolean =
-            inputListener.onTap(TapEvent(point))
+            inputListener.onTap(this@EpubNavigatorFragment, TapEvent(point))
 
         override fun onDragStart(event: R2BasicWebView.DragEvent): Boolean =
             onDrag(DragEvent.Type.Start, event)
@@ -753,6 +756,7 @@ class EpubNavigatorFragment internal constructor(
 
         private fun onDrag(type: DragEvent.Type, event: R2BasicWebView.DragEvent): Boolean =
             inputListener.onDrag(
+                this@EpubNavigatorFragment,
                 DragEvent(
                     type = type,
                     start = event.startPoint.adjustedToViewport(),
@@ -761,7 +765,7 @@ class EpubNavigatorFragment internal constructor(
             )
 
         override fun onKey(event: KeyEvent): Boolean =
-            inputListener.onKey(event)
+            inputListener.onKey(this@EpubNavigatorFragment, event)
 
         override fun onDecorationActivated(
             id: DecorationId,

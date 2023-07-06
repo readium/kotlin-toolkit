@@ -7,6 +7,7 @@
 package org.readium.r2.navigator
 
 import android.graphics.PointF
+import android.view.View
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.flow.Flow
@@ -104,6 +105,11 @@ interface NavigatorDelegate {
  * A navigator rendering the publication visually on-screen.
  */
 interface VisualNavigator : Navigator {
+
+    /**
+     * View displaying the publication.
+     */
+    val publicationView: View
 
     /**
      * Current presentation rendered by the navigator.

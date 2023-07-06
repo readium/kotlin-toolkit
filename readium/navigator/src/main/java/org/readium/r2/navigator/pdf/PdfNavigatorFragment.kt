@@ -127,7 +127,7 @@ class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferenc
     ): View {
         val view = FragmentContainerView(inflater.context)
         view.id = R.id.readium_pdf_container
-        return KeyInterceptorView(view, inputListener)
+        return KeyInterceptorView(view, this, inputListener)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -189,7 +189,7 @@ class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferenc
         }
 
         override fun onTap(point: PointF): Boolean =
-            inputListener.onTap(TapEvent(point))
+            inputListener.onTap(this@PdfNavigatorFragment, TapEvent(point))
 
         override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
             listener?.onResourceLoadFailed(link, error)
@@ -239,6 +239,9 @@ class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferenc
     }
 
     // VisualNavigator
+
+    override val publicationView: View
+        get() = requireView()
 
     @ExperimentalReadiumApi
     override val presentation: StateFlow<VisualNavigator.Presentation>

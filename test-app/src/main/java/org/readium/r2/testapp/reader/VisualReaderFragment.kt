@@ -41,13 +41,10 @@ import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.input.InputListener
-import org.readium.r2.navigator.input.InputModifiers
-import org.readium.r2.navigator.input.Key
-import org.readium.r2.navigator.input.KeyEvent
 import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.util.BaseActionModeCallback
-import org.readium.r2.navigator.util.EdgeTapNavigation
+import org.readium.r2.navigator.util.DirectionalNavigationAdapter
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Language
@@ -99,32 +96,17 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
         navigatorFragment = navigator as Fragment
 
-        (navigator as VisualNavigator).addInputListener(object : InputListener {
-            override fun onTap(event: TapEvent): Boolean {
-                val navigated = edgeTapNavigation.onTap(event.point, requireView())
+        (navigator as VisualNavigator).apply {
+            // This will automatically turn pages when tapping the screen edges or arrow keys.
+            addInputListener(DirectionalNavigationAdapter())
 
-                if (!navigated) {
+            addInputListener(object : InputListener {
+                override fun onTap(navigator: VisualNavigator, event: TapEvent): Boolean {
                     requireActivity().toggleSystemUi()
+                    return true
                 }
-                return true
-            }
-
-            override fun onKey(event: KeyEvent): Boolean {
-                if (event.type != KeyEvent.Type.Down || event.modifiers != InputModifiers.None) return false
-
-                return when (event.key) {
-                    Key.ArrowRight, Key.Space -> navigator.goForward()
-                    Key.ArrowLeft -> navigator.goBackward()
-                    else -> false
-                }
-            }
-
-            private val edgeTapNavigation by lazy {
-                EdgeTapNavigation(
-                    navigator = navigator as VisualNavigator
-                )
-            }
-        })
+            })
+        }
 
         setupObservers()
 
