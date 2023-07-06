@@ -19,9 +19,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
-import org.readium.r2.navigator.input.DragEvent
 import org.readium.r2.navigator.input.InputListener
-import org.readium.r2.navigator.input.KeyboardEvent
 
 /**
  * Base interface for a navigator rendering a publication.

@@ -9,7 +9,6 @@ package org.readium.r2.testapp.reader
 import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
-import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Bundle
 import android.view.*
@@ -43,7 +42,7 @@ import kotlinx.parcelize.Parcelize
 import org.readium.r2.navigator.*
 import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.input.Key
-import org.readium.r2.navigator.input.KeyboardEvent
+import org.readium.r2.navigator.input.KeyEvent
 import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.util.BaseActionModeCallback
@@ -109,8 +108,8 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                 return true
             }
 
-            override fun onKey(event: KeyboardEvent): Boolean {
-                if (event.type != KeyboardEvent.Type.Down) return false
+            override fun onKey(event: KeyEvent): Boolean {
+                if (event.type != KeyEvent.Type.Down) return false
 
                 return when (event.key) {
                     Key.ArrowRight, Key.Space -> navigator.goForward()

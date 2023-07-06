@@ -18,7 +18,7 @@ interface InputListener {
     /**
      * Called when the user pressed or released a key, but nothing handled the event internally.
      */
-    fun onKey(event: KeyboardEvent): Boolean = false
+    fun onKey(event: KeyEvent): Boolean = false
 }
 
 @OptIn(ExperimentalReadiumApi::class)
@@ -39,6 +39,6 @@ internal class CompositeInputListener: InputListener {
     override fun onDrag(event: DragEvent): Boolean =
         listeners.any { it.onDrag(event) }
 
-    override fun onKey(event: KeyboardEvent): Boolean =
+    override fun onKey(event: KeyEvent): Boolean =
         listeners.any { it.onKey(event) }
 }
