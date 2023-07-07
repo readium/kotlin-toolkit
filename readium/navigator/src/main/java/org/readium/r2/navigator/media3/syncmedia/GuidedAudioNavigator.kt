@@ -102,11 +102,11 @@ class GuidedAudioNavigator<S : Configurable.Settings, P : Configurable.Preferenc
         audioNavigator.close()
     }
 
-    override fun previousUtterance() {
+    override fun goToPreviousUtterance() {
         TODO("Not yet implemented")
     }
 
-    override fun nextUtterance() {
+    override fun goToNextUtterance() {
         TODO("Not yet implemented")
     }
 

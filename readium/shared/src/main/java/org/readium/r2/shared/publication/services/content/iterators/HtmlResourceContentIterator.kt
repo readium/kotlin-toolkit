@@ -319,8 +319,9 @@ class HtmlResourceContentIterator internal constructor(
                     currentLanguage = language
                 }
 
-                rawTextAcc += Parser.unescapeEntities(node.wholeText, false)
-                appendNormalisedText(node)
+                val text = Parser.unescapeEntities(node.wholeText, false)
+                rawTextAcc += text
+                appendNormalisedText(text)
             } else if (node is Element) {
                 if (node.isBlock) {
                     assert(breadcrumbs.last() == node)
@@ -330,8 +331,7 @@ class HtmlResourceContentIterator internal constructor(
             }
         }
 
-        private fun appendNormalisedText(textNode: TextNode) {
-            val text = Parser.unescapeEntities(textNode.wholeText, false)
+        private fun appendNormalisedText(text: String) {
             StringUtil.appendNormalisedWhitespace(textAcc, text, lastCharIsWhitespace())
         }
 

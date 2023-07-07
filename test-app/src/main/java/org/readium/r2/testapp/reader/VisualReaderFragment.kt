@@ -84,13 +84,6 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
      */
     private var disableTouches by mutableStateOf(false)
 
-    /**
-     * When true, the fragment won't save progression.
-     * This is useful in the case where the TTS is on and a service is saving progression
-     * in background.
-     */
-    private var preventProgressionSaving: Boolean = false
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -161,11 +154,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 navigator.currentLocator
-                    .onEach {
-                        if (!preventProgressionSaving) {
-                            model.saveProgression(it)
-                        }
-                    }
+                    .onEach { model.saveProgression(it) }
                     .launchIn(this)
 
                 setupHighlights(this)
@@ -244,12 +233,6 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                     }
                     .launchIn(scope)
             }
-
-            showControls
-                .onEach { showControls ->
-                    preventProgressionSaving = showControls
-                }
-                .launchIn(scope)
         }
     }
 
