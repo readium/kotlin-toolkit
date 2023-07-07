@@ -16,9 +16,9 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.extensions.sum
 import org.readium.r2.navigator.extensions.time
-import org.readium.r2.navigator.media3.api.TimeBasedMediaNavigator
 import org.readium.r2.navigator.media3.api.Media3Adapter
 import org.readium.r2.navigator.media3.api.MediaNavigator
+import org.readium.r2.navigator.media3.api.TimeBasedMediaNavigator
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.mapStateIn

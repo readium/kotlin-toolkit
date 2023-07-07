@@ -6,8 +6,8 @@
 
 package org.readium.r2.navigator.media3.exoplayer
 
-import org.readium.r2.navigator.media3.audio.AudioNavigatorFactory
 import org.readium.r2.navigator.media3.audio.AudioNavigator
+import org.readium.r2.navigator.media3.audio.AudioNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @OptIn(ExperimentalReadiumApi::class)

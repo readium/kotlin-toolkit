@@ -9,10 +9,10 @@ package org.readium.r2.navigator.media3.syncmedia
 import androidx.media3.common.Player
 import kotlin.time.Duration
 import kotlinx.coroutines.flow.StateFlow
-import org.readium.r2.navigator.media3.api.TimeBasedMediaNavigator
 import org.readium.r2.navigator.media3.api.Media3Adapter
 import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.media3.api.TextAwareMediaNavigator
+import org.readium.r2.navigator.media3.api.TimeBasedMediaNavigator
 import org.readium.r2.navigator.media3.audio.AudioNavigator
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
