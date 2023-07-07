@@ -191,7 +191,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         setWillNotDraw(false)
         descendantFocusability = ViewGroup.FOCUS_AFTER_DESCENDANTS
 
-        // Disable the focus overlay when using the keyboard.
+        // Disable the focus overlay appearing when interacting with the keyboard.
         // https://developer.android.com/about/versions/oreo/android-8.0-changes#ian
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             defaultFocusHighlightEnabled = false

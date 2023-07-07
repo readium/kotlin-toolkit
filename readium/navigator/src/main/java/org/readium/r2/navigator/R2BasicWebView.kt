@@ -453,7 +453,8 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 else -> return false
             },
             key = Key(jsonObject.optString("code")),
-            modifiers = inputModifiers(jsonObject)
+            modifiers = inputModifiers(jsonObject),
+            characters = jsonObject.optNullableString("characters")?.takeUnless { it.isBlank() }
         )
 
         return listener?.onKey(event) ?: false

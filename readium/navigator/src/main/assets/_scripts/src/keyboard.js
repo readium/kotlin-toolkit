@@ -44,7 +44,7 @@ function sendPressKeyMessage(event, type) {
   let keyEvent = {
     type: type,
     code: event.code,
-    key: String.fromCharCode(event.keyCode),
+    characters: String.fromCharCode(event.keyCode),
     alt: event.altKey,
     control: event.ctrlKey,
     shift: event.shiftKey,
