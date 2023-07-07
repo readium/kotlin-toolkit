@@ -339,8 +339,8 @@ class AndroidTtsEngine private constructor(
         engine: TextToSpeech,
         request: Request
     ): Boolean {
-        return engine.setupVoice(settings.value, request.id, request.language, voices)
-            && (engine.speak(request.text, QUEUE_ADD, null, request.id.value) == SUCCESS)
+        return engine.setupVoice(settings.value, request.id, request.language, voices) &&
+            (engine.speak(request.text, QUEUE_ADD, null, request.id.value) == SUCCESS)
     }
 
     private fun setupListener(engine: TextToSpeech) {
@@ -403,7 +403,7 @@ class AndroidTtsEngine private constructor(
         val language = utteranceLanguage
             .takeUnless { settings.overrideContentLanguage }
             // We take utterance language if data are missing but not if the language is not supported
-            ?.takeIf { isLanguageAvailable(it.locale) != LANG_NOT_SUPPORTED}
+            ?.takeIf { isLanguageAvailable(it.locale) != LANG_NOT_SUPPORTED }
             ?: settings.language
                 .takeIf { isLanguageAvailable(it.locale) != LANG_NOT_SUPPORTED }
             ?: defaultVoice?.locale?.let { Language(it) }

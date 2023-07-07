@@ -11,11 +11,11 @@ import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 /**
- * A [MediaNavigator] which can play audio files.
+ * A [MediaNavigator] whose locations provide time offsets.
  */
 @ExperimentalReadiumApi
-interface AudioNavigator<L : AudioNavigator.Location, P : AudioNavigator.Playback,
-    R : AudioNavigator.ReadingOrder> : MediaNavigator<L, P, R> {
+interface TimeBasedMediaNavigator<L : TimeBasedMediaNavigator.Location, P : TimeBasedMediaNavigator.Playback,
+    R : TimeBasedMediaNavigator.ReadingOrder> : MediaNavigator<L, P, R> {
 
     /**
      * Location of the navigator.
