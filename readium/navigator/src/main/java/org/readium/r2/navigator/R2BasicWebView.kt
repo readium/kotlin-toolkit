@@ -177,16 +177,12 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         listener?.onProgressionChanged()
     }
 
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        addJavascriptInterface(this, "Android")
-    }
-
-    override fun onDetachedFromWindow() {
-        super.onDetachedFromWindow()
+    override fun destroy() {
         // Prevent the web view from leaking when detached
         // See https://github.com/readium/r2-navigator-kotlin/issues/52
         removeJavascriptInterface("Android")
+
+        super.destroy()
     }
 
     @android.webkit.JavascriptInterface

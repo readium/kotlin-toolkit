@@ -33,6 +33,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Fixed
 
+#### Navigator
+
+* [#360](https://github.com/readium/kotlin-toolkit/issues/360) Fix EPUB JavaScript interface injection when rotating the screen on some devices.
+
 #### Streamer
 
 * Fix issue with the TTS starting from the beginning of the chapter instead of the current position.

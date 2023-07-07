@@ -165,6 +165,7 @@ class R2EpubPageFragment : Fragment() {
         webView.settings.textZoom = textZoom
         webView.resourceUrl = resourceUrl
         webView.setPadding(0, 0, 0, 0)
+        webView.addJavascriptInterface(webView, "Android")
 
         var endReached = false
         webView.setOnOverScrolledCallback(object : R2BasicWebView.OnOverScrolledCallback {
