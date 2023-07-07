@@ -35,7 +35,7 @@ import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.safety.Safelist
 import org.readium.r2.navigator.extensions.optRectF
-import org.readium.r2.navigator.input.InputModifiers
+import org.readium.r2.navigator.input.InputModifier
 import org.readium.r2.navigator.input.Key
 import org.readium.r2.navigator.input.KeyEvent
 import org.readium.r2.shared.InternalReadiumApi
@@ -457,7 +457,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 else -> return false
             },
             key = Key(jsonObject.optString("code")),
-            modifiers = InputModifiers(jsonObject)
+            modifiers = inputModifiers(jsonObject)
         )
 
         return listener?.onKey(event) ?: false
@@ -693,19 +693,18 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 }
 
-private operator fun InputModifiers.Companion.invoke(json: JSONObject): InputModifiers {
-    var modifiers = None
-    if (json.optBoolean("alt")) {
-        modifiers += Alt
+private fun inputModifiers(json: JSONObject): Set<InputModifier> =
+    buildSet {
+        if (json.optBoolean("alt")) {
+            add(InputModifier.Alt)
+        }
+        if (json.optBoolean("control")) {
+            add(InputModifier.Control)
+        }
+        if (json.optBoolean("shift")) {
+            add(InputModifier.Shift)
+        }
+        if (json.optBoolean("meta")) {
+            add(InputModifier.Meta)
+        }
     }
-    if (json.optBoolean("control")) {
-        modifiers += Control
-    }
-    if (json.optBoolean("shift")) {
-        modifiers += Shift
-    }
-    if (json.optBoolean("meta")) {
-        modifiers += Meta
-    }
-    return modifiers
-}

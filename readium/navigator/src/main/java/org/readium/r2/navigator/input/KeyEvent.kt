@@ -12,7 +12,7 @@ import android.view.KeyEvent as AndroidKeyEvent
 data class KeyEvent(
     val type: Type,
     val key: Key,
-    val modifiers: InputModifiers
+    val modifiers: Set<InputModifier> = emptySet()
 ) {
 
     enum class Type {
@@ -24,7 +24,7 @@ data class KeyEvent(
             return KeyEvent(
                 type = type,
                 key = Key(event) ?: return null,
-                modifiers = InputModifiers(event)
+                modifiers = inputModifiers(event)
             )
         }
     }
@@ -346,19 +346,18 @@ value class Key(val code: String) {
     }
 }
 
-private operator fun InputModifiers.Companion.invoke(event: android.view.KeyEvent): InputModifiers {
-    var modifiers = None
-    if (event.isAltPressed) {
-        modifiers += Alt
+private fun inputModifiers(event: android.view.KeyEvent): Set<InputModifier> =
+    buildSet {
+        if (event.isAltPressed) {
+            add(InputModifier.Alt)
+        }
+        if (event.isCtrlPressed) {
+            add(InputModifier.Control)
+        }
+        if (event.isMetaPressed) {
+            add(InputModifier.Meta)
+        }
+        if (event.isShiftPressed) {
+            add(InputModifier.Shift)
+        }
     }
-    if (event.isCtrlPressed) {
-        modifiers += Control
-    }
-    if (event.isMetaPressed) {
-        modifiers += Meta
-    }
-    if (event.isShiftPressed) {
-        modifiers += Shift
-    }
-    return modifiers
-}

@@ -4,7 +4,6 @@ import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.goLeft
 import org.readium.r2.navigator.goRight
 import org.readium.r2.navigator.input.InputListener
-import org.readium.r2.navigator.input.InputModifiers
 import org.readium.r2.navigator.input.Key
 import org.readium.r2.navigator.input.KeyEvent
 import org.readium.r2.navigator.input.TapEvent
@@ -34,7 +33,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  */
 @ExperimentalReadiumApi
 class DirectionalNavigationAdapter(
-    private val tapEdges: TapEdges = TapEdges.Horizontal,
+    private val tapEdges: Set<TapEdge> = setOf(TapEdge.Horizontal),
     private val handleTapsWhileScrolling: Boolean = false,
     private val minimumHorizontalEdgeSize: Double = 80.0,
     private val horizontalEdgeThresholdPercent: Double? = 0.3,
@@ -46,30 +45,8 @@ class DirectionalNavigationAdapter(
     /**
      * Indicates which viewport edges trigger page turns on tap.
      */
-    @JvmInline
-    value class TapEdges(val value: Int) {
-        companion object {
-            /** The user cannot turn pages by tapping on the edges. */
-            val None = TapEdges(0)
-
-            /** The user can turn pages when tapping on the left and right edges. */
-            val Horizontal = TapEdges(1 shl 0)
-
-            /** The user can turn pages when tapping on the top and bottom edges. */
-            val Vertical = TapEdges(1 shl 1)
-
-            /**
-             * The user can turn pages when tapping on the edges of both the horizontal and vertical
-             * axes.
-             */
-            val All = TapEdges(Horizontal.value or Vertical.value)
-        }
-
-        fun contains(other: TapEdges): Boolean =
-            (value and other.value) == other.value
-
-        operator fun plus(other: TapEdges): TapEdges =
-            TapEdges(value or other.value)
+    enum class TapEdge {
+        Horizontal, Vertical;
     }
 
     override fun onTap(navigator: VisualNavigator, event: TapEvent): Boolean {
@@ -77,7 +54,7 @@ class DirectionalNavigationAdapter(
             return false
         }
 
-        if (tapEdges.contains(TapEdges.Horizontal)) {
+        if (tapEdges.contains(TapEdge.Horizontal)) {
             val width = navigator.publicationView.width.toDouble()
 
             val horizontalEdgeSize = horizontalEdgeThresholdPercent?.let {
@@ -93,7 +70,7 @@ class DirectionalNavigationAdapter(
             }
         }
 
-        if (tapEdges.contains(TapEdges.Vertical)) {
+        if (tapEdges.contains(TapEdge.Vertical)) {
             val height = navigator.publicationView.height.toDouble()
 
             val verticalEdgeSize = verticalEdgeThresholdPercent?.let {
@@ -113,7 +90,7 @@ class DirectionalNavigationAdapter(
     }
 
     override fun onKey(navigator: VisualNavigator, event: KeyEvent): Boolean {
-        if (event.type != KeyEvent.Type.Down || event.modifiers != InputModifiers.None) {
+        if (event.type != KeyEvent.Type.Down || !event.modifiers.isEmpty()) {
             return false
         }
 
