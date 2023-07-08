@@ -19,17 +19,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.BuildConfig.DEBUG
 import org.readium.r2.navigator.IR2Activity
+import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.NavigatorDelegate
 import org.readium.r2.navigator.R
-import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.databinding.ActivityR2AudiobookBinding
-import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.getPublication
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.isRestricted
 import timber.log.Timber
 
-open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activity, MediaPlayerCallback, VisualNavigator {
+open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activity, MediaPlayerCallback, Navigator {
 
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
     private val _currentLocator = MutableStateFlow(Locator(href = "#", type = ""))
@@ -100,14 +102,6 @@ open class R2AudiobookActivity : AppCompatActivity(), CoroutineScope, IR2Activit
         binding.playPause.callOnClick()
         return true
     }
-
-    @Deprecated("Use `presentation.value.readingProgression` instead", replaceWith = ReplaceWith("presentation.value.readingProgression"))
-    override val readingProgression: ReadingProgression
-        get() = TODO("not implemented") // To change initializer of created properties use File | Settings | File Templates.
-
-    @ExperimentalReadiumApi
-    override val presentation: StateFlow<VisualNavigator.Presentation>
-        get() = TODO("Not yet implemented")
 
     /**
      * Context of this scope.

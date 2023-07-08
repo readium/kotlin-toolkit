@@ -7,6 +7,45 @@
 import { isScrollModeEnabled } from "./utils";
 import { getCssSelector } from "css-selector-generator";
 
+// See. https://github.com/JayPanoz/architecture/tree/touch-handling/misc/touch-handling
+export function nearestInteractiveElement(element) {
+  if (element == null) {
+    return null;
+  }
+  var interactiveTags = [
+    "a",
+    "audio",
+    "button",
+    "canvas",
+    "details",
+    "input",
+    "label",
+    "option",
+    "select",
+    "submit",
+    "textarea",
+    "video",
+  ];
+  if (interactiveTags.indexOf(element.nodeName.toLowerCase()) != -1) {
+    return element.outerHTML;
+  }
+
+  // Checks whether the element is editable by the user.
+  if (
+    element.hasAttribute("contenteditable") &&
+    element.getAttribute("contenteditable").toLowerCase() != "false"
+  ) {
+    return element.outerHTML;
+  }
+
+  // Checks parents recursively because the touch might be for example on an <em> inside a <a>.
+  if (element.parentElement) {
+    return nearestInteractiveElement(element.parentElement);
+  }
+
+  return null;
+}
+
 export function findFirstVisibleLocator() {
   const element = findElement(document.body);
   return {
