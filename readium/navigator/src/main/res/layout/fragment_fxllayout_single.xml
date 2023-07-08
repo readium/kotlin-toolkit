@@ -10,6 +10,7 @@
 <org.readium.r2.navigator.epub.fxl.R2FXLLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/r2FXLLayout"
+    android:focusable="false"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -17,11 +18,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
+        android:focusable="false"
         android:scrollbars="none">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:focusable="false"
             android:layout_gravity="center">
 
             <LinearLayout
@@ -30,6 +33,7 @@
                 android:layout_centerInParent="true"
                 android:gravity="center_horizontal"
                 android:orientation="horizontal"
+                android:focusable="false"
                 tools:ignore="UselessParent">
 
                 <org.readium.r2.navigator.R2BasicWebView
