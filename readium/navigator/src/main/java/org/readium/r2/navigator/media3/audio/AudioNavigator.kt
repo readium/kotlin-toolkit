@@ -16,9 +16,9 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.extensions.sum
 import org.readium.r2.navigator.extensions.time
-import org.readium.r2.navigator.media3.api.AudioNavigator
 import org.readium.r2.navigator.media3.api.Media3Adapter
 import org.readium.r2.navigator.media3.api.MediaNavigator
+import org.readium.r2.navigator.media3.api.TimeBasedMediaNavigator
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.mapStateIn
@@ -30,13 +30,13 @@ import timber.log.Timber
 
 @ExperimentalReadiumApi
 @OptIn(ExperimentalTime::class)
-class AudiobookNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>> private constructor(
+class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>> private constructor(
     override val publication: Publication,
     private val audioEngine: AudioEngine<S, P>,
     override val readingOrder: ReadingOrder,
 ) :
-    MediaNavigator<AudiobookNavigator.Location, AudiobookNavigator.Playback, AudiobookNavigator.ReadingOrder>,
-    AudioNavigator<AudiobookNavigator.Location, AudiobookNavigator.Playback, AudiobookNavigator.ReadingOrder>,
+    MediaNavigator<AudioNavigator.Location, AudioNavigator.Playback, AudioNavigator.ReadingOrder>,
+    TimeBasedMediaNavigator<AudioNavigator.Location, AudioNavigator.Playback, AudioNavigator.ReadingOrder>,
     Media3Adapter,
     Configurable<S, P> by audioEngine {
 
@@ -48,7 +48,7 @@ class AudiobookNavigator<S : Configurable.Settings, P : Configurable.Preferences
             readingOrder: List<Link> = publication.readingOrder,
             initialPreferences: P? = null,
             initialLocator: Locator? = null,
-        ): AudiobookNavigator<S, P>? {
+        ): AudioNavigator<S, P>? {
             if (readingOrder.isEmpty()) {
                 return null
             }
@@ -71,7 +71,7 @@ class AudiobookNavigator<S : Configurable.Settings, P : Configurable.Preferences
                     initialPreferences ?: audioEngineProvider.createEmptyPreferences()
                 ) ?: return null
 
-            return AudiobookNavigator(publication, audioEngine, actualReadingOrder)
+            return AudioNavigator(publication, audioEngine, actualReadingOrder)
         }
 
         private fun duration(link: Link, publication: Publication): Duration? {
@@ -90,17 +90,17 @@ class AudiobookNavigator<S : Configurable.Settings, P : Configurable.Preferences
     data class Location(
         override val href: Href,
         override val offset: Duration,
-    ) : AudioNavigator.Location
+    ) : TimeBasedMediaNavigator.Location
 
     data class ReadingOrder(
         override val duration: Duration?,
         override val items: List<Item>
-    ) : AudioNavigator.ReadingOrder {
+    ) : TimeBasedMediaNavigator.ReadingOrder {
 
         data class Item(
             val href: Href,
             override val duration: Duration?
-        ) : AudioNavigator.ReadingOrder.Item
+        ) : TimeBasedMediaNavigator.ReadingOrder.Item
     }
 
     data class Playback(
@@ -109,7 +109,7 @@ class AudiobookNavigator<S : Configurable.Settings, P : Configurable.Preferences
         override val index: Int,
         override val offset: Duration,
         override val buffered: Duration?,
-    ) : AudioNavigator.Playback
+    ) : TimeBasedMediaNavigator.Playback
 
     sealed class State {
 

@@ -6,12 +6,12 @@
 
 package org.readium.r2.navigator.media3.exoplayer
 
+import org.readium.r2.navigator.media3.audio.AudioNavigator
 import org.readium.r2.navigator.media3.audio.AudioNavigatorFactory
-import org.readium.r2.navigator.media3.audio.AudiobookNavigator
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @OptIn(ExperimentalReadiumApi::class)
 typealias ExoPlayerNavigatorFactory = AudioNavigatorFactory<ExoPlayerSettings, ExoPlayerPreferences, ExoPlayerPreferencesEditor>
 
 @OptIn(ExperimentalReadiumApi::class)
-typealias ExoPlayerNavigator = AudiobookNavigator<ExoPlayerSettings, ExoPlayerPreferences>
+typealias ExoPlayerNavigator = AudioNavigator<ExoPlayerSettings, ExoPlayerPreferences>
