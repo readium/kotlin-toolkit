@@ -31,6 +31,10 @@ import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.extensions.page
+import org.readium.r2.navigator.input.CompositeInputListener
+import org.readium.r2.navigator.input.InputListener
+import org.readium.r2.navigator.input.KeyInterceptorView
+import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.navigator.preferences.ReadingProgression
@@ -109,15 +113,6 @@ class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferenc
         ) { "[PdfNavigatorFragment] currently supports only publications with a single PDF for reading order" }
     }
 
-    // Configurable
-
-    @Suppress("Unchecked_cast")
-    override val settings: StateFlow<S> get() = viewModel.settings as StateFlow<S>
-
-    override fun submitPreferences(preferences: P) {
-        viewModel.submitPreferences(preferences)
-    }
-
     private val viewModel: PdfNavigatorViewModel<S, P> by viewModels {
         PdfNavigatorViewModel.createFactory(
             requireActivity().application,
@@ -143,7 +138,7 @@ class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferenc
     ): View {
         val view = FragmentContainerView(inflater.context)
         view.id = R.id.readium_pdf_container
-        return view
+        return KeyInterceptorView(view, this, inputListener)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -204,26 +199,24 @@ class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferenc
             viewModel.onPageChanged(pageIndex)
         }
 
-        override fun onTap(point: PointF): Boolean {
-            return listener?.onTap(point) ?: false
-        }
+        override fun onTap(point: PointF): Boolean =
+            inputListener.onTap(this@PdfNavigatorFragment, TapEvent(point))
 
         override fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
             listener?.onResourceLoadFailed(link, error)
         }
     }
 
-    @ExperimentalReadiumApi
-    override val presentation: StateFlow<VisualNavigator.Presentation>
-        get() = settings.mapStateIn(lifecycleScope) { settings ->
-            pdfEngineProvider.computePresentation(settings)
-        }
+    // Configurable
 
-    override val readingProgression: PublicationReadingProgression
-        get() = when (presentation.value.readingProgression) {
-            ReadingProgression.LTR -> PublicationReadingProgression.LTR
-            ReadingProgression.RTL -> PublicationReadingProgression.RTL
-        }
+    @Suppress("Unchecked_cast")
+    override val settings: StateFlow<S> get() = viewModel.settings as StateFlow<S>
+
+    override fun submitPreferences(preferences: P) {
+        viewModel.submitPreferences(preferences)
+    }
+
+    // Navigator
 
     override val currentLocator: StateFlow<Locator>
         get() = viewModel.currentLocator
@@ -254,5 +247,32 @@ class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferenc
         val success = fragment.goToPageIndex(pageIndex, animated = animated)
         if (success) { completion() }
         return success
+    }
+
+    // VisualNavigator
+
+    override val publicationView: View
+        get() = requireView()
+
+    @ExperimentalReadiumApi
+    override val presentation: StateFlow<VisualNavigator.Presentation>
+        get() = settings.mapStateIn(lifecycleScope) { settings ->
+            pdfEngineProvider.computePresentation(settings)
+        }
+
+    override val readingProgression: PublicationReadingProgression
+        get() = when (presentation.value.readingProgression) {
+            ReadingProgression.LTR -> PublicationReadingProgression.LTR
+            ReadingProgression.RTL -> PublicationReadingProgression.RTL
+        }
+
+    private val inputListener = CompositeInputListener()
+
+    override fun addInputListener(listener: InputListener) {
+        inputListener.add(listener)
+    }
+
+    override fun removeInputListener(listener: InputListener) {
+        inputListener.remove(listener)
     }
 }

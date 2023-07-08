@@ -11,7 +11,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
-import android.graphics.PointF
 import android.graphics.Rect
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -26,6 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 import org.json.JSONException
 import org.json.JSONObject
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.pager.R2EpubPageFragment
 import org.readium.r2.navigator.pager.R2PagerAdapter
 import org.readium.r2.navigator.pager.R2ViewPager
@@ -154,6 +154,9 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
         }
     }
 
+    override val publicationView: View
+        get() = navigatorFragment().publicationView
+
     @Deprecated("Use `presentation.value.readingProgression` instead", replaceWith = ReplaceWith("presentation.value.readingProgression"))
     override val readingProgression: ReadingProgression
         get() = navigatorFragment().readingProgression
@@ -161,6 +164,16 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
     @ExperimentalReadiumApi
     override val presentation: StateFlow<VisualNavigator.Presentation>
         get() = navigatorFragment().presentation
+
+    @ExperimentalReadiumApi
+    override fun addInputListener(listener: InputListener) {
+        navigatorFragment().addInputListener(listener)
+    }
+
+    @ExperimentalReadiumApi
+    override fun removeInputListener(listener: InputListener) {
+        navigatorFragment().removeInputListener(listener)
+    }
 
     @Suppress("DEPRECATION")
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
@@ -190,11 +203,6 @@ open class R2EpubActivity : AppCompatActivity(), IR2Activity, IR2Selectable, IR2
 
     override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
         return navigatorFragment().goBackward(animated, completion)
-    }
-
-    override fun onTap(point: PointF): Boolean {
-        toggleActionBar()
-        return super.onTap(point)
     }
 
     override fun currentSelection(callback: (Locator?) -> Unit) {
