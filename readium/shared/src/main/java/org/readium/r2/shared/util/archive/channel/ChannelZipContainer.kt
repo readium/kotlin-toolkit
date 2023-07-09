@@ -132,10 +132,10 @@ internal class ChannelZipContainer(
     }
 
     override suspend fun close() {
-            withContext(Dispatchers.IO) {
-                tryOrLog { archive.close() }
-            }
+        withContext(Dispatchers.IO) {
+            tryOrLog { archive.close() }
         }
+    }
 }
 
 /**

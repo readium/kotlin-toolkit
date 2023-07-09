@@ -8,7 +8,6 @@ package org.readium.r2.shared.resource
 
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.requireLengthFitInt
 
@@ -22,15 +21,19 @@ sealed class BaseBytesResource(
         if (!::_bytes.isInitialized)
             _bytes = bytes()
 
-        if (range == null || _bytes.isFailure)
+        if (range == null)
             return _bytes
 
+        return _bytes.map { it.read(range) }
+    }
+
+    private fun ByteArray.read(range: LongRange): ByteArray {
         @Suppress("NAME_SHADOWING")
         val range = range
-            .coerceIn(0L until _bytes.getOrThrow().size)
+            .coerceIn(0L until size)
             .requireLengthFitInt()
 
-        return Try.success(_bytes.getOrThrow().sliceArray(range.map(Long::toInt)))
+        return sliceArray(range.map(Long::toInt))
     }
 
     override suspend fun length(): ResourceTry<Long> =

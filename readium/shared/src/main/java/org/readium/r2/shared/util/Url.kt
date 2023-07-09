@@ -38,7 +38,7 @@ value class Url private constructor(internal val uri: Uri) {
     companion object {
 
         operator fun invoke(url: String): Url? =
-            Url.invoke(Uri.parse(url))
+            invoke(Uri.parse(url))
 
         internal operator fun invoke(uri: Uri): Url? =
             tryOrNull {
@@ -64,3 +64,6 @@ fun File.toUrl(): Url =
 
 fun Uri.toUrl(): Url? =
     Url.invoke(this)
+
+fun Url.toUri() =
+    uri

@@ -7,11 +7,13 @@
 package org.readium.r2.shared.resource
 
 import java.io.File
+import java.io.IOException
 import java.util.zip.ZipEntry
 import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.error.SimpleError
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
@@ -65,10 +67,10 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
                 ?: Try.failure(Resource.Exception.Other(Exception("Unsupported operation")))
 
         override val compressedLength: Long? =
-                if (entry.method == ZipEntry.STORED || entry.method == -1)
-                    null
-                else
-                    entry.compressedSize.takeUnless { it == -1L }
+            if (entry.method == ZipEntry.STORED || entry.method == -1)
+                null
+            else
+                entry.compressedSize.takeUnless { it == -1L }
 
         override suspend fun read(range: LongRange?): Try<ByteArray, Resource.Exception> =
             try {
@@ -80,6 +82,8 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
                             readRange(range)
                     Try.success(bytes)
                 }
+            } catch (e: IOException) {
+                Try.failure(Resource.Exception.Unavailable(e))
             } catch (e: Exception) {
                 Try.failure(Resource.Exception.wrap(e))
             }
@@ -160,7 +164,11 @@ class DefaultArchiveFactory : ArchiveFactory {
 
         return resource.file
             ?.let { open(it) }
-            ?: Try.failure(ArchiveFactory.Error.ResourceNotSupported())
+            ?: Try.failure(
+                ArchiveFactory.Error.FormatNotSupported(
+                    SimpleError("Resource not supported because file cannot be directly access.")
+                )
+            )
     }
 
     // Internal for testing purpose

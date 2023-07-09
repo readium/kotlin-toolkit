@@ -60,8 +60,6 @@ sealed class PublicationError(@StringRes userMessageId: Int) : UserException(use
                     UnsupportedPublication(error)
                 is AssetRetriever.Error.Forbidden ->
                     Forbidden(error)
-                is AssetRetriever.Error.NoArchiveFactoryForResource ->
-                    throw IllegalStateException("Universal zip archive opener should be available.")
                 is AssetRetriever.Error.NotFound ->
                     NotFound(error)
                 is AssetRetriever.Error.InvalidAsset ->

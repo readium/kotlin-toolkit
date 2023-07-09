@@ -62,7 +62,7 @@ class FallbackResource(
                 is Try.Success -> originalResource
                 is Try.Failure -> fallbackResourceFactory(result.value)
             }
-    }
+        }
 
     override suspend fun link(): Link =
         resource.await().link()

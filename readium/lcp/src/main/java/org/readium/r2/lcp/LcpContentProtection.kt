@@ -175,8 +175,6 @@ internal class LcpContentProtection(
                 Publication.OpeningException.UnsupportedAsset()
             is ArchiveFactory.Error.ResourceReading ->
                 resourceException.wrap()
-            is ArchiveFactory.Error.ResourceNotSupported ->
-                Publication.OpeningException.UnsupportedAsset()
         }
 
     private fun Resource.Exception.wrap(): Publication.OpeningException =

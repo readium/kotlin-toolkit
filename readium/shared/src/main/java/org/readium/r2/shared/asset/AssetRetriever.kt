@@ -35,7 +35,8 @@ class AssetRetriever(
             override val cause: org.readium.r2.shared.error.Error?,
         ) : Error() {
 
-            constructor(scheme: String, exception: Exception) : this(scheme, ThrowableError(exception))
+            constructor(scheme: String, exception: Exception) :
+                this(scheme, ThrowableError(exception))
 
             override val message: String =
                 "Scheme $scheme is not supported."
@@ -46,7 +47,8 @@ class AssetRetriever(
             override val cause: org.readium.r2.shared.error.Error?
         ) : Error() {
 
-            constructor(url: Url, exception: Exception) : this(url, ThrowableError(exception))
+            constructor(url: Url, exception: Exception) :
+                this(url, ThrowableError(exception))
 
             override val message: String =
                 "Asset could not be found at $url."
@@ -56,7 +58,8 @@ class AssetRetriever(
             override val cause: org.readium.r2.shared.error.Error?
         ) : Error() {
 
-            constructor(exception: Exception) : this(ThrowableError(exception))
+            constructor(exception: Exception) :
+                this(ThrowableError(exception))
 
             override val message: String =
                 "Asset looks corrupted."
@@ -66,20 +69,11 @@ class AssetRetriever(
             override val cause: org.readium.r2.shared.error.Error?
         ) : Error() {
 
-            constructor(exception: Exception) : this(ThrowableError(exception))
+            constructor(exception: Exception) :
+                this(ThrowableError(exception))
 
             override val message: String =
                 "Archive factory does not support this kind of archive."
-        }
-
-        class NoArchiveFactoryForResource(
-            override val cause: org.readium.r2.shared.error.Error?
-        ) : Error() {
-
-            constructor(exception: Exception) : this(ThrowableError(exception))
-
-            override val message: String =
-                "Archive factory does not support resources without direct access to file."
         }
 
         class Forbidden(
@@ -87,7 +81,8 @@ class AssetRetriever(
             override val cause: org.readium.r2.shared.error.Error
         ) : Error() {
 
-            constructor(url: Url, exception: Exception) : this(url, ThrowableError(exception))
+            constructor(url: Url, exception: Exception) :
+                this(url, ThrowableError(exception))
 
             override val message: String =
                 "Access to asset at url $url is forbidden."
@@ -97,7 +92,8 @@ class AssetRetriever(
             override val cause: org.readium.r2.shared.error.Error
         ) : Error() {
 
-            constructor(exception: Exception) : this(ThrowableError(exception))
+            constructor(exception: Exception) :
+                this(ThrowableError(exception))
 
             override val message: String =
                 "Asset seems not to be available at the moment."
@@ -150,19 +146,24 @@ class AssetRetriever(
         return resourceFactory.create(url)
             .mapFailure { error ->
                 when (error) {
-                    is ResourceFactory.Error.NotAResource -> Error.NotFound(url, error)
-                    is ResourceFactory.Error.Forbidden -> Error.Forbidden(url, error)
-                    is ResourceFactory.Error.UnsupportedScheme -> Error.SchemeNotSupported(error.scheme, error)
+                    is ResourceFactory.Error.NotAResource ->
+                        Error.NotFound(url, error)
+                    is ResourceFactory.Error.Forbidden ->
+                        Error.Forbidden(url, error)
+                    is ResourceFactory.Error.UnsupportedScheme ->
+                        Error.SchemeNotSupported(error.scheme, error)
                 }
             }
             .flatMap { resource: Resource ->
                 archiveFactory.create(resource, password = null)
                     .mapFailure { error ->
                         when (error) {
-                            is ArchiveFactory.Error.FormatNotSupported -> Error.ArchiveFormatNotSupported(error)
-                            is ArchiveFactory.Error.ResourceReading -> error.resourceException.wrap(url)
-                            is ArchiveFactory.Error.ResourceNotSupported -> Error.NoArchiveFactoryForResource(error)
-                            is ArchiveFactory.Error.PasswordsNotSupported -> Error.ArchiveFormatNotSupported(error)
+                            is ArchiveFactory.Error.FormatNotSupported ->
+                                Error.ArchiveFormatNotSupported(error)
+                            is ArchiveFactory.Error.ResourceReading ->
+                                error.resourceException.wrap(url)
+                            is ArchiveFactory.Error.PasswordsNotSupported ->
+                                Error.ArchiveFormatNotSupported(error)
                         }
                     }
             }
@@ -174,12 +175,17 @@ class AssetRetriever(
         mediaType: MediaType
     ): Try<Asset.Container, Error> {
         return containerFactory.create(url)
-            .map { container -> Asset.Container(url.filename, mediaType, AssetType.Directory, container) }
+            .map { container ->
+                Asset.Container(url.filename, mediaType, AssetType.Directory, container)
+            }
             .mapFailure { error ->
                 when (error) {
-                    is ContainerFactory.Error.NotAContainer -> Error.NotFound(url, error)
-                    is ContainerFactory.Error.Forbidden -> Error.Forbidden(url, error)
-                    is ContainerFactory.Error.UnsupportedScheme -> Error.SchemeNotSupported(error.scheme, error)
+                    is ContainerFactory.Error.NotAContainer ->
+                        Error.NotFound(url, error)
+                    is ContainerFactory.Error.Forbidden ->
+                        Error.Forbidden(url, error)
+                    is ContainerFactory.Error.UnsupportedScheme ->
+                        Error.SchemeNotSupported(error.scheme, error)
                 }
             }
     }
@@ -192,21 +198,28 @@ class AssetRetriever(
             .map { resource -> Asset.Resource(url.filename, mediaType, resource) }
             .mapFailure { error ->
                 when (error) {
-                    is ResourceFactory.Error.NotAResource -> Error.NotFound(url, error)
-                    is ResourceFactory.Error.Forbidden -> Error.Forbidden(url, error)
-                    is ResourceFactory.Error.UnsupportedScheme -> Error.SchemeNotSupported(error.scheme, error)
+                    is ResourceFactory.Error.NotAResource ->
+                        Error.NotFound(url, error)
+                    is ResourceFactory.Error.Forbidden ->
+                        Error.Forbidden(url, error)
+                    is ResourceFactory.Error.UnsupportedScheme ->
+                        Error.SchemeNotSupported(error.scheme, error)
                 }
             }
     }
 
     private fun Resource.Exception.wrap(url: Url): Error =
         when (this) {
-            is Resource.Exception.Forbidden -> Error.Forbidden(url, this)
-            is Resource.Exception.NotFound -> Error.InvalidAsset(this)
-            Resource.Exception.Offline -> Error.Unavailable(this)
-            is Resource.Exception.Other -> Error.Unknown(this)
-            is Resource.Exception.OutOfMemory -> Error.OutOfMemory(cause)
-            is Resource.Exception.Unavailable -> Error.Unavailable(this)
+            is Resource.Exception.Forbidden ->
+                Error.Forbidden(url, this)
+            is Resource.Exception.NotFound ->
+                Error.InvalidAsset(this)
+            is Resource.Exception.Unavailable, Resource.Exception.Offline ->
+                Error.Unavailable(this)
+            is Resource.Exception.OutOfMemory ->
+                Error.OutOfMemory(cause)
+            is Resource.Exception.Other ->
+                Error.Unknown(this)
             else -> Error.Unknown(this)
         }
 
@@ -225,9 +238,12 @@ class AssetRetriever(
         file: File,
         mediaType: String? = null,
         fileExtension: String? = null,
-    ): Asset? {
-        return retrieve(file, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension))
-    }
+    ): Asset? =
+        retrieve(
+            file,
+            mediaTypes = listOfNotNull(mediaType),
+            fileExtensions = listOfNotNull(fileExtension)
+        )
 
     /**
      * Retrieves an asset from a local file.
@@ -238,23 +254,28 @@ class AssetRetriever(
         fileExtensions: List<String>,
     ): Asset? {
         val context = snifferContextFactory
-            .createContext(file.toUrl(), mediaTypes, listOf(file.extension) + fileExtensions)
-            ?: return null
+            .createContext(
+                file.toUrl(),
+                mediaTypes = mediaTypes,
+                fileExtensions = listOf(file.extension) + fileExtensions
+            ) ?: return null
 
         return retrieve(context, file.name)
     }
 
     /**
-     * Retrieves an asset from a content URI thanks to [ContentResolver].
-     * Accepts the following URI schemes: content, android.resource, file.
+     * Retrieves an asset from an Uri.
      */
     suspend fun retrieve(
         uri: Uri,
         mediaType: String? = null,
         fileExtension: String? = null,
-    ): Asset? {
-        return retrieve(uri, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension))
-    }
+    ): Asset? =
+        retrieve(
+            uri,
+            mediaTypes = listOfNotNull(mediaType),
+            fileExtensions = listOfNotNull(fileExtension)
+        )
 
     /**
      * Retrieves an asset from a Uri.
@@ -310,16 +331,16 @@ class AssetRetriever(
         return when (context) {
             is ContainerSnifferContext ->
                 Asset.Container(
-                    context.container.name().successOrNull() ?: fallbackName,
-                    mediaType,
-                    if (context.isExploded) AssetType.Directory else AssetType.Archive,
-                    context.container
+                    name = context.container.name().successOrNull() ?: fallbackName,
+                    mediaType = mediaType,
+                    assetType = if (context.isExploded) AssetType.Directory else AssetType.Archive,
+                    container = context.container
                 )
             is ResourceSnifferContext ->
                 Asset.Resource(
-                    context.resource.name().successOrNull() ?: fallbackName,
-                    mediaType,
-                    context.resource
+                    name = context.resource.name().successOrNull() ?: fallbackName,
+                    mediaType = mediaType,
+                    resource = context.resource
                 )
         }
     }

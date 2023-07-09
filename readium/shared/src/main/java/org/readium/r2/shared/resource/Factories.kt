@@ -112,14 +112,6 @@ fun interface ArchiveFactory {
 
     sealed class Error : org.readium.r2.shared.error.Error {
 
-        class ResourceNotSupported(
-            override val cause: org.readium.r2.shared.error.Error? = null
-        ) : Error() {
-
-            override val message: String =
-                "Resource not supported because file cannot be directly access."
-        }
-
         class FormatNotSupported(
             override val cause: org.readium.r2.shared.error.Error? = null
         ) : Error() {
@@ -157,7 +149,7 @@ fun interface ArchiveFactory {
 
 /**
  * A composite archive factory which first tries [primaryFactory]
- * and fall backs on [fallbackFactory] in case of failure.
+ * and falls back on [fallbackFactory] if it doesn't support the resource.
  */
 class CompositeArchiveFactory(
     private val primaryFactory: ArchiveFactory,
@@ -167,15 +159,17 @@ class CompositeArchiveFactory(
     override suspend fun create(resource: Resource, password: String?): Try<Container, ArchiveFactory.Error> {
         return primaryFactory.create(resource, password)
             .tryRecover { error ->
-                if (error !is ArchiveFactory.Error.ResourceReading) fallbackFactory.create(resource, password)
-                else Try.failure(error)
+                if (error is ArchiveFactory.Error.FormatNotSupported)
+                    fallbackFactory.create(resource, password)
+                else
+                    Try.failure(error)
             }
     }
 }
 
 /**
  * A composite resource factory which first tries [primaryFactory]
- * and fall backs on [fallbackFactory] in case of failure.
+ * and falls back on [fallbackFactory] if it doesn't support the scheme..
  */
 class CompositeResourceFactory(
     private val primaryFactory: ResourceFactory,
@@ -185,15 +179,17 @@ class CompositeResourceFactory(
     override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
         return primaryFactory.create(url)
             .tryRecover { error ->
-                if (error is ResourceFactory.Error.UnsupportedScheme) fallbackFactory.create(url)
-                else Try.failure(error)
+                if (error is ResourceFactory.Error.UnsupportedScheme)
+                    fallbackFactory.create(url)
+                else
+                    Try.failure(error)
             }
     }
 }
 
 /**
  * A composite container factory which first tries [primaryFactory]
- * and fall backs on [fallbackFactory] in case of failure.
+ * and falls back on [fallbackFactory] if it doesn't support the scheme.
  */
 class CompositeContainerFactory(
     private val primaryFactory: ContainerFactory,
@@ -203,8 +199,10 @@ class CompositeContainerFactory(
     override suspend fun create(url: Url): Try<Container, ContainerFactory.Error> {
         return primaryFactory.create(url)
             .tryRecover { error ->
-                if (error is ContainerFactory.Error.UnsupportedScheme) fallbackFactory.create(url)
-                else Try.failure(error)
+                if (error is ContainerFactory.Error.UnsupportedScheme)
+                    fallbackFactory.create(url)
+                else
+                    Try.failure(error)
             }
     }
 }
