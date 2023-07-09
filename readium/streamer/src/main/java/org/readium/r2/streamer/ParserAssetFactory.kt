@@ -72,11 +72,15 @@ internal class ParserAssetFactory(
         val baseUrl =
             manifest.linkWithRel("self")?.let { File(it.href).parent }
                 ?: return Try.failure(
-                    Publication.OpeningException.ParsingFailed(SimpleError("No self link in the manifest."))
+                    Publication.OpeningException.ParsingFailed(
+                        SimpleError("No self link in the manifest.")
+                    )
                 )
 
         if (!baseUrl.startsWith("http")) {
-            Publication.OpeningException.UnsupportedAsset()
+            return Try.failure(
+                Publication.OpeningException.UnsupportedAsset("Self link doesn't use the HTTP(S) scheme.")
+            )
         }
 
         val link = Link(
@@ -95,7 +99,7 @@ internal class ParserAssetFactory(
         )
     }
 
-    private suspend fun createFetcherForContent(
+    private fun createFetcherForContent(
         resource: Resource,
         mediaType: MediaType,
         assetName: String

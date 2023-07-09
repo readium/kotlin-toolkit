@@ -44,11 +44,10 @@ internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningE
  * @param context Application context.
  * @param parsers Parsers used to open a publication, in addition to the default parsers.
  * @param ignoreDefaultParsers When true, only parsers provided in parsers will be used.
- * @param archiveFactory Opens an archive (e.g. ZIP, RAR), optionally protected by credentials. If
- *  you use the default [PublicationAssetFactory], your [ArchiveFactory] must support the protocols
- *  you want to open archive publications through.
  * @param pdfFactory Parses a PDF document, optionally protected by password.
+ * @param contentProtections Opens DRM-protected publications.
  * @param httpClient Service performing HTTP requests.
+ * @param mediaTypeRetriever Retrieves media types from different sources.
  * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
  *   the [Manifest], the root [Fetcher] or the list of service factories of a [Publication].
  */
@@ -86,7 +85,7 @@ class PublicationFactory constructor(
         ParserAssetFactory(httpClient, mediaTypeRetriever)
 
     /**
-     * Parses a [Publication] from the given asset.
+     * Opens a [Publication] from the given asset.
      *
      * If you are opening the publication to render it in a Navigator, you must set [allowUserInteraction]
      * to true to prompt the user for its credentials when the publication is protected. However,
@@ -101,7 +100,8 @@ class PublicationFactory constructor(
      * publication authoring mistakes. This can be useful to warn users of potential rendering
      * issues.
      *
-     * @param source Digital medium (e.g. a file) used to access the publication.
+     * @param asset Digital medium (e.g. a file) used to access the publication.
+     * @param drmScheme Scheme of the DRM protecting the publication, or null if there is none.
      * @param credentials Credentials that Content Protections can use to attempt to unlock a
      *   publication, for example a password.
      * @param allowUserInteraction Indicates whether the user can be prompted, for example for its
@@ -112,8 +112,7 @@ class PublicationFactory constructor(
      *   It can be used to modify the [Manifest], the root [Fetcher] or the list of service
      *   factories of the [Publication].
      * @param warnings Logger used to broadcast non-fatal parsing warnings.
-     * @return Null if the asset was not recognized by any parser, or a
-     *   [Publication.OpeningException] in case of failure.
+     * @return A [Publication] or a [Publication.OpeningException] in case of failure.
      */
     suspend fun open(
         asset: Asset,
@@ -195,9 +194,6 @@ class PublicationFactory constructor(
         val builder = parse(publicationAsset, warnings)
             .getOrElse { return Try.failure(wrapParserException(it)) }
 
-        // Transform provided by the reading app during the construction of the Streamer.
-        builder.apply(this.onCreatePublication)
-        // Transform provided by the reading app in `Streamer.open()`.
         builder.apply(onCreatePublication)
 
         val publication = builder.build()
