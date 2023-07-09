@@ -10,7 +10,6 @@ import org.readium.r2.lcp.auth.LcpDumbAuthentication
 import org.readium.r2.lcp.auth.LcpPassphraseAuthentication
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.asset.Asset
-import org.readium.r2.shared.asset.AssetType
 import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrElse
@@ -150,7 +149,7 @@ internal class LcpContentProtection(
         val publicationAsset = Asset.Container(
             url.filename,
             link.mediaType,
-            AssetType.Archive,
+            false,
             container
         )
 

@@ -266,15 +266,32 @@ internal class UrlSnifferContextFactory(
             .getOrElse {
                 when (it) {
                     is ResourceFactory.Error.NotAResource ->
-                        return tryCreateContainerContext(url, fileExtensions, mediaTypes)
+                        return tryCreateContainerContext(
+                            url = url,
+                            mediaTypes = allMediaTypes,
+                            fileExtensions = allFileExtensions
+                        )
                     else -> return null
                 }
             }
 
         return archiveFactory.create(resource, password = null)
             .fold(
-                { ContainerSnifferContext(it, false, fileExtensions) },
-                { ResourceSnifferContext(resource, mediaTypes, fileExtensions) }
+                {
+                    ContainerSnifferContext(
+                        container = it,
+                        isExploded = false,
+                        mediaTypes = allMediaTypes,
+                        fileExtensions = allFileExtensions
+                    )
+                },
+                {
+                    ResourceSnifferContext(
+                        resource = resource,
+                        mediaTypes = allMediaTypes,
+                        fileExtensions = allFileExtensions
+                    )
+                }
             )
     }
 
@@ -287,7 +304,12 @@ internal class UrlSnifferContextFactory(
             .successOrNull()
             ?: return null
 
-        return ContainerSnifferContext(container, true, mediaTypes, fileExtensions)
+        return ContainerSnifferContext(
+            container = container,
+            isExploded = true,
+            mediaTypes = mediaTypes,
+            fileExtensions = fileExtensions
+        )
     }
 }
 

@@ -59,19 +59,21 @@ sealed class Asset {
      *
      * @param name Name of the asset.
      * @param mediaType Media type of the asset.
-     * @param assetType Type of the asset source, i.e. archive or directory.
+     * @param exploded If this container is an exploded or packaged container.
      * @param container Opened container to access asset resources.
      */
     class Container(
         override val name: String,
         override val mediaType: MediaType,
-        override val assetType: AssetType,
+        exploded: Boolean,
         val container: org.readium.r2.shared.resource.Container
     ) : Asset() {
 
-        init {
-            require(assetType != AssetType.Resource)
-        }
+        override val assetType: AssetType =
+            if (exploded)
+                AssetType.Directory
+            else
+                AssetType.Archive
 
         override suspend fun close() {
             container.close()

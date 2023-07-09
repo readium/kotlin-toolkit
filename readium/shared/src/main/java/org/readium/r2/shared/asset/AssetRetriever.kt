@@ -167,7 +167,7 @@ class AssetRetriever(
                         }
                     }
             }
-            .map { container -> Asset.Container(url.filename, mediaType, AssetType.Archive, container) }
+            .map { container -> Asset.Container(url.filename, mediaType, false, container) }
     }
 
     private suspend fun retrieveDirectoryAsset(
@@ -176,7 +176,7 @@ class AssetRetriever(
     ): Try<Asset.Container, Error> {
         return containerFactory.create(url)
             .map { container ->
-                Asset.Container(url.filename, mediaType, AssetType.Directory, container)
+                Asset.Container(url.filename, mediaType, true, container)
             }
             .mapFailure { error ->
                 when (error) {
@@ -323,9 +323,9 @@ class AssetRetriever(
     ): Asset? {
 
         val mediaType = mediaTypeRetriever.doRetrieve(
-            { context },
-            context.mediaTypes.map(MediaType::toString),
-            context.fileExtensions
+            fullContext = { context },
+            mediaTypes = context.mediaTypes.map(MediaType::toString),
+            fileExtensions = context.fileExtensions
         ) ?: return null
 
         return when (context) {
@@ -333,7 +333,7 @@ class AssetRetriever(
                 Asset.Container(
                     name = context.container.name().successOrNull() ?: fallbackName,
                     mediaType = mediaType,
-                    assetType = if (context.isExploded) AssetType.Directory else AssetType.Archive,
+                    exploded = context.isExploded,
                     container = context.container
                 )
             is ResourceSnifferContext ->
