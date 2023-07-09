@@ -279,8 +279,6 @@ class SnifferTest {
 
     @Test
     fun `sniff JSON`() = runBlocking {
-        assertEquals(MediaType.JSON, mediaTypeRetriever.retrieve(mediaType = "application/json"))
-        assertEquals(MediaType.JSON, mediaTypeRetriever.retrieve(mediaType = "application/json; charset=utf-8"))
         assertEquals(MediaType.JSON, mediaTypeRetriever.retrieve(fixtures.fileAt("any.json")))
     }
 

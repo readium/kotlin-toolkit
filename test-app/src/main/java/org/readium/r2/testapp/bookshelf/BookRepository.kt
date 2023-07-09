@@ -297,31 +297,34 @@ class BookRepository(
             protectionRetriever.retrieve(asset)
                 ?.uri
 
-        publicationFactory.open(asset, allowUserInteraction = false)
-            .onSuccess { publication ->
-                val coverBitmap: Bitmap? = coverUrl
-                    ?.let { getBitmapFromURL(it) }
-                    ?: publication.cover()
-                val coverFile =
-                    try {
-                        storeCover(coverBitmap)
-                    } catch (e: Exception) {
-                        return Try.failure(ImportError.ImportBookFailed(e))
-                    }
-
-                val id = insertBookIntoDatabase(
-                    url.toString(),
-                    asset.mediaType,
-                    asset.assetType,
-                    drmScheme,
-                    publication,
-                    coverFile.path
-                )
-                if (id == -1L) {
-                    coverFile.delete()
-                    return Try.failure(ImportError.ImportDatabaseFailed())
+        publicationFactory.open(
+            asset,
+            drmScheme = drmScheme,
+            allowUserInteraction = false
+        ).onSuccess { publication ->
+            val coverBitmap: Bitmap? = coverUrl
+                ?.let { getBitmapFromURL(it) }
+                ?: publication.cover()
+            val coverFile =
+                try {
+                    storeCover(coverBitmap)
+                } catch (e: Exception) {
+                    return Try.failure(ImportError.ImportBookFailed(e))
                 }
+
+            val id = insertBookIntoDatabase(
+                url.toString(),
+                asset.mediaType,
+                asset.assetType,
+                drmScheme,
+                publication,
+                coverFile.path
+            )
+            if (id == -1L) {
+                coverFile.delete()
+                return Try.failure(ImportError.ImportDatabaseFailed())
             }
+        }
             .onFailure {
                 Timber.d("Cannot open publication: $it.")
                 return Try.failure(

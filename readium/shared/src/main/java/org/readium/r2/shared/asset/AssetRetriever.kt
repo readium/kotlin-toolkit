@@ -226,7 +226,7 @@ class AssetRetriever(
     /* Sniff unknown assets */
 
     private val snifferContextFactory: UrlSnifferContextFactory =
-        UrlSnifferContextFactory(resourceFactory, containerFactory, archiveFactory, contentResolver)
+        UrlSnifferContextFactory(resourceFactory, containerFactory, archiveFactory)
 
     private val mediaTypeRetriever: MediaTypeRetriever =
         MediaTypeRetriever(resourceFactory, containerFactory, archiveFactory, contentResolver, sniffers)
@@ -311,7 +311,11 @@ class AssetRetriever(
         fileExtensions: List<String>
     ): Asset? {
         val context = snifferContextFactory
-            .createContext(url, mediaTypes, fileExtensions + url.extension)
+            .createContext(
+                url,
+                mediaTypes = mediaTypes,
+                fileExtensions = fileExtensions + url.extension
+            )
             ?: return null
 
         return retrieve(context, url.filename)

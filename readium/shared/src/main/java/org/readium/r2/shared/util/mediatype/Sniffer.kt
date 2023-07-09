@@ -424,10 +424,6 @@ object Sniffers {
             return MediaType.JSON_PROBLEM_DETAILS
         }
 
-        if (context.hasMediaType("application/json")) {
-            return MediaType.JSON
-        }
-
         if (context !is ResourceSnifferContext) {
             return null
         }

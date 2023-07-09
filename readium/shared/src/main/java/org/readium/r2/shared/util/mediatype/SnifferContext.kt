@@ -6,9 +6,6 @@
 
 package org.readium.r2.shared.util.mediatype
 
-import android.content.ContentResolver
-import android.provider.MediaStore
-import android.webkit.MimeTypeMap
 import java.io.File
 import java.io.InputStream
 import java.nio.charset.Charset
@@ -17,7 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.error.getOrElse
-import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.resource.*
@@ -236,7 +232,6 @@ internal class UrlSnifferContextFactory(
     private val resourceFactory: ResourceFactory,
     private val containerFactory: ContainerFactory,
     private val archiveFactory: ArchiveFactory,
-    private val contentResolver: ContentResolver?
 ) {
 
     suspend fun createContext(
@@ -244,23 +239,6 @@ internal class UrlSnifferContextFactory(
         mediaTypes: List<String> = emptyList(),
         fileExtensions: List<String> = emptyList()
     ): ContentAwareSnifferContext? {
-        val allMediaTypes = mediaTypes.toMutableList()
-        val allFileExtensions = fileExtensions.toMutableList()
-
-        MimeTypeMap.getFileExtensionFromUrl(url.toString()).ifEmpty { null }?.let {
-            allFileExtensions.add(0, it)
-        }
-
-        if (url.scheme == ContentResolver.SCHEME_CONTENT && contentResolver != null) {
-            contentResolver.getType(url.uri)
-                ?.takeUnless { MediaType.BINARY.matches(it) }
-                ?.let { allMediaTypes.add(0, it) }
-
-            contentResolver.queryProjection(url.uri, MediaStore.MediaColumns.DISPLAY_NAME)?.let { filename ->
-                allFileExtensions.add(0, File(filename).extension)
-            }
-        }
-
         val resource = resourceFactory
             .create(url)
             .getOrElse {
@@ -268,8 +246,8 @@ internal class UrlSnifferContextFactory(
                     is ResourceFactory.Error.NotAResource ->
                         return tryCreateContainerContext(
                             url = url,
-                            mediaTypes = allMediaTypes,
-                            fileExtensions = allFileExtensions
+                            mediaTypes = mediaTypes,
+                            fileExtensions = fileExtensions
                         )
                     else -> return null
                 }
@@ -281,15 +259,17 @@ internal class UrlSnifferContextFactory(
                     ContainerSnifferContext(
                         container = it,
                         isExploded = false,
-                        mediaTypes = allMediaTypes,
-                        fileExtensions = allFileExtensions
+                        mediaTypes = mediaTypes,
+                        fileExtensions = fileExtensions
                     )
                 },
                 {
                     ResourceSnifferContext(
                         resource = resource,
-                        mediaTypes = allMediaTypes,
-                        fileExtensions = allFileExtensions
+                        mediaTypes = mediaTypes +
+                            listOfNotNull(resource.mediaType().successOrNull()),
+                        fileExtensions = fileExtensions +
+                            listOfNotNull(resource.name().successOrNull()?.let { File(it).extension })
                     )
                 }
             )

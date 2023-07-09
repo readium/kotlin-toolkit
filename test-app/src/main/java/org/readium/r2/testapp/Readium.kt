@@ -37,7 +37,7 @@ class Readium(context: Context) {
 
     private val archiveFactory = CompositeArchiveFactory(
         DefaultArchiveFactory(),
-        ChannelZipArchiveFactory(httpClient)
+        ChannelZipArchiveFactory()
     )
 
     private val resourceFactory = CompositeResourceFactory(

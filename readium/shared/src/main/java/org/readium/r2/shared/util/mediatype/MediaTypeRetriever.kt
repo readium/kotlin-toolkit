@@ -8,8 +8,10 @@ package org.readium.r2.shared.util.mediatype
 
 import android.content.ContentResolver
 import android.net.Uri
+import android.provider.MediaStore
 import java.io.File
 import org.readium.r2.shared.BuildConfig
+import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.resource.*
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Url
@@ -19,11 +21,11 @@ class MediaTypeRetriever(
     resourceFactory: ResourceFactory = FileResourceFactory(),
     containerFactory: ContainerFactory = DirectoryContainerFactory(),
     archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
-    contentResolver: ContentResolver? = null,
+    private val contentResolver: ContentResolver? = null,
     private val sniffers: List<Sniffer> = Sniffers.all,
 ) {
     private val urlSnifferContextFactory: UrlSnifferContextFactory =
-        UrlSnifferContextFactory(resourceFactory, containerFactory, archiveFactory, contentResolver)
+        UrlSnifferContextFactory(resourceFactory, containerFactory, archiveFactory)
 
     private val bytesSnifferContextFactory: BytesSnifferContextFactory =
         BytesSnifferContextFactory(archiveFactory)
@@ -154,7 +156,30 @@ class MediaTypeRetriever(
             }
         }
 
-        return doRetrieve(fullContext, mediaTypes, fileExtensions)
+        doRetrieve(fullContext, mediaTypes, fileExtensions)?.let { return it }
+
+        // Falls back on the [contentResolver] in case of content Uri.
+        // Note: This is done after the heavy sniffing of the provided [sniffers], because
+        // otherwise it will detect JSON, XML or ZIP formats before we have a chance of sniffing
+        // their content (for example, for RWPM).
+
+        val url = (content as? Either.Right)?.value
+            ?: return null
+
+        val allMediaTypes = mediaTypes.toMutableList()
+        val allFileExtensions = fileExtensions.toMutableList()
+
+        if (url.scheme == ContentResolver.SCHEME_CONTENT && contentResolver != null) {
+            contentResolver.getType(url.uri)
+                ?.takeUnless { MediaType.BINARY.matches(it) }
+                ?.let { allMediaTypes.add(0, it) }
+
+            contentResolver.queryProjection(url.uri, MediaStore.MediaColumns.DISPLAY_NAME)?.let { filename ->
+                allFileExtensions.add(0, File(filename).extension)
+            }
+        }
+
+        return doRetrieve(fullContext, allMediaTypes, allFileExtensions)
     }
 
     /**

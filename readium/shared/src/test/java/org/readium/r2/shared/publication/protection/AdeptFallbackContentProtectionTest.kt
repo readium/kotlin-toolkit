@@ -12,7 +12,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.asset.Asset
-import org.readium.r2.shared.asset.AssetType
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -76,7 +75,7 @@ class AdeptFallbackContentProtectionTest {
             Asset.Container(
                 name = "fake name",
                 mediaType = mediaType,
-                assetType = AssetType.Archive,
+                exploded = false,
                 container = TestContainer(resources)
             )
         )

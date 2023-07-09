@@ -17,8 +17,6 @@ import org.readium.r2.shared.resource.*
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArchiveEntry
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipFile
 import org.readium.r2.shared.util.archive.channel.jvm.SeekableByteChannel
-import org.readium.r2.shared.util.http.DefaultHttpClient
-import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.io.CountingInputStream
 
 internal class ChannelZipContainer(
@@ -140,12 +138,8 @@ internal class ChannelZipContainer(
 
 /**
  * An [ArchiveFactory] able to open a ZIP archive served through an HTTP server.
- *
- * The given [httpClient] is used to perform the HTTP requests.
  */
-class ChannelZipArchiveFactory(
-    private val httpClient: HttpClient = DefaultHttpClient()
-) : ArchiveFactory {
+class ChannelZipArchiveFactory : ArchiveFactory {
 
     override suspend fun create(
         resource: Resource,
