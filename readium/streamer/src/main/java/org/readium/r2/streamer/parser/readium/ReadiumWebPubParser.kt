@@ -29,7 +29,7 @@ class ReadiumWebPubParser(
     override suspend fun parse(asset: PublicationAsset, warnings: WarningLogger?): Publication.Builder? {
         val mediaType = asset.mediaType
 
-        if (!mediaType.isReadiumWebPublication)
+        if (!mediaType.isReadiumWebPubProfile)
             return null
 
         val manifestJson =
@@ -68,7 +68,8 @@ class ReadiumWebPubParser(
 }
 
 /** Returns whether this media type is of a Readium Web Publication profile. */
-private val MediaType.isReadiumWebPublication: Boolean get() = matchesAny(
-    MediaType.READIUM_WEBPUB, MediaType.DIVINA, MediaType.LCP_PROTECTED_PDF,
-    MediaType.READIUM_AUDIOBOOK, MediaType.LCP_PROTECTED_AUDIOBOOK,
+private val MediaType.isReadiumWebPubProfile: Boolean get() = matchesAny(
+    MediaType.READIUM_WEBPUB, MediaType.READIUM_WEBPUB_MANIFEST,
+    MediaType.READIUM_AUDIOBOOK, MediaType.READIUM_AUDIOBOOK_MANIFEST, MediaType.LCP_PROTECTED_AUDIOBOOK,
+    MediaType.DIVINA, MediaType.DIVINA_MANIFEST, MediaType.LCP_PROTECTED_PDF
 )

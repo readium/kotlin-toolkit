@@ -10,7 +10,7 @@ repo_name: kotlin-toolkit
 repo_url: https://github.com/readium/kotlin-toolkit
 
 # Copyright (shown at the footer)
-copyright: 'Copyright &copy; 2022 Readium Foundation'
+copyright: 'Copyright &copy; 2023 Readium Foundation'
 
 # Material theme
 theme:

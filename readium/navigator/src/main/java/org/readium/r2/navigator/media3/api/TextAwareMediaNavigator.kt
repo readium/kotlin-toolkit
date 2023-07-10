@@ -14,8 +14,11 @@ import org.readium.r2.shared.publication.Locator
  * A [MediaNavigator] aware of the utterances being read aloud.
  */
 @ExperimentalReadiumApi
-interface TextAwareMediaNavigator<L : TextAwareMediaNavigator.Location, P : TextAwareMediaNavigator.Playback,
-    R : TextAwareMediaNavigator.ReadingOrder> : MediaNavigator<L, P, R> {
+interface TextAwareMediaNavigator<
+    L : TextAwareMediaNavigator.Location,
+    P : TextAwareMediaNavigator.Playback,
+    R : TextAwareMediaNavigator.ReadingOrder
+    > : MediaNavigator<L, P, R> {
 
     /**
      * Location of the navigator.
@@ -105,14 +108,14 @@ interface TextAwareMediaNavigator<L : TextAwareMediaNavigator.Location, P : Text
      *
      * Does nothing if the current utterance is the first one.
      */
-    fun previousUtterance()
+    fun goToPreviousUtterance()
 
     /**
      * Jumps to the next utterance.
      *
      * Does nothing if the current utterance is the last one.
      */
-    fun nextUtterance()
+    fun goToNextUtterance()
 
     /**
      * Whether the current utterance has a previous one or is the first one.

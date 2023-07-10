@@ -13,6 +13,7 @@ import androidx.media3.common.Player
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.StateFlow
+import org.readium.r2.navigator.media3.api.Media3Adapter
 import org.readium.r2.navigator.media3.api.MediaMetadataProvider
 import org.readium.r2.navigator.media3.api.MediaNavigator
 import org.readium.r2.navigator.media3.api.TextAwareMediaNavigator
@@ -39,7 +40,10 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     override val publication: Publication,
     private val player: TtsPlayer<S, P, E, V>,
     private val sessionAdapter: TtsSessionAdapter<E>,
-) : TextAwareMediaNavigator<TtsNavigator.Location, TtsNavigator.Playback, TtsNavigator.ReadingOrder>,
+) :
+    MediaNavigator<TtsNavigator.Location, TtsNavigator.Playback, TtsNavigator.ReadingOrder>,
+    TextAwareMediaNavigator<TtsNavigator.Location, TtsNavigator.Playback, TtsNavigator.ReadingOrder>,
+    Media3Adapter,
     Configurable<S, P> by player {
 
     companion object {
@@ -128,7 +132,6 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     data class Location(
         override val href: Href,
-        val cssSelector: String,
         override val utterance: String,
         override val range: IntRange?,
         override val textBefore: String?,
@@ -198,11 +201,11 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         player.go(locator)
     }
 
-    override fun previousUtterance() {
+    override fun goToPreviousUtterance() {
         player.previousUtterance()
     }
 
-    override fun nextUtterance() {
+    override fun goToNextUtterance() {
         player.nextUtterance()
     }
 
@@ -214,7 +217,7 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         return player.hasNextUtterance()
     }
 
-    override fun asPlayer(): Player =
+    override fun asMedia3Player(): Player =
         sessionAdapter
 
     override fun close() {
@@ -272,14 +275,9 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
         val utteranceHighlight = publication
             .locatorFromLink(currentLink)!!
-            .copyWithLocations(
-                progression = null,
-                otherLocations = buildMap {
-                    put("cssSelector", position.cssSelector)
-                }
-            ).copy(
-                text =
-                Locator.Text(
+            .copy(
+                locations = position.locations,
+                text = Locator.Text(
                     highlight = text,
                     before = position.textBefore,
                     after = position.textAfter
@@ -291,7 +289,6 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
         return Location(
             href = Href(currentLink.href),
-            cssSelector = position.cssSelector,
             textBefore = position.textBefore,
             textAfter = position.textAfter,
             utterance = text,

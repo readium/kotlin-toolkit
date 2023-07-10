@@ -112,7 +112,7 @@ class EpubParser(
                 search = StringSearchService.createDefaultFactory(),
                 content = DefaultContentService.createFactory(
                     listOf(
-                        HtmlResourceContentIterator.createFactory()
+                        HtmlResourceContentIterator.Factory()
                     )
                 ),
             )

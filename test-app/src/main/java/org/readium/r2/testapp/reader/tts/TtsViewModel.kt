@@ -105,7 +105,7 @@ class TtsViewModel private constructor(
             bookId = bookId,
             preferencesManager = preferencesManager
         ) { preferences ->
-            val baseEditor = ttsNavigatorFactory.createTtsPreferencesEditor(preferences)
+            val baseEditor = ttsNavigatorFactory.createPreferencesEditor(preferences)
             val voices = navigatorNow?.voices.orEmpty()
             TtsPreferencesEditor(baseEditor, voices)
         }
@@ -148,7 +148,8 @@ class TtsViewModel private constructor(
                     is MediaNavigator.State.Ready -> {}
                     is MediaNavigator.State.Buffering -> {}
                 }
-            }.launchIn(viewModelScope)
+            }
+            .launchIn(viewModelScope)
 
         preferencesManager.preferences
             .onEach { navigatorNow?.submitPreferences(it) }
@@ -213,24 +214,26 @@ class TtsViewModel private constructor(
     }
 
     private fun onPlaybackError(error: TtsNavigator.State.Error) {
-        val exception = when (error) {
+        val event = when (error) {
             is TtsNavigator.State.Error.ContentError -> {
                 Timber.e(error.exception)
-                UserException(R.string.tts_error_other, cause = error.exception)
+                Event.OnError(UserException(R.string.tts_error_other, cause = error.exception))
             }
             is TtsNavigator.State.Error.EngineError<*> -> {
-                val kind = (error.error as AndroidTtsEngine.Error).kind
-                when (kind) {
-                    AndroidTtsEngine.Error.Kind.Network ->
-                        UserException(R.string.tts_error_network)
+                val engineError = (error.error as AndroidTtsEngine.Error)
+                when (engineError) {
+                    is AndroidTtsEngine.Error.LanguageMissingData ->
+                        Event.OnMissingVoiceData(engineError.language)
+                    AndroidTtsEngine.Error.Network ->
+                        Event.OnError(UserException(R.string.tts_error_network))
                     else ->
-                        UserException(R.string.tts_error_other)
-                }.also { Timber.e(it, "Error type: ${kind.name}") }
+                        Event.OnError(UserException(R.string.tts_error_other))
+                }.also { Timber.e("Error type: $error") }
             }
         }
 
         viewModelScope.launch {
-            _events.send(Event.OnError(exception))
+            _events.send(event)
         }
     }
 }
