@@ -17,7 +17,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.fetcher.EmptyFetcher
-import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.Publication.Profile
 import org.readium.r2.shared.publication.services.DefaultLocatorService
@@ -408,7 +408,7 @@ class PublicationTest {
 
     @Test fun `get method passes on href parameters to services`() {
         val service = object : Publication.Service {
-            override fun get(link: Link): Resource? {
+            override fun get(link: Link): Fetcher.Resource? {
                 assertFalse(link.templated)
                 assertEquals("param1=a&param2=b", link.href.substringAfter("?"))
                 return StringResource(link, "test passed")
@@ -422,7 +422,7 @@ class PublicationTest {
                 positions = { service }
             )
         )
-        assertEquals("test passed", runBlocking { publication.get(link).readAsString().getOrNull() })
+        assertEquals("test passed", runBlocking { publication.get(link).readAsString().successOrNull() })
     }
 
     @Test fun `find the first resource {Link} with the given {href}`() {

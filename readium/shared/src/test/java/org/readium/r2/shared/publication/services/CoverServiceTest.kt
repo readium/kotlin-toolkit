@@ -23,6 +23,7 @@ import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.linkBlocking
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.readBlocking
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -51,7 +52,7 @@ class CoverServiceTest {
                     Link(href = coverPath, rels = setOf("cover"))
                 )
             ),
-            fetcher = FileFetcher(coverPath, File(coverPath))
+            fetcher = FileFetcher(coverPath, File(coverPath), MediaTypeRetriever())
         )
     }
 
@@ -65,7 +66,7 @@ class CoverServiceTest {
             res.linkBlocking()
         )
 
-        val bytes = res.readBlocking().getOrNull()
+        val bytes = res.readBlocking().successOrNull()
         assertNotNull(bytes)
 
         assertTrue(BitmapFactory.decodeByteArray(bytes, 0, bytes.size).sameAs(coverBitmap))

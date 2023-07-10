@@ -10,21 +10,24 @@
 package org.readium.r2.lcp
 
 import java.io.IOException
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrElse
+import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.fetcher.*
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.encryption.encryption
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.ResourceTry
 
 /**
  * Decrypts a resource protected with LCP.
  */
 internal class LcpDecryptor(val license: LcpLicense?) {
 
-    fun transform(resource: Resource): Resource = LazyResource {
+    fun transform(resource: Fetcher.Resource): Fetcher.Resource = LazyResource {
         // Checks if the resource is encrypted and whether the encryption schemes of the resource
         // and the DRM license are the same.
         val link = resource.link()
@@ -46,7 +49,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
      * resource, for example when the resource is deflated before encryption.
      */
     private class FullLcpResource(
-        resource: Resource,
+        resource: Fetcher.Resource,
         private val license: LcpLicense
     ) : TransformingResource(resource) {
 
@@ -65,9 +68,9 @@ internal class LcpDecryptor(val license: LcpLicense?) {
      * Supports random access for byte range requests, but the resource MUST NOT be deflated.
      */
     private class CbcLcpResource(
-        private val resource: Resource,
+        private val resource: Fetcher.Resource,
         private val license: LcpLicense
-    ) : Resource {
+    ) : Fetcher.Resource {
 
         private class Cache(
             var startIndex: Int? = null,

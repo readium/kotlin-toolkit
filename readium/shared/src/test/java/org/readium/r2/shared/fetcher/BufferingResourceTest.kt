@@ -12,17 +12,17 @@ class BufferingResourceTest {
 
     @Test
     fun `get file`() {
-        assertEquals(sut().file, file)
+        assertEquals(file, sut().file)
     }
 
     @Test
     fun `get link`() = runBlocking {
-        assertEquals(sut().link(), link)
+        assertEquals(link, sut().link())
     }
 
     @Test
     fun `get length`() = runBlocking {
-        assertEquals(sut().length().getOrNull(), 161291)
+        assertEquals(161291, sut().length().successOrNull())
     }
 
     @Test
@@ -128,7 +128,7 @@ class BufferingResourceTest {
     private fun testRead(sut: BufferingResource, range: LongRange? = null) {
         runBlocking {
             val res = sut.read(range)
-            val readData = res.getOrNull()
+            val readData = res.successOrNull()
             assertNotNull(readData)
             if (range != null) {
                 val expected = data.copyOfRange(range.first.toInt(), range.last.toInt() + 1)

@@ -339,8 +339,8 @@ class AndroidTtsEngine private constructor(
         engine: TextToSpeech,
         request: Request
     ): Boolean {
-        return engine.setupVoice(settings.value, request.id, request.language, voices)
-            && (engine.speak(request.text, QUEUE_ADD, null, request.id.value) == SUCCESS)
+        return engine.setupVoice(settings.value, request.id, request.language, voices) &&
+            (engine.speak(request.text, QUEUE_ADD, null, request.id.value) == SUCCESS)
     }
 
     private fun setupListener(engine: TextToSpeech) {
@@ -400,19 +400,23 @@ class AndroidTtsEngine private constructor(
         utteranceLanguage: Language?,
         voices: Set<Voice>
     ): Boolean {
-        var language = utteranceLanguage
+        val language = utteranceLanguage
             .takeUnless { settings.overrideContentLanguage }
+            // We take utterance language if data are missing but not if the language is not supported
+            ?.takeIf { isLanguageAvailable(it.locale) != LANG_NOT_SUPPORTED }
             ?: settings.language
+                .takeIf { isLanguageAvailable(it.locale) != LANG_NOT_SUPPORTED }
+            ?: defaultVoice?.locale?.let { Language(it) }
 
-        utteranceListener?.onError(id, Error.LanguageMissingData(language))
-        return false
+        if (language == null) {
+            // We don't know what to do.
+            utteranceListener?.onError(id, Error.Unknown)
+            return false
+        }
 
-        when (isLanguageAvailable(language.locale)) {
-            LANG_MISSING_DATA -> {
-                utteranceListener?.onError(id, Error.LanguageMissingData(language))
-                return false
-            }
-            LANG_NOT_SUPPORTED -> language = Language(defaultVoice.locale)
+        if (isLanguageAvailable(language.locale) < LANG_AVAILABLE) {
+            utteranceListener?.onError(id, Error.LanguageMissingData(language))
+            return false
         }
 
         val preferredVoiceWithRegion =

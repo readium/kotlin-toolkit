@@ -11,7 +11,6 @@ package org.readium.r2.shared.publication
 
 import android.net.Uri
 import android.os.Parcelable
-import androidx.annotation.StringRes
 import java.net.URL
 import java.net.URLEncoder
 import kotlin.reflect.KClass
@@ -22,11 +21,13 @@ import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.*
 import org.readium.r2.shared.BuildConfig.DEBUG
+import org.readium.r2.shared.error.Error
+import org.readium.r2.shared.error.SimpleError
+import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.removeLastComponent
 import org.readium.r2.shared.fetcher.EmptyFetcher
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.CacheService
@@ -166,7 +167,7 @@ class Publication(
     /**
      * Returns the resource targeted by the given non-templated [link].
      */
-    fun get(link: Link): Resource {
+    fun get(link: Link): Fetcher.Resource {
         if (DEBUG) { require(!link.templated) { "You must expand templated links before calling [Publication.get]" } }
 
         services.services.forEach { service -> service.get(link)?.let { return it } }
@@ -352,7 +353,7 @@ class Publication(
          * @return The [Resource] containing the response, or null if the service doesn't recognize
          *         this request.
          */
-        fun get(link: Link): Resource? = null
+        fun get(link: Link): Fetcher.Resource? = null
 
         /**
          * Closes any opened file handles, removes temporary files, etc.
@@ -432,39 +433,79 @@ class Publication(
     /**
      * Errors occurring while opening a Publication.
      */
-    sealed class OpeningException(@StringRes userMessageId: Int, cause: Throwable? = null) : UserException(userMessageId, cause = cause) {
+    sealed class OpeningException : Error {
 
         /**
          * The file format could not be recognized by any parser.
          */
-        class UnsupportedFormat(cause: Throwable? = null) : OpeningException(R.string.r2_shared_publication_opening_exception_unsupported_format, cause)
+        class UnsupportedAsset(override val cause: Error? = null) : OpeningException() {
+
+            constructor(message: String) : this(SimpleError(message))
+
+            override val message: String =
+                "Asset is not supported."
+        }
 
         /**
          * The publication file was not found on the file system.
          */
-        class NotFound(cause: Throwable? = null) : OpeningException(R.string.r2_shared_publication_opening_exception_not_found, cause)
+        class NotFound(override val cause: Error? = null) : OpeningException() {
+
+            override val message: String =
+                "Asset couldn't be found."
+        }
 
         /**
          * The publication parser failed with the given underlying exception.
          */
-        class ParsingFailed(cause: Throwable? = null) : OpeningException(R.string.r2_shared_publication_opening_exception_parsing_failed, cause)
+        class ParsingFailed(override val cause: Error? = null) : OpeningException() {
+
+            override val message: String =
+                "The asset is corrupted so the publication cannot be opened."
+        }
 
         /**
          * We're not allowed to open the publication at all, for example because it expired.
          */
-        class Forbidden(cause: Throwable? = null) : OpeningException(R.string.r2_shared_publication_opening_exception_forbidden, cause)
+        class Forbidden(override val cause: Error? = null) : OpeningException() {
+
+            override val message: String =
+                "You are not allowed to open this publication."
+        }
 
         /**
          * The publication can't be opened at the moment, for example because of a networking error.
          * This error is generally temporary, so the operation may be retried or postponed.
          */
-        class Unavailable(cause: Throwable? = null) : OpeningException(R.string.r2_shared_publication_opening_exception_unavailable, cause)
+        class Unavailable(override val cause: Error? = null) : OpeningException() {
+
+            override val message: String =
+                "Not available, please try again later."
+        }
 
         /**
          * The provided credentials are incorrect and we can't open the publication in a
          * `restricted` state (e.g. for a password-protected ZIP).
          */
-        object IncorrectCredentials : OpeningException(R.string.r2_shared_publication_opening_exception_incorrect_credentials)
+        class IncorrectCredentials(override val cause: Error? = null) : OpeningException() {
+
+            override val message: String =
+                "Provided credentials were incorrect."
+        }
+
+        class OutOfMemory(override val cause: Error? = null) : OpeningException() {
+
+            override val message: String =
+                "There is not enough memory available to open device to read the publication."
+        }
+
+        class Unexpected(override val cause: Error? = null) : OpeningException() {
+
+            constructor(exception: Exception) : this(ThrowableError(exception))
+
+            override val message: String =
+                "An expected error occurred."
+        }
     }
 
     /**

@@ -10,12 +10,11 @@
 package org.readium.r2.streamer
 
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.streamer.parser.PublicationParser
 
-internal fun Resource.readBlocking(range: LongRange? = null) = runBlocking { read(range) }
+internal fun Fetcher.Resource.readBlocking(range: LongRange? = null) = runBlocking { read(range) }
 
-internal fun PublicationParser.parseBlocking(asset: PublicationAsset):
-    Publication.Builder? = runBlocking { parse(asset) }
+internal fun PublicationParser.parseBlocking(asset: PublicationParser.Asset):
+    Publication.Builder? = runBlocking { parse(asset).successOrNull() }

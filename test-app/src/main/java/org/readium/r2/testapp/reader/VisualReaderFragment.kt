@@ -9,7 +9,6 @@ package org.readium.r2.testapp.reader
 import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
-import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Bundle
 import android.view.*
@@ -41,9 +40,11 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import org.readium.r2.navigator.*
+import org.readium.r2.navigator.input.InputListener
+import org.readium.r2.navigator.input.TapEvent
 import org.readium.r2.navigator.media3.tts.android.AndroidTtsEngine
 import org.readium.r2.navigator.util.BaseActionModeCallback
-import org.readium.r2.navigator.util.EdgeTapNavigation
+import org.readium.r2.navigator.util.DirectionalNavigationAdapter
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Language
@@ -87,6 +88,18 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         super.onViewCreated(view, savedInstanceState)
 
         navigatorFragment = navigator as Fragment
+
+        (navigator as VisualNavigator).apply {
+            // This will automatically turn pages when tapping the screen edges or arrow keys.
+            addInputListener(DirectionalNavigationAdapter())
+
+            addInputListener(object : InputListener {
+                override fun onTap(navigator: VisualNavigator, event: TapEvent): Boolean {
+                    requireActivity().toggleSystemUi()
+                    return true
+                }
+            })
+        }
 
         setupObservers()
 
@@ -232,7 +245,10 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
         if (
             activity.confirmDialog(
-                getString(R.string.tts_error_language_support_incomplete, language.locale.displayLanguage)
+                getString(
+                    R.string.tts_error_language_support_incomplete,
+                    language.locale.displayLanguage
+                )
             )
         ) {
             AndroidTtsEngine.requestInstallVoice(activity)
@@ -342,13 +358,14 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         }
     }
 
-    private fun showHighlightPopupWithStyle(style: Highlight.Style) = viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-        // Get the rect of the current selection to know where to position the highlight
-        // popup.
-        (navigator as? SelectableNavigator)?.currentSelection()?.rect?.let { selectionRect ->
-            showHighlightPopup(selectionRect, style)
+    private fun showHighlightPopupWithStyle(style: Highlight.Style) =
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            // Get the rect of the current selection to know where to position the highlight
+            // popup.
+            (navigator as? SelectableNavigator)?.currentSelection()?.rect?.let { selectionRect ->
+                showHighlightPopup(selectionRect, style)
+            }
         }
-    }
 
     private fun showHighlightPopup(rect: RectF, style: Highlight.Style, highlightId: Long? = null) =
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
@@ -438,54 +455,63 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
             mode?.finish()
         }
 
-    private fun showAnnotationPopup(highlightId: Long? = null) = viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-        val activity = activity ?: return@launchWhenResumed
-        val view = layoutInflater.inflate(R.layout.popup_note, null, false)
-        val note = view.findViewById<EditText>(R.id.note)
-        val alert = AlertDialog.Builder(activity)
-            .setView(view)
-            .create()
+    private fun showAnnotationPopup(highlightId: Long? = null) =
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            val activity = activity ?: return@launchWhenResumed
+            val view = layoutInflater.inflate(R.layout.popup_note, null, false)
+            val note = view.findViewById<EditText>(R.id.note)
+            val alert = AlertDialog.Builder(activity)
+                .setView(view)
+                .create()
 
-        fun dismiss() {
-            alert.dismiss()
-            mode?.finish()
-            (activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
-                .hideSoftInputFromWindow(note.applicationWindowToken, InputMethodManager.HIDE_NOT_ALWAYS)
-        }
+            fun dismiss() {
+                alert.dismiss()
+                mode?.finish()
+                (activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                    .hideSoftInputFromWindow(
+                        note.applicationWindowToken,
+                        InputMethodManager.HIDE_NOT_ALWAYS
+                    )
+            }
 
-        with(view) {
-            val highlight = highlightId?.let { model.highlightById(it) }
-            if (highlight != null) {
-                note.setText(highlight.annotation)
-                findViewById<View>(R.id.sidemark).setBackgroundColor(highlight.tint)
-                findViewById<TextView>(R.id.select_text).text = highlight.locator.text.highlight
+            with(view) {
+                val highlight = highlightId?.let { model.highlightById(it) }
+                if (highlight != null) {
+                    note.setText(highlight.annotation)
+                    findViewById<View>(R.id.sidemark).setBackgroundColor(highlight.tint)
+                    findViewById<TextView>(R.id.select_text).text = highlight.locator.text.highlight
 
-                findViewById<TextView>(R.id.positive).setOnClickListener {
-                    val text = note.text.toString()
-                    model.updateHighlightAnnotation(highlight.id, annotation = text)
-                    dismiss()
+                    findViewById<TextView>(R.id.positive).setOnClickListener {
+                        val text = note.text.toString()
+                        model.updateHighlightAnnotation(highlight.id, annotation = text)
+                        dismiss()
+                    }
+                } else {
+                    val tint = highlightTints.values.random()
+                    findViewById<View>(R.id.sidemark).setBackgroundColor(tint)
+                    val navigator = navigator as? SelectableNavigator ?: return@launchWhenResumed
+                    val selection = navigator.currentSelection() ?: return@launchWhenResumed
+                    navigator.clearSelection()
+                    findViewById<TextView>(R.id.select_text).text = selection.locator.text.highlight
+
+                    findViewById<TextView>(R.id.positive).setOnClickListener {
+                        model.addHighlight(
+                            locator = selection.locator,
+                            style = Highlight.Style.HIGHLIGHT,
+                            tint = tint,
+                            annotation = note.text.toString()
+                        )
+                        dismiss()
+                    }
                 }
-            } else {
-                val tint = highlightTints.values.random()
-                findViewById<View>(R.id.sidemark).setBackgroundColor(tint)
-                val navigator = navigator as? SelectableNavigator ?: return@launchWhenResumed
-                val selection = navigator.currentSelection() ?: return@launchWhenResumed
-                navigator.clearSelection()
-                findViewById<TextView>(R.id.select_text).text = selection.locator.text.highlight
 
-                findViewById<TextView>(R.id.positive).setOnClickListener {
-                    model.addHighlight(locator = selection.locator, style = Highlight.Style.HIGHLIGHT, tint = tint, annotation = note.text.toString())
+                findViewById<TextView>(R.id.negative).setOnClickListener {
                     dismiss()
                 }
             }
 
-            findViewById<TextView>(R.id.negative).setOnClickListener {
-                dismiss()
-            }
+            alert.show()
         }
-
-        alert.show()
-    }
 
     fun updateSystemUiVisibility() {
         if (navigatorFragment.isHidden)
@@ -502,23 +528,6 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         } else {
             container.clearPadding()
         }
-    }
-
-    // VisualNavigator.Listener
-
-    override fun onTap(point: PointF): Boolean {
-        val navigated = edgeTapNavigation.onTap(point, requireView())
-
-        if (!navigated) {
-            requireActivity().toggleSystemUi()
-        }
-        return true
-    }
-
-    private val edgeTapNavigation by lazy {
-        EdgeTapNavigation(
-            navigator = navigator as VisualNavigator
-        )
     }
 }
 

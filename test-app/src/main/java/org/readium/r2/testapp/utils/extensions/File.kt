@@ -17,10 +17,11 @@ import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.util.http.*
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.testapp.BuildConfig
 import timber.log.Timber
 
@@ -49,7 +50,7 @@ suspend fun URL.downloadTo(
     val urlString = toString()
 
     if (BuildConfig.DEBUG) Timber.i("download url $urlString")
-    return DefaultHttpClient().download(HttpRequest(toString()), dest)
+    return DefaultHttpClient().download(HttpRequest(toString()), dest, MediaTypeRetriever())
         .flatMap {
             try {
                 if (BuildConfig.DEBUG) Timber.i("response url ${it.url}")
@@ -68,6 +69,7 @@ suspend fun URL.downloadTo(
 private suspend fun HttpClient.download(
     request: HttpRequest,
     destination: File,
+    mediaTypeRetriever: MediaTypeRetriever
 ): HttpTry<HttpResponse> =
     try {
         stream(request).flatMap { res ->
@@ -87,7 +89,7 @@ private suspend fun HttpClient.download(
                 var response = res.response
                 if (response.mediaType.matches(MediaType.BINARY)) {
                     response = response.copy(
-                        mediaType = MediaType.ofFile(destination) ?: response.mediaType
+                        mediaType = mediaTypeRetriever.retrieve(destination) ?: response.mediaType
                     )
                 }
                 Try.success(response)

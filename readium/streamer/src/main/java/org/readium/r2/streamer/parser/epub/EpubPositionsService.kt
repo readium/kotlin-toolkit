@@ -8,7 +8,6 @@ package org.readium.r2.streamer.parser.epub
 
 import kotlin.math.ceil
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -59,16 +58,16 @@ class EpubPositionsService(
      */
     sealed class ReflowableStrategy {
         /** Returns the number of positions in the given [resource] according to the strategy. */
-        abstract suspend fun positionCount(resource: Resource): Int
+        abstract suspend fun positionCount(resource: Fetcher.Resource): Int
 
         /**
          * Use the original length of each resource (before compression and encryption) and split it
          * by the given [pageLength].
          */
         data class OriginalLength(val pageLength: Int) : ReflowableStrategy() {
-            override suspend fun positionCount(resource: Resource): Int {
+            override suspend fun positionCount(resource: Fetcher.Resource): Int {
                 val length = resource.link().properties.encryption?.originalLength
-                    ?: resource.length().getOrNull()
+                    ?: resource.length().successOrNull()
                     ?: 0
                 return ceil(length.toDouble() / pageLength.toDouble()).toInt()
                     .coerceAtLeast(1)
@@ -80,9 +79,9 @@ class EpubPositionsService(
          * given [pageLength].
          */
         data class ArchiveEntryLength(val pageLength: Int) : ReflowableStrategy() {
-            override suspend fun positionCount(resource: Resource): Int {
+            override suspend fun positionCount(resource: Fetcher.Resource): Int {
                 val length = resource.link().properties.archive?.entryLength
-                    ?: resource.length().getOrNull()
+                    ?: resource.length().successOrNull()
                     ?: 0
                 return ceil(length.toDouble() / pageLength.toDouble()).toInt()
                     .coerceAtLeast(1)

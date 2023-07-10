@@ -31,12 +31,12 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.readium.navigator.media2.MediaNavigator.Companion.create
 import org.readium.r2.navigator.Navigator
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.flatMap
 import timber.log.Timber
 
 /**

@@ -17,6 +17,8 @@ import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.Search
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.fetcher.DefaultResourceContentExtractorFactory
 import org.readium.r2.shared.fetcher.ResourceContentExtractor
 import org.readium.r2.shared.publication.Link
@@ -26,7 +28,6 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.publication.services.search.SearchService.Options
 import org.readium.r2.shared.util.Ref
-import org.readium.r2.shared.util.Try
 import timber.log.Timber
 
 /**

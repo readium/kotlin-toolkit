@@ -14,12 +14,12 @@ import java.net.URL
 import kotlin.time.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.flatMap
+import org.readium.r2.shared.error.tryRecover
 import org.readium.r2.shared.util.http.HttpRequest.Method
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.sniffMediaType
-import org.readium.r2.shared.util.tryRecover
 import timber.log.Timber
 
 /**
@@ -32,7 +32,7 @@ import timber.log.Timber
  * @param readTimeout Timeout used when reading the input stream. A null timeout is interpreted
  *        as the default value, while a timeout of zero as an infinite timeout.
  */
-class DefaultHttpClient constructor(
+class DefaultHttpClient(
     private val userAgent: String? = null,
     private val additionalHeaders: Map<String, String> = mapOf(),
     private val connectTimeout: Duration? = null,
@@ -138,8 +138,8 @@ class DefaultHttpClient constructor(
 
                         // Reads the full body, since it might contain an error representation such as
                         // JSON Problem Details or OPDS Authentication Document
-                        val body = connection.errorStream.use { it.readBytes() }
-                        val mediaType = connection.sniffMediaType(bytes = { body })
+                        val body = connection.errorStream?.use { it.readBytes() }
+                        val mediaType = body?.let { connection.sniffMediaType(bytes = { it }) }
                         throw HttpException(kind, mediaType, body)
                     }
 

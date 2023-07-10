@@ -8,6 +8,7 @@ package org.readium.r2.testapp.reader
 
 import android.app.Activity
 import android.app.Application
+import androidx.annotation.StringRes
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences as JetpackPreferences
 import org.json.JSONObject
@@ -18,12 +19,15 @@ import org.readium.r2.navigator.media3.exoplayer.ExoPlayerEngineProvider
 import org.readium.r2.navigator.media3.tts.TtsNavigatorFactory
 import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.UserException
+import org.readium.r2.shared.asset.AssetRetriever
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.isRestricted
-import org.readium.r2.shared.publication.services.protectionError
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.testapp.PublicationError
 import org.readium.r2.testapp.Readium
 import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.reader.preferences.AndroidTtsPreferencesManagerFactory
@@ -46,7 +50,33 @@ class ReaderRepository(
     private val bookRepository: BookRepository,
     private val preferencesDataStore: DataStore<JetpackPreferences>,
 ) {
-    object CancellationException : Exception()
+    sealed class OpeningError(
+        content: Content,
+        cause: Exception?
+    ) : UserException(content, cause) {
+
+        constructor(@StringRes userMessageId: Int) :
+            this(Content(userMessageId), null)
+
+        constructor(cause: UserException) :
+            this(Content(cause), cause)
+
+        class PublicationError(
+            override val cause: UserException
+        ) : OpeningError(cause) {
+
+            companion object {
+
+                operator fun invoke(
+                    error: AssetRetriever.Error
+                ): OpeningError = PublicationError(org.readium.r2.testapp.PublicationError(error))
+
+                operator fun invoke(
+                    error: Publication.OpeningException
+                ): OpeningError = PublicationError(org.readium.r2.testapp.PublicationError(error))
+            }
+        }
+    }
 
     private val repository: MutableMap<Long, ReaderInitData> =
         mutableMapOf()
@@ -57,36 +87,31 @@ class ReaderRepository(
     operator fun get(bookId: Long): ReaderInitData? =
         repository[bookId]
 
-    suspend fun open(bookId: Long, activity: Activity): Try<Unit, Exception> {
-        return try {
-            openThrowing(bookId, activity)
-            Try.success(Unit)
-        } catch (e: Exception) {
-            Try.failure(e)
-        }
-    }
-
-    private suspend fun openThrowing(bookId: Long, activity: Activity) {
+    suspend fun open(bookId: Long, activity: Activity): Try<Unit, OpeningError> {
         if (bookId in repository.keys) {
-            return
+            return Try.success(Unit)
         }
 
-        val book = bookRepository.get(bookId)
-            ?: throw Exception("Cannot find book in database.")
+        val book = checkNotNull(bookRepository.get(bookId)) { "Cannot find book in database." }
 
-        val publication = readium.streamer.open(
-            Url(book.href)!!, book.mediaType(),
-            allowUserInteraction = true, sender = activity
-        )
-            .getOrThrow()
+        val asset = readium.assetRetriever.retrieve(
+            Url(book.href)!!, book.mediaType, book.assetType
+        ).getOrElse { return Try.failure(OpeningError.PublicationError(it)) }
+
+        val publication = readium.publicationFactory.open(
+            asset,
+            drmScheme = book.drm,
+            allowUserInteraction = true,
+            sender = activity
+        ).getOrElse { return Try.failure(OpeningError.PublicationError(it)) }
 
         // The publication is protected with a DRM and not unlocked.
         if (publication.isRestricted) {
-            throw publication.protectionError
-                ?: CancellationException
+            return Try.failure(OpeningError.PublicationError(PublicationError.Forbidden()))
         }
 
-        val initialLocator = book.progression?.let { Locator.fromJSON(JSONObject(it)) }
+        val initialLocator = book.progression
+            ?.let { Locator.fromJSON(JSONObject(it)) }
 
         val readerInitData = when {
             publication.conformsTo(Publication.Profile.AUDIOBOOK) ->
@@ -98,17 +123,19 @@ class ReaderRepository(
             publication.conformsTo(Publication.Profile.DIVINA) ->
                 openImage(bookId, publication, initialLocator)
             else ->
-                throw Exception("Publication is not supported.")
+                Try.failure(
+                    OpeningError.PublicationError(PublicationError.UnsupportedPublication())
+                )
         }
 
-        repository[bookId] = readerInitData
+        return readerInitData.map { repository[bookId] = it }
     }
 
     private suspend fun openAudio(
         bookId: Long,
         publication: Publication,
         initialLocator: Locator?
-    ): MediaReaderInitData {
+    ): Try<MediaReaderInitData, OpeningError> {
 
         val preferencesManager = ExoPlayerPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)
@@ -117,39 +144,47 @@ class ReaderRepository(
         val navigatorFactory = AudioNavigatorFactory(
             publication,
             ExoPlayerEngineProvider(application),
-        ) ?: throw Exception("Cannot open audiobook.")
+        ) ?: return Try.failure(OpeningError.PublicationError(PublicationError.UnsupportedPublication()))
 
         val navigator = navigatorFactory.createNavigator(
             initialPreferences,
             initialLocator
-        ) ?: throw Exception("Cannot open audiobook.")
+        ) ?: return Try.failure(OpeningError.PublicationError(PublicationError.UnsupportedPublication()))
 
         mediaServiceFacade.openSession(bookId, navigator)
-        return MediaReaderInitData(bookId, publication, navigator, preferencesManager, navigatorFactory)
+        val initData = MediaReaderInitData(
+            bookId,
+            publication,
+            navigator,
+            preferencesManager,
+            navigatorFactory
+        )
+        return Try.success(initData)
     }
 
     private suspend fun openEpub(
         bookId: Long,
         publication: Publication,
         initialLocator: Locator?
-    ): EpubReaderInitData {
+    ): Try<EpubReaderInitData, OpeningError> {
 
         val preferencesManager = EpubPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)
         val navigatorFactory = EpubNavigatorFactory(publication)
         val ttsInitData = getTtsInitData(bookId, publication)
 
-        return EpubReaderInitData(
+        val initData = EpubReaderInitData(
             bookId, publication, initialLocator,
             preferencesManager, navigatorFactory, ttsInitData
         )
+        return Try.success(initData)
     }
 
     private suspend fun openPdf(
         bookId: Long,
         publication: Publication,
         initialLocator: Locator?
-    ): PdfReaderInitData {
+    ): Try<PdfReaderInitData, OpeningError> {
 
         val preferencesManager = PdfiumPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)
@@ -157,24 +192,26 @@ class ReaderRepository(
         val navigatorFactory = PdfNavigatorFactory(publication, pdfEngine)
         val ttsInitData = getTtsInitData(bookId, publication)
 
-        return PdfReaderInitData(
+        val initData = PdfReaderInitData(
             bookId, publication, initialLocator,
             preferencesManager, navigatorFactory,
             ttsInitData
         )
+        return Try.success(initData)
     }
 
     private suspend fun openImage(
         bookId: Long,
         publication: Publication,
         initialLocator: Locator?
-    ): ImageReaderInitData {
-        return ImageReaderInitData(
+    ): Try<ImageReaderInitData, OpeningError> {
+        val initData = ImageReaderInitData(
             bookId = bookId,
             publication = publication,
             initialLocation = initialLocator,
             ttsInitData = getTtsInitData(bookId, publication)
         )
+        return Try.success(initData)
     }
 
     private suspend fun getTtsInitData(

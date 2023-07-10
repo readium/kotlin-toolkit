@@ -15,13 +15,14 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.FileFetcher
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.streamer.readBlocking
 import org.robolectric.RobolectricTestRunner
 
@@ -39,14 +40,14 @@ class EpubDeobfuscatorTest {
             ?.path
             ?.let { File(it).parentFile }
         assertNotNull(deobfuscationDir)
-        fetcher = FileFetcher("/deobfuscation", deobfuscationDir!!)
+        fetcher = FileFetcher("/deobfuscation", deobfuscationDir!!, MediaTypeRetriever())
 
         val fontResult = fetcher.get(Link(href = "/deobfuscation/cut-cut.woff")).readBlocking()
         assert(fontResult.isSuccess)
         font = fontResult.getOrThrow()
     }
 
-    private fun deobfuscate(href: String, algorithm: String?): Resource {
+    private fun deobfuscate(href: String, algorithm: String?): Fetcher.Resource {
         val encryption = algorithm?.let {
             Encryption(
                 algorithm = algorithm
@@ -70,7 +71,7 @@ class EpubDeobfuscatorTest {
         val deobfuscatedRes = deobfuscate(
             "/deobfuscation/cut-cut.obf.woff",
             "http://www.idpf.org/2008/embedding"
-        ).readBlocking().getOrNull()
+        ).readBlocking().successOrNull()
         assertThat(deobfuscatedRes).isEqualTo(font)
     }
 
@@ -90,7 +91,7 @@ class EpubDeobfuscatorTest {
         val deobfuscatedRes = deobfuscate(
             "/deobfuscation/cut-cut.adb.woff",
             "http://ns.adobe.com/pdf/enc#RC"
-        ).readBlocking().getOrNull()
+        ).readBlocking().successOrNull()
         assertThat(deobfuscatedRes).isEqualTo(font)
     }
 
@@ -99,7 +100,7 @@ class EpubDeobfuscatorTest {
         val deobfuscatedRes = deobfuscate(
             "/deobfuscation/cut-cut.woff",
             null
-        ).readBlocking().getOrNull()
+        ).readBlocking().successOrNull()
         assertThat(deobfuscatedRes).isEqualTo(font)
     }
 
@@ -108,7 +109,7 @@ class EpubDeobfuscatorTest {
         val deobfuscatedRes = deobfuscate(
             "/deobfuscation/cut-cut.woff",
             "unknown algorithm"
-        ).readBlocking().getOrNull()
+        ).readBlocking().successOrNull()
         assertThat(deobfuscatedRes).isEqualTo(font)
     }
 }

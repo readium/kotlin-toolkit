@@ -16,16 +16,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.UserException
 import org.readium.r2.shared.util.Url
 import org.readium.r2.testapp.BuildConfig
-import org.readium.r2.testapp.R
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.reader.ReaderActivityContract
-import org.readium.r2.testapp.reader.ReaderRepository
 import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
-import timber.log.Timber
 
 class BookshelfViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -68,44 +64,36 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
             app.bookRepository.deleteBook(book)
         }
 
-    fun addPublicationFromUri(uri: Uri) =
+    fun importPublicationFromUri(uri: Uri) =
         viewModelScope.launch {
             app.bookRepository
-                .addContentBook(uri)
-                .exceptionOrNull()
+                .importBook(uri)
+                .failureOrNull()
+                .let { sendImportFeedback(it) }
+        }
+
+    fun addSharedStoragePublication(uri: Uri) =
+        viewModelScope.launch {
+            app.bookRepository
+                .addSharedStorageBook(Url(uri.toString())!!)
+                .failureOrNull()
                 .let { sendImportFeedback(it) }
         }
 
     fun addRemotePublication(url: Url) {
         viewModelScope.launch {
-            val exception =
-                if (!url.protocol.startsWith("http")) {
-                    BookRepository.ImportException.UnsupportedProtocol(url.protocol)
-                } else {
-                    app.bookRepository
-                        .addRemoteBook(url)
-                        .exceptionOrNull()
-                }
+            val exception = app.bookRepository
+                .addRemoteBook(url)
+                .failureOrNull()
             sendImportFeedback(exception)
         }
     }
 
-    private fun sendImportFeedback(exception: BookRepository.ImportException?) {
-        if (exception == null) {
+    private fun sendImportFeedback(error: BookRepository.ImportError?) {
+        if (error == null) {
             channel.send(Event.ImportPublicationSuccess)
         } else {
-            val errorMessage = when (exception) {
-                is BookRepository.ImportException.UnableToOpenPublication ->
-                    exception.exception.getUserMessage(app)
-                BookRepository.ImportException.ImportDatabaseFailed ->
-                    app.getString(R.string.unable_add_pub_database)
-                is BookRepository.ImportException.LcpAcquisitionFailed ->
-                    "Error: " + exception.message
-                BookRepository.ImportException.IOException ->
-                    app.getString(R.string.unexpected_io_exception)
-                is BookRepository.ImportException.UnsupportedProtocol ->
-                    app.getString(R.string.unsupported_protocol)
-            }
+            val errorMessage = error.getUserMessage(app)
             channel.send(Event.ImportPublicationError(errorMessage))
         }
     }
@@ -116,15 +104,8 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
     ) = viewModelScope.launch {
         val readerRepository = app.readerRepository.await()
         readerRepository.open(bookId, activity)
-            .onFailure { exception ->
-                if (exception is ReaderRepository.CancellationException)
-                    return@launch
-
-                Timber.e(exception)
-                val message = when (exception) {
-                    is UserException -> exception.getUserMessage(app)
-                    else -> exception.message
-                }
+            .onFailure { error ->
+                val message = error.getUserMessage(app)
                 channel.send(Event.OpenPublicationError(message))
             }
             .onSuccess {
@@ -135,14 +116,15 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
 
     sealed class Event {
 
-        object ImportPublicationSuccess : Event()
+        object ImportPublicationSuccess :
+            Event()
 
         class ImportPublicationError(
             val errorMessage: String
         ) : Event()
 
         class OpenPublicationError(
-            val errorMessage: String?
+            val errorMessage: String
         ) : Event()
 
         class LaunchReader(

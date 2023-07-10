@@ -7,8 +7,10 @@
 package org.readium.r2.shared.util.mediatype
 
 import com.github.kittinunf.fuel.core.Response
+import java.io.File
 import java.net.HttpURLConnection
 import org.readium.r2.shared.extensions.extension
+import org.readium.r2.shared.resource.DefaultArchiveFactory
 
 /**
  * Resolves the format for this [HttpURLConnection], with optional extra file extension and media type
@@ -35,10 +37,19 @@ suspend fun HttpURLConnection.sniffMediaType(
 
     // TODO: The suggested filename extension, part of the HTTP header `Content-Disposition`.
 
+    val mediaTypeRetriever = MediaTypeRetriever(sniffers = sniffers)
+
     return if (bytes != null) {
-        MediaType.ofBytes(bytes, mediaTypes = allMediaTypes, fileExtensions = allFileExtensions, sniffers = sniffers)
+        mediaTypeRetriever.doRetrieve(
+            {
+                BytesSnifferContextFactory(DefaultArchiveFactory())
+                    .createContext(bytes.invoke(), mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
+            },
+            mediaTypes = allMediaTypes,
+            fileExtensions = allFileExtensions
+        )
     } else {
-        MediaType.of(mediaTypes = allMediaTypes, fileExtensions = allFileExtensions, sniffers = sniffers)
+        mediaTypeRetriever.retrieve(mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
     }
 }
 
@@ -62,7 +73,25 @@ suspend fun Response.sniffMediaType(
         allFileExtensions.add(0, it)
     }
 
+    val mediaTypeRetriever = MediaTypeRetriever(sniffers = sniffers)
+    val bytes: () -> ByteArray = { data }
+
     // TODO: The suggested filename extension, part of the HTTP header `Content-Disposition`.
 
-    return MediaType.ofBytes({ data }, mediaTypes = allMediaTypes, fileExtensions = allFileExtensions, sniffers = sniffers)
+    return mediaTypeRetriever.doRetrieve(
+        {
+            BytesSnifferContextFactory(DefaultArchiveFactory())
+                .createContext(bytes.invoke(), mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
+        },
+        mediaTypes = allMediaTypes,
+        fileExtensions = allFileExtensions
+    )
 }
+
+/**
+* Sniffs the media type of the file.
+*
+* If unknown, fallback on `MediaType.BINARY`.
+*/
+suspend fun File.mediaType(mediaTypeHint: String? = null): MediaType =
+    MediaTypeRetriever().retrieve(this, mediaType = mediaTypeHint) ?: MediaType.BINARY

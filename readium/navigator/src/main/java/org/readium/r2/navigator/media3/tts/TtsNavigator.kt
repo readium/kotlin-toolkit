@@ -44,7 +44,7 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     MediaNavigator<TtsNavigator.Location, TtsNavigator.Playback, TtsNavigator.ReadingOrder>,
     TextAwareMediaNavigator<TtsNavigator.Location, TtsNavigator.Playback, TtsNavigator.ReadingOrder>,
     Media3Adapter,
-    Configurable<S, P> by player {
+    Configurable<S, P> {
 
     companion object {
 
@@ -245,6 +245,14 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     override fun goBackward(animated: Boolean, completion: () -> Unit): Boolean {
         player.previousUtterance()
         return true
+    }
+
+    override val settings: StateFlow<S> =
+        player.settings
+
+    override fun submitPreferences(preferences: P) {
+        player.submitPreferences(preferences)
+        player.restartUtterance()
     }
 
     private fun navigatorPlayback(playback: TtsPlayer.Playback, utterance: TtsPlayer.Utterance) =

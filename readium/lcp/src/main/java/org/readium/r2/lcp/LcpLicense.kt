@@ -15,8 +15,8 @@ import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.services.ContentProtectionService
-import org.readium.r2.shared.util.Try
 import timber.log.Timber
 
 /**
@@ -113,7 +113,7 @@ interface LcpLicense : ContentProtectionService.UserRights {
     fun decipher(data: ByteArray): ByteArray? =
         runBlocking { decrypt(data) }
             .onFailure { Timber.e(it) }
-            .getOrNull()
+            .successOrNull()
 
     @Deprecated("Use `renewLoan` with `RenewListener` instead", ReplaceWith("renewLoan(LcpLicense.RenewListener)"), level = DeprecationLevel.ERROR)
     suspend fun renewLoan(end: DateTime?, urlPresenter: suspend (URL) -> Unit): Try<Unit, LcpException> = Try.success(Unit)
@@ -129,7 +129,7 @@ interface LcpLicense : ContentProtectionService.UserRights {
     @DelicateCoroutinesApi
     fun returnPublication(completion: (LcpException?) -> Unit) {
         GlobalScope.launch {
-            completion(returnPublication().exceptionOrNull())
+            completion(returnPublication().failureOrNull())
         }
     }
 }

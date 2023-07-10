@@ -7,15 +7,13 @@
 package org.readium.r2.streamer.parser.image
 
 import java.io.File
-import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
-import org.readium.r2.streamer.extensions.lowercasedExtension
 import org.readium.r2.streamer.parser.PublicationParser
 
 /**
@@ -26,18 +24,31 @@ import org.readium.r2.streamer.parser.PublicationParser
  */
 class ImageParser : PublicationParser {
 
-    override suspend fun parse(asset: PublicationAsset, warnings: WarningLogger?): Publication.Builder? {
+    override suspend fun parse(
+        asset: PublicationParser.Asset,
+        warnings: WarningLogger?
+    ): Try<Publication.Builder, PublicationParser.Error> {
 
-        if (!accepts(asset.mediaType, asset.fetcher))
-            return null
+        if (!asset.mediaType.matches(MediaType.CBZ) && !asset.mediaType.isBitmap)
+            return Try.failure(PublicationParser.Error.FormatNotSupported())
 
-        val readingOrder = asset.fetcher.links()
-            .filter { !File(it.href).isHiddenOrThumbs && it.mediaType.isBitmap }
-            .sortedBy(Link::href)
-            .toMutableList()
+        val readingOrder =
+            if (asset.mediaType.matches(MediaType.CBZ)) {
+                asset.fetcher.links()
+                    .filter { !File(it.href).isHiddenOrThumbs && it.mediaType.isBitmap }
+                    .sortedBy(Link::href)
+                    .toMutableList()
+            } else {
+                listOfNotNull(
+                    asset.fetcher.links().firstOrNull()
+                ).toMutableList()
+            }
 
-        if (readingOrder.isEmpty())
-            throw Exception("No bitmap found in the publication.")
+        if (readingOrder.isEmpty()) {
+            return Try.failure(
+                PublicationParser.Error.ParsingFailed("No bitmap found in the publication.")
+            )
+        }
 
         val title = asset.fetcher.guessTitle() ?: asset.name
 
@@ -52,27 +63,14 @@ class ImageParser : PublicationParser {
             readingOrder = readingOrder
         )
 
-        return Publication.Builder(
+        val publicationBuilder = Publication.Builder(
             manifest = manifest,
             fetcher = asset.fetcher,
             servicesBuilder = Publication.ServicesBuilder(
                 positions = PerResourcePositionsService.createFactory(fallbackMediaType = "image/*")
             )
         )
-    }
 
-    private suspend fun accepts(mediaType: MediaType, fetcher: Fetcher): Boolean {
-        if (mediaType == MediaType.CBZ)
-            return true
-
-        val allowedExtensions = listOf("acbf", "txt", "xml")
-
-        if (fetcher.links()
-            .filterNot { File(it.href).isHiddenOrThumbs }
-            .all { it.mediaType.isBitmap || File(it.href).lowercasedExtension in allowedExtensions }
-        )
-            return true
-
-        return false
+        return Try.success(publicationBuilder)
     }
 }

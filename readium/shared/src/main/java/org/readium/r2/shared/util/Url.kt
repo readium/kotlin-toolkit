@@ -6,49 +6,64 @@
 
 package org.readium.r2.shared.util
 
+import android.content.ContentResolver
+import android.net.Uri
 import java.io.File
-import java.net.URL
-import org.readium.r2.shared.extensions.extension
 import org.readium.r2.shared.extensions.tryOrNull
 
 /**
  * A Uniform Resource Locator.
  */
 @JvmInline
-value class Url internal constructor(internal val url: URL) {
+value class Url private constructor(internal val uri: Uri) {
 
-    val protocol: String
-        get() = url.protocol
+    val scheme: String
+        get() = uri.scheme!!
 
     val authority: String
-        get() = url.authority
+        get() = uri.authority!!
 
     val path: String
-        get() = url.path
+        get() = uri.path!!
 
-    val file: String
-        get() = url.file
+    val filename: String
+        get() = File(path).name
 
-    val extension: String?
-        get() = url.extension
+    val extension: String
+        get() = File(path).extension
 
     override fun toString(): String =
-        url.toString()
+        uri.toString()
 
     companion object {
 
         operator fun invoke(url: String): Url? =
-            tryOrNull { Url(URL(url)) }
+            invoke(Uri.parse(url))
+
+        internal operator fun invoke(uri: Uri): Url? =
+            tryOrNull {
+                requireNotNull(uri.scheme)
+                requireNotNull(uri.authority)
+                requireNotNull(uri.path)
+                Url(uri)
+            }
     }
 }
 
-fun Url.toURL(): URL =
-    url
-
 fun Url.isFile(): Boolean =
-    protocol == "file"
-
-fun Url.readBytes() = url.openStream().use { it.readBytes() }
+    scheme == "file"
 
 fun File.toUrl(): Url =
-    Url(toURI().toURL()!!)
+    Url(
+        Uri.Builder()
+            .appendPath(path)
+            .authority("")
+            .scheme(ContentResolver.SCHEME_FILE)
+            .build()
+    )!!
+
+fun Uri.toUrl(): Url? =
+    Url.invoke(this)
+
+fun Url.toUri() =
+    uri

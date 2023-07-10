@@ -16,9 +16,10 @@ import kotlin.reflect.KClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.PdfSupport
+import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.use
@@ -89,19 +90,19 @@ class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<PdfiumDocumen
     override suspend fun open(file: File, password: String?): PdfiumDocument =
         core.fromFile(file, password)
 
-    override suspend fun open(resource: Resource, password: String?): PdfiumDocument {
+    override suspend fun open(resource: Fetcher.Resource, password: String?): PdfiumDocument {
         // First try to open the resource as a file on the FS for performance improvement, as
         // PDFium requires the whole PDF document to be loaded in memory when using raw bytes.
         return resource.openAsFile(password)
             ?: resource.openBytes(password)
     }
 
-    private suspend fun Resource.openAsFile(password: String?): PdfiumDocument? =
+    private suspend fun Fetcher.Resource.openAsFile(password: String?): PdfiumDocument? =
         file?.let {
             tryOrNull { open(it, password) }
         }
 
-    private suspend fun Resource.openBytes(password: String?): PdfiumDocument =
+    private suspend fun Fetcher.Resource.openBytes(password: String?): PdfiumDocument =
         use {
             core.fromBytes(read().getOrThrow(), password)
         }

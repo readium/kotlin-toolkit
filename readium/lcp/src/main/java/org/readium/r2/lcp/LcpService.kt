@@ -11,7 +11,11 @@ package org.readium.r2.lcp
 
 import android.content.Context
 import java.io.File
-import kotlinx.coroutines.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.auth.LcpDialogAuthentication
 import org.readium.r2.lcp.persistence.LcpDatabase
 import org.readium.r2.lcp.service.CRLService
@@ -23,15 +27,15 @@ import org.readium.r2.lcp.service.LicensesService
 import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.PassphrasesRepository
 import org.readium.r2.lcp.service.PassphrasesService
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.ContentProtection
-import org.readium.r2.shared.publication.asset.PublicationAsset
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.archive.ArchiveFactory
-import org.readium.r2.shared.util.archive.DefaultArchiveFactory
-import org.readium.r2.shared.util.http.DefaultHttpClient
-import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.asset.Asset
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.publication.protection.ContentProtection
+import org.readium.r2.shared.resource.ArchiveFactory
+import org.readium.r2.shared.resource.DefaultArchiveFactory
+import org.readium.r2.shared.resource.FileResourceFactory
+import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * Service used to acquire and open publications protected with LCP.
@@ -39,9 +43,14 @@ import org.readium.r2.shared.util.mediatype.MediaType
 interface LcpService {
 
     /**
-     * Returns if the publication is protected by LCP.
+     * Returns if the file is a LCP license document or a publication protected by LCP.
      */
     suspend fun isLcpProtected(file: File): Boolean
+
+    /**
+     * Returns if the asset is a LCP license document or a publication protected by LCP.
+     */
+    suspend fun isLcpProtected(asset: Asset): Boolean
 
     /**
      * Acquires a protected publication from a standalone LCPL's bytes.
@@ -80,6 +89,7 @@ interface LcpService {
      */
     suspend fun retrieveLicense(
         file: File,
+        mediaType: MediaType,
         authentication: LcpAuthenticating = LcpDialogAuthentication(),
         allowUserInteraction: Boolean,
         sender: Any? = null
@@ -87,7 +97,7 @@ interface LcpService {
 
     /**
      * Opens the LCP license of a protected publication, to access its DRM metadata and decipher
-     * its content. As the updated license cannot be stored through a [Fetcher],
+     * its content. As the updated license cannot be stored through a [Asset],
      * you'll get an exception if the license points to a LSD server that cannot be reached,
      * for instance because no Internet gateway is available.
      *
@@ -99,11 +109,10 @@ interface LcpService {
      *        presenting dialogs with [LcpAuthenticating].
      */
     suspend fun retrieveLicense(
-        fetcher: Fetcher,
-        mediaType: MediaType,
+        asset: Asset,
         authentication: LcpAuthenticating = LcpDialogAuthentication(),
         allowUserInteraction: Boolean,
-        sender: Any? = null
+        sender: Any?
     ): Try<LcpLicense, LcpException>
 
     /**
@@ -114,13 +123,9 @@ interface LcpService {
      * LCP license. The default implementation [LcpDialogAuthentication] presents a dialog to the
      * user to enter their passphrase.
      */
-    fun contentProtection(authentication: LcpAuthenticating = LcpDialogAuthentication()): ContentProtection =
-        LcpContentProtection(this, authentication)
-
-    /**
-     * Builds a [PublicationAsset] to open a LCP-protected publication from its license file.
-     */
-    suspend fun remoteAssetForLicense(license: File): Try<PublicationAsset, LcpException>
+    fun contentProtection(
+        authentication: LcpAuthenticating = LcpDialogAuthentication(),
+    ): ContentProtection
 
     /**
      * Information about an acquired publication protected with LCP.
@@ -145,8 +150,9 @@ interface LcpService {
          */
         operator fun invoke(
             context: Context,
-            archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
-            httpClient: HttpClient = DefaultHttpClient()
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
+            resourceFactory: ResourceFactory = FileResourceFactory(),
+            archiveFactory: ArchiveFactory = DefaultArchiveFactory()
         ): LcpService? {
             if (!LcpClient.isAvailable())
                 return null
@@ -166,8 +172,9 @@ interface LcpService {
                 network = network,
                 passphrases = passphrases,
                 context = context,
-                archiveFactory = archiveFactory,
-                httpClient = httpClient
+                mediaTypeRetriever = mediaTypeRetriever,
+                resourceFactory = resourceFactory,
+                archiveFactory = archiveFactory
             )
         }
 
@@ -175,7 +182,7 @@ interface LcpService {
         fun create(context: Context): LcpService? = invoke(context)
     }
 
-    @Deprecated("Use `acquirePublication()` with coroutines instead", ReplaceWith("acquirePublication(lcpl)"))
+    @Deprecated("Use `acquirePublication()` with coroutines instead", ReplaceWith("acquirePublication(lcpl)"), level = DeprecationLevel.ERROR)
     @DelicateCoroutinesApi
     fun importPublication(
         lcpl: ByteArray,
@@ -189,35 +196,20 @@ interface LcpService {
         }
     }
 
-    @Deprecated("Use `retrieveLicense()` with coroutines instead", ReplaceWith("retrieveLicense(File(publication), authentication, allowUserInteraction = true)"))
+    @Deprecated("Use `retrieveLicense()` with coroutines instead", ReplaceWith("retrieveLicense(File(publication), authentication, allowUserInteraction = true)"), level = DeprecationLevel.ERROR)
     @DelicateCoroutinesApi
     fun retrieveLicense(
         publication: String,
         authentication: LcpAuthenticating?,
         completion: (LcpLicense?, LcpException?) -> Unit
     ) {
-        GlobalScope.launch {
-            val result =
-                try {
-                    retrieveLicense(File(publication), authentication ?: LcpDialogAuthentication(), allowUserInteraction = true)
-                } catch (e: CancellationException) {
-                    null
-                }
-
-            if (result == null) {
-                completion(null, null)
-            } else {
-                result
-                    .onSuccess { completion(it, null) }
-                    .onFailure { completion(null, it) }
-            }
-        }
+        throw NotImplementedError()
     }
 }
 
-@Deprecated("Renamed to `LcpService()`", replaceWith = ReplaceWith("LcpService(context)"))
+@Deprecated("Renamed to `LcpService()`", replaceWith = ReplaceWith("LcpService(context)"), level = DeprecationLevel.ERROR)
 fun R2MakeLCPService(context: Context): LcpService =
     LcpService(context) ?: throw Exception("liblcp is missing on the classpath")
 
-@Deprecated("Renamed to `LcpService.AcquiredPublication`", replaceWith = ReplaceWith("LcpService.AcquiredPublication"))
+@Deprecated("Renamed to `LcpService.AcquiredPublication`", replaceWith = ReplaceWith("LcpService.AcquiredPublication"), level = DeprecationLevel.ERROR)
 typealias LCPImportedPublication = LcpService.AcquiredPublication

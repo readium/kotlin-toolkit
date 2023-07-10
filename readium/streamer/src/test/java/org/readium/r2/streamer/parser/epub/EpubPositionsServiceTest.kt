@@ -13,15 +13,15 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.fetcher.ResourceTry
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
-import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.ResourceTry
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -475,7 +475,7 @@ class EpubPositionsServiceTest {
 
             override suspend fun links(): List<Link> = emptyList()
 
-            override fun get(link: Link): Resource = object : Resource {
+            override fun get(link: Link): Fetcher.Resource = object : Fetcher.Resource {
                 override suspend fun link(): Link = link
 
                 override suspend fun length() = findResource(link.href)

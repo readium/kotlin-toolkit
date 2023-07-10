@@ -10,19 +10,12 @@
 package org.readium.r2.shared.fetcher
 
 import java.io.File
-import java.io.FileNotFoundException
-import java.io.RandomAccessFile
 import java.lang.ref.WeakReference
-import java.nio.channels.Channels
 import java.util.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.isLazyInitialized
-import org.readium.r2.shared.util.mediatype.MediaType
-import timber.log.Timber
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * Provides access to resources on the local file system.
@@ -30,12 +23,16 @@ import timber.log.Timber
  * [paths] contains the reachable local paths, indexed by the exposed HREF. Sub-paths are reachable
  * as well, to be able to access a whole directory.
  */
-class FileFetcher(private val paths: Map<String, File>) : Fetcher {
+class FileFetcher(
+    private val paths: Map<String, File>,
+    private val mediaTypeRetriever: MediaTypeRetriever
+) : Fetcher {
 
     /** Provides access to the given local [file] at [href]. */
-    constructor(href: String, file: File) : this(mapOf(href to file))
+    constructor(href: String, file: File, mediaTypeRetriever: MediaTypeRetriever) :
+        this(mapOf(href to file), mediaTypeRetriever)
 
-    private val openedResources: MutableList<WeakReference<Resource>> = LinkedList()
+    private val openedResources: MutableList<WeakReference<FileResource>> = LinkedList()
 
     override suspend fun links(): List<Link> =
         paths.toSortedMap().flatMap { (href, file) ->
@@ -46,14 +43,14 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
                     } else {
                         Link(
                             href = File(href, it.canonicalPath.removePrefix(file.canonicalPath)).canonicalPath,
-                            type = MediaType.ofFile(file, fileExtension = it.extension)?.toString()
+                            type = mediaTypeRetriever.retrieve(it)?.toString()
                         )
                     }
                 }
             }
         }
 
-    override fun get(link: Link): Resource {
+    override fun get(link: Link): Fetcher.Resource {
         val linkHref = link.href.addPrefix("/")
         for ((itemHref, itemFile) in paths) {
             @Suppress("NAME_SHADOWING")
@@ -72,93 +69,23 @@ class FileFetcher(private val paths: Map<String, File>) : Fetcher {
     }
 
     override suspend fun close() {
-        openedResources.mapNotNull(WeakReference<Resource>::get).forEach { it.close() }
+        openedResources.mapNotNull(WeakReference<FileResource>::get).forEach { it.close() }
         openedResources.clear()
     }
 
-    class FileResource(val link: Link, override val file: File) : Resource {
+    class FileResource(val link: Link, val resource: org.readium.r2.shared.resource.FileResource) :
+        Resource by resource, Fetcher.Resource {
 
-        private val randomAccessFile by lazy {
-            ResourceTry.catching {
-                RandomAccessFile(file, "r")
-            }
+        companion object {
+
+            operator fun invoke(link: Link, file: File): FileResource =
+                FileResource(link, org.readium.r2.shared.resource.FileResource(file))
         }
 
-        override suspend fun link(): Link = link
-
-        override suspend fun close() = withContext(Dispatchers.IO) {
-            if (::randomAccessFile.isLazyInitialized) {
-                randomAccessFile.onSuccess {
-                    try {
-                        it.close()
-                    } catch (e: java.lang.Exception) {
-                        Timber.e(e)
-                    }
-                }
-            }
-        }
-
-        override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
-            withContext(Dispatchers.IO) {
-                ResourceTry.catching {
-                    readSync(range)
-                }
-            }
-
-        private fun readSync(range: LongRange?): ByteArray {
-            if (range == null) {
-                return file.readBytes()
-            }
-
-            @Suppress("NAME_SHADOWING")
-            val range = range
-                .coerceFirstNonNegative()
-                .requireLengthFitInt()
-
-            if (range.isEmpty()) {
-                return ByteArray(0)
-            }
-
-            return randomAccessFile.getOrThrow().run {
-                channel.position(range.first)
-
-                // The stream must not be closed here because it would close the underlying
-                // [FileChannel] too. Instead, [close] is responsible for that.
-                Channels.newInputStream(channel).run {
-                    val length = range.last - range.first + 1
-                    read(length)
-                }
-            }
-        }
-
-        override suspend fun length(): ResourceTry<Long> =
-            metadataLength?.let { Try.success(it) }
-                ?: read().map { it.size.toLong() }
-
-        private val metadataLength: Long? =
-            try {
-                if (file.isFile)
-                    file.length()
-                else
-                    null
-            } catch (e: Exception) {
-                null
-            }
-
-        private inline fun <T> Try.Companion.catching(closure: () -> T): ResourceTry<T> =
-            try {
-                success(closure())
-            } catch (e: FileNotFoundException) {
-                failure(Resource.Exception.NotFound(e))
-            } catch (e: SecurityException) {
-                failure(Resource.Exception.Forbidden(e))
-            } catch (e: Exception) {
-                failure(Resource.Exception.wrap(e))
-            } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
-                failure(Resource.Exception.wrap(e))
-            }
+        override suspend fun link(): Link =
+            link
 
         override fun toString(): String =
-            "${javaClass.simpleName}(${file.path})"
+            "${javaClass.simpleName}(${resource.file.path})"
     }
 }

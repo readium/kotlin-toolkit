@@ -94,7 +94,7 @@ internal class EpubNavigatorViewModel(
         }
 
     private val googleFonts: List<FontFamily> =
-            emptyList()
+        emptyList()
 
     private val css = MutableStateFlow(
         ReadiumCss(

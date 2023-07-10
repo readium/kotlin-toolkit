@@ -7,10 +7,12 @@
 package org.readium.r2.navigator
 
 import android.graphics.PointF
+import android.view.View
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.media.MediaPlayback
 import org.readium.r2.navigator.preferences.Axis
 import org.readium.r2.navigator.preferences.ReadingProgression
@@ -105,17 +107,15 @@ interface NavigatorDelegate {
 interface VisualNavigator : Navigator {
 
     /**
+     * View displaying the publication.
+     */
+    val publicationView: View
+
+    /**
      * Current presentation rendered by the navigator.
      */
     @ExperimentalReadiumApi
     val presentation: StateFlow<Presentation>
-
-    /**
-     * Returns the [Locator] to the first content element that begins on the current screen.
-     */
-    @ExperimentalReadiumApi
-    suspend fun firstVisibleElementLocator(): Locator? =
-        currentLocator.value
 
     @ExperimentalReadiumApi
     interface Presentation {
@@ -135,43 +135,36 @@ interface VisualNavigator : Navigator {
         val axis: Axis
     }
 
+    /**
+     * Returns the [Locator] to the first content element that begins on the current screen.
+     */
+    @ExperimentalReadiumApi
+    suspend fun firstVisibleElementLocator(): Locator? =
+        currentLocator.value
+
+    /**
+     * Adds a new [InputListener] to receive touch, mouse or keyboard events.
+     *
+     * Registration order is critical, as listeners may consume the events and prevent others from
+     * receiving them.
+     */
+    @ExperimentalReadiumApi
+    fun addInputListener(listener: InputListener)
+
+    /**
+     * Removes a previously registered [InputListener].
+     */
+    @ExperimentalReadiumApi
+    fun removeInputListener(listener: InputListener)
+
     interface Listener : Navigator.Listener {
-        /**
-         * Called when the user tapped the content, but nothing handled the event internally (eg.
-         * by following an internal link).
-         *
-         * Can be used in the reading app to toggle the navigation bars, or switch to the
-         * previous/next page if the tapped occurred on the edges.
-         *
-         * The [point] is relative to the navigator's view.
-         */
+        @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
         fun onTap(point: PointF): Boolean = false
-
-        /**
-         * Called when the user starts dragging the content, but nothing handled the event
-         * internally.
-         *
-         * The points are relative to the navigator's view.
-         */
-        @ExperimentalDragGesture
+        @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
         fun onDragStart(startPoint: PointF, offset: PointF): Boolean = false
-
-        /**
-         * Called when the user continues dragging the content, but nothing handled the event
-         * internally.
-         *
-         * The points are relative to the navigator's view.
-         */
-        @ExperimentalDragGesture
+        @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
         fun onDragMove(startPoint: PointF, offset: PointF): Boolean = false
-
-        /**
-         * Called when the user stops dragging the content, but nothing handled the event
-         * internally.
-         *
-         * The points are relative to the navigator's view.
-         */
-        @ExperimentalDragGesture
+        @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
         fun onDragEnd(startPoint: PointF, offset: PointF): Boolean = false
     }
 

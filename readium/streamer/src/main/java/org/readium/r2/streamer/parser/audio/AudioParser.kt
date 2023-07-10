@@ -7,9 +7,12 @@
 package org.readium.r2.streamer.parser.audio
 
 import java.io.File
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.asset.PublicationAsset
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.extensions.guessTitle
@@ -25,18 +28,31 @@ import org.readium.r2.streamer.parser.PublicationParser
  */
 class AudioParser : PublicationParser {
 
-    override suspend fun parse(asset: PublicationAsset, warnings: WarningLogger?): Publication.Builder? {
+    override suspend fun parse(
+        asset: PublicationParser.Asset,
+        warnings: WarningLogger?
+    ): Try<Publication.Builder, PublicationParser.Error> {
 
-        if (!accepts(asset.mediaType, asset.fetcher))
-            return null
+        if (!asset.mediaType.matches(MediaType.ZAB) && !asset.mediaType.isAudio)
+            return Try.failure(PublicationParser.Error.FormatNotSupported())
 
-        val readingOrder = asset.fetcher.links()
-            .filter { link -> with(File(link.href)) { lowercasedExtension in audioExtensions && !isHiddenOrThumbs } }
-            .sortedBy(Link::href)
-            .toMutableList()
+        val readingOrder =
+            if (asset.mediaType.matches(MediaType.ZAB)) {
+                asset.fetcher.links()
+                    .filter { link -> zabCanContain(link.href) }
+                    .sortedBy(Link::href)
+                    .toMutableList()
+            } else {
+                listOfNotNull(
+                    asset.fetcher.links().firstOrNull()
+                )
+            }
 
-        if (readingOrder.isEmpty())
-            throw Exception("No audio file found in the publication.")
+        if (readingOrder.isEmpty()) {
+            return Try.failure(
+                PublicationParser.Error.ParsingFailed("No audio file found in the publication.")
+            )
+        }
 
         val title = asset.fetcher.guessTitle() ?: asset.name
 
@@ -48,29 +64,21 @@ class AudioParser : PublicationParser {
             readingOrder = readingOrder
         )
 
-        return Publication.Builder(
+        val publicationBuilder = Publication.Builder(
             manifest = manifest,
             fetcher = asset.fetcher,
             servicesBuilder = Publication.ServicesBuilder(
                 locator = AudioLocatorService.createFactory()
             )
         )
+
+        return Try.success(publicationBuilder)
     }
 
-    private suspend fun accepts(mediaType: MediaType, fetcher: Fetcher): Boolean {
-        if (mediaType == MediaType.ZAB)
-            return true
-
-        val allowedExtensions = audioExtensions +
-            listOf("asx", "bio", "m3u", "m3u8", "pla", "pls", "smil", "txt", "vlc", "wpl", "xspf", "zpl")
-
-        if (fetcher.links().filterNot { File(it.href).isHiddenOrThumbs }
-            .all { File(it.href).lowercasedExtension in allowedExtensions }
-        )
-            return true
-
-        return false
-    }
+    private fun zabCanContain(href: String): Boolean =
+        with(File(href)) {
+            lowercasedExtension in audioExtensions && !isHiddenOrThumbs
+        }
 
     private val audioExtensions = listOf(
         "aac", "aiff", "alac", "flac", "m4a", "m4b", "mp3",

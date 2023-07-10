@@ -1,65 +1,51 @@
 /*
- * Module: r2-shared-kotlin
- * Developers: Quentin Gliosca
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
-
 package org.readium.r2.shared.fetcher
 
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.shared.extensions.coerceIn
-import org.readium.r2.shared.extensions.requireLengthFitInt
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.ResourceTry
 
-sealed class BaseBytesResource(val link: Link, val bytes: suspend () -> ByteArray) : Resource {
+sealed class BaseBytesResource(
+    private val link: Link,
+    protected val resource: org.readium.r2.shared.resource.BytesResource
+) : Resource by resource, Fetcher.Resource {
 
-    private lateinit var _bytes: ByteArray
+    constructor(link: Link, bytes: suspend () -> ResourceTry<ByteArray>) :
+        this(link, org.readium.r2.shared.resource.BytesResource(bytes))
 
-    override suspend fun link(): Link = link
+    constructor(link: Link, bytes: ByteArray) :
+        this(link, { Try.success(bytes) })
 
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
-        try {
-            if (!::_bytes.isInitialized)
-                _bytes = bytes()
+    override suspend fun link(): Link =
+        link
 
-            if (range == null)
-                return Try.success(_bytes)
-
-            @Suppress("NAME_SHADOWING")
-            val range = range
-                .coerceIn(0L until _bytes.size)
-                .requireLengthFitInt()
-
-            return Try.success(_bytes.sliceArray(range.map(Long::toInt)))
-        } catch (e: Exception) {
-            return Try.failure(Resource.Exception.wrap(e))
-        }
-    }
-
-    override suspend fun length(): ResourceTry<Long> =
-        read().map { it.size.toLong() }
-
-    override suspend fun close() {}
+    override fun toString(): String =
+        "${javaClass.simpleName}(${runBlocking { length().successOrNull() }} bytes)"
 }
 
 /** Creates a Resource serving [ByteArray]. */
-class BytesResource(link: Link, bytes: suspend () -> ByteArray) : BaseBytesResource(link, bytes) {
+class BytesResource(
+    link: Link,
+    bytes: suspend () -> ByteArray
+) : BaseBytesResource(link, { Try.success(bytes()) }) {
 
     constructor(link: Link, bytes: ByteArray) : this(link, { bytes })
-
-    override fun toString(): String =
-        "${javaClass.simpleName}(${runBlocking { bytes().size }} bytes)"
 }
 
 /** Creates a Resource serving a [String]. */
-class StringResource(link: Link, string: suspend () -> String) : BaseBytesResource(link, { string().toByteArray() }) {
+class StringResource(
+    link: Link,
+    string: suspend () -> String
+) : BaseBytesResource(link, { Try.success(string()).map { it.toByteArray() } }) {
 
     constructor(link: Link, string: String) : this(link, { string })
 
     override fun toString(): String =
-        "${javaClass.simpleName}(${runBlocking { bytes().toString() }})"
+        "${javaClass.simpleName}(${runBlocking { resource.bytes().map { it.toString() } } })"
 }

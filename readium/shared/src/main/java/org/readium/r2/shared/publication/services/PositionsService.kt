@@ -13,7 +13,7 @@ import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.toJsonOrNull
-import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.toJSON
@@ -40,7 +40,7 @@ interface PositionsService : Publication.Service {
 
     override val links get() = listOf(positionsLink)
 
-    override fun get(link: Link): Resource? {
+    override fun get(link: Link): Fetcher.Resource? {
         if (link.href != positionsLink.href)
             return null
 
@@ -58,7 +58,7 @@ private suspend fun Publication.positionsFromManifest(): List<Locator> =
     links.firstWithMediaType(positionsLink.mediaType)
         ?.let { get(it) }
         ?.readAsString()
-        ?.getOrNull()
+        ?.successOrNull()
         ?.toJsonOrNull()
         ?.optJSONArray("positions")
         ?.mapNotNull { Locator.fromJSON(it as? JSONObject) }

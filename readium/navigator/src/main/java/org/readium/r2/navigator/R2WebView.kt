@@ -11,6 +11,7 @@ package org.readium.r2.navigator
 
 import android.content.Context
 import android.graphics.Rect
+import android.os.Build
 import android.util.AttributeSet
 import android.view.*
 import android.view.animation.Interpolator
@@ -189,7 +190,13 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     private fun initWebPager() {
         setWillNotDraw(false)
         descendantFocusability = ViewGroup.FOCUS_AFTER_DESCENDANTS
-        isFocusable = true
+
+        // Disable the focus overlay appearing when interacting with the keyboard.
+        // https://developer.android.com/about/versions/oreo/android-8.0-changes#ian
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            defaultFocusHighlightEnabled = false
+        }
+
         val context = context
         mScroller = Scroller(context, sInterpolator)
         val configuration = ViewConfiguration.get(context)

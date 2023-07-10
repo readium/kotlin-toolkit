@@ -11,6 +11,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.annotation.ColorInt
+import androidx.annotation.StringRes
 import androidx.lifecycle.LiveData
 import java.io.File
 import java.io.FileOutputStream
@@ -23,15 +24,26 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.joda.time.DateTime
 import org.readium.r2.lcp.LcpService
+import org.readium.r2.shared.UserException
+import org.readium.r2.shared.asset.Asset
+import org.readium.r2.shared.asset.AssetRetriever
+import org.readium.r2.shared.asset.AssetType
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.flatMap
+import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
+import org.readium.r2.shared.publication.protection.ProtectionRetriever
 import org.readium.r2.shared.publication.services.cover
-import org.readium.r2.shared.util.*
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.streamer.Streamer
+import org.readium.r2.shared.util.toUrl
+import org.readium.r2.streamer.PublicationFactory
+import org.readium.r2.testapp.PublicationError
+import org.readium.r2.testapp.R
 import org.readium.r2.testapp.db.BooksDao
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.domain.model.Bookmark
@@ -45,8 +57,10 @@ class BookRepository(
     private val context: Context,
     private val booksDao: BooksDao,
     private val storageDir: File,
-    private val lcpService: Try<LcpService, Exception>,
-    private val streamer: Streamer,
+    private val lcpService: Try<LcpService, UserException>,
+    private val publicationFactory: PublicationFactory,
+    private val assetRetriever: AssetRetriever,
+    private val protectionRetriever: ProtectionRetriever,
 ) {
     private val coverDir: File =
         File(storageDir, "covers/")
@@ -109,6 +123,8 @@ class BookRepository(
     private suspend fun insertBookIntoDatabase(
         href: String,
         mediaType: MediaType,
+        assetType: AssetType,
+        drm: String?,
         publication: Publication,
         cover: String
     ): Long {
@@ -118,7 +134,9 @@ class BookRepository(
             author = publication.metadata.authorName,
             href = href,
             identifier = publication.metadata.identifier ?: "",
-            type = mediaType.toString(),
+            mediaType = mediaType,
+            assetType = assetType,
+            drm = drm,
             progression = "{}",
             cover = cover
         )
@@ -128,93 +146,142 @@ class BookRepository(
     private suspend fun deleteBookFromDatabase(id: Long) =
         booksDao.deleteBook(id)
 
-    sealed class ImportException(
-        message: String? = null,
-        cause: Throwable? = null
-    ) : Exception(message, cause) {
+    sealed class ImportError(
+        content: Content,
+        cause: Exception?
+    ) : UserException(content, cause) {
+
+        constructor(@StringRes userMessageId: Int) :
+            this(Content(userMessageId), null)
+
+        constructor(cause: UserException) :
+            this(Content(cause), cause)
 
         class LcpAcquisitionFailed(
-            cause: Throwable
-        ) : ImportException(cause = cause)
+            override val cause: UserException
+        ) : ImportError(cause)
 
-        object IOException : ImportException()
+        class PublicationError(
+            override val cause: UserException
+        ) : ImportError(cause) {
 
-        object ImportDatabaseFailed : ImportException()
+            companion object {
 
-        class UnableToOpenPublication(
-            val exception: Publication.OpeningException
-        ) : ImportException(cause = exception)
+                operator fun invoke(
+                    error: AssetRetriever.Error
+                ): ImportError = PublicationError(org.readium.r2.testapp.PublicationError(error))
 
-        class UnsupportedProtocol(
-            private val protocol: String
-        ) : ImportException()
+                operator fun invoke(
+                    error: Publication.OpeningException
+                ): ImportError = PublicationError(org.readium.r2.testapp.PublicationError(error))
+            }
+        }
+
+        class ImportBookFailed(
+            override val cause: Throwable
+        ) : ImportError(R.string.import_publication_unexpected_io_exception)
+
+        class ImportDatabaseFailed :
+            ImportError(R.string.import_publication_unable_add_pub_database)
     }
 
-    suspend fun addContentBook(
+    suspend fun importBook(
         contentUri: Uri
-    ): Try<Unit, ImportException> =
+    ): Try<Unit, ImportError> =
         contentUri.copyToTempFile(context, storageDir)
-            .mapFailure { ImportException.IOException }
+            .mapFailure { ImportError.ImportBookFailed(it) }
             .flatMap { addLocalBook(it) }
 
     suspend fun addRemoteBook(
         url: Url
-    ): Try<Unit, ImportException> {
-        val bytes = { url.readBytes() }
-        val mediaType = MediaType.ofBytes(bytes, fileExtension = url.extension)
-            ?: MediaType.BINARY
+    ): Try<Unit, ImportError> {
+        val asset = assetRetriever.retrieve(url, fileExtension = url.extension)
+            ?: return Try.failure(
+                ImportError.PublicationError(
+                    PublicationError.UnsupportedPublication(Publication.OpeningException.UnsupportedAsset())
+                )
+            )
+        return addBook(url, asset)
+    }
 
-        return addBook(url, mediaType)
+    suspend fun addSharedStorageBook(
+        url: Url,
+        coverUrl: String? = null,
+    ): Try<Unit, ImportError> {
+        val asset = assetRetriever.retrieve(url)
+            ?: return Try.failure(
+                ImportError.PublicationError(
+                    PublicationError.UnsupportedPublication(
+                        Publication.OpeningException.UnsupportedAsset("Unsupported media type")
+                    )
+                )
+            )
+
+        return addBook(url, asset, coverUrl)
     }
 
     suspend fun addLocalBook(
         tempFile: File,
-        coverUrl: String? = null
-    ): Try<Unit, ImportException> {
-        val sourceMediaType = MediaType.ofFile(tempFile)
+        coverUrl: String? = null,
+    ): Try<Unit, ImportError> {
+        val sourceAsset = assetRetriever.retrieve(tempFile)
+            ?: return Try.failure(
+                ImportError.PublicationError(
+                    PublicationError.UnsupportedPublication(Publication.OpeningException.UnsupportedAsset())
+                )
+            )
 
-        val (publicationFile, mediaType) =
-            if (sourceMediaType != MediaType.LCP_LICENSE_DOCUMENT) {
-                tempFile to sourceMediaType
+        val (publicationTempFile, publicationTempAsset) =
+            if (sourceAsset.mediaType != MediaType.LCP_LICENSE_DOCUMENT) {
+                tempFile to sourceAsset
             } else {
                 lcpService
                     .flatMap {
+                        sourceAsset.close()
                         it.acquirePublication(tempFile)
                     }
                     .fold(
                         {
                             val file = it.localFile
-                            val mediaType = MediaType.of(fileExtension = File(it.suggestedFilename).extension)
-                            file to mediaType
+                            val asset = assetRetriever.retrieve(file, fileExtension = File(it.suggestedFilename).extension)
+                            file to asset
                         },
                         {
                             tryOrNull { tempFile.delete() }
-                            return Try.failure(ImportException.LcpAcquisitionFailed(it))
+                            return Try.failure(ImportError.LcpAcquisitionFailed(it))
                         }
                     )
             }
 
-        if (mediaType == null) {
-            val exception = Publication.OpeningException.UnsupportedFormat(
-                Exception("Unsupported media type")
+        if (publicationTempAsset == null) {
+            val exception = Publication.OpeningException.UnsupportedAsset("Unsupported media type")
+            return Try.failure(
+                ImportError.PublicationError(
+                    PublicationError.UnsupportedPublication(exception)
+                )
             )
-            return Try.failure(ImportException.UnableToOpenPublication(exception))
         }
 
-        val fileName = "${UUID.randomUUID()}.${mediaType.fileExtension}"
+        val fileName = "${UUID.randomUUID()}.${publicationTempAsset.mediaType.fileExtension}"
         val libraryFile = File(storageDir, fileName)
         val libraryUrl = libraryFile.toUrl()
 
         try {
-            publicationFile.moveTo(libraryFile)
+            publicationTempFile.moveTo(libraryFile)
         } catch (e: Exception) {
             Timber.d(e)
             tryOrNull { libraryFile.delete() }
-            return Try.failure(ImportException.IOException)
+            return Try.failure(ImportError.ImportBookFailed(e))
         }
 
+        val libraryAsset = assetRetriever.retrieve(
+            libraryUrl,
+            publicationTempAsset.mediaType,
+            publicationTempAsset.assetType
+        ).getOrElse { return Try.failure(ImportError.PublicationError(it)) }
+
         return addBook(
-            libraryUrl, mediaType, coverUrl
+            libraryUrl, libraryAsset, coverUrl
         ).onFailure {
             tryOrNull { libraryFile.delete() }
         }
@@ -222,32 +289,46 @@ class BookRepository(
 
     private suspend fun addBook(
         url: Url,
-        mediaType: MediaType,
+        asset: Asset,
         coverUrl: String? = null,
-    ): Try<Unit, ImportException> {
-        streamer.open(url, mediaType, allowUserInteraction = false)
-            .onSuccess { publication ->
-                val coverBitmap: Bitmap? = coverUrl
-                    ?.let { getBitmapFromURL(it) }
-                    ?: publication.cover()
-                val coverFile =
-                    tryOrNull { storeCover(coverBitmap) }
-                        ?: return Try.failure(ImportException.IOException)
+    ): Try<Unit, ImportError> {
+        val drmScheme =
+            protectionRetriever.retrieve(asset)
+                ?.uri
 
-                val id = insertBookIntoDatabase(
-                    url.toString(),
-                    mediaType,
-                    publication,
-                    coverFile.path
-                )
-                if (id == -1L) {
-                    coverFile.delete()
-                    return Try.failure(ImportException.ImportDatabaseFailed)
+        publicationFactory.open(
+            asset,
+            drmScheme = drmScheme,
+            allowUserInteraction = false
+        ).onSuccess { publication ->
+            val coverBitmap: Bitmap? = coverUrl
+                ?.let { getBitmapFromURL(it) }
+                ?: publication.cover()
+            val coverFile =
+                try {
+                    storeCover(coverBitmap)
+                } catch (e: Exception) {
+                    return Try.failure(ImportError.ImportBookFailed(e))
                 }
+
+            val id = insertBookIntoDatabase(
+                url.toString(),
+                asset.mediaType,
+                asset.assetType,
+                drmScheme,
+                publication,
+                coverFile.path
+            )
+            if (id == -1L) {
+                coverFile.delete()
+                return Try.failure(ImportError.ImportDatabaseFailed())
             }
+        }
             .onFailure {
-                Timber.d(it)
-                return Try.failure(ImportException.UnableToOpenPublication(it))
+                Timber.d("Cannot open publication: $it.")
+                return Try.failure(
+                    ImportError.PublicationError(PublicationError(it))
+                )
             }
 
         return Try.success(Unit)
@@ -281,8 +362,8 @@ class BookRepository(
 
     suspend fun deleteBook(book: Book) {
         val id = book.id!!
-        val url = URL(book.href)
-        if (url.protocol == "file") {
+        val url = Url(book.href)!!
+        if (url.scheme == "file") {
             tryOrLog { File(url.path).delete() }
         }
         File(book.cover).delete()
