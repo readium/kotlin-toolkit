@@ -39,7 +39,7 @@ interface IR2Activity {
     fun highlightAnnotationMarkActivated(id: String) {}
 }
 
-@Deprecated("Use ImageNavigatorFragment.", level = DeprecationLevel.ERROR)
+@Deprecated("Use TtsNavigator.", level = DeprecationLevel.ERROR)
 interface IR2TTS {
     fun playTextChanged(text: String) {}
     fun playStateChanged(playing: Boolean) {}

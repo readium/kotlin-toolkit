@@ -285,7 +285,7 @@ class EpubNavigatorFragment internal constructor(
     private lateinit var resourcesDouble: List<PageResource>
 
     @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-    val preferences: SharedPreferences get() = TODO()
+    val preferences: SharedPreferences get() = throw NotImplementedError()
 
     internal lateinit var publicationIdentifier: String
 
@@ -357,7 +357,12 @@ class EpubNavigatorFragment internal constructor(
                 }
                 // add last page if there is only a left page remaining
                 if (doublePageLeft != null) {
-                    resourcesDouble.add(PageResource.EpubFxl(leftLink = doublePageLeft, leftUrl = viewModel.urlTo(doublePageLeft)))
+                    resourcesDouble.add(
+                        PageResource.EpubFxl(
+                            leftLink = doublePageLeft,
+                            leftUrl = viewModel.urlTo(doublePageLeft)
+                        )
+                    )
                 }
 
                 this.resourcesSingle = resourcesSingle
@@ -560,8 +565,10 @@ class EpubNavigatorFragment internal constructor(
         fun setCurrent(resources: List<PageResource>) {
             val page = resources.withIndex().firstOrNull { (_, res) ->
                 when (res) {
-                    is PageResource.EpubReflowable -> res.link.href == href
-                    is PageResource.EpubFxl -> res.leftUrl?.endsWith(href) == true || res.rightUrl?.endsWith(href) == true
+                    is PageResource.EpubReflowable ->
+                        res.link.href == href
+                    is PageResource.EpubFxl ->
+                        res.leftUrl?.endsWith(href) == true || res.rightUrl?.endsWith(href) == true
                     else -> false
                 }
             } ?: return
@@ -627,7 +634,8 @@ class EpubNavigatorFragment internal constructor(
     override val publicationView: View
         get() = requireView()
 
-    override val presentation: StateFlow<VisualNavigator.Presentation> get() = viewModel.presentation
+    override val presentation: StateFlow<VisualNavigator.Presentation>
+    get() = viewModel.presentation
 
     override val readingProgression: PublicationReadingProgression
         get() = throw NotImplementedError()
