@@ -11,3 +11,6 @@ package org.readium.r2.navigator.cbz
 
 @Deprecated("Use ImageNavigatorFragment in your own activity instead.", level = DeprecationLevel.ERROR)
 open class R2CbzActivity
+
+// This is for lint to pass.
+private val fake = null

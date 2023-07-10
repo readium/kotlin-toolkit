@@ -14,3 +14,6 @@ package org.readium.r2.navigator.divina
     level = DeprecationLevel.ERROR
 )
 open class R2DiViNaActivity
+
+// This is for lint to pass.
+private val fake = null

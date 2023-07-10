@@ -22,7 +22,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.readium.r2.navigator.databinding.ReadiumViewpagerFragmentCbzBinding
+import org.readium.r2.navigator.databinding.ReadiumNavigatorViewpagerFragmentCbzBinding
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 
@@ -41,7 +41,7 @@ class R2CbzPageFragment(
     private lateinit var containerView: View
     private lateinit var photoView: PhotoView
 
-    private var _binding: ReadiumViewpagerFragmentCbzBinding? = null
+    private var _binding: ReadiumNavigatorViewpagerFragmentCbzBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -50,7 +50,7 @@ class R2CbzPageFragment(
         savedInstanceState: Bundle?
     ): View? {
 
-        _binding = ReadiumViewpagerFragmentCbzBinding.inflate(inflater, container, false)
+        _binding = ReadiumNavigatorViewpagerFragmentCbzBinding.inflate(inflater, container, false)
         containerView = binding.root
         photoView = binding.imageView
         photoView.setOnViewTapListener { _, x, y -> onTapListener(x, y) }

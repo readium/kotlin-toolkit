@@ -31,7 +31,7 @@ import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.R2BasicWebView
 import org.readium.r2.navigator.R2WebView
-import org.readium.r2.navigator.databinding.ReadiumViewpagerFragmentEpubBinding
+import org.readium.r2.navigator.databinding.ReadiumNavigatorViewpagerFragmentEpubBinding
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel
 import org.readium.r2.navigator.extensions.htmlId
@@ -62,7 +62,7 @@ class R2EpubPageFragment : Fragment() {
     private lateinit var preferences: SharedPreferences
     private val viewModel: EpubNavigatorViewModel by viewModels(ownerProducer = { requireParentFragment() })
 
-    private var _binding: ReadiumViewpagerFragmentEpubBinding? = null
+    private var _binding: ReadiumNavigatorViewpagerFragmentEpubBinding? = null
     private val binding get() = _binding!!
 
     private var isLoading: Boolean = false
@@ -125,7 +125,7 @@ class R2EpubPageFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = ReadiumViewpagerFragmentEpubBinding.inflate(inflater, container, false)
+        _binding = ReadiumNavigatorViewpagerFragmentEpubBinding.inflate(inflater, container, false)
         containerView = binding.root
         preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
 
