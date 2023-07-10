@@ -238,7 +238,6 @@ class BookRepository(
                 lcpService
                     .flatMap {
                         sourceAsset.close()
-                        // FIXME: Zipfile duplicate entry with All's Well that Ends well
                         it.acquirePublication(tempFile)
                     }
                     .fold(

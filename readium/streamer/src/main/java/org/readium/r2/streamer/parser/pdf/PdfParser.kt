@@ -40,7 +40,7 @@ class PdfParser(
 
         val fileHref = asset.fetcher.links().firstOrNull()?.href
             ?: return Try.failure(
-                PublicationParser.Error.ParsingFailed("Unable to find PDF file.")
+                PublicationParser.Error.ParsingFailed("No PDF found in the publication.")
             )
         val document = pdfFactory.open(asset.fetcher.get(fileHref), password = null)
         val tableOfContents = document.outline.toLinks(fileHref)

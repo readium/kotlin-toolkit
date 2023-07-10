@@ -39,7 +39,7 @@ class AudioParser : PublicationParser {
         val readingOrder =
             if (asset.mediaType.matches(MediaType.ZAB)) {
                 asset.fetcher.links()
-                    .filter { link -> with(File(link.href)) { lowercasedExtension in audioExtensions && !isHiddenOrThumbs } }
+                    .filter { link -> zabCanContain(link.href) }
                     .sortedBy(Link::href)
                     .toMutableList()
             } else {
@@ -74,6 +74,11 @@ class AudioParser : PublicationParser {
 
         return Try.success(publicationBuilder)
     }
+
+    private fun zabCanContain(href: String): Boolean =
+        with(File(href)) {
+            lowercasedExtension in audioExtensions && !isHiddenOrThumbs
+        }
 
     private val audioExtensions = listOf(
         "aac", "aiff", "alac", "flac", "m4a", "m4b", "mp3",

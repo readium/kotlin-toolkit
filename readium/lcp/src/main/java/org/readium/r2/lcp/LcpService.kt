@@ -43,10 +43,13 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 interface LcpService {
 
     /**
-     * Returns if the publication is protected by LCP.
+     * Returns if the file is a LCP license document or a publication protected by LCP.
      */
     suspend fun isLcpProtected(file: File): Boolean
 
+    /**
+     * Returns if the asset is a LCP license document or a publication protected by LCP.
+     */
     suspend fun isLcpProtected(asset: Asset): Boolean
 
     /**
@@ -200,7 +203,7 @@ interface LcpService {
         authentication: LcpAuthenticating?,
         completion: (LcpLicense?, LcpException?) -> Unit
     ) {
-        TODO()
+        throw NotImplementedError()
     }
 }
 

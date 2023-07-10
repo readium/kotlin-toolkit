@@ -138,8 +138,8 @@ class DefaultHttpClient(
 
                         // Reads the full body, since it might contain an error representation such as
                         // JSON Problem Details or OPDS Authentication Document
-                        val body = connection.errorStream.use { it.readBytes() }
-                        val mediaType = connection.sniffMediaType(bytes = { body })
+                        val body = connection.errorStream?.use { it.readBytes() }
+                        val mediaType = body?.let { connection.sniffMediaType(bytes = { it }) }
                         throw HttpException(kind, mediaType, body)
                     }
 
