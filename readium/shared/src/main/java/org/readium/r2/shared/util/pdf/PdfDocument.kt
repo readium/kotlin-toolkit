@@ -89,7 +89,7 @@ interface PdfDocument : SuspendingCloseable {
     /**
      * Default reading progression of the document.
      */
-    val readingProgression: ReadingProgression get() = ReadingProgression.AUTO
+    val readingProgression: ReadingProgression? get() = null
 
     /**
      * The first page rendered as a cover.

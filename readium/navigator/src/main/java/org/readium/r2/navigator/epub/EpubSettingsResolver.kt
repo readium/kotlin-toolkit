@@ -64,6 +64,7 @@ internal class EpubSettingsResolver(
         val rpPref = preferences.readingProgression
         val langPref = preferences.language
         val metadataLanguage = metadata.language
+        val metadataReadingProgression = metadata.readingProgression
 
         // Compute language according to the following rule:
         // preference value > metadata value > default value > null
@@ -80,10 +81,10 @@ internal class EpubSettingsResolver(
                 rpPref
             langPref != null ->
                 if (langPref.isRtl) ReadingProgression.RTL else ReadingProgression.LTR
-            metadata.readingProgression.isHorizontal == true ->
-                when (metadata.readingProgression) {
+            metadataReadingProgression != null ->
+                when (metadataReadingProgression) {
                     PublicationReadingProgression.RTL -> ReadingProgression.RTL
-                    else -> ReadingProgression.LTR
+                    PublicationReadingProgression.LTR -> ReadingProgression.LTR
                 }
             metadataLanguage != null ->
                 if (metadataLanguage.isRtl) ReadingProgression.RTL else ReadingProgression.LTR

@@ -13,9 +13,6 @@ import android.net.Uri
 import android.os.Parcelable
 import java.net.URL
 import kotlin.reflect.KClass
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.*
@@ -39,6 +36,7 @@ import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Closeable
+import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.mediatype.MediaType
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
@@ -166,16 +164,9 @@ class Publication(
     /**
      * Closes any opened resource associated with the [Publication], including services.
      */
-    @OptIn(DelicateCoroutinesApi::class)
-    // TODO Change this to be a suspend function
-    override fun close() {
-        GlobalScope.launch {
-            tryOrLog {
-                fetcher.close()
-            }
-
-            services.close()
-        }
+    override suspend fun close() {
+        fetcher.close()
+        services.close()
     }
 
     // PublicationServicesHolder
@@ -618,7 +609,7 @@ class Publication(
 /**
  * Holds [Publication.Service] instances for a [Publication].
  */
-interface PublicationServicesHolder {
+interface PublicationServicesHolder : SuspendingCloseable {
     /**
      * Returns the first publication service that is an instance of [serviceType].
      */
@@ -628,11 +619,6 @@ interface PublicationServicesHolder {
      * Returns all the publication services that are instances of [serviceType].
      */
     fun <T : Publication.Service> findServices(serviceType: KClass<T>): List<T>
-
-    /**
-     * Closes the publication services.
-     */
-    fun close()
 }
 
 internal class ListPublicationServicesHolder(
@@ -644,7 +630,7 @@ internal class ListPublicationServicesHolder(
     override fun <T : Publication.Service> findServices(serviceType: KClass<T>): List<T> =
         services.filterIsInstance(serviceType.java)
 
-    override fun close() {
+    override suspend fun close() {
         for (service in services) {
             tryOrLog { service.close() }
         }

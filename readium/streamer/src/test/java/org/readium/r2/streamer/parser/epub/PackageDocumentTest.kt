@@ -39,13 +39,13 @@ class ReadingProgressionTest {
     @Test
     fun `No page progression direction is mapped to default`() {
         assertThat(parsePackageDocument("package/progression-none.opf").metadata.readingProgression)
-            .isEqualTo(ReadingProgression.AUTO)
+            .isEqualTo(null)
     }
 
     @Test
     fun `Default page progression direction is rightly parsed`() {
         assertThat(parsePackageDocument("package/progression-default.opf").metadata.readingProgression)
-            .isEqualTo(ReadingProgression.AUTO)
+            .isEqualTo(null)
     }
 
     @Test

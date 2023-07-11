@@ -37,24 +37,9 @@ internal enum class ReadiumCssLayout(val cssId: String) {
          * [readingProgression].
          * Defaults to [LTR].
          */
+        @Suppress("UNUSED_PARAMETER")
         operator fun invoke(languages: List<String>, readingProgression: ReadingProgression): ReadiumCssLayout {
-            val isCjk: Boolean =
-                if (languages.size == 1) {
-                    val language = languages[0].split("-")[0] // Remove region
-                    listOf("zh", "ja", "ko").contains(language)
-                } else {
-                    false
-                }
-
-            return when (readingProgression) {
-                ReadingProgression.RTL, ReadingProgression.BTT ->
-                    if (isCjk) CJK_VERTICAL
-                    else RTL
-
-                ReadingProgression.LTR, ReadingProgression.TTB, ReadingProgression.AUTO ->
-                    if (isCjk) CJK_HORIZONTAL
-                    else LTR
-            }
+            throw NotImplementedError()
         }
     }
 }

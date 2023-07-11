@@ -18,7 +18,11 @@ import org.readium.r2.shared.fetcher.EmptyFetcher
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.Publication.Profile
-import org.readium.r2.shared.publication.services.*
+import org.readium.r2.shared.publication.services.DefaultLocatorService
+import org.readium.r2.shared.publication.services.PositionsService
+import org.readium.r2.shared.publication.services.WebPositionsService
+import org.readium.r2.shared.publication.services.positions
+import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -28,7 +32,7 @@ class PublicationTest {
         conformsTo: Set<Profile> = emptySet(),
         title: String = "Title",
         language: String = "en",
-        readingProgression: ReadingProgression = ReadingProgression.AUTO,
+        readingProgression: ReadingProgression? = null,
         links: List<Link> = listOf(),
         readingOrder: List<Link> = emptyList(),
         resources: List<Link> = emptyList(),

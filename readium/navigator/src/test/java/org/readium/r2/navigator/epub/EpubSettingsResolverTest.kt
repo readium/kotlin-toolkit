@@ -29,7 +29,7 @@ class EpubSettingsResolverTest {
 
     private fun resolveLayout(
         languages: List<String> = emptyList(),
-        readingProgression: PublicationReadingProgression = PublicationReadingProgression.AUTO,
+        readingProgression: PublicationReadingProgression? = null,
         defaults: EpubDefaults = EpubDefaults(),
         preferences: EpubPreferences = EpubPreferences()
     ): Layout {
