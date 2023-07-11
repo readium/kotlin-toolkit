@@ -100,7 +100,7 @@ class ImageNavigatorFragment private constructor(
 
         preferences = requireContext().getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
         resourcePager = binding.resourcePager
-        resourcePager.type = Publication.TYPE.CBZ
+        resourcePager.publicationType = R2ViewPager.PublicationType.CBZ
 
         positions = runBlocking { publication.positions() }
 

@@ -422,9 +422,9 @@ class EpubNavigatorFragment internal constructor(
 
         resourcePager = R2ViewPager(requireContext())
         resourcePager.id = R.id.resourcePager
-        resourcePager.type = when (publication.metadata.presentation.layout) {
-            EpubLayout.REFLOWABLE, null -> Publication.TYPE.EPUB
-            EpubLayout.FIXED -> Publication.TYPE.FXL
+        resourcePager.publicationType = when (publication.metadata.presentation.layout) {
+            EpubLayout.REFLOWABLE, null -> R2ViewPager.PublicationType.EPUB
+            EpubLayout.FIXED -> R2ViewPager.PublicationType.FXL
         }
         resourcePager.setBackgroundColor(viewModel.settings.value.effectiveBackgroundColor)
         // Let the page views handle the keyboard events.
@@ -635,7 +635,7 @@ class EpubNavigatorFragment internal constructor(
         get() = requireView()
 
     override val presentation: StateFlow<VisualNavigator.Presentation>
-    get() = viewModel.presentation
+        get() = viewModel.presentation
 
     override val readingProgression: PublicationReadingProgression
         get() = throw NotImplementedError()

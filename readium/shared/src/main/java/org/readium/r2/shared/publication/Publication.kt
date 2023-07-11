@@ -12,7 +12,6 @@ package org.readium.r2.shared.publication
 import android.net.Uri
 import android.os.Parcelable
 import java.net.URL
-import java.net.URLEncoder
 import kotlin.reflect.KClass
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -36,10 +35,10 @@ import org.readium.r2.shared.publication.services.CoverService
 import org.readium.r2.shared.publication.services.DefaultLocatorService
 import org.readium.r2.shared.publication.services.LocatorService
 import org.readium.r2.shared.publication.services.PositionsService
+import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.util.Closeable
-import org.readium.r2.shared.util.Ref
 import org.readium.r2.shared.util.mediatype.MediaType
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
@@ -68,25 +67,19 @@ class Publication(
     manifest: Manifest,
     private val fetcher: Fetcher = EmptyFetcher(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
-    // FIXME: To refactor after specifying the User and Rendition Settings API
-    @Deprecated("Migrate to the new Settings API (see migration guide)")
+    @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
     var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(),
-    @Deprecated("Migrate to the new Settings API (see migration guide)")
+    @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
     var cssStyle: String? = null,
 ) : PublicationServicesHolder {
 
     private val _manifest: Manifest
+
     private val services = ListPublicationServicesHolder()
 
     init {
-        // We use a Ref<Publication> instead of passing directly `this` to the services to prevent
-        // them from using the Publication before it is fully initialized.
-        val pubRef = Ref<Publication>()
-
-        services.services = servicesBuilder.build(Service.Context(pubRef, manifest, fetcher, services))
+        services.services = servicesBuilder.build(Service.Context(manifest, fetcher, services))
         _manifest = manifest.copy(links = manifest.links + services.services.map(Service::links).flatten())
-
-        pubRef.ref = this
     }
 
     // Shortcuts to manifest properties
@@ -106,12 +99,8 @@ class Publication(
 
     val subcollections: Map<String, List<PublicationCollection>> get() = _manifest.subcollections
 
-    @Deprecated("Use conformsTo() to check the kind of a publication.", level = DeprecationLevel.WARNING)
-    var type: TYPE = when {
-        metadata.type == "http://schema.org/Audiobook" || readingOrder.allAreAudio -> TYPE.AUDIO
-        readingOrder.allAreBitmap -> TYPE.DiViNa
-        else -> TYPE.WEBPUB
-    }
+    @Deprecated("Use conformsTo() to check the kind of a publication.", level = DeprecationLevel.ERROR)
+    var type: TYPE = TYPE.EPUB
 
     @Deprecated("Version is not available any more.", level = DeprecationLevel.ERROR)
     var version: Double = 0.0
@@ -197,10 +186,20 @@ class Publication(
     override fun <T : Service> findServices(serviceType: KClass<T>): List<T> =
         services.findServices(serviceType)
 
+    @Deprecated(
+        "Use Publication.Profile ",
+        replaceWith = ReplaceWith("Publication.Profile"),
+        level = DeprecationLevel.WARNING
+    )
     enum class TYPE {
-        EPUB, CBZ, FXL, WEBPUB, AUDIO, DiViNa
+        EPUB
     }
 
+    @Deprecated(
+        "Use Publication.Profile ",
+        replaceWith = ReplaceWith("Publication.Profile"),
+        level = DeprecationLevel.ERROR
+    )
     enum class EXTENSION(var value: String) {
         EPUB(".epub"),
         CBZ(".cbz"),
@@ -209,11 +208,6 @@ class Publication(
         AUDIO(".audiobook"),
         LCPL(".lcpl"),
         UNKNOWN("");
-
-        companion object {
-            fun fromString(type: String): EXTENSION? =
-                values().firstOrNull { it.value == type }
-        }
     }
 
     /**
@@ -243,22 +237,20 @@ class Publication(
          * Server, and set in the self [Link]. Unfortunately, the self [Link] is not available
          * in the navigator at the moment without changing the code in reading apps.
          */
-        @Deprecated("The HTTP server is not needed anymore (see migration guide)")
+        @Suppress("UNUSED_PARAMETER")
+        @Deprecated("The HTTP server is not needed anymore (see migration guide)", level = DeprecationLevel.ERROR)
         fun localBaseUrlOf(filename: String, port: Int): String {
-            val sanitizedFilename = filename
-                .removePrefix("/")
-                .hash(HashAlgorithm.MD5)
-                .let { URLEncoder.encode(it, "UTF-8") }
-
-            return "http://127.0.0.1:$port/$sanitizedFilename"
+            throw NotImplementedError()
         }
 
         /**
          * Gets the absolute URL of a resource locally served through HTTP.
          */
-        @Deprecated("The HTTP server is not needed anymore (see migration guide)")
-        fun localUrlOf(filename: String, port: Int, href: String): String =
-            localBaseUrlOf(filename, port) + href
+        @Suppress("UNUSED_PARAMETER")
+        @Deprecated("The HTTP server is not needed anymore (see migration guide)", level = DeprecationLevel.ERROR)
+        fun localUrlOf(filename: String, port: Int, href: String): String {
+            throw NotImplementedError()
+        }
 
         @Suppress("UNUSED_PARAMETER")
         @Deprecated(
@@ -304,16 +296,8 @@ class Publication(
 
         /**
          * Container for the context from which a service is created.
-         *
-         * @param publication Reference to the parent publication.
-         *        Don't store directly the referenced publication, always access it through the
-         *        [Ref] property. The publication won't be set when the service is created or when
-         *        calling [Service.links], but you can use it during regular service operations. If
-         *        you need to initialize your service differently depending on the publication, use
-         *        `manifest`.
          */
         class Context(
-            val publication: Ref<Publication>,
             val manifest: Manifest,
             val fetcher: Fetcher,
             val services: PublicationServicesHolder
@@ -377,7 +361,7 @@ class Publication(
             content: ServiceFactory? = null,
             contentProtection: ServiceFactory? = null,
             cover: ServiceFactory? = null,
-            locator: ServiceFactory? = { DefaultLocatorService(it.manifest.readingOrder, it.services) },
+            locator: ServiceFactory? = null,
             positions: ServiceFactory? = null,
             search: ServiceFactory? = null,
         ) : this(
@@ -393,7 +377,27 @@ class Publication(
         )
 
         /** Builds the actual list of publication services to use in a Publication. */
-        fun build(context: Service.Context): List<Service> = serviceFactories.values.mapNotNull { it(context) }
+        fun build(context: Service.Context): List<Service> {
+            val serviceFactories =
+                buildMap<String, ServiceFactory> {
+                    putAll(this@ServicesBuilder.serviceFactories)
+
+                    if (!containsKey(LocatorService::class.java.simpleName)) {
+                        val factory: ServiceFactory = {
+                            DefaultLocatorService(it.manifest.readingOrder, it.services)
+                        }
+                        put(LocatorService::class.java.simpleName, factory)
+                    }
+
+                    if (!containsKey(PositionsService::class.java.simpleName)) {
+                        val factory = WebPositionsService.createFactory()
+                        put(PositionsService::class.java.simpleName, factory)
+                    }
+                }
+
+            return serviceFactories.values
+                .mapNotNull { it(context) }
+        }
 
         /** Gets the publication service factory for the given service type. */
         operator fun <T : Service> get(serviceType: KClass<T>): ServiceFactory? {
@@ -530,7 +534,7 @@ class Publication(
     /**
      * Finds the first [Link] to the publication's cover (rel = cover).
      */
-    @Deprecated("Use [Publication.cover] to get the cover as a [Bitmap]", ReplaceWith("cover"))
+    @Deprecated("Use [Publication.cover] to get the cover as a [Bitmap]", ReplaceWith("cover"), level = DeprecationLevel.ERROR)
     val coverLink: Link? get() = linkWithRel("cover")
 
     /**
@@ -540,26 +544,26 @@ class Publication(
      */
     @Suppress("DEPRECATION", "UNUSED_PARAMETER")
     @Deprecated("Use [Publication.copy(serviceFactories)] instead", ReplaceWith("Publication.copy(serviceFactories = listOf(positionsServiceFactory)"), level = DeprecationLevel.ERROR)
-    fun copyWithPositionsFactory(createFactory: Publication.() -> PositionListFactory): Publication {
+    fun copyWithPositionsFactory(): Publication {
         throw NotImplementedError()
     }
 
-    @Deprecated("Renamed to [listOfAudioClips]", ReplaceWith("listOfAudioClips"))
+    @Deprecated("Renamed to [listOfAudioClips]", ReplaceWith("listOfAudioClips"), level = DeprecationLevel.ERROR)
     val listOfAudioFiles: List<Link> = listOfAudioClips
 
-    @Deprecated("Renamed to [listOfVideoClips]", ReplaceWith("listOfVideoClips"))
+    @Deprecated("Renamed to [listOfVideoClips]", ReplaceWith("listOfVideoClips"), level = DeprecationLevel.ERROR)
     val listOfVideos: List<Link> = listOfVideoClips
 
-    @Deprecated("Renamed to [linkWithHref]", ReplaceWith("linkWithHref(href)"))
+    @Deprecated("Renamed to [linkWithHref]", ReplaceWith("linkWithHref(href)"), level = DeprecationLevel.ERROR)
     fun resource(href: String): Link? = linkWithHref(href)
 
-    @Deprecated("Refactored as a property", ReplaceWith("baseUrl"))
+    @Deprecated("Refactored as a property", ReplaceWith("baseUrl"), level = DeprecationLevel.ERROR)
     fun baseUrl(): URL? = baseUrl
 
-    @Deprecated("Renamed [subcollections]", ReplaceWith("subcollections"))
+    @Deprecated("Renamed [subcollections]", ReplaceWith("subcollections"), level = DeprecationLevel.ERROR)
     val otherCollections: Map<String, List<PublicationCollection>> get() = subcollections
 
-    @Deprecated("Use [setSelfLink] instead", ReplaceWith("setSelfLink"))
+    @Deprecated("Use [setSelfLink] instead", ReplaceWith("setSelfLink"), level = DeprecationLevel.ERROR)
     fun addSelfLink(endPoint: String, baseURL: URL) {
         setSelfLink(
             Uri.parse(baseURL.toString())
@@ -573,7 +577,7 @@ class Publication(
     /**
      * Finds the first resource [Link] (asset or [readingOrder] item) at the given relative path.
      */
-    @Deprecated("Use [linkWithHref] instead.", ReplaceWith("linkWithHref(href)"))
+    @Deprecated("Use [linkWithHref] instead.", ReplaceWith("linkWithHref(href)"), level = DeprecationLevel.ERROR)
     fun resourceWithHref(href: String): Link? = linkWithHref(href)
 
     /**
@@ -583,7 +587,7 @@ class Publication(
      * might want to use a custom factory to implement, for example, a caching mechanism or use a
      * different calculation method.
      */
-    @Deprecated("Use a [ServiceFactory] for a [PositionsService] instead.")
+    @Deprecated("Use a [ServiceFactory] for a [PositionsService] instead.", level = DeprecationLevel.ERROR)
     interface PositionListFactory {
         fun create(): List<Locator>
     }

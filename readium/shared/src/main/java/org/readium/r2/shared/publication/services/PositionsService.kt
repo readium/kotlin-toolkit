@@ -54,34 +54,20 @@ interface PositionsService : Publication.Service {
     }
 }
 
-private suspend fun Publication.positionsFromManifest(): List<Locator> =
-    links.firstWithMediaType(positionsLink.mediaType)
-        ?.let { get(it) }
-        ?.readAsString()
-        ?.successOrNull()
-        ?.toJsonOrNull()
-        ?.optJSONArray("positions")
-        ?.mapNotNull { Locator.fromJSON(it as? JSONObject) }
-        .orEmpty()
-
 /**
  * Returns the list of all the positions in the publication, grouped by the resource reading order index.
  */
-suspend fun Publication.positionsByReadingOrder(): List<List<Locator>> {
-    findService(PositionsService::class)?.let {
-        return it.positionsByReadingOrder()
-    }
-
-    val locators = positionsFromManifest().groupBy(Locator::href)
-    return readingOrder.map { locators[it.href].orEmpty() }
+suspend fun PublicationServicesHolder.positionsByReadingOrder(): List<List<Locator>> {
+    checkNotNull(findService(PositionsService::class)) { "No position service found." }
+        .let { return it.positionsByReadingOrder() }
 }
 
 /**
  * Returns the list of all the positions in the publication.
  */
-suspend fun Publication.positions(): List<Locator> {
-    return findService(PositionsService::class)?.positions()
-        ?: positionsFromManifest()
+suspend fun PublicationServicesHolder.positions(): List<Locator> {
+    checkNotNull(findService(PositionsService::class)) { "No position service found." }
+        .let { return it.positions() }
 }
 
 /**
@@ -133,6 +119,47 @@ class PerResourcePositionsService(
                 readingOrder = it.manifest.readingOrder,
                 fallbackMediaType = fallbackMediaType
             )
+        }
+    }
+}
+
+class WebPositionsService(
+    private val manifest: Manifest
+) : PositionsService {
+
+    private lateinit var _positions: List<Locator>
+
+    override val links: List<Link> =
+        listOfNotNull(
+            manifest.links.firstWithMediaType(positionsLink.mediaType)
+        )
+
+    override suspend fun positions(): List<Locator> {
+        if (!::_positions.isInitialized)
+            _positions = computePositions()
+
+        return _positions
+    }
+
+    override suspend fun positionsByReadingOrder(): List<List<Locator>> {
+        val locators = positions().groupBy(Locator::href)
+        return manifest.readingOrder.map { locators[it.href].orEmpty() }
+    }
+
+    private suspend fun computePositions(): List<Locator> =
+        links.firstOrNull()
+            ?.let { get(it) }
+            ?.readAsString()
+            ?.successOrNull()
+            ?.toJsonOrNull()
+            ?.optJSONArray("positions")
+            ?.mapNotNull { Locator.fromJSON(it as? JSONObject) }
+            .orEmpty()
+
+    companion object {
+
+        fun createFactory(): (Publication.Service.Context) -> WebPositionsService = {
+            WebPositionsService(it.manifest)
         }
     }
 }

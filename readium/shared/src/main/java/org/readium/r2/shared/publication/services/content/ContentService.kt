@@ -7,12 +7,11 @@
 package org.readium.r2.shared.publication.services.content
 
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.publication.services.content.iterators.PublicationContentIterator
 import org.readium.r2.shared.publication.services.content.iterators.ResourceContentIteratorFactory
-import org.readium.r2.shared.util.Ref
 
 /**
  * Provides a way to extract the raw [Content] of a [Publication].
@@ -52,7 +51,9 @@ var Publication.ServicesBuilder.contentServiceFactory: ServiceFactory?
  */
 @ExperimentalReadiumApi
 class DefaultContentService(
-    private val publication: Ref<Publication>,
+    private val manifest: Manifest,
+    private val fetcher: Fetcher,
+    private val services: PublicationServicesHolder,
     private val resourceContentIteratorFactories: List<ResourceContentIteratorFactory>
 ) : ContentService {
 
@@ -60,22 +61,25 @@ class DefaultContentService(
         fun createFactory(
             resourceContentIteratorFactories: List<ResourceContentIteratorFactory>
         ): (Publication.Service.Context) -> DefaultContentService = { context ->
-            DefaultContentService(context.publication, resourceContentIteratorFactories)
+            DefaultContentService(context.manifest, context.fetcher, context.services, resourceContentIteratorFactories)
         }
     }
 
     override fun content(start: Locator?): Content {
-        val publication = publication() ?: throw IllegalStateException("No Publication object")
-        return ContentImpl(publication, start)
+        return ContentImpl(manifest, fetcher, services, start)
     }
 
     private inner class ContentImpl(
-        val publication: Publication,
+        val manifest: Manifest,
+        val fetcher: Fetcher,
+        val services: PublicationServicesHolder,
         val start: Locator?,
     ) : Content {
         override fun iterator(): Content.Iterator =
             PublicationContentIterator(
-                publication = publication,
+                manifest = manifest,
+                fetcher = fetcher,
+                services = services,
                 startLocator = start,
                 resourceContentIteratorFactories = resourceContentIteratorFactories
             )

@@ -9,23 +9,10 @@
 
 package org.readium.r2.navigator.extensions
 
-import java.net.URL
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.positions
-
-/** Computes an absolute URL to the given HREF. */
-internal fun Publication.urlToHref(href: String): URL? {
-    val baseUrl = this.baseUrl?.toString()?.removeSuffix("/")
-    val urlString = if (baseUrl != null && href.startsWith("/")) {
-        "$baseUrl$href"
-    } else {
-        href
-    }
-    return tryOrNull { URL(urlString) }
-}
 
 // These extensions will be removed in the next release, with `PositionsService`.
 

@@ -20,14 +20,11 @@ import org.readium.r2.shared.Search
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.fetcher.DefaultResourceContentExtractorFactory
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.ResourceContentExtractor
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.LocatorCollection
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.publication.services.search.SearchService.Options
-import org.readium.r2.shared.util.Ref
 import timber.log.Timber
 
 /**
@@ -42,7 +39,9 @@ import timber.log.Timber
  */
 @Search
 class StringSearchService(
-    private val publication: Ref<Publication>,
+    private val manifest: Manifest,
+    private val fetcher: Fetcher,
+    private val services: PublicationServicesHolder,
     val language: String?,
     private val snippetLength: Int,
     private val searchAlgorithm: Algorithm,
@@ -57,7 +56,9 @@ class StringSearchService(
         ): (Publication.Service.Context) -> StringSearchService =
             { context ->
                 StringSearchService(
-                    publication = context.publication,
+                    manifest = context.manifest,
+                    fetcher = context.fetcher,
+                    services = context.services,
                     language = context.manifest.metadata.languages.firstOrNull(),
                     snippetLength = snippetLength,
                     searchAlgorithm = searchAlgorithm
@@ -76,7 +77,8 @@ class StringSearchService(
         try {
             Try.success(
                 Iterator(
-                    publication = publication() ?: throw IllegalStateException("No Publication object"),
+                    manifest = manifest,
+                    fetcher = fetcher,
                     query = query,
                     options = options ?: Options(),
                     locale = options?.language?.let { Locale.forLanguageTag(it) } ?: locale,
@@ -87,7 +89,8 @@ class StringSearchService(
         }
 
     private inner class Iterator(
-        val publication: Publication,
+        val manifest: Manifest,
+        val fetcher: Fetcher,
         val query: String,
         val options: Options,
         val locale: Locale
@@ -103,14 +106,14 @@ class StringSearchService(
 
         override suspend fun next(): SearchTry<LocatorCollection?> {
             try {
-                if (index >= publication.readingOrder.count() - 1) {
+                if (index >= manifest.readingOrder.count() - 1) {
                     return Try.success(null)
                 }
 
                 index += 1
 
-                val link = publication.readingOrder[index]
-                val resource = publication.get(link)
+                val link = manifest.readingOrder[index]
+                val resource = fetcher.get(link)
 
                 val text = extractorFactory.createExtractor(resource)?.extractText(resource)?.getOrThrow()
                 if (text == null) {
@@ -137,8 +140,8 @@ class StringSearchService(
             if (text == "")
                 return emptyList()
 
-            val resourceTitle = publication.tableOfContents.titleMatching(link.href)
-            var resourceLocator = publication.locatorFromLink(link) ?: return emptyList()
+            val resourceTitle = manifest.tableOfContents.titleMatching(link.href)
+            var resourceLocator = manifest.locatorFromLink(link) ?: return emptyList()
             resourceLocator = resourceLocator.copy(title = resourceTitle ?: resourceLocator.title)
             val locators = mutableListOf<Locator>()
 
@@ -214,7 +217,7 @@ class StringSearchService(
         private lateinit var _positions: List<List<Locator>>
         private suspend fun positions(): List<List<Locator>> {
             if (!::_positions.isInitialized) {
-                _positions = publication.positionsByReadingOrder()
+                _positions = services.positionsByReadingOrder()
             }
             return _positions
         }
