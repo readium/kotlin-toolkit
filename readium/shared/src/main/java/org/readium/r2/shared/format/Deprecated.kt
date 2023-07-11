@@ -6,7 +6,6 @@
 
 package org.readium.r2.shared.format
 
-import com.github.kittinunf.fuel.core.Response
 import java.net.HttpURLConnection
 import org.readium.r2.shared.util.mediatype.MediaType as NewMediaType
 import org.readium.r2.shared.util.mediatype.Sniffer
@@ -24,14 +23,6 @@ typealias FormatSniffer = Sniffer
 typealias FormatSniffers = Sniffers
 @Deprecated("Renamed SnifferContext", replaceWith = ReplaceWith("org.readium.r2.shared.util.mediatype.SnifferContext"), level = DeprecationLevel.ERROR)
 typealias FormatSnifferContext = SnifferContext
-
-@Deprecated("Renamed to another package", ReplaceWith("org.readium.r2.shared.util.mediatype.sniffMediaType"), level = DeprecationLevel.ERROR)
-suspend fun Response.sniffFormat(
-    mediaTypes: List<String> = emptyList(),
-    fileExtensions: List<String> = emptyList(),
-    sniffers: List<Sniffer> = NewMediaType.sniffers
-): NewMediaType? =
-    sniffMediaType(mediaTypes, fileExtensions, sniffers)
 
 @Deprecated("Renamed to another package", ReplaceWith("org.readium.r2.shared.util.mediatype.sniffMediaType"), level = DeprecationLevel.ERROR)
 suspend fun HttpURLConnection.sniffFormat(

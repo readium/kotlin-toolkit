@@ -10,8 +10,6 @@
 package org.readium.r2.opds
 
 import java.net.URL
-import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.then
 import org.joda.time.DateTime
 import org.readium.r2.shared.extensions.toList
 import org.readium.r2.shared.extensions.toMap
@@ -57,29 +55,6 @@ class OPDS1Parser {
         suspend fun parseRequest(request: HttpRequest, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
             return client.fetchWithDecoder(request) {
                 this.parse(it.body, URL(request.url))
-            }
-        }
-
-        @Deprecated(
-            "Use `parseRequest` or `parseUrlString` with coroutines instead",
-            ReplaceWith("OPDS1Parser.parseUrlString(url)"),
-            DeprecationLevel.WARNING
-        )
-        fun parseURL(url: URL): Promise<ParseData, Exception> {
-            return DefaultHttpClient().fetchPromise(HttpRequest(url.toString())) then {
-                this.parse(xmlData = it.body, url = url)
-            }
-        }
-
-        @Deprecated(
-            "Use `parseRequest` or `parseUrlString` with coroutines instead",
-            ReplaceWith("OPDS1Parser.parseUrlString(url)"),
-            DeprecationLevel.WARNING
-        )
-        @Suppress("unused")
-        fun parseURL(headers: MutableMap<String, String>, url: URL): Promise<ParseData, Exception> {
-            return DefaultHttpClient().fetchPromise(HttpRequest(url = url.toString(), headers = headers)) then {
-                this.parse(xmlData = it.body, url = url)
             }
         }
 
@@ -221,65 +196,6 @@ class OPDS1Parser {
             }
 
             return DefaultHttpClient().fetchWithDecoder(HttpRequest(unwrappedURL.toString())) {
-
-                val document = XmlParser().parse(it.body.inputStream())
-
-                val urls = document.get("Url", Namespaces.Search)
-
-                var typeAndProfileMatch: ElementNode? = null
-                var typeMatch: ElementNode? = null
-
-                selfMimeType?.let { s ->
-
-                    val selfMimeParams = parseMimeType(mimeTypeString = s)
-                    for (url in urls) {
-                        val urlMimeType = url.getAttr("type") ?: continue
-                        val otherMimeParams = parseMimeType(mimeTypeString = urlMimeType)
-                        if (selfMimeParams.type == otherMimeParams.type) {
-                            if (typeMatch == null) {
-                                typeMatch = url
-                            }
-                            if (selfMimeParams.parameters["profile"] == otherMimeParams.parameters["profile"]) {
-                                typeAndProfileMatch = url
-                                break
-                            }
-                        }
-                    }
-                    val match = typeAndProfileMatch ?: (typeMatch ?: urls[0])
-                    val template = match.getAttr("template")
-
-                    template
-                }
-                null
-            }
-        }
-
-        @Deprecated(
-            "Use `retrieveOpenSearchTemplate` with coroutines instead",
-            ReplaceWith("OPDS1Parser.retrieveOpenSearchTemplate(feed)"),
-            DeprecationLevel.WARNING
-        )
-        @Suppress("unused")
-        fun fetchOpenSearchTemplate(feed: Feed): Promise<String?, Exception> {
-
-            var openSearchURL: URL? = null
-            var selfMimeType: String? = null
-
-            for (link in feed.links) {
-                if (link.rels.contains("self")) {
-                    if (link.type != null) {
-                        selfMimeType = link.type
-                    }
-                } else if (link.rels.contains("search")) {
-                    openSearchURL = URL(link.href)
-                }
-            }
-
-            val unwrappedURL = openSearchURL?.let {
-                return@let it
-            }
-
-            return DefaultHttpClient().fetchPromise(HttpRequest(unwrappedURL.toString())) then {
 
                 val document = XmlParser().parse(it.body.inputStream())
 
