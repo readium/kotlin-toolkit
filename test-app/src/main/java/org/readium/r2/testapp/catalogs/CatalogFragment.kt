@@ -13,7 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
@@ -29,7 +29,7 @@ import org.readium.r2.testapp.utils.viewLifecycle
 
 class CatalogFragment : Fragment() {
 
-    private val catalogViewModel: CatalogViewModel by viewModels()
+    private val catalogViewModel: CatalogViewModel by activityViewModels()
     private lateinit var publicationAdapter: PublicationAdapter
     private lateinit var groupAdapter: GroupAdapter
     private lateinit var navigationAdapter: NavigationAdapter
@@ -52,9 +52,9 @@ class CatalogFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        publicationAdapter = PublicationAdapter()
+        publicationAdapter = PublicationAdapter(catalogViewModel::publication::set)
         navigationAdapter = NavigationAdapter(catalog.type)
-        groupAdapter = GroupAdapter(catalog.type)
+        groupAdapter = GroupAdapter(catalog.type, catalogViewModel::publication::set)
         setHasOptionsMenu(true)
 
         binding.catalogNavigationList.apply {

@@ -6,7 +6,6 @@
 
 package org.readium.r2.testapp.catalogs
 
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.navigation.Navigation
@@ -14,13 +13,14 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
-import org.readium.r2.shared.extensions.putPublication
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.databinding.ItemRecycleCatalogBinding
 
-class PublicationAdapter :
+class PublicationAdapter(
+    private val setModelPublication: (Publication) -> Unit
+) :
     ListAdapter<Publication, PublicationAdapter.ViewHolder>(PublicationListDiff()) {
 
     override fun onCreateViewHolder(
@@ -56,11 +56,9 @@ class PublicationAdapter :
             }
 
             binding.root.setOnClickListener {
-                val bundle = Bundle().apply {
-                    putPublication(publication)
-                }
+                setModelPublication(publication)
                 Navigation.findNavController(it)
-                    .navigate(R.id.action_navigation_catalog_to_navigation_catalog_detail, bundle)
+                    .navigate(R.id.action_navigation_catalog_to_navigation_catalog_detail)
             }
         }
     }

@@ -9,8 +9,6 @@
 
 package org.readium.r2.shared.publication
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
@@ -27,7 +25,6 @@ import org.readium.r2.shared.util.mediatype.MediaType
 /**
  * Holds the metadata of a Readium publication, as described in the Readium Web Publication Manifest.
  */
-@Parcelize
 data class Manifest(
     val context: List<String> = emptyList(),
     val metadata: Metadata,
@@ -39,7 +36,7 @@ data class Manifest(
     val tableOfContents: List<Link> = emptyList(),
     val subcollections: Map<String, List<PublicationCollection>> = emptyMap()
 
-) : JSONable, Parcelable {
+) : JSONable{
 
     /**
      * Returns whether this manifest conforms to the given Readium Web Publication Profile.
