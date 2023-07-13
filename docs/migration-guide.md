@@ -38,6 +38,36 @@ the streamer. You can use the overloaded open method taking a `Url` as argument 
 streamer.open(file.toUrl(), ...)
 ```
 
+### Tap and drag events
+
+The `VisualNavigator.Listener`'s `onTap` and `onDrag` events are deprecated. You can now provide multiple implementations of `InputListener`, and the order matters if events are consumed.
+
+```kotlin
+navigator.addInputListener(DirectionalNavigationAdapter())
+
+navigator.addInputListener(object : InputListener {
+    override fun onTap(navigator: VisualNavigator, event: TapEvent): Boolean {
+        toggleUi()
+        return true
+    }
+})
+```
+
+### Edge tap and keyboard navigation
+
+Version 3.0.0 ships with a new `DirectionalNavigationAdapter` component replacing `EdgeTapNavigation`. This helper allows users to turn pages with arrow and space keys on their keyboard or by tapping the edge of the screen.
+
+It's easy to set it up with an implementation of `VisualNavigator`, as it implements `InputListener`.
+
+```kotlin
+navigator.addInputListener(DirectionalNavigationAdapter(
+    animatedTransition = true
+))
+```
+
+`DirectionalNavigationAdapter` offers a lot of customization options. Take a look at its API.
+
+
 ## 2.3.0
 
 ### `Decoration.extras`

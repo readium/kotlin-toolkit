@@ -35,6 +35,9 @@ import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.safety.Safelist
 import org.readium.r2.navigator.extensions.optRectF
+import org.readium.r2.navigator.input.InputModifier
+import org.readium.r2.navigator.input.Key
+import org.readium.r2.navigator.input.KeyEvent
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.tryOrLog
@@ -61,6 +64,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         fun onDragStart(event: DragEvent): Boolean
         fun onDragMove(event: DragEvent): Boolean
         fun onDragEnd(event: DragEvent): Boolean
+        fun onKey(event: KeyEvent): Boolean = false
         fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean = false
         fun onProgressionChanged()
         fun onHighlightActivated(id: String)
@@ -440,6 +444,23 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     }
 
     @android.webkit.JavascriptInterface
+    fun onKey(eventJson: String): Boolean {
+        val jsonObject = JSONObject(eventJson)
+        val event = KeyEvent(
+            type = when (jsonObject.optString("type")) {
+                "down" -> KeyEvent.Type.Down
+                "up" -> KeyEvent.Type.Up
+                else -> return false
+            },
+            key = Key(jsonObject.optString("code")),
+            modifiers = inputModifiers(jsonObject),
+            characters = jsonObject.optNullableString("characters")?.takeUnless { it.isBlank() }
+        )
+
+        return listener?.onKey(event) ?: false
+    }
+
+    @android.webkit.JavascriptInterface
     fun onSelectionStart() {
         isSelecting = true
     }
@@ -668,3 +689,19 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
                 ?: super.onGetContentRect(mode, view, outRect)
     }
 }
+
+private fun inputModifiers(json: JSONObject): Set<InputModifier> =
+    buildSet {
+        if (json.optBoolean("alt")) {
+            add(InputModifier.Alt)
+        }
+        if (json.optBoolean("control")) {
+            add(InputModifier.Control)
+        }
+        if (json.optBoolean("shift")) {
+            add(InputModifier.Shift)
+        }
+        if (json.optBoolean("meta")) {
+            add(InputModifier.Meta)
+        }
+    }
