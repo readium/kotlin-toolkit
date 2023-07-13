@@ -186,7 +186,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         super.destroy()
     }
 
-    @android.webkit.JavascriptInterface
     open fun scrollRight(animated: Boolean = false) {
         uiScope.launch {
             val listener = listener ?: return@launch
@@ -221,7 +220,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         }
     }
 
-    @android.webkit.JavascriptInterface
     open fun scrollLeft(animated: Boolean = false) {
         uiScope.launch {
             val listener = listener ?: return@launch
@@ -254,10 +252,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         }
     }
 
-    /**
-     * Called from the JS code when a tap is detected.
-     * If the JS indicates the tap is being handled within the web view, don't take action,
-     *
+    /*
      * Returns whether the web view should prevent the default behavior for this tap.
      */
     @android.webkit.JavascriptInterface
@@ -282,11 +277,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             return handleFootnote(event.targetElement)
         }
 
-        // Skips to previous/next pages if the tap is on the content edges.
-        val clientWidth = computeHorizontalScrollExtent()
-        val thresholdRange = 0.0..(0.2 * clientWidth)
-
-        // FIXME: Call listener.onTap if scrollLeft|Right fails
         return runBlocking(uiScope.coroutineContext) { listener?.onTap(event.point) ?: false }
     }
 
