@@ -22,11 +22,11 @@ sealed class PublicationError(@StringRes userMessageId: Int) : UserException(use
 
     class SchemeNotSupported(val error: Error) : PublicationError(R.string.publication_error_scheme_not_supported)
 
-    class UnsupportedPublication(val error: Error? = null) : PublicationError(R.string.r2_shared_publication_opening_exception_unsupported_asset)
+    class UnsupportedPublication(val error: Error? = null) : PublicationError(R.string.publication_error_unsupported_asset)
 
     class InvalidPublication(val error: Error) : PublicationError(R.string.publication_error_invalid_publication)
 
-    class IncorrectCredentials(val error: Error) : PublicationError(R.string.r2_shared_publication_opening_exception_incorrect_credentials)
+    class IncorrectCredentials(val error: Error) : PublicationError(R.string.publication_error_incorrect_credentials)
 
     class Forbidden(val error: Error? = null) : PublicationError(R.string.publication_error_forbidden)
 
