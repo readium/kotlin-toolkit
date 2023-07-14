@@ -6,7 +6,6 @@
 
 package org.readium.r2.shared.util.mediatype
 
-import com.github.kittinunf.fuel.core.Response
 import java.net.HttpURLConnection
 import org.readium.r2.shared.extensions.extension
 
@@ -40,29 +39,4 @@ suspend fun HttpURLConnection.sniffMediaType(
     } else {
         MediaType.of(mediaTypes = allMediaTypes, fileExtensions = allFileExtensions, sniffers = sniffers)
     }
-}
-
-/**
- * Resolves the format for this [Response], with optional extra file extension and media type
- * hints.
- */
-suspend fun Response.sniffMediaType(
-    mediaTypes: List<String> = emptyList(),
-    fileExtensions: List<String> = emptyList(),
-    sniffers: List<Sniffer> = MediaType.sniffers
-): MediaType? {
-    val allMediaTypes = mediaTypes.toMutableList()
-    val allFileExtensions = fileExtensions.toMutableList()
-
-    // The value of the `Content-Type` HTTP header.
-    allMediaTypes.addAll(0, headers["Content-Type"])
-
-    // The URL file extension.
-    url.extension?.let {
-        allFileExtensions.add(0, it)
-    }
-
-    // TODO: The suggested filename extension, part of the HTTP header `Content-Disposition`.
-
-    return MediaType.ofBytes({ data }, mediaTypes = allMediaTypes, fileExtensions = allFileExtensions, sniffers = sniffers)
 }
