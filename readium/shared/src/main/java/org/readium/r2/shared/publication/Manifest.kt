@@ -36,7 +36,7 @@ data class Manifest(
     val tableOfContents: List<Link> = emptyList(),
     val subcollections: Map<String, List<PublicationCollection>> = emptyMap()
 
-) : JSONable{
+) : JSONable {
 
     /**
      * Returns whether this manifest conforms to the given Readium Web Publication Profile.

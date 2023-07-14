@@ -260,6 +260,11 @@ class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferenc
             pdfEngineProvider.computePresentation(settings)
         }
 
+    @Deprecated(
+        "Use `presentation.value.readingProgression` instead",
+        replaceWith = ReplaceWith("presentation.value.readingProgression"),
+        level = DeprecationLevel.ERROR
+    )
     override val readingProgression: PublicationReadingProgression
         get() = when (presentation.value.readingProgression) {
             ReadingProgression.LTR -> PublicationReadingProgression.LTR

@@ -93,14 +93,10 @@ internal class EpubNavigatorViewModel(
             )
         }
 
-    private val googleFonts: List<FontFamily> =
-        emptyList()
-
     private val css = MutableStateFlow(
         ReadiumCss(
             rsProperties = config.readiumCssRsProperties,
             fontFamilyDeclarations = config.fontFamilyDeclarations,
-            googleFonts = googleFonts,
             assetsBaseHref = WebViewServer.assetsBaseHref
         ).update(settings.value, useReadiumCssFontSize = config.useReadiumCssFontSize)
     )

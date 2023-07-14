@@ -637,6 +637,11 @@ class EpubNavigatorFragment internal constructor(
     override val presentation: StateFlow<VisualNavigator.Presentation>
         get() = viewModel.presentation
 
+    @Deprecated(
+        "Use `presentation.value.readingProgression` instead",
+        replaceWith = ReplaceWith("presentation.value.readingProgression"),
+        level = DeprecationLevel.ERROR
+    )
     override val readingProgression: PublicationReadingProgression
         get() = throw NotImplementedError()
 

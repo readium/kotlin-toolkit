@@ -217,6 +217,11 @@ class ImageNavigatorFragment private constructor(
     override val publicationView: View
         get() = requireView()
 
+    @Deprecated(
+        "Use `presentation.value.readingProgression` instead",
+        replaceWith = ReplaceWith("presentation.value.readingProgression"),
+        level = DeprecationLevel.ERROR
+    )
     override val readingProgression: PublicationReadingProgression =
         publication.metadata.effectiveReadingProgression
 

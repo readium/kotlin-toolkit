@@ -123,7 +123,7 @@ class PerResourcePositionsService(
     }
 }
 
-class WebPositionsService(
+internal class WebPositionsService(
     private val manifest: Manifest
 ) : PositionsService {
 
