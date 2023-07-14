@@ -113,7 +113,7 @@ interface LcpLicense : ContentProtectionService.UserRights {
     fun decipher(data: ByteArray): ByteArray? =
         runBlocking { decrypt(data) }
             .onFailure { Timber.e(it) }
-            .successOrNull()
+            .getOrNull()
 
     @Deprecated("Use `renewLoan` with `RenewListener` instead", ReplaceWith("renewLoan(LcpLicense.RenewListener)"), level = DeprecationLevel.ERROR)
     suspend fun renewLoan(end: DateTime?, urlPresenter: suspend (URL) -> Unit): Try<Unit, LcpException> = Try.success(Unit)

@@ -183,18 +183,6 @@
     <string name="publication_error_invalid_publication">Publication looks corrupted.</string>
     <string name="publication_error_unexpected">An unexpected error occurred.</string>
 
-    <string name="r2.shared.publication.content_protection.exception.not_supported">This publication cannot be opened because it is protected with %1$s</string>
-    <string name="r2.shared.publication.content_protection.exception.not_supported.unknown">This publication cannot be opened because it is protected with an unknown DRM</string>
-
-    <string name="r2.shared.resource.exception.bad_request">Invalid request which can\'t be processed</string>
-    <string name="r2.shared.resource.exception.not_found">Resource not found</string>
-    <string name="r2.shared.resource.exception.forbidden">You are not allowed to access the resource</string>
-    <string name="r2.shared.resource.exception.unavailable">The resource is currently unavailable, please try again later</string>
-    <string name="r2_shared_resource_exception_offline">The Internet connection appears to be offline</string>
-    <string name="r2.shared.resource.exception.out_of_memory">The resource is too large to be read on this device</string>
-    <string name="r2.shared.resource.exception.unexpected">An expected error occurred.</string>
-    <string name="r2.shared.resource.exception.other">A service error occurred</string>
-
     <string name="failed_parsing_catalog">Failed parsing Catalog</string>
     <string name="next_chapter">Next chapter</string>
     <string name="next_sentence">Next sentence</string>

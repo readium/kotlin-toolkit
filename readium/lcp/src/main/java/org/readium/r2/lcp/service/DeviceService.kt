@@ -69,7 +69,7 @@ internal class DeviceService(
 
         val url = link.url(asQueryParameters).toString()
         val data = network.fetch(url, NetworkService.Method.POST, asQueryParameters)
-            .successOrNull() ?: return null
+            .getOrNull() ?: return null
 
         repository.registerDevice(license)
         return data

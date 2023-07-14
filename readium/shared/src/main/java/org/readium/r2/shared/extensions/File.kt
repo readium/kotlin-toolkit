@@ -12,6 +12,8 @@ package org.readium.r2.shared.extensions
 import java.io.File
 import java.io.FileInputStream
 import java.security.MessageDigest
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import timber.log.Timber
 
 /**
@@ -57,3 +59,12 @@ fun File.isParentOf(other: File): Boolean {
     }
     return false
 }
+
+/**
+ * Sniffs the media type of the file.
+ *
+ * If unknown, fallback on `MediaType.BINARY`.
+ */
+@Deprecated("Explicitly use MediaTypeRetriever", level = DeprecationLevel.ERROR)
+suspend fun File.mediaType(mediaTypeHint: String? = null): MediaType =
+    MediaTypeRetriever().retrieve(this, mediaType = mediaTypeHint) ?: MediaType.BINARY

@@ -26,7 +26,7 @@ sealed class BaseBytesResource(
         link
 
     override fun toString(): String =
-        "${javaClass.simpleName}(${runBlocking { length().successOrNull() }} bytes)"
+        "${javaClass.simpleName}(${runBlocking { length().getOrNull() }} bytes)"
 }
 
 /** Creates a Resource serving [ByteArray]. */

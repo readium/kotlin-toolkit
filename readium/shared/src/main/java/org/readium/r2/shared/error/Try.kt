@@ -21,7 +21,7 @@ sealed class Try<out Success, out Failure> {
     abstract val isFailure: Boolean
 
     /** Returns the encapsulated value if this instance represents success or null if it is failure. */
-    abstract fun successOrNull(): Success?
+    abstract fun getOrNull(): Success?
 
     /** Returns the encapsulated [Throwable] exception if this instance represents failure or null if it is success. */
     abstract fun failureOrNull(): Failure?
@@ -29,14 +29,14 @@ sealed class Try<out Success, out Failure> {
     class Success<out S, out F>(val value: S) : Try<S, F>() {
         override val isSuccess: Boolean get() = true
         override val isFailure: Boolean get() = false
-        override fun successOrNull(): S? = value
+        override fun getOrNull(): S? = value
         override fun failureOrNull(): F? = null
     }
 
     class Failure<out S, out F>(val value: F) : Try<S, F>() {
         override val isSuccess: Boolean get() = false
         override val isFailure: Boolean get() = true
-        override fun successOrNull(): S? = null
+        override fun getOrNull(): S? = null
         override fun failureOrNull(): F = value
     }
 

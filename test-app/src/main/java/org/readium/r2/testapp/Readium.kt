@@ -73,7 +73,7 @@ class Readium(context: Context) {
         ?: Try.failure(UserException("liblcp is missing on the classpath"))
 
     private val contentProtections = listOfNotNull(
-        lcpService.successOrNull()?.contentProtection()
+        lcpService.getOrNull()?.contentProtection()
     )
 
     val protectionRetriever = ProtectionRetriever(
@@ -82,7 +82,7 @@ class Readium(context: Context) {
     )
 
     /**
-     * The Streamer is used to open and parse publications.
+     * The PublicationFactory is used to parse and open publications.
      */
     val publicationFactory = PublicationFactory(
         context,

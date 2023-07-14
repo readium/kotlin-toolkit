@@ -41,12 +41,12 @@ internal class LcpContentProtection(
 
     override suspend fun open(
         asset: Asset,
-        drmScheme: String,
+        drmScheme: ContentProtection.Scheme,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
     ): Try<ContentProtection.Asset, Publication.OpeningException>? {
-        if (drmScheme != scheme.uri) {
+        if (drmScheme != scheme) {
             return null
         }
 
@@ -90,11 +90,11 @@ internal class LcpContentProtection(
         license: Try<LcpLicense, LcpException>,
     ): Try<ContentProtection.Asset, Publication.OpeningException> {
         val serviceFactory = LcpContentProtectionService
-            .createFactory(license.successOrNull(), license.failureOrNull())
+            .createFactory(license.getOrNull(), license.failureOrNull())
 
         val fetcher = TransformingFetcher(
             ContainerFetcher(asset.container, mediaTypeRetriever),
-            LcpDecryptor(license.successOrNull())::transform
+            LcpDecryptor(license.getOrNull())::transform
         )
 
         val protectedFile = ContentProtection.Asset(
@@ -117,7 +117,7 @@ internal class LcpContentProtection(
     ): Try<ContentProtection.Asset, Publication.OpeningException> {
         val license = retrieveLicense(licenseAsset, credentials, allowUserInteraction, sender)
 
-        val licenseDoc = license.successOrNull()?.license
+        val licenseDoc = license.getOrNull()?.license
             ?: licenseAsset.resource.read()
                 .map {
                     try {

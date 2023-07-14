@@ -36,6 +36,7 @@ import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
+import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.ProtectionRetriever
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.util.Url
@@ -124,7 +125,7 @@ class BookRepository(
         href: String,
         mediaType: MediaType,
         assetType: AssetType,
-        drm: String?,
+        drm: ContentProtection.Scheme?,
         publication: Publication,
         cover: String
     ): Long {
@@ -294,7 +295,6 @@ class BookRepository(
     ): Try<Unit, ImportError> {
         val drmScheme =
             protectionRetriever.retrieve(asset)
-                ?.uri
 
         publicationFactory.open(
             asset,

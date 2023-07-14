@@ -26,4 +26,9 @@ class ProtectionRetriever(
         contentProtections
             .firstOrNull { it.supports(asset) }
             ?.scheme
+
+    fun retrieve(scheme: String): ContentProtection.Scheme? =
+        contentProtections
+            .firstOrNull { it.scheme.uri == scheme}
+            ?.scheme
 }

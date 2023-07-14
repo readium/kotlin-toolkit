@@ -40,7 +40,7 @@ class LcpFallbackContentProtection(
 
     override suspend fun open(
         asset: Asset,
-        drmScheme: String,
+        drmScheme: Scheme,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
@@ -104,7 +104,7 @@ class LcpFallbackContentProtection(
 }
 
 private suspend inline fun Resource.readAsJsonOrNull(): JSONObject? =
-    readAsJson().successOrNull()
+    readAsJson().getOrNull()
 
 private suspend inline fun Resource.readAsXmlOrNull(): ElementNode? =
-    readAsXml().successOrNull()
+    readAsXml().getOrNull()

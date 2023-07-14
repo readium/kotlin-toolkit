@@ -314,7 +314,10 @@ class AssetRetriever(
             .createContext(
                 url,
                 mediaTypes = mediaTypes,
-                fileExtensions = fileExtensions + url.extension
+                fileExtensions = buildList {
+                    addAll(fileExtensions)
+                    url.extension?.let { add(it) }
+                }
             )
             ?: return null
 
@@ -335,14 +338,14 @@ class AssetRetriever(
         return when (context) {
             is ContainerSnifferContext ->
                 Asset.Container(
-                    name = context.container.name().successOrNull() ?: fallbackName,
+                    name = context.container.name().getOrNull() ?: fallbackName,
                     mediaType = mediaType,
                     exploded = context.isExploded,
                     container = context.container
                 )
             is ResourceSnifferContext ->
                 Asset.Resource(
-                    name = context.resource.name().successOrNull() ?: fallbackName,
+                    name = context.resource.name().getOrNull() ?: fallbackName,
                     mediaType = mediaType,
                     resource = context.resource
                 )

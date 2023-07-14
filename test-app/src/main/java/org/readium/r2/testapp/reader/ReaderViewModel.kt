@@ -191,7 +191,7 @@ class ReaderViewModel(
         _searchLocators.value = emptyList()
         searchIterator = publication.search(query)
             .onFailure { activityChannel.send(Event.Failure(it)) }
-            .successOrNull()
+            .getOrNull()
         pagingSourceFactory.invalidate()
         activityChannel.send(Event.StartNewSearch)
     }

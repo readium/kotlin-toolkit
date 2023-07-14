@@ -6,7 +6,6 @@
 
 package org.readium.r2.shared.util
 
-import android.content.ContentResolver
 import android.net.Uri
 import java.io.File
 import org.readium.r2.shared.extensions.tryOrNull
@@ -29,8 +28,9 @@ value class Url private constructor(internal val uri: Uri) {
     val filename: String
         get() = File(path).name
 
-    val extension: String
+    val extension: String?
         get() = File(path).extension
+            .takeIf { it.isNotEmpty() }
 
     override fun toString(): String =
         uri.toString()
@@ -53,14 +53,11 @@ value class Url private constructor(internal val uri: Uri) {
 fun Url.isFile(): Boolean =
     scheme == "file"
 
+fun Url.isHttp(): Boolean =
+    scheme == "http" || scheme == "https"
+
 fun File.toUrl(): Url =
-    Url(
-        Uri.Builder()
-            .appendPath(path)
-            .authority("")
-            .scheme(ContentResolver.SCHEME_FILE)
-            .build()
-    )!!
+    Url(Uri.fromFile(this))!!
 
 fun Uri.toUrl(): Url? =
     Url.invoke(this)

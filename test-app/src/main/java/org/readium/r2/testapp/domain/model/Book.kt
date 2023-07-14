@@ -10,6 +10,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import org.readium.r2.shared.asset.AssetType
+import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.mediatype.MediaType
 
 @Entity(tableName = Book.TABLE_NAME)
@@ -49,7 +50,7 @@ data class Book(
         progression: String? = null,
         mediaType: MediaType,
         assetType: AssetType,
-        drm: String?,
+        drm: ContentProtection.Scheme?,
         cover: String,
     ) : this(
         id = id,
@@ -60,21 +61,20 @@ data class Book(
         identifier = identifier,
         progression = progression,
         rawMediaType = mediaType.toString(),
-        rawAssetType = assetType.toString(),
-        drm = drm,
+        rawAssetType = assetType.rawValue,
+        drm = drm?.uri,
         cover = cover,
     )
 
     val mediaType: MediaType get() =
         MediaType(rawMediaType)
 
+    val drmScheme: ContentProtection.Scheme? get() =
+        drm?.let { ContentProtection.Scheme(it, null) }
+
     val assetType: AssetType
-        get() = when (rawAssetType) {
-            "Archive" -> AssetType.Archive
-            "Directory" -> AssetType.Directory
-            "Resource" -> AssetType.Resource
-            else -> throw IllegalStateException("Invalid asset type $rawAssetType")
-        }
+        get() = AssetType(rawAssetType)
+            ?: throw IllegalStateException("Invalid asset type $rawAssetType")
 
     companion object {
 

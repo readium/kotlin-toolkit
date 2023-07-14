@@ -38,7 +38,7 @@ class AdeptFallbackContentProtection(
 
     override suspend fun open(
         asset: Asset,
-        drmScheme: String,
+        drmScheme: Scheme,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
@@ -82,4 +82,4 @@ class AdeptFallbackContentProtection(
 }
 
 private suspend inline fun Resource.readAsXmlOrNull(): ElementNode? =
-    readAsXml().successOrNull()
+    readAsXml().getOrNull()

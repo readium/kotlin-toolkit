@@ -10,13 +10,14 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.isHttp
 
 class HttpResourceFactory(
     private val httpClient: HttpClient
 ) : ResourceFactory {
 
     override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
-        if (!url.scheme.startsWith("http")) {
+        if (!url.isHttp()) {
             return Try.failure(ResourceFactory.Error.UnsupportedScheme(url.scheme))
         }
 

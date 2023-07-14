@@ -116,7 +116,7 @@ class PublicationFactory constructor(
      */
     suspend fun open(
         asset: Asset,
-        drmScheme: String? = null,
+        drmScheme: ContentProtection.Scheme? = null,
         credentials: String? = null,
         allowUserInteraction: Boolean,
         sender: Any? = null,
@@ -159,7 +159,7 @@ class PublicationFactory constructor(
 
     private suspend fun openProtected(
         asset: Asset,
-        drmScheme: String,
+        drmScheme: ContentProtection.Scheme,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?,

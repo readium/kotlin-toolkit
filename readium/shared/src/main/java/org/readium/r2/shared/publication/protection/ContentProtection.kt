@@ -46,7 +46,7 @@ interface ContentProtection {
      */
     suspend fun open(
         asset: org.readium.r2.shared.asset.Asset,
-        drmScheme: String,
+        drmScheme: Scheme,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?

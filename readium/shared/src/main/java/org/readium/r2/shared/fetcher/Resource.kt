@@ -290,7 +290,7 @@ class BufferingResource(
     }
 
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
-        val length = cachedLength().successOrNull()
+        val length = cachedLength().getOrNull()
         // Reading the whole resource bypasses buffering to keep things simple.
         if (range == null || length == null) {
             return super.read(range)

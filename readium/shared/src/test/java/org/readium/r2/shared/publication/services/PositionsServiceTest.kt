@@ -76,7 +76,7 @@ class PositionsServiceTest {
 
         val json = service.get(Link("/~readium/positions"))
             ?.let { runBlocking { it.readAsString() } }
-            ?.successOrNull()
+            ?.getOrNull()
             ?.let { JSONObject(it) }
         val total = json
             ?.optNullableInt("total")
