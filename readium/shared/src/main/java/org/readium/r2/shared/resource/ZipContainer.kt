@@ -13,7 +13,7 @@ import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.error.SimpleError
+import org.readium.r2.shared.error.MessageError
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
@@ -166,7 +166,7 @@ class DefaultArchiveFactory : ArchiveFactory {
             ?.let { open(it) }
             ?: Try.failure(
                 ArchiveFactory.Error.FormatNotSupported(
-                    SimpleError("Resource not supported because file cannot be directly access.")
+                    MessageError("Resource not supported because file cannot be directly access.")
                 )
             )
     }

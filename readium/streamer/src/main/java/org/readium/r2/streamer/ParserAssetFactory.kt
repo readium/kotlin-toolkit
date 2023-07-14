@@ -73,7 +73,7 @@ internal class ParserAssetFactory(
             manifest.linkWithRel("self")?.let { File(it.href).parent }
                 ?: return Try.failure(
                     Publication.OpeningException.ParsingFailed(
-                        SimpleError("No self link in the manifest.")
+                        MessageError("No self link in the manifest.")
                     )
                 )
 

@@ -6,7 +6,7 @@
 
 package org.readium.r2.streamer.parser
 
-import org.readium.r2.shared.error.SimpleError
+import org.readium.r2.shared.error.MessageError
 import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.fetcher.Fetcher
@@ -52,7 +52,7 @@ interface PublicationParser {
 
         class ParsingFailed(override val cause: org.readium.r2.shared.error.Error?) : Error() {
 
-            constructor(message: String) : this(SimpleError(message))
+            constructor(message: String) : this(MessageError(message))
 
             override val message: String =
                 "An error occurred while parsing the publication."
