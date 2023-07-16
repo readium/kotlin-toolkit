@@ -70,7 +70,7 @@ data class Book(
         MediaType(rawMediaType)
 
     val drmScheme: ContentProtection.Scheme? get() =
-        drm?.let { ContentProtection.Scheme(it, null) }
+        drm?.let { ContentProtection.Scheme(it) }
 
     val assetType: AssetType
         get() = AssetType(rawAssetType)

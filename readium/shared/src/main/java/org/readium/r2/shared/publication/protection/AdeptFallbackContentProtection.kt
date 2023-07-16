@@ -56,7 +56,7 @@ class AdeptFallbackContentProtection(
             ContainerFetcher(asset.container, mediaTypeRetriever),
             onCreatePublication = {
                 servicesBuilder.contentProtectionServiceFactory =
-                    FallbackContentProtectionService.createFactory(scheme)
+                    FallbackContentProtectionService.createFactory(scheme, "Adobe ADEPT")
             }
         )
 

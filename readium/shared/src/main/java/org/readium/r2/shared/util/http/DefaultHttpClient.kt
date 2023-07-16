@@ -19,7 +19,7 @@ import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.error.tryRecover
 import org.readium.r2.shared.util.http.HttpRequest.Method
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.sniffMediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import timber.log.Timber
 
 /**
@@ -112,6 +112,9 @@ class DefaultHttpClient(
         suspend fun onRequestFailed(request: HttpRequest, error: HttpException) {}
     }
 
+    private val mediaTypeRetriever: MediaTypeRetriever =
+        MediaTypeRetriever()
+
     // We are using Dispatchers.IO but we still get this warning...
     @Suppress("BlockingMethodInNonBlockingContext", "NAME_SHADOWING")
     override suspend fun stream(request: HttpRequest): HttpTry<HttpStreamResponse> {
@@ -139,17 +142,28 @@ class DefaultHttpClient(
                         // Reads the full body, since it might contain an error representation such as
                         // JSON Problem Details or OPDS Authentication Document
                         val body = connection.errorStream?.use { it.readBytes() }
-                        val mediaType = body?.let { connection.sniffMediaType(bytes = { it }) }
+                        val mediaType = body?.let {
+                            mediaTypeRetriever.retrieve(
+                                connection = connection,
+                                bytes = { it }
+                            )
+                        }
                         throw HttpException(kind, mediaType, body)
                     }
+
+                    val mediaType =
+                        mediaTypeRetriever.retrieve(
+                            connection = connection
+                        ) ?: MediaType.BINARY
 
                     val response = HttpResponse(
                         request = request,
                         url = connection.url.toString(),
                         statusCode = statusCode,
                         headers = connection.safeHeaders,
-                        mediaType = connection.sniffMediaType() ?: MediaType.BINARY,
+                        mediaType = mediaType
                     )
+
                     callback.onResponseReceived(request, response)
 
                     if (statusCode in 300..399) {

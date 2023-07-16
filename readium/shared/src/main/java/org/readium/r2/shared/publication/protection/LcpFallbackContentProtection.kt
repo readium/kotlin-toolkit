@@ -58,7 +58,8 @@ class LcpFallbackContentProtection(
             asset.mediaType,
             ContainerFetcher(asset.container, mediaTypeRetriever),
             onCreatePublication = {
-                servicesBuilder.contentProtectionServiceFactory = FallbackContentProtectionService.createFactory(scheme)
+                servicesBuilder.contentProtectionServiceFactory =
+                    FallbackContentProtectionService.createFactory(scheme, "Readium LCP")
             }
         )
 

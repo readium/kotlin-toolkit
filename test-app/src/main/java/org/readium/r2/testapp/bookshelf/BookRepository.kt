@@ -37,7 +37,7 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.protection.ContentProtection
-import org.readium.r2.shared.publication.protection.ProtectionRetriever
+import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -61,7 +61,7 @@ class BookRepository(
     private val lcpService: Try<LcpService, UserException>,
     private val publicationFactory: PublicationFactory,
     private val assetRetriever: AssetRetriever,
-    private val protectionRetriever: ProtectionRetriever,
+    private val protectionRetriever: ContentProtectionSchemeRetriever,
 ) {
     private val coverDir: File =
         File(storageDir, "covers/")
