@@ -49,7 +49,6 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.timber)
     implementation(libs.joda.time)
-    implementation("nl.komponents.kovenant:kovenant:3.3.0")
     implementation(libs.kotlinx.coroutines.core)
 
     // Tests
