@@ -16,6 +16,7 @@ import org.readium.r2.shared.extensions.toJsonOrNull
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.toJSON
 
 private val positionsLink = Link(

@@ -108,7 +108,7 @@ class FileResourceFactory : ResourceFactory {
 
     override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
         if (url.scheme != ContentResolver.SCHEME_FILE) {
-            return Try.failure(ResourceFactory.Error.UnsupportedScheme(url.scheme))
+            return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
         }
 
         val file = File(url.path)

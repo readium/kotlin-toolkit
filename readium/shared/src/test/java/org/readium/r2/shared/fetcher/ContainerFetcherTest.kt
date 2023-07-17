@@ -25,6 +25,7 @@ import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.readBlocking
 import org.readium.r2.shared.resource.DefaultArchiveFactory
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows

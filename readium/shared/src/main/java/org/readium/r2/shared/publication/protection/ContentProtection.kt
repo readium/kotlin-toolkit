@@ -40,17 +40,15 @@ interface ContentProtection {
     /**
      * Attempts to unlock a potentially protected publication asset.
      *
-     * @return A [Asset] in case of success, null if the asset is not protected by this
-     * technology or a [Publication.OpeningException] if the asset can't be successfully opened,
-     * even in restricted mode.
+     * @return A [Asset] in case of success or a [Publication.OpeningException] if the
+     * asset can't be successfully opened even in restricted mode.
      */
     suspend fun open(
         asset: org.readium.r2.shared.asset.Asset,
-        drmScheme: Scheme,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
-    ): Try<Asset, Publication.OpeningException>?
+    ): Try<Asset, Publication.OpeningException>
 
     /**
      * Holds the result of opening an [Asset] with a [ContentProtection].

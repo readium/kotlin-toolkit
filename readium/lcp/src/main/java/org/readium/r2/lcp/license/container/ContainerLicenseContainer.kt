@@ -14,7 +14,7 @@ import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 
 /**
- * Access to a License Document stored in a read-only ZIP archive.
+ * Access to a License Document stored in a read-only container.
  */
 internal class ContainerLicenseContainer(
     private val container: Container,

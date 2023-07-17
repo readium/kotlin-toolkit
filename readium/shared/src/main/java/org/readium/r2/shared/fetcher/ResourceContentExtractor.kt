@@ -13,6 +13,7 @@ import org.jsoup.parser.Parser
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**

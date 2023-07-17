@@ -24,6 +24,7 @@ import org.readium.r2.shared.publication.services.DefaultLocatorService
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
+import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.util.Ref
 import org.robolectric.RobolectricTestRunner
 

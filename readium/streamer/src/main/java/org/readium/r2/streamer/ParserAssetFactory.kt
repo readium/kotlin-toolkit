@@ -35,13 +35,15 @@ internal class ParserAssetFactory(
     ): Try<PublicationParser.Asset, Publication.OpeningException> {
         return when (asset) {
             is Asset.Container ->
-                Try.success(createFetcherForContainer(asset.container, asset.mediaType, asset.name))
+                Try.success(
+                    createParserAssetForContainer(asset.container, asset.mediaType, asset.name)
+                )
             is Asset.Resource ->
-                createFetcherForResource(asset.resource, asset.mediaType, asset.name)
+                createParserAssetForResource(asset.resource, asset.mediaType, asset.name)
         }
     }
 
-    private fun createFetcherForContainer(
+    private fun createParserAssetForContainer(
         container: Container,
         mediaType: MediaType,
         assetName: String
@@ -50,18 +52,18 @@ internal class ParserAssetFactory(
         return PublicationParser.Asset(assetName, mediaType, fetcher)
     }
 
-    private suspend fun createFetcherForResource(
+    private suspend fun createParserAssetForResource(
         resource: Resource,
         mediaType: MediaType,
         assetName: String
     ): Try<PublicationParser.Asset, Publication.OpeningException> =
         if (mediaType.isRwpm) {
-            createFetcherForManifest(resource, assetName)
+            createParserAssetForManifest(resource, assetName)
         } else {
-            createFetcherForContent(resource, mediaType, assetName)
+            createParserAssetForContent(resource, mediaType, assetName)
         }
 
-    private suspend fun createFetcherForManifest(
+    private suspend fun createParserAssetForManifest(
         resource: Resource,
         assetName: String
     ): Try<PublicationParser.Asset, Publication.OpeningException> {
@@ -99,7 +101,7 @@ internal class ParserAssetFactory(
         )
     }
 
-    private fun createFetcherForContent(
+    private fun createParserAssetForContent(
         resource: Resource,
         mediaType: MediaType,
         assetName: String

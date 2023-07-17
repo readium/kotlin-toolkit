@@ -298,7 +298,7 @@ class BookRepository(
 
         publicationFactory.open(
             asset,
-            drmScheme = drmScheme,
+            contentProtectionScheme = drmScheme,
             allowUserInteraction = false
         ).onSuccess { publication ->
             val coverBitmap: Bitmap? = coverUrl

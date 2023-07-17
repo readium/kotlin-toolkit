@@ -21,7 +21,7 @@ fun interface ResourceFactory {
 
     sealed class Error : org.readium.r2.shared.error.Error {
 
-        class UnsupportedScheme(
+        class SchemeNotSupported(
             val scheme: String,
             override val cause: org.readium.r2.shared.error.Error? = null
         ) : Error() {
@@ -67,7 +67,7 @@ fun interface ContainerFactory {
 
     sealed class Error : org.readium.r2.shared.error.Error {
 
-        class UnsupportedScheme(
+        class SchemeNotSupported(
             val scheme: String,
             override val cause: org.readium.r2.shared.error.Error? = null
         ) : Error() {
@@ -169,7 +169,7 @@ class CompositeArchiveFactory(
 
 /**
  * A composite resource factory which first tries [primaryFactory]
- * and falls back on [fallbackFactory] if it doesn't support the scheme..
+ * and falls back on [fallbackFactory] if it doesn't support the scheme.
  */
 class CompositeResourceFactory(
     private val primaryFactory: ResourceFactory,
@@ -179,7 +179,7 @@ class CompositeResourceFactory(
     override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
         return primaryFactory.create(url)
             .tryRecover { error ->
-                if (error is ResourceFactory.Error.UnsupportedScheme)
+                if (error is ResourceFactory.Error.SchemeNotSupported)
                     fallbackFactory.create(url)
                 else
                     Try.failure(error)
@@ -199,7 +199,7 @@ class CompositeContainerFactory(
     override suspend fun create(url: Url): Try<Container, ContainerFactory.Error> {
         return primaryFactory.create(url)
             .tryRecover { error ->
-                if (error is ContainerFactory.Error.UnsupportedScheme)
+                if (error is ContainerFactory.Error.SchemeNotSupported)
                     fallbackFactory.create(url)
                 else
                     Try.failure(error)

@@ -17,7 +17,7 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.readFully
 
-class FileChannelResource(
+internal class FileChannelResource(
     private val channel: FileChannel
 ) : Resource {
 

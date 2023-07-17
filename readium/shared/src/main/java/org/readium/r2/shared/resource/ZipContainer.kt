@@ -9,11 +9,9 @@ package org.readium.r2.shared.resource
 import java.io.File
 import java.io.IOException
 import java.util.zip.ZipEntry
-import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.error.MessageError
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
@@ -28,7 +26,7 @@ interface ZipContainer : Container {
     interface Entry : Container.Entry {
 
         /**
-         *  Compressed data length.
+         * Compressed data length.
          */
         val compressedLength: Long?
     }
@@ -153,36 +151,4 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
             }
         }
     }
-}
-
-class DefaultArchiveFactory : ArchiveFactory {
-
-    override suspend fun create(resource: Resource, password: String?): Try<Container, ArchiveFactory.Error> {
-        if (password != null) {
-            return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
-        }
-
-        return resource.file
-            ?.let { open(it) }
-            ?: Try.failure(
-                ArchiveFactory.Error.FormatNotSupported(
-                    MessageError("Resource not supported because file cannot be directly access.")
-                )
-            )
-    }
-
-    // Internal for testing purpose
-    internal suspend fun open(file: File): Try<Container, ArchiveFactory.Error> =
-        withContext(Dispatchers.IO) {
-            try {
-                val archive = JavaZipContainer(ZipFile(file), file)
-                Try.success(archive)
-            } catch (e: ZipException) {
-                Try.failure(ArchiveFactory.Error.FormatNotSupported(e))
-            } catch (e: SecurityException) {
-                Try.failure(ArchiveFactory.Error.ResourceReading(Resource.Exception.Forbidden(e)))
-            } catch (e: Exception) {
-                Try.failure(ArchiveFactory.Error.ResourceReading(Resource.Exception.wrap(e)))
-            }
-        }
 }

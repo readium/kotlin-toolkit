@@ -18,6 +18,8 @@ import org.readium.r2.shared.publication.protection.ContentProtection.Scheme
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.readAsJson
+import org.readium.r2.shared.resource.readAsXml
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
@@ -40,17 +42,14 @@ class LcpFallbackContentProtection(
 
     override suspend fun open(
         asset: Asset,
-        drmScheme: Scheme,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
-    ): Try<ContentProtection.Asset, Publication.OpeningException>? {
+    ): Try<ContentProtection.Asset, Publication.OpeningException> {
         if (asset !is Asset.Container) {
-            return null
-        }
-
-        if (!isLcpProtected(asset.container, asset.mediaType)) {
-            return null
+            return Try.failure(
+                Publication.OpeningException.UnsupportedAsset("A container asset was expected.")
+            )
         }
 
         val protectedFile = ContentProtection.Asset(

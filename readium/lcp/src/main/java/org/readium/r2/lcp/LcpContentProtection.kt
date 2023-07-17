@@ -41,15 +41,10 @@ internal class LcpContentProtection(
 
     override suspend fun open(
         asset: Asset,
-        drmScheme: ContentProtection.Scheme,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
-    ): Try<ContentProtection.Asset, Publication.OpeningException>? {
-        if (drmScheme != scheme) {
-            return null
-        }
-
+    ): Try<ContentProtection.Asset, Publication.OpeningException> {
         return when (asset) {
             is Asset.Container -> openPublication(asset, credentials, allowUserInteraction, sender)
             is Asset.Resource -> openLicense(asset, credentials, allowUserInteraction, sender)
@@ -168,7 +163,7 @@ internal class LcpContentProtection(
                 Publication.OpeningException.NotFound()
             is ResourceFactory.Error.Forbidden ->
                 Publication.OpeningException.Forbidden()
-            is ResourceFactory.Error.UnsupportedScheme ->
+            is ResourceFactory.Error.SchemeNotSupported ->
                 Publication.OpeningException.UnsupportedAsset()
         }
 

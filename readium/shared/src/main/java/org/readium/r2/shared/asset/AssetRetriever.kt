@@ -7,15 +7,13 @@
 package org.readium.r2.shared.asset
 
 import android.content.ContentResolver
+import android.content.Context
 import android.net.Uri
 import java.io.File
 import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.flatMap
-import org.readium.r2.shared.resource.ArchiveFactory
-import org.readium.r2.shared.resource.ContainerFactory
-import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.ResourceFactory
+import org.readium.r2.shared.resource.*
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.*
 import org.readium.r2.shared.util.toUrl
@@ -27,6 +25,14 @@ class AssetRetriever(
     contentResolver: ContentResolver,
     sniffers: List<Sniffer>
 ) {
+
+    constructor(context: Context) : this(
+        resourceFactory = FileResourceFactory(),
+        containerFactory = DirectoryContainerFactory(),
+        archiveFactory = DefaultArchiveFactory(),
+        contentResolver = context.contentResolver,
+        sniffers = MediaType.sniffers
+    )
 
     sealed class Error : org.readium.r2.shared.error.Error {
 
@@ -123,7 +129,7 @@ class AssetRetriever(
     }
 
     /**
-     * Retrieves again a well-known asset.
+     * Retrieves an asset from a known media and asset type again.
      */
     suspend fun retrieve(
         url: Url,
@@ -143,17 +149,7 @@ class AssetRetriever(
         url: Url,
         mediaType: MediaType
     ): Try<Asset.Container, Error> {
-        return resourceFactory.create(url)
-            .mapFailure { error ->
-                when (error) {
-                    is ResourceFactory.Error.NotAResource ->
-                        Error.NotFound(url, error)
-                    is ResourceFactory.Error.Forbidden ->
-                        Error.Forbidden(url, error)
-                    is ResourceFactory.Error.UnsupportedScheme ->
-                        Error.SchemeNotSupported(error.scheme, error)
-                }
-            }
+        return retrieveResource(url)
             .flatMap { resource: Resource ->
                 archiveFactory.create(resource, password = null)
                     .mapFailure { error ->
@@ -184,7 +180,7 @@ class AssetRetriever(
                         Error.NotFound(url, error)
                     is ContainerFactory.Error.Forbidden ->
                         Error.Forbidden(url, error)
-                    is ContainerFactory.Error.UnsupportedScheme ->
+                    is ContainerFactory.Error.SchemeNotSupported ->
                         Error.SchemeNotSupported(error.scheme, error)
                 }
             }
@@ -194,15 +190,21 @@ class AssetRetriever(
         url: Url,
         mediaType: MediaType
     ): Try<Asset.Resource, Error> {
-        return resourceFactory.create(url)
+        return retrieveResource(url)
             .map { resource -> Asset.Resource(url.filename, mediaType, resource) }
+    }
+
+    private suspend fun retrieveResource(
+        url: Url,
+    ): Try<Resource, Error> {
+        return resourceFactory.create(url)
             .mapFailure { error ->
                 when (error) {
                     is ResourceFactory.Error.NotAResource ->
                         Error.NotFound(url, error)
                     is ResourceFactory.Error.Forbidden ->
                         Error.Forbidden(url, error)
-                    is ResourceFactory.Error.UnsupportedScheme ->
+                    is ResourceFactory.Error.SchemeNotSupported ->
                         Error.SchemeNotSupported(error.scheme, error)
                 }
             }
@@ -305,7 +307,7 @@ class AssetRetriever(
     /**
      * Retrieves an asset from a Url.
      */
-    private suspend fun retrieve(
+    suspend fun retrieve(
         url: Url,
         mediaTypes: List<String>,
         fileExtensions: List<String>

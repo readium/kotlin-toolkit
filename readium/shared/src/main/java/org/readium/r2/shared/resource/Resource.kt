@@ -65,38 +65,6 @@ interface Resource : SuspendingCloseable {
     suspend fun read(range: LongRange? = null): ResourceTry<ByteArray>
 
     /**
-     * Reads the full content as a [String].
-     *
-     * If [charset] is null, then it is parsed from the `charset` parameter of link().type,
-     * or falls back on UTF-8.
-     */
-    suspend fun readAsString(charset: Charset? = null): ResourceTry<String> =
-        read().mapCatching {
-            String(it, charset = charset ?: Charsets.UTF_8)
-        }
-
-    /**
-     * Reads the full content as a JSON object.
-     */
-    suspend fun readAsJson(): ResourceTry<JSONObject> =
-        readAsString(charset = Charsets.UTF_8).mapCatching { JSONObject(it) }
-
-    /**
-     * Reads the full content as an XML document.
-     */
-    suspend fun readAsXml(): ResourceTry<ElementNode> =
-        read().mapCatching { XmlParser().parse(ByteArrayInputStream(it)) }
-
-    /**
-     * Reads the full content as a [Bitmap].
-     */
-    suspend fun readAsBitmap(): ResourceTry<Bitmap> =
-        read().mapCatching {
-            BitmapFactory.decodeByteArray(it, 0, it.size)
-                ?: throw kotlin.Exception("Could not decode resource as a bitmap")
-        }
-
-    /**
      * Errors occurring while accessing a resource.
      */
     sealed class Exception(@StringRes userMessageId: Int, cause: Throwable? = null) : UserException(userMessageId, cause = cause) {
@@ -186,3 +154,35 @@ inline fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): Resour
 
 inline fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =
     mapCatching(transform).flatMap { it }
+
+/**
+ * Reads the full content as a [String].
+ *
+ * If [charset] is null, then it is parsed from the `charset` parameter of link().type,
+ * or falls back on UTF-8.
+ */
+suspend fun Resource.readAsString(charset: Charset? = null): ResourceTry<String> =
+    read().mapCatching {
+        String(it, charset = charset ?: Charsets.UTF_8)
+    }
+
+/**
+ * Reads the full content as a JSON object.
+ */
+suspend fun Resource.readAsJson(): ResourceTry<JSONObject> =
+    readAsString(charset = Charsets.UTF_8).mapCatching { JSONObject(it) }
+
+/**
+ * Reads the full content as an XML document.
+ */
+suspend fun Resource.readAsXml(): ResourceTry<ElementNode> =
+    read().mapCatching { XmlParser().parse(ByteArrayInputStream(it)) }
+
+/**
+ * Reads the full content as a [Bitmap].
+ */
+suspend fun Resource.readAsBitmap(): ResourceTry<Bitmap> =
+    read().mapCatching {
+        BitmapFactory.decodeByteArray(it, 0, it.size)
+            ?: throw kotlin.Exception("Could not decode resource as a bitmap")
+    }

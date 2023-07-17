@@ -12,6 +12,8 @@ package org.readium.r2.streamer.extensions
 import org.json.JSONObject
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.parser.xml.ElementNode
+import org.readium.r2.shared.resource.readAsJson
+import org.readium.r2.shared.resource.readAsXml
 import org.readium.r2.shared.util.use
 
 /** Returns the resource data as an XML Document at the given [href], or null. */
