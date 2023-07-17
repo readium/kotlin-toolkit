@@ -12,9 +12,10 @@ import java.nio.ByteBuffer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.readSafe
 import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.channel.jvm.NonWritableChannelException
 import org.readium.r2.shared.util.archive.channel.jvm.SeekableByteChannel
 import org.readium.r2.shared.util.http.HttpClient

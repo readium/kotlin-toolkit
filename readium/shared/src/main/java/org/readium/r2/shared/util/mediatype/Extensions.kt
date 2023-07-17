@@ -6,13 +6,23 @@
 
 package org.readium.r2.shared.util.mediatype
 
+import java.io.File
 import java.net.HttpURLConnection
 import org.readium.r2.shared.extensions.extension
+import org.readium.r2.shared.resource.DefaultArchiveFactory
 
 /**
  * Resolves the format for this [HttpURLConnection], with optional extra file extension and media type
  * hints.
  */
+@Deprecated(
+    "Use the MediaTypeRetriever extension instead.",
+    replaceWith = ReplaceWith(
+        "mediaTypeRetriever.retrieve(connection, bytes, mediaTypes, fileExtensions)",
+        "org.readium.r2.shared.util.http.retrieve"
+    ),
+    level = DeprecationLevel.ERROR
+)
 suspend fun HttpURLConnection.sniffMediaType(
     bytes: (() -> ByteArray)? = null,
     mediaTypes: List<String> = emptyList(),
@@ -34,9 +44,31 @@ suspend fun HttpURLConnection.sniffMediaType(
 
     // TODO: The suggested filename extension, part of the HTTP header `Content-Disposition`.
 
+    val mediaTypeRetriever = MediaTypeRetriever(sniffers = sniffers)
+
     return if (bytes != null) {
-        MediaType.ofBytes(bytes, mediaTypes = allMediaTypes, fileExtensions = allFileExtensions, sniffers = sniffers)
+        mediaTypeRetriever.doRetrieve(
+            {
+                BytesSnifferContextFactory(DefaultArchiveFactory())
+                    .createContext(bytes.invoke(), mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
+            },
+            mediaTypes = allMediaTypes,
+            fileExtensions = allFileExtensions
+        )
     } else {
-        MediaType.of(mediaTypes = allMediaTypes, fileExtensions = allFileExtensions, sniffers = sniffers)
+        mediaTypeRetriever.retrieve(mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
     }
 }
+
+/**
+* Sniffs the media type of the file.
+*
+* If unknown, fallback on `MediaType.BINARY`.
+*/
+@Deprecated(
+    "Use MediaTypeRetriever explicitly.",
+    replaceWith = ReplaceWith("mediaTypeRetriever.retrieve(mediaType = mediaTypeHint)"),
+    level = DeprecationLevel.ERROR
+)
+suspend fun File.mediaType(mediaTypeHint: String? = null): MediaType =
+    MediaTypeRetriever().retrieve(this, mediaType = mediaTypeHint) ?: MediaType.BINARY

@@ -11,11 +11,11 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.ResultReceiver
 import org.readium.r2.navigator.ExperimentalAudiobook
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationId
+import org.readium.r2.shared.resource.Resource
 
 /**
  * Media player compatible with Android's MediaSession and handling the playback for

@@ -18,8 +18,12 @@ import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
 import org.readium.r2.lcp.license.model.components.Link
-import org.readium.r2.lcp.service.*
-import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.lcp.service.CRLService
+import org.readium.r2.lcp.service.DeviceService
+import org.readium.r2.lcp.service.LcpClient
+import org.readium.r2.lcp.service.NetworkService
+import org.readium.r2.lcp.service.PassphrasesService
+import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 

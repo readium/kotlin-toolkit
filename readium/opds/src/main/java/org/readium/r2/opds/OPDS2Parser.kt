@@ -13,13 +13,13 @@ import java.net.URL
 import org.joda.time.DateTime
 import org.json.JSONArray
 import org.json.JSONObject
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.removeLastComponent
 import org.readium.r2.shared.opds.*
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Href
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest

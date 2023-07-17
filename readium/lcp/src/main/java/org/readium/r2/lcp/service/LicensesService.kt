@@ -12,26 +12,31 @@ package org.readium.r2.lcp.service
 import android.content.Context
 import java.io.File
 import kotlin.coroutines.resume
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.LcpAuthenticating
+import org.readium.r2.lcp.LcpContentProtection
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.LcpService
-import org.readium.r2.lcp.auth.LcpDumbAuthentication
 import org.readium.r2.lcp.license.License
 import org.readium.r2.lcp.license.LicenseValidation
 import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
+import org.readium.r2.shared.asset.Asset
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.tryOr
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.asset.PublicationAsset
-import org.readium.r2.shared.publication.asset.RemoteAsset
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.archive.ArchiveFactory
-import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.publication.protection.ContentProtection
+import org.readium.r2.shared.resource.ArchiveFactory
+import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import timber.log.Timber
 
 internal class LicensesService(
@@ -41,50 +46,34 @@ internal class LicensesService(
     private val network: NetworkService,
     private val passphrases: PassphrasesService,
     private val context: Context,
-    private val archiveFactory: ArchiveFactory,
-    private val httpClient: HttpClient
+    private val mediaTypeRetriever: MediaTypeRetriever,
+    private val resourceFactory: ResourceFactory,
+    private val archiveFactory: ArchiveFactory
 ) : LcpService, CoroutineScope by MainScope() {
 
     override suspend fun isLcpProtected(file: File): Boolean =
         tryOr(false) {
-            createLicenseContainer(file.path).read()
+            val mediaType = mediaTypeRetriever.retrieve(file) ?: return false
+            createLicenseContainer(file, mediaType).read()
             true
         }
 
-    override suspend fun remoteAssetForLicense(license: File): Try<PublicationAsset, LcpException> {
-        return try {
-            Try.success(remoteAssetForLicenseThrowing(license))
-        } catch (e: Exception) {
-            Try.failure(LcpException.wrap(e))
+    override suspend fun isLcpProtected(asset: Asset): Boolean =
+        tryOr(false) {
+            when (asset) {
+                is Asset.Resource ->
+                    asset.mediaType == MediaType.LCP_LICENSE_DOCUMENT
+                is Asset.Container -> {
+                    createLicenseContainer(asset.container, asset.mediaType).read()
+                    true
+                }
+            }
         }
-    }
 
-    private suspend fun remoteAssetForLicenseThrowing(licenseFile: File): PublicationAsset {
-        // Update the license file to get a fresh publication URL.
-        val license = retrieveLicense(licenseFile, LcpDumbAuthentication(), false)
-            .getOrNull()
-
-        val licenseDoc = license?.license
-            ?: LicenseDocument(licenseFile.readBytes())
-
-        val link = checkNotNull(licenseDoc.link(LicenseDocument.Rel.publication))
-        val url = try {
-            Url(link.url.toString()) ?: throw IllegalStateException()
-        } catch (e: Exception) {
-            throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.rawValue)
-        }
-        val baseAsset = RemoteAsset.Factory(archiveFactory, httpClient)
-            .createAsset(url, link.mediaType)
-            .getOrThrow()
-
-        return LcpLicensedAsset(
-            baseAsset.name,
-            baseAsset.mediaType,
-            baseAsset.fetcher,
-            licenseFile,
-            license
-        )
-    }
+    override fun contentProtection(
+        authentication: LcpAuthenticating,
+    ): ContentProtection =
+        LcpContentProtection(this, authentication, mediaTypeRetriever, resourceFactory, archiveFactory)
 
     override suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit): Try<LcpService.AcquiredPublication, LcpException> =
         try {
@@ -97,12 +86,13 @@ internal class LicensesService(
 
     override suspend fun retrieveLicense(
         file: File,
+        mediaType: MediaType,
         authentication: LcpAuthenticating,
         allowUserInteraction: Boolean,
         sender: Any?
     ): Try<LcpLicense, LcpException> =
         try {
-            val container = createLicenseContainer(file.path)
+            val container = createLicenseContainer(file, mediaType)
             val license = retrieveLicense(container, authentication, allowUserInteraction, true, sender)
             Try.success(license)
         } catch (e: Exception) {
@@ -110,15 +100,14 @@ internal class LicensesService(
         }
 
     override suspend fun retrieveLicense(
-        fetcher: Fetcher,
-        mediaType: MediaType,
+        asset: Asset,
         authentication: LcpAuthenticating,
         allowUserInteraction: Boolean,
         sender: Any?
     ): Try<LcpLicense, LcpException> =
         try {
-            val container = createLicenseContainer(fetcher, mediaType)
-            val license = retrieveLicense(container, authentication, allowUserInteraction, false, sender)
+            val licenseContainer = createLicenseContainer(asset)
+            val license = retrieveLicense(licenseContainer, authentication, allowUserInteraction, false, sender)
             Try.success(license)
         } catch (e: Exception) {
             Try.failure(LcpException.wrap(e))
@@ -238,10 +227,12 @@ internal class LicensesService(
         }
         Timber.i("LCP destination $destination")
 
-        val mediaType = network.download(url, destination, mediaType = link.type, onProgress = onProgress) ?: MediaType.of(mediaType = link.type) ?: MediaType.EPUB
+        val mediaType = network.download(url, destination, mediaType = link.type, onProgress = onProgress)
+            ?: mediaTypeRetriever.retrieve(mediaType = link.type)
+            ?: MediaType.EPUB
 
         // Saves the License Document into the downloaded publication
-        val container = createLicenseContainer(destination.path, mediaType)
+        val container = createLicenseContainer(destination, mediaType)
         container.write(license)
 
         return LcpService.AcquiredPublication(

@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         intent.data?.let {
-            viewModel.addPublicationFromUri(it)
+            viewModel.importPublicationFromUri(it)
         }
 
         val navView: BottomNavigationView = findViewById(R.id.nav_view)

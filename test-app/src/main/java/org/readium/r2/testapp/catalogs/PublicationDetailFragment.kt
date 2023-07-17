@@ -67,7 +67,7 @@ class PublicationDetailFragment : Fragment() {
         val message =
             when (event) {
                 is CatalogViewModel.Event.DetailEvent.ImportPublicationSuccess -> getString(R.string.import_publication_success)
-                is CatalogViewModel.Event.DetailEvent.ImportPublicationFailed -> getString(R.string.unable_add_pub_database)
+                is CatalogViewModel.Event.DetailEvent.ImportPublicationFailed -> getString(R.string.import_publication_unable_add_pub_database)
             }
         binding.catalogDetailProgressBar.visibility = View.GONE
         Snackbar.make(

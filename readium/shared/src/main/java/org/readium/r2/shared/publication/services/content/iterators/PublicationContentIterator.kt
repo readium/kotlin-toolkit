@@ -7,7 +7,7 @@
 package org.readium.r2.shared.publication.services.content.iterators
 
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -15,6 +15,11 @@ import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.util.Either
 
+/**
+ * Creates a [Content.Iterator] instance for the [Resource], starting from the given [Locator].
+ *
+ * Returns null if the resource media type is not supported.
+ */
 @ExperimentalReadiumApi
 fun interface ResourceContentIteratorFactory {
 
@@ -26,7 +31,7 @@ fun interface ResourceContentIteratorFactory {
     suspend fun create(
         publication: Publication,
         readingOrderIndex: Int,
-        resource: Resource,
+        resource: Fetcher.Resource,
         locator: Locator
     ): Content.Iterator?
 }

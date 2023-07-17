@@ -15,8 +15,9 @@ import org.jsoup.parser.Parser
 import org.jsoup.select.NodeTraversor
 import org.jsoup.select.NodeVisitor
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -24,6 +25,7 @@ import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.publication.services.content.Content.*
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
+import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -43,7 +45,7 @@ import org.readium.r2.shared.util.use
  */
 @ExperimentalReadiumApi
 class HtmlResourceContentIterator internal constructor(
-    private val resource: Resource,
+    private val resource: Fetcher.Resource,
     private val totalProgressionRange: ClosedRange<Double>?,
     private val locator: Locator,
     private val beforeMaxLength: Int = 50
@@ -53,7 +55,7 @@ class HtmlResourceContentIterator internal constructor(
         override suspend fun create(
             publication: Publication,
             readingOrderIndex: Int,
-            resource: Resource,
+            resource: Fetcher.Resource,
             locator: Locator
         ): Content.Iterator? {
             if (!resource.link().mediaType.matchesAny(MediaType.HTML, MediaType.XHTML)) {
@@ -407,7 +409,7 @@ class HtmlResourceContentIterator internal constructor(
                         text = text,
                         attributes = buildList {
                             currentLanguage?.let {
-                                add(Attribute(Content.AttributeKey.LANGUAGE, Language(it)))
+                                add(Attribute(AttributeKey.LANGUAGE, Language(it)))
                             }
                         },
                     )

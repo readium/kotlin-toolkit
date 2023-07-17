@@ -11,7 +11,9 @@ import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
 import org.readium.r2.shared.Search
-import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -23,7 +25,7 @@ interface ResourceContentExtractor {
     /**
      * Extracts the text content of the given [resource].
      */
-    suspend fun extractText(resource: Resource): ResourceTry<String> = Try.success("")
+    suspend fun extractText(resource: Fetcher.Resource): ResourceTry<String> = Try.success("")
 
     interface Factory {
         /**
@@ -31,14 +33,14 @@ interface ResourceContentExtractor {
          *
          * Return null if the resource format is not supported.
          */
-        suspend fun createExtractor(resource: Resource): ResourceContentExtractor?
+        suspend fun createExtractor(resource: Fetcher.Resource): ResourceContentExtractor?
     }
 }
 
 @Search
 class DefaultResourceContentExtractorFactory : ResourceContentExtractor.Factory {
 
-    override suspend fun createExtractor(resource: Resource): ResourceContentExtractor? =
+    override suspend fun createExtractor(resource: Fetcher.Resource): ResourceContentExtractor? =
         when (resource.link().mediaType) {
             MediaType.HTML, MediaType.XHTML -> HtmlResourceContentExtractor()
             else -> null
@@ -51,7 +53,7 @@ class DefaultResourceContentExtractorFactory : ResourceContentExtractor.Factory 
 @Search
 class HtmlResourceContentExtractor : ResourceContentExtractor {
 
-    override suspend fun extractText(resource: Resource): ResourceTry<String> = withContext(Dispatchers.IO) {
+    override suspend fun extractText(resource: Fetcher.Resource): ResourceTry<String> = withContext(Dispatchers.IO) {
         resource.readAsString().mapCatching { html ->
             val body = Jsoup.parse(html).body().text()
             // Transform HTML entities into their actual characters.

@@ -12,17 +12,17 @@ class BufferingResourceTest {
 
     @Test
     fun `get file`() {
-        assertEquals(sut().file, file)
+        assertEquals(file, sut().file)
     }
 
     @Test
     fun `get link`() = runBlocking {
-        assertEquals(sut().link(), link)
+        assertEquals(link, sut().link())
     }
 
     @Test
     fun `get length`() = runBlocking {
-        assertEquals(sut().length().getOrNull(), 161291)
+        assertEquals(161291, sut().length().getOrNull())
     }
 
     @Test

@@ -68,7 +68,7 @@ import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -821,7 +821,7 @@ class EpubNavigatorFragment internal constructor(
         override fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? =
             viewModel.shouldInterceptRequest(request)
 
-        override fun resourceAtUrl(url: String): Resource? =
+        override fun resourceAtUrl(url: String): Fetcher.Resource? =
             viewModel.internalLinkFromUrl(url)
                 ?.let { publication.get(it) }
     }

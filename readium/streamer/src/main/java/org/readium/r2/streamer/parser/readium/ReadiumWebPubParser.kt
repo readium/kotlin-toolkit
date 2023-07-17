@@ -7,14 +7,15 @@
 package org.readium.r2.streamer.parser.readium
 
 import android.content.Context
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.*
+import org.readium.r2.shared.resource.readAsJson
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
-import org.readium.r2.streamer.extensions.readAsJsonOrNull
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioLocatorService
 
@@ -26,32 +27,37 @@ class ReadiumWebPubParser(
     private val pdfFactory: PdfDocumentFactory<*>?,
 ) : PublicationParser {
 
-    override suspend fun parse(asset: PublicationAsset, warnings: WarningLogger?): Publication.Builder? {
-        val mediaType = asset.mediaType
+    override suspend fun parse(
+        asset: PublicationParser.Asset,
+        warnings: WarningLogger?
+    ): Try<Publication.Builder, PublicationParser.Error> {
 
-        if (!mediaType.isReadiumWebPubProfile)
-            return null
+        if (!asset.mediaType.isReadiumWebPublication)
+            return Try.failure(PublicationParser.Error.FormatNotSupported())
 
-        val manifestJson =
-            asset.fetcher.readAsJsonOrNull("/manifest.json")
-                ?: throw Exception("Manifest not found")
+        val manifestJson = asset.fetcher
+            .get("/manifest.json")
+            .readAsJson()
+            .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
 
-        val manifest = Manifest.fromJSON(manifestJson, packaged = !mediaType.isRwpm)
-            ?: throw Exception("Failed to parse the RWPM Manifest")
+        val manifest = Manifest.fromJSON(manifestJson, packaged = !asset.mediaType.isRwpm)
+            ?: return Try.failure(
+                PublicationParser.Error.ParsingFailed("Failed to parse the RWPM Manifest")
+            )
 
         // Checks the requirements from the LCPDF specification.
         // https://readium.org/lcp-specs/notes/lcp-for-pdf.html
         val readingOrder = manifest.readingOrder
-        if (mediaType == MediaType.LCP_PROTECTED_PDF &&
+        if (asset.mediaType == MediaType.LCP_PROTECTED_PDF &&
             (readingOrder.isEmpty() || !readingOrder.all { it.mediaType.matches(MediaType.PDF) })
         ) {
-            throw Exception("Invalid LCP Protected PDF.")
+            return Try.failure(PublicationParser.Error.ParsingFailed("Invalid LCP Protected PDF."))
         }
 
         val servicesBuilder = Publication.ServicesBuilder().apply {
             cacheServiceFactory = InMemoryCacheService.createFactory(context)
 
-            when (mediaType) {
+            when (asset.mediaType) {
                 MediaType.LCP_PROTECTED_PDF ->
                     positionsServiceFactory = pdfFactory?.let { LcpdfPositionsService.create(it) }
 
@@ -63,13 +69,13 @@ class ReadiumWebPubParser(
             }
         }
 
-        return Publication.Builder(manifest, asset.fetcher, servicesBuilder)
+        val publicationBuilder = Publication.Builder(manifest, asset.fetcher, servicesBuilder)
+        return Try.success(publicationBuilder)
     }
 }
 
 /** Returns whether this media type is of a Readium Web Publication profile. */
-private val MediaType.isReadiumWebPubProfile: Boolean get() = matchesAny(
-    MediaType.READIUM_WEBPUB, MediaType.READIUM_WEBPUB_MANIFEST,
-    MediaType.READIUM_AUDIOBOOK, MediaType.READIUM_AUDIOBOOK_MANIFEST, MediaType.LCP_PROTECTED_AUDIOBOOK,
-    MediaType.DIVINA, MediaType.DIVINA_MANIFEST, MediaType.LCP_PROTECTED_PDF
+private val MediaType.isReadiumWebPublication: Boolean get() = matchesAny(
+    MediaType.READIUM_WEBPUB, MediaType.DIVINA, MediaType.LCP_PROTECTED_PDF,
+    MediaType.READIUM_AUDIOBOOK, MediaType.LCP_PROTECTED_AUDIOBOOK,
 )

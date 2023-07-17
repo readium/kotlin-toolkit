@@ -8,7 +8,7 @@ package org.readium.r2.navigator.epub
 
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.TransformingResource
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
@@ -22,12 +22,12 @@ import timber.log.Timber
  * @param baseHref Base URL where the Readium CSS and scripts are served.
  */
 @OptIn(ExperimentalReadiumApi::class)
-internal fun Resource.injectHtml(
+internal fun Fetcher.Resource.injectHtml(
     publication: Publication,
     css: ReadiumCss,
     baseHref: String,
     disableSelectionWhenProtected: Boolean
-): Resource =
+): Fetcher.Resource =
     TransformingResource(this) { bytes ->
         val link = link()
         check(link.mediaType.isHtml)

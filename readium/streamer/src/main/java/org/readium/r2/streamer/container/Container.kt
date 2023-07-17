@@ -27,6 +27,7 @@ import org.readium.r2.shared.drm.DRM
  *
  * @func dataInputStream : return the InputStream of content
  */
+@Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
 interface Container {
     var rootFile: RootFile
     var drm: DRM?

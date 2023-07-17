@@ -17,21 +17,22 @@ import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.math.round
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.LcpException
-import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.util.http.retrieve
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.sniffMediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import timber.log.Timber
 
 internal typealias URLParameters = Map<String, String?>
 
 internal class NetworkException(val status: Int?, cause: Throwable? = null) : Exception("Network failure with status $status", cause)
 
-@OptIn(ExperimentalTime::class)
-internal class NetworkService {
+internal class NetworkService(
+    private val mediaTypeRetriever: MediaTypeRetriever
+) {
     enum class Method(val rawValue: String) {
         GET("GET"), POST("POST"), PUT("PUT");
 
@@ -132,7 +133,10 @@ internal class NetworkService {
                 }
             }
 
-            connection.sniffMediaType(mediaTypes = listOfNotNull(mediaType))
+            mediaTypeRetriever.retrieve(
+                connection = connection,
+                mediaType = mediaType
+            )
         } catch (e: Exception) {
             Timber.e(e)
             throw LcpException.Network(e)

@@ -12,7 +12,7 @@ import androidx.media2.common.SessionPlayer
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
-import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.error.Try
 
 internal enum class SessionPlayerState {
     Idle,

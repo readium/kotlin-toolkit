@@ -18,7 +18,7 @@ import org.joda.time.DateTime
 import org.joda.time.Days
 import org.readium.r2.lcp.BuildConfig.DEBUG
 import org.readium.r2.lcp.LcpException
-import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.error.getOrElse
 import timber.log.Timber
 
 @OptIn(ExperimentalTime::class)

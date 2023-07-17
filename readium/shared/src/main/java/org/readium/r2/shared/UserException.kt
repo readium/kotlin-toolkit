@@ -10,7 +10,7 @@ import android.content.Context
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import java.text.DateFormat
-import java.util.*
+import java.util.Date
 import org.joda.time.DateTime
 import org.readium.r2.shared.extensions.asInstance
 

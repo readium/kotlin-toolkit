@@ -9,8 +9,8 @@ package org.readium.r2.streamer.parser.pdf
 import android.content.Context
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.PdfSupport
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.asset.PublicationAsset
 import org.readium.r2.shared.publication.services.InMemoryCacheService
 import org.readium.r2.shared.publication.services.InMemoryCoverService
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -31,12 +31,17 @@ class PdfParser(
 
     private val context = context.applicationContext
 
-    override suspend fun parse(asset: PublicationAsset, warnings: WarningLogger?): Publication.Builder? {
+    override suspend fun parse(
+        asset: PublicationParser.Asset,
+        warnings: WarningLogger?
+    ): Try<Publication.Builder, PublicationParser.Error> {
         if (asset.mediaType != MediaType.PDF)
-            return null
+            return Try.failure(PublicationParser.Error.FormatNotSupported())
 
-        val fileHref = asset.fetcher.links().firstOrNull { it.mediaType == MediaType.PDF }?.href
-            ?: throw Exception("Unable to find PDF file.")
+        val fileHref = asset.fetcher.links().firstOrNull()?.href
+            ?: return Try.failure(
+                PublicationParser.Error.ParsingFailed("No PDF found in the publication.")
+            )
         val document = pdfFactory.open(asset.fetcher.get(fileHref), password = null)
         val tableOfContents = document.outline.toLinks(fileHref)
 
@@ -59,6 +64,8 @@ class PdfParser(
             cover = document.cover(context)?.let { InMemoryCoverService.createFactory(it) }
         )
 
-        return Publication.Builder(manifest, asset.fetcher, servicesBuilder)
+        val publicationBuilder = Publication.Builder(manifest, asset.fetcher, servicesBuilder)
+
+        return Try.success(publicationBuilder)
     }
 }

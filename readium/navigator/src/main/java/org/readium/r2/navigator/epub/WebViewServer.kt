@@ -16,12 +16,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.fetcher.Resource
-import org.readium.r2.shared.fetcher.ResourceInputStream
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.fetcher.fallback
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.ResourceInputStream
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
@@ -83,7 +84,11 @@ internal class WebViewServer(
             ?.copy(href = href)
             ?: Link(href = href)
 
-        var resource = publication.get(link)
+        // Drop anchor because it is meant to be interpreted by the client.
+        val linkWithoutAnchor = link
+            .copy(href.takeWhile { it != '#' })
+
+        var resource = publication.get(linkWithoutAnchor)
             .fallback { errorResource(link, error = it) }
         if (link.mediaType.isHtml) {
             resource = resource.injectHtml(
@@ -110,7 +115,7 @@ internal class WebViewServer(
         }
     }
 
-    private fun errorResource(link: Link, error: Resource.Exception): Resource =
+    private fun errorResource(link: Link, error: Resource.Exception): Fetcher.Resource =
         StringResource(link.copy(type = MediaType.XHTML.toString())) {
             withContext(Dispatchers.IO) {
                 assetManager

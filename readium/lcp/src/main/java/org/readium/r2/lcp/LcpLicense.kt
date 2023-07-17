@@ -15,8 +15,8 @@ import kotlinx.coroutines.runBlocking
 import org.joda.time.DateTime
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.StatusDocument
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.services.ContentProtectionService
-import org.readium.r2.shared.util.Try
 import timber.log.Timber
 
 /**
@@ -129,7 +129,7 @@ interface LcpLicense : ContentProtectionService.UserRights {
     @DelicateCoroutinesApi
     fun returnPublication(completion: (LcpException?) -> Unit) {
         GlobalScope.launch {
-            completion(returnPublication().exceptionOrNull())
+            completion(returnPublication().failureOrNull())
         }
     }
 }

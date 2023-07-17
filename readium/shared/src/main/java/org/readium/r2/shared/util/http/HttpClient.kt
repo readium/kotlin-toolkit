@@ -11,8 +11,8 @@ import java.nio.charset.Charset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**

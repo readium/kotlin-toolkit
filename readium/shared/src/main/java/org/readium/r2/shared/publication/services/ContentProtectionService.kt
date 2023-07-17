@@ -15,9 +15,15 @@ import org.readium.r2.shared.UserException
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.queryParameters
 import org.readium.r2.shared.fetcher.FailureResource
-import org.readium.r2.shared.fetcher.Resource
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.StringResource
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.PublicationServicesHolder
+import org.readium.r2.shared.publication.ServiceFactory
+import org.readium.r2.shared.publication.protection.ContentProtection
+import org.readium.r2.shared.resource.Resource
 
 /**
  * Provides information about a publication's content protection and manages user rights.
@@ -54,12 +60,12 @@ interface ContentProtectionService : Publication.Service {
      * User-facing name for this Content Protection, e.g. "Readium LCP".
      * It could be used in a sentence such as "Protected by {name}"
      */
-    val name: LocalizedString? get() = scheme?.name
+    val name: LocalizedString? get() = null
 
     override val links: List<Link>
         get() = RouteHandler.links
 
-    override fun get(link: Link): Resource? {
+    override fun get(link: Link): Fetcher.Resource? {
         val route = RouteHandler.route(link) ?: return null
         return route.handleRequest(link, this)
     }
@@ -243,7 +249,7 @@ private sealed class RouteHandler {
 
     abstract fun acceptRequest(link: Link): Boolean
 
-    abstract fun handleRequest(link: Link, service: ContentProtectionService): Resource
+    abstract fun handleRequest(link: Link, service: ContentProtectionService): Fetcher.Resource
 
     object ContentProtectionHandler : RouteHandler() {
 
@@ -254,7 +260,7 @@ private sealed class RouteHandler {
 
         override fun acceptRequest(link: Link): Boolean = link.href == this.link.href
 
-        override fun handleRequest(link: Link, service: ContentProtectionService): Resource =
+        override fun handleRequest(link: Link, service: ContentProtectionService): Fetcher.Resource =
             StringResource(link) {
                 JSONObject().apply {
                     put("isRestricted", service.isRestricted)
@@ -275,7 +281,7 @@ private sealed class RouteHandler {
 
         override fun acceptRequest(link: Link): Boolean = link.href.startsWith("/~readium/rights/copy")
 
-        override fun handleRequest(link: Link, service: ContentProtectionService): Resource {
+        override fun handleRequest(link: Link, service: ContentProtectionService): Fetcher.Resource {
             val parameters = link.href.queryParameters()
             val text = parameters["text"]
                 ?: return FailureResource(
@@ -313,7 +319,7 @@ private sealed class RouteHandler {
 
         override fun acceptRequest(link: Link): Boolean = link.href.startsWith("/~readium/rights/print")
 
-        override fun handleRequest(link: Link, service: ContentProtectionService): Resource {
+        override fun handleRequest(link: Link, service: ContentProtectionService): Fetcher.Resource {
             val parameters = link.href.queryParameters()
             val pageCountString = parameters["pageCount"]
                 ?: return FailureResource(

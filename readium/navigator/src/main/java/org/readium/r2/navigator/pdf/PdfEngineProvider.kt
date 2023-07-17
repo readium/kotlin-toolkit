@@ -12,10 +12,10 @@ import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.resource.Resource
 
 /**
  * To be implemented by adapters for third-party PDF engines which can be used with [PdfNavigatorFragment].

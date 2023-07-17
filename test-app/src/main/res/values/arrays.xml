@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="documentSelectorArray">
-        <item>Import from device</item>
-        <item>Add a remote publication</item>
+        <item>Import to app storage</item>
+        <item>Add from shared storage</item>
+        <item>Add from the Web</item>
     </string-array>
 
     <string-array name="font_list">

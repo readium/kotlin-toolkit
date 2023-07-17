@@ -16,8 +16,8 @@ import org.readium.r2.shared.extensions.scaleToFit
 import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.fetcher.BytesResource
 import org.readium.r2.shared.fetcher.FailureResource
+import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.LazyResource
-import org.readium.r2.shared.fetcher.Resource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
@@ -98,13 +98,14 @@ abstract class GeneratedCoverService : CoverService {
 
     abstract override suspend fun cover(): Bitmap
 
-    override fun get(link: Link): Resource? {
+    override fun get(link: Link): Fetcher.Resource? {
         if (link.href != coverLink.href)
             return null
 
         return LazyResource {
             val cover = cover()
             val png = cover.toPng()
+
             if (png == null) {
                 val error = Exception("Unable to convert cover to PNG.")
                 FailureResource(coverLink, error)

@@ -14,8 +14,8 @@ import java.util.concurrent.CancellationException
 import org.json.JSONObject
 import org.readium.r2.shared.R
 import org.readium.r2.shared.UserException
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
 
 typealias HttpTry<SuccessT> = Try<SuccessT, HttpException>

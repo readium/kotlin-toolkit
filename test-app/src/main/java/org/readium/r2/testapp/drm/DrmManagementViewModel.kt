@@ -9,7 +9,7 @@ package org.readium.r2.testapp.drm
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import java.util.*
-import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.error.Try
 
 abstract class DrmManagementViewModel : ViewModel() {
 
