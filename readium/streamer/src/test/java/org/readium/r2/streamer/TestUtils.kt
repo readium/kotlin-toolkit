@@ -17,4 +17,4 @@ import org.readium.r2.streamer.parser.PublicationParser
 internal fun Fetcher.Resource.readBlocking(range: LongRange? = null) = runBlocking { read(range) }
 
 internal fun PublicationParser.parseBlocking(asset: PublicationParser.Asset):
-    Publication.Builder? = runBlocking { parse(asset).successOrNull() }
+    Publication.Builder? = runBlocking { parse(asset).getOrNull() }

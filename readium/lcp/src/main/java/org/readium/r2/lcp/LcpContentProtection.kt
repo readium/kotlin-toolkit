@@ -41,15 +41,10 @@ internal class LcpContentProtection(
 
     override suspend fun open(
         asset: Asset,
-        drmScheme: String,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
-    ): Try<ContentProtection.Asset, Publication.OpeningException>? {
-        if (drmScheme != scheme.uri) {
-            return null
-        }
-
+    ): Try<ContentProtection.Asset, Publication.OpeningException> {
         return when (asset) {
             is Asset.Container -> openPublication(asset, credentials, allowUserInteraction, sender)
             is Asset.Resource -> openLicense(asset, credentials, allowUserInteraction, sender)
@@ -90,11 +85,11 @@ internal class LcpContentProtection(
         license: Try<LcpLicense, LcpException>,
     ): Try<ContentProtection.Asset, Publication.OpeningException> {
         val serviceFactory = LcpContentProtectionService
-            .createFactory(license.successOrNull(), license.failureOrNull())
+            .createFactory(license.getOrNull(), license.failureOrNull())
 
         val fetcher = TransformingFetcher(
             ContainerFetcher(asset.container, mediaTypeRetriever),
-            LcpDecryptor(license.successOrNull())::transform
+            LcpDecryptor(license.getOrNull())::transform
         )
 
         val protectedFile = ContentProtection.Asset(
@@ -117,7 +112,7 @@ internal class LcpContentProtection(
     ): Try<ContentProtection.Asset, Publication.OpeningException> {
         val license = retrieveLicense(licenseAsset, credentials, allowUserInteraction, sender)
 
-        val licenseDoc = license.successOrNull()?.license
+        val licenseDoc = license.getOrNull()?.license
             ?: licenseAsset.resource.read()
                 .map {
                     try {
@@ -168,7 +163,7 @@ internal class LcpContentProtection(
                 Publication.OpeningException.NotFound()
             is ResourceFactory.Error.Forbidden ->
                 Publication.OpeningException.Forbidden()
-            is ResourceFactory.Error.UnsupportedScheme ->
+            is ResourceFactory.Error.SchemeNotSupported ->
                 Publication.OpeningException.UnsupportedAsset()
         }
 

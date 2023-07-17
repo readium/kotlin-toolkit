@@ -25,6 +25,7 @@ import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.readBlocking
 import org.readium.r2.shared.resource.DefaultArchiveFactory
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
@@ -40,7 +41,7 @@ class ContainerFetcherTest {
         val archive = runBlocking {
             DefaultArchiveFactory()
                 .open(File(epub.path))
-                .successOrNull()!!
+                .getOrNull()!!
         }
         val zipFetcher = ContainerFetcher(archive, MediaTypeRetriever())
         assertNotNull(zipFetcher)
@@ -102,14 +103,14 @@ class ContainerFetcherTest {
     @Test
     fun `Fully reading an entry works well`() {
         val resource = fetcher.get(Link(href = "/mimetype"))
-        val result = resource.readBlocking().successOrNull()
+        val result = resource.readBlocking().getOrNull()
         assertEquals("application/epub+zip", result?.toString(StandardCharsets.UTF_8))
     }
 
     @Test
     fun `Reading a range of an entry works well`() {
         val resource = fetcher.get(Link(href = "/mimetype"))
-        val result = resource.readBlocking(0..10L).successOrNull()
+        val result = resource.readBlocking(0..10L).getOrNull()
         assertEquals("application", result?.toString(StandardCharsets.UTF_8))
         assertEquals(11, result?.size)
     }
@@ -117,7 +118,7 @@ class ContainerFetcherTest {
     @Test
     fun `Out of range indexes are clamped to the available length`() {
         val resource = fetcher.get(Link(href = "/mimetype"))
-        val result = resource.readBlocking(-5..60L).successOrNull()
+        val result = resource.readBlocking(-5..60L).getOrNull()
         assertEquals("application/epub+zip", result?.toString(StandardCharsets.UTF_8))
         assertEquals(20, result?.size)
     }
@@ -125,7 +126,7 @@ class ContainerFetcherTest {
     @Test
     fun `Decreasing ranges are understood as empty ones`() {
         val resource = fetcher.get(Link(href = "/mimetype"))
-        val result = resource.readBlocking(60..20L).successOrNull()
+        val result = resource.readBlocking(60..20L).getOrNull()
         assertEquals("", result?.toString(StandardCharsets.UTF_8))
         assertEquals(0, result?.size)
     }
@@ -134,7 +135,7 @@ class ContainerFetcherTest {
     fun `Computing length works well`() {
         val resource = fetcher.get(Link(href = "/mimetype"))
         val result = resource.lengthBlocking()
-        assertEquals(20L, result.successOrNull())
+        assertEquals(20L, result.getOrNull())
     }
 
     @Test
@@ -189,7 +190,7 @@ class ContainerFetcherTest {
     @Test
     fun `Get resource from HREF with query parameters`() = runBlocking {
         val resource = fetcher.get(Link(href = "/mimetype?query=param"))
-        val result = resource.readAsString().successOrNull()
+        val result = resource.readAsString().getOrNull()
         assertEquals("application/epub+zip", result)
     }
 
@@ -200,7 +201,7 @@ class ContainerFetcherTest {
     @Test
     fun `Get resource from HREF with anchors`() = runBlocking {
         val resource = fetcher.get(Link(href = "/mimetype#anchor"))
-        val result = resource.readAsString().successOrNull()
+        val result = resource.readAsString().getOrNull()
         assertEquals("application/epub+zip", result)
     }
 }

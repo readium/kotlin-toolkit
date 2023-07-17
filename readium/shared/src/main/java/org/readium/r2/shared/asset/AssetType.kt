@@ -6,20 +6,24 @@
 
 package org.readium.r2.shared.asset
 
-enum class AssetType {
+import org.readium.r2.shared.util.MapCompanion
+
+enum class AssetType(val rawValue: String) {
 
     /**
      * A simple resource.
      */
-    Resource,
+    Resource("resource"),
 
     /**
      * A directory container.
      */
-    Directory,
+    Directory("directory"),
 
     /**
      * An archive container.
      */
-    Archive
+    Archive("archive");
+
+    companion object : MapCompanion<String, AssetType>(values(), AssetType::rawValue)
 }

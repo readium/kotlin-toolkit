@@ -67,7 +67,7 @@ class EpubPositionsService(
         data class OriginalLength(val pageLength: Int) : ReflowableStrategy() {
             override suspend fun positionCount(resource: Fetcher.Resource): Int {
                 val length = resource.link().properties.encryption?.originalLength
-                    ?: resource.length().successOrNull()
+                    ?: resource.length().getOrNull()
                     ?: 0
                 return ceil(length.toDouble() / pageLength.toDouble()).toInt()
                     .coerceAtLeast(1)
@@ -81,7 +81,7 @@ class EpubPositionsService(
         data class ArchiveEntryLength(val pageLength: Int) : ReflowableStrategy() {
             override suspend fun positionCount(resource: Fetcher.Resource): Int {
                 val length = resource.link().properties.archive?.entryLength
-                    ?: resource.length().successOrNull()
+                    ?: resource.length().getOrNull()
                     ?: 0
                 return ceil(length.toDouble() / pageLength.toDouble()).toInt()
                     .coerceAtLeast(1)

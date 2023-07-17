@@ -24,11 +24,6 @@ interface Container : SuspendingCloseable {
          * It MUST start with /.
          */
         val path: String
-
-        /**
-         * Gets the entry name if any.
-         */
-        override suspend fun name(): ResourceTry<String?>
     }
 
     /**

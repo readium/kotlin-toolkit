@@ -71,7 +71,7 @@ class EpubDeobfuscatorTest {
         val deobfuscatedRes = deobfuscate(
             "/deobfuscation/cut-cut.obf.woff",
             "http://www.idpf.org/2008/embedding"
-        ).readBlocking().successOrNull()
+        ).readBlocking().getOrNull()
         assertThat(deobfuscatedRes).isEqualTo(font)
     }
 
@@ -91,7 +91,7 @@ class EpubDeobfuscatorTest {
         val deobfuscatedRes = deobfuscate(
             "/deobfuscation/cut-cut.adb.woff",
             "http://ns.adobe.com/pdf/enc#RC"
-        ).readBlocking().successOrNull()
+        ).readBlocking().getOrNull()
         assertThat(deobfuscatedRes).isEqualTo(font)
     }
 
@@ -100,7 +100,7 @@ class EpubDeobfuscatorTest {
         val deobfuscatedRes = deobfuscate(
             "/deobfuscation/cut-cut.woff",
             null
-        ).readBlocking().successOrNull()
+        ).readBlocking().getOrNull()
         assertThat(deobfuscatedRes).isEqualTo(font)
     }
 
@@ -109,7 +109,7 @@ class EpubDeobfuscatorTest {
         val deobfuscatedRes = deobfuscate(
             "/deobfuscation/cut-cut.woff",
             "unknown algorithm"
-        ).readBlocking().successOrNull()
+        ).readBlocking().getOrNull()
         assertThat(deobfuscatedRes).isEqualTo(font)
     }
 }

@@ -60,7 +60,7 @@ interface ContentProtectionService : Publication.Service {
      * User-facing name for this Content Protection, e.g. "Readium LCP".
      * It could be used in a sentence such as "Protected by {name}"
      */
-    val name: LocalizedString? get() = scheme?.name
+    val name: LocalizedString? get() = null
 
     override val links: List<Link>
         get() = RouteHandler.links

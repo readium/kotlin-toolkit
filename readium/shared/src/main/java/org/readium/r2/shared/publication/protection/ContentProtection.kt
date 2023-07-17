@@ -40,17 +40,15 @@ interface ContentProtection {
     /**
      * Attempts to unlock a potentially protected publication asset.
      *
-     * @return A [Asset] in case of success, null if the asset is not protected by this
-     * technology or a [Publication.OpeningException] if the asset can't be successfully opened,
-     * even in restricted mode.
+     * @return A [Asset] in case of success or a [Publication.OpeningException] if the
+     * asset can't be successfully opened even in restricted mode.
      */
     suspend fun open(
         asset: org.readium.r2.shared.asset.Asset,
-        drmScheme: String,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?
-    ): Try<Asset, Publication.OpeningException>?
+    ): Try<Asset, Publication.OpeningException>
 
     /**
      * Holds the result of opening an [Asset] with a [ContentProtection].
@@ -72,18 +70,19 @@ interface ContentProtection {
     /**
      * Represents a specific Content Protection technology, uniquely identified with an [uri].
      */
-    class Scheme(
+    @JvmInline
+    value class Scheme(
         val uri: String,
-        val name: LocalizedString?
     ) {
-        override fun hashCode(): Int = uri.hashCode()
-        override fun equals(other: Any?): Boolean = (other as? Scheme)?.uri == uri
+
+        @Deprecated("Define yourself the name to print to users.", level = DeprecationLevel.ERROR)
+        val name: LocalizedString? get() = null
 
         companion object {
             /** Readium LCP DRM scheme. */
-            val Lcp = Scheme(uri = "http://readium.org/2014/01/lcp", name = LocalizedString("Readium LCP"))
+            val Lcp = Scheme(uri = "http://readium.org/2014/01/lcp")
             /** Adobe ADEPT DRM scheme. */
-            val Adept = Scheme(uri = "http://ns.adobe.com/adept", name = LocalizedString("Adobe ADEPT"))
+            val Adept = Scheme(uri = "http://ns.adobe.com/adept")
         }
     }
 
@@ -99,10 +98,10 @@ interface ContentProtection {
          * Exception returned when the given Content Protection [scheme] is not supported by the
          * app.
          */
-        class SchemeNotSupported(val scheme: Scheme? = null) : Exception(
-            if (scheme?.name == null) R.string.readium_shared_publication_content_protection_exception_not_supported_unknown
+        class SchemeNotSupported(val scheme: Scheme? = null, name: String?) : Exception(
+            if (name == null) R.string.readium_shared_publication_content_protection_exception_not_supported_unknown
             else R.string.readium_shared_publication_content_protection_exception_not_supported,
-            scheme?.name?.string
+            name
         )
     }
 }

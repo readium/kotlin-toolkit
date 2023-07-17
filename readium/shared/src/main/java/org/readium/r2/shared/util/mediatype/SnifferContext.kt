@@ -105,7 +105,7 @@ class ResourceSnifferContext internal constructor(
                 loadedContentAsString = true
                 _contentAsString = resource
                     .readAsString(charset ?: Charset.defaultCharset())
-                    .successOrNull()
+                    .getOrNull()
             }
             _contentAsString
         } catch (e: OutOfMemoryError) { // We don't want to catch any Error, only OOM.
@@ -122,7 +122,7 @@ class ResourceSnifferContext internal constructor(
             loadedContentAsXml = true
             _contentAsXml = withContext(Dispatchers.IO) {
                 try {
-                    resource.readAsXml().successOrNull()
+                    resource.readAsXml().getOrNull()
                 } catch (e: Exception) {
                     null
                 }
@@ -165,7 +165,7 @@ class ResourceSnifferContext internal constructor(
      * See https://en.wikipedia.org/wiki/List_of_file_signatures
      */
     suspend fun read(range: LongRange? = null): ByteArray? =
-        resource.read(range).successOrNull()
+        resource.read(range).getOrNull()
 
     /**
      * Returns whether the content is a JSON object containing all of the given root keys.
@@ -209,7 +209,7 @@ class ContainerSnifferContext internal constructor(
 
         return withContext(Dispatchers.IO) {
             val entry = archive.entry(path)
-            val bytes = entry.read().successOrNull()
+            val bytes = entry.read().getOrNull()
             entry.close()
             bytes
         }
@@ -267,9 +267,9 @@ internal class UrlSnifferContextFactory(
                     ResourceSnifferContext(
                         resource = resource,
                         mediaTypes = mediaTypes +
-                            listOfNotNull(resource.mediaType().successOrNull()),
+                            listOfNotNull(resource.mediaType().getOrNull()),
                         fileExtensions = fileExtensions +
-                            listOfNotNull(resource.name().successOrNull()?.let { File(it).extension })
+                            listOfNotNull(resource.name().getOrNull()?.let { File(it).extension })
                     )
                 }
             )
@@ -281,7 +281,7 @@ internal class UrlSnifferContextFactory(
         fileExtensions: List<String>
     ): ContentAwareSnifferContext? {
         val container = containerFactory.create(url)
-            .successOrNull()
+            .getOrNull()
             ?: return null
 
         return ContainerSnifferContext(

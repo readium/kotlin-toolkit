@@ -67,6 +67,31 @@ navigator.addInputListener(DirectionalNavigationAdapter(
 
 `DirectionalNavigationAdapter` offers a lot of customization options. Take a look at its API.
 
+### Removal of Fuel and Kovenant
+
+Both the Fuel and Kovenant libraries have been completely removed from the toolkit. With that, several deprecated functions have also been removed.
+
+#### opds/OPDS1Parser
+
+* Both `parseURL(url: URL)` and `parseURL(headers: MutableMap<String, String>, url: URL)` have been replaced with `parseUrlString(url: String, client: HttpClient = DefaultHttpClient())`.
+* `fetchOpenSearchTemplate(feed: Feed)` has been replaced with `retrieveOpenSearchTemplate(feed: Feed)`.
+
+#### opds/OPDS2Parser
+
+* Both `parseURL(url: URL)` and `parseURL(headers: MutableMap<String, String>, url: URL)` have been replaced with `parseUrlString(url: String, client: HttpClient = DefaultHttpClient())`.
+
+#### shared/FuelPromiseExtension
+
+* `Request.promise()`
+
+#### shared/format/Deprecated
+
+* `Response.sniffFormat` has been replaced with `org.readium.r2.shared.util.mediatype.sniffMediaType`
+
+#### shared/util/mediatype/Extensions
+
+* `Response.sniffMediaType(...)` has been replaced with `org.readium.r2.shared.util.mediatype.sniffMediaType`
+
 
 ## 2.3.0
 

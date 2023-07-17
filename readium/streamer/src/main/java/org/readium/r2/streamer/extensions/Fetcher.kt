@@ -12,15 +12,17 @@ package org.readium.r2.streamer.extensions
 import org.json.JSONObject
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.parser.xml.ElementNode
+import org.readium.r2.shared.resource.readAsJson
+import org.readium.r2.shared.resource.readAsXml
 import org.readium.r2.shared.util.use
 
 /** Returns the resource data as an XML Document at the given [href], or null. */
 internal suspend fun Fetcher.readAsXmlOrNull(href: String): ElementNode? =
-    get(href).use { it.readAsXml().successOrNull() }
+    get(href).use { it.readAsXml().getOrNull() }
 
 /** Returns the resource data as a JSON object at the given [href], or null. */
 internal suspend fun Fetcher.readAsJsonOrNull(href: String): JSONObject? =
-    get(href).use { it.readAsJson().successOrNull() }
+    get(href).use { it.readAsJson().getOrNull() }
 
 internal suspend fun Fetcher.guessTitle(): String? {
     val firstLink = links().firstOrNull() ?: return null

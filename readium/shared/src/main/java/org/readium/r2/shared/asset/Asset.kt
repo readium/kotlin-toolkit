@@ -9,7 +9,7 @@ package org.readium.r2.shared.asset
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
- * An asset which is either a single resource or a container for several ones.
+ * An asset which is either a single resource or a container that holds multiple resources.
  */
 sealed class Asset {
 

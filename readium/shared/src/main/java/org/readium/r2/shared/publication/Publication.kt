@@ -18,7 +18,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.*
 import org.readium.r2.shared.BuildConfig.DEBUG
 import org.readium.r2.shared.error.Error
-import org.readium.r2.shared.error.SimpleError
+import org.readium.r2.shared.error.MessageError
 import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.removeLastComponent
@@ -435,7 +435,7 @@ class Publication(
          */
         class UnsupportedAsset(override val cause: Error? = null) : OpeningException() {
 
-            constructor(message: String) : this(SimpleError(message))
+            constructor(message: String) : this(MessageError(message))
 
             override val message: String =
                 "Asset is not supported."

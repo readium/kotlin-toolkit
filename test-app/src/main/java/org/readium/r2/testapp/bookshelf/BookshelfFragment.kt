@@ -147,9 +147,7 @@ class BookshelfFragment : Fragment() {
                 }
 
                 is BookshelfViewModel.Event.OpenPublicationError -> {
-                    val detail = event.errorMessage
-                        ?: "Unable to open publication. An unexpected error occurred."
-                    "Error: $detail"
+                    event.errorMessage
                 }
 
                 is BookshelfViewModel.Event.LaunchReader -> {

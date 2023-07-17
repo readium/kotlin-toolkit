@@ -12,7 +12,7 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 /**
  * Retrieves [ContentProtection] schemes of assets.
  */
-class ProtectionRetriever(
+class ContentProtectionSchemeRetriever(
     contentProtections: List<ContentProtection>,
     mediaTypeRetriever: MediaTypeRetriever
 ) {

@@ -39,9 +39,11 @@ class ThrowableError(
 }
 
 /**
- * A basic [Error] implementation.
+ * A basic [Error] implementation with a message.
  */
-class SimpleError(
+class MessageError(
     override val message: String,
+) : Error {
+
     override val cause: Error? = null
-) : Error
+}

@@ -61,11 +61,12 @@ class PublicationFactory constructor(
     private val onCreatePublication: Publication.Builder.() -> Unit = {},
 ) {
 
-    private val contentProtections: List<ContentProtection> =
-        contentProtections + listOf(
-            LcpFallbackContentProtection(mediaTypeRetriever),
-            AdeptFallbackContentProtection(mediaTypeRetriever)
-        )
+    private val contentProtections: Map<ContentProtection.Scheme, ContentProtection> =
+        buildList {
+            add(LcpFallbackContentProtection(mediaTypeRetriever))
+            add(AdeptFallbackContentProtection(mediaTypeRetriever))
+            addAll(contentProtections.asReversed())
+        }.associateBy(ContentProtection::scheme)
 
     private val defaultParsers: List<PublicationParser> =
         listOfNotNull(
@@ -99,7 +100,8 @@ class PublicationFactory constructor(
      * issues.
      *
      * @param asset Digital medium (e.g. a file) used to access the publication.
-     * @param drmScheme Scheme of the DRM protecting the publication, or null if there is none.
+     * @param contentProtectionScheme Scheme of the [ContentProtection] protecting the publication,
+     *   or null if there is none.
      * @param credentials Credentials that Content Protections can use to attempt to unlock a
      *   publication, for example a password.
      * @param allowUserInteraction Indicates whether the user can be prompted, for example for its
@@ -114,7 +116,7 @@ class PublicationFactory constructor(
      */
     suspend fun open(
         asset: Asset,
-        drmScheme: String? = null,
+        contentProtectionScheme: ContentProtection.Scheme? = null,
         credentials: String? = null,
         allowUserInteraction: Boolean,
         sender: Any? = null,
@@ -126,7 +128,7 @@ class PublicationFactory constructor(
             onCreatePublication(this)
         }
 
-        return if (drmScheme == null) {
+        return if (contentProtectionScheme == null) {
             openUnprotected(
                 asset,
                 compositeOnCreatePublication,
@@ -135,7 +137,7 @@ class PublicationFactory constructor(
         } else {
             openProtected(
                 asset,
-                drmScheme,
+                contentProtectionScheme,
                 credentials,
                 allowUserInteraction,
                 sender,
@@ -157,17 +159,16 @@ class PublicationFactory constructor(
 
     private suspend fun openProtected(
         asset: Asset,
-        drmScheme: String,
+        contentProtectionScheme: ContentProtection.Scheme,
         credentials: String?,
         allowUserInteraction: Boolean,
         sender: Any?,
         onCreatePublication: Publication.Builder.() -> Unit,
         warnings: WarningLogger?
     ): Try<Publication, Publication.OpeningException> {
-        val protectedAsset = contentProtections
-            .lazyMapFirstNotNullOrNull {
-                it.open(asset, drmScheme, credentials, allowUserInteraction, sender)
-            }?.getOrElse { return Try.failure(it) }
+        val protectedAsset = contentProtections[contentProtectionScheme]
+            ?.open(asset, credentials, allowUserInteraction, sender)
+            ?.getOrElse { return Try.failure(it) }
             ?: return Try.failure(Publication.OpeningException.Forbidden())
 
         val parserAsset = PublicationParser.Asset(

@@ -23,6 +23,7 @@ import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
+import org.readium.r2.shared.resource.readAsString
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -408,7 +409,7 @@ class PublicationTest {
                 positions = { service }
             )
         )
-        assertEquals("test passed", runBlocking { publication.get(link).readAsString().successOrNull() })
+        assertEquals("test passed", runBlocking { publication.get(link).readAsString().getOrNull() })
     }
 
     @Test fun `find the first resource {Link} with the given {href}`() {

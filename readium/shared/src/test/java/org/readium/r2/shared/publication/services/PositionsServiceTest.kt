@@ -20,6 +20,7 @@ import org.readium.r2.shared.extensions.optNullableInt
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.resource.readAsString
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -76,7 +77,7 @@ class PositionsServiceTest {
 
         val json = service.get(Link("/~readium/positions"))
             ?.let { runBlocking { it.readAsString() } }
-            ?.successOrNull()
+            ?.getOrNull()
             ?.let { JSONObject(it) }
         val total = json
             ?.optNullableInt("total")

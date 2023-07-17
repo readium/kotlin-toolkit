@@ -100,7 +100,7 @@ class ReaderRepository(
 
         val publication = readium.publicationFactory.open(
             asset,
-            drmScheme = book.drm,
+            contentProtectionScheme = book.drmScheme,
             allowUserInteraction = true,
             sender = activity
         ).getOrElse { return Try.failure(OpeningError.PublicationError(it)) }

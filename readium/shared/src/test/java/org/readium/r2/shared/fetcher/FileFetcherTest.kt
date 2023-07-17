@@ -59,21 +59,21 @@ class FileFetcherTest {
     @Test
     fun `Reading an href in the map works well`() {
         val resource = fetcher.get(Link(href = "/file_href"))
-        val result = resource.readBlocking().successOrNull()
+        val result = resource.readBlocking().getOrNull()
         assertEquals("text", result?.toString(StandardCharsets.UTF_8))
     }
 
     @Test
     fun `Reading a file in a directory works well`() {
         val resource = fetcher.get(Link(href = "/dir_href/text1.txt"))
-        val result = resource.readBlocking().successOrNull()
+        val result = resource.readBlocking().getOrNull()
         assertEquals("text1", result?.toString(StandardCharsets.UTF_8))
     }
 
     @Test
     fun `Reading a file in a subdirectory works well`() {
         val resource = fetcher.get(Link(href = "/dir_href/subdirectory/text2.txt"))
-        val result = resource.readBlocking().successOrNull()
+        val result = resource.readBlocking().getOrNull()
         assertEquals("text2", result?.toString(StandardCharsets.UTF_8))
     }
 
@@ -92,23 +92,23 @@ class FileFetcherTest {
     @Test
     fun `Reading a range works well`() {
         val resource = fetcher.get(Link(href = "/file_href"))
-        val result = resource.readBlocking(0..2L).successOrNull()
+        val result = resource.readBlocking(0..2L).getOrNull()
         assertEquals("tex", result?.toString(StandardCharsets.UTF_8))
     }
 
     @Test
     fun `Reading two ranges with the same resource work well`() {
         val resource = fetcher.get(Link(href = "/file_href"))
-        val result1 = resource.readBlocking(0..1L).successOrNull()
+        val result1 = resource.readBlocking(0..1L).getOrNull()
         assertEquals("te", result1?.toString(StandardCharsets.UTF_8))
-        val result2 = resource.readBlocking(1..3L).successOrNull()
+        val result2 = resource.readBlocking(1..3L).getOrNull()
         assertEquals("ext", result2?.toString(StandardCharsets.UTF_8))
     }
 
     @Test
     fun `Out of range indexes are clamped to the available length`() {
         val resource = fetcher.get(Link(href = "/file_href"))
-        val result = resource.readBlocking(-5..60L).successOrNull()
+        val result = resource.readBlocking(-5..60L).getOrNull()
         assertEquals("text", result?.toString(StandardCharsets.UTF_8))
         assertEquals(4, result?.size)
     }
@@ -117,7 +117,7 @@ class FileFetcherTest {
     @Suppress("EmptyRange")
     fun `Decreasing ranges are understood as empty ones`() {
         val resource = fetcher.get(Link(href = "/file_href"))
-        val result = resource.readBlocking(60..20L).successOrNull()
+        val result = resource.readBlocking(60..20L).getOrNull()
         assertEquals("", result?.toString(StandardCharsets.UTF_8))
         assertEquals(0, result?.size)
     }
@@ -125,7 +125,7 @@ class FileFetcherTest {
     @Test
     fun `Computing length works well`() {
         val resource = fetcher.get(Link(href = "/file_href"))
-        val result = resource.lengthBlocking().successOrNull()
+        val result = resource.lengthBlocking().getOrNull()
         assertEquals(4L, result)
     }
 

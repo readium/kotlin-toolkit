@@ -10,8 +10,6 @@
 package org.readium.r2.opds
 
 import java.net.URL
-import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.then
 import org.joda.time.DateTime
 import org.json.JSONArray
 import org.json.JSONObject
@@ -50,29 +48,6 @@ class OPDS2Parser {
         suspend fun parseRequest(request: HttpRequest, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
             return client.fetchWithDecoder(request) {
                 this.parse(it.body, URL(request.url))
-            }
-        }
-
-        @Deprecated(
-            "Use `parseRequest` or `parseUrlString` with coroutines instead",
-            ReplaceWith("OPDS2Parser.parseUrlString(url)"),
-            DeprecationLevel.WARNING
-        )
-        fun parseURL(url: URL): Promise<ParseData, Exception> {
-            return DefaultHttpClient().fetchPromise(HttpRequest(url.toString())) then {
-                this.parse(it.body, url)
-            }
-        }
-
-        @Deprecated(
-            "Use `parseRequest` or `parseUrlString` with coroutines instead",
-            ReplaceWith("OPDS2Parser.parseUrlString(url)"),
-            DeprecationLevel.WARNING
-        )
-        @Suppress("unused")
-        fun parseURL(headers: MutableMap<String, String>, url: URL): Promise<ParseData, Exception> {
-            return DefaultHttpClient().fetchPromise(HttpRequest(url = url.toString(), headers = headers)) then {
-                this.parse(it.body, url)
             }
         }
 

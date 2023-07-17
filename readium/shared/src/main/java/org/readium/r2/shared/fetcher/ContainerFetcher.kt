@@ -92,7 +92,7 @@ private suspend fun Container.Entry.toLink(mediaTypeRetriever: MediaTypeRetrieve
 private suspend fun ZipContainer.Entry.toLinkProperties(): Map<String, Any> {
     return mutableMapOf<String, Any>(
         "archive" to mapOf<String, Any>(
-            "entryLength" to (compressedLength ?: length().successOrNull() ?: 0),
+            "entryLength" to (compressedLength ?: length().getOrNull() ?: 0),
             "isEntryCompressed" to (compressedLength != null)
         )
     )
