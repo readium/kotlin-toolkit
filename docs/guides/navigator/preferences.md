@@ -2,7 +2,7 @@
 
 :warning: The Navigator Setting API is still experimental and currently only available with `EpubNavigatorFragment` and `PdfNavigatorFragment`.
 
-Take a look at the [migration guide](../migration-guide.md) if you are already using the legacy EPUB settings.
+Take a look at the [migration guide](../../migration-guide.md) if you are already using the legacy EPUB settings.
 
 ## Overview
 
@@ -12,7 +12,7 @@ You cannot directly overwrite the Navigator settings. Instead, you submit a set 
 
 For instance: "font size" is a **setting**, and the application can submit the font size value `150%` as a **preference**.
 
-<img src="assets/settings-flow.svg">
+<img src="../assets/settings-flow.svg">
 
 ```kotlin
 // 1. Create a set of preferences.
