@@ -173,8 +173,8 @@ class TtsViewModel private constructor(
 
         val ttsNavigator = ttsNavigatorFactory.createNavigator(
             this,
-            preferencesManager.preferences.value,
-            start
+            initialLocator = start,
+            initialPreferences = preferencesManager.preferences.value
         ) ?: run {
             val exception = UserException(R.string.tts_error_initialization)
             _events.send(Event.OnError(exception))

@@ -147,8 +147,8 @@ class ReaderRepository(
         ) ?: return Try.failure(OpeningError.PublicationError(PublicationError.UnsupportedPublication()))
 
         val navigator = navigatorFactory.createNavigator(
-            initialPreferences,
-            initialLocator
+            initialLocator,
+            initialPreferences
         ) ?: return Try.failure(OpeningError.PublicationError(PublicationError.UnsupportedPublication()))
 
         mediaServiceFacade.openSession(bookId, navigator)

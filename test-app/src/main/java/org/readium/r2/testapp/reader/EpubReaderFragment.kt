@@ -54,8 +54,8 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         childFragmentManager.fragmentFactory =
             readerData.navigatorFactory.createFragmentFactory(
                 initialLocator = readerData.initialLocation,
-                listener = this,
                 initialPreferences = readerData.preferencesManager.preferences.value,
+                listener = this,
                 configuration = EpubNavigatorFragment.Configuration {
                     // To customize the text selection menu.
                     selectionActionModeCallback = customSelectionActionModeCallback

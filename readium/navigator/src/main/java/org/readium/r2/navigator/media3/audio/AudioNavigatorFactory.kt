@@ -42,14 +42,14 @@ class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferen
     }
 
     suspend fun createNavigator(
+        initialLocator: Locator? = null,
         initialPreferences: P? = null,
-        initialLocator: Locator? = null
     ): AudioNavigator<S, P>? {
         return AudioNavigator(
             publication = publication,
             audioEngineProvider = audioEngineProvider,
+            initialLocator = initialLocator,
             initialPreferences = initialPreferences,
-            initialLocator = initialLocator
         )
     }
 

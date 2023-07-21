@@ -56,8 +56,8 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             tokenizerFactory: (language: Language?) -> TextTokenizer,
             metadataProvider: MediaMetadataProvider,
             listener: Listener,
-            initialPreferences: P? = null,
             initialLocator: Locator? = null,
+            initialPreferences: P? = null,
         ): TtsNavigator<S, P, E, V>? {
 
             if (publication.findService(ContentService::class) == null) {

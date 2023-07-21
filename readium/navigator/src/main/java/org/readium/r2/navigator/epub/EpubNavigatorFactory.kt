@@ -6,6 +6,8 @@
 
 package org.readium.r2.navigator.epub
 
+import androidx.fragment.app.FragmentFactory
+import org.readium.r2.navigator.ExperimentalDecorator
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -36,13 +38,14 @@ class EpubNavigatorFactory(
     private val layout: EpubLayout =
         publication.metadata.presentation.layout ?: EpubLayout.REFLOWABLE
 
+    @OptIn(ExperimentalDecorator::class)
     fun createFragmentFactory(
         initialLocator: Locator?,
         initialPreferences: EpubPreferences = EpubPreferences(),
         listener: EpubNavigatorFragment.Listener? = null,
         paginationListener: EpubNavigatorFragment.PaginationListener? = null,
         configuration: EpubNavigatorFragment.Configuration = EpubNavigatorFragment.Configuration(),
-    ) = org.readium.r2.navigator.util.createFragmentFactory {
+    ): FragmentFactory = org.readium.r2.navigator.util.createFragmentFactory {
         EpubNavigatorFragment(
             publication = publication,
             initialLocator = initialLocator,

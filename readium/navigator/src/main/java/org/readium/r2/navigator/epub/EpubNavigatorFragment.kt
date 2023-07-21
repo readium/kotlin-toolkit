@@ -64,7 +64,6 @@ import org.readium.r2.navigator.pager.R2ViewPager
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.preferences.ReadingProgression
-import org.readium.r2.navigator.util.createFragmentFactory
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
@@ -1042,6 +1041,7 @@ class EpubNavigatorFragment internal constructor(
          * @param listener Optional listener to implement to observe events, such as user taps.
          * @param config Additional configuration.
          */
+        @Deprecated("Use `EpubNavigatorFactory().createFragmentFactory()` instead", level = DeprecationLevel.ERROR)
         fun createFactory(
             publication: Publication,
             baseUrl: String? = null,
@@ -1050,16 +1050,7 @@ class EpubNavigatorFragment internal constructor(
             paginationListener: PaginationListener? = null,
             config: Configuration = Configuration(),
             initialPreferences: EpubPreferences = EpubPreferences()
-        ): FragmentFactory =
-            createFragmentFactory {
-                EpubNavigatorFragment(
-                    publication, initialLocator, initialPreferences,
-                    listener, paginationListener,
-                    epubLayout = publication.metadata.presentation.layout ?: EpubLayout.REFLOWABLE,
-                    defaults = EpubDefaults(),
-                    configuration = config,
-                )
-            }
+        ): FragmentFactory { throw NotImplementedError() }
 
         /**
          * Returns a URL to the application asset at [path], served in the web views.
