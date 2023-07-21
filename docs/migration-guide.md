@@ -36,9 +36,10 @@ To avoid conflicts when merging your app resources, all resources declared in th
 #### Layouts
 
 | Deprecated                  | New                                           |
+|-----------------------------|-----------------------------------------------|
 | `activity_r2_viewpager`     | `readium_navigator_viewpager`                 |
 | `fragment_fxllayout_double` | `readium_navigator_fragment_fxllayout_double` |
-| `fragment_fxllayout_single` | `readium_navigator_fragment_fxllayout_single`
+| `fragment_fxllayout_single` | `readium_navigator_fragment_fxllayout_single` |
 | `popup_footnote`            | `readium_navigator_popup_footnote`            |
 | `r2_lcp_auth_dialog`        | `readium_lcp_auth_dialog`                     |
 | `viewpager_fragment_cbz`    | `readium_navigator_viewpager_fragment_cbz`    |
@@ -47,11 +48,13 @@ To avoid conflicts when merging your app resources, all resources declared in th
 #### Dimensions
 
 | Deprecated                           | New                                       |
+|--------------------------------------|-------------------------------------------|
 | `r2_navigator_epub_vertical_padding` | `readium_navigator_epub_vertical_padding` |
 
 #### Strings
 
 | Deprecated                                  | New                                              |
+|---------------------------------------------|--------------------------------------------------|
 | `r2_lcp_dialog_cancel`                      | `readium_lcp_dialog_cancel`                      |
 | `r2_lcp_dialog_continue`                    | `readium_lcp_dialog_continue`                    |
 | `r2_lcp_dialog_forgotPassphrase`            | `readium_lcp_dialog_forgotPassphrase`            |
@@ -68,6 +71,7 @@ To avoid conflicts when merging your app resources, all resources declared in th
 #### Drawables
 
 | Deprecated                              | New                                          |
+|-----------------------------------------|----------------------------------------------|
 | `r2_media_notification_fastforward.xml` | `readium_media_notification_fastforward.xml` |
 | `r2_media_notification_rewind.xml`      | `readium_media_notification_rewind.xml`      |
 
