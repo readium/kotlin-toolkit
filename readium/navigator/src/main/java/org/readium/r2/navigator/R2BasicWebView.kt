@@ -38,6 +38,8 @@ import org.readium.r2.navigator.extensions.optRectF
 import org.readium.r2.navigator.input.InputModifier
 import org.readium.r2.navigator.input.Key
 import org.readium.r2.navigator.input.KeyEvent
+import org.readium.r2.navigator.preferences.ReadingProgression
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.optNullableString
@@ -46,31 +48,27 @@ import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 
-@OptIn(ExperimentalDecorator::class)
+@OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class)
 open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
 
     interface Listener {
         val readingProgression: ReadingProgression
         fun onResourceLoaded(link: Link?, webView: R2BasicWebView, url: String?) {}
-        fun onPageLoaded()
-        fun onPageChanged(pageIndex: Int, totalPages: Int, url: String)
-        fun onPageEnded(end: Boolean)
-        fun onScroll()
-        fun onTap(point: PointF): Boolean
-        fun onDragStart(event: DragEvent): Boolean
-        fun onDragMove(event: DragEvent): Boolean
-        fun onDragEnd(event: DragEvent): Boolean
+        fun onPageLoaded() {}
+        fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {}
+        fun onPageEnded(end: Boolean) {}
+        fun onTap(point: PointF): Boolean = false
+        fun onDragStart(event: DragEvent): Boolean = false
+        fun onDragMove(event: DragEvent): Boolean = false
+        fun onDragEnd(event: DragEvent): Boolean = false
         fun onKey(event: KeyEvent): Boolean = false
         fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean = false
-        fun onProgressionChanged()
-        fun onHighlightActivated(id: String)
-        fun onHighlightAnnotationMarkActivated(id: String)
+        fun onProgressionChanged() {}
         fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean = false
         fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean = false
 
@@ -98,11 +96,17 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         fun goToNextResource(jump: Boolean, animated: Boolean): Boolean = false
         @InternalReadiumApi
         fun goToPreviousResource(jump: Boolean, animated: Boolean): Boolean = false
+
+        @Deprecated("Not available anymore", level = DeprecationLevel.ERROR)
+        fun onScroll() {}
+        @Deprecated("Not available anymore", level = DeprecationLevel.ERROR)
+        fun onHighlightActivated(id: String) {}
+        @Deprecated("Not available anymore", level = DeprecationLevel.ERROR)
+        fun onHighlightAnnotationMarkActivated(id: String) {}
     }
 
     var listener: Listener? = null
     internal var preferences: SharedPreferences? = null
-    internal var useLegacySettings: Boolean = false
 
     var resourceUrl: String? = null
 
@@ -187,13 +191,9 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         super.destroy()
     }
 
-    @android.webkit.JavascriptInterface
     open fun scrollRight(animated: Boolean = false) {
         uiScope.launch {
             val listener = listener ?: return@launch
-            listener.onScroll()
-
-            val isRtl = (listener.readingProgression == ReadingProgression.RTL)
 
             fun goRight(jump: Boolean) {
                 if (listener.readingProgression == ReadingProgression.RTL) {
@@ -222,11 +222,9 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         }
     }
 
-    @android.webkit.JavascriptInterface
     open fun scrollLeft(animated: Boolean = false) {
         uiScope.launch {
             val listener = listener ?: return@launch
-            listener.onScroll()
 
             fun goLeft(jump: Boolean) {
                 if (listener.readingProgression == ReadingProgression.RTL) {
@@ -255,10 +253,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         }
     }
 
-    /**
-     * Called from the JS code when a tap is detected.
-     * If the JS indicates the tap is being handled within the web view, don't take action,
-     *
+    /*
      * Returns whether the web view should prevent the default behavior for this tap.
      */
     @android.webkit.JavascriptInterface
@@ -283,23 +278,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             return handleFootnote(event.targetElement)
         }
 
-        // Skips to previous/next pages if the tap is on the content edges.
-        val clientWidth = computeHorizontalScrollExtent()
-        val thresholdRange = 0.0..(0.2 * clientWidth)
-
-        // FIXME: Call listener.onTap if scrollLeft|Right fails
-        return when {
-            useLegacySettings && thresholdRange.contains(event.point.x) -> {
-                scrollLeft(false)
-                true
-            }
-            useLegacySettings && thresholdRange.contains(clientWidth - event.point.x) -> {
-                scrollRight(false)
-                true
-            }
-            else ->
-                runBlocking(uiScope.coroutineContext) { listener?.onTap(event.point) ?: false }
-        }
+        return runBlocking(uiScope.coroutineContext) { listener?.onTap(event.point) ?: false }
     }
 
     /**
@@ -381,7 +360,7 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
         // Inflate the custom layout/view
-        val customView = inflater.inflate(R.layout.popup_footnote, null)
+        val customView = inflater.inflate(R.layout.readium_navigator_popup_footnote, null)
 
         // Initialize a new instance of popup window
         val mPopupWindow = PopupWindow(
@@ -487,9 +466,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             fun fromJSONObject(obj: JSONObject?): DragEvent? {
                 obj ?: return null
 
-                val x = obj.optDouble("x").toFloat()
-                val y = obj.optDouble("y").toFloat()
-
                 return DragEvent(
                     defaultPrevented = obj.optBoolean("defaultPrevented"),
                     startPoint = PointF(
@@ -524,20 +500,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     fun log(message: String) {
         Timber.d("JavaScript: $message")
-    }
-
-    @android.webkit.JavascriptInterface
-    fun highlightActivated(id: String) {
-        uiScope.launch {
-            listener?.onHighlightActivated(id)
-        }
-    }
-
-    @android.webkit.JavascriptInterface
-    fun highlightAnnotationMarkActivated(id: String) {
-        uiScope.launch {
-            listener?.onHighlightAnnotationMarkActivated(id)
-        }
     }
 
     fun Boolean.toInt() = if (this) 1 else 0

@@ -36,7 +36,7 @@ sealed class SearchException(content: Content, cause: Throwable? = null) : UserE
     /**
      * The publication is not searchable.
      */
-    object PublicationNotSearchable : SearchException(R.string.r2_shared_search_exception_publication_not_searchable)
+    object PublicationNotSearchable : SearchException(R.string.readium_shared_search_exception_publication_not_searchable)
 
     /**
      * The provided search query cannot be handled by the service.
@@ -58,10 +58,10 @@ sealed class SearchException(content: Content, cause: Throwable? = null) : UserE
      *
      * For example, when a coroutine or a network request is cancelled.
      */
-    object Cancelled : SearchException(R.string.r2_shared_search_exception_cancelled)
+    object Cancelled : SearchException(R.string.readium_shared_search_exception_cancelled)
 
     /** For any other custom service error. */
-    class Other(cause: Throwable) : SearchException(R.string.r2_shared_search_exception_other, cause = cause)
+    class Other(cause: Throwable) : SearchException(R.string.readium_shared_search_exception_other, cause = cause)
 
     companion object {
         fun wrap(e: Throwable): SearchException =

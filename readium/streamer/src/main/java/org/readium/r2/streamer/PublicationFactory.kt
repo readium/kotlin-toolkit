@@ -20,13 +20,11 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
-import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioParser
 import org.readium.r2.streamer.parser.epub.EpubParser
-import org.readium.r2.streamer.parser.epub.setLayoutStyle
 import org.readium.r2.streamer.parser.image.ImageParser
 import org.readium.r2.streamer.parser.pdf.PdfParser
 import org.readium.r2.streamer.parser.readium.ReadiumWebPubParser
@@ -198,7 +196,6 @@ class PublicationFactory constructor(
         builder.apply(onCreatePublication)
 
         val publication = builder.build()
-            .apply { addLegacyProperties(publicationAsset.mediaType) }
         return Try.success(publication)
     }
 
@@ -248,21 +245,4 @@ class PublicationFactory constructor(
         }
         return null
     }
-
-    private fun Publication.addLegacyProperties(mediaType: MediaType?) {
-        @Suppress("DEPRECATION")
-        type = mediaType.toPublicationType()
-
-        if (mediaType == MediaType.EPUB)
-            setLayoutStyle()
-    }
 }
-
-internal fun MediaType?.toPublicationType(): Publication.TYPE =
-    when (this) {
-        MediaType.READIUM_AUDIOBOOK, MediaType.READIUM_AUDIOBOOK_MANIFEST, MediaType.LCP_PROTECTED_AUDIOBOOK -> Publication.TYPE.AUDIO
-        MediaType.DIVINA, MediaType.DIVINA_MANIFEST -> Publication.TYPE.DiViNa
-        MediaType.CBZ -> Publication.TYPE.CBZ
-        MediaType.EPUB -> Publication.TYPE.EPUB
-        else -> Publication.TYPE.WEBPUB
-    }

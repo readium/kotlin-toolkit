@@ -4,12 +4,9 @@
  * available in the top-level LICENSE file of the project.
  */
 
-@file:Suppress("DEPRECATION")
-
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.ReadiumCSSName
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrElse
@@ -29,48 +26,6 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.extensions.readAsXmlOrNull
 import org.readium.r2.streamer.parser.PublicationParser
-
-@Suppress("DEPRECATION")
-object EPUBConstant {
-
-    @Deprecated("Use [MediaType.EPUB.toString()] instead", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("MediaType.EPUB.toString()"))
-    val mimetype: String get() = MediaType.EPUB.toString()
-
-    internal val ltrPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("hyphens") to false,
-        ReadiumCSSName.ref("ligatures") to false
-    )
-
-    internal val rtlPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("hyphens") to false,
-        ReadiumCSSName.ref("wordSpacing") to false,
-        ReadiumCSSName.ref("letterSpacing") to false,
-        ReadiumCSSName.ref("ligatures") to true
-    )
-
-    internal val cjkHorizontalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("textAlignment") to false,
-        ReadiumCSSName.ref("hyphens") to false,
-        ReadiumCSSName.ref("paraIndent") to false,
-        ReadiumCSSName.ref("wordSpacing") to false,
-        ReadiumCSSName.ref("letterSpacing") to false
-    )
-
-    internal val cjkVerticalPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("scroll") to true,
-        ReadiumCSSName.ref("columnCount") to false,
-        ReadiumCSSName.ref("textAlignment") to false,
-        ReadiumCSSName.ref("hyphens") to false,
-        ReadiumCSSName.ref("paraIndent") to false,
-        ReadiumCSSName.ref("wordSpacing") to false,
-        ReadiumCSSName.ref("letterSpacing") to false
-    )
-
-    @Deprecated("Use the new Settings API", level = DeprecationLevel.ERROR)
-    val forceScrollPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(
-        ReadiumCSSName.ref("scroll") to true
-    )
-}
 
 /**
  * Parses a Publication from an EPUB publication.
@@ -119,7 +74,7 @@ class EpubParser(
                 positions = EpubPositionsService.createFactory(reflowablePositionsStrategy),
                 search = StringSearchService.createDefaultFactory(),
                 content = DefaultContentService.createFactory(
-                    listOf(
+                    resourceContentIteratorFactories = listOf(
                         HtmlResourceContentIterator.Factory()
                     )
                 ),
@@ -188,19 +143,5 @@ class EpubParser(
                 if (optName != null && optVal != null) Pair(optName, optVal) else null
             }
             ?.toMap().orEmpty()
-    }
-}
-
-@Suppress("DEPRECATION")
-internal fun Publication.setLayoutStyle() {
-    val layout = ReadiumCssLayout(metadata)
-
-    cssStyle = layout.cssId
-
-    userSettingsUIPreset = when (layout) {
-        ReadiumCssLayout.RTL -> EPUBConstant.rtlPreset
-        ReadiumCssLayout.LTR -> EPUBConstant.ltrPreset
-        ReadiumCssLayout.CJK_VERTICAL -> EPUBConstant.cjkVerticalPreset
-        ReadiumCssLayout.CJK_HORIZONTAL -> EPUBConstant.cjkHorizontalPreset
     }
 }

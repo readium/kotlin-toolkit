@@ -12,8 +12,7 @@ plugins {
 }
 
 android {
-    // FIXME: This doesn't pass the lint because some resources don't start with readium_ yet. We need to rename all resources for the next major version.
-//    resourcePrefix "readium_"
+    resourcePrefix = "readium_"
 
     compileSdk = 33
 

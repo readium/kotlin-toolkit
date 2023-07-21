@@ -22,8 +22,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.webkit.WebViewClientCompat
 import org.readium.r2.navigator.R2BasicWebView
-import org.readium.r2.navigator.databinding.FragmentFxllayoutDoubleBinding
-import org.readium.r2.navigator.databinding.FragmentFxllayoutSingleBinding
+import org.readium.r2.navigator.databinding.ReadiumNavigatorFragmentFxllayoutDoubleBinding
+import org.readium.r2.navigator.databinding.ReadiumNavigatorFragmentFxllayoutSingleBinding
 import org.readium.r2.navigator.epub.EpubNavigatorFragment
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel
 import org.readium.r2.navigator.epub.fxl.R2FXLLayout
@@ -39,10 +39,10 @@ class R2FXLPageFragment : Fragment() {
 
     private var webViews = mutableListOf<R2BasicWebView>()
 
-    private var _doubleBinding: FragmentFxllayoutDoubleBinding? = null
+    private var _doubleBinding: ReadiumNavigatorFragmentFxllayoutDoubleBinding? = null
     private val doubleBinding get() = _doubleBinding!!
 
-    private var _singleBinding: FragmentFxllayoutSingleBinding? = null
+    private var _singleBinding: ReadiumNavigatorFragmentFxllayoutSingleBinding? = null
     private val singleBinding get() = _singleBinding!!
 
     private val navigator: EpubNavigatorFragment?
@@ -55,10 +55,10 @@ class R2FXLPageFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         secondResourceUrl?.let {
-            _doubleBinding = FragmentFxllayoutDoubleBinding.inflate(inflater, container, false)
+            _doubleBinding = ReadiumNavigatorFragmentFxllayoutDoubleBinding.inflate(inflater, container, false)
             val view: View = doubleBinding.root
             view.setPadding(0, 0, 0, 0)
 
@@ -80,7 +80,7 @@ class R2FXLPageFragment : Fragment() {
 
             return view
         } ?: run {
-            _singleBinding = FragmentFxllayoutSingleBinding.inflate(inflater, container, false)
+            _singleBinding = ReadiumNavigatorFragmentFxllayoutSingleBinding.inflate(inflater, container, false)
             val view: View = singleBinding.root
             view.setPadding(0, 0, 0, 0)
 
@@ -131,7 +131,6 @@ class R2FXLPageFragment : Fragment() {
             webView.listener = it.webViewListener
         }
 
-        webView.useLegacySettings = viewModel.useLegacySettings
         webView.settings.javaScriptEnabled = true
         webView.isVerticalScrollBarEnabled = false
         webView.isHorizontalScrollBarEnabled = false

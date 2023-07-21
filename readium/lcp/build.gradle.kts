@@ -12,6 +12,7 @@ plugins {
 }
 
 android {
+    resourcePrefix = "readium_"
 
     compileSdk = 33
     defaultConfig {

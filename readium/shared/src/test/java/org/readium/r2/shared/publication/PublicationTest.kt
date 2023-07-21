@@ -11,21 +11,19 @@ package org.readium.r2.shared.publication
 
 import java.net.URL
 import kotlinx.coroutines.runBlocking
-import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.fetcher.EmptyFetcher
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.Publication.Profile
 import org.readium.r2.shared.publication.services.DefaultLocatorService
 import org.readium.r2.shared.publication.services.PositionsService
+import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.resource.readAsString
-import org.readium.r2.shared.util.Ref
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -35,7 +33,7 @@ class PublicationTest {
         conformsTo: Set<Profile> = emptySet(),
         title: String = "Title",
         language: String = "en",
-        readingProgression: ReadingProgression = ReadingProgression.AUTO,
+        readingProgression: ReadingProgression? = null,
         links: List<Link> = listOf(),
         readingOrder: List<Link> = emptyList(),
         resources: List<Link> = emptyList(),
@@ -54,18 +52,6 @@ class PublicationTest {
         ),
         servicesBuilder = servicesBuilder
     )
-
-    @Suppress("DEPRECATION")
-    @Test fun `get the type computed from the manifest content`() {
-        val fixtures = Fixtures("format")
-        fun parseAt(path: String): Publication =
-            Publication(manifest = Manifest.fromJSON(JSONObject(fixtures.fileAt(path).readText()))!!)
-
-        assertEquals(Publication.TYPE.AUDIO, parseAt("audiobook.json").type)
-        assertEquals(Publication.TYPE.DiViNa, parseAt("divina.json").type)
-        assertEquals(Publication.TYPE.WEBPUB, parseAt("webpub.json").type)
-        assertEquals(Publication.TYPE.WEBPUB, parseAt("opds2-publication.json").type)
-    }
 
     @Test fun `get the default empty {positions}`() {
         assertEquals(emptyList<Locator>(), runBlocking { createPublication().positions() })
@@ -444,29 +430,6 @@ class PublicationTest {
     @Test fun `find the first resource {Link} with the given {href} when missing`() {
         assertNull(createPublication().linkWithHref("foobar"))
     }
-
-    @Suppress("DEPRECATION")
-    @Test fun `find the cover {Link}`() {
-        val coverLink = Link(href = "cover", rels = setOf("cover"))
-        val publication = createPublication(
-            links = listOf(Link(href = "other"), coverLink),
-            readingOrder = listOf(Link(href = "other")),
-            resources = listOf(Link(href = "other"))
-        )
-
-        assertEquals(coverLink, publication.coverLink)
-    }
-
-    @Suppress("DEPRECATION")
-    @Test fun `find the cover {Link} when missing`() {
-        val publication = createPublication(
-            links = listOf(Link(href = "other")),
-            readingOrder = listOf(Link(href = "other")),
-            resources = listOf(Link(href = "other"))
-        )
-
-        assertNull(publication.coverLink)
-    }
 }
 
 class ServicesBuilderTest {
@@ -480,7 +443,6 @@ class ServicesBuilderTest {
     class BarServiceA : BarService()
 
     private val context = Publication.Service.Context(
-        publication = Ref(),
         manifest = Manifest(metadata = Metadata(localizedTitle = LocalizedString())),
         fetcher = EmptyFetcher(),
         services = ListPublicationServicesHolder()
@@ -503,8 +465,9 @@ class ServicesBuilderTest {
     fun testBuildEmpty() {
         val builder = Publication.ServicesBuilder(cover = null)
         val services = builder.build(context)
-        assertEquals(1, services.size)
+        assertEquals(2, services.size)
         assertNotNull(services.find<DefaultLocatorService>())
+        assertNotNull(services.find<WebPositionsService>())
     }
 
     @Test

@@ -54,7 +54,7 @@ data class Metadata(
     val contributors: List<Contributor> = emptyList(),
     val publishers: List<Contributor> = emptyList(),
     val imprints: List<Contributor> = emptyList(),
-    val readingProgression: ReadingProgression = ReadingProgression.AUTO,
+    val readingProgression: ReadingProgression? = null,
     val description: String? = null,
     val duration: Double? = null,
     val numberOfPages: Int? = null,
@@ -87,7 +87,7 @@ data class Metadata(
         contributors: List<Contributor> = emptyList(),
         publishers: List<Contributor> = emptyList(),
         imprints: List<Contributor> = emptyList(),
-        readingProgression: ReadingProgression = ReadingProgression.AUTO,
+        readingProgression: ReadingProgression? = null,
         description: String? = null,
         duration: Double? = null,
         numberOfPages: Int? = null,
@@ -171,7 +171,7 @@ data class Metadata(
     @Deprecated("You should resolve [ReadingProgression.AUTO] by yourself.", level = DeprecationLevel.WARNING)
     @IgnoredOnParcel
     val effectiveReadingProgression: ReadingProgression get() {
-        if (readingProgression != ReadingProgression.AUTO) {
+        if (readingProgression != null) {
             return readingProgression
         }
 
@@ -222,7 +222,7 @@ data class Metadata(
         putIfNotEmpty("contributor", contributors)
         putIfNotEmpty("publisher", publishers)
         putIfNotEmpty("imprint", imprints)
-        put("readingProgression", readingProgression.value)
+        put("readingProgression", readingProgression?.value ?: "auto")
         put("description", description)
         put("duration", duration)
         put("numberOfPages", numberOfPages)
@@ -333,22 +333,24 @@ data class Metadata(
         }
     }
 
-    @Deprecated("Use [type] instead", ReplaceWith("type"))
+    @Deprecated("Use [type] instead", ReplaceWith("type"), level = DeprecationLevel.ERROR)
     val rdfType: String? get() = type
 
-    @Deprecated("Use [localizeTitle] instead.", ReplaceWith("localizedTitle"))
+    @Deprecated("Use [localizeTitle] instead.", ReplaceWith("localizedTitle"), level = DeprecationLevel.ERROR)
     val multilanguageTitle: LocalizedString?
         get() = localizedTitle
 
-    @Deprecated("Use [localizedTitle.get] instead", ReplaceWith("localizedTitle.translationForLanguage(key)?.string"))
+    @Deprecated("Use [localizedTitle.get] instead", ReplaceWith("localizedTitle.translationForLanguage(key)?.string"), level = DeprecationLevel.ERROR)
     fun titleForLang(key: String): String? =
         localizedTitle.getOrFallback(key)?.string
 
-    @Deprecated("Use [readingProgression] instead.", ReplaceWith("readingProgression"))
+    @Deprecated("Use [readingProgression] instead.", ReplaceWith("readingProgression"), level = DeprecationLevel.ERROR)
     val direction: String
-        get() = readingProgression.value
+        get() {
+            throw NotImplementedError()
+        }
 
-    @Deprecated("Use [published] instead", ReplaceWith("published?.toIso8601String()"))
+    @Deprecated("Use [published] instead", ReplaceWith("published?.toIso8601String()"), level = DeprecationLevel.ERROR)
     val publicationDate: String?
         get() = published?.toIso8601String()
 

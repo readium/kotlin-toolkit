@@ -18,6 +18,13 @@ import timber.log.Timber
 
 class R2ViewPager : R2RTLViewPager {
 
+    internal enum class PublicationType {
+        EPUB, CBZ, FXL, WEBPUB, AUDIO, DiViNa
+    }
+
+    internal lateinit var publicationType: PublicationType
+
+    @Deprecated(message = "You shouldn't be using these internals.", level = DeprecationLevel.ERROR)
     lateinit var type: Publication.TYPE
 
     constructor(context: Context) : super(context)
@@ -29,7 +36,7 @@ class R2ViewPager : R2RTLViewPager {
 
     override fun onTouchEvent(ev: MotionEvent): Boolean {
         if (DEBUG) Timber.d("ev.action ${ev.action}")
-        if (type == Publication.TYPE.EPUB) {
+        if (publicationType == PublicationType.EPUB) {
             when (ev.action and MotionEvent.ACTION_MASK) {
                 MotionEvent.ACTION_DOWN -> {
                     // prevent swipe from view pager directly
@@ -51,7 +58,7 @@ class R2ViewPager : R2RTLViewPager {
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-        if (type == Publication.TYPE.EPUB) {
+        if (publicationType == PublicationType.EPUB) {
             when (ev.action and MotionEvent.ACTION_MASK) {
                 MotionEvent.ACTION_DOWN -> {
                     // prevent swipe from view pager directly

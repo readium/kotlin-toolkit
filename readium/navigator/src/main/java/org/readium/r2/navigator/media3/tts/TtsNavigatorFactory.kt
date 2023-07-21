@@ -115,8 +115,8 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
 
     suspend fun createNavigator(
         listener: TtsNavigator.Listener,
+        initialLocator: Locator? = null,
         initialPreferences: P? = null,
-        initialLocator: Locator? = null
     ): TtsNavigator<S, P, F, V>? {
         return TtsNavigator(
             application,
@@ -125,8 +125,8 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
             tokenizerFactory,
             metadataProvider,
             listener,
+            initialLocator,
             initialPreferences,
-            initialLocator
         )
     }
 

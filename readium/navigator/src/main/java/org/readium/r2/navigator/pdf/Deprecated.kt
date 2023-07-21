@@ -13,3 +13,6 @@ import androidx.appcompat.app.AppCompatActivity
 
 @Deprecated("Use `PdfNavigatorFragment` in your own activity instead", level = DeprecationLevel.ERROR)
 abstract class R2PdfActivity : AppCompatActivity()
+
+// This is for lint to pass.
+private val fake = null

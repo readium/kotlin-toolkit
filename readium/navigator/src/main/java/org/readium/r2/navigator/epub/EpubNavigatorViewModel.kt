@@ -9,8 +9,6 @@
 package org.readium.r2.navigator.epub
 
 import android.app.Application
-import android.content.Context
-import android.content.SharedPreferences
 import android.graphics.PointF
 import android.graphics.RectF
 import android.net.Uri
@@ -29,15 +27,12 @@ import org.readium.r2.navigator.epub.extensions.javascriptForGroup
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
 import org.readium.r2.navigator.preferences.*
 import org.readium.r2.navigator.util.createViewModelFactory
-import org.readium.r2.shared.COLUMN_COUNT_REF
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.SCROLL_REF
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.Href
 
@@ -53,14 +48,8 @@ internal class EpubNavigatorViewModel(
     initialPreferences: EpubPreferences,
     val layout: EpubLayout,
     private val defaults: EpubDefaults,
-    baseUrl: String?,
-    private val server: WebViewServer?,
+    private val server: WebViewServer
 ) : AndroidViewModel(application) {
-
-    val useLegacySettings: Boolean = (server == null)
-
-    val preferences: SharedPreferences =
-        application.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
 
     // Make a copy to prevent new decoration templates from being registered after initializing
     // the navigator.
@@ -104,20 +93,10 @@ internal class EpubNavigatorViewModel(
             )
         }
 
-    private val googleFonts: List<FontFamily> =
-        if (useLegacySettings)
-            listOf(
-                FontFamily.LITERATA, FontFamily.PT_SERIF, FontFamily.ROBOTO,
-                FontFamily.SOURCE_SANS_PRO, FontFamily.VOLLKORN
-            )
-        else
-            emptyList()
-
     private val css = MutableStateFlow(
         ReadiumCss(
             rsProperties = config.readiumCssRsProperties,
             fontFamilyDeclarations = config.fontFamilyDeclarations,
-            googleFonts = googleFonts,
             assetsBaseHref = WebViewServer.assetsBaseHref
         ).update(settings.value, useReadiumCssFontSize = config.useReadiumCssFontSize)
     )
@@ -178,8 +157,7 @@ internal class EpubNavigatorViewModel(
     // Serving resources
 
     val baseUrl: String =
-        baseUrl?.let { it.removeSuffix("/") + "/" }
-            ?: publication.linkWithRel("self")?.href
+        publication.linkWithRel("self")?.href
             ?: WebViewServer.publicationBaseHref
 
     /**
@@ -224,7 +202,7 @@ internal class EpubNavigatorViewModel(
     }
 
     fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? =
-        server?.shouldInterceptRequest(request, css.value)
+        server.shouldInterceptRequest(request, css.value)
 
     fun submitPreferences(preferences: EpubPreferences) = viewModelScope.launch {
         val oldSettings = settings.value
@@ -252,37 +230,23 @@ internal class EpubNavigatorViewModel(
     /**
      * Effective reading progression.
      */
-    val readingProgression: PublicationReadingProgression get() =
-        if (useLegacySettings) {
-            publication.metadata.effectiveReadingProgression
-        } else when (settings.value.readingProgression) {
-            ReadingProgression.LTR -> PublicationReadingProgression.LTR
-            ReadingProgression.RTL -> PublicationReadingProgression.RTL
-        }
+    val readingProgression: ReadingProgression get() =
+        settings.value.readingProgression
 
     /**
      * Indicates whether the dual page mode is enabled.
      */
     val dualPageMode: DualPage get() =
-        if (useLegacySettings) {
-            @Suppress("DEPRECATION")
-            when (preferences.getInt(COLUMN_COUNT_REF, 0)) {
-                1 -> DualPage.OFF
-                2 -> DualPage.ON
-                else -> DualPage.AUTO
+        when (layout) {
+            EpubLayout.FIXED -> when (settings.value.spread) {
+                Spread.AUTO -> DualPage.AUTO
+                Spread.ALWAYS -> DualPage.ON
+                Spread.NEVER -> DualPage.OFF
             }
-        } else {
-            when (layout) {
-                EpubLayout.FIXED -> when (settings.value.spread) {
-                    Spread.AUTO -> DualPage.AUTO
-                    Spread.ALWAYS -> DualPage.ON
-                    Spread.NEVER -> DualPage.OFF
-                }
-                EpubLayout.REFLOWABLE -> when (settings.value.columnCount) {
-                    ColumnCount.ONE -> DualPage.OFF
-                    ColumnCount.TWO -> DualPage.ON
-                    ColumnCount.AUTO -> DualPage.AUTO
-                }
+            EpubLayout.REFLOWABLE -> when (settings.value.columnCount) {
+                ColumnCount.ONE -> DualPage.OFF
+                ColumnCount.TWO -> DualPage.ON
+                ColumnCount.AUTO -> DualPage.AUTO
             }
         }
 
@@ -290,14 +254,8 @@ internal class EpubNavigatorViewModel(
      * Indicates whether the navigator is scrollable instead of paginated.
      */
     val isScrollEnabled: StateFlow<Boolean> get() =
-        if (useLegacySettings) {
-            @Suppress("DEPRECATION")
-            val scroll = preferences.getBoolean(SCROLL_REF, false)
-            MutableStateFlow(scroll)
-        } else {
-            settings.mapStateIn(viewModelScope) {
-                if (layout == EpubLayout.REFLOWABLE) it.scroll else false
-            }
+        settings.mapStateIn(viewModelScope) {
+            if (layout == EpubLayout.REFLOWABLE) it.scroll else false
         }
 
     // Selection
@@ -382,7 +340,6 @@ internal class EpubNavigatorViewModel(
         fun createFactory(
             application: Application,
             publication: Publication,
-            baseUrl: String?,
             layout: EpubLayout,
             defaults: EpubDefaults,
             config: EpubNavigatorFragment.Configuration,
@@ -391,9 +348,7 @@ internal class EpubNavigatorViewModel(
             EpubNavigatorViewModel(
                 application, publication, config, initialPreferences, layout,
                 defaults = defaults,
-                baseUrl = baseUrl,
-                server = if (baseUrl != null) null
-                else WebViewServer(
+                server = WebViewServer(
                     application, publication,
                     servedAssets = config.servedAssets,
                     disableSelectionWhenProtected = config.disableSelectionWhenProtected
@@ -402,9 +357,3 @@ internal class EpubNavigatorViewModel(
         }
     }
 }
-
-private val FontFamily.Companion.LITERATA: FontFamily get() = FontFamily("Literata")
-private val FontFamily.Companion.PT_SERIF: FontFamily get() = FontFamily("PT Serif")
-private val FontFamily.Companion.ROBOTO: FontFamily get() = FontFamily("Roboto")
-private val FontFamily.Companion.SOURCE_SANS_PRO: FontFamily get() = FontFamily("Source Sans Pro")
-private val FontFamily.Companion.VOLLKORN: FontFamily get() = FontFamily("Vollkorn")

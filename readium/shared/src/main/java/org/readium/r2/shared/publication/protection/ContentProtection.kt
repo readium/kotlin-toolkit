@@ -99,8 +99,8 @@ interface ContentProtection {
          * app.
          */
         class SchemeNotSupported(val scheme: Scheme? = null, name: String?) : Exception(
-            if (name == null) R.string.r2_shared_publication_content_protection_exception_not_supported_unknown
-            else R.string.r2_shared_publication_content_protection_exception_not_supported,
+            if (name == null) R.string.readium_shared_publication_content_protection_exception_not_supported_unknown
+            else R.string.readium_shared_publication_content_protection_exception_not_supported,
             name
         )
     }

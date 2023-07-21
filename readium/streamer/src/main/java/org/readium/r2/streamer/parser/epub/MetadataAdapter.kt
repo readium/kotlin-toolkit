@@ -16,7 +16,7 @@ internal class MetadataAdapter(
     private val epubVersion: Double,
     private val fallbackTitle: String,
     private val uniqueIdentifierId: String?,
-    private val readingProgression: ReadingProgression,
+    private val readingProgression: ReadingProgression?,
     private val displayOptions: Map<String, String>
 ) {
     data class Result(

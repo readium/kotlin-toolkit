@@ -1,12 +1,8 @@
 <!--
-  ~ Module: r2-testapp-kotlin
-  ~ Developers: Aferdita Muriqi, Clément Baumann
-  ~
-  ~ Copyright (c) 2018. European Digital Reading Lab. All rights reserved.
-  ~ Licensed to the Readium Foundation under one or more contributor license agreements.
-  ~ Use of this source code is governed by a BSD-style license which is detailed in the
-  ~ LICENSE file present in the project repository where this source code is maintained.
-  -->
+  Copyright 2023 Readium Foundation. All rights reserved.
+  Use of this source code is governed by the BSD-style license
+  available in the top-level LICENSE file of the project.
+-->
 
 <resources>
     <string name="app_name" translatable="false">R2 Reader</string>
@@ -182,6 +178,18 @@
     <string name="publication_error_scheme_not_supported">Publication source not supported.</string>
     <string name="publication_error_invalid_publication">Publication looks corrupted.</string>
     <string name="publication_error_unexpected">An unexpected error occurred.</string>
+
+    <string name="readium_shared_publication.content_protection.exception.not_supported">This publication cannot be opened because it is protected with %1$s</string>
+    <string name="readium_shared_publication.content_protection.exception.not_supported.unknown">This publication cannot be opened because it is protected with an unknown DRM</string>
+
+    <string name="readium_shared_resource.exception.bad_request">Invalid request which can\'t be processed</string>
+    <string name="readium_shared_resource.exception.not_found">Resource not found</string>
+    <string name="readium_shared_resource.exception.forbidden">You are not allowed to access the resource</string>
+    <string name="readium_shared_resource.exception.unavailable">The resource is currently unavailable, please try again later</string>
+    <string name="readium_shared_resource_exception_offline">The Internet connection appears to be offline</string>
+    <string name="readium_shared_resource.exception.out_of_memory">The resource is too large to be read on this device</string>
+    <string name="readium_shared_resource.exception.unexpected">An expected error occurred.</string>
+    <string name="readium_shared_resource.exception.other">A service error occurred</string>
 
     <string name="failed_parsing_catalog">Failed parsing Catalog</string>
     <string name="next_chapter">Next chapter</string>

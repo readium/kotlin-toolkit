@@ -38,7 +38,7 @@ open class MapCompanion<K, E>(protected val map: Map<K, E>) {
     /**
      * Returns the element matching the [key], or [null] if not found.
      *
-     * To be overriden in subclasses if custom retrieval is needed – for example, testing lowercase
+     * To be overridden in subclasses if custom retrieval is needed – for example, testing lowercase
      * keys.
      */
     open fun get(key: K?): E? =
@@ -49,7 +49,7 @@ open class MapCompanion<K, E>(protected val map: Map<K, E>) {
      */
     open operator fun invoke(key: K?): E? = get(key)
 
-    @Deprecated("Use `Enum(\"value\")` instead", ReplaceWith("get(key)"))
+    @Deprecated("Use `Enum(\"value\")` instead", ReplaceWith("get(key)"), level = DeprecationLevel.ERROR)
     open fun from(key: K?): E? = get(key)
 }
 
@@ -72,6 +72,6 @@ open class MapWithDefaultCompanion<K, E>(map: Map<K, E>, val default: E) : MapCo
      */
     override operator fun invoke(key: K?): E = getOrDefault(key)
 
-    @Deprecated("Use `Enum(\"value\")` instead", ReplaceWith("getOrDefault(key)"))
+    @Deprecated("Use `Enum(\"value\")` instead", ReplaceWith("getOrDefault(key)"), level = DeprecationLevel.ERROR)
     override fun from(key: K?): E? = getOrDefault(key)
 }

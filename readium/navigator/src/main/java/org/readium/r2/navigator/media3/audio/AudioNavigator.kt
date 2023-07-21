@@ -46,8 +46,8 @@ class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>>
             publication: Publication,
             audioEngineProvider: AudioEngineProvider<S, P, *>,
             readingOrder: List<Link> = publication.readingOrder,
-            initialPreferences: P? = null,
             initialLocator: Locator? = null,
+            initialPreferences: P? = null,
         ): AudioNavigator<S, P>? {
             if (readingOrder.isEmpty()) {
                 return null

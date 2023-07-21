@@ -38,6 +38,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
     val detailChannel = EventChannel(Channel<Event.DetailEvent>(Channel.BUFFERED), viewModelScope)
     val eventChannel = EventChannel(Channel<Event.FeedEvent>(Channel.BUFFERED), viewModelScope)
     val parseData = MutableLiveData<ParseData>()
+    lateinit var publication: Publication
 
     fun parseCatalog(catalog: Catalog) = viewModelScope.launch {
         var parseRequest: Try<ParseData, Exception>? = null

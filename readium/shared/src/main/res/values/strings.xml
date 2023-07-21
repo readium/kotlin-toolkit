@@ -6,39 +6,39 @@
 -->
 
 <resources>
-    <string name="r2.shared.publication.opening_exception.unsupported_asset">Format not supported</string>
-    <string name="r2.shared.publication.opening_exception.not_found">File not found</string>
-    <string name="r2.shared.publication.opening_exception.parsing_failed">The file is corrupted and can\'t be opened</string>
-    <string name="r2.shared.publication.opening_exception.forbidden">You are not allowed to open this publication</string>
-    <string name="r2.shared.publication.opening_exception.unavailable">Not available, please try again later</string>
-    <string name="r2.shared.publication.opening_exception.incorrect_credentials">Provided credentials were incorrect</string>
+    <string name="readium_shared_publication.opening_exception.unsupported_asset">Format not supported</string>
+    <string name="readium_shared_publication.opening_exception.not_found">File not found</string>
+    <string name="readium_shared_publication.opening_exception.parsing_failed">The file is corrupted and can\'t be opened</string>
+    <string name="readium_shared_publication.opening_exception.forbidden">You are not allowed to open this publication</string>
+    <string name="readium_shared_publication.opening_exception.unavailable">Not available, please try again later</string>
+    <string name="readium_shared_publication.opening_exception.incorrect_credentials">Provided credentials were incorrect</string>
 
-    <string name="r2.shared.publication.content_protection.exception.not_supported">This publication cannot be opened because it is protected with %1$s</string>
-    <string name="r2.shared.publication.content_protection.exception.not_supported.unknown">This publication cannot be opened because it is protected with an unknown DRM</string>
+    <string name="readium_shared_publication.content_protection.exception.not_supported">This publication cannot be opened because it is protected with %1$s</string>
+    <string name="readium_shared_publication.content_protection.exception.not_supported.unknown">This publication cannot be opened because it is protected with an unknown DRM</string>
 
-    <string name="r2.shared.resource.exception.bad_request">Invalid request which can\'t be processed</string>
-    <string name="r2.shared.resource.exception.not_found">Resource not found</string>
-    <string name="r2.shared.resource.exception.forbidden">You are not allowed to access the resource</string>
-    <string name="r2.shared.resource.exception.unavailable">The resource is currently unavailable, please try again later</string>
-    <string name="r2_shared_resource_exception_offline">The Internet connection appears to be offline</string>
-    <string name="r2.shared.resource.exception.out_of_memory">The resource is too large to be read on this device</string>
-    <string name="r2.shared.resource.exception.unexpected">An expected error occurred.</string>
-    <string name="r2.shared.resource.exception.other">A service error occurred</string>
+    <string name="readium_shared_resource.exception.bad_request">Invalid request which can\'t be processed</string>
+    <string name="readium_shared_resource.exception.not_found">Resource not found</string>
+    <string name="readium_shared_resource.exception.forbidden">You are not allowed to access the resource</string>
+    <string name="readium_shared_resource.exception.unavailable">The resource is currently unavailable, please try again later</string>
+    <string name="readium_shared_resource_exception_offline">The Internet connection appears to be offline</string>
+    <string name="readium_shared_resource.exception.out_of_memory">The resource is too large to be read on this device</string>
+    <string name="readium_shared_resource.exception.unexpected">An expected error occurred.</string>
+    <string name="readium_shared_resource.exception.other">A service error occurred</string>
 
-    <string name="r2.shared.http.exception.malformed_request">The provided request was not valid</string>
-    <string name="r2.shared.http.exception.malformed_response">The received response could not be decoded</string>
-    <string name="r2.shared.http.exception.timeout">Request timed out</string>
-    <string name="r2.shared.http.exception.bad_request">The provided request was not valid</string>
-    <string name="r2.shared.http.exception.unauthorized">Authentication required</string>
-    <string name="r2.shared.http.exception.forbidden">You are not authorized</string>
-    <string name="r2.shared.http.exception.not_found">Page not found</string>
-    <string name="r2.shared.http.exception.client_error">A client error occurred</string>
-    <string name="r2.shared.http.exception.server_error">A server error occurred, please try again later</string>
-    <string name="r2.shared.http.exception.offline">Your Internet connection appears to be offline</string>
-    <string name="r2.shared.http.exception.cancelled">The request was cancelled</string>
-    <string name="r2.shared.http.exception.other">A networking error occurred</string>
+    <string name="readium_shared_http.exception.malformed_request">The provided request was not valid</string>
+    <string name="readium_shared_http.exception.malformed_response">The received response could not be decoded</string>
+    <string name="readium_shared_http.exception.timeout">Request timed out</string>
+    <string name="readium_shared_http.exception.bad_request">The provided request was not valid</string>
+    <string name="readium_shared_http.exception.unauthorized">Authentication required</string>
+    <string name="readium_shared_http.exception.forbidden">You are not authorized</string>
+    <string name="readium_shared_http.exception.not_found">Page not found</string>
+    <string name="readium_shared_http.exception.client_error">A client error occurred</string>
+    <string name="readium_shared_http.exception.server_error">A server error occurred, please try again later</string>
+    <string name="readium_shared_http.exception.offline">Your Internet connection appears to be offline</string>
+    <string name="readium_shared_http.exception.cancelled">The request was cancelled</string>
+    <string name="readium_shared_http.exception.other">A networking error occurred</string>
 
-    <string name="r2.shared.search.exception.publication_not_searchable">This publication is not searchable</string>
-    <string name="r2.shared.search.exception.cancelled">The search was cancelled</string>
-    <string name="r2.shared.search.exception.other">An error occurred while searching</string>
+    <string name="readium_shared_search.exception.publication_not_searchable">This publication is not searchable</string>
+    <string name="readium_shared_search.exception.cancelled">The search was cancelled</string>
+    <string name="readium_shared_search.exception.other">An error occurred while searching</string>
 </resources>

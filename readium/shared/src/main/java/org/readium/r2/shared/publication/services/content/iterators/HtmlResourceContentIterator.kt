@@ -18,9 +18,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.publication.services.content.Content.*
@@ -53,7 +51,8 @@ class HtmlResourceContentIterator internal constructor(
 
     class Factory : ResourceContentIteratorFactory {
         override suspend fun create(
-            publication: Publication,
+            manifest: Manifest,
+            servicesHolder: PublicationServicesHolder,
             readingOrderIndex: Int,
             resource: Fetcher.Resource,
             locator: Locator
@@ -62,7 +61,7 @@ class HtmlResourceContentIterator internal constructor(
                 return null
             }
 
-            val positions = publication.positionsByReadingOrder()
+            val positions = servicesHolder.positionsByReadingOrder()
             return HtmlResourceContentIterator(
                 resource,
                 totalProgressionRange = positions.getOrNull(readingOrderIndex)

@@ -119,12 +119,12 @@ class ExoMediaPlayer(
             MEDIA_NOTIFICATION_ID,
             MEDIA_CHANNEL_ID
         )
-            .setChannelNameResourceId(R.string.r2_media_notification_channel_name)
-            .setChannelDescriptionResourceId(R.string.r2_media_notification_channel_description)
+            .setChannelNameResourceId(R.string.readium_media_notification_channel_name)
+            .setChannelDescriptionResourceId(R.string.readium_media_notification_channel_description)
             .setMediaDescriptionAdapter(DescriptionAdapter(mediaSession.controller, media))
             .setNotificationListener(NotificationListener())
-            .setRewindActionIconResourceId(R.drawable.r2_media_notification_rewind)
-            .setFastForwardActionIconResourceId(R.drawable.r2_media_notification_fastforward)
+            .setRewindActionIconResourceId(R.drawable.readium_media_notification_rewind)
+            .setFastForwardActionIconResourceId(R.drawable.readium_media_notification_fastforward)
             .build()
             .apply {
                 setMediaSessionToken(mediaSession.sessionToken)

@@ -8,15 +8,12 @@ package org.readium.r2.shared.publication.services.content.iterators
 
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.indexOfFirstWithHref
+import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.util.Either
 
 /**
- * Creates a [Content.Iterator] instance for the [Resource], starting from the given [Locator].
+ * Creates a [Content.Iterator] instance for the [Fetcher.Resource], starting from the given [Locator].
  *
  * Returns null if the resource media type is not supported.
  */
@@ -29,7 +26,8 @@ fun interface ResourceContentIteratorFactory {
      * Returns null if the resource media type is not supported.
      */
     suspend fun create(
-        publication: Publication,
+        manifest: Manifest,
+        servicesHolder: PublicationServicesHolder,
         readingOrderIndex: Int,
         resource: Fetcher.Resource,
         locator: Locator
@@ -48,7 +46,9 @@ fun interface ResourceContentIteratorFactory {
  */
 @ExperimentalReadiumApi
 class PublicationContentIterator(
-    private val publication: Publication,
+    private val manifest: Manifest,
+    private val fetcher: Fetcher,
+    private val services: PublicationServicesHolder,
     private val startLocator: Locator?,
     private val resourceContentIteratorFactories: List<ResourceContentIteratorFactory>
 ) : Content.Iterator {
@@ -119,7 +119,7 @@ class PublicationContentIterator(
      */
     private suspend fun initialIterator(): IndexedIterator? {
         val index: Int =
-            startLocator?.let { publication.readingOrder.indexOfFirstWithHref(it.href) }
+            startLocator?.let { manifest.readingOrder.indexOfFirstWithHref(it.href) }
                 ?: 0
 
         val locations = startLocator.orProgression(0.0)
@@ -133,7 +133,7 @@ class PublicationContentIterator(
      */
     private suspend fun nextIteratorIn(direction: Direction, fromIndex: Int): IndexedIterator? {
         val index = fromIndex + direction.delta
-        if (!publication.readingOrder.indices.contains(index)) {
+        if (!manifest.readingOrder.indices.contains(index)) {
             return null
         }
 
@@ -152,13 +152,13 @@ class PublicationContentIterator(
      * The [location] will be used to compute the starting [Locator] for the iterator.
      */
     private suspend fun loadIteratorAt(index: Int, location: LocatorOrProgression): IndexedIterator? {
-        val link = publication.readingOrder[index]
+        val link = manifest.readingOrder[index]
         val locator = location.toLocator(link) ?: return null
-        val resource = publication.get(link)
+        val resource = fetcher.get(link)
 
         return resourceContentIteratorFactories
             .firstNotNullOfOrNull { factory ->
-                factory.create(publication, index, resource, locator)
+                factory.create(manifest, services, index, resource, locator)
             }
             ?.let { IndexedIterator(index, it) }
     }
@@ -175,7 +175,7 @@ class PublicationContentIterator(
 
     private fun LocatorOrProgression.toLocator(link: Link): Locator? =
         left
-            ?: publication.locatorFromLink(link)?.copyWithLocations(progression = right)
+            ?: manifest.locatorFromLink(link)?.copyWithLocations(progression = right)
 }
 
 /**

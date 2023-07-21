@@ -68,7 +68,7 @@ class LcpDialogAuthentication : LcpAuthenticating {
 
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         @SuppressLint("InflateParams") // https://stackoverflow.com/q/26404951/1474476
-        val dialogView = inflater.inflate(R.layout.r2_lcp_auth_dialog, null)
+        val dialogView = inflater.inflate(R.layout.readium_lcp_auth_dialog, null)
 
         val title = dialogView.findViewById(R.id.r2_title) as TextView
         val description = dialogView.findViewById(R.id.r2_description) as TextView
@@ -85,16 +85,16 @@ class LcpDialogAuthentication : LcpAuthenticating {
 
         when (reason) {
             LcpAuthenticating.AuthenticationReason.PassphraseNotFound -> {
-                title.text = context.getString(R.string.r2_lcp_dialog_reason_passphraseNotFound)
+                title.text = context.getString(R.string.readium_lcp_dialog_reason_passphraseNotFound)
             }
             LcpAuthenticating.AuthenticationReason.InvalidPassphrase -> {
-                title.text = context.getString(R.string.r2_lcp_dialog_reason_invalidPassphrase)
-                passwordLayout.error = context.getString(R.string.r2_lcp_dialog_reason_invalidPassphrase)
+                title.text = context.getString(R.string.readium_lcp_dialog_reason_invalidPassphrase)
+                passwordLayout.error = context.getString(R.string.readium_lcp_dialog_reason_invalidPassphrase)
             }
         }
 
         val provider = tryOr(license.provider) { Uri.parse(license.provider).host }
-        description.text = context.getString(R.string.r2_lcp_dialog_prompt, provider)
+        description.text = context.getString(R.string.readium_lcp_dialog_prompt, provider)
 
         hint.text = license.hint
 
@@ -129,12 +129,12 @@ class LcpDialogAuthentication : LcpAuthenticating {
 
     private fun showHelpDialog(context: Context, links: List<Link>) {
         val titles = links.map {
-            it.title ?: tryOr(context.getString(R.string.r2_lcp_dialog_support)) {
+            it.title ?: tryOr(context.getString(R.string.readium_lcp_dialog_support)) {
                 when (Uri.parse(it.href).scheme) {
-                    "http", "https" -> context.getString(R.string.r2_lcp_dialog_support_web)
-                    "tel" -> context.getString(R.string.r2_lcp_dialog_support_phone)
-                    "mailto" -> context.getString(R.string.r2_lcp_dialog_support_mail)
-                    else -> context.getString(R.string.r2_lcp_dialog_support)
+                    "http", "https" -> context.getString(R.string.readium_lcp_dialog_support_web)
+                    "tel" -> context.getString(R.string.readium_lcp_dialog_support_phone)
+                    "mailto" -> context.getString(R.string.readium_lcp_dialog_support_mail)
+                    else -> context.getString(R.string.readium_lcp_dialog_support)
                 }
             }
         }.toTypedArray()

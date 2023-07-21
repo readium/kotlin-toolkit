@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.navigator.SimplePresentation
 import org.readium.r2.navigator.VisualNavigator
-import org.readium.r2.navigator.databinding.ActivityR2ViewpagerBinding
+import org.readium.r2.navigator.databinding.ReadiumNavigatorViewpagerBinding
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
 import org.readium.r2.navigator.input.CompositeInputListener
 import org.readium.r2.navigator.input.InputListener
@@ -79,7 +79,7 @@ class ImageNavigatorFragment private constructor(
     internal var currentPagerPosition: Int = 0
     internal var resources: List<String> = emptyList()
 
-    private var _binding: ActivityR2ViewpagerBinding? = null
+    private var _binding: ReadiumNavigatorViewpagerBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,12 +95,12 @@ class ImageNavigatorFragment private constructor(
         savedInstanceState: Bundle?
     ): View {
         currentActivity = requireActivity()
-        _binding = ActivityR2ViewpagerBinding.inflate(inflater, container, false)
+        _binding = ReadiumNavigatorViewpagerBinding.inflate(inflater, container, false)
         val view = binding.root
 
         preferences = requireContext().getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
         resourcePager = binding.resourcePager
-        resourcePager.type = Publication.TYPE.CBZ
+        resourcePager.publicationType = R2ViewPager.PublicationType.CBZ
 
         positions = runBlocking { publication.positions() }
 
@@ -217,6 +217,11 @@ class ImageNavigatorFragment private constructor(
     override val publicationView: View
         get() = requireView()
 
+    @Deprecated(
+        "Use `presentation.value.readingProgression` instead",
+        replaceWith = ReplaceWith("presentation.value.readingProgression"),
+        level = DeprecationLevel.ERROR
+    )
     override val readingProgression: PublicationReadingProgression =
         publication.metadata.effectiveReadingProgression
 
@@ -224,7 +229,7 @@ class ImageNavigatorFragment private constructor(
     override val presentation: StateFlow<VisualNavigator.Presentation> =
         MutableStateFlow(
             SimplePresentation(
-                readingProgression = when (readingProgression) {
+                readingProgression = when (publication.metadata.effectiveReadingProgression) {
                     PublicationReadingProgression.RTL -> ReadingProgression.RTL
                     else -> ReadingProgression.LTR
                 },

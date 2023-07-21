@@ -11,10 +11,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import com.google.android.material.snackbar.Snackbar
 import com.squareup.picasso.Picasso
-import org.readium.r2.shared.extensions.getPublicationOrNull
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.testapp.MainActivity
@@ -24,7 +23,7 @@ import org.readium.r2.testapp.databinding.FragmentPublicationDetailBinding
 class PublicationDetailFragment : Fragment() {
 
     private var publication: Publication? = null
-    private val catalogViewModel: CatalogViewModel by viewModels()
+    private val catalogViewModel: CatalogViewModel by activityViewModels()
 
     private var _binding: FragmentPublicationDetailBinding? = null
     private val binding get() = _binding!!
@@ -38,7 +37,7 @@ class PublicationDetailFragment : Fragment() {
             inflater, container, false
         )
         catalogViewModel.detailChannel.receive(this) { handleEvent(it) }
-        publication = arguments?.getPublicationOrNull()
+        publication = catalogViewModel.publication
         return binding.root
     }
 

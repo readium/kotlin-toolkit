@@ -57,7 +57,7 @@ internal data class Item(
             val href = element.getAttr("href")?.let { Href(it, baseHref = filePath).string }
                 ?: return null
             val propAttr = element.getAttr("properties").orEmpty()
-            val properties = parseProperties(propAttr).mapNotNull { resolveProperty(it, prefixMap, DEFAULT_VOCAB.ITEM) }
+            val properties = parseProperties(propAttr).map { resolveProperty(it, prefixMap, DEFAULT_VOCAB.ITEM) }
             return Item(
                 href = href,
                 id = element.id,
@@ -72,7 +72,7 @@ internal data class Item(
 
 internal data class Spine(
     val itemrefs: List<Itemref>,
-    val direction: ReadingProgression,
+    val direction: ReadingProgression?,
     val toc: String? = null
 ) {
     companion object {
@@ -81,7 +81,7 @@ internal data class Spine(
             val pageProgressionDirection = when (element.getAttr("page-progression-direction")) {
                 "rtl" -> ReadingProgression.RTL
                 "ltr" -> ReadingProgression.LTR
-                else -> ReadingProgression.AUTO // null or "default"
+                else -> null // null or "default"
             }
             val ncx = if (epubVersion < 3.0) element.getAttr("toc") else null
             return Spine(itemrefs, pageProgressionDirection, ncx)

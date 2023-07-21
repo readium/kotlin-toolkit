@@ -54,8 +54,8 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         childFragmentManager.fragmentFactory =
             readerData.navigatorFactory.createFragmentFactory(
                 initialLocator = readerData.initialLocation,
-                listener = this,
                 initialPreferences = readerData.preferencesManager.preferences.value,
+                listener = this,
                 configuration = EpubNavigatorFragment.Configuration {
                     // To customize the text selection menu.
                     selectionActionModeCallback = customSelectionActionModeCallback
@@ -113,14 +113,13 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
         savedInstanceState: Bundle?
     ): View {
         val view = super.onCreateView(inflater, container, savedInstanceState)
-        val navigatorFragmentTag = getString(R.string.epub_navigator_tag)
 
         if (savedInstanceState == null) {
             childFragmentManager.commitNow {
-                add(R.id.fragment_reader_container, EpubNavigatorFragment::class.java, Bundle(), navigatorFragmentTag)
+                add(R.id.fragment_reader_container, EpubNavigatorFragment::class.java, Bundle(), NAVIGATOR_FRAGMENT_TAG)
             }
         }
-        navigator = childFragmentManager.findFragmentByTag(navigatorFragmentTag) as EpubNavigatorFragment
+        navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG) as EpubNavigatorFragment
 
         return view
     }
@@ -246,6 +245,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 
     companion object {
         private const val SEARCH_FRAGMENT_TAG = "search"
+        private const val NAVIGATOR_FRAGMENT_TAG = "navigator"
         private const val IS_SEARCH_VIEW_ICONIFIED = "isSearchViewIconified"
     }
 }

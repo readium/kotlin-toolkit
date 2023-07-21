@@ -37,29 +37,29 @@ class HttpException(
 
     enum class Kind(@StringRes val userMessageId: Int) {
         /** The provided request was not valid. */
-        MalformedRequest(R.string.r2_shared_http_exception_malformed_request),
+        MalformedRequest(R.string.readium_shared_http_exception_malformed_request),
         /** The received response couldn't be decoded. */
-        MalformedResponse(R.string.r2_shared_http_exception_malformed_response),
+        MalformedResponse(R.string.readium_shared_http_exception_malformed_response),
         /** The client, server or gateways timed out. */
-        Timeout(R.string.r2_shared_http_exception_timeout),
+        Timeout(R.string.readium_shared_http_exception_timeout),
         /** (400) The server cannot or will not process the request due to an apparent client error. */
-        BadRequest(R.string.r2_shared_http_exception_bad_request),
+        BadRequest(R.string.readium_shared_http_exception_bad_request),
         /** (401) Authentication is required and has failed or has not yet been provided. */
-        Unauthorized(R.string.r2_shared_http_exception_unauthorized),
+        Unauthorized(R.string.readium_shared_http_exception_unauthorized),
         /** (403) The server refuses the action, probably because we don't have the necessary permissions. */
-        Forbidden(R.string.r2_shared_http_exception_forbidden),
+        Forbidden(R.string.readium_shared_http_exception_forbidden),
         /** (404) The requested resource could not be found. */
-        NotFound(R.string.r2_shared_http_exception_not_found),
+        NotFound(R.string.readium_shared_http_exception_not_found),
         /** (4xx) Other client errors */
-        ClientError(R.string.r2_shared_http_exception_client_error),
+        ClientError(R.string.readium_shared_http_exception_client_error),
         /** (5xx) Server errors */
-        ServerError(R.string.r2_shared_http_exception_server_error),
+        ServerError(R.string.readium_shared_http_exception_server_error),
         /** The device is offline. */
-        Offline(R.string.r2_shared_http_exception_offline),
+        Offline(R.string.readium_shared_http_exception_offline),
         /** The request was cancelled. */
-        Cancelled(R.string.r2_shared_http_exception_cancelled),
+        Cancelled(R.string.readium_shared_http_exception_cancelled),
         /** An error whose kind is not recognized. */
-        Other(R.string.r2_shared_http_exception_other);
+        Other(R.string.readium_shared_http_exception_other);
 
         companion object {
 

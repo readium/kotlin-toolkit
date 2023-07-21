@@ -6,9 +6,7 @@
 -->
 
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/days_spinner"
-    style="?android:attr/spinnerDropDownItemStyle"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:textAlignment="textEnd"
-    android:textSize="9pt" />
+    android:gravity="end"
+    android:textSize="12sp" />

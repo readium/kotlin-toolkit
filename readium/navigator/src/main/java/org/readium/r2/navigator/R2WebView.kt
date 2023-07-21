@@ -40,7 +40,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
 
     private val uiScope = CoroutineScope(Dispatchers.Main)
 
-    @android.webkit.JavascriptInterface
     override fun scrollRight(animated: Boolean) {
         super.scrollRight(animated)
         uiScope.launch {
@@ -53,7 +52,6 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
         }
     }
 
-    @android.webkit.JavascriptInterface
     override fun scrollLeft(animated: Boolean) {
         super.scrollLeft(animated)
         uiScope.launch {
@@ -557,7 +555,7 @@ class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context,
     }
 
     override fun computeScroll() {
-        if (!useLegacySettings && scrollMode) {
+        if (scrollMode) {
             return super.computeScroll()
         }
 
