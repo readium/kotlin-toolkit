@@ -431,7 +431,7 @@ class R2EpubPageFragment : Fragment() {
 private fun View.setOnClickListenerWithPoint(action: (View, PointF) -> Unit) {
     var point = PointF()
 
-    setOnTouchListener { v, event ->
+    setOnTouchListener { _, event ->
         if (event.action == MotionEvent.ACTION_DOWN) {
             point = PointF(event.x, event.y)
         }

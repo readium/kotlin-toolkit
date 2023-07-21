@@ -59,19 +59,16 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     interface Listener {
         val readingProgression: ReadingProgression
         fun onResourceLoaded(link: Link?, webView: R2BasicWebView, url: String?) {}
-        fun onPageLoaded()
-        fun onPageChanged(pageIndex: Int, totalPages: Int, url: String)
-        fun onPageEnded(end: Boolean)
-        fun onScroll()
-        fun onTap(point: PointF): Boolean
-        fun onDragStart(event: DragEvent): Boolean
-        fun onDragMove(event: DragEvent): Boolean
-        fun onDragEnd(event: DragEvent): Boolean
+        fun onPageLoaded() {}
+        fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {}
+        fun onPageEnded(end: Boolean) {}
+        fun onTap(point: PointF): Boolean = false
+        fun onDragStart(event: DragEvent): Boolean = false
+        fun onDragMove(event: DragEvent): Boolean = false
+        fun onDragEnd(event: DragEvent): Boolean = false
         fun onKey(event: KeyEvent): Boolean = false
         fun onDecorationActivated(id: DecorationId, group: String, rect: RectF, point: PointF): Boolean = false
-        fun onProgressionChanged()
-        fun onHighlightActivated(id: String)
-        fun onHighlightAnnotationMarkActivated(id: String)
+        fun onProgressionChanged() {}
         fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean = false
         fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean = false
 
@@ -99,6 +96,13 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
         fun goToNextResource(jump: Boolean, animated: Boolean): Boolean = false
         @InternalReadiumApi
         fun goToPreviousResource(jump: Boolean, animated: Boolean): Boolean = false
+
+        @Deprecated("Not available anymore", level = DeprecationLevel.ERROR)
+        fun onScroll() {}
+        @Deprecated("Not available anymore", level = DeprecationLevel.ERROR)
+        fun onHighlightActivated(id: String) {}
+        @Deprecated("Not available anymore", level = DeprecationLevel.ERROR)
+        fun onHighlightAnnotationMarkActivated(id: String) {}
     }
 
     var listener: Listener? = null
@@ -190,9 +194,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     open fun scrollRight(animated: Boolean = false) {
         uiScope.launch {
             val listener = listener ?: return@launch
-            listener.onScroll()
-
-            val isRtl = (listener.readingProgression == ReadingProgression.RTL)
 
             fun goRight(jump: Boolean) {
                 if (listener.readingProgression == ReadingProgression.RTL) {
@@ -224,7 +225,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     open fun scrollLeft(animated: Boolean = false) {
         uiScope.launch {
             val listener = listener ?: return@launch
-            listener.onScroll()
 
             fun goLeft(jump: Boolean) {
                 if (listener.readingProgression == ReadingProgression.RTL) {
@@ -466,9 +466,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
             fun fromJSONObject(obj: JSONObject?): DragEvent? {
                 obj ?: return null
 
-                val x = obj.optDouble("x").toFloat()
-                val y = obj.optDouble("y").toFloat()
-
                 return DragEvent(
                     defaultPrevented = obj.optBoolean("defaultPrevented"),
                     startPoint = PointF(
@@ -503,20 +500,6 @@ open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(conte
     @android.webkit.JavascriptInterface
     fun log(message: String) {
         Timber.d("JavaScript: $message")
-    }
-
-    @android.webkit.JavascriptInterface
-    fun highlightActivated(id: String) {
-        uiScope.launch {
-            listener?.onHighlightActivated(id)
-        }
-    }
-
-    @android.webkit.JavascriptInterface
-    fun highlightAnnotationMarkActivated(id: String) {
-        uiScope.launch {
-            listener?.onHighlightAnnotationMarkActivated(id)
-        }
     }
 
     fun Boolean.toInt() = if (this) 1 else 0

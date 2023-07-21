@@ -20,15 +20,6 @@ import {
   setProperty,
   setCSSProperties,
 } from "./utils";
-import {
-  createAnnotation,
-  createHighlight,
-  destroyHighlight,
-  getCurrentSelectionInfo,
-  getSelectionRect,
-  rectangleForHighlightWithID,
-  setScrollMode,
-} from "./highlight";
 import { findFirstVisibleLocator } from "./dom";
 import { getCurrentSelection } from "./selection";
 import { getDecorations, registerTemplates } from "./decorator";
@@ -57,12 +48,3 @@ window.readium = {
   // DOM
   findFirstVisibleLocator: findFirstVisibleLocator,
 };
-
-// Legacy highlights API.
-window.createAnnotation = createAnnotation;
-window.createHighlight = createHighlight;
-window.destroyHighlight = destroyHighlight;
-window.getCurrentSelectionInfo = getCurrentSelectionInfo;
-window.getSelectionRect = getSelectionRect;
-window.rectangleForHighlightWithID = rectangleForHighlightWithID;
-window.setScrollMode = setScrollMode;

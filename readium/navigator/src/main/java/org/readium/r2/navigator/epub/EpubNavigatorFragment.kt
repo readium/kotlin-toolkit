@@ -328,7 +328,7 @@ class EpubNavigatorFragment internal constructor(
 
                 // TODO needs work, currently showing two resources for fxl, needs to understand which two resources, left & right, or only right etc.
                 var doublePageLeft: Link? = null
-                var doublePageRight: Link? = null
+                var doublePageRight: Link?
 
                 for ((index, link) in publication.readingOrder.withIndex()) {
                     val url = viewModel.urlTo(link)
@@ -711,7 +711,6 @@ class EpubNavigatorFragment internal constructor(
 
     internal val webViewListener: R2BasicWebView.Listener = WebViewListener()
 
-    @OptIn(ExperimentalDragGesture::class)
     private inner class WebViewListener : R2BasicWebView.Listener {
 
         override val readingProgression: ReadingProgression
@@ -724,16 +723,6 @@ class EpubNavigatorFragment internal constructor(
         override fun onPageLoaded() {
             paginationListener?.onPageLoaded()
             notifyCurrentLocation()
-        }
-
-        override fun onPageChanged(pageIndex: Int, totalPages: Int, url: String) {
-        }
-
-        override fun onPageEnded(end: Boolean) {
-        }
-
-        @Suppress("DEPRECATION")
-        override fun onScroll() {
         }
 
         override fun javascriptInterfacesForResource(link: Link): Map<String, Any?> =
@@ -779,12 +768,6 @@ class EpubNavigatorFragment internal constructor(
 
         override fun onProgressionChanged() {
             notifyCurrentLocation()
-        }
-
-        override fun onHighlightActivated(id: String) {
-        }
-
-        override fun onHighlightAnnotationMarkActivated(id: String) {
         }
 
         override fun goToPreviousResource(jump: Boolean, animated: Boolean): Boolean {
