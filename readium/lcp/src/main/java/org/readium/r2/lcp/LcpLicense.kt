@@ -105,11 +105,11 @@ interface LcpLicense : ContentProtectionService.UserRights {
         suspend fun openWebPage(url: URL)
     }
 
-    @Deprecated("Use `license.encryption.profile` instead", ReplaceWith("license.encryption.profile"))
+    @Deprecated("Use `license.encryption.profile` instead", ReplaceWith("license.encryption.profile"), level = DeprecationLevel.ERROR)
     val encryptionProfile: String? get() =
         license.encryption.profile
 
-    @Deprecated("Use `decrypt()` with coroutines instead", ReplaceWith("decrypt(data)"))
+    @Deprecated("Use `decrypt()` with coroutines instead", ReplaceWith("decrypt(data)"), level = DeprecationLevel.ERROR)
     fun decipher(data: ByteArray): ByteArray? =
         runBlocking { decrypt(data) }
             .onFailure { Timber.e(it) }
@@ -125,7 +125,7 @@ interface LcpLicense : ContentProtectionService.UserRights {
         completion: (LcpException?) -> Unit
     ) {}
 
-    @Deprecated("Use `returnPublication()` with coroutines instead", ReplaceWith("returnPublication"))
+    @Deprecated("Use `returnPublication()` with coroutines instead", ReplaceWith("returnPublication"), level = DeprecationLevel.ERROR)
     @DelicateCoroutinesApi
     fun returnPublication(completion: (LcpException?) -> Unit) {
         GlobalScope.launch {
@@ -134,8 +134,8 @@ interface LcpLicense : ContentProtectionService.UserRights {
     }
 }
 
-@Deprecated("Renamed to `LcpService`", replaceWith = ReplaceWith("LcpService"))
+@Deprecated("Renamed to `LcpService`", replaceWith = ReplaceWith("LcpService"), level = DeprecationLevel.ERROR)
 typealias LCPService = LcpService
 
-@Deprecated("Renamed to `LcpLicense`", replaceWith = ReplaceWith("LcpLicense"))
+@Deprecated("Renamed to `LcpLicense`", replaceWith = ReplaceWith("LcpLicense"), level = DeprecationLevel.ERROR)
 typealias LCPLicense = LcpLicense

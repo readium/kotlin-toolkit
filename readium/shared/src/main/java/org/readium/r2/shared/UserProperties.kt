@@ -7,91 +7,21 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
-@file:Suppress("DEPRECATION")
-
 package org.readium.r2.shared
 
 import java.io.Serializable
 
-@Deprecated("Migrate to the new Settings API (see migration guide)")
-sealed class UserProperty(var ref: String, var name: String) {
+@Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
+sealed class UserProperty(var ref: String, var name: String)
 
-    private val value: String
-        get() = this.toString()
+@Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
+class Enumerable(var index: Int, private val values: List<String>, ref: String, name: String)
 
-    abstract override fun toString(): String
-    fun getJson(): String {
-        return """{name:"$name",value:"$this"}"""
-    }
-}
+@Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
+class Incremental(var value: Float, val min: Float, val max: Float, private val step: Float, private val suffix: String, ref: String, name: String)
 
-// TODO add here your new Subclasses of UserPreference. It has to be an abstract class inheriting from UserSetting.
+@Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
+class Switchable(onValue: String, offValue: String, var on: Boolean, ref: String, name: String)
 
-@Deprecated("Migrate to the new Settings API (see migration guide)")
-class Enumerable(var index: Int, private val values: List<String>, ref: String, name: String) : UserProperty(ref, name) {
-    override fun toString() = values[index]
-}
-
-@Deprecated("Migrate to the new Settings API (see migration guide)")
-class Incremental(
-    var value: Float,
-    val min: Float,
-    val max: Float,
-    private val step: Float,
-    private val suffix: String,
-    ref: String,
-    name: String
-) : UserProperty(ref, name) {
-
-    fun increment() {
-        value += (if (value + step <= max) step else 0.0f)
-    }
-
-    fun decrement() {
-        value -= (if (value - step >= min) step else 0.0f)
-    }
-
-    override fun toString() = value.toString() + suffix
-}
-
-@Deprecated("Migrate to the new Settings API (see migration guide)")
-class Switchable(onValue: String, offValue: String, var on: Boolean, ref: String, name: String) : UserProperty(ref, name) {
-
-    private val values = mapOf(true to onValue, false to offValue)
-
-    fun switch() {
-        on = !on
-    }
-
-    override fun toString() = values[on] ?: error("")
-}
-
-@Deprecated("Migrate to the new Settings API (see migration guide)")
-class UserProperties : Serializable {
-
-    val properties: MutableList<UserProperty> = mutableListOf()
-
-    fun addIncremental(
-        nValue: Float,
-        min: Float,
-        max: Float,
-        step: Float,
-        suffix: String,
-        ref: String,
-        name: String
-    ) {
-        properties.add(Incremental(nValue, min, max, step, suffix, ref, name))
-    }
-
-    fun addSwitchable(onValue: String, offValue: String, on: Boolean, ref: String, name: String) {
-        properties.add(Switchable(onValue, offValue, on, ref, name))
-    }
-
-    fun addEnumerable(index: Int, values: List<String>, ref: String, name: String) {
-        properties.add(Enumerable(index, values, ref, name))
-    }
-
-    inline fun <reified T : UserProperty> getByRef(ref: String) = properties.firstOrNull {
-        it.ref == ref
-    }!! as T
-}
+@Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
+class UserProperties : Serializable

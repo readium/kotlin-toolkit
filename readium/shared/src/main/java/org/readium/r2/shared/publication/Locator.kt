@@ -100,7 +100,7 @@ data class Locator(
             }
         }
 
-        @Deprecated("Renamed to [fragments]", ReplaceWith("fragments"))
+        @Deprecated("Renamed to [fragments]", ReplaceWith("fragments"), level = DeprecationLevel.ERROR)
         val fragment: String? get() = fragments.firstOrNull()
     }
 
@@ -207,7 +207,7 @@ data class Locator(
 /**
  * Creates a [Locator] from a reading order [Link].
  */
-@Deprecated("This may create an incorrect `Locator` if the link `type` is missing. Use `publication.locatorFromLink()` instead.")
+@Deprecated("This may create an incorrect `Locator` if the link `type` is missing. Use `publication.locatorFromLink()` instead.", level = DeprecationLevel.ERROR)
 fun Link.toLocator(): Locator {
     val components = href.split("#", limit = 2)
     return Locator(

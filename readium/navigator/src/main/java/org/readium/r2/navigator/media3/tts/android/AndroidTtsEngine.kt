@@ -467,7 +467,7 @@ class AndroidTtsEngine private constructor(
             listener?.onDone(TtsEngine.RequestId(utteranceId))
         }
 
-        @Deprecated("Deprecated in the interface", ReplaceWith("onError(utteranceId, -1)"))
+        @Deprecated("Deprecated in the interface", ReplaceWith("onError(utteranceId, -1)"), level = DeprecationLevel.ERROR)
         override fun onError(utteranceId: String) {
             onError(utteranceId, -1)
         }

@@ -595,7 +595,7 @@ class Publication(
     @Suppress("UNUSED_PARAMETER")
     fun link(predicate: (Link) -> Boolean): Link? = null
 
-    @Deprecated("Use [jsonManifest] instead", ReplaceWith("jsonManifest"))
+    @Deprecated("Use [jsonManifest] instead", ReplaceWith("jsonManifest"), level = DeprecationLevel.ERROR)
     fun toJSON() = JSONObject(jsonManifest)
 
     @Deprecated("Use `metadata.effectiveReadingProgression` instead", ReplaceWith("metadata.effectiveReadingProgression"), level = DeprecationLevel.ERROR)

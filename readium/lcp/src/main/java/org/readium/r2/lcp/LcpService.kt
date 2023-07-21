@@ -139,7 +139,7 @@ interface LcpService {
         val localFile: File,
         val suggestedFilename: String
     ) {
-        @Deprecated("Use `localFile` instead", replaceWith = ReplaceWith("localFile"))
+        @Deprecated("Use `localFile` instead", replaceWith = ReplaceWith("localFile"), level = DeprecationLevel.ERROR)
         val localURL: String get() = localFile.path
     }
 
