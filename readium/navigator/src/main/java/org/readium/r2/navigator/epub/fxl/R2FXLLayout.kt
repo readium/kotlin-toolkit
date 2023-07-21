@@ -31,7 +31,7 @@ import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 import org.readium.r2.shared.extensions.equalsDelta
 
-class R2FXLLayout : FrameLayout {
+internal class R2FXLLayout : FrameLayout {
 
     private var scaleDetector: ScaleGestureDetector? = null
     private var gestureDetector: GestureDetector? = null

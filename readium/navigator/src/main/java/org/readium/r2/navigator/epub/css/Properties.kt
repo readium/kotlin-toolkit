@@ -4,6 +4,8 @@
  * available in the top-level LICENSE file of the project.
  */
 
+@file:OptIn(ExperimentalReadiumApi::class)
+
 package org.readium.r2.navigator.epub.css
 
 import androidx.annotation.ColorInt

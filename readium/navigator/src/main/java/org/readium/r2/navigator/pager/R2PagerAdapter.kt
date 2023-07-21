@@ -19,7 +19,7 @@ import androidx.fragment.app.FragmentManager
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 
-class R2PagerAdapter internal constructor(
+internal class R2PagerAdapter internal constructor(
     val fm: FragmentManager,
     private val resources: List<PageResource>
 ) : R2FragmentPagerAdapter(fm) {

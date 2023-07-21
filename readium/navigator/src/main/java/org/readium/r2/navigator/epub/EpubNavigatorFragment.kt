@@ -278,7 +278,8 @@ class EpubNavigatorFragment internal constructor(
 
     internal lateinit var positionsByReadingOrder: List<List<Locator>>
     internal lateinit var positions: List<Locator>
-    lateinit var resourcePager: R2ViewPager
+
+    internal lateinit var resourcePager: R2ViewPager
 
     private lateinit var resourcesSingle: List<PageResource>
     private lateinit var resourcesDouble: List<PageResource>
@@ -976,7 +977,6 @@ class EpubNavigatorFragment internal constructor(
         // Make sure viewLifecycleOwner is accessible.
         view ?: return
 
-        val navigator = this
         debounceLocationNotificationJob?.cancel()
         debounceLocationNotificationJob = viewLifecycleOwner.lifecycleScope.launch {
             delay(100L)
@@ -1016,8 +1016,6 @@ class EpubNavigatorFragment internal constructor(
             _currentLocator.value = currentLocator
 
             // Deprecated notifications
-            @Suppress("DEPRECATION")
-            navigatorDelegate?.locationDidChange(navigator = navigator, locator = currentLocator)
             reflowableWebView?.let {
                 paginationListener?.onPageChanged(
                     pageIndex = it.mCurItem,

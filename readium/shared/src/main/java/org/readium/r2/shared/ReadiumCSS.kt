@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package org.readium.r2.shared
 
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
@@ -54,21 +52,5 @@ const val LINE_HEIGHT_NAME = ""
 
 // List of strings that can identify the name of a CSS custom property
 // Also used for storing UserSettings in UserDefaults
-@Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-enum class ReadiumCSSName(val ref: String) {
-    fontSize("--USER__fontSize"),
-    fontFamily("--USER__fontFamily"),
-    fontOverride("--USER__fontOverride"),
-    appearance("--USER__appearance"),
-    scroll("--USER__scroll"),
-    publisherDefault("--USER__advancedSettings"),
-    textAlignment("--USER__textAlign"),
-    columnCount("--USER__colCount"),
-    wordSpacing("--USER__wordSpacing"),
-    letterSpacing("--USER__letterSpacing"),
-    pageMargins("--USER__pageMargins"),
-    lineHeight("--USER__lineHeight"),
-    paraIndent("--USER__paraIndent"),
-    hyphens("--USER__bodyHyphens"),
-    ligatures("--USER__ligatures");
-}
+@Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.WARNING)
+enum class ReadiumCSSName(val ref: String)

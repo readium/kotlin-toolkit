@@ -54,7 +54,7 @@ import org.readium.r2.shared.util.use
 import timber.log.Timber
 
 @OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class)
-open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
+internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebView(context, attrs) {
 
     interface Listener {
         val readingProgression: ReadingProgression

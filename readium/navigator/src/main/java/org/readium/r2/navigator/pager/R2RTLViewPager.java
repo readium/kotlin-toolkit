@@ -45,8 +45,7 @@ import java.util.HashMap;
  * <code>OnPageChangeListener</code>s so that clients can be agnostic to layout direction and
  * modifications are kept internal to <code>RtlViewPager</code>.
  */
-@ExperimentalReadiumApi
-public class R2RTLViewPager extends ViewPager {
+class R2RTLViewPager extends ViewPager {
     public ReadingProgression direction = ReadingProgression.LTR;
     private int mLayoutDirection = ViewCompat.LAYOUT_DIRECTION_LTR;
     private HashMap<OnPageChangeListener, ReversingOnPageChangeListener> mPageChangeListeners = new HashMap<>();

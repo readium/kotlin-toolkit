@@ -7,6 +7,8 @@
  * LICENSE file present in the project repository where this source code is maintained.
  */
 
+@file:Suppress("UNUSED_PARAMETER")
+
 package org.readium.r2.shared
 
 import java.io.Serializable
@@ -18,7 +20,15 @@ sealed class UserProperty(var ref: String, var name: String)
 class Enumerable(var index: Int, private val values: List<String>, ref: String, name: String)
 
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-class Incremental(var value: Float, val min: Float, val max: Float, private val step: Float, private val suffix: String, ref: String, name: String)
+class Incremental(
+    var value: Float,
+    val min: Float,
+    val max: Float,
+    private val step: Float,
+    private val suffix: String,
+    ref: String,
+    name: String
+)
 
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
 class Switchable(onValue: String, offValue: String, var on: Boolean, ref: String, name: String)

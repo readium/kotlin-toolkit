@@ -32,7 +32,7 @@ import timber.log.Timber
  * Created by Aferdita Muriqi on 12/2/17.
  */
 
-class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context, attrs) {
+internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView(context, attrs) {
 
     init {
         initWebPager()
