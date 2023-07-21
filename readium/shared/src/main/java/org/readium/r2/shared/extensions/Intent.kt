@@ -70,7 +70,7 @@ fun Intent.getPublicationOrNull(): Publication? {
 }
 
 @Suppress("UNUSED_PARAMETER")
-@Deprecated("The `activity` parameter is not necessary", ReplaceWith("getPublicationOrNull()"), level = DeprecationLevel.WARNING)
+@Deprecated("The `activity` parameter is not necessary", level = DeprecationLevel.ERROR)
 fun Intent.getPublicationOrNull(activity: Activity): Publication? {
     throw NotImplementedError()
 }

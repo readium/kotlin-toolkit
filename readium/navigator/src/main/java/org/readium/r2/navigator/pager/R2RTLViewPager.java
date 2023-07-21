@@ -35,7 +35,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi;
 
 import java.util.HashMap;
 
- /**
+/**
  * <code>RtlViewPager</code> is an API-compatible implementation of <code>ViewPager</code> which
  * orders paged views according to the layout direction of the view.  In left to right mode, the
  * first view is at the left side of the carousel, and in right to left mode it is at the right
