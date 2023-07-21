@@ -21,17 +21,17 @@ import org.readium.r2.shared.util.mediatype.MediaType
  * You may provide a custom implementation, or use the [DefaultHttpClient] one which relies on
  * native APIs.
  */
-interface HttpClient {
+public interface HttpClient {
 
     /**
      * Streams the resource from the given [request].
      */
-    suspend fun stream(request: HttpRequest): HttpTry<HttpStreamResponse>
+    public suspend fun stream(request: HttpRequest): HttpTry<HttpStreamResponse>
 
     /**
      * Fetches the resource from the given [request].
      */
-    suspend fun fetch(request: HttpRequest): HttpTry<HttpFetchResponse> =
+    public suspend fun fetch(request: HttpRequest): HttpTry<HttpFetchResponse> =
         stream(request)
             .flatMap { response ->
                 try {
@@ -46,7 +46,7 @@ interface HttpClient {
 
     // Declare a companion object to allow reading apps to extend it. For example, by adding a
     // HttpClient.get(Context) constructor.
-    companion object
+    public companion object
 }
 
 /**
@@ -54,7 +54,7 @@ interface HttpClient {
  *
  * If the decoder fails, a MalformedResponse error is returned.
  */
-suspend fun <T> HttpClient.fetchWithDecoder(request: HttpRequest, decoder: (HttpFetchResponse) -> T): HttpTry<T> =
+public suspend fun <T> HttpClient.fetchWithDecoder(request: HttpRequest, decoder: (HttpFetchResponse) -> T): HttpTry<T> =
     fetch(request)
         .flatMap {
             try {
@@ -67,7 +67,7 @@ suspend fun <T> HttpClient.fetchWithDecoder(request: HttpRequest, decoder: (Http
 /**
  * Fetches the resource from the given [request] as a [String].
  */
-suspend fun HttpClient.fetchString(request: HttpRequest, charset: Charset = Charsets.UTF_8): HttpTry<String> =
+public suspend fun HttpClient.fetchString(request: HttpRequest, charset: Charset = Charsets.UTF_8): HttpTry<String> =
     fetchWithDecoder(request) { response ->
         String(response.body, charset)
     }
@@ -75,19 +75,19 @@ suspend fun HttpClient.fetchString(request: HttpRequest, charset: Charset = Char
 /**
  * Fetches the resource from the given [request] as a [JSONObject].
  */
-suspend fun HttpClient.fetchJSONObject(request: HttpRequest): HttpTry<JSONObject> =
+public suspend fun HttpClient.fetchJSONObject(request: HttpRequest): HttpTry<JSONObject> =
     fetchWithDecoder(request) { response ->
         JSONObject(String(response.body))
     }
 
-class HttpStreamResponse(
-    val response: HttpResponse,
-    val body: InputStream,
+public class HttpStreamResponse(
+    public val response: HttpResponse,
+    public val body: InputStream,
 )
 
-class HttpFetchResponse(
-    val response: HttpResponse,
-    val body: ByteArray,
+public class HttpFetchResponse(
+    public val response: HttpResponse,
+    public val body: ByteArray,
 )
 
 /**
@@ -100,7 +100,7 @@ class HttpFetchResponse(
  * @param mediaType Media type sniffed from the `Content-Type` header and response body. Falls back
  *        on `application/octet-stream`.
  */
-data class HttpResponse(
+public data class HttpResponse(
     val request: HttpRequest,
     val url: String,
     val statusCode: Int,
@@ -114,13 +114,13 @@ data class HttpResponse(
      * Finds the first value of the first header matching the given name.
      * In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
      */
-    fun valueForHeader(name: String): String? = httpHeaders[name]
+    public fun valueForHeader(name: String): String? = httpHeaders[name]
 
     /**
      * Finds all the values of the first header matching the given name.
      * In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
      */
-    fun valuesForHeader(name: String): List<String> = httpHeaders.getAll(name)
+    public fun valuesForHeader(name: String): List<String> = httpHeaders.getAll(name)
 
     /**
      * Indicates whether this server supports byte range requests.

@@ -23,13 +23,13 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
  * [paths] contains the reachable local paths, indexed by the exposed HREF. Sub-paths are reachable
  * as well, to be able to access a whole directory.
  */
-class FileFetcher(
+public class FileFetcher(
     private val paths: Map<String, File>,
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : Fetcher {
 
     /** Provides access to the given local [file] at [href]. */
-    constructor(href: String, file: File, mediaTypeRetriever: MediaTypeRetriever) :
+    public constructor(href: String, file: File, mediaTypeRetriever: MediaTypeRetriever) :
         this(mapOf(href to file), mediaTypeRetriever)
 
     private val openedResources: MutableList<WeakReference<FileResource>> = LinkedList()
@@ -73,12 +73,14 @@ class FileFetcher(
         openedResources.clear()
     }
 
-    class FileResource(val link: Link, val resource: org.readium.r2.shared.resource.FileResource) :
-        Resource by resource, Fetcher.Resource {
+    public class FileResource(
+        public val link: Link,
+        public val resource: org.readium.r2.shared.resource.FileResource
+    ) : Resource by resource, Fetcher.Resource {
 
-        companion object {
+        public companion object {
 
-            operator fun invoke(link: Link, file: File): FileResource =
+            public operator fun invoke(link: Link, file: File): FileResource =
                 FileResource(link, org.readium.r2.shared.resource.FileResource(file))
         }
 

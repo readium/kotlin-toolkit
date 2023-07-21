@@ -13,27 +13,26 @@ import org.json.JSONObject
 import org.readium.r2.shared.util.logging.Warning.SeverityLevel.*
 import timber.log.Timber
 
-// FIXME: Mark this interface as functional to benefit from the SAM-conversion in Kotlin 1.4 https://blog.jetbrains.com/kotlin/2020/03/kotlin-1-4-m1-released/#new-type-inference
 /**
  * Interface to be implemented by third-party apps if they want to observe warnings raised, for
- * example, during the parsing of a [Publication].
+ * example, during the parsing of a publication.
  */
-interface WarningLogger {
+public fun interface WarningLogger {
 
     /** Notifies that a warning occurred. */
-    fun log(warning: Warning)
+    public fun log(warning: Warning)
 }
 
 /**
  * Implementation of a [WarningLogger] that accumulates the warnings in a list, to be used as a
  * convenience by third-party apps.
  */
-class ListWarningLogger : WarningLogger {
+public class ListWarningLogger : WarningLogger {
 
     /**
      * The list of accumulated [Warning]s.
      */
-    val warnings: List<Warning> get() = _warnings
+    public val warnings: List<Warning> get() = _warnings
     private val _warnings = mutableListOf<Warning>()
 
     override fun log(warning: Warning) {
@@ -44,7 +43,7 @@ class ListWarningLogger : WarningLogger {
 /**
  * Implementation of a [WarningLogger] printing the warnings to the console.
  */
-class ConsoleWarningLogger : WarningLogger {
+public class ConsoleWarningLogger : WarningLogger {
 
     override fun log(warning: Warning) {
         val message = "[${warning.tag}] ${warning.message}"
@@ -61,7 +60,7 @@ class ConsoleWarningLogger : WarningLogger {
  * For example, while parsing an EPUB we, might want to report issues in the publication without
  * failing the whole parsing.
  */
-interface Warning {
+public interface Warning {
 
     /**
      * Indicates how the user experience might be affected by a warning.
@@ -70,7 +69,7 @@ interface Warning {
      * @property MODERATE The user experience might be affected, but it shouldn't prevent the user from enjoying the publication.
      * @property MAJOR The user experience will most likely be disturbed, for example with rendering issues.
      */
-    enum class SeverityLevel {
+    public enum class SeverityLevel {
         MINOR,
         MODERATE,
         MAJOR
@@ -81,17 +80,17 @@ interface Warning {
      *
      * For example json, metadata, etc.
      */
-    val tag: String
+    public val tag: String
 
     /**
      * Localized user-facing message describing the issue.
      */
-    val message: String
+    public val message: String
 
     /**
      * Indicates the severity level of this warning.
      */
-    val severity: SeverityLevel
+    public val severity: SeverityLevel
 }
 
 /**
@@ -101,7 +100,7 @@ interface Warning {
  * @param reason Details about the failure.
  * @param json Source [JSONObject].
  */
-data class JsonWarning(
+public data class JsonWarning(
     val modelClass: Class<*>,
     val reason: String,
     override val severity: Warning.SeverityLevel,
@@ -121,7 +120,7 @@ data class JsonWarning(
  * @param severity The severity level of this warning.
  * @param json Source [JSONObject].
  */
-fun WarningLogger.log(
+public fun WarningLogger.log(
     modelClass: Class<*>,
     reason: String,
     json: JSONObject? = null,

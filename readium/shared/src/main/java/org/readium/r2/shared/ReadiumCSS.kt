@@ -1,56 +1,56 @@
 package org.readium.r2.shared
 
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val FONT_SIZE_REF = "fontSize"
+public const val FONT_SIZE_REF: String = "fontSize"
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val FONT_FAMILY_REF = "fontFamily"
+public const val FONT_FAMILY_REF: String = "fontFamily"
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val FONT_OVERRIDE_REF = "fontOverride"
+public const val FONT_OVERRIDE_REF: String = "fontOverride"
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val APPEARANCE_REF = "appearance"
+public const val APPEARANCE_REF: String = "appearance"
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val SCROLL_REF = "scroll"
+public const val SCROLL_REF: String = "scroll"
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val PUBLISHER_DEFAULT_REF = "advancedSettings"
+public const val PUBLISHER_DEFAULT_REF: String = "advancedSettings"
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val TEXT_ALIGNMENT_REF = "textAlign"
+public const val TEXT_ALIGNMENT_REF: String = "textAlign"
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val COLUMN_COUNT_REF = "colCount"
+public const val COLUMN_COUNT_REF: String = "colCount"
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val WORD_SPACING_REF = "wordSpacing"
+public const val WORD_SPACING_REF: String = "wordSpacing"
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val LETTER_SPACING_REF = "letterSpacing"
+public const val LETTER_SPACING_REF: String = "letterSpacing"
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val PAGE_MARGINS_REF = "pageMargins"
+public const val PAGE_MARGINS_REF: String = "pageMargins"
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val LINE_HEIGHT_REF = "lineHeight"
+public const val LINE_HEIGHT_REF: String = "lineHeight"
 
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val FONT_SIZE_NAME = ""
+public const val FONT_SIZE_NAME: String = ""
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val FONT_FAMILY_NAME = ""
+public const val FONT_FAMILY_NAME: String = ""
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val FONT_OVERRIDE_NAME = ""
+public const val FONT_OVERRIDE_NAME: String = ""
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val APPEARANCE_NAME = ""
+public const val APPEARANCE_NAME: String = ""
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val SCROLL_NAME = ""
+public const val SCROLL_NAME: String = ""
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val PUBLISHER_DEFAULT_NAME = ""
+public const val PUBLISHER_DEFAULT_NAME: String = ""
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val TEXT_ALIGNMENT_NAME = ""
+public const val TEXT_ALIGNMENT_NAME: String = ""
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val COLUMN_COUNT_NAME = ""
+public const val COLUMN_COUNT_NAME: String = ""
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val WORD_SPACING_NAME = ""
+public const val WORD_SPACING_NAME: String = ""
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val LETTER_SPACING_NAME = ""
+public const val LETTER_SPACING_NAME: String = ""
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val PAGE_MARGINS_NAME = ""
+public const val PAGE_MARGINS_NAME: String = ""
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-const val LINE_HEIGHT_NAME = ""
+public const val LINE_HEIGHT_NAME: String = ""
 
 // List of strings that can identify the name of a CSS custom property
 // Also used for storing UserSettings in UserDefaults
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.WARNING)
-enum class ReadiumCSSName(val ref: String)
+public enum class ReadiumCSSName(public val ref: String)

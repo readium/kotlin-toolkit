@@ -18,13 +18,13 @@ import org.readium.r2.shared.util.MapCompanion
 
 @Serializable
 @Parcelize
-enum class ReadingProgression(val value: String) : Parcelable {
+public enum class ReadingProgression(public val value: String) : Parcelable {
     /** Right to left */
     @SerialName("rtl") RTL("rtl"),
     /** Left to right */
     @SerialName("ltr") LTR("ltr");
 
-    companion object : MapCompanion<String, ReadingProgression>(values(), ReadingProgression::value) {
+    public companion object : MapCompanion<String, ReadingProgression>(values(), ReadingProgression::value) {
 
         override fun get(key: String?): ReadingProgression? =
             // For backward compatibility, we allow uppercase keys.

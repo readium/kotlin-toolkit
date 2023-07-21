@@ -23,7 +23,7 @@ import org.readium.r2.shared.util.isLazyInitialized
 /**
  * A [Resource] to access a [file].
  */
-class FileResource(override val file: File) : Resource {
+public class FileResource(override val file: File) : Resource {
 
     private val randomAccessFile by lazy {
         ResourceTry.catching {
@@ -34,10 +34,12 @@ class FileResource(override val file: File) : Resource {
     override suspend fun name(): ResourceTry<String?> =
         ResourceTry.success(file.name)
 
-    override suspend fun close() = withContext(Dispatchers.IO) {
-        if (::randomAccessFile.isLazyInitialized) {
-            randomAccessFile.onSuccess {
-                tryOrLog { it.close() }
+    override suspend fun close() {
+        withContext(Dispatchers.IO) {
+            if (::randomAccessFile.isLazyInitialized) {
+                randomAccessFile.onSuccess {
+                    tryOrLog { it.close() }
+                }
             }
         }
     }
@@ -104,7 +106,7 @@ class FileResource(override val file: File) : Resource {
         "${javaClass.simpleName}(${file.path})"
 }
 
-class FileResourceFactory : ResourceFactory {
+public class FileResourceFactory : ResourceFactory {
 
     override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
         if (url.scheme != ContentResolver.SCHEME_FILE) {

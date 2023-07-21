@@ -21,7 +21,7 @@ import org.readium.r2.shared.extensions.optPositiveInt
  * https://drafts.opds.io/schema/properties.schema.json
  */
 @Parcelize
-data class Holds(
+public data class Holds(
     val total: Int? = null,
     val position: Int? = null
 ) : JSONable, Parcelable {
@@ -29,17 +29,17 @@ data class Holds(
     /**
      * Serializes an [Holds] to its JSON representation.
      */
-    override fun toJSON() = JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         put("total", total)
         put("position", position)
     }
 
-    companion object {
+    public companion object {
 
         /**
          * Creates an [Holds] from its JSON representation.
          */
-        fun fromJSON(json: JSONObject?): Holds? {
+        public fun fromJSON(json: JSONObject?): Holds? {
             json ?: return null
             return Holds(
                 total = json.optPositiveInt("total"),

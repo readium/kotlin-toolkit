@@ -12,6 +12,7 @@ package org.readium.r2.shared.extensions
 import java.io.File
 import java.io.FileInputStream
 import java.security.MessageDigest
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import timber.log.Timber
@@ -21,7 +22,8 @@ import timber.log.Timber
  *
  * Returns null if [File] is a directory or a file that failed to be read.
  */
-fun File.md5(): String? =
+@InternalReadiumApi
+public fun File.md5(): String? =
     try {
         val md = MessageDigest.getInstance("MD5")
         // https://stackoverflow.com/questions/10143731/android-optimal-buffer-size
@@ -48,7 +50,8 @@ fun File.md5(): String? =
 /**
  * Returns whether the `other` is a descendant of this file.
  */
-fun File.isParentOf(other: File): Boolean {
+@InternalReadiumApi
+public fun File.isParentOf(other: File): Boolean {
     val canonicalThis = canonicalFile
     var parent = other.canonicalFile.parentFile
     while (parent != null) {
@@ -66,5 +69,5 @@ fun File.isParentOf(other: File): Boolean {
  * If unknown, fallback on `MediaType.BINARY`.
  */
 @Deprecated("Explicitly use MediaTypeRetriever", level = DeprecationLevel.ERROR)
-suspend fun File.mediaType(mediaTypeHint: String? = null): MediaType =
+public suspend fun File.mediaType(mediaTypeHint: String? = null): MediaType =
     MediaTypeRetriever().retrieve(this, mediaType = mediaTypeHint) ?: MediaType.BINARY

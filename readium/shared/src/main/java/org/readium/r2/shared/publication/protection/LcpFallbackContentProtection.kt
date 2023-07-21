@@ -7,6 +7,7 @@
 package org.readium.r2.shared.publication.protection
 
 import org.json.JSONObject
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.fetcher.ContainerFetcher
@@ -27,7 +28,8 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
  * [ContentProtection] implementation used as a fallback by the Streamer to detect LCP DRM
  * if it is not supported by the app.
  */
-class LcpFallbackContentProtection(
+@InternalReadiumApi
+public class LcpFallbackContentProtection(
     private val mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
 ) : ContentProtection {
 

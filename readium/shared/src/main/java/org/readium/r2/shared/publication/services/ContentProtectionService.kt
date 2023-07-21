@@ -28,39 +28,39 @@ import org.readium.r2.shared.resource.Resource
 /**
  * Provides information about a publication's content protection and manages user rights.
  */
-interface ContentProtectionService : Publication.Service {
+public interface ContentProtectionService : Publication.Service {
 
     /**
      * Whether the [Publication] has a restricted access to its resources, and can't be rendered in
      * a Navigator.
      */
-    val isRestricted: Boolean
+    public val isRestricted: Boolean
 
     /**
      * The error raised when trying to unlock the [Publication], if any.
      */
-    val error: UserException?
+    public val error: UserException?
 
     /**
      * Credentials used to unlock this [Publication].
      */
-    val credentials: String?
+    public val credentials: String?
 
     /**
      * Manages consumption of user rights and permissions.
      */
-    val rights: UserRights
+    public val rights: UserRights
 
     /**
      * Known technology for this type of Content Protection.
      */
-    val scheme: ContentProtection.Scheme? get() = null
+    public val scheme: ContentProtection.Scheme? get() = null
 
     /**
      * User-facing name for this Content Protection, e.g. "Readium LCP".
      * It could be used in a sentence such as "Protected by {name}"
      */
-    val name: LocalizedString? get() = null
+    public val name: LocalizedString? get() = null
 
     override val links: List<Link>
         get() = RouteHandler.links
@@ -73,7 +73,7 @@ interface ContentProtectionService : Publication.Service {
     /**
      * Manages consumption of user rights and permissions.
      */
-    interface UserRights {
+    public interface UserRights {
 
         /**
          * Returns whether the user is currently allowed to copy content to the pasteboard.
@@ -82,7 +82,7 @@ interface ContentProtectionService : Publication.Service {
          * out or not. This should be called every time the "Copy" action will be displayed,
          * because the value might change during runtime.
          */
-        val canCopy: Boolean
+        public val canCopy: Boolean
 
         /**
          * Returns whether the user is allowed to copy the given text to the pasteboard.
@@ -93,14 +93,14 @@ interface ContentProtectionService : Publication.Service {
          * To be used before presenting, for example, a pop-up to share a selected portion of
          * content.
          */
-        fun canCopy(text: String): Boolean
+        public fun canCopy(text: String): Boolean
 
         /**
          * Consumes the given text with the copy right.
          *
          * Returns whether the user is allowed to copy the given text.
          */
-        fun copy(text: String): Boolean
+        public fun copy(text: String): Boolean
 
         /**
          * Returns whether the user is currently allowed to print the content.
@@ -108,7 +108,7 @@ interface ContentProtectionService : Publication.Service {
          * Navigators and reading apps can use this to know if the "Print" action should be greyed
          * out or not.
          */
-        val canPrint: Boolean
+        public val canPrint: Boolean
 
         /**
          * Returns whether the user is allowed to print the given amount of pages.
@@ -118,19 +118,19 @@ interface ContentProtectionService : Publication.Service {
          *
          * To be used before attempting to launch a print job, for example.
          */
-        fun canPrint(pageCount: Int): Boolean
+        public fun canPrint(pageCount: Int): Boolean
 
         /**
          * Consumes the given amount of pages with the print right.
          *
          * Returns whether the user is allowed to print the given amount of pages.
          */
-        fun print(pageCount: Int): Boolean
+        public fun print(pageCount: Int): Boolean
 
         /**
          * A [UserRights] without any restriction.
          */
-        object Unrestricted : UserRights {
+        public object Unrestricted : UserRights {
             override val canCopy: Boolean = true
 
             override fun canCopy(text: String): Boolean = true
@@ -147,7 +147,7 @@ interface ContentProtectionService : Publication.Service {
         /**
          * A [UserRights] which forbids any right.
          */
-        object AllRestricted : UserRights {
+        public object AllRestricted : UserRights {
             override val canCopy: Boolean = false
 
             override fun canCopy(text: String): Boolean = false
@@ -173,61 +173,61 @@ private val PublicationServicesHolder.protectionService: ContentProtectionServic
     }
 
 /** Factory to build a [ContentProtectionService]. */
-var Publication.ServicesBuilder.contentProtectionServiceFactory: ServiceFactory?
+public var Publication.ServicesBuilder.contentProtectionServiceFactory: ServiceFactory?
     get() = get(ContentProtectionService::class)
     set(value) = set(ContentProtectionService::class, value)
 
 /**
  * Returns whether this Publication is protected by a Content Protection technology.
  */
-val Publication.isProtected: Boolean
+public val Publication.isProtected: Boolean
     get() = protectionService != null
 
 /**
  * Whether the [Publication] has a restricted access to its resources, and can't be rendered in
  * a Navigator.
  */
-val Publication.isRestricted: Boolean
+public val Publication.isRestricted: Boolean
     get() = protectionService?.isRestricted
         ?: false
 
 /**
  * The error raised when trying to unlock the [Publication], if any.
  */
-val Publication.protectionError: UserException?
+public val Publication.protectionError: UserException?
     get() = protectionService?.error
 
 /**
  * Credentials used to unlock this [Publication].
  */
-val Publication.credentials: String?
+public val Publication.credentials: String?
     get() = protectionService?.credentials
 
 /**
  * Manages consumption of user rights and permissions.
  */
-val Publication.rights: ContentProtectionService.UserRights
+public val Publication.rights: ContentProtectionService.UserRights
     get() = protectionService?.rights
         ?: ContentProtectionService.UserRights.Unrestricted
 
 /**
  * Known technology for this type of Content Protection.
  */
-val Publication.protectionScheme: ContentProtection.Scheme?
+public val Publication.protectionScheme: ContentProtection.Scheme?
     get() = protectionService?.scheme
 
 /**
  * User-facing localized name for this Content Protection, e.g. "Readium LCP".
  * It could be used in a sentence such as "Protected by {name}".
  */
-val Publication.protectionLocalizedName: LocalizedString?
+public val Publication.protectionLocalizedName: LocalizedString?
     get() = protectionService?.name
 
 /**
  * User-facing name for this Content Protection, e.g. "Readium LCP".
  * It could be used in a sentence such as "Protected by {name}".
  */
-val Publication.protectionName: String?
+public val Publication.protectionName: String?
     get() = protectionLocalizedName?.string
 
 private sealed class RouteHandler {

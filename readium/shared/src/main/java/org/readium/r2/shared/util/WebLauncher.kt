@@ -13,7 +13,7 @@ import org.readium.r2.shared.extensions.tryOrLog
  * Opens the given [uri] with a Chrome Custom Tab or the system browser as a fallback.
  */
 @InternalReadiumApi
-fun launchWebBrowser(context: Context, uri: Uri) {
+public fun launchWebBrowser(context: Context, uri: Uri) {
     var url = uri
     if (url.scheme == null) {
         url = url.buildUpon().scheme("http").build()

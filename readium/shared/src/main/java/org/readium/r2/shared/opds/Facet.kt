@@ -11,7 +11,7 @@ package org.readium.r2.shared.opds
 
 import org.readium.r2.shared.publication.Link
 
-data class Facet(
+public data class Facet(
     val title: String,
     var metadata: OpdsMetadata = OpdsMetadata(title = title),
     var links: MutableList<Link> = mutableListOf()

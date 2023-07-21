@@ -18,7 +18,7 @@ import org.readium.r2.shared.publication.Properties
  * Identifies content contained in the linked resource, that cannot be strictly identified using a
  * media type.
  */
-val Properties.contains: Set<String>
+public val Properties.contains: Set<String>
     get() = (this["contains"] as? List<*>)
         ?.filterIsInstance(String::class.java)
         ?.toSet()
@@ -27,5 +27,5 @@ val Properties.contains: Set<String>
 /**
  * Hints how the layout of the resource should be presented.
  */
-val Properties.layout: EpubLayout?
+public val Properties.layout: EpubLayout?
     get() = EpubLayout(this["layout"] as? String)

@@ -20,16 +20,16 @@ import org.readium.r2.shared.resource.Resource
  *
  * The [routes] will be tested in the given order.
  */
-class RoutingFetcher(private val routes: List<Route>) : Fetcher {
+public class RoutingFetcher(private val routes: List<Route>) : Fetcher {
 
     /**
      * Holds a child fetcher and the predicate used to determine if it can answer a request.
      *
      * The default value for [accepts] means that the fetcher will accept any link.
      */
-    class Route(val fetcher: Fetcher, val accepts: (Link) -> Boolean = { true })
+    public class Route(public val fetcher: Fetcher, public val accepts: (Link) -> Boolean = { true })
 
-    constructor(local: Fetcher, remote: Fetcher) :
+    public constructor(local: Fetcher, remote: Fetcher) :
         this(listOf(Route(local, Link::isLocal), Route(remote)))
 
     override suspend fun links(): List<Link> = routes.flatMap { it.fetcher.links() }

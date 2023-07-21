@@ -16,5 +16,5 @@ import org.readium.r2.shared.error.Try
  */
 @Suppress("Unused_parameter")
 @Deprecated(message = "Use getOrElse instead.", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("getOrElse"))
-inline fun <R, S : R, F : Throwable> Try<S, F>.recover(transform: (exception: F) -> R): Try<R, Nothing> =
+public inline fun <R, S : R, F : Throwable> Try<S, F>.recover(transform: (exception: F) -> R): Try<R, Nothing> =
     TODO()

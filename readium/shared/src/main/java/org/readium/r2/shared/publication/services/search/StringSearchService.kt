@@ -16,6 +16,7 @@ import java.text.StringCharacterIterator
 import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrThrow
@@ -37,19 +38,19 @@ import timber.log.Timber
  *
  * The actual search is implemented by the provided [searchAlgorithm].
  */
-@Search
-class StringSearchService(
+@ExperimentalReadiumApi
+public class StringSearchService(
     private val manifest: Manifest,
     private val fetcher: Fetcher,
     private val services: PublicationServicesHolder,
-    val language: String?,
+    private val language: String?,
     private val snippetLength: Int,
     private val searchAlgorithm: Algorithm,
     private val extractorFactory: ResourceContentExtractor.Factory,
 ) : SearchService {
 
-    companion object {
-        fun createDefaultFactory(
+    public companion object {
+        public fun createDefaultFactory(
             snippetLength: Int = 200,
             searchAlgorithm: Algorithm? = null,
             extractorFactory: ResourceContentExtractor.Factory = DefaultResourceContentExtractorFactory(),
@@ -224,18 +225,18 @@ class StringSearchService(
     }
 
     /** Implements the actual search algorithm in sanitized text content. */
-    interface Algorithm {
+    public interface Algorithm {
 
         /**
          * Default value for the search options available with this algorithm.
          * If an option does not have a value, it is not supported by the algorithm.
          */
-        val options: Options
+        public val options: Options
 
         /**
          * Finds all the ranges of occurrences of the given [query] in the [text].
          */
-        suspend fun findRanges(query: String, options: Options, text: String, locale: Locale): List<IntRange>
+        public suspend fun findRanges(query: String, options: Options, text: String, locale: Locale): List<IntRange>
     }
 
     /**
@@ -243,7 +244,7 @@ class StringSearchService(
      * while taking into account languages specificities.
      */
     @RequiresApi(Build.VERSION_CODES.N)
-    class IcuAlgorithm : Algorithm {
+    public class IcuAlgorithm : Algorithm {
 
         override val options: Options = Options(
             caseSensitive = false,
@@ -313,7 +314,7 @@ class StringSearchService(
      * all languages, so this [Algorithm] does not have any options. Use [IcuAlgorithm] for
      * better results.
      */
-    class NaiveAlgorithm : Algorithm {
+    public class NaiveAlgorithm : Algorithm {
 
         override val options: Options get() = Options()
 

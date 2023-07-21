@@ -18,34 +18,34 @@ import timber.log.Timber
  *   - Converting a [Locator] which was created from an alternate manifest with a different reading
  *     order. For example, when downloading a streamed manifest or offloading a package.
  */
-interface LocatorService : Publication.Service {
+public interface LocatorService : Publication.Service {
 
     /** Locates the target of the given [locator]. */
-    suspend fun locate(locator: Locator): Locator?
+    public suspend fun locate(locator: Locator): Locator?
 
     /** Locates the target at the given [totalProgression] relative to the whole publication. */
-    suspend fun locateProgression(totalProgression: Double): Locator?
+    public suspend fun locateProgression(totalProgression: Double): Locator?
 }
 
 /** Locates the target of the given [locator]. */
-suspend fun Publication.locate(locator: Locator): Locator? =
+public suspend fun Publication.locate(locator: Locator): Locator? =
     findService(LocatorService::class)?.locate(locator)
 
-/** Locates the target at the given [progression] relative to the whole publication. */
-suspend fun Publication.locateProgression(totalProgression: Double): Locator? =
+/** Locates the target at the given progression relative to the whole publication. */
+public suspend fun Publication.locateProgression(totalProgression: Double): Locator? =
     findService(LocatorService::class)?.locateProgression(totalProgression)
 
 /** Factory to build a [LocatorService] */
-var Publication.ServicesBuilder.locatorServiceFactory: ServiceFactory?
+public var Publication.ServicesBuilder.locatorServiceFactory: ServiceFactory?
     get() = get(LocatorService::class)
     set(value) = set(LocatorService::class, value)
 
-open class DefaultLocatorService(
-    val readingOrder: List<Link>,
-    val positionsByReadingOrder: suspend () -> List<List<Locator>>
+public open class DefaultLocatorService(
+    public val readingOrder: List<Link>,
+    public val positionsByReadingOrder: suspend () -> List<List<Locator>>
 ) : LocatorService {
 
-    constructor(readingOrder: List<Link>, services: PublicationServicesHolder) :
+    public constructor(readingOrder: List<Link>, services: PublicationServicesHolder) :
         this(readingOrder, positionsByReadingOrder = {
             services.findService(PositionsService::class)?.positionsByReadingOrder() ?: emptyList()
         })

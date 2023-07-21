@@ -14,16 +14,16 @@ package org.readium.r2.shared
 import java.io.Serializable
 
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-sealed class UserProperty(var ref: String, var name: String)
+public sealed class UserProperty(public var ref: String, public var name: String)
 
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-class Enumerable(var index: Int, private val values: List<String>, ref: String, name: String)
+public class Enumerable(public var index: Int, private val values: List<String>, ref: String, name: String)
 
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-class Incremental(
-    var value: Float,
-    val min: Float,
-    val max: Float,
+public class Incremental(
+    public var value: Float,
+    public val min: Float,
+    public val max: Float,
     private val step: Float,
     private val suffix: String,
     ref: String,
@@ -31,7 +31,7 @@ class Incremental(
 )
 
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-class Switchable(onValue: String, offValue: String, var on: Boolean, ref: String, name: String)
+public class Switchable(onValue: String, offValue: String, public var on: Boolean, ref: String, name: String)
 
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-class UserProperties : Serializable
+public class UserProperties : Serializable

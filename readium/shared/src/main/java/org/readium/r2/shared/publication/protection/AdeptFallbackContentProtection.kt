@@ -6,6 +6,7 @@
 
 package org.readium.r2.shared.publication.protection
 
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.fetcher.ContainerFetcher
@@ -23,7 +24,8 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
  * [ContentProtection] implementation used as a fallback by the Streamer to detect Adept DRM,
  * if it is not supported by the app.
  */
-class AdeptFallbackContentProtection(
+@InternalReadiumApi
+public class AdeptFallbackContentProtection(
     private val mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
 ) : ContentProtection {
 

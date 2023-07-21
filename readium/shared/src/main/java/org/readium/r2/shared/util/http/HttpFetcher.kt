@@ -24,7 +24,7 @@ import timber.log.Timber
  * @param baseUrl Base URL from which relative HREF are served.
  * @param links A set of links that are known to be available through this fetcher.
  */
-class HttpFetcher(
+public class HttpFetcher(
     private val client: HttpClient,
     private val baseUrl: String? = null,
     private val links: List<Link> = emptyList(),
@@ -47,14 +47,14 @@ class HttpFetcher(
     override suspend fun close() {}
 
     /** Provides access to an external URL. */
-    class HttpResource(
+    public class HttpResource(
         private val link: Link,
         private val resource: org.readium.r2.shared.util.http.HttpResource
     ) : Resource by resource, Fetcher.Resource {
 
-        companion object {
+        public companion object {
 
-            operator fun invoke(
+            public operator fun invoke(
                 link: Link,
                 url: String,
                 client: HttpClient,

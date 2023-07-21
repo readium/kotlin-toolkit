@@ -26,10 +26,10 @@ import org.readium.r2.shared.resource.ResourceTry
  *
  * If the transformation doesn't apply, simply return resource unchanged.
  */
-typealias ResourceTransformer = (Fetcher.Resource) -> Fetcher.Resource
+public typealias ResourceTransformer = (Fetcher.Resource) -> Fetcher.Resource
 
 /** Creates a Resource that will always return the given [error]. */
-class FailureResource(private val link: Link, private val error: Resource.Exception) :
+public class FailureResource(private val link: Link, private val error: Resource.Exception) :
     Fetcher.Resource {
 
     internal constructor(link: Link, cause: Throwable) : this(link, Resource.Exception.Other(cause))
@@ -49,7 +49,7 @@ class FailureResource(private val link: Link, private val error: Resource.Except
 /**
  * Resource that will act as a proxy to a fallback resource if the [originalResource] errors out.
  */
-class FallbackResource(
+public class FallbackResource(
     private val originalResource: Fetcher.Resource,
     private val fallbackResourceFactory: (Resource.Exception) -> Fetcher.Resource
 ) : Fetcher.Resource {
@@ -85,13 +85,13 @@ class FallbackResource(
 /**
  * Falls back to alternative resources when the receiver fails.
  */
-fun Fetcher.Resource.fallback(fallbackResourceFactory: (Resource.Exception) -> Fetcher.Resource): Fetcher.Resource =
+public fun Fetcher.Resource.fallback(fallbackResourceFactory: (Resource.Exception) -> Fetcher.Resource): Fetcher.Resource =
     FallbackResource(this, fallbackResourceFactory)
 
 /**
  * Falls back to the given alternative [Fetcher.Resource] when the receiver fails.
  */
-fun Fetcher.Resource.fallback(fallbackResource: Fetcher.Resource): Fetcher.Resource =
+public fun Fetcher.Resource.fallback(fallbackResource: Fetcher.Resource): Fetcher.Resource =
     FallbackResource(this) { fallbackResource }
 
 /**
@@ -99,7 +99,7 @@ fun Fetcher.Resource.fallback(fallbackResource: Fetcher.Resource): Fetcher.Resou
  *
  * Every function is delegating to the proxied resource, and subclasses should override some of them.
  */
-abstract class ProxyResource(protected val resource: Fetcher.Resource) : Fetcher.Resource {
+public abstract class ProxyResource(protected val resource: Fetcher.Resource) : Fetcher.Resource {
 
     override val file: File? = resource.file
 
@@ -109,7 +109,7 @@ abstract class ProxyResource(protected val resource: Fetcher.Resource) : Fetcher
 
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = resource.read(range)
 
-    override suspend fun close() = resource.close()
+    override suspend fun close() { resource.close() }
 
     override fun toString(): String =
         "${javaClass.simpleName}($resource)"
@@ -124,16 +124,16 @@ abstract class ProxyResource(protected val resource: Fetcher.Resource) : Fetcher
  * Warning: The transformation runs on the full content of [resource], so it's not appropriate for
  * large resources which can't be held in memory.
  */
-abstract class TransformingResource(
+public abstract class TransformingResource(
     resource: Fetcher.Resource,
     private val cacheBytes: Boolean = true
 ) : ProxyResource(resource) {
 
-    companion object {
+    public companion object {
         /**
          * Creates a [TransformingResource] using the given [transform] function.
          */
-        operator fun invoke(resource: Fetcher.Resource, transform: suspend (ByteArray) -> ByteArray): TransformingResource =
+        public operator fun invoke(resource: Fetcher.Resource, transform: suspend (ByteArray) -> ByteArray): TransformingResource =
             object : TransformingResource(resource) {
                 override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
                     data.mapCatching { transform(it) }
@@ -142,7 +142,7 @@ abstract class TransformingResource(
 
     private lateinit var _bytes: ResourceTry<ByteArray>
 
-    abstract suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray>
+    public abstract suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray>
 
     private suspend fun bytes(): ResourceTry<ByteArray> {
         if (::_bytes.isInitialized)
@@ -174,7 +174,7 @@ abstract class TransformingResource(
 /**
  * Wraps a [Fetcher.Resource] which will be created only when first accessing one of its members.
  */
-class LazyResource(private val factory: suspend () -> Fetcher.Resource) : Fetcher.Resource {
+public class LazyResource(private val factory: suspend () -> Fetcher.Resource) : Fetcher.Resource {
 
     private lateinit var _resource: Fetcher.Resource
 
@@ -212,7 +212,7 @@ class LazyResource(private val factory: suspend () -> Fetcher.Resource) : Fetche
  *
  * This doesn't implement [ProxyResource] to avoid forgetting the synchronization for a future API.
  */
-class SynchronizedResource(
+public class SynchronizedResource(
     private val resource: Fetcher.Resource
 ) : Fetcher.Resource {
 
@@ -230,8 +230,9 @@ class SynchronizedResource(
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
         mutex.withLock { resource.read(range) }
 
-    override suspend fun close() =
+    override suspend fun close() {
         mutex.withLock { resource.close() }
+    }
 
     override fun toString(): String =
         "${javaClass.simpleName}($resource)"
@@ -240,7 +241,7 @@ class SynchronizedResource(
 /**
  * Wraps this resource in a [SynchronizedResource] to protect the access from multiple threads.
  */
-fun Fetcher.Resource.synchronized(): SynchronizedResource =
+public fun Fetcher.Resource.synchronized(): SynchronizedResource =
     SynchronizedResource(this)
 
 /**
@@ -260,14 +261,14 @@ fun Fetcher.Resource.synchronized(): SynchronizedResource =
  *        by avoiding requesting the length from the underlying resource.
  * @param bufferSize Size of the buffer chunks to read.
  */
-class BufferingResource(
+public class BufferingResource(
     resource: Fetcher.Resource,
     resourceLength: Long? = null,
     private val bufferSize: Long = DEFAULT_BUFFER_SIZE,
 ) : ProxyResource(resource) {
 
-    companion object {
-        const val DEFAULT_BUFFER_SIZE: Long = 8192
+    public companion object {
+        public const val DEFAULT_BUFFER_SIZE: Long = 8192
     }
 
     /**
@@ -380,10 +381,10 @@ class BufferingResource(
  *        by avoiding requesting the length from the underlying resource.
  * @param size Size of the buffer chunks to read.
  */
-fun Fetcher.Resource.buffered(
+public fun Fetcher.Resource.buffered(
     resourceLength: Long? = null,
     size: Long = BufferingResource.DEFAULT_BUFFER_SIZE
-) =
+) : BufferingResource =
     BufferingResource(resource = this, resourceLength = resourceLength, bufferSize = size)
 
 /**
@@ -391,7 +392,7 @@ fun Fetcher.Resource.buffered(
  *
  * If the [transform] throws an [Exception], it is wrapped in a failure with Resource.Exception.Other.
  */
-inline fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): ResourceTry<R> =
+public inline fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): ResourceTry<R> =
     try {
         map(transform)
     } catch (e: Exception) {
@@ -400,5 +401,5 @@ inline fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): Resour
         Try.failure(Resource.Exception.wrap(e))
     }
 
-inline fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =
+public inline fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =
     mapCatching(transform).flatMap { it }

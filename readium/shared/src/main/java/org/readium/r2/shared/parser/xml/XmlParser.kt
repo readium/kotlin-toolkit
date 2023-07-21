@@ -13,6 +13,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.util.*
 import javax.xml.XMLConstants
+import org.readium.r2.shared.InternalReadiumApi
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import org.xmlpull.v1.XmlPullParserFactory
@@ -22,15 +23,16 @@ import org.xmlpull.v1.XmlPullParserFactory
  * [isNamespaceAware] behaves as defined in XmlPullParser specification.
  * If [isCaseSensitive] is false, attribute and tag names are lowercased during the parsing
  */
-class XmlParser(val isNamespaceAware: Boolean = true, val isCaseSensitive: Boolean = true) {
+@InternalReadiumApi
+public class XmlParser(private val isNamespaceAware: Boolean = true, private val isCaseSensitive: Boolean = true) {
 
-    val parser: XmlPullParser = XmlPullParserFactory.newInstance().let {
+    private val parser: XmlPullParser = XmlPullParserFactory.newInstance().let {
         it.isNamespaceAware = isNamespaceAware
         it.newPullParser()
     }
 
     @Throws(XmlPullParserException::class, IOException::class)
-    fun parse(stream: InputStream): ElementNode {
+    public fun parse(stream: InputStream): ElementNode {
         parser.setInput(stream, null) // let the parser try to determine input encoding
 
         val stack = Stack<Triple<MutableList<Node>, AttributeMap, String>>()
@@ -103,17 +105,22 @@ class XmlParser(val isNamespaceAware: Boolean = true, val isCaseSensitive: Boole
     }
 }
 
-data class Attribute(val name: String, val namespace: String, val value: String)
+@InternalReadiumApi
+public data class Attribute(val name: String, val namespace: String, val value: String)
 
-typealias AttributeMap = Map<String, Map<String, String>>
+@InternalReadiumApi
+public typealias AttributeMap = Map<String, Map<String, String>>
 
-sealed class Node
+@InternalReadiumApi
+public sealed class Node
 
 /** Container for text in the XML tree */
-data class TextNode(val text: String) : Node()
+@InternalReadiumApi
+public data class TextNode(val text: String) : Node()
 
 /** Represents a node with children in the XML tree */
-data class ElementNode(
+@InternalReadiumApi
+public data class ElementNode(
     val name: String,
     val namespace: String = "",
     val lang: String = "",
@@ -131,23 +138,23 @@ data class ElementNode(
 
     /** Return the value of an attribute picked in the same namespace as this [ElementNode],
      * fallback to no namespace and at last to null. */
-    fun getAttr(name: String) = getAttrNs(name, namespace) ?: getAttrNs(name, "")
+    public fun getAttr(name: String): String? = getAttrNs(name, namespace) ?: getAttrNs(name, "")
 
     /** Return the value of an attribute picked in a specific namespace or null if it does not exist */
-    fun getAttrNs(name: String, namespace: String) = attributes[namespace]?.get(name)
+    public fun getAttrNs(name: String, namespace: String): String? = attributes[namespace]?.get(name)
 
     /** Return a list of all ElementNode children */
-    fun getAll() = children.filterIsInstance<ElementNode>()
+    public fun getAll(): List<ElementNode> = children.filterIsInstance<ElementNode>()
 
     /** Return a list of [ElementNode] children with the given name and namespace */
-    fun get(name: String, namespace: String) =
+    public fun get(name: String, namespace: String): List<ElementNode> =
         getAll().filter { it.name == name && it.namespace == namespace }
 
     /** Return the first [ElementNode] child with the given name and namespace, or null if there is none */
-    fun getFirst(name: String, namespace: String) = get(name, namespace).firstOrNull()
+    public fun getFirst(name: String, namespace: String): ElementNode? = get(name, namespace).firstOrNull()
 
     /** Recursively collect all descendent [ElementNode] with the given name and namespace into a list */
-    fun collect(name: String, namespace: String): List<ElementNode> {
+    public fun collect(name: String, namespace: String): List<ElementNode> {
         val founded: MutableList<ElementNode> = mutableListOf()
         for (c in getAll()) {
             if (c.name == name && c.namespace == namespace) founded.add(c)
@@ -157,7 +164,7 @@ data class ElementNode(
     }
 
     /** Recursively collect and concatenate all descendent [TextNode] in depth-first order */
-    fun collectText(): String {
+    public fun collectText(): String {
         val text = StringBuilder()
         for (c in children) {
             when (c) {

@@ -12,6 +12,7 @@ package org.readium.r2.shared.extensions
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 import java.util.zip.Inflater
+import org.readium.r2.shared.InternalReadiumApi
 import timber.log.Timber
 
 /**
@@ -19,7 +20,8 @@ import timber.log.Timber
  *
  * @param nowrap If true then support GZIP compatible compression, see the documentation of [Inflater]
  */
-fun ByteArray.inflate(nowrap: Boolean = false, bufferSize: Int = 32 * 1024 /* 32 KB */): ByteArray =
+@InternalReadiumApi
+public fun ByteArray.inflate(nowrap: Boolean = false, bufferSize: Int = 32 * 1024 /* 32 KB */): ByteArray =
     ByteArrayOutputStream().use { output ->
         val inflater = Inflater(nowrap)
         inflater.setInput(this)
@@ -34,7 +36,8 @@ fun ByteArray.inflate(nowrap: Boolean = false, bufferSize: Int = 32 * 1024 /* 32
     }
 
 /** Computes the MD5 hash of the byte array. */
-fun ByteArray.md5(): String? =
+@InternalReadiumApi
+public fun ByteArray.md5(): String? =
     try {
         MessageDigest
             .getInstance("MD5")

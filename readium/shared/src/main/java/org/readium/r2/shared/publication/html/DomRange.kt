@@ -40,7 +40,7 @@ import org.readium.r2.shared.util.logging.log
  * @param end A serializable representation of the "end" boundary point of the DOM Range.
  */
 @Parcelize
-data class DomRange(
+public data class DomRange(
     val start: Point,
     val end: Point? = null
 ) : JSONable, Parcelable {
@@ -61,21 +61,21 @@ data class DomRange(
      * https://github.com/readium/architecture/blob/master/models/locators/extensions/html.md#the-start-and-end-object
      */
     @Parcelize
-    data class Point(
+    public data class Point(
         val cssSelector: String,
         val textNodeIndex: Int,
         val charOffset: Int? = null
     ) : JSONable, Parcelable {
 
-        override fun toJSON() = JSONObject().apply {
+        override fun toJSON(): JSONObject = JSONObject().apply {
             put("cssSelector", cssSelector)
             put("textNodeIndex", textNodeIndex)
             put("charOffset", charOffset)
         }
 
-        companion object {
+        public companion object {
 
-            fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Point? {
+            public fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Point? {
                 val cssSelector = json?.optNullableString("cssSelector")
                 val textNodeIndex = json?.optPositiveInt("textNodeIndex")
                 if (cssSelector == null || textNodeIndex == null) {
@@ -99,14 +99,14 @@ data class DomRange(
         val offset: Long? get() = charOffset?.toLong()
     }
 
-    override fun toJSON() = JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         putIfNotEmpty("start", start)
         putIfNotEmpty("end", end)
     }
 
-    companion object {
+    public companion object {
 
-        fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): DomRange? {
+        public fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): DomRange? {
             val start = Point.fromJSON(json?.optJSONObject("start"))
             if (start == null) {
                 warnings?.log(DomRange::class.java, "[start] is required", json)

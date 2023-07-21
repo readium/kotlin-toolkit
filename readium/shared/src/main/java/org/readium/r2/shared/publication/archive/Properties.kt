@@ -27,7 +27,7 @@ import org.readium.r2.shared.util.logging.log
  *        archive.
  */
 @Parcelize
-data class ArchiveProperties(
+public data class ArchiveProperties(
     val entryLength: Long,
     val isEntryCompressed: Boolean
 ) : JSONable, Parcelable {
@@ -37,8 +37,8 @@ data class ArchiveProperties(
         put("isEntryCompressed", isEntryCompressed)
     }
 
-    companion object {
-        fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): ArchiveProperties? {
+    public companion object {
+        public fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): ArchiveProperties? {
             json ?: return null
 
             val entryLength = json.optNullableLong("entryLength")
@@ -56,6 +56,6 @@ data class ArchiveProperties(
 /**
  * Provides information about how the resource is stored in the publication archive.
  */
-val Properties.archive: ArchiveProperties?
+public val Properties.archive: ArchiveProperties?
     get() = (this["archive"] as? Map<*, *>)
         ?.let { ArchiveProperties.fromJSON(JSONObject(it)) }

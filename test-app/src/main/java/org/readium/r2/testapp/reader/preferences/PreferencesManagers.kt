@@ -37,8 +37,8 @@ import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesFilter
 import org.readium.r2.navigator.preferences.PreferencesSerializer
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.testapp.utils.extensions.stateInFirst
+import org.readium.r2.testapp.utils.tryOrNull
 
 class PreferencesManager<P : Configurable.Preferences<P>> internal constructor(
     val preferences: StateFlow<P>,

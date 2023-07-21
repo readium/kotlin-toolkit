@@ -26,14 +26,14 @@ import org.readium.r2.shared.util.mediatype.MediaType
  * - Create a [Fetcher] one can access the publication through.
  * - Create a [ContentProtectionService] publication service.
  */
-interface ContentProtection {
+public interface ContentProtection {
 
-    val scheme: Scheme
+    public val scheme: Scheme
 
     /**
      * Returns if this [ContentProtection] supports the given [asset].
      */
-    suspend fun supports(
+    public suspend fun supports(
         asset: org.readium.r2.shared.asset.Asset
     ): Boolean
 
@@ -43,7 +43,7 @@ interface ContentProtection {
      * @return A [Asset] in case of success or a [Publication.OpeningException] if the
      * asset can't be successfully opened even in restricted mode.
      */
-    suspend fun open(
+    public suspend fun open(
         asset: org.readium.r2.shared.asset.Asset,
         credentials: String?,
         allowUserInteraction: Boolean,
@@ -60,7 +60,7 @@ interface ContentProtection {
      * It can be used to modify the `Manifest`, the root [Fetcher] or the list of service factories
      * of a [Publication].
      */
-    data class Asset(
+    public data class Asset(
         val name: String,
         val mediaType: MediaType,
         val fetcher: Fetcher,
@@ -71,34 +71,34 @@ interface ContentProtection {
      * Represents a specific Content Protection technology, uniquely identified with an [uri].
      */
     @JvmInline
-    value class Scheme(
-        val uri: String,
+    public value class Scheme(
+        public val uri: String,
     ) {
 
         @Deprecated("Define yourself the name to print to users.", level = DeprecationLevel.ERROR)
-        val name: LocalizedString? get() = null
+        public val name: LocalizedString? get() = null
 
-        companion object {
+        public companion object {
             /** Readium LCP DRM scheme. */
-            val Lcp = Scheme(uri = "http://readium.org/2014/01/lcp")
+            public val Lcp: Scheme = Scheme(uri = "http://readium.org/2014/01/lcp")
             /** Adobe ADEPT DRM scheme. */
-            val Adept = Scheme(uri = "http://ns.adobe.com/adept")
+            public val Adept: Scheme = Scheme(uri = "http://ns.adobe.com/adept")
         }
     }
 
-    sealed class Exception(
+    public sealed class Exception(
         userMessageId: Int,
         vararg args: Any?,
         quantity: Int? = null,
         cause: Throwable? = null
     ) : UserException(userMessageId, quantity, *args, cause = cause) {
-        constructor(@StringRes userMessageId: Int, vararg args: Any?, cause: Throwable? = null) : this(userMessageId, *args, quantity = null, cause = cause)
+        protected constructor(@StringRes userMessageId: Int, vararg args: Any?, cause: Throwable? = null) : this(userMessageId, *args, quantity = null, cause = cause)
 
         /**
          * Exception returned when the given Content Protection [scheme] is not supported by the
          * app.
          */
-        class SchemeNotSupported(val scheme: Scheme? = null, name: String?) : Exception(
+        public class SchemeNotSupported(public val scheme: Scheme? = null, name: String?) : Exception(
             if (name == null) R.string.readium_shared_publication_content_protection_exception_not_supported_unknown
             else R.string.readium_shared_publication_content_protection_exception_not_supported,
             name

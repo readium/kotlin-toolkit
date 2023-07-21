@@ -29,7 +29,7 @@ import org.readium.r2.shared.util.logging.log
  * @param otherMetadata Additional metadata for extensions, as a JSON dictionary.
  */
 @Parcelize
-data class Metadata(
+public data class Metadata(
     val identifier: String? = null, // URI
     val type: String? = null, // URI (@type)
     val conformsTo: Set<Publication.Profile> = emptySet(),
@@ -62,7 +62,7 @@ data class Metadata(
     val otherMetadata: @WriteWith<JSONParceler> Map<String, Any> = mapOf()
 ) : JSONable, Parcelable {
 
-    constructor(
+    public constructor(
         identifier: String? = null, // URI
         type: String? = null, // URI (@type)
         conformsTo: Set<Publication.Profile> = emptySet(),
@@ -197,7 +197,7 @@ data class Metadata(
     /**
      * Serializes a [Metadata] to its RWPM JSON representation.
      */
-    override fun toJSON() = JSONObject(otherMetadata).apply {
+    override fun toJSON(): JSONObject = JSONObject(otherMetadata).apply {
         put("identifier", identifier)
         put("@type", type)
         putIfNotEmpty("conformsTo", conformsTo.map { it.uri })
@@ -233,16 +233,16 @@ data class Metadata(
      * Syntactic sugar to access the [otherMetadata] values by subscripting [Metadata] directly.
      * `metadata["layout"] == metadata.otherMetadata["layout"]`
      */
-    operator fun get(key: String): Any? = otherMetadata[key]
+    public operator fun get(key: String): Any? = otherMetadata[key]
 
-    companion object {
+    public companion object {
 
         /**
          * Parses a [Metadata] from its RWPM JSON representation.
          *
          * If the metadata can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSON(
+        public fun fromJSON(
             json: JSONObject?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
@@ -341,7 +341,7 @@ data class Metadata(
         get() = localizedTitle
 
     @Deprecated("Use [localizedTitle.get] instead", ReplaceWith("localizedTitle.translationForLanguage(key)?.string"), level = DeprecationLevel.ERROR)
-    fun titleForLang(key: String): String? =
+    public fun titleForLang(key: String): String? =
         localizedTitle.getOrFallback(key)?.string
 
     @Deprecated("Use [readingProgression] instead.", ReplaceWith("readingProgression"), level = DeprecationLevel.ERROR)
@@ -366,5 +366,5 @@ data class Metadata(
     val rights: String? get() = null
 
     @Deprecated("Renamed into [toJSON]", ReplaceWith("toJSON()"))
-    fun writeJSON(): JSONObject = toJSON()
+    public fun writeJSON(): JSONObject = toJSON()
 }

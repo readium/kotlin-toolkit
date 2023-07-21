@@ -15,7 +15,7 @@ import org.readium.r2.shared.InternalReadiumApi
  * [coroutineScope].
  */
 @InternalReadiumApi
-fun <T, M> StateFlow<T>.mapStateIn(
+public fun <T, M> StateFlow<T>.mapStateIn(
     coroutineScope: CoroutineScope,
     transform: (value: T) -> M
 ): StateFlow<M> =
@@ -31,7 +31,7 @@ fun <T, M> StateFlow<T>.mapStateIn(
  * given [coroutineScope].
  */
 @InternalReadiumApi
-fun <T1, T2, R> StateFlow<T1>.combineStateIn(
+public fun <T1, T2, R> StateFlow<T1>.combineStateIn(
     coroutineScope: CoroutineScope,
     flow: StateFlow<T2>,
     transform: (a: T1, b: T2) -> R

@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.Search
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.resource.ResourceTry
@@ -19,26 +20,26 @@ import org.readium.r2.shared.util.mediatype.MediaType
 /**
  * Extracts pure content from a marked-up (e.g. HTML) or binary (e.g. PDF) resource.
  */
-@Search
-interface ResourceContentExtractor {
+@ExperimentalReadiumApi
+public interface ResourceContentExtractor {
 
     /**
      * Extracts the text content of the given [resource].
      */
-    suspend fun extractText(resource: Fetcher.Resource): ResourceTry<String> = Try.success("")
+    public suspend fun extractText(resource: Fetcher.Resource): ResourceTry<String> = Try.success("")
 
-    interface Factory {
+    public interface Factory {
         /**
          * Creates a [ResourceContentExtractor] instance for the given [resource].
          *
          * Return null if the resource format is not supported.
          */
-        suspend fun createExtractor(resource: Fetcher.Resource): ResourceContentExtractor?
+        public suspend fun createExtractor(resource: Fetcher.Resource): ResourceContentExtractor?
     }
 }
 
-@Search
-class DefaultResourceContentExtractorFactory : ResourceContentExtractor.Factory {
+@ExperimentalReadiumApi
+public class DefaultResourceContentExtractorFactory : ResourceContentExtractor.Factory {
 
     override suspend fun createExtractor(resource: Fetcher.Resource): ResourceContentExtractor? =
         when (resource.link().mediaType) {
@@ -50,8 +51,8 @@ class DefaultResourceContentExtractorFactory : ResourceContentExtractor.Factory 
 /**
  * [ResourceContentExtractor] implementation for HTML resources.
  */
-@Search
-class HtmlResourceContentExtractor : ResourceContentExtractor {
+@ExperimentalReadiumApi
+public class HtmlResourceContentExtractor : ResourceContentExtractor {
 
     override suspend fun extractText(resource: Fetcher.Resource): ResourceTry<String> = withContext(Dispatchers.IO) {
         resource.readAsString().mapCatching { html ->

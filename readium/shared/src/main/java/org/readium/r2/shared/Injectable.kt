@@ -10,14 +10,10 @@
 package org.readium.r2.shared
 
 import java.io.Serializable
-import org.readium.r2.shared.util.MapCompanion
 
-enum class Injectable(val rawValue: String) : Serializable {
+@Deprecated("Migrate the HTTP server, see the migration guide", level = DeprecationLevel.ERROR)
+public enum class Injectable(public val rawValue: String) : Serializable {
     Script("scripts"),
     Font("fonts"),
     Style("styles");
-
-    companion object : MapCompanion<String, Injectable>(values(), Injectable::rawValue)
-
-    override fun toString(): String = rawValue
 }

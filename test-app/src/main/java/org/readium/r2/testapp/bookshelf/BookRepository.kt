@@ -31,8 +31,6 @@ import org.readium.r2.shared.asset.AssetType
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.error.getOrElse
-import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
@@ -52,6 +50,8 @@ import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.utils.extensions.authorName
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
 import org.readium.r2.testapp.utils.extensions.moveTo
+import org.readium.r2.testapp.utils.tryOrLog
+import org.readium.r2.testapp.utils.tryOrNull
 import timber.log.Timber
 
 class BookRepository(

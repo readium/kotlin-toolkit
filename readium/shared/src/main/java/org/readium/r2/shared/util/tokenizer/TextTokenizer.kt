@@ -15,11 +15,11 @@ import org.readium.r2.shared.util.Language
 
 /** A tokenizer splitting a String into range tokens (e.g. words, sentences, etc.). */
 @ExperimentalReadiumApi
-typealias TextTokenizer = Tokenizer<String, IntRange>
+public typealias TextTokenizer = Tokenizer<String, IntRange>
 
 /** A text token unit which can be used with a [TextTokenizer]. */
 @ExperimentalReadiumApi
-enum class TextUnit {
+public enum class TextUnit {
     Word, Sentence, Paragraph
 }
 
@@ -28,10 +28,10 @@ enum class TextUnit {
  * version.
  */
 @ExperimentalReadiumApi
-class DefaultTextContentTokenizer private constructor(
+public class DefaultTextContentTokenizer private constructor(
     private val tokenizer: TextTokenizer
 ) : TextTokenizer by tokenizer {
-    constructor(unit: TextUnit, language: Language?) : this(
+    public constructor(unit: TextUnit, language: Language?) : this(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
             IcuTextTokenizer(language = language, unit = unit)
         else
@@ -45,7 +45,7 @@ class DefaultTextContentTokenizer private constructor(
  */
 @ExperimentalReadiumApi
 @RequiresApi(Build.VERSION_CODES.N)
-class IcuTextTokenizer(language: Language?, unit: TextUnit) : TextTokenizer {
+public class IcuTextTokenizer(language: Language?, unit: TextUnit) : TextTokenizer {
 
     private val iterator: BreakIterator
 
@@ -80,7 +80,7 @@ class IcuTextTokenizer(language: Language?, unit: TextUnit) : TextTokenizer {
  * Use [IcuTextTokenizer] for better results.
  */
 @ExperimentalReadiumApi
-class NaiveTextTokenizer(unit: TextUnit) : TextTokenizer {
+public class NaiveTextTokenizer(unit: TextUnit) : TextTokenizer {
     private val iterator: java.text.BreakIterator = when (unit) {
         TextUnit.Word -> java.text.BreakIterator.getWordInstance()
         TextUnit.Sentence -> java.text.BreakIterator.getSentenceInstance()

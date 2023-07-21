@@ -17,15 +17,15 @@ import org.readium.r2.shared.extensions.asInstance
 /**
  * An exception that can be presented to the user using a localized message.
  */
-open class UserException protected constructor(
+public open class UserException protected constructor(
     protected val content: Content,
     cause: Throwable?
 ) : Exception(cause) {
 
-    constructor(@StringRes userMessageId: Int, vararg args: Any?, cause: Throwable? = null) :
+    public constructor(@StringRes userMessageId: Int, vararg args: Any?, cause: Throwable? = null) :
         this(Content(userMessageId, *args), cause)
 
-    constructor(
+    public constructor(
         @PluralsRes userMessageId: Int,
         quantity: Int?,
         vararg args: Any?,
@@ -33,10 +33,10 @@ open class UserException protected constructor(
     ) :
         this(Content(userMessageId, quantity, *args), cause)
 
-    constructor(message: String, cause: Throwable? = null) :
+    public constructor(message: String, cause: Throwable? = null) :
         this(Content(message), cause)
 
-    constructor(cause: UserException) :
+    public constructor(cause: UserException) :
         this(Content(cause), cause)
 
     /**
@@ -44,7 +44,7 @@ open class UserException protected constructor(
      *
      * @param includesCauses Includes nested [UserException] causes in the user message when true.
      */
-    open fun getUserMessage(context: Context, includesCauses: Boolean = true): String =
+    public open fun getUserMessage(context: Context, includesCauses: Boolean = true): String =
         content.getUserMessage(context, cause, includesCauses)
 
     /**
@@ -52,7 +52,7 @@ open class UserException protected constructor(
      */
     protected sealed class Content {
 
-        abstract fun getUserMessage(
+        public abstract fun getUserMessage(
             context: Context,
             cause: Throwable? = null,
             includesCauses: Boolean = true
@@ -61,7 +61,7 @@ open class UserException protected constructor(
         /**
          * Holds a nested [UserException].
          */
-        class Exception(val exception: UserException) : Content() {
+        public class Exception(public val exception: UserException) : Content() {
             override fun getUserMessage(
                 context: Context,
                 cause: Throwable?,
@@ -77,7 +77,7 @@ open class UserException protected constructor(
          * @param args Optional arguments to expand in the message.
          * @param quantity Quantity to use if the user message is a quantity strings.
          */
-        class LocalizedString(
+        public class LocalizedString(
             private val userMessageId: Int,
             private val args: Array<out Any?>,
             private val quantity: Int?
@@ -114,7 +114,7 @@ open class UserException protected constructor(
          * Holds an already localized string message. For example, received from an HTTP
          * Problem Details object.
          */
-        class Message(private val message: String) : Content() {
+        public class Message(private val message: String) : Content() {
             override fun getUserMessage(
                 context: Context,
                 cause: Throwable?,
@@ -122,14 +122,14 @@ open class UserException protected constructor(
             ): String = message
         }
 
-        companion object {
-            operator fun invoke(@StringRes userMessageId: Int, vararg args: Any?) =
+        public companion object {
+            public operator fun invoke(@StringRes userMessageId: Int, vararg args: Any?): Content =
                 LocalizedString(userMessageId, args, null)
-            operator fun invoke(@PluralsRes userMessageId: Int, quantity: Int?, vararg args: Any?) =
+            public operator fun invoke(@PluralsRes userMessageId: Int, quantity: Int?, vararg args: Any?): Content =
                 LocalizedString(userMessageId, args, quantity)
-            operator fun invoke(cause: UserException) =
+            public operator fun invoke(cause: UserException): Content =
                 Exception(cause)
-            operator fun invoke(message: String) =
+            public operator fun invoke(message: String): Content =
                 Message(message)
         }
     }

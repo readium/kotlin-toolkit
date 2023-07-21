@@ -21,12 +21,12 @@ import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.util.SuspendingCloseable
 
-typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Exception>
+public typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Exception>
 
 /**
  * Acts as a proxy to an actual resource by handling read access.
  */
-interface Resource : SuspendingCloseable {
+public interface Resource : SuspendingCloseable {
 
     /**
      * Direct file to this resource, when available.
@@ -36,17 +36,17 @@ interface Resource : SuspendingCloseable {
      * underwent transformations or is being read from an archive. Therefore, consumers should
      * always fallback on regular stream reading, using [read] or [ResourceInputStream].
      */
-    val file: File? get() = null
+    public val file: File? get() = null
 
     /**
      * Returns the resource media type if known.
      */
-    suspend fun mediaType(): ResourceTry<String?> = ResourceTry.success(null)
+    public suspend fun mediaType(): ResourceTry<String?> = ResourceTry.success(null)
 
     /**
      * Returns the name of the resource if any.
      */
-    suspend fun name(): ResourceTry<String?> = ResourceTry.success(null)
+    public suspend fun name(): ResourceTry<String?> = ResourceTry.success(null)
 
     /**
      * Returns data length from metadata if available, or calculated from reading the bytes otherwise.
@@ -54,7 +54,7 @@ interface Resource : SuspendingCloseable {
      * This value must be treated as a hint, as it might not reflect the actual bytes length. To get
      * the real length, you need to read the whole resource.
      */
-    suspend fun length(): ResourceTry<Long>
+    public suspend fun length(): ResourceTry<Long>
 
     /**
      * Reads the bytes at the given range.
@@ -62,19 +62,19 @@ interface Resource : SuspendingCloseable {
      * When [range] is null, the whole content is returned. Out-of-range indexes are clamped to the
      * available length automatically.
      */
-    suspend fun read(range: LongRange? = null): ResourceTry<ByteArray>
+    public suspend fun read(range: LongRange? = null): ResourceTry<ByteArray>
 
     /**
      * Errors occurring while accessing a resource.
      */
-    sealed class Exception(@StringRes userMessageId: Int, cause: Throwable? = null) : UserException(userMessageId, cause = cause) {
+    public sealed class Exception(@StringRes userMessageId: Int, cause: Throwable? = null) : UserException(userMessageId, cause = cause) {
 
         /** Equivalent to a 400 HTTP error. */
-        class BadRequest(val parameters: Map<String, String> = emptyMap(), cause: Throwable? = null) :
+        public class BadRequest(public val parameters: Map<String, String> = emptyMap(), cause: Throwable? = null) :
             Exception(R.string.readium_shared_resource_exception_bad_request, cause)
 
         /** Equivalent to a 404 HTTP error. */
-        class NotFound(cause: Throwable? = null) :
+        public class NotFound(cause: Throwable? = null) :
             Exception(R.string.readium_shared_resource_exception_not_found, cause)
 
         /**
@@ -83,7 +83,7 @@ interface Resource : SuspendingCloseable {
          * This can be returned when trying to read a resource protected with a DRM that is not
          * unlocked.
          */
-        class Forbidden(cause: Throwable? = null) :
+        public class Forbidden(cause: Throwable? = null) :
             Exception(R.string.readium_shared_resource_exception_forbidden, cause)
 
         /**
@@ -92,28 +92,28 @@ interface Resource : SuspendingCloseable {
          * Used when the source can't be reached, e.g. no Internet connection, or an issue with the
          * file system. Usually this is a temporary error.
          */
-        class Unavailable(cause: Throwable? = null) :
+        public class Unavailable(cause: Throwable? = null) :
             Exception(R.string.readium_shared_resource_exception_unavailable, cause)
 
         /**
          * The Internet connection appears to be offline.
          */
-        object Offline : Exception(R.string.readium_shared_resource_exception_offline)
+        public object Offline : Exception(R.string.readium_shared_resource_exception_offline)
 
         /**
          * Equivalent to a 507 HTTP error.
          *
          * Used when the requested range is too large to be read in memory.
          */
-        class OutOfMemory(override val cause: OutOfMemoryError) :
+        public class OutOfMemory(override val cause: OutOfMemoryError) :
             Exception(R.string.readium_shared_resource_exception_out_of_memory)
 
         /** For any other error, such as HTTP 500. */
-        class Other(cause: Throwable) : Exception(R.string.readium_shared_resource_exception_other, cause)
+        public class Other(cause: Throwable) : Exception(R.string.readium_shared_resource_exception_other, cause)
 
-        companion object {
+        public companion object {
 
-            fun wrap(e: Throwable): Exception =
+            public fun wrap(e: Throwable): Exception =
                 when (e) {
                     is Exception -> e
                     is OutOfMemoryError -> OutOfMemory(e)
@@ -124,7 +124,7 @@ interface Resource : SuspendingCloseable {
 }
 
 /** Creates a Resource that will always return the given [error]. */
-class FailureResource(private val error: Resource.Exception) : Resource {
+public class FailureResource(private val error: Resource.Exception) : Resource {
 
     internal constructor(cause: Throwable) : this(Resource.Exception.wrap(cause))
 
@@ -143,7 +143,7 @@ class FailureResource(private val error: Resource.Exception) : Resource {
  *
  * If the [transform] throws an [Exception], it is wrapped in a failure with Resource.Exception.Other.
  */
-inline fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): ResourceTry<R> =
+public inline fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): ResourceTry<R> =
     try {
         map(transform)
     } catch (e: Exception) {
@@ -152,7 +152,7 @@ inline fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): Resour
         Try.failure(Resource.Exception.wrap(e))
     }
 
-inline fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =
+public inline fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =
     mapCatching(transform).flatMap { it }
 
 /**
@@ -161,7 +161,7 @@ inline fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) -> Resour
  * If [charset] is null, then it is parsed from the `charset` parameter of link().type,
  * or falls back on UTF-8.
  */
-suspend fun Resource.readAsString(charset: Charset? = null): ResourceTry<String> =
+public suspend fun Resource.readAsString(charset: Charset? = null): ResourceTry<String> =
     read().mapCatching {
         String(it, charset = charset ?: Charsets.UTF_8)
     }
@@ -169,19 +169,19 @@ suspend fun Resource.readAsString(charset: Charset? = null): ResourceTry<String>
 /**
  * Reads the full content as a JSON object.
  */
-suspend fun Resource.readAsJson(): ResourceTry<JSONObject> =
+public suspend fun Resource.readAsJson(): ResourceTry<JSONObject> =
     readAsString(charset = Charsets.UTF_8).mapCatching { JSONObject(it) }
 
 /**
  * Reads the full content as an XML document.
  */
-suspend fun Resource.readAsXml(): ResourceTry<ElementNode> =
+public suspend fun Resource.readAsXml(): ResourceTry<ElementNode> =
     read().mapCatching { XmlParser().parse(ByteArrayInputStream(it)) }
 
 /**
  * Reads the full content as a [Bitmap].
  */
-suspend fun Resource.readAsBitmap(): ResourceTry<Bitmap> =
+public suspend fun Resource.readAsBitmap(): ResourceTry<Bitmap> =
     read().mapCatching {
         BitmapFactory.decodeByteArray(it, 0, it.size)
             ?: throw kotlin.Exception("Could not decode resource as a bitmap")
