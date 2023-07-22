@@ -19,7 +19,7 @@ import org.readium.r2.shared.publication.Metadata
  * or ranges.
  */
 @ExperimentalReadiumApi
-class PdfiumPreferencesEditor internal constructor(
+public class PdfiumPreferencesEditor internal constructor(
     initialPreferences: PdfiumPreferences,
     publicationMetadata: Metadata,
     defaults: PdfiumDefaults,
@@ -49,7 +49,7 @@ class PdfiumPreferencesEditor internal constructor(
     /**
      * Indicates how pages should be laid out within the viewport.
      */
-    val fit: EnumPreference<Fit> =
+    public val fit: EnumPreference<Fit> =
         EnumPreferenceDelegate(
             getValue = { preferences.fit },
             getEffectiveValue = { state.settings.fit },
@@ -61,7 +61,7 @@ class PdfiumPreferencesEditor internal constructor(
     /**
      * Space between pages in dp.
      */
-    val pageSpacing: RangePreference<Double> =
+    public val pageSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.pageSpacing },
             getEffectiveValue = { state.settings.pageSpacing },
@@ -75,7 +75,7 @@ class PdfiumPreferencesEditor internal constructor(
     /**
      * Direction of the horizontal progression across pages.
      */
-    val readingProgression: EnumPreference<ReadingProgression> =
+    public val readingProgression: EnumPreference<ReadingProgression> =
         EnumPreferenceDelegate(
             getValue = { preferences.readingProgression },
             getEffectiveValue = { state.settings.readingProgression },
@@ -87,7 +87,7 @@ class PdfiumPreferencesEditor internal constructor(
     /**
      * Indicates the axis along which pages should be laid out in scroll mode.
      */
-    val scrollAxis: EnumPreference<Axis> =
+    public val scrollAxis: EnumPreference<Axis> =
         EnumPreferenceDelegate(
             getValue = { preferences.scrollAxis },
             getEffectiveValue = { state.settings.scrollAxis },

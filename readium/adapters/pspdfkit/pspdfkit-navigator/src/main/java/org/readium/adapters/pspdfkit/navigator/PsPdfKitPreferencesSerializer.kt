@@ -14,7 +14,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * JSON serializer of [PsPdfKitPreferences].
  */
 @ExperimentalReadiumApi
-class PsPdfKitPreferencesSerializer : PreferencesSerializer<PsPdfKitPreferences> {
+public class PsPdfKitPreferencesSerializer : PreferencesSerializer<PsPdfKitPreferences> {
 
     override fun serialize(preferences: PsPdfKitPreferences): String =
         Json.encodeToString(PsPdfKitPreferences.serializer(), preferences)

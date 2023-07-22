@@ -25,7 +25,7 @@ import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import timber.log.Timber
 
-class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPdfKitDocument> {
+public class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPdfKitDocument> {
     private val context = context.applicationContext
 
     override val documentType: KClass<PsPdfKitDocument> = PsPdfKitDocument::class
@@ -42,8 +42,8 @@ class PsPdfKitDocumentFactory(context: Context) : PdfDocumentFactory<PsPdfKitDoc
         }
 }
 
-class PsPdfKitDocument(
-    val document: _PsPdfKitDocument
+public class PsPdfKitDocument(
+    public val document: _PsPdfKitDocument
 ) : PdfDocument {
 
     // FIXME: Doesn't seem to be exposed by PSPDFKit.

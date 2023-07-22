@@ -13,7 +13,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * Suggested filter to keep only shared [PdfiumPreferences].
  */
 @ExperimentalReadiumApi
-object PdfiumSharedPreferencesFilter : PreferencesFilter<PdfiumPreferences> {
+public object PdfiumSharedPreferencesFilter : PreferencesFilter<PdfiumPreferences> {
 
     override fun filter(preferences: PdfiumPreferences): PdfiumPreferences =
         preferences.copy(
@@ -25,7 +25,7 @@ object PdfiumSharedPreferencesFilter : PreferencesFilter<PdfiumPreferences> {
  * Suggested filter to keep only publication-specific [PdfiumPreferences].
  */
 @ExperimentalReadiumApi
-object PdfiumPublicationPreferencesFilter : PreferencesFilter<PdfiumPreferences> {
+public object PdfiumPublicationPreferencesFilter : PreferencesFilter<PdfiumPreferences> {
 
     override fun filter(preferences: PdfiumPreferences): PdfiumPreferences =
         PdfiumPreferences(

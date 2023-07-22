@@ -26,7 +26,7 @@ import org.readium.r2.shared.util.pdf.cachedIn
  * the navigator for some preferences.
  */
 @ExperimentalReadiumApi
-class PsPdfKitEngineProvider(
+public class PsPdfKitEngineProvider(
     private val context: Context,
     private val defaults: PsPdfKitDefaults = PsPdfKitDefaults()
 ) : PdfEngineProvider<PsPdfKitSettings, PsPdfKitPreferences, PsPdfKitPreferencesEditor> {
