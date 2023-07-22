@@ -25,7 +25,7 @@ import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
 
-enum class OPDS2ParserError {
+public enum class OPDS2ParserError {
     MetadataNotFound,
     InvalidLink,
     MissingTitle,
@@ -33,25 +33,25 @@ enum class OPDS2ParserError {
     InvalidGroup,
 }
 
-class OPDS2Parser {
+public class OPDS2Parser {
 
-    companion object {
+    public companion object {
 
         private lateinit var feed: Feed
 
-        suspend fun parseUrlString(url: String, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
+        public suspend fun parseUrlString(url: String, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
             return client.fetchWithDecoder(HttpRequest(url)) {
                 this.parse(it.body, URL(url))
             }
         }
 
-        suspend fun parseRequest(request: HttpRequest, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
+        public suspend fun parseRequest(request: HttpRequest, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
             return client.fetchWithDecoder(request) {
                 this.parse(it.body, URL(request.url))
             }
         }
 
-        fun parse(jsonData: ByteArray, url: URL): ParseData {
+        public fun parse(jsonData: ByteArray, url: URL): ParseData {
             return if (isFeed(jsonData)) {
                 ParseData(parseFeed(jsonData, url), null, 2)
             } else {
