@@ -13,7 +13,7 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.license.model.components.Link
 import org.readium.r2.lcp.license.model.components.lcp.User
 
-interface LcpAuthenticating {
+public interface LcpAuthenticating {
 
     /**
      * Retrieves the passphrase used to decrypt the given license.
@@ -44,14 +44,14 @@ interface LcpAuthenticating {
      * @param sender Free object that can be used by reading apps to give some UX context when
      *        presenting dialogs.
      */
-    suspend fun retrievePassphrase(
+    public suspend fun retrievePassphrase(
         license: AuthenticatedLicense,
         reason: AuthenticationReason,
         allowUserInteraction: Boolean,
         sender: Any? = null
     ): String?
 
-    enum class AuthenticationReason {
+    public enum class AuthenticationReason {
 
         /** No matching passphrase was found. */
         PassphraseNotFound,
@@ -59,13 +59,13 @@ interface LcpAuthenticating {
         /** The provided passphrase was invalid. */
         InvalidPassphrase;
 
-        companion object
+        public companion object
     }
 
     /**
      * @param document License Document being opened.
      */
-    data class AuthenticatedLicense(val document: LicenseDocument) {
+    public data class AuthenticatedLicense(val document: LicenseDocument) {
 
         /**
          * A hint to be displayed to the User to help them remember the User Passphrase.
@@ -101,21 +101,21 @@ interface LcpAuthenticating {
 }
 
 @Deprecated("Renamed to `LcpAuthenticating`", replaceWith = ReplaceWith("LcpAuthenticating"), level = DeprecationLevel.ERROR)
-typealias LCPAuthenticating = LcpAuthenticating
+public typealias LCPAuthenticating = LcpAuthenticating
 
 @Deprecated("Not used anymore", level = DeprecationLevel.ERROR)
-interface LCPAuthenticationDelegate
+public interface LCPAuthenticationDelegate
 
 @Deprecated("Renamed to `LcpAuthenticating.AuthenticationReason`", replaceWith = ReplaceWith("LcpAuthenticating.AuthenticationReason"), level = DeprecationLevel.ERROR)
-typealias LCPAuthenticationReason = LcpAuthenticating.AuthenticationReason
+public typealias LCPAuthenticationReason = LcpAuthenticating.AuthenticationReason
 
 @Deprecated("Renamed to `LcpAuthenticating.AuthenticatedLicense`", replaceWith = ReplaceWith("LcpAuthenticating.AuthenticatedLicense"), level = DeprecationLevel.ERROR)
-typealias LCPAuthenticatedLicense = LcpAuthenticating.AuthenticatedLicense
+public typealias LCPAuthenticatedLicense = LcpAuthenticating.AuthenticatedLicense
 
 @Deprecated("Renamed to `PassphraseNotFound`", replaceWith = ReplaceWith("PassphraseNotFound"), level = DeprecationLevel.ERROR)
-val LcpAuthenticating.AuthenticationReason.Companion.passphraseNotFound get() =
-    LcpAuthenticating.AuthenticationReason.PassphraseNotFound
+public val LcpAuthenticating.AuthenticationReason.Companion.passphraseNotFound: LcpAuthenticating.AuthenticationReason
+    get() = LcpAuthenticating.AuthenticationReason.PassphraseNotFound
 
 @Deprecated("Renamed to `InvalidPassphrase`", replaceWith = ReplaceWith("InvalidPassphrase"), level = DeprecationLevel.ERROR)
-val LcpAuthenticating.AuthenticationReason.Companion.invalidPassphrase get() =
-    LcpAuthenticating.AuthenticationReason.InvalidPassphrase
+public val LcpAuthenticating.AuthenticationReason.Companion.invalidPassphrase: LcpAuthenticating.AuthenticationReason
+    get() = LcpAuthenticating.AuthenticationReason.InvalidPassphrase

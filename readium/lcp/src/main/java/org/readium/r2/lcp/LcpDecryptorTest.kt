@@ -19,7 +19,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 
-suspend fun Publication.checkDecryption() {
+public suspend fun Publication.checkDecryption() {
 
     checkResourcesAreReadableInOneBlock(this)
 

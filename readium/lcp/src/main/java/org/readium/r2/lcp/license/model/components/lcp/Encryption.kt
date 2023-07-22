@@ -12,7 +12,7 @@ package org.readium.r2.lcp.license.model.components.lcp
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpException
 
-data class Encryption(val json: JSONObject) {
+public data class Encryption(val json: JSONObject) {
     val profile: String
     val contentKey: ContentKey
     val userKey: UserKey

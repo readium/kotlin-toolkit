@@ -25,27 +25,27 @@ import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.util.mediatype.MediaType
 
-class LicenseDocument(val data: ByteArray) {
-    val provider: String
-    val id: String
-    val issued: Date
-    val updated: Date
-    val encryption: Encryption
-    val links: Links
-    val user: User
-    val rights: Rights
-    val signature: Signature
-    val json: JSONObject
+public class LicenseDocument(public val data: ByteArray) {
+    public val provider: String
+    public val id: String
+    public val issued: Date
+    public val updated: Date
+    public val encryption: Encryption
+    public val links: Links
+    public val user: User
+    public val rights: Rights
+    public val signature: Signature
+    public val json: JSONObject
 
-    enum class Rel(val rawValue: String) {
+    public enum class Rel(public val rawValue: String) {
         hint("hint"),
         publication("publication"),
         self("self"),
         support("support"),
         status("status");
 
-        companion object {
-            operator fun invoke(rawValue: String) = values().firstOrNull { it.rawValue == rawValue }
+        public companion object {
+            public operator fun invoke(rawValue: String): Rel? = values().firstOrNull { it.rawValue == rawValue }
         }
     }
 
@@ -71,13 +71,13 @@ class LicenseDocument(val data: ByteArray) {
         }
     }
 
-    fun link(rel: Rel, type: MediaType? = null): Link? =
+    public fun link(rel: Rel, type: MediaType? = null): Link? =
         links.firstWithRel(rel.rawValue, type)
 
-    fun links(rel: Rel, type: MediaType? = null): List<Link> =
+    public fun links(rel: Rel, type: MediaType? = null): List<Link> =
         links.allWithRel(rel.rawValue, type)
 
-    fun url(rel: Rel, preferredType: MediaType? = null, parameters: URLParameters = emptyMap()): URL {
+    public fun url(rel: Rel, preferredType: MediaType? = null, parameters: URLParameters = emptyMap()): URL {
         val link = link(rel, preferredType)
             ?: links.firstWithRelAndNoType(rel.rawValue)
             ?: throw LcpException.Parsing.Url(rel = rel.rawValue)
@@ -85,6 +85,6 @@ class LicenseDocument(val data: ByteArray) {
         return link.url(parameters)
     }
 
-    val description: String
+    public val description: String
         get() = "License($id)"
 }

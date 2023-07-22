@@ -39,11 +39,11 @@ import timber.log.Timber
 /**
  * An [LcpAuthenticating] implementation presenting a dialog to the user.
  *
- * For this authentication to trigger, you must provide a [sender] parameter of type [Activity],
+ * For this authentication to trigger, you must provide a sender parameter of type [Activity],
  * [Fragment] or [View] to `Streamer::open()` or `LcpService::retrieveLicense()`. It will be used as
  * the host view for the dialog.
  */
-class LcpDialogAuthentication : LcpAuthenticating {
+public class LcpDialogAuthentication : LcpAuthenticating {
 
     override suspend fun retrievePassphrase(
         license: LcpAuthenticating.AuthenticatedLicense,

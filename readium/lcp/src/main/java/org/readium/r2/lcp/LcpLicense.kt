@@ -22,40 +22,40 @@ import timber.log.Timber
 /**
  * Opened license, used to decipher a protected publication and manage its license.
  */
-interface LcpLicense : ContentProtectionService.UserRights {
+public interface LcpLicense : ContentProtectionService.UserRights {
 
     /**
      * License Document information.
      * https://readium.org/lcp-specs/releases/lcp/latest.html
      */
-    val license: LicenseDocument
+    public val license: LicenseDocument
 
     /**
      * License Status Document information.
      * https://readium.org/lcp-specs/releases/lsd/latest.html
      */
-    val status: StatusDocument?
+    public val status: StatusDocument?
 
     /**
      * Number of remaining characters allowed to be copied by the user. If null, there's no limit.
      */
-    val charactersToCopyLeft: Int?
+    public val charactersToCopyLeft: Int?
 
     /**
      * Number of pages allowed to be printed by the user. If null, there's no limit.
      */
-    val pagesToPrintLeft: Int?
+    public val pagesToPrintLeft: Int?
 
     /**
      * Can the user renew the loaned publication?
      */
-    val canRenewLoan: Boolean
+    public val canRenewLoan: Boolean
 
     /**
      * The maximum potential date to renew to.
      * If null, then the renew date might not be customizable.
      */
-    val maxRenewDate: Date?
+    public val maxRenewDate: Date?
 
     /**
      * Renews the loan by starting a renew LSD interaction.
@@ -63,22 +63,22 @@ interface LcpLicense : ContentProtectionService.UserRights {
      * @param prefersWebPage Indicates whether the loan should be renewed through a web page if
      *        available, instead of programmatically.
      */
-    suspend fun renewLoan(listener: RenewListener, prefersWebPage: Boolean = false): Try<Date?, LcpException>
+    public suspend fun renewLoan(listener: RenewListener, prefersWebPage: Boolean = false): Try<Date?, LcpException>
 
     /**
      * Can the user return the loaned publication?
      */
-    val canReturnPublication: Boolean
+    public val canReturnPublication: Boolean
 
     /**
      * Returns the publication to its provider.
      */
-    suspend fun returnPublication(): Try<Unit, LcpException>
+    public suspend fun returnPublication(): Try<Unit, LcpException>
 
     /**
      * Decrypts the given [data] encrypted with the license's content key.
      */
-    suspend fun decrypt(data: ByteArray): Try<ByteArray, LcpException>
+    public suspend fun decrypt(data: ByteArray): Try<ByteArray, LcpException>
 
     /**
      * UX delegate for the loan renew LSD interaction.
@@ -86,7 +86,7 @@ interface LcpLicense : ContentProtectionService.UserRights {
      * If your application fits Material Design guidelines, take a look at [MaterialRenewListener]
      * for a default implementation.
      */
-    interface RenewListener {
+    public interface RenewListener {
 
         /**
          * Called when the renew interaction allows to customize the end date programmatically.
@@ -94,7 +94,7 @@ interface LcpLicense : ContentProtectionService.UserRights {
          *
          * The returned date can't exceed [maximumDate].
          */
-        suspend fun preferredEndDate(maximumDate: Date?): Date?
+        public suspend fun preferredEndDate(maximumDate: Date?): Date?
 
         /**
          * Called when the renew interaction uses an HTML web page.
@@ -102,24 +102,24 @@ interface LcpLicense : ContentProtectionService.UserRights {
          * You should present the URL in a Chrome Custom Tab and terminate the function when the
          * web page is dismissed by the user.
          */
-        suspend fun openWebPage(url: URL)
+        public suspend fun openWebPage(url: URL)
     }
 
     @Deprecated("Use `license.encryption.profile` instead", ReplaceWith("license.encryption.profile"), level = DeprecationLevel.ERROR)
-    val encryptionProfile: String? get() =
+    public val encryptionProfile: String? get() =
         license.encryption.profile
 
     @Deprecated("Use `decrypt()` with coroutines instead", ReplaceWith("decrypt(data)"), level = DeprecationLevel.ERROR)
-    fun decipher(data: ByteArray): ByteArray? =
+    public fun decipher(data: ByteArray): ByteArray? =
         runBlocking { decrypt(data) }
             .onFailure { Timber.e(it) }
             .getOrNull()
 
     @Deprecated("Use `renewLoan` with `RenewListener` instead", ReplaceWith("renewLoan(LcpLicense.RenewListener)"), level = DeprecationLevel.ERROR)
-    suspend fun renewLoan(end: DateTime?, urlPresenter: suspend (URL) -> Unit): Try<Unit, LcpException> = Try.success(Unit)
+    public suspend fun renewLoan(end: DateTime?, urlPresenter: suspend (URL) -> Unit): Try<Unit, LcpException> = Try.success(Unit)
 
     @Deprecated("Use `renewLoan` with `RenewListener` instead", ReplaceWith("renewLoan(LcpLicense.RenewListener)"), level = DeprecationLevel.ERROR)
-    fun renewLoan(
+    public fun renewLoan(
         end: DateTime?,
         present: (URL, dismissed: () -> Unit) -> Unit,
         completion: (LcpException?) -> Unit
@@ -127,7 +127,7 @@ interface LcpLicense : ContentProtectionService.UserRights {
 
     @Deprecated("Use `returnPublication()` with coroutines instead", ReplaceWith("returnPublication"), level = DeprecationLevel.ERROR)
     @DelicateCoroutinesApi
-    fun returnPublication(completion: (LcpException?) -> Unit) {
+    public fun returnPublication(completion: (LcpException?) -> Unit) {
         GlobalScope.launch {
             completion(returnPublication().failureOrNull())
         }
@@ -135,7 +135,7 @@ interface LcpLicense : ContentProtectionService.UserRights {
 }
 
 @Deprecated("Renamed to `LcpService`", replaceWith = ReplaceWith("LcpService"), level = DeprecationLevel.ERROR)
-typealias LCPService = LcpService
+public typealias LCPService = LcpService
 
 @Deprecated("Renamed to `LcpLicense`", replaceWith = ReplaceWith("LcpLicense"), level = DeprecationLevel.ERROR)
-typealias LCPLicense = LcpLicense
+public typealias LCPLicense = LcpLicense

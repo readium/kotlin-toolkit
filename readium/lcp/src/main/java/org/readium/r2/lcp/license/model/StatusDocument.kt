@@ -24,19 +24,19 @@ import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.util.mediatype.MediaType
 
-class StatusDocument(val data: ByteArray) {
-    val id: String
-    val status: Status
-    val message: String
-    val licenseUpdated: Date
-    val statusUpdated: Date
-    val links: Links
-    val potentialRights: PotentialRights?
-    val events: List<Event>
+public class StatusDocument(public val data: ByteArray) {
+    public val id: String
+    public val status: Status
+    public val message: String
+    public val licenseUpdated: Date
+    public val statusUpdated: Date
+    public val links: Links
+    public val potentialRights: PotentialRights?
+    public val events: List<Event>
 
-    val json: JSONObject
+    public val json: JSONObject
 
-    enum class Status(val rawValue: String) {
+    public enum class Status(public val rawValue: String) {
         ready("ready"),
         active("active"),
         revoked("revoked"),
@@ -44,19 +44,19 @@ class StatusDocument(val data: ByteArray) {
         cancelled("cancelled"),
         expired("expired");
 
-        companion object {
-            operator fun invoke(rawValue: String) = values().firstOrNull { it.rawValue == rawValue }
+        public companion object {
+            public operator fun invoke(rawValue: String): Status? = values().firstOrNull { it.rawValue == rawValue }
         }
     }
 
-    enum class Rel(val rawValue: String) {
+    public enum class Rel(public val rawValue: String) {
         register("register"),
         license("license"),
         `return`("return"),
         renew("renew");
 
-        companion object {
-            operator fun invoke(rawValue: String) = values().firstOrNull { it.rawValue == rawValue }
+        public companion object {
+            public operator fun invoke(rawValue: String): Rel? = values().firstOrNull { it.rawValue == rawValue }
         }
     }
 
@@ -86,16 +86,16 @@ class StatusDocument(val data: ByteArray) {
             ?: emptyList()
     }
 
-    fun link(rel: Rel, type: MediaType? = null): Link? =
+    public fun link(rel: Rel, type: MediaType? = null): Link? =
         links.firstWithRel(rel.rawValue, type)
 
-    fun links(rel: Rel, type: MediaType? = null): List<Link> =
+    public fun links(rel: Rel, type: MediaType? = null): List<Link> =
         links.allWithRel(rel.rawValue, type)
 
     internal fun linkWithNoType(rel: Rel): Link? =
         links.firstWithRelAndNoType(rel.rawValue)
 
-    fun url(rel: Rel, preferredType: MediaType? = null, parameters: URLParameters = emptyMap()): URL {
+    public fun url(rel: Rel, preferredType: MediaType? = null, parameters: URLParameters = emptyMap()): URL {
         val link = link(rel, preferredType)
             ?: linkWithNoType(rel)
             ?: throw LcpException.Parsing.Url(rel = rel.rawValue)
@@ -103,12 +103,12 @@ class StatusDocument(val data: ByteArray) {
         return link.url(parameters)
     }
 
-    fun events(type: Event.EventType): List<Event> =
+    public fun events(type: Event.EventType): List<Event> =
         events(type.rawValue)
 
-    fun events(type: String): List<Event> =
+    public fun events(type: String): List<Event> =
         events.filter { it.type == type }
 
-    val description: String
+    public val description: String
         get() = "Status(${status.rawValue})"
 }
