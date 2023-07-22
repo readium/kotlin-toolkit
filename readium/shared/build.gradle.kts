@@ -27,7 +27,6 @@ android {
     kotlinOptions {
         allWarningsAsErrors = true
         freeCompilerArgs = freeCompilerArgs + listOf(
-            "-Xexplicit-api=strict",
             "-opt-in=kotlin.RequiresOptIn",
             "-opt-in=org.readium.r2.shared.InternalReadiumApi"
         )
@@ -42,6 +41,10 @@ android {
         }
     }
     namespace = "org.readium.r2.shared"
+}
+
+kotlin {
+    explicitApi()
 }
 
 rootProject.ext["publish.artifactId"] = "readium-shared"
