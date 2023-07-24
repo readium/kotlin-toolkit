@@ -18,9 +18,9 @@ import org.readium.r2.shared.util.mediatype.MediaType
 /**
  *  Parses a Publication from an asset.
  */
-interface PublicationParser {
+public interface PublicationParser {
 
-    data class Asset(
+    public data class Asset(
         val name: String,
         val mediaType: MediaType,
         val fetcher: Fetcher
@@ -34,14 +34,14 @@ interface PublicationParser {
      * mistakes. This is useful to warn users of potential rendering issues or help authors
      * debug their publications.
      */
-    suspend fun parse(
+    public suspend fun parse(
         asset: Asset,
         warnings: WarningLogger? = null
     ): Try<Publication.Builder, Error>
 
-    sealed class Error : org.readium.r2.shared.error.Error {
+    public sealed class Error : org.readium.r2.shared.error.Error {
 
-        class FormatNotSupported : Error() {
+        public class FormatNotSupported : Error() {
 
             override val message: String =
                 "Asset format not supported."
@@ -50,16 +50,16 @@ interface PublicationParser {
                 null
         }
 
-        class ParsingFailed(override val cause: org.readium.r2.shared.error.Error?) : Error() {
+        public class ParsingFailed(override val cause: org.readium.r2.shared.error.Error?) : Error() {
 
-            constructor(message: String) : this(MessageError(message))
+            public constructor(message: String) : this(MessageError(message))
 
             override val message: String =
                 "An error occurred while parsing the publication."
         }
 
-        class IO(
-            val resourceError: Resource.Exception
+        public class IO(
+            public val resourceError: Resource.Exception
         ) : Error() {
 
             override val message: String =
@@ -69,7 +69,7 @@ interface PublicationParser {
                 ThrowableError(resourceError)
         }
 
-        class OutOfMemory(
+        public class OutOfMemory(
             override val cause: org.readium.r2.shared.error.Error?
         ) : Error() {
 

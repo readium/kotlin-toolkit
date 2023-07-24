@@ -33,8 +33,8 @@ import org.readium.r2.streamer.parser.PublicationParser
  * @param reflowablePositionsStrategy Strategy used to calculate the number of positions in a
  *        reflowable resource.
  */
-@OptIn(ExperimentalReadiumApi::class, Search::class)
-class EpubParser(
+@OptIn(ExperimentalReadiumApi::class)
+public class EpubParser(
     private val reflowablePositionsStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.recommended
 ) : PublicationParser {
 
@@ -61,7 +61,6 @@ class EpubParser(
             displayOptions = parseDisplayOptions(asset.fetcher)
         ).adapt()
 
-        @Suppress("NAME_SHADOWING")
         var fetcher = asset.fetcher
         manifest.metadata.identifier?.let {
             fetcher = TransformingFetcher(fetcher, EpubDeobfuscator(it)::transform)

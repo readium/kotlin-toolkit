@@ -29,16 +29,16 @@ import org.readium.r2.shared.util.use
  * https://github.com/readium/architecture/blob/master/models/locators/best-practices/format.md#epub
  * https://github.com/readium/architecture/issues/101
  */
-class EpubPositionsService(
+public class EpubPositionsService(
     private val readingOrder: List<Link>,
     private val presentation: Presentation,
     private val fetcher: Fetcher,
     private val reflowableStrategy: ReflowableStrategy
 ) : PositionsService {
 
-    companion object {
+    public companion object {
 
-        fun createFactory(reflowableStrategy: ReflowableStrategy = ReflowableStrategy.recommended): (
+        public fun createFactory(reflowableStrategy: ReflowableStrategy = ReflowableStrategy.recommended): (
             Publication.Service.Context
         ) -> EpubPositionsService =
             { context ->
@@ -56,15 +56,15 @@ class EpubPositionsService(
      *
      * Note that a fixed-layout resource always has a single position.
      */
-    sealed class ReflowableStrategy {
+    public sealed class ReflowableStrategy {
         /** Returns the number of positions in the given [resource] according to the strategy. */
-        abstract suspend fun positionCount(resource: Fetcher.Resource): Int
+        public abstract suspend fun positionCount(resource: Fetcher.Resource): Int
 
         /**
          * Use the original length of each resource (before compression and encryption) and split it
          * by the given [pageLength].
          */
-        data class OriginalLength(val pageLength: Int) : ReflowableStrategy() {
+        public data class OriginalLength(val pageLength: Int) : ReflowableStrategy() {
             override suspend fun positionCount(resource: Fetcher.Resource): Int {
                 val length = resource.link().properties.encryption?.originalLength
                     ?: resource.length().getOrNull()
@@ -78,7 +78,7 @@ class EpubPositionsService(
          * Use the archive entry length (whether it is compressed or stored) and split it by the
          * given [pageLength].
          */
-        data class ArchiveEntryLength(val pageLength: Int) : ReflowableStrategy() {
+        public data class ArchiveEntryLength(val pageLength: Int) : ReflowableStrategy() {
             override suspend fun positionCount(resource: Fetcher.Resource): Int {
                 val length = resource.link().properties.archive?.entryLength
                     ?: resource.length().getOrNull()
@@ -88,14 +88,14 @@ class EpubPositionsService(
             }
         }
 
-        companion object {
+        public companion object {
             /**
              * Recommended historical strategy: archive entry length split by 1024 bytes pages.
              *
              * This strategy is used by Adobe RMSDK as well.
              * See https://github.com/readium/architecture/issues/123
              */
-            val recommended = ArchiveEntryLength(pageLength = 1024)
+            public val recommended: ReflowableStrategy = ArchiveEntryLength(pageLength = 1024)
         }
     }
 
