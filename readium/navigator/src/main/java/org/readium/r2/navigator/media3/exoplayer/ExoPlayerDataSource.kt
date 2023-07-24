@@ -21,10 +21,10 @@ import org.readium.r2.shared.fetcher.buffered
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Resource
 
-sealed class ExoPlayerDataSourceException(message: String, cause: Throwable?) : IOException(message, cause) {
-    class NotOpened(message: String) : ExoPlayerDataSourceException(message, null)
-    class NotFound(message: String) : ExoPlayerDataSourceException(message, null)
-    class ReadFailed(uri: Uri, offset: Int, readLength: Int, cause: Throwable) : ExoPlayerDataSourceException("Failed to read $readLength bytes of URI $uri at offset $offset.", cause)
+public sealed class ExoPlayerDataSourceException(message: String, cause: Throwable?) : IOException(message, cause) {
+    public class NotOpened(message: String) : ExoPlayerDataSourceException(message, null)
+    public class NotFound(message: String) : ExoPlayerDataSourceException(message, null)
+    public class ReadFailed(uri: Uri, offset: Int, readLength: Int, cause: Throwable) : ExoPlayerDataSourceException("Failed to read $readLength bytes of URI $uri at offset $offset.", cause)
 }
 
 /**

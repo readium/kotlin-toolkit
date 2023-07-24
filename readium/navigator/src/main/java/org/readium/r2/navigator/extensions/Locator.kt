@@ -23,7 +23,7 @@ import org.readium.r2.shared.publication.Locator
  * All named parameters found in the fragments, such as `p=5`.
  */
 @InternalReadiumApi
-val Locator.Locations.fragmentParameters: Map<String, String> get() =
+internal val Locator.Locations.fragmentParameters: Map<String, String> get() =
     fragments
         // Concatenates fragments together, after dropping any #
         .map { it.removePrefix("#") }

@@ -28,7 +28,7 @@ import org.readium.r2.shared.publication.indexOfFirstWithHref
  */
 @ExperimentalReadiumApi
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-class ExoPlayerEngineProvider(
+public class ExoPlayerEngineProvider(
     private val application: Application,
     private val metadataProvider: MediaMetadataProvider = DefaultMediaMetadataProvider(),
     private val defaults: ExoPlayerDefaults = ExoPlayerDefaults(),
@@ -68,12 +68,6 @@ class ExoPlayerEngineProvider(
             initialPreferences = initialPreferences
         )
     }
-
-    override fun computeSettings(
-        metadata: Metadata,
-        preferences: ExoPlayerPreferences
-    ): ExoPlayerSettings =
-        ExoPlayerSettingsResolver(defaults).settings(preferences)
 
     override fun createPreferenceEditor(
         publication: Publication,

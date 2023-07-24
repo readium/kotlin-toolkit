@@ -84,7 +84,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
  *
  * Return `null` if you don't want to inject the interface for the given resource.
  */
-typealias JavascriptInterfaceFactory = (resource: Link) -> Any?
+public typealias JavascriptInterfaceFactory = (resource: Link) -> Any?
 
 /**
  * Navigator for EPUB publications.
@@ -92,7 +92,7 @@ typealias JavascriptInterfaceFactory = (resource: Link) -> Any?
  * To use this [Fragment], create a factory with `EpubNavigatorFragment.createFactory()`.
  */
 @OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class, DelicateReadiumApi::class)
-class EpubNavigatorFragment internal constructor(
+public class EpubNavigatorFragment internal constructor(
     override val publication: Publication,
     private val initialLocator: Locator?,
     private val initialPreferences: EpubPreferences,
@@ -114,7 +114,7 @@ class EpubNavigatorFragment internal constructor(
         }
     }
 
-    data class Configuration internal constructor(
+    public data class Configuration internal constructor(
 
         /**
          * Patterns for asset paths which will be available to EPUB resources under
@@ -183,7 +183,7 @@ class EpubNavigatorFragment internal constructor(
         internal var fontFamilyDeclarations: List<FontFamilyDeclaration>,
         internal var javascriptInterfaces: Map<String, JavascriptInterfaceFactory>
     ) {
-        constructor(
+        public constructor(
             servedAssets: List<String> = emptyList(),
             readiumCssRsProperties: RsProperties = RsProperties(),
             decorationTemplates: HtmlDecorationTemplates = HtmlDecorationTemplates.defaultTemplates(),
@@ -206,7 +206,7 @@ class EpubNavigatorFragment internal constructor(
          * Return `null` in [factory] to prevent adding the Javascript interface for a given
          * resource.
          */
-        fun registerJavascriptInterface(name: String, factory: JavascriptInterfaceFactory) {
+        public fun registerJavascriptInterface(name: String, factory: JavascriptInterfaceFactory) {
             javascriptInterfaces += name to factory
         }
 
@@ -217,7 +217,7 @@ class EpubNavigatorFragment internal constructor(
          * symbols are missing from [fontFamily].
          */
         @ExperimentalReadiumApi
-        fun addFontFamilyDeclaration(
+        public fun addFontFamilyDeclaration(
             fontFamily: FontFamily,
             alternates: List<FontFamily> = emptyList(),
             builderAction: (MutableFontFamilyDeclaration).() -> Unit
@@ -229,18 +229,18 @@ class EpubNavigatorFragment internal constructor(
             )
         }
 
-        companion object {
-            operator fun invoke(builder: Configuration.() -> Unit): Configuration =
+        public companion object {
+            public operator fun invoke(builder: Configuration.() -> Unit): Configuration =
                 Configuration().apply(builder)
         }
     }
 
-    interface PaginationListener {
-        fun onPageChanged(pageIndex: Int, totalPages: Int, locator: Locator) {}
-        fun onPageLoaded() {}
+    public interface PaginationListener {
+        public fun onPageChanged(pageIndex: Int, totalPages: Int, locator: Locator) {}
+        public fun onPageLoaded() {}
     }
 
-    interface Listener : VisualNavigator.Listener
+    public interface Listener : VisualNavigator.Listener
 
     init {
         require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
@@ -259,7 +259,7 @@ class EpubNavigatorFragment internal constructor(
      *
      * Note that this only work with reflowable resources.
      */
-    suspend fun evaluateJavascript(script: String): String? {
+    public suspend fun evaluateJavascript(script: String): String? {
         val page = currentReflowablePageFragment ?: return null
         page.awaitLoaded()
         val webView = page.webView ?: return null
@@ -285,15 +285,13 @@ class EpubNavigatorFragment internal constructor(
     private lateinit var resourcesDouble: List<PageResource>
 
     @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-    val preferences: SharedPreferences get() = throw NotImplementedError()
+    public val preferences: SharedPreferences get() = throw NotImplementedError()
 
-    internal lateinit var publicationIdentifier: String
+    private lateinit var publicationIdentifier: String
 
     internal var currentPagerPosition: Int = 0
     internal lateinit var adapter: R2PagerAdapter
     private lateinit var currentActivity: FragmentActivity
-
-    internal var navigatorDelegate: NavigatorDelegate? = null
 
     private var _binding: ReadiumNavigatorViewpagerBinding? = null
     private val binding get() = _binding!!
@@ -1026,7 +1024,7 @@ class EpubNavigatorFragment internal constructor(
         }
     }
 
-    companion object {
+    public companion object {
 
         /**
          * Creates a factory for [EpubNavigatorFragment].
@@ -1040,7 +1038,7 @@ class EpubNavigatorFragment internal constructor(
          * @param config Additional configuration.
          */
         @Deprecated("Use `EpubNavigatorFactory().createFragmentFactory()` instead", level = DeprecationLevel.ERROR)
-        fun createFactory(
+        public fun createFactory(
             publication: Publication,
             baseUrl: String? = null,
             initialLocator: Locator? = null,
@@ -1053,7 +1051,7 @@ class EpubNavigatorFragment internal constructor(
         /**
          * Returns a URL to the application asset at [path], served in the web views.
          */
-        fun assetUrl(path: String): String =
+        public fun assetUrl(path: String): String =
             WebViewServer.assetUrl(path)
     }
 }

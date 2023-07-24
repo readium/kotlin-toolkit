@@ -15,58 +15,58 @@ import org.readium.r2.shared.util.Language
  * A text-to-speech engine synthesizes text utterances (e.g. sentence).
  */
 @ExperimentalReadiumApi
-interface TtsEngine<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
+public interface TtsEngine<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     E : TtsEngine.Error, V : TtsEngine.Voice> : Configurable<S, P>, Closeable {
 
-    interface Preferences<P : Configurable.Preferences<P>> : Configurable.Preferences<P> {
+    public interface Preferences<P : Configurable.Preferences<P>> : Configurable.Preferences<P> {
 
         /**
          * The default language to use when no language information is passed to [speak].
          */
-        val language: Language?
+        public val language: Language?
     }
 
-    interface Settings : Configurable.Settings {
+    public interface Settings : Configurable.Settings {
 
         /**
          * The default language to use when no language information is passed to [speak].
          */
-        val language: Language?
+        public val language: Language?
 
         /**
          * Whether language information in content should be superseded by [language].
          */
-        val overrideContentLanguage: Boolean
+        public val overrideContentLanguage: Boolean
     }
 
-    interface Voice {
+    public interface Voice {
 
         /**
          * The voice's language.
          */
-        val language: Language
+        public val language: Language
     }
 
     /**
      * Marker interface for the errors that the [TtsEngine] returns.
      */
-    interface Error
+    public interface Error
 
     /**
      * An id to identify a request to speak.
      */
     @JvmInline
-    value class RequestId(val value: String)
+    public value class RequestId(public val value: String)
 
     /**
      * TTS engine callbacks.
      */
-    interface Listener<E : Error> {
+    public interface Listener<E : Error> {
 
         /**
          * Called when the utterance with the given id starts as perceived by the caller.
          */
-        fun onStart(requestId: RequestId)
+        public fun onStart(requestId: RequestId)
 
         /**
          * Called when the [TtsEngine] is about to speak the specified [range] of the utterance with
@@ -74,48 +74,48 @@ interface TtsEngine<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
          *
          * This callback may not be called if the [TtsEngine] does not provide range information.
          */
-        fun onRange(requestId: RequestId, range: IntRange)
+        public fun onRange(requestId: RequestId, range: IntRange)
 
         /**
          * Called if the utterance with the given id has been stopped while in progress
          * by a call to [stop].
          */
-        fun onInterrupted(requestId: RequestId)
+        public fun onInterrupted(requestId: RequestId)
 
         /**
          * Called when the utterance with the given id has been flushed from the synthesis queue
          * by a call to [stop].
          */
-        fun onFlushed(requestId: RequestId)
+        public fun onFlushed(requestId: RequestId)
 
         /**
          * Called when the utterance with the given id has successfully completed processing.
          */
-        fun onDone(requestId: RequestId)
+        public fun onDone(requestId: RequestId)
 
         /**
          * Called when an error has occurred during processing of the utterance with the given id.
          */
-        fun onError(requestId: RequestId, error: E)
+        public fun onError(requestId: RequestId, error: E)
     }
 
     /**
      * Sets of voices available with this [TtsEngine].
      */
-    val voices: Set<V>
+    public val voices: Set<V>
 
     /**
      * Enqueues a new speak request.
      */
-    fun speak(requestId: RequestId, text: String, language: Language?)
+    public fun speak(requestId: RequestId, text: String, language: Language?)
 
     /**
      * Stops the [TtsEngine].
      */
-    fun stop()
+    public fun stop()
 
     /**
      * Sets a new listener or removes the current one.
      */
-    fun setListener(listener: Listener<E>?)
+    public fun setListener(listener: Listener<E>?)
 }

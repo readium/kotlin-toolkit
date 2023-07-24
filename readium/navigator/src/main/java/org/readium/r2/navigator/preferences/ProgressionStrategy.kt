@@ -11,11 +11,11 @@ import org.readium.r2.shared.extensions.equalsDelta
 /**
  * A strategy to increment or decrement a setting.
  */
-interface ProgressionStrategy<V> {
+public interface ProgressionStrategy<V> {
 
-    fun increment(value: V): V
+    public fun increment(value: V): V
 
-    fun decrement(value: V): V
+    public fun decrement(value: V): V
 }
 
 /**
@@ -25,19 +25,19 @@ interface ProgressionStrategy<V> {
  *
  * @param equalsDelta Provide an equality algorithm to compare floating point numbers.
  */
-class StepsProgression<T : Comparable<T>>(
+public class StepsProgression<T : Comparable<T>>(
     private val steps: List<T>,
     private val equalsDelta: (T, T) -> Boolean
 ) : ProgressionStrategy<T> {
 
-    companion object {
-        operator fun invoke(vararg steps: Int): StepsProgression<Int> =
+    public companion object {
+        public operator fun invoke(vararg steps: Int): StepsProgression<Int> =
             StepsProgression(steps = steps.toList(), equalsDelta = Int::equals)
 
-        operator fun invoke(vararg steps: Float): StepsProgression<Float> =
+        public operator fun invoke(vararg steps: Float): StepsProgression<Float> =
             StepsProgression(steps = steps.toList(), equalsDelta = { a, b -> a.equalsDelta(b) })
 
-        operator fun invoke(vararg steps: Double): StepsProgression<Double> =
+        public operator fun invoke(vararg steps: Double): StepsProgression<Double> =
             StepsProgression(steps = steps.toList(), equalsDelta = { a, b -> a.equalsDelta(b) })
     }
 
@@ -56,7 +56,7 @@ class StepsProgression<T : Comparable<T>>(
  * Simple progression strategy which increments or decrements the setting
  * by a fixed number.
  */
-class IntIncrement(private val increment: Int) : ProgressionStrategy<Int> {
+public class IntIncrement(private val increment: Int) : ProgressionStrategy<Int> {
 
     override fun increment(value: Int): Int = value + increment
 
@@ -67,7 +67,7 @@ class IntIncrement(private val increment: Int) : ProgressionStrategy<Int> {
  * Simple progression strategy which increments or decrements the setting
  * by a fixed number.
  */
-class DoubleIncrement(private val increment: Double) : ProgressionStrategy<Double> {
+public class DoubleIncrement(private val increment: Double) : ProgressionStrategy<Double> {
 
     override fun increment(value: Double): Double = value + increment
 

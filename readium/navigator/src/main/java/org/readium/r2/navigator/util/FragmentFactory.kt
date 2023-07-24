@@ -16,7 +16,7 @@ import org.readium.r2.shared.extensions.tryOrNull
  * [factory] closure.
  */
 @InternalReadiumApi
-inline fun <reified T : Fragment> createFragmentFactory(crossinline factory: () -> T): FragmentFactory = object : FragmentFactory() {
+public inline fun <reified T : Fragment> createFragmentFactory(crossinline factory: () -> T): FragmentFactory = object : FragmentFactory() {
 
     override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
         return when (className) {
@@ -38,9 +38,9 @@ inline fun <reified T : Fragment> createFragmentFactory(crossinline factory: () 
  * ```
  */
 @InternalReadiumApi
-class CompositeFragmentFactory(private val factories: List<FragmentFactory>) : FragmentFactory() {
+public class CompositeFragmentFactory(private val factories: List<FragmentFactory>) : FragmentFactory() {
 
-    constructor(vararg factories: FragmentFactory) : this(factories.toList())
+    public constructor(vararg factories: FragmentFactory) : this(factories.toList())
 
     override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
         for (factory in factories) {

@@ -36,7 +36,7 @@ import org.readium.r2.shared.util.Language
  * Default [TtsEngine] implementation using Android's native text to speech engine.
  */
 @ExperimentalReadiumApi
-class AndroidTtsEngine private constructor(
+public class AndroidTtsEngine private constructor(
     private val context: Context,
     engine: TextToSpeech,
     private val settingsResolver: SettingsResolver,
@@ -46,9 +46,9 @@ class AndroidTtsEngine private constructor(
 ) : TtsEngine<AndroidTtsSettings, AndroidTtsPreferences,
         AndroidTtsEngine.Error, AndroidTtsEngine.Voice> {
 
-    companion object {
+    public companion object {
 
-        suspend operator fun invoke(
+        public suspend operator fun invoke(
             context: Context,
             settingsResolver: SettingsResolver,
             voiceSelector: VoiceSelector,
@@ -88,7 +88,7 @@ class AndroidTtsEngine private constructor(
          * Starts the activity to install additional voice data.
          */
         @SuppressLint("QueryPermissionsNeeded")
-        fun requestInstallVoice(context: Context) {
+        public fun requestInstallVoice(context: Context) {
             val intent = Intent()
                 .setAction(Engine.ACTION_INSTALL_TTS_DATA)
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -125,47 +125,47 @@ class AndroidTtsEngine private constructor(
             )
     }
 
-    fun interface SettingsResolver {
+    public fun interface SettingsResolver {
 
         /**
          * Computes a set of engine settings from the engine preferences.
          */
-        fun settings(preferences: AndroidTtsPreferences): AndroidTtsSettings
+        public fun settings(preferences: AndroidTtsPreferences): AndroidTtsSettings
     }
 
-    fun interface VoiceSelector {
+    public fun interface VoiceSelector {
 
         /**
          * Selects a voice for the given [language].
          */
-        fun voice(language: Language?, availableVoices: Set<Voice>): Voice?
+        public fun voice(language: Language?, availableVoices: Set<Voice>): Voice?
     }
 
-    sealed class Error : TtsEngine.Error {
+    public sealed class Error : TtsEngine.Error {
 
         /** Denotes a generic operation failure. */
-        object Unknown : Error()
+        public object Unknown : Error()
 
         /** Denotes a failure caused by an invalid request. */
-        object InvalidRequest : Error()
+        public object InvalidRequest : Error()
 
         /** Denotes a failure caused by a network connectivity problems. */
-        object Network : Error()
+        public object Network : Error()
 
         /** Denotes a failure caused by network timeout. */
-        object NetworkTimeout : Error()
+        public object NetworkTimeout : Error()
 
         /** Denotes a failure caused by an unfinished download of the voice data. */
-        object NotInstalledYet : Error()
+        public object NotInstalledYet : Error()
 
         /** Denotes a failure related to the output (audio device or a file). */
-        object Output : Error()
+        public object Output : Error()
 
         /** Denotes a failure of a TTS service. */
-        object Service : Error()
+        public object Service : Error()
 
         /** Denotes a failure of a TTS engine to synthesize the given input. */
-        object Synthesis : Error()
+        public object Synthesis : Error()
 
         /**
          * Denotes the language data is missing.
@@ -173,13 +173,13 @@ class AndroidTtsEngine private constructor(
          * You can open the Android settings to install the missing data with:
          * AndroidTtsEngine.requestInstallVoice(context)
          */
-        data class LanguageMissingData(val language: Language) : Error()
+        public data class LanguageMissingData(val language: Language) : Error()
 
         /**
          * Android's TTS error code.
          * See https://developer.android.com/reference/android/speech/tts/TextToSpeech#ERROR
          */
-        companion object {
+        public companion object {
             internal fun fromNativeError(code: Int): Error =
                 when (code) {
                     ERROR_INVALID_REQUEST -> InvalidRequest
@@ -202,7 +202,7 @@ class AndroidTtsEngine private constructor(
      * @param quality Voice quality.
      * @param requiresNetwork Indicates whether using this voice requires an Internet connection.
      */
-    data class Voice(
+    public data class Voice(
         val id: Id,
         override val language: Language,
         val quality: Quality = Quality.Normal,
@@ -211,9 +211,9 @@ class AndroidTtsEngine private constructor(
 
         @kotlinx.serialization.Serializable
         @JvmInline
-        value class Id(val value: String)
+        public value class Id(public val value: String)
 
-        enum class Quality {
+        public enum class Quality {
             Lowest, Low, Normal, High, Highest
         }
     }

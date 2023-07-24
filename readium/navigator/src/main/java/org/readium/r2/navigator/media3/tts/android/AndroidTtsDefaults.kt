@@ -18,7 +18,7 @@ import org.readium.r2.shared.util.Language
  * @see AndroidTtsPreferences
  */
 @ExperimentalReadiumApi
-data class AndroidTtsDefaults(
+public data class AndroidTtsDefaults(
     val language: Language? = null,
     val pitch: Double? = null,
     val speed: Double? = null

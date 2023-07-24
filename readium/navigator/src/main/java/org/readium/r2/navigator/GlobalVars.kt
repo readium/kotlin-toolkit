@@ -17,4 +17,4 @@ package org.readium.r2.navigator
  * Global Parameters
  */
 @Deprecated("Use Publication::localBaseUrlOf() instead", level = DeprecationLevel.ERROR)
-const val BASE_URL = "http://127.0.0.1"
+public const val BASE_URL: String = "http://127.0.0.1"

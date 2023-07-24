@@ -22,7 +22,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Href
 
 @ExperimentalReadiumApi
-class GuidedMediaNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>>(
+public class GuidedMediaNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>>(
     private val audioNavigator: AudioNavigator<S, P>,
 ) :
     MediaNavigator<GuidedMediaNavigator.Location, GuidedMediaNavigator.Playback, GuidedMediaNavigator.ReadingOrder>,
@@ -31,7 +31,7 @@ class GuidedMediaNavigator<S : Configurable.Settings, P : Configurable.Preferenc
     Media3Adapter,
     Configurable<S, P> {
 
-    data class Location(
+    public data class Location(
         override val href: Href,
         override val offset: Duration,
         val fragment: String,
@@ -44,7 +44,7 @@ class GuidedMediaNavigator<S : Configurable.Settings, P : Configurable.Preferenc
     ) : TimeBasedMediaNavigator.Location,
         TextAwareMediaNavigator.Location
 
-    data class Playback(
+    public data class Playback(
         override val state: MediaNavigator.State,
         override val playWhenReady: Boolean,
         override val index: Int,
@@ -54,12 +54,12 @@ class GuidedMediaNavigator<S : Configurable.Settings, P : Configurable.Preferenc
         override val range: IntRange?,
     ) : TimeBasedMediaNavigator.Playback, TextAwareMediaNavigator.Playback
 
-    data class ReadingOrder(
+    public data class ReadingOrder(
         override val duration: Duration?,
         override val items: List<Item>
     ) : TimeBasedMediaNavigator.ReadingOrder, TextAwareMediaNavigator.ReadingOrder {
 
-        data class Item(
+        public data class Item(
             val href: Href,
             override val duration: Duration?
         ) : TimeBasedMediaNavigator.ReadingOrder.Item, TextAwareMediaNavigator.ReadingOrder.Item

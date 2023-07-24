@@ -15,7 +15,7 @@ import org.readium.r2.shared.InternalReadiumApi
  * given [factory] closure.
  */
 @InternalReadiumApi
-inline fun <reified T : ViewModel> createViewModelFactory(crossinline factory: () -> T): ViewModelProvider.Factory =
+public inline fun <reified T : ViewModel> createViewModelFactory(crossinline factory: () -> T): ViewModelProvider.Factory =
 
     object : ViewModelProvider.Factory {
         override fun <V : ViewModel> create(modelClass: Class<V>): V {

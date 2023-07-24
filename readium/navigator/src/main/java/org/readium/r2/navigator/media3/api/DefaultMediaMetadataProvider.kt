@@ -13,7 +13,7 @@ import org.readium.r2.shared.publication.Publication
  * Builds a [MediaMetadataFactory] which will use the given title, author and cover,
  * and fall back on what is in the publication.
  */
-class DefaultMediaMetadataProvider(
+public class DefaultMediaMetadataProvider(
     private val title: String? = null,
     private val author: String? = null,
     private val cover: Uri? = null

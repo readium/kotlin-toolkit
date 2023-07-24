@@ -20,7 +20,7 @@ import org.readium.r2.shared.util.Language
  * or ranges.
  */
 @ExperimentalReadiumApi
-class AndroidTtsPreferencesEditor(
+public class AndroidTtsPreferencesEditor(
     initialPreferences: AndroidTtsPreferences,
     publicationMetadata: Metadata,
     defaults: AndroidTtsDefaults,
@@ -44,7 +44,7 @@ class AndroidTtsPreferencesEditor(
         updateValues { AndroidTtsPreferences() }
     }
 
-    val language: Preference<Language?> =
+    public val language: Preference<Language?> =
         PreferenceDelegate(
             getValue = { preferences.language },
             getEffectiveValue = { state.settings.language },
@@ -52,7 +52,7 @@ class AndroidTtsPreferencesEditor(
             updateValue = { value -> updateValues { it.copy(language = value) } },
         )
 
-    val pitch: RangePreference<Double> =
+    public val pitch: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.pitch },
             getEffectiveValue = { state.settings.pitch },
@@ -63,7 +63,7 @@ class AndroidTtsPreferencesEditor(
             valueFormatter = { "${it.format(2)}x" },
         )
 
-    val speed: RangePreference<Double> =
+    public val speed: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.speed },
             getEffectiveValue = { state.settings.speed },
@@ -74,7 +74,7 @@ class AndroidTtsPreferencesEditor(
             valueFormatter = { "${it.format(2)}x" },
         )
 
-    val voices: Preference<Map<Language, AndroidTtsEngine.Voice.Id>> =
+    public val voices: Preference<Map<Language, AndroidTtsEngine.Voice.Id>> =
         PreferenceDelegate(
             getValue = { preferences.voices },
             getEffectiveValue = { state.settings.voices },

@@ -10,7 +10,7 @@
 package org.readium.r2.navigator
 
 @Deprecated("Use navigator fragments.", level = DeprecationLevel.ERROR)
-interface IR2Activity
+public interface IR2Activity
 
 @Deprecated("Use TtsNavigator.", level = DeprecationLevel.ERROR)
-interface IR2TTS
+public interface IR2TTS

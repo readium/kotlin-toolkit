@@ -17,18 +17,17 @@ import org.readium.r2.navigator.ExperimentalAudiobook
  * @param rate Speed of the playback, defaults to 1.0.
  * @param timeline Position and duration of the current resource.
  */
-@OptIn(ExperimentalTime::class)
 @ExperimentalAudiobook
-data class MediaPlayback(val state: State, val rate: Double, val timeline: Timeline) {
+public data class MediaPlayback(val state: State, val rate: Double, val timeline: Timeline) {
 
-    enum class State {
+    public enum class State {
         Idle, Loading, Playing, Paused;
 
-        val isPlaying: Boolean get() =
+        public val isPlaying: Boolean get() =
             (this == Playing || this == Loading)
     }
 
-    data class Timeline(
+    public data class Timeline(
         val position: Duration,
         val duration: Duration?,
         val buffered: Duration?

@@ -17,7 +17,7 @@ import org.readium.r2.shared.publication.Publication
 
 @ExperimentalReadiumApi
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-class AndroidTtsEngineProvider(
+public class AndroidTtsEngineProvider(
     private val context: Context,
     private val defaults: AndroidTtsDefaults = AndroidTtsDefaults(),
     private val voiceSelector: AndroidTtsEngine.VoiceSelector = AndroidTtsEngine.VoiceSelector { _, _ -> null }
@@ -38,12 +38,6 @@ class AndroidTtsEngineProvider(
             initialPreferences
         )
     }
-
-    fun computeSettings(
-        metadata: Metadata,
-        preferences: AndroidTtsPreferences
-    ): AndroidTtsSettings =
-        AndroidTtsSettingsResolver(metadata, defaults).settings(preferences)
 
     override fun createPreferencesEditor(
         publication: Publication,

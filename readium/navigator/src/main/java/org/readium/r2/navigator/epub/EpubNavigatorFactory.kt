@@ -21,7 +21,7 @@ import org.readium.r2.shared.publication.presentation.presentation
  * @param configuration Configuration of the factory to create.
  */
 @ExperimentalReadiumApi
-class EpubNavigatorFactory(
+public class EpubNavigatorFactory(
     private val publication: Publication,
     private val configuration: Configuration = Configuration()
 ) {
@@ -31,7 +31,7 @@ class EpubNavigatorFactory(
      *
      * @param defaults navigator fallbacks for some preferences
      */
-    data class Configuration(
+    public data class Configuration(
         val defaults: EpubDefaults = EpubDefaults(),
     )
 
@@ -39,7 +39,7 @@ class EpubNavigatorFactory(
         publication.metadata.presentation.layout ?: EpubLayout.REFLOWABLE
 
     @OptIn(ExperimentalDecorator::class)
-    fun createFragmentFactory(
+    public fun createFragmentFactory(
         initialLocator: Locator?,
         initialPreferences: EpubPreferences = EpubPreferences(),
         listener: EpubNavigatorFragment.Listener? = null,
@@ -58,7 +58,7 @@ class EpubNavigatorFactory(
         )
     }
 
-    fun createPreferencesEditor(
+    public fun createPreferencesEditor(
         currentPreferences: EpubPreferences,
     ): EpubPreferencesEditor =
         EpubPreferencesEditor(

@@ -18,8 +18,8 @@ import org.readium.r2.shared.util.Either
  * Holds a set of Readium CSS properties applied together.
  */
 @ExperimentalReadiumApi
-interface Properties : Cssable {
-    fun toCssProperties(): Map<String, String?>
+public interface Properties : Cssable {
+    public fun toCssProperties(): Map<String, String?>
 
     override fun toCss(): String? {
         val props = toCssProperties()
@@ -90,7 +90,7 @@ interface Properties : Cssable {
  * subscripts. Requires: fontOverride
  */
 @ExperimentalReadiumApi
-data class UserProperties(
+public data class UserProperties(
     // View mode
     val view: View? = null,
 
@@ -231,7 +231,7 @@ data class UserProperties(
  * The value can be another variable e.g. var(-RS__monospaceTf).
  */
 @ExperimentalReadiumApi
-data class RsProperties(
+public data class RsProperties(
     // Pagination
     val colWidth: Length? = null,
     val colCount: ColCount? = null,
@@ -347,7 +347,7 @@ data class RsProperties(
 
 /** User view. */
 @ExperimentalReadiumApi
-enum class View(private val css: String) : Cssable {
+public enum class View(private val css: String) : Cssable {
     PAGED("readium-paged-on"),
     SCROLL("readium-scroll-on");
 
@@ -356,7 +356,7 @@ enum class View(private val css: String) : Cssable {
 
 /** Reading mode. */
 @ExperimentalReadiumApi
-enum class Appearance(private val css: String?) : Cssable {
+public enum class Appearance(private val css: String?) : Cssable {
     NIGHT("readium-night-on"),
     SEPIA("readium-sepia-on");
 
@@ -365,9 +365,9 @@ enum class Appearance(private val css: String?) : Cssable {
 
 /** CSS color. */
 @ExperimentalReadiumApi
-interface Color : Cssable {
+public interface Color : Cssable {
 
-    data class Rgb(val red: kotlin.Int, val green: kotlin.Int, val blue: kotlin.Int) : Color {
+    public data class Rgb(val red: kotlin.Int, val green: kotlin.Int, val blue: kotlin.Int) : Color {
         init {
             require(red in 0..255)
             require(green in 0..255)
@@ -378,7 +378,7 @@ interface Color : Cssable {
     }
 
     @JvmInline
-    value class Hex(val color: String) : Color {
+    public value class Hex(public val color: String) : Color {
         init {
             require(Regex("^#(?:[0-9a-fA-F]{3}){1,2}$").matches(color))
         }
@@ -387,7 +387,7 @@ interface Color : Cssable {
     }
 
     @JvmInline
-    value class Int(@ColorInt val color: kotlin.Int) : Color {
+    public value class Int(@ColorInt public val color: kotlin.Int) : Color {
         override fun toCss(): String =
             String.format("#%06X", 0xFFFFFF and color)
     }
@@ -395,102 +395,102 @@ interface Color : Cssable {
 
 /** CSS length dimension. */
 @ExperimentalReadiumApi
-interface Length : Cssable {
+public interface Length : Cssable {
 
     /** Absolute CSS length. */
-    interface Absolute : Length
+    public interface Absolute : Length
 
     /** Centimeters */
     @JvmInline
-    value class Cm(val value: Double) : Absolute {
+    public value class Cm(public val value: Double) : Absolute {
         override fun toCss(): String = value.toCss("cm")
     }
 
     /** Millimeters */
     @JvmInline
-    value class Mm(val value: Double) : Absolute {
+    public value class Mm(public val value: Double) : Absolute {
         override fun toCss(): String = value.toCss("mm")
     }
 
     /** Inches */
     @JvmInline
-    value class In(val value: Double) : Absolute {
+    public value class In(public val value: Double) : Absolute {
         override fun toCss(): String = value.toCss("in")
     }
 
     /** Pixels */
     @JvmInline
-    value class Px(val value: Double) : Absolute {
+    public value class Px(public val value: Double) : Absolute {
         override fun toCss(): String = value.toCss("px")
     }
 
     /** Points */
     @JvmInline
-    value class Pt(val value: Double) : Absolute {
+    public value class Pt(public val value: Double) : Absolute {
         override fun toCss(): String = value.toCss("pt")
     }
 
     /** Picas */
     @JvmInline
-    value class Pc(val value: Double) : Absolute {
+    public value class Pc(public val value: Double) : Absolute {
         override fun toCss(): String = value.toCss("pc")
     }
 
     /** Relative CSS length. */
-    interface Relative : Length
+    public interface Relative : Length
 
     /** Relative to the font-size of the element. */
     @JvmInline
-    value class Em(val value: Double) : Relative {
+    public value class Em(public val value: Double) : Relative {
         override fun toCss(): String = value.toCss("em")
     }
 
     /** Relative to the width of the "0" (zero). */
     @JvmInline
-    value class Ch(val value: Double) : Relative {
+    public value class Ch(public val value: Double) : Relative {
         override fun toCss(): String = value.toCss("ch")
     }
 
     /** Relative to font-size of the root element. */
     @JvmInline
-    value class Rem(val value: Double) : Relative {
+    public value class Rem(public val value: Double) : Relative {
         override fun toCss(): String = value.toCss("rem")
     }
 
     /** Relative to 1% of the width of the viewport. */
     @JvmInline
-    value class Vw(val value: Double) : Relative {
+    public value class Vw(public val value: Double) : Relative {
         override fun toCss(): String = value.toCss("vw")
     }
 
     /** Relative to 1% of the height of the viewport. */
     @JvmInline
-    value class Vh(val value: Double) : Relative {
+    public value class Vh(public val value: Double) : Relative {
         override fun toCss(): String = value.toCss("vh")
     }
 
     /** Relative to 1% of viewport's smaller dimension. */
     @JvmInline
-    value class VMin(val value: Double) : Relative {
+    public value class VMin(public val value: Double) : Relative {
         override fun toCss(): String = value.toCss("vmin")
     }
 
     /** Relative to 1% of viewport's larger dimension. */
     @JvmInline
-    value class VMax(val value: Double) : Relative {
+    public value class VMax(public val value: Double) : Relative {
         override fun toCss(): String = value.toCss("vmax")
     }
 
     /** Relative to the parent element. */
     @JvmInline
-    value class Percent(val value: Double) : Relative {
+    public value class Percent(public val value: Double) : Relative {
         override fun toCss(): String = (value * 100).toCss("%")
     }
 }
 
 /** Number of CSS columns. */
 @ExperimentalReadiumApi
-enum class ColCount(private val css: String) : Cssable {
+public enum class ColCount(private val css: String) : Cssable {
     AUTO("auto"),
     ONE("1"),
     TWO("2");
@@ -500,7 +500,7 @@ enum class ColCount(private val css: String) : Cssable {
 
 /** CSS text alignment. */
 @ExperimentalReadiumApi
-enum class TextAlign(private val css: String) : Cssable {
+public enum class TextAlign(private val css: String) : Cssable {
     START("start"),
     LEFT("left"),
     RIGHT("right"),
@@ -511,7 +511,7 @@ enum class TextAlign(private val css: String) : Cssable {
 
 /** CSS hyphenation. */
 @ExperimentalReadiumApi
-enum class Hyphens(private val css: String) : Cssable {
+public enum class Hyphens(private val css: String) : Cssable {
     NONE("none"),
     AUTO("auto");
 
@@ -520,7 +520,7 @@ enum class Hyphens(private val css: String) : Cssable {
 
 /** CSS ligatures. */
 @ExperimentalReadiumApi
-enum class Ligatures(private val css: String) : Cssable {
+public enum class Ligatures(private val css: String) : Cssable {
     NONE("none"),
     COMMON("common-ligatures");
 
@@ -529,7 +529,7 @@ enum class Ligatures(private val css: String) : Cssable {
 
 /** CSS box sizing. */
 @ExperimentalReadiumApi
-enum class BoxSizing(private val css: String) : Cssable {
+public enum class BoxSizing(private val css: String) : Cssable {
     CONTENT_BOX("content-box"),
     BORDER_BOX("border-box");
 
@@ -537,8 +537,8 @@ enum class BoxSizing(private val css: String) : Cssable {
 }
 
 @ExperimentalReadiumApi
-fun interface Cssable {
-    fun toCss(): String?
+public fun interface Cssable {
+    public fun toCss(): String?
 }
 
 private fun MutableMap<String, String?>.putCss(name: String, value: Cssable?) {

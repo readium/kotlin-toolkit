@@ -14,7 +14,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * JSON serializer of [AndroidTtsPreferences].
  */
 @ExperimentalReadiumApi
-class AndroidTtsPreferencesSerializer : PreferencesSerializer<AndroidTtsPreferences> {
+public class AndroidTtsPreferencesSerializer : PreferencesSerializer<AndroidTtsPreferences> {
 
     override fun serialize(preferences: AndroidTtsPreferences): String =
         Json.encodeToString(AndroidTtsPreferences.serializer(), preferences)

@@ -13,7 +13,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * Suggested filter to keep only shared [AndroidTtsPreferences].
  */
 @ExperimentalReadiumApi
-object AndroidTtsSharedPreferencesFilter : PreferencesFilter<AndroidTtsPreferences> {
+public object AndroidTtsSharedPreferencesFilter : PreferencesFilter<AndroidTtsPreferences> {
 
     override fun filter(preferences: AndroidTtsPreferences): AndroidTtsPreferences =
         preferences.copy(
@@ -25,7 +25,7 @@ object AndroidTtsSharedPreferencesFilter : PreferencesFilter<AndroidTtsPreferenc
  * Suggested filter to keep only publication-specific [AndroidTtsPreferences].
  */
 @ExperimentalReadiumApi
-object AndroidTtsPublicationPreferencesFilter : PreferencesFilter<AndroidTtsPreferences> {
+public object AndroidTtsPublicationPreferencesFilter : PreferencesFilter<AndroidTtsPreferences> {
 
     override fun filter(preferences: AndroidTtsPreferences): AndroidTtsPreferences =
         AndroidTtsPreferences(

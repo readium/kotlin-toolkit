@@ -45,26 +45,26 @@ import timber.log.Timber
  */
 @ExperimentalAudiobook
 @OptIn(ExperimentalCoroutinesApi::class)
-open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainScope() {
+public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainScope() {
 
     /**
      * Creates the instance of [MediaPlayer] which will be used for playing the given [media].
      *
      * The default implementation uses ExoPlayer.
      */
-    open fun onCreatePlayer(mediaSession: MediaSessionCompat, media: PendingMedia): MediaPlayer =
+    public open fun onCreatePlayer(mediaSession: MediaSessionCompat, media: PendingMedia): MediaPlayer =
         ExoMediaPlayer(this, mediaSession, media)
 
     /**
      * Called when the underlying [MediaPlayer] was stopped.
      */
-    open fun onPlayerStopped() {}
+    public open fun onPlayerStopped() {}
 
     /**
      * Creates the [PendingIntent] which will be used to start the media activity when the user
      * activates the media notification.
      */
-    open suspend fun onCreateNotificationIntent(
+    public open suspend fun onCreateNotificationIntent(
         publicationId: PublicationId,
         publication: Publication
     ): PendingIntent? = null
@@ -74,7 +74,7 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
      *
      * The metadata will be used for the media-style notification.
      */
-    open fun onCreateNotificationMetadata(
+    public open fun onCreateNotificationMetadata(
         publicationId: PublicationId,
         publication: Publication,
         link: Link
@@ -84,7 +84,7 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
     /**
      * Returns the cover for the given [publication] which should be used in media notifications.
      */
-    open suspend fun coverOfPublication(publicationId: PublicationId, publication: Publication): Bitmap? =
+    public open suspend fun coverOfPublication(publicationId: PublicationId, publication: Publication): Bitmap? =
         publication.cover()
 
     /**
@@ -92,7 +92,7 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
      *
      * @return Whether the custom command was handled.
      */
-    open fun onCommand(command: String, args: Bundle?, cb: ResultReceiver?): Boolean = false
+    public open fun onCommand(command: String, args: Bundle?, cb: ResultReceiver?): Boolean = false
 
     /**
      * Called when a resource failed to be loaded, for example because the Internet connection
@@ -100,7 +100,7 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
      *
      * You should present the exception to the user.
      */
-    open fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
+    public open fun onResourceLoadFailed(link: Link, error: Resource.Exception) {
         Toast.makeText(this, error.getUserMessage(this), Toast.LENGTH_LONG).show()
     }
 
@@ -111,7 +111,7 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
      * @param packageName The package name of the application which is requesting access.
      * @param uid The UID of the application which is requesting access.
      */
-    open fun isClientAuthorized(packageName: String, uid: Int): Boolean =
+    public open fun isClientAuthorized(packageName: String, uid: Int): Boolean =
         (uid == Process.myUid())
 
     protected val mediaSession: MediaSessionCompat get() = getMediaSession(this, javaClass)
@@ -278,7 +278,7 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
         result.sendResult(mutableListOf())
     }
 
-    companion object {
+    public companion object {
 
         internal const val EVENT_PUBLICATION_CHANGED = "org.readium.r2.navigator.EVENT_PUBLICATION_CHANGED"
         internal const val EXTRA_PUBLICATION_ID = "org.readium.r2.navigator.EXTRA_PUBLICATION_ID"
@@ -289,9 +289,9 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
         private val currentNavigator = MutableStateFlow<MediaSessionNavigator?>(null)
         private val pendingNavigator = Channel<PendingNavigator>(Channel.CONFLATED)
 
-        val navigator = currentNavigator.asStateFlow()
+        public val navigator: StateFlow<MediaSessionNavigator?> = currentNavigator.asStateFlow()
 
-        fun connect(serviceClass: Class<*> = MediaService::class.java): Connection =
+        public fun connect(serviceClass: Class<*> = MediaService::class.java): Connection =
             createIfNull(this::connection, this) {
                 Connection(serviceClass)
             }
@@ -316,11 +316,11 @@ open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by MainSco
      * Use a [Connection] to get a [MediaSessionNavigator] from a [Publication].
      * It will start the service if needed.
      */
-    class Connection internal constructor(private val serviceClass: Class<*>) {
+    public class Connection internal constructor(private val serviceClass: Class<*>) {
 
-        val currentNavigator: StateFlow<MediaSessionNavigator?> get() = navigator
+        public val currentNavigator: StateFlow<MediaSessionNavigator?> get() = navigator
 
-        fun getNavigator(
+        public fun getNavigator(
             context: Context,
             publication: Publication,
             publicationId: PublicationId,

@@ -16,36 +16,36 @@ import org.readium.r2.shared.publication.Publication
  * To be implemented by adapters for third-party TTS engines which can be used with [TtsNavigator].
  */
 @ExperimentalReadiumApi
-interface TtsEngineProvider<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
+public interface TtsEngineProvider<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
     F : TtsEngine.Error, V : TtsEngine.Voice> {
 
     /**
      * Creates a [TtsEngine] for [publication] and [initialPreferences].
      */
-    suspend fun createEngine(publication: Publication, initialPreferences: P): TtsEngine<S, P, F, V>?
+    public suspend fun createEngine(publication: Publication, initialPreferences: P): TtsEngine<S, P, F, V>?
 
     /**
      * Creates a preferences editor for [publication] and [initialPreferences].
      */
-    fun createPreferencesEditor(publication: Publication, initialPreferences: P): E
+    public fun createPreferencesEditor(publication: Publication, initialPreferences: P): E
 
     /**
      * Creates an empty set of preferences of this TTS engine provider.
      */
-    fun createEmptyPreferences(): P
+    public fun createEmptyPreferences(): P
 
     /**
      * Computes Media3 [PlaybackParameters] from the given [settings].
      */
-    fun getPlaybackParameters(settings: S): PlaybackParameters
+    public fun getPlaybackParameters(settings: S): PlaybackParameters
 
     /**
      * Updates [previousPreferences] to honor the given Media3 [playbackParameters].
      */
-    fun updatePlaybackParameters(previousPreferences: P, playbackParameters: PlaybackParameters): P
+    public fun updatePlaybackParameters(previousPreferences: P, playbackParameters: PlaybackParameters): P
 
     /**
      * Maps an engine-specific error to Media3 [PlaybackException].
      */
-    fun mapEngineError(error: F): PlaybackException
+    public fun mapEngineError(error: F): PlaybackException
 }

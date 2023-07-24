@@ -24,7 +24,10 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
 @Serializable
-enum class Theme(@ColorInt val contentColor: Int, @ColorInt val backgroundColor: Int) {
+public enum class Theme(
+    @ColorInt public val contentColor: Int,
+    @ColorInt public val backgroundColor: Int
+) {
     @SerialName("light") LIGHT(contentColor = dayContentColor, backgroundColor = dayBackgroundColor),
     @SerialName("dark") DARK(contentColor = nightContentColor, backgroundColor = nightBackgroundColor),
     @SerialName("sepia") SEPIA(contentColor = sepiaContentColor, backgroundColor = sepiaBackgroundColor);
@@ -32,7 +35,7 @@ enum class Theme(@ColorInt val contentColor: Int, @ColorInt val backgroundColor:
 
 @ExperimentalReadiumApi
 @Serializable
-enum class TextAlign {
+public enum class TextAlign {
     /** Align the text in the center of the page. */
     @SerialName("center") CENTER,
     /** Stretch lines of text that end with a soft line break to fill the width of the page. */
@@ -49,7 +52,7 @@ enum class TextAlign {
 
 @ExperimentalReadiumApi
 @Serializable
-enum class ColumnCount {
+public enum class ColumnCount {
     @SerialName("auto") AUTO,
     @SerialName("1") ONE,
     @SerialName("2") TWO;
@@ -57,7 +60,7 @@ enum class ColumnCount {
 
 @ExperimentalReadiumApi
 @Serializable
-enum class ImageFilter {
+public enum class ImageFilter {
     @SerialName("darken") DARKEN,
     @SerialName("invert") INVERT;
 }
@@ -65,28 +68,26 @@ enum class ImageFilter {
 /**
  * Typeface for a publication's text.
  *
- * When not available, the Navigator should use [alternate] as a fallback.
- *
  * For a list of vetted font families, see https://readium.org/readium-css/docs/CSS10-libre_fonts.
  */
 @JvmInline
 @ExperimentalReadiumApi
 @Serializable
-value class FontFamily(val name: String) {
+public value class FontFamily(public val name: String) {
 
-    companion object {
+    public companion object {
         // Generic font families
         // See https://www.w3.org/TR/css-fonts-4/#generic-font-families
-        val SERIF = FontFamily("serif")
-        val SANS_SERIF = FontFamily("sans-serif")
-        val CURSIVE = FontFamily("cursive")
-        val FANTASY = FontFamily("fantasy")
-        val MONOSPACE = FontFamily("monospace")
+        public val SERIF: FontFamily = FontFamily("serif")
+        public val SANS_SERIF: FontFamily = FontFamily("sans-serif")
+        public val CURSIVE: FontFamily = FontFamily("cursive")
+        public val FANTASY: FontFamily = FontFamily("fantasy")
+        public val MONOSPACE: FontFamily = FontFamily("monospace")
 
         // Accessibility fonts embedded with Readium
-        val ACCESSIBLE_DFA = FontFamily("AccessibleDfA")
-        val IA_WRITER_DUOSPACE = FontFamily("IA Writer Duospace")
-        val OPEN_DYSLEXIC = FontFamily("OpenDyslexic")
+        public val ACCESSIBLE_DFA: FontFamily = FontFamily("AccessibleDfA")
+        public val IA_WRITER_DUOSPACE: FontFamily = FontFamily("IA Writer Duospace")
+        public val OPEN_DYSLEXIC: FontFamily = FontFamily("OpenDyslexic")
     }
 }
 
@@ -96,14 +97,14 @@ value class FontFamily(val name: String) {
 @ExperimentalReadiumApi
 @Serializable
 @JvmInline
-value class Color(@ColorInt val int: Int)
+public value class Color(@ColorInt public val int: Int)
 
 /**
  * Layout axis.
  */
 @ExperimentalReadiumApi
 @Serializable
-enum class Axis(val value: String) {
+public enum class Axis(public val value: String) {
     @SerialName("horizontal") HORIZONTAL("horizontal"),
     @SerialName("vertical") VERTICAL("vertical");
 }
@@ -113,7 +114,7 @@ enum class Axis(val value: String) {
  */
 @ExperimentalReadiumApi
 @Serializable
-enum class Spread(val value: String) {
+public enum class Spread(public val value: String) {
     @SerialName("auto") AUTO("auto"),
     @SerialName("never") NEVER("never"),
     @SerialName("always") ALWAYS("always");
@@ -124,7 +125,7 @@ enum class Spread(val value: String) {
  */
 @ExperimentalReadiumApi
 @Serializable
-enum class ReadingProgression(val value: String) {
+public enum class ReadingProgression(public val value: String) {
     @SerialName("ltr") LTR("ltr"),
     @SerialName("rtl") RTL("rtl");
 }
@@ -134,7 +135,7 @@ enum class ReadingProgression(val value: String) {
  */
 @ExperimentalReadiumApi
 @Serializable
-enum class Fit(val value: String) {
+public enum class Fit(public val value: String) {
     @SerialName("cover") COVER("cover"),
     @SerialName("contain") CONTAIN("contain"),
     @SerialName("width") WIDTH("width"),

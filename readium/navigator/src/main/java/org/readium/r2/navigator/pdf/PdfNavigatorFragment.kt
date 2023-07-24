@@ -60,7 +60,7 @@ import timber.log.Timber
  * To use this [Fragment], create a factory with [PdfNavigatorFactory.createFragmentFactory].
  */
 @ExperimentalReadiumApi
-class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferences<P>> internal constructor(
+public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferences<P>> internal constructor(
     override val publication: Publication,
     initialLocator: Locator? = null,
     initialPreferences: P,
@@ -68,15 +68,15 @@ class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferenc
     private val pdfEngineProvider: PdfEngineProvider<S, P, *>
 ) : Fragment(), VisualNavigator, Configurable<S, P> {
 
-    interface Listener : VisualNavigator.Listener {
+    public interface Listener : VisualNavigator.Listener {
 
         /**
          * Called when a PDF resource failed to be loaded, for example because of an [OutOfMemoryError].
          */
-        fun onResourceLoadFailed(link: Link, error: Resource.Exception) {}
+        public fun onResourceLoadFailed(link: Link, error: Resource.Exception) {}
     }
 
-    companion object {
+    public companion object {
 
         /**
          * Creates a factory for [PdfNavigatorFragment].
@@ -89,7 +89,7 @@ class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Preferenc
          * @param pdfEngineProvider provider for third-party PDF engine adapter.
          */
         @ExperimentalReadiumApi
-        fun <S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> createFactory(
+        public fun <S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> createFactory(
             publication: Publication,
             initialLocator: Locator? = null,
             preferences: P? = null,

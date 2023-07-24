@@ -9,7 +9,6 @@ package org.readium.r2.navigator
 import android.graphics.PointF
 import android.view.View
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.input.InputListener
@@ -42,40 +41,40 @@ import org.readium.r2.shared.publication.ReadingProgression as PublicationReadin
  *   interactions such as tapping/clicking the edge of the page to skip to the next one should be
  *   implemented by the reading app, and not the navigator.
  */
-interface Navigator {
+public interface Navigator {
 
     /**
      * Publication rendered by this navigator.
      */
-    val publication: Publication
+    public val publication: Publication
 
     /**
      * Current position in the publication.
      * Can be used to save a bookmark to the current position.
      */
-    val currentLocator: StateFlow<Locator>
+    public val currentLocator: StateFlow<Locator>
 
     /**
      * Moves to the position in the publication corresponding to the given [Locator].
      */
-    fun go(locator: Locator, animated: Boolean = false, completion: () -> Unit = {}): Boolean
+    public fun go(locator: Locator, animated: Boolean = false, completion: () -> Unit = {}): Boolean
 
     /**
      * Moves to the position in the publication targeted by the given link.
      */
-    fun go(link: Link, animated: Boolean = false, completion: () -> Unit = {}): Boolean
+    public fun go(link: Link, animated: Boolean = false, completion: () -> Unit = {}): Boolean
 
     /**
      * Moves to the next content portion (eg. page) in the reading progression direction.
      */
-    fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
+    public fun goForward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
 
     /**
      * Moves to the previous content portion (eg. page) in the reading progression direction.
      */
-    fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
+    public fun goBackward(animated: Boolean = false, completion: () -> Unit = {}): Boolean
 
-    interface Listener {
+    public interface Listener {
 
         /**
          * Called when the navigator jumps to an explicit location, which might break the linear
@@ -87,59 +86,59 @@ interface Navigator {
          * You can use this callback to implement a navigation history by differentiating between
          * continuous and discontinuous moves.
          */
-        fun onJumpToLocator(locator: Locator) {}
+        public fun onJumpToLocator(locator: Locator) {}
     }
 
     @Deprecated("Use [currentLocator.value] instead", ReplaceWith("currentLocator.value"), level = DeprecationLevel.ERROR)
-    val currentLocation: Locator? get() = currentLocator.value
+    public val currentLocation: Locator? get() = currentLocator.value
     @Deprecated("Use [VisualNavigator.Listener] instead", ReplaceWith("VisualNavigator.Listener"), level = DeprecationLevel.ERROR)
-    interface VisualListener : VisualNavigator.Listener
+    public interface VisualListener : VisualNavigator.Listener
 }
 
-interface NavigatorDelegate {
+public interface NavigatorDelegate {
     @Deprecated("Observe [currentLocator] instead", level = DeprecationLevel.ERROR)
-    fun locationDidChange(navigator: Navigator? = null, locator: Locator) {}
+    public fun locationDidChange(navigator: Navigator? = null, locator: Locator) {}
 }
 
 /**
  * A navigator rendering the publication visually on-screen.
  */
-interface VisualNavigator : Navigator {
+public interface VisualNavigator : Navigator {
 
     /**
      * View displaying the publication.
      */
-    val publicationView: View
+    public val publicationView: View
 
     /**
      * Current presentation rendered by the navigator.
      */
     @ExperimentalReadiumApi
-    val presentation: StateFlow<Presentation>
+    public val presentation: StateFlow<Presentation>
 
     @ExperimentalReadiumApi
-    interface Presentation {
+    public interface Presentation {
         /**
          * Horizontal direction of progression across resources.
          */
-        val readingProgression: ReadingProgression
+        public val readingProgression: ReadingProgression
 
         /**
          * If the overflow of the content is managed through scroll instead of pagination.
          */
-        val scroll: Boolean
+        public val scroll: Boolean
 
         /**
          * Main axis along which the resources are laid out.
          */
-        val axis: Axis
+        public val axis: Axis
     }
 
     /**
      * Returns the [Locator] to the first content element that begins on the current screen.
      */
     @ExperimentalReadiumApi
-    suspend fun firstVisibleElementLocator(): Locator? =
+    public suspend fun firstVisibleElementLocator(): Locator? =
         currentLocator.value
 
     /**
@@ -149,37 +148,37 @@ interface VisualNavigator : Navigator {
      * receiving them.
      */
     @ExperimentalReadiumApi
-    fun addInputListener(listener: InputListener)
+    public fun addInputListener(listener: InputListener)
 
     /**
      * Removes a previously registered [InputListener].
      */
     @ExperimentalReadiumApi
-    fun removeInputListener(listener: InputListener)
+    public fun removeInputListener(listener: InputListener)
 
-    interface Listener : Navigator.Listener {
+    public interface Listener : Navigator.Listener {
         @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
-        fun onTap(point: PointF): Boolean = false
+        public fun onTap(point: PointF): Boolean = false
         @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
-        fun onDragStart(startPoint: PointF, offset: PointF): Boolean = false
+        public fun onDragStart(startPoint: PointF, offset: PointF): Boolean = false
         @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
-        fun onDragMove(startPoint: PointF, offset: PointF): Boolean = false
+        public fun onDragMove(startPoint: PointF, offset: PointF): Boolean = false
         @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
-        fun onDragEnd(startPoint: PointF, offset: PointF): Boolean = false
+        public fun onDragEnd(startPoint: PointF, offset: PointF): Boolean = false
     }
 
     /**
      * Current reading progression direction.
      */
     @Deprecated("Use `presentation.value.readingProgression` instead", ReplaceWith("presentation.value.readingProgression"), level = DeprecationLevel.ERROR)
-    val readingProgression: PublicationReadingProgression
+    public val readingProgression: PublicationReadingProgression
 }
 
 /**
  * Moves to the left content portion (eg. page) relative to the reading progression direction.
  */
 @OptIn(ExperimentalReadiumApi::class)
-fun VisualNavigator.goLeft(animated: Boolean = false, completion: () -> Unit = {}): Boolean {
+public fun VisualNavigator.goLeft(animated: Boolean = false, completion: () -> Unit = {}): Boolean {
     return when (presentation.value.readingProgression) {
         ReadingProgression.LTR ->
             goBackward(animated = animated, completion = completion)
@@ -193,7 +192,7 @@ fun VisualNavigator.goLeft(animated: Boolean = false, completion: () -> Unit = {
  * Moves to the right content portion (eg. page) relative to the reading progression direction.
  */
 @OptIn(ExperimentalReadiumApi::class)
-fun VisualNavigator.goRight(animated: Boolean = false, completion: () -> Unit = {}): Boolean {
+public fun VisualNavigator.goRight(animated: Boolean = false, completion: () -> Unit = {}): Boolean {
     return when (presentation.value.readingProgression) {
         ReadingProgression.LTR ->
             goForward(animated = animated, completion = completion)
@@ -206,42 +205,41 @@ fun VisualNavigator.goRight(animated: Boolean = false, completion: () -> Unit = 
 /**
  * A navigator rendering an audio or video publication.
  */
-@OptIn(ExperimentalTime::class)
 @ExperimentalAudiobook
-interface MediaNavigator : Navigator {
+public interface MediaNavigator : Navigator {
 
     /**
      * Current playback information.
      */
-    val playback: Flow<MediaPlayback>
+    public val playback: Flow<MediaPlayback>
 
     /**
      * Indicates whether the navigator is currently playing.
      */
-    val isPlaying: Boolean
+    public val isPlaying: Boolean
 
     /**
      * Sets the speed of the media playback.
      *
      * Normal speed is 1.0 and 0.0 is incorrect.
      */
-    fun setPlaybackRate(rate: Double)
+    public fun setPlaybackRate(rate: Double)
 
     /**
      * Resumes or start the playback at the current location.
      */
-    fun play()
+    public fun play()
 
     /**
      * Pauses the playback.
      */
-    fun pause()
+    public fun pause()
 
     /**
      * Toggles the playback.
      * Can be useful as a handler for play/pause button.
      */
-    fun playPause()
+    public fun playPause()
 
     /**
      * Stops the playback.
@@ -249,17 +247,17 @@ interface MediaNavigator : Navigator {
      * Compared to [pause], the navigator may clear its state in whatever way is appropriate. For
      * example, recovering a player's resources.
      */
-    fun stop()
+    public fun stop()
 
     /**
      * Seeks to the given time in the current resource.
      */
-    fun seekTo(position: Duration)
+    public fun seekTo(position: Duration)
 
     /**
      * Seeks relatively from the current position in the current resource.
      */
-    fun seekRelative(offset: Duration)
+    public fun seekRelative(offset: Duration)
 
-    interface Listener : Navigator.Listener
+    public interface Listener : Navigator.Listener
 }

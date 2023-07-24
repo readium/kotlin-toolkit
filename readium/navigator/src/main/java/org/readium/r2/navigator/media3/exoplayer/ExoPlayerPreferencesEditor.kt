@@ -22,7 +22,7 @@ import org.readium.r2.shared.publication.Metadata
  * or ranges.
  */
 @ExperimentalReadiumApi
-class ExoPlayerPreferencesEditor(
+public class ExoPlayerPreferencesEditor(
     initialPreferences: ExoPlayerPreferences,
     @Suppress("UNUSED_PARAMETER") publicationMetadata: Metadata,
     defaults: ExoPlayerDefaults,
@@ -46,7 +46,7 @@ class ExoPlayerPreferencesEditor(
         updateValues { ExoPlayerPreferences() }
     }
 
-    val pitch: RangePreference<Double> =
+    public val pitch: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.pitch },
             getEffectiveValue = { state.settings.pitch },
@@ -57,7 +57,7 @@ class ExoPlayerPreferencesEditor(
             valueFormatter = { "${it.format(2)}x" },
         )
 
-    val speed: RangePreference<Double> =
+    public val speed: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.speed },
             getEffectiveValue = { state.settings.speed },

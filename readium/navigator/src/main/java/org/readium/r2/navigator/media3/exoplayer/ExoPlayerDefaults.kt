@@ -17,7 +17,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * @see ExoPlayerPreferences
  */
 @ExperimentalReadiumApi
-data class ExoPlayerDefaults(
+public data class ExoPlayerDefaults(
     val pitch: Double? = null,
     val speed: Double? = null
 ) {

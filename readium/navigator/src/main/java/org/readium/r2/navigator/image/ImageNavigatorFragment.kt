@@ -50,13 +50,13 @@ import org.readium.r2.shared.publication.services.positions
  * Navigator for bitmap-based publications, such as CBZ.
  */
 @OptIn(ExperimentalReadiumApi::class)
-class ImageNavigatorFragment private constructor(
+public class ImageNavigatorFragment private constructor(
     override val publication: Publication,
     private val initialLocator: Locator? = null,
     internal val listener: Listener? = null
 ) : Fragment(), CoroutineScope by MainScope(), VisualNavigator {
 
-    interface Listener : VisualNavigator.Listener
+    public interface Listener : VisualNavigator.Listener
 
     init {
         require(!publication.isRestricted) { "The provided publication is restricted. Check that any DRM was properly unlocked using a Content Protection." }
@@ -150,13 +150,13 @@ class ImageNavigatorFragment private constructor(
 
     @Deprecated("Use goForward instead", replaceWith = ReplaceWith("goForward()"), level = DeprecationLevel.ERROR)
     @Suppress("UNUSED_PARAMETER")
-    fun nextResource(v: View?) {
+    public fun nextResource(v: View?) {
         goForward()
     }
 
     @Deprecated("Use goBackward instead", replaceWith = ReplaceWith("goBackward()"), level = DeprecationLevel.ERROR)
     @Suppress("UNUSED_PARAMETER")
-    fun previousResource(v: View?) {
+    public fun previousResource(v: View?) {
         goBackward()
     }
 
@@ -248,7 +248,7 @@ class ImageNavigatorFragment private constructor(
         inputListener.remove(listener)
     }
 
-    companion object {
+    public companion object {
 
         /**
          * Factory for [ImageNavigatorFragment].
@@ -258,7 +258,7 @@ class ImageNavigatorFragment private constructor(
          *        publication. Can be used to restore the last reading location.
          * @param listener Optional listener to implement to observe events, such as user taps.
          */
-        fun createFactory(
+        public fun createFactory(
             publication: Publication,
             initialLocator: Locator? = null,
             listener: Listener? = null
