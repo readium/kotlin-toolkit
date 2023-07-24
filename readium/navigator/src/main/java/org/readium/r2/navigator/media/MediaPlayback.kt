@@ -7,7 +7,6 @@
 package org.readium.r2.navigator.media
 
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 import org.readium.r2.navigator.ExperimentalAudiobook
 
 /**

@@ -27,7 +27,10 @@ public class RoutingFetcher(private val routes: List<Route>) : Fetcher {
      *
      * The default value for [accepts] means that the fetcher will accept any link.
      */
-    public class Route(public val fetcher: Fetcher, public val accepts: (Link) -> Boolean = { true })
+    public class Route(
+        public val fetcher: Fetcher,
+        public val accepts: (Link) -> Boolean = { true }
+    )
 
     public constructor(local: Fetcher, remote: Fetcher) :
         this(listOf(Route(local, Link::isLocal), Route(remote)))

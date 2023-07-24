@@ -64,7 +64,10 @@ public sealed class Try<out Success, out Failure> {
      * Returns the result of [onSuccess] for the encapsulated value if this instance represents success or
      * the result of [onFailure] function for the encapsulated value if it is failure.
      */
-    public inline fun <R> fold(onSuccess: (value: Success) -> R, onFailure: (exception: Failure) -> R): R =
+    public inline fun <R> fold(
+        onSuccess: (value: Success) -> R,
+        onFailure: (exception: Failure) -> R
+    ): R =
         when (this) {
             is Try.Success -> onSuccess(value)
             is Try.Failure -> onFailure(failureOrNull()!!)

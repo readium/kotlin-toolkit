@@ -77,7 +77,11 @@ public class LicenseDocument(public val data: ByteArray) {
     public fun links(rel: Rel, type: MediaType? = null): List<Link> =
         links.allWithRel(rel.rawValue, type)
 
-    public fun url(rel: Rel, preferredType: MediaType? = null, parameters: URLParameters = emptyMap()): URL {
+    public fun url(
+        rel: Rel,
+        preferredType: MediaType? = null,
+        parameters: URLParameters = emptyMap()
+    ): URL {
         val link = link(rel, preferredType)
             ?: links.firstWithRelAndNoType(rel.rawValue)
             ?: throw LcpException.Parsing.Url(rel = rel.rawValue)

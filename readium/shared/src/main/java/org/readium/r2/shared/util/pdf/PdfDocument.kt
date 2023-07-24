@@ -44,7 +44,9 @@ public interface PdfDocumentFactory<T : PdfDocument> {
  * around.
  */
 @ExperimentalReadiumApi
-public suspend fun <T : PdfDocument> PdfDocumentFactory<T>.cachedIn(holder: PublicationServicesHolder): PdfDocumentFactory<T> {
+public suspend fun <T : PdfDocument> PdfDocumentFactory<T>.cachedIn(
+    holder: PublicationServicesHolder
+): PdfDocumentFactory<T> {
     val namespace = requireNotNull(documentType.qualifiedName)
     val cache = holder.cacheService?.cacheOf(documentType, namespace) ?: return this
     return CachingPdfDocumentFactory(this, cache)

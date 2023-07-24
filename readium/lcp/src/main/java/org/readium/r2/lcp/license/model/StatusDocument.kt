@@ -95,7 +95,11 @@ public class StatusDocument(public val data: ByteArray) {
     internal fun linkWithNoType(rel: Rel): Link? =
         links.firstWithRelAndNoType(rel.rawValue)
 
-    public fun url(rel: Rel, preferredType: MediaType? = null, parameters: URLParameters = emptyMap()): URL {
+    public fun url(
+        rel: Rel,
+        preferredType: MediaType? = null,
+        parameters: URLParameters = emptyMap()
+    ): URL {
         val link = link(rel, preferredType)
             ?: linkWithNoType(rel)
             ?: throw LcpException.Parsing.Url(rel = rel.rawValue)

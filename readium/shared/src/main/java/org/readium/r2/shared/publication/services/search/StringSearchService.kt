@@ -17,7 +17,6 @@ import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.Search
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.fetcher.DefaultResourceContentExtractorFactory

@@ -87,11 +87,21 @@ public data class HtmlDecorationTemplate(
     public companion object {
 
         /** Creates a new decoration template for the highlight style. */
-        public fun highlight(@ColorInt defaultTint: Int, lineWeight: Int, cornerRadius: Int, alpha: Double): HtmlDecorationTemplate =
+        public fun highlight(
+            @ColorInt defaultTint: Int,
+            lineWeight: Int,
+            cornerRadius: Int,
+            alpha: Double
+        ): HtmlDecorationTemplate =
             createTemplate(asHighlight = true, defaultTint = defaultTint, lineWeight = lineWeight, cornerRadius = cornerRadius, alpha = alpha)
 
         /** Creates a new decoration template for the underline style. */
-        public fun underline(@ColorInt defaultTint: Int, lineWeight: Int, cornerRadius: Int, alpha: Double): HtmlDecorationTemplate =
+        public fun underline(
+            @ColorInt defaultTint: Int,
+            lineWeight: Int,
+            cornerRadius: Int,
+            alpha: Double
+        ): HtmlDecorationTemplate =
             createTemplate(asHighlight = false, defaultTint = defaultTint, lineWeight = lineWeight, cornerRadius = cornerRadius, alpha = alpha)
 
         /**

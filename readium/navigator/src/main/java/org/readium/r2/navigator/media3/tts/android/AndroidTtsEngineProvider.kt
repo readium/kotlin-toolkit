@@ -12,7 +12,6 @@ import androidx.media3.common.PlaybackException.*
 import androidx.media3.common.PlaybackParameters
 import org.readium.r2.navigator.media3.tts.TtsEngineProvider
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 
 @ExperimentalReadiumApi

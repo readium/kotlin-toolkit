@@ -70,7 +70,10 @@ public interface Resource : SuspendingCloseable {
     public sealed class Exception(@StringRes userMessageId: Int, cause: Throwable? = null) : UserException(userMessageId, cause = cause) {
 
         /** Equivalent to a 400 HTTP error. */
-        public class BadRequest(public val parameters: Map<String, String> = emptyMap(), cause: Throwable? = null) :
+        public class BadRequest(
+            public val parameters: Map<String, String> = emptyMap(),
+            cause: Throwable? = null
+        ) :
             Exception(R.string.readium_shared_resource_exception_bad_request, cause)
 
         /** Equivalent to a 404 HTTP error. */

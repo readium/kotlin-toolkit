@@ -6,10 +6,10 @@
 
 package org.readium.adapters.pdfium.document
 
-import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.ParcelFileDescriptor
+import com.shockwave.pdfium.PdfDocument as _PdfiumDocument
 import com.shockwave.pdfium.PdfiumCore
 import java.io.File
 import kotlin.reflect.KClass

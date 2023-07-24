@@ -13,7 +13,6 @@ package org.readium.r2.shared.publication
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
-import org.readium.r2.shared.util.MapWithDefaultCompanion
 
 /**
  * The [ContentLayout] defines how a [Publication] should be laid out, based on the declared

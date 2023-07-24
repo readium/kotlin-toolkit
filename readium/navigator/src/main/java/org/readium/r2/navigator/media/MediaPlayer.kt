@@ -44,7 +44,10 @@ public interface MediaPlayer {
 
         public fun locatorFromMediaId(mediaId: String, extras: Bundle?): Locator?
 
-        public suspend fun coverOfPublication(publication: Publication, publicationId: PublicationId): Bitmap?
+        public suspend fun coverOfPublication(
+            publication: Publication,
+            publicationId: PublicationId
+        ): Bitmap?
 
         public fun onNotificationPosted(notificationId: Int, notification: Notification)
         public fun onNotificationCancelled(notificationId: Int)

@@ -42,7 +42,10 @@ public interface TtsEngineProvider<S : TtsEngine.Settings, P : TtsEngine.Prefere
     /**
      * Updates [previousPreferences] to honor the given Media3 [playbackParameters].
      */
-    public fun updatePlaybackParameters(previousPreferences: P, playbackParameters: PlaybackParameters): P
+    public fun updatePlaybackParameters(
+        previousPreferences: P,
+        playbackParameters: PlaybackParameters
+    ): P
 
     /**
      * Maps an engine-specific error to Media3 [PlaybackException].

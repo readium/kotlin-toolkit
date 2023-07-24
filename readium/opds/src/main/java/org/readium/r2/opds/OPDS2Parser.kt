@@ -45,7 +45,10 @@ public class OPDS2Parser {
             }
         }
 
-        public suspend fun parseRequest(request: HttpRequest, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
+        public suspend fun parseRequest(
+            request: HttpRequest,
+            client: HttpClient = DefaultHttpClient()
+        ): Try<ParseData, Exception> {
             return client.fetchWithDecoder(request) {
                 this.parse(it.body, URL(request.url))
             }

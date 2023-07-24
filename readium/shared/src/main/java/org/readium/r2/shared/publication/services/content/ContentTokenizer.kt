@@ -37,7 +37,11 @@ public class TextContentTokenizer(
     /**
      * A [ContentTokenizer] using the default [TextTokenizer] to split the text of the [Content.Element].
      */
-    public constructor(language: Language?, unit: TextUnit, overrideContentLanguage: Boolean = false) : this(
+    public constructor(
+        language: Language?,
+        unit: TextUnit,
+        overrideContentLanguage: Boolean = false
+    ) : this(
         language = language,
         textTokenizerFactory = { contentLanguage -> DefaultTextContentTokenizer(unit, contentLanguage) },
         overrideContentLanguage = overrideContentLanguage

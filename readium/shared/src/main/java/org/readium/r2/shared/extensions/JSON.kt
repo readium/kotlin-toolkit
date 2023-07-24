@@ -168,7 +168,11 @@ public fun JSONObject.optPositiveInt(name: String, fallback: Int = -1, remove: B
  * If [remove] is true, then the mapping will be removed from the [JSONObject].
  */
 @InternalReadiumApi
-public fun JSONObject.optPositiveDouble(name: String, fallback: Double = -1.0, remove: Boolean = false): Double? {
+public fun JSONObject.optPositiveDouble(
+    name: String,
+    fallback: Double = -1.0,
+    remove: Boolean = false
+): Double? {
     val double = optDouble(name, fallback)
     val value = if (double >= 0) double else null
     if (remove) {

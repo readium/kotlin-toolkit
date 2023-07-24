@@ -17,7 +17,12 @@ import java.io.Serializable
 public sealed class UserProperty(public var ref: String, public var name: String)
 
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-public class Enumerable(public var index: Int, private val values: List<String>, ref: String, name: String)
+public class Enumerable(
+    public var index: Int,
+    private val values: List<String>,
+    ref: String,
+    name: String
+)
 
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
 public class Incremental(
@@ -31,7 +36,13 @@ public class Incremental(
 )
 
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-public class Switchable(onValue: String, offValue: String, public var on: Boolean, ref: String, name: String)
+public class Switchable(
+    onValue: String,
+    offValue: String,
+    public var on: Boolean,
+    ref: String,
+    name: String
+)
 
 @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
 public class UserProperties : Serializable

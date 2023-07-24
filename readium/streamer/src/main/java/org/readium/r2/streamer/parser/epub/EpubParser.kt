@@ -7,7 +7,6 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.Search
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.extensions.addPrefix

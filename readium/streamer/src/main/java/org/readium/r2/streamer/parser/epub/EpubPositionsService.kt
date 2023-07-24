@@ -38,7 +38,9 @@ public class EpubPositionsService(
 
     public companion object {
 
-        public fun createFactory(reflowableStrategy: ReflowableStrategy = ReflowableStrategy.recommended): (
+        public fun createFactory(
+            reflowableStrategy: ReflowableStrategy = ReflowableStrategy.recommended
+        ): (
             Publication.Service.Context
         ) -> EpubPositionsService =
             { context ->

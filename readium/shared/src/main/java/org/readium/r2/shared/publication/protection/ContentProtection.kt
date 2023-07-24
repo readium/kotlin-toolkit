@@ -92,7 +92,11 @@ public interface ContentProtection {
         quantity: Int? = null,
         cause: Throwable? = null
     ) : UserException(userMessageId, quantity, *args, cause = cause) {
-        protected constructor(@StringRes userMessageId: Int, vararg args: Any?, cause: Throwable? = null) : this(userMessageId, *args, quantity = null, cause = cause)
+        protected constructor(
+            @StringRes userMessageId: Int,
+            vararg args: Any?,
+            cause: Throwable? = null
+        ) : this(userMessageId, *args, quantity = null, cause = cause)
 
         /**
          * Exception returned when the given Content Protection [scheme] is not supported by the

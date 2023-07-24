@@ -120,7 +120,11 @@ public class HttpException(
          *
          * Returns null if the status code is a success.
          */
-        public operator fun invoke(statusCode: Int, mediaType: MediaType? = null, body: ByteArray? = null): HttpException? =
+        public operator fun invoke(
+            statusCode: Int,
+            mediaType: MediaType? = null,
+            body: ByteArray? = null
+        ): HttpException? =
             Kind.ofStatusCode(statusCode)?.let { kind ->
                 HttpException(kind, mediaType, body)
             }

@@ -85,7 +85,9 @@ public class FallbackResource(
 /**
  * Falls back to alternative resources when the receiver fails.
  */
-public fun Fetcher.Resource.fallback(fallbackResourceFactory: (Resource.Exception) -> Fetcher.Resource): Fetcher.Resource =
+public fun Fetcher.Resource.fallback(
+    fallbackResourceFactory: (Resource.Exception) -> Fetcher.Resource
+): Fetcher.Resource =
     FallbackResource(this, fallbackResourceFactory)
 
 /**
@@ -133,7 +135,10 @@ public abstract class TransformingResource(
         /**
          * Creates a [TransformingResource] using the given [transform] function.
          */
-        public operator fun invoke(resource: Fetcher.Resource, transform: suspend (ByteArray) -> ByteArray): TransformingResource =
+        public operator fun invoke(
+            resource: Fetcher.Resource,
+            transform: suspend (ByteArray) -> ByteArray
+        ): TransformingResource =
             object : TransformingResource(resource) {
                 override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
                     data.mapCatching { transform(it) }
@@ -384,7 +389,7 @@ public class BufferingResource(
 public fun Fetcher.Resource.buffered(
     resourceLength: Long? = null,
     size: Long = BufferingResource.DEFAULT_BUFFER_SIZE
-) : BufferingResource =
+): BufferingResource =
     BufferingResource(resource = this, resourceLength = resourceLength, bufferSize = size)
 
 /**

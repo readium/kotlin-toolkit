@@ -24,7 +24,10 @@ import org.xmlpull.v1.XmlPullParserFactory
  * If [isCaseSensitive] is false, attribute and tag names are lowercased during the parsing
  */
 @InternalReadiumApi
-public class XmlParser(private val isNamespaceAware: Boolean = true, private val isCaseSensitive: Boolean = true) {
+public class XmlParser(
+    private val isNamespaceAware: Boolean = true,
+    private val isCaseSensitive: Boolean = true
+) {
 
     private val parser: XmlPullParser = XmlPullParserFactory.newInstance().let {
         it.isNamespaceAware = isNamespaceAware

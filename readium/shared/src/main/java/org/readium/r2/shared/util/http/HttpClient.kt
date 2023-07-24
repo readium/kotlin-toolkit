@@ -54,7 +54,10 @@ public interface HttpClient {
  *
  * If the decoder fails, a MalformedResponse error is returned.
  */
-public suspend fun <T> HttpClient.fetchWithDecoder(request: HttpRequest, decoder: (HttpFetchResponse) -> T): HttpTry<T> =
+public suspend fun <T> HttpClient.fetchWithDecoder(
+    request: HttpRequest,
+    decoder: (HttpFetchResponse) -> T
+): HttpTry<T> =
     fetch(request)
         .flatMap {
             try {

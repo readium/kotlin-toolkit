@@ -125,7 +125,11 @@ public open class UserException protected constructor(
         public companion object {
             public operator fun invoke(@StringRes userMessageId: Int, vararg args: Any?): Content =
                 LocalizedString(userMessageId, args, null)
-            public operator fun invoke(@PluralsRes userMessageId: Int, quantity: Int?, vararg args: Any?): Content =
+            public operator fun invoke(
+                @PluralsRes userMessageId: Int,
+                quantity: Int?,
+                vararg args: Any?
+            ): Content =
                 LocalizedString(userMessageId, args, quantity)
             public operator fun invoke(cause: UserException): Content =
                 Exception(cause)

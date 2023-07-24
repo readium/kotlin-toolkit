@@ -111,7 +111,9 @@ public sealed class LcpException(
     /**
      * Errors while parsing the License or Status JSON Documents.
      */
-    public sealed class Parsing(@StringRes userMessageId: Int = R.string.readium_lcp_exception_parsing) : LcpException(userMessageId) {
+    public sealed class Parsing(
+        @StringRes userMessageId: Int = R.string.readium_lcp_exception_parsing
+    ) : LcpException(userMessageId) {
 
         /** The JSON is malformed and can't be parsed. */
         public object MalformedJSON : Parsing(R.string.readium_lcp_exception_parsing_malformed_json)

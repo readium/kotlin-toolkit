@@ -84,7 +84,10 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
     /**
      * Returns the cover for the given [publication] which should be used in media notifications.
      */
-    public open suspend fun coverOfPublication(publicationId: PublicationId, publication: Publication): Bitmap? =
+    public open suspend fun coverOfPublication(
+        publicationId: PublicationId,
+        publication: Publication
+    ): Bitmap? =
         publication.cover()
 
     /**
