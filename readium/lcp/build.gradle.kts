@@ -14,18 +14,18 @@ plugins {
 android {
     resourcePrefix = "readium_"
 
-    compileSdk = 33
+    compileSdk = 34
     defaultConfig {
         minSdk = 21
-        targetSdk = 33
+        targetSdk = 34
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_17.toString()
         allWarningsAsErrors = true
         freeCompilerArgs = freeCompilerArgs + listOf(
             "-opt-in=kotlin.RequiresOptIn",
@@ -65,7 +65,7 @@ dependencies {
 
     implementation(libs.bundles.room)
     kapt(libs.androidx.room.compiler)
-    kapt("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.5.0")
+    kapt("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.7.0")
 
     // Tests
     testImplementation(libs.junit)
