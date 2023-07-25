@@ -211,7 +211,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             }
         })
 
-        menuSearchView.findViewById<ImageView>(R.id.search_close_btn).setOnClickListener {
+        menuSearchView.findViewById<ImageView>(androidx.appcompat.R.id.search_close_btn).setOnClickListener {
             menuSearchView.requestFocus()
             model.cancelSearch()
             menuSearchView.setQuery("", false)

@@ -7,7 +7,7 @@
 plugins {
     id("com.android.application")
     kotlin("android")
-    kotlin("kapt")
+    id("com.google.devtools.ksp")
     kotlin("plugin.parcelize")
 }
 
@@ -41,6 +41,7 @@ android {
     buildFeatures {
         viewBinding = true
         compose = true
+        buildConfig = true
     }
     buildTypes {
         getByName("release") {
@@ -106,7 +107,7 @@ dependencies {
 
     // Room database
     implementation(libs.bundles.room)
-    kapt(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
 
     // Tests
     testImplementation(libs.junit)

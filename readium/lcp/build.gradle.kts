@@ -8,7 +8,7 @@ plugins {
     id("com.android.library")
     kotlin("android")
     kotlin("plugin.parcelize")
-    kotlin("kapt")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -38,6 +38,9 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
     }
+    buildFeatures {
+        buildConfig = true
+    }
     namespace = "org.readium.r2.lcp"
 }
 
@@ -64,8 +67,7 @@ dependencies {
     implementation(libs.androidx.browser)
 
     implementation(libs.bundles.room)
-    kapt(libs.androidx.room.compiler)
-    kapt("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.7.0")
+    ksp(libs.androidx.room.compiler)
 
     // Tests
     testImplementation(libs.junit)

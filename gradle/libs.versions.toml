@@ -27,7 +27,7 @@ androidx-media3 = "1.1.0"
 androidx-navigation = "2.5.2"
 androidx-paging = "3.1.1"
 androidx-recyclerview = "1.3.0"
-androidx-room = "2.4.3"
+androidx-room = "2.5.2"
 androidx-viewpager2 = "1.0.0"
 androidx-webkit = "1.7.0"
 
@@ -119,7 +119,7 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlin-gradle = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-junit = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit", version.ref = "kotlin" }
 kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
-kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version.ref = "kotlin" }
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
 
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }

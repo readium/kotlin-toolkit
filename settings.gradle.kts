@@ -23,8 +23,9 @@ pluginManagement {
         id("io.github.gradle-nexus.publish-plugin") version ("1.1.0")
         id("org.jetbrains.dokka") version ("1.8.20")
         id("org.jetbrains.kotlin.android") version ("1.9.0")
-        id("org.jetbrains.kotlin.plugin.serialization") version ("1.8.21")
+        id("org.jetbrains.kotlin.plugin.serialization") version ("1.9.0")
         id("org.jlleitschuh.gradle.ktlint") version ("11.0.0")
+        id("com.google.devtools.ksp") version ("1.9.0-1.0.12")
     }
 }
 dependencyResolutionManagement {

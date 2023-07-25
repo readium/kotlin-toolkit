@@ -56,8 +56,4 @@ abstract class LifecycleMedia2SessionService : MediaSessionService(), LifecycleO
         lifecycleDispatcher.onServicePreSuperOnDestroy()
         super.onDestroy()
     }
-
-    override fun getLifecycle(): Lifecycle {
-        return lifecycleDispatcher.lifecycle
-    }
 }

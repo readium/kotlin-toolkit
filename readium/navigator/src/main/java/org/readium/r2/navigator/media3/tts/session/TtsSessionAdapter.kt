@@ -207,7 +207,6 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     override fun replaceMediaItem(index: Int, mediaItem: MediaItem) {
-        TODO("Not yet implemented")
     }
 
     override fun replaceMediaItems(
@@ -215,7 +214,6 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         toIndex: Int,
         mediaItems: MutableList<MediaItem>
     ) {
-        TODO("Not yet implemented")
     }
 
     override fun removeMediaItem(index: Int) {
