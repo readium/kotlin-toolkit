@@ -136,7 +136,7 @@ internal class LcpContentProtection(
             ?: return Try.failure(
                 Publication.OpeningException.ParsingFailed(
                     ThrowableError(
-                        LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.rawValue)
+                        LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.value)
                     )
                 )
             )

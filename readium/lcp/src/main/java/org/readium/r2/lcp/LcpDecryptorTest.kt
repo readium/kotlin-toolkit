@@ -19,7 +19,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 
-public suspend fun Publication.checkDecryption() {
+internal suspend fun Publication.checkDecryption() {
 
     checkResourcesAreReadableInOneBlock(this)
 
@@ -30,7 +30,7 @@ public suspend fun Publication.checkDecryption() {
     checkExceedingRangesAreAllowed(this)
 }
 
-private suspend fun checkResourcesAreReadableInOneBlock(publication: Publication) {
+internal suspend fun checkResourcesAreReadableInOneBlock(publication: Publication) {
     Timber.d("checking resources are readable in one block")
 
     (publication.readingOrder + publication.resources)
@@ -43,7 +43,7 @@ private suspend fun checkResourcesAreReadableInOneBlock(publication: Publication
         }
 }
 
-private suspend fun checkLengthComputationIsCorrect(publication: Publication) {
+internal suspend fun checkLengthComputationIsCorrect(publication: Publication) {
     Timber.d("checking length computation is correct")
 
     (publication.readingOrder + publication.resources)
@@ -60,7 +60,7 @@ private suspend fun checkLengthComputationIsCorrect(publication: Publication) {
         }
 }
 
-private suspend fun checkAllResourcesAreReadableByChunks(publication: Publication) {
+internal suspend fun checkAllResourcesAreReadableByChunks(publication: Publication) {
     Timber.d("checking all resources are readable by chunks")
 
     (publication.readingOrder + publication.resources)
@@ -77,7 +77,7 @@ private suspend fun checkAllResourcesAreReadableByChunks(publication: Publicatio
         }
 }
 
-private suspend fun checkExceedingRangesAreAllowed(publication: Publication) {
+internal suspend fun checkExceedingRangesAreAllowed(publication: Publication) {
     Timber.d("checking exceeding ranges are allowed")
 
     (publication.readingOrder + publication.resources)
@@ -111,7 +111,7 @@ private suspend fun checkExceedingRangesAreAllowed(publication: Publication) {
         }
 }
 
-private suspend fun Fetcher.Resource.readByChunks(
+internal suspend fun Fetcher.Resource.readByChunks(
     chunkSize: Long,
     groundTruth: ByteArray,
     shuffle: Boolean = true

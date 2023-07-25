@@ -8,7 +8,7 @@ package org.readium.r2.shared.asset
 
 import org.readium.r2.shared.util.MapCompanion
 
-public enum class AssetType(public val rawValue: String) {
+public enum class AssetType(public val value: String) {
 
     /**
      * A simple resource.
@@ -25,5 +25,5 @@ public enum class AssetType(public val rawValue: String) {
      */
     Archive("archive");
 
-    public companion object : MapCompanion<String, AssetType>(values(), AssetType::rawValue)
+    public companion object : MapCompanion<String, AssetType>(values(), AssetType::value)
 }

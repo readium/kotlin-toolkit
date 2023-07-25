@@ -28,9 +28,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 public data class Manifest(
     val context: List<String> = emptyList(),
     val metadata: Metadata,
-    // FIXME: Currently Readium requires to set the [Link] with [rel] "self" when adding it to the
-    //     server. So we need to keep [links] as a mutable property.
-    var links: List<Link> = emptyList(),
+    val links: List<Link> = emptyList(),
     val readingOrder: List<Link> = emptyList(),
     val resources: List<Link> = emptyList(),
     val tableOfContents: List<Link> = emptyList(),

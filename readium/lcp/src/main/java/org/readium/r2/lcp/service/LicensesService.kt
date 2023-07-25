@@ -220,7 +220,7 @@ internal class LicensesService(
     private suspend fun fetchPublication(license: LicenseDocument, onProgress: (Double) -> Unit): LcpService.AcquiredPublication {
         val link = license.link(LicenseDocument.Rel.publication)
         val url = link?.url
-            ?: throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.rawValue)
+            ?: throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.value)
 
         val destination = withContext(Dispatchers.IO) {
             File.createTempFile("lcp-${System.currentTimeMillis()}", ".tmp")

@@ -37,15 +37,18 @@ public class LicenseDocument(public val data: ByteArray) {
     public val signature: Signature
     public val json: JSONObject
 
-    public enum class Rel(public val rawValue: String) {
+    public enum class Rel(public val value: String) {
         hint("hint"),
         publication("publication"),
         self("self"),
         support("support"),
         status("status");
 
+        @Deprecated("Use [value] instead", ReplaceWith("value"), level = DeprecationLevel.ERROR)
+        public val rawValue: String get() = value
+
         public companion object {
-            public operator fun invoke(rawValue: String): Rel? = values().firstOrNull { it.rawValue == rawValue }
+            public operator fun invoke(value: String): Rel? = values().firstOrNull { it.value == value }
         }
     }
 
@@ -72,10 +75,10 @@ public class LicenseDocument(public val data: ByteArray) {
     }
 
     public fun link(rel: Rel, type: MediaType? = null): Link? =
-        links.firstWithRel(rel.rawValue, type)
+        links.firstWithRel(rel.value, type)
 
     public fun links(rel: Rel, type: MediaType? = null): List<Link> =
-        links.allWithRel(rel.rawValue, type)
+        links.allWithRel(rel.value, type)
 
     public fun url(
         rel: Rel,
@@ -83,8 +86,8 @@ public class LicenseDocument(public val data: ByteArray) {
         parameters: URLParameters = emptyMap()
     ): URL {
         val link = link(rel, preferredType)
-            ?: links.firstWithRelAndNoType(rel.rawValue)
-            ?: throw LcpException.Parsing.Url(rel = rel.rawValue)
+            ?: links.firstWithRelAndNoType(rel.value)
+            ?: throw LcpException.Parsing.Url(rel = rel.value)
 
         return link.url(parameters)
     }

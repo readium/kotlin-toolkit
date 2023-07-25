@@ -12,7 +12,6 @@ package org.readium.r2.navigator.extensions
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Locator
 
 // FIXME: This should be in r2-shared once this public API is specified.
@@ -22,7 +21,6 @@ import org.readium.r2.shared.publication.Locator
 /**
  * All named parameters found in the fragments, such as `p=5`.
  */
-@InternalReadiumApi
 internal val Locator.Locations.fragmentParameters: Map<String, String> get() =
     fragments
         // Concatenates fragments together, after dropping any #

@@ -10,6 +10,7 @@ import java.io.File
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.extensions.coerceIn
@@ -272,8 +273,8 @@ public class BufferingResource(
     private val bufferSize: Long = DEFAULT_BUFFER_SIZE,
 ) : ProxyResource(resource) {
 
-    public companion object {
-        public const val DEFAULT_BUFFER_SIZE: Long = 8192
+    internal companion object {
+        internal const val DEFAULT_BUFFER_SIZE: Long = 8192
     }
 
     /**
@@ -397,6 +398,7 @@ public fun Fetcher.Resource.buffered(
  *
  * If the [transform] throws an [Exception], it is wrapped in a failure with Resource.Exception.Other.
  */
+@InternalReadiumApi
 public inline fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R): ResourceTry<R> =
     try {
         map(transform)
@@ -406,5 +408,6 @@ public inline fun <R, S> ResourceTry<S>.mapCatching(transform: (value: S) -> R):
         Try.failure(Resource.Exception.wrap(e))
     }
 
+@InternalReadiumApi
 public inline fun <R, S> ResourceTry<S>.flatMapCatching(transform: (value: S) -> ResourceTry<R>): ResourceTry<R> =
     mapCatching(transform).flatMap { it }

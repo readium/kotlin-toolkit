@@ -36,7 +36,7 @@ public class StatusDocument(public val data: ByteArray) {
 
     public val json: JSONObject
 
-    public enum class Status(public val rawValue: String) {
+    public enum class Status(public val value: String) {
         ready("ready"),
         active("active"),
         revoked("revoked"),
@@ -44,19 +44,25 @@ public class StatusDocument(public val data: ByteArray) {
         cancelled("cancelled"),
         expired("expired");
 
+        @Deprecated("Use [value] instead", ReplaceWith("value"), level = DeprecationLevel.ERROR)
+        public val rawValue: String get() = value
+
         public companion object {
-            public operator fun invoke(rawValue: String): Status? = values().firstOrNull { it.rawValue == rawValue }
+            public operator fun invoke(value: String): Status? = values().firstOrNull { it.value == value }
         }
     }
 
-    public enum class Rel(public val rawValue: String) {
+    public enum class Rel(public val value: String) {
         register("register"),
         license("license"),
         `return`("return"),
         renew("renew");
 
+        @Deprecated("Use [value] instead", ReplaceWith("value"), level = DeprecationLevel.ERROR)
+        public val rawValue: String get() = value
+
         public companion object {
-            public operator fun invoke(rawValue: String): Rel? = values().firstOrNull { it.rawValue == rawValue }
+            public operator fun invoke(value: String): Rel? = values().firstOrNull { it.value == value }
         }
     }
 
@@ -87,13 +93,13 @@ public class StatusDocument(public val data: ByteArray) {
     }
 
     public fun link(rel: Rel, type: MediaType? = null): Link? =
-        links.firstWithRel(rel.rawValue, type)
+        links.firstWithRel(rel.value, type)
 
     public fun links(rel: Rel, type: MediaType? = null): List<Link> =
-        links.allWithRel(rel.rawValue, type)
+        links.allWithRel(rel.value, type)
 
     internal fun linkWithNoType(rel: Rel): Link? =
-        links.firstWithRelAndNoType(rel.rawValue)
+        links.firstWithRelAndNoType(rel.value)
 
     public fun url(
         rel: Rel,
@@ -102,17 +108,17 @@ public class StatusDocument(public val data: ByteArray) {
     ): URL {
         val link = link(rel, preferredType)
             ?: linkWithNoType(rel)
-            ?: throw LcpException.Parsing.Url(rel = rel.rawValue)
+            ?: throw LcpException.Parsing.Url(rel = rel.value)
 
         return link.url(parameters)
     }
 
     public fun events(type: Event.EventType): List<Event> =
-        events(type.rawValue)
+        events(type.value)
 
     public fun events(type: String): List<Event> =
         events.filter { it.type == type }
 
     public val description: String
-        get() = "Status(${status.rawValue})"
+        get() = "Status(${status.value})"
 }

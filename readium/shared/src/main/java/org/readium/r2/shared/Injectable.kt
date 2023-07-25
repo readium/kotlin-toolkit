@@ -12,7 +12,7 @@ package org.readium.r2.shared
 import java.io.Serializable
 
 @Deprecated("Migrate the HTTP server, see the migration guide", level = DeprecationLevel.ERROR)
-public enum class Injectable(public val rawValue: String) : Serializable {
+public enum class Injectable(public val value: String) : Serializable {
     Script("scripts"),
     Font("fonts"),
     Style("styles");

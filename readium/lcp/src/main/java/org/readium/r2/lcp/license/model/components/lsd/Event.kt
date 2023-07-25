@@ -20,15 +20,18 @@ public data class Event(val json: JSONObject) {
     val id: String = json.optNullableString("id") ?: ""
     val date: Date? = json.optNullableString("timestamp")?.iso8601ToDate()
 
-    public enum class EventType(public val rawValue: String) {
+    public enum class EventType(public val value: String) {
         register("register"),
         renew("renew"),
         `return`("return"),
         revoke("revoke"),
         cancel("cancel");
 
+        @Deprecated("Use [value] instead", ReplaceWith("value"), level = DeprecationLevel.ERROR)
+        public val rawValue: String get() = value
+
         public companion object {
-            public operator fun invoke(rawValue: String): EventType? = values().firstOrNull { it.rawValue == rawValue }
+            public operator fun invoke(value: String): EventType? = values().firstOrNull { it.value == value }
         }
     }
 }

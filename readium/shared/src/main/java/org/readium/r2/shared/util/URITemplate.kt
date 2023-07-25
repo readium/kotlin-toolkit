@@ -9,12 +9,15 @@
 
 package org.readium.r2.shared.util
 
+import org.readium.r2.shared.InternalReadiumApi
+
 /**
  * A lightweight implementation of URI Template (RFC 6570).
  *
  * Only handles simple cases, fitting Readium's use cases.
  * See https://tools.ietf.org/html/rfc6570
  */
+@InternalReadiumApi
 public data class URITemplate(val uri: String) {
 
     /**
