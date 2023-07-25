@@ -344,7 +344,7 @@ public class MediaType(
          * Resolves a format from a single file extension and media type hint, without checking the actual
          * content.
          */
-        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
+        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(mediaType = mediaType, fileExtension = fileExtension)"), level = DeprecationLevel.ERROR)
         @Suppress("UNUSED_PARAMETER")
         public fun of(
             mediaType: String? = null,
@@ -358,7 +358,7 @@ public class MediaType(
          * Resolves a format from file extension and media type hints, without checking the actual
          * content.
          */
-        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
+        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(mediaTypes = mediaTypes, fileExtensions = fileExtensions)"), level = DeprecationLevel.ERROR)
         @Suppress("UNUSED_PARAMETER")
         public fun of(
             mediaTypes: List<String>,
@@ -372,7 +372,7 @@ public class MediaType(
          * Resolves a format from a local file path.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
+        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(file)"), level = DeprecationLevel.ERROR)
         public fun ofFile(
             file: File,
             mediaType: String? = null,
@@ -385,7 +385,7 @@ public class MediaType(
         /**
          * Resolves a format from a local file path.
          */
-        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
+        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(file, mediaTypes = mediaTypes, fileExtensions = fileExtensions)"), level = DeprecationLevel.ERROR)
         @Suppress("UNUSED_PARAMETER")
         public fun ofFile(
             file: File,
@@ -400,7 +400,7 @@ public class MediaType(
          * Resolves a format from a local file path.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
+        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(File(path))"), level = DeprecationLevel.ERROR)
         public fun ofFile(
             path: String,
             mediaType: String? = null,
@@ -414,7 +414,7 @@ public class MediaType(
          * Resolves a format from a local file path.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
+        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(File(path), mediaTypes = mediaTypes, fileExtensions = fileExtensions)"), level = DeprecationLevel.ERROR)
         public fun ofFile(
             path: String,
             mediaTypes: List<String>,
@@ -428,7 +428,7 @@ public class MediaType(
          * Resolves a format from bytes, e.g. from an HTTP response.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
+        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(bytes)"), level = DeprecationLevel.ERROR)
         public fun ofBytes(
             bytes: () -> ByteArray,
             mediaType: String? = null,
@@ -442,7 +442,7 @@ public class MediaType(
          * Resolves a format from bytes, e.g. from an HTTP response.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
+        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(bytes, mediaTypes = mediaTypes, fileExtensions = fileExtensions)"), level = DeprecationLevel.ERROR)
         public fun ofBytes(
             bytes: () -> ByteArray,
             mediaTypes: List<String>,
@@ -457,7 +457,7 @@ public class MediaType(
          * Accepts the following URI schemes: content, android.resource, file.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
+        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever(contentResolver = contentResolver).retrieve(uri)"), level = DeprecationLevel.ERROR)
         public fun ofUri(
             uri: Uri,
             contentResolver: ContentResolver,
@@ -473,7 +473,7 @@ public class MediaType(
          * Accepts the following URI schemes: content, android.resource, file.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated(message = "Use MediaTypeRetriever instead", level = DeprecationLevel.ERROR)
+        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever(contentResolver = contentResolver).retrieve(uri, mediaTypes = mediaTypes, fileExtensions = fileExtensions)"), level = DeprecationLevel.ERROR)
         public fun ofUri(
             uri: Uri,
             contentResolver: ContentResolver,
@@ -502,7 +502,7 @@ public class MediaType(
         public val LCP_LICENSE: MediaType get() = LCP_LICENSE_DOCUMENT
 
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated("Renamed to [ofFile()]", ReplaceWith("MediaType.ofFile(file, mediaType, fileExtension, sniffers)"), level = DeprecationLevel.ERROR)
+        @Deprecated("Use `MediaTypeRetriever` instead", level = DeprecationLevel.ERROR)
         public fun of(
             file: File,
             mediaType: String? = null,
@@ -511,7 +511,7 @@ public class MediaType(
         ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated("Renamed to [ofFile()]", ReplaceWith("MediaType.ofFile(file, mediaTypes, fileExtensions, sniffers)"), level = DeprecationLevel.ERROR)
+        @Deprecated("Use `MediaTypeRetriever` instead", level = DeprecationLevel.ERROR)
         public fun of(
             file: File,
             mediaTypes: List<String>,
@@ -520,7 +520,7 @@ public class MediaType(
         ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated("Renamed to [ofBytes()]", ReplaceWith("MediaType.ofBytes(bytes, mediaType, fileExtension, sniffers)"), level = DeprecationLevel.ERROR)
+        @Deprecated("Use `MediaTypeRetriever` instead", level = DeprecationLevel.ERROR)
         public fun of(
             bytes: () -> ByteArray,
             mediaType: String? = null,
@@ -529,7 +529,7 @@ public class MediaType(
         ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated("Renamed to [ofBytes()]", ReplaceWith("MediaType.ofBytes(bytes, mediaTypes, fileExtensions, sniffers)"), level = DeprecationLevel.ERROR)
+        @Deprecated("Use `MediaTypeRetriever` instead", level = DeprecationLevel.ERROR)
         public fun of(
             bytes: () -> ByteArray,
             mediaTypes: List<String>,
@@ -538,7 +538,7 @@ public class MediaType(
         ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated("Renamed to [ofUri()]", ReplaceWith("MediaType.ofUri(uri, contentResolver, mediaType, fileExtension, sniffers)"), level = DeprecationLevel.ERROR)
+        @Deprecated("Use `MediaTypeRetriever` instead", level = DeprecationLevel.ERROR)
         public fun of(
             uri: Uri,
             contentResolver: ContentResolver,
@@ -548,7 +548,7 @@ public class MediaType(
         ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated("Renamed to [ofUri()]", ReplaceWith("MediaType.ofUri(uri, contentResolver, mediaTypes, fileExtensions, sniffers)"), level = DeprecationLevel.ERROR)
+        @Deprecated("Use `MediaTypeRetriever` instead", level = DeprecationLevel.ERROR)
         public fun of(
             uri: Uri,
             contentResolver: ContentResolver,
