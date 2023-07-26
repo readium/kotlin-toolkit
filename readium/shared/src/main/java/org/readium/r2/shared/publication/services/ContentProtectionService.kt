@@ -12,18 +12,19 @@ package org.readium.r2.shared.publication.services
 import java.util.*
 import org.json.JSONObject
 import org.readium.r2.shared.UserException
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.queryParameters
-import org.readium.r2.shared.fetcher.FailureResource
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.publication.protection.ContentProtection
+import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.StringResource
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Provides information about a publication's content protection and manages user rights.
@@ -65,7 +66,7 @@ public interface ContentProtectionService : Publication.Service {
     override val links: List<Link>
         get() = RouteHandler.links
 
-    override fun get(link: Link): Fetcher.Resource? {
+    override fun get(link: Link): Publication.Resource? {
         val route = RouteHandler.route(link) ?: return null
         return route.handleRequest(link, this)
     }
@@ -249,7 +250,7 @@ private sealed class RouteHandler {
 
     abstract fun acceptRequest(link: Link): Boolean
 
-    abstract fun handleRequest(link: Link, service: ContentProtectionService): Fetcher.Resource
+    abstract fun handleRequest(link: Link, service: ContentProtectionService): Publication.Resource
 
     object ContentProtectionHandler : RouteHandler() {
 
@@ -260,15 +261,20 @@ private sealed class RouteHandler {
 
         override fun acceptRequest(link: Link): Boolean = link.href == this.link.href
 
-        override fun handleRequest(link: Link, service: ContentProtectionService): Fetcher.Resource =
-            StringResource(link) {
-                JSONObject().apply {
-                    put("isRestricted", service.isRestricted)
-                    putOpt("error", service.error?.localizedMessage)
-                    putIfNotEmpty("name", service.name)
-                    put("rights", service.rights.toJSON())
-                }.toString()
-            }
+        override fun handleRequest(link: Link, service: ContentProtectionService): Publication.Resource =
+            Publication.Resource(
+                StringResource {
+                    Try.success(
+                        JSONObject().apply {
+                            put("isRestricted", service.isRestricted)
+                            putOpt("error", service.error?.localizedMessage)
+                            putIfNotEmpty("name", service.name)
+                            put("rights", service.rights.toJSON())
+                        }.toString()
+                    )
+                },
+                link
+            )
     }
 
     object RightsCopyHandler : RouteHandler() {
@@ -281,31 +287,35 @@ private sealed class RouteHandler {
 
         override fun acceptRequest(link: Link): Boolean = link.href.startsWith("/~readium/rights/copy")
 
-        override fun handleRequest(link: Link, service: ContentProtectionService): Fetcher.Resource {
+        override fun handleRequest(link: Link, service: ContentProtectionService): Publication.Resource {
             val parameters = link.href.queryParameters()
             val text = parameters["text"]
-                ?: return FailureResource(
-                    link,
-                    Resource.Exception.BadRequest(
-                        parameters,
-                        IllegalArgumentException("'text' parameter is required")
-                    )
+                ?: return Publication.Resource(
+                    FailureResource(
+                        Resource.Exception.BadRequest(
+                            parameters,
+                            IllegalArgumentException("'text' parameter is required")
+                        )
+                    ),
+                    link
                 )
             val peek = (parameters["peek"] ?: "false").toBooleanOrNull()
-                ?: return FailureResource(
-                    link,
-                    Resource.Exception.BadRequest(
-                        parameters,
-                        IllegalArgumentException("if present, 'peek' must be true or false")
-                    )
+                ?: return Publication.Resource(
+                    FailureResource(
+                        Resource.Exception.BadRequest(
+                            parameters,
+                            IllegalArgumentException("if present, 'peek' must be true or false")
+                        )
+                    ),
+                    link
                 )
 
             val copyAllowed = with(service.rights) { if (peek) canCopy(text) else copy(text) }
 
             return if (!copyAllowed)
-                FailureResource(link, Resource.Exception.Forbidden())
+                Publication.Resource(FailureResource(Resource.Exception.Forbidden()), link)
             else
-                StringResource(link, "true")
+                Publication.Resource(StringResource("true", mediaType = MediaType.JSON.toString()), link)
         }
     }
 
@@ -319,40 +329,46 @@ private sealed class RouteHandler {
 
         override fun acceptRequest(link: Link): Boolean = link.href.startsWith("/~readium/rights/print")
 
-        override fun handleRequest(link: Link, service: ContentProtectionService): Fetcher.Resource {
+        override fun handleRequest(link: Link, service: ContentProtectionService): Publication.Resource {
             val parameters = link.href.queryParameters()
             val pageCountString = parameters["pageCount"]
-                ?: return FailureResource(
-                    link,
-                    Resource.Exception.BadRequest(
-                        parameters,
-                        IllegalArgumentException("'pageCount' parameter is required")
-                    )
+                ?: return Publication.Resource(
+                    FailureResource(
+                        Resource.Exception.BadRequest(
+                            parameters,
+                            IllegalArgumentException("'pageCount' parameter is required")
+                        )
+                    ),
+                    link
                 )
 
             val pageCount = pageCountString.toIntOrNull()?.takeIf { it >= 0 }
-                ?: return FailureResource(
-                    link,
-                    Resource.Exception.BadRequest(
-                        parameters,
-                        IllegalArgumentException("'pageCount' must be a positive integer")
-                    )
+                ?: return Publication.Resource(
+                    FailureResource(
+                        Resource.Exception.BadRequest(
+                            parameters,
+                            IllegalArgumentException("'pageCount' must be a positive integer")
+                        )
+                    ),
+                    link
                 )
             val peek = (parameters["peek"] ?: "false").toBooleanOrNull()
-                ?: return FailureResource(
-                    link,
-                    Resource.Exception.BadRequest(
-                        parameters,
-                        IllegalArgumentException("if present, 'peek' must be true or false")
-                    )
+                ?: return Publication.Resource(
+                    FailureResource(
+                        Resource.Exception.BadRequest(
+                            parameters,
+                            IllegalArgumentException("if present, 'peek' must be true or false")
+                        )
+                    ),
+                    link
                 )
 
             val printAllowed = with(service.rights) { if (peek) canPrint(pageCount) else print(pageCount) }
 
             return if (!printAllowed)
-                FailureResource(link, Resource.Exception.Forbidden())
+                Publication.Resource(FailureResource(Resource.Exception.Forbidden()), link)
             else
-                StringResource(link, "true")
+                Publication.Resource(StringResource(MediaType.JSON.toString(), "true"), link)
         }
     }
 

@@ -11,11 +11,17 @@ package org.readium.r2.shared.publication.services
 
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.toJsonOrNull
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.StringResource
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.PublicationServicesHolder
+import org.readium.r2.shared.publication.ServiceFactory
+import org.readium.r2.shared.publication.firstWithMediaType
+import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.toJSON
 
@@ -41,17 +47,22 @@ public interface PositionsService : Publication.Service {
 
     override val links: List<Link> get() = listOf(positionsLink)
 
-    override fun get(link: Link): Fetcher.Resource? {
+    override fun get(link: Link): Publication.Resource? {
         if (link.href != positionsLink.href)
             return null
 
-        return StringResource(positionsLink) {
-            val positions = positions()
-            JSONObject().apply {
-                put("total", positions.size)
-                put("positions", positions.toJSON())
-            }.toString()
-        }
+        return Publication.Resource(
+            StringResource {
+                val positions = positions()
+                Try.success(
+                    JSONObject().apply {
+                        put("total", positions.size)
+                        put("positions", positions.toJSON())
+                    }.toString()
+                )
+            },
+            positionsLink
+        )
     }
 }
 

@@ -8,9 +8,10 @@ package org.readium.r2.shared.util.http
 
 import android.webkit.URLUtil
 import org.readium.r2.shared.error.getOrDefault
-import org.readium.r2.shared.fetcher.FailureResource
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 import timber.log.Timber
 
@@ -32,13 +33,13 @@ public class HttpFetcher(
 
     override suspend fun links(): List<Link> = links
 
-    override fun get(link: Link): Fetcher.Resource {
+    override fun get(link: Link): Publication.Resource {
         val url = link.toUrl(baseUrl)
 
         return if (url == null || !URLUtil.isNetworkUrl(url)) {
             val cause = IllegalArgumentException("Invalid HREF: ${link.href}, produced URL: $url")
             Timber.e(cause)
-            FailureResource(link, error = Resource.Exception.BadRequest(cause = cause))
+            Publication.Resource(FailureResource(error = Resource.Exception.BadRequest(cause = cause)), link)
         } else {
             HttpResource(link, url, client)
         }
@@ -47,10 +48,10 @@ public class HttpFetcher(
     override suspend fun close() {}
 
     /** Provides access to an external URL. */
-    public class HttpResource(
+    private class HttpResource(
         private val link: Link,
         private val resource: org.readium.r2.shared.util.http.HttpResource
-    ) : Resource by resource, Fetcher.Resource {
+    ) : Publication.Resource, Resource by resource {
 
         public companion object {
 
@@ -61,6 +62,8 @@ public class HttpFetcher(
             ): HttpResource =
                 HttpResource(link, HttpResource(client, url))
         }
+
+        override val key: String get() = resource.key
 
         override suspend fun link(): Link =
             link.copy(

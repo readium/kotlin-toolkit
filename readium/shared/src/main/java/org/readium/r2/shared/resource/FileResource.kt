@@ -19,17 +19,30 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.isLazyInitialized
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * A [Resource] to access a [file].
  */
-public class FileResource(override val file: File) : Resource {
+public class FileResource internal constructor(
+    override val file: File,
+    private val mediaType: String?,
+    private val mediaTypeRetriever: MediaTypeRetriever?
+) : Resource {
+
+    constructor(file: File, mediaType: String?) : this(file, mediaType, null)
+    constructor(file: File, mediaTypeRetriever: MediaTypeRetriever?) : this(file, null, mediaTypeRetriever)
 
     private val randomAccessFile by lazy {
         ResourceTry.catching {
             RandomAccessFile(file, "r")
         }
     }
+
+    override val key: String = file.absolutePath
+
+    override suspend fun mediaType(): ResourceTry<String?> =
+        Try.success(mediaType ?: mediaTypeRetriever?.retrieve(file)?.toString())
 
     override suspend fun name(): ResourceTry<String?> =
         ResourceTry.success(file.name)
@@ -123,6 +136,6 @@ public class FileResourceFactory : ResourceFactory {
             return Try.failure(ResourceFactory.Error.Forbidden(e))
         }
 
-        return Try.success(FileResource(file))
+        return Try.success(FileResource(file, mediaTypeRetriever = null))
     }
 }

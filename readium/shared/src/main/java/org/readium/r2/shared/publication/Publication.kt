@@ -10,6 +10,7 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
+import java.io.File
 import java.net.URL
 import kotlin.reflect.KClass
 import kotlinx.parcelize.Parcelize
@@ -19,6 +20,7 @@ import org.readium.r2.shared.BuildConfig.DEBUG
 import org.readium.r2.shared.error.Error
 import org.readium.r2.shared.error.MessageError
 import org.readium.r2.shared.error.ThrowableError
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.removeLastComponent
 import org.readium.r2.shared.fetcher.EmptyFetcher
@@ -34,8 +36,10 @@ import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.Resource as BaseResource
+import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.util.Closeable
-import org.readium.r2.shared.util.SuspendingCloseable
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
 
@@ -152,7 +156,7 @@ public class Publication(
     /**
      * Returns the resource targeted by the given non-templated [link].
      */
-    public fun get(link: Link): Fetcher.Resource {
+    public fun get(link: Link): Resource {
         if (DEBUG) { require(!link.templated) { "You must expand templated links before calling [Publication.get]" } }
 
         services.services.forEach { service -> service.get(link)?.let { return it } }
@@ -322,10 +326,10 @@ public class Publication(
          * use the [Fetcher] provided by the [Publication.Service.Context] instead of
          * [Publication.get], otherwise it will trigger an infinite loop.
          *
-         * @return The [Fetcher.Resource] containing the response, or null if the service doesn't
+         * @return The [Resource] containing the response, or null if the service doesn't
          * recognize this request.
          */
-        public fun get(link: Link): Fetcher.Resource? = null
+        public fun get(link: Link): Resource? = null
 
         /**
          * Closes any opened file handles, removes temporary files, etc.
@@ -520,6 +524,41 @@ public class Publication(
     }
 
     /**
+     * Represents a resource from a Publication's container.
+     */
+    public interface Resource : BaseResource {
+
+        public override val key: String
+
+        /**
+         * Returns the link from which the resource was retrieved.
+         *
+         * It might be modified by the [Resource] to include additional metadata, e.g. the
+         * `Content-Type` HTTP header in [Link.type].
+         */
+        public suspend fun link(): Link
+
+        public companion object {
+            public operator fun invoke(resource: BaseResource, link: Link): Resource =
+                invoke(resource, href = link.href) { link }
+
+            public operator fun invoke(
+                resource: BaseResource,
+                href: String,
+                link: suspend () -> Link
+            ): Resource =
+                object : Resource, BaseResource by resource {
+                    override suspend fun link(): Link = link()
+
+                    override val key: String = href
+
+                    override suspend fun mediaType(): ResourceTry<String?> =
+                        Try.success(link().type)
+                }
+        }
+    }
+
+    /**
      * Finds the first [Link] to the publication's cover (rel = cover).
      */
     @Deprecated("Use [Publication.cover] to get the cover as a [Bitmap]", ReplaceWith("cover"), level = DeprecationLevel.ERROR)
@@ -579,33 +618,46 @@ public class Publication(
     public fun contentLayoutForLanguage(language: String?): ReadingProgression = metadata.effectiveReadingProgression
 }
 
-/**
- * Holds [Publication.Service] instances for a [Publication].
- */
-public interface PublicationServicesHolder : SuspendingCloseable {
-    /**
-     * Returns the first publication service that is an instance of [serviceType].
-     */
-    public fun <T : Publication.Service> findService(serviceType: KClass<T>): T?
+public class LazyPublicationResource(
+    override val key: String,
+    private val factory: suspend () -> Publication.Resource
+) : Publication.Resource {
 
-    /**
-     * Returns all the publication services that are instances of [serviceType].
-     */
-    public fun <T : Publication.Service> findServices(serviceType: KClass<T>): List<T>
-}
+    private lateinit var _resource: Publication.Resource
 
-internal class ListPublicationServicesHolder(
-    var services: List<Publication.Service> = emptyList()
-) : PublicationServicesHolder {
-    override fun <T : Publication.Service> findService(serviceType: KClass<T>): T? =
-        findServices(serviceType).firstOrNull()
+    private suspend fun resource(): Publication.Resource {
+        if (!::_resource.isInitialized)
+            _resource = factory()
 
-    override fun <T : Publication.Service> findServices(serviceType: KClass<T>): List<T> =
-        services.filterIsInstance(serviceType.java)
+        return _resource
+    }
+
+    override val file: File? = null
+
+    override suspend fun mediaType(): ResourceTry<String?> =
+        resource().mediaType()
+
+    override suspend fun name(): ResourceTry<String?> =
+        resource().name()
+
+    override suspend fun link(): Link =
+        resource().link()
+
+    override suspend fun length(): ResourceTry<Long> =
+        resource().length()
+
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+        resource().read(range)
 
     override suspend fun close() {
-        for (service in services) {
-            tryOrLog { service.close() }
-        }
+        if (::_resource.isInitialized)
+            _resource.close()
     }
+
+    override fun toString(): String =
+        if (::_resource.isInitialized) {
+            "${javaClass.simpleName}($_resource)"
+        } else {
+            "${javaClass.simpleName}(...)"
+        }
 }

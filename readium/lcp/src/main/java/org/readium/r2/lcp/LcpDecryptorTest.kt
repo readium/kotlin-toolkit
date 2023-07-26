@@ -13,9 +13,9 @@ import kotlin.math.ceil
 import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.coerceIn
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.mapCatching
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.mapCatching
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 
@@ -111,7 +111,7 @@ internal suspend fun checkExceedingRangesAreAllowed(publication: Publication) {
         }
 }
 
-internal suspend fun Fetcher.Resource.readByChunks(
+internal suspend fun Resource.readByChunks(
     chunkSize: Long,
     groundTruth: ByteArray,
     shuffle: Boolean = true
@@ -132,13 +132,13 @@ internal suspend fun Fetcher.Resource.readByChunks(
         blocks.forEach {
             Timber.d("block index ${it.first}: ${it.second}")
             val decryptedBytes = read(it.second).getOrElse { error ->
-                throw IllegalStateException("unable to decrypt chunk ${it.second} from ${link().href}", error)
+                throw IllegalStateException("unable to decrypt chunk ${it.second} from ${key ?: "null"}", error)
             }
             check(decryptedBytes.isNotEmpty()) { "empty decrypted bytearray" }
             check(decryptedBytes.contentEquals(groundTruth.sliceArray(it.second.map(Long::toInt)))) {
                 Timber.d("decrypted length: ${decryptedBytes.size}")
                 Timber.d("expected length: ${groundTruth.sliceArray(it.second.map(Long::toInt)).size}")
-                "decrypted chunk ${it.first}: ${it.second} seems to be wrong in ${link().href}"
+                "decrypted chunk ${it.first}: ${it.second} seems to be wrong in ${key ?: "null"}"
             }
             Pair(it.first, decryptedBytes)
         }

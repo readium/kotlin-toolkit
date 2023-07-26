@@ -16,13 +16,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.StringResource
-import org.readium.r2.shared.fetcher.fallback
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceInputStream
+import org.readium.r2.shared.resource.StringResource
+import org.readium.r2.shared.resource.fallback
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
@@ -115,14 +115,16 @@ internal class WebViewServer(
         }
     }
 
-    private fun errorResource(link: Link, error: Resource.Exception): Fetcher.Resource =
-        StringResource(link.copy(type = MediaType.XHTML.toString())) {
+    private fun errorResource(link: Link, error: Resource.Exception): Resource =
+        StringResource(MediaType.XHTML.toString()) {
             withContext(Dispatchers.IO) {
-                assetManager
-                    .open("readium/error.xhtml").bufferedReader()
-                    .use { it.readText() }
-                    .replace("\${error}", error.getUserMessage(application))
-                    .replace("\${href}", link.href)
+                Try.success(
+                    assetManager
+                        .open("readium/error.xhtml").bufferedReader()
+                        .use { it.readText() }
+                        .replace("\${error}", error.getUserMessage(application))
+                        .replace("\${href}", link.href)
+                )
             }
         }
 

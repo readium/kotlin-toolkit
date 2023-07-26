@@ -6,28 +6,14 @@
 
 package org.readium.r2.shared.fetcher
 
-import java.io.File
-import org.readium.r2.shared.fetcher.Fetcher.Resource
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.resource.FailureResource
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.SuspendingCloseable
 
 /** Provides access to a [Resource] from a [Link]. */
 public interface Fetcher : SuspendingCloseable {
-
-    /**
-     * Acts as a proxy to an actual resource by handling read access.
-     */
-    public interface Resource : org.readium.r2.shared.resource.Resource {
-
-        /**
-         * Returns the link from which the resource was retrieved.
-         *
-         * It might be modified by the [Resource] to include additional metadata, e.g. the
-         * `Content-Type` HTTP header in [Link.type].
-         */
-        public suspend fun link(): Link
-    }
 
     /**
      * Known resources available in the medium, such as file paths on the file system
@@ -45,10 +31,10 @@ public interface Fetcher : SuspendingCloseable {
      * A [Resource] is always returned, since for some cases we can't know if it exists before
      * actually fetching it, such as HTTP. Therefore, errors are handled at the Resource level.
      */
-    public fun get(link: Link): Resource
+    public fun get(link: Link): Publication.Resource
 
     /** Returns the [Resource] at the given [href]. */
-    public fun get(href: String): Resource =
+    public fun get(href: String): Publication.Resource =
         get(Link(href = href))
 
     // To be able to add extensions on Fetcher.Companion in other components...
@@ -61,56 +47,34 @@ public class EmptyFetcher : Fetcher {
     override suspend fun links(): List<Link> =
         emptyList()
 
-    override fun get(link: Link): Resource =
-        FailureResource(link, org.readium.r2.shared.resource.Resource.Exception.NotFound())
+    override fun get(link: Link): Publication.Resource =
+        Publication.Resource(FailureResource(Resource.Exception.NotFound()), link)
 
     override suspend fun close() {}
 }
 
 public class ResourceFetcher(
     private val link: Link,
-    private val resource: org.readium.r2.shared.resource.Resource
+    private val resource: Publication.Resource
 ) : Fetcher {
 
     public companion object {
 
-        public suspend operator fun invoke(resource: Resource): ResourceFetcher {
+        public suspend operator fun invoke(resource: Publication.Resource): ResourceFetcher {
             val link = resource.link()
             return ResourceFetcher(link, resource)
-        }
-    }
-
-    public class Resource(
-        private val link: Link,
-        private val resource: org.readium.r2.shared.resource.Resource
-    ) : Fetcher.Resource {
-
-        override val file: File? =
-            resource.file
-
-        override suspend fun link(): Link =
-            link
-
-        override suspend fun length(): ResourceTry<Long> =
-            resource.length()
-
-        override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
-            resource.read(range)
-
-        override suspend fun close() {
         }
     }
 
     override suspend fun links(): List<Link> =
         listOf(link)
 
-    override fun get(link: Link): Fetcher.Resource {
+    override fun get(link: Link): Publication.Resource {
         if (link.href.takeWhile { it !in "#?" } != this.link.href) {
-            val exception = org.readium.r2.shared.resource.Resource.Exception.NotFound()
-            return FailureResource(link, exception)
+            return Publication.Resource(FailureResource(Resource.Exception.NotFound()), link)
         }
 
-        return Resource(link, resource)
+        return Publication.Resource(resource, link)
     }
 
     override suspend fun close() {

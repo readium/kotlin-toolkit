@@ -10,6 +10,8 @@
 package org.readium.r2.shared.fetcher
 
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 
 /**
@@ -37,8 +39,9 @@ public class RoutingFetcher(private val routes: List<Route>) : Fetcher {
 
     override suspend fun links(): List<Link> = routes.flatMap { it.fetcher.links() }
 
-    override fun get(link: Link): Fetcher.Resource =
-        routes.firstOrNull { it.accepts(link) }?.fetcher?.get(link) ?: FailureResource(link, Resource.Exception.NotFound())
+    override fun get(link: Link): Publication.Resource =
+        routes.firstOrNull { it.accepts(link) }?.fetcher?.get(link)
+            ?: Publication.Resource(FailureResource(Resource.Exception.NotFound()), link)
 
     override suspend fun close() {
         routes.forEach { it.fetcher.close() }

@@ -17,30 +17,41 @@ import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.fetcher.*
+import org.readium.r2.shared.publication.LazyPublicationResource
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.encryption
+import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.resource.TransformingResource
+import org.readium.r2.shared.resource.flatMapCatching
+import org.readium.r2.shared.resource.mapCatching
 
 /**
  * Decrypts a resource protected with LCP.
  */
 internal class LcpDecryptor(val license: LcpLicense?) {
 
-    fun transform(resource: Fetcher.Resource): Fetcher.Resource = LazyResource {
-        // Checks if the resource is encrypted and whether the encryption schemes of the resource
-        // and the DRM license are the same.
-        val link = resource.link()
-        val encryption = link.properties.encryption
-        if (encryption == null || encryption.scheme != "http://readium.org/2014/01/lcp")
-            return@LazyResource resource
+    fun transform(resource: Publication.Resource): Publication.Resource =
+        LazyPublicationResource(key = resource.key) {
+            // Checks if the resource is encrypted and whether the encryption schemes of the resource
+            // and the DRM license are the same.
+            val link = resource.link()
+            val encryption = link.properties.encryption
+            if (encryption == null || encryption.scheme != "http://readium.org/2014/01/lcp") {
+                return@LazyPublicationResource resource
+            }
 
-        when {
-            license == null -> FailureResource(link, Resource.Exception.Forbidden())
-            link.isDeflated || !link.isCbcEncrypted -> FullLcpResource(resource, license)
-            else -> CbcLcpResource(resource, license)
+            Publication.Resource(
+                when {
+                    license == null -> FailureResource(Resource.Exception.Forbidden())
+                    link.isDeflated || !link.isCbcEncrypted -> FullLcpResource(resource, license)
+                    else -> CbcLcpResource(resource, license)
+                },
+                link
+            )
         }
-    }
 
     /**
      * A  LCP resource that is read, decrypted and cached fully before reading requested ranges.
@@ -49,7 +60,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
      * resource, for example when the resource is deflated before encryption.
      */
     private class FullLcpResource(
-        resource: Fetcher.Resource,
+        private val resource: Publication.Resource,
         private val license: LcpLicense
     ) : TransformingResource(resource) {
 
@@ -68,9 +79,9 @@ internal class LcpDecryptor(val license: LcpLicense?) {
      * Supports random access for byte range requests, but the resource MUST NOT be deflated.
      */
     private class CbcLcpResource(
-        private val resource: Fetcher.Resource,
+        private val resource: Publication.Resource,
         private val license: LcpLicense
-    ) : Fetcher.Resource {
+    ) : Resource by resource {
 
         private class Cache(
             var startIndex: Int? = null,
@@ -89,8 +100,6 @@ internal class LcpDecryptor(val license: LcpLicense?) {
         * in the next call if possible.
         */
         private val _cache: Cache = Cache()
-
-        override suspend fun link(): Link = resource.link()
 
         /** Plain text size. */
         override suspend fun length(): ResourceTry<Long> {
@@ -150,7 +159,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
                     }
 
                     val bytes = license.decrypt(encryptedData)
-                        .getOrElse { throw IOException("Can't decrypt the content at: ${link().href}", it) }
+                        .getOrElse { throw IOException("Can't decrypt the content at: ${resource.link().href}", it) }
 
                     // exclude the bytes added to match a multiple of AES_BLOCK_SIZE
                     val sliceStart = (range.first - encryptedStart).toInt()
@@ -191,8 +200,6 @@ internal class LcpDecryptor(val license: LcpLicense?) {
                 bytes
             }
         }
-
-        override suspend fun close() = resource.close()
 
         companion object {
             private const val AES_BLOCK_SIZE = 16 // bytes

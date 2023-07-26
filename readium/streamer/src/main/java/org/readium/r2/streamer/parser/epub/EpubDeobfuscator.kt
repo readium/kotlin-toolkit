@@ -9,28 +9,31 @@ package org.readium.r2.streamer.parser.epub
 import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.toHexBytes
 import kotlin.experimental.xor
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.LazyResource
-import org.readium.r2.shared.fetcher.TransformingResource
+import org.readium.r2.shared.publication.LazyPublicationResource
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.resource.TransformingResource
 
 /**
  * Deobfuscates fonts according to https://www.w3.org/TR/epub-33/#sec-font-obfuscation
  */
 internal class EpubDeobfuscator(private val pubId: String) {
 
-    fun transform(resource: Fetcher.Resource): Fetcher.Resource = LazyResource {
-        val algorithm = resource.link().properties.encryption?.algorithm
+    fun transform(resource: Publication.Resource): Publication.Resource = LazyPublicationResource(key = resource.key) {
+        val link = resource.link()
+        val algorithm = link.properties.encryption?.algorithm
         if (algorithm != null && algorithm2length.containsKey(algorithm)) {
-            DeobfuscatingResource(resource, algorithm)
+            Publication.Resource(DeobfuscatingResource(resource, algorithm), link)
         } else {
             resource
         }
     }
 
-    inner class DeobfuscatingResource(resource: Fetcher.Resource, private val algorithm: String) :
-        TransformingResource(resource) {
+    inner class DeobfuscatingResource(
+        private val resource: Publication.Resource,
+        private val algorithm: String
+    ) : TransformingResource(resource) {
 
         // The obfuscation doesn't change the length of the resource.
         override suspend fun length(): ResourceTry<Long> =

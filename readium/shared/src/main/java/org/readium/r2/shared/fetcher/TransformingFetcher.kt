@@ -10,6 +10,17 @@
 package org.readium.r2.shared.fetcher
 
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.resource.Resource
+
+/**
+ * Implements the transformation of a Resource. It can be used, for example, to decrypt,
+ * deobfuscate, inject CSS or JavaScript, correct content – e.g. adding a missing dir="rtl" in an
+ * HTML document, pre-process – e.g. before indexing a publication's content, etc.
+ *
+ * If the transformation doesn't apply, simply return resource unchanged.
+ */
+public typealias ResourceTransformer = (Publication.Resource) -> Publication.Resource
 
 /**
  * Transforms the resources' content of a child fetcher using a list of [ResourceTransformer]
@@ -25,9 +36,11 @@ public class TransformingFetcher(
 
     override suspend fun links(): List<Link> = fetcher.links()
 
-    override fun get(link: Link): Fetcher.Resource {
+    override fun get(link: Link): Publication.Resource {
         val resource = fetcher.get(link)
-        return transformers.fold(resource) { acc, transformer -> transformer(acc) }
+        return transformers.fold(resource) { acc, transformer ->
+            Publication.Resource(transformer(acc), link)
+        }
     }
 
     override suspend fun close() {

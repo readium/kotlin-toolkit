@@ -9,6 +9,7 @@ package org.readium.r2.shared.resource
 import android.content.ContentResolver
 import android.net.Uri
 import android.provider.OpenableColumns
+import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
@@ -50,6 +51,8 @@ public class ContentResource(
 
     private lateinit var _length: ResourceTry<Long>
 
+    override val key: String = uri.toString()
+
     override suspend fun name(): ResourceTry<String?> {
         val cursor = contentResolver
             .query(uri, null, null, null, null)
@@ -69,6 +72,9 @@ public class ContentResource(
                 ?: return Try.success(uri.lastPathSegment)
         }
     }
+
+    // FIXME: Could it be implemented?
+    override val file: File? = null
 
     override suspend fun mediaType(): ResourceTry<String?> =
         Try.success(contentResolver.getType(uri))

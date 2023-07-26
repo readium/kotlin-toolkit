@@ -15,7 +15,7 @@ import org.readium.r2.shared.util.io.CountingInputStream
 /** Provides access to an external URL. */
 public class HttpResource(
     private val client: HttpClient,
-    private val url: String,
+    internal val url: String,
     private val maxSkipBytes: Long = MAX_SKIP_BYTES
 ) : Resource {
 
@@ -29,6 +29,9 @@ public class HttpResource(
                 ?.trim('=', '"')
                 ?.let { File(it).name }
         }
+
+    override val key: String = url
+    override val file: File? = null
 
     override suspend fun mediaType(): ResourceTry<String?> =
         headResponse().map {

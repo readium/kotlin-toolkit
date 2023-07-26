@@ -34,6 +34,12 @@ internal class ChannelZipContainer(
     private inner class Entry(private val entry: ZipArchiveEntry) : ZipContainer.Entry {
 
         override val path: String get() = entry.name.addPrefix("/")
+        override val key: String = path
+        override val file: File? = null
+
+        // FIXME: Implement with a sniffer.
+        override suspend fun mediaType(): ResourceTry<String?> =
+            ResourceTry.success(null)
 
         override suspend fun name(): ResourceTry<String?> =
             ResourceTry.success(File(path).name)

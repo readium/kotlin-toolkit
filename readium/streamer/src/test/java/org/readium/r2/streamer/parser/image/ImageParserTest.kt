@@ -34,7 +34,7 @@ class ImageParserTest {
     private val cbzAsset = runBlocking {
         val path = pathForResource("futuristic_tales.cbz")
         val file = File(path)
-        val resource = FileResource(file)
+        val resource = FileResource(file, null)
         val archive = DefaultArchiveFactory().create(resource, password = null).getOrNull()!!
         val fetcher = ContainerFetcher(archive, MediaTypeRetriever())
         PublicationParser.Asset(file.name, MediaType.CBZ, fetcher)
@@ -43,9 +43,9 @@ class ImageParserTest {
     private val jpgAsset = runBlocking {
         val path = pathForResource("futuristic_tales.jpg")
         val file = File(path)
-        val resource = FileResource(file)
         val link = Link(href = "/image.jpg", type = "image/jpeg")
-        val fetcher = ResourceFetcher(link, resource)
+        val resource = Publication.Resource(FileResource(file, null), link)
+        val fetcher = ResourceFetcher(resource)
         PublicationParser.Asset(file.name, MediaType.JPEG, fetcher)
     }
     private fun pathForResource(resource: String): String {

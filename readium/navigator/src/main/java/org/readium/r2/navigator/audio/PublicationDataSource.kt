@@ -16,9 +16,9 @@ import com.google.android.exoplayer2.upstream.TransferListener
 import java.io.IOException
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.error.getOrThrow
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.buffered
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.buffered
 
 internal sealed class PublicationDataSourceException(message: String, cause: Throwable?) : IOException(message, cause) {
     class NotOpened(message: String) : PublicationDataSourceException(message, null)
@@ -45,7 +45,7 @@ internal class PublicationDataSource(private val publication: Publication) : Bas
     }
 
     private data class OpenedResource(
-        val resource: Fetcher.Resource,
+        val resource: Resource,
         val uri: Uri,
         var position: Long,
     )
@@ -81,7 +81,7 @@ internal class PublicationDataSource(private val publication: Publication) : Bas
     /** Cached content lengths indexed by their URL. */
     private var cachedLengths: MutableMap<String, Long> = mutableMapOf()
 
-    private fun contentLengthOf(uri: Uri, resource: Fetcher.Resource): Long? {
+    private fun contentLengthOf(uri: Uri, resource: Resource): Long? {
         cachedLengths[uri.toString()]?.let { return it }
 
         val length = runBlocking { resource.length() }.getOrNull()

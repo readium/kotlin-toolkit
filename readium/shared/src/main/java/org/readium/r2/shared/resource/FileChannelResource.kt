@@ -6,6 +6,7 @@
 
 package org.readium.r2.shared.resource
 
+import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.nio.channels.Channels
@@ -18,10 +19,15 @@ import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.readFully
 
 internal class FileChannelResource(
+    override val key: String?,
+    override val file: File?,
     private val channel: FileChannel
 ) : Resource {
 
     private lateinit var _length: ResourceTry<Long>
+
+    override suspend fun mediaType(): ResourceTry<String?> =
+        ResourceTry.success(null)
 
     override suspend fun name(): ResourceTry<String?> =
         ResourceTry.success(null)

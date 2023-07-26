@@ -38,6 +38,13 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
 
         override val compressedLength: Long? = null
 
+        override val key: String = path
+        override val file: File? = null
+
+        // FIXME: Implement with a sniffer.
+        override suspend fun mediaType(): ResourceTry<String?> =
+            Try.success(null)
+
         override suspend fun name(): ResourceTry<String?> =
             Try.failure(Resource.Exception.NotFound())
 
@@ -55,6 +62,13 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
 
         override val path: String =
             entry.name.addPrefix("/")
+
+        override val key: String = path
+        override val file: File? = null
+
+        // FIXME: Implement with a sniffer.
+        override suspend fun mediaType(): ResourceTry<String?> =
+            Try.success(null)
 
         override suspend fun name(): ResourceTry<String?> =
             ResourceTry.success(File(path).name)

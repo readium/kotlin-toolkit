@@ -29,6 +29,11 @@ public typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Exception>
 public interface Resource : SuspendingCloseable {
 
     /**
+     * Returns a unique identifier for this resource, relative to its parent [Container].
+     */
+    public val key: String?
+
+    /**
      * Direct file to this resource, when available.
      *
      * This is meant to be used as an optimization for consumers which can't work efficiently
@@ -36,17 +41,17 @@ public interface Resource : SuspendingCloseable {
      * underwent transformations or is being read from an archive. Therefore, consumers should
      * always fallback on regular stream reading, using [read] or [ResourceInputStream].
      */
-    public val file: File? get() = null
+    public val file: File?
 
     /**
      * Returns the resource media type if known.
      */
-    public suspend fun mediaType(): ResourceTry<String?> = ResourceTry.success(null)
+    public suspend fun mediaType(): ResourceTry<String?>
 
     /**
      * Returns the name of the resource if any.
      */
-    public suspend fun name(): ResourceTry<String?> = ResourceTry.success(null)
+    public suspend fun name(): ResourceTry<String?>
 
     /**
      * Returns data length from metadata if available, or calculated from reading the bytes otherwise.
@@ -127,11 +132,22 @@ public interface Resource : SuspendingCloseable {
 }
 
 /** Creates a Resource that will always return the given [error]. */
-public class FailureResource(private val error: Resource.Exception) : Resource {
+public class FailureResource(
+    private val error: Resource.Exception,
+    override val key: String? = null
+) : Resource {
 
     internal constructor(cause: Throwable) : this(Resource.Exception.wrap(cause))
 
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = Try.failure(error)
+
+    override val file: File? = null
+
+    override suspend fun mediaType(): ResourceTry<String?> =
+        Try.success(null)
+
+    override suspend fun name(): ResourceTry<String?> =
+        Try.success(null)
 
     override suspend fun length(): ResourceTry<Long> = Try.failure(error)
 

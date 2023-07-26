@@ -17,12 +17,21 @@ import org.jsoup.select.NodeVisitor
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.services.content.Content
-import org.readium.r2.shared.publication.services.content.Content.*
+import org.readium.r2.shared.publication.services.content.Content.Attribute
+import org.readium.r2.shared.publication.services.content.Content.AttributeKey
+import org.readium.r2.shared.publication.services.content.Content.AudioElement
+import org.readium.r2.shared.publication.services.content.Content.ImageElement
+import org.readium.r2.shared.publication.services.content.Content.TextElement
+import org.readium.r2.shared.publication.services.content.Content.VideoElement
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Language
@@ -43,7 +52,7 @@ import org.readium.r2.shared.util.use
  */
 @ExperimentalReadiumApi
 public class HtmlResourceContentIterator internal constructor(
-    private val resource: Fetcher.Resource,
+    private val resource: Resource,
     private val totalProgressionRange: ClosedRange<Double>?,
     private val locator: Locator,
     private val beforeMaxLength: Int = 50
@@ -54,10 +63,10 @@ public class HtmlResourceContentIterator internal constructor(
             manifest: Manifest,
             servicesHolder: PublicationServicesHolder,
             readingOrderIndex: Int,
-            resource: Fetcher.Resource,
+            resource: Publication.Resource,
             locator: Locator
         ): Content.Iterator? {
-            if (!resource.link().mediaType.matchesAny(MediaType.HTML, MediaType.XHTML)) {
+            if (resource.mediaType().getOrNull()?.let { MediaType(it) }?.matchesAny(MediaType.HTML, MediaType.XHTML) != true) {
                 return null
             }
 

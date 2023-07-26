@@ -14,12 +14,12 @@ import android.graphics.Bitmap
 import java.io.File
 import kotlin.reflect.KClass
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.publication.services.cacheService
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.cache.Cache
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -33,7 +33,7 @@ public interface PdfDocumentFactory<T : PdfDocument> {
     public suspend fun open(file: File, password: String?): T
 
     /** Opens a PDF from a Fetcher resource. */
-    public suspend fun open(resource: Fetcher.Resource, password: String?): T
+    public suspend fun open(resource: Resource, password: String?): T
 }
 
 /**
@@ -64,12 +64,14 @@ private class CachingPdfDocumentFactory<T : PdfDocument>(
             }
         }
 
-    override suspend fun open(resource: Fetcher.Resource, password: String?): T =
-        cache.transaction {
-            getOrPut(resource.link().href) {
+    override suspend fun open(resource: Resource, password: String?): T {
+        val key = resource.key ?: return factory.open(resource, password)
+        return cache.transaction {
+            getOrPut(key) {
                 factory.open(resource, password)
             }
         }
+    }
 }
 
 /**

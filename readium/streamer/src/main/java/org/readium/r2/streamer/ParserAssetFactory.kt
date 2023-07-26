@@ -92,7 +92,7 @@ internal class ParserAssetFactory(
 
         val fetcher =
             RoutingFetcher(
-                local = ResourceFetcher(link, resource),
+                local = ResourceFetcher(link, Publication.Resource(resource, link)),
                 remote = HttpFetcher(httpClient, baseUrl)
             )
 
@@ -107,7 +107,7 @@ internal class ParserAssetFactory(
         assetName: String
     ): Try<PublicationParser.Asset, Publication.OpeningException> {
         val link = Link(href = "/$assetName", type = mediaType.toString())
-        val fetcher = ResourceFetcher(link, resource)
+        val fetcher = ResourceFetcher(link, Publication.Resource(resource, link))
 
         return Try.success(
             PublicationParser.Asset(assetName, mediaType, fetcher)

@@ -18,6 +18,7 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.resource.Resource
@@ -475,7 +476,7 @@ class EpubPositionsServiceTest {
 
             override suspend fun links(): List<Link> = emptyList()
 
-            override fun get(link: Link): Fetcher.Resource = object : Fetcher.Resource {
+            override fun get(link: Link): Publication.Resource = object : Publication.Resource {
                 override suspend fun link(): Link = link
 
                 override suspend fun length() = findResource(link.href)

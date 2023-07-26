@@ -12,10 +12,12 @@ import org.readium.r2.shared.error.getOrDefault
 import org.readium.r2.shared.error.tryRecover
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.ZipContainer
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.use
 
@@ -30,7 +32,7 @@ public class ContainerFetcher(
             ?.map { it.toLink(mediaTypeRetriever) }
             ?: emptyList()
 
-    override fun get(link: Link): Fetcher.Resource =
+    override fun get(link: Link): Publication.Resource =
         EntryResource(link, container)
 
     override suspend fun close() {
@@ -40,7 +42,7 @@ public class ContainerFetcher(
     private class EntryResource(
         val originalLink: Link,
         val container: Container
-    ) : Fetcher.Resource {
+    ) : Publication.Resource {
 
         override suspend fun link(): Link =
             withEntry { entry ->
@@ -50,6 +52,16 @@ public class ContainerFetcher(
 
                 Try.success(enhancedLink)
             }.getOrDefault(originalLink)
+
+        override val key: String get() = originalLink.href
+
+        override val file: File? get() = null
+
+        override suspend fun mediaType(): ResourceTry<String?> =
+            Try.success(originalLink.type)
+
+        override suspend fun name(): ResourceTry<String?> =
+            Try.success(Url(originalLink.href)?.filename)
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
             withEntry { entry -> entry.read(range) }

@@ -45,9 +45,10 @@ import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.use
@@ -84,7 +85,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
         @InternalReadiumApi
         fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? = null
         @InternalReadiumApi
-        fun resourceAtUrl(url: String): Fetcher.Resource? = null
+        fun resourceAtUrl(url: String): Publication.Resource? = null
 
         /**
          * Requests to load the next resource in the reading order.

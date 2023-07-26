@@ -6,14 +6,25 @@
 
 package org.readium.r2.shared.resource
 
+import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.requireLengthFitInt
 
 public sealed class BaseBytesResource(
-    public val bytes: suspend () -> Try<ByteArray, Resource.Exception>
+    override val key: String? = null,
+    private val mediaType: String? = null,
+    protected val bytes: suspend () -> Try<ByteArray, Resource.Exception>
 ) : Resource {
+
+    override val file: File? = null
+
+    override suspend fun name(): ResourceTry<String?> =
+        Try.success(null)
+
+    override suspend fun mediaType(): ResourceTry<String?> =
+        Try.success(mediaType)
 
     private lateinit var _bytes: Try<ByteArray, Resource.Exception>
 
@@ -43,9 +54,14 @@ public sealed class BaseBytesResource(
 }
 
 /** Creates a Resource serving a [ByteArray]. */
-public class BytesResource(bytes: suspend () -> Try<ByteArray, Resource.Exception>) : BaseBytesResource(bytes) {
+public class BytesResource(
+    key: String? = null,
+    mediaType: String? = null,
+    bytes: suspend () -> Try<ByteArray, Resource.Exception>
+) : BaseBytesResource(key = key, mediaType = mediaType, bytes) {
 
-    public constructor(bytes: ByteArray) : this({ Try.success(bytes) })
+    public constructor(bytes: ByteArray, key: String? = null, mediaType: String? = null) :
+        this(key = key, mediaType = mediaType, { Try.success(bytes) })
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { length() }} bytes)"
@@ -53,10 +69,13 @@ public class BytesResource(bytes: suspend () -> Try<ByteArray, Resource.Exceptio
 
 /** Creates a Resource serving a [String]. */
 public class StringResource(
+    key: String? = null,
+    val mediaType: String? = null,
     string: suspend () -> ResourceTry<String>
-) : BaseBytesResource({ string().map { it.toByteArray() } }) {
+) : BaseBytesResource(key = key, mediaType = mediaType, { string().map { it.toByteArray() } }) {
 
-    public constructor(string: String) : this({ Try.success(string) })
+    public constructor(string: String, mediaType: String? = null, key: String? = null) :
+        this(key = key, mediaType = mediaType, { Try.success(string) })
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { readAsString() }})"

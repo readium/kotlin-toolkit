@@ -15,7 +15,6 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.fetcher.EmptyFetcher
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.Publication.Profile
 import org.readium.r2.shared.publication.services.DefaultLocatorService
@@ -23,6 +22,7 @@ import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
+import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.resource.readAsString
 import org.robolectric.RobolectricTestRunner
 
@@ -373,10 +373,10 @@ class PublicationTest {
 
     @Test fun `get method passes on href parameters to services`() {
         val service = object : Publication.Service {
-            override fun get(link: Link): Fetcher.Resource? {
+            override fun get(link: Link): Publication.Resource? {
                 assertFalse(link.templated)
                 assertEquals("param1=a&param2=b", link.href.substringAfter("?"))
-                return StringResource(link, "test passed")
+                return Publication.Resource(StringResource("test passed"), link)
             }
         }
 
