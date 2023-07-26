@@ -70,8 +70,6 @@ dependencies {
     implementation(libs.bundles.media3)
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.webkit)
-    // Needed to avoid a crash with API 31, see https://stackoverflow.com/a/69152986/1474476
-    implementation("androidx.work:work-runtime-ktx:2.8.1")
 
     implementation(libs.bundles.media2)
     // ExoPlayer is used by the Audio Navigator.
