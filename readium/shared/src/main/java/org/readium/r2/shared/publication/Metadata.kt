@@ -354,17 +354,17 @@ public data class Metadata(
     val publicationDate: String?
         get() = published?.toIso8601String()
 
-    @Deprecated("Use [presentation] instead", ReplaceWith("presentation", "org.readium.r2.shared.publication.presentation.presentation"))
+    @Deprecated("Use [presentation] instead", ReplaceWith("presentation", "org.readium.r2.shared.publication.presentation.presentation"), level = DeprecationLevel.ERROR)
     val rendition: Presentation
         get() = presentation
 
-    @Deprecated("Access from [otherMetadata] instead", ReplaceWith("otherMetadata[\"source\"] as? String"))
+    @Deprecated("Access from [otherMetadata] instead", ReplaceWith("otherMetadata[\"source\"] as? String"), level = DeprecationLevel.ERROR)
     val source: String?
         get() = otherMetadata["source"] as? String
 
-    @Deprecated("Not used anymore", ReplaceWith("null"))
+    @Deprecated("Not used anymore", ReplaceWith("null"), level = DeprecationLevel.ERROR)
     val rights: String? get() = null
 
-    @Deprecated("Renamed into [toJSON]", ReplaceWith("toJSON()"))
+    @Deprecated("Renamed into [toJSON]", ReplaceWith("toJSON()"), level = DeprecationLevel.ERROR)
     public fun writeJSON(): JSONObject = toJSON()
 }

@@ -74,7 +74,7 @@ public suspend fun PublicationServicesHolder.positions(): List<Locator> {
 /**
  * List of all the positions in each resource, indexed by their href.
  */
-@Deprecated("Use [positionsByReadingOrder] instead", ReplaceWith("positionsByReadingOrder"))
+@Deprecated("Use [positionsByReadingOrder] instead", ReplaceWith("positionsByReadingOrder"), level = DeprecationLevel.ERROR)
 public val Publication.positionsByResource: Map<String, List<Locator>>
     get() = runBlocking { positions().groupBy { it.href } }
 
