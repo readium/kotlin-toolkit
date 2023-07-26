@@ -43,7 +43,7 @@ public interface ResourceContentExtractor {
 public class DefaultResourceContentExtractorFactory : ResourceContentExtractor.Factory {
 
     override suspend fun createExtractor(resource: Resource): ResourceContentExtractor? =
-        when (resource.mediaType().getOrNull()?.let { MediaType(it) }) {
+        when (resource.mediaType().getOrNull()) {
             MediaType.HTML, MediaType.XHTML -> HtmlResourceContentExtractor()
             else -> null
         }

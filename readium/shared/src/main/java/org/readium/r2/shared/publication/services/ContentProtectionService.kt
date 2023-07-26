@@ -315,7 +315,7 @@ private sealed class RouteHandler {
             return if (!copyAllowed)
                 Publication.Resource(FailureResource(Resource.Exception.Forbidden()), link)
             else
-                Publication.Resource(StringResource("true", mediaType = MediaType.JSON.toString()), link)
+                Publication.Resource(StringResource("true", mediaType = MediaType.JSON), link)
         }
     }
 
@@ -368,7 +368,7 @@ private sealed class RouteHandler {
             return if (!printAllowed)
                 Publication.Resource(FailureResource(Resource.Exception.Forbidden()), link)
             else
-                Publication.Resource(StringResource(MediaType.JSON.toString(), "true"), link)
+                Publication.Resource(StringResource("true", mediaType = MediaType.JSON), link)
         }
     }
 

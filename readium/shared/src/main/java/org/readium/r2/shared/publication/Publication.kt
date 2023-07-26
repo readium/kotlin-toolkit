@@ -40,6 +40,7 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.Resource as BaseResource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.util.Closeable
+import org.readium.r2.shared.util.mediatype.MediaType
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
 
@@ -552,8 +553,8 @@ public class Publication(
 
                     override val key: String = href
 
-                    override suspend fun mediaType(): ResourceTry<String?> =
-                        Try.success(link().type)
+                    override suspend fun mediaType(): ResourceTry<MediaType?> =
+                        Try.success(link().mediaType)
                 }
         }
     }
@@ -634,7 +635,7 @@ public class LazyPublicationResource(
 
     override val file: File? = null
 
-    override suspend fun mediaType(): ResourceTry<String?> =
+    override suspend fun mediaType(): ResourceTry<MediaType?> =
         resource().mediaType()
 
     override suspend fun name(): ResourceTry<String?> =

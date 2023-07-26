@@ -9,6 +9,7 @@ package org.readium.r2.shared.resource
 import java.io.File
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Protects the access to a wrapped resource with a mutex to make it thread-safe.
@@ -28,7 +29,7 @@ public class SynchronizedResource(
     override suspend fun name(): ResourceTry<String?> =
         mutex.withLock { resource.name() }
 
-    override suspend fun mediaType(): ResourceTry<String?> =
+    override suspend fun mediaType(): ResourceTry<MediaType?> =
         mutex.withLock { resource.mediaType() }
 
     override suspend fun length(): ResourceTry<Long> =

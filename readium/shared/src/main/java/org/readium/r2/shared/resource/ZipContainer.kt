@@ -17,6 +17,7 @@ import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.io.CountingInputStream
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * A [Container] representing a Zip archive.
@@ -42,7 +43,7 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         override val file: File? = null
 
         // FIXME: Implement with a sniffer.
-        override suspend fun mediaType(): ResourceTry<String?> =
+        override suspend fun mediaType(): ResourceTry<MediaType?> =
             Try.success(null)
 
         override suspend fun name(): ResourceTry<String?> =
@@ -67,7 +68,7 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         override val file: File? = null
 
         // FIXME: Implement with a sniffer.
-        override suspend fun mediaType(): ResourceTry<String?> =
+        override suspend fun mediaType(): ResourceTry<MediaType?> =
             Try.success(null)
 
         override suspend fun name(): ResourceTry<String?> =

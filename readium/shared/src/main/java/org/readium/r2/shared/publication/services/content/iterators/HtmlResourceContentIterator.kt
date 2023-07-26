@@ -66,7 +66,7 @@ public class HtmlResourceContentIterator internal constructor(
             resource: Publication.Resource,
             locator: Locator
         ): Content.Iterator? {
-            if (resource.mediaType().getOrNull()?.let { MediaType(it) }?.matchesAny(MediaType.HTML, MediaType.XHTML) != true) {
+            if (resource.mediaType().getOrNull()?.matchesAny(MediaType.HTML, MediaType.XHTML) != true) {
                 return null
             }
 

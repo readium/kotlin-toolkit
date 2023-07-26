@@ -53,9 +53,9 @@ public class HttpFetcher(
         private val resource: org.readium.r2.shared.util.http.HttpResource
     ) : Publication.Resource, Resource by resource {
 
-        public companion object {
+        companion object {
 
-            public operator fun invoke(
+            operator fun invoke(
                 link: Link,
                 url: String,
                 client: HttpClient,
@@ -67,7 +67,7 @@ public class HttpFetcher(
 
         override suspend fun link(): Link =
             link.copy(
-                type = resource.mediaType().getOrDefault(link.type)
+                type = resource.mediaType().getOrDefault(link.mediaType)?.toString()
             )
     }
 }

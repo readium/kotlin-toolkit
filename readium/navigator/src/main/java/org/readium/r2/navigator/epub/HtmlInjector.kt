@@ -37,7 +37,6 @@ internal fun Resource.injectHtml(
             .getOrElse {
                 return@TransformingResource ResourceTry.failure(it)
             }
-            ?.let { MediaType.parse(it) }
             ?.takeIf { it.isHtml }
             ?: return@TransformingResource ResourceTry.success(bytes)
 

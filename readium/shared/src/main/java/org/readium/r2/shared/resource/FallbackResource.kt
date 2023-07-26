@@ -14,6 +14,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Resource that will act as a proxy to a fallback resource if the [originalResource] errors out.
@@ -41,7 +42,7 @@ public class FallbackResource(
     override suspend fun name(): ResourceTry<String?> =
         resource.await().name()
 
-    override suspend fun mediaType(): ResourceTry<String?> =
+    override suspend fun mediaType(): ResourceTry<MediaType?> =
         resource.await().mediaType()
 
     override suspend fun length(): ResourceTry<Long> =

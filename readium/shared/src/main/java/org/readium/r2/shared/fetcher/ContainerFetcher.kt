@@ -18,6 +18,7 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.ZipContainer
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.use
 
@@ -57,8 +58,8 @@ public class ContainerFetcher(
 
         override val file: File? get() = null
 
-        override suspend fun mediaType(): ResourceTry<String?> =
-            Try.success(originalLink.type)
+        override suspend fun mediaType(): ResourceTry<MediaType?> =
+            Try.success(originalLink.mediaType)
 
         override suspend fun name(): ResourceTry<String?> =
             Try.success(Url(originalLink.href)?.filename)

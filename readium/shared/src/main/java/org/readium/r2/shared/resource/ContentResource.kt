@@ -21,6 +21,7 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUri
 
 /**
@@ -76,8 +77,8 @@ public class ContentResource(
     // FIXME: Could it be implemented?
     override val file: File? = null
 
-    override suspend fun mediaType(): ResourceTry<String?> =
-        Try.success(contentResolver.getType(uri))
+    override suspend fun mediaType(): ResourceTry<MediaType?> =
+        Try.success(contentResolver.getType(uri)?.let { MediaType.parse(it) })
 
     override suspend fun close() {
     }

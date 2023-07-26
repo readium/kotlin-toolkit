@@ -20,6 +20,7 @@ import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.mediatype.MediaType
 
 public typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Exception>
 
@@ -46,7 +47,7 @@ public interface Resource : SuspendingCloseable {
     /**
      * Returns the resource media type if known.
      */
-    public suspend fun mediaType(): ResourceTry<String?>
+    public suspend fun mediaType(): ResourceTry<MediaType?>
 
     /**
      * Returns the name of the resource if any.
@@ -143,7 +144,7 @@ public class FailureResource(
 
     override val file: File? = null
 
-    override suspend fun mediaType(): ResourceTry<String?> =
+    override suspend fun mediaType(): ResourceTry<MediaType?> =
         Try.success(null)
 
     override suspend fun name(): ResourceTry<String?> =

@@ -18,6 +18,7 @@ import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArch
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipFile
 import org.readium.r2.shared.util.archive.channel.jvm.SeekableByteChannel
 import org.readium.r2.shared.util.io.CountingInputStream
+import org.readium.r2.shared.util.mediatype.MediaType
 
 internal class ChannelZipContainer(
     private val archive: ZipFile,
@@ -38,7 +39,7 @@ internal class ChannelZipContainer(
         override val file: File? = null
 
         // FIXME: Implement with a sniffer.
-        override suspend fun mediaType(): ResourceTry<String?> =
+        override suspend fun mediaType(): ResourceTry<MediaType?> =
             ResourceTry.success(null)
 
         override suspend fun name(): ResourceTry<String?> =

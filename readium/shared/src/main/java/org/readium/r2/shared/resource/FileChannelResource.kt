@@ -17,6 +17,7 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.readFully
+import org.readium.r2.shared.util.mediatype.MediaType
 
 internal class FileChannelResource(
     override val key: String?,
@@ -26,7 +27,7 @@ internal class FileChannelResource(
 
     private lateinit var _length: ResourceTry<Long>
 
-    override suspend fun mediaType(): ResourceTry<String?> =
+    override suspend fun mediaType(): ResourceTry<MediaType?> =
         ResourceTry.success(null)
 
     override suspend fun name(): ResourceTry<String?> =

@@ -62,7 +62,7 @@ public class FileFetcher(
                 val resourceFile = File(itemFile, linkHref.removePrefix(itemHref))
                 // Make sure that the requested resource is [path] or one of its descendant.
                 if (resourceFile.canonicalPath.startsWith(itemFile.canonicalPath)) {
-                    val resource = Publication.Resource(FileResource(resourceFile, link.type), link)
+                    val resource = Publication.Resource(FileResource(resourceFile, link.mediaType), link)
                     openedResources.add(WeakReference(resource))
                     return resource
                 }

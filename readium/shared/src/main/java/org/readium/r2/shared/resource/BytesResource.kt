@@ -11,10 +11,11 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.requireLengthFitInt
+import org.readium.r2.shared.util.mediatype.MediaType
 
 public sealed class BaseBytesResource(
     override val key: String? = null,
-    private val mediaType: String? = null,
+    private val mediaType: MediaType? = null,
     protected val bytes: suspend () -> Try<ByteArray, Resource.Exception>
 ) : Resource {
 
@@ -23,7 +24,7 @@ public sealed class BaseBytesResource(
     override suspend fun name(): ResourceTry<String?> =
         Try.success(null)
 
-    override suspend fun mediaType(): ResourceTry<String?> =
+    override suspend fun mediaType(): ResourceTry<MediaType?> =
         Try.success(mediaType)
 
     private lateinit var _bytes: Try<ByteArray, Resource.Exception>
@@ -56,11 +57,11 @@ public sealed class BaseBytesResource(
 /** Creates a Resource serving a [ByteArray]. */
 public class BytesResource(
     key: String? = null,
-    mediaType: String? = null,
+    mediaType: MediaType? = null,
     bytes: suspend () -> Try<ByteArray, Resource.Exception>
 ) : BaseBytesResource(key = key, mediaType = mediaType, bytes) {
 
-    public constructor(bytes: ByteArray, key: String? = null, mediaType: String? = null) :
+    public constructor(bytes: ByteArray, key: String? = null, mediaType: MediaType? = null) :
         this(key = key, mediaType = mediaType, { Try.success(bytes) })
 
     override fun toString(): String =
@@ -70,11 +71,11 @@ public class BytesResource(
 /** Creates a Resource serving a [String]. */
 public class StringResource(
     key: String? = null,
-    val mediaType: String? = null,
+    internal val mediaType: MediaType? = null,
     string: suspend () -> ResourceTry<String>
 ) : BaseBytesResource(key = key, mediaType = mediaType, { string().map { it.toByteArray() } }) {
 
-    public constructor(string: String, mediaType: String? = null, key: String? = null) :
+    public constructor(string: String, mediaType: MediaType? = null, key: String? = null) :
         this(key = key, mediaType = mediaType, { Try.success(string) })
 
     override fun toString(): String =

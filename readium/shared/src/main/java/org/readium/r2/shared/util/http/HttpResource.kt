@@ -11,6 +11,7 @@ import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.util.io.CountingInputStream
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /** Provides access to an external URL. */
 public class HttpResource(
@@ -33,10 +34,8 @@ public class HttpResource(
     override val key: String = url
     override val file: File? = null
 
-    override suspend fun mediaType(): ResourceTry<String?> =
-        headResponse().map {
-            it.mediaType.toString()
-        }
+    override suspend fun mediaType(): ResourceTry<MediaType?> =
+        headResponse().map { it.mediaType }
 
     override suspend fun length(): ResourceTry<Long> =
         headResponse().flatMap {
