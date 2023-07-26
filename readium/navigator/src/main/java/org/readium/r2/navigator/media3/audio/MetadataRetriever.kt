@@ -36,7 +36,9 @@ internal class MetadataRetriever(
             ?.milliseconds
 
     fun close() {
-        retriever.close()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            retriever.close()
+        }
     }
 
     class ResourceMediaDataSource(
