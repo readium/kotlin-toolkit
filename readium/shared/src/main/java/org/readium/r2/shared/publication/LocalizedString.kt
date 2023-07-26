@@ -160,11 +160,11 @@ public data class LocalizedString(val translations: Map<String?, Translation> = 
         }
     }
 
-    @Deprecated("Use [string] instead.", ReplaceWith("string"))
+    @Deprecated("Use [string] instead.", ReplaceWith("string"), level = DeprecationLevel.ERROR)
     val singleString: String?
         get() = string.ifEmpty { null }
 
-    @Deprecated("Use [get] instead.", ReplaceWith("()"))
+    @Deprecated("Use [get] instead.", ReplaceWith("()"), level = DeprecationLevel.ERROR)
     val multiString: Map<String?, String>
         get() = translations.mapValues { (_, translation) -> translation.string }
 }

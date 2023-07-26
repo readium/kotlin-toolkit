@@ -183,11 +183,11 @@ public data class Link(
         }
     }
 
-    @Deprecated("Use [type] instead", ReplaceWith("type"))
+    @Deprecated("Use [type] instead", ReplaceWith("type"), level = DeprecationLevel.ERROR)
     val typeLink: String?
         get() = type
 
-    @Deprecated("Use [rels] instead.", ReplaceWith("rels"))
+    @Deprecated("Use [rels] instead.", ReplaceWith("rels"), level = DeprecationLevel.ERROR)
     val rel: List<String>
         get() = rels.toList()
 }
