@@ -140,18 +140,12 @@ public class FailureResource(
 
     internal constructor(cause: Throwable) : this(Resource.Exception.wrap(cause))
 
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = Try.failure(error)
-
     override val file: File? = null
 
-    override suspend fun mediaType(): ResourceTry<MediaType?> =
-        Try.success(null)
-
-    override suspend fun name(): ResourceTry<String?> =
-        Try.success(null)
-
+    override suspend fun mediaType(): ResourceTry<MediaType?> = Try.failure(error)
+    override suspend fun name(): ResourceTry<String?> = Try.failure(error)
     override suspend fun length(): ResourceTry<Long> = Try.failure(error)
-
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = Try.failure(error)
     override suspend fun close() {}
 
     override fun toString(): String =
