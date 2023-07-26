@@ -17,6 +17,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.auth.LcpDialogAuthentication
+import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.persistence.LcpDatabase
 import org.readium.r2.lcp.service.CRLService
 import org.readium.r2.lcp.service.DeviceRepository
@@ -137,7 +138,9 @@ public interface LcpService {
      */
     public data class AcquiredPublication(
         val localFile: File,
-        val suggestedFilename: String
+        val suggestedFilename: String,
+        val mediaType: MediaType,
+        val licenseDocument: LicenseDocument
     ) {
         @Deprecated("Use `localFile` instead", replaceWith = ReplaceWith("localFile"), level = DeprecationLevel.ERROR)
         val localURL: String get() = localFile.path
