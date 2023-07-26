@@ -17,8 +17,10 @@ import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.json.JSONException
 import org.json.JSONObject
+import org.readium.r2.shared.InternalReadiumApi
 
-fun String.iso8601ToDate(): Date? =
+@InternalReadiumApi
+public fun String.iso8601ToDate(): Date? =
     try {
         // We assume that a date without a time zone component is in UTC. To handle this properly,
         // we need to set the default time zone of Joda to UTC, since by default it uses the local
@@ -39,7 +41,8 @@ fun String.iso8601ToDate(): Date? =
  * If this string starts with the given [prefix], returns this string.
  * Otherwise, returns a copy of this string after adding the [prefix].
  */
-fun String.addPrefix(prefix: CharSequence): String {
+@InternalReadiumApi
+public fun String.addPrefix(prefix: CharSequence): String {
     if (startsWith(prefix)) {
         return this
     }

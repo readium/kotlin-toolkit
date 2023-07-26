@@ -25,7 +25,7 @@ import org.readium.r2.shared.util.toUri
 /**
  * Creates [ContentResource]s.
  */
-class ContentResourceFactory(
+public class ContentResourceFactory(
     private val contentResolver: ContentResolver
 ) : ResourceFactory {
 
@@ -43,7 +43,7 @@ class ContentResourceFactory(
 /**
  * A [Resource] to access content [uri] thanks to a [ContentResolver].
  */
-class ContentResource(
+public class ContentResource(
     private val uri: Uri,
     private val contentResolver: ContentResolver,
 ) : Resource {

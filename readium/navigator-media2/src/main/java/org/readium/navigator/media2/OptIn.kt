@@ -14,4 +14,4 @@ package org.readium.navigator.media2
 )
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
-annotation class ExperimentalMedia2
+public annotation class ExperimentalMedia2

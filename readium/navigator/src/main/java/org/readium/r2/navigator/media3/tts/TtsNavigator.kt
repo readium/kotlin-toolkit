@@ -34,7 +34,7 @@ import org.readium.r2.shared.util.tokenizer.TextTokenizer
  * A navigator to read aloud a [Publication] with a TTS engine.
  */
 @ExperimentalReadiumApi
-class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
+public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     E : TtsEngine.Error, V : TtsEngine.Voice> private constructor(
     coroutineScope: CoroutineScope,
     override val publication: Publication,
@@ -46,9 +46,9 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     Media3Adapter,
     Configurable<S, P> {
 
-    companion object {
+    public companion object {
 
-        suspend operator fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
+        public suspend operator fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             E : TtsEngine.Error, V : TtsEngine.Voice> invoke(
             application: Application,
             publication: Publication,
@@ -125,12 +125,12 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         }
     }
 
-    interface Listener {
+    public interface Listener {
 
-        fun onStopRequested()
+        public fun onStopRequested()
     }
 
-    data class Location(
+    public data class Location(
         override val href: Href,
         override val utterance: String,
         override val range: IntRange?,
@@ -140,7 +140,7 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         override val tokenLocator: Locator?,
     ) : TextAwareMediaNavigator.Location
 
-    data class Playback(
+    public data class Playback(
         override val state: MediaNavigator.State,
         override val playWhenReady: Boolean,
         override val index: Int,
@@ -148,30 +148,30 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         override val range: IntRange?,
     ) : TextAwareMediaNavigator.Playback
 
-    data class ReadingOrder(
+    public data class ReadingOrder(
         override val items: List<Item>
     ) : TextAwareMediaNavigator.ReadingOrder {
 
-        data class Item(
+        public data class Item(
             val href: Href
         ) : TextAwareMediaNavigator.ReadingOrder.Item
     }
 
-    sealed class State {
+    public sealed class State {
 
-        object Ready : MediaNavigator.State.Ready
+        public object Ready : MediaNavigator.State.Ready
 
-        object Ended : MediaNavigator.State.Ended
+        public object Ended : MediaNavigator.State.Ended
 
-        sealed class Error : MediaNavigator.State.Error {
+        public sealed class Error : MediaNavigator.State.Error {
 
-            data class EngineError<E : TtsEngine.Error> (val error: E) : Error()
+            public data class EngineError<E : TtsEngine.Error> (val error: E) : Error()
 
-            data class ContentError(val exception: Exception) : Error()
+            public data class ContentError(val exception: Exception) : Error()
         }
     }
 
-    val voices: Set<V> get() =
+    public val voices: Set<V> get() =
         player.voices
 
     override val readingOrder: ReadingOrder =
@@ -197,7 +197,7 @@ class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         player.pause()
     }
 
-    fun go(locator: Locator) {
+    public fun go(locator: Locator) {
         player.go(locator)
     }
 

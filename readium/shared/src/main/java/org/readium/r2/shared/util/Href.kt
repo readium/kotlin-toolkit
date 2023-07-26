@@ -20,17 +20,17 @@ import timber.log.Timber
  *
  * This is used to normalize the string representation.
  */
-class Href(
+public class Href(
     private val href: String,
     baseHref: String = "/"
 ) {
 
-    data class QueryParameter(val name: String, val value: String?)
+    public data class QueryParameter(val name: String, val value: String?)
 
     private val baseHref = if (baseHref.isEmpty()) "/" else baseHref
 
     /** Returns the normalized string representation for this HREF. */
-    val string: String get() {
+    public val string: String get() {
         val baseHref = baseHref.removePercentEncoding()
         val href = href.removePercentEncoding()
 
@@ -67,7 +67,7 @@ class Href(
      *
      * Taken from https://stackoverflow.com/a/49796882/1474476
      */
-    val percentEncodedString: String get() {
+    public val percentEncodedString: String get() {
         var string = string
         if (string.startsWith("/")) {
             string = string.addPrefix("file://")
@@ -84,7 +84,7 @@ class Href(
     }
 
     /** Returns the query parameters present in this HREF, in the order they appear. */
-    val queryParameters: List<QueryParameter> get() {
+    public val queryParameters: List<QueryParameter> get() {
         val url = percentEncodedString.substringBefore("#")
         return UrlQuerySanitizer(url).parameterList
             .map { p -> QueryParameter(name = p.mParameter, value = p.mValue.takeUnless { it.isBlank() }) }
@@ -108,8 +108,8 @@ class Href(
             .takeIf { !it.contains("\uFFFD") } ?: this
 }
 
-fun List<Href.QueryParameter>.firstNamedOrNull(name: String): String? =
+public fun List<Href.QueryParameter>.firstNamedOrNull(name: String): String? =
     firstOrNull { it.name == name }?.value
 
-fun List<Href.QueryParameter>.allNamed(name: String): List<String> =
+public fun List<Href.QueryParameter>.allNamed(name: String): List<String> =
     filter { it.name == name }.mapNotNull { it.value }

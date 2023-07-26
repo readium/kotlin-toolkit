@@ -30,16 +30,16 @@ import org.readium.r2.shared.units.hz
 @ExperimentalReadiumApi
 @OptIn(ExperimentalCoroutinesApi::class)
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-class ExoPlayerEngine private constructor(
+public class ExoPlayerEngine private constructor(
     private val exoPlayer: ExoAudiobookPlayer,
     private val settingsResolver: SettingsResolver,
     private val configuration: Configuration,
     initialPreferences: ExoPlayerPreferences
 ) : AudioEngine<ExoPlayerSettings, ExoPlayerPreferences> {
 
-    companion object {
+    public companion object {
 
-        suspend operator fun invoke(
+        public suspend operator fun invoke(
             application: Application,
             settingsResolver: SettingsResolver,
             dataSourceFactory: DataSource.Factory,
@@ -120,30 +120,30 @@ class ExoPlayerEngine private constructor(
         }
     }
 
-    data class Configuration(
+    public data class Configuration(
         val positionRefreshRate: Hz = 2.0.hz,
         val seekBackwardIncrement: Duration = 15.seconds,
         val seekForwardIncrement: Duration = 30.seconds
     )
 
-    data class Playlist(
+    public data class Playlist(
         val mediaMetadata: MediaMetadata,
         val duration: Duration?,
         val items: List<Item>
     ) {
-        data class Item(
+        public data class Item(
             val uri: String,
             val mediaMetadata: MediaMetadata,
             val duration: Duration?
         )
     }
 
-    fun interface SettingsResolver {
+    public fun interface SettingsResolver {
 
         /**
          * Computes a set of engine settings from the engine preferences.
          */
-        fun settings(preferences: ExoPlayerPreferences): ExoPlayerSettings
+        public fun settings(preferences: ExoPlayerPreferences): ExoPlayerSettings
     }
 
     private inner class Listener : Player.Listener {
@@ -162,7 +162,7 @@ class ExoPlayerEngine private constructor(
         }
     }
 
-    data class Error(val error: ExoPlaybackException) : AudioEngine.Error
+    public data class Error(val error: ExoPlaybackException) : AudioEngine.Error
 
     private val coroutineScope: CoroutineScope =
         MainScope()

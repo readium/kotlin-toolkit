@@ -13,7 +13,7 @@ import org.readium.r2.navigator.media3.tts.android.AndroidTtsSettings
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @OptIn(ExperimentalReadiumApi::class)
-typealias AndroidTtsNavigatorFactory = TtsNavigatorFactory<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsPreferencesEditor, AndroidTtsEngine.Error, AndroidTtsEngine.Voice>
+public typealias AndroidTtsNavigatorFactory = TtsNavigatorFactory<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsPreferencesEditor, AndroidTtsEngine.Error, AndroidTtsEngine.Voice>
 
 @OptIn(ExperimentalReadiumApi::class)
-typealias AndroidTtsNavigator = TtsNavigator<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsEngine.Error, AndroidTtsEngine.Voice>
+public typealias AndroidTtsNavigator = TtsNavigator<AndroidTtsSettings, AndroidTtsPreferences, AndroidTtsEngine.Error, AndroidTtsEngine.Voice>

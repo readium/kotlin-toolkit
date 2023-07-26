@@ -14,45 +14,45 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * A [MediaNavigator] whose locations provide time offsets.
  */
 @ExperimentalReadiumApi
-interface TimeBasedMediaNavigator<L : TimeBasedMediaNavigator.Location, P : TimeBasedMediaNavigator.Playback,
+public interface TimeBasedMediaNavigator<L : TimeBasedMediaNavigator.Location, P : TimeBasedMediaNavigator.Playback,
     R : TimeBasedMediaNavigator.ReadingOrder> : MediaNavigator<L, P, R> {
 
     /**
      * Location of the navigator.
      */
-    interface Location : MediaNavigator.Location {
+    public interface Location : MediaNavigator.Location {
 
         /**
          * The duration offset in the resource.
          */
-        val offset: Duration
+        public val offset: Duration
     }
 
     /**
      * State of the playback.
      */
-    interface Playback : MediaNavigator.Playback {
+    public interface Playback : MediaNavigator.Playback {
 
         /**
          * Position of the playback in the current item.
          */
-        val offset: Duration
+        public val offset: Duration
 
         /**
          * Position in the current item until which the content is buffered.
          */
-        val buffered: Duration?
+        public val buffered: Duration?
     }
 
     /**
      * Data about the content to play.
      */
-    interface ReadingOrder : MediaNavigator.ReadingOrder {
+    public interface ReadingOrder : MediaNavigator.ReadingOrder {
 
         /**
          * Total duration of the content to play.
          */
-        val duration: Duration?
+        public val duration: Duration?
 
         /**
          * List of items to play.
@@ -62,12 +62,12 @@ interface TimeBasedMediaNavigator<L : TimeBasedMediaNavigator.Location, P : Time
         /**
          * A piece of the content to play.
          */
-        interface Item : MediaNavigator.ReadingOrder.Item {
+        public interface Item : MediaNavigator.ReadingOrder.Item {
 
             /**
              * Duration of the item.
              */
-            val duration: Duration?
+            public val duration: Duration?
         }
     }
 
@@ -89,5 +89,5 @@ interface TimeBasedMediaNavigator<L : TimeBasedMediaNavigator.Location, P : Time
     /**
      * Seeks to [offset] in the item at [index].
      */
-    fun seek(index: Int, offset: Duration)
+    public fun seek(index: Int, offset: Duration)
 }

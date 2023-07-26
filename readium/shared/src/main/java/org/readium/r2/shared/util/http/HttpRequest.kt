@@ -22,29 +22,29 @@ import kotlin.time.Duration
  * @param allowUserInteraction If true, the user might be presented with interactive dialogs, such
  *        as popping up an authentication dialog.
  */
-class HttpRequest(
-    val url: String,
-    val method: Method = Method.GET,
-    val headers: Map<String, String> = mapOf(),
-    val body: Body? = null,
-    val extras: Bundle = Bundle(),
-    val connectTimeout: Duration? = null,
-    val readTimeout: Duration? = null,
-    val allowUserInteraction: Boolean = false,
+public class HttpRequest(
+    public val url: String,
+    public val method: Method = Method.GET,
+    public val headers: Map<String, String> = mapOf(),
+    public val body: Body? = null,
+    public val extras: Bundle = Bundle(),
+    public val connectTimeout: Duration? = null,
+    public val readTimeout: Duration? = null,
+    public val allowUserInteraction: Boolean = false,
 ) : Serializable {
 
     /** Supported HTTP methods. */
-    enum class Method : Serializable {
+    public enum class Method : Serializable {
         DELETE, GET, HEAD, PATCH, POST, PUT;
     }
 
     /** Supported body values. */
-    sealed class Body : Serializable {
-        class Bytes(val bytes: ByteArray) : Body()
-        class File(val file: java.io.File) : Body()
+    public sealed class Body : Serializable {
+        public class Bytes(public val bytes: ByteArray) : Body()
+        public class File(public val file: java.io.File) : Body()
     }
 
-    fun buildUpon() = Builder(
+    public fun buildUpon(): Builder = Builder(
         url = url,
         method = method,
         headers = headers.toMutableMap(),
@@ -55,43 +55,43 @@ class HttpRequest(
         allowUserInteraction = allowUserInteraction
     )
 
-    companion object {
-        operator fun invoke(url: String, build: Builder.() -> Unit): HttpRequest =
+    public companion object {
+        public operator fun invoke(url: String, build: Builder.() -> Unit): HttpRequest =
             Builder(url).apply(build).build()
     }
 
-    class Builder(
+    public class Builder(
         url: String,
-        var method: Method = Method.GET,
-        var headers: MutableMap<String, String> = mutableMapOf(),
-        var body: Body? = null,
-        var extras: Bundle = Bundle(),
-        var connectTimeout: Duration? = null,
-        var readTimeout: Duration? = null,
-        var allowUserInteraction: Boolean = false,
+        public var method: Method = Method.GET,
+        public var headers: MutableMap<String, String> = mutableMapOf(),
+        public var body: Body? = null,
+        public var extras: Bundle = Bundle(),
+        public var connectTimeout: Duration? = null,
+        public var readTimeout: Duration? = null,
+        public var allowUserInteraction: Boolean = false,
     ) {
 
-        var url: String
+        public var url: String
             get() = uriBuilder.build().toString()
             set(value) { uriBuilder = Uri.parse(value).buildUpon() }
 
         private var uriBuilder: Uri.Builder = Uri.parse(url).buildUpon()
 
-        fun appendQueryParameter(key: String, value: String?): Builder {
+        public fun appendQueryParameter(key: String, value: String?): Builder {
             if (value != null) {
                 uriBuilder.appendQueryParameter(key, value)
             }
             return this
         }
 
-        fun appendQueryParameters(params: Map<String, String?>): Builder {
+        public fun appendQueryParameters(params: Map<String, String?>): Builder {
             for ((key, value) in params) {
                 appendQueryParameter(key, value)
             }
             return this
         }
 
-        fun setHeader(key: String, value: String): Builder {
+        public fun setHeader(key: String, value: String): Builder {
             headers[key] = value
             return this
         }
@@ -99,7 +99,7 @@ class HttpRequest(
         /**
          * Issue a byte range request. Use -1 to download until the end.
          */
-        fun setRange(range: LongRange): Builder {
+        public fun setRange(range: LongRange): Builder {
             val start = range.first.coerceAtLeast(0)
             var value = "$start-"
             if (range.last >= start) {
@@ -112,7 +112,7 @@ class HttpRequest(
         /**
          * Initializes a POST request with the given form data.
          */
-        fun setPostForm(form: Map<String, String?>): Builder {
+        public fun setPostForm(form: Map<String, String?>): Builder {
             method = Method.POST
             setHeader("Content-Type", "application/x-www-form-urlencoded")
 
@@ -128,7 +128,7 @@ class HttpRequest(
             return this
         }
 
-        fun build(): HttpRequest = HttpRequest(
+        public fun build(): HttpRequest = HttpRequest(
             url = url,
             method = method,
             headers = headers.toMap(),

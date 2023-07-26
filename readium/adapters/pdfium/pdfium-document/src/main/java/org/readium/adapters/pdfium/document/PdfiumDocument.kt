@@ -15,7 +15,7 @@ import java.io.File
 import kotlin.reflect.KClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.PdfSupport
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.md5
 import org.readium.r2.shared.extensions.tryOrNull
@@ -25,10 +25,9 @@ import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 
-@OptIn(PdfSupport::class)
-class PdfiumDocument(
-    val core: PdfiumCore,
-    val document: _PdfiumDocument,
+public class PdfiumDocument(
+    @InternalReadiumApi public val core: PdfiumCore,
+    @InternalReadiumApi public val document: _PdfiumDocument,
     override val identifier: String?,
     override val pageCount: Int
 ) : PdfDocument {
@@ -69,10 +68,9 @@ class PdfiumDocument(
 
     override suspend fun close() {}
 
-    companion object
+    public companion object
 }
 
-@OptIn(PdfSupport::class)
 private fun _PdfiumDocument.Bookmark.toOutlineNode(): PdfDocument.OutlineNode =
     PdfDocument.OutlineNode(
         title = title,
@@ -80,8 +78,7 @@ private fun _PdfiumDocument.Bookmark.toOutlineNode(): PdfDocument.OutlineNode =
         children = children.map { it.toOutlineNode() }
     )
 
-@OptIn(PdfSupport::class)
-class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<PdfiumDocument> {
+public class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<PdfiumDocument> {
 
     override val documentType: KClass<PdfiumDocument> = PdfiumDocument::class
 

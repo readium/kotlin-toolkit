@@ -20,24 +20,24 @@ import org.readium.r2.shared.resource.*
 import org.readium.r2.shared.util.Url
 import timber.log.Timber
 
-sealed class SnifferContext(
+public sealed class SnifferContext(
     mediaTypes: List<String> = emptyList(),
     fileExtensions: List<String> = emptyList()
 ) {
     /** Media type hints. */
-    val mediaTypes: List<MediaType> = mediaTypes
+    public val mediaTypes: List<MediaType> = mediaTypes
         .mapNotNull { MediaType.parse(it) }
 
     /** File extension hints. */
-    val fileExtensions: List<String> = fileExtensions
+    public val fileExtensions: List<String> = fileExtensions
         .map { it.lowercase(Locale.ROOT) }
 
     /** Finds the first [Charset] declared in the media types' `charset` parameter. */
-    val charset: Charset? get() =
+    public val charset: Charset? get() =
         this.mediaTypes.firstNotNullOfOrNull { it.charset }
 
     /** Returns whether this context has any of the given file extensions, ignoring case. */
-    fun hasFileExtension(vararg fileExtensions: String): Boolean {
+    public fun hasFileExtension(vararg fileExtensions: String): Boolean {
         for (fileExtension in fileExtensions) {
             if (this.fileExtensions.contains(fileExtension.lowercase(Locale.ROOT))) {
                 return true
@@ -52,7 +52,7 @@ sealed class SnifferContext(
      *
      * Implementation note: Use [MediaType] to handle the comparison to avoid edge cases.
      */
-    fun hasMediaType(vararg mediaTypes: String): Boolean {
+    public fun hasMediaType(vararg mediaTypes: String): Boolean {
         @Suppress("NAME_SHADOWING")
         val mediaTypes = mediaTypes.mapNotNull { MediaType.parse(it) }
         for (mediaType in mediaTypes) {
@@ -63,10 +63,10 @@ sealed class SnifferContext(
         return false
     }
 
-    abstract suspend fun release()
+    public abstract suspend fun release()
 }
 
-class HintSnifferContext(
+public class HintSnifferContext(
     mediaTypes: List<String> = emptyList(),
     fileExtensions: List<String> = emptyList()
 ) : SnifferContext(mediaTypes, fileExtensions) {
@@ -74,7 +74,7 @@ class HintSnifferContext(
     override suspend fun release() {}
 }
 
-sealed class ContentAwareSnifferContext(
+public sealed class ContentAwareSnifferContext(
     mediaTypes: List<String> = emptyList(),
     fileExtensions: List<String> = emptyList()
 ) : SnifferContext(mediaTypes, fileExtensions)
@@ -87,8 +87,8 @@ sealed class ContentAwareSnifferContext(
  * @param mediaTypes Media type hints.
  * @param fileExtensions File extension hints.
  */
-class ResourceSnifferContext internal constructor(
-    val resource: Resource,
+public class ResourceSnifferContext internal constructor(
+    public val resource: Resource,
     mediaTypes: List<String> = emptyList(),
     fileExtensions: List<String> = emptyList()
 ) : ContentAwareSnifferContext(mediaTypes, fileExtensions) {
@@ -99,7 +99,7 @@ class ResourceSnifferContext internal constructor(
      * It will extract the charset parameter from the media type hints to figure out an encoding.
      * Otherwise, fallback on UTF-8.
      */
-    suspend fun contentAsString(): String? =
+    public suspend fun contentAsString(): String? =
         try {
             if (!loadedContentAsString) {
                 loadedContentAsString = true
@@ -117,7 +117,7 @@ class ResourceSnifferContext internal constructor(
     private var _contentAsString: String? = null
 
     /** Content as an XML document. */
-    suspend fun contentAsXml(): ElementNode? {
+    public suspend fun contentAsXml(): ElementNode? {
         if (!loadedContentAsXml) {
             loadedContentAsXml = true
             _contentAsXml = withContext(Dispatchers.IO) {
@@ -138,7 +138,7 @@ class ResourceSnifferContext internal constructor(
     /**
      * Content parsed from JSON.
      */
-    suspend fun contentAsJson(): JSONObject? =
+    public suspend fun contentAsJson(): JSONObject? =
         try {
             contentAsString()?.let { JSONObject(it) }
         } catch (e: Exception) {
@@ -146,7 +146,7 @@ class ResourceSnifferContext internal constructor(
         }
 
     /** Readium Web Publication Manifest parsed from the content. */
-    suspend fun contentAsRwpm(): Manifest? =
+    public suspend fun contentAsRwpm(): Manifest? =
         Manifest.fromJSON(contentAsJson())
 
     /**
@@ -155,7 +155,7 @@ class ResourceSnifferContext internal constructor(
      * A byte stream can be useful when sniffers only need to read a few bytes at the beginning of
      * the file.
      */
-    suspend fun contentAsStream(): InputStream? =
+    public suspend fun contentAsStream(): InputStream =
         ResourceInputStream(resource)
 
     /**
@@ -164,7 +164,7 @@ class ResourceSnifferContext internal constructor(
      * It can be used to check a file signature, aka magic number.
      * See https://en.wikipedia.org/wiki/List_of_file_signatures
      */
-    suspend fun read(range: LongRange? = null): ByteArray? =
+    public suspend fun read(range: LongRange? = null): ByteArray? =
         resource.read(range).getOrNull()
 
     /**
@@ -184,13 +184,13 @@ class ResourceSnifferContext internal constructor(
  * A companion type of [Sniffer] holding the type hints (file extensions, media types) and
  * providing an access to the file content.
  *
- * @param resource Underlying content holder.
+ * @param container Underlying content holder.
  * @param mediaTypes Media type hints.
  * @param fileExtensions File extension hints.
  */
-class ContainerSnifferContext internal constructor(
-    val container: Container,
-    val isExploded: Boolean,
+public class ContainerSnifferContext internal constructor(
+    public val container: Container,
+    public val isExploded: Boolean,
     mediaTypes: List<String> = emptyList(),
     fileExtensions: List<String> = emptyList()
 ) : ContentAwareSnifferContext(mediaTypes, fileExtensions) {
@@ -301,7 +301,7 @@ internal class BytesSnifferContextFactory(
         bytes: ByteArray,
         mediaTypes: List<String> = emptyList(),
         fileExtensions: List<String> = emptyList(),
-    ): ContentAwareSnifferContext? {
+    ): ContentAwareSnifferContext {
         val resource: Resource = BytesResource(bytes)
         return archiveFactory.create(resource, password = null)
             .fold(

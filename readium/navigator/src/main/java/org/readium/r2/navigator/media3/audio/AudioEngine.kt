@@ -16,38 +16,38 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * An audio engine playing a list of items.
  */
 @ExperimentalReadiumApi
-interface AudioEngine<S : Configurable.Settings, P : Configurable.Preferences<P>> :
+public interface AudioEngine<S : Configurable.Settings, P : Configurable.Preferences<P>> :
     Configurable<S, P> {
 
     /**
      * Marker interface for the errors that the [AudioEngine] returns.
      */
-    interface Error
+    public interface Error
 
     /**
      * State of the player.
      */
-    sealed class State {
+    public sealed class State {
 
         /**
          * The player is ready to play.
          */
-        object Ready : State()
+        public object Ready : State()
 
         /**
          * The end of the content has been reached.
          */
-        object Ended : State()
+        public object Ended : State()
 
         /**
          * The engine cannot play because the buffer is starved.
          */
-        object Buffering : State()
+        public object Buffering : State()
 
         /**
          * The engine cannot play because an error occurred.
          */
-        data class Error(val error: AudioEngine.Error) : State()
+        public data class Error(val error: AudioEngine.Error) : State()
     }
 
     /**
@@ -59,7 +59,7 @@ interface AudioEngine<S : Configurable.Settings, P : Configurable.Preferences<P>
      * @param offset Position of the playback in the current item.
      * @param buffered Position in the current item until which the content is buffered.
      */
-    data class Playback(
+    public data class Playback(
         val state: State,
         val playWhenReady: Boolean,
         val index: Int,
@@ -70,45 +70,45 @@ interface AudioEngine<S : Configurable.Settings, P : Configurable.Preferences<P>
     /**
      * Current state of the playback.
      */
-    val playback: StateFlow<Playback>
+    public val playback: StateFlow<Playback>
 
     /**
      * Resumes the playback at the current location.
      */
-    fun play()
+    public fun play()
 
     /**
      * Pauses the playback.
      */
-    fun pause()
+    public fun pause()
 
     /**
      * Seeks to [position] in the item at [index].
      */
-    fun seek(index: Int, position: Duration)
+    public fun seek(index: Int, position: Duration)
 
     /**
      * Seeks by [offset] either forward or backward if [offset] is negative.
      */
-    fun seekBy(offset: Duration)
+    public fun seekBy(offset: Duration)
 
     /**
      * Seeks by a small increment forward.
      */
-    fun seekForward()
+    public fun seekForward()
 
     /**
      * Seeks by a small increment backward.
      */
-    fun seekBackward()
+    public fun seekBackward()
 
     /**
      * Closes the player.
      */
-    fun close()
+    public fun close()
 
     /**
      * Adapts this engine to the media3 [Player] interface.
      */
-    fun asPlayer(): Player
+    public fun asPlayer(): Player
 }

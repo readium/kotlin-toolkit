@@ -14,7 +14,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * JSON serializer of [ExoPlayerPreferences].
  */
 @ExperimentalReadiumApi
-class ExoPlayerPreferencesSerializer : PreferencesSerializer<ExoPlayerPreferences> {
+public class ExoPlayerPreferencesSerializer : PreferencesSerializer<ExoPlayerPreferences> {
 
     override fun serialize(preferences: ExoPlayerPreferences): String =
         Json.encodeToString(ExoPlayerPreferences.serializer(), preferences)

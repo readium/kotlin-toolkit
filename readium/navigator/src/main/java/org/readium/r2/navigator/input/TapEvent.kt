@@ -7,6 +7,6 @@ import android.graphics.PointF
  *
  * All the points are relative to the navigator view.
  */
-data class TapEvent(
+public data class TapEvent(
     val point: PointF
 )

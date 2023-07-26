@@ -139,7 +139,7 @@ internal class ChannelZipContainer(
 /**
  * An [ArchiveFactory] able to open a ZIP archive served through an HTTP server.
  */
-class ChannelZipArchiveFactory : ArchiveFactory {
+public class ChannelZipArchiveFactory : ArchiveFactory {
 
     override suspend fun create(
         resource: Resource,
@@ -180,7 +180,7 @@ class ChannelZipArchiveFactory : ArchiveFactory {
         }
     }
 
-    companion object {
+    public companion object {
 
         private const val CACHE_ALL_MAX_SIZE = 5242880
 

@@ -17,7 +17,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  */
 @ExperimentalReadiumApi
 @kotlinx.serialization.Serializable
-data class ExoPlayerPreferences(
+public data class ExoPlayerPreferences(
     val pitch: Double? = null,
     val speed: Double? = null,
 ) : Configurable.Preferences<ExoPlayerPreferences> {

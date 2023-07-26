@@ -18,14 +18,14 @@ import org.readium.r2.shared.util.Either
  * Returns null if the resource media type is not supported.
  */
 @ExperimentalReadiumApi
-fun interface ResourceContentIteratorFactory {
+public fun interface ResourceContentIteratorFactory {
 
     /**
      * Creates a [Content.Iterator] instance for the [resource], starting from the given [locator].
      *
      * Returns null if the resource media type is not supported.
      */
-    suspend fun create(
+    public suspend fun create(
         manifest: Manifest,
         servicesHolder: PublicationServicesHolder,
         readingOrderIndex: Int,
@@ -35,17 +35,17 @@ fun interface ResourceContentIteratorFactory {
 }
 
 /**
- * A composite [Content.Iterator] which iterates through a whole [publication] and delegates the
+ * A composite [Content.Iterator] which iterates through a whole [manifest] and delegates the
  * iteration inside a given resource to media type-specific iterators.
  *
- * @param publication The [Publication] which will be iterated through.
+ * @param manifest The [Manifest] of the publication which will be iterated through.
  * @param startLocator Starting [Locator] in the publication.
  * @param resourceContentIteratorFactories List of [ResourceContentIteratorFactory] which will be
  * used to create the iterator for each resource. The factories are tried in order until there's a
  * match.
  */
 @ExperimentalReadiumApi
-class PublicationContentIterator(
+public class PublicationContentIterator(
     private val manifest: Manifest,
     private val fetcher: Fetcher,
     private val services: PublicationServicesHolder,
@@ -105,7 +105,7 @@ class PublicationContentIterator(
     }
 
     /**
-     * Returns the [Content.Iterator] for the current [Resource] in the reading order.
+     * Returns the [Content.Iterator] for the current resource in the reading order.
      */
     private suspend fun currentIterator(): IndexedIterator? {
         if (_currentIterator == null) {

@@ -9,16 +9,19 @@
 
 package org.readium.r2.shared.util
 
+import org.readium.r2.shared.InternalReadiumApi
+
 /**
  * A lightweight implementation of URI Template (RFC 6570).
  *
  * Only handles simple cases, fitting Readium's use cases.
  * See https://tools.ietf.org/html/rfc6570
  */
-data class URITemplate(val uri: String) {
+@InternalReadiumApi
+public data class URITemplate(val uri: String) {
 
     /**
-     * List of URI template parameter keys, if the [Link] is templated.
+     * List of URI template parameter keys, if the Link is templated.
      */
     val parameters: List<String> by lazy {
         // Escaping the last } is somehow required, otherwise the regex can't be parsed on a Pixel
@@ -32,7 +35,7 @@ data class URITemplate(val uri: String) {
     /**
      * Expands the HREF by replacing URI template variables by the given parameters.
      */
-    fun expand(parameters: Map<String, String>): String {
+    public fun expand(parameters: Map<String, String>): String {
         @Suppress("NAME_SHADOWING")
         // `+` is considered like an encoded space, and will not be properly encoded in parameters.
         // This is an issue for ISO 8601 date for example.

@@ -10,9 +10,9 @@ import kotlin.math.abs
 import org.readium.r2.shared.InternalReadiumApi
 
 @InternalReadiumApi
-fun Float.equalsDelta(other: Float, delta: Float = 0.001f) =
+public fun Float.equalsDelta(other: Float, delta: Float = 0.001f): Boolean =
     this == other || abs(this - other) < delta
 
 @InternalReadiumApi
-fun Double.equalsDelta(other: Double, delta: Double = 0.001) =
+public fun Double.equalsDelta(other: Double, delta: Double = 0.001): Boolean =
     this == other || abs(this - other) < delta

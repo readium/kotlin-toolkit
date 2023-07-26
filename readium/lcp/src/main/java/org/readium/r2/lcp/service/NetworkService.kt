@@ -33,11 +33,11 @@ internal class NetworkException(val status: Int?, cause: Throwable? = null) : Ex
 internal class NetworkService(
     private val mediaTypeRetriever: MediaTypeRetriever
 ) {
-    enum class Method(val rawValue: String) {
+    enum class Method(val value: String) {
         GET("GET"), POST("POST"), PUT("PUT");
 
         companion object {
-            operator fun invoke(rawValue: String) = values().firstOrNull { it.rawValue == rawValue }
+            operator fun invoke(value: String) = values().firstOrNull { it.value == value }
         }
     }
 
@@ -54,7 +54,7 @@ internal class NetworkService(
                 val url = URL(Uri.parse(url).buildUpon().appendQueryParameters(parameters).build().toString())
 
                 val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = method.rawValue
+                connection.requestMethod = method.value
                 if (timeout != null) {
                     connection.connectTimeout = timeout.inWholeMilliseconds.toInt()
                 }

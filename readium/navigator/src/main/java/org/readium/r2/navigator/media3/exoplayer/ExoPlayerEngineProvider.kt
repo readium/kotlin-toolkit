@@ -16,7 +16,6 @@ import org.readium.r2.navigator.media3.api.MediaMetadataProvider
 import org.readium.r2.navigator.media3.audio.AudioEngineProvider
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 
@@ -28,7 +27,7 @@ import org.readium.r2.shared.publication.indexOfFirstWithHref
  */
 @ExperimentalReadiumApi
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-class ExoPlayerEngineProvider(
+public class ExoPlayerEngineProvider(
     private val application: Application,
     private val metadataProvider: MediaMetadataProvider = DefaultMediaMetadataProvider(),
     private val defaults: ExoPlayerDefaults = ExoPlayerDefaults(),
@@ -68,12 +67,6 @@ class ExoPlayerEngineProvider(
             initialPreferences = initialPreferences
         )
     }
-
-    override fun computeSettings(
-        metadata: Metadata,
-        preferences: ExoPlayerPreferences
-    ): ExoPlayerSettings =
-        ExoPlayerSettingsResolver(defaults).settings(preferences)
 
     override fun createPreferenceEditor(
         publication: Publication,

@@ -24,19 +24,19 @@ import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.util.mediatype.MediaType
 
-class StatusDocument(val data: ByteArray) {
-    val id: String
-    val status: Status
-    val message: String
-    val licenseUpdated: Date
-    val statusUpdated: Date
-    val links: Links
-    val potentialRights: PotentialRights?
-    val events: List<Event>
+public class StatusDocument(public val data: ByteArray) {
+    public val id: String
+    public val status: Status
+    public val message: String
+    public val licenseUpdated: Date
+    public val statusUpdated: Date
+    public val links: Links
+    public val potentialRights: PotentialRights?
+    public val events: List<Event>
 
-    val json: JSONObject
+    public val json: JSONObject
 
-    enum class Status(val rawValue: String) {
+    public enum class Status(public val value: String) {
         ready("ready"),
         active("active"),
         revoked("revoked"),
@@ -44,19 +44,25 @@ class StatusDocument(val data: ByteArray) {
         cancelled("cancelled"),
         expired("expired");
 
-        companion object {
-            operator fun invoke(rawValue: String) = values().firstOrNull { it.rawValue == rawValue }
+        @Deprecated("Use [value] instead", ReplaceWith("value"), level = DeprecationLevel.ERROR)
+        public val rawValue: String get() = value
+
+        public companion object {
+            public operator fun invoke(value: String): Status? = values().firstOrNull { it.value == value }
         }
     }
 
-    enum class Rel(val rawValue: String) {
+    public enum class Rel(public val value: String) {
         register("register"),
         license("license"),
         `return`("return"),
         renew("renew");
 
-        companion object {
-            operator fun invoke(rawValue: String) = values().firstOrNull { it.rawValue == rawValue }
+        @Deprecated("Use [value] instead", ReplaceWith("value"), level = DeprecationLevel.ERROR)
+        public val rawValue: String get() = value
+
+        public companion object {
+            public operator fun invoke(value: String): Rel? = values().firstOrNull { it.value == value }
         }
     }
 
@@ -86,29 +92,33 @@ class StatusDocument(val data: ByteArray) {
             ?: emptyList()
     }
 
-    fun link(rel: Rel, type: MediaType? = null): Link? =
-        links.firstWithRel(rel.rawValue, type)
+    public fun link(rel: Rel, type: MediaType? = null): Link? =
+        links.firstWithRel(rel.value, type)
 
-    fun links(rel: Rel, type: MediaType? = null): List<Link> =
-        links.allWithRel(rel.rawValue, type)
+    public fun links(rel: Rel, type: MediaType? = null): List<Link> =
+        links.allWithRel(rel.value, type)
 
     internal fun linkWithNoType(rel: Rel): Link? =
-        links.firstWithRelAndNoType(rel.rawValue)
+        links.firstWithRelAndNoType(rel.value)
 
-    fun url(rel: Rel, preferredType: MediaType? = null, parameters: URLParameters = emptyMap()): URL {
+    public fun url(
+        rel: Rel,
+        preferredType: MediaType? = null,
+        parameters: URLParameters = emptyMap()
+    ): URL {
         val link = link(rel, preferredType)
             ?: linkWithNoType(rel)
-            ?: throw LcpException.Parsing.Url(rel = rel.rawValue)
+            ?: throw LcpException.Parsing.Url(rel = rel.value)
 
         return link.url(parameters)
     }
 
-    fun events(type: Event.EventType): List<Event> =
-        events(type.rawValue)
+    public fun events(type: Event.EventType): List<Event> =
+        events(type.value)
 
-    fun events(type: String): List<Event> =
+    public fun events(type: String): List<Event> =
         events.filter { it.type == type }
 
-    val description: String
-        get() = "Status(${status.rawValue})"
+    public val description: String
+        get() = "Status(${status.value})"
 }

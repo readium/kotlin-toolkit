@@ -26,44 +26,47 @@ import org.readium.r2.shared.resource.Resource
  * `publicationId#resourceHref` with a [Locator] as a `locator` extra field.
  */
 @ExperimentalAudiobook
-interface MediaPlayer {
+public interface MediaPlayer {
 
-    data class NotificationMetadata(
+    public data class NotificationMetadata(
         val publicationTitle: String?,
         val trackTitle: String?,
         val authors: String?
     ) {
-        constructor(publication: Publication, link: Link) : this(
+        public constructor(publication: Publication, link: Link) : this(
             publicationTitle = publication.metadata.title,
             trackTitle = link.title,
             authors = publication.metadata.authors.joinToString(", ") { it.name }.takeIf { it.isNotBlank() }
         )
     }
 
-    interface Listener {
+    public interface Listener {
 
-        fun locatorFromMediaId(mediaId: String, extras: Bundle?): Locator?
+        public fun locatorFromMediaId(mediaId: String, extras: Bundle?): Locator?
 
-        suspend fun coverOfPublication(publication: Publication, publicationId: PublicationId): Bitmap?
+        public suspend fun coverOfPublication(
+            publication: Publication,
+            publicationId: PublicationId
+        ): Bitmap?
 
-        fun onNotificationPosted(notificationId: Int, notification: Notification)
-        fun onNotificationCancelled(notificationId: Int)
-        fun onCommand(command: String, args: Bundle?, cb: ResultReceiver?): Boolean
+        public fun onNotificationPosted(notificationId: Int, notification: Notification)
+        public fun onNotificationCancelled(notificationId: Int)
+        public fun onCommand(command: String, args: Bundle?, cb: ResultReceiver?): Boolean
 
-        fun onPlayerStopped()
+        public fun onPlayerStopped()
 
         /**
          * Called when a resource failed to be loaded, for example because the Internet connection
          * is offline and the resource is streamed.
          */
-        fun onResourceLoadFailed(link: Link, error: Resource.Exception)
+        public fun onResourceLoadFailed(link: Link, error: Resource.Exception)
 
         /**
          * Creates the [NotificationMetadata] for the given resource [link].
          *
          * The metadata will be used for the media-style notification.
          */
-        fun onCreateNotificationMetadata(
+        public fun onCreateNotificationMetadata(
             publication: Publication,
             publicationId: PublicationId,
             link: Link
@@ -71,9 +74,9 @@ interface MediaPlayer {
     }
 
     // FIXME: ExoPlayer's media session connector doesn't handle the playback speed yet, so I used a custom solution until we create our own connector
-    var playbackRate: Double
+    public var playbackRate: Double
 
-    var listener: Listener?
+    public var listener: Listener?
 
-    fun onDestroy()
+    public fun onDestroy()
 }

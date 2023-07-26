@@ -12,13 +12,13 @@ import org.readium.r2.shared.publication.Locator
 /**
  * A navigator supporting user selection.
  */
-interface SelectableNavigator : Navigator {
+public interface SelectableNavigator : Navigator {
 
     /** Currently selected content. */
-    suspend fun currentSelection(): Selection?
+    public suspend fun currentSelection(): Selection?
 
     /** Clears the current selection. */
-    fun clearSelection()
+    public fun clearSelection()
 }
 
 /**
@@ -28,7 +28,7 @@ interface SelectableNavigator : Navigator {
  * @param rect Frame of the bounding rect for the selection, in the coordinate of the navigator
  *        view. This is only useful in the context of a VisualNavigator.
  */
-data class Selection(
+public data class Selection(
     val locator: Locator,
     val rect: RectF?,
 )

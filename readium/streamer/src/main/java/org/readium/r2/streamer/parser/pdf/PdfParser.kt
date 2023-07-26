@@ -24,7 +24,7 @@ import org.readium.r2.streamer.parser.PublicationParser
  */
 @PdfSupport
 @OptIn(ExperimentalReadiumApi::class)
-class PdfParser(
+public class PdfParser(
     context: Context,
     private val pdfFactory: PdfDocumentFactory<*>
 ) : PublicationParser {

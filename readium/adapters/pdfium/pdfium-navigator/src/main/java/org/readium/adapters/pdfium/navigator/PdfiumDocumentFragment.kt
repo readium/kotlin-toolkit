@@ -27,7 +27,7 @@ import org.readium.r2.shared.resource.Resource
 import timber.log.Timber
 
 @ExperimentalReadiumApi
-class PdfiumDocumentFragment internal constructor(
+public class PdfiumDocumentFragment internal constructor(
     private val publication: Publication,
     private val link: Link,
     private val initialPageIndex: Int,
@@ -36,9 +36,9 @@ class PdfiumDocumentFragment internal constructor(
     private val navigatorListener: PdfDocumentFragment.Listener?
 ) : PdfDocumentFragment<PdfiumSettings>() {
 
-    interface Listener {
+    public interface Listener {
         /** Called when configuring [PDFView]. */
-        fun onConfigurePdfView(configurator: PDFView.Configurator) {}
+        public fun onConfigurePdfView(configurator: PDFView.Configurator) {}
     }
 
     override var settings: PdfiumSettings = settings

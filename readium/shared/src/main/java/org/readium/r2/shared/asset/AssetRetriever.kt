@@ -18,7 +18,7 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.*
 import org.readium.r2.shared.util.toUrl
 
-class AssetRetriever(
+public class AssetRetriever(
     private val resourceFactory: ResourceFactory,
     private val containerFactory: ContainerFactory,
     private val archiveFactory: ArchiveFactory,
@@ -26,7 +26,7 @@ class AssetRetriever(
     sniffers: List<Sniffer>
 ) {
 
-    constructor(context: Context) : this(
+    public constructor(context: Context) : this(
         resourceFactory = FileResourceFactory(),
         containerFactory = DirectoryContainerFactory(),
         archiveFactory = DefaultArchiveFactory(),
@@ -34,78 +34,78 @@ class AssetRetriever(
         sniffers = MediaType.sniffers
     )
 
-    sealed class Error : org.readium.r2.shared.error.Error {
+    public sealed class Error : org.readium.r2.shared.error.Error {
 
-        class SchemeNotSupported(
-            val scheme: String,
+        public class SchemeNotSupported(
+            public val scheme: String,
             override val cause: org.readium.r2.shared.error.Error?,
         ) : Error() {
 
-            constructor(scheme: String, exception: Exception) :
+            public constructor(scheme: String, exception: Exception) :
                 this(scheme, ThrowableError(exception))
 
             override val message: String =
                 "Scheme $scheme is not supported."
         }
 
-        class NotFound(
-            val url: Url,
+        public class NotFound(
+            public val url: Url,
             override val cause: org.readium.r2.shared.error.Error?
         ) : Error() {
 
-            constructor(url: Url, exception: Exception) :
+            public constructor(url: Url, exception: Exception) :
                 this(url, ThrowableError(exception))
 
             override val message: String =
                 "Asset could not be found at $url."
         }
 
-        class InvalidAsset(
+        public class InvalidAsset(
             override val cause: org.readium.r2.shared.error.Error?
         ) : Error() {
 
-            constructor(exception: Exception) :
+            public constructor(exception: Exception) :
                 this(ThrowableError(exception))
 
             override val message: String =
                 "Asset looks corrupted."
         }
 
-        class ArchiveFormatNotSupported(
+        public class ArchiveFormatNotSupported(
             override val cause: org.readium.r2.shared.error.Error?
         ) : Error() {
 
-            constructor(exception: Exception) :
+            public constructor(exception: Exception) :
                 this(ThrowableError(exception))
 
             override val message: String =
                 "Archive factory does not support this kind of archive."
         }
 
-        class Forbidden(
-            val url: Url,
+        public class Forbidden(
+            public val url: Url,
             override val cause: org.readium.r2.shared.error.Error
         ) : Error() {
 
-            constructor(url: Url, exception: Exception) :
+            public constructor(url: Url, exception: Exception) :
                 this(url, ThrowableError(exception))
 
             override val message: String =
                 "Access to asset at url $url is forbidden."
         }
 
-        class Unavailable(
+        public class Unavailable(
             override val cause: org.readium.r2.shared.error.Error
         ) : Error() {
 
-            constructor(exception: Exception) :
+            public constructor(exception: Exception) :
                 this(ThrowableError(exception))
 
             override val message: String =
                 "Asset seems not to be available at the moment."
         }
 
-        class OutOfMemory(
+        public class OutOfMemory(
             error: OutOfMemoryError
         ) : Error() {
 
@@ -116,7 +116,7 @@ class AssetRetriever(
                 ThrowableError(error)
         }
 
-        class Unknown(
+        public class Unknown(
             private val exception: Exception
         ) : Error() {
 
@@ -131,7 +131,7 @@ class AssetRetriever(
     /**
      * Retrieves an asset from a known media and asset type again.
      */
-    suspend fun retrieve(
+    public suspend fun retrieve(
         url: Url,
         mediaType: MediaType,
         assetType: AssetType
@@ -236,7 +236,7 @@ class AssetRetriever(
     /**
      * Retrieves an asset from a local file.
      */
-    suspend fun retrieve(
+    public suspend fun retrieve(
         file: File,
         mediaType: String? = null,
         fileExtension: String? = null,
@@ -250,7 +250,7 @@ class AssetRetriever(
     /**
      * Retrieves an asset from a local file.
      */
-    suspend fun retrieve(
+    public suspend fun retrieve(
         file: File,
         mediaTypes: List<String>,
         fileExtensions: List<String>,
@@ -268,7 +268,7 @@ class AssetRetriever(
     /**
      * Retrieves an asset from an Uri.
      */
-    suspend fun retrieve(
+    public suspend fun retrieve(
         uri: Uri,
         mediaType: String? = null,
         fileExtension: String? = null,
@@ -282,7 +282,7 @@ class AssetRetriever(
     /**
      * Retrieves an asset from a Uri.
      */
-    suspend fun retrieve(
+    public suspend fun retrieve(
         uri: Uri,
         mediaTypes: List<String>,
         fileExtensions: List<String>,
@@ -296,7 +296,7 @@ class AssetRetriever(
     /**
      * Retrieves an asset from a Url.
      */
-    suspend fun retrieve(
+    public suspend fun retrieve(
         url: Url,
         mediaType: String? = null,
         fileExtension: String? = null
@@ -307,7 +307,7 @@ class AssetRetriever(
     /**
      * Retrieves an asset from a Url.
      */
-    suspend fun retrieve(
+    public suspend fun retrieve(
         url: Url,
         mediaTypes: List<String>,
         fileExtensions: List<String>

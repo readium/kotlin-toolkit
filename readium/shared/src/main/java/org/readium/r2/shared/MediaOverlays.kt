@@ -11,13 +11,14 @@ package org.readium.r2.shared
 
 import java.io.Serializable
 
-data class MediaOverlays(private val nodes: List<MediaOverlayNode> = listOf()) : Serializable {
-    fun clip(ref: String): Clip? {
+@InternalReadiumApi
+public data class MediaOverlays(private val nodes: List<MediaOverlayNode> = listOf()) : Serializable {
+    public fun clip(ref: String): Clip? {
         val fragmentNode = nodeForFragment(ref)
         return fragmentNode?.clip
     }
 
-    fun nodeForFragment(ref: String?): MediaOverlayNode? = findNode(ref, this.nodes)
+    private fun nodeForFragment(ref: String?): MediaOverlayNode? = findNode(ref, this.nodes)
 
     private fun findNode(ref: String?, inNodes: List<MediaOverlayNode>): MediaOverlayNode? {
         for (node in inNodes) {
@@ -29,7 +30,7 @@ data class MediaOverlays(private val nodes: List<MediaOverlayNode> = listOf()) :
         return null
     }
 
-    data class NextNodeResult(val found: MediaOverlayNode?, val prevFound: Boolean)
+    public data class NextNodeResult(val found: MediaOverlayNode?, val prevFound: Boolean)
 
     private fun nodeAfterFragment(ref: String?): MediaOverlayNode? = findNextNode(ref, this.nodes).found
 

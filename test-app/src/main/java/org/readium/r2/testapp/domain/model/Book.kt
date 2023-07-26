@@ -61,7 +61,7 @@ data class Book(
         identifier = identifier,
         progression = progression,
         rawMediaType = mediaType.toString(),
-        rawAssetType = assetType.rawValue,
+        rawAssetType = assetType.value,
         drm = drm?.uri,
         cover = cover,
     )

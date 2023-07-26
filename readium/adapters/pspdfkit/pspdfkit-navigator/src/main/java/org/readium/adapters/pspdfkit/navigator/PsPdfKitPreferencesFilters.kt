@@ -13,7 +13,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * Suggested filter to keep only shared [PsPdfKitPreferences].
  */
 @ExperimentalReadiumApi
-object PsPdfKitSharedPreferencesFilter : PreferencesFilter<PsPdfKitPreferences> {
+public object PsPdfKitSharedPreferencesFilter : PreferencesFilter<PsPdfKitPreferences> {
 
     override fun filter(preferences: PsPdfKitPreferences): PsPdfKitPreferences =
         preferences.copy(
@@ -27,7 +27,7 @@ object PsPdfKitSharedPreferencesFilter : PreferencesFilter<PsPdfKitPreferences> 
  * Suggested filter to keep only publication-specific [PsPdfKitPreferences].
  */
 @ExperimentalReadiumApi
-object PsPdfKitPublicationPreferencesFilter : PreferencesFilter<PsPdfKitPreferences> {
+public object PsPdfKitPublicationPreferencesFilter : PreferencesFilter<PsPdfKitPreferences> {
 
     override fun filter(preferences: PsPdfKitPreferences): PsPdfKitPreferences =
         PsPdfKitPreferences(

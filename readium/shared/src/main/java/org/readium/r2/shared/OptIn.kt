@@ -15,7 +15,7 @@ package org.readium.r2.shared
 )
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY, AnnotationTarget.CONSTRUCTOR)
-annotation class InternalReadiumApi
+public annotation class InternalReadiumApi
 
 @RequiresOptIn(
     level = RequiresOptIn.Level.WARNING,
@@ -23,7 +23,7 @@ annotation class InternalReadiumApi
 )
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
-annotation class ExperimentalReadiumApi
+public annotation class ExperimentalReadiumApi
 
 @RequiresOptIn(
     level = RequiresOptIn.Level.WARNING,
@@ -31,7 +31,7 @@ annotation class ExperimentalReadiumApi
 )
 @Retention(value = AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
-annotation class DelicateReadiumApi
+public annotation class DelicateReadiumApi
 
 @RequiresOptIn(
     level = RequiresOptIn.Level.WARNING,
@@ -39,7 +39,7 @@ annotation class DelicateReadiumApi
 )
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
-annotation class PdfSupport
+public annotation class PdfSupport
 
 @RequiresOptIn(
     level = RequiresOptIn.Level.WARNING,
@@ -47,4 +47,4 @@ annotation class PdfSupport
 )
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
-annotation class Search
+public annotation class Search

@@ -14,7 +14,7 @@ import android.graphics.RectF
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
-object R2FXLUtils {
+internal object R2FXLUtils {
 
     /**
      * Round and set the values on the rectangle

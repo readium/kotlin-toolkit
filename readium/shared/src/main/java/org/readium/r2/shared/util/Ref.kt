@@ -12,7 +12,7 @@ package org.readium.r2.shared.util
  * Get the reference by calling `ref()`
  * Conveniently, the reference can be reset by setting the `ref` property.
  */
-class Ref<T>(var ref: T? = null) {
+internal class Ref<T>(var ref: T? = null) {
 
     operator fun invoke(): T? = ref
 }

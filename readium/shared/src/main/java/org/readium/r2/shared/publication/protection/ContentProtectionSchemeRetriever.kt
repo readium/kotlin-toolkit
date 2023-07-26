@@ -12,7 +12,7 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 /**
  * Retrieves [ContentProtection] schemes of assets.
  */
-class ContentProtectionSchemeRetriever(
+public class ContentProtectionSchemeRetriever(
     contentProtections: List<ContentProtection>,
     mediaTypeRetriever: MediaTypeRetriever
 ) {
@@ -22,7 +22,7 @@ class ContentProtectionSchemeRetriever(
             AdeptFallbackContentProtection(mediaTypeRetriever)
         )
 
-    suspend fun retrieve(asset: Asset): ContentProtection.Scheme? =
+    public suspend fun retrieve(asset: Asset): ContentProtection.Scheme? =
         contentProtections
             .firstOrNull { it.supports(asset) }
             ?.scheme

@@ -20,15 +20,15 @@ import org.readium.r2.shared.publication.Publication
  * Provides navigation to positions in the Publication content that correspond to the locations of
  * page boundaries present in a print source being represented by this EPUB Publication.
  */
-val Publication.pageList: List<Link> get() = linksWithRole("pageList")
+public val Publication.pageList: List<Link> get() = linksWithRole("pageList")
 
 /**
  * Identifies fundamental structural components of the publication in order to enable Reading
  * Systems to provide the User efficient access to them.
  */
-val Publication.landmarks: List<Link> get() = linksWithRole("landmarks")
+public val Publication.landmarks: List<Link> get() = linksWithRole("landmarks")
 
-val Publication.listOfAudioClips: List<Link> get() = linksWithRole("loa")
-val Publication.listOfIllustrations: List<Link> get() = linksWithRole("loi")
-val Publication.listOfTables: List<Link> get() = linksWithRole("lot")
-val Publication.listOfVideoClips: List<Link> get() = linksWithRole("lov")
+public val Publication.listOfAudioClips: List<Link> get() = linksWithRole("loa")
+public val Publication.listOfIllustrations: List<Link> get() = linksWithRole("loi")
+public val Publication.listOfTables: List<Link> get() = linksWithRole("lot")
+public val Publication.listOfVideoClips: List<Link> get() = linksWithRole("lov")

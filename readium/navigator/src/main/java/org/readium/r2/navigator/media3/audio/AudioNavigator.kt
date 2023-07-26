@@ -30,7 +30,7 @@ import timber.log.Timber
 
 @ExperimentalReadiumApi
 @OptIn(ExperimentalTime::class)
-class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>> private constructor(
+public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>> private constructor(
     override val publication: Publication,
     private val audioEngine: AudioEngine<S, P>,
     override val readingOrder: ReadingOrder,
@@ -40,9 +40,9 @@ class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>>
     Media3Adapter,
     Configurable<S, P> by audioEngine {
 
-    companion object {
+    public companion object {
 
-        suspend operator fun <S : Configurable.Settings, P : Configurable.Preferences<P>> invoke(
+        public suspend operator fun <S : Configurable.Settings, P : Configurable.Preferences<P>> invoke(
             publication: Publication,
             audioEngineProvider: AudioEngineProvider<S, P, *>,
             readingOrder: List<Link> = publication.readingOrder,
@@ -89,23 +89,23 @@ class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>>
         }
     }
 
-    data class Location(
+    public data class Location(
         override val href: Href,
         override val offset: Duration,
     ) : TimeBasedMediaNavigator.Location
 
-    data class ReadingOrder(
+    public data class ReadingOrder(
         override val duration: Duration?,
         override val items: List<Item>
     ) : TimeBasedMediaNavigator.ReadingOrder {
 
-        data class Item(
+        public data class Item(
             val href: Href,
             override val duration: Duration?
         ) : TimeBasedMediaNavigator.ReadingOrder.Item
     }
 
-    data class Playback(
+    public data class Playback(
         override val state: MediaNavigator.State,
         override val playWhenReady: Boolean,
         override val index: Int,
@@ -113,15 +113,15 @@ class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>>
         override val buffered: Duration?,
     ) : TimeBasedMediaNavigator.Playback
 
-    sealed class State {
+    public sealed class State {
 
-        object Ready : MediaNavigator.State.Ready
+        public object Ready : MediaNavigator.State.Ready
 
-        object Ended : MediaNavigator.State.Ended
+        public object Ended : MediaNavigator.State.Ended
 
-        object Buffering : MediaNavigator.State.Buffering
+        public object Buffering : MediaNavigator.State.Buffering
 
-        data class Error<E : AudioEngine.Error> (val error: E) : MediaNavigator.State.Error
+        public data class Error<E : AudioEngine.Error> (val error: E) : MediaNavigator.State.Error
     }
 
     private val coroutineScope: CoroutineScope =
@@ -178,15 +178,15 @@ class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>>
         audioEngine.seek(index, offset)
     }
 
-    fun seekForward() {
+    public fun seekForward() {
         audioEngine.seekForward()
     }
 
-    fun seekBackward() {
+    public fun seekBackward() {
         audioEngine.seekBackward()
     }
 
-    fun seekBy(offset: Duration) {
+    public fun seekBy(offset: Duration) {
         audioEngine.seekBy(offset)
     }
 

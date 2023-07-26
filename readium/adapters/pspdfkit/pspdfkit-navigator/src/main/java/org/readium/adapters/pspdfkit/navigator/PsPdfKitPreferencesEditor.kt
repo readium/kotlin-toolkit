@@ -30,7 +30,7 @@ import org.readium.r2.shared.publication.Metadata
  * or ranges.
  */
 @ExperimentalReadiumApi
-class PsPdfKitPreferencesEditor internal constructor(
+public class PsPdfKitPreferencesEditor internal constructor(
     initialPreferences: PsPdfKitPreferences,
     publicationMetadata: Metadata,
     defaults: PsPdfKitDefaults,
@@ -60,7 +60,7 @@ class PsPdfKitPreferencesEditor internal constructor(
     /**
      * Indicates how pages should be laid out within the viewport.
      */
-    val fit: EnumPreference<Fit> =
+    public val fit: EnumPreference<Fit> =
         EnumPreferenceDelegate(
             getValue = { preferences.fit },
             getEffectiveValue = { state.settings.fit },
@@ -76,7 +76,7 @@ class PsPdfKitPreferencesEditor internal constructor(
      *  - [scroll] is off
      *  - [spread] are not disabled
      */
-    val offsetFirstPage: Preference<Boolean> =
+    public val offsetFirstPage: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.offsetFirstPage },
             getEffectiveValue = { state.settings.offsetFirstPage },
@@ -87,7 +87,7 @@ class PsPdfKitPreferencesEditor internal constructor(
     /**
      * Space between pages in dp.
      */
-    val pageSpacing: RangePreference<Double> =
+    public val pageSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.pageSpacing },
             getEffectiveValue = { state.settings.pageSpacing },
@@ -101,7 +101,7 @@ class PsPdfKitPreferencesEditor internal constructor(
     /**
      * Direction of the horizontal progression across pages.
      */
-    val readingProgression: EnumPreference<ReadingProgression> =
+    public val readingProgression: EnumPreference<ReadingProgression> =
         EnumPreferenceDelegate(
             getValue = { preferences.readingProgression },
             getEffectiveValue = { state.settings.readingProgression },
@@ -113,7 +113,7 @@ class PsPdfKitPreferencesEditor internal constructor(
     /**
      * Indicates if pages should be handled using scrolling instead of pagination.
      */
-    val scroll: Preference<Boolean> =
+    public val scroll: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.scroll },
             getEffectiveValue = { state.settings.scroll },
@@ -126,7 +126,7 @@ class PsPdfKitPreferencesEditor internal constructor(
      *
      * Only effective when [scroll] is on.
      */
-    val scrollAxis: EnumPreference<Axis> =
+    public val scrollAxis: EnumPreference<Axis> =
         EnumPreferenceDelegate(
             getValue = { preferences.scrollAxis },
             getEffectiveValue = { state.settings.scrollAxis },
@@ -140,7 +140,7 @@ class PsPdfKitPreferencesEditor internal constructor(
      *
      * Only effective when [scroll] is off.
      */
-    val spread: EnumPreference<Spread> =
+    public val spread: EnumPreference<Spread> =
         EnumPreferenceDelegate(
             getValue = { preferences.spread },
             getEffectiveValue = { state.settings.spread },

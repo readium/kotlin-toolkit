@@ -10,8 +10,6 @@
 package org.readium.r2.streamer.container
 
 import java.io.InputStream
-import org.readium.r2.shared.RootFile
-import org.readium.r2.shared.drm.DRM
 
 /**
  * Container of a publication
@@ -28,23 +26,26 @@ import org.readium.r2.shared.drm.DRM
  * @func dataInputStream : return the InputStream of content
  */
 @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
-interface Container {
-    var rootFile: RootFile
-    var drm: DRM?
-
-    @Deprecated("Use [publication.get()] to access publication content.")
-    fun data(relativePath: String): ByteArray
-    @Deprecated("Use [publication.get()] to access publication content.")
-    fun dataLength(relativePath: String): Long
-    @Deprecated("Use [publication.get()] to access publication content.")
-    fun dataInputStream(relativePath: String): InputStream
+public interface Container {
+    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+    public fun data(relativePath: String): ByteArray
+    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+    public fun dataLength(relativePath: String): Long
+    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+    public fun dataInputStream(relativePath: String): InputStream
 }
 
-sealed class ContainerError : Exception() {
-    object streamInitFailed : ContainerError()
-    object fileNotFound : ContainerError()
-    object fileError : ContainerError()
-    data class missingFile(val path: String) : ContainerError()
-    data class xmlParse(val underlyingError: Error) : ContainerError()
-    data class missingLink(val title: String?) : ContainerError()
+public sealed class ContainerError : Exception() {
+    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+    public object streamInitFailed : ContainerError()
+    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+    public object fileNotFound : ContainerError()
+    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+    public object fileError : ContainerError()
+    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+    public data class missingFile(public val path: String) : ContainerError()
+    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+    public data class xmlParse(public val underlyingError: Error) : ContainerError()
+    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+    public data class missingLink(public val title: String?) : ContainerError()
 }

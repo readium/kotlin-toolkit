@@ -10,34 +10,25 @@
 package org.readium.r2.shared.drm
 
 import java.io.Serializable
-import org.readium.r2.shared.util.MapCompanion
 
-data class DRM(val brand: Brand) : Serializable {
-    val scheme: Scheme
-    var license: DRMLicense? = null
+@Deprecated("Not used anymore", level = DeprecationLevel.ERROR)
+public class DRM {
 
-    enum class Brand(val rawValue: String) : Serializable {
+    @Deprecated("Not used anymore", level = DeprecationLevel.ERROR)
+    public enum class Brand(public val rawValue: String) : Serializable {
         lcp("lcp");
-
-        companion object : MapCompanion<String, Brand>(values(), Brand::rawValue)
     }
 
-    enum class Scheme(val rawValue: String) : Serializable {
+    @Deprecated("Not used anymore", level = DeprecationLevel.ERROR)
+    public enum class Scheme(public val rawValue: String) : Serializable {
         lcp("http://readium.org/2014/01/lcp");
-
-        companion object : MapCompanion<String, Scheme>(values(), Scheme::rawValue)
-    }
-
-    init {
-        when (brand) {
-            Brand.lcp -> scheme = Scheme.lcp
-        }
     }
 }
 
-interface DRMLicense : Serializable {
-    val encryptionProfile: String?
-    fun decipher(data: ByteArray): ByteArray?
-    val canCopy: Boolean
-    fun copy(text: String): String?
+@Deprecated("Not used anymore", level = DeprecationLevel.ERROR)
+public interface DRMLicense : Serializable {
+    public val encryptionProfile: String?
+    public fun decipher(data: ByteArray): ByteArray?
+    public val canCopy: Boolean
+    public fun copy(text: String): String?
 }

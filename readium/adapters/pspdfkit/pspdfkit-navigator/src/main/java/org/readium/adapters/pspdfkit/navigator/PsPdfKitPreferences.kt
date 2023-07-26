@@ -23,7 +23,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  */
 @ExperimentalReadiumApi
 @Serializable
-data class PsPdfKitPreferences(
+public data class PsPdfKitPreferences(
     val fit: Fit? = null,
     val offsetFirstPage: Boolean? = null,
     val pageSpacing: Double? = null,
@@ -38,7 +38,7 @@ data class PsPdfKitPreferences(
         require(pageSpacing == null || pageSpacing >= 0)
     }
 
-    override operator fun plus(other: PsPdfKitPreferences) =
+    override operator fun plus(other: PsPdfKitPreferences): PsPdfKitPreferences =
         PsPdfKitPreferences(
             fit = other.fit ?: fit,
             offsetFirstPage = other.offsetFirstPage ?: offsetFirstPage,

@@ -4,22 +4,22 @@ import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.shared.ExperimentalReadiumApi
 
 @ExperimentalReadiumApi
-interface InputListener {
+public interface InputListener {
     /**
      * Called when the user tapped the content, but nothing handled the event internally (eg.
      * by following an internal link).
      */
-    fun onTap(navigator: VisualNavigator, event: TapEvent): Boolean = false
+    public fun onTap(navigator: VisualNavigator, event: TapEvent): Boolean = false
 
     /**
      * Called when the user dragged the content, but nothing handled the event internally.
      */
-    fun onDrag(navigator: VisualNavigator, event: DragEvent): Boolean = false
+    public fun onDrag(navigator: VisualNavigator, event: DragEvent): Boolean = false
 
     /**
      * Called when the user pressed or released a key, but nothing handled the event internally.
      */
-    fun onKey(navigator: VisualNavigator, event: KeyEvent): Boolean = false
+    public fun onKey(navigator: VisualNavigator, event: KeyEvent): Boolean = false
 }
 
 @OptIn(ExperimentalReadiumApi::class)

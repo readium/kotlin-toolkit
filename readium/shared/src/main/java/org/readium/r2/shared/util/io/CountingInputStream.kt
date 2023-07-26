@@ -18,12 +18,12 @@ import org.readium.r2.shared.extensions.requireLengthFitInt
  * An [InputStream] counting the number of bytes read from a wrapped [inputStream].
  */
 @InternalReadiumApi
-class CountingInputStream(
+public class CountingInputStream(
     inputStream: InputStream,
     initialCount: Long = 0
 ) : FilterInputStream(inputStream) {
 
-    var count: Long = initialCount
+    public var count: Long = initialCount
         private set
 
     private var mark: Long = -1
@@ -65,7 +65,7 @@ class CountingInputStream(
         count = mark.coerceAtLeast(0)
     }
 
-    fun readRange(range: LongRange): ByteArray {
+    public fun readRange(range: LongRange): ByteArray {
         @Suppress("NAME_SHADOWING")
         val range = range
             .coerceFirstNonNegative()

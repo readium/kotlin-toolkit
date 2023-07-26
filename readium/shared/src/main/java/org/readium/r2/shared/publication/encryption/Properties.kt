@@ -18,6 +18,6 @@ import org.readium.r2.shared.publication.Properties
  * Indicates that a resource is encrypted/obfuscated and provides relevant information for
  * decryption.
  */
-val Properties.encryption: Encryption?
+public val Properties.encryption: Encryption?
     get() = (this["encrypted"] as? Map<*, *>)
         ?.let { Encryption.fromJSON(JSONObject(it)) }

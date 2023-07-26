@@ -12,8 +12,6 @@ package org.readium.r2.navigator.extensions
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Locator
 
 // FIXME: This should be in r2-shared once this public API is specified.
@@ -23,8 +21,7 @@ import org.readium.r2.shared.publication.Locator
 /**
  * All named parameters found in the fragments, such as `p=5`.
  */
-@InternalReadiumApi
-val Locator.Locations.fragmentParameters: Map<String, String> get() =
+internal val Locator.Locations.fragmentParameters: Map<String, String> get() =
     fragments
         // Concatenates fragments together, after dropping any #
         .map { it.removePrefix("#") }
@@ -68,7 +65,6 @@ internal val Locator.Locations.time: Duration? get() =
 /**
  * Computes the time position from the resource duration.
  */
-@OptIn(ExperimentalTime::class)
 internal fun Locator.Locations.timeWithDuration(duration: Duration?): Duration? =
-    let(duration, progression) { d, p -> (p * d.inSeconds).seconds }
+    let(duration, progression) { d, p -> (p * d.inWholeSeconds).seconds }
         ?: time

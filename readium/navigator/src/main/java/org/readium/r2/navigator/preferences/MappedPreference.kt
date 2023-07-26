@@ -7,21 +7,21 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * the target type [V].
  */
 @ExperimentalReadiumApi
-fun <T, V> Preference<T>.map(from: (T) -> V, to: (V) -> T): Preference<V> =
+public fun <T, V> Preference<T>.map(from: (T) -> V, to: (V) -> T): Preference<V> =
     MappedPreference(this, from, to)
 
 /**
  * Creates a new [EnumPreference] object wrapping the receiver with the provided [supportedValues].
  */
 @ExperimentalReadiumApi
-fun <T> Preference<T>.withSupportedValues(vararg supportedValues: T): EnumPreference<T> =
+public fun <T> Preference<T>.withSupportedValues(vararg supportedValues: T): EnumPreference<T> =
     withSupportedValues(supportedValues.toList())
 
 /**
  * Creates a new [EnumPreference] object wrapping the receiver with the provided [supportedValues].
  */
 @ExperimentalReadiumApi
-fun <T> Preference<T>.withSupportedValues(supportedValues: List<T>): EnumPreference<T> =
+public fun <T> Preference<T>.withSupportedValues(supportedValues: List<T>): EnumPreference<T> =
     PreferenceWithSupportedValues(this, supportedValues)
 
 /**
@@ -29,7 +29,7 @@ fun <T> Preference<T>.withSupportedValues(supportedValues: List<T>): EnumPrefere
  * [supportedValues], [from] and [to] the target type [V].
  */
 @ExperimentalReadiumApi
-fun <T, V> EnumPreference<T>.map(
+public fun <T, V> EnumPreference<T>.map(
     from: (T) -> V,
     to: (V) -> T,
     supportedValues: (List<T>) -> List<V> = { it.map(from) }
@@ -40,14 +40,14 @@ fun <T, V> EnumPreference<T>.map(
  * Creates a new [EnumPreference] object wrapping the receiver with the provided [supportedValues].
  */
 @ExperimentalReadiumApi
-fun <T> EnumPreference<T>.withSupportedValues(vararg supportedValues: T): EnumPreference<T> =
+public fun <T> EnumPreference<T>.withSupportedValues(vararg supportedValues: T): EnumPreference<T> =
     withSupportedValues(supportedValues.toList())
 
 /**
  * Creates a new [EnumPreference] object wrapping the receiver with the provided [supportedValues].
  */
 @ExperimentalReadiumApi
-fun <T> EnumPreference<T>.withSupportedValues(supportedValues: List<T>): EnumPreference<T> =
+public fun <T> EnumPreference<T>.withSupportedValues(supportedValues: List<T>): EnumPreference<T> =
     map(from = { it }, to = { it }, supportedValues = { supportedValues })
 
 /**
@@ -55,7 +55,7 @@ fun <T> EnumPreference<T>.withSupportedValues(supportedValues: List<T>): EnumPre
  * values with [transform].
  */
 @ExperimentalReadiumApi
-fun <T> EnumPreference<T>.mapSupportedValues(transform: (List<T>) -> List<T>): EnumPreference<T> =
+public fun <T> EnumPreference<T>.mapSupportedValues(transform: (List<T>) -> List<T>): EnumPreference<T> =
     map(from = { it }, to = { it }, supportedValues = transform)
 
 /**
@@ -65,7 +65,7 @@ fun <T> EnumPreference<T>.mapSupportedValues(transform: (List<T>) -> List<T>): E
  * The value formatter, or [increment] and [decrement] strategy of the receiver can be overwritten.
  */
 @ExperimentalReadiumApi
-fun <T : Comparable<T>, V : Comparable<V>> RangePreference<T>.map(
+public fun <T : Comparable<T>, V : Comparable<V>> RangePreference<T>.map(
     from: (T) -> V,
     to: (V) -> T,
     supportedRange: (ClosedRange<T>) -> ClosedRange<V> = { from(it.start)..from(it.endInclusive) },
@@ -86,7 +86,7 @@ fun <T : Comparable<T>, V : Comparable<V>> RangePreference<T>.map(
  * [supportedRange], or overwriting its [formatValue] or [increment] and [decrement] strategy.
  */
 @ExperimentalReadiumApi
-fun <T : Comparable<T>> RangePreference<T>.map(
+public fun <T : Comparable<T>> RangePreference<T>.map(
     supportedRange: (ClosedRange<T>) -> ClosedRange<T> = { it },
     formatValue: ((T) -> String)? = null,
     increment: (RangePreference<T>.() -> Unit)? = null,
@@ -106,7 +106,7 @@ fun <T : Comparable<T>> RangePreference<T>.map(
  * and decrement.
  */
 @ExperimentalReadiumApi
-fun <T : Comparable<T>> RangePreference<T>.withSupportedRange(
+public fun <T : Comparable<T>> RangePreference<T>.withSupportedRange(
     range: ClosedRange<T> = supportedRange,
     progressionStrategy: ProgressionStrategy<T>
 ): RangePreference<T> =

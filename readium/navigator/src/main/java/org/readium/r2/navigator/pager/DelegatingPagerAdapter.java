@@ -24,7 +24,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.viewpager.widget.PagerAdapter;
 
-public class DelegatingPagerAdapter extends PagerAdapter {
+class DelegatingPagerAdapter extends PagerAdapter {
 
     private final PagerAdapter mDelegate;
 

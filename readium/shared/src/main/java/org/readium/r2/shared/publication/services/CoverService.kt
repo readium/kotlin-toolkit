@@ -39,19 +39,19 @@ import org.readium.r2.shared.publication.ServiceFactory
  * - generating a bitmap from scratch using the publication's title
  * - using a cover selected by the user.
  */
-interface CoverService : Publication.Service {
+public interface CoverService : Publication.Service {
 
     /**
      * Returns the publication cover as a [Bitmap] at its maximum size.
      *
      * If the cover is not a bitmap format (e.g. SVG), it should be scaled down to fit the screen.
      */
-    suspend fun cover(): Bitmap?
+    public suspend fun cover(): Bitmap?
 
     /**
      *  Returns the publication cover as a [Bitmap], scaled down to fit the given [maxSize].
      */
-    suspend fun coverFitting(maxSize: Size): Bitmap? = cover()?.scaleToFit(maxSize)
+    public suspend fun coverFitting(maxSize: Size): Bitmap? = cover()?.scaleToFit(maxSize)
 }
 
 private suspend fun Publication.coverFromManifest(): Bitmap? {
@@ -65,7 +65,7 @@ private suspend fun Publication.coverFromManifest(): Bitmap? {
 /**
  * Returns the publication cover as a [Bitmap] at its maximum size.
  */
-suspend fun Publication.cover(): Bitmap? {
+public suspend fun Publication.cover(): Bitmap? {
     findService(CoverService::class)?.cover()?.let { return it }
     return coverFromManifest()
 }
@@ -73,20 +73,20 @@ suspend fun Publication.cover(): Bitmap? {
 /**
  * Returns the publication cover as a [Bitmap], scaled down to fit the given [maxSize].
  */
-suspend fun Publication.coverFitting(maxSize: Size): Bitmap? {
+public suspend fun Publication.coverFitting(maxSize: Size): Bitmap? {
     findService(CoverService::class)?.coverFitting(maxSize)?.let { return it }
     return coverFromManifest()?.scaleToFit(maxSize)
 }
 
 /** Factory to build a [CoverService]. */
-var Publication.ServicesBuilder.coverServiceFactory: ServiceFactory?
+public var Publication.ServicesBuilder.coverServiceFactory: ServiceFactory?
     get() = get(CoverService::class)
     set(value) = set(CoverService::class, value)
 
 /**
  * A [CoverService] which provides a unique cover for each Publication.
  */
-abstract class GeneratedCoverService : CoverService {
+public abstract class GeneratedCoverService : CoverService {
 
     private val coverLink = Link(
         href = "/~readium/cover",
@@ -121,10 +121,10 @@ abstract class GeneratedCoverService : CoverService {
 /**
  * A [CoverService] which uses a provided in-memory bitmap.
  */
-class InMemoryCoverService internal constructor(private val cover: Bitmap) : GeneratedCoverService() {
+public class InMemoryCoverService internal constructor(private val cover: Bitmap) : GeneratedCoverService() {
 
-    companion object {
-        fun createFactory(cover: Bitmap?): ServiceFactory? = { cover?.let { InMemoryCoverService(it) } }
+    public companion object {
+        public fun createFactory(cover: Bitmap?): ServiceFactory = { cover?.let { InMemoryCoverService(it) } }
     }
 
     override suspend fun cover(): Bitmap = cover

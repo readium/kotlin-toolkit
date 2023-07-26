@@ -24,12 +24,20 @@ All notable changes to this project will be documented in this file. Take a look
 
 ### Changed
 
+* Readium resources are now prefixed with `readium_`. Take care of updating any overridden resource by following [the migration guide](docs/migration-guide.md#300).
+
 #### Navigator
 
 * `EpubNavigatorFragment.firstVisibleElementLocator()` now returns the first *block* element that is visible on the screen, even if it starts on previous pages.
     * This is used to make sure the user will not miss any context when restoring a TTS session in the middle of a resource.
 * The `VisualNavigator`'s drag and tap listener events are moved to a new `addInputListener()` API.
 * The new `DirectionalNavigationAdapter` component replaces `EdgeTapNavigation`, helping you turn pages with the arrow and space keyboard keys, or taps on the edge of the screen.
+
+### Deprecated
+
+#### Navigator
+
+* All the navigator `Activity` are deprecated in favor of the `Fragment` variants.
 
 ### Fixed
 

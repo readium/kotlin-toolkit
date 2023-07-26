@@ -26,12 +26,13 @@ import org.readium.r2.shared.util.mediatype.MediaType
  * Function used to recursively transform the href of a [Link] when parsing its JSON
  * representation.
  */
-typealias LinkHrefNormalizer = (String) -> String
+
+public typealias LinkHrefNormalizer = (String) -> String
 
 /**
  * Default href normalizer for [Link], doing nothing.
  */
-val LinkHrefNormalizerIdentity: LinkHrefNormalizer = { it }
+public val LinkHrefNormalizerIdentity: LinkHrefNormalizer = { it }
 
 /**
  * Link Object for the Readium Web Publication Manifest.
@@ -53,7 +54,7 @@ val LinkHrefNormalizerIdentity: LinkHrefNormalizer = { it }
  *     collection role.
  */
 @Parcelize
-data class Link(
+public data class Link(
     val href: String,
     val type: String? = null,
     val templated: Boolean = false,
@@ -89,7 +90,7 @@ data class Link(
      *
      * See RFC 6570 on URI template.
      */
-    fun expandTemplate(parameters: Map<String, String>): Link =
+    public fun expandTemplate(parameters: Map<String, String>): Link =
         copy(href = URITemplate(href).expand(parameters), templated = false)
 
     /**
@@ -97,7 +98,7 @@ data class Link(
      *
      * If the link's [href] is already absolute, the [baseUrl] is ignored.
      */
-    fun toUrl(baseUrl: String?): String? {
+    public fun toUrl(baseUrl: String?): String? {
         val href = href.removePrefix("/")
         if (href.isBlank()) {
             return null
@@ -128,10 +129,10 @@ data class Link(
     /**
      * Makes a copy of this [Link] after merging in the given additional other [properties].
      */
-    fun addProperties(properties: Map<String, Any>): Link =
+    public fun addProperties(properties: Map<String, Any>): Link =
         copy(properties = this.properties.add(properties))
 
-    companion object {
+    public companion object {
 
         /**
          * Creates an [Link] from its RWPM JSON representation.
@@ -139,7 +140,7 @@ data class Link(
          * [normalizeHref] closure.
          * If the link can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSON(
+        public fun fromJSON(
             json: JSONObject?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
@@ -173,7 +174,7 @@ data class Link(
          * [normalizeHref] closure.
          * If a link can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSONArray(
+        public fun fromJSONArray(
             json: JSONArray?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
@@ -194,84 +195,84 @@ data class Link(
 /**
  * Returns the first [Link] with the given [href], or null if not found.
  */
-fun List<Link>.indexOfFirstWithHref(href: String): Int? =
+public fun List<Link>.indexOfFirstWithHref(href: String): Int? =
     indexOfFirst { it.href == href }
         .takeUnless { it == -1 }
 
 /**
  * Finds the first link matching the given HREF.
  */
-fun List<Link>.firstWithHref(href: String): Link? = firstOrNull { it.href == href }
+public fun List<Link>.firstWithHref(href: String): Link? = firstOrNull { it.href == href }
 
 /**
  * Finds the first link with the given relation.
  */
-fun List<Link>.firstWithRel(rel: String): Link? = firstOrNull { it.rels.contains(rel) }
+public fun List<Link>.firstWithRel(rel: String): Link? = firstOrNull { it.rels.contains(rel) }
 
 /**
  * Finds all the links with the given relation.
  */
-fun List<Link>.filterByRel(rel: String): List<Link> = filter { it.rels.contains(rel) }
+public fun List<Link>.filterByRel(rel: String): List<Link> = filter { it.rels.contains(rel) }
 
 /**
  * Finds the first link matching the given media type.
  */
-fun List<Link>.firstWithMediaType(mediaType: MediaType): Link? = firstOrNull {
+public fun List<Link>.firstWithMediaType(mediaType: MediaType): Link? = firstOrNull {
     it.mediaType.matches(mediaType)
 }
 
 /**
  * Finds all the links matching the given media type.
  */
-fun List<Link>.filterByMediaType(mediaType: MediaType): List<Link> = filter {
+public fun List<Link>.filterByMediaType(mediaType: MediaType): List<Link> = filter {
     it.mediaType.matches(mediaType)
 }
 
 /**
  * Finds all the links matching any of the given media types.
  */
-fun List<Link>.filterByMediaTypes(mediaTypes: List<MediaType>): List<Link> = filter {
+public fun List<Link>.filterByMediaTypes(mediaTypes: List<MediaType>): List<Link> = filter {
     mediaTypes.any { mediaType -> mediaType.matches(it.type) }
 }
 
 /**
  * Returns whether all the resources in the collection are bitmaps.
  */
-val List<Link>.allAreBitmap: Boolean get() = isNotEmpty() && all {
+public val List<Link>.allAreBitmap: Boolean get() = isNotEmpty() && all {
     it.mediaType.isBitmap
 }
 
 /**
  * Returns whether all the resources in the collection are audio clips.
  */
-val List<Link>.allAreAudio: Boolean get() = isNotEmpty() && all {
+public val List<Link>.allAreAudio: Boolean get() = isNotEmpty() && all {
     it.mediaType.isAudio
 }
 
 /**
  * Returns whether all the resources in the collection are video clips.
  */
-val List<Link>.allAreVideo: Boolean get() = isNotEmpty() && all {
+public val List<Link>.allAreVideo: Boolean get() = isNotEmpty() && all {
     it.mediaType.isVideo
 }
 
 /**
  * Returns whether all the resources in the collection are HTML documents.
  */
-val List<Link>.allAreHtml: Boolean get() = isNotEmpty() && all {
+public val List<Link>.allAreHtml: Boolean get() = isNotEmpty() && all {
     it.mediaType.isHtml
 }
 
 /**
  * Returns whether all the resources in the collection are matching the given media type.
  */
-fun List<Link>.allMatchMediaType(mediaType: MediaType): Boolean = isNotEmpty() && all {
+public fun List<Link>.allMatchMediaType(mediaType: MediaType): Boolean = isNotEmpty() && all {
     mediaType.matches(it.mediaType)
 }
 
 /**
  * Returns whether all the resources in the collection are matching any of the given media types.
  */
-fun List<Link>.allMatchMediaTypes(mediaTypes: List<MediaType>): Boolean = isNotEmpty() && all {
+public fun List<Link>.allMatchMediaTypes(mediaTypes: List<MediaType>): Boolean = isNotEmpty() && all {
     mediaTypes.any { mediaType -> mediaType.matches(it.mediaType) }
 }

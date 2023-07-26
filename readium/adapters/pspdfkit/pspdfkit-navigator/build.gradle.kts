@@ -44,6 +44,10 @@ android {
     namespace = "org.readium.adapters.pspdfkit.navigator"
 }
 
+kotlin {
+    explicitApi()
+}
+
 rootProject.ext["publish.artifactId"] = "readium-adapter-pspdfkit-navigator"
 apply(from = "$rootDir/scripts/publish-module.gradle")
 

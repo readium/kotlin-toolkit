@@ -27,19 +27,19 @@ private val positionsLink = Link(
 /**
  * Provides a list of discrete locations in the publication, no matter what the original format is.
  */
-interface PositionsService : Publication.Service {
+public interface PositionsService : Publication.Service {
 
     /**
      * Returns the list of all the positions in the publication, grouped by the resource reading order index.
      */
-    suspend fun positionsByReadingOrder(): List<List<Locator>>
+    public suspend fun positionsByReadingOrder(): List<List<Locator>>
 
     /**
      * Returns the list of all the positions in the publication.
      */
-    suspend fun positions(): List<Locator> = positionsByReadingOrder().flatten()
+    public suspend fun positions(): List<Locator> = positionsByReadingOrder().flatten()
 
-    override val links get() = listOf(positionsLink)
+    override val links: List<Link> get() = listOf(positionsLink)
 
     override fun get(link: Link): Fetcher.Resource? {
         if (link.href != positionsLink.href)
@@ -58,7 +58,7 @@ interface PositionsService : Publication.Service {
 /**
  * Returns the list of all the positions in the publication, grouped by the resource reading order index.
  */
-suspend fun PublicationServicesHolder.positionsByReadingOrder(): List<List<Locator>> {
+public suspend fun PublicationServicesHolder.positionsByReadingOrder(): List<List<Locator>> {
     checkNotNull(findService(PositionsService::class)) { "No position service found." }
         .let { return it.positionsByReadingOrder() }
 }
@@ -66,7 +66,7 @@ suspend fun PublicationServicesHolder.positionsByReadingOrder(): List<List<Locat
 /**
  * Returns the list of all the positions in the publication.
  */
-suspend fun PublicationServicesHolder.positions(): List<Locator> {
+public suspend fun PublicationServicesHolder.positions(): List<Locator> {
     checkNotNull(findService(PositionsService::class)) { "No position service found." }
         .let { return it.positions() }
 }
@@ -75,11 +75,11 @@ suspend fun PublicationServicesHolder.positions(): List<Locator> {
  * List of all the positions in each resource, indexed by their href.
  */
 @Deprecated("Use [positionsByReadingOrder] instead", ReplaceWith("positionsByReadingOrder"))
-val Publication.positionsByResource: Map<String, List<Locator>>
+public val Publication.positionsByResource: Map<String, List<Locator>>
     get() = runBlocking { positions().groupBy { it.href } }
 
 /** Factory to build a [PositionsService] */
-var Publication.ServicesBuilder.positionsServiceFactory: ServiceFactory?
+public var Publication.ServicesBuilder.positionsServiceFactory: ServiceFactory?
     get() = get(PositionsService::class)
     set(value) = set(PositionsService::class, value)
 
@@ -90,7 +90,7 @@ var Publication.ServicesBuilder.positionsServiceFactory: ServiceFactory?
  * @param fallbackMediaType Media type that will be used as a fallback if the Link doesn't specify
  *        any.
  */
-class PerResourcePositionsService(
+public class PerResourcePositionsService(
     private val readingOrder: List<Link>,
     private val fallbackMediaType: String
 ) : PositionsService {
@@ -113,9 +113,9 @@ class PerResourcePositionsService(
         }
     }
 
-    companion object {
+    public companion object {
 
-        fun createFactory(fallbackMediaType: String): (Publication.Service.Context) -> PerResourcePositionsService = {
+        public fun createFactory(fallbackMediaType: String): (Publication.Service.Context) -> PerResourcePositionsService = {
             PerResourcePositionsService(
                 readingOrder = it.manifest.readingOrder,
                 fallbackMediaType = fallbackMediaType

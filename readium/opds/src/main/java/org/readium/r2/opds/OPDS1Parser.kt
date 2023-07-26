@@ -25,40 +25,43 @@ import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
 
-enum class OPDSParserError {
+public enum class OPDSParserError {
     MissingTitle
 }
 
-data class MimeTypeParameters(
+public data class MimeTypeParameters(
     var type: String,
     var parameters: MutableMap<String, String> = mutableMapOf()
 )
 
-object Namespaces {
-    const val Opds = "http://opds-spec.org/2010/catalog"
-    const val Dc = "http://purl.org/dc/elements/1.1/"
-    const val Dcterms = "http://purl.org/dc/terms/"
-    const val Atom = "http://www.w3.org/2005/Atom"
-    const val Search = "http://a9.com/-/spec/opensearch/1.1/"
-    const val Thread = "http://purl.org/syndication/thread/1.0"
+public object Namespaces {
+    public const val Opds: String = "http://opds-spec.org/2010/catalog"
+    public const val Dc: String = "http://purl.org/dc/elements/1.1/"
+    public const val Dcterms: String = "http://purl.org/dc/terms/"
+    public const val Atom: String = "http://www.w3.org/2005/Atom"
+    public const val Search: String = "http://a9.com/-/spec/opensearch/1.1/"
+    public const val Thread: String = "http://purl.org/syndication/thread/1.0"
 }
 
-class OPDS1Parser {
-    companion object {
+public class OPDS1Parser {
+    public companion object {
 
-        suspend fun parseUrlString(url: String, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
+        public suspend fun parseUrlString(url: String, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
             return client.fetchWithDecoder(HttpRequest(url)) {
                 this.parse(it.body, URL(url))
             }
         }
 
-        suspend fun parseRequest(request: HttpRequest, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
+        public suspend fun parseRequest(
+            request: HttpRequest,
+            client: HttpClient = DefaultHttpClient()
+        ): Try<ParseData, Exception> {
             return client.fetchWithDecoder(request) {
                 this.parse(it.body, URL(request.url))
             }
         }
 
-        fun parse(xmlData: ByteArray, url: URL): ParseData {
+        public fun parse(xmlData: ByteArray, url: URL): ParseData {
             val root = XmlParser().parse(xmlData.inputStream())
             return if (root.name == "feed")
                 ParseData(parseFeed(root, url), null, 1)
@@ -176,7 +179,7 @@ class OPDS1Parser {
         }
 
         @Suppress("unused")
-        suspend fun retrieveOpenSearchTemplate(feed: Feed): Try<String?, Exception> {
+        public suspend fun retrieveOpenSearchTemplate(feed: Feed): Try<String?, Exception> {
 
             var openSearchURL: URL? = null
             var selfMimeType: String? = null

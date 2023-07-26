@@ -20,7 +20,7 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.use
 
 /** Provides access to entries of a [Container]. */
-class ContainerFetcher(
+public class ContainerFetcher(
     private val container: Container,
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : Fetcher {
@@ -33,8 +33,9 @@ class ContainerFetcher(
     override fun get(link: Link): Fetcher.Resource =
         EntryResource(link, container)
 
-    override suspend fun close() =
+    override suspend fun close() {
         container.close()
+    }
 
     private class EntryResource(
         val originalLink: Link,

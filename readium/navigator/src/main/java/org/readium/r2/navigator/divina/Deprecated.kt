@@ -13,7 +13,7 @@ package org.readium.r2.navigator.divina
     "Use ImageNavigatorFragment in your own activity to get a basic support for DiViNa.",
     level = DeprecationLevel.ERROR
 )
-open class R2DiViNaActivity
+public open class R2DiViNaActivity
 
 // This is for lint to pass.
 private val fake = null

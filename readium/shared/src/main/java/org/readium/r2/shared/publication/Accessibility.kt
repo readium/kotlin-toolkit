@@ -45,7 +45,7 @@ import org.readium.r2.shared.util.logging.log
  *   dangerous to some users.
  */
 @Parcelize
-data class Accessibility(
+public data class Accessibility(
     val conformsTo: Set<Profile>,
     val certification: Certification? = null,
     val summary: String? = null,
@@ -60,17 +60,17 @@ data class Accessibility(
      */
     @Parcelize
     @JvmInline
-    value class Profile(val uri: String) : Parcelable {
+    public value class Profile(public val uri: String) : Parcelable {
 
-        companion object {
+        public companion object {
 
-            val EPUB_A11Y_10_WCAG_20_A = Profile("http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a")
+            public val EPUB_A11Y_10_WCAG_20_A: Profile = Profile("http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a")
 
-            val EPUB_A11Y_10_WCAG_20_AA = Profile("http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aa")
+            public val EPUB_A11Y_10_WCAG_20_AA: Profile = Profile("http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aa")
 
-            val EPUB_A11Y_10_WCAG_20_AAA = Profile("http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa")
+            public val EPUB_A11Y_10_WCAG_20_AAA: Profile = Profile("http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa")
 
-            fun Set<Profile>.toJSONArray(): JSONArray =
+            public fun Set<Profile>.toJSONArray(): JSONArray =
                 JSONArray(this.map(Profile::uri))
         }
     }
@@ -86,7 +86,7 @@ data class Accessibility(
      *   in the associated [certifiedBy] property.
      */
     @Parcelize
-    data class Certification(
+    public data class Certification(
         val certifiedBy: String?,
         val credential: String?,
         val report: String?
@@ -98,14 +98,14 @@ data class Accessibility(
             put("report", report)
         }
 
-        companion object {
+        public companion object {
 
             /**
              * Parses a [Certification] from its RWPM JSON representation.
              *
              * If the certification can't be parsed, a warning will be logged with [warnings].
              */
-            fun fromJSON(
+            public fun fromJSON(
                 json: JSONObject?,
                 warnings: WarningLogger? = null
             ): Certification? {
@@ -134,43 +134,43 @@ data class Accessibility(
      */
     @Parcelize
     @JvmInline
-    value class AccessMode(val value: String) : Parcelable {
+    public value class AccessMode(public val value: String) : Parcelable {
 
-        companion object {
+        public companion object {
             /**
              * Indicates that the resource contains information encoded in auditory form.
              */
-            val AUDITORY = AccessMode("auditory")
+            public val AUDITORY: AccessMode = AccessMode("auditory")
 
             /**
              * Indicates that the resource contains charts encoded in visual form.
              */
-            val CHART_ON_VISUAL = AccessMode("chartOnVisual")
+            public val CHART_ON_VISUAL: AccessMode = AccessMode("chartOnVisual")
 
             /**
              * Indicates that the resource contains chemical equations encoded in visual form.
              */
-            val CHEM_ON_VISUAL = AccessMode("chemOnVisual")
+            public val CHEM_ON_VISUAL: AccessMode = AccessMode("chemOnVisual")
 
             /**
              * Indicates that the resource contains information encoded such that color perception is necessary.
              */
-            val COLOR_DEPENDENT = AccessMode("colorDependent")
+            public val COLOR_DEPENDENT: AccessMode = AccessMode("colorDependent")
 
             /**
              * Indicates that the resource contains diagrams encoded in visual form.
              */
-            val DIAGRAM_ON_VISUAL = AccessMode("diagramOnVisual")
+            public val DIAGRAM_ON_VISUAL: AccessMode = AccessMode("diagramOnVisual")
 
             /**
              * Indicates that the resource contains mathematical notations encoded in visual form.
              */
-            val MATH_ON_VISUAL = AccessMode("mathOnVisual")
+            public val MATH_ON_VISUAL: AccessMode = AccessMode("mathOnVisual")
 
             /**
              * Indicates that the resource contains musical notation encoded in visual form.
              */
-            val MUSIC_ON_VISUAL = AccessMode("musicOnVisual")
+            public val MUSIC_ON_VISUAL: AccessMode = AccessMode("musicOnVisual")
 
             /**
              * Indicates that the resource contains information encoded in tactile form.
@@ -179,32 +179,32 @@ data class Accessibility(
              * using a braille system, this is not always the case. Tactile perception may also indicate,
              * for example, the use of tactile graphics to convey information.
              */
-            val TACTILE = AccessMode("tactile")
+            public val TACTILE: AccessMode = AccessMode("tactile")
 
             /**
              * Indicates that the resource contains text encoded in visual form.
              */
-            val TEXT_ON_VISUAL = AccessMode("textOnVisual")
+            public val TEXT_ON_VISUAL: AccessMode = AccessMode("textOnVisual")
 
             /**
              * Indicates that the resource contains information encoded in textual form.
              */
-            val TEXTUAL = AccessMode("textual")
+            public val TEXTUAL: AccessMode = AccessMode("textual")
 
             /**
              * Indicates that the resource contains information encoded in visual form.
              */
-            val VISUAL = AccessMode("visual")
+            public val VISUAL: AccessMode = AccessMode("visual")
 
             /**
              * Creates a list of [AccessMode] from its RWPM JSON representation.
              */
-            fun fromJSONArray(json: JSONArray?): List<AccessMode> =
+            public fun fromJSONArray(json: JSONArray?): List<AccessMode> =
                 json?.filterIsInstance(String::class.java)
                     ?.map { AccessMode(it) }
                     .orEmpty()
 
-            fun Set<AccessMode>.toJSONArray(): JSONArray =
+            public fun Set<AccessMode>.toJSONArray(): JSONArray =
                 JSONArray(this.map(AccessMode::value))
         }
     }
@@ -215,7 +215,7 @@ data class Accessibility(
      */
     @Parcelize
     @Serializable
-    enum class PrimaryAccessMode(val value: String) : Parcelable {
+    public enum class PrimaryAccessMode(public val value: String) : Parcelable {
 
         /**
          * Indicates that auditory perception is necessary to consume the information.
@@ -240,17 +240,17 @@ data class Accessibility(
          */
         @SerialName("visual") VISUAL("visual");
 
-        companion object : MapCompanion<String, PrimaryAccessMode>(values(), PrimaryAccessMode::value) {
+        public companion object : MapCompanion<String, PrimaryAccessMode>(values(), PrimaryAccessMode::value) {
 
             /**
              * Creates a list of [PrimaryAccessMode] from its RWPM JSON representation.
              */
-            fun fromJSONArray(json: JSONArray?): List<PrimaryAccessMode> =
+            public fun fromJSONArray(json: JSONArray?): List<PrimaryAccessMode> =
                 json?.filterIsInstance(String::class.java)
                     ?.mapNotNull { get(it) }
                     .orEmpty()
 
-            fun Set<PrimaryAccessMode>.toJSONArray(): JSONArray =
+            public fun Set<PrimaryAccessMode>.toJSONArray(): JSONArray =
                 JSONArray(this.map(PrimaryAccessMode::value))
         }
     }
@@ -261,13 +261,13 @@ data class Accessibility(
      */
     @Parcelize
     @JvmInline
-    value class Feature(val value: String) : Parcelable {
+    public value class Feature(public val value: String) : Parcelable {
 
-        companion object {
+        public companion object {
             /**
              * The work includes annotations from the author, instructor and/or others.
              */
-            val ANNOTATIONS = Feature("annotations")
+            public val ANNOTATIONS: Feature = Feature("annotations")
 
             /**
              * Indicates the resource includes ARIA roles to organize and improve the structure and navigation.
@@ -275,74 +275,74 @@ data class Accessibility(
              * The use of this value corresponds to the inclusion of Document Structure, Landmark,
              * Live Region, and Window roles [WAI-ARIA].
              */
-            val ARIA = Feature("ARIA")
+            public val ARIA: Feature = Feature("ARIA")
 
             /**
              * The work includes bookmarks to facilitate navigation to key points.
              */
-            val BOOKMARKS = Feature("bookmark")
+            public val BOOKMARKS: Feature = Feature("bookmark")
 
             /**
              * The work includes an index to the content.
              */
-            val INDEX = Feature("index")
+            public val INDEX: Feature = Feature("index")
 
             /**
              * The work includes equivalent print page numbers. This setting is most commonly used
              * with ebooks for which there is a print equivalent.
              */
-            val PRINT_PAGE_NUMBERS = Feature("printPageNumbers")
+            public val PRINT_PAGE_NUMBERS: Feature = Feature("printPageNumbers")
 
             /**
              * The reading order of the content is clearly defined in the markup
              * (e.g., figures, sidebars and other secondary content has been marked up to allow it
              * to be skipped automatically and/or manually escaped from).
              */
-            val READING_ORDER = Feature("readingOrder")
+            public val READING_ORDER: Feature = Feature("readingOrder")
 
             /**
              * The use of headings in the work fully and accurately reflects the document hierarchy,
              * allowing navigation by assistive technologies.
              */
-            val STRUCTURAL_NAVIGATION = Feature("structuralNavigation")
+            public val STRUCTURAL_NAVIGATION: Feature = Feature("structuralNavigation")
 
             /**
              * The work includes a table of contents that provides links to the major sections of the content.
              */
-            val TABLE_OF_CONTENTS = Feature("tableOfContents")
+            public val TABLE_OF_CONTENTS: Feature = Feature("tableOfContents")
 
             /**
              * The contents of the PDF have been tagged to permit access by assistive technologies.
              */
-            val TAGGED_PDF = Feature("taggedPDF")
+            public val TAGGED_PDF: Feature = Feature("taggedPDF")
 
             /**
              * Alternative text is provided for visual content (e.g., via the HTML `alt` attribute).
              */
-            val ALTERNATIVE_TEXT = Feature("alternativeText")
+            public val ALTERNATIVE_TEXT: Feature = Feature("alternativeText")
 
             /**
              * Audio descriptions are available (e.g., via an HTML `track` element with its `kind`
              * attribute set to "descriptions").
              */
-            val AUDIO_DESCRIPTION = Feature("audioDescription")
+            public val AUDIO_DESCRIPTION: Feature = Feature("audioDescription")
 
             /**
              * Indicates that synchronized captions are available for audio and video content.
              */
-            val CAPTIONS = Feature("captions")
+            public val CAPTIONS: Feature = Feature("captions")
 
             /**
              * Textual descriptions of math equations are included, whether in the alt attribute
              * for image-based equations,
              */
-            val DESCRIBED_MATH = Feature("describeMath")
+            public val DESCRIBED_MATH: Feature = Feature("describeMath")
 
             /**
              * Descriptions are provided for image-based visual content and/or complex structures
              * such as tables, mathematics, diagrams, and charts.
              */
-            val LONG_DESCRIPTION = Feature("longDescription")
+            public val LONG_DESCRIPTION: Feature = Feature("longDescription")
 
             /**
              * Indicates that `ruby` annotations HTML are provided in the content. Ruby annotations
@@ -351,17 +351,17 @@ data class Accessibility(
              *
              * The absence of rubyAnnotations implies that no CJK ideographic characters have ruby.
              */
-            val RUBY_ANNOTATIONS = Feature("rubyAnnotations")
+            public val RUBY_ANNOTATIONS: Feature = Feature("rubyAnnotations")
 
             /**
              * Sign language interpretation is available for audio and video content.
              */
-            val SIGN_LANGUAGE = Feature("signLanguage")
+            public val SIGN_LANGUAGE: Feature = Feature("signLanguage")
 
             /**
              * Indicates that a transcript of the audio content is available.
              */
-            val TRANSCRIPT = Feature("transcript")
+            public val TRANSCRIPT: Feature = Feature("transcript")
 
             /**
              * Display properties are controllable by the user. This property can be set, for example,
@@ -369,7 +369,7 @@ data class Accessibility(
              * It can also be used to indicate that styling in document formats like Word and PDF
              * can be modified.
              */
-            val DISPLAY_TRANSFORMABILITY = Feature("displayTransformability")
+            public val DISPLAY_TRANSFORMABILITY: Feature = Feature("displayTransformability")
 
             /**
              * Describes a resource that offers both audio and text, with information that allows them
@@ -377,93 +377,93 @@ data class Accessibility(
              * This term is not recommended when the only material that is synchronized is
              * the document headings.
              */
-            val SYNCHRONIZED_AUDIO_TEXT = Feature("synchronizedAudioText")
+            public val SYNCHRONIZED_AUDIO_TEXT: Feature = Feature("synchronizedAudioText")
 
             /**
              * For content with timed interaction, this value indicates that the user can control
              * the timing to meet their needs (e.g., pause and reset)
              */
-            val TIMING_CONTROL = Feature("timingControl")
+            public val TIMING_CONTROL: Feature = Feature("timingControl")
 
             /**
              * No digital rights management or other content restriction protocols have been applied
              * to the resource.
              */
-            val UNLOCKED = Feature("unlocked")
+            public val UNLOCKED: Feature = Feature("unlocked")
 
             /**
              * Identifies that chemical information is encoded using the ChemML markup language.
              */
-            val CHEM_ML = Feature("ChemML")
+            public val CHEM_ML: Feature = Feature("ChemML")
 
             /**
              * Identifies that mathematical equations and formulas are encoded in the LaTeX
              * typesetting system.
              */
-            val LATEX = Feature("latex")
+            public val LATEX: Feature = Feature("latex")
 
             /**
              * Identifies that mathematical equations and formulas are encoded in MathML.
              */
-            val MATH_ML = Feature("MathML")
+            public val MATH_ML: Feature = Feature("MathML")
 
             /**
              * One or more of SSML, Pronunciation-Lexicon, and CSS3-Speech properties has been used
              * to enhance text-to-speech playback quality.
              */
-            val TTS_MARKUP = Feature("ttsMarkup")
+            public val TTS_MARKUP: Feature = Feature("ttsMarkup")
 
             /**
              * Audio content with speech in the foreground meets the contrast thresholds set out
              * in WCAG Success Criteria 1.4.7.
              */
-            val HIGH_CONTRAST_AUDIO = Feature("highContrastAudio")
+            public val HIGH_CONTRAST_AUDIO: Feature = Feature("highContrastAudio")
 
             /**
              * Content meets the visual contrast threshold set out in WCAG Success Criteria 1.4.6.
              */
-            val HIGH_CONTRAST_DISPLAY = Feature("highContrastDisplay")
+            public val HIGH_CONTRAST_DISPLAY: Feature = Feature("highContrastDisplay")
 
             /**
              * The content has been formatted to meet large print guidelines.
              *
              * The property is not set if the font size can be increased. See DISPLAY_TRANSFORMABILITY.
              */
-            val LARGE_PRINT = Feature("largePrint")
+            public val LARGE_PRINT: Feature = Feature("largePrint")
 
             /**
              * The content is in braille format, or alternatives are available in braille.
              */
-            val BRAILLE = Feature("braille")
+            public val BRAILLE: Feature = Feature("braille")
 
             /**
              * When used with creative works such as books, indicates that the resource includes
              * tactile graphics. When used to describe an image resource or physical object,
              * indicates that the resource is a tactile graphic.
              */
-            val TACTILE_GRAPHIC = Feature("tactileGraphic")
+            public val TACTILE_GRAPHIC: Feature = Feature("tactileGraphic")
 
             /**
              * When used with creative works such as books, indicates that the resource includes models
              * to generate tactile 3D objects. When used to describe a physical object,
              * indicates that the resource is a tactile 3D object.
              */
-            val TACTILE_OBJECT = Feature("tactileObject")
+            public val TACTILE_OBJECT: Feature = Feature("tactileObject")
 
             /**
              * Indicates that the resource does not contain any accessibility features.
              */
-            val NONE = Feature("none")
+            public val NONE: Feature = Feature("none")
 
             /**
              * Creates a list of [Feature] from its RWPM JSON representation.
              */
-            fun fromJSONArray(json: JSONArray?): List<Feature> =
+            public fun fromJSONArray(json: JSONArray?): List<Feature> =
                 json?.filterIsInstance(String::class.java)
                     ?.map { Feature(it) }
                     .orEmpty()
 
-            fun Set<Feature>.toJSONArray(): JSONArray =
+            public fun Set<Feature>.toJSONArray(): JSONArray =
                 JSONArray(this.map(Feature::value))
         }
     }
@@ -473,19 +473,19 @@ data class Accessibility(
      */
     @Parcelize
     @JvmInline
-    value class Hazard(val value: String) : Parcelable {
+    public value class Hazard(public val value: String) : Parcelable {
 
-        companion object {
+        public companion object {
 
             /**
              * Indicates that the resource presents a flashing hazard for photosensitive persons.
              */
-            val FLASHING = Hazard("flashing")
+            public val FLASHING: Hazard = Hazard("flashing")
 
             /**
              * Indicates that the resource does not present a flashing hazard.
              */
-            val NO_FLASHING_HAZARD = Hazard("noFlashingHazard")
+            public val NO_FLASHING_HAZARD: Hazard = Hazard("noFlashingHazard")
 
             /**
              * Indicates that the resource contains instances of motion simulation that
@@ -494,44 +494,44 @@ data class Accessibility(
              * Some examples of motion simulation include video games with a first-person perspective
              * and CSS-controlled backgrounds that move when a user scrolls a page.
              */
-            val MOTION_SIMULATION = Hazard("motionSimulation")
+            public val MOTION_SIMULATION: Hazard = Hazard("motionSimulation")
 
             /**
              * Indicates that the resource does not contain instances of motion simulation.
              *
              * See MOTION_SIMULATION.
              */
-            val NO_MOTION_SIMULATION_HAZARD = Hazard("noMotionSimulationHazard")
+            public val NO_MOTION_SIMULATION_HAZARD: Hazard = Hazard("noMotionSimulationHazard")
 
             /**
              * Indicates that the resource contains auditory sounds that may affect some individuals.
              */
-            val SOUND = Hazard("sound")
+            public val SOUND: Hazard = Hazard("sound")
 
             /**
              * Indicates that the resource does not contain auditory hazards.
              */
-            val NO_SOUND_HAZARD = Hazard("noSoundHazard")
+            public val NO_SOUND_HAZARD: Hazard = Hazard("noSoundHazard")
 
             /**
              * Indicates that the author is not able to determine if the resource presents any hazards.
              */
-            val UNKNOWN = Hazard("unknown")
+            public val UNKNOWN: Hazard = Hazard("unknown")
 
             /**
              * Indicates that the resource does not contain any hazards.
              */
-            val NONE = Hazard("none")
+            public val NONE: Hazard = Hazard("none")
 
             /**
              * Creates a list of [Hazard] from its RWPM JSON representation.
              */
-            fun fromJSONArray(json: JSONArray?): List<Hazard> =
+            public fun fromJSONArray(json: JSONArray?): List<Hazard> =
                 json?.filterIsInstance(String::class.java)
                     ?.map { Hazard(it) }
                     .orEmpty()
 
-            fun Set<Hazard>.toJSONArray(): JSONArray =
+            public fun Set<Hazard>.toJSONArray(): JSONArray =
                 JSONArray(this.map(Hazard::value))
         }
     }
@@ -546,14 +546,14 @@ data class Accessibility(
         putIfNotEmpty("feature", features.toJSONArray())
     }
 
-    companion object {
+    public companion object {
 
         /**
          * Parses a [Accessibility] from its RWPM JSON representation.
          *
          * If the accessibility metadata can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSON(json: Any?): Accessibility? {
+        public fun fromJSON(json: Any?): Accessibility? {
             if (json !is JSONObject) {
                 return null
             }

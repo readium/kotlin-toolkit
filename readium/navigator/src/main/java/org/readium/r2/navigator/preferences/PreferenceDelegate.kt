@@ -12,7 +12,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
 
 @InternalReadiumApi
-open class PreferenceDelegate<T>(
+public open class PreferenceDelegate<T>(
     private val getValue: () -> T?,
     private val getEffectiveValue: () -> T,
     private val getIsEffective: () -> Boolean,
@@ -28,12 +28,13 @@ open class PreferenceDelegate<T>(
     override val isEffective: Boolean
         get() = getIsEffective()
 
-    override fun set(value: T?) =
+    public override fun set(value: T?) {
         updateValue(value)
+    }
 }
 
 @InternalReadiumApi
-class EnumPreferenceDelegate<T>(
+public class EnumPreferenceDelegate<T>(
     getValue: () -> T?,
     getEffectiveValue: () -> T,
     getIsEffective: () -> Boolean,
@@ -49,7 +50,7 @@ class EnumPreferenceDelegate<T>(
 }
 
 @InternalReadiumApi
-class RangePreferenceDelegate<T : Comparable<T>>(
+public class RangePreferenceDelegate<T : Comparable<T>>(
     getValue: () -> T?,
     getEffectiveValue: () -> T,
     getIsEffective: () -> Boolean,

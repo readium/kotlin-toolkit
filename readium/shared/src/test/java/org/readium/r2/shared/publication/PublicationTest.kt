@@ -101,28 +101,6 @@ class PublicationTest {
         )
     }
 
-    @Test fun `set {self} link`() {
-        val publication = createPublication()
-        publication.setSelfLink("http://manifest.json")
-
-        assertEquals(
-            "http://manifest.json",
-            publication.linkWithRel("self")?.href
-        )
-    }
-
-    @Test fun `set {self} link replaces existing {self} link`() {
-        val publication = createPublication(
-            links = listOf(Link(href = "previous", rels = setOf("self")))
-        )
-        publication.setSelfLink("http://manifest.json")
-
-        assertEquals(
-            "http://manifest.json",
-            publication.linkWithRel("self")?.href
-        )
-    }
-
     @Test fun `get {baseUrl} computes the URL from the {self} link`() {
         val publication = createPublication(
             links = listOf(Link(href = "http://domain.com/path/manifest.json", rels = setOf("self")))

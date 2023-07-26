@@ -29,7 +29,7 @@ import org.readium.r2.shared.util.logging.log
  * Can be used as extension point in the Readium Web Publication Manifest.
  */
 @Parcelize
-data class PublicationCollection(
+public data class PublicationCollection(
     val metadata: @WriteWith<JSONParceler> Map<String, Any> = emptyMap(),
     val links: List<Link> = emptyList(),
     val subcollections: Map<String, List<PublicationCollection>> = emptyMap()
@@ -38,13 +38,13 @@ data class PublicationCollection(
     /**
      * Serializes a [PublicationCollection] to its RWPM JSON representation.
      */
-    override fun toJSON() = JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         put("metadata", metadata)
         putIfNotEmpty("links", links)
         subcollections.appendToJSONObject(this)
     }
 
-    companion object {
+    public companion object {
 
         /**
          * Parses a [PublicationCollection] from its RWPM JSON representation.
@@ -53,7 +53,7 @@ data class PublicationCollection(
          * The [links]' href and their children's will be normalized recursively using the
          * provided [normalizeHref] closure.
          */
-        fun fromJSON(
+        public fun fromJSON(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
@@ -102,7 +102,7 @@ data class PublicationCollection(
          * The [links]' href and their children's will be normalized recursively using the
          * provided [normalizeHref] closure.
          */
-        fun collectionsFromJSON(
+        public fun collectionsFromJSON(
             json: JSONObject,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
@@ -150,9 +150,9 @@ internal fun Map<String, List<PublicationCollection>>.appendToJSONObject(jsonObj
     }
 
 @Deprecated("Use [subcollections[role].firstOrNull()] instead", ReplaceWith("subcollections[role].firstOrNull()"))
-fun Map<String, List<PublicationCollection>>.firstWithRole(role: String): PublicationCollection? =
+public fun Map<String, List<PublicationCollection>>.firstWithRole(role: String): PublicationCollection? =
     get(role)?.firstOrNull()
 
 @Deprecated("Use [subcollections[role]] instead", ReplaceWith("subcollections[role]"))
-fun Map<String, List<PublicationCollection>>.findAllWithRole(role: String): List<PublicationCollection> =
+public fun Map<String, List<PublicationCollection>>.findAllWithRole(role: String): List<PublicationCollection> =
     get(role) ?: emptyList()
