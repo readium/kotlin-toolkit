@@ -244,7 +244,13 @@ class BookRepository(
                     .fold(
                         {
                             val file = it.localFile
-                            val asset = assetRetriever.retrieve(file, fileExtension = File(it.suggestedFilename).extension)
+                            val asset = assetRetriever.retrieve(
+                                file.toUrl(),
+                                assetType = AssetType.Archive,
+                                mediaType = it.mediaType
+                            ).getOrElse { error ->
+                                return Try.failure(ImportError.PublicationError(error))
+                            }
                             file to asset
                         },
                         {
@@ -253,15 +259,6 @@ class BookRepository(
                         }
                     )
             }
-
-        if (publicationTempAsset == null) {
-            val exception = Publication.OpeningException.UnsupportedAsset("Unsupported media type")
-            return Try.failure(
-                ImportError.PublicationError(
-                    PublicationError.UnsupportedPublication(exception)
-                )
-            )
-        }
 
         val fileName = "${UUID.randomUUID()}.${publicationTempAsset.mediaType.fileExtension}"
         val libraryFile = File(storageDir, fileName)
