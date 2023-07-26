@@ -12,10 +12,10 @@ import org.readium.r2.shared.InternalReadiumApi
  * Helper to parse HTTP request/response headers.
  */
 @InternalReadiumApi
-data class HttpHeaders(val headers: Map<String, List<String>>) {
+public data class HttpHeaders(val headers: Map<String, List<String>>) {
 
-    companion object {
-        operator fun invoke(headers: Map<String, String>): HttpHeaders =
+    public companion object {
+        public operator fun invoke(headers: Map<String, String>): HttpHeaders =
             HttpHeaders(headers.mapValues { (_, value) -> listOf(value) })
     }
 
@@ -23,7 +23,7 @@ data class HttpHeaders(val headers: Map<String, List<String>>) {
      * Finds the first value of the first header matching the given name.
      * In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
      */
-    operator fun get(name: String): String? {
+    public operator fun get(name: String): String? {
         val n = name.lowercase()
         return headers.firstNotNullOfOrNull { (key, value) ->
             if (key.lowercase() == n) value.firstOrNull()
@@ -35,7 +35,7 @@ data class HttpHeaders(val headers: Map<String, List<String>>) {
      * Finds all the values of the first header matching the given name.
      * In keeping with the HTTP RFC, HTTP header field names are case-insensitive.
      */
-    fun getAll(name: String): List<String> {
+    public fun getAll(name: String): List<String> {
         val n = name.lowercase()
         return headers
             .mapNotNull { (key, value) ->
@@ -92,10 +92,10 @@ data class HttpHeaders(val headers: Map<String, List<String>>) {
  *
  * [end] is inclusive.
  */
-data class HttpRange(
+public data class HttpRange(
     val start: Long,
     val end: Long?
 ) {
-    fun toLongRange(contentLength: Long): LongRange =
+    public fun toLongRange(contentLength: Long): LongRange =
         start..(end ?: (contentLength - 1))
 }

@@ -35,24 +35,22 @@ import timber.log.Timber
  */
 private const val playbackPositionRefreshRate: Double = 2.0 // Hz
 
-@OptIn(ExperimentalTime::class)
 private val skipForwardInterval: Duration = 30.seconds
-@OptIn(ExperimentalTime::class)
 private val skipBackwardInterval: Duration = 30.seconds
 
 /**
  * An implementation of [MediaNavigator] using an Android's MediaSession compatible media player.
  */
 @ExperimentalAudiobook
-@OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
-class MediaSessionNavigator(
+@OptIn(ExperimentalTime::class)
+public class MediaSessionNavigator(
     override val publication: Publication,
-    val publicationId: PublicationId,
-    val controller: MediaControllerCompat,
-    var listener: Listener? = null
+    internal val publicationId: PublicationId,
+    private val controller: MediaControllerCompat,
+    public var listener: Listener? = null
 ) : MediaNavigator, CoroutineScope by MainScope() {
 
-    interface Listener : MediaNavigator.Listener
+    public interface Listener : MediaNavigator.Listener
 
     /**
      * Indicates whether the media session is loaded with a resource from this [publication]. This

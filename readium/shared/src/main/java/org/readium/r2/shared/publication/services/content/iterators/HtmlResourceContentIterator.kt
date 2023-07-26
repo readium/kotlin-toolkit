@@ -42,14 +42,14 @@ import org.readium.r2.shared.util.use
  * Locators will contain a `before` context of up to `beforeMaxLength` characters.
  */
 @ExperimentalReadiumApi
-class HtmlResourceContentIterator internal constructor(
+public class HtmlResourceContentIterator internal constructor(
     private val resource: Fetcher.Resource,
     private val totalProgressionRange: ClosedRange<Double>?,
     private val locator: Locator,
     private val beforeMaxLength: Int = 50
 ) : Content.Iterator {
 
-    class Factory : ResourceContentIteratorFactory {
+    public class Factory : ResourceContentIteratorFactory {
         override suspend fun create(
             manifest: Manifest,
             servicesHolder: PublicationServicesHolder,
@@ -196,7 +196,7 @@ class HtmlResourceContentIterator internal constructor(
      * The [startIndex] will be calculated from the element matched by the base [locator], if
      * possible. Defaults to 0.
      */
-    data class ParsedElements(
+    public data class ParsedElements(
         val elements: List<Content.Element>,
         val startIndex: Int,
     )

@@ -11,8 +11,8 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.requireLengthFitInt
 
-sealed class BaseBytesResource(
-    val bytes: suspend () -> Try<ByteArray, Resource.Exception>
+public sealed class BaseBytesResource(
+    public val bytes: suspend () -> Try<ByteArray, Resource.Exception>
 ) : Resource {
 
     private lateinit var _bytes: Try<ByteArray, Resource.Exception>
@@ -43,20 +43,20 @@ sealed class BaseBytesResource(
 }
 
 /** Creates a Resource serving a [ByteArray]. */
-class BytesResource(bytes: suspend () -> Try<ByteArray, Resource.Exception>) : BaseBytesResource(bytes) {
+public class BytesResource(bytes: suspend () -> Try<ByteArray, Resource.Exception>) : BaseBytesResource(bytes) {
 
-    constructor(bytes: ByteArray) : this({ Try.success(bytes) })
+    public constructor(bytes: ByteArray) : this({ Try.success(bytes) })
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { length() }} bytes)"
 }
 
 /** Creates a Resource serving a [String]. */
-class StringResource(
+public class StringResource(
     string: suspend () -> ResourceTry<String>
 ) : BaseBytesResource({ string().map { it.toByteArray() } }) {
 
-    constructor(string: String) : this({ Try.success(string) })
+    public constructor(string: String) : this({ Try.success(string) })
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { readAsString() }})"

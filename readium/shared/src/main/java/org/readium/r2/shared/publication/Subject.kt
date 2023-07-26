@@ -23,13 +23,13 @@ import org.readium.r2.shared.util.logging.log
 /**
  * https://github.com/readium/webpub-manifest/tree/master/contexts/default#subjects
  *
- * @param sortAs Provides a string that a machine can sort.
+ * @param localizedSortAs Provides a string that a machine can sort.
  * @param scheme EPUB 3.1 opf:authority.
  * @param code EPUB 3.1 opf:term.
  * @param links Used to retrieve similar publications for the given subjects.
  */
 @Parcelize
-data class Subject(
+public data class Subject(
     val localizedName: LocalizedString,
     val localizedSortAs: LocalizedString? = null,
     val scheme: String? = null,
@@ -40,7 +40,7 @@ data class Subject(
     /**
      * Shortcut to create a [Subject] using a string as [name].
      */
-    constructor(name: String) : this(
+    public constructor(name: String) : this(
         localizedName = LocalizedString(name)
     )
 
@@ -57,7 +57,7 @@ data class Subject(
     /**
      * Serializes a [Subject] to its RWPM JSON representation.
      */
-    override fun toJSON() = JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         putIfNotEmpty("name", localizedName)
         putIfNotEmpty("sortAs", localizedSortAs)
         put("scheme", scheme)
@@ -65,7 +65,7 @@ data class Subject(
         putIfNotEmpty("links", links)
     }
 
-    companion object {
+    public companion object {
 
         /**
          * Parses a [Subject] from its RWPM JSON representation.
@@ -75,7 +75,7 @@ data class Subject(
          * provided [normalizeHref] closure.
          * If the subject can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSON(
+        public fun fromJSON(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
@@ -109,7 +109,7 @@ data class Subject(
          * provided [normalizeHref] closure.
          * If a subject can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSONArray(
+        public fun fromJSONArray(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null

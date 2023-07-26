@@ -9,17 +9,17 @@ package org.readium.r2.shared.error
 /**
  * Describes an error.
  */
-interface Error {
+public interface Error {
 
     /**
      * An error message.
      */
-    val message: String
+    public val message: String
 
     /**
      * The cause error or null if there is none.
      */
-    val cause: Error?
+    public val cause: Error?
 }
 
 /**
@@ -27,8 +27,8 @@ interface Error {
  *
  * @param throwable the cause Throwable
  */
-class ThrowableError(
-    val throwable: Throwable
+public class ThrowableError(
+    public val throwable: Throwable
 ) : Error {
 
     override val message: String =
@@ -41,7 +41,7 @@ class ThrowableError(
 /**
  * A basic [Error] implementation with a message.
  */
-class MessageError(
+public class MessageError(
     override val message: String,
 ) : Error {
 

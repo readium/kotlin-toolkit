@@ -11,7 +11,7 @@ package org.readium.r2.shared.opds
 
 import java.util.*
 
-data class OpdsMetadata(
+public data class OpdsMetadata(
     var title: String,
     var numberOfItems: Int? = null,
     var itemsPerPage: Int? = null,

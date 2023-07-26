@@ -14,7 +14,7 @@ import android.view.MenuItem
  * A convenient base implementation of [ActionMode.Callback], when you don't need to override all
  * methods.
  */
-abstract class BaseActionModeCallback : ActionMode.Callback {
+public abstract class BaseActionModeCallback : ActionMode.Callback {
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean = false
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean = false
     override fun onDestroyActionMode(mode: ActionMode) {}

@@ -17,7 +17,7 @@ import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.toUrl
 
-class MediaTypeRetriever(
+public class MediaTypeRetriever(
     resourceFactory: ResourceFactory = FileResourceFactory(),
     containerFactory: ContainerFactory = DirectoryContainerFactory(),
     archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
@@ -30,14 +30,14 @@ class MediaTypeRetriever(
     private val bytesSnifferContextFactory: BytesSnifferContextFactory =
         BytesSnifferContextFactory(archiveFactory)
 
-    suspend fun canonicalMediaType(mediaType: MediaType): MediaType =
+    public suspend fun canonicalMediaType(mediaType: MediaType): MediaType =
         retrieve(mediaType = mediaType.toString()) ?: mediaType
 
     /**
      * Resolves a media type from a single file extension and media type hint, without checking the actual
      * content.
      */
-    suspend fun retrieve(
+    public suspend fun retrieve(
         mediaType: String? = null,
         fileExtension: String? = null,
     ): MediaType? {
@@ -51,7 +51,7 @@ class MediaTypeRetriever(
      * Resolves a media type from file extension and media type hints without checking the actual
      * content.
      */
-    suspend fun retrieve(
+    public suspend fun retrieve(
         mediaTypes: List<String>,
         fileExtensions: List<String>
     ): MediaType? {
@@ -61,7 +61,7 @@ class MediaTypeRetriever(
     /**
      * Resolves a media type from a local file.
      */
-    suspend fun retrieve(
+    public suspend fun retrieve(
         file: File,
         mediaType: String? = null,
         fileExtension: String? = null,
@@ -72,7 +72,7 @@ class MediaTypeRetriever(
     /**
      * Resolves a media type from a local file.
      */
-    suspend fun retrieve(
+    public suspend fun retrieve(
         file: File,
         mediaTypes: List<String>,
         fileExtensions: List<String>,
@@ -83,7 +83,7 @@ class MediaTypeRetriever(
     /**
      * Resolves a media type from bytes, e.g. from an HTTP response.
      */
-    suspend fun retrieve(
+    public suspend fun retrieve(
         bytes: () -> ByteArray,
         mediaType: String? = null,
         fileExtension: String? = null,
@@ -94,7 +94,7 @@ class MediaTypeRetriever(
     /**
      * Resolves a media type from bytes, e.g. from an HTTP response.
      */
-    suspend fun retrieve(
+    public suspend fun retrieve(
         bytes: () -> ByteArray,
         mediaTypes: List<String>,
         fileExtensions: List<String>,
@@ -105,7 +105,7 @@ class MediaTypeRetriever(
     /**
      * Resolves a media type from a Uri.
      */
-    suspend fun retrieve(
+    public suspend fun retrieve(
         uri: Uri,
         mediaType: String? = null,
         fileExtension: String? = null,
@@ -116,7 +116,7 @@ class MediaTypeRetriever(
     /**
      * Resolves a media type from a Uri.
      */
-    suspend fun retrieve(
+    public suspend fun retrieve(
         uri: Uri,
         mediaTypes: List<String>,
         fileExtensions: List<String>,

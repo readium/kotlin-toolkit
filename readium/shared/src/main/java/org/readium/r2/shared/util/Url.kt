@@ -14,30 +14,30 @@ import org.readium.r2.shared.extensions.tryOrNull
  * A Uniform Resource Locator.
  */
 @JvmInline
-value class Url private constructor(internal val uri: Uri) {
+public value class Url private constructor(internal val uri: Uri) {
 
-    val scheme: String
+    public val scheme: String
         get() = uri.scheme!!
 
-    val authority: String
+    public val authority: String
         get() = uri.authority!!
 
-    val path: String
+    public val path: String
         get() = uri.path!!
 
-    val filename: String
+    public val filename: String
         get() = File(path).name
 
-    val extension: String?
+    public val extension: String?
         get() = File(path).extension
             .takeIf { it.isNotEmpty() }
 
     override fun toString(): String =
         uri.toString()
 
-    companion object {
+    public companion object {
 
-        operator fun invoke(url: String): Url? =
+        public operator fun invoke(url: String): Url? =
             invoke(Uri.parse(url))
 
         internal operator fun invoke(uri: Uri): Url? =
@@ -50,17 +50,17 @@ value class Url private constructor(internal val uri: Uri) {
     }
 }
 
-fun Url.isFile(): Boolean =
+public fun Url.isFile(): Boolean =
     scheme == "file"
 
-fun Url.isHttp(): Boolean =
+public fun Url.isHttp(): Boolean =
     scheme == "http" || scheme == "https"
 
-fun File.toUrl(): Url =
+public fun File.toUrl(): Url =
     Url(Uri.fromFile(this))!!
 
-fun Uri.toUrl(): Url? =
+public fun Uri.toUrl(): Url? =
     Url.invoke(this)
 
-fun Url.toUri() =
+public fun Url.toUri(): Uri =
     uri

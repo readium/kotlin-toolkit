@@ -15,7 +15,7 @@ import java.io.InputStream
 import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.testapp.utils.tryOrNull
 
 suspend fun InputStream.toFile(file: File) {
     withContext(Dispatchers.IO) {

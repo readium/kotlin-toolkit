@@ -13,12 +13,12 @@ import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.util.SuspendingCloseable
 
 /** Provides access to a [Resource] from a [Link]. */
-interface Fetcher : SuspendingCloseable {
+public interface Fetcher : SuspendingCloseable {
 
     /**
      * Acts as a proxy to an actual resource by handling read access.
      */
-    interface Resource : org.readium.r2.shared.resource.Resource {
+    public interface Resource : org.readium.r2.shared.resource.Resource {
 
         /**
          * Returns the link from which the resource was retrieved.
@@ -26,7 +26,7 @@ interface Fetcher : SuspendingCloseable {
          * It might be modified by the [Resource] to include additional metadata, e.g. the
          * `Content-Type` HTTP header in [Link.type].
          */
-        suspend fun link(): Link
+        public suspend fun link(): Link
     }
 
     /**
@@ -37,7 +37,7 @@ interface Fetcher : SuspendingCloseable {
      * If the medium has an inherent resource order, it should be followed.
      * Otherwise, HREFs are sorted alphabetically.
      */
-    suspend fun links(): List<Link>
+    public suspend fun links(): List<Link>
 
     /**
      * Returns the [Resource] at the given [link]'s HREF.
@@ -45,18 +45,18 @@ interface Fetcher : SuspendingCloseable {
      * A [Resource] is always returned, since for some cases we can't know if it exists before
      * actually fetching it, such as HTTP. Therefore, errors are handled at the Resource level.
      */
-    fun get(link: Link): Resource
+    public fun get(link: Link): Resource
 
     /** Returns the [Resource] at the given [href]. */
-    fun get(href: String): Resource =
+    public fun get(href: String): Resource =
         get(Link(href = href))
 
     // To be able to add extensions on Fetcher.Companion in other components...
-    companion object
+    public companion object
 }
 
 /** A [Fetcher] providing no resources at all. */
-class EmptyFetcher : Fetcher {
+public class EmptyFetcher : Fetcher {
 
     override suspend fun links(): List<Link> =
         emptyList()
@@ -67,20 +67,20 @@ class EmptyFetcher : Fetcher {
     override suspend fun close() {}
 }
 
-class ResourceFetcher(
+public class ResourceFetcher(
     private val link: Link,
     private val resource: org.readium.r2.shared.resource.Resource
 ) : Fetcher {
 
-    companion object {
+    public companion object {
 
-        suspend operator fun invoke(resource: Resource): ResourceFetcher {
+        public suspend operator fun invoke(resource: Resource): ResourceFetcher {
             val link = resource.link()
             return ResourceFetcher(link, resource)
         }
     }
 
-    class Resource(
+    public class Resource(
         private val link: Link,
         private val resource: org.readium.r2.shared.resource.Resource
     ) : Fetcher.Resource {
@@ -88,7 +88,7 @@ class ResourceFetcher(
         override val file: File? =
             resource.file
 
-        override suspend fun link() =
+        override suspend fun link(): Link =
             link
 
         override suspend fun length(): ResourceTry<Long> =

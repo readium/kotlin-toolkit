@@ -22,10 +22,10 @@ import org.readium.r2.shared.util.Language
  * or ranges.
  */
 @ExperimentalReadiumApi
-class EpubPreferencesEditor internal constructor(
+public class EpubPreferencesEditor internal constructor(
     initialPreferences: EpubPreferences,
     publicationMetadata: Metadata,
-    val layout: EpubLayout,
+    public val layout: EpubLayout,
     defaults: EpubDefaults
 ) : PreferencesEditor<EpubPreferences> {
 
@@ -59,7 +59,7 @@ class EpubPreferencesEditor internal constructor(
      *
      * When unset, the current [theme] background color is effective.
      */
-    val backgroundColor: Preference<Color> =
+    public val backgroundColor: Preference<Color> =
         PreferenceDelegate(
             getValue = { preferences.backgroundColor },
             getEffectiveValue = { state.settings.backgroundColor ?: Color((theme.value ?: theme.effectiveValue).backgroundColor) },
@@ -74,7 +74,7 @@ class EpubPreferencesEditor internal constructor(
      *  - the publication is reflowable
      *  - [scroll] is off
      */
-    val columnCount: EnumPreference<ColumnCount> =
+    public val columnCount: EnumPreference<ColumnCount> =
         EnumPreferenceDelegate(
             getValue = { preferences.columnCount },
             getEffectiveValue = { state.settings.columnCount },
@@ -88,7 +88,7 @@ class EpubPreferencesEditor internal constructor(
      *
      * Only effective with reflowable publications.
      */
-    val fontFamily: Preference<FontFamily?> =
+    public val fontFamily: Preference<FontFamily?> =
         PreferenceDelegate(
             getValue = { preferences.fontFamily },
             getEffectiveValue = { state.settings.fontFamily },
@@ -103,7 +103,7 @@ class EpubPreferencesEditor internal constructor(
      *
      * Only effective with reflowable publications.
      */
-    val fontSize: RangePreference<Double> =
+    public val fontSize: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.fontSize },
             getEffectiveValue = { state.settings.fontSize },
@@ -122,7 +122,7 @@ class EpubPreferencesEditor internal constructor(
      *
      * Only effective with reflowable publications.
      */
-    val fontWeight: RangePreference<Double> =
+    public val fontWeight: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.fontWeight },
             getEffectiveValue = { state.settings.fontWeight ?: 1.0 },
@@ -141,7 +141,7 @@ class EpubPreferencesEditor internal constructor(
      *  - [publisherStyles] is off
      *  - the layout is LTR
      */
-    val hyphens: Preference<Boolean> =
+    public val hyphens: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.hyphens },
             getEffectiveValue = {
@@ -159,7 +159,7 @@ class EpubPreferencesEditor internal constructor(
      *  - the publication is reflowable
      *  - the [theme] is set to [Theme.DARK]
      */
-    val imageFilter: EnumPreference<ImageFilter?> =
+    public val imageFilter: EnumPreference<ImageFilter?> =
         EnumPreferenceDelegate(
             getValue = { preferences.imageFilter },
             getEffectiveValue = { state.settings.imageFilter },
@@ -173,7 +173,7 @@ class EpubPreferencesEditor internal constructor(
      *
      * This has an impact on the resolved layout (e.g. LTR, RTL).
      */
-    val language: Preference<Language?> =
+    public val language: Preference<Language?> =
         PreferenceDelegate(
             getValue = { preferences.language },
             getEffectiveValue = { state.settings.language },
@@ -189,7 +189,7 @@ class EpubPreferencesEditor internal constructor(
      *  - [publisherStyles] is off
      *  - the layout is LTR
      */
-    val letterSpacing: RangePreference<Double> =
+    public val letterSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.letterSpacing },
             getEffectiveValue = { state.settings.letterSpacing ?: 0.0 },
@@ -208,7 +208,7 @@ class EpubPreferencesEditor internal constructor(
      *  - [publisherStyles] is off
      *  - the layout is RTL
      */
-    val ligatures: Preference<Boolean> =
+    public val ligatures: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.ligatures },
             getEffectiveValue = { state.settings.ligatures ?: false },
@@ -223,7 +223,7 @@ class EpubPreferencesEditor internal constructor(
      *  - the publication is reflowable
      *  - [publisherStyles] is off
      */
-    val lineHeight: RangePreference<Double> =
+    public val lineHeight: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.lineHeight },
             getEffectiveValue = { state.settings.lineHeight ?: 1.2 },
@@ -239,7 +239,7 @@ class EpubPreferencesEditor internal constructor(
      *
      * Only effective with reflowable publications.
      */
-    val pageMargins: RangePreference<Double> =
+    public val pageMargins: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.pageMargins },
             getEffectiveValue = { state.settings.pageMargins },
@@ -258,7 +258,7 @@ class EpubPreferencesEditor internal constructor(
      *  - [publisherStyles] is off
      *  - the layout is LTR or RTL
      */
-    val paragraphIndent: RangePreference<Double> =
+    public val paragraphIndent: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.paragraphIndent },
             getEffectiveValue = { state.settings.paragraphIndent ?: 0.0 },
@@ -276,7 +276,7 @@ class EpubPreferencesEditor internal constructor(
      *  - the publication is reflowable
      *  - [publisherStyles] is off
      */
-    val paragraphSpacing: RangePreference<Double> =
+    public val paragraphSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.paragraphSpacing },
             getEffectiveValue = { state.settings.paragraphSpacing ?: 0.0 },
@@ -293,7 +293,7 @@ class EpubPreferencesEditor internal constructor(
      *
      * Only effective with reflowable publications.
      */
-    val publisherStyles: Preference<Boolean> =
+    public val publisherStyles: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.publisherStyles },
             getEffectiveValue = { state.settings.publisherStyles },
@@ -306,7 +306,7 @@ class EpubPreferencesEditor internal constructor(
      *
      * This can be changed to influence directly the layout (e.g. LTR or RTL).
      */
-    val readingProgression: EnumPreference<ReadingProgression> =
+    public val readingProgression: EnumPreference<ReadingProgression> =
         EnumPreferenceDelegate(
             getValue = { preferences.readingProgression },
             getEffectiveValue = { state.settings.readingProgression },
@@ -321,7 +321,7 @@ class EpubPreferencesEditor internal constructor(
      *
      * Only effective with reflowable publications.
      */
-    val scroll: Preference<Boolean> =
+    public val scroll: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.scroll },
             getEffectiveValue = { state.settings.scroll },
@@ -335,7 +335,7 @@ class EpubPreferencesEditor internal constructor(
      *
      * Only effective with fixed-layout publications.
      */
-    val spread: EnumPreference<Spread> =
+    public val spread: EnumPreference<Spread> =
         EnumPreferenceDelegate(
             getValue = { preferences.spread },
             getEffectiveValue = { state.settings.spread },
@@ -352,7 +352,7 @@ class EpubPreferencesEditor internal constructor(
      *  - [publisherStyles] is off
      *  - the layout is LTR or RTL
      */
-    val textAlign: EnumPreference<TextAlign?> =
+    public val textAlign: EnumPreference<TextAlign?> =
         EnumPreferenceDelegate(
             getValue = { preferences.textAlign },
             getEffectiveValue = { state.settings.textAlign },
@@ -367,7 +367,7 @@ class EpubPreferencesEditor internal constructor(
      * When unset, the current [theme] text color is effective.
      * Only effective with reflowable publications.
      */
-    val textColor: Preference<Color> =
+    public val textColor: Preference<Color> =
         PreferenceDelegate(
             getValue = { preferences.textColor },
             getEffectiveValue = { state.settings.textColor ?: Color((theme.value ?: theme.effectiveValue).contentColor) },
@@ -380,7 +380,7 @@ class EpubPreferencesEditor internal constructor(
      *
      * Only effective with reflowable publications.
      */
-    val textNormalization: Preference<Boolean> =
+    public val textNormalization: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.textNormalization },
             getEffectiveValue = { state.settings.textNormalization },
@@ -393,7 +393,7 @@ class EpubPreferencesEditor internal constructor(
      *
      * Only effective with reflowable publications.
      */
-    val theme: EnumPreference<Theme> =
+    public val theme: EnumPreference<Theme> =
         EnumPreferenceDelegate(
             getValue = { preferences.theme },
             getEffectiveValue = { state.settings.theme },
@@ -409,7 +409,7 @@ class EpubPreferencesEditor internal constructor(
      *  - the publication is reflowable
      *  - [publisherStyles] is off
      */
-    val typeScale: RangePreference<Double> =
+    public val typeScale: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.typeScale },
             getEffectiveValue = { state.settings.typeScale ?: 1.2 },
@@ -426,7 +426,7 @@ class EpubPreferencesEditor internal constructor(
      *
      * Only effective with reflowable publications.
      */
-    val verticalText: Preference<Boolean> =
+    public val verticalText: Preference<Boolean> =
         PreferenceDelegate(
             getValue = { preferences.verticalText },
             getEffectiveValue = { state.settings.verticalText },
@@ -441,7 +441,7 @@ class EpubPreferencesEditor internal constructor(
      *  - the publication is reflowable
      *  - the layout is LTR
      */
-    val wordSpacing: RangePreference<Double> =
+    public val wordSpacing: RangePreference<Double> =
         RangePreferenceDelegate(
             getValue = { preferences.wordSpacing },
             getEffectiveValue = { state.settings.wordSpacing ?: 0.0 },

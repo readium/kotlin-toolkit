@@ -21,14 +21,14 @@ import org.readium.r2.shared.util.io.CountingInputStream
 /**
  * A [Container] representing a Zip archive.
  */
-interface ZipContainer : Container {
+public interface ZipContainer : Container {
 
-    interface Entry : Container.Entry {
+    public interface Entry : Container.Entry {
 
         /**
          * Compressed data length.
          */
-        val compressedLength: Long?
+        public val compressedLength: Long?
     }
 }
 

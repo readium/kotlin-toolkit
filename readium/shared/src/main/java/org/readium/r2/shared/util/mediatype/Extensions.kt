@@ -23,7 +23,7 @@ import org.readium.r2.shared.resource.DefaultArchiveFactory
     ),
     level = DeprecationLevel.ERROR
 )
-suspend fun HttpURLConnection.sniffMediaType(
+public suspend fun HttpURLConnection.sniffMediaType(
     bytes: (() -> ByteArray)? = null,
     mediaTypes: List<String> = emptyList(),
     fileExtensions: List<String> = emptyList(),
@@ -70,5 +70,5 @@ suspend fun HttpURLConnection.sniffMediaType(
     replaceWith = ReplaceWith("mediaTypeRetriever.retrieve(mediaType = mediaTypeHint)"),
     level = DeprecationLevel.ERROR
 )
-suspend fun File.mediaType(mediaTypeHint: String? = null): MediaType =
+public suspend fun File.mediaType(mediaTypeHint: String? = null): MediaType =
     MediaTypeRetriever().retrieve(this, mediaType = mediaTypeHint) ?: MediaType.BINARY

@@ -17,7 +17,7 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
  * Resolves the format for this [HttpURLConnection], with optional extra file extension and media type
  * hints.
  */
-suspend fun MediaTypeRetriever.retrieve(
+public suspend fun MediaTypeRetriever.retrieve(
     connection: HttpURLConnection,
     bytes: (() -> ByteArray)?,
     mediaTypes: List<String>,
@@ -56,9 +56,9 @@ suspend fun MediaTypeRetriever.retrieve(
  * Resolves the format for this [HttpURLConnection], with optional extra file extension and media type
  * hints.
  */
-suspend fun MediaTypeRetriever.retrieve(
+public suspend fun MediaTypeRetriever.retrieve(
     connection: HttpURLConnection,
     bytes: (() -> ByteArray)? = null,
     mediaType: String? = null,
     fileExtension: String? = null
-) = retrieve(connection, bytes, listOfNotNull(mediaType), listOfNotNull(fileExtension))
+): MediaType? = retrieve(connection, bytes, listOfNotNull(mediaType), listOfNotNull(fileExtension))

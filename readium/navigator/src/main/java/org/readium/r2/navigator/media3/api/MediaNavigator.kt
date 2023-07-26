@@ -16,7 +16,7 @@ import org.readium.r2.shared.util.Href
  * A [Navigator] which can play multimedia content.
  */
 @ExperimentalReadiumApi
-interface MediaNavigator<
+public interface MediaNavigator<
     L : MediaNavigator.Location,
     P : MediaNavigator.Playback,
     R : MediaNavigator.ReadingOrder
@@ -25,96 +25,96 @@ interface MediaNavigator<
     /**
      *  Location of the navigator.
      */
-    interface Location {
+    public interface Location {
 
-        val href: Href
+        public val href: Href
     }
 
     /**
      * State of the player.
      */
-    sealed interface State {
+    public sealed interface State {
 
         /**
          * The navigator is ready to play.
          */
-        interface Ready : State
+        public interface Ready : State
 
         /**
          * The end of the media has been reached.
          */
-        interface Ended : State
+        public interface Ended : State
 
         /**
          * The navigator cannot play because the buffer is starved.
          */
-        interface Buffering : State
+        public interface Buffering : State
 
         /**
          * The navigator cannot play because an error occurred.
          */
-        interface Error : State
+        public interface Error : State
     }
 
     /**
      * State of the playback.
      */
-    interface Playback {
+    public interface Playback {
 
         /**
          * The current state.
          */
-        val state: State
+        public val state: State
 
         /**
          * Indicates if the navigator should play as soon as the state is Ready.
          */
-        val playWhenReady: Boolean
+        public val playWhenReady: Boolean
 
         /**
          * Index of the reading order item currently being played.
          */
-        val index: Int
+        public val index: Int
     }
 
     /**
      * Data about the content to play.
      */
-    interface ReadingOrder {
+    public interface ReadingOrder {
 
         /**
          * List of items to play.
          */
-        val items: List<Item>
+        public val items: List<Item>
 
         /**
          * A piece of the content to play.
          */
-        interface Item
+        public interface Item
     }
 
     /**
      * Current state of the playback.
      */
-    val playback: StateFlow<P>
+    public val playback: StateFlow<P>
 
     /**
      * Current location of the navigator.
      */
-    val location: StateFlow<L>
+    public val location: StateFlow<L>
 
     /**
      * Reading order being read by this navigator.
      */
-    val readingOrder: R
+    public val readingOrder: R
 
     /**
      * Resumes the playback at the current location.
      */
-    fun play()
+    public fun play()
 
     /**
      * Pauses the playback.
      */
-    fun pause()
+    public fun pause()
 }

@@ -13,16 +13,16 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 
 @ExperimentalReadiumApi
-class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferences<P>,
+public class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferences<P>,
     E : PreferencesEditor<P>> private constructor(
     private val publication: Publication,
     private val audioEngineProvider: AudioEngineProvider<S, P, E>,
 ) {
 
-    companion object {
+    public companion object {
 
         @Suppress("RedundantSuspendModifier")
-        suspend operator fun <S : Configurable.Settings, P : Configurable.Preferences<P>,
+        public suspend operator fun <S : Configurable.Settings, P : Configurable.Preferences<P>,
             E : PreferencesEditor<P>> invoke(
             publication: Publication,
             audioEngineProvider: AudioEngineProvider<S, P, E>,
@@ -41,7 +41,7 @@ class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferen
         }
     }
 
-    suspend fun createNavigator(
+    public suspend fun createNavigator(
         initialLocator: Locator? = null,
         initialPreferences: P? = null,
     ): AudioNavigator<S, P>? {
@@ -53,7 +53,7 @@ class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferen
         )
     }
 
-    fun createAudioPreferencesEditor(
+    public fun createAudioPreferencesEditor(
         currentPreferences: P,
     ): E = audioEngineProvider.createPreferenceEditor(publication, currentPreferences)
 }

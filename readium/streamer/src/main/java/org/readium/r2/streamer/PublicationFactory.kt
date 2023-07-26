@@ -11,7 +11,6 @@ import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrElse
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.AdeptFallbackContentProtection
 import org.readium.r2.shared.publication.protection.ContentProtection
@@ -34,10 +33,10 @@ internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningE
 /**
  * Opens a Publication using a list of parsers.
  *
- * The [PublicationFactory] is configured to use Readium's default parsers, which you can bypass using
- * [ignoreDefaultParsers]. However, you can provide additional [parsers] which will take precedence
- * over the default ones. This can also be used to provide an alternative configuration of a
- * default parser.
+ * The [PublicationFactory] is configured to use Readium's default parsers, which you can bypass
+ * using ignoreDefaultParsers. However, you can provide additional [parsers] which will take
+ * precedence over the default ones. This can also be used to provide an alternative configuration
+ * of a default parser.
  *
  * @param context Application context.
  * @param parsers Parsers used to open a publication, in addition to the default parsers.
@@ -47,10 +46,10 @@ internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningE
  * @param httpClient Service performing HTTP requests.
  * @param mediaTypeRetriever Retrieves media types from different sources.
  * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
- *   the [Manifest], the root [Fetcher] or the list of service factories of a [Publication].
+ *   the manifest, the root fetcher or the list of service factories of a [Publication].
  */
 @OptIn(PdfSupport::class)
-class PublicationFactory constructor(
+public class PublicationFactory constructor(
     context: Context,
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
@@ -109,12 +108,12 @@ class PublicationFactory constructor(
      * @param sender Free object that can be used by reading apps to give some UX context when
      *   presenting dialogs.
      * @param onCreatePublication Transformation which will be applied on the Publication Builder.
-     *   It can be used to modify the [Manifest], the root [Fetcher] or the list of service
+     *   It can be used to modify the manifest, the root fetcher or the list of service
      *   factories of the [Publication].
      * @param warnings Logger used to broadcast non-fatal parsing warnings.
      * @return A [Publication] or a [Publication.OpeningException] in case of failure.
      */
-    suspend fun open(
+    public suspend fun open(
         asset: Asset,
         contentProtectionScheme: ContentProtection.Scheme? = null,
         credentials: String? = null,
@@ -237,12 +236,4 @@ class PublicationFactory constructor(
             is PublicationParser.Error.ParsingFailed ->
                 Publication.OpeningException.ParsingFailed(e)
         }
-
-    @Suppress("UNCHECKED_CAST")
-    private suspend fun <T, R> List<T>.lazyMapFirstNotNullOrNull(transform: suspend (T) -> R): R? {
-        for (it in this) {
-            return transform(it) ?: continue
-        }
-        return null
-    }
 }

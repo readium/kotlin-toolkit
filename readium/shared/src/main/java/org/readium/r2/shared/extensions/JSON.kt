@@ -13,13 +13,15 @@ import android.os.Parcel
 import kotlinx.parcelize.Parceler
 import org.json.JSONArray
 import org.json.JSONObject
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.JSONable
 import timber.log.Timber
 
 /**
  * Unwraps recursively the [JSONObject] to a [Map<String, Any>].
  */
-fun JSONObject.toMap(): Map<String, Any> {
+@InternalReadiumApi
+public fun JSONObject.toMap(): Map<String, Any> {
     val map = mutableMapOf<String, Any>()
     for (key in keys()) {
         if (!isNull(key)) {
@@ -32,7 +34,8 @@ fun JSONObject.toMap(): Map<String, Any> {
 /**
  * Unwraps recursively the [JSONArray] to a [List<Any>].
  */
-fun JSONArray.toList(): List<Any> {
+@InternalReadiumApi
+public fun JSONArray.toList(): List<Any> {
     val list = mutableListOf<Any>()
     for (i in 0 until length()) {
         list.add(unwrapJSON(get(i)))
@@ -69,7 +72,8 @@ private fun wrapJSON(value: Any?): Any? = when (value) {
  * Maps [name] to [jsonObject], clobbering any existing name/value mapping with the same name. If
  * the [JSONObject] is empty, any existing mapping for [name] is removed.
  */
-fun JSONObject.putIfNotEmpty(name: String, jsonObject: JSONObject?) {
+@InternalReadiumApi
+public fun JSONObject.putIfNotEmpty(name: String, jsonObject: JSONObject?) {
     if (jsonObject == null || jsonObject.length() == 0) {
         remove(name)
         return
@@ -82,7 +86,8 @@ fun JSONObject.putIfNotEmpty(name: String, jsonObject: JSONObject?) {
  * Maps [name] to [jsonArray], clobbering any existing name/value mapping with the same name. If
  * the [JSONArray] is empty, any existing mapping for [name] is removed.
  */
-fun JSONObject.putIfNotEmpty(name: String, jsonArray: JSONArray?) {
+@InternalReadiumApi
+public fun JSONObject.putIfNotEmpty(name: String, jsonArray: JSONArray?) {
     if (jsonArray == null || jsonArray.length() == 0) {
         remove(name)
         return
@@ -96,7 +101,8 @@ fun JSONObject.putIfNotEmpty(name: String, jsonArray: JSONArray?) {
  * name/value mapping with the same name. If the [JSONObject] argument is empty, any existing mapping
  * for [name] is removed.
  */
-fun JSONObject.putIfNotEmpty(name: String, jsonable: JSONable?) {
+@InternalReadiumApi
+public fun JSONObject.putIfNotEmpty(name: String, jsonable: JSONable?) {
     val json = jsonable?.toJSON()
     if (json == null || json.length() == 0) {
         remove(name)
@@ -146,7 +152,8 @@ internal fun JSONObject.putIfNotEmpty(name: String, map: Map<String, *>) {
  * positive integer, or [fallback] otherwise.
  * If [remove] is true, then the mapping will be removed from the [JSONObject].
  */
-fun JSONObject.optPositiveInt(name: String, fallback: Int = -1, remove: Boolean = false): Int? {
+@InternalReadiumApi
+public fun JSONObject.optPositiveInt(name: String, fallback: Int = -1, remove: Boolean = false): Int? {
     val int = optInt(name, fallback)
     val value = if (int >= 0) int else null
     if (remove) {
@@ -160,7 +167,12 @@ fun JSONObject.optPositiveInt(name: String, fallback: Int = -1, remove: Boolean 
  * positive double, or [fallback] otherwise.
  * If [remove] is true, then the mapping will be removed from the [JSONObject].
  */
-fun JSONObject.optPositiveDouble(name: String, fallback: Double = -1.0, remove: Boolean = false): Double? {
+@InternalReadiumApi
+public fun JSONObject.optPositiveDouble(
+    name: String,
+    fallback: Double = -1.0,
+    remove: Boolean = false
+): Double? {
     val double = optDouble(name, fallback)
     val value = if (double >= 0) double else null
     if (remove) {
@@ -174,7 +186,8 @@ fun JSONObject.optPositiveDouble(name: String, fallback: Double = -1.0, remove: 
  * mapping exists, it is not a string or it is empty.
  * If [remove] is true, then the mapping will be removed from the [JSONObject].
  */
-fun JSONObject.optNullableString(name: String, remove: Boolean = false): String? {
+@InternalReadiumApi
+public fun JSONObject.optNullableString(name: String, remove: Boolean = false): String? {
     val value = if (remove) this.remove(name) else this.opt(name)
     val string = value as? String
     return string?.takeUnless(String::isEmpty)
@@ -185,7 +198,8 @@ fun JSONObject.optNullableString(name: String, remove: Boolean = false): String?
  * mapping exists.
  * If [remove] is true, then the mapping will be removed from the [JSONObject].
  */
-fun JSONObject.optNullableBoolean(name: String, remove: Boolean = false): Boolean? {
+@InternalReadiumApi
+public fun JSONObject.optNullableBoolean(name: String, remove: Boolean = false): Boolean? {
     if (!has(name)) {
         return null
     }
@@ -201,7 +215,8 @@ fun JSONObject.optNullableBoolean(name: String, remove: Boolean = false): Boolea
  * mapping exists.
  * If [remove] is true, then the mapping will be removed from the [JSONObject].
  */
-fun JSONObject.optNullableInt(name: String, remove: Boolean = false): Int? {
+@InternalReadiumApi
+public fun JSONObject.optNullableInt(name: String, remove: Boolean = false): Int? {
     if (!has(name)) {
         return null
     }
@@ -217,7 +232,8 @@ fun JSONObject.optNullableInt(name: String, remove: Boolean = false): Int? {
  * mapping exists.
  * If [remove] is true, then the mapping will be removed from the [JSONObject].
  */
-fun JSONObject.optNullableLong(name: String, remove: Boolean = false): Long? {
+@InternalReadiumApi
+public fun JSONObject.optNullableLong(name: String, remove: Boolean = false): Long? {
     if (!has(name)) {
         return null
     }
@@ -233,7 +249,8 @@ fun JSONObject.optNullableLong(name: String, remove: Boolean = false): Long? {
  * mapping exists.
  * If [remove] is true, then the mapping will be removed from the [JSONObject].
  */
-fun JSONObject.optNullableDouble(name: String, remove: Boolean = false): Double? {
+@InternalReadiumApi
+public fun JSONObject.optNullableDouble(name: String, remove: Boolean = false): Double? {
     if (!has(name)) {
         return null
     }
@@ -251,7 +268,8 @@ fun JSONObject.optNullableDouble(name: String, remove: Boolean = false): Double?
  *
  * E.g. ["a", "b"] or "a"
  */
-fun JSONObject.optStringsFromArrayOrSingle(name: String, remove: Boolean = false): List<String> {
+@InternalReadiumApi
+public fun JSONObject.optStringsFromArrayOrSingle(name: String, remove: Boolean = false): List<String> {
     val value = if (remove) this.remove(name) else opt(name)
 
     return when (value) {
@@ -266,7 +284,8 @@ fun JSONObject.optStringsFromArrayOrSingle(name: String, remove: Boolean = false
  * in the original [JSONObject].
  * If the tranform returns `null`, it is not included in the output list.
  */
-fun <T> JSONObject.mapNotNull(transform: (Pair<String, Any>) -> T?): List<T> {
+@InternalReadiumApi
+public fun <T> JSONObject.mapNotNull(transform: (Pair<String, Any>) -> T?): List<T> {
     val result = mutableListOf<T>()
     for (key in keys()) {
         val transformedValue = transform(Pair(key, get(key)))
@@ -282,7 +301,8 @@ fun <T> JSONObject.mapNotNull(transform: (Pair<String, Any>) -> T?): List<T> {
  * in the original [JSONArray].
  * If the tranform returns `null`, it is not included in the output list.
  */
-fun <T> JSONArray.mapNotNull(transform: (Any) -> T?): List<T> {
+@InternalReadiumApi
+public fun <T> JSONArray.mapNotNull(transform: (Any) -> T?): List<T> {
     val result = mutableListOf<T>()
     for (i in 0 until length()) {
         val transformedValue = transform(get(i))
@@ -327,7 +347,8 @@ internal fun <T> JSONArray?.parseObjects(factory: (Any) -> T?): List<T> {
 /**
  * Implementation of a [Parceler] to be used with [@Parcelize] to serialize JSON objects.
  */
-object JSONParceler : Parceler<Map<String, Any>> {
+@InternalReadiumApi
+public object JSONParceler : Parceler<Map<String, Any>> {
 
     override fun create(parcel: Parcel): Map<String, Any> =
         try {

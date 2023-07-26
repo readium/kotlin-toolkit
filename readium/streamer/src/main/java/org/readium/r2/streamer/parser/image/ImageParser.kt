@@ -22,7 +22,7 @@ import org.readium.r2.streamer.parser.PublicationParser
  *
  * It can also work for a standalone bitmap file.
  */
-class ImageParser : PublicationParser {
+public class ImageParser : PublicationParser {
 
     override suspend fun parse(
         asset: PublicationParser.Asset,

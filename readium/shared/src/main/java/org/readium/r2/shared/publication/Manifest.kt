@@ -25,12 +25,10 @@ import org.readium.r2.shared.util.mediatype.MediaType
 /**
  * Holds the metadata of a Readium publication, as described in the Readium Web Publication Manifest.
  */
-data class Manifest(
+public data class Manifest(
     val context: List<String> = emptyList(),
     val metadata: Metadata,
-    // FIXME: Currently Readium requires to set the [Link] with [rel] "self" when adding it to the
-    //     server. So we need to keep [links] as a mutable property.
-    var links: List<Link> = emptyList(),
+    val links: List<Link> = emptyList(),
     val readingOrder: List<Link> = emptyList(),
     val resources: List<Link> = emptyList(),
     val tableOfContents: List<Link> = emptyList(),
@@ -41,7 +39,7 @@ data class Manifest(
     /**
      * Returns whether this manifest conforms to the given Readium Web Publication Profile.
      */
-    fun conformsTo(profile: Publication.Profile): Boolean {
+    public fun conformsTo(profile: Publication.Profile): Boolean {
         if (readingOrder.isEmpty()) {
             return false
         }
@@ -67,7 +65,7 @@ data class Manifest(
      * If there's no match, tries again after removing any query parameter and anchor from the
      * given [href].
      */
-    fun linkWithHref(href: String): Link? {
+    public fun linkWithHref(href: String): Link? {
         fun List<Link>.deepLinkWithHref(href: String): Link? {
             for (l in this) {
                 if (l.href == href)
@@ -93,7 +91,7 @@ data class Manifest(
     /**
      * Finds the first [Link] with the given relation in the manifest's links.
      */
-    fun linkWithRel(rel: String): Link? =
+    public fun linkWithRel(rel: String): Link? =
         readingOrder.firstWithRel(rel)
             ?: resources.firstWithRel(rel)
             ?: links.firstWithRel(rel)
@@ -101,7 +99,7 @@ data class Manifest(
     /**
      * Finds all [Link]s having the given [rel] in the manifest's links.
      */
-    fun linksWithRel(rel: String): List<Link> =
+    public fun linksWithRel(rel: String): List<Link> =
         (readingOrder + resources + links).filterByRel(rel)
 
     /**
@@ -109,7 +107,7 @@ data class Manifest(
      *
      * Returns null if the resource is not found in this manifest.
      */
-    fun locatorFromLink(link: Link): Locator? {
+    public fun locatorFromLink(link: Link): Locator? {
         val components = link.href.split("#", limit = 2)
         val href = components.firstOrNull() ?: link.href
         val resourceLink = linkWithHref(href) ?: return null
@@ -130,7 +128,7 @@ data class Manifest(
     /**
      * Serializes a [Publication] to its RWPM JSON representation.
      */
-    override fun toJSON() = JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         putIfNotEmpty("@context", context)
         put("metadata", metadata.toJSON())
         put("links", links.toJSON())
@@ -145,7 +143,7 @@ data class Manifest(
      */
     override fun toString(): String = toJSON().toString().replace("\\/", "/")
 
-    companion object {
+    public companion object {
 
         /**
          * Parses a [Manifest] from its RWPM JSON representation.
@@ -154,7 +152,7 @@ data class Manifest(
          * https://readium.org/webpub-manifest/
          * https://readium.org/webpub-manifest/schema/publication.schema.json
          */
-        fun fromJSON(
+        public fun fromJSON(
             json: JSONObject?,
             packaged: Boolean = false,
             warnings: WarningLogger? = null

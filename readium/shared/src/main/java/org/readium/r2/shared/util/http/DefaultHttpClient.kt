@@ -32,24 +32,24 @@ import timber.log.Timber
  * @param readTimeout Timeout used when reading the input stream. A null timeout is interpreted
  *        as the default value, while a timeout of zero as an infinite timeout.
  */
-class DefaultHttpClient(
+public class DefaultHttpClient(
     private val userAgent: String? = null,
     private val additionalHeaders: Map<String, String> = mapOf(),
     private val connectTimeout: Duration? = null,
     private val readTimeout: Duration? = null,
-    var callback: Callback = object : Callback {},
+    public var callback: Callback = object : Callback {},
 ) : HttpClient {
-    companion object {
+    public companion object {
         /**
          * [HttpRequest.extras] key for the number of redirections performed for a request.
          */
-        const val EXTRA_REDIRECT_COUNT = "redirectCount"
+        private const val EXTRA_REDIRECT_COUNT: String = "redirectCount"
     }
 
     /**
      * Callbacks allowing to override some behavior of the [DefaultHttpClient].
      */
-    interface Callback {
+    public interface Callback {
 
         /**
          * Called when the HTTP client will start a new [request].
@@ -57,7 +57,7 @@ class DefaultHttpClient(
          * You can modify the [request], for example by adding additional HTTP headers or
          * redirecting to a different URL, before returning it.
          */
-        suspend fun onStartRequest(request: HttpRequest): HttpTry<HttpRequest> =
+        public suspend fun onStartRequest(request: HttpRequest): HttpTry<HttpRequest> =
             Try.success(request)
 
         /**
@@ -69,7 +69,7 @@ class DefaultHttpClient(
          *   - the [error] argument, if you cannot recover from it
          *   - a new [HttpException] to provide additional information
          */
-        suspend fun onRecoverRequest(request: HttpRequest, error: HttpException): HttpTry<HttpRequest> =
+        public suspend fun onRecoverRequest(request: HttpRequest, error: HttpException): HttpTry<HttpRequest> =
             Try.failure(error)
 
         /**
@@ -85,7 +85,7 @@ class DefaultHttpClient(
          *   - a different redirection request
          *   - a [HttpException.CANCELLED] error to abort the redirection
          */
-        suspend fun onFollowUnsafeRedirect(
+        public suspend fun onFollowUnsafeRedirect(
             request: HttpRequest,
             response: HttpResponse,
             newRequest: HttpRequest
@@ -99,7 +99,7 @@ class DefaultHttpClient(
          * This is merely for informational purposes. For example, you could implement this to
          * confirm that request credentials were successful.
          */
-        suspend fun onResponseReceived(request: HttpRequest, response: HttpResponse) {}
+        public suspend fun onResponseReceived(request: HttpRequest, response: HttpResponse) {}
 
         /**
          * Called when the HTTP client received an [error] for the given [request].
@@ -109,14 +109,13 @@ class DefaultHttpClient(
          *
          * This will be called only if [onRecoverRequest] is not implemented, or returns an error.
          */
-        suspend fun onRequestFailed(request: HttpRequest, error: HttpException) {}
+        public suspend fun onRequestFailed(request: HttpRequest, error: HttpException) {}
     }
 
     private val mediaTypeRetriever: MediaTypeRetriever =
         MediaTypeRetriever()
 
     // We are using Dispatchers.IO but we still get this warning...
-    @Suppress("BlockingMethodInNonBlockingContext", "NAME_SHADOWING")
     override suspend fun stream(request: HttpRequest): HttpTry<HttpStreamResponse> {
 
         suspend fun tryStream(request: HttpRequest): HttpTry<HttpStreamResponse> =

@@ -13,10 +13,9 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
 import org.readium.r2.navigator.BuildConfig.DEBUG
-import org.readium.r2.shared.publication.Publication
 import timber.log.Timber
 
-class R2ViewPager : R2RTLViewPager {
+internal class R2ViewPager : R2RTLViewPager {
 
     internal enum class PublicationType {
         EPUB, CBZ, FXL, WEBPUB, AUDIO, DiViNa
@@ -25,7 +24,7 @@ class R2ViewPager : R2RTLViewPager {
     internal lateinit var publicationType: PublicationType
 
     @Deprecated(message = "You shouldn't be using these internals.", level = DeprecationLevel.ERROR)
-    lateinit var type: Publication.TYPE
+    val type = Unit
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)

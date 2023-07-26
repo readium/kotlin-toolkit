@@ -14,7 +14,7 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.MessageError
 import org.readium.r2.shared.error.Try
 
-class DefaultArchiveFactory : ArchiveFactory {
+public class DefaultArchiveFactory : ArchiveFactory {
 
     override suspend fun create(resource: Resource, password: String?): Try<Container, ArchiveFactory.Error> {
         if (password != null) {

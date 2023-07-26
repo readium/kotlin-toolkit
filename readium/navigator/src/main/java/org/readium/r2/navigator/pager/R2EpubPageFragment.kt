@@ -42,7 +42,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 
 @OptIn(ExperimentalReadiumApi::class)
-class R2EpubPageFragment : Fragment() {
+internal class R2EpubPageFragment : Fragment() {
 
     private val resourceUrl: String?
         get() = requireArguments().getString("url")

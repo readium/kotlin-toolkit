@@ -42,6 +42,10 @@ android {
     namespace = "org.readium.r2.opds"
 }
 
+kotlin {
+    explicitApi()
+}
+
 rootProject.ext["publish.artifactId"] = "readium-opds"
 apply(from = "$rootDir/scripts/publish-module.gradle")
 

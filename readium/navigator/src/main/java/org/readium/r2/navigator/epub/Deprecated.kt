@@ -9,22 +9,22 @@ package org.readium.r2.navigator.epub
 import org.readium.r2.shared.publication.Locator
 
 @Deprecated("Use EpubNavigatorFragment in your own activity instead.", level = DeprecationLevel.ERROR)
-open class R2EpubActivity
+public open class R2EpubActivity
 
 @Deprecated("Use Decorator API instead.", level = DeprecationLevel.ERROR)
-interface IR2Highlightable
+public interface IR2Highlightable
 
 @Deprecated("Use Decorator API instead.", level = DeprecationLevel.ERROR)
-data class Highlight(
+public data class Highlight(
     val id: String
 )
 
 @Deprecated("Use Decorator API instead.", level = DeprecationLevel.ERROR)
-enum class Style {
+public enum class Style {
     highlight, underline, strikethrough
 }
 
 @Deprecated("Use navigator fragments.", level = DeprecationLevel.ERROR)
-interface IR2Selectable {
-    fun currentSelection(callback: (Locator?) -> Unit)
+public interface IR2Selectable {
+    public fun currentSelection(callback: (Locator?) -> Unit)
 }

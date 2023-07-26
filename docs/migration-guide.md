@@ -29,6 +29,52 @@ dependencies {
 }
 ```
 
+### All resources now have the prefix `readium_`.
+
+To avoid conflicts when merging your app resources, all resources declared in the Readium toolkit now have the prefix `readium_`. This means that you must rename any layouts or strings you have overridden. Here is a comprehensive list of the changes.
+
+#### Layouts
+
+| Deprecated                  | New                                           |
+|-----------------------------|-----------------------------------------------|
+| `activity_r2_viewpager`     | `readium_navigator_viewpager`                 |
+| `fragment_fxllayout_double` | `readium_navigator_fragment_fxllayout_double` |
+| `fragment_fxllayout_single` | `readium_navigator_fragment_fxllayout_single` |
+| `popup_footnote`            | `readium_navigator_popup_footnote`            |
+| `r2_lcp_auth_dialog`        | `readium_lcp_auth_dialog`                     |
+| `viewpager_fragment_cbz`    | `readium_navigator_viewpager_fragment_cbz`    |
+| `viewpager_fragment_epub`   | `readium_navigator_viewpager_fragment_epub`   |
+
+#### Dimensions
+
+| Deprecated                           | New                                       |
+|--------------------------------------|-------------------------------------------|
+| `r2_navigator_epub_vertical_padding` | `readium_navigator_epub_vertical_padding` |
+
+#### Strings
+
+| Deprecated                                  | New                                              |
+|---------------------------------------------|--------------------------------------------------|
+| `r2_lcp_dialog_cancel`                      | `readium_lcp_dialog_cancel`                      |
+| `r2_lcp_dialog_continue`                    | `readium_lcp_dialog_continue`                    |
+| `r2_lcp_dialog_forgotPassphrase`            | `readium_lcp_dialog_forgotPassphrase`            |
+| `r2_lcp_dialog_help`                        | `readium_lcp_dialog_help`                        |
+| `r2_lcp_dialog_prompt`                      | `readium_lcp_dialog_prompt`                      |
+| `r2_lcp_dialog_reason_invalidPassphrase`    | `readium_lcp_dialog_reason_invalidPassphrase`    |
+| `r2_lcp_dialog_reason_passphraseNotFound`   | `readium_lcp_dialog_reason_passphraseNotFound`   |
+| `r2_lcp_dialog_support_mail`                | `readium_lcp_dialog_support_mail`                |
+| `r2_lcp_dialog_support_phone`               | `readium_lcp_dialog_support_phone`               |
+| `r2_lcp_dialog_support_web`                 | `readium_lcp_dialog_support_web`                 |
+| `r2_media_notification_channel_description` | `readium_media_notification_channel_description` |
+| `r2_media_notification_channel_name`        | `readium_media_notification_channel_name`        |
+
+#### Drawables
+
+| Deprecated                              | New                                          |
+|-----------------------------------------|----------------------------------------------|
+| `r2_media_notification_fastforward.xml` | `readium_media_notification_fastforward.xml` |
+| `r2_media_notification_rewind.xml`      | `readium_media_notification_rewind.xml`      |
+
 ### Publication assets
 
 In most cases, you no longer need to manually create a `PublicationAsset` to open a publication with

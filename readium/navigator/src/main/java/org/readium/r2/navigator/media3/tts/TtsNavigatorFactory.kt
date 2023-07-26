@@ -24,7 +24,7 @@ import org.readium.r2.shared.util.tokenizer.TextTokenizer
 import org.readium.r2.shared.util.tokenizer.TextUnit
 
 @ExperimentalReadiumApi
-class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
+public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
     F : TtsEngine.Error, V : TtsEngine.Voice> private constructor(
     private val application: Application,
     private val publication: Publication,
@@ -32,9 +32,9 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
     private val tokenizerFactory: (language: Language?) -> TextTokenizer,
     private val metadataProvider: MediaMetadataProvider
 ) {
-    companion object {
+    public companion object {
 
-        suspend operator fun invoke(
+        public suspend operator fun invoke(
             application: Application,
             publication: Publication,
             tokenizerFactory: (language: Language?) -> TextTokenizer = defaultTokenizerFactory,
@@ -58,7 +58,7 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
             )
         }
 
-        suspend operator fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
+        public suspend operator fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, E : PreferencesEditor<P>,
             F : TtsEngine.Error, V : TtsEngine.Voice> invoke(
             application: Application,
             publication: Publication,
@@ -113,7 +113,7 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
             { _, _ -> null }
     }
 
-    suspend fun createNavigator(
+    public suspend fun createNavigator(
         listener: TtsNavigator.Listener,
         initialLocator: Locator? = null,
         initialPreferences: P? = null,
@@ -130,6 +130,6 @@ class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>, 
         )
     }
 
-    fun createPreferencesEditor(preferences: P): E =
+    public fun createPreferencesEditor(preferences: P): E =
         ttsEngineProvider.createPreferencesEditor(publication, preferences)
 }

@@ -19,7 +19,7 @@ import org.readium.r2.shared.InternalReadiumApi
  *   as the last returned element. May be -1 or the size of the list as well.
  */
 @InternalReadiumApi
-class CursorList<E>(
+public class CursorList<E>(
     private val list: List<E> = emptyList(),
     private var index: Int = -1
 ) : List<E> by list {
@@ -28,14 +28,14 @@ class CursorList<E>(
         check(index in -1..list.size)
     }
 
-    fun hasPrevious(): Boolean {
+    public fun hasPrevious(): Boolean {
         return index > 0
     }
 
     /**
      * Moves the cursor backward and returns the element, or null when reaching the beginning.
      */
-    fun previous(): E? {
+    public fun previous(): E? {
         if (!hasPrevious())
             return null
 
@@ -43,14 +43,14 @@ class CursorList<E>(
         return list[index]
     }
 
-    fun hasNext(): Boolean {
+    public fun hasNext(): Boolean {
         return index + 1 < list.size
     }
 
     /**
      * Moves the cursor forward and returns the element, or null when reaching the end.
      */
-    fun next(): E? {
+    public fun next(): E? {
         if (!hasNext())
             return null
 

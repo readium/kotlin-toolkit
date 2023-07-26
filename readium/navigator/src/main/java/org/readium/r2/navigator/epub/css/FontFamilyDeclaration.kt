@@ -37,16 +37,6 @@ internal data class FontFamilyDeclaration(
 )
 
 /**
- * Build a font face declaration for [fontFamily].
- */
-@ExperimentalReadiumApi
-internal fun buildFontFaceDeclaration(
-    fontFamily: String,
-    builderAction: (MutableFontFaceDeclaration).() -> Unit
-) =
-    MutableFontFaceDeclaration(fontFamily).apply(builderAction).toFontFaceDeclaration()
-
-/**
  * An immutable font face declaration.
  */
 @ExperimentalReadiumApi
@@ -107,13 +97,13 @@ internal data class FontFaceSource(
  * A mutable font family declaration.
  */
 @ExperimentalReadiumApi
-data class MutableFontFamilyDeclaration internal constructor(
+public data class MutableFontFamilyDeclaration internal constructor(
     private val fontFamily: String,
     private val alternates: List<String>,
     private val fontFaces: MutableList<FontFaceDeclaration> = mutableListOf()
 ) {
 
-    fun addFontFace(builderAction: MutableFontFaceDeclaration.() -> Unit) {
+    public fun addFontFace(builderAction: MutableFontFaceDeclaration.() -> Unit) {
         val fontFace = MutableFontFaceDeclaration(fontFamily).apply(builderAction)
         fontFaces.add(fontFace.toFontFaceDeclaration())
     }
@@ -128,7 +118,7 @@ data class MutableFontFamilyDeclaration internal constructor(
  * A mutable font face declaration.
  */
 @ExperimentalReadiumApi
-data class MutableFontFaceDeclaration internal constructor(
+public data class MutableFontFaceDeclaration internal constructor(
     private val fontFamily: String,
     private val sources: MutableList<FontFaceSource> = mutableListOf(),
     private var fontStyle: FontStyle? = null,
@@ -141,28 +131,28 @@ data class MutableFontFaceDeclaration internal constructor(
      * @param preload Indicates whether this source will be declared for preloading in the HTML
      * using `<link rel="preload">`.
      */
-    fun addSource(href: String, preload: Boolean = false) {
+    public fun addSource(href: String, preload: Boolean = false) {
         this.sources.add(FontFaceSource(href = href, preload = preload))
     }
 
     /**
      * Set the font style of the font face.
      */
-    fun setFontStyle(fontStyle: FontStyle) {
+    public fun setFontStyle(fontStyle: FontStyle) {
         this.fontStyle = fontStyle
     }
 
     /**
      * Set the font weight of the font face.
      */
-    fun setFontWeight(fontWeight: FontWeight) {
+    public fun setFontWeight(fontWeight: FontWeight) {
         this.fontWeight = Either(fontWeight)
     }
 
     /**
      * Set the font weight range of a variable font face.
      */
-    fun setFontWeight(range: ClosedRange<Int>) {
+    public fun setFontWeight(range: ClosedRange<Int>) {
         require(range.start >= 1)
         require(range.endInclusive <= 1000)
         this.fontWeight = Either(range)
@@ -176,7 +166,7 @@ data class MutableFontFaceDeclaration internal constructor(
  *  Styles that a font can be styled with.
  */
 @ExperimentalReadiumApi
-enum class FontStyle {
+public enum class FontStyle {
     NORMAL,
     ITALIC;
 }
@@ -187,7 +177,7 @@ enum class FontStyle {
  * See https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-weight#common_weight_name_mapping
  */
 @ExperimentalReadiumApi
-enum class FontWeight(val value: Int) {
+public enum class FontWeight(public val value: Int) {
     THIN(100),
     EXTRA_LIGHT(200),
     LIGHT(300),

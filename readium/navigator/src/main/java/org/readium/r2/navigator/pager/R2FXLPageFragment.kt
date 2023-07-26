@@ -29,7 +29,7 @@ import org.readium.r2.navigator.epub.EpubNavigatorViewModel
 import org.readium.r2.navigator.epub.fxl.R2FXLLayout
 import org.readium.r2.navigator.epub.fxl.R2FXLOnDoubleTapListener
 
-class R2FXLPageFragment : Fragment() {
+internal class R2FXLPageFragment : Fragment() {
 
     private val firstResourceUrl: String?
         get() = requireArguments().getString("firstUrl")

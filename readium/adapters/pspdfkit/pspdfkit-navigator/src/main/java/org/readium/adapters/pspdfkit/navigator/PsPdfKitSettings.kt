@@ -15,7 +15,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * @see PsPdfKitPreferences
  */
 @ExperimentalReadiumApi
-data class PsPdfKitSettings(
+public data class PsPdfKitSettings(
     val fit: Fit,
     val offsetFirstPage: Boolean,
     val pageSpacing: Double,

@@ -22,17 +22,17 @@ import org.readium.r2.shared.util.logging.log
  * Represents a string with multiple [translations] indexed by a BCP 47 language tag.
  */
 @Parcelize
-data class LocalizedString(val translations: Map<String?, Translation> = emptyMap()) : JSONable, Parcelable {
+public data class LocalizedString(val translations: Map<String?, Translation> = emptyMap()) : JSONable, Parcelable {
 
     @Parcelize
-    data class Translation(
+    public data class Translation(
         val string: String
     ) : Parcelable
 
     /**
      * Shortcut to create a [LocalizedString] using a single string for a given language.
      */
-    constructor(value: String, lang: String? = null) : this(
+    public constructor(value: String, lang: String? = null) : this(
         translations = mapOf(lang to Translation(string = value))
     )
 
@@ -58,7 +58,7 @@ data class LocalizedString(val translations: Map<String?, Translation> = emptyMa
      *    3. on the English language
      *    4. the first translation found
      */
-    fun getOrFallback(language: String?): Translation? {
+    public fun getOrFallback(language: String?): Translation? {
         return translations[language]
             ?: translations[Locale.getDefault().toLanguageTag()]
             ?: translations[null]
@@ -71,42 +71,42 @@ data class LocalizedString(val translations: Map<String?, Translation> = emptyMa
      * Returns a new [LocalizedString] after adding (or replacing) the translation with the given
      * [language].
      */
-    fun copyWithString(language: String?, string: String): LocalizedString =
+    public fun copyWithString(language: String?, string: String): LocalizedString =
         copy(translations = translations + Pair(language, Translation(string = string)))
 
     /**
      * Returns a new [LocalizedString] after applying the [transform] function to each language.
      */
-    fun mapLanguages(transform: (Map.Entry<String?, Translation>) -> String?): LocalizedString =
+    public fun mapLanguages(transform: (Map.Entry<String?, Translation>) -> String?): LocalizedString =
         copy(translations = translations.mapKeys(transform))
 
     /**
      * Returns a new [LocalizedString] after applying the [transform] function to each translation.
      */
-    fun mapTranslations(transform: (Map.Entry<String?, Translation>) -> Translation): LocalizedString =
+    public fun mapTranslations(transform: (Map.Entry<String?, Translation>) -> Translation): LocalizedString =
         copy(translations = translations.mapValues(transform))
 
     /**
      * Serializes a [LocalizedString] to its RWPM JSON representation.
      */
-    override fun toJSON() = JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         for ((language, translation) in translations) {
             put(language ?: UNDEFINED_LANGUAGE, translation.string)
         }
     }
 
-    companion object {
+    public companion object {
 
         /**
          * BCP-47 tag for an undefined language.
          */
-        const val UNDEFINED_LANGUAGE = "und"
+        public const val UNDEFINED_LANGUAGE: String = "und"
 
         /**
          * Shortcut to create a [LocalizedString] using a map of translations indexed by the BCP 47
          * language tag.
          */
-        fun fromStrings(strings: Map<String?, String>): LocalizedString = LocalizedString(
+        public fun fromStrings(strings: Map<String?, String>): LocalizedString = LocalizedString(
             translations = strings
                 .mapValues { (_, string) -> Translation(string = string) }
         )
@@ -132,7 +132,7 @@ data class LocalizedString(val translations: Map<String?, Translation> = emptyMa
          *   }
          * ]
          */
-        fun fromJSON(json: Any?, warnings: WarningLogger? = null): LocalizedString? {
+        public fun fromJSON(json: Any?, warnings: WarningLogger? = null): LocalizedString? {
             json ?: return null
 
             return when (json) {
@@ -145,7 +145,7 @@ data class LocalizedString(val translations: Map<String?, Translation> = emptyMa
             }
         }
 
-        private fun fromJSONObject(json: JSONObject, warnings: WarningLogger?): LocalizedString? {
+        private fun fromJSONObject(json: JSONObject, warnings: WarningLogger?): LocalizedString {
             val translations = mutableMapOf<String?, Translation>()
             for (key in json.keys()) {
                 val string = json.optNullableString(key)
@@ -160,11 +160,11 @@ data class LocalizedString(val translations: Map<String?, Translation> = emptyMa
         }
     }
 
-    @Deprecated("Use [string] instead.", ReplaceWith("string"))
+    @Deprecated("Use [string] instead.", ReplaceWith("string"), level = DeprecationLevel.ERROR)
     val singleString: String?
         get() = string.ifEmpty { null }
 
-    @Deprecated("Use [get] instead.", ReplaceWith("()"))
+    @Deprecated("Use [get] instead.", ReplaceWith("()"), level = DeprecationLevel.ERROR)
     val multiString: Map<String?, String>
         get() = translations.mapValues { (_, translation) -> translation.string }
 }

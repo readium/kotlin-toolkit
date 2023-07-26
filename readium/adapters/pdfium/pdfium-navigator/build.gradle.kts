@@ -44,6 +44,10 @@ android {
     namespace = "org.readium.adapters.pdfium.navigator"
 }
 
+kotlin {
+    explicitApi()
+}
+
 rootProject.ext["publish.artifactId"] = "readium-adapter-pdfium-navigator"
 apply(from = "$rootDir/scripts/publish-module.gradle")
 

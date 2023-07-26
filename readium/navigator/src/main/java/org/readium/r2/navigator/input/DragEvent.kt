@@ -7,10 +7,10 @@ import android.graphics.PointF
  *
  * All the points are relative to the navigator view.
  */
-data class DragEvent(
+public data class DragEvent(
     val type: Type,
     val start: PointF,
     val offset: PointF
 ) {
-    enum class Type { Start, Move, End }
+    public enum class Type { Start, Move, End }
 }

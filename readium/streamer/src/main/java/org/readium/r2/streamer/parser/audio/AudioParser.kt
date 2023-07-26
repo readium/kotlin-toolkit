@@ -26,7 +26,7 @@ import org.readium.r2.streamer.parser.PublicationParser
  *
  * It can also work for a standalone audio file.
  */
-class AudioParser : PublicationParser {
+public class AudioParser : PublicationParser {
 
     override suspend fun parse(
         asset: PublicationParser.Asset,

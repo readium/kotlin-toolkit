@@ -37,7 +37,7 @@ import org.readium.r2.shared.JSONable
  *        your app name. r2- and readium- are reserved by the Readium toolkit.
  */
 @ExperimentalDecorator
-data class HtmlDecorationTemplate(
+public data class HtmlDecorationTemplate(
     val layout: Layout,
     val width: Width = Width.WRAP,
     val element: (Decoration) -> String = { "<div/>" },
@@ -49,7 +49,7 @@ data class HtmlDecorationTemplate(
      * DOM range.
      */
     @Parcelize
-    enum class Layout(val value: String) : Parcelable {
+    public enum class Layout(public val value: String) : Parcelable {
         /** A single HTML element covering the smallest region containing all CSS border boxes. */
         BOUNDS("bounds"),
         /** One HTML element for each CSS border box (e.g. line of text). */
@@ -60,7 +60,7 @@ data class HtmlDecorationTemplate(
      * Indicates how the width of each created HTML element expands in the viewport.
      */
     @Parcelize
-    enum class Width(val value: String) : Parcelable {
+    public enum class Width(public val value: String) : Parcelable {
         /** Smallest width fitting the CSS border box. */
         WRAP("wrap"),
         /** Fills the bounds layout. */
@@ -78,20 +78,30 @@ data class HtmlDecorationTemplate(
         val bottom: Int = 0
     )
 
-    override fun toJSON() = JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         put("layout", layout.value)
         put("width", width.value)
         putOpt("stylesheet", stylesheet)
     }
 
-    companion object {
+    public companion object {
 
         /** Creates a new decoration template for the highlight style. */
-        fun highlight(@ColorInt defaultTint: Int, lineWeight: Int, cornerRadius: Int, alpha: Double): HtmlDecorationTemplate =
+        public fun highlight(
+            @ColorInt defaultTint: Int,
+            lineWeight: Int,
+            cornerRadius: Int,
+            alpha: Double
+        ): HtmlDecorationTemplate =
             createTemplate(asHighlight = true, defaultTint = defaultTint, lineWeight = lineWeight, cornerRadius = cornerRadius, alpha = alpha)
 
         /** Creates a new decoration template for the underline style. */
-        fun underline(@ColorInt defaultTint: Int, lineWeight: Int, cornerRadius: Int, alpha: Double): HtmlDecorationTemplate =
+        public fun underline(
+            @ColorInt defaultTint: Int,
+            lineWeight: Int,
+            cornerRadius: Int,
+            alpha: Double
+        ): HtmlDecorationTemplate =
             createTemplate(asHighlight = false, defaultTint = defaultTint, lineWeight = lineWeight, cornerRadius = cornerRadius, alpha = alpha)
 
         /**
@@ -143,38 +153,38 @@ data class HtmlDecorationTemplate(
 }
 
 @ExperimentalDecorator
-class HtmlDecorationTemplates private constructor(
+public class HtmlDecorationTemplates private constructor(
     internal val styles: MutableMap<KClass<*>, HtmlDecorationTemplate> = mutableMapOf()
 ) : JSONable {
 
-    operator fun <S : Style> get(style: KClass<S>): HtmlDecorationTemplate? =
+    public operator fun <S : Style> get(style: KClass<S>): HtmlDecorationTemplate? =
         styles[style]
 
-    operator fun <S : Style> set(style: KClass<S>, template: HtmlDecorationTemplate) {
+    public operator fun <S : Style> set(style: KClass<S>, template: HtmlDecorationTemplate) {
         styles[style] = template
     }
 
-    override fun toJSON() = JSONObject(
+    override fun toJSON(): JSONObject = JSONObject(
         styles.entries.associate {
             it.key.qualifiedName!! to it.value.toJSON()
         }
     )
 
-    fun copy() = HtmlDecorationTemplates(styles.toMutableMap())
+    public fun copy(): HtmlDecorationTemplates = HtmlDecorationTemplates(styles.toMutableMap())
 
-    companion object {
-        operator fun invoke(build: HtmlDecorationTemplates.() -> Unit): HtmlDecorationTemplates =
+    public companion object {
+        public operator fun invoke(build: HtmlDecorationTemplates.() -> Unit): HtmlDecorationTemplates =
             HtmlDecorationTemplates().apply(build)
 
         /**
          * Creates the default list of decoration styles with associated HTML templates.
          */
-        fun defaultTemplates(
+        public fun defaultTemplates(
             @ColorInt defaultTint: Int = Color.YELLOW,
             lineWeight: Int = 2,
             cornerRadius: Int = 3,
             alpha: Double = 0.3
-        ) = HtmlDecorationTemplates {
+        ): HtmlDecorationTemplates = HtmlDecorationTemplates {
             set(Style.Highlight::class, HtmlDecorationTemplate.highlight(defaultTint = defaultTint, lineWeight = lineWeight, cornerRadius = cornerRadius, alpha = alpha))
             set(Style.Underline::class, HtmlDecorationTemplate.underline(defaultTint = defaultTint, lineWeight = lineWeight, cornerRadius = cornerRadius, alpha = alpha))
         }
@@ -186,10 +196,10 @@ class HtmlDecorationTemplates private constructor(
  *
  * @param alpha When set, overrides the actual color alpha.
  */
-fun @receiver:ColorInt Int.toCss(alpha: Double? = null): String {
+public fun @receiver:ColorInt Int.toCss(alpha: Double? = null): String {
     val r = Color.red(this)
     val g = Color.green(this)
     val b = Color.blue(this)
-    val a = alpha ?: Color.alpha(this).toDouble() / 255
+    val a = alpha ?: (Color.alpha(this).toDouble() / 255)
     return "rgba($r, $g, $b, $a)"
 }

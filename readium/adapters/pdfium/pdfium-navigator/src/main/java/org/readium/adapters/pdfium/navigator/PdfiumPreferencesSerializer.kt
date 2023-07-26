@@ -14,7 +14,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * JSON serializer of [PdfiumPreferences].
  */
 @ExperimentalReadiumApi
-class PdfiumPreferencesSerializer : PreferencesSerializer<PdfiumPreferences> {
+public class PdfiumPreferencesSerializer : PreferencesSerializer<PdfiumPreferences> {
 
     override fun serialize(preferences: PdfiumPreferences): String =
         Json.encodeToString(PdfiumPreferences.serializer(), preferences)

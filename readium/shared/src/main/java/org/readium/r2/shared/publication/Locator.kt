@@ -33,7 +33,7 @@ import org.readium.r2.shared.util.logging.log
  * https://readium.org/architecture/models/locators/
  */
 @Parcelize
-data class Locator(
+public data class Locator(
     val href: String,
     val type: String,
     val title: String? = null,
@@ -53,7 +53,7 @@ data class Locator(
      * @param otherLocations Additional locations for extensions.
      */
     @Parcelize
-    data class Locations(
+    public data class Locations(
         val fragments: List<String> = emptyList(),
         val progression: Double? = null,
         val position: Int? = null,
@@ -61,7 +61,7 @@ data class Locator(
         val otherLocations: @WriteWith<JSONParceler> Map<String, Any> = emptyMap()
     ) : JSONable, Parcelable {
 
-        override fun toJSON() = JSONObject(otherLocations).apply {
+        override fun toJSON(): JSONObject = JSONObject(otherLocations).apply {
             putIfNotEmpty("fragments", fragments)
             put("progression", progression)
             put("position", position)
@@ -72,11 +72,11 @@ data class Locator(
          * Syntactic sugar to access the [otherLocations] values by subscripting [Locations] directly.
          * `locations["cssSelector"] == locations.otherLocations["cssSelector"]`
          */
-        operator fun get(key: String): Any? = otherLocations[key]
+        public operator fun get(key: String): Any? = otherLocations[key]
 
-        companion object {
+        public companion object {
 
-            fun fromJSON(json: JSONObject?): Locations {
+            public fun fromJSON(json: JSONObject?): Locations {
                 val fragments = json?.optStringsFromArrayOrSingle("fragments", remove = true)?.takeIf { it.isNotEmpty() }
                     ?: json?.optStringsFromArrayOrSingle("fragment", remove = true)
                     ?: emptyList()
@@ -100,7 +100,7 @@ data class Locator(
             }
         }
 
-        @Deprecated("Renamed to [fragments]", ReplaceWith("fragments"))
+        @Deprecated("Renamed to [fragments]", ReplaceWith("fragments"), level = DeprecationLevel.ERROR)
         val fragment: String? get() = fragments.firstOrNull()
     }
 
@@ -116,19 +116,19 @@ data class Locator(
      * @param after The text after the locator.
      */
     @Parcelize
-    data class Text(
+    public data class Text(
         val before: String? = null,
         val highlight: String? = null,
         val after: String? = null
     ) : JSONable, Parcelable {
 
-        override fun toJSON() = JSONObject().apply {
+        override fun toJSON(): JSONObject = JSONObject().apply {
             put("before", before)
             put("highlight", highlight)
             put("after", after)
         }
 
-        fun substring(range: IntRange): Text {
+        public fun substring(range: IntRange): Text {
             highlight ?: return this
             return tryOr(this) {
                 copy(
@@ -139,9 +139,9 @@ data class Locator(
             }
         }
 
-        companion object {
+        public companion object {
 
-            fun fromJSON(json: JSONObject?) = Text(
+            public fun fromJSON(json: JSONObject?): Text = Text(
                 before = json?.optNullableString("before"),
                 highlight = json?.optNullableString("highlight"),
                 after = json?.optNullableString("after")
@@ -152,13 +152,13 @@ data class Locator(
     /**
      * Shortcut to get a copy of the [Locator] with different [Locations] sub-properties.
      */
-    fun copyWithLocations(
+    public fun copyWithLocations(
         fragments: List<String> = locations.fragments,
         progression: Double? = locations.progression,
         position: Int? = locations.position,
         totalProgression: Double? = locations.totalProgression,
         otherLocations: Map<String, Any> = locations.otherLocations
-    ) = copy(
+    ): Locator = copy(
         locations = locations.copy(
             fragments = fragments,
             progression = progression,
@@ -168,7 +168,7 @@ data class Locator(
         )
     )
 
-    override fun toJSON() = JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         put("href", href)
         put("type", type)
         put("title", title)
@@ -176,9 +176,9 @@ data class Locator(
         putIfNotEmpty("text", text)
     }
 
-    companion object {
+    public companion object {
 
-        fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Locator? {
+        public fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Locator? {
             val href = json?.optNullableString("href")
             val type = json?.optNullableString("type")
             if (href == null || type == null) {
@@ -195,11 +195,11 @@ data class Locator(
             )
         }
 
-        fun fromJSONArray(
+        public fun fromJSONArray(
             json: JSONArray?,
             warnings: WarningLogger? = null
         ): List<Locator> {
-            return json.parseObjects { Locator.fromJSON(it as? JSONObject, warnings) }
+            return json.parseObjects { fromJSON(it as? JSONObject, warnings) }
         }
     }
 }
@@ -207,8 +207,8 @@ data class Locator(
 /**
  * Creates a [Locator] from a reading order [Link].
  */
-@Deprecated("This may create an incorrect `Locator` if the link `type` is missing. Use `publication.locatorFromLink()` instead.")
-fun Link.toLocator(): Locator {
+@Deprecated("This may create an incorrect `Locator` if the link `type` is missing. Use `publication.locatorFromLink()` instead.", level = DeprecationLevel.ERROR)
+public fun Link.toLocator(): Locator {
     val components = href.split("#", limit = 2)
     return Locator(
         href = components.firstOrNull() ?: href,
@@ -226,7 +226,7 @@ fun Link.toLocator(): Locator {
  * For example, a search result or a list of positions.
  */
 @Parcelize
-data class LocatorCollection(
+public data class LocatorCollection(
     val metadata: Metadata = Metadata(),
     val links: List<Link> = emptyList(),
     val locators: List<Locator> = emptyList(),
@@ -238,7 +238,7 @@ data class LocatorCollection(
      * @param numberOfItems Indicates the total number of locators in the collection.
      */
     @Parcelize
-    data class Metadata(
+    public data class Metadata(
         val localizedTitle: LocalizedString? = null,
         val numberOfItems: Int? = null,
         val otherMetadata: @WriteWith<JSONParceler> Map<String, Any> = mapOf(),
@@ -249,14 +249,14 @@ data class LocatorCollection(
          */
         val title: String? get() = localizedTitle?.string
 
-        override fun toJSON() = JSONObject(otherMetadata).apply {
+        override fun toJSON(): JSONObject = JSONObject(otherMetadata).apply {
             putIfNotEmpty("title", localizedTitle)
             putOpt("numberOfItems", numberOfItems)
         }
 
-        companion object {
+        public companion object {
 
-            fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Metadata {
+            public fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Metadata {
                 json ?: return Metadata()
 
                 val localizedTitle = LocalizedString.fromJSON(json.remove("title"), warnings)
@@ -271,15 +271,15 @@ data class LocatorCollection(
         }
     }
 
-    override fun toJSON() = JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         putIfNotEmpty("metadata", metadata.toJSON())
         putIfNotEmpty("links", links.toJSON())
         put("locators", locators.toJSON())
     }
 
-    companion object {
+    public companion object {
 
-        fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): LocatorCollection {
+        public fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): LocatorCollection {
             return LocatorCollection(
                 metadata = Metadata.fromJSON(json?.optJSONObject("metadata"), warnings),
                 links = Link.fromJSONArray(json?.optJSONArray("links"), warnings = warnings),

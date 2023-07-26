@@ -22,7 +22,7 @@ import org.readium.r2.streamer.parser.audio.AudioLocatorService
 /**
  * Parses any Readium Web Publication package or manifest, e.g. WebPub, Audiobook, DiViNa, LCPDF...
  */
-class ReadiumWebPubParser(
+public class ReadiumWebPubParser(
     private val context: Context? = null,
     private val pdfFactory: PdfDocumentFactory<*>?,
 ) : PublicationParser {

@@ -13,15 +13,15 @@ import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.util.io.CountingInputStream
 
 /** Provides access to an external URL. */
-class HttpResource(
+public class HttpResource(
     private val client: HttpClient,
     private val url: String,
     private val maxSkipBytes: Long = MAX_SKIP_BYTES
 ) : Resource {
 
     override suspend fun name(): ResourceTry<String?> =
-        headResponse().map {
-            it.valuesForHeader("Content-Disposition")
+        headResponse().map { r ->
+            r.valuesForHeader("Content-Disposition")
                 .flatMap { it.split(";") }
                 .map { it.trim() }
                 .firstOrNull { it.startsWith("filename=") }
@@ -137,7 +137,7 @@ class HttpResource(
                 Resource.Exception.Other(e)
         }
 
-    companion object {
+    public companion object {
 
         private const val MAX_SKIP_BYTES: Long = 8192
     }

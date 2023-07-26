@@ -31,7 +31,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
  * @param caller Activity or Fragment used to register the ActivityResultLauncher.
  * @param fragmentManager FragmentManager used to present the date picker.
  */
-class MaterialRenewListener(
+public class MaterialRenewListener(
     private val license: LcpLicense,
     private val caller: ActivityResultCaller,
     private val fragmentManager: FragmentManager
@@ -73,14 +73,16 @@ class MaterialRenewListener(
             .show(fragmentManager, "MaterialRenewListener.DatePicker")
     }
 
-    override suspend fun openWebPage(url: URL) = suspendCoroutine<Unit> { cont ->
-        webPageContinuation = cont
+    override suspend fun openWebPage(url: URL) {
+        suspendCoroutine { cont ->
+            webPageContinuation = cont
 
-        webPageLauncher.launch(
-            CustomTabsIntent.Builder().build().intent.apply {
-                data = Uri.parse(url.toString())
-            }
-        )
+            webPageLauncher.launch(
+                CustomTabsIntent.Builder().build().intent.apply {
+                    data = Uri.parse(url.toString())
+                }
+            )
+        }
     }
 
     private var webPageContinuation: Continuation<Unit>? = null

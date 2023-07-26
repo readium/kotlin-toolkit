@@ -12,7 +12,7 @@ package org.readium.r2.lcp.license.model.components.lcp
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpException
 
-data class UserKey(val json: JSONObject) {
+public data class UserKey(val json: JSONObject) {
     val textHint: String
     val algorithm: String
     val keyCheck: String

@@ -27,7 +27,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
  * https://drafts.opds.io/schema/acquisition-object.schema.json
  */
 @Parcelize
-data class Acquisition(
+public data class Acquisition(
     val type: String,
     val children: List<Acquisition> = emptyList()
 ) : JSONable, Parcelable {
@@ -39,18 +39,18 @@ data class Acquisition(
     /**
      * Serializes an [Acquisition] to its JSON representation.
      */
-    override fun toJSON() = JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         put("type", type)
         putIfNotEmpty("child", children)
     }
 
-    companion object {
+    public companion object {
 
         /**
          * Creates an [Acquisition] from its JSON representation.
          * If the acquisition can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Acquisition? {
+        public fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): Acquisition? {
             val type = json?.optNullableString("type")
             if (type == null) {
                 warnings?.log(Acquisition::class.java, "[type] is required", json)
@@ -67,7 +67,7 @@ data class Acquisition(
          * Creates a list of [Acquisition] from its JSON representation.
          * If an acquisition can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSONArray(
+        public fun fromJSONArray(
             json: JSONArray?,
             warnings: WarningLogger? = null
         ): List<Acquisition> {
@@ -75,19 +75,19 @@ data class Acquisition(
         }
     }
 
-    @Deprecated("Use [type] instead", ReplaceWith("type"))
+    @Deprecated("Use [type] instead", ReplaceWith("type"), level = DeprecationLevel.ERROR)
     val typeAcquisition: String?
         get() = type
 
-    @Deprecated("Use [children] instead", ReplaceWith("children"))
+    @Deprecated("Use [children] instead", ReplaceWith("children"), level = DeprecationLevel.ERROR)
     val child: List<Acquisition>
         get() = children
 }
 
-@Deprecated("Renamed into [Acquisition]", ReplaceWith("Acquisition"))
-typealias IndirectAcquisition = Acquisition
+@Deprecated("Renamed into [Acquisition]", ReplaceWith("Acquisition"), level = DeprecationLevel.ERROR)
+public typealias IndirectAcquisition = Acquisition
 
-@Deprecated("Use [Acquisition::fromJSON] instead", ReplaceWith("Acquisition.fromJSON"))
-fun parseIndirectAcquisition(indirectAcquisitionDict: JSONObject): Acquisition =
+@Deprecated("Use [Acquisition::fromJSON] instead", ReplaceWith("Acquisition.fromJSON"), level = DeprecationLevel.ERROR)
+public fun parseIndirectAcquisition(indirectAcquisitionDict: JSONObject): Acquisition =
     Acquisition.fromJSON(indirectAcquisitionDict)
         ?: throw Exception("Invalid indirect acquisition")

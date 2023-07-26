@@ -21,7 +21,7 @@ import org.readium.r2.shared.util.Language
  */
 @ExperimentalReadiumApi
 @Serializable
-data class AndroidTtsPreferences(
+public data class AndroidTtsPreferences(
     override val language: Language? = null,
     val pitch: Double? = null,
     val speed: Double? = null,

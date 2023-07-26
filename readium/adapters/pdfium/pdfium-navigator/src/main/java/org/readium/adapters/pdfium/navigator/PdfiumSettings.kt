@@ -15,7 +15,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  *  @see PdfiumPreferences
  */
 @ExperimentalReadiumApi
-data class PdfiumSettings(
+public data class PdfiumSettings(
     val fit: Fit,
     val pageSpacing: Double,
     val readingProgression: ReadingProgression,

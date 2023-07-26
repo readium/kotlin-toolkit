@@ -17,14 +17,14 @@ import org.readium.r2.shared.publication.services.content.iterators.ResourceCont
  * Provides a way to extract the raw [Content] of a [Publication].
  */
 @ExperimentalReadiumApi
-interface ContentService : Publication.Service {
+public interface ContentService : Publication.Service {
     /**
      * Creates a [Content] starting from the given [start] location.
      *
      * The implementation must be fast and non-blocking. Do the actual extraction inside the
      * [Content] implementation.
      */
-    fun content(start: Locator?): Content
+    public fun content(start: Locator?): Content
 }
 
 /**
@@ -32,7 +32,7 @@ interface ContentService : Publication.Service {
  * publication when missing.
  */
 @ExperimentalReadiumApi
-fun Publication.content(start: Locator? = null): Content? =
+public fun Publication.content(start: Locator? = null): Content? =
     contentService?.content(start)
 
 @ExperimentalReadiumApi
@@ -41,7 +41,7 @@ private val Publication.contentService: ContentService?
 
 /** Factory to build a [ContentService] */
 @ExperimentalReadiumApi
-var Publication.ServicesBuilder.contentServiceFactory: ServiceFactory?
+public var Publication.ServicesBuilder.contentServiceFactory: ServiceFactory?
     get() = get(ContentService::class)
     set(value) = set(ContentService::class, value)
 
@@ -50,15 +50,15 @@ var Publication.ServicesBuilder.contentServiceFactory: ServiceFactory?
  * [ResourceContentIteratorFactory].
  */
 @ExperimentalReadiumApi
-class DefaultContentService(
+public class DefaultContentService(
     private val manifest: Manifest,
     private val fetcher: Fetcher,
     private val services: PublicationServicesHolder,
     private val resourceContentIteratorFactories: List<ResourceContentIteratorFactory>
 ) : ContentService {
 
-    companion object {
-        fun createFactory(
+    public companion object {
+        public fun createFactory(
             resourceContentIteratorFactories: List<ResourceContentIteratorFactory>
         ): (Publication.Service.Context) -> DefaultContentService = { context ->
             DefaultContentService(context.manifest, context.fetcher, context.services, resourceContentIteratorFactories)

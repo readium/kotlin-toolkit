@@ -14,7 +14,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * JSON serializer of [EpubPreferences].
  */
 @ExperimentalReadiumApi
-class EpubPreferencesSerializer : PreferencesSerializer<EpubPreferences> {
+public class EpubPreferencesSerializer : PreferencesSerializer<EpubPreferences> {
 
     override fun serialize(preferences: EpubPreferences): String =
         Json.encodeToString(EpubPreferences.serializer(), preferences)

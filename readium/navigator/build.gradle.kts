@@ -48,6 +48,10 @@ android {
     namespace = "org.readium.r2.navigator"
 }
 
+kotlin {
+    explicitApi()
+}
+
 rootProject.ext["publish.artifactId"] = "readium-navigator"
 apply(from = "$rootDir/scripts/publish-module.gradle")
 

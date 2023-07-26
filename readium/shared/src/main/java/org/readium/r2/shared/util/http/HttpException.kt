@@ -18,7 +18,7 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.mediatype.MediaType
 
-typealias HttpTry<SuccessT> = Try<SuccessT, HttpException>
+public typealias HttpTry<SuccessT> = Try<SuccessT, HttpException>
 
 /**
  * Represents an error occurring during an HTTP activity.
@@ -28,14 +28,14 @@ typealias HttpTry<SuccessT> = Try<SuccessT, HttpException>
  * @param body Response body.
  * @param cause Underlying error, if any.
  */
-class HttpException(
-    val kind: Kind,
-    val mediaType: MediaType? = null,
-    val body: ByteArray? = null,
+public class HttpException(
+    public val kind: Kind,
+    public val mediaType: MediaType? = null,
+    public val body: ByteArray? = null,
     cause: Throwable? = null,
 ) : UserException(kind.userMessageId, cause = cause) {
 
-    enum class Kind(@StringRes val userMessageId: Int) {
+    public enum class Kind(@StringRes public val userMessageId: Int) {
         /** The provided request was not valid. */
         MalformedRequest(R.string.readium_shared_http_exception_malformed_request),
         /** The received response couldn't be decoded. */
@@ -61,10 +61,10 @@ class HttpException(
         /** An error whose kind is not recognized. */
         Other(R.string.readium_shared_http_exception_other);
 
-        companion object {
+        public companion object {
 
             /** Resolves the kind of the HTTP error associated with the given [statusCode]. */
-            fun ofStatusCode(statusCode: Int): Kind? =
+            public fun ofStatusCode(statusCode: Int): Kind? =
                 when (statusCode) {
                     in 200..399 -> null
                     400 -> BadRequest
@@ -91,7 +91,7 @@ class HttpException(
         return super.getUserMessage(context, includesCauses)
     }
 
-    override fun getLocalizedMessage(): String? {
+    override fun getLocalizedMessage(): String {
         var message = "HTTP error: ${kind.name}"
         problemDetails?.let { details ->
             message += ": ${details.title} ${details.detail}"
@@ -100,7 +100,7 @@ class HttpException(
     }
 
     /** Response body parsed as a JSON problem details. */
-    val problemDetails: ProblemDetails? by lazy {
+    public val problemDetails: ProblemDetails? by lazy {
         if (body == null || mediaType?.matches(MediaType.JSON_PROBLEM_DETAILS) != true) {
             return@lazy null
         }
@@ -108,19 +108,23 @@ class HttpException(
         tryOrLog { ProblemDetails.fromJSON(JSONObject(String(body))) }
     }
 
-    companion object {
+    public companion object {
 
         /**
          * Shortcut for a cancelled HTTP error.
          */
-        val CANCELLED = HttpException(kind = Kind.Cancelled)
+        public val CANCELLED: HttpException = HttpException(kind = Kind.Cancelled)
 
         /**
          * Creates an HTTP error from a status code.
          *
          * Returns null if the status code is a success.
          */
-        operator fun invoke(statusCode: Int, mediaType: MediaType? = null, body: ByteArray? = null): HttpException? =
+        public operator fun invoke(
+            statusCode: Int,
+            mediaType: MediaType? = null,
+            body: ByteArray? = null
+        ): HttpException? =
             Kind.ofStatusCode(statusCode)?.let { kind ->
                 HttpException(kind, mediaType, body)
             }
@@ -128,7 +132,7 @@ class HttpException(
         /**
          * Creates an HTTP error from a generic exception.
          */
-        fun wrap(cause: Throwable): HttpException {
+        public fun wrap(cause: Throwable): HttpException {
             val kind = when (cause) {
                 is HttpException -> return cause
                 is MalformedURLException -> Kind.MalformedRequest

@@ -14,6 +14,6 @@ import org.json.JSONObject
 import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.optNullableString
 
-data class PotentialRights(val json: JSONObject) {
+public data class PotentialRights(val json: JSONObject) {
     val end: Date? = json.optNullableString("end")?.iso8601ToDate()
 }

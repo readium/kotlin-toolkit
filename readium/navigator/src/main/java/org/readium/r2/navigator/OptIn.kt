@@ -12,7 +12,7 @@ package org.readium.r2.navigator
 )
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
-annotation class ExperimentalDecorator
+public annotation class ExperimentalDecorator
 
 @RequiresOptIn(
     level = RequiresOptIn.Level.WARNING,
@@ -20,7 +20,7 @@ annotation class ExperimentalDecorator
 )
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
-annotation class ExperimentalAudiobook
+public annotation class ExperimentalAudiobook
 
 @RequiresOptIn(
     level = RequiresOptIn.Level.WARNING,
@@ -28,4 +28,4 @@ annotation class ExperimentalAudiobook
 )
 @Retention(AnnotationRetention.BINARY)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
-annotation class ExperimentalDragGesture
+public annotation class ExperimentalDragGesture

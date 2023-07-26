@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <item type="layout" name="readium_activity_epub">@layout/activity_reader</item>
-    <item type="layout" name="readium_activity_audiobook">@layout/activity_reader</item>
-</resources>

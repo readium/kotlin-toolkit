@@ -16,26 +16,26 @@ import org.readium.r2.lcp.LcpLicense
 import org.readium.r2.lcp.LcpService
 
 @Deprecated("Renamed to `LcpService`", ReplaceWith("org.readium.r2.lcp.LcpService"), level = DeprecationLevel.ERROR)
-typealias LCPService = LcpService
+public typealias LCPService = LcpService
 @Deprecated("Renamed to `LcpService.AcquiredPublication`", ReplaceWith("org.readium.r2.lcp.LcpService.AcquiredPublication"), level = DeprecationLevel.ERROR)
-typealias LCPImportedPublication = LcpService.AcquiredPublication
+public typealias LCPImportedPublication = LcpService.AcquiredPublication
 @Deprecated("Not used anymore", level = DeprecationLevel.ERROR)
-typealias URLPresenter = () -> Unit
+public typealias URLPresenter = () -> Unit
 @Deprecated("Renamed to `LcpLicense`", ReplaceWith("org.readium.r2.lcp.LcpLicense"), level = DeprecationLevel.ERROR)
-typealias LCPLicense = LcpLicense
+public typealias LCPLicense = LcpLicense
 
 @Deprecated("Renamed to `LcpAuthenticating`", ReplaceWith("org.readium.r2.lcp.LcpAuthenticating"), level = DeprecationLevel.ERROR)
-typealias LCPAuthenticating = LcpAuthenticating
+public typealias LCPAuthenticating = LcpAuthenticating
 @Deprecated("Not used anymore", level = DeprecationLevel.ERROR)
-interface LCPAuthenticationDelegate
+public interface LCPAuthenticationDelegate
 @Deprecated("Renamed to `LcpAuthenticating.AuthenticationReason`", ReplaceWith("org.readium.r2.lcp.LcpAuthenticating.AuthenticationReason"), level = DeprecationLevel.ERROR)
-typealias LCPAuthenticationReason = LcpAuthenticating.AuthenticationReason
+public typealias LCPAuthenticationReason = LcpAuthenticating.AuthenticationReason
 @Deprecated("Renamed to `LcpAuthenticating.AuthenticatedLicense`", ReplaceWith("org.readium.r2.lcp.LcpAuthenticating.AuthenticatedLicense"), level = DeprecationLevel.ERROR)
-typealias LCPAuthenticatedLicense = LcpAuthenticating.AuthenticatedLicense
+public typealias LCPAuthenticatedLicense = LcpAuthenticating.AuthenticatedLicense
 
 @Deprecated("Renamed to `LcpException", ReplaceWith("org.readium.r2.lcp.LcpException"), level = DeprecationLevel.ERROR)
-typealias LCPError = LcpException
+public typealias LCPError = LcpException
 
 @Deprecated("Renamed to `LcpService()`", ReplaceWith("LcpService()"), level = DeprecationLevel.ERROR)
-fun R2MakeLCPService(context: Context) =
+public fun R2MakeLCPService(context: Context): LcpService? =
     LcpService(context)

@@ -17,9 +17,9 @@ import org.readium.r2.shared.error.getOrThrow
  * If you experience bad performances, consider wrapping the stream in a BufferedInputStream. This
  * is particularly useful when streaming deflated ZIP entries.
  */
-class ResourceInputStream(
+public class ResourceInputStream(
     private val resource: Resource,
-    val range: LongRange? = null
+    public val range: LongRange? = null
 ) : InputStream() {
 
     private var isClosed = false
@@ -107,26 +107,32 @@ class ResourceInputStream(
     override fun markSupported(): Boolean = true
 
     @Throws(IOException::class)
-    override fun mark(readlimit: Int) = synchronized(this) {
-        checkNotClosed()
-        mark = position
+    override fun mark(readlimit: Int) {
+        synchronized(this) {
+            checkNotClosed()
+            mark = position
+        }
     }
 
     @Throws(IOException::class)
-    override fun reset() = synchronized(this) {
-        checkNotClosed()
-        position = mark
+    override fun reset() {
+        synchronized(this) {
+            checkNotClosed()
+            position = mark
+        }
     }
 
     /**
      * Closes the underlying resource.
      */
-    override fun close() = synchronized(this) {
-        if (isClosed)
-            return
+    override fun close() {
+        synchronized(this) {
+            if (isClosed)
+                return
 
-        isClosed = true
-        runBlocking { resource.close() }
+            isClosed = true
+            runBlocking { resource.close() }
+        }
     }
 
     private fun checkNotClosed() {

@@ -21,12 +21,12 @@ import org.readium.r2.shared.publication.Publication
  * the navigator for some preferences.
  */
 @ExperimentalReadiumApi
-class PdfiumEngineProvider(
+public class PdfiumEngineProvider(
     private val listener: PdfiumDocumentFragment.Listener? = null,
     private val defaults: PdfiumDefaults = PdfiumDefaults()
 ) : PdfEngineProvider<PdfiumSettings, PdfiumPreferences, PdfiumPreferencesEditor> {
 
-    override suspend fun createDocumentFragment(input: PdfDocumentFragmentInput<PdfiumSettings>) =
+    override suspend fun createDocumentFragment(input: PdfDocumentFragmentInput<PdfiumSettings>): PdfiumDocumentFragment =
         PdfiumDocumentFragment(
             publication = input.publication,
             link = input.link,

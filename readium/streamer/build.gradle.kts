@@ -42,6 +42,10 @@ android {
     namespace = "org.readium.r2.streamer"
 }
 
+kotlin {
+    explicitApi()
+}
+
 rootProject.ext["publish.artifactId"] = "readium-streamer"
 apply(from = "$rootDir/scripts/publish-module.gradle")
 

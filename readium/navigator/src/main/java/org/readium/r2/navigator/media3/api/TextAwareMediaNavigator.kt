@@ -14,7 +14,7 @@ import org.readium.r2.shared.publication.Locator
  * A [MediaNavigator] aware of the utterances being read aloud.
  */
 @ExperimentalReadiumApi
-interface TextAwareMediaNavigator<
+public interface TextAwareMediaNavigator<
     L : TextAwareMediaNavigator.Location,
     P : TextAwareMediaNavigator.Playback,
     R : TextAwareMediaNavigator.ReadingOrder
@@ -23,59 +23,59 @@ interface TextAwareMediaNavigator<
     /**
      * Location of the navigator.
      */
-    interface Location : MediaNavigator.Location {
+    public interface Location : MediaNavigator.Location {
 
         /**
          * The utterance being played.
          */
-        val utterance: String
+        public val utterance: String
 
         /**
          * The text right before the utterance being played, if any in the current item.
          */
-        val textBefore: String?
+        public val textBefore: String?
 
         /**
          * The text right after the utterance being played, if any in the current item.
          */
-        val textAfter: String?
+        public val textAfter: String?
 
         /**
          * The range of [utterance] being played, if known.
          */
-        val range: IntRange?
+        public val range: IntRange?
 
         /**
          * A locator pointing to the current utterance.
          */
-        val utteranceLocator: Locator
+        public val utteranceLocator: Locator
 
         /**
          * A locator pointing to the current token, if known.
          */
-        val tokenLocator: Locator?
+        public val tokenLocator: Locator?
     }
 
     /**
      * State of the playback.
      */
-    interface Playback : MediaNavigator.Playback {
+    public interface Playback : MediaNavigator.Playback {
 
         /**
          * The utterance being played.
          */
-        val utterance: String
+        public val utterance: String
 
         /**
          * The range of [utterance] being played.
          */
-        val range: IntRange?
+        public val range: IntRange?
     }
 
     /**
      * Data about the content to play.
      */
-    interface ReadingOrder : MediaNavigator.ReadingOrder {
+    public interface ReadingOrder : MediaNavigator.ReadingOrder {
 
         /**
          * List of items to play.
@@ -85,7 +85,7 @@ interface TextAwareMediaNavigator<
         /**
          * A piece of the content to play..
          */
-        interface Item : MediaNavigator.ReadingOrder.Item
+        public interface Item : MediaNavigator.ReadingOrder.Item
     }
 
     /**
@@ -108,22 +108,22 @@ interface TextAwareMediaNavigator<
      *
      * Does nothing if the current utterance is the first one.
      */
-    fun goToPreviousUtterance()
+    public fun goToPreviousUtterance()
 
     /**
      * Jumps to the next utterance.
      *
      * Does nothing if the current utterance is the last one.
      */
-    fun goToNextUtterance()
+    public fun goToNextUtterance()
 
     /**
      * Whether the current utterance has a previous one or is the first one.
      */
-    fun hasPreviousUtterance(): Boolean
+    public fun hasPreviousUtterance(): Boolean
 
     /**
      * Whether the current utterance has a next utterance or is the last one.
      */
-    fun hasNextUtterance(): Boolean
+    public fun hasNextUtterance(): Boolean
 }

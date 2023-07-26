@@ -59,7 +59,7 @@ internal class DirectoryContainer(
     override suspend fun close() {}
 }
 
-class DirectoryContainerFactory : ContainerFactory {
+public class DirectoryContainerFactory : ContainerFactory {
 
     override suspend fun create(url: Url): Try<Container, ContainerFactory.Error> {
         if (url.scheme != ContentResolver.SCHEME_FILE) {

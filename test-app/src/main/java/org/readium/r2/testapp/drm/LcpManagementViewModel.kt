@@ -31,7 +31,7 @@ class LcpManagementViewModel(
     override val type: String = "LCP"
 
     override val state: String?
-        get() = lcpLicense.status?.status?.rawValue
+        get() = lcpLicense.status?.status?.value
 
     override val provider: String?
         get() = lcpLicense.license.provider

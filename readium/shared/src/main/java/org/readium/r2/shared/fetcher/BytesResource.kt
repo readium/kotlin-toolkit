@@ -6,20 +6,22 @@
 package org.readium.r2.shared.fetcher
 
 import kotlinx.coroutines.runBlocking
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 
-sealed class BaseBytesResource(
+@InternalReadiumApi
+public sealed class BaseBytesResource(
     private val link: Link,
     protected val resource: org.readium.r2.shared.resource.BytesResource
 ) : Resource by resource, Fetcher.Resource {
 
-    constructor(link: Link, bytes: suspend () -> ResourceTry<ByteArray>) :
+    protected constructor(link: Link, bytes: suspend () -> ResourceTry<ByteArray>) :
         this(link, org.readium.r2.shared.resource.BytesResource(bytes))
 
-    constructor(link: Link, bytes: ByteArray) :
+    protected constructor(link: Link, bytes: ByteArray) :
         this(link, { Try.success(bytes) })
 
     override suspend fun link(): Link =
@@ -30,21 +32,21 @@ sealed class BaseBytesResource(
 }
 
 /** Creates a Resource serving [ByteArray]. */
-class BytesResource(
+public class BytesResource(
     link: Link,
     bytes: suspend () -> ByteArray
 ) : BaseBytesResource(link, { Try.success(bytes()) }) {
 
-    constructor(link: Link, bytes: ByteArray) : this(link, { bytes })
+    public constructor(link: Link, bytes: ByteArray) : this(link, { bytes })
 }
 
 /** Creates a Resource serving a [String]. */
-class StringResource(
+public class StringResource(
     link: Link,
     string: suspend () -> String
 ) : BaseBytesResource(link, { Try.success(string()).map { it.toByteArray() } }) {
 
-    constructor(link: Link, string: String) : this(link, { string })
+    public constructor(link: Link, string: String) : this(link, { string })
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { resource.bytes().map { it.toString() } } })"

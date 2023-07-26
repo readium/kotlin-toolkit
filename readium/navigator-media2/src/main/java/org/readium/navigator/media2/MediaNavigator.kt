@@ -52,7 +52,7 @@ import timber.log.Timber
  */
 @ExperimentalMedia2
 @OptIn(ExperimentalTime::class)
-class MediaNavigator private constructor(
+public class MediaNavigator private constructor(
     override val publication: Publication,
     private val playerFacade: SessionPlayerFacade,
     private val playerCallback: SessionPlayerCallback,
@@ -200,7 +200,7 @@ class MediaNavigator private constructor(
     /**
      * Indicates the navigator current state.
      */
-    val playback: StateFlow<Playback> =
+    public val playback: StateFlow<Playback> =
         playbackMutable
 
     /**
@@ -208,35 +208,35 @@ class MediaNavigator private constructor(
      *
      * Normal speed is 1.0 and 0.0 is incorrect.
      */
-    suspend fun setPlaybackRate(rate: Double): Try<Unit, Exception> = executeCommand {
+    public suspend fun setPlaybackRate(rate: Double): Try<Unit, Exception> = executeCommand {
         playerFacade.setPlaybackSpeed(rate).toNavigatorResult()
     }
 
     /**
      * Resumes or start the playback at the current location.
      */
-    suspend fun play(): Try<Unit, Exception> = executeCommand {
+    public suspend fun play(): Try<Unit, Exception> = executeCommand {
         playerFacade.play().toNavigatorResult()
     }
 
     /**
      * Pauses the playback.
      */
-    suspend fun pause(): Try<Unit, Exception> = executeCommand {
+    public suspend fun pause(): Try<Unit, Exception> = executeCommand {
         playerFacade.pause().toNavigatorResult()
     }
 
     /**
      * Seeks to the given time at the given resource.
      */
-    suspend fun seek(index: Int, position: Duration): Try<Unit, Exception> = executeCommand {
+    public suspend fun seek(index: Int, position: Duration): Try<Unit, Exception> = executeCommand {
         playerFacade.seekTo(index, position).toNavigatorResult()
     }
 
     /**
      * Seeks to the given locator.
      */
-    suspend fun go(locator: Locator): Try<Unit, Exception> {
+    public suspend fun go(locator: Locator): Try<Unit, Exception> {
         val itemIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
             ?: return Try.failure(Exception.InvalidArgument("Invalid href ${locator.href}."))
         val position = locator.locations.time ?: Duration.ZERO
@@ -247,7 +247,7 @@ class MediaNavigator private constructor(
     /**
      * Seeks to the beginning of the given link.
      */
-    suspend fun go(link: Link): Try<Unit, Exception> {
+    public suspend fun go(link: Link): Try<Unit, Exception> {
         val locator = publication.locatorFromLink(link)
             ?: return Try.failure(Exception.InvalidArgument("Resource not found at ${link.href}"))
         return go(locator)
@@ -256,13 +256,13 @@ class MediaNavigator private constructor(
     /**
      * Skips to a little amount of time later.
      */
-    suspend fun goForward(): Try<Unit, Exception> =
+    public suspend fun goForward(): Try<Unit, Exception> =
         seekBy(configuration.skipForwardInterval)
 
     /**
      * Skips to a little amount of time before.
      */
-    suspend fun goBackward(): Try<Unit, Exception> =
+    public suspend fun goBackward(): Try<Unit, Exception> =
         seekBy(-configuration.skipBackwardInterval)
 
     private suspend fun seekBy(offset: Duration): Try<Unit, Exception> = executeCommand {
@@ -298,7 +298,7 @@ class MediaNavigator private constructor(
      * Compared to [pause], the navigator may clear its state in whatever way is appropriate. For
      * example, recovering a player's resources.
      */
-    fun close() {
+    public fun close() {
         playerFacade.unregisterPlayerCallback(playerCallback)
         playerCallback.close()
         playerFacade.close()
@@ -308,50 +308,50 @@ class MediaNavigator private constructor(
     /**
      * Builds a [MediaSession] for this navigator.
      */
-    fun session(context: Context, activityIntent: PendingIntent, id: String? = null): MediaSession =
+    public fun session(context: Context, activityIntent: PendingIntent, id: String? = null): MediaSession =
         playerFacade.session(context, id, activityIntent)
 
-    data class Configuration(
+    public data class Configuration(
         val positionRefreshRate: Double = 2.0, // Hz
         val skipForwardInterval: Duration = 30.seconds,
         val skipBackwardInterval: Duration = 30.seconds,
     )
 
     @ExperimentalTime
-    data class Playback(
+    public data class Playback(
         val state: State,
         val rate: Double,
         val resource: Resource,
         val buffer: Buffer
     ) {
 
-        enum class State {
+        public enum class State {
             Playing,
             Paused,
             Finished,
             Error
         }
 
-        data class Resource(
+        public data class Resource(
             val index: Int,
             val link: Link,
             val position: Duration,
             val duration: Duration?
         )
 
-        data class Buffer(
+        public data class Buffer(
             val isPlayable: Boolean,
             val position: Duration
         )
     }
 
-    sealed class Exception(override val message: String) : kotlin.Exception(message) {
+    public sealed class Exception(override val message: String) : kotlin.Exception(message) {
 
-        class SessionPlayer internal constructor(
+        public class SessionPlayer internal constructor(
             internal val error: SessionPlayerError
         ) : Exception("${error.name} error occurred in SessionPlayer.")
 
-        class InvalidArgument(message: String) : Exception(message)
+        public class InvalidArgument(message: String) : Exception(message)
     }
 
     /*
@@ -381,9 +381,9 @@ class MediaNavigator private constructor(
         return true
     }
 
-    companion object {
+    public companion object {
 
-        suspend fun create(
+        public suspend fun create(
             context: Context,
             publication: Publication,
             initialLocator: Locator?,

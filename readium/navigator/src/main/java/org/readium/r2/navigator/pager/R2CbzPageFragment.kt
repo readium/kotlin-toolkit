@@ -26,7 +26,7 @@ import org.readium.r2.navigator.databinding.ReadiumNavigatorViewpagerFragmentCbz
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 
-class R2CbzPageFragment(
+internal class R2CbzPageFragment(
     private val publication: Publication,
     private val onTapListener: (Float, Float) -> Unit
 ) :

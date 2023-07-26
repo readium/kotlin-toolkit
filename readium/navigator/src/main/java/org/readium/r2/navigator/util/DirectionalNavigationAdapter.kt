@@ -32,7 +32,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  * @param animatedTransition: Indicates whether the page turns should be animated.
  */
 @ExperimentalReadiumApi
-class DirectionalNavigationAdapter(
+public class DirectionalNavigationAdapter(
     private val tapEdges: Set<TapEdge> = setOf(TapEdge.Horizontal),
     private val handleTapsWhileScrolling: Boolean = false,
     private val minimumHorizontalEdgeSize: Double = 80.0,
@@ -45,7 +45,7 @@ class DirectionalNavigationAdapter(
     /**
      * Indicates which viewport edges trigger page turns on tap.
      */
-    enum class TapEdge {
+    public enum class TapEdge {
         Horizontal, Vertical;
     }
 
@@ -90,7 +90,7 @@ class DirectionalNavigationAdapter(
     }
 
     override fun onKey(navigator: VisualNavigator, event: KeyEvent): Boolean {
-        if (event.type != KeyEvent.Type.Down || !event.modifiers.isEmpty()) {
+        if (event.type != KeyEvent.Type.Down || event.modifiers.isNotEmpty()) {
             return false
         }
 

@@ -16,7 +16,7 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.isLazyInitialized
 import timber.log.Timber
 
-class ResourceDataProvider(
+internal class ResourceDataProvider(
     resource: Fetcher.Resource,
     private val onResourceError: (Resource.Exception) -> Unit = { Timber.e(it) }
 ) : DataProvider {

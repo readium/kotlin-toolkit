@@ -20,18 +20,18 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.buffered
 import org.readium.r2.shared.publication.Publication
 
-sealed class ExoPlayerDataSourceException(message: String, cause: Throwable?) : IOException(message, cause) {
-    class NotOpened(message: String) : ExoPlayerDataSourceException(message, null)
-    class NotFound(message: String) : ExoPlayerDataSourceException(message, null)
-    class ReadFailed(uri: Uri, offset: Int, readLength: Int, cause: Throwable) : ExoPlayerDataSourceException("Failed to read $readLength bytes of URI $uri at offset $offset.", cause)
+public sealed class ExoPlayerDataSourceException(message: String, cause: Throwable?) : IOException(message, cause) {
+    public class NotOpened(message: String) : ExoPlayerDataSourceException(message, null)
+    public class NotFound(message: String) : ExoPlayerDataSourceException(message, null)
+    public class ReadFailed(uri: Uri, offset: Int, readLength: Int, cause: Throwable) : ExoPlayerDataSourceException("Failed to read $readLength bytes of URI $uri at offset $offset.", cause)
 }
 
 /**
  * An ExoPlayer's [DataSource] which retrieves resources from a [Publication].
  */
-class ExoPlayerDataSource internal constructor(private val publication: Publication) : BaseDataSource(/* isNetwork = */ true) {
+public class ExoPlayerDataSource internal constructor(private val publication: Publication) : BaseDataSource(/* isNetwork = */ true) {
 
-    class Factory(
+    public class Factory(
         private val publication: Publication,
         private val transferListener: TransferListener? = null
     ) : DataSource.Factory {

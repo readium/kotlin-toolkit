@@ -18,15 +18,15 @@ import org.readium.r2.shared.util.MapCompanion
  * https://readium.org/webpub-manifest/schema/extensions/epub/metadata.schema.json
  */
 @Parcelize
-enum class EpubLayout(val value: String) : Parcelable {
+public enum class EpubLayout(public val value: String) : Parcelable {
     FIXED("fixed"),
     REFLOWABLE("reflowable");
 
-    companion object : MapCompanion<String, EpubLayout>(values(), EpubLayout::value) {
+    public companion object : MapCompanion<String, EpubLayout>(values(), EpubLayout::value) {
 
-        @Deprecated("Renamed to [FIXED]", ReplaceWith("EpubLayout.FIXED"))
-        val Fixed: EpubLayout get() = FIXED
-        @Deprecated("Renamed to [REFLOWABLE]", ReplaceWith("EpubLayout.REFLOWABLE"))
-        val Reflowable: EpubLayout get() = REFLOWABLE
+        @Deprecated("Renamed to [FIXED]", ReplaceWith("EpubLayout.FIXED"), level = DeprecationLevel.ERROR)
+        public val Fixed: EpubLayout get() = FIXED
+        @Deprecated("Renamed to [REFLOWABLE]", ReplaceWith("EpubLayout.REFLOWABLE"), level = DeprecationLevel.ERROR)
+        public val Reflowable: EpubLayout get() = REFLOWABLE
     }
 }

@@ -7,6 +7,6 @@
 package org.readium.r2.shared.units
 
 @JvmInline
-value class Hz(val value: Double)
+public value class Hz(public val value: Double)
 
-val Double.hz get() = Hz(this)
+public val Double.hz: Hz get() = Hz(this)

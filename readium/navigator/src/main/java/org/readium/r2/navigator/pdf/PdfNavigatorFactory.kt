@@ -21,7 +21,7 @@ import org.readium.r2.shared.publication.Publication
  * @param pdfEngineProvider provider for third-party PDF engine adapter.
  */
 @ExperimentalReadiumApi
-class PdfNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>>(
+public class PdfNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>>(
     private val publication: Publication,
     private val pdfEngineProvider: PdfEngineProvider<S, P, E>
 ) {
@@ -35,7 +35,7 @@ class PdfNavigatorFactory<S : Configurable.Settings, P : Configurable.Preference
      * @param listener Optional listener to implement to observe events, such as user taps.
      */
     @ExperimentalReadiumApi
-    fun createFragmentFactory(
+    public fun createFragmentFactory(
         initialLocator: Locator? = null,
         initialPreferences: P? = null,
         listener: PdfNavigatorFragment.Listener? = null,
@@ -54,7 +54,7 @@ class PdfNavigatorFactory<S : Configurable.Settings, P : Configurable.Preference
      *
      * @param initialPreferences Initial set of preferences for the editor.
      */
-    fun createPreferencesEditor(
+    public fun createPreferencesEditor(
         initialPreferences: P
     ): E =
         pdfEngineProvider.createPreferenceEditor(

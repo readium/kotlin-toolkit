@@ -44,6 +44,10 @@ android {
     namespace = "org.readium.r2.lcp"
 }
 
+kotlin {
+    explicitApi()
+}
+
 rootProject.ext["publish.artifactId"] = "readium-lcp"
 apply(from = "$rootDir/scripts/publish-module.gradle")
 

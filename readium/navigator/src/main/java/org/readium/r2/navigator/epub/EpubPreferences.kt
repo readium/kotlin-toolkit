@@ -49,7 +49,7 @@ import org.readium.r2.shared.util.Language
  */
 @ExperimentalReadiumApi
 @Serializable
-data class EpubPreferences(
+public data class EpubPreferences(
     val backgroundColor: Color? = null,
     val columnCount: ColumnCount? = null,
     val fontFamily: FontFamily? = null,
@@ -116,120 +116,123 @@ data class EpubPreferences(
             verticalText = other.verticalText ?: verticalText,
             wordSpacing = other.wordSpacing ?: wordSpacing
         )
-}
 
-/**
- * Loads the preferences from the legacy EPUB settings stored in the [SharedPreferences] with
- * given [sharedPreferencesName].
- *
- * This can be used to migrate the legacy settings to the new [EpubPreferences] format.
- *
- * If you changed the `fontFamilyValues` in the original Test App `UserSettings`, pass it to
- * [fontFamilies] to migrate the font family properly.
- */
-@ExperimentalReadiumApi
-fun EpubPreferences.Companion.fromLegacyEpubSettings(
-    context: Context,
-    sharedPreferencesName: String = "org.readium.r2.settings",
-    fontFamilies: List<String> = listOf(
-        "Original", "PT Serif", "Roboto", "Source Sans Pro", "Vollkorn", "OpenDyslexic",
-        "AccessibleDfA", "IA Writer Duospace"
-    )
-): EpubPreferences {
+    public companion object {
 
-    val sp: SharedPreferences =
-        context.getSharedPreferences(sharedPreferencesName, Context.MODE_PRIVATE)
+        /**
+         * Loads the preferences from the legacy EPUB settings stored in the [SharedPreferences] with
+         * given [sharedPreferencesName].
+         *
+         * This can be used to migrate the legacy settings to the new [EpubPreferences] format.
+         *
+         * If you changed the `fontFamilyValues` in the original Test App `UserSettings`, pass it to
+         * [fontFamilies] to migrate the font family properly.
+         */
+        @ExperimentalReadiumApi
+        public fun fromLegacyEpubSettings(
+            context: Context,
+            sharedPreferencesName: String = "org.readium.r2.settings",
+            fontFamilies: List<String> = listOf(
+                "Original", "PT Serif", "Roboto", "Source Sans Pro", "Vollkorn", "OpenDyslexic",
+                "AccessibleDfA", "IA Writer Duospace"
+            )
+        ): EpubPreferences {
 
-    val fontFamily = sp
-        .takeIf { it.contains("fontFamily") }
-        ?.getInt("fontFamily", 0)
-        ?.let { fontFamilies.getOrNull(it) }
-        ?.takeUnless { it == "Original" }
-        ?.let { FontFamily(it) }
+            val sp: SharedPreferences =
+                context.getSharedPreferences(sharedPreferencesName, Context.MODE_PRIVATE)
 
-    val theme = sp
-        .takeIf { sp.contains("appearance") }
-        ?.getInt("appearance", 0)
-        ?.let {
-            when (it) {
-                0 -> Theme.LIGHT
-                1 -> Theme.SEPIA
-                2 -> Theme.DARK
-                else -> null
-            }
+            val fontFamily = sp
+                .takeIf { it.contains("fontFamily") }
+                ?.getInt("fontFamily", 0)
+                ?.let { fontFamilies.getOrNull(it) }
+                ?.takeUnless { it == "Original" }
+                ?.let { FontFamily(it) }
+
+            val theme = sp
+                .takeIf { sp.contains("appearance") }
+                ?.getInt("appearance", 0)
+                ?.let {
+                    when (it) {
+                        0 -> Theme.LIGHT
+                        1 -> Theme.SEPIA
+                        2 -> Theme.DARK
+                        else -> null
+                    }
+                }
+
+            val scroll = sp
+                .takeIf { sp.contains("scroll") }
+                ?.getBoolean("scroll", false)
+
+            val colCount = sp
+                .takeIf { sp.contains("colCount") }
+                ?.getInt("colCount", 0)
+                ?.let {
+                    when (it) {
+                        0 -> ColumnCount.AUTO
+                        1 -> ColumnCount.ONE
+                        2 -> ColumnCount.TWO
+                        else -> null
+                    }
+                }
+
+            val pageMargins = sp
+                .takeIf { sp.contains("pageMargins") }
+                ?.getFloat("pageMargins", 1.0f)
+                ?.toDouble()
+
+            val fontSize = sp
+                .takeIf { sp.contains("fontSize") }
+                ?.let { sp.getFloat("fontSize", 0f) }
+                ?.toDouble()
+                ?.let { it / 100 }
+
+            val textAlign = sp
+                .takeIf { sp.contains("textAlign") }
+                ?.getInt("textAlign", 0)
+                ?.let {
+                    when (it) {
+                        0 -> TextAlign.JUSTIFY
+                        1 -> TextAlign.START
+                        else -> null
+                    }
+                }
+
+            val wordSpacing = sp
+                .takeIf { sp.contains("wordSpacing") }
+                ?.getFloat("wordSpacing", 0f)
+                ?.toDouble()
+
+            val letterSpacing = sp
+                .takeIf { sp.contains("letterSpacing") }
+                ?.getFloat("letterSpacing", 0f)
+                ?.toDouble()
+                ?.let { it * 2 }
+
+            val lineHeight = sp
+                .takeIf { sp.contains("lineHeight") }
+                ?.getFloat("lineHeight", 1.2f)
+                ?.toDouble()
+
+            // Note that in the legacy preferences storage, "advanced settings" was incorrectly synonym to
+            // "publisher styles", hence we don't need to flip the value.
+            val publisherStyles = sp
+                .takeIf { sp.contains("advancedSettings") }
+                ?.getBoolean("advancedSettings", false)
+
+            return EpubPreferences(
+                fontFamily = fontFamily,
+                theme = theme,
+                scroll = scroll,
+                columnCount = colCount,
+                pageMargins = pageMargins,
+                fontSize = fontSize,
+                textAlign = textAlign,
+                wordSpacing = wordSpacing,
+                letterSpacing = letterSpacing,
+                lineHeight = lineHeight,
+                publisherStyles = publisherStyles
+            )
         }
-
-    val scroll = sp
-        .takeIf { sp.contains("scroll") }
-        ?.getBoolean("scroll", false)
-
-    val colCount = sp
-        .takeIf { sp.contains("colCount") }
-        ?.getInt("colCount", 0)
-        ?.let {
-            when (it) {
-                0 -> ColumnCount.AUTO
-                1 -> ColumnCount.ONE
-                2 -> ColumnCount.TWO
-                else -> null
-            }
-        }
-
-    val pageMargins = sp
-        .takeIf { sp.contains("pageMargins") }
-        ?.getFloat("pageMargins", 1.0f)
-        ?.toDouble()
-
-    val fontSize = sp
-        .takeIf { sp.contains("fontSize") }
-        ?.let { sp.getFloat("fontSize", 0f) }
-        ?.toDouble()
-        ?.let { it / 100 }
-
-    val textAlign = sp
-        .takeIf { sp.contains("textAlign") }
-        ?.getInt("textAlign", 0)
-        ?.let {
-            when (it) {
-                0 -> TextAlign.JUSTIFY
-                1 -> TextAlign.START
-                else -> null
-            }
-        }
-
-    val wordSpacing = sp
-        .takeIf { sp.contains("wordSpacing") }
-        ?.getFloat("wordSpacing", 0f)
-        ?.toDouble()
-
-    val letterSpacing = sp
-        .takeIf { sp.contains("letterSpacing") }
-        ?.getFloat("letterSpacing", 0f)
-        ?.toDouble()
-        ?.let { it * 2 }
-
-    val lineHeight = sp
-        .takeIf { sp.contains("lineHeight") }
-        ?.getFloat("lineHeight", 1.2f)
-        ?.toDouble()
-
-    // Note that in the legacy preferences storage, "advanced settings" was incorrectly synonym to
-    // "publisher styles", hence we don't need to flip the value.
-    val publisherStyles = sp
-        .takeIf { sp.contains("advancedSettings") }
-        ?.getBoolean("advancedSettings", false)
-
-    return EpubPreferences(
-        fontFamily = fontFamily,
-        theme = theme,
-        scroll = scroll,
-        columnCount = colCount,
-        pageMargins = pageMargins,
-        fontSize = fontSize,
-        textAlign = textAlign,
-        wordSpacing = wordSpacing,
-        letterSpacing = letterSpacing,
-        lineHeight = lineHeight,
-        publisherStyles = publisherStyles
-    )
+    }
 }

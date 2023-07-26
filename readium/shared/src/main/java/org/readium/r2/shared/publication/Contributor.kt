@@ -23,15 +23,15 @@ import org.readium.r2.shared.util.logging.log
  * https://readium.org/webpub-manifest/schema/contributor-object.schema.json
  *
  * @param localizedName The name of the contributor.
+ * @param localizedSortAs The string used to sort the name of the contributor.
  * @param identifier An unambiguous reference to this contributor.
- * @param sortAs The string used to sort the name of the contributor.
  * @param roles The roles of the contributor in the publication making.
  * @param position The position of the publication in this collection/series,
  *     when the contributor represents a collection.
  * @param links Used to retrieve similar publications for the given contributor.
  */
 @Parcelize
-data class Contributor(
+public data class Contributor(
     val localizedName: LocalizedString,
     val localizedSortAs: LocalizedString? = null,
     val identifier: String? = null,
@@ -43,7 +43,7 @@ data class Contributor(
     /**
      * Shortcut to create a [Contributor] using a string as [name].
      */
-    constructor(name: String) : this(
+    public constructor(name: String) : this(
         localizedName = LocalizedString(name)
     )
 
@@ -60,7 +60,7 @@ data class Contributor(
     /**
      * Serializes a [Subject] to its RWPM JSON representation.
      */
-    override fun toJSON() = JSONObject().apply {
+    override fun toJSON(): JSONObject = JSONObject().apply {
         putIfNotEmpty("name", localizedName)
         put("identifier", identifier)
         putIfNotEmpty("sortAs", localizedSortAs)
@@ -69,7 +69,7 @@ data class Contributor(
         putIfNotEmpty("links", links)
     }
 
-    companion object {
+    public companion object {
 
         /**
          * Parses a [Contributor] from its RWPM JSON representation.
@@ -79,7 +79,7 @@ data class Contributor(
          * provided [normalizeHref] closure.
          * If the contributor can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSON(
+        public fun fromJSON(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
@@ -114,7 +114,7 @@ data class Contributor(
          * provided [normalizeHref] closure.
          * If a contributor can't be parsed, a warning will be logged with [warnings].
          */
-        fun fromJSONArray(
+        public fun fromJSONArray(
             json: Any?,
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
@@ -131,7 +131,7 @@ data class Contributor(
         }
     }
 
-    @Deprecated("Use [localizedName] instead.", ReplaceWith("localizedName"))
+    @Deprecated("Use [localizedName] instead.", ReplaceWith("localizedName"), level = DeprecationLevel.ERROR)
     val multilanguageName: LocalizedString
         get() = localizedName
 }

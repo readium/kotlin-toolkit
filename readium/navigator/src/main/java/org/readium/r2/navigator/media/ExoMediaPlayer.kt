@@ -35,7 +35,6 @@ import com.google.android.exoplayer2.upstream.cache.Cache
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import java.net.UnknownHostException
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.MainScope
@@ -59,8 +58,7 @@ import timber.log.Timber
  * An implementation of [MediaPlayer] using ExoPlayer.
  */
 @ExperimentalAudiobook
-@OptIn(ExperimentalTime::class)
-class ExoMediaPlayer(
+public class ExoMediaPlayer(
     context: Context,
     mediaSession: MediaSessionCompat,
     media: PendingMedia,

@@ -23,7 +23,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
  */
 @ExperimentalReadiumApi
 @Serializable
-data class PdfiumPreferences(
+public data class PdfiumPreferences(
     val fit: Fit? = null,
     val pageSpacing: Double? = null,
     val readingProgression: ReadingProgression? = null,
@@ -35,7 +35,7 @@ data class PdfiumPreferences(
         require(pageSpacing == null || pageSpacing >= 0)
     }
 
-    override operator fun plus(other: PdfiumPreferences) =
+    override operator fun plus(other: PdfiumPreferences): PdfiumPreferences =
         PdfiumPreferences(
             fit = other.fit ?: fit,
             pageSpacing = other.pageSpacing ?: pageSpacing,

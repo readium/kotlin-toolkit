@@ -6,7 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 
 @Dao
-interface LcpDao {
+internal interface LcpDao {
 
     /**
      * Retrieve passphrase

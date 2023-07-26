@@ -11,14 +11,16 @@ package org.readium.r2.shared
 
 import java.io.Serializable
 
-data class Clip(
+@InternalReadiumApi
+public data class Clip(
     val audioResource: String? = null,
     val fragmentId: String? = null,
     val start: Double? = null,
     val end: Double? = null
 )
 
-data class MediaOverlayNode(
+@InternalReadiumApi
+public data class MediaOverlayNode(
     val text: String, // an URI possibly finishing by a fragment (textFile#id)
     val audio: String?, // an URI possibly finishing by a simple timer (audioFile#t=start,end)
     val children: List<MediaOverlayNode> = listOf(),

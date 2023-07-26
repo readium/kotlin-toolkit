@@ -19,20 +19,20 @@ import org.readium.r2.shared.publication.*
 /**
  * Determines if the provided content matches a known media type.
  *
- * @param context Holds the file metadata and cached content, which are shared among the sniffers.
+ * The context holds the file metadata and cached content, which are shared among the sniffers.
  */
-typealias Sniffer = suspend (context: SnifferContext) -> MediaType?
+public typealias Sniffer = suspend (context: SnifferContext) -> MediaType?
 
 /**
  * Default media type sniffers provided by Readium.
  */
-object Sniffers {
+public object Sniffers {
 
     /**
      * The default sniffers provided by Readium 2 to resolve a [MediaType].
      * The sniffers order is important, because some formats are subsets of other formats.
      */
-    val all: List<Sniffer> = listOf(
+    public val all: List<Sniffer> = listOf(
         ::xhtml, ::html, ::opds, ::lcpLicense, ::bitmap, ::webpubManifest, ::webpub, ::w3cWPUB,
         ::epub, ::lpf, ::archive, ::pdf, ::json
     )
@@ -42,7 +42,7 @@ object Sniffers {
      *
      * Must precede the HTML sniffer.
      */
-    suspend fun xhtml(context: SnifferContext): MediaType? {
+    public suspend fun xhtml(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("xht", "xhtml") || context.hasMediaType("application/xhtml+xml")) {
             return MediaType.XHTML
         }
@@ -60,7 +60,7 @@ object Sniffers {
     }
 
     /** Sniffs an HTML document. */
-    suspend fun html(context: SnifferContext): MediaType? {
+    public suspend fun html(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("htm", "html") || context.hasMediaType("text/html")) {
             return MediaType.HTML
         }
@@ -80,7 +80,7 @@ object Sniffers {
     }
 
     /** Sniffs an OPDS document. */
-    suspend fun opds(context: SnifferContext): MediaType? {
+    public suspend fun opds(context: SnifferContext): MediaType? {
         // OPDS 1
         if (context.hasMediaType("application/atom+xml;type=entry;profile=opds-catalog")) {
             return MediaType.OPDS1_ENTRY
@@ -136,7 +136,7 @@ object Sniffers {
     }
 
     /** Sniffs an LCP License Document. */
-    suspend fun lcpLicense(context: SnifferContext): MediaType? {
+    public suspend fun lcpLicense(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("lcpl") || context.hasMediaType("application/vnd.readium.lcp.license.v1.0+json")) {
             return MediaType.LCP_LICENSE_DOCUMENT
         }
@@ -153,7 +153,7 @@ object Sniffers {
 
     /** Sniffs a bitmap image. */
     @Suppress("RedundantSuspendModifier")
-    suspend fun bitmap(context: SnifferContext): MediaType? {
+    public suspend fun bitmap(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("avif") || context.hasMediaType("image/avif")) {
             return MediaType.AVIF
         }
@@ -182,7 +182,7 @@ object Sniffers {
     }
 
     /** Sniffs a Readium Web Manifest. */
-    suspend fun webpubManifest(context: SnifferContext): MediaType? {
+    public suspend fun webpubManifest(context: SnifferContext): MediaType? {
         if (context.hasMediaType("application/audiobook+json")) {
             return MediaType.READIUM_AUDIOBOOK_MANIFEST
         }
@@ -217,7 +217,7 @@ object Sniffers {
     }
 
     /** Sniffs a Readium Web Publication, protected or not by LCP. */
-    suspend fun webpub(context: SnifferContext): MediaType? {
+    public suspend fun webpub(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("audiobook") || context.hasMediaType("application/audiobook+zip")) {
             return MediaType.READIUM_AUDIOBOOK
         }
@@ -271,7 +271,7 @@ object Sniffers {
     }
 
     /** Sniffs a W3C Web Publication Manifest. */
-    suspend fun w3cWPUB(context: SnifferContext): MediaType? {
+    public suspend fun w3cWPUB(context: SnifferContext): MediaType? {
         if (context !is ResourceSnifferContext) {
             return null
         }
@@ -290,7 +290,7 @@ object Sniffers {
      *
      * Reference: https://www.w3.org/publishing/epub3/epub-ocf.html#sec-zip-container-mime
      */
-    suspend fun epub(context: SnifferContext): MediaType? {
+    public suspend fun epub(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("epub") || context.hasMediaType("application/epub+zip")) {
             return MediaType.EPUB
         }
@@ -315,7 +315,7 @@ object Sniffers {
      *  - https://www.w3.org/TR/lpf/
      *  - https://www.w3.org/TR/pub-manifest/
      */
-    suspend fun lpf(context: SnifferContext): MediaType? {
+    public suspend fun lpf(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("lpf") || context.hasMediaType("application/lpf+zip")) {
             return MediaType.LPF
         }
@@ -366,7 +366,7 @@ object Sniffers {
      *
      * Reference: https://wiki.mobileread.com/wiki/CBR_and_CBZ
      */
-    suspend fun archive(context: SnifferContext): MediaType? {
+    public suspend fun archive(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("cbz") || context.hasMediaType("application/vnd.comicbook+zip", "application/x-cbz", "application/x-cbr")) {
             return MediaType.CBZ
         }
@@ -402,7 +402,7 @@ object Sniffers {
      *
      * Reference: https://www.loc.gov/preservation/digital/formats/fdd/fdd000123.shtml
      */
-    suspend fun pdf(context: SnifferContext): MediaType? {
+    public suspend fun pdf(context: SnifferContext): MediaType? {
         if (context.hasFileExtension("pdf") || context.hasMediaType("application/pdf")) {
             return MediaType.PDF
         }
@@ -419,7 +419,7 @@ object Sniffers {
     }
 
     /** Sniffs a JSON document. */
-    suspend fun json(context: SnifferContext): MediaType? {
+    public suspend fun json(context: SnifferContext): MediaType? {
         if (context.hasMediaType("application/problem+json")) {
             return MediaType.JSON_PROBLEM_DETAILS
         }
@@ -438,7 +438,7 @@ object Sniffers {
      * Sniffs the system-wide registered media types using [MimeTypeMap] and
      * [URLConnection.guessContentTypeFromStream].
      */
-    suspend fun system(context: SnifferContext): MediaType? {
+    public suspend fun system(context: SnifferContext): MediaType? {
         val mimetypes = tryOrNull { MimeTypeMap.getSingleton() }
             ?: return null
 
@@ -472,7 +472,7 @@ object Sniffers {
 
         return withContext(Dispatchers.IO) {
             context.contentAsStream()
-                ?.let { URLConnection.guessContentTypeFromStream(it) }
+                .let { URLConnection.guessContentTypeFromStream(it) }
                 ?.let { sniffType(it) }
         }
     }

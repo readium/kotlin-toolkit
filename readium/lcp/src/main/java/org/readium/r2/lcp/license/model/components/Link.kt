@@ -19,9 +19,9 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.URITemplate
 import org.readium.r2.shared.util.mediatype.MediaType
 
-data class Link(val json: JSONObject) {
+public data class Link(val json: JSONObject) {
     val href: String
-    var rel = mutableListOf<String>()
+    var rel: MutableList<String> = mutableListOf()
     val title: String?
     val type: String?
     val templated: Boolean
@@ -56,7 +56,7 @@ data class Link(val json: JSONObject) {
         hash = if (json.has("hash")) json.getString("hash") else null
     }
 
-    fun url(parameters: URLParameters): URL {
+    public fun url(parameters: URLParameters): URL {
         if (!templated) {
             return URL(href)
         }

@@ -12,7 +12,7 @@ import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.isHttp
 
-class HttpResourceFactory(
+public class HttpResourceFactory(
     private val httpClient: HttpClient
 ) : ResourceFactory {
 

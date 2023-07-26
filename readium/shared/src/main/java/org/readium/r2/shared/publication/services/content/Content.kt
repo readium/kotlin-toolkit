@@ -17,17 +17,17 @@ import org.readium.r2.shared.util.Language
  * Provides an iterable list of content [Element]s.
  */
 @ExperimentalReadiumApi
-interface Content {
+public interface Content {
 
     /**
      * Represents a single semantic content element part of a publication.
      */
     @ExperimentalReadiumApi
-    interface Element : AttributesHolder {
+    public interface Element : AttributesHolder {
         /**
          * Locator targeting this element in the Publication.
          */
-        val locator: Locator
+        public val locator: Locator
     }
 
     /**
@@ -35,26 +35,26 @@ interface Content {
      *
      * The default implementation returns the first accessibility label associated to the element.
      */
-    interface TextualElement : Element {
+    public interface TextualElement : Element {
         /** Human-readable text representation for this element. */
-        val text: String? get() = accessibilityLabel
+        public val text: String? get() = accessibilityLabel
     }
 
     /** An element referencing an embedded external resource. */
-    interface EmbeddedElement : Element {
+    public interface EmbeddedElement : Element {
         /** Referenced resource in the publication. */
-        val embeddedLink: Link
+        public val embeddedLink: Link
     }
 
     /** An audio clip. */
-    data class AudioElement(
+    public data class AudioElement(
         override val locator: Locator,
         override val embeddedLink: Link,
         override val attributes: List<Attribute<*>> = emptyList(),
     ) : EmbeddedElement, TextualElement
 
     /** A video clip. */
-    data class VideoElement(
+    public data class VideoElement(
         override val locator: Locator,
         override val embeddedLink: Link,
         override val attributes: List<Attribute<*>> = emptyList(),
@@ -65,7 +65,7 @@ interface Content {
      *
      * @param caption Short piece of text associated with the image.
      */
-    data class ImageElement(
+    public data class ImageElement(
         override val locator: Locator,
         override val embeddedLink: Link,
         val caption: String?,
@@ -85,7 +85,7 @@ interface Content {
      * @param role Purpose of this element in the broader context of the document.
      * @param segments Ranged portions of text with associated attributes.
      */
-    data class TextElement(
+    public data class TextElement(
         override val locator: Locator,
         val role: Role,
         val segments: List<Segment>,
@@ -98,23 +98,23 @@ interface Content {
         /**
          * Represents a purpose of an element in the broader context of the document.
          */
-        interface Role {
+        public interface Role {
             /**
              * Title of a section.
              *
              * @param level Heading importance, 1 being the highest.
              */
-            data class Heading(val level: Int) : Role
+            public data class Heading(val level: Int) : Role
 
             /**
              * Normal body of content.
              */
-            object Body : Role
+            public object Body : Role
 
             /**
              * A footnote at the bottom of a document.
              */
-            object Footnote : Role
+            public object Footnote : Role
 
             /**
              * A quotation.
@@ -122,7 +122,7 @@ interface Content {
              * @param referenceUrl URL to the source for this quote.
              * @param referenceTitle Name of the source for this quote.
              */
-            data class Quote(
+            public data class Quote(
                 val referenceUrl: URL?,
                 val referenceTitle: String?
             ) : Role
@@ -135,7 +135,7 @@ interface Content {
          * @param text Text in the segment.
          * @param attributes Attributes associated with this segment, e.g. language.
          */
-        data class Segment(
+        public data class Segment(
             val locator: Locator,
             val text: String,
             override val attributes: List<Attribute<*>>,
@@ -145,7 +145,7 @@ interface Content {
     /**
      * An attribute is an arbitrary key-value metadata pair.
      */
-    data class Attribute<V>(
+    public data class Attribute<V>(
         val key: AttributeKey<V>,
         val value: V
     )
@@ -155,41 +155,41 @@ interface Content {
      *
      * The [V] phantom type is there to perform static type checking when requesting an attribute.
      */
-    data class AttributeKey<V>(val id: String) {
-        companion object {
-            val ACCESSIBILITY_LABEL = AttributeKey<String>("accessibilityLabel")
-            val LANGUAGE = AttributeKey<Language>("language")
+    public data class AttributeKey<V>(val id: String) {
+        public companion object {
+            public val ACCESSIBILITY_LABEL: AttributeKey<String> = AttributeKey<String>("accessibilityLabel")
+            public val LANGUAGE: AttributeKey<Language> = AttributeKey<Language>("language")
         }
     }
 
     /**
      * An object associated with a list of attributes.
      */
-    interface AttributesHolder {
+    public interface AttributesHolder {
 
         /**
          * Associated list of attributes.
          */
-        val attributes: List<Attribute<*>>
+        public val attributes: List<Attribute<*>>
 
-        val language: Language?
+        public val language: Language?
             get() = attribute(AttributeKey.LANGUAGE)
 
-        val accessibilityLabel: String?
+        public val accessibilityLabel: String?
             get() = attribute(AttributeKey.ACCESSIBILITY_LABEL)
 
         /**
          * Gets the first attribute with the given [key].
          */
         @Suppress("UNCHECKED_CAST")
-        fun <V> attribute(key: AttributeKey<V>): V? =
+        public fun <V> attribute(key: AttributeKey<V>): V? =
             attributes.firstOrNull { it.key == key }?.value as V
 
         /**
          * Gets all the attributes with the given [key].
          */
         @Suppress("UNCHECKED_CAST")
-        fun <V> attributes(key: AttributeKey<V>): List<V> =
+        public fun <V> attributes(key: AttributeKey<V>): List<V> =
             attributes
                 .filter { it.key == key }
                 .map { it.value as V }
@@ -202,44 +202,44 @@ interface Content {
      * to any of both methods.
      */
     @ExperimentalReadiumApi
-    interface Iterator {
+    public interface Iterator {
 
         /**
          * Returns true if the iterator has a next element, suspending the caller while processing
          * it.
          */
-        suspend operator fun hasNext(): Boolean
+        public suspend operator fun hasNext(): Boolean
 
         /**
          * Retrieves the element computed by a preceding call to [hasNext], or throws an
          * [IllegalStateException] if [hasNext] was not invoked. This method should only be used in
          * pair with [hasNext].
          */
-        operator fun next(): Element
+        public operator fun next(): Element
 
         /**
          * Advances to the next item and returns it, or null if we reached the end.
          */
-        suspend fun nextOrNull(): Element? =
+        public suspend fun nextOrNull(): Element? =
             if (hasNext()) next() else null
 
         /**
          * Returns true if the iterator has a previous element, suspending the caller while processing
          * it.
          */
-        suspend fun hasPrevious(): Boolean
+        public suspend fun hasPrevious(): Boolean
 
         /**
          * Retrieves the element computed by a preceding call to [hasPrevious], or throws an
          * [IllegalStateException] if [hasPrevious] was not invoked. This method should only be used in
          * pair with [hasPrevious].
          */
-        fun previous(): Element
+        public fun previous(): Element
 
         /**
          * Advances to the previous item and returns it, or null if we reached the beginning.
          */
-        suspend fun previousOrNull(): Element? =
+        public suspend fun previousOrNull(): Element? =
             if (hasPrevious()) previous() else null
     }
 
@@ -247,7 +247,7 @@ interface Content {
      * Extracts the full raw text, or returns null if no text content can be found.
      * @param separator Separator to use between individual elements. Defaults to newline.
      */
-    suspend fun text(separator: String = "\n"): String? =
+    public suspend fun text(separator: String = "\n"): String? =
         elements()
             .mapNotNull { (it as? TextualElement)?.text }
             .joinToString(separator = separator)
@@ -256,12 +256,12 @@ interface Content {
     /**
      * Creates a new iterator for this content.
      */
-    operator fun iterator(): Iterator
+    public operator fun iterator(): Iterator
 
     /**
      * Returns all the elements as a list.
      */
-    suspend fun elements(): List<Element> =
+    public suspend fun elements(): List<Element> =
         buildList {
             for (element in this@Content) {
                 add(element)

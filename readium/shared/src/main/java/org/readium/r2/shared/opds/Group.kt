@@ -12,9 +12,9 @@ package org.readium.r2.shared.opds
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 
-data class Group(val title: String) {
+public data class Group(val title: String) {
     var metadata: OpdsMetadata = OpdsMetadata(title = title)
-    var links = mutableListOf<Link>()
-    var publications = mutableListOf<Publication>()
-    var navigation = mutableListOf<Link>()
+    var links: MutableList<Link> = mutableListOf<Link>()
+    var publications: MutableList<Publication> = mutableListOf<Publication>()
+    var navigation: MutableList<Link> = mutableListOf<Link>()
 }

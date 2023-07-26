@@ -12,7 +12,7 @@ package org.readium.r2.lcp.license.model.components.lcp
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpException
 
-data class ContentKey(val json: JSONObject) {
+public data class ContentKey(val json: JSONObject) {
     val algorithm: String
     val encryptedValue: String
 

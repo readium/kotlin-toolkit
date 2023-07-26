@@ -12,34 +12,34 @@ import org.readium.r2.shared.util.SuspendingCloseable
 /**
  * A resource container as an archive or a directory.
  */
-interface Container : SuspendingCloseable {
+public interface Container : SuspendingCloseable {
 
     /**
      * Holds a container entry's.
      */
-    interface Entry : Resource {
+    public interface Entry : Resource {
 
         /**
          * Absolute path to the entry in the archive.
          * It MUST start with /.
          */
-        val path: String
+        public val path: String
     }
 
     /**
      * Direct file to this container, when available.
      */
-    val file: File? get() = null
+    public val file: File? get() = null
 
     /**
      * Gets the container name if any.
      */
-    suspend fun name(): ResourceTry<String?>
+    public suspend fun name(): ResourceTry<String?>
 
     /**
      * List of all the container entries of null if such a list is not available.
      */
-    suspend fun entries(): Iterable<Entry>?
+    public suspend fun entries(): Iterable<Entry>?
 
     /**
      * Returns the [Entry] at the given [path].
@@ -47,5 +47,5 @@ interface Container : SuspendingCloseable {
      * A [Entry] is always returned, since for some cases we can't know if it exists before
      * actually fetching it, such as HTTP. Therefore, errors are handled at the Entry level.
      */
-    suspend fun entry(path: String): Entry
+    public suspend fun entry(path: String): Entry
 }
