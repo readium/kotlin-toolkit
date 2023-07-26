@@ -1,58 +1,58 @@
 [versions]
 
-androidx-activity = "1.6.1"
-androidx-appcompat = "1.5.1"
-androidx-browser = "1.4.0"
+androidx-activity = "1.7.2"
+androidx-appcompat = "1.6.1"
+androidx-browser = "1.5.0"
 androidx-cardview = "1.0.0"
-androidx-compose-compiler = "1.3.2"
-androidx-compose-animation = "1.3.0-beta03"
-androidx-compose-foundation = "1.3.0-beta03"
-androidx-compose-material = "1.3.0-beta03"
-androidx-compose-material3 = "1.0.0-beta03"
-androidx-compose-runtime = "1.3.0-beta03"
+androidx-compose-compiler = "1.5.0"
+androidx-compose-animation = "1.4.3"
+androidx-compose-foundation = "1.4.3"
+androidx-compose-material = "1.4.3"
+androidx-compose-material3 = "1.1.1"
+androidx-compose-runtime = "1.4.3"
 androidx-compose-theme-adapter = "1.1.19"
-androidx-compose-ui = "1.3.0-beta03"
+androidx-compose-ui = "1.4.3"
 androidx-constraintlayout = "2.1.4"
-androidx-core = "1.9.0"
+androidx-core = "1.10.1"
 androidx-datastore = "1.0.0"
-androidx-expresso-core = "3.4.0"
-androidx-ext-junit = "1.1.3"
-androidx-fragment-ktx = "1.5.4"
+androidx-expresso-core = "3.5.1"
+androidx-ext-junit = "1.1.5"
+androidx-fragment-ktx = "1.6.0"
 androidx-legacy = "1.0.0"
-androidx-lifecycle = "2.5.1"
+androidx-lifecycle = "2.6.1"
 androidx-lifecycle-extensions = "2.2.0"
 androidx-media = "1.6.0"
 androidx-media2 = "1.2.1"
-androidx-media3 = "1.0.0"
+androidx-media3 = "1.1.0"
 androidx-navigation = "2.5.2"
 androidx-paging = "3.1.1"
-androidx-recyclerview = "1.2.1"
-androidx-room = "2.4.3"
+androidx-recyclerview = "1.3.0"
+androidx-room = "2.5.2"
 androidx-viewpager2 = "1.0.0"
-androidx-webkit = "1.5.0"
+androidx-webkit = "1.7.0"
 
-assertj = "3.23.1"
+assertj = "3.24.2"
 
-dokka = "1.7.20"
+dokka = "1.8.20"
 
-google-exoplayer = "2.18.1"
-google-material = "1.7.0"
+google-exoplayer = "2.19.0"
+google-material = "1.9.0"
 
-joda-time = "2.12.1"
-jsoup = "1.15.3"
+joda-time = "2.12.5"
+jsoup = "1.16.1"
 junit = "4.13.2"
 
-kotlin = "1.7.20"
-kotlinx-coroutines = "1.6.4"
-kotlinx-coroutines-test = "1.6.4"
-kotlinx-serialization-json = "1.4.1"
+kotlin = "1.9.0"
+kotlinx-coroutines = "1.7.2"
+kotlinx-coroutines-test = "1.7.2"
+kotlinx-serialization-json = "1.5.1"
 
 pdfium = "1.8.2"
 pdf-viewer = "2.8.2"
-picasso = "2.71828"
+picasso = "2.8"
 pspdfkit = "8.4.1"
 
-robolectric = "4.9"
+robolectric = "4.10.3"
 
 timber = "5.0.1"
 
@@ -119,7 +119,7 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlin-gradle = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlin-junit = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit", version.ref = "kotlin" }
 kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
-kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version.ref = "kotlin" }
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
 
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }

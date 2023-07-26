@@ -35,8 +35,8 @@ internal abstract class LcpDatabase : RoomDatabase() {
                 return tempInstance
             }
             val MIGRATION_1_2 = object : Migration(1, 2) {
-                override fun migrate(database: SupportSQLiteDatabase) {
-                    database.execSQL(
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL(
                         """
                 CREATE TABLE passphrases (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,15 +47,15 @@ internal abstract class LcpDatabase : RoomDatabase() {
                 )
                         """.trimIndent()
                     )
-                    database.execSQL(
+                    db.execSQL(
                         """
                 INSERT INTO passphrases (license_id, provider, user_id, passphrase)
                 SELECT id, origin, userId, passphrase FROM Transactions
                         """.trimIndent()
                     )
-                    database.execSQL("DROP TABLE Transactions")
+                    db.execSQL("DROP TABLE Transactions")
 
-                    database.execSQL(
+                    db.execSQL(
                         """
                 CREATE TABLE new_Licenses (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -66,14 +66,14 @@ internal abstract class LcpDatabase : RoomDatabase() {
                 )
                         """.trimIndent()
                     )
-                    database.execSQL(
+                    db.execSQL(
                         """
                 INSERT INTO new_Licenses (license_id, right_print, right_copy, registered)
                 SELECT id, printsLeft, copiesLeft, registered FROM Licenses
                         """.trimIndent()
                     )
-                    database.execSQL("DROP TABLE Licenses")
-                    database.execSQL("ALTER TABLE new_Licenses RENAME TO licenses")
+                    db.execSQL("DROP TABLE Licenses")
+                    db.execSQL("ALTER TABLE new_Licenses RENAME TO licenses")
                 }
             }
             synchronized(this) {

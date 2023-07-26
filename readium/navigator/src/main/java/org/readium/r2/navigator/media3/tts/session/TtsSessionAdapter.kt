@@ -206,6 +206,16 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     override fun moveMediaItems(fromIndex: Int, toIndex: Int, newIndex: Int) {
     }
 
+    override fun replaceMediaItem(index: Int, mediaItem: MediaItem) {
+    }
+
+    override fun replaceMediaItems(
+        fromIndex: Int,
+        toIndex: Int,
+        mediaItems: MutableList<MediaItem>
+    ) {
+    }
+
     override fun removeMediaItem(index: Int) {
     }
 
@@ -437,9 +447,6 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     override fun stop() {
         onStop()
     }
-
-    @Deprecated("Deprecated in Java")
-    override fun stop(reset: Boolean) {}
 
     override fun release() {
         streamVolumeManager.release()
@@ -716,7 +723,15 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         streamVolumeManager.setVolume(volume)
     }
 
+    override fun setDeviceVolume(volume: Int, flags: Int) {
+        streamVolumeManager.setVolume(volume)
+    }
+
     override fun increaseDeviceVolume() {
+        streamVolumeManager.increaseVolume()
+    }
+
+    override fun increaseDeviceVolume(flags: Int) {
         streamVolumeManager.increaseVolume()
     }
 
@@ -724,7 +739,15 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         streamVolumeManager.decreaseVolume()
     }
 
+    override fun decreaseDeviceVolume(flags: Int) {
+        streamVolumeManager.decreaseVolume()
+    }
+
     override fun setDeviceMuted(muted: Boolean) {
+        streamVolumeManager.setMuted(muted)
+    }
+
+    override fun setDeviceMuted(muted: Boolean, flags: Int) {
         streamVolumeManager.setMuted(muted)
     }
 

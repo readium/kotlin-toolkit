@@ -38,10 +38,8 @@ open class ReaderActivity : AppCompatActivity() {
 
     private val model: ReaderViewModel by viewModels()
 
-    override fun getDefaultViewModelProviderFactory(): ViewModelProvider.Factory {
-        val arguments = ReaderActivityContract.parseIntent(this)
-        return ReaderViewModel.createFactory(application as Application, arguments)
-    }
+    override val defaultViewModelProviderFactory: ViewModelProvider.Factory
+        get() = ReaderViewModel.createFactory(application as Application, ReaderActivityContract.parseIntent(this))
 
     private lateinit var binding: ActivityReaderBinding
     private lateinit var readerFragment: BaseReaderFragment

@@ -14,19 +14,19 @@ plugins {
 android {
     resourcePrefix = "readium_"
 
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 21
-        targetSdk = 33
+        targetSdk = 34
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = JavaVersion.VERSION_17.toString()
         freeCompilerArgs = freeCompilerArgs + listOf(
             "-opt-in=kotlin.RequiresOptIn",
             "-opt-in=org.readium.r2.shared.InternalReadiumApi"
@@ -43,6 +43,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
     namespace = "org.readium.r2.navigator"
 }
@@ -73,8 +74,6 @@ dependencies {
     implementation(libs.bundles.media3)
     implementation(libs.androidx.viewpager2)
     implementation(libs.androidx.webkit)
-    // Needed to avoid a crash with API 31, see https://stackoverflow.com/a/69152986/1474476
-    implementation("androidx.work:work-runtime-ktx:2.7.1")
 
     implementation(libs.bundles.media2)
     // ExoPlayer is used by the Audio Navigator.

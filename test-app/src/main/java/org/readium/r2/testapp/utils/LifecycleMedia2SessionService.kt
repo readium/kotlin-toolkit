@@ -9,7 +9,6 @@ package org.readium.r2.testapp.utils
 import android.content.Intent
 import android.os.IBinder
 import androidx.annotation.CallSuper
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ServiceLifecycleDispatcher
 import androidx.media2.session.MediaSessionService
@@ -55,9 +54,5 @@ abstract class LifecycleMedia2SessionService : MediaSessionService(), LifecycleO
     override fun onDestroy() {
         lifecycleDispatcher.onServicePreSuperOnDestroy()
         super.onDestroy()
-    }
-
-    override fun getLifecycle(): Lifecycle {
-        return lifecycleDispatcher.lifecycle
     }
 }

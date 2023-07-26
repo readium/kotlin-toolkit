@@ -359,76 +359,80 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
     }
 
     private fun showHighlightPopupWithStyle(style: Highlight.Style) =
-        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            // Get the rect of the current selection to know where to position the highlight
-            // popup.
-            (navigator as? SelectableNavigator)?.currentSelection()?.rect?.let { selectionRect ->
-                showHighlightPopup(selectionRect, style)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Get the rect of the current selection to know where to position the highlight
+                // popup.
+                (navigator as? SelectableNavigator)?.currentSelection()?.rect?.let { selectionRect ->
+                    showHighlightPopup(selectionRect, style)
+                }
             }
         }
 
     private fun showHighlightPopup(rect: RectF, style: Highlight.Style, highlightId: Long? = null) =
-        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            if (popupWindow?.isShowing == true) return@launchWhenResumed
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                if (popupWindow?.isShowing == true) return@repeatOnLifecycle
 
-            model.activeHighlightId.value = highlightId
+                model.activeHighlightId.value = highlightId
 
-            val isReverse = (rect.top > 60)
-            val popupView = layoutInflater.inflate(
-                if (isReverse) R.layout.view_action_mode_reverse else R.layout.view_action_mode,
-                null,
-                false
-            )
-            popupView.measure(
-                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-            )
+                val isReverse = (rect.top > 60)
+                val popupView = layoutInflater.inflate(
+                    if (isReverse) R.layout.view_action_mode_reverse else R.layout.view_action_mode,
+                    null,
+                    false
+                )
+                popupView.measure(
+                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+                )
 
-            popupWindow = PopupWindow(
-                popupView,
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                isFocusable = true
-                setOnDismissListener {
-                    model.activeHighlightId.value = null
-                }
-            }
-
-            val x = rect.left
-            val y = if (isReverse) rect.top else rect.bottom + rect.height()
-
-            popupWindow?.showAtLocation(popupView, Gravity.NO_GRAVITY, x.toInt(), y.toInt())
-
-            val highlight = highlightId?.let { model.highlightById(it) }
-            popupView.run {
-                findViewById<View>(R.id.notch).run {
-                    setX(rect.left * 2)
+                popupWindow = PopupWindow(
+                    popupView,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    isFocusable = true
+                    setOnDismissListener {
+                        model.activeHighlightId.value = null
+                    }
                 }
 
-                fun selectTint(view: View) {
-                    val tint = highlightTints[view.id] ?: return
-                    selectHighlightTint(highlightId, style, tint)
-                }
+                val x = rect.left
+                val y = if (isReverse) rect.top else rect.bottom + rect.height()
 
-                findViewById<View>(R.id.red).setOnClickListener(::selectTint)
-                findViewById<View>(R.id.green).setOnClickListener(::selectTint)
-                findViewById<View>(R.id.blue).setOnClickListener(::selectTint)
-                findViewById<View>(R.id.yellow).setOnClickListener(::selectTint)
-                findViewById<View>(R.id.purple).setOnClickListener(::selectTint)
+                popupWindow?.showAtLocation(popupView, Gravity.NO_GRAVITY, x.toInt(), y.toInt())
 
-                findViewById<View>(R.id.annotation).setOnClickListener {
-                    popupWindow?.dismiss()
-                    showAnnotationPopup(highlightId)
-                }
-                findViewById<View>(R.id.del).run {
-                    visibility = if (highlight != null) View.VISIBLE else View.GONE
-                    setOnClickListener {
-                        highlightId?.let {
-                            model.deleteHighlight(highlightId)
-                        }
+                val highlight = highlightId?.let { model.highlightById(it) }
+                popupView.run {
+                    findViewById<View>(R.id.notch).run {
+                        setX(rect.left * 2)
+                    }
+
+                    fun selectTint(view: View) {
+                        val tint = highlightTints[view.id] ?: return
+                        selectHighlightTint(highlightId, style, tint)
+                    }
+
+                    findViewById<View>(R.id.red).setOnClickListener(::selectTint)
+                    findViewById<View>(R.id.green).setOnClickListener(::selectTint)
+                    findViewById<View>(R.id.blue).setOnClickListener(::selectTint)
+                    findViewById<View>(R.id.yellow).setOnClickListener(::selectTint)
+                    findViewById<View>(R.id.purple).setOnClickListener(::selectTint)
+
+                    findViewById<View>(R.id.annotation).setOnClickListener {
                         popupWindow?.dismiss()
-                        mode?.finish()
+                        showAnnotationPopup(highlightId)
+                    }
+                    findViewById<View>(R.id.del).run {
+                        visibility = if (highlight != null) View.VISIBLE else View.GONE
+                        setOnClickListener {
+                            highlightId?.let {
+                                model.deleteHighlight(highlightId)
+                            }
+                            popupWindow?.dismiss()
+                            mode?.finish()
+                        }
                     }
                 }
             }
@@ -439,78 +443,89 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         style: Highlight.Style,
         @ColorInt tint: Int
     ) =
-        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            if (highlightId != null) {
-                model.updateHighlightStyle(highlightId, style, tint)
-            } else {
-                (navigator as? SelectableNavigator)?.let { navigator ->
-                    navigator.currentSelection()?.let { selection ->
-                        model.addHighlight(locator = selection.locator, style = style, tint = tint)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                if (highlightId != null) {
+                    model.updateHighlightStyle(highlightId, style, tint)
+                } else {
+                    (navigator as? SelectableNavigator)?.let { navigator ->
+                        navigator.currentSelection()?.let { selection ->
+                            model.addHighlight(
+                                locator = selection.locator,
+                                style = style,
+                                tint = tint
+                            )
+                        }
+                        navigator.clearSelection()
                     }
-                    navigator.clearSelection()
                 }
-            }
 
-            popupWindow?.dismiss()
-            mode?.finish()
+                popupWindow?.dismiss()
+                mode?.finish()
+            }
         }
 
     private fun showAnnotationPopup(highlightId: Long? = null) =
-        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            val activity = activity ?: return@launchWhenResumed
-            val view = layoutInflater.inflate(R.layout.popup_note, null, false)
-            val note = view.findViewById<EditText>(R.id.note)
-            val alert = AlertDialog.Builder(activity)
-                .setView(view)
-                .create()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                val activity = activity ?: return@repeatOnLifecycle
+                val view = layoutInflater.inflate(R.layout.popup_note, null, false)
+                val note = view.findViewById<EditText>(R.id.note)
+                val alert = AlertDialog.Builder(activity)
+                    .setView(view)
+                    .create()
 
-            fun dismiss() {
-                alert.dismiss()
-                mode?.finish()
-                (activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
-                    .hideSoftInputFromWindow(
-                        note.applicationWindowToken,
-                        InputMethodManager.HIDE_NOT_ALWAYS
-                    )
-            }
-
-            with(view) {
-                val highlight = highlightId?.let { model.highlightById(it) }
-                if (highlight != null) {
-                    note.setText(highlight.annotation)
-                    findViewById<View>(R.id.sidemark).setBackgroundColor(highlight.tint)
-                    findViewById<TextView>(R.id.select_text).text = highlight.locator.text.highlight
-
-                    findViewById<TextView>(R.id.positive).setOnClickListener {
-                        val text = note.text.toString()
-                        model.updateHighlightAnnotation(highlight.id, annotation = text)
-                        dismiss()
-                    }
-                } else {
-                    val tint = highlightTints.values.random()
-                    findViewById<View>(R.id.sidemark).setBackgroundColor(tint)
-                    val navigator = navigator as? SelectableNavigator ?: return@launchWhenResumed
-                    val selection = navigator.currentSelection() ?: return@launchWhenResumed
-                    navigator.clearSelection()
-                    findViewById<TextView>(R.id.select_text).text = selection.locator.text.highlight
-
-                    findViewById<TextView>(R.id.positive).setOnClickListener {
-                        model.addHighlight(
-                            locator = selection.locator,
-                            style = Highlight.Style.HIGHLIGHT,
-                            tint = tint,
-                            annotation = note.text.toString()
+                fun dismiss() {
+                    alert.dismiss()
+                    mode?.finish()
+                    (activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                        .hideSoftInputFromWindow(
+                            note.applicationWindowToken,
+                            InputMethodManager.HIDE_NOT_ALWAYS
                         )
+                }
+
+                with(view) {
+                    val highlight = highlightId?.let { model.highlightById(it) }
+                    if (highlight != null) {
+                        note.setText(highlight.annotation)
+                        findViewById<View>(R.id.sidemark).setBackgroundColor(highlight.tint)
+                        findViewById<TextView>(R.id.select_text).text =
+                            highlight.locator.text.highlight
+
+                        findViewById<TextView>(R.id.positive).setOnClickListener {
+                            val text = note.text.toString()
+                            model.updateHighlightAnnotation(highlight.id, annotation = text)
+                            dismiss()
+                        }
+                    } else {
+                        val tint = highlightTints.values.random()
+                        findViewById<View>(R.id.sidemark).setBackgroundColor(tint)
+                        val navigator =
+                            navigator as? SelectableNavigator ?: return@repeatOnLifecycle
+                        val selection = navigator.currentSelection() ?: return@repeatOnLifecycle
+                        navigator.clearSelection()
+                        findViewById<TextView>(R.id.select_text).text =
+                            selection.locator.text.highlight
+
+                        findViewById<TextView>(R.id.positive).setOnClickListener {
+                            model.addHighlight(
+                                locator = selection.locator,
+                                style = Highlight.Style.HIGHLIGHT,
+                                tint = tint,
+                                annotation = note.text.toString()
+                            )
+                            dismiss()
+                        }
+                    }
+
+                    findViewById<TextView>(R.id.negative).setOnClickListener {
                         dismiss()
                     }
                 }
 
-                findViewById<TextView>(R.id.negative).setOnClickListener {
-                    dismiss()
-                }
+                alert.show()
             }
-
-            alert.show()
         }
 
     fun updateSystemUiVisibility() {

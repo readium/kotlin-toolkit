@@ -192,9 +192,9 @@ internal class PsPdfKitDocumentFragment(
         }
 
         private val allowedTextSelectionItems = listOf(
-            R.id.pspdf__text_selection_toolbar_item_share,
-            R.id.pspdf__text_selection_toolbar_item_copy,
-            R.id.pspdf__text_selection_toolbar_item_speak
+            com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_share,
+            com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_copy,
+            com.pspdfkit.R.id.pspdf__text_selection_toolbar_item_speak
         )
 
         override fun onPrepareTextSelectionPopupToolbar(toolbar: PdfTextSelectionPopupToolbar) {

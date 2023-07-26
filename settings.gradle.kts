@@ -18,13 +18,16 @@ pluginManagement {
     // it to integrate Readium in submodules.
     // See https://github.com/readium/kotlin-toolkit/pull/97
     plugins {
-        id("com.android.application") version ("7.3.1")
-        id("com.android.library") version ("7.3.1")
+        id("com.android.application") version ("8.1.0")
+        id("com.android.library") version ("8.1.0")
         id("io.github.gradle-nexus.publish-plugin") version ("1.1.0")
-        id("org.jetbrains.dokka") version ("1.7.20")
-        id("org.jetbrains.kotlin.android") version ("1.7.20")
-        id("org.jetbrains.kotlin.plugin.serialization") version ("1.7.10")
+        id("org.jetbrains.dokka") version ("1.8.20")
+        id("org.jetbrains.kotlin.android") version ("1.9.0")
+        id("org.jetbrains.kotlin.plugin.serialization") version ("1.9.0")
         id("org.jlleitschuh.gradle.ktlint") version ("11.0.0")
+        // Make sure to align with the Kotlin version.
+        // See https://github.com/google/ksp/releases
+        id("com.google.devtools.ksp") version ("1.9.0-1.0.12")
     }
 }
 dependencyResolutionManagement {
