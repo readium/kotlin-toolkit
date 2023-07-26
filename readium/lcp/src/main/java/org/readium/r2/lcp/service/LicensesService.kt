@@ -237,7 +237,9 @@ internal class LicensesService(
 
         return LcpService.AcquiredPublication(
             localFile = destination,
-            suggestedFilename = "${license.id}.${mediaType.fileExtension}"
+            suggestedFilename = "${license.id}.${mediaType.fileExtension}",
+            mediaType = mediaType,
+            licenseDocument = license
         )
     }
 }

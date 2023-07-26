@@ -95,7 +95,7 @@ public data class DomRange(
             }
         }
 
-        @Deprecated("Renamed into [charOffset]", ReplaceWith("charOffset"))
+        @Deprecated("Renamed into [charOffset]", ReplaceWith("charOffset"), level = DeprecationLevel.ERROR)
         val offset: Long? get() = charOffset?.toLong()
     }
 

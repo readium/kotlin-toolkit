@@ -46,7 +46,7 @@ public val Properties.indirectAcquisitions: List<Acquisition>
         }
         ?: emptyList()
 
-@Deprecated("Use [indirectAcquisitions] instead.", ReplaceWith("indirectAcquisitions"))
+@Deprecated("Use [indirectAcquisitions] instead.", ReplaceWith("indirectAcquisitions"), level = DeprecationLevel.ERROR)
 public val Properties.indirectAcquisition: List<Acquisition>
     get() = indirectAcquisitions
 
