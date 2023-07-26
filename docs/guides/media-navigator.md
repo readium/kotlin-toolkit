@@ -123,6 +123,8 @@ Don't forget to declare this new service in your `AndroidManifest.xml`.
 <manifest ...>
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- If targeting Android SDK 34, you will need this permission -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
     <application ...>
         ...

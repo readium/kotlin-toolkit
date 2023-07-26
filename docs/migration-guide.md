@@ -92,6 +92,13 @@ Both the Fuel and Kovenant libraries have been completely removed from the toolk
 
 * `Response.sniffMediaType(...)` has been replaced with `org.readium.r2.shared.util.mediatype.sniffMediaType`
 
+### Targeting Android SDK 34
+
+The modules now target Android SDK 34. If your app also targets that, you will need the `FOREGROUND_SERVICE_MEDIA_PLAYBACK` permission in you AndroidManifest.xml file in order to use TTS and audiobook playback.
+
+### Gradle 8.0
+
+The minimum required Gradle version is now 8.0.
 
 ## 2.3.0
 
