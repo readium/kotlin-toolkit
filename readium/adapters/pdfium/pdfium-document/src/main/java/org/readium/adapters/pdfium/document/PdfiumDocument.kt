@@ -95,7 +95,7 @@ public class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<Pdfium
     }
 
     private suspend fun Resource.openAsFile(password: String?): PdfiumDocument? =
-        file?.let {
+        file().getOrNull()?.let {
             tryOrNull { open(it, password) }
         }
 

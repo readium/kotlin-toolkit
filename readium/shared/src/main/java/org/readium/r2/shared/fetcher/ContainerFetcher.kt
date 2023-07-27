@@ -8,6 +8,7 @@ package org.readium.r2.shared.fetcher
 
 import java.io.File
 import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.error.getOrDefault
 import org.readium.r2.shared.error.tryRecover
 import org.readium.r2.shared.publication.Link
@@ -33,7 +34,7 @@ public class ContainerFetcher(
             ?.map { it.toLink(mediaTypeRetriever) }
             ?: emptyList()
 
-    override fun get(link: Link): Publication.Resource =
+    override fun get(link: Link): Resource =
         EntryResource(link, container)
 
     override suspend fun close() {
@@ -41,28 +42,26 @@ public class ContainerFetcher(
     }
 
     private class EntryResource(
-        val originalLink: Link,
+        val link: Link,
         val container: Container
-    ) : Publication.Resource {
+    ) : Resource {
 
-        override suspend fun link(): Link =
-            withEntry { entry ->
-                val enhancedLink = (entry as? ZipContainer.Entry)
-                    ?.let { originalLink.addProperties(entry.toLinkProperties()) }
-                    ?: originalLink
+        override val key: String get() = link.href
 
-                Try.success(enhancedLink)
-            }.getOrDefault(originalLink)
-
-        override val key: String get() = originalLink.href
-
-        override val file: File? get() = null
+        override suspend fun file(): ResourceTry<File?> = Try.success(null)
 
         override suspend fun mediaType(): ResourceTry<MediaType?> =
-            Try.success(originalLink.mediaType)
+            Try.success(link.mediaType)
 
         override suspend fun name(): ResourceTry<String?> =
-            Try.success(Url(originalLink.href)?.filename)
+            Try.success(Url(link.href)?.filename)
+
+        override suspend fun properties(): ResourceTry<Properties> =
+            withEntry { entry ->
+                entry.properties().map {
+                    link.properties.add(it)
+                }
+            }
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
             withEntry { entry -> entry.read(range) }
@@ -78,20 +77,20 @@ public class ContainerFetcher(
             withEntry { entry -> entry.length() }
 
         suspend fun <T> withEntry(block: suspend (Container.Entry) -> ResourceTry<T>): ResourceTry<T> =
-            originalLink.href
+            link.href
                 .let { href -> container.entry(href) }
                 .let { entry -> entry.use { block(entry) } }
                 .takeIf { result -> result.failureOrNull() !is Resource.Exception.NotFound }
                 ?: run {
                     // Try again after removing query and fragment.
-                    originalLink.href
+                    link.href
                         .takeWhile { it !in "#?" }
                         .let { href -> container.entry(href) }
                         .let { entry -> entry.use { block(entry) } }
                 }
 
         override fun toString(): String =
-            "${javaClass.simpleName}(${container::class.java.simpleName}, ${originalLink.href})"
+            "${javaClass.simpleName}(${container::class.java.simpleName}, ${link.href})"
     }
 }
 
@@ -99,15 +98,6 @@ private suspend fun Container.Entry.toLink(mediaTypeRetriever: MediaTypeRetrieve
     return Link(
         href = path,
         type = mediaTypeRetriever.retrieve(fileExtension = File(path).extension)?.toString(),
-        properties = Properties((this as? ZipContainer.Entry)?.toLinkProperties().orEmpty())
-    )
-}
-
-private suspend fun ZipContainer.Entry.toLinkProperties(): Map<String, Any> {
-    return mutableMapOf<String, Any>(
-        "archive" to mapOf<String, Any>(
-            "entryLength" to (compressedLength ?: length().getOrNull() ?: 0),
-            "isEntryCompressed" to (compressedLength != null)
-        )
+        properties = properties().getOrNull() ?: Properties()
     )
 }

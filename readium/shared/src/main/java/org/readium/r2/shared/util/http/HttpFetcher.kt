@@ -33,41 +33,17 @@ public class HttpFetcher(
 
     override suspend fun links(): List<Link> = links
 
-    override fun get(link: Link): Publication.Resource {
+    override fun get(link: Link): Resource {
         val url = link.toUrl(baseUrl)
 
         return if (url == null || !URLUtil.isNetworkUrl(url)) {
             val cause = IllegalArgumentException("Invalid HREF: ${link.href}, produced URL: $url")
             Timber.e(cause)
-            Publication.Resource(FailureResource(error = Resource.Exception.BadRequest(cause = cause)), link)
+            FailureResource(error = Resource.Exception.BadRequest(cause = cause))
         } else {
-            HttpResource(link, url, client)
+            HttpResource(client, url)
         }
     }
 
     override suspend fun close() {}
-
-    /** Provides access to an external URL. */
-    private class HttpResource(
-        private val link: Link,
-        private val resource: org.readium.r2.shared.util.http.HttpResource
-    ) : Publication.Resource, Resource by resource {
-
-        companion object {
-
-            operator fun invoke(
-                link: Link,
-                url: String,
-                client: HttpClient,
-            ): HttpResource =
-                HttpResource(link, HttpResource(client, url))
-        }
-
-        override val key: String get() = resource.key
-
-        override suspend fun link(): Link =
-            link.copy(
-                type = resource.mediaType().getOrDefault(link.mediaType)?.toString()
-            )
-    }
 }

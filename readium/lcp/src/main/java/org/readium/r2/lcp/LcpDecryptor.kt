@@ -11,20 +11,20 @@ package org.readium.r2.lcp
 
 import java.io.IOException
 import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.fetcher.*
-import org.readium.r2.shared.publication.LazyPublicationResource
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.TransformingResource
+import org.readium.r2.shared.resource.flatMap
 import org.readium.r2.shared.resource.flatMapCatching
 import org.readium.r2.shared.resource.mapCatching
 
@@ -33,24 +33,20 @@ import org.readium.r2.shared.resource.mapCatching
  */
 internal class LcpDecryptor(val license: LcpLicense?) {
 
-    fun transform(resource: Publication.Resource): Publication.Resource =
-        LazyPublicationResource(key = resource.key) {
+    fun transform(resource: Resource): Resource =
+        resource.flatMap {
             // Checks if the resource is encrypted and whether the encryption schemes of the resource
             // and the DRM license are the same.
-            val link = resource.link()
-            val encryption = link.properties.encryption
+            val encryption = it.properties().getOrNull()?.encryption
             if (encryption == null || encryption.scheme != "http://readium.org/2014/01/lcp") {
-                return@LazyPublicationResource resource
+                return@flatMap resource
             }
 
-            Publication.Resource(
-                when {
-                    license == null -> FailureResource(Resource.Exception.Forbidden())
-                    link.isDeflated || !link.isCbcEncrypted -> FullLcpResource(resource, license)
-                    else -> CbcLcpResource(resource, license)
-                },
-                link
-            )
+            when {
+                license == null -> FailureResource(Resource.Exception.Forbidden())
+                encryption.isDeflated || !encryption.isCbcEncrypted -> FullLcpResource(resource, license)
+                else -> CbcLcpResource(resource, license)
+            }
         }
 
     /**
@@ -60,17 +56,24 @@ internal class LcpDecryptor(val license: LcpLicense?) {
      * resource, for example when the resource is deflated before encryption.
      */
     private class FullLcpResource(
-        private val resource: Publication.Resource,
+        private val resource: Resource,
         private val license: LcpLicense
     ) : TransformingResource(resource) {
 
+        private suspend fun encryption(): ResourceTry<Encryption?> =
+            resource.properties().map { it.encryption }
+
         override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
-            license.decryptFully(data, resource.link().isDeflated)
+            encryption()
+                .flatMap { enc ->
+                    license.decryptFully(data, enc?.isDeflated ?: false)
+                }
 
         override suspend fun length(): ResourceTry<Long> =
-            resource.link().properties.encryption?.originalLength
-                ?.let { Try.success(it) }
-                ?: super.length()
+            encryption().flatMap {
+                it?.originalLength?.let { Try.success(it) }
+                    ?: super.length()
+            }
     }
 
     /**
@@ -79,7 +82,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
      * Supports random access for byte range requests, but the resource MUST NOT be deflated.
      */
     private class CbcLcpResource(
-        private val resource: Publication.Resource,
+        private val resource: Resource,
         private val license: LcpLicense
     ) : Resource by resource {
 
@@ -101,14 +104,18 @@ internal class LcpDecryptor(val license: LcpLicense?) {
         */
         private val _cache: Cache = Cache()
 
+        private suspend fun encryption(): ResourceTry<Encryption?> =
+            resource.properties().map { it.encryption }
+
         /** Plain text size. */
         override suspend fun length(): ResourceTry<Long> {
             if (::_length.isInitialized)
                 return _length
 
-            _length = resource.link().properties.encryption?.originalLength
-                ?.let { Try.success(it) }
-                ?: lengthFromPadding()
+            _length = encryption().flatMap {
+                it?.originalLength?.let { Try.success(it) }
+                    ?: lengthFromPadding()
+            }
 
             return _length
         }
@@ -159,7 +166,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
                     }
 
                     val bytes = license.decrypt(encryptedData)
-                        .getOrElse { throw IOException("Can't decrypt the content at: ${resource.link().href}", it) }
+                        .getOrElse { throw IOException("Can't decrypt the content for resource with key: ${resource.key ?: "null"}", it) }
 
                     // exclude the bytes added to match a multiple of AES_BLOCK_SIZE
                     val sliceStart = (range.first - encryptedStart).toInt()
@@ -228,11 +235,11 @@ private suspend fun LcpLicense.decryptFully(data: ResourceTry<ByteArray>, isDefl
         bytes
     }
 
-private val Link.isDeflated: Boolean get() =
-    properties.encryption?.compression?.lowercase(java.util.Locale.ROOT) == "deflate"
+private val Encryption.isDeflated: Boolean get() =
+    compression?.lowercase(java.util.Locale.ROOT) == "deflate"
 
-private val Link.isCbcEncrypted: Boolean get() =
-    properties.encryption?.algorithm == "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+private val Encryption.isCbcEncrypted: Boolean get() =
+    algorithm == "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
 
 private fun Long.ceilMultipleOf(divisor: Long) =
     divisor * (this / divisor + if (this % divisor == 0L) 0 else 1)

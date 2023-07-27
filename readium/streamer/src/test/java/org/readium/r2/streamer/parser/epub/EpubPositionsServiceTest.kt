@@ -9,6 +9,7 @@
 
 package org.readium.r2.streamer.parser.epub
 
+import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -23,6 +24,7 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -476,8 +478,12 @@ class EpubPositionsServiceTest {
 
             override suspend fun links(): List<Link> = emptyList()
 
-            override fun get(link: Link): Publication.Resource = object : Publication.Resource {
-                override suspend fun link(): Link = link
+            override fun get(link: Link): Resource = object : Resource {
+                override val key: String = link.href
+                override suspend fun mediaType(): ResourceTry<MediaType?> = Try.success(link.mediaType)
+                override suspend fun name(): ResourceTry<String?> = Try.success(null)
+                override suspend fun properties(): ResourceTry<Properties> = Try.success(Properties())
+                override suspend fun file(): ResourceTry<File?> = Try.success(null)
 
                 override suspend fun length() = findResource(link.href)
                     ?.let { Try.success(it.first) }

@@ -10,7 +10,6 @@
 package org.readium.r2.shared.fetcher
 
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Resource
 
 /**
@@ -20,7 +19,7 @@ import org.readium.r2.shared.resource.Resource
  *
  * If the transformation doesn't apply, simply return resource unchanged.
  */
-public typealias ResourceTransformer = (Publication.Resource) -> Publication.Resource
+public typealias ResourceTransformer = (Resource) -> Resource
 
 /**
  * Transforms the resources' content of a child fetcher using a list of [ResourceTransformer]
@@ -36,10 +35,10 @@ public class TransformingFetcher(
 
     override suspend fun links(): List<Link> = fetcher.links()
 
-    override fun get(link: Link): Publication.Resource {
+    override fun get(link: Link): Resource {
         val resource = fetcher.get(link)
         return transformers.fold(resource) { acc, transformer ->
-            Publication.Resource(transformer(acc), link)
+            transformer(acc)
         }
     }
 

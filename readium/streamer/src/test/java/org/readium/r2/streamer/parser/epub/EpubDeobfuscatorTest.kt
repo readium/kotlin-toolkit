@@ -21,8 +21,8 @@ import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.fetcher.FileFetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.streamer.readBlocking
 import org.robolectric.RobolectricTestRunner
@@ -48,7 +48,7 @@ class EpubDeobfuscatorTest {
         font = fontResult.getOrThrow()
     }
 
-    private fun deobfuscate(href: String, algorithm: String?): Publication.Resource {
+    private fun deobfuscate(href: String, algorithm: String?): Resource {
         val encryption = algorithm?.let {
             Encryption(
                 algorithm = algorithm

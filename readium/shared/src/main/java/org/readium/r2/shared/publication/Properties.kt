@@ -43,6 +43,12 @@ public data class Properties(
     }
 
     /**
+     * Makes a copy of this [Properties] after merging in the given additional other [properties].
+     */
+    public fun add(properties: Properties): Properties =
+        add(properties.otherProperties)
+
+    /**
      * Syntactic sugar to access the [otherProperties] values by subscripting [Properties] directly.
      * `properties["price"] == properties.otherProperties["price"]`
      */

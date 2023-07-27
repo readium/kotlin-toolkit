@@ -17,6 +17,7 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.read
+import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.isLazyInitialized
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -26,7 +27,7 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
  * A [Resource] to access a [file].
  */
 public class FileResource internal constructor(
-    override val file: File,
+    private val file: File,
     private val mediaType: MediaType?,
     private val mediaTypeRetriever: MediaTypeRetriever?
 ) : Resource {
@@ -42,11 +43,17 @@ public class FileResource internal constructor(
 
     override val key: String = file.absolutePath
 
+    override suspend fun name(): ResourceTry<String?> =
+        ResourceTry.success(file.name)
+
+    override suspend fun properties(): ResourceTry<Properties> =
+        ResourceTry.success(Properties())
+
     override suspend fun mediaType(): ResourceTry<MediaType?> =
         Try.success(mediaType ?: mediaTypeRetriever?.retrieve(file))
 
-    override suspend fun name(): ResourceTry<String?> =
-        ResourceTry.success(file.name)
+    override suspend fun file(): ResourceTry<File?> =
+        Try.success(file)
 
     override suspend fun close() {
         withContext(Dispatchers.IO) {

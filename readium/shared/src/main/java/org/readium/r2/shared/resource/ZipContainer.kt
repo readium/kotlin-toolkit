@@ -16,6 +16,7 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -40,7 +41,6 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         override val compressedLength: Long? = null
 
         override val key: String = path
-        override val file: File? = null
 
         // FIXME: Implement with a sniffer.
         override suspend fun mediaType(): ResourceTry<MediaType?> =
@@ -49,8 +49,14 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         override suspend fun name(): ResourceTry<String?> =
             Try.failure(Resource.Exception.NotFound())
 
+        override suspend fun properties(): ResourceTry<Properties> =
+            Try.failure(Resource.Exception.NotFound())
+
         override suspend fun length(): ResourceTry<Long> =
             Try.failure(Resource.Exception.NotFound())
+
+        override suspend fun file(): ResourceTry<File?> =
+            Try.success(null)
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
             Try.failure(Resource.Exception.NotFound())
@@ -65,7 +71,6 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
             entry.name.addPrefix("/")
 
         override val key: String = path
-        override val file: File? = null
 
         // FIXME: Implement with a sniffer.
         override suspend fun mediaType(): ResourceTry<MediaType?> =
@@ -73,6 +78,17 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
 
         override suspend fun name(): ResourceTry<String?> =
             ResourceTry.success(File(path).name)
+
+        override suspend fun properties(): ResourceTry<Properties> =
+            ResourceTry.success(Properties(mapOf(
+                "archive" to mapOf<String, Any>(
+                    "entryLength" to (compressedLength ?: length().getOrNull() ?: 0),
+                    "isEntryCompressed" to (compressedLength != null)
+                )
+            )))
+
+        override suspend fun file(): ResourceTry<File?> =
+            ResourceTry.success(null)
 
         override suspend fun length(): Try<Long, Resource.Exception> =
             entry.size.takeUnless { it == -1L }

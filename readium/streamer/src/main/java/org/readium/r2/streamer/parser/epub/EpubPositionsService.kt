@@ -18,6 +18,7 @@ import org.readium.r2.shared.publication.epub.layoutOf
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.PositionsService
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.use
 
 /**
@@ -60,15 +61,15 @@ public class EpubPositionsService(
      */
     public sealed class ReflowableStrategy {
         /** Returns the number of positions in the given [resource] according to the strategy. */
-        public abstract suspend fun positionCount(resource: Publication.Resource): Int
+        public abstract suspend fun positionCount(resource: Resource): Int
 
         /**
          * Use the original length of each resource (before compression and encryption) and split it
          * by the given [pageLength].
          */
         public data class OriginalLength(val pageLength: Int) : ReflowableStrategy() {
-            override suspend fun positionCount(resource: Publication.Resource): Int {
-                val length = resource.link().properties.encryption?.originalLength
+            override suspend fun positionCount(resource: Resource): Int {
+                val length = resource.properties().getOrNull()?.encryption?.originalLength
                     ?: resource.length().getOrNull()
                     ?: 0
                 return ceil(length.toDouble() / pageLength.toDouble()).toInt()
@@ -81,8 +82,8 @@ public class EpubPositionsService(
          * given [pageLength].
          */
         public data class ArchiveEntryLength(val pageLength: Int) : ReflowableStrategy() {
-            override suspend fun positionCount(resource: Publication.Resource): Int {
-                val length = resource.link().properties.archive?.entryLength
+            override suspend fun positionCount(resource: Resource): Int {
+                val length = resource.properties().getOrNull()?.archive?.entryLength
                     ?: resource.length().getOrNull()
                     ?: 0
                 return ceil(length.toDouble() / pageLength.toDouble()).toInt()

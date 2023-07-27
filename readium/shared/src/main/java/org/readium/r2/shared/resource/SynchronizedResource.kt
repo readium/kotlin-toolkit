@@ -9,6 +9,7 @@ package org.readium.r2.shared.resource
 import java.io.File
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -24,13 +25,17 @@ public class SynchronizedResource(
 
     override val key: String? get() = resource.key
 
-    override val file: File? get() = resource.file
-
     override suspend fun name(): ResourceTry<String?> =
         mutex.withLock { resource.name() }
 
+    override suspend fun properties(): ResourceTry<Properties> =
+        mutex.withLock { resource.properties() }
+
     override suspend fun mediaType(): ResourceTry<MediaType?> =
         mutex.withLock { resource.mediaType() }
+
+    override suspend fun file(): ResourceTry<File?> =
+        mutex.withLock { resource.file() }
 
     override suspend fun length(): ResourceTry<Long> =
         mutex.withLock { resource.length() }

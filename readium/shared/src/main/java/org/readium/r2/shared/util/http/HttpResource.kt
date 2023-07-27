@@ -8,6 +8,7 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.util.io.CountingInputStream
@@ -20,6 +21,8 @@ public class HttpResource(
     private val maxSkipBytes: Long = MAX_SKIP_BYTES
 ) : Resource {
 
+    override val key: String = url
+
     override suspend fun name(): ResourceTry<String?> =
         headResponse().map { r ->
             r.valuesForHeader("Content-Disposition")
@@ -31,11 +34,13 @@ public class HttpResource(
                 ?.let { File(it).name }
         }
 
-    override val key: String = url
-    override val file: File? = null
+    override suspend fun properties(): ResourceTry<Properties> =
+        Try.success(Properties())
 
     override suspend fun mediaType(): ResourceTry<MediaType?> =
         headResponse().map { it.mediaType }
+
+    override suspend fun file(): ResourceTry<File?> = Try.success(null)
 
     override suspend fun length(): ResourceTry<Long> =
         headResponse().flatMap {

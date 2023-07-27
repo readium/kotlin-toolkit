@@ -68,3 +68,6 @@ public abstract class TransformingResource(
 
     override suspend fun length(): ResourceTry<Long> = bytes().map { it.size.toLong() }
 }
+
+public fun Resource.map(transform: suspend (ByteArray) -> ResourceTry<ByteArray>): Resource =
+    TransformingResource(this, transform = transform)

@@ -10,10 +10,11 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.content.Content
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Either
 
 /**
- * Creates a [Content.Iterator] instance for the [Publication.Resource], starting from the
+ * Creates a [Content.Iterator] instance for the [Resource], starting from the
  * given [Locator].
  *
  * Returns null if the resource media type is not supported.
@@ -30,7 +31,7 @@ public fun interface ResourceContentIteratorFactory {
         manifest: Manifest,
         servicesHolder: PublicationServicesHolder,
         readingOrderIndex: Int,
-        resource: Publication.Resource,
+        resource: Resource,
         locator: Locator
     ): Content.Iterator?
 }

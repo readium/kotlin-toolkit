@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.MessageError
 import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.flatMap
 
 public class DefaultArchiveFactory : ArchiveFactory {
 
@@ -21,13 +22,17 @@ public class DefaultArchiveFactory : ArchiveFactory {
             return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
         }
 
-        return resource.file
-            ?.let { open(it) }
-            ?: Try.failure(
-                ArchiveFactory.Error.FormatNotSupported(
-                    MessageError("Resource not supported because file cannot be directly access.")
-                )
-            )
+        return resource.file()
+            .mapFailure { ArchiveFactory.Error.ResourceReading(it) }
+            .flatMap { file ->
+                if (file != null) {
+                    open(file)
+                } else {
+                    Try.Failure(ArchiveFactory.Error.FormatNotSupported(
+                        MessageError("Resource not supported because file cannot be directly access.")
+                    ))
+                }
+            }
     }
 
     // Internal for testing purpose

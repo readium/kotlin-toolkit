@@ -6,6 +6,7 @@
 
 package org.readium.r2.navigator.epub
 
+import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import android.content.SharedPreferences
 import android.graphics.PointF
 import android.graphics.RectF
@@ -41,7 +42,15 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
-import org.readium.r2.navigator.*
+import org.readium.r2.navigator.DecorableNavigator
+import org.readium.r2.navigator.Decoration
+import org.readium.r2.navigator.DecorationId
+import org.readium.r2.navigator.ExperimentalDecorator
+import org.readium.r2.navigator.R
+import org.readium.r2.navigator.R2BasicWebView
+import org.readium.r2.navigator.SelectableNavigator
+import org.readium.r2.navigator.Selection
+import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.databinding.ReadiumNavigatorViewpagerBinding
 import org.readium.r2.navigator.epub.EpubNavigatorViewModel.RunScriptCommand
 import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
@@ -70,11 +79,11 @@ import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.launchWebBrowser
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -790,7 +799,7 @@ public class EpubNavigatorFragment internal constructor(
         override fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? =
             viewModel.shouldInterceptRequest(request)
 
-        override fun resourceAtUrl(url: String): Publication.Resource? =
+        override fun resourceAtUrl(url: String): Resource? =
             viewModel.internalLinkFromUrl(url)
                 ?.let { publication.get(it) }
     }

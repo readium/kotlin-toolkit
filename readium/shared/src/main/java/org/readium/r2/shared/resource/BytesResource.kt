@@ -11,21 +11,31 @@ import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.requireLengthFitInt
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.util.mediatype.MediaType
 
 public sealed class BaseBytesResource(
-    override val key: String? = null,
-    private val mediaType: MediaType? = null,
+    override val key: String?,
+    private val mediaType: MediaType?,
+    private val properties: Properties,
     protected val bytes: suspend () -> Try<ByteArray, Resource.Exception>
 ) : Resource {
-
-    override val file: File? = null
 
     override suspend fun name(): ResourceTry<String?> =
         Try.success(null)
 
+    override suspend fun properties(): ResourceTry<Properties> =
+        Try.success(properties)
+
     override suspend fun mediaType(): ResourceTry<MediaType?> =
         Try.success(mediaType)
+
+    override suspend fun file(): ResourceTry<File?> =
+        Try.success(null)
+
+    override suspend fun length(): ResourceTry<Long> =
+        read().map { it.size.toLong() }
 
     private lateinit var _bytes: Try<ByteArray, Resource.Exception>
 
@@ -48,9 +58,6 @@ public sealed class BaseBytesResource(
         return sliceArray(range.map(Long::toInt))
     }
 
-    override suspend fun length(): ResourceTry<Long> =
-        read().map { it.size.toLong() }
-
     override suspend fun close() {}
 }
 
@@ -58,11 +65,23 @@ public sealed class BaseBytesResource(
 public class BytesResource(
     key: String? = null,
     mediaType: MediaType? = null,
-    bytes: suspend () -> Try<ByteArray, Resource.Exception>
-) : BaseBytesResource(key = key, mediaType = mediaType, bytes) {
+    properties: Properties = Properties(),
+    bytes: suspend () -> ResourceTry<ByteArray>
+) : BaseBytesResource(key = key, mediaType = mediaType, properties = properties, bytes = bytes) {
 
-    public constructor(bytes: ByteArray, key: String? = null, mediaType: MediaType? = null) :
-        this(key = key, mediaType = mediaType, { Try.success(bytes) })
+    public constructor(
+        bytes: ByteArray,
+        key: String? = null,
+        mediaType: MediaType? = null,
+        properties: Properties = Properties()
+    ) :
+        this(key = key, mediaType = mediaType, properties = properties, { Try.success(bytes) })
+
+    public constructor(bytes: ByteArray, link: Link)
+        : this(bytes = bytes, key = link.href, mediaType = link.mediaType, properties = link.properties)
+
+    public constructor(link: Link, bytes: suspend () -> ResourceTry<ByteArray>)
+        : this(key = link.href, mediaType = link.mediaType, properties = link.properties, bytes = bytes)
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { length() }} bytes)"
@@ -71,12 +90,24 @@ public class BytesResource(
 /** Creates a Resource serving a [String]. */
 public class StringResource(
     key: String? = null,
-    internal val mediaType: MediaType? = null,
+    mediaType: MediaType? = null,
+    properties: Properties = Properties(),
     string: suspend () -> ResourceTry<String>
-) : BaseBytesResource(key = key, mediaType = mediaType, { string().map { it.toByteArray() } }) {
+) : BaseBytesResource(key = key, mediaType = mediaType, properties = properties, { string().map { it.toByteArray() } }) {
 
-    public constructor(string: String, mediaType: MediaType? = null, key: String? = null) :
-        this(key = key, mediaType = mediaType, { Try.success(string) })
+    public constructor(
+        string: String,
+        key: String? = null,
+        mediaType: MediaType? = null,
+        properties: Properties = Properties()
+    ) :
+        this(key = key, mediaType = mediaType, properties = properties, { Try.success(string) })
+
+    public constructor(string: String, link: Link)
+        : this(string = string, key = link.href, mediaType = link.mediaType, properties = link.properties)
+
+    public constructor(link: Link, string: suspend () -> ResourceTry<String>)
+        : this(key = link.href, mediaType = link.mediaType, properties = link.properties, string = string)
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { readAsString() }})"

@@ -14,7 +14,6 @@ import java.lang.ref.WeakReference
 import java.util.*
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.FileResource
 import org.readium.r2.shared.resource.Resource
@@ -35,7 +34,7 @@ public class FileFetcher(
     public constructor(href: String, file: File, mediaTypeRetriever: MediaTypeRetriever) :
         this(mapOf(href to file), mediaTypeRetriever)
 
-    private val openedResources: MutableList<WeakReference<Publication.Resource>> = LinkedList()
+    private val openedResources: MutableList<WeakReference<Resource>> = LinkedList()
 
     override suspend fun links(): List<Link> =
         paths.toSortedMap().flatMap { (href, file) ->
@@ -53,7 +52,7 @@ public class FileFetcher(
             }
         }
 
-    override fun get(link: Link): Publication.Resource {
+    override fun get(link: Link): Resource {
         val linkHref = link.href.addPrefix("/")
         for ((itemHref, itemFile) in paths) {
             @Suppress("NAME_SHADOWING")
@@ -62,17 +61,17 @@ public class FileFetcher(
                 val resourceFile = File(itemFile, linkHref.removePrefix(itemHref))
                 // Make sure that the requested resource is [path] or one of its descendant.
                 if (resourceFile.canonicalPath.startsWith(itemFile.canonicalPath)) {
-                    val resource = Publication.Resource(FileResource(resourceFile, link.mediaType), link)
+                    val resource = FileResource(resourceFile, link.mediaType)
                     openedResources.add(WeakReference(resource))
                     return resource
                 }
             }
         }
-        return Publication.Resource(FailureResource(Resource.Exception.NotFound()), link)
+        return FailureResource(Resource.Exception.NotFound())
     }
 
     override suspend fun close() {
-        openedResources.mapNotNull(WeakReference<Publication.Resource>::get).forEach { it.close() }
+        openedResources.mapNotNull(WeakReference<Resource>::get).forEach { it.close() }
         openedResources.clear()
     }
 }

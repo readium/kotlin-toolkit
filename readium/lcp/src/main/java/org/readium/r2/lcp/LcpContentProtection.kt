@@ -71,7 +71,7 @@ internal class LcpContentProtection(
             ?.let { LcpPassphraseAuthentication(it, fallback = this.authentication) }
             ?: this.authentication
 
-        val file = (asset as? Asset.Resource)?.resource?.file
+        val file = (asset as? Asset.Resource)?.resource?.file()?.getOrNull()
             ?: (asset as? Asset.Container)?.container?.file
 
         return file

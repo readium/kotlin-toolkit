@@ -33,9 +33,8 @@ internal class DirectoryContainer(
             Resource.Exception.NotFound(Exception("No entry at path $path."))
         )
 
-    private inner class SuccessEntry(
-        override val file: File
-    ) : Container.Entry, Resource by FileResource(file, mediaTypeRetriever) {
+    private inner class SuccessEntry(file: File)
+        : Container.Entry, Resource by FileResource(file, mediaTypeRetriever) {
 
         override val path: String =
             file.relativeTo(root).path.addPrefix("/")

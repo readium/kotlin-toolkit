@@ -9,29 +9,29 @@ package org.readium.r2.streamer.parser.epub
 import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.toHexBytes
 import kotlin.experimental.xor
-import org.readium.r2.shared.publication.LazyPublicationResource
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.encryption
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.TransformingResource
+import org.readium.r2.shared.resource.flatMap
 
 /**
  * Deobfuscates fonts according to https://www.w3.org/TR/epub-33/#sec-font-obfuscation
  */
 internal class EpubDeobfuscator(private val pubId: String) {
 
-    fun transform(resource: Publication.Resource): Publication.Resource = LazyPublicationResource(key = resource.key) {
-        val link = resource.link()
-        val algorithm = link.properties.encryption?.algorithm
-        if (algorithm != null && algorithm2length.containsKey(algorithm)) {
-            Publication.Resource(DeobfuscatingResource(resource, algorithm), link)
-        } else {
-            resource
+    fun transform(resource: Resource): Resource =
+        resource.flatMap {
+            val algorithm = resource.properties().getOrNull()?.encryption?.algorithm
+            if (algorithm != null && algorithm2length.containsKey(algorithm)) {
+                DeobfuscatingResource(resource, algorithm)
+            } else {
+                resource
+            }
         }
-    }
 
     inner class DeobfuscatingResource(
-        private val resource: Publication.Resource,
+        private val resource: Resource,
         private val algorithm: String
     ) : TransformingResource(resource) {
 

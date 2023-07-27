@@ -22,6 +22,7 @@ import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.resource.readAsString
 import org.robolectric.RobolectricTestRunner
@@ -373,10 +374,10 @@ class PublicationTest {
 
     @Test fun `get method passes on href parameters to services`() {
         val service = object : Publication.Service {
-            override fun get(link: Link): Publication.Resource? {
+            override fun get(link: Link): Resource? {
                 assertFalse(link.templated)
                 assertEquals("param1=a&param2=b", link.href.substringAfter("?"))
-                return Publication.Resource(StringResource("test passed"), link)
+                return StringResource("test passed", link)
             }
         }
 

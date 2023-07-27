@@ -21,6 +21,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.publication.firstWithMediaType
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.toJSON
@@ -47,12 +48,11 @@ public interface PositionsService : Publication.Service {
 
     override val links: List<Link> get() = listOf(positionsLink)
 
-    override fun get(link: Link): Publication.Resource? {
+    override fun get(link: Link): Resource? {
         if (link.href != positionsLink.href)
             return null
 
-        return Publication.Resource(
-            StringResource {
+        return StringResource(positionsLink) {
                 val positions = positions()
                 Try.success(
                     JSONObject().apply {
@@ -60,9 +60,7 @@ public interface PositionsService : Publication.Service {
                         put("positions", positions.toJSON())
                     }.toString()
                 )
-            },
-            positionsLink
-        )
+            }
     }
 }
 
