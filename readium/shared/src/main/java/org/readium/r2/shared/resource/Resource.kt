@@ -22,6 +22,7 @@ import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 public typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Exception>
@@ -32,9 +33,9 @@ public typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Exception>
 public interface Resource : SuspendingCloseable {
 
     /**
-     * HREF locating this resource, if any.
+     * URL locating this resource, if any.
      */
-    public val href: Href?
+    public val url: Url?
 
     /**
      * Returns the resource media type if known.
@@ -52,16 +53,6 @@ public interface Resource : SuspendingCloseable {
      * This is opened for extensions.
      */
     public suspend fun properties(): ResourceTry<Properties>
-
-    /**
-     * Direct file to this resource, when available.
-     *
-     * This is meant to be used as an optimization for consumers which can't work efficiently
-     * with streams. However, [file] is not guaranteed to be set, for example if the resource
-     * underwent transformations or is being read from an archive. Therefore, consumers should
-     * always fallback on regular stream reading, using [read] or [ResourceInputStream].
-     */
-    public suspend fun file(): ResourceTry<File?>
 
     /**
      * Returns data length from metadata if available, or calculated from reading the bytes otherwise.
@@ -148,12 +139,11 @@ public class FailureResource(
 
     internal constructor(cause: Throwable) : this(Resource.Exception.wrap(cause))
 
-    override val href: Href? = null
+    override val url: Url? = null
     override suspend fun mediaType(): ResourceTry<MediaType?> = Try.failure(error)
     override suspend fun name(): ResourceTry<String?> = Try.failure(error)
     override suspend fun properties(): ResourceTry<Properties> = Try.failure(error)
     override suspend fun length(): ResourceTry<Long> = Try.failure(error)
-    override suspend fun file(): ResourceTry<File?> = Try.failure(error)
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = Try.failure(error)
     override suspend fun close() {}
 

@@ -22,6 +22,7 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.toFile
 
 internal class LcpContentProtection(
     private val lcpService: LcpService,
@@ -71,7 +72,7 @@ internal class LcpContentProtection(
             ?.let { LcpPassphraseAuthentication(it, fallback = this.authentication) }
             ?: this.authentication
 
-        val file = (asset as? Asset.Resource)?.resource?.file()?.getOrNull()
+        val file = (asset as? Asset.Resource)?.resource?.url?.toFile()
             ?: (asset as? Asset.Container)?.container?.file
 
         return file

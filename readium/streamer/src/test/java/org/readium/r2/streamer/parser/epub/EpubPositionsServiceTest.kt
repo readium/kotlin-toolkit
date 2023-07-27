@@ -484,7 +484,6 @@ class EpubPositionsServiceTest {
                 override suspend fun mediaType(): ResourceTry<MediaType?> = Try.success(link.mediaType)
                 override suspend fun name(): ResourceTry<String?> = Try.success(null)
                 override suspend fun properties(): ResourceTry<Properties> = Try.success(Properties())
-                override suspend fun file(): ResourceTry<File?> = Try.success(null)
 
                 override suspend fun length() = findResource(link.href)
                     ?.let { Try.success(it.first) }

@@ -42,7 +42,7 @@ public class FileResource internal constructor(
         }
     }
 
-    override val href: Href = Href("file://${file.canonicalPath}")
+    override val url: Url? = Url("file://${file.canonicalPath}")
 
     override suspend fun name(): ResourceTry<String?> =
         ResourceTry.success(file.name)
@@ -52,9 +52,6 @@ public class FileResource internal constructor(
 
     override suspend fun mediaType(): ResourceTry<MediaType?> =
         Try.success(mediaType ?: mediaTypeRetriever?.retrieve(file))
-
-    override suspend fun file(): ResourceTry<File?> =
-        Try.success(file)
 
     override suspend fun close() {
         withContext(Dispatchers.IO) {

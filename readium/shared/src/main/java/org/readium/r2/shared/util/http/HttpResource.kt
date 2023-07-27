@@ -11,18 +11,16 @@ import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /** Provides access to an external URL. */
 public class HttpResource(
     private val client: HttpClient,
-    internal val url: String,
+    override val url: Url,
     private val maxSkipBytes: Long = MAX_SKIP_BYTES
 ) : Resource {
-
-    override val href: Href = Href(url)
 
     override suspend fun name(): ResourceTry<String?> =
         headResponse().map { r ->
@@ -40,8 +38,6 @@ public class HttpResource(
 
     override suspend fun mediaType(): ResourceTry<MediaType?> =
         headResponse().map { it.mediaType }
-
-    override suspend fun file(): ResourceTry<File?> = Try.success(null)
 
     override suspend fun length(): ResourceTry<Long> =
         headResponse().flatMap {
@@ -78,7 +74,7 @@ public class HttpResource(
         if (::_headResponse.isInitialized)
             return _headResponse
 
-        _headResponse = client.fetch(HttpRequest(url, method = HttpRequest.Method.HEAD))
+        _headResponse = client.fetch(HttpRequest(url.toString(), method = HttpRequest.Method.HEAD))
             .map { it.response }
             .mapFailure { Resource.Exception.wrapHttp(it) }
 
@@ -104,7 +100,7 @@ public class HttpResource(
         }
         tryOrLog { inputStream?.close() }
 
-        val request = HttpRequest(url) {
+        val request = HttpRequest(url.toString()) {
             from?.let { setRange(from..-1) }
         }
 

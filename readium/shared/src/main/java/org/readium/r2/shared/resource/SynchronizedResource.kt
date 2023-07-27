@@ -6,11 +6,10 @@
 
 package org.readium.r2.shared.resource
 
-import java.io.File
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -24,7 +23,7 @@ public class SynchronizedResource(
 
     private val mutex = Mutex()
 
-    override val href: Href? get() = resource.href
+    override val url: Url? get() = resource.url
 
     override suspend fun name(): ResourceTry<String?> =
         mutex.withLock { resource.name() }
@@ -34,9 +33,6 @@ public class SynchronizedResource(
 
     override suspend fun mediaType(): ResourceTry<MediaType?> =
         mutex.withLock { resource.mediaType() }
-
-    override suspend fun file(): ResourceTry<File?> =
-        mutex.withLock { resource.file() }
 
     override suspend fun length(): ResourceTry<Long> =
         mutex.withLock { resource.length() }

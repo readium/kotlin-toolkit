@@ -138,6 +138,9 @@ public class Href(
             // percent-decoded. For example, if the string contains a standalone % character.
             .takeIf { !it.contains("\uFFFD") } ?: this
 
+    public fun toUrl(): Url? =
+        Url(absoluteHref())
+
     override fun toString(): String =
         absoluteHref()
 }

@@ -16,6 +16,7 @@ import kotlinx.coroutines.cancel
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -37,7 +38,7 @@ public class FallbackResource(
             }
         }
 
-    override val href: Href? get() = originalResource.href
+    override val url: Url? get() = originalResource.url
 
     override suspend fun name(): ResourceTry<String?> =
         resource.await().name()
@@ -47,9 +48,6 @@ public class FallbackResource(
 
     override suspend fun mediaType(): ResourceTry<MediaType?> =
         resource.await().mediaType()
-
-    override suspend fun file(): ResourceTry<File?> =
-        resource.await().file()
 
     override suspend fun length(): ResourceTry<Long> =
         resource.await().length()

@@ -18,6 +18,7 @@ import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -41,7 +42,7 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
 
         override val compressedLength: Long? = null
 
-        override val href: Href = Href(path)
+        override val url: Url? = Url(path)
 
         // FIXME: Implement with a sniffer.
         override suspend fun mediaType(): ResourceTry<MediaType?> =
@@ -56,9 +57,6 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         override suspend fun length(): ResourceTry<Long> =
             Try.failure(Resource.Exception.NotFound())
 
-        override suspend fun file(): ResourceTry<File?> =
-            Try.success(null)
-
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
             Try.failure(Resource.Exception.NotFound())
 
@@ -71,7 +69,7 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         override val path: String =
             entry.name.addPrefix("/")
 
-        override val href: Href = Href(path)
+        override val url: Url? = Url(path)
 
         // FIXME: Implement with a sniffer.
         override suspend fun mediaType(): ResourceTry<MediaType?> =
@@ -87,9 +85,6 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
                     "isEntryCompressed" to (compressedLength != null)
                 )
             )))
-
-        override suspend fun file(): ResourceTry<File?> =
-            ResourceTry.success(null)
 
         override suspend fun length(): Try<Long, Resource.Exception> =
             entry.size.takeUnless { it == -1L }

@@ -13,6 +13,8 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.isHttp
 import timber.log.Timber
 
 /**
@@ -34,9 +36,9 @@ public class HttpFetcher(
     override suspend fun links(): List<Link> = links
 
     override fun get(link: Link): Resource {
-        val url = link.toUrl(baseUrl)
+        val url = link.toUrl(baseUrl)?.let { Url(it) }
 
-        return if (url == null || !URLUtil.isNetworkUrl(url)) {
+        return if (url == null || !url.isHttp()) {
             val cause = IllegalArgumentException("Invalid HREF: ${link.href}, produced URL: $url")
             Timber.e(cause)
             FailureResource(error = Resource.Exception.BadRequest(cause = cause))

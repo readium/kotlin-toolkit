@@ -47,9 +47,7 @@ public class ContainerFetcher(
         val container: Container
     ) : Resource {
 
-        override val href: Href = Href(link.href)
-
-        override suspend fun file(): ResourceTry<File?> = Try.success(null)
+        override val url: Url? get() = Url(link.href)
 
         override suspend fun mediaType(): ResourceTry<MediaType?> =
             Try.success(link.mediaType)

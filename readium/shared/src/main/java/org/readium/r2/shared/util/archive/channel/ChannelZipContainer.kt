@@ -16,6 +16,7 @@ import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.resource.*
 import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArchiveEntry
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipFile
 import org.readium.r2.shared.util.archive.channel.jvm.SeekableByteChannel
@@ -38,7 +39,7 @@ internal class ChannelZipContainer(
 
         override val path: String = entry.name.addPrefix("/")
 
-        override val href: Href = Href(path)
+        override val url: Url? get() = Url(path)
 
         override suspend fun name(): ResourceTry<String?> =
             ResourceTry.success(File(path).name)
@@ -49,8 +50,6 @@ internal class ChannelZipContainer(
         // FIXME: Implement with a sniffer.
         override suspend fun mediaType(): ResourceTry<MediaType?> =
             ResourceTry.success(null)
-
-        override suspend fun file(): ResourceTry<File?> = Try.success(null)
 
         override suspend fun length(): ResourceTry<Long> =
             entry.size.takeUnless { it == -1L }

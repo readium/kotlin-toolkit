@@ -27,6 +27,7 @@ import org.readium.r2.shared.resource.TransformingResource
 import org.readium.r2.shared.resource.flatMap
 import org.readium.r2.shared.resource.flatMapCatching
 import org.readium.r2.shared.resource.mapCatching
+import org.readium.r2.shared.util.Url
 
 /**
  * Decrypts a resource protected with LCP.
@@ -85,6 +86,8 @@ internal class LcpDecryptor(val license: LcpLicense?) {
         private val resource: Resource,
         private val license: LcpLicense
     ) : Resource by resource {
+
+        override val url: Url? = null
 
         private class Cache(
             var startIndex: Int? = null,
@@ -166,7 +169,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
                     }
 
                     val bytes = license.decrypt(encryptedData)
-                        .getOrElse { throw IOException("Can't decrypt the content for resource with key: ${resource.href ?: "null"}", it) }
+                        .getOrElse { throw IOException("Can't decrypt the content for resource with key: ${resource.url}", it) }
 
                     // exclude the bytes added to match a multiple of AES_BLOCK_SIZE
                     val sliceStart = (range.first - encryptedStart).toInt()

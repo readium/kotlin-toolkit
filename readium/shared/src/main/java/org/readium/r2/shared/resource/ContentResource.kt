@@ -25,6 +25,7 @@ import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUri
+import org.readium.r2.shared.util.toUrl
 
 /**
  * Creates [ContentResource]s.
@@ -54,7 +55,7 @@ public class ContentResource(
 
     private lateinit var _length: ResourceTry<Long>
 
-    override val href: Href = Href(uri.toString())
+    override val url: Url? = uri.toUrl()
 
     override suspend fun name(): ResourceTry<String?> {
         val cursor = contentResolver
@@ -81,10 +82,6 @@ public class ContentResource(
 
     override suspend fun mediaType(): ResourceTry<MediaType?> =
         Try.success(contentResolver.getType(uri)?.let { MediaType.parse(it) })
-
-    // FIXME: Could it be implemented?
-    override suspend fun file(): ResourceTry<File?> =
-        Try.success(null)
 
     override suspend fun close() {
     }

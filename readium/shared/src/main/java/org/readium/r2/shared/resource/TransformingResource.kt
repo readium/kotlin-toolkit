@@ -9,6 +9,7 @@ package org.readium.r2.shared.resource
 import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.requireLengthFitInt
+import org.readium.r2.shared.util.Url
 
 /**
  * Transforms the bytes of [resource] on-the-fly.
@@ -37,6 +38,8 @@ public abstract class TransformingResource(
                     data.flatMap { transform(it) }
             }
     }
+
+    override val url: Url? = null
 
     private lateinit var _bytes: ResourceTry<ByteArray>
 

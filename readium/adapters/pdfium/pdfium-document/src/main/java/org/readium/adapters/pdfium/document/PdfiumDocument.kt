@@ -22,6 +22,7 @@ import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
+import org.readium.r2.shared.util.toFile
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 
@@ -95,8 +96,8 @@ public class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<Pdfium
     }
 
     private suspend fun Resource.openAsFile(password: String?): PdfiumDocument? =
-        file().getOrNull()?.let {
-            tryOrNull { open(it, password) }
+        tryOrNull {
+            url?.toFile()?.let { open(it, password) }
         }
 
     private suspend fun Resource.openBytes(password: String?): PdfiumDocument =
