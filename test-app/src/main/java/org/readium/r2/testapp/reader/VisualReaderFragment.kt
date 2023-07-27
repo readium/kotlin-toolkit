@@ -152,7 +152,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
     private fun setupObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 navigator.currentLocator
                     .onEach { model.saveProgression(it) }
                     .launchIn(this)
