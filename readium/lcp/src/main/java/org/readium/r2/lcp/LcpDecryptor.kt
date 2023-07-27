@@ -88,7 +88,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
         private val license: LcpLicense
     ) : Resource by resource {
 
-        override val url: Url? = null
+        override val source: Url? = null
 
         private class Cache(
             var startIndex: Int? = null,
@@ -170,7 +170,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
                     }
 
                     val bytes = license.decrypt(encryptedData)
-                        .getOrElse { throw IOException("Can't decrypt the content for resource with key: ${resource.url}", it) }
+                        .getOrElse { throw IOException("Can't decrypt the content for resource with key: ${resource.source}", it) }
 
                     // exclude the bytes added to match a multiple of AES_BLOCK_SIZE
                     val sliceStart = (range.first - encryptedStart).toInt()

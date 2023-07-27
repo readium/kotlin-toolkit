@@ -21,7 +21,6 @@ import org.readium.r2.shared.resource.BytesResource
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.LazyResource
 import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Url
 
 /**
@@ -104,7 +103,7 @@ public abstract class GeneratedCoverService : CoverService {
         if (link.href != coverLink.href)
             return null
 
-        return LazyResource(url = Url(link.href)) {
+        return LazyResource(source = Url(link.href)) {
             val cover = cover()
             val png = cover.toPng()
 

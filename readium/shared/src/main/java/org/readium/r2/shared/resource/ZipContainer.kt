@@ -40,7 +40,7 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
 
         override val compressedLength: Long? = null
 
-        override val url: Url? = Url(path)
+        override val source: Url? = Url(path)
 
         // FIXME: Implement with a sniffer.
         override suspend fun mediaType(): ResourceTry<MediaType?> =
@@ -67,7 +67,7 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         override val path: String =
             entry.name.addPrefix("/")
 
-        override val url: Url? = Url(path)
+        override val source: Url? = Url(path)
 
         // FIXME: Implement with a sniffer.
         override suspend fun mediaType(): ResourceTry<MediaType?> =

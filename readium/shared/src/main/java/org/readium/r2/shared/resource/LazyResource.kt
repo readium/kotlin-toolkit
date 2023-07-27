@@ -13,7 +13,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
  * Wraps a [Resource] which will be created only when first accessing one of its members.
  */
 public class LazyResource(
-    override val url: Url? = null,
+    override val source: Url? = null,
     private val factory: suspend () -> Resource
 ) : Resource {
 

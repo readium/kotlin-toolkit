@@ -15,7 +15,7 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 public sealed class BaseBytesResource(
-    override val url: Url?,
+    override val source: Url?,
     private val mediaType: MediaType?,
     private val properties: Resource.Properties,
     protected val bytes: suspend () -> Try<ByteArray, Resource.Exception>
@@ -63,7 +63,7 @@ public class BytesResource(
     mediaType: MediaType? = null,
     properties: Resource.Properties = Resource.Properties(),
     bytes: suspend () -> ResourceTry<ByteArray>
-) : BaseBytesResource(url = url, mediaType = mediaType, properties = properties, bytes = bytes) {
+) : BaseBytesResource(source = url, mediaType = mediaType, properties = properties, bytes = bytes) {
 
     public constructor(
         bytes: ByteArray,
@@ -89,7 +89,7 @@ public class StringResource(
     mediaType: MediaType? = null,
     properties: Resource.Properties = Resource.Properties(),
     string: suspend () -> ResourceTry<String>
-) : BaseBytesResource(url = url, mediaType = mediaType, properties = properties, { string().map { it.toByteArray() } }) {
+) : BaseBytesResource(source = url, mediaType = mediaType, properties = properties, { string().map { it.toByteArray() } }) {
 
     public constructor(
         string: String,

@@ -65,7 +65,7 @@ private class CachingPdfDocumentFactory<T : PdfDocument>(
         }
 
     override suspend fun open(resource: Resource, password: String?): T {
-        val key = resource.url?.toString() ?: return factory.open(resource, password)
+        val key = resource.source?.toString() ?: return factory.open(resource, password)
         return cache.transaction {
             getOrPut(key) {
                 factory.open(resource, password)

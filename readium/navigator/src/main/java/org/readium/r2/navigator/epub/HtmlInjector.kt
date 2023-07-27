@@ -17,7 +17,6 @@ import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.TransformingResource
-import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
 /**
@@ -68,7 +67,7 @@ internal fun Resource.injectHtml(
 
         val headEndIndex = content.indexOf("</head>", 0, true)
         if (headEndIndex == -1) {
-            Timber.e("</head> closing tag not found in resource with href: $url")
+            Timber.e("</head> closing tag not found in resource with href: $source")
         } else {
             content = StringBuilder(content)
                 .insert(headEndIndex, "\n" + injectables.joinToString("\n") + "\n")

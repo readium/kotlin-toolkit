@@ -55,7 +55,7 @@ public class ContentResource(
 
     private lateinit var _length: ResourceTry<Long>
 
-    override val url: Url? = uri.toUrl()
+    override val source: Url? = uri.toUrl()
 
     override suspend fun name(): ResourceTry<String?> {
         val cursor = contentResolver

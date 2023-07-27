@@ -8,7 +8,6 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.util.Url
@@ -18,7 +17,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 /** Provides access to an external URL. */
 public class HttpResource(
     private val client: HttpClient,
-    override val url: Url,
+    override val source: Url,
     private val maxSkipBytes: Long = MAX_SKIP_BYTES
 ) : Resource {
 
@@ -74,7 +73,7 @@ public class HttpResource(
         if (::_headResponse.isInitialized)
             return _headResponse
 
-        _headResponse = client.fetch(HttpRequest(url.toString(), method = HttpRequest.Method.HEAD))
+        _headResponse = client.fetch(HttpRequest(source.toString(), method = HttpRequest.Method.HEAD))
             .map { it.response }
             .mapFailure { Resource.Exception.wrapHttp(it) }
 
@@ -100,7 +99,7 @@ public class HttpResource(
         }
         tryOrLog { inputStream?.close() }
 
-        val request = HttpRequest(url.toString()) {
+        val request = HttpRequest(source.toString()) {
             from?.let { setRange(from..-1) }
         }
 
