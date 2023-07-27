@@ -10,6 +10,7 @@ import kotlin.math.ceil
 import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.archive.archive
 import org.readium.r2.shared.publication.encryption.encryption
@@ -69,7 +70,8 @@ public class EpubPositionsService(
          */
         public data class OriginalLength(val pageLength: Int) : ReflowableStrategy() {
             override suspend fun positionCount(resource: Resource): Int {
-                val length = resource.properties().getOrNull()?.encryption?.originalLength
+                val length = resource.properties().getOrNull()
+                    ?.let { Properties(it).encryption?.originalLength }
                     ?: resource.length().getOrNull()
                     ?: 0
                 return ceil(length.toDouble() / pageLength.toDouble()).toInt()
@@ -83,7 +85,8 @@ public class EpubPositionsService(
          */
         public data class ArchiveEntryLength(val pageLength: Int) : ReflowableStrategy() {
             override suspend fun positionCount(resource: Resource): Int {
-                val length = resource.properties().getOrNull()?.archive?.entryLength
+                val length = resource.properties().getOrNull()
+                    ?.let { Properties(it).archive?.entryLength }
                     ?: resource.length().getOrNull()
                     ?: 0
                 return ceil(length.toDouble() / pageLength.toDouble()).toInt()

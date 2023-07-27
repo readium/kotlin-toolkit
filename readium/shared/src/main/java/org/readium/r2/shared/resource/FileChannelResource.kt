@@ -15,10 +15,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.extensions.read
-import org.readium.r2.shared.extensions.readFully
-import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -36,8 +32,8 @@ internal class FileChannelResource(
     override suspend fun name(): ResourceTry<String?> =
         ResourceTry.success(null)
 
-    override suspend fun properties(): ResourceTry<Properties> =
-        ResourceTry.success(Properties())
+    override suspend fun properties(): ResourceTry<Resource.Properties> =
+        ResourceTry.success(Resource.Properties())
 
     override suspend fun close() {
         withContext(Dispatchers.IO) {

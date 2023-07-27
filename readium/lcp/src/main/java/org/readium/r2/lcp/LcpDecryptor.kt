@@ -18,6 +18,7 @@ import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.fetcher.*
+import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.resource.FailureResource
@@ -38,7 +39,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
         resource.flatMap {
             // Checks if the resource is encrypted and whether the encryption schemes of the resource
             // and the DRM license are the same.
-            val encryption = it.properties().getOrNull()?.encryption
+            val encryption = it.properties().getOrNull()?.let { Properties(it).encryption }
             if (encryption == null || encryption.scheme != "http://readium.org/2014/01/lcp") {
                 return@flatMap resource
             }
@@ -62,7 +63,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
     ) : TransformingResource(resource) {
 
         private suspend fun encryption(): ResourceTry<Encryption?> =
-            resource.properties().map { it.encryption }
+            resource.properties().map { Properties(it).encryption }
 
         override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
             encryption()
@@ -108,7 +109,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
         private val _cache: Cache = Cache()
 
         private suspend fun encryption(): ResourceTry<Encryption?> =
-            resource.properties().map { it.encryption }
+            resource.properties().map { Properties(it).encryption }
 
         /** Plain text size. */
         override suspend fun length(): ResourceTry<Long> {

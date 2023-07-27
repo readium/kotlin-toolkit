@@ -10,7 +10,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.annotation.StringRes
 import java.io.ByteArrayInputStream
-import java.io.File
 import java.nio.charset.Charset
 import org.json.JSONObject
 import org.readium.r2.shared.R
@@ -19,8 +18,6 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
-import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -53,6 +50,10 @@ public interface Resource : SuspendingCloseable {
      * This is opened for extensions.
      */
     public suspend fun properties(): ResourceTry<Properties>
+
+    public class Properties(
+        properties: Map<String, Any> = emptyMap()
+    ) : Map<String, Any> by properties
 
     /**
      * Returns data length from metadata if available, or calculated from reading the bytes otherwise.
@@ -142,7 +143,7 @@ public class FailureResource(
     override val url: Url? = null
     override suspend fun mediaType(): ResourceTry<MediaType?> = Try.failure(error)
     override suspend fun name(): ResourceTry<String?> = Try.failure(error)
-    override suspend fun properties(): ResourceTry<Properties> = Try.failure(error)
+    override suspend fun properties(): ResourceTry<Resource.Properties> = Try.failure(error)
     override suspend fun length(): ResourceTry<Long> = Try.failure(error)
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = Try.failure(error)
     override suspend fun close() {}

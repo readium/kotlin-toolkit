@@ -11,21 +11,20 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 public sealed class BaseBytesResource(
     override val url: Url?,
     private val mediaType: MediaType?,
-    private val properties: Properties,
+    private val properties: Resource.Properties,
     protected val bytes: suspend () -> Try<ByteArray, Resource.Exception>
 ) : Resource {
 
     override suspend fun name(): ResourceTry<String?> =
         Try.success(null)
 
-    override suspend fun properties(): ResourceTry<Properties> =
+    override suspend fun properties(): ResourceTry<Resource.Properties> =
         Try.success(properties)
 
     override suspend fun mediaType(): ResourceTry<MediaType?> =
@@ -62,7 +61,7 @@ public sealed class BaseBytesResource(
 public class BytesResource(
     url: Url? = null,
     mediaType: MediaType? = null,
-    properties: Properties = Properties(),
+    properties: Resource.Properties = Resource.Properties(),
     bytes: suspend () -> ResourceTry<ByteArray>
 ) : BaseBytesResource(url = url, mediaType = mediaType, properties = properties, bytes = bytes) {
 
@@ -70,15 +69,15 @@ public class BytesResource(
         bytes: ByteArray,
         url: Url? = null,
         mediaType: MediaType? = null,
-        properties: Properties = Properties()
+        properties: Resource.Properties = Resource.Properties()
     ) :
         this(url = url, mediaType = mediaType, properties = properties, { Try.success(bytes) })
 
     public constructor(bytes: ByteArray, link: Link)
-        : this(bytes = bytes, url = Url(link.href), mediaType = link.mediaType, properties = link.properties)
+        : this(bytes = bytes, url = Url(link.href), mediaType = link.mediaType, properties = link.properties.toResourceProperties())
 
     public constructor(link: Link, bytes: suspend () -> ResourceTry<ByteArray>)
-        : this(url = Url(link.href), mediaType = link.mediaType, properties = link.properties, bytes = bytes)
+        : this(url = Url(link.href), mediaType = link.mediaType, properties = link.properties.toResourceProperties(), bytes = bytes)
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { length() }} bytes)"
@@ -88,7 +87,7 @@ public class BytesResource(
 public class StringResource(
     url: Url? = null,
     mediaType: MediaType? = null,
-    properties: Properties = Properties(),
+    properties: Resource.Properties = Resource.Properties(),
     string: suspend () -> ResourceTry<String>
 ) : BaseBytesResource(url = url, mediaType = mediaType, properties = properties, { string().map { it.toByteArray() } }) {
 
@@ -96,15 +95,15 @@ public class StringResource(
         string: String,
         url: Url? = null,
         mediaType: MediaType? = null,
-        properties: Properties = Properties()
+        properties: Resource.Properties = Resource.Properties()
     ) :
         this(url = url, mediaType = mediaType, properties = properties, { Try.success(string) })
 
     public constructor(string: String, link: Link)
-        : this(string = string, url = Url(link.href), mediaType = link.mediaType, properties = link.properties)
+        : this(string = string, url = Url(link.href), mediaType = link.mediaType, properties = link.properties.toResourceProperties())
 
     public constructor(link: Link, string: suspend () -> ResourceTry<String>)
-        : this(url = Url(link.href), mediaType = link.mediaType, properties = link.properties, string = string)
+        : this(url = Url(link.href), mediaType = link.mediaType, properties = link.properties.toResourceProperties(), string = string)
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { readAsString() }})"

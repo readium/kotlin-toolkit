@@ -6,7 +6,6 @@
 
 package org.readium.r2.shared.resource
 
-import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -14,8 +13,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -43,7 +40,7 @@ public class FallbackResource(
     override suspend fun name(): ResourceTry<String?> =
         resource.await().name()
 
-    override suspend fun properties(): ResourceTry<Properties> =
+    override suspend fun properties(): ResourceTry<Resource.Properties> =
         resource.await().properties()
 
     override suspend fun mediaType(): ResourceTry<MediaType?> =

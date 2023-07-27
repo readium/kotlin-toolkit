@@ -16,8 +16,6 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -51,7 +49,7 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         override suspend fun name(): ResourceTry<String?> =
             Try.failure(Resource.Exception.NotFound())
 
-        override suspend fun properties(): ResourceTry<Properties> =
+        override suspend fun properties(): ResourceTry<Resource.Properties> =
             Try.failure(Resource.Exception.NotFound())
 
         override suspend fun length(): ResourceTry<Long> =
@@ -78,8 +76,8 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         override suspend fun name(): ResourceTry<String?> =
             ResourceTry.success(File(path).name)
 
-        override suspend fun properties(): ResourceTry<Properties> =
-            ResourceTry.success(Properties(mapOf(
+        override suspend fun properties(): ResourceTry<Resource.Properties> =
+            ResourceTry.success(Resource.Properties(mapOf(
                 "archive" to mapOf<String, Any>(
                     "entryLength" to (compressedLength ?: length().getOrNull() ?: 0),
                     "isEntryCompressed" to (compressedLength != null)

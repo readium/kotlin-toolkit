@@ -55,10 +55,10 @@ public class ContainerFetcher(
         override suspend fun name(): ResourceTry<String?> =
             Try.success(Url(link.href)?.filename)
 
-        override suspend fun properties(): ResourceTry<Properties> =
+        override suspend fun properties(): ResourceTry<Resource.Properties> =
             withEntry { entry ->
                 entry.properties().map {
-                    link.properties.add(it)
+                    Resource.Properties(link.properties.add(it).otherProperties)
                 }
             }
 
@@ -97,6 +97,6 @@ private suspend fun Container.Entry.toLink(mediaTypeRetriever: MediaTypeRetrieve
     return Link(
         href = path,
         type = mediaTypeRetriever.retrieve(fileExtension = File(path).extension)?.toString(),
-        properties = properties().getOrNull() ?: Properties()
+        properties = properties().getOrNull()?.let { Properties(it) } ?: Properties()
     )
 }

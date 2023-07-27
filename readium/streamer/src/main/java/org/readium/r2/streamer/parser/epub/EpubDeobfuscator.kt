@@ -9,6 +9,7 @@ package org.readium.r2.streamer.parser.epub
 import com.mcxiaoke.koi.HASH
 import com.mcxiaoke.koi.ext.toHexBytes
 import kotlin.experimental.xor
+import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
@@ -22,7 +23,7 @@ internal class EpubDeobfuscator(private val pubId: String) {
 
     fun transform(resource: Resource): Resource =
         resource.flatMap {
-            val algorithm = resource.properties().getOrNull()?.encryption?.algorithm
+            val algorithm = resource.properties().getOrNull()?.let { Properties(it).encryption?.algorithm }
             if (algorithm != null && algorithm2length.containsKey(algorithm)) {
                 DeobfuscatingResource(resource, algorithm)
             } else {

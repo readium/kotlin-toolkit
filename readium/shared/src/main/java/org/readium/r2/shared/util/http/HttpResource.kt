@@ -33,8 +33,8 @@ public class HttpResource(
                 ?.let { File(it).name }
         }
 
-    override suspend fun properties(): ResourceTry<Properties> =
-        Try.success(Properties())
+    override suspend fun properties(): ResourceTry<Resource.Properties> =
+        Try.success(Resource.Properties())
 
     override suspend fun mediaType(): ResourceTry<MediaType?> =
         headResponse().map { it.mediaType }

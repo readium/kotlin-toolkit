@@ -6,9 +6,6 @@
 
 package org.readium.r2.shared.resource
 
-import java.io.File
-import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -16,10 +13,9 @@ import org.readium.r2.shared.util.mediatype.MediaType
  * Wraps a [Resource] which will be created only when first accessing one of its members.
  */
 public class LazyResource(
+    override val url: Url? = null,
     private val factory: suspend () -> Resource
 ) : Resource {
-
-    override val url: Url? = null
 
     private lateinit var _resource: Resource
 
@@ -36,7 +32,7 @@ public class LazyResource(
     override suspend fun name(): ResourceTry<String?> =
         resource().name()
 
-    override suspend fun properties(): ResourceTry<Properties> =
+    override suspend fun properties(): ResourceTry<Resource.Properties> =
         resource().properties()
 
     override suspend fun length(): ResourceTry<Long> =
