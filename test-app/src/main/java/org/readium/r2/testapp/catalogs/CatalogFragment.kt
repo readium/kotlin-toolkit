@@ -9,11 +9,16 @@ package org.readium.r2.testapp.catalogs
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
@@ -55,7 +60,6 @@ class CatalogFragment : Fragment() {
         publicationAdapter = PublicationAdapter(catalogViewModel::publication::set)
         navigationAdapter = NavigationAdapter(catalog.type)
         groupAdapter = GroupAdapter(catalog.type, catalogViewModel::publication::set)
-        setHasOptionsMenu(true)
 
         binding.catalogNavigationList.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -84,12 +88,9 @@ class CatalogFragment : Fragment() {
 
         (activity as MainActivity).supportActionBar?.title = catalog.title
 
-        // TODO this feels hacky, I don't want to parse the file if it has not changed
-        if (catalogViewModel.parseData.value == null) {
-            binding.catalogProgressBar.visibility = View.VISIBLE
-            catalogViewModel.parseCatalog(catalog)
-        }
-        catalogViewModel.parseData.observe(viewLifecycleOwner, { result ->
+        // FIXME opening a catalog, then opening a different catalog does not transition well
+        catalogViewModel.parseCatalog(catalog)
+        catalogViewModel.parseData.observe(viewLifecycleOwner) { result ->
 
             facets = result.feed?.facets ?: mutableListOf()
 
@@ -103,7 +104,44 @@ class CatalogFragment : Fragment() {
             groupAdapter.submitList(result.feed!!.groups)
 
             binding.catalogProgressBar.visibility = View.GONE
-        })
+        }
+
+        val menuHost: MenuHost = requireActivity()
+
+        menuHost.addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                    menu.clear()
+                    if (showFacetMenu) {
+                        facets.let {
+                            for (i in facets.indices) {
+                                val submenu = menu.addSubMenu(facets[i].title)
+                                for (link in facets[i].links) {
+                                    val item = submenu.add(link.title)
+                                    item.setOnMenuItemClickListener {
+                                        val catalog1 = Catalog(
+                                            title = link.title!!,
+                                            href = link.href,
+                                            type = catalog.type
+                                        )
+                                        val bundle = bundleOf(CATALOGFEED to catalog1)
+                                        Navigation.findNavController(requireView())
+                                            .navigate(R.id.action_navigation_catalog_self, bundle)
+                                        true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    return false
+                }
+            },
+            viewLifecycleOwner,
+            Lifecycle.State.RESUMED
+        )
     }
 
     private fun handleEvent(event: CatalogViewModel.Event.FeedEvent) {
@@ -117,30 +155,5 @@ class CatalogFragment : Fragment() {
             message,
             Snackbar.LENGTH_LONG
         ).show()
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        menu.clear()
-        if (showFacetMenu) {
-            facets.let {
-                for (i in facets.indices) {
-                    val submenu = menu.addSubMenu(facets[i].title)
-                    for (link in facets[i].links) {
-                        val item = submenu.add(link.title)
-                        item.setOnMenuItemClickListener {
-                            val catalog1 = Catalog(
-                                title = link.title!!,
-                                href = link.href,
-                                type = catalog.type
-                            )
-                            val bundle = bundleOf(CATALOGFEED to catalog1)
-                            Navigation.findNavController(requireView())
-                                .navigate(R.id.action_navigation_catalog_self, bundle)
-                            true
-                        }
-                    }
-                }
-            }
-        }
     }
 }
