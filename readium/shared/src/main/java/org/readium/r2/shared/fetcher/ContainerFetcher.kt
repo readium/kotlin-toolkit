@@ -52,9 +52,6 @@ public class ContainerFetcher(
         override suspend fun mediaType(): ResourceTry<MediaType?> =
             Try.success(link.mediaType)
 
-        override suspend fun name(): ResourceTry<String?> =
-            Try.success(Url(link.href)?.filename)
-
         override suspend fun properties(): ResourceTry<Resource.Properties> =
             withEntry { entry ->
                 entry.properties().map {

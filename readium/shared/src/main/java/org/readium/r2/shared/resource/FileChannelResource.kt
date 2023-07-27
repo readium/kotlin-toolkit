@@ -29,9 +29,6 @@ internal class FileChannelResource(
     override suspend fun mediaType(): ResourceTry<MediaType?> =
         ResourceTry.success(null)
 
-    override suspend fun name(): ResourceTry<String?> =
-        ResourceTry.success(null)
-
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         ResourceTry.success(Resource.Properties())
 

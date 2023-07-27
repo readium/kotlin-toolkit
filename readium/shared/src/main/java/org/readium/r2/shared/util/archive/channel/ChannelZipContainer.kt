@@ -19,6 +19,7 @@ import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.ZipContainer
+import org.readium.r2.shared.resource.suggestedFilename
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArchiveEntry
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipFile
@@ -44,11 +45,10 @@ internal class ChannelZipContainer(
 
         override val source: Url? get() = Url(path)
 
-        override suspend fun name(): ResourceTry<String?> =
-            ResourceTry.success(File(path).name)
-
         override suspend fun properties(): ResourceTry<Resource.Properties> =
-            ResourceTry.success(Resource.Properties())
+            ResourceTry.success(Resource.Properties {
+                suggestedFilename = File(path).name
+            })
 
         // FIXME: Implement with a sniffer.
         override suspend fun mediaType(): ResourceTry<MediaType?> =
@@ -169,7 +169,9 @@ public class ChannelZipArchiveFactory : ArchiveFactory {
             val resourceChannel = ResourceChannel(resource)
             val channel = wrapBaseChannel(resourceChannel)
             val zipFile = ZipFile(channel, true)
-            val channelZip = ChannelZipContainer(zipFile, resource::name)
+            val channelZip = ChannelZipContainer(zipFile,
+                fetchName = resource::suggestedFilename
+            )
             Try.success(channelZip)
         } catch (e: Resource.Exception) {
             Try.failure(ArchiveFactory.Error.ResourceReading(e))

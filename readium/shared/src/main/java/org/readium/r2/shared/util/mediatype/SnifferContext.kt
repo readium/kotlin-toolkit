@@ -269,7 +269,7 @@ internal class UrlSnifferContextFactory(
                         mediaTypes = mediaTypes +
                             listOfNotNull(resource.mediaType().getOrNull()?.toString()),
                         fileExtensions = fileExtensions +
-                            listOfNotNull(resource.name().getOrNull()?.let { File(it).extension })
+                            listOfNotNull(resource.suggestedFilename().getOrNull()?.let { File(it).extension })
                     )
                 }
             )

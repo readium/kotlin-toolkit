@@ -40,11 +40,6 @@ public interface Resource : SuspendingCloseable {
     public suspend fun mediaType(): ResourceTry<MediaType?>
 
     /**
-     * Returns the name of the resource if any.
-     */
-    public suspend fun name(): ResourceTry<String?>
-
-    /**
      * Properties associated to the resource.
      *
      * This is opened for extensions.
@@ -53,7 +48,19 @@ public interface Resource : SuspendingCloseable {
 
     public class Properties(
         properties: Map<String, Any> = emptyMap()
-    ) : Map<String, Any> by properties
+    ) : Map<String, Any> by properties {
+
+        public companion object {
+            public inline operator fun invoke(build: Builder.() -> Unit): Properties =
+                Properties(Builder().apply(build))
+        }
+
+        public inline fun copy(build: Builder.() -> Unit): Properties =
+            Properties(Builder(this).apply(build))
+
+        public class Builder(properties: Map<String, Any> = emptyMap())
+            : MutableMap<String, Any> by properties.toMutableMap()
+    }
 
     /**
      * Returns data length from metadata if available, or calculated from reading the bytes otherwise.
@@ -133,6 +140,36 @@ public interface Resource : SuspendingCloseable {
     }
 }
 
+
+/**
+ * Filename suggested for this resource when stored on the disk.
+ */
+public suspend fun Resource.suggestedFilename(): ResourceTry<String?> =
+    properties().map {
+        it.suggestedFilename ?: source?.filename
+    }
+
+private const val suggestedFilenameKey = "suggestedFilename"
+
+/**
+ * Filename suggested for this resource when stored on the disk.
+ */
+public val Resource.Properties.suggestedFilename: String?
+    get() = this[suggestedFilenameKey] as? String
+
+/**
+ * Filename suggested for this resource when stored on the disk.
+ */
+public var Resource.Properties.Builder.suggestedFilename: String?
+    get() = this[suggestedFilenameKey] as? String
+    set(value) {
+        if (value != null) {
+            this[suggestedFilenameKey] = value
+        } else {
+            this.remove(suggestedFilenameKey)
+        }
+    }
+
 /** Creates a Resource that will always return the given [error]. */
 public class FailureResource(
     private val error: Resource.Exception
@@ -142,7 +179,6 @@ public class FailureResource(
 
     override val source: Url? = null
     override suspend fun mediaType(): ResourceTry<MediaType?> = Try.failure(error)
-    override suspend fun name(): ResourceTry<String?> = Try.failure(error)
     override suspend fun properties(): ResourceTry<Resource.Properties> = Try.failure(error)
     override suspend fun length(): ResourceTry<Long> = Try.failure(error)
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = Try.failure(error)

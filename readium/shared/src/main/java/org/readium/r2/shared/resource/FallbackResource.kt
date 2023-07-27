@@ -37,9 +37,6 @@ public class FallbackResource(
 
     override val source: Url? get() = originalResource.source
 
-    override suspend fun name(): ResourceTry<String?> =
-        resource.await().name()
-
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         resource.await().properties()
 

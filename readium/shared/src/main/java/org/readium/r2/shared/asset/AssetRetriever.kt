@@ -347,7 +347,7 @@ public class AssetRetriever(
                 )
             is ResourceSnifferContext ->
                 Asset.Resource(
-                    name = context.resource.name().getOrNull() ?: fallbackName,
+                    name = context.resource.suggestedFilename().getOrNull() ?: fallbackName,
                     mediaType = mediaType,
                     resource = context.resource
                 )

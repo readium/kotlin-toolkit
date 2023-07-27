@@ -29,9 +29,6 @@ public class LazyResource(
     override suspend fun mediaType(): ResourceTry<MediaType?> =
         resource().mediaType()
 
-    override suspend fun name(): ResourceTry<String?> =
-        resource().name()
-
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         resource().properties()
 

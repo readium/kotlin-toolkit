@@ -12,7 +12,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.archive.archive
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.layoutOf
@@ -20,6 +19,7 @@ import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.archive
 import org.readium.r2.shared.util.use
 
 /**
@@ -86,7 +86,7 @@ public class EpubPositionsService(
         public data class ArchiveEntryLength(val pageLength: Int) : ReflowableStrategy() {
             override suspend fun positionCount(resource: Resource): Int {
                 val length = resource.properties().getOrNull()
-                    ?.let { Properties(it).archive?.entryLength }
+                    ?.archive?.entryLength
                     ?: resource.length().getOrNull()
                     ?: 0
                 return ceil(length.toDouble() / pageLength.toDouble()).toInt()
@@ -132,7 +132,7 @@ public class EpubPositionsService(
         }
 
         // Calculates [totalProgression].
-        val totalPageCount = positions.map { it.size }.sum()
+        val totalPageCount = positions.sumOf { it.size }
         positions = positions.map { item ->
             item.map { locator ->
                 val position = locator.locations.position

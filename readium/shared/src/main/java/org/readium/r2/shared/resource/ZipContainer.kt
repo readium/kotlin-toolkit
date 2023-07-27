@@ -12,8 +12,12 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.addPrefix
+import org.readium.r2.shared.extensions.optNullableBoolean
+import org.readium.r2.shared.extensions.optNullableLong
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Url
@@ -34,6 +38,55 @@ public interface ZipContainer : Container {
     }
 }
 
+/**
+ * Holds information about how the resource is stored in the archive.
+ *
+ * @param entryLength The length of the entry stored in the archive. It might be a compressed length
+ *        if the entry is deflated.
+ * @param isEntryCompressed Indicates whether the entry was compressed before being stored in the
+ *        archive.
+ */
+public data class ArchiveProperties(
+    val entryLength: Long,
+    val isEntryCompressed: Boolean
+) : JSONable {
+
+    override fun toJSON(): JSONObject = JSONObject().apply {
+        put("entryLength", entryLength)
+        put("isEntryCompressed", isEntryCompressed)
+    }
+
+    public companion object {
+        public fun fromJSON(json: JSONObject?): ArchiveProperties? {
+            json ?: return null
+
+            val entryLength = json.optNullableLong("entryLength")
+            val isEntryCompressed = json.optNullableBoolean("isEntryCompressed")
+            if (entryLength == null || isEntryCompressed == null) {
+                return null
+            }
+            return ArchiveProperties(entryLength = entryLength, isEntryCompressed = isEntryCompressed)
+        }
+    }
+}
+
+private const val archiveKey = "archive"
+
+public val Resource.Properties.archive: ArchiveProperties?
+    get() = (this[archiveKey] as? Map<*, *>)
+        ?.let { ArchiveProperties.fromJSON(JSONObject(it)) }
+
+public var Resource.Properties.Builder.archive: ArchiveProperties?
+    get() = (this[archiveKey] as? Map<*, *>)
+        ?.let { ArchiveProperties.fromJSON(JSONObject(it)) }
+    set(value) {
+        if (value == null) {
+            remove(archiveKey)
+        } else {
+            put(archiveKey, value.toJSON())
+        }
+    }
+
 internal class JavaZipContainer(private val archive: ZipFile, source: File) : ZipContainer {
 
     private inner class FailureEntry(override val path: String) : ZipContainer.Entry {
@@ -45,9 +98,6 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         // FIXME: Implement with a sniffer.
         override suspend fun mediaType(): ResourceTry<MediaType?> =
             Try.success(null)
-
-        override suspend fun name(): ResourceTry<String?> =
-            Try.failure(Resource.Exception.NotFound())
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
             Try.failure(Resource.Exception.NotFound())
@@ -73,16 +123,15 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         override suspend fun mediaType(): ResourceTry<MediaType?> =
             Try.success(null)
 
-        override suspend fun name(): ResourceTry<String?> =
-            ResourceTry.success(File(path).name)
-
         override suspend fun properties(): ResourceTry<Resource.Properties> =
-            ResourceTry.success(Resource.Properties(mapOf(
-                "archive" to mapOf<String, Any>(
-                    "entryLength" to (compressedLength ?: length().getOrNull() ?: 0),
-                    "isEntryCompressed" to (compressedLength != null)
+            ResourceTry.success(Resource.Properties {
+                suggestedFilename = File(path).name
+
+                archive = ArchiveProperties(
+                    entryLength = (compressedLength ?: length().getOrNull() ?: 0),
+                    isEntryCompressed = (compressedLength != null)
                 )
-            )))
+            })
 
         override suspend fun length(): Try<Long, Resource.Exception> =
             entry.size.takeUnless { it == -1L }

@@ -24,9 +24,6 @@ public class SynchronizedResource(
 
     override val source: Url? get() = resource.source
 
-    override suspend fun name(): ResourceTry<String?> =
-        mutex.withLock { resource.name() }
-
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         mutex.withLock { resource.properties() }
 

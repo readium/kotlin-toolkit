@@ -21,9 +21,6 @@ public sealed class BaseBytesResource(
     protected val bytes: suspend () -> Try<ByteArray, Resource.Exception>
 ) : Resource {
 
-    override suspend fun name(): ResourceTry<String?> =
-        Try.success(null)
-
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         Try.success(properties)
 

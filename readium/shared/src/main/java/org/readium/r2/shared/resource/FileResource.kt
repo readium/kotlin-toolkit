@@ -41,11 +41,10 @@ public class FileResource internal constructor(
 
     override val source: Url? = Url("file://${file.canonicalPath}")
 
-    override suspend fun name(): ResourceTry<String?> =
-        ResourceTry.success(file.name)
-
     override suspend fun properties(): ResourceTry<Resource.Properties> =
-        ResourceTry.success(Resource.Properties())
+        ResourceTry.success(Resource.Properties {
+            suggestedFilename = file.name
+        })
 
     override suspend fun mediaType(): ResourceTry<MediaType?> =
         Try.success(mediaType ?: mediaTypeRetriever?.retrieve(file))
