@@ -8,7 +8,7 @@ package org.readium.r2.shared.util
 
 import android.net.Uri
 import android.net.UrlQuerySanitizer
-import android.webkit.URLUtil
+import java.io.File
 import java.net.IDN
 import java.net.URI
 import java.net.URL
@@ -49,12 +49,20 @@ public class Href(
             ?: href.indexOf("#").takeIf { it != -1 }
             ?: (href.lastIndex + 1)
 
-        val path = href.substring(0, splitIndex)
-        val suffix = href.substring(splitIndex)
-
         return try {
-            val uri = URI.create(baseHref.percentEncodedPath()).resolve(path.percentEncodedPath())
-            val url = (if (URLUtil.isNetworkUrl(uri.toString())) uri.toString() else uri.path.addPrefix("/")) + suffix
+            val baseUri = URI.create(baseHref.percentEncodedPath())
+            if (baseUri.scheme?.lowercase() == "file") {
+                return if (href.startsWith("/")) {
+                    "file://$href"
+                } else {
+                    "file://" + File(baseUri.path, href).canonicalPath
+                }
+            }
+
+            val path = href.substring(0, splitIndex)
+            val suffix = href.substring(splitIndex)
+            val uri = baseUri.resolve(path.percentEncodedPath())
+            val url = (if (uri.scheme != null) uri.toString() else uri.path.addPrefix("/")) + suffix
             return url.removePercentEncoding()
         } catch (e: Exception) {
             Timber.e(e)
@@ -69,14 +77,19 @@ public class Href(
      */
     public val percentEncodedString: String get() {
         var string = string
-        if (string.startsWith("/")) {
+        val hasScheme = !string.startsWith("/")
+        if (!hasScheme) {
             string = string.addPrefix("file://")
         }
 
         return try {
             val url = URL(string)
             val uri = URI(url.protocol, url.userInfo, IDN.toASCII(url.host), url.port, url.path, url.query, url.ref)
-            uri.toASCIIString().removePrefix("file://")
+            var result = uri.toASCIIString()
+            if (!hasScheme) {
+                result = result.removePrefix("file://")
+            }
+            return result
         } catch (e: Exception) {
             Timber.e(e)
             this.string
