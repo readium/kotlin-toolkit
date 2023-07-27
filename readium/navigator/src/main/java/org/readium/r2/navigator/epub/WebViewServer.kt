@@ -43,7 +43,7 @@ internal class WebViewServer(
         val assetsBaseHref = "https://readium/assets/"
 
         fun assetUrl(path: String): String =
-            Href(path, baseHref = assetsBaseHref).percentEncodedString
+            Href(path, baseHref = assetsBaseHref).absoluteHref(percentEncoded = true)
     }
 
     private val assetManager: AssetManager = application.assets

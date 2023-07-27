@@ -40,7 +40,7 @@ internal object SmilParser {
         val textref = node.getAttrNs("textref", Namespaces.OPS)
         val audioFiles = children.mapNotNull(MediaOverlayNode::audioFile)
         return if (textref != null && audioFiles.distinct().size == 1) { // hierarchy
-            val normalizedTextref = Href(textref, baseHref = filePath).string
+            val normalizedTextref = Href(textref, baseHref = filePath).absoluteHref()
             listOf(mediaOverlayFromChildren(normalizedTextref, children))
         } else children
     }
@@ -53,7 +53,10 @@ internal object SmilParser {
             val end = audioNode.getAttr("clipEnd")?.let { ClockValueParser.parse(it) } ?: ""
             "$src#t=$begin,$end"
         }
-        return MediaOverlayNode(Href(text, baseHref = filePath).string, Href(audio ?: "", baseHref = filePath).string)
+        return MediaOverlayNode(
+            Href(text, baseHref = filePath).absoluteHref(),
+            Href(audio ?: "", baseHref = filePath).absoluteHref()
+        )
     }
 
     private fun mediaOverlayFromChildren(text: String, children: List<MediaOverlayNode>): MediaOverlayNode {

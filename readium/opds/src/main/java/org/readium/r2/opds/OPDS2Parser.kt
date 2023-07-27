@@ -260,7 +260,12 @@ public class OPDS2Parser {
 
         private fun parseLink(feed: Feed, json: JSONObject): Link? {
             val baseUrl = feed.href.removeLastComponent()
-            return Link.fromJSON(json, normalizeHref = { Href(it, baseUrl.toString()).string })
+            return Link.fromJSON(json, normalizeHref = {
+                Href(
+                    it,
+                    baseUrl.toString()
+                ).absoluteHref()
+            })
         }
     }
 }

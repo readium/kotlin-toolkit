@@ -16,21 +16,39 @@ import org.readium.r2.shared.extensions.addPrefix
 import timber.log.Timber
 
 /**
- * Represents an HREF, optionally relative to another one.
+ * Represents an HREF, which can be relative to a [baseHref].
  *
- * This is used to normalize the string representation.
+ * @param href The HREF string, which can be absolute or relative.
+ * @param baseHref The base HREF to use when the [href] is relative.
  */
 public class Href(
-    private val href: String,
+    public val href: String,
     baseHref: String = "/"
 ) {
 
     public data class QueryParameter(val name: String, val value: String?)
 
-    private val baseHref = if (baseHref.isEmpty()) "/" else baseHref
+    public val baseHref: String = baseHref.ifBlank { "/" }
 
-    /** Returns the normalized string representation for this HREF. */
-    public val string: String get() {
+    @Deprecated("Use `absoluteHref` instead", ReplaceWith("absoluteHref()"), DeprecationLevel.ERROR)
+    public val string: String get() = absoluteHref()
+    @Deprecated("Use `absoluteHref(percentEncoded = true)` instead", ReplaceWith("absoluteHref(percentEncoded = true)"), DeprecationLevel.ERROR)
+    public val percentEncodedString: String get() = absoluteHref(percentEncoded = true)
+
+    /**
+     * Returns the normalized string representation for this HREF.
+     *
+     * @param percentEncoded Percent-encode the HREF for URL uses.
+     */
+    public fun absoluteHref(percentEncoded: Boolean = false): String {
+        var href = rawAbsoluteHref()
+        if (percentEncoded) {
+            href = percentEncode(href)
+        }
+        return href
+    }
+
+    private fun rawAbsoluteHref(): String {
         val baseHref = baseHref.removePercentEncoding()
         val href = href.removePercentEncoding()
 
@@ -71,12 +89,12 @@ public class Href(
     }
 
     /**
-     * Returns the normalized string representation for this HREF, encoded for URL uses.
+     * Returns the normalized string representation for [href], encoded for URL uses.
      *
      * Taken from https://stackoverflow.com/a/49796882/1474476
      */
-    public val percentEncodedString: String get() {
-        var string = string
+    private fun percentEncode(href: String): String {
+        var string = href
         val hasScheme = !string.startsWith("/")
         if (!hasScheme) {
             string = string.addPrefix("file://")
@@ -92,13 +110,13 @@ public class Href(
             return result
         } catch (e: Exception) {
             Timber.e(e)
-            this.string
+            href
         }
     }
 
     /** Returns the query parameters present in this HREF, in the order they appear. */
     public val queryParameters: List<QueryParameter> get() {
-        val url = percentEncodedString.substringBefore("#")
+        val url = absoluteHref(percentEncoded = true).substringBefore("#")
         return UrlQuerySanitizer(url).parameterList
             .map { p -> QueryParameter(name = p.mParameter, value = p.mValue.takeUnless { it.isBlank() }) }
     }
@@ -119,6 +137,9 @@ public class Href(
             // If the string contains invalid percent-encoded characters, assumes that it is already
             // percent-decoded. For example, if the string contains a standalone % character.
             .takeIf { !it.contains("\uFFFD") } ?: this
+
+    override fun toString(): String =
+        absoluteHref()
 }
 
 public fun List<Href.QueryParameter>.firstNamedOrNull(name: String): String? =

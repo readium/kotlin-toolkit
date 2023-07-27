@@ -338,7 +338,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
             .takeIf { it.isNotBlank() }
             ?: return false
 
-        val absoluteUrl = Href(href, baseHref = resourceUrl).percentEncodedString
+        val absoluteUrl = Href(href, baseHref = resourceUrl).absoluteHref(percentEncoded = true)
             .substringBefore("#")
 
         val aside = runBlocking {

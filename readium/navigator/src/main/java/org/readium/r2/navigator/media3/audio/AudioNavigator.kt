@@ -130,7 +130,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
     override val currentLocator: StateFlow<Locator> =
         audioEngine.playback.mapStateIn(coroutineScope) { playback ->
             val currentItem = readingOrder.items[playback.index]
-            val link = requireNotNull(publication.linkWithHref(currentItem.href.string))
+            val link = requireNotNull(publication.linkWithHref(currentItem.href.absoluteHref()))
             val item = readingOrder.items[playback.index]
             val itemStartPosition = readingOrder.items
                 .slice(0 until playback.index)
@@ -198,7 +198,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
         audioEngine.asPlayer()
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        val itemIndex = readingOrder.items.indexOfFirst { it.href.string == locator.href }
+        val itemIndex = readingOrder.items.indexOfFirst { it.href.absoluteHref() == locator.href }
             .takeUnless { it == -1 }
             ?: return false
         val position = locator.locations.time ?: Duration.ZERO

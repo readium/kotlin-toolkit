@@ -97,7 +97,7 @@ public fun parseLink(linkDict: JSONObject, feedUrl: URL? = null): Link =
         if (feedUrl == null) {
             it
         } else {
-            Href(it, baseHref = feedUrl.toString()).string
+            Href(it, baseHref = feedUrl.toString()).absoluteHref()
         }
     }) ?: Link(href = "#")
 
@@ -106,4 +106,4 @@ public fun URL.removeLastComponent(): URL = removeLastComponent()
 
 @Deprecated("Use `Href().string` instead", replaceWith = ReplaceWith("Href(href, base).string"), level = DeprecationLevel.ERROR)
 public fun normalize(base: String, href: String?): String =
-    Href(href ?: "", baseHref = base).string
+    Href(href ?: "", baseHref = base).absoluteHref()

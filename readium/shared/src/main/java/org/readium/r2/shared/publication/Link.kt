@@ -104,7 +104,7 @@ public data class Link(
             return null
         }
 
-        return Href(href, baseHref = baseUrl ?: "/").percentEncodedString
+        return Href(href, baseHref = baseUrl ?: "/").absoluteHref(percentEncoded = true)
     }
 
     /**

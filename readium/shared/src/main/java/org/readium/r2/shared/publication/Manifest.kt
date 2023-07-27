@@ -171,7 +171,7 @@ public data class Manifest(
                         ?.toString()
                         ?: "/"
 
-            val normalizeHref = { href: String -> Href(href, baseUrl).string }
+            val normalizeHref = { href: String -> Href(href, baseUrl).absoluteHref() }
 
             val context = json.optStringsFromArrayOrSingle("@context", remove = true)
 

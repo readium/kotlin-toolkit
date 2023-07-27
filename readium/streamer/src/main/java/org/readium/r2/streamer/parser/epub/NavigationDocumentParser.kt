@@ -46,7 +46,10 @@ internal object NavigationDocumentParser {
         val first = element.getAll().firstOrNull() ?: return null // should be <a>,  <span>, or <ol>
         val title = if (first.name == "ol") "" else first.collectText().replace("\\s+".toRegex(), " ").trim()
         val rawHref = first.getAttr("href")
-        val href = if (first.name == "a" && !rawHref.isNullOrBlank()) Href(rawHref, baseHref = filePath).string else "#"
+        val href = if (first.name == "a" && !rawHref.isNullOrBlank()) Href(
+            rawHref,
+            baseHref = filePath
+        ).absoluteHref() else "#"
         val children = element.getFirst("ol", Namespaces.XHTML)?.let { parseOlElement(it, filePath) }.orEmpty()
 
         return if (children.isEmpty() && (href == "#" || title == "")) {
