@@ -88,23 +88,8 @@ class CatalogFragment : Fragment() {
 
         (activity as MainActivity).supportActionBar?.title = catalog.title
 
-        // FIXME opening a catalog, then opening a different catalog does not transition well
         catalogViewModel.parseCatalog(catalog)
-        catalogViewModel.parseData.observe(viewLifecycleOwner) { result ->
-
-            facets = result.feed?.facets ?: mutableListOf()
-
-            if (facets.size > 0) {
-                showFacetMenu = true
-            }
-            requireActivity().invalidateOptionsMenu()
-
-            navigationAdapter.submitList(result.feed!!.navigation)
-            publicationAdapter.submitList(result.feed!!.publications)
-            groupAdapter.submitList(result.feed!!.groups)
-
-            binding.catalogProgressBar.visibility = View.GONE
-        }
+        binding.catalogProgressBar.visibility = View.VISIBLE
 
         val menuHost: MenuHost = requireActivity()
 
@@ -145,15 +130,28 @@ class CatalogFragment : Fragment() {
     }
 
     private fun handleEvent(event: CatalogViewModel.Event.FeedEvent) {
-        val message =
-            when (event) {
-                is CatalogViewModel.Event.FeedEvent.CatalogParseFailed -> getString(R.string.failed_parsing_catalog)
+        when (event) {
+            is CatalogViewModel.Event.FeedEvent.CatalogParseFailed -> {
+                Snackbar.make(
+                    requireView(),
+                    getString(R.string.failed_parsing_catalog),
+                    Snackbar.LENGTH_LONG
+                ).show()
             }
+
+            is CatalogViewModel.Event.FeedEvent.CatalogParseSuccess -> {
+                facets = event.result.feed?.facets ?: mutableListOf()
+
+                if (facets.size > 0) {
+                    showFacetMenu = true
+                }
+                requireActivity().invalidateOptionsMenu()
+
+                navigationAdapter.submitList(event.result.feed!!.navigation)
+                publicationAdapter.submitList(event.result.feed!!.publications)
+                groupAdapter.submitList(event.result.feed!!.groups)
+            }
+        }
         binding.catalogProgressBar.visibility = View.GONE
-        Snackbar.make(
-            requireView(),
-            message,
-            Snackbar.LENGTH_LONG
-        ).show()
     }
 }
