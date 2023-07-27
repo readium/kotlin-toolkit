@@ -8,14 +8,15 @@ package org.readium.r2.shared.resource
 
 import java.io.File
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Wraps a [Resource] which will be created only when first accessing one of its members.
  */
 public class LazyResource(
-    override val key: String?,
-    private val factory: suspend () -> Resource,
+    override val href: Href?,
+    private val factory: suspend () -> Resource
 ) : Resource {
 
     private lateinit var _resource: Resource
@@ -59,4 +60,4 @@ public class LazyResource(
 }
 
 public fun Resource.flatMap(transform: suspend (Resource) -> Resource): Resource =
-    LazyResource(key = key) { transform(this) }
+    LazyResource(href = href) { transform(this) }

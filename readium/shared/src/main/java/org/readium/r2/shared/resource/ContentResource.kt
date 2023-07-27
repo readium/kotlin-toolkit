@@ -21,6 +21,7 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUri
@@ -53,7 +54,7 @@ public class ContentResource(
 
     private lateinit var _length: ResourceTry<Long>
 
-    override val key: String = uri.toString()
+    override val href: Href = Href(uri.toString())
 
     override suspend fun name(): ResourceTry<String?> {
         val cursor = contentResolver

@@ -68,7 +68,7 @@ internal fun Resource.injectHtml(
 
         val headEndIndex = content.indexOf("</head>", 0, true)
         if (headEndIndex == -1) {
-            Timber.e("</head> closing tag not found in resource with key: ${key ?: "null"}")
+            Timber.e("</head> closing tag not found in resource with href: ${href ?: "null"}")
         } else {
             content = StringBuilder(content)
                 .insert(headEndIndex, "\n" + injectables.joinToString("\n") + "\n")

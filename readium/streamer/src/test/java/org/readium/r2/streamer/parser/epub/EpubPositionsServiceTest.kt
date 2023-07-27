@@ -24,6 +24,7 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -479,7 +480,7 @@ class EpubPositionsServiceTest {
             override suspend fun links(): List<Link> = emptyList()
 
             override fun get(link: Link): Resource = object : Resource {
-                override val key: String = link.href
+                override val href: Href = Href(link.href)
                 override suspend fun mediaType(): ResourceTry<MediaType?> = Try.success(link.mediaType)
                 override suspend fun name(): ResourceTry<String?> = Try.success(null)
                 override suspend fun properties(): ResourceTry<Properties> = Try.success(Properties())

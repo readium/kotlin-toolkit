@@ -15,6 +15,7 @@ import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.resource.*
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArchiveEntry
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipFile
 import org.readium.r2.shared.util.archive.channel.jvm.SeekableByteChannel
@@ -35,8 +36,9 @@ internal class ChannelZipContainer(
 
     private inner class Entry(private val entry: ZipArchiveEntry) : ZipContainer.Entry {
 
-        override val path: String get() = entry.name.addPrefix("/")
-        override val key: String = path
+        override val path: String = entry.name.addPrefix("/")
+
+        override val href: Href = Href(path)
 
         override suspend fun name(): ResourceTry<String?> =
             ResourceTry.success(File(path).name)

@@ -21,6 +21,7 @@ import org.readium.r2.shared.resource.BytesResource
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.LazyResource
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.Href
 
 /**
  * Provides an easy access to a bitmap version of the publication cover.
@@ -102,7 +103,7 @@ public abstract class GeneratedCoverService : CoverService {
         if (link.href != coverLink.href)
             return null
 
-        return LazyResource(key = link.href) {
+        return LazyResource(href = Href(link.href)) {
             val cover = cover()
             val png = cover.toPng()
 

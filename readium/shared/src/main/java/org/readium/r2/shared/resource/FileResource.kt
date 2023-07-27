@@ -18,6 +18,7 @@ import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.isLazyInitialized
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -41,7 +42,7 @@ public class FileResource internal constructor(
         }
     }
 
-    override val key: String = file.absolutePath
+    override val href: Href = Href("file://${file.canonicalPath}")
 
     override suspend fun name(): ResourceTry<String?> =
         ResourceTry.success(file.name)

@@ -22,11 +22,11 @@ public fun interface ResourceFactory {
     public sealed class Error : org.readium.r2.shared.error.Error {
 
         public class SchemeNotSupported(
-            public val scheme: String,
+            public val scheme: String?,
             override val cause: org.readium.r2.shared.error.Error? = null
         ) : Error() {
 
-            public constructor(scheme: String, exception: Exception) : this(scheme, ThrowableError(exception))
+            public constructor(scheme: String?, exception: Exception) : this(scheme, ThrowableError(exception))
 
             override val message: String =
                 "Url scheme $scheme is not supported."
@@ -68,11 +68,11 @@ public fun interface ContainerFactory {
     public sealed class Error : org.readium.r2.shared.error.Error {
 
         public class SchemeNotSupported(
-            public val scheme: String,
+            public val scheme: String?,
             override val cause: org.readium.r2.shared.error.Error? = null
         ) : Error() {
 
-            public constructor(scheme: String, exception: Exception) : this(scheme, ThrowableError(exception))
+            public constructor(scheme: String?, exception: Exception) : this(scheme, ThrowableError(exception))
 
             override val message: String =
                 "Url scheme $scheme is not supported."

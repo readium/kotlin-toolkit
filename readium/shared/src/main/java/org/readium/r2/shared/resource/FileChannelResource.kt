@@ -18,10 +18,11 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.mediatype.MediaType
 
 internal class FileChannelResource(
-    override val key: String?,
+    override val href: Href?,
     private val file: File?,
     private val channel: FileChannel
 ) : Resource {

@@ -20,6 +20,7 @@ import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -31,9 +32,9 @@ public typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Exception>
 public interface Resource : SuspendingCloseable {
 
     /**
-     * Returns a unique identifier for this resource, relative to its parent [Container].
+     * HREF locating this resource, if any.
      */
-    public val key: String?
+    public val href: Href?
 
     /**
      * Returns the resource media type if known.
@@ -142,12 +143,12 @@ public interface Resource : SuspendingCloseable {
 
 /** Creates a Resource that will always return the given [error]. */
 public class FailureResource(
-    private val error: Resource.Exception,
-    override val key: String? = null
+    private val error: Resource.Exception
 ) : Resource {
 
     internal constructor(cause: Throwable) : this(Resource.Exception.wrap(cause))
 
+    override val href: Href? = null
     override suspend fun mediaType(): ResourceTry<MediaType?> = Try.failure(error)
     override suspend fun name(): ResourceTry<String?> = Try.failure(error)
     override suspend fun properties(): ResourceTry<Properties> = Try.failure(error)

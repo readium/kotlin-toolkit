@@ -11,6 +11,7 @@ import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -21,7 +22,7 @@ public class HttpResource(
     private val maxSkipBytes: Long = MAX_SKIP_BYTES
 ) : Resource {
 
-    override val key: String = url
+    override val href: Href = Href(url)
 
     override suspend fun name(): ResourceTry<String?> =
         headResponse().map { r ->

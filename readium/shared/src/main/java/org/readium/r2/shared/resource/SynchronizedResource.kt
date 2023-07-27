@@ -10,6 +10,7 @@ import java.io.File
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -23,7 +24,7 @@ public class SynchronizedResource(
 
     private val mutex = Mutex()
 
-    override val key: String? get() = resource.key
+    override val href: Href? get() = resource.href
 
     override suspend fun name(): ResourceTry<String?> =
         mutex.withLock { resource.name() }

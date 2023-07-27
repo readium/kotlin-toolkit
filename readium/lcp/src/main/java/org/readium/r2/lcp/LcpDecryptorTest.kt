@@ -132,13 +132,13 @@ internal suspend fun Resource.readByChunks(
         blocks.forEach {
             Timber.d("block index ${it.first}: ${it.second}")
             val decryptedBytes = read(it.second).getOrElse { error ->
-                throw IllegalStateException("unable to decrypt chunk ${it.second} from ${key ?: "null"}", error)
+                throw IllegalStateException("unable to decrypt chunk ${it.second} from ${href ?: "null"}", error)
             }
             check(decryptedBytes.isNotEmpty()) { "empty decrypted bytearray" }
             check(decryptedBytes.contentEquals(groundTruth.sliceArray(it.second.map(Long::toInt)))) {
                 Timber.d("decrypted length: ${decryptedBytes.size}")
                 Timber.d("expected length: ${groundTruth.sliceArray(it.second.map(Long::toInt)).size}")
-                "decrypted chunk ${it.first}: ${it.second} seems to be wrong in ${key ?: "null"}"
+                "decrypted chunk ${it.first}: ${it.second} seems to be wrong in ${href ?: "null"}"
             }
             Pair(it.first, decryptedBytes)
         }

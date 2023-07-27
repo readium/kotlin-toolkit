@@ -17,6 +17,7 @@ import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -40,7 +41,7 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
 
         override val compressedLength: Long? = null
 
-        override val key: String = path
+        override val href: Href = Href(path)
 
         // FIXME: Implement with a sniffer.
         override suspend fun mediaType(): ResourceTry<MediaType?> =
@@ -70,7 +71,7 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         override val path: String =
             entry.name.addPrefix("/")
 
-        override val key: String = path
+        override val href: Href = Href(path)
 
         // FIXME: Implement with a sniffer.
         override suspend fun mediaType(): ResourceTry<MediaType?> =

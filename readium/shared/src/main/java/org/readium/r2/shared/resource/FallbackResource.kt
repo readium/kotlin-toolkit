@@ -15,6 +15,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -36,7 +37,7 @@ public class FallbackResource(
             }
         }
 
-    override val key: String? get() = originalResource.key
+    override val href: Href? get() = originalResource.href
 
     override suspend fun name(): ResourceTry<String?> =
         resource.await().name()

@@ -13,10 +13,11 @@ import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.mediatype.MediaType
 
 public sealed class BaseBytesResource(
-    override val key: String?,
+    override val href: Href?,
     private val mediaType: MediaType?,
     private val properties: Properties,
     protected val bytes: suspend () -> Try<ByteArray, Resource.Exception>
@@ -63,25 +64,25 @@ public sealed class BaseBytesResource(
 
 /** Creates a Resource serving a [ByteArray]. */
 public class BytesResource(
-    key: String? = null,
+    href: Href? = null,
     mediaType: MediaType? = null,
     properties: Properties = Properties(),
     bytes: suspend () -> ResourceTry<ByteArray>
-) : BaseBytesResource(key = key, mediaType = mediaType, properties = properties, bytes = bytes) {
+) : BaseBytesResource(href = href, mediaType = mediaType, properties = properties, bytes = bytes) {
 
     public constructor(
         bytes: ByteArray,
-        key: String? = null,
+        href: Href? = null,
         mediaType: MediaType? = null,
         properties: Properties = Properties()
     ) :
-        this(key = key, mediaType = mediaType, properties = properties, { Try.success(bytes) })
+        this(href = href, mediaType = mediaType, properties = properties, { Try.success(bytes) })
 
     public constructor(bytes: ByteArray, link: Link)
-        : this(bytes = bytes, key = link.href, mediaType = link.mediaType, properties = link.properties)
+        : this(bytes = bytes, href = Href(link.href), mediaType = link.mediaType, properties = link.properties)
 
     public constructor(link: Link, bytes: suspend () -> ResourceTry<ByteArray>)
-        : this(key = link.href, mediaType = link.mediaType, properties = link.properties, bytes = bytes)
+        : this(href = Href(link.href), mediaType = link.mediaType, properties = link.properties, bytes = bytes)
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { length() }} bytes)"
@@ -89,25 +90,25 @@ public class BytesResource(
 
 /** Creates a Resource serving a [String]. */
 public class StringResource(
-    key: String? = null,
+    href: Href? = null,
     mediaType: MediaType? = null,
     properties: Properties = Properties(),
     string: suspend () -> ResourceTry<String>
-) : BaseBytesResource(key = key, mediaType = mediaType, properties = properties, { string().map { it.toByteArray() } }) {
+) : BaseBytesResource(href = href, mediaType = mediaType, properties = properties, { string().map { it.toByteArray() } }) {
 
     public constructor(
         string: String,
-        key: String? = null,
+        href: Href? = null,
         mediaType: MediaType? = null,
         properties: Properties = Properties()
     ) :
-        this(key = key, mediaType = mediaType, properties = properties, { Try.success(string) })
+        this(href = href, mediaType = mediaType, properties = properties, { Try.success(string) })
 
     public constructor(string: String, link: Link)
-        : this(string = string, key = link.href, mediaType = link.mediaType, properties = link.properties)
+        : this(string = string, href = Href(link.href), mediaType = link.mediaType, properties = link.properties)
 
     public constructor(link: Link, string: suspend () -> ResourceTry<String>)
-        : this(key = link.href, mediaType = link.mediaType, properties = link.properties, string = string)
+        : this(href = Href(link.href), mediaType = link.mediaType, properties = link.properties, string = string)
 
     override fun toString(): String =
         "${javaClass.simpleName}(${runBlocking { readAsString() }})"

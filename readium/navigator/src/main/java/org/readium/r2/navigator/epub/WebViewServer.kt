@@ -116,7 +116,7 @@ internal class WebViewServer(
     }
 
     private fun errorResource(link: Link, error: Resource.Exception): Resource =
-        StringResource(MediaType.XHTML.toString()) {
+        StringResource(mediaType = MediaType.XHTML) {
             withContext(Dispatchers.IO) {
                 Try.success(
                     assetManager

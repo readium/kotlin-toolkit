@@ -166,7 +166,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
                     }
 
                     val bytes = license.decrypt(encryptedData)
-                        .getOrElse { throw IOException("Can't decrypt the content for resource with key: ${resource.key ?: "null"}", it) }
+                        .getOrElse { throw IOException("Can't decrypt the content for resource with key: ${resource.href ?: "null"}", it) }
 
                     // exclude the bytes added to match a multiple of AES_BLOCK_SIZE
                     val sliceStart = (range.first - encryptedStart).toInt()
