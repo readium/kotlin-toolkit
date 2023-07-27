@@ -1,5 +1,7 @@
 [versions]
 
+accompanist = "0.30.1"
+
 androidx-activity = "1.7.2"
 androidx-appcompat = "1.6.1"
 androidx-browser = "1.5.0"
@@ -10,7 +12,6 @@ androidx-compose-foundation = "1.4.3"
 androidx-compose-material = "1.4.3"
 androidx-compose-material3 = "1.1.1"
 androidx-compose-runtime = "1.4.3"
-androidx-compose-theme-adapter = "1.1.19"
 androidx-compose-ui = "1.4.3"
 androidx-constraintlayout = "2.1.4"
 androidx-core = "1.10.1"
@@ -57,6 +58,8 @@ robolectric = "4.10.3"
 timber = "5.0.1"
 
 [libraries]
+accompanist-themeadapter-material = { group = "com.google.accompanist", name = "accompanist-themeadapter-material", version.ref = "accompanist" }
+
 androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "androidx-activity" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidx-appcompat" }
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "androidx-browser" }
@@ -67,7 +70,6 @@ androidx-compose-foundation = { group = "androidx.compose.foundation", name = "f
 androidx-compose-material = { group = "androidx.compose.material", name = "material", version.ref = "androidx-compose-material" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "androidx-compose-material3" }
 androidx-compose-material-icons = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "androidx-compose-material" }
-androidx-compose-theme-adapter = { group ="com.google.android.material", name = "compose-theme-adapter", version.ref = "androidx-compose-theme-adapter" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "androidx-compose-ui" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "androidx-compose-ui" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "androidx-constraintlayout" }
@@ -137,7 +139,7 @@ timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "tim
 
 
 [bundles]
-compose = ["androidx-compose-activity", "androidx-compose-animation", "androidx-compose-foundation", "androidx-compose-material", "androidx-compose-material3", "androidx-compose-material-icons", "androidx-compose-theme-adapter", "androidx-compose-ui", "androidx-compose-ui-tooling"]
+compose = ["androidx-compose-activity", "androidx-compose-animation", "androidx-compose-foundation", "androidx-compose-material", "androidx-compose-material3", "androidx-compose-material-icons", "androidx-compose-ui", "androidx-compose-ui-tooling"]
 coroutines = ["kotlinx-coroutines-core", "kotlinx-coroutines-android"]
 exoplayer = ["google-exoplayer-core", "google-exoplayer-ui", "google-exoplayer-mediasession", "google-exoplayer-workmanager", "google-exoplayer-extension-media2"]
 lifecycle = ["androidx-lifecycle-common", "androidx-lifecycle-extensions", "androidx-lifecycle-livedata", "androidx-lifecycle-runtime", "androidx-lifecycle-viewmodel", "androidx-lifecycle-vmsavedstate", "androidx-lifecycle-viewmodel-compose"]
