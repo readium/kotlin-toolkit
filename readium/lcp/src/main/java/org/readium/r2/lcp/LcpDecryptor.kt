@@ -11,16 +11,13 @@ package org.readium.r2.lcp
 
 import java.io.IOException
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.fetcher.*
-import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.encryption.Encryption
-import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
@@ -33,21 +30,25 @@ import org.readium.r2.shared.util.Url
 /**
  * Decrypts a resource protected with LCP.
  */
-internal class LcpDecryptor(val license: LcpLicense?) {
+internal class LcpDecryptor(
+    val license: LcpLicense?,
+    var retrieveEncryption: (Url) -> Encryption? = { null }
+) {
 
     fun transform(resource: Resource): Resource =
         resource.flatMap {
+            val encryption = resource.source?.let(retrieveEncryption)
+
             // Checks if the resource is encrypted and whether the encryption schemes of the resource
             // and the DRM license are the same.
-            val encryption = it.properties().getOrNull()?.let { Properties(it).encryption }
             if (encryption == null || encryption.scheme != "http://readium.org/2014/01/lcp") {
                 return@flatMap resource
             }
 
             when {
                 license == null -> FailureResource(Resource.Exception.Forbidden())
-                encryption.isDeflated || !encryption.isCbcEncrypted -> FullLcpResource(resource, license)
-                else -> CbcLcpResource(resource, license)
+                encryption.isDeflated || !encryption.isCbcEncrypted -> FullLcpResource(resource, encryption, license)
+                else -> CbcLcpResource(resource, encryption, license)
             }
         }
 
@@ -58,24 +59,17 @@ internal class LcpDecryptor(val license: LcpLicense?) {
      * resource, for example when the resource is deflated before encryption.
      */
     private class FullLcpResource(
-        private val resource: Resource,
+        resource: Resource,
+        private val encryption: Encryption,
         private val license: LcpLicense
     ) : TransformingResource(resource) {
 
-        private suspend fun encryption(): ResourceTry<Encryption?> =
-            resource.properties().map { Properties(it).encryption }
-
         override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
-            encryption()
-                .flatMap { enc ->
-                    license.decryptFully(data, enc?.isDeflated ?: false)
-                }
+            license.decryptFully(data, encryption.isDeflated)
 
         override suspend fun length(): ResourceTry<Long> =
-            encryption().flatMap {
-                it?.originalLength?.let { Try.success(it) }
-                    ?: super.length()
-            }
+            encryption.originalLength?.let { Try.success(it) }
+                ?: super.length()
     }
 
     /**
@@ -85,6 +79,7 @@ internal class LcpDecryptor(val license: LcpLicense?) {
      */
     private class CbcLcpResource(
         private val resource: Resource,
+        private val encryption: Encryption,
         private val license: LcpLicense
     ) : Resource by resource {
 
@@ -108,18 +103,13 @@ internal class LcpDecryptor(val license: LcpLicense?) {
         */
         private val _cache: Cache = Cache()
 
-        private suspend fun encryption(): ResourceTry<Encryption?> =
-            resource.properties().map { Properties(it).encryption }
-
         /** Plain text size. */
         override suspend fun length(): ResourceTry<Long> {
             if (::_length.isInitialized)
                 return _length
 
-            _length = encryption().flatMap {
-                it?.originalLength?.let { Try.success(it) }
-                    ?: lengthFromPadding()
-            }
+            _length = encryption.originalLength?.let { Try.success(it) }
+                ?: lengthFromPadding()
 
             return _length
         }

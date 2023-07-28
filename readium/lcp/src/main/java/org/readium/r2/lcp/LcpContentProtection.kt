@@ -15,6 +15,7 @@ import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.fetcher.ContainerFetcher
 import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.resource.ArchiveFactory
@@ -88,15 +89,22 @@ internal class LcpContentProtection(
         val serviceFactory = LcpContentProtectionService
             .createFactory(license.getOrNull(), license.failureOrNull())
 
+        val decryptor = LcpDecryptor(license.getOrNull())
+
         val fetcher = TransformingFetcher(
             ContainerFetcher(asset.container, mediaTypeRetriever),
-            LcpDecryptor(license.getOrNull())::transform
+            decryptor::transform
         )
 
         val protectedFile = ContentProtection.Asset(
             mediaType = asset.mediaType,
             fetcher = fetcher,
             onCreatePublication = {
+                decryptor.retrieveEncryption = { url ->
+                    manifest.linkWithHref(url.toString())
+                        ?.properties?.encryption
+                }
+
                 servicesBuilder.contentProtectionServiceFactory = serviceFactory
             }
         )
