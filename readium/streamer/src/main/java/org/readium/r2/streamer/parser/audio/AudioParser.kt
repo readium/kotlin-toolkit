@@ -54,12 +54,10 @@ public class AudioParser : PublicationParser {
             )
         }
 
-        val title = asset.fetcher.guessTitle() ?: asset.name
-
         val manifest = Manifest(
             metadata = Metadata(
                 conformsTo = setOf(Publication.Profile.AUDIOBOOK),
-                localizedTitle = LocalizedString(title)
+                localizedTitle = asset.fetcher.guessTitle()?.let { LocalizedString(it) }
             ),
             readingOrder = readingOrder
         )

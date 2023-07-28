@@ -33,7 +33,7 @@ public data class Metadata(
     val identifier: String? = null, // URI
     val type: String? = null, // URI (@type)
     val conformsTo: Set<Publication.Profile> = emptySet(),
-    val localizedTitle: LocalizedString,
+    val localizedTitle: LocalizedString? = null,
     val localizedSubtitle: LocalizedString? = null,
     val localizedSortAs: LocalizedString? = null,
     val modified: Date? = null,
@@ -66,7 +66,7 @@ public data class Metadata(
         identifier: String? = null, // URI
         type: String? = null, // URI (@type)
         conformsTo: Set<Publication.Profile> = emptySet(),
-        localizedTitle: LocalizedString,
+        localizedTitle: LocalizedString? = null,
         localizedSubtitle: LocalizedString? = null,
         localizedSortAs: LocalizedString? = null,
         modified: Date? = null,
@@ -141,7 +141,7 @@ public data class Metadata(
     /**
      * Returns the default translation string for the [localizedTitle].
      */
-    val title: String get() = localizedTitle.string
+    val title: String? get() = localizedTitle?.string
 
     /**
      * Returns the default translation string for the [localizedSortAs].
@@ -248,17 +248,12 @@ public data class Metadata(
             warnings: WarningLogger? = null
         ): Metadata? {
             json ?: return null
-            val localizedTitle = LocalizedString.fromJSON(json.remove("title"), warnings)
-            if (localizedTitle == null) {
-                warnings?.log(Metadata::class.java, "[title] is required", json)
-                return null
-            }
-
             val identifier = json.remove("identifier") as? String
             val type = json.remove("@type") as? String
             val conformsTo = json.optStringsFromArrayOrSingle("conformsTo", remove = true)
                 .map { Publication.Profile(it) }
                 .toSet()
+            val localizedTitle = LocalizedString.fromJSON(json.remove("title"), warnings)
             val localizedSubtitle = LocalizedString.fromJSON(json.remove("subtitle"), warnings)
             val modified = (json.remove("modified") as? String)?.iso8601ToDate()
             val published = (json.remove("published") as? String)?.iso8601ToDate()
@@ -342,7 +337,7 @@ public data class Metadata(
 
     @Deprecated("Use [localizedTitle.get] instead", ReplaceWith("localizedTitle.translationForLanguage(key)?.string"), level = DeprecationLevel.ERROR)
     public fun titleForLang(key: String): String? =
-        localizedTitle.getOrFallback(key)?.string
+        localizedTitle?.getOrFallback(key)?.string
 
     @Deprecated("Use [readingProgression] instead.", ReplaceWith("readingProgression"), level = DeprecationLevel.ERROR)
     val direction: String

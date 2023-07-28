@@ -53,7 +53,6 @@ public class EpubParser(
             ?: return Try.failure(PublicationParser.Error.ParsingFailed("Invalid OPF file."))
 
         val manifest = ManifestAdapter(
-            fallbackTitle = asset.name,
             packageDocument = packageDocument,
             navigationData = parseNavigationData(packageDocument, asset.fetcher),
             encryptionData = parseEncryptionData(asset.fetcher),

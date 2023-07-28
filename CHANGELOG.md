@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file. Take a look
 ### Changed
 
 * Readium resources are now prefixed with `readium_`. Take care of updating any overridden resource by following [the migration guide](docs/migration-guide.md#300).
+* `Publication.localizedTitle` is nullable, as we cannot guarantee that all publication sources offer a title.
 
 #### Navigator
 

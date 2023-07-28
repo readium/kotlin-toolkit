@@ -49,7 +49,7 @@ public fun Intent.getPublication(activity: Activity?): Publication {
     if (publication == null) {
         activity?.finish()
         // Fallbacks on a dummy Publication to avoid crashing the app until the Activity finishes.
-        val metadata = Metadata(identifier = "dummy", localizedTitle = LocalizedString(""))
+        val metadata = Metadata(identifier = "dummy")
         return Publication(Manifest(metadata = metadata))
     }
 

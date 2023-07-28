@@ -18,7 +18,6 @@ import org.readium.r2.shared.publication.encryption.Encryption
  *        See https://github.com/readium/architecture/blob/master/streamer/parser/metadata.md#epub-2x-9
  */
 internal class ManifestAdapter(
-    private val fallbackTitle: String,
     private val packageDocument: PackageDocument,
     private val navigationData: Map<String, List<Link>> = emptyMap(),
     private val encryptionData: Map<String, Encryption> = emptyMap(),
@@ -31,7 +30,6 @@ internal class ManifestAdapter(
         // Compute metadata
         val metadata = MetadataAdapter(
             epubVersion,
-            fallbackTitle,
             packageDocument.uniqueIdentifierId,
             spine.direction,
             displayOptions

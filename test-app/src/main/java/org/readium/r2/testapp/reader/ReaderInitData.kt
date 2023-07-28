@@ -79,7 +79,7 @@ class DummyReaderInitData(
 ) : ReaderInitData() {
     override val publication: Publication = Publication(
         Manifest(
-            metadata = Metadata(identifier = "dummy", localizedTitle = LocalizedString(""))
+            metadata = Metadata(identifier = "dummy")
         )
     )
 }

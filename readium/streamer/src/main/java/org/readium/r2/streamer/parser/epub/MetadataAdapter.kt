@@ -14,7 +14,6 @@ import org.readium.r2.shared.publication.presentation.Presentation
 
 internal class MetadataAdapter(
     private val epubVersion: Double,
-    private val fallbackTitle: String,
     private val uniqueIdentifierId: String?,
     private val readingProgression: ReadingProgression?,
     private val displayOptions: Map<String, String>
@@ -65,7 +64,7 @@ internal class MetadataAdapter(
             ?.value
 
         val (localizedTitle, localizedSortAs, localizedSubtitle) = globalItemsHolder
-            .adapt(TitleAdapter(fallbackTitle)::adapt)
+            .adapt(TitleAdapter()::adapt)
 
         val (belongsToCollections, belongsToSeries) = globalItemsHolder
             .adapt(CollectionAdapter()::adapt)
@@ -187,10 +186,10 @@ private class LanguageAdapter {
         .mapFirst { it.map(MetadataItem.Meta::value) }
 }
 
-private class TitleAdapter(private val fallbackTitle: String) {
+private class TitleAdapter() {
 
     data class Result(
-        val localizedTitle: LocalizedString,
+        val localizedTitle: LocalizedString?,
         val localizedSortAs: LocalizedString?,
         val localizedSubtitle: LocalizedString?
     )
@@ -205,7 +204,6 @@ private class TitleAdapter(private val fallbackTitle: String) {
         val mainTitleItem = mainTitleWithItem?.second
 
         val localizedTitle = mainTitle?.value
-            ?: LocalizedString(fallbackTitle)
         val localizedSortAs = mainTitle?.fileAs
             ?: items.firstWithProperty("calibre:title_sort")
                 ?.let { LocalizedString(it.value) }
@@ -221,7 +219,11 @@ private class TitleAdapter(private val fallbackTitle: String) {
             .removeFirstOrNull { it == mainTitleItem }.second
             .removeFirstOrNull { it == subtitleItem }.second
 
-        return Result(localizedTitle, localizedSortAs, localizedSubtitle) to remainingItems
+        return Result(
+            localizedTitle = localizedTitle,
+            localizedSortAs = localizedSortAs,
+            localizedSubtitle = localizedSubtitle
+        ) to remainingItems
     }
 }
 

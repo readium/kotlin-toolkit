@@ -50,15 +50,13 @@ public class ImageParser : PublicationParser {
             )
         }
 
-        val title = asset.fetcher.guessTitle() ?: asset.name
-
         // First valid resource is the cover.
         readingOrder[0] = readingOrder[0].copy(rels = setOf("cover"))
 
         val manifest = Manifest(
             metadata = Metadata(
                 conformsTo = setOf(Publication.Profile.DIVINA),
-                localizedTitle = LocalizedString(title)
+                localizedTitle = asset.fetcher.guessTitle()?.let { LocalizedString(it) }
             ),
             readingOrder = readingOrder
         )
