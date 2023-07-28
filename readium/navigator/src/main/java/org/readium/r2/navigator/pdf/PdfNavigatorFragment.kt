@@ -174,7 +174,7 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
     }
 
     private suspend fun createPdfDocumentFragment(locator: Locator, settings: S): PdfDocumentFragment<S>? {
-        val link = publication.linkWithHref(locator.href) ?: return null
+        val link = viewModel.findLink(locator) ?: return null
 
         return try {
             val pageIndex = (locator.locations.page ?: 1) - 1

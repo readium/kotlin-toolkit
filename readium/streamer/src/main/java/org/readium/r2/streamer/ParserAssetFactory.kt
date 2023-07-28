@@ -106,7 +106,10 @@ internal class ParserAssetFactory(
         mediaType: MediaType,
         assetName: String
     ): Try<PublicationParser.Asset, Publication.OpeningException> {
-        val link = Link(href = "/$assetName", type = mediaType.toString())
+        // Historically, the reading order of a standalone file contained a single link with the
+        // HREF "/$assetName". This was fragile if the asset named changed, or was different on
+        // other devices. To avoid this, we now use a single link with the HREF ".".
+        val link = Link(href = ".", type = mediaType.toString())
         val fetcher = ResourceFetcher(link, resource)
 
         return Try.success(

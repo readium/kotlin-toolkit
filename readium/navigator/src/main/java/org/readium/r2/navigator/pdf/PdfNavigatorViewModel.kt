@@ -17,6 +17,7 @@ import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.navigator.preferences.PreferencesEditor
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.positions
@@ -50,6 +51,22 @@ internal class PdfNavigatorViewModel<S : Configurable.Settings, P : Configurable
             _currentLocator.value = locator
         }
     }
+
+    fun findLink(locator: Locator): Link? =
+        if (isPDFFile) publication.readingOrder.first()
+        else publication.linkWithHref(locator.href)
+
+    /**
+     * Historically, the reading order of a standalone PDF file contained a single link with the
+     * HREF "/$assetName". This was fragile if the asset named changed, or was different on other
+     * devices.
+     *
+     * To avoid this, we now use a single link with the HREF ".". And to avoid breaking legacy
+     * locators, we match any HREF if the reading order contains a single link with the HREF ".".
+     */
+    private val isPDFFile: Boolean =
+        publication.readingOrder.count() == 1
+            && publication.readingOrder[0].href == "."
 
     companion object {
         fun <S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> createFactory(
