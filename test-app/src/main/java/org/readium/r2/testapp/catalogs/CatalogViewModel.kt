@@ -8,7 +8,6 @@ package org.readium.r2.testapp.catalogs
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import java.io.File
 import java.net.MalformedURLException
@@ -96,7 +95,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
 
             object CatalogParseFailed : FeedEvent()
 
-            class CatalogParseSuccess(val result: ParseData): FeedEvent()
+            class CatalogParseSuccess(val result: ParseData) : FeedEvent()
         }
 
         sealed class DetailEvent : Event() {
