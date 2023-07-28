@@ -17,7 +17,6 @@
         android:id="@+id/search_recyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="@android:color/white"
         app:layout_constraintBottom_toBottomOf="@id/search_overlay"
         app:layout_constraintEnd_toEndOf="@id/search_overlay"
         app:layout_constraintStart_toStartOf="@id/search_overlay"
