@@ -28,7 +28,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.whenStarted
+import androidx.lifecycle.withStarted
 import androidx.viewpager.widget.ViewPager
 import kotlin.math.ceil
 import kotlin.reflect.KClass
@@ -479,7 +479,7 @@ public class EpubNavigatorFragment internal constructor(
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            whenStarted {
+            withStarted {
                 // Restore the last locator before a configuration change (e.g. screen rotation), or the
                 // initial locator when given.
                 val locator = savedInstanceState?.getParcelable("locator") ?: initialLocator

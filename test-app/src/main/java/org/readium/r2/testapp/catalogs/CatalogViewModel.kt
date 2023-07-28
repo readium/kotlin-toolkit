@@ -8,7 +8,6 @@ package org.readium.r2.testapp.catalogs
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import java.io.File
 import java.net.MalformedURLException
@@ -37,7 +36,6 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
 
     val detailChannel = EventChannel(Channel<Event.DetailEvent>(Channel.BUFFERED), viewModelScope)
     val eventChannel = EventChannel(Channel<Event.FeedEvent>(Channel.BUFFERED), viewModelScope)
-    val parseData = MutableLiveData<ParseData>()
     lateinit var publication: Publication
 
     fun parseCatalog(catalog: Catalog) = viewModelScope.launch {
@@ -55,7 +53,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
             }
         }
         parseRequest?.onSuccess {
-            parseData.postValue(it)
+            eventChannel.send(Event.FeedEvent.CatalogParseSuccess(it))
         }
         parseRequest?.onFailure {
             Timber.e(it)
@@ -96,6 +94,8 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
         sealed class FeedEvent : Event() {
 
             object CatalogParseFailed : FeedEvent()
+
+            class CatalogParseSuccess(val result: ParseData) : FeedEvent()
         }
 
         sealed class DetailEvent : Event() {

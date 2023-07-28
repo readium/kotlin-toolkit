@@ -14,6 +14,8 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import androidx.annotation.ColorInt
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.FragmentResultListener
 import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
@@ -105,8 +107,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             }
         )
 
-        setHasOptionsMenu(true)
-
         super.onCreate(savedInstanceState)
     }
 
@@ -140,6 +140,37 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                 (navigator as? DecorableNavigator)?.applyPageNumberDecorations()
             }
         }
+
+        val menuHost: MenuHost = requireActivity()
+
+        menuHost.addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                    menuSearch = menu.findItem(R.id.search).apply {
+                        isVisible = true
+                        menuSearchView = actionView as SearchView
+                    }
+
+                    connectSearch()
+                    if (!isSearchViewIconified) menuSearch.expandActionView()
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    when (menuItem.itemId) {
+                        R.id.search -> {
+                            return true
+                        }
+                        android.R.id.home -> {
+                            menuSearch.collapseActionView()
+                            return true
+                        }
+                    }
+                    return true
+                }
+            },
+            viewLifecycleOwner,
+            Lifecycle.State.RESUMED
+        )
     }
 
     /**
@@ -162,18 +193,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             }
 
         applyDecorations(decorations, "pageNumbers")
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, menuInflater)
-
-        menuSearch = menu.findItem(R.id.search).apply {
-            isVisible = true
-            menuSearchView = actionView as SearchView
-        }
-
-        connectSearch()
-        if (!isSearchViewIconified) menuSearch.expandActionView()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -226,18 +245,6 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             )
         }
     }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when (item.itemId) {
-            R.id.search -> {
-                super.onOptionsItemSelected(item)
-            }
-            android.R.id.home -> {
-                menuSearch.collapseActionView()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
 
     private fun showSearchFragment() {
         childFragmentManager.commit {

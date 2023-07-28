@@ -30,6 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -132,6 +134,25 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                 content = { Overlay() }
             )
         }
+
+        val menuHost: MenuHost = requireActivity()
+
+        menuHost.addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                    menu.findItem(R.id.tts).isVisible = (model.tts != null)
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    when (menuItem.itemId) {
+                        R.id.tts -> checkNotNull(model.tts).start(navigator)
+                    }
+                    return true
+                }
+            },
+            viewLifecycleOwner,
+            Lifecycle.State.RESUMED
+        )
     }
 
     @Composable
@@ -152,7 +173,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
     private fun setupObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 navigator.currentLocator
                     .onEach { model.saveProgression(it) }
                     .launchIn(this)
@@ -269,19 +290,6 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         super.onHiddenChanged(hidden)
         setMenuVisibility(!hidden)
         requireActivity().invalidateOptionsMenu()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, menuInflater)
-        menu.findItem(R.id.tts).isVisible = (model.tts != null)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.tts -> checkNotNull(model.tts).start(navigator)
-            else -> return super.onOptionsItemSelected(item)
-        }
-        return true
     }
 
     // DecorableNavigator.Listener
