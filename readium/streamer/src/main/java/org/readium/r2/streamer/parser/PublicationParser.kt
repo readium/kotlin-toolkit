@@ -21,7 +21,6 @@ import org.readium.r2.shared.util.mediatype.MediaType
 public interface PublicationParser {
 
     public data class Asset(
-        val name: String,
         val mediaType: MediaType,
         val fetcher: Fetcher
     )

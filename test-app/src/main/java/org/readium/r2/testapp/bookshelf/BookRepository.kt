@@ -79,7 +79,6 @@ class BookRepository(
         val bookmark = Bookmark(
             creation = DateTime().toDate().time,
             bookId = bookId,
-            publicationId = publication.metadata.identifier ?: publication.metadata.title,
             resourceIndex = resource.toLong(),
             resourceHref = locator.href,
             resourceType = locator.type,

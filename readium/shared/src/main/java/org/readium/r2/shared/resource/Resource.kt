@@ -140,36 +140,6 @@ public interface Resource : SuspendingCloseable {
     }
 }
 
-
-/**
- * Filename suggested for this resource when stored on the disk.
- */
-public suspend fun Resource.suggestedFilename(): ResourceTry<String?> =
-    properties().map {
-        it.suggestedFilename ?: source?.filename
-    }
-
-private const val suggestedFilenameKey = "suggestedFilename"
-
-/**
- * Filename suggested for this resource when stored on the disk.
- */
-public val Resource.Properties.suggestedFilename: String?
-    get() = this[suggestedFilenameKey] as? String
-
-/**
- * Filename suggested for this resource when stored on the disk.
- */
-public var Resource.Properties.Builder.suggestedFilename: String?
-    get() = this[suggestedFilenameKey] as? String
-    set(value) {
-        if (value != null) {
-            this[suggestedFilenameKey] = value
-        } else {
-            this.remove(suggestedFilenameKey)
-        }
-    }
-
 /** Creates a Resource that will always return the given [error]. */
 public class FailureResource(
     private val error: Resource.Exception

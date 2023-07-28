@@ -32,11 +32,6 @@ public interface Container : SuspendingCloseable {
     public val file: File? get() = null
 
     /**
-     * Gets the container name if any.
-     */
-    public suspend fun name(): ResourceTry<String?>
-
-    /**
      * List of all the container entries of null if such a list is not available.
      */
     public suspend fun entries(): Iterable<Entry>?

@@ -19,7 +19,6 @@ import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.ZipContainer
-import org.readium.r2.shared.resource.suggestedFilename
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArchiveEntry
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipFile
@@ -28,8 +27,7 @@ import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
 
 internal class ChannelZipContainer(
-    private val archive: ZipFile,
-    private val fetchName: suspend () -> ResourceTry<String?>
+    private val archive: ZipFile
 ) : ZipContainer {
 
     private inner class FailureEntry(
@@ -46,9 +44,7 @@ internal class ChannelZipContainer(
         override val source: Url? get() = Url(path)
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
-            ResourceTry.success(Resource.Properties {
-                suggestedFilename = File(path).name
-            })
+            ResourceTry.success(Resource.Properties())
 
         // FIXME: Implement with a sniffer.
         override suspend fun mediaType(): ResourceTry<MediaType?> =
@@ -129,10 +125,6 @@ internal class ChannelZipContainer(
         }
     }
 
-    override suspend fun name(): ResourceTry<String?> {
-        return fetchName.invoke()
-    }
-
     override suspend fun entries(): List<Container.Entry> =
         archive.entries.toList()
             .filterNot { it.isDirectory }
@@ -169,9 +161,7 @@ public class ChannelZipArchiveFactory : ArchiveFactory {
             val resourceChannel = ResourceChannel(resource)
             val channel = wrapBaseChannel(resourceChannel)
             val zipFile = ZipFile(channel, true)
-            val channelZip = ChannelZipContainer(zipFile,
-                fetchName = resource::suggestedFilename
-            )
+            val channelZip = ChannelZipContainer(zipFile)
             Try.success(channelZip)
         } catch (e: Resource.Exception) {
             Try.failure(ArchiveFactory.Error.ResourceReading(e))
@@ -183,7 +173,7 @@ public class ChannelZipArchiveFactory : ArchiveFactory {
     internal fun openFile(file: File): Container {
         val fileChannel = FileChannelAdapter(file, "r")
         val channel = wrapBaseChannel(fileChannel)
-        return ChannelZipContainer(ZipFile(channel)) { Try.success(file.name) }
+        return ChannelZipContainer(ZipFile(channel))
     }
 
     private fun wrapBaseChannel(channel: SeekableByteChannel): SeekableByteChannel {

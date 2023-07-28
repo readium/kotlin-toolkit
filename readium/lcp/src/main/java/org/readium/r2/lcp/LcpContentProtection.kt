@@ -94,7 +94,6 @@ internal class LcpContentProtection(
         )
 
         val protectedFile = ContentProtection.Asset(
-            name = asset.name,
             mediaType = asset.mediaType,
             fetcher = fetcher,
             onCreatePublication = {
@@ -148,12 +147,7 @@ internal class LcpContentProtection(
         val container = archiveFactory.create(resource, password = null)
             .getOrElse { return Try.failure(it.wrap()) }
 
-        val publicationAsset = Asset.Container(
-            url.filename,
-            link.mediaType,
-            false,
-            container
-        )
+        val publicationAsset = Asset.Container(link.mediaType, exploded = false, container)
 
         return createResultAsset(publicationAsset, license)
     }

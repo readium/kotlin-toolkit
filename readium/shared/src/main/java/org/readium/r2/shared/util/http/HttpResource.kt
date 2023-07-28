@@ -10,7 +10,6 @@ import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
-import org.readium.r2.shared.resource.suggestedFilename
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -22,21 +21,11 @@ public class HttpResource(
     private val maxSkipBytes: Long = MAX_SKIP_BYTES
 ) : Resource {
 
-    override suspend fun properties(): ResourceTry<Resource.Properties> =
-        headResponse().map { r ->
-            Resource.Properties {
-                suggestedFilename = r.valuesForHeader("Content-Disposition")
-                    .flatMap { it.split(";") }
-                    .map { it.trim() }
-                    .firstOrNull { it.startsWith("filename=") }
-                    ?.dropWhile { it != '=' }
-                    ?.trim('=', '"')
-                    ?.let { File(it).name }
-            }
-        }
-
     override suspend fun mediaType(): ResourceTry<MediaType?> =
         headResponse().map { it.mediaType }
+
+    override suspend fun properties(): ResourceTry<Resource.Properties> =
+        ResourceTry.success(Resource.Properties())
 
     override suspend fun length(): ResourceTry<Long> =
         headResponse().flatMap {

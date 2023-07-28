@@ -163,7 +163,7 @@ public class AssetRetriever(
                         }
                     }
             }
-            .map { container -> Asset.Container(url.filename, mediaType, false, container) }
+            .map { container -> Asset.Container(mediaType, exploded = false, container) }
     }
 
     private suspend fun retrieveDirectoryAsset(
@@ -172,7 +172,7 @@ public class AssetRetriever(
     ): Try<Asset.Container, Error> {
         return containerFactory.create(url)
             .map { container ->
-                Asset.Container(url.filename, mediaType, true, container)
+                Asset.Container(mediaType, exploded = true, container)
             }
             .mapFailure { error ->
                 when (error) {
@@ -191,7 +191,7 @@ public class AssetRetriever(
         mediaType: MediaType
     ): Try<Asset.Resource, Error> {
         return retrieveResource(url)
-            .map { resource -> Asset.Resource(url.filename, mediaType, resource) }
+            .map { resource -> Asset.Resource(mediaType, resource) }
     }
 
     private suspend fun retrieveResource(
@@ -262,7 +262,7 @@ public class AssetRetriever(
                 fileExtensions = listOf(file.extension) + fileExtensions
             ) ?: return null
 
-        return retrieve(context, file.name)
+        return retrieve(context)
     }
 
     /**
@@ -323,13 +323,10 @@ public class AssetRetriever(
             )
             ?: return null
 
-        return retrieve(context, url.filename)
+        return retrieve(context)
     }
 
-    private suspend fun retrieve(
-        context: ContentAwareSnifferContext,
-        fallbackName: String
-    ): Asset? {
+    private suspend fun retrieve(context: ContentAwareSnifferContext): Asset? {
 
         val mediaType = mediaTypeRetriever.doRetrieve(
             fullContext = { context },
@@ -340,14 +337,12 @@ public class AssetRetriever(
         return when (context) {
             is ContainerSnifferContext ->
                 Asset.Container(
-                    name = context.container.name().getOrNull() ?: fallbackName,
                     mediaType = mediaType,
                     exploded = context.isExploded,
                     container = context.container
                 )
             is ResourceSnifferContext ->
                 Asset.Resource(
-                    name = context.resource.suggestedFilename().getOrNull() ?: fallbackName,
                     mediaType = mediaType,
                     resource = context.resource
                 )

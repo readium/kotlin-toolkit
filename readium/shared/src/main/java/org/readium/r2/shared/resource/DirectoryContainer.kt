@@ -42,9 +42,6 @@ internal class DirectoryContainer(
         override suspend fun close() {}
     }
 
-    override suspend fun name(): ResourceTry<String> =
-        ResourceTry.success(root.name)
-
     override suspend fun entries(): List<Container.Entry> =
         entries.map { SuccessEntry(it) }.toList()
 

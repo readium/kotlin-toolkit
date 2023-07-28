@@ -52,7 +52,6 @@ public class AdeptFallbackContentProtection(
         }
 
         val protectedFile = ContentProtection.Asset(
-            asset.name,
             asset.mediaType,
             ContainerFetcher(asset.container, mediaTypeRetriever),
             onCreatePublication = {

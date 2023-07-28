@@ -171,7 +171,6 @@ public class PublicationFactory constructor(
             ?: return Try.failure(Publication.OpeningException.Forbidden())
 
         val parserAsset = PublicationParser.Asset(
-            protectedAsset.name,
             protectedAsset.mediaType,
             protectedAsset.fetcher
         )

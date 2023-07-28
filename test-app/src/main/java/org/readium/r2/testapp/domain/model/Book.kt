@@ -23,7 +23,7 @@ data class Book(
     @ColumnInfo(name = HREF)
     val href: String,
     @ColumnInfo(name = TITLE)
-    val title: String,
+    val title: String?,
     @ColumnInfo(name = AUTHOR)
     val author: String? = null,
     @ColumnInfo(name = IDENTIFIER)
@@ -44,7 +44,7 @@ data class Book(
         id: Long? = null,
         creation: Long? = null,
         href: String,
-        title: String,
+        title: String?,
         author: String? = null,
         identifier: String,
         progression: String? = null,

@@ -125,8 +125,6 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
             ResourceTry.success(Resource.Properties {
-                suggestedFilename = File(path).name
-
                 archive = ArchiveProperties(
                     entryLength = (compressedLength ?: length().getOrNull() ?: 0),
                     isEntryCompressed = (compressedLength != null)
@@ -203,9 +201,6 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
     }
 
     override val file: File = source
-
-    override suspend fun name(): ResourceTry<String> =
-        ResourceTry.success(file.name)
 
     override suspend fun entries(): List<Container.Entry> =
         archive.entries().toList()

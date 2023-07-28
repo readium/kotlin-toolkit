@@ -49,7 +49,7 @@ public class PdfParser(
             metadata = Metadata(
                 identifier = document.identifier,
                 conformsTo = setOf(Publication.Profile.PDF),
-                localizedTitle = LocalizedString(document.title?.ifBlank { null } ?: asset.name),
+                localizedTitle = document.title?.ifBlank { null }?.let { LocalizedString(it) },
                 authors = listOfNotNull(document.author).map { Contributor(name = it) },
                 readingProgression = document.readingProgression,
                 numberOfPages = document.pageCount,

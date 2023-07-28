@@ -30,8 +30,6 @@ data class Bookmark(
     var creation: Long? = null,
     @ColumnInfo(name = BOOK_ID)
     val bookId: Long,
-    @ColumnInfo(name = PUBLICATION_ID)
-    val publicationId: String,
     @ColumnInfo(name = RESOURCE_INDEX)
     val resourceIndex: Long,
     @ColumnInfo(name = RESOURCE_HREF)
@@ -61,7 +59,6 @@ data class Bookmark(
         const val ID = "ID"
         const val CREATION_DATE = "CREATION_DATE"
         const val BOOK_ID = "BOOK_ID"
-        const val PUBLICATION_ID = "PUBLICATION_ID"
         const val RESOURCE_INDEX = "RESOURCE_INDEX"
         const val RESOURCE_HREF = "RESOURCE_HREF"
         const val RESOURCE_TYPE = "RESOURCE_TYPE"

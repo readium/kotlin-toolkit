@@ -10,7 +10,11 @@ import java.io.File
 import java.nio.charset.Charset
 import org.json.JSONObject
 import org.readium.r2.shared.asset.Asset
-import org.readium.r2.shared.error.*
+import org.readium.r2.shared.error.MessageError
+import org.readium.r2.shared.error.ThrowableError
+import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrElse
+import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.fetcher.ContainerFetcher
 import org.readium.r2.shared.fetcher.ResourceFetcher
 import org.readium.r2.shared.fetcher.RoutingFetcher
@@ -35,37 +39,32 @@ internal class ParserAssetFactory(
     ): Try<PublicationParser.Asset, Publication.OpeningException> {
         return when (asset) {
             is Asset.Container ->
-                Try.success(
-                    createParserAssetForContainer(asset.container, asset.mediaType, asset.name)
-                )
+                createParserAssetForContainer(asset.container, asset.mediaType)
             is Asset.Resource ->
-                createParserAssetForResource(asset.resource, asset.mediaType, asset.name)
+                createParserAssetForResource(asset.resource, asset.mediaType)
         }
     }
 
     private fun createParserAssetForContainer(
         container: Container,
-        mediaType: MediaType,
-        assetName: String
-    ): PublicationParser.Asset {
+        mediaType: MediaType
+    ): Try<PublicationParser.Asset, Publication.OpeningException> {
         val fetcher = ContainerFetcher(container, mediaTypeRetriever)
-        return PublicationParser.Asset(assetName, mediaType, fetcher)
+        return Try.success(PublicationParser.Asset(mediaType, fetcher))
     }
 
     private suspend fun createParserAssetForResource(
         resource: Resource,
-        mediaType: MediaType,
-        assetName: String
+        mediaType: MediaType
     ): Try<PublicationParser.Asset, Publication.OpeningException> =
         if (mediaType.isRwpm) {
-            createParserAssetForManifest(resource, assetName)
+            createParserAssetForManifest(resource)
         } else {
-            createParserAssetForContent(resource, mediaType, assetName)
+            createParserAssetForContent(resource, mediaType)
         }
 
     private suspend fun createParserAssetForManifest(
-        resource: Resource,
-        assetName: String
+        resource: Resource
     ): Try<PublicationParser.Asset, Publication.OpeningException> {
         val manifest = resource.readAsRwpm(packaged = false)
             .mapFailure { Publication.OpeningException.ParsingFailed(ThrowableError(it)) }
@@ -97,14 +96,13 @@ internal class ParserAssetFactory(
             )
 
         return Try.success(
-            PublicationParser.Asset(assetName, MediaType.READIUM_WEBPUB, fetcher)
+            PublicationParser.Asset(MediaType.READIUM_WEBPUB, fetcher)
         )
     }
 
     private fun createParserAssetForContent(
         resource: Resource,
-        mediaType: MediaType,
-        assetName: String
+        mediaType: MediaType
     ): Try<PublicationParser.Asset, Publication.OpeningException> {
         // Historically, the reading order of a standalone file contained a single link with the
         // HREF "/$assetName". This was fragile if the asset named changed, or was different on
@@ -113,7 +111,7 @@ internal class ParserAssetFactory(
         val fetcher = ResourceFetcher(link, resource)
 
         return Try.success(
-            PublicationParser.Asset(assetName, mediaType, fetcher)
+            PublicationParser.Asset(mediaType, fetcher)
         )
     }
 

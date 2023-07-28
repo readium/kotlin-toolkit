@@ -57,27 +57,8 @@ public class ContentResource(
 
     override val source: Url? = uri.toUrl()
 
-    override suspend fun properties(): ResourceTry<Resource.Properties> {
-        val cursor = contentResolver
-            .query(uri, null, null, null, null)
-            ?: return ResourceTry.failure(Resource.Exception.NotFound())
-
-        @Suppress("Name_shadowing")
-        val filename = cursor.use { cursor ->
-            if (!cursor.moveToFirst()) {
-                return ResourceTry.failure(Resource.Exception.NotFound())
-            }
-
-            cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                .takeUnless { it == -1 }
-                ?.let { columnIndex -> tryOrNull { cursor.getString(columnIndex) } }
-                ?: uri.lastPathSegment
-        }
-
-        return ResourceTry.success(Resource.Properties {
-            suggestedFilename = filename
-        })
-    }
+    override suspend fun properties(): ResourceTry<Resource.Properties> =
+        ResourceTry.success(Resource.Properties())
 
     override suspend fun mediaType(): ResourceTry<MediaType?> =
         Try.success(contentResolver.getType(uri)?.let { MediaType.parse(it) })

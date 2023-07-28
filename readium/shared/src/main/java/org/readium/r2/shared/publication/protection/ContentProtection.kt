@@ -53,7 +53,6 @@ public interface ContentProtection {
     /**
      * Holds the result of opening an [Asset] with a [ContentProtection].
      *
-     * @property name Asset name
      * @property mediaType Media type of the asset
      * @property fetcher Fetcher to access the publication through
      * @property onCreatePublication Called on every parsed Publication.Builder
@@ -61,7 +60,6 @@ public interface ContentProtection {
      * of a [Publication].
      */
     public data class Asset(
-        val name: String,
         val mediaType: MediaType,
         val fetcher: Fetcher,
         val onCreatePublication: Publication.Builder.() -> Unit = {}
