@@ -64,8 +64,6 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
         }
     }
 
-    private val USE_CACHE = false
-
     private val MAX_SETTLE_DURATION = 600 // ms
     private val MIN_DISTANCE_FOR_FLING = 25 // dips
     private val MIN_FLING_VELOCITY = 400 // dips
@@ -105,8 +103,6 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
     // or end of the pager data set during touch scrolling.
     private val mFirstOffset = -java.lang.Float.MAX_VALUE
     private val mLastOffset = java.lang.Float.MAX_VALUE
-
-    private var mScrollingCacheEnabled: Boolean = false
 
     private var mIsBeingDragged: Boolean = false
     private var mGutterSize: Int = 30
@@ -396,7 +392,6 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
             sx = if (mIsScrollStarted) mScroller!!.currX else mScroller!!.startX
             // And abort the current scrolling.
             mScroller!!.abortAnimation()
-            setScrollingCacheEnabled(false)
         } else {
             sx = scrollX
         }
@@ -409,7 +404,6 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
             return
         }
 
-        setScrollingCacheEnabled(true)
         setScrollState(SCROLL_STATE_SETTLING)
 
         val halfWidth = width / 2
@@ -662,8 +656,6 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
     private fun completeScroll(postEvents: Boolean) {
         val needPopulate = mScrollState == SCROLL_STATE_SETTLING
         if (needPopulate) {
-            // Done with scroll, no longer want to cache view drawing.
-            setScrollingCacheEnabled(false)
             val wasScrolling = !mScroller!!.isFinished
             if (wasScrolling) {
                 mScroller!!.abortAnimation()
@@ -730,7 +722,6 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
                         else
                             mInitialMotionX - mTouchSlop
                         setScrollState(SCROLL_STATE_DRAGGING)
-                        setScrollingCacheEnabled(true)
                     }
                 }
             }
@@ -882,21 +873,6 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
             mLastMotionX = ev.getX(newPointerIndex)
             mActivePointerId = ev.getPointerId(newPointerIndex)
             mVelocityTracker?.clear()
-        }
-    }
-
-    private fun setScrollingCacheEnabled(enabled: Boolean) {
-        if (mScrollingCacheEnabled != enabled) {
-            mScrollingCacheEnabled = enabled
-            if (USE_CACHE) {
-                val size = childCount
-                for (i in 0 until size) {
-                    val child = getChildAt(i)
-                    if (child.visibility != View.GONE) {
-                        child.isDrawingCacheEnabled = enabled
-                    }
-                }
-            }
         }
     }
 
