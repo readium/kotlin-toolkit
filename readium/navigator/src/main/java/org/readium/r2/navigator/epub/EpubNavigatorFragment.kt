@@ -21,6 +21,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import androidx.collection.forEach
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentFactory
@@ -482,7 +483,8 @@ public class EpubNavigatorFragment internal constructor(
             withStarted {
                 // Restore the last locator before a configuration change (e.g. screen rotation), or the
                 // initial locator when given.
-                val locator = savedInstanceState?.getParcelable("locator") ?: initialLocator
+                val locator = savedInstanceState?.let { BundleCompat.getParcelable(it, "locator", Locator::class.java) }
+                    ?: initialLocator
                 if (locator != null) {
                     go(locator)
                 }
@@ -1038,6 +1040,7 @@ public class EpubNavigatorFragment internal constructor(
          * @param config Additional configuration.
          */
         @Deprecated("Use `EpubNavigatorFactory().createFragmentFactory()` instead", level = DeprecationLevel.ERROR)
+        @Suppress("UNUSED_PARAMETER")
         public fun createFactory(
             publication: Publication,
             baseUrl: String? = null,

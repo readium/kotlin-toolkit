@@ -19,6 +19,7 @@ import android.view.*
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
+import androidx.core.os.BundleCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -50,7 +51,7 @@ internal class R2EpubPageFragment : Fragment() {
         get() = requireArguments().getString("url")
 
     internal val link: Link?
-        get() = requireArguments().getParcelable("link")
+        get() = BundleCompat.getParcelable(requireArguments(), "link", Link::class.java)
 
     private var pendingLocator: Locator? = null
 
@@ -118,7 +119,7 @@ internal class R2EpubPageFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        pendingLocator = requireArguments().getParcelable("initialLocator")
+        pendingLocator = BundleCompat.getParcelable(requireArguments(), "initialLocator", Locator::class.java)
     }
 
     @SuppressLint("SetJavaScriptEnabled", "JavascriptInterface")
@@ -170,9 +171,8 @@ internal class R2EpubPageFragment : Fragment() {
                 clampedX: Boolean,
                 clampedY: Boolean
             ) {
-                val activity = activity ?: return
+                activity ?: return
                 val metrics = DisplayMetrics()
-                activity.windowManager.defaultDisplay.getMetrics(metrics)
 
                 val topDecile = webView.contentHeight - 1.15 * metrics.heightPixels
                 val bottomDecile = (webView.contentHeight - metrics.heightPixels).toDouble()
