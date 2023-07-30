@@ -217,6 +217,7 @@ public class ImageNavigatorFragment private constructor(
     override val publicationView: View
         get() = requireView()
 
+    @Suppress("DEPRECATION")
     @Deprecated(
         "Use `presentation.value.readingProgression` instead",
         replaceWith = ReplaceWith("presentation.value.readingProgression"),
@@ -229,7 +230,7 @@ public class ImageNavigatorFragment private constructor(
     override val presentation: StateFlow<VisualNavigator.Presentation> =
         MutableStateFlow(
             SimplePresentation(
-                readingProgression = when (publication.metadata.effectiveReadingProgression) {
+                readingProgression = when (publication.metadata.readingProgression) {
                     PublicationReadingProgression.RTL -> ReadingProgression.RTL
                     else -> ReadingProgression.LTR
                 },
