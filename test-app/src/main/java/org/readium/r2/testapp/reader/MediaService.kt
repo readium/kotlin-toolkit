@@ -53,7 +53,12 @@ class MediaService : MediaSessionService() {
             sessionMutable.asStateFlow()
 
         fun closeSession() {
-            stopForeground(true)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                stopForeground(STOP_FOREGROUND_DETACH)
+            } else {
+                @Suppress("DEPRECATION")
+                stopForeground(true)
+            }
             session.value?.mediaSession?.release()
             session.value?.navigator?.close()
             session.value?.coroutineScope?.cancel()

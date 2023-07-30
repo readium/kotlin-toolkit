@@ -179,7 +179,12 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
         override fun onNotificationCancelled(notificationId: Int) {
             this@MediaService.notificationId = null
             this@MediaService.notification = null
-            stopForeground(true)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                stopForeground(STOP_FOREGROUND_DETACH)
+            } else {
+                @Suppress("DEPRECATION")
+                stopForeground(true)
+            }
 
             if (currentNavigator.value?.isPlaying == false) {
                 onPlayerStopped()
@@ -250,7 +255,12 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
                             startForeground(id, note)
                         }
                     } else {
-                        stopForeground(false)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            stopForeground(STOP_FOREGROUND_DETACH)
+                        } else {
+                            @Suppress("DEPRECATION")
+                            stopForeground(true)
+                        }
                     }
                 }
         }
