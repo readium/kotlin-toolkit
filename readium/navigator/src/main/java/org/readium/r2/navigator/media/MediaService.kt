@@ -18,6 +18,7 @@ import android.os.ResultReceiver
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.widget.Toast
+import androidx.core.app.ServiceCompat
 import androidx.core.os.BundleCompat
 import androidx.media.MediaBrowserServiceCompat
 import kotlin.reflect.KMutableProperty0
@@ -179,12 +180,7 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
         override fun onNotificationCancelled(notificationId: Int) {
             this@MediaService.notificationId = null
             this@MediaService.notification = null
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                stopForeground(STOP_FOREGROUND_DETACH)
-            } else {
-                @Suppress("DEPRECATION")
-                stopForeground(true)
-            }
+            ServiceCompat.stopForeground(this@MediaService, ServiceCompat.STOP_FOREGROUND_REMOVE)
 
             if (currentNavigator.value?.isPlaying == false) {
                 onPlayerStopped()
