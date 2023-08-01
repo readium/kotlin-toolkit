@@ -4,6 +4,9 @@
  * available in the top-level LICENSE file of the project.
  */
 
+// Everything in this file will be deprecated
+@file:Suppress("DEPRECATION")
+
 package org.readium.navigator.media2
 
 import android.app.PendingIntent

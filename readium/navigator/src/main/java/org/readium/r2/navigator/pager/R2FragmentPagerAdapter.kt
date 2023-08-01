@@ -21,6 +21,8 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.viewpager.widget.PagerAdapter
 
+// This class will be going away when the navigator is rewritten
+@Suppress("DEPRECATION")
 internal abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentManager) : androidx.fragment.app.FragmentStatePagerAdapter(mFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
     val mFragments = LongSparseArray<Fragment>()
