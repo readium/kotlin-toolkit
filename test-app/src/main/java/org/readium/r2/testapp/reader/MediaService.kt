@@ -61,6 +61,7 @@ class MediaService : MediaSessionService() {
             sessionMutable.value = null
         }
 
+        @OptIn(FlowPreview::class)
         fun <N> openSession(
             navigator: N,
             bookId: Long
