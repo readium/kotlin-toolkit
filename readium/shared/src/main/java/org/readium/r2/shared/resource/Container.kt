@@ -48,7 +48,7 @@ public interface Container : SuspendingCloseable {
      * A [Entry] is always returned, since for some cases we can't know if it exists before actually
      * fetching it, such as HTTP. Therefore, errors are handled at the Entry level.
      */
-    public suspend fun get(path: String): Entry
+    public fun get(path: String): Entry
 }
 
 /** A [Container] providing no resources at all. */
@@ -56,7 +56,7 @@ public class EmptyContainer : Container {
 
     override suspend fun entries(): Iterable<Container.Entry> = emptyList()
 
-    override suspend fun get(path: String): Container.Entry =
+    override fun get(path: String): Container.Entry =
         FailureResource(Resource.Exception.NotFound()).toEntry(path)
 
     override suspend fun close() {}
@@ -69,7 +69,7 @@ public class ResourceContainer(path: String, resource: Resource) : Container {
 
     override suspend fun entries(): Iterable<Container.Entry> = listOf(entry)
 
-    override suspend fun get(path: String): Container.Entry {
+    override fun get(path: String): Container.Entry {
         if (path.takeWhile { it !in "#?" } != entry.path) {
             return FailureResource(Resource.Exception.NotFound()).toEntry(path)
         }

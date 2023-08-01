@@ -33,7 +33,7 @@ public class HttpContainer(
     override suspend fun entries(): Iterable<Container.Entry> =
         paths.map { get(it) }
 
-    override suspend fun get(path: String): Container.Entry {
+    override fun get(path: String): Container.Entry {
         val url = Href(path.removePrefix("/"), baseHref = baseUrl ?: "/").toUrl()
 
         return if (url == null || !url.isHttp()) {

@@ -130,7 +130,7 @@ internal class ChannelZipContainer(
             .filterNot { it.isDirectory }
             .mapNotNull { Entry(it) }
 
-    override suspend fun get(path: String): Container.Entry =
+    override fun get(path: String): Container.Entry =
         archive.getEntry(path.removePrefix("/"))
             ?.takeUnless { it.isDirectory }
             ?.let { Entry(it) }

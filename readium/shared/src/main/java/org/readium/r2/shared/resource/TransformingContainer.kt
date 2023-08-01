@@ -30,7 +30,7 @@ public class TransformingContainer(
     override suspend fun entries(): Iterable<Container.Entry> =
         container.entries()
 
-    override suspend fun get(path: String): Container.Entry =
+    override fun get(path: String): Container.Entry =
         transformers
             .fold(container.get(path) as Resource) { acc, transformer ->
                 transformer(acc)

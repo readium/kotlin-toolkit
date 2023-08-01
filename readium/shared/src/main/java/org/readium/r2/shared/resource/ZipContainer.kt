@@ -208,7 +208,7 @@ internal class JavaZipContainer(private val archive: ZipFile, file: File) : ZipC
             .filterNot { it.isDirectory }
             .mapNotNull { Entry(it) }
 
-    override suspend fun get(path: String): Container.Entry =
+    override fun get(path: String): Container.Entry =
         archive.getEntry(path.removePrefix("/"))
             ?.let { Entry(it) }
             ?: FailureEntry(path)

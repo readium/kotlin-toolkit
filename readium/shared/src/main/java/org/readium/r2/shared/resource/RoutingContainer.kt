@@ -38,7 +38,7 @@ public class RoutingContainer(private val routes: List<Route>) : Container {
     override suspend fun entries(): Iterable<Container.Entry> =
         routes.flatMap { it.container.entries() }
 
-    override suspend fun get(path: String): Container.Entry =
+    override fun get(path: String): Container.Entry =
         routes.firstOrNull { it.accepts(path) }?.container?.get(path)
             ?: FailureResource(Resource.Exception.NotFound()).toEntry(path)
 

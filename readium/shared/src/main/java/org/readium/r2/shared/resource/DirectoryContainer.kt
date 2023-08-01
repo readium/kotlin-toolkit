@@ -36,7 +36,7 @@ internal class DirectoryContainer(
     override suspend fun entries(): List<Container.Entry> =
         entries.map { FileEntry(it) }.toList()
 
-    override suspend fun get(path: String): Container.Entry {
+    override fun get(path: String): Container.Entry {
         val file = File(root, path.removePrefix("/"))
 
         return if (!root.isParentOf(file))

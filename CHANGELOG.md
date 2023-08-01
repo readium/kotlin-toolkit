@@ -40,6 +40,10 @@ All notable changes to this project will be documented in this file. Take a look
 
 * All the navigator `Activity` are deprecated in favor of the `Fragment` variants.
 
+#### Streamer
+
+* The `Fetcher` interface was deprecated in favor of the `Container` one in `readium-shared`.
+
 ### Fixed
 
 #### Navigator
