@@ -242,7 +242,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             menuSearchView.setQuery("", false)
 
             (activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.showSoftInput(
-                this.view, InputMethodManager.SHOW_FORCED
+                this.view, 0
             )
         }
     }
