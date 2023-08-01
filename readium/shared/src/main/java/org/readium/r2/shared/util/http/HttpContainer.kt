@@ -6,14 +6,11 @@
 
 package org.readium.r2.shared.util.http
 
-import android.webkit.URLUtil
-import org.readium.r2.shared.error.getOrDefault
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.resource.toEntry
+import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.isHttp
 import timber.log.Timber
 
@@ -25,26 +22,28 @@ import timber.log.Timber
  *
  * @param client HTTP client used to perform HTTP requests.
  * @param baseUrl Base URL from which relative HREF are served.
- * @param links A set of links that are known to be available through this fetcher.
+ * @param paths A set of paths that are known to be available through this container.
  */
-public class HttpFetcher(
+public class HttpContainer(
     private val client: HttpClient,
     private val baseUrl: String? = null,
-    private val links: List<Link> = emptyList(),
-) : Fetcher {
+    private val paths: List<String> = emptyList(),
+) : Container {
 
-    override suspend fun links(): List<Link> = links
+    override suspend fun entries(): Iterable<Container.Entry> =
+        paths.map { get(it) }
 
-    override fun get(link: Link): Resource {
-        val url = link.toUrl(baseUrl)?.let { Url(it) }
+    override suspend fun get(path: String): Container.Entry {
+        val url = Href(path.removePrefix("/"), baseHref = baseUrl ?: "/").toUrl()
 
         return if (url == null || !url.isHttp()) {
-            val cause = IllegalArgumentException("Invalid HREF: ${link.href}, produced URL: $url")
+            val cause = IllegalArgumentException("Invalid HREF: ${path}, produced URL: $url")
             Timber.e(cause)
-            FailureResource(error = Resource.Exception.BadRequest(cause = cause))
+            FailureResource(Resource.Exception.BadRequest(cause = cause))
         } else {
             HttpResource(client, url)
         }
+            .toEntry(path)
     }
 
     override suspend fun close() {}

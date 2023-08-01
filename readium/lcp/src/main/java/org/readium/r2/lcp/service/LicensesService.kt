@@ -73,7 +73,7 @@ internal class LicensesService(
     override fun contentProtection(
         authentication: LcpAuthenticating,
     ): ContentProtection =
-        LcpContentProtection(this, authentication, mediaTypeRetriever, resourceFactory, archiveFactory)
+        LcpContentProtection(this, authentication, resourceFactory, archiveFactory)
 
     override suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit): Try<LcpService.AcquiredPublication, LcpException> =
         try {

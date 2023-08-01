@@ -35,7 +35,7 @@ public class ReadiumWebPubParser(
         if (!asset.mediaType.isReadiumWebPublication)
             return Try.failure(PublicationParser.Error.FormatNotSupported())
 
-        val manifestJson = asset.fetcher
+        val manifestJson = asset.container
             .get("/manifest.json")
             .readAsJson()
             .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
@@ -69,7 +69,7 @@ public class ReadiumWebPubParser(
             }
         }
 
-        val publicationBuilder = Publication.Builder(manifest, asset.fetcher, servicesBuilder)
+        val publicationBuilder = Publication.Builder(manifest, asset.container, servicesBuilder)
         return Try.success(publicationBuilder)
     }
 }

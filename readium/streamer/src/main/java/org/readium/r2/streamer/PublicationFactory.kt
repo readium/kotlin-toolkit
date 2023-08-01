@@ -44,9 +44,8 @@ internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningE
  * @param pdfFactory Parses a PDF document, optionally protected by password.
  * @param contentProtections Opens DRM-protected publications.
  * @param httpClient Service performing HTTP requests.
- * @param mediaTypeRetriever Retrieves media types from different sources.
  * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
- *   the manifest, the root fetcher or the list of service factories of a [Publication].
+ *   the manifest, the root container or the list of service factories of a [Publication].
  */
 @OptIn(PdfSupport::class)
 public class PublicationFactory constructor(
@@ -56,14 +55,13 @@ public class PublicationFactory constructor(
     contentProtections: List<ContentProtection> = emptyList(),
     pdfFactory: PdfDocumentFactory<*>? = null,
     httpClient: HttpClient = DefaultHttpClient(),
-    mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
     private val onCreatePublication: Publication.Builder.() -> Unit = {},
 ) {
 
     private val contentProtections: Map<ContentProtection.Scheme, ContentProtection> =
         buildList {
-            add(LcpFallbackContentProtection(mediaTypeRetriever))
-            add(AdeptFallbackContentProtection(mediaTypeRetriever))
+            add(LcpFallbackContentProtection())
+            add(AdeptFallbackContentProtection())
             addAll(contentProtections.asReversed())
         }.associateBy(ContentProtection::scheme)
 
@@ -80,7 +78,7 @@ public class PublicationFactory constructor(
         if (!ignoreDefaultParsers) defaultParsers else emptyList()
 
     private val parserAssetFactory: ParserAssetFactory =
-        ParserAssetFactory(httpClient, mediaTypeRetriever)
+        ParserAssetFactory(httpClient)
 
     /**
      * Opens a [Publication] from the given asset.
@@ -108,7 +106,7 @@ public class PublicationFactory constructor(
      * @param sender Free object that can be used by reading apps to give some UX context when
      *   presenting dialogs.
      * @param onCreatePublication Transformation which will be applied on the Publication Builder.
-     *   It can be used to modify the manifest, the root fetcher or the list of service
+     *   It can be used to modify the manifest, the root container or the list of service
      *   factories of the [Publication].
      * @param warnings Logger used to broadcast non-fatal parsing warnings.
      * @return A [Publication] or a [Publication.OpeningException] in case of failure.
@@ -172,7 +170,7 @@ public class PublicationFactory constructor(
 
         val parserAsset = PublicationParser.Asset(
             protectedAsset.mediaType,
-            protectedAsset.fetcher
+            protectedAsset.container
         )
 
         val compositeOnCreatePublication: Publication.Builder.() -> Unit = {

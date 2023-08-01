@@ -1,21 +1,17 @@
 /*
- * Module: r2-streamer-kotlin
- * Developers: Quentin Gliosca
- *
- * Copyright (c) 2020. Readium Foundation. All rights reserved.
- * Use of this source code is governed by a BSD-style license which is detailed in the
- * LICENSE file present in the project repository where this source code is maintained.
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
  */
 
 package org.readium.r2.streamer.extensions
 
-import java.io.File
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.util.mediatype.MediaType
 
-/** Returns a [File] to the directory containing all links, if there is such a directory. */
-internal fun List<Link>.hrefCommonFirstComponent(): File? =
-    map { it.href.removePrefix("/").substringBefore("/") }
-        .distinct()
-        .takeIf { it.size == 1 }
-        ?.firstOrNull()
-        ?.let { File(it) }
+internal suspend fun Container.Entry.toLink(mediaType: MediaType? = null): Link =
+    Link(
+        href = path,
+        type = (mediaType ?: mediaType().getOrNull())?.toString()
+    )

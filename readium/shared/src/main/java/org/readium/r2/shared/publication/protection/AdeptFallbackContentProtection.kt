@@ -9,7 +9,6 @@ package org.readium.r2.shared.publication.protection
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.fetcher.ContainerFetcher
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.ContentProtection.Scheme
@@ -25,9 +24,7 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
  * if it is not supported by the app.
  */
 @InternalReadiumApi
-public class AdeptFallbackContentProtection(
-    private val mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
-) : ContentProtection {
+public class AdeptFallbackContentProtection: ContentProtection {
 
     override val scheme: Scheme = Scheme.Adept
 
@@ -53,7 +50,7 @@ public class AdeptFallbackContentProtection(
 
         val protectedFile = ContentProtection.Asset(
             asset.mediaType,
-            ContainerFetcher(asset.container, mediaTypeRetriever),
+            asset.container,
             onCreatePublication = {
                 servicesBuilder.contentProtectionServiceFactory =
                     FallbackContentProtectionService.createFactory(scheme, "Adobe ADEPT")
@@ -67,8 +64,8 @@ public class AdeptFallbackContentProtection(
         if (!mediaType.matches(MediaType.EPUB)) {
             return false
         }
-        val rightsXml = container.entry("/META-INF/rights.xml").readAsXmlOrNull()
-        val encryptionXml = container.entry("/META-INF/encryption.xml").readAsXmlOrNull()
+        val rightsXml = container.get("/META-INF/rights.xml").readAsXmlOrNull()
+        val encryptionXml = container.get("/META-INF/encryption.xml").readAsXmlOrNull()
 
         return encryptionXml != null && (
             rightsXml?.namespace == "http://ns.adobe.com/adept" ||

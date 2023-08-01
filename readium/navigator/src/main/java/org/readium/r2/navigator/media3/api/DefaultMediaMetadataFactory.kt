@@ -32,7 +32,7 @@ internal class DefaultMediaMetadataFactory(
     private val coroutineScope =
         CoroutineScope(Dispatchers.Default)
 
-    private val title: String =
+    private val title: String? =
         title ?: publication.metadata.title
 
     private val author: String? =

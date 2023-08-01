@@ -295,8 +295,6 @@ public class EpubNavigatorFragment internal constructor(
     @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
     public val preferences: SharedPreferences get() = throw NotImplementedError()
 
-    private lateinit var publicationIdentifier: String
-
     internal var currentPagerPosition: Int = 0
     internal lateinit var adapter: R2PagerAdapter
     private lateinit var currentActivity: FragmentActivity
@@ -315,7 +313,6 @@ public class EpubNavigatorFragment internal constructor(
 
         positionsByReadingOrder = runBlocking { publication.positionsByReadingOrder() }
         positions = positionsByReadingOrder.flatten()
-        publicationIdentifier = publication.metadata.identifier ?: publication.metadata.title
 
         when (viewModel.layout) {
             EpubLayout.REFLOWABLE -> {

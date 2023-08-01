@@ -23,6 +23,7 @@ import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.toUrl
 
 /**
  * A [Container] representing a Zip archive.
@@ -87,7 +88,7 @@ public var Resource.Properties.Builder.archive: ArchiveProperties?
         }
     }
 
-internal class JavaZipContainer(private val archive: ZipFile, source: File) : ZipContainer {
+internal class JavaZipContainer(private val archive: ZipFile, file: File) : ZipContainer {
 
     private inner class FailureEntry(override val path: String) : ZipContainer.Entry {
 
@@ -200,18 +201,17 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         }
     }
 
-    override val file: File = source
+    override val source: Url = file.toUrl()
 
     override suspend fun entries(): List<Container.Entry> =
         archive.entries().toList()
             .filterNot { it.isDirectory }
             .mapNotNull { Entry(it) }
 
-    override suspend fun entry(path: String): Container.Entry {
-        return archive.getEntry(path.removePrefix("/"))
+    override suspend fun get(path: String): Container.Entry =
+        archive.getEntry(path.removePrefix("/"))
             ?.let { Entry(it) }
             ?: FailureEntry(path)
-    }
 
     override suspend fun close() {
         tryOrLog {

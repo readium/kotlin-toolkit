@@ -23,12 +23,12 @@ import timber.log.Timber
  */
 public class Href(
     public val href: String,
-    baseHref: String = "/"
+    baseHref: String? = null
 ) {
 
     public data class QueryParameter(val name: String, val value: String?)
 
-    public val baseHref: String = baseHref.ifBlank { "/" }
+    public val baseHref: String = baseHref?.takeUnless { it.isBlank() } ?: "/"
 
     @Deprecated("Use `absoluteHref` instead", ReplaceWith("absoluteHref()"), DeprecationLevel.ERROR)
     public val string: String get() = absoluteHref()
@@ -139,7 +139,7 @@ public class Href(
             .takeIf { !it.contains("\uFFFD") } ?: this
 
     public fun toUrl(): Url? =
-        Url(absoluteHref())
+        Url(absoluteHref(percentEncoded = true))
 
     override fun toString(): String =
         absoluteHref()

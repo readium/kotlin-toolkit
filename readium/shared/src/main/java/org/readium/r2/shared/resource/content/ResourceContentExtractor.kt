@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.fetcher
+package org.readium.r2.shared.resource.content
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

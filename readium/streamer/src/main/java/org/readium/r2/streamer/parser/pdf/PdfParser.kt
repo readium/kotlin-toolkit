@@ -17,6 +17,7 @@ import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.toLinks
+import org.readium.r2.streamer.extensions.toLink
 import org.readium.r2.streamer.parser.PublicationParser
 
 /**
@@ -38,12 +39,12 @@ public class PdfParser(
         if (asset.mediaType != MediaType.PDF)
             return Try.failure(PublicationParser.Error.FormatNotSupported())
 
-        val fileHref = asset.fetcher.links().firstOrNull()?.href
+        val resource = asset.container.entries().firstOrNull()
             ?: return Try.failure(
                 PublicationParser.Error.ParsingFailed("No PDF found in the publication.")
             )
-        val document = pdfFactory.open(asset.fetcher.get(fileHref), password = null)
-        val tableOfContents = document.outline.toLinks(fileHref)
+        val document = pdfFactory.open(resource, password = null)
+        val tableOfContents = document.outline.toLinks(resource.path)
 
         val manifest = Manifest(
             metadata = Metadata(
@@ -54,7 +55,7 @@ public class PdfParser(
                 readingProgression = document.readingProgression,
                 numberOfPages = document.pageCount,
             ),
-            readingOrder = listOf(Link(href = fileHref, type = MediaType.PDF.toString())),
+            readingOrder = listOf(resource.toLink(MediaType.PDF)),
             tableOfContents = tableOfContents
         )
 
@@ -64,7 +65,7 @@ public class PdfParser(
             cover = document.cover(context)?.let { InMemoryCoverService.createFactory(it) }
         )
 
-        val publicationBuilder = Publication.Builder(manifest, asset.fetcher, servicesBuilder)
+        val publicationBuilder = Publication.Builder(manifest, asset.container, servicesBuilder)
 
         return Try.success(publicationBuilder)
     }

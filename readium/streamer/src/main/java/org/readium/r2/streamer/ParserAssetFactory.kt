@@ -15,23 +15,19 @@ import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.error.getOrThrow
-import org.readium.r2.shared.fetcher.ContainerFetcher
-import org.readium.r2.shared.fetcher.ResourceFetcher
-import org.readium.r2.shared.fetcher.RoutingFetcher
-import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.ResourceContainer
+import org.readium.r2.shared.resource.RoutingContainer
 import org.readium.r2.shared.util.http.HttpClient
-import org.readium.r2.shared.util.http.HttpFetcher
+import org.readium.r2.shared.util.http.HttpContainer
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.streamer.parser.PublicationParser
 
 internal class ParserAssetFactory(
-    private val httpClient: HttpClient,
-    private val mediaTypeRetriever: MediaTypeRetriever,
+    private val httpClient: HttpClient
 ) {
 
     suspend fun createParserAsset(
@@ -48,10 +44,8 @@ internal class ParserAssetFactory(
     private fun createParserAssetForContainer(
         container: Container,
         mediaType: MediaType
-    ): Try<PublicationParser.Asset, Publication.OpeningException> {
-        val fetcher = ContainerFetcher(container, mediaTypeRetriever)
-        return Try.success(PublicationParser.Asset(mediaType, fetcher))
-    }
+    ): Try<PublicationParser.Asset, Publication.OpeningException> =
+        Try.success(PublicationParser.Asset(mediaType, container))
 
     private suspend fun createParserAssetForResource(
         resource: Resource,
@@ -84,19 +78,14 @@ internal class ParserAssetFactory(
             )
         }
 
-        val link = Link(
-            href = "/manifest.json",
-            type = MediaType.READIUM_WEBPUB_MANIFEST.toString()
-        )
-
-        val fetcher =
-            RoutingFetcher(
-                local = ResourceFetcher(link, resource),
-                remote = HttpFetcher(httpClient, baseUrl)
+        val container =
+            RoutingContainer(
+                local = ResourceContainer("/manifest.json", resource),
+                remote = HttpContainer(httpClient, baseUrl)
             )
 
         return Try.success(
-            PublicationParser.Asset(MediaType.READIUM_WEBPUB, fetcher)
+            PublicationParser.Asset(MediaType.READIUM_WEBPUB, container)
         )
     }
 
@@ -107,11 +96,10 @@ internal class ParserAssetFactory(
         // Historically, the reading order of a standalone file contained a single link with the
         // HREF "/$assetName". This was fragile if the asset named changed, or was different on
         // other devices. To avoid this, we now use a single link with the HREF ".".
-        val link = Link(href = ".", type = mediaType.toString())
-        val fetcher = ResourceFetcher(link, resource)
+        val container = ResourceContainer(".", resource)
 
         return Try.success(
-            PublicationParser.Asset(mediaType, fetcher)
+            PublicationParser.Asset(mediaType, container)
         )
     }
 

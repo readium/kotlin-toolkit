@@ -24,7 +24,7 @@ internal class ContainerLicenseContainer(
     override fun read(): ByteArray {
         return runBlocking {
             container
-                .entry(entryPath)
+                .get(entryPath)
                 .read()
                 .mapFailure {
                     when (it) {

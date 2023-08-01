@@ -269,10 +269,10 @@ public class ExoMediaPlayer(
             controller.sessionActivity
 
         override fun getCurrentContentText(player: Player): CharSequence =
-            publication.metadata.title
+            publication.metadata.title ?: ""
 
         override fun getCurrentContentTitle(player: Player): CharSequence =
-            controller.metadata.description.title ?: publication.metadata.title
+            controller.metadata.description.title ?: publication.metadata.title ?: ""
 
         override fun getCurrentLargeIcon(
             player: Player,

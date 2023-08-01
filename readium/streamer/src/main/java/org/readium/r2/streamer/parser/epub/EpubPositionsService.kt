@@ -7,7 +7,6 @@
 package org.readium.r2.streamer.parser.epub
 
 import kotlin.math.ceil
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Properties
@@ -18,12 +17,13 @@ import org.readium.r2.shared.publication.epub.layoutOf
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.PositionsService
+import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.archive
 import org.readium.r2.shared.util.use
 
 /**
- * Positions Service for an EPUB from its [readingOrder] and [fetcher].
+ * Positions Service for an EPUB from its [readingOrder] and [container].
  *
  * The [presentation] is used to apply different calculation strategy if the resource has a
  * reflowable or fixed layout.
@@ -34,7 +34,7 @@ import org.readium.r2.shared.util.use
 public class EpubPositionsService(
     private val readingOrder: List<Link>,
     private val presentation: Presentation,
-    private val fetcher: Fetcher,
+    private val container: Container,
     private val reflowableStrategy: ReflowableStrategy
 ) : PositionsService {
 
@@ -49,7 +49,7 @@ public class EpubPositionsService(
                 EpubPositionsService(
                     readingOrder = context.manifest.readingOrder,
                     presentation = context.manifest.metadata.presentation,
-                    fetcher = context.fetcher,
+                    container = context.container,
                     reflowableStrategy = reflowableStrategy
                 )
             }
@@ -121,7 +121,7 @@ public class EpubPositionsService(
                 if (presentation.layoutOf(link) == EpubLayout.FIXED) {
                     createFixed(link, lastPositionOfPreviousResource)
                 } else {
-                    createReflowable(link, lastPositionOfPreviousResource, fetcher)
+                    createReflowable(link, lastPositionOfPreviousResource, container)
                 }
 
             positions.lastOrNull()?.locations?.position?.let {
@@ -157,8 +157,8 @@ public class EpubPositionsService(
         )
     )
 
-    private suspend fun createReflowable(link: Link, startPosition: Int, fetcher: Fetcher): List<Locator> {
-        val positionCount = fetcher.get(link).use { resource ->
+    private suspend fun createReflowable(link: Link, startPosition: Int, container: Container): List<Locator> {
+        val positionCount = container.get(link.href).use { resource ->
             reflowableStrategy.positionCount(resource)
         }
 

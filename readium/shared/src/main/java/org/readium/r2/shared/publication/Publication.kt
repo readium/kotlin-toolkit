@@ -10,7 +10,6 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
-import java.io.File
 import java.net.URL
 import kotlin.reflect.KClass
 import kotlinx.parcelize.Parcelize
@@ -20,11 +19,8 @@ import org.readium.r2.shared.BuildConfig.DEBUG
 import org.readium.r2.shared.error.Error
 import org.readium.r2.shared.error.MessageError
 import org.readium.r2.shared.error.ThrowableError
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.removeLastComponent
-import org.readium.r2.shared.fetcher.EmptyFetcher
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.CacheService
@@ -36,6 +32,8 @@ import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
+import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.EmptyContainer
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Closeable
 
@@ -56,14 +54,14 @@ public typealias PublicationId = String
  * related to a Readium publication.
  *
  * @param manifest The manifest holding the publication metadata extracted from the publication file.
- * @param fetcher The underlying fetcher used to read publication resources.
+ * @param container The underlying container used to read publication resources.
  * The default implementation returns Resource.Exception.NotFound for all HREFs.
  * @param servicesBuilder Holds the list of service factories used to create the instances of
  * Publication.Service attached to this Publication.
  */
 public class Publication(
     manifest: Manifest,
-    private val fetcher: Fetcher = EmptyFetcher(),
+    private val container: Container = EmptyContainer(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
     @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
     public var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(),
@@ -76,7 +74,7 @@ public class Publication(
     private val services = ListPublicationServicesHolder()
 
     init {
-        services.services = servicesBuilder.build(Service.Context(manifest, fetcher, services))
+        services.services = servicesBuilder.build(Service.Context(manifest, container, services))
         _manifest = manifest.copy(links = manifest.links + services.services.map(Service::links).flatten())
     }
 
@@ -158,14 +156,14 @@ public class Publication(
         if (DEBUG) { require(!link.templated) { "You must expand templated links before calling [Publication.get]" } }
 
         services.services.forEach { service -> service.get(link)?.let { return it } }
-        return fetcher.get(link)
+        return PublicationResource(container, link)
     }
 
     /**
      * Closes any opened resource associated with the [Publication], including services.
      */
     override suspend fun close() {
-        fetcher.close()
+        container.close()
         services.close()
     }
 
@@ -289,7 +287,7 @@ public class Publication(
          */
         public class Context(
             public val manifest: Manifest,
-            public val fetcher: Fetcher,
+            public val container: Container,
             public val services: PublicationServicesHolder
         )
 
@@ -321,7 +319,7 @@ public class Publication(
          * Called by [Publication.get] for each request.
          *
          * Warning: If you need to request one of the publication resources to answer the request,
-         * use the [Fetcher] provided by the [Publication.Service.Context] instead of
+         * use the [Container] provided by the [Publication.Service.Context] instead of
          * [Publication.get], otherwise it will trigger an infinite loop.
          *
          * @return The [Resource] containing the response, or null if the service doesn't
@@ -510,13 +508,13 @@ public class Publication(
      */
     public class Builder(
         public var manifest: Manifest,
-        public var fetcher: Fetcher,
+        public var container: Container,
         public var servicesBuilder: ServicesBuilder = ServicesBuilder()
     ) {
 
         public fun build(): Publication = Publication(
             manifest = manifest,
-            fetcher = fetcher,
+            container = container,
             servicesBuilder = servicesBuilder
         )
     }

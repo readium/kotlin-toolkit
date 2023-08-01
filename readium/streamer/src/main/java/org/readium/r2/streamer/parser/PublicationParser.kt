@@ -9,8 +9,8 @@ package org.readium.r2.streamer.parser
 import org.readium.r2.shared.error.MessageError
 import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -22,7 +22,7 @@ public interface PublicationParser {
 
     public data class Asset(
         val mediaType: MediaType,
-        val fetcher: Fetcher
+        val container: Container
     )
 
     /**

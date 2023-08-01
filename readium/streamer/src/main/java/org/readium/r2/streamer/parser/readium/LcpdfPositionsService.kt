@@ -10,7 +10,6 @@
 package org.readium.r2.streamer.parser.readium
 
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -22,10 +21,10 @@ import org.readium.r2.shared.util.pdf.cachedIn
 import timber.log.Timber
 
 /**
- * Creates the [positions] for an LCP protected PDF [Publication] from its [readingOrder] and
- * [fetcher].
+ * Creates the [positions] for an LCP protected PDF [Publication] from its reading order and
+ * container.
  */
-@OptIn(PdfSupport::class, ExperimentalReadiumApi::class)
+@OptIn(ExperimentalReadiumApi::class)
 internal class LcpdfPositionsService(
     private val pdfFactory: PdfDocumentFactory<*>,
     private val context: Publication.Service.Context,
@@ -91,7 +90,7 @@ internal class LcpdfPositionsService(
         try {
             pdfFactory
                 .cachedIn(context.services)
-                .open(context.fetcher.get(link), password = null)
+                .open(context.container.get(link.href), password = null)
         } catch (e: Exception) {
             Timber.e(e)
             null

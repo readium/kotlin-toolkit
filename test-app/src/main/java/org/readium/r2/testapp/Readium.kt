@@ -76,10 +76,7 @@ class Readium(context: Context) {
         lcpService.getOrNull()?.contentProtection()
     )
 
-    val protectionRetriever = ContentProtectionSchemeRetriever(
-        contentProtections,
-        mediaTypeRetriever
-    )
+    val protectionRetriever = ContentProtectionSchemeRetriever(contentProtections)
 
     /**
      * The PublicationFactory is used to parse and open publications.

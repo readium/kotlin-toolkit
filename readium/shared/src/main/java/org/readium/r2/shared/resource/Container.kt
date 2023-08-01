@@ -6,41 +6,84 @@
 
 package org.readium.r2.shared.resource
 
-import java.io.File
 import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.Url
 
 /**
- * A resource container as an archive or a directory.
+ * A container provides access to a list of [Resource] entries.
  */
 public interface Container : SuspendingCloseable {
 
     /**
-     * Holds a container entry's.
+     * Represents a container entry's.
      */
     public interface Entry : Resource {
 
         /**
          * Absolute path to the entry in the archive.
+         *
          * It MUST start with /.
          */
         public val path: String
     }
 
     /**
-     * Direct file to this container, when available.
+     * Direct source to this container, when available.
      */
-    public val file: File? get() = null
+    public val source: Url? get() = null
 
     /**
-     * List of all the container entries of null if such a list is not available.
+     * Known entries available in the container, such as file paths on the file system or entries in
+     * a ZIP archive. This list is not exhaustive, and additional unknown resources might be
+     * reachable.
+     *
+     * If the container has an inherent resource order, it should be followed. Otherwise, entries
+     * are sorted alphabetically.
      */
-    public suspend fun entries(): Iterable<Entry>?
+    public suspend fun entries(): Iterable<Entry>
 
     /**
      * Returns the [Entry] at the given [path].
      *
-     * A [Entry] is always returned, since for some cases we can't know if it exists before
-     * actually fetching it, such as HTTP. Therefore, errors are handled at the Entry level.
+     * A [Entry] is always returned, since for some cases we can't know if it exists before actually
+     * fetching it, such as HTTP. Therefore, errors are handled at the Entry level.
      */
-    public suspend fun entry(path: String): Entry
+    public suspend fun get(path: String): Entry
 }
+
+/** A [Container] providing no resources at all. */
+public class EmptyContainer : Container {
+
+    override suspend fun entries(): Iterable<Container.Entry> = emptyList()
+
+    override suspend fun get(path: String): Container.Entry =
+        FailureResource(Resource.Exception.NotFound()).toEntry(path)
+
+    override suspend fun close() {}
+}
+
+/** A [Container] for a single [Resource]. */
+public class ResourceContainer(path: String, resource: Resource) : Container {
+
+    private val entry = resource.toEntry(path)
+
+    override suspend fun entries(): Iterable<Container.Entry> = listOf(entry)
+
+    override suspend fun get(path: String): Container.Entry {
+        if (path.takeWhile { it !in "#?" } != entry.path) {
+            return FailureResource(Resource.Exception.NotFound()).toEntry(path)
+        }
+
+        return entry
+    }
+
+    override suspend fun close() {
+        entry.close()
+    }
+}
+
+/** Convenience helper to wrap a [Resource] and a [path] into a [Container.Entry]. */
+internal fun Resource.toEntry(path: String) : Container.Entry =
+    object : Container.Entry, Resource by this {
+        override val path: String = path
+    }

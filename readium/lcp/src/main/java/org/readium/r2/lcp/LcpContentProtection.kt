@@ -12,8 +12,6 @@ import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrElse
-import org.readium.r2.shared.fetcher.ContainerFetcher
-import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.protection.ContentProtection
@@ -21,14 +19,13 @@ import org.readium.r2.shared.publication.services.contentProtectionServiceFactor
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
+import org.readium.r2.shared.resource.TransformingContainer
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.toFile
 
 internal class LcpContentProtection(
     private val lcpService: LcpService,
     private val authentication: LcpAuthenticating,
-    private val mediaTypeRetriever: MediaTypeRetriever,
     private val resourceFactory: ResourceFactory,
     private val archiveFactory: ArchiveFactory
 ) : ContentProtection {
@@ -74,7 +71,7 @@ internal class LcpContentProtection(
             ?: this.authentication
 
         val file = (asset as? Asset.Resource)?.resource?.source?.toFile()
-            ?: (asset as? Asset.Container)?.container?.file
+            ?: (asset as? Asset.Container)?.container?.source?.toFile()
 
         return file
             // This is less restrictive with regard to network availability.
@@ -91,14 +88,11 @@ internal class LcpContentProtection(
 
         val decryptor = LcpDecryptor(license.getOrNull())
 
-        val fetcher = TransformingFetcher(
-            ContainerFetcher(asset.container, mediaTypeRetriever),
-            decryptor::transform
-        )
+        val container = TransformingContainer(asset.container, decryptor::transform)
 
         val protectedFile = ContentProtection.Asset(
             mediaType = asset.mediaType,
-            fetcher = fetcher,
+            container = container,
             onCreatePublication = {
                 decryptor.retrieveEncryption = { url ->
                     manifest.linkWithHref(url.toString())

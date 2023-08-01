@@ -13,17 +13,17 @@ import androidx.annotation.StringRes
 import org.readium.r2.shared.R
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
+import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Bridge between a Content Protection technology and the Readium toolkit.
  *
  * Its responsibilities are to:
- * - Create a [Fetcher] one can access the publication through.
+ * - Create a [Container] one can access the publication through.
  * - Create a [ContentProtectionService] publication service.
  */
 public interface ContentProtection {
@@ -54,14 +54,14 @@ public interface ContentProtection {
      * Holds the result of opening an [Asset] with a [ContentProtection].
      *
      * @property mediaType Media type of the asset
-     * @property fetcher Fetcher to access the publication through
+     * @property container Container to access the publication through
      * @property onCreatePublication Called on every parsed Publication.Builder
-     * It can be used to modify the `Manifest`, the root [Fetcher] or the list of service factories
-     * of a [Publication].
+     * It can be used to modify the `Manifest`, the root [Container] or the list of service
+     * factories of a [Publication].
      */
     public data class Asset(
         val mediaType: MediaType,
-        val fetcher: Fetcher,
+        val container: Container,
         val onCreatePublication: Publication.Builder.() -> Unit = {}
     )
 

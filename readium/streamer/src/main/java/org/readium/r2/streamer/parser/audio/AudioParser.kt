@@ -18,6 +18,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
 import org.readium.r2.streamer.extensions.lowercasedExtension
+import org.readium.r2.streamer.extensions.toLink
 import org.readium.r2.streamer.parser.PublicationParser
 
 /**
@@ -38,13 +39,13 @@ public class AudioParser : PublicationParser {
 
         val readingOrder =
             if (asset.mediaType.matches(MediaType.ZAB)) {
-                asset.fetcher.links()
-                    .filter { link -> zabCanContain(link.href) }
-                    .sortedBy(Link::href)
+                asset.container.entries()
+                    .filter { entry -> zabCanContain(entry.path) }
+                    .sortedBy { it.path }
                     .toMutableList()
             } else {
                 listOfNotNull(
-                    asset.fetcher.links().firstOrNull()
+                    asset.container.entries().firstOrNull()
                 )
             }
 
@@ -57,14 +58,14 @@ public class AudioParser : PublicationParser {
         val manifest = Manifest(
             metadata = Metadata(
                 conformsTo = setOf(Publication.Profile.AUDIOBOOK),
-                localizedTitle = asset.fetcher.guessTitle()?.let { LocalizedString(it) }
+                localizedTitle = asset.container.guessTitle()?.let { LocalizedString(it) }
             ),
-            readingOrder = readingOrder
+            readingOrder = readingOrder.map { it.toLink() }
         )
 
         val publicationBuilder = Publication.Builder(
             manifest = manifest,
-            fetcher = asset.fetcher,
+            container = asset.container,
             servicesBuilder = Publication.ServicesBuilder(
                 locator = AudioLocatorService.createFactory()
             )

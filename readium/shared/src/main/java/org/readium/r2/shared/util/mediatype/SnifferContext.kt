@@ -18,6 +18,7 @@ import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.resource.*
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.use
 import timber.log.Timber
 
 public sealed class SnifferContext(
@@ -199,7 +200,7 @@ public class ContainerSnifferContext internal constructor(
      * Returns whether an Archive entry exists in this file.
      */
     internal suspend fun containsArchiveEntryAt(path: String): Boolean =
-        container.entry(path).read(0 until 16L).isSuccess
+        container.get(path).read(0 until 16L).isSuccess
 
     /**
      * Returns the Archive entry data at the given [path] in this file.
@@ -208,10 +209,9 @@ public class ContainerSnifferContext internal constructor(
         val archive = container
 
         return withContext(Dispatchers.IO) {
-            val entry = archive.entry(path)
-            val bytes = entry.read().getOrNull()
-            entry.close()
-            bytes
+            archive.get(path).use {
+                it.read().getOrNull()
+            }
         }
     }
 
@@ -219,9 +219,7 @@ public class ContainerSnifferContext internal constructor(
      * Returns whether all the Archive entry paths satisfy the given `predicate`.
      */
     internal suspend fun archiveEntriesAllSatisfy(predicate: (Container.Entry) -> Boolean): Boolean =
-        container.entries()
-            ?.all(predicate)
-            ?: false
+        container.entries().all(predicate)
 
     override suspend fun release() {
         container.close()

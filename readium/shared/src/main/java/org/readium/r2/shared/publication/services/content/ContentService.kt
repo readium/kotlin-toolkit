@@ -7,11 +7,11 @@
 package org.readium.r2.shared.publication.services.content
 
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.publication.services.content.iterators.PublicationContentIterator
 import org.readium.r2.shared.publication.services.content.iterators.ResourceContentIteratorFactory
+import org.readium.r2.shared.resource.Container
 
 /**
  * Provides a way to extract the raw [Content] of a [Publication].
@@ -52,7 +52,7 @@ public var Publication.ServicesBuilder.contentServiceFactory: ServiceFactory?
 @ExperimentalReadiumApi
 public class DefaultContentService(
     private val manifest: Manifest,
-    private val fetcher: Fetcher,
+    private val container: Container,
     private val services: PublicationServicesHolder,
     private val resourceContentIteratorFactories: List<ResourceContentIteratorFactory>
 ) : ContentService {
@@ -61,24 +61,24 @@ public class DefaultContentService(
         public fun createFactory(
             resourceContentIteratorFactories: List<ResourceContentIteratorFactory>
         ): (Publication.Service.Context) -> DefaultContentService = { context ->
-            DefaultContentService(context.manifest, context.fetcher, context.services, resourceContentIteratorFactories)
+            DefaultContentService(context.manifest, context.container, context.services, resourceContentIteratorFactories)
         }
     }
 
     override fun content(start: Locator?): Content {
-        return ContentImpl(manifest, fetcher, services, start)
+        return ContentImpl(manifest, container, services, start)
     }
 
     private inner class ContentImpl(
         val manifest: Manifest,
-        val fetcher: Fetcher,
+        val container: Container,
         val services: PublicationServicesHolder,
         val start: Locator?,
     ) : Content {
         override fun iterator(): Content.Iterator =
             PublicationContentIterator(
                 manifest = manifest,
-                fetcher = fetcher,
+                container = container,
                 services = services,
                 startLocator = start,
                 resourceContentIteratorFactories = resourceContentIteratorFactories

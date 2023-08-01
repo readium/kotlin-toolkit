@@ -19,12 +19,12 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrThrow
-import org.readium.r2.shared.fetcher.DefaultResourceContentExtractorFactory
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.ResourceContentExtractor
+import org.readium.r2.shared.resource.content.DefaultResourceContentExtractorFactory
+import org.readium.r2.shared.resource.content.ResourceContentExtractor
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.publication.services.search.SearchService.Options
+import org.readium.r2.shared.resource.Container
 import timber.log.Timber
 
 /**
@@ -40,7 +40,7 @@ import timber.log.Timber
 @ExperimentalReadiumApi
 public class StringSearchService(
     private val manifest: Manifest,
-    private val fetcher: Fetcher,
+    private val container: Container,
     private val services: PublicationServicesHolder,
     private val language: String?,
     private val snippetLength: Int,
@@ -57,7 +57,7 @@ public class StringSearchService(
             { context ->
                 StringSearchService(
                     manifest = context.manifest,
-                    fetcher = context.fetcher,
+                    container = context.container,
                     services = context.services,
                     language = context.manifest.metadata.languages.firstOrNull(),
                     snippetLength = snippetLength,
@@ -78,7 +78,7 @@ public class StringSearchService(
             Try.success(
                 Iterator(
                     manifest = manifest,
-                    fetcher = fetcher,
+                    container = container,
                     query = query,
                     options = options ?: Options(),
                     locale = options?.language?.let { Locale.forLanguageTag(it) } ?: locale,
@@ -90,7 +90,7 @@ public class StringSearchService(
 
     private inner class Iterator(
         val manifest: Manifest,
-        val fetcher: Fetcher,
+        val container: Container,
         val query: String,
         val options: Options,
         val locale: Locale
@@ -113,7 +113,7 @@ public class StringSearchService(
                 index += 1
 
                 val link = manifest.readingOrder[index]
-                val resource = fetcher.get(link)
+                val resource = container.get(link.href)
 
                 val text = extractorFactory.createExtractor(resource)?.extractText(resource)?.getOrThrow()
                 if (text == null) {

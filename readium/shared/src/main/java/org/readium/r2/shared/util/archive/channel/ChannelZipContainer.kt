@@ -130,12 +130,11 @@ internal class ChannelZipContainer(
             .filterNot { it.isDirectory }
             .mapNotNull { Entry(it) }
 
-    override suspend fun entry(path: String): Container.Entry {
-        return archive.getEntry(path.removePrefix("/"))
+    override suspend fun get(path: String): Container.Entry =
+        archive.getEntry(path.removePrefix("/"))
             ?.takeUnless { it.isDirectory }
             ?.let { Entry(it) }
             ?: FailureEntry(path)
-    }
 
     override suspend fun close() {
         withContext(Dispatchers.IO) {
