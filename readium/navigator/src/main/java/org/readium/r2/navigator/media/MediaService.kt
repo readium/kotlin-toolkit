@@ -251,12 +251,7 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
                             startForeground(id, note)
                         }
                     } else {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            stopForeground(STOP_FOREGROUND_DETACH)
-                        } else {
-                            @Suppress("DEPRECATION")
-                            stopForeground(true)
-                        }
+                        ServiceCompat.stopForeground(this@MediaService, ServiceCompat.STOP_FOREGROUND_REMOVE)
                     }
                 }
         }
