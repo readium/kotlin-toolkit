@@ -15,6 +15,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.core.os.BundleCompat
 import androidx.core.view.ViewCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -38,7 +39,7 @@ internal class R2CbzPageFragment(
         get() = Dispatchers.Main
 
     private val link: Link
-        get() = requireArguments().getParcelable("link")!!
+        get() = BundleCompat.getParcelable(requireArguments(), "link", Link::class.java)!!
 
     private lateinit var containerView: View
     private lateinit var photoView: PhotoView

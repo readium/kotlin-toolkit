@@ -14,6 +14,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import androidx.annotation.ColorInt
 import androidx.appcompat.widget.SearchView
+import androidx.core.os.BundleCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.FragmentResultListener
@@ -101,7 +102,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             this,
             FragmentResultListener { _, result ->
                 menuSearch.collapseActionView()
-                result.getParcelable<Locator>(SearchFragment::class.java.name)?.let {
+                BundleCompat.getParcelable(result, SearchFragment::class.java.name, Locator::class.java)?.let {
                     navigator.go(it)
                 }
             }
@@ -241,7 +242,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             menuSearchView.setQuery("", false)
 
             (activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.showSoftInput(
-                this.view, InputMethodManager.SHOW_FORCED
+                this.view, 0
             )
         }
     }

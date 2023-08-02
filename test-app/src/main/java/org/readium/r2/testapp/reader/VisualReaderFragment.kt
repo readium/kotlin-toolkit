@@ -262,7 +262,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
      */
     private suspend fun confirmAndInstallTtsVoice(language: Language) {
         val activity = activity ?: return
-        val tts = model.tts ?: return
+        model.tts ?: return
 
         if (
             activity.confirmDialog(

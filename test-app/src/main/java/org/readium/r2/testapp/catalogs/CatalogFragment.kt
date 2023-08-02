@@ -13,6 +13,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.BundleCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -50,7 +51,8 @@ class CatalogFragment : Fragment() {
     ): View {
 
         catalogViewModel.eventChannel.receive(this) { handleEvent(it) }
-        catalog = arguments?.get(CATALOGFEED) as Catalog
+
+        catalog = arguments?.let { BundleCompat.getParcelable(it, CATALOGFEED, Catalog::class.java) }!!
         binding = FragmentCatalogBinding.inflate(inflater, container, false)
         return binding.root
     }
