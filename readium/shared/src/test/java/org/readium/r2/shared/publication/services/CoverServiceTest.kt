@@ -19,10 +19,10 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.shared.fetcher.FileFetcher
-import org.readium.r2.shared.linkBlocking
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.readBlocking
+import org.readium.r2.shared.resource.FileResource
+import org.readium.r2.shared.resource.ResourceContainer
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.robolectric.RobolectricTestRunner
 
@@ -52,19 +52,15 @@ class CoverServiceTest {
                     Link(href = coverPath, rels = setOf("cover"))
                 )
             ),
-            fetcher = FileFetcher(coverPath, File(coverPath), MediaTypeRetriever())
+            container = ResourceContainer(coverPath, FileResource(File(coverPath), mediaType = null))
         )
     }
 
     @Test
-    fun `get works fine`() {
+    fun `get works fine`() = runBlocking {
         val service = InMemoryCoverService(coverBitmap)
         val res = service.get(Link("/~readium/cover", rels = setOf("cover")))
         assertNotNull(res)
-        assertEquals(
-            Link(href = "/~readium/cover", type = "image/png", width = 598, height = 800, rels = setOf("cover")),
-            res.linkBlocking()
-        )
 
         val bytes = res.readBlocking().getOrNull()
         assertNotNull(bytes)

@@ -14,14 +14,13 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.shared.fetcher.EmptyFetcher
-import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.Publication.Profile
 import org.readium.r2.shared.publication.services.DefaultLocatorService
 import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.positions
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
+import org.readium.r2.shared.resource.EmptyContainer
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.resource.readAsString
@@ -423,7 +422,7 @@ class ServicesBuilderTest {
 
     private val context = Publication.Service.Context(
         manifest = Manifest(metadata = Metadata(localizedTitle = LocalizedString())),
-        fetcher = EmptyFetcher(),
+        container = EmptyContainer(),
         services = ListPublicationServicesHolder()
     )
 

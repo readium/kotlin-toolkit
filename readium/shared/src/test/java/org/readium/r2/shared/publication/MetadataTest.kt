@@ -180,10 +180,6 @@ class MetadataTest {
         )
     }
 
-    @Test fun `parse JSON requires {title}`() {
-        assertNull(Metadata.fromJSON(JSONObject("{'duration': 4.24}")))
-    }
-
     @Test fun `parse JSON {duration} requires positive`() {
         assertEquals(
             Metadata(localizedTitle = LocalizedString("t")),

@@ -1,23 +1,28 @@
-package org.readium.r2.shared.fetcher
+package org.readium.r2.shared.resource
 
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.fail
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.toFile
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class BufferingResourceTest {
 
     @Test
     fun `get file`() {
-        assertEquals(file, sut().file)
+        assertEquals(file, sut().source?.toFile())
     }
 
     @Test
-    fun `get link`() = runBlocking {
-        assertEquals(link, sut().link())
+    fun `get media type`() = runBlocking {
+        assertEquals(MediaType.EPUB, sut().mediaType().getOrNull())
     }
 
     @Test
@@ -117,10 +122,9 @@ class BufferingResourceTest {
         }
     }
 
-    private val link = Link(href = "file")
-    private val file = Fixtures("fetcher").fileAt("epub.epub")
+    private val file = Fixtures("resource").fileAt("epub.epub")
     private val data = file.readBytes()
-    private val resource = FileFetcher.FileResource(link, file)
+    private val resource = FileResource(file, MediaType.EPUB)
 
     private fun sut(bufferSize: Long = 1024): BufferingResource =
         BufferingResource(resource, bufferSize = bufferSize)

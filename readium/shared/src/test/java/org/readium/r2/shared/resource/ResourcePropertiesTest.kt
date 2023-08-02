@@ -1,4 +1,4 @@
-package org.readium.r2.shared.publication.archive
+package org.readium.r2.shared.resource
 
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
@@ -6,11 +6,11 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
-import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.resource.Resource.Properties
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-class PropertiesTest {
+class ResourcePropertiesTest {
 
     @Test
     fun `get no archive`() {

@@ -8,7 +8,6 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.fetcher.StringResource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.services.content.Content
@@ -17,6 +16,7 @@ import org.readium.r2.shared.publication.services.content.Content.AttributeKey.C
 import org.readium.r2.shared.publication.services.content.Content.AttributeKey.Companion.LANGUAGE
 import org.readium.r2.shared.publication.services.content.Content.TextElement
 import org.readium.r2.shared.publication.services.content.Content.TextElement.Segment
+import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.util.Language
 import org.robolectric.RobolectricTestRunner
 
@@ -178,7 +178,7 @@ class HtmlResourceContentIteratorTest {
         startLocator: Locator = locator,
         totalProgressionRange: ClosedRange<Double>? = null
     ): HtmlResourceContentIterator =
-        HtmlResourceContentIterator(StringResource(link, html), totalProgressionRange = totalProgressionRange, startLocator)
+        HtmlResourceContentIterator(StringResource(html, link), totalProgressionRange = totalProgressionRange, startLocator)
 
     private suspend fun HtmlResourceContentIterator.elements(): List<Content.Element> =
         buildList {

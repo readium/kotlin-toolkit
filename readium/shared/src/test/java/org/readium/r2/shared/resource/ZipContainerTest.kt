@@ -18,38 +18,44 @@ import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
+import org.readium.r2.shared.util.use
+import org.robolectric.ParameterizedRobolectricTestRunner
+import timber.log.Timber
 
-@RunWith(Parameterized::class)
-class ZipContainerTest(val container: Container) {
+@RunWith(ParameterizedRobolectricTestRunner::class)
+class ZipContainerTest(val sut: suspend () -> Container) {
 
     companion object {
 
-        @Parameterized.Parameters
+        @ParameterizedRobolectricTestRunner.Parameters
         @JvmStatic
-        fun archives(): List<Container> {
+        fun archives(): List<suspend () -> Container> {
             val epubZip = ZipContainerTest::class.java.getResource("epub.epub")
             assertNotNull(epubZip)
-            val zipArchive = runBlocking {
-                DefaultArchiveFactory()
-                    .create(FileResource(File(epubZip.path)), password = null)
-                    .getOrNull()
+
+            val zipArchive = suspend {
+                assertNotNull(
+                    DefaultArchiveFactory()
+                        .create(FileResource(File(epubZip.path), mediaType = null), password = null)
+                        .getOrNull()
+                )
             }
-            assertNotNull(zipArchive)
-            val apacheZipArchive = runBlocking {
+
+            val apacheZipArchive = suspend {
                 ChannelZipArchiveFactory()
                     .openFile(File(epubZip.path))
             }
-            assertNotNull(apacheZipArchive)
 
             val epubExploded = ZipContainerTest::class.java.getResource("epub")
             assertNotNull(epubExploded)
-            val explodedArchive = runBlocking {
-                DirectoryContainerFactory()
-                    .create(File(epubExploded.path))
-                    .getOrNull()
+            val explodedArchive = suspend {
+                assertNotNull(
+                    DirectoryContainerFactory()
+                        .create(File(epubExploded.path))
+                        .getOrNull()
+                )
             }
             assertNotNull(explodedArchive)
 
@@ -58,57 +64,71 @@ class ZipContainerTest(val container: Container) {
     }
 
     @Test
-    fun `Entry list is correct`() {
-        assertThat(runBlocking { container.entries()?.map { it.path }.orEmpty() })
-            .contains(
-                "/mimetype",
-                "/EPUB/cover.xhtml",
-                "/EPUB/css/epub.css",
-                "/EPUB/css/nav.css",
-                "/EPUB/images/cover.png",
-                "/EPUB/nav.xhtml",
-                "/EPUB/package.opf",
-                "/EPUB/s04.xhtml",
-                "/EPUB/toc.ncx",
-                "/META-INF/container.xml"
-            )
+    fun `Entry list is correct`(): Unit = runBlocking {
+        sut().use { container ->
+            assertThat(container.entries().map { it.path })
+                .contains(
+                    "/mimetype",
+                    "/EPUB/cover.xhtml",
+                    "/EPUB/css/epub.css",
+                    "/EPUB/css/nav.css",
+                    "/EPUB/images/cover.png",
+                    "/EPUB/nav.xhtml",
+                    "/EPUB/package.opf",
+                    "/EPUB/s04.xhtml",
+                    "/EPUB/toc.ncx",
+                    "/META-INF/container.xml"
+                )
+        }
     }
 
     @Test
-    fun `Attempting to read a missing entry throws`() {
-        assertFails { runBlocking { container.entry("unknown").read().getOrThrow() } }
+    fun `Attempting to read a missing entry throws`(): Unit = runBlocking {
+        sut().use { container ->
+            assertFails { container.get("/unknown").read().getOrThrow() }
+        }
     }
 
     @Test
-    fun `Fully reading an entry works well`() {
-        val bytes = runBlocking { container.entry("mimetype").read().getOrThrow() }
-        assertEquals("application/epub+zip", bytes.toString(StandardCharsets.UTF_8))
+    fun `Fully reading an entry works well`(): Unit = runBlocking {
+        sut().use { container ->
+            val bytes = container.get("/mimetype").read().getOrThrow()
+            assertEquals("application/epub+zip", bytes.toString(StandardCharsets.UTF_8))
+        }
     }
 
     @Test
-    fun `Reading a range of an entry works well`() {
-        val bytes = runBlocking { container.entry("mimetype").read(0..10L).getOrThrow() }
-        assertEquals("application", bytes.toString(StandardCharsets.UTF_8))
-        assertEquals(11, bytes.size)
+    fun `Reading a range of an entry works well`(): Unit = runBlocking {
+        sut().use { container ->
+            val bytes = container.get("/mimetype").read(0..10L).getOrThrow()
+            assertEquals("application", bytes.toString(StandardCharsets.UTF_8))
+            assertEquals(11, bytes.size)
+        }
     }
 
     @Test
-    fun `Out of range indexes are clamped to the available length`() {
-        val bytes = runBlocking { container.entry("mimetype").read(-5..60L).getOrThrow() }
-        assertEquals("application/epub+zip", bytes.toString(StandardCharsets.UTF_8))
-        assertEquals(20, bytes.size)
+    fun `Out of range indexes are clamped to the available length`(): Unit = runBlocking {
+        sut().use { container ->
+            val bytes = container.get("/mimetype").read(-5..60L).getOrThrow()
+            assertEquals("application/epub+zip", bytes.toString(StandardCharsets.UTF_8))
+            assertEquals(20, bytes.size)
+        }
     }
 
     @Test
-    fun `Decreasing ranges are understood as empty ones`() {
-        val bytes = runBlocking { container.entry("mimetype").read(60..20L).getOrThrow() }
-        assertEquals("", bytes.toString(StandardCharsets.UTF_8))
-        assertEquals(0, bytes.size)
+    fun `Decreasing ranges are understood as empty ones`(): Unit = runBlocking {
+        sut().use { container ->
+            val bytes = container.get("/mimetype").read(60..20L).getOrThrow()
+            assertEquals("", bytes.toString(StandardCharsets.UTF_8))
+            assertEquals(0, bytes.size)
+        }
     }
 
     @Test
-    fun `Computing size works well`() {
-        val size = runBlocking { container.entry("mimetype").length().getOrThrow() }
-        assertEquals(20L, size)
+    fun `Computing size works well`(): Unit = runBlocking {
+        sut().use { container ->
+            val size = container.get("/mimetype").length().getOrThrow()
+            assertEquals(20L, size)
+        }
     }
 }

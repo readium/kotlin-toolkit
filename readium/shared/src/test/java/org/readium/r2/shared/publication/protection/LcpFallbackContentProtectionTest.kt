@@ -90,7 +90,6 @@ class LcpFallbackContentProtectionTest {
     private fun supports(mediaType: MediaType, resources: Map<String, String>): Boolean = runBlocking {
         LcpFallbackContentProtection().supports(
             Asset.Container(
-                name = "fake name",
                 mediaType = mediaType,
                 exploded = false,
                 container = TestContainer(resources)
