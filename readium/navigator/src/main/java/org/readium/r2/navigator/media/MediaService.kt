@@ -251,7 +251,7 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
                             startForeground(id, note)
                         }
                     } else {
-                        ServiceCompat.stopForeground(this@MediaService, ServiceCompat.STOP_FOREGROUND_REMOVE)
+                        ServiceCompat.stopForeground(this@MediaService, ServiceCompat.STOP_FOREGROUND_DETACH)
                     }
                 }
         }
