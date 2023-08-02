@@ -143,14 +143,14 @@ private fun <T> MenuItem(
                 )
             }
         ) { dismiss ->
-            for (value in values) {
+            for (aValue in values) {
                 DropdownMenuItem(
                     onClick = {
                         dismiss()
-                        onValueChanged(value)
+                        onValueChanged(aValue)
                     }
                 ) {
-                    Text(formatValue(value))
+                    Text(formatValue(aValue))
                 }
             }
         }

@@ -13,6 +13,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Build
 import android.os.IBinder
+import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
@@ -53,13 +54,14 @@ class MediaService : MediaSessionService() {
             sessionMutable.asStateFlow()
 
         fun closeSession() {
-            stopForeground(true)
+            ServiceCompat.stopForeground(this@MediaService, ServiceCompat.STOP_FOREGROUND_REMOVE)
             session.value?.mediaSession?.release()
             session.value?.navigator?.close()
             session.value?.coroutineScope?.cancel()
             sessionMutable.value = null
         }
 
+        @OptIn(FlowPreview::class)
         fun <N> openSession(
             navigator: N,
             bookId: Long

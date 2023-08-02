@@ -373,9 +373,7 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
 
         // Set an elevation value for popup window
         // Call requires API level 21
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mPopupWindow.elevation = 5.0f
-        }
+        mPopupWindow.elevation = 5.0f
 
         val textView = customView.findViewById(R.id.footnote) as TextView
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

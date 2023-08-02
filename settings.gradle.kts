@@ -20,7 +20,7 @@ pluginManagement {
     plugins {
         id("com.android.application") version ("8.1.0")
         id("com.android.library") version ("8.1.0")
-        id("io.github.gradle-nexus.publish-plugin") version ("1.1.0")
+        id("io.github.gradle-nexus.publish-plugin") version ("1.3.0")
         id("org.jetbrains.dokka") version ("1.8.20")
         id("org.jetbrains.kotlin.android") version ("1.9.0")
         id("org.jetbrains.kotlin.plugin.serialization") version ("1.9.0")

@@ -18,6 +18,8 @@ import android.os.ResultReceiver
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.widget.Toast
+import androidx.core.app.ServiceCompat
+import androidx.core.os.BundleCompat
 import androidx.media.MediaBrowserServiceCompat
 import kotlin.reflect.KMutableProperty0
 import kotlinx.coroutines.*
@@ -151,7 +153,7 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
                 return null
             }
 
-            val locator = (extras?.getParcelable(EXTRA_LOCATOR) as? Locator)
+            val locator = extras?.let { BundleCompat.getParcelable(it, EXTRA_LOCATOR, Locator::class.java) }
                 ?: href
                     ?.let { navigator.publication.linkWithHref(it) }
                     ?.let { navigator.publication.locatorFromLink(it) }
@@ -178,7 +180,7 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
         override fun onNotificationCancelled(notificationId: Int) {
             this@MediaService.notificationId = null
             this@MediaService.notification = null
-            stopForeground(true)
+            ServiceCompat.stopForeground(this@MediaService, ServiceCompat.STOP_FOREGROUND_REMOVE)
 
             if (currentNavigator.value?.isPlaying == false) {
                 onPlayerStopped()
@@ -249,7 +251,7 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
                             startForeground(id, note)
                         }
                     } else {
-                        stopForeground(false)
+                        ServiceCompat.stopForeground(this@MediaService, ServiceCompat.STOP_FOREGROUND_DETACH)
                     }
                 }
         }

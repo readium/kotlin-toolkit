@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
@@ -41,7 +42,7 @@ class NavigationFragment : Fragment() {
             publication = it.publication
         }
 
-        links = requireNotNull(requireArguments().getParcelableArrayList(LINKS_ARG))
+        links = requireNotNull(BundleCompat.getParcelableArrayList(requireArguments(), LINKS_ARG, Link::class.java))
     }
 
     override fun onCreateView(

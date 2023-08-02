@@ -7,6 +7,7 @@
 package org.readium.r2.testapp.outline
 
 import android.os.Bundle
+import androidx.core.os.BundleCompat
 import org.readium.r2.shared.publication.Locator
 
 object OutlineContract {
@@ -21,7 +22,7 @@ object OutlineContract {
         Bundle().apply { putParcelable(DESTINATION_KEY, locator) }
 
     fun parseResult(result: Bundle): Result {
-        val destination = requireNotNull(result.getParcelable<Locator>(DESTINATION_KEY))
+        val destination = requireNotNull(BundleCompat.getParcelable(result, DESTINATION_KEY, Locator::class.java))
         return Result(destination)
     }
 }

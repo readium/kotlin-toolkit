@@ -9,11 +9,17 @@ package org.readium.r2.testapp.catalogs
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.BundleCompat
 import androidx.core.os.bundleOf
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
@@ -45,7 +51,8 @@ class CatalogFragment : Fragment() {
     ): View {
 
         catalogViewModel.eventChannel.receive(this) { handleEvent(it) }
-        catalog = arguments?.get(CATALOGFEED) as Catalog
+
+        catalog = arguments?.let { BundleCompat.getParcelable(it, CATALOGFEED, Catalog::class.java) }!!
         binding = FragmentCatalogBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -55,7 +62,6 @@ class CatalogFragment : Fragment() {
         publicationAdapter = PublicationAdapter(catalogViewModel::publication::set)
         navigationAdapter = NavigationAdapter(catalog.type)
         groupAdapter = GroupAdapter(catalog.type, catalogViewModel::publication::set)
-        setHasOptionsMenu(true)
 
         binding.catalogNavigationList.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -84,63 +90,70 @@ class CatalogFragment : Fragment() {
 
         (activity as MainActivity).supportActionBar?.title = catalog.title
 
-        // TODO this feels hacky, I don't want to parse the file if it has not changed
-        if (catalogViewModel.parseData.value == null) {
-            binding.catalogProgressBar.visibility = View.VISIBLE
-            catalogViewModel.parseCatalog(catalog)
-        }
-        catalogViewModel.parseData.observe(viewLifecycleOwner, { result ->
+        catalogViewModel.parseCatalog(catalog)
+        binding.catalogProgressBar.visibility = View.VISIBLE
 
-            facets = result.feed?.facets ?: mutableListOf()
+        val menuHost: MenuHost = requireActivity()
 
-            if (facets.size > 0) {
-                showFacetMenu = true
-            }
-            requireActivity().invalidateOptionsMenu()
-
-            navigationAdapter.submitList(result.feed!!.navigation)
-            publicationAdapter.submitList(result.feed!!.publications)
-            groupAdapter.submitList(result.feed!!.groups)
-
-            binding.catalogProgressBar.visibility = View.GONE
-        })
-    }
-
-    private fun handleEvent(event: CatalogViewModel.Event.FeedEvent) {
-        val message =
-            when (event) {
-                is CatalogViewModel.Event.FeedEvent.CatalogParseFailed -> getString(R.string.failed_parsing_catalog)
-            }
-        binding.catalogProgressBar.visibility = View.GONE
-        Snackbar.make(
-            requireView(),
-            message,
-            Snackbar.LENGTH_LONG
-        ).show()
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        menu.clear()
-        if (showFacetMenu) {
-            facets.let {
-                for (i in facets.indices) {
-                    val submenu = menu.addSubMenu(facets[i].title)
-                    for (link in facets[i].links) {
-                        val item = submenu.add(link.title)
-                        item.setOnMenuItemClickListener {
-                            val catalog1 = Catalog(
-                                title = link.title!!,
-                                href = link.href,
-                                type = catalog.type
-                            )
-                            val bundle = bundleOf(CATALOGFEED to catalog1)
-                            Navigation.findNavController(requireView())
-                                .navigate(R.id.action_navigation_catalog_self, bundle)
-                            true
+        menuHost.addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                    menu.clear()
+                    if (showFacetMenu) {
+                        facets.let {
+                            for (i in facets.indices) {
+                                val submenu = menu.addSubMenu(facets[i].title)
+                                for (link in facets[i].links) {
+                                    val item = submenu.add(link.title)
+                                    item.setOnMenuItemClickListener {
+                                        val catalog1 = Catalog(
+                                            title = link.title!!,
+                                            href = link.href,
+                                            type = catalog.type
+                                        )
+                                        val bundle = bundleOf(CATALOGFEED to catalog1)
+                                        Navigation.findNavController(requireView())
+                                            .navigate(R.id.action_navigation_catalog_self, bundle)
+                                        true
+                                    }
+                                }
+                            }
                         }
                     }
                 }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    return false
+                }
+            },
+            viewLifecycleOwner,
+            Lifecycle.State.RESUMED
+        )
+    }
+
+    private fun handleEvent(event: CatalogViewModel.Event.FeedEvent) {
+        when (event) {
+            is CatalogViewModel.Event.FeedEvent.CatalogParseFailed -> {
+                Snackbar.make(
+                    requireView(),
+                    getString(R.string.failed_parsing_catalog),
+                    Snackbar.LENGTH_LONG
+                ).show()
+            }
+
+            is CatalogViewModel.Event.FeedEvent.CatalogParseSuccess -> {
+                facets = event.result.feed?.facets ?: mutableListOf()
+
+                if (facets.size > 0) {
+                    showFacetMenu = true
+                }
+                requireActivity().invalidateOptionsMenu()
+
+                navigationAdapter.submitList(event.result.feed!!.navigation)
+                publicationAdapter.submitList(event.result.feed!!.publications)
+                groupAdapter.submitList(event.result.feed!!.groups)
             }
         }
+        binding.catalogProgressBar.visibility = View.GONE
     }
 }
