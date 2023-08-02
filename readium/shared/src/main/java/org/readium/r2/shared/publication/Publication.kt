@@ -35,8 +35,10 @@ import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.EmptyContainer
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.fallback
 import org.readium.r2.shared.util.Closeable
+import org.readium.r2.shared.util.mediatype.MediaType
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
 
@@ -167,6 +169,8 @@ public class Publication(
                     null
                 }
             }
+            // FIXME: To remove when the `Resource` properly sniffs its content media type.
+            .withMediaType(link.mediaType)
     }
 
     /**
@@ -588,3 +592,9 @@ public class Publication(
     @Suppress("UNUSED_PARAMETER")
     public fun contentLayoutForLanguage(language: String?): ReadingProgression = metadata.effectiveReadingProgression
 }
+
+private fun Resource.withMediaType(mediaType: MediaType): Resource =
+    object : Resource by this {
+        override suspend fun mediaType(): ResourceTry<MediaType?> =
+            ResourceTry.success(mediaType)
+    }
