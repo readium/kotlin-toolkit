@@ -12,14 +12,14 @@ import org.readium.r2.shared.util.mediatype.MediaType
 /**
  * Wraps a [Resource] which will be created only when first accessing one of its members.
  */
-public class LazyResource(
+public open class LazyResource<R : Resource>(
     override val source: Url? = null,
-    private val factory: suspend () -> Resource
+    private val factory: suspend () -> R
 ) : Resource {
 
-    private lateinit var _resource: Resource
+    private lateinit var _resource: R
 
-    private suspend fun resource(): Resource {
+    protected suspend fun resource(): R {
         if (!::_resource.isInitialized)
             _resource = factory()
 
@@ -51,5 +51,5 @@ public class LazyResource(
         }
 }
 
-public fun Resource.flatMap(transform: suspend (Resource) -> Resource): Resource =
+public fun <R : Resource> Resource.flatMap(transform: suspend (Resource) -> R): LazyResource<R> =
     LazyResource { transform(this) }

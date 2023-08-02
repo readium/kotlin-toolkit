@@ -35,6 +35,7 @@ import org.readium.r2.shared.publication.services.search.SearchService
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.EmptyContainer
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.fallback
 import org.readium.r2.shared.util.Closeable
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
@@ -156,7 +157,16 @@ public class Publication(
         if (DEBUG) { require(!link.templated) { "You must expand templated links before calling [Publication.get]" } }
 
         services.services.forEach { service -> service.get(link)?.let { return it } }
-        return PublicationResource(container, link)
+
+        return container.get(link.href)
+            .fallback { error ->
+                if (error is Resource.Exception.NotFound) {
+                    // Try again after removing query and fragment.
+                    container.get(link.href.takeWhile { it !in "#?" })
+                } else {
+                    null
+                }
+            }
     }
 
     /**

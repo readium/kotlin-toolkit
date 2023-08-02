@@ -111,9 +111,7 @@ public abstract class GeneratedCoverService : CoverService {
                 val error = Exception("Unable to convert cover to PNG.")
                 FailureResource(error)
             } else {
-                @Suppress("NAME_SHADOWING")
-                val link = coverLink.copy(width = cover.width, height = cover.height)
-                BytesResource(png, link)
+                BytesResource(png, coverLink)
             }
         }
     }

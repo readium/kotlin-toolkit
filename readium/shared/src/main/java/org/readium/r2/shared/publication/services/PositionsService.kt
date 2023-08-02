@@ -53,14 +53,14 @@ public interface PositionsService : Publication.Service {
             return null
 
         return StringResource(positionsLink) {
-                val positions = positions()
-                Try.success(
-                    JSONObject().apply {
-                        put("total", positions.size)
-                        put("positions", positions.toJSON())
-                    }.toString()
-                )
-            }
+            val positions = positions()
+            Try.success(
+                JSONObject().apply {
+                    put("total", positions.size)
+                    put("positions", positions.toJSON())
+                }.toString()
+            )
+        }
     }
 }
 

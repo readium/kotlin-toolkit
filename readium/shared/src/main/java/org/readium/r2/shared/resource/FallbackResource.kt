@@ -6,13 +6,6 @@
 
 package org.readium.r2.shared.resource
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
-import kotlinx.coroutines.cancel
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -21,40 +14,48 @@ import org.readium.r2.shared.util.mediatype.MediaType
  */
 public class FallbackResource(
     private val originalResource: Resource,
-    private val fallbackResourceFactory: (Resource.Exception) -> Resource
+    private val fallbackResourceFactory: (Resource.Exception) -> Resource?
 ) : Resource {
 
-    private val coroutineScope =
-        CoroutineScope(Dispatchers.Default)
+    override val source: Url? = null
 
-    private val resource: Deferred<Resource> =
-        coroutineScope.async {
-            when (val result = originalResource.length()) {
-                is Try.Success -> originalResource
-                is Try.Failure -> fallbackResourceFactory(result.value)
+    override suspend fun mediaType(): ResourceTry<MediaType?> =
+        withResource { mediaType() }
+
+    override suspend fun properties(): ResourceTry<Resource.Properties> =
+        withResource { properties() }
+
+    override suspend fun length(): ResourceTry<Long> =
+        withResource { length() }
+
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+        withResource { read(range) }
+
+    override suspend fun close() {
+        if (::_resource.isInitialized) {
+            _resource.close()
+        }
+    }
+
+    private lateinit var _resource: Resource
+
+    private suspend fun <T> withResource(action: suspend Resource.() -> ResourceTry<T>): ResourceTry<T> {
+        if (::_resource.isInitialized) {
+            return _resource.action()
+        }
+
+        var resource = originalResource
+
+        var result = resource.action()
+        result.onFailure { error ->
+            fallbackResourceFactory(error)?.let { fallbackResource ->
+                resource = fallbackResource
+                result = resource.action()
             }
         }
 
-    override val source: Url? get() = originalResource.source
-
-    override suspend fun properties(): ResourceTry<Resource.Properties> =
-        resource.await().properties()
-
-    override suspend fun mediaType(): ResourceTry<MediaType?> =
-        resource.await().mediaType()
-
-    override suspend fun length(): ResourceTry<Long> =
-        resource.await().length()
-
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
-        resource.await().read(range)
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override suspend fun close() {
-        coroutineScope.cancel()
-        if (resource.isCompleted) {
-            resource.getCompleted().close()
-        }
+        _resource = resource
+        return result
     }
 }
 
@@ -62,7 +63,7 @@ public class FallbackResource(
  * Falls back to alternative resources when the receiver fails.
  */
 public fun Resource.fallback(
-    fallbackResourceFactory: (Resource.Exception) -> Resource
+    fallbackResourceFactory: (Resource.Exception) -> Resource?
 ): Resource =
     FallbackResource(this, fallbackResourceFactory)
 
