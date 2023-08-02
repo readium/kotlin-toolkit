@@ -16,7 +16,6 @@ import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.extensions.requireLengthFitInt
-import org.readium.r2.shared.fetcher.*
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource

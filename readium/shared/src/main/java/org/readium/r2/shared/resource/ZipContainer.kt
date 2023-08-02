@@ -19,6 +19,7 @@ import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.optNullableBoolean
 import org.readium.r2.shared.extensions.optNullableLong
 import org.readium.r2.shared.extensions.readFully
+import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.io.CountingInputStream
@@ -84,7 +85,7 @@ public var Resource.Properties.Builder.archive: ArchiveProperties?
         if (value == null) {
             remove(archiveKey)
         } else {
-            put(archiveKey, value.toJSON())
+            put(archiveKey, value.toJSON().toMap())
         }
     }
 

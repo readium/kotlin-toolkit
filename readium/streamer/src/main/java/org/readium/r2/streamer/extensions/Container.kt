@@ -39,7 +39,7 @@ internal suspend fun Container.guessTitle(): String? {
 }
 
 /** Returns a [File] to the directory containing all paths, if there is such a directory. */
-private fun Iterable<Container.Entry>.pathCommonFirstComponent(): File? =
+internal fun Iterable<Container.Entry>.pathCommonFirstComponent(): File? =
     map { it.path.removePrefix("/").substringBefore("/") }
         .distinct()
         .takeIf { it.size == 1 }

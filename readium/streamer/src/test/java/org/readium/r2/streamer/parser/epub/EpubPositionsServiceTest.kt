@@ -9,22 +9,22 @@
 
 package org.readium.r2.streamer.parser.epub
 
-import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
+import org.readium.r2.shared.resource.ArchiveProperties
+import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.resource.archive
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -42,7 +42,7 @@ class EpubPositionsServiceTest {
     fun `Positions  from a {readingOrder} with one resource`() {
         val service = createService(
             readingOrder = listOf(
-                Pair(1L, Link(href = "res", type = "application/xml"))
+                ReadingOrderItem(href = "res", length = 1, type = MediaType.XML)
             )
         )
 
@@ -66,9 +66,9 @@ class EpubPositionsServiceTest {
     fun `Positions from a {readingOrder} with a few resources`() {
         val service = createService(
             readingOrder = listOf(
-                Pair(1L, Link(href = "res")),
-                Pair(2L, Link(href = "chap1", type = "application/xml")),
-                Pair(2L, Link(href = "chap2", type = "text/html", title = "Chapter 2"))
+                ReadingOrderItem("res", length = 1),
+                ReadingOrderItem("chap1", length = 2, MediaType.XML),
+                ReadingOrderItem("chap2", length = 2, MediaType.HTML, title = "Chapter 2")
             )
         )
 
@@ -111,8 +111,8 @@ class EpubPositionsServiceTest {
     fun `{type} fallbacks on text-html`() {
         val service = createService(
             readingOrder = listOf(
-                Pair(1L, Link(href = "chap1", properties = createProperties(layout = EpubLayout.REFLOWABLE))),
-                Pair(1L, Link(href = "chap2", properties = createProperties(layout = EpubLayout.FIXED)))
+                ReadingOrderItem("chap1", length = 1, layout = EpubLayout.REFLOWABLE),
+                ReadingOrderItem("chap2", length = 1, layout = EpubLayout.FIXED)
             )
         )
 
@@ -146,9 +146,9 @@ class EpubPositionsServiceTest {
         val service = createService(
             layout = EpubLayout.FIXED,
             readingOrder = listOf(
-                Pair(10000L, Link(href = "res")),
-                Pair(20000L, Link(href = "chap1", type = "application/xml")),
-                Pair(40000L, Link(href = "chap2", type = "text/html", title = "Chapter 2"))
+                ReadingOrderItem("res", length = 10000),
+                ReadingOrderItem("chap1", length = 20000, MediaType.XML),
+                ReadingOrderItem("chap2", length = 40000, MediaType.HTML, title = "Chapter 2")
             )
         )
 
@@ -192,11 +192,11 @@ class EpubPositionsServiceTest {
         val service = createService(
             layout = EpubLayout.REFLOWABLE,
             readingOrder = listOf(
-                Pair(0L, Link(href = "chap1")),
-                Pair(49L, Link(href = "chap2", type = "application/xml")),
-                Pair(50L, Link(href = "chap3", type = "text/html", title = "Chapter 3")),
-                Pair(51L, Link(href = "chap4")),
-                Pair(120L, Link(href = "chap5"))
+                ReadingOrderItem("chap1", length = 0),
+                ReadingOrderItem("chap2", length = 49, MediaType.XML),
+                ReadingOrderItem("chap3", length = 50, MediaType.HTML, title = "Chapter 3"),
+                ReadingOrderItem("chap4", length = 51),
+                ReadingOrderItem("chap5", length = 120)
             ),
             reflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(pageLength = 50)
         )
@@ -287,7 +287,7 @@ class EpubPositionsServiceTest {
         val service = createService(
             layout = null,
             readingOrder = listOf(
-                Pair(60L, Link(href = "chap1"))
+                ReadingOrderItem("chap1", length = 60)
             ),
             reflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(pageLength = 50)
         )
@@ -322,9 +322,9 @@ class EpubPositionsServiceTest {
         val service = createService(
             layout = EpubLayout.FIXED,
             readingOrder = listOf(
-                Pair(20000L, Link(href = "chap1")),
-                Pair(60L, Link(href = "chap2", properties = createProperties(layout = EpubLayout.REFLOWABLE))),
-                Pair(20000L, Link(href = "chap3", properties = createProperties(layout = EpubLayout.FIXED)))
+                ReadingOrderItem("chap1", length = 20000),
+                ReadingOrderItem("chap2", length = 60, layout = EpubLayout.REFLOWABLE),
+                ReadingOrderItem("chap3", length = 20000, layout = EpubLayout.FIXED)
             ),
             reflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(pageLength = 50)
         )
@@ -377,8 +377,8 @@ class EpubPositionsServiceTest {
         val service = createService(
             layout = EpubLayout.REFLOWABLE,
             readingOrder = listOf(
-                Pair(60L, Link(href = "chap1", properties = createProperties(archiveEntryLength = 20L))),
-                Pair(60L, Link(href = "chap2"))
+                ReadingOrderItem("chap1", length = 60, archiveEntryLength = 20L),
+                ReadingOrderItem("chap2", length = 60)
             ),
             reflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(pageLength = 50)
         )
@@ -426,8 +426,8 @@ class EpubPositionsServiceTest {
         val service = createService(
             layout = EpubLayout.REFLOWABLE,
             readingOrder = listOf(
-                Pair(60L, Link(href = "chap1", properties = createProperties(originalLength = 20L))),
-                Pair(60L, Link(href = "chap2"))
+                ReadingOrderItem("chap1", length = 60, originalLength = 20L),
+                ReadingOrderItem("chap2", length = 60)
             ),
             reflowableStrategy = EpubPositionsService.ReflowableStrategy.OriginalLength(pageLength = 50)
         )
@@ -468,30 +468,38 @@ class EpubPositionsServiceTest {
 
     private fun createService(
         layout: EpubLayout? = null,
-        readingOrder: List<Pair<Long, Link>>,
+        readingOrder: List<ReadingOrderItem>,
         reflowableStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(pageLength = 50)
     ) = EpubPositionsService(
-        readingOrder = readingOrder.map { it.second },
-        fetcher = object : Fetcher {
+        readingOrder = readingOrder.map { it.link },
+        container = object : Container {
 
-            private fun findResource(relativePath: String): Pair<Long, Link>? =
-                readingOrder.find { it.second.href == relativePath }
+            private fun find(relativePath: String): ReadingOrderItem? =
+                readingOrder.find { it.link.href == relativePath }
 
-            override suspend fun links(): List<Link> = emptyList()
+            override suspend fun entries(): Iterable<Container.Entry> = emptyList()
 
-            override fun get(link: Link): Resource = object : Resource {
-                override val href: Href = Href(link.href)
-                override suspend fun mediaType(): ResourceTry<MediaType?> = Try.success(link.mediaType)
-                override suspend fun name(): ResourceTry<String?> = Try.success(null)
-                override suspend fun properties(): ResourceTry<Properties> = Try.success(Properties())
+            override fun get(path: String): Container.Entry {
+                val item = requireNotNull(find(path))
 
-                override suspend fun length() = findResource(link.href)
-                    ?.let { Try.success(it.first) }
-                    ?: Try.failure(Resource.Exception.NotFound())
+                return object : Container.Entry {
+                    override val path: String = path
 
-                override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = Try.success(ByteArray(0))
+                    override val source: Url? = null
 
-                override suspend fun close() {}
+                    override suspend fun mediaType(): ResourceTry<MediaType?> =
+                        Try.success(item.link.mediaType)
+
+                    override suspend fun properties(): ResourceTry<Resource.Properties> =
+                        Try.success(item.resourceProperties)
+
+                    override suspend fun length() = Try.success(item.length)
+
+                    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
+                        Try.success(ByteArray(0))
+
+                    override suspend fun close() {}
+                }
             }
 
             override suspend fun close() {}
@@ -500,27 +508,41 @@ class EpubPositionsServiceTest {
         reflowableStrategy = reflowableStrategy
     )
 
-    private fun createProperties(
-        layout: EpubLayout? = null,
-        archiveEntryLength: Long? = null,
-        originalLength: Long? = null
-    ): Properties {
-        val properties = mutableMapOf<String, Any>()
-        if (layout != null) {
-            properties["layout"] = layout.value
+    class ReadingOrderItem(
+        val href: String,
+        val length: Long,
+        val type: MediaType? = null,
+        val title: String? = null,
+        val archiveEntryLength: Long? = null,
+        val originalLength: Long? = null,
+        val layout: EpubLayout? = null,
+    ) {
+        val link: Link = Link(
+            href = href,
+            type = type?.toString(),
+            title = title,
+            properties = Properties(buildMap {
+                if (layout != null) {
+                    put("layout", layout.value)
+                }
+                if (originalLength != null) {
+                    put(
+                        "encrypted", mapOf(
+                            "algorithm" to "algo",
+                            "originalLength" to originalLength
+                        )
+                    )
+                }
+            })
+        )
+
+        val resourceProperties: Resource.Properties = Resource.Properties {
+            if (archiveEntryLength != null) {
+                archive = ArchiveProperties(
+                    entryLength = archiveEntryLength,
+                    isEntryCompressed = true
+                )
+            }
         }
-        if (originalLength != null) {
-            properties["encrypted"] = mapOf(
-                "algorithm" to "algo",
-                "originalLength" to originalLength
-            )
-        }
-        if (archiveEntryLength != null) {
-            properties["archive"] = mapOf(
-                "entryLength" to archiveEntryLength,
-                "isEntryCompressed" to true
-            )
-        }
-        return Properties(otherProperties = properties)
     }
 }

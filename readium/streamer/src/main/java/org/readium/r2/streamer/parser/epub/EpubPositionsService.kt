@@ -9,7 +9,6 @@ package org.readium.r2.streamer.parser.epub
 import kotlin.math.ceil
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
-import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.epub.EpubLayout
@@ -62,16 +61,15 @@ public class EpubPositionsService(
      */
     public sealed class ReflowableStrategy {
         /** Returns the number of positions in the given [resource] according to the strategy. */
-        public abstract suspend fun positionCount(resource: Resource): Int
+        public abstract suspend fun positionCount(link: Link, resource: Resource): Int
 
         /**
          * Use the original length of each resource (before compression and encryption) and split it
          * by the given [pageLength].
          */
         public data class OriginalLength(val pageLength: Int) : ReflowableStrategy() {
-            override suspend fun positionCount(resource: Resource): Int {
-                val length = resource.properties().getOrNull()
-                    ?.let { Properties(it).encryption?.originalLength }
+            override suspend fun positionCount(link: Link, resource: Resource): Int {
+                val length = link.properties.encryption?.originalLength
                     ?: resource.length().getOrNull()
                     ?: 0
                 return ceil(length.toDouble() / pageLength.toDouble()).toInt()
@@ -84,9 +82,8 @@ public class EpubPositionsService(
          * given [pageLength].
          */
         public data class ArchiveEntryLength(val pageLength: Int) : ReflowableStrategy() {
-            override suspend fun positionCount(resource: Resource): Int {
-                val length = resource.properties().getOrNull()
-                    ?.archive?.entryLength
+            override suspend fun positionCount(link: Link, resource: Resource): Int {
+                val length = resource.properties().getOrNull()?.archive?.entryLength
                     ?: resource.length().getOrNull()
                     ?: 0
                 return ceil(length.toDouble() / pageLength.toDouble()).toInt()
@@ -159,7 +156,7 @@ public class EpubPositionsService(
 
     private suspend fun createReflowable(link: Link, startPosition: Int, container: Container): List<Locator> {
         val positionCount = container.get(link.href).use { resource ->
-            reflowableStrategy.positionCount(resource)
+            reflowableStrategy.positionCount(link, resource)
         }
 
         return (1..positionCount).map { position ->
