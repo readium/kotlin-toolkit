@@ -37,11 +37,11 @@ public class AssetRetriever(
     public sealed class Error : org.readium.r2.shared.error.Error {
 
         public class SchemeNotSupported(
-            public val scheme: String?,
+            public val scheme: String,
             override val cause: org.readium.r2.shared.error.Error?,
         ) : Error() {
 
-            public constructor(scheme: String?, exception: Exception) :
+            public constructor(scheme: String, exception: Exception) :
                 this(scheme, ThrowableError(exception))
 
             override val message: String =

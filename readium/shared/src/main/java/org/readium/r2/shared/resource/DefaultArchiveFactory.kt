@@ -24,9 +24,11 @@ public class DefaultArchiveFactory : ArchiveFactory {
 
         return resource.source?.toFile()
             ?.let { open(it) }
-            ?: Try.Failure(ArchiveFactory.Error.FormatNotSupported(
-                MessageError("Resource not supported because file cannot be directly access.")
-            ))
+            ?: Try.Failure(
+                ArchiveFactory.Error.FormatNotSupported(
+                    MessageError("Resource not supported because file cannot be directly access.")
+                )
+            )
     }
 
     // Internal for testing purpose

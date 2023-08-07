@@ -7,18 +7,25 @@
 package org.readium.r2.shared.publication
 
 import android.os.Parcelable
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.WriteWith
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.extensions.*
+import org.readium.r2.shared.extensions.JSONParceler
+import org.readium.r2.shared.extensions.iso8601ToDate
+import org.readium.r2.shared.extensions.optPositiveDouble
+import org.readium.r2.shared.extensions.optPositiveInt
+import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
+import org.readium.r2.shared.extensions.putIfNotEmpty
+import org.readium.r2.shared.extensions.toIso8601String
+import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.logging.WarningLogger
-import org.readium.r2.shared.util.logging.log
 
 /**
  * https://readium.org/webpub-manifest/schema/metadata.schema.json

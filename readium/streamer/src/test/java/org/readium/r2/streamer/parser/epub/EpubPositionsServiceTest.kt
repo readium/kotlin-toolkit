@@ -521,19 +521,22 @@ class EpubPositionsServiceTest {
             href = href,
             type = type?.toString(),
             title = title,
-            properties = Properties(buildMap {
-                if (layout != null) {
-                    put("layout", layout.value)
-                }
-                if (originalLength != null) {
-                    put(
-                        "encrypted", mapOf(
-                            "algorithm" to "algo",
-                            "originalLength" to originalLength
+            properties = Properties(
+                buildMap {
+                    if (layout != null) {
+                        put("layout", layout.value)
+                    }
+                    if (originalLength != null) {
+                        put(
+                            "encrypted",
+                            mapOf(
+                                "algorithm" to "algo",
+                                "originalLength" to originalLength
+                            )
                         )
-                    )
+                    }
                 }
-            })
+            )
         )
 
         val resourceProperties: Resource.Properties = Resource.Properties {

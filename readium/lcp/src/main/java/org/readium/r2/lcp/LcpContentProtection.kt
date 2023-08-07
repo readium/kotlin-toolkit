@@ -94,10 +94,9 @@ internal class LcpContentProtection(
             mediaType = asset.mediaType,
             container = container,
             onCreatePublication = {
-                decryptor.retrieveEncryption = { url ->
-                    manifest.linkWithHref(url.toString())
-                        ?.properties?.encryption
-                }
+                decryptor.encryptionData = (manifest.readingOrder + manifest.resources)
+                    .mapNotNull { it.properties.encryption?.let { enc -> it.href to enc } }
+                    .toMap()
 
                 servicesBuilder.contentProtectionServiceFactory = serviceFactory
             }

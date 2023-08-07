@@ -65,8 +65,8 @@ internal class PdfNavigatorViewModel<S : Configurable.Settings, P : Configurable
      * locators, we match any HREF if the reading order contains a single link with the HREF ".".
      */
     private val isPDFFile: Boolean =
-        publication.readingOrder.count() == 1
-            && publication.readingOrder[0].href == "."
+        publication.readingOrder.count() == 1 &&
+            publication.readingOrder[0].href == "."
 
     companion object {
         fun <S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> createFactory(

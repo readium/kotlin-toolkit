@@ -41,7 +41,7 @@ internal class ChannelZipContainer(
 
         override val path: String = entry.name.addPrefix("/")
 
-        override val source: Url? get() = Url(path)
+        override val source: Url? get() = null
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
             ResourceTry.success(Resource.Properties())

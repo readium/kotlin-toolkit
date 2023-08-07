@@ -30,7 +30,7 @@ class EpubDeobfuscatorTest {
     private val deobfuscationDir = requireNotNull(
         EpubDeobfuscatorTest::class.java
             .getResource("deobfuscation")
-            ?.let { Url(it.toString()) }
+            ?.let { Url(it) }
     )
 
     private val container = runBlocking {

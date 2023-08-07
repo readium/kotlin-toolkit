@@ -17,14 +17,13 @@ import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.readAsXml
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * [ContentProtection] implementation used as a fallback by the Streamer to detect Adept DRM,
  * if it is not supported by the app.
  */
 @InternalReadiumApi
-public class AdeptFallbackContentProtection: ContentProtection {
+public class AdeptFallbackContentProtection : ContentProtection {
 
     override val scheme: Scheme = Scheme.Adept
 

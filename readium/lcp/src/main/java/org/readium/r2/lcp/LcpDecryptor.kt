@@ -17,6 +17,7 @@ import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
@@ -31,12 +32,16 @@ import org.readium.r2.shared.util.Url
  */
 internal class LcpDecryptor(
     val license: LcpLicense?,
-    var retrieveEncryption: (Url) -> Encryption? = { null }
+    var encryptionData: Map<String, Encryption> = emptyMap()
 ) {
 
-    fun transform(resource: Resource): Resource =
-        resource.flatMap {
-            val encryption = resource.source?.let(retrieveEncryption)
+    fun transform(resource: Resource): Resource {
+        if (resource !is Container.Entry) {
+            return resource
+        }
+
+        return resource.flatMap {
+            val encryption = encryptionData[resource.path]
 
             // Checks if the resource is encrypted and whether the encryption schemes of the resource
             // and the DRM license are the same.
@@ -46,10 +51,16 @@ internal class LcpDecryptor(
 
             when {
                 license == null -> FailureResource(Resource.Exception.Forbidden())
-                encryption.isDeflated || !encryption.isCbcEncrypted -> FullLcpResource(resource, encryption, license)
+                encryption.isDeflated || !encryption.isCbcEncrypted -> FullLcpResource(
+                    resource,
+                    encryption,
+                    license
+                )
+
                 else -> CbcLcpResource(resource, encryption, license)
             }
         }
+    }
 
     /**
      * A  LCP resource that is read, decrypted and cached fully before reading requested ranges.

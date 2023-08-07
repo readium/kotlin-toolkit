@@ -8,6 +8,8 @@ package org.readium.r2.shared.util
 
 import android.net.Uri
 import java.io.File
+import java.net.URL
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
 
 /**
@@ -16,11 +18,11 @@ import org.readium.r2.shared.extensions.tryOrNull
 @JvmInline
 public value class Url private constructor(internal val uri: Uri) {
 
-    public val scheme: String?
-        get() = uri.scheme
+    public val scheme: String
+        get() = uri.scheme!!
 
-    public val authority: String?
-        get() = uri.authority
+    public val authority: String
+        get() = uri.authority!!
 
     public val path: String
         get() = uri.path!!
@@ -42,9 +44,15 @@ public value class Url private constructor(internal val uri: Uri) {
 
         internal operator fun invoke(uri: Uri): Url? =
             tryOrNull {
+                requireNotNull(uri.scheme)
+                requireNotNull(uri.authority)
                 requireNotNull(uri.path)
                 Url(uri)
             }
+
+        @InternalReadiumApi
+        public operator fun invoke(url: URL): Url =
+            Url(Uri.parse(url.toString()))
     }
 }
 
