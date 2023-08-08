@@ -40,7 +40,7 @@ internal object SmilParser {
         val textref = node.getAttrNs("textref", Namespaces.OPS)
         val audioFiles = children.mapNotNull(MediaOverlayNode::audioFile)
         return if (textref != null && audioFiles.distinct().size == 1) { // hierarchy
-            val normalizedTextref = Href(textref, baseHref = filePath).absoluteHref()
+            val normalizedTextref = Href(textref, baseHref = filePath).value
             listOf(mediaOverlayFromChildren(normalizedTextref, children))
         } else children
     }
@@ -54,8 +54,8 @@ internal object SmilParser {
             "$src#t=$begin,$end"
         }
         return MediaOverlayNode(
-            Href(text, baseHref = filePath).absoluteHref(),
-            Href(audio ?: "", baseHref = filePath).absoluteHref()
+            Href(text, baseHref = filePath).value,
+            Href(audio ?: "", baseHref = filePath).value
         )
     }
 

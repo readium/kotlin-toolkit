@@ -22,7 +22,6 @@ import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
 import org.readium.r2.shared.util.use
 import org.robolectric.ParameterizedRobolectricTestRunner
-import timber.log.Timber
 
 @RunWith(ParameterizedRobolectricTestRunner::class)
 class ZipContainerTest(val sut: suspend () -> Container) {

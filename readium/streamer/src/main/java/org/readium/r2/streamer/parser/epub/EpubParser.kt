@@ -107,11 +107,14 @@ public class EpubParser(
             ?: parseNcx(packageDocument, container)
             ?: emptyMap()
 
-    private suspend fun parseNavigationDocument(packageDocument: PackageDocument, container: Container): Map<String, List<Link>>? =
+    private suspend fun parseNavigationDocument(
+        packageDocument: PackageDocument,
+        container: Container
+    ): Map<String, List<Link>>? =
         packageDocument.manifest
             .firstOrNull { it.properties.contains(Vocabularies.ITEM + "nav") }
             ?.let { navItem ->
-                val navPath = Href(navItem.href, baseHref = packageDocument.path).absoluteHref()
+                val navPath = Href(navItem.href, baseHref = packageDocument.path).value
                 container.readAsXmlOrNull(navPath)
                     ?.let { NavigationDocumentParser.parse(it, navPath) }
             }
@@ -127,7 +130,7 @@ public class EpubParser(
 
         return ncxItem
             ?.let {
-                val ncxPath = Href(ncxItem.href, baseHref = packageDocument.path).absoluteHref()
+                val ncxPath = Href(ncxItem.href, baseHref = packageDocument.path).value
                 container.readAsXmlOrNull(ncxPath)?.let { NcxParser.parse(it, ncxPath) }
             }
             ?.takeUnless { it.isEmpty() }

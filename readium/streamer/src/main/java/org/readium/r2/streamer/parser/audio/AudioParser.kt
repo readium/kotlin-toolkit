@@ -8,7 +8,6 @@ package org.readium.r2.streamer.parser.audio
 
 import java.io.File
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata

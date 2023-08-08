@@ -48,5 +48,5 @@ internal object NcxParser {
 
     private fun extractHref(element: ElementNode, filePath: String) =
         element.getFirst("content", Namespaces.NCX)?.getAttr("src")
-            ?.ifBlank { null }?.let { Href(it, baseHref = filePath).absoluteHref() }
+            ?.ifBlank { null }?.let { Href(it, baseHref = filePath).value }
 }

@@ -54,7 +54,7 @@ internal data class Item(
 ) {
     companion object {
         fun parse(element: ElementNode, filePath: String, prefixMap: Map<String, String>): Item? {
-            val href = element.getAttr("href")?.let { Href(it, baseHref = filePath).absoluteHref() }
+            val href = element.getAttr("href")?.let { Href(it, baseHref = filePath).value }
                 ?: return null
             val propAttr = element.getAttr("properties").orEmpty()
             val properties = parseProperties(propAttr).map { resolveProperty(it, prefixMap, DEFAULT_VOCAB.ITEM) }
