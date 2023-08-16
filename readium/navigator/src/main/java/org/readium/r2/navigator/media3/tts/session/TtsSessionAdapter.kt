@@ -146,11 +146,11 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
                 COMMAND_GET_AUDIO_ATTRIBUTES,
                 COMMAND_GET_DEVICE_VOLUME,
-                COMMAND_SET_DEVICE_VOLUME,
+                COMMAND_SET_DEVICE_VOLUME_WITH_FLAGS,
 
                 COMMAND_SET_SPEED_AND_PITCH,
                 COMMAND_GET_CURRENT_MEDIA_ITEM,
-                COMMAND_GET_MEDIA_ITEMS_METADATA,
+                COMMAND_GET_METADATA,
                 COMMAND_GET_TEXT
             ).build()
 
@@ -825,11 +825,12 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     }
 
     private fun createDeviceInfo(streamVolumeManager: StreamVolumeManager): DeviceInfo {
-        val newDeviceInfo = DeviceInfo(
-            DeviceInfo.PLAYBACK_TYPE_LOCAL,
-            streamVolumeManager.minVolume,
-            streamVolumeManager.maxVolume
+        val newDeviceInfo = DeviceInfo.Builder(
+            DeviceInfo.PLAYBACK_TYPE_LOCAL
         )
+            .setMinVolume(streamVolumeManager.minVolume)
+            .setMaxVolume(streamVolumeManager.maxVolume)
+            .build()
         deviceInfo = newDeviceInfo
         return newDeviceInfo
     }

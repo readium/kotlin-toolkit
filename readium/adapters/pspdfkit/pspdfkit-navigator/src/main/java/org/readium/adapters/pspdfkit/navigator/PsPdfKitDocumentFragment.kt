@@ -55,7 +55,7 @@ internal class PsPdfKitDocumentFragment(
             if (field == value) return
 
             field = value
-            reloadDocumentAtPage(pageIndex)
+            reloadDocumentAtPage()
         }
 
     private lateinit var pdfFragment: PdfFragment
@@ -73,10 +73,10 @@ internal class PsPdfKitDocumentFragment(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        reloadDocumentAtPage(initialPageIndex)
+        reloadDocumentAtPage()
     }
 
-    private fun reloadDocumentAtPage(pageIndex: Int) {
+    private fun reloadDocumentAtPage() {
         pdfFragment = createPdfFragment()
 
         childFragmentManager.commitNow {

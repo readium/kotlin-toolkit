@@ -10,9 +10,13 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.preferences.Configurable
@@ -37,7 +41,6 @@ abstract class BaseReaderFragment : Fragment() {
     protected abstract val navigator: Navigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setHasOptionsMenu(true)
         super.onCreate(savedInstanceState)
 
         model.fragmentChannel.receive(this) { event ->
@@ -52,42 +55,52 @@ abstract class BaseReaderFragment : Fragment() {
         }
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val menuHost: MenuHost = requireActivity()
+
+        menuHost.addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                    menuInflater.inflate(R.menu.menu_reader, menu)
+
+                    menu.findItem(R.id.settings).isVisible =
+                        navigator is Configurable<*, *>
+
+                    menu.findItem(R.id.drm).isVisible =
+                        model.publication.lcpLicense != null
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    when (menuItem.itemId) {
+                        R.id.toc -> {
+                            model.activityChannel.send(ReaderViewModel.Event.OpenOutlineRequested)
+                        }
+                        R.id.bookmark -> {
+                            model.insertBookmark(navigator.currentLocator.value)
+                        }
+                        R.id.settings -> {
+                            val settingsModel = checkNotNull(model.settings)
+                            UserPreferencesBottomSheetDialogFragment(settingsModel, "User Settings")
+                                .show(childFragmentManager, "Settings")
+                        }
+                        R.id.drm -> {
+                            model.activityChannel.send(ReaderViewModel.Event.OpenDrmManagementRequested)
+                        }
+                    }
+                    return true
+                }
+            },
+            viewLifecycleOwner,
+            Lifecycle.State.RESUMED
+        )
+    }
+
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
         setMenuVisibility(!hidden)
         requireActivity().invalidateOptionsMenu()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.menu_reader, menu)
-
-        menu.findItem(R.id.settings).isVisible =
-            navigator is Configurable<*, *>
-
-        menu.findItem(R.id.drm).isVisible =
-            model.publication.lcpLicense != null
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.toc -> {
-                model.activityChannel.send(ReaderViewModel.Event.OpenOutlineRequested)
-            }
-            R.id.bookmark -> {
-                model.insertBookmark(navigator.currentLocator.value)
-            }
-            R.id.settings -> {
-                val settingsModel = checkNotNull(model.settings)
-                UserPreferencesBottomSheetDialogFragment(settingsModel, "User Settings")
-                    .show(childFragmentManager, "Settings")
-            }
-            R.id.drm -> {
-                model.activityChannel.send(ReaderViewModel.Event.OpenDrmManagementRequested)
-            }
-            else -> return super.onOptionsItemSelected(item)
-        }
-
-        return true
     }
 
     open fun go(locator: Locator, animated: Boolean) {

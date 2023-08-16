@@ -15,11 +15,14 @@ import android.os.Parcelable
 import android.view.View
 import android.view.ViewGroup
 import androidx.collection.LongSparseArray
+import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import androidx.viewpager.widget.PagerAdapter
 
+// This class will be going away when the navigator is rewritten
+@Suppress("DEPRECATION")
 internal abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentManager) : androidx.fragment.app.FragmentStatePagerAdapter(mFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
     val mFragments = LongSparseArray<Fragment>()
@@ -148,7 +151,7 @@ internal abstract class R2FragmentPagerAdapter(private val mFragmentManager: Fra
             mFragments.clear()
             if (fss != null) {
                 for (fs in fss) {
-                    mSavedStates.put(fs, bundle.getParcelable<Parcelable>(fs.toString()) as Fragment.SavedState)
+                    mSavedStates.put(fs, BundleCompat.getParcelable(bundle, fs.toString(), Fragment.SavedState::class.java))
                 }
             }
             val keys = bundle.keySet()

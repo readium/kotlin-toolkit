@@ -19,11 +19,14 @@ import android.view.*
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
+import androidx.core.os.BundleCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.webkit.WebViewClientCompat
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.*
@@ -48,7 +51,7 @@ internal class R2EpubPageFragment : Fragment() {
         get() = requireArguments().getString("url")
 
     internal val link: Link?
-        get() = requireArguments().getParcelable("link")
+        get() = BundleCompat.getParcelable(requireArguments(), "link", Link::class.java)
 
     private var pendingLocator: Locator? = null
 
@@ -116,7 +119,7 @@ internal class R2EpubPageFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        pendingLocator = requireArguments().getParcelable("initialLocator")
+        pendingLocator = BundleCompat.getParcelable(requireArguments(), "initialLocator", Locator::class.java)
     }
 
     @SuppressLint("SetJavaScriptEnabled", "JavascriptInterface")
@@ -124,7 +127,7 @@ internal class R2EpubPageFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = ReadiumNavigatorViewpagerFragmentEpubBinding.inflate(inflater, container, false)
         containerView = binding.root
         preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
@@ -168,9 +171,8 @@ internal class R2EpubPageFragment : Fragment() {
                 clampedX: Boolean,
                 clampedY: Boolean
             ) {
-                val activity = activity ?: return
+                activity ?: return
                 val metrics = DisplayMetrics()
-                activity.windowManager.defaultDisplay.getMetrics(metrics)
 
                 val topDecile = webView.contentHeight - 1.15 * metrics.heightPixels
                 val bottomDecile = (webView.contentHeight - metrics.heightPixels).toDouble()
@@ -294,32 +296,36 @@ internal class R2EpubPageFragment : Fragment() {
     private fun updatePadding() {
         if (view == null) return
 
-        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            val window = activity?.window ?: return@launchWhenResumed
-            var top = 0
-            var bottom = 0
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                val window = activity?.window ?: return@repeatOnLifecycle
+                var top = 0
+                var bottom = 0
 
-            // Add additional padding to take into account the display cutout, if needed.
-            if (
-                shouldApplyInsetsPadding &&
-                android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P &&
-                window.attributes.layoutInDisplayCutoutMode != WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
-            ) {
-                // Request the display cutout insets from the decor view because the ones given by
-                // setOnApplyWindowInsetsListener are not always correct for preloaded views.
-                window.decorView.rootWindowInsets?.displayCutout?.let { displayCutoutInsets ->
-                    top += displayCutoutInsets.safeInsetTop
-                    bottom += displayCutoutInsets.safeInsetBottom
+                // Add additional padding to take into account the display cutout, if needed.
+                if (
+                    shouldApplyInsetsPadding &&
+                    android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P &&
+                    window.attributes.layoutInDisplayCutoutMode != WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
+                ) {
+                    // Request the display cutout insets from the decor view because the ones given by
+                    // setOnApplyWindowInsetsListener are not always correct for preloaded views.
+                    window.decorView.rootWindowInsets?.displayCutout?.let { displayCutoutInsets ->
+                        top += displayCutoutInsets.safeInsetTop
+                        bottom += displayCutoutInsets.safeInsetBottom
+                    }
                 }
-            }
 
-            if (!viewModel.isScrollEnabled.value) {
-                val margin = resources.getDimension(R.dimen.readium_navigator_epub_vertical_padding).toInt()
-                top += margin
-                bottom += margin
-            }
+                if (!viewModel.isScrollEnabled.value) {
+                    val margin =
+                        resources.getDimension(R.dimen.readium_navigator_epub_vertical_padding)
+                            .toInt()
+                    top += margin
+                    bottom += margin
+                }
 
-            containerView.setPadding(0, top, 0, bottom)
+                containerView.setPadding(0, top, 0, bottom)
+            }
         }
     }
 
@@ -339,17 +345,23 @@ internal class R2EpubPageFragment : Fragment() {
 
         if (view == null) return
 
-        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
-            val webView = requireNotNull(webView)
-            webView.visibility = View.VISIBLE
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+                val webView = requireNotNull(webView)
+                webView.visibility = View.VISIBLE
 
-            pendingLocator
-                ?.let { locator ->
-                    loadLocator(webView, requireNotNull(navigator).presentation.value.readingProgression, locator)
-                }
-                .also { pendingLocator = null }
+                pendingLocator
+                    ?.let { locator ->
+                        loadLocator(
+                            webView,
+                            requireNotNull(navigator).presentation.value.readingProgression,
+                            locator
+                        )
+                    }
+                    .also { pendingLocator = null }
 
-            webView.listener?.onPageLoaded()
+                webView.listener?.onPageLoaded()
+            }
         }
     }
 
@@ -359,11 +371,13 @@ internal class R2EpubPageFragment : Fragment() {
             return
         }
 
-        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
-            val webView = requireNotNull(webView)
-            val epubNavigator = requireNotNull(navigator)
-            loadLocator(webView, epubNavigator.presentation.value.readingProgression, locator)
-            webView.listener?.onProgressionChanged()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
+                val webView = requireNotNull(webView)
+                val epubNavigator = requireNotNull(navigator)
+                loadLocator(webView, epubNavigator.presentation.value.readingProgression, locator)
+                webView.listener?.onProgressionChanged()
+            }
         }
     }
 

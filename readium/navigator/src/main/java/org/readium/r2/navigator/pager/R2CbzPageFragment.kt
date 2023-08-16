@@ -15,8 +15,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.core.os.BundleCompat
 import androidx.core.view.ViewCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.github.chrisbanes.photoview.PhotoView
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
@@ -36,7 +39,7 @@ internal class R2CbzPageFragment(
         get() = Dispatchers.Main
 
     private val link: Link
-        get() = requireArguments().getParcelable("link")!!
+        get() = BundleCompat.getParcelable(requireArguments(), "link", Link::class.java)!!
 
     private lateinit var containerView: View
     private lateinit var photoView: PhotoView
@@ -85,25 +88,27 @@ internal class R2CbzPageFragment(
     }
 
     private fun updatePadding() {
-        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            val window = activity?.window ?: return@launchWhenResumed
-            var top = 0
-            var bottom = 0
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                val window = activity?.window ?: return@repeatOnLifecycle
+                var top = 0
+                var bottom = 0
 
-            // Add additional padding to take into account the display cutout, if needed.
-            if (
-                android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P &&
-                window.attributes.layoutInDisplayCutoutMode != WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
-            ) {
-                // Request the display cutout insets from the decor view because the ones given by
-                // setOnApplyWindowInsetsListener are not always correct for preloaded views.
-                window.decorView.rootWindowInsets?.displayCutout?.let { displayCutoutInsets ->
-                    top += displayCutoutInsets.safeInsetTop
-                    bottom += displayCutoutInsets.safeInsetBottom
+                // Add additional padding to take into account the display cutout, if needed.
+                if (
+                    android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P &&
+                    window.attributes.layoutInDisplayCutoutMode != WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
+                ) {
+                    // Request the display cutout insets from the decor view because the ones given by
+                    // setOnApplyWindowInsetsListener are not always correct for preloaded views.
+                    window.decorView.rootWindowInsets?.displayCutout?.let { displayCutoutInsets ->
+                        top += displayCutoutInsets.safeInsetTop
+                        bottom += displayCutoutInsets.safeInsetBottom
+                    }
                 }
-            }
 
-            photoView.setPadding(0, top, 0, bottom)
+                photoView.setPadding(0, top, 0, bottom)
+            }
         }
     }
 }

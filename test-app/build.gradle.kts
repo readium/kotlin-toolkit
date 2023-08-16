@@ -49,7 +49,7 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
     }
-    packagingOptions {
+    packaging {
         resources.excludes.add("META-INF/*")
     }
 
@@ -75,6 +75,8 @@ dependencies {
     implementation(project(":readium:readium-lcp"))
     // Only required if you want to support PDF files using PDFium.
     implementation(project(":readium:adapters:pdfium"))
+
+    implementation(libs.accompanist.themeadapter.material)
 
     implementation(libs.androidx.compose.activity)
     implementation(libs.androidx.activity.ktx)

@@ -14,6 +14,7 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import androidx.core.content.IntentCompat
 import org.readium.r2.testapp.MainActivity
 import timber.log.Timber
 
@@ -44,7 +45,7 @@ class R2DispatcherActivity : Activity() {
                 if ("text/plain" == intent.type) {
                     intent.getStringExtra(Intent.EXTRA_TEXT).let { Uri.parse(it) }
                 } else {
-                    intent.getParcelableExtra(Intent.EXTRA_STREAM)
+                    IntentCompat.getParcelableExtra(intent, Intent.EXTRA_STREAM, Uri::class.java)
                 }
             }
             else -> {
