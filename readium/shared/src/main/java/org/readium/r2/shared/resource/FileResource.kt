@@ -39,7 +39,7 @@ public class FileResource internal constructor(
         }
     }
 
-    override val source: Url? = Url("file://${file.canonicalPath}")
+    override val source: Url? = Url("file://${file.path}")
 
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         ResourceTry.success(Resource.Properties())
