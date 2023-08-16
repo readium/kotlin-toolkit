@@ -80,6 +80,10 @@ include(":readium:shared")
 project(":readium:shared")
     .name = "readium-shared"
 
+include(":readium:downloads")
+project(":readium:downloads")
+    .name = "readium-downloads"
+
 include(":readium:streamer")
 project(":readium:streamer")
     .name = "readium-streamer"

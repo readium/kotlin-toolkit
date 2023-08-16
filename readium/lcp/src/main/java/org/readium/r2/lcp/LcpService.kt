@@ -9,6 +9,7 @@
 
 package org.readium.r2.lcp
 
+import android.app.DownloadManager
 import android.content.Context
 import java.io.File
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -16,6 +17,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.readium.downloads.DownloadManagerProvider
+import org.readium.downloads.android.AndroidDownloadManagerProvider
 import org.readium.r2.lcp.auth.LcpDialogAuthentication
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.persistence.LcpDatabase
@@ -60,7 +63,10 @@ public interface LcpService {
      *
      * @param onProgress Callback to follow the acquisition progress from 0.0 to 1.0.
      */
-    public suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit = {}): Try<AcquiredPublication, LcpException>
+    public suspend fun acquirePublication(
+        lcpl: ByteArray,
+        onProgress: (Double) -> Unit = {}
+    ): Try<AcquiredPublication, LcpException>
 
     /**
      * Acquires a protected publication from a standalone LCPL file.
@@ -116,6 +122,10 @@ public interface LcpService {
         sender: Any?
     ): Try<LcpLicense, LcpException>
 
+    public fun publicationRetriever(
+        listener: LcpPublicationRetriever.Listener
+    ): LcpPublicationRetriever
+
     /**
      * Creates a [ContentProtection] instance which can be used with a Streamer to unlock
      * LCP protected publications.
@@ -155,7 +165,8 @@ public interface LcpService {
             context: Context,
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             resourceFactory: ResourceFactory = FileResourceFactory(),
-            archiveFactory: ArchiveFactory = DefaultArchiveFactory()
+            archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
+            downloadManagerProvider: DownloadManagerProvider = AndroidDownloadManagerProvider(context)
         ): LcpService? {
             if (!LcpClient.isAvailable())
                 return null
@@ -177,7 +188,8 @@ public interface LcpService {
                 context = context,
                 mediaTypeRetriever = mediaTypeRetriever,
                 resourceFactory = resourceFactory,
-                archiveFactory = archiveFactory
+                archiveFactory = archiveFactory,
+                downloadManagerProvider = downloadManagerProvider
             )
         }
 

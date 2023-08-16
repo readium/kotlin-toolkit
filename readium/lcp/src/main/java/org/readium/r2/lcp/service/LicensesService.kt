@@ -19,6 +19,9 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import org.readium.downloads.DownloadManager
+import org.readium.downloads.DownloadManagerProvider
+import org.readium.r2.lcp.LcpPublicationRetriever
 import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.LcpContentProtection
 import org.readium.r2.lcp.LcpException
@@ -48,7 +51,8 @@ internal class LicensesService(
     private val context: Context,
     private val mediaTypeRetriever: MediaTypeRetriever,
     private val resourceFactory: ResourceFactory,
-    private val archiveFactory: ArchiveFactory
+    private val archiveFactory: ArchiveFactory,
+    private val downloadManagerProvider: DownloadManagerProvider
 ) : LcpService, CoroutineScope by MainScope() {
 
     override suspend fun isLcpProtected(file: File): Boolean =
@@ -75,7 +79,21 @@ internal class LicensesService(
     ): ContentProtection =
         LcpContentProtection(this, authentication, mediaTypeRetriever, resourceFactory, archiveFactory)
 
-    override suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit): Try<LcpService.AcquiredPublication, LcpException> =
+    override fun publicationRetriever(
+        listener: LcpPublicationRetriever.Listener
+    ): LcpPublicationRetriever {
+        return LcpPublicationRetriever(
+            context,
+            listener,
+            downloadManagerProvider,
+            mediaTypeRetriever
+        )
+    }
+
+    override suspend fun acquirePublication(
+        lcpl: ByteArray,
+        onProgress: (Double) -> Unit
+    ): Try<LcpService.AcquiredPublication, LcpException> =
         try {
             val licenseDocument = LicenseDocument(lcpl)
             Timber.d("license ${licenseDocument.json}")
