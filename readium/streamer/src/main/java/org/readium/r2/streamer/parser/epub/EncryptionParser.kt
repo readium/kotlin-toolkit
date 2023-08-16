@@ -40,7 +40,7 @@ internal object EncryptionParser {
             compression = compressionMethod,
             originalLength = originalLength
         )
-        return Pair(Href(resourceURI).value, enc)
+        return Pair(Href(resourceURI).string, enc)
     }
 
     private fun parseEncryptionProperties(encryptionProperties: ElementNode): Pair<Long, String>? {

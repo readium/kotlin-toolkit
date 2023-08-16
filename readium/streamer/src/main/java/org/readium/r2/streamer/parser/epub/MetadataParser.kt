@@ -45,7 +45,7 @@ internal class MetadataParser(
         return MetadataItem.Link(
             id = element.id,
             refines = refines,
-            href = Href(href, baseHref = filePath).value,
+            href = Href(href, baseHref = filePath).string,
             rels = rel.toSet(),
             mediaType = mediaType,
             properties = properties

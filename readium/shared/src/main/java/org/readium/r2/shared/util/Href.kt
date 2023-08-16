@@ -20,7 +20,7 @@ import timber.log.Timber
  */
 @JvmInline
 public value class Href private constructor(
-    public val value: String
+    public val string: String
 ) {
 
     public companion object {
@@ -94,16 +94,11 @@ public value class Href private constructor(
 
     public data class QueryParameter(val name: String, val value: String?)
 
-    @Deprecated("Use `absoluteHref` instead", ReplaceWith("absoluteHref()"), DeprecationLevel.ERROR)
-    public val string: String get() = throw  NotImplementedError()
-    @Deprecated("Use `absoluteHref(percentEncoded = true)` instead", ReplaceWith("absoluteHref(percentEncoded = true)"), DeprecationLevel.ERROR)
-    public val percentEncodedString: String get() = throw NotImplementedError()
-
     /**
-     * Percent-encode the HREF for URL uses.
+     * Percent-encode the HREF to use in an URL.
      */
-    public val percentEncoded: String get() =
-        percentEncode(value)
+    public val percentEncodedString: String get() =
+        percentEncode(string)
 
     /**
      * Returns the normalized string representation for [href], encoded for URL uses.
@@ -111,14 +106,14 @@ public value class Href private constructor(
      * Taken from https://stackoverflow.com/a/49796882/1474476
      */
     private fun percentEncode(href: String): String {
-        var string = href
-        val hasScheme = !string.startsWith("/")
+        @Suppress("NAME_SHADOWING") var href = href
+        val hasScheme = !href.startsWith("/")
         if (!hasScheme) {
-            string = string.addPrefix("file://")
+            href = href.addPrefix("file://")
         }
 
         return try {
-            val url = URL(string)
+            val url = URL(href)
             val uri = URI(url.protocol, url.userInfo, IDN.toASCII(url.host), url.port, url.path, url.query, url.ref)
             var result = uri.toASCIIString()
             if (!hasScheme) {
@@ -133,7 +128,7 @@ public value class Href private constructor(
 
     /** Returns the query parameters present in this HREF, in the order they appear. */
     public val queryParameters: List<QueryParameter> get() {
-        val url = percentEncoded.substringBefore("#")
+        val url = percentEncodedString.substringBefore("#")
         return UrlQuerySanitizer(url).parameterList
             .map { p -> QueryParameter(name = p.mParameter, value = p.mValue.takeUnless { it.isBlank() }) }
     }
@@ -142,10 +137,8 @@ public value class Href private constructor(
     /**
      * Expands percent-encoded characters.
      */
-
-
     public fun toUrl(): Url? =
-        Url(percentEncoded)
+        Url(percentEncodedString)
 }
 
 public fun List<Href.QueryParameter>.firstNamedOrNull(name: String): String? =

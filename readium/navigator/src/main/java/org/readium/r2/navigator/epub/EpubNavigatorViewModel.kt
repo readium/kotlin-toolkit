@@ -172,7 +172,7 @@ internal class EpubNavigatorViewModel(
                 Href(
                     href = href.removePrefix("/"),
                     baseHref = baseUrl
-                ).percentEncoded
+                ).percentEncodedString
             }
         }
 

@@ -264,7 +264,7 @@ public class OPDS2Parser {
                 Href(
                     it,
                     baseUrl.toString()
-                ).value
+                ).string
             })
         }
     }

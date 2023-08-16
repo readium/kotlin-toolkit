@@ -451,4 +451,4 @@ private val Node.language: String? get() =
 private fun Node.srcRelativeToHref(baseHref: String): String? =
     attr("src")
         .takeIf { it.isNotBlank() }
-        ?.let { Href(it, baseHref).value }
+        ?.let { Href(it, baseHref).string }
