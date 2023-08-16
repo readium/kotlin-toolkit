@@ -248,12 +248,17 @@ public data class Metadata(
             warnings: WarningLogger? = null
         ): Metadata? {
             json ?: return null
+            val localizedTitle = LocalizedString.fromJSON(json.remove("title"), warnings)
+            if (localizedTitle == null) {
+                warnings?.log(Metadata::class.java, "[title] is required", json)
+                return null
+            }
+
             val identifier = json.remove("identifier") as? String
             val type = json.remove("@type") as? String
             val conformsTo = json.optStringsFromArrayOrSingle("conformsTo", remove = true)
                 .map { Publication.Profile(it) }
                 .toSet()
-            val localizedTitle = LocalizedString.fromJSON(json.remove("title"), warnings)
             val localizedSubtitle = LocalizedString.fromJSON(json.remove("subtitle"), warnings)
             val modified = (json.remove("modified") as? String)?.iso8601ToDate()
             val published = (json.remove("published") as? String)?.iso8601ToDate()
