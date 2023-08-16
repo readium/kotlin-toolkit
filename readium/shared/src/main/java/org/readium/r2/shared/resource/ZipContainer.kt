@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.optNullableBoolean
 import org.readium.r2.shared.extensions.optNullableLong
@@ -128,8 +129,9 @@ internal class JavaZipContainer(private val archive: ZipFile, file: File) : ZipC
         override suspend fun properties(): ResourceTry<Resource.Properties> =
             ResourceTry.success(Resource.Properties {
                 archive = ArchiveProperties(
-                    entryLength = (compressedLength ?: length().getOrNull() ?: 0),
-                    isEntryCompressed = (compressedLength != null)
+                    entryLength = compressedLength
+                        ?: length().getOrElse { return ResourceTry.failure(it) },
+                    isEntryCompressed = compressedLength != null
                 )
             })
 

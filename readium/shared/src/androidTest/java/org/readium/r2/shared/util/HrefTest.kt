@@ -15,721 +15,701 @@ class HrefTest {
 
     @Test
     fun normalizeToBaseHref() {
-        assertEquals("/folder/", Href("", "/folder/").absoluteHref())
-        assertEquals("/", Href("/", "/folder/").absoluteHref())
+        assertEquals("/folder/", Href("", "/folder/").value)
+        assertEquals("/", Href("/", "/folder/").value)
 
-        assertEquals("/foo/bar.txt", Href("foo/bar.txt", "").absoluteHref())
-        assertEquals("/foo/bar.txt", Href("foo/bar.txt", "/").absoluteHref())
-        assertEquals("/foo/bar.txt", Href("foo/bar.txt", "/file.txt").absoluteHref())
-        assertEquals("/foo/bar.txt", Href("foo/bar.txt", "/folder").absoluteHref())
-        assertEquals("/folder/foo/bar.txt", Href("foo/bar.txt", "/folder/").absoluteHref())
+        assertEquals("/foo/bar.txt", Href("foo/bar.txt", "").value)
+        assertEquals("/foo/bar.txt", Href("foo/bar.txt", "/").value)
+        assertEquals("/foo/bar.txt", Href("foo/bar.txt", "/file.txt").value)
+        assertEquals("/foo/bar.txt", Href("foo/bar.txt", "/folder").value)
+        assertEquals("/folder/foo/bar.txt", Href("foo/bar.txt", "/folder/").value)
         assertEquals(
             "http://example.com/folder/foo/bar.txt",
-            Href("foo/bar.txt", "http://example.com/folder/file.txt").absoluteHref()
+            Href("foo/bar.txt", "http://example.com/folder/file.txt").value
         )
         assertEquals(
             "http://example.com/foo/bar.txt",
-            Href("foo/bar.txt", "http://example.com/folder").absoluteHref()
+            Href("foo/bar.txt", "http://example.com/folder").value
         )
         assertEquals(
             "http://example.com/folder/foo/bar.txt",
-            Href("foo/bar.txt", "http://example.com/folder/").absoluteHref()
+            Href("foo/bar.txt", "http://example.com/folder/").value
         )
         assertEquals(
             "file:///root/folder/foo/bar.txt",
-            Href("foo/bar.txt", "file:///root/folder").absoluteHref()
+            Href("foo/bar.txt", "file:///root/folder").value
         )
         assertEquals(
             "file:///root/folder/foo/bar.txt",
-            Href("foo/bar.txt", "file:///root/folder/").absoluteHref()
+            Href("foo/bar.txt", "file:///root/folder/").value
         )
 
-        assertEquals("/foo/bar.txt", Href("/foo/bar.txt", "").absoluteHref())
-        assertEquals("/foo/bar.txt", Href("/foo/bar.txt", "/").absoluteHref())
-        assertEquals("/foo/bar.txt", Href("/foo/bar.txt", "/file.txt").absoluteHref())
-        assertEquals("/foo/bar.txt", Href("/foo/bar.txt", "/folder").absoluteHref())
-        assertEquals("/foo/bar.txt", Href("/foo/bar.txt", "/folder/").absoluteHref())
+        assertEquals("/foo/bar.txt", Href("/foo/bar.txt", "").value)
+        assertEquals("/foo/bar.txt", Href("/foo/bar.txt", "/").value)
+        assertEquals("/foo/bar.txt", Href("/foo/bar.txt", "/file.txt").value)
+        assertEquals("/foo/bar.txt", Href("/foo/bar.txt", "/folder").value)
+        assertEquals("/foo/bar.txt", Href("/foo/bar.txt", "/folder/").value)
         assertEquals(
             "http://example.com/foo/bar.txt",
-            Href("/foo/bar.txt", "http://example.com/folder/file.txt").absoluteHref()
+            Href("/foo/bar.txt", "http://example.com/folder/file.txt").value
         )
         assertEquals(
             "http://example.com/foo/bar.txt",
-            Href("/foo/bar.txt", "http://example.com/folder").absoluteHref()
+            Href("/foo/bar.txt", "http://example.com/folder").value
         )
         assertEquals(
             "http://example.com/foo/bar.txt",
-            Href("/foo/bar.txt", "http://example.com/folder/").absoluteHref()
+            Href("/foo/bar.txt", "http://example.com/folder/").value
         )
         assertEquals(
             "file:///foo/bar.txt",
-            Href("/foo/bar.txt", "file:///root/folder").absoluteHref()
+            Href("/foo/bar.txt", "file:///root/folder").value
         )
         assertEquals(
             "file:///foo/bar.txt",
-            Href("/foo/bar.txt", "file:///root/folder/").absoluteHref()
+            Href("/foo/bar.txt", "file:///root/folder/").value
         )
 
-        assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "").absoluteHref())
-        assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "/").absoluteHref())
-        assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "/file.txt").absoluteHref())
-        assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "/folder").absoluteHref())
-        assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "/folder/").absoluteHref())
+        assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "").value)
+        assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "/").value)
+        assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "/file.txt").value)
+        assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "/folder").value)
+        assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "/folder/").value)
         assertEquals(
             "http://example.com/foo/bar.txt",
-            Href("../foo/bar.txt", "http://example.com/folder/file.txt").absoluteHref()
+            Href("../foo/bar.txt", "http://example.com/folder/file.txt").value
         )
         assertEquals(
             "http://example.com/foo/bar.txt",
-            Href("../foo/bar.txt", "http://example.com/folder").absoluteHref()
+            Href("../foo/bar.txt", "http://example.com/folder").value
         )
         assertEquals(
             "http://example.com/foo/bar.txt",
-            Href("../foo/bar.txt", "http://example.com/folder/").absoluteHref()
+            Href("../foo/bar.txt", "http://example.com/folder/").value
         )
         assertEquals(
             "file:///root/folder/foo/bar.txt",
-            Href("../foo/bar.txt", "file:///root/folder/file.txt").absoluteHref()
+            Href("../foo/bar.txt", "file:///root/folder/file.txt").value
         )
         assertEquals(
             "file:///root/foo/bar.txt",
-            Href("../foo/bar.txt", "file:///root/folder").absoluteHref()
+            Href("../foo/bar.txt", "file:///root/folder").value
         )
         assertEquals(
             "file:///root/foo/bar.txt",
-            Href("../foo/bar.txt", "file:///root/folder/").absoluteHref()
+            Href("../foo/bar.txt", "file:///root/folder/").value
         )
 
-        assertEquals("/bar.txt", Href("foo/../bar.txt", "").absoluteHref())
-        assertEquals("/bar.txt", Href("foo/../bar.txt", "/").absoluteHref())
-        assertEquals("/bar.txt", Href("foo/../bar.txt", "/file.txt").absoluteHref())
-        assertEquals("/bar.txt", Href("foo/../bar.txt", "/folder").absoluteHref())
-        assertEquals("/folder/bar.txt", Href("foo/../bar.txt", "/folder/").absoluteHref())
+        assertEquals("/bar.txt", Href("foo/../bar.txt", "").value)
+        assertEquals("/bar.txt", Href("foo/../bar.txt", "/").value)
+        assertEquals("/bar.txt", Href("foo/../bar.txt", "/file.txt").value)
+        assertEquals("/bar.txt", Href("foo/../bar.txt", "/folder").value)
+        assertEquals("/folder/bar.txt", Href("foo/../bar.txt", "/folder/").value)
         assertEquals(
             "http://example.com/folder/bar.txt",
-            Href("foo/../bar.txt", "http://example.com/folder/file.txt").absoluteHref()
+            Href("foo/../bar.txt", "http://example.com/folder/file.txt").value
         )
         assertEquals(
             "http://example.com/bar.txt",
-            Href("foo/../bar.txt", "http://example.com/folder").absoluteHref()
+            Href("foo/../bar.txt", "http://example.com/folder").value
         )
         assertEquals(
             "http://example.com/folder/bar.txt",
-            Href("foo/../bar.txt", "http://example.com/folder/").absoluteHref()
+            Href("foo/../bar.txt", "http://example.com/folder/").value
         )
         assertEquals(
             "file:///root/folder/file.txt/bar.txt",
-            Href("foo/../bar.txt", "file:///root/folder/file.txt").absoluteHref()
+            Href("foo/../bar.txt", "file:///root/folder/file.txt").value
         )
         assertEquals(
             "file:///root/folder/bar.txt",
-            Href("foo/../bar.txt", "file:///root/folder").absoluteHref()
+            Href("foo/../bar.txt", "file:///root/folder").value
         )
         assertEquals(
             "file:///root/folder/bar.txt",
-            Href("foo/../bar.txt", "file:///root/folder/").absoluteHref()
+            Href("foo/../bar.txt", "file:///root/folder/").value
         )
 
         assertEquals(
             "http://absolute.com/foo/bar.txt",
-            Href("http://absolute.com/foo/bar.txt", "/").absoluteHref()
+            Href("http://absolute.com/foo/bar.txt", "/").value
         )
         assertEquals(
             "http://absolute.com/foo/bar.txt",
-            Href("http://absolute.com/foo/bar.txt", "https://example.com/").absoluteHref()
+            Href("http://absolute.com/foo/bar.txt", "https://example.com/").value
         )
         assertEquals(
             "file:///root/foo/bar.txt",
-            Href("file:///root/foo/bar.txt", "/").absoluteHref()
+            Href("file:///root/foo/bar.txt", "/").value
         )
         assertEquals(
             "file:///root/foo/bar.txt",
-            Href("file:///root/foo/bar.txt", "file://foo/").absoluteHref()
+            Href("file:///root/foo/bar.txt", "file://foo/").value
         )
 
         // Anchor and query parameters are preserved
-        assertEquals("/foo/bar.txt#anchor", Href("foo/bar.txt#anchor", "/").absoluteHref())
+        assertEquals("/foo/bar.txt#anchor", Href("foo/bar.txt#anchor", "/").value)
         assertEquals(
             "/foo/bar.txt?query=param#anchor",
-            Href("foo/bar.txt?query=param#anchor", "/").absoluteHref()
+            Href("foo/bar.txt?query=param#anchor", "/").value
         )
         assertEquals(
             "/foo/bar.txt?query=param#anchor",
-            Href("/foo/bar.txt?query=param#anchor", "/").absoluteHref()
+            Href("/foo/bar.txt?query=param#anchor", "/").value
         )
         assertEquals(
             "http://absolute.com/foo/bar.txt?query=param#anchor",
-            Href("http://absolute.com/foo/bar.txt?query=param#anchor", "/").absoluteHref()
+            Href("http://absolute.com/foo/bar.txt?query=param#anchor", "/").value
         )
         assertEquals(
             "file:///root/foo/bar.txt?query=param#anchor",
-            Href("file:///root/foo/bar.txt?query=param#anchor", "/").absoluteHref()
+            Href("file:///root/foo/bar.txt?query=param#anchor", "/").value
         )
 
-        assertEquals("/foo/bar.txt#anchor", Href("foo/bar.txt#anchor", "/").absoluteHref())
+        assertEquals("/foo/bar.txt#anchor", Href("foo/bar.txt#anchor", "/").value)
         assertEquals(
             "/foo/bar.txt?query=param#anchor",
-            Href("foo/bar.txt?query=param#anchor", "/").absoluteHref()
+            Href("foo/bar.txt?query=param#anchor", "/").value
         )
         assertEquals(
             "/foo/bar.txt?query=param#anchor",
-            Href("/foo/bar.txt?query=param#anchor", "/").absoluteHref()
+            Href("/foo/bar.txt?query=param#anchor", "/").value
         )
         assertEquals(
             "http://absolute.com/foo/bar.txt?query=param#anchor",
-            Href("http://absolute.com/foo/bar.txt?query=param#anchor", "/").absoluteHref()
+            Href("http://absolute.com/foo/bar.txt?query=param#anchor", "/").value
         )
         assertEquals(
             "file:///root/foo/bar.txt?query=param#anchor",
-            Href("file:///root/foo/bar.txt?query=param#anchor", "/").absoluteHref()
+            Href("file:///root/foo/bar.txt?query=param#anchor", "/").value
         )
 
         // HREF that is just an anchor
-        assertEquals("/#anchor", Href("#anchor", "").absoluteHref())
-        assertEquals("/#anchor", Href("#anchor", "/").absoluteHref())
-        assertEquals("/file.txt#anchor", Href("#anchor", "/file.txt").absoluteHref())
-        assertEquals("/folder#anchor", Href("#anchor", "/folder").absoluteHref())
-        assertEquals("/folder/#anchor", Href("#anchor", "/folder/").absoluteHref())
+        assertEquals("/#anchor", Href("#anchor", "").value)
+        assertEquals("/#anchor", Href("#anchor", "/").value)
+        assertEquals("/file.txt#anchor", Href("#anchor", "/file.txt").value)
+        assertEquals("/folder#anchor", Href("#anchor", "/folder").value)
+        assertEquals("/folder/#anchor", Href("#anchor", "/folder/").value)
         assertEquals(
             "http://example.com/folder/file.txt#anchor",
-            Href("#anchor", "http://example.com/folder/file.txt").absoluteHref()
+            Href("#anchor", "http://example.com/folder/file.txt").value
         )
         assertEquals(
             "http://example.com/folder#anchor",
-            Href("#anchor", "http://example.com/folder").absoluteHref()
+            Href("#anchor", "http://example.com/folder").value
         )
         assertEquals(
             "http://example.com/folder/#anchor",
-            Href("#anchor", "http://example.com/folder/").absoluteHref()
+            Href("#anchor", "http://example.com/folder/").value
         )
         assertEquals(
             "file:///root/folder/file.txt#anchor",
-            Href("#anchor", "file:///root/folder/file.txt").absoluteHref()
+            Href("#anchor", "file:///root/folder/file.txt").value
         )
         assertEquals(
             "file:///root/folder#anchor",
-            Href("#anchor", "file:///root/folder").absoluteHref()
+            Href("#anchor", "file:///root/folder").value
         )
         assertEquals(
             "file:///root/folder/#anchor",
-            Href("#anchor", "file:///root/folder/").absoluteHref()
+            Href("#anchor", "file:///root/folder/").value
         )
 
         // HREF containing spaces.
-        assertEquals("/foo bar.txt", Href("foo bar.txt", "").absoluteHref())
-        assertEquals("/foo bar.txt", Href("foo bar.txt", "/").absoluteHref())
-        assertEquals("/foo bar.txt", Href("foo bar.txt", "/file.txt").absoluteHref())
-        assertEquals("/foo bar.txt", Href("foo bar.txt", "/base folder").absoluteHref())
+        assertEquals("/foo bar.txt", Href("foo bar.txt", "").value)
+        assertEquals("/foo bar.txt", Href("foo bar.txt", "/").value)
+        assertEquals("/foo bar.txt", Href("foo bar.txt", "/file.txt").value)
+        assertEquals("/foo bar.txt", Href("foo bar.txt", "/base folder").value)
         assertEquals(
             "/base folder/foo bar.txt",
-            Href("foo bar.txt", "/base folder/").absoluteHref()
+            Href("foo bar.txt", "/base folder/").value
         )
         assertEquals(
             "/base folder/foo bar.txt",
-            Href("foo bar.txt", "/base folder/file.txt").absoluteHref()
+            Href("foo bar.txt", "/base folder/file.txt").value
         )
         assertEquals(
             "/base folder/foo bar.txt",
-            Href("foo bar.txt", "base folder/file.txt").absoluteHref()
+            Href("foo bar.txt", "base folder/file.txt").value
         )
 
         // HREF containing special characters
         assertEquals(
             "/base%folder/foo bar/baz%qux.txt",
-            Href("foo bar/baz%qux.txt", "/base%folder/").absoluteHref()
+            Href("foo bar/baz%qux.txt", "/base%folder/").value
         )
         assertEquals(
             "/base folder/foo bar/baz%qux.txt",
-            Href("foo%20bar/baz%25qux.txt", "/base%20folder/").absoluteHref()
+            Href("foo%20bar/baz%25qux.txt", "/base%20folder/").value
         )
         assertEquals(
             "http://example.com/foo bar/baz qux.txt",
-            Href("foo bar/baz qux.txt", "http://example.com/base%20folder").absoluteHref()
+            Href("foo bar/baz qux.txt", "http://example.com/base%20folder").value
         )
         assertEquals(
             "http://example.com/base folder/foo bar/baz qux.txt",
-            Href("foo bar/baz qux.txt", "http://example.com/base%20folder/").absoluteHref()
+            Href("foo bar/baz qux.txt", "http://example.com/base%20folder/").value
         )
         assertEquals(
             "http://example.com/base folder/foo bar/baz%qux.txt",
-            Href("foo bar/baz%qux.txt", "http://example.com/base%20folder/").absoluteHref()
+            Href("foo bar/baz%qux.txt", "http://example.com/base%20folder/").value
         )
         assertEquals(
             "file:///root/base folder/foo bar/baz qux.txt",
-            Href("foo bar/baz qux.txt", "file:///root/base%20folder").absoluteHref()
+            Href("foo bar/baz qux.txt", "file:///root/base%20folder").value
         )
         assertEquals(
             "file:///root/base folder/foo bar/baz qux.txt",
-            Href("foo bar/baz qux.txt", "file:///root/base%20folder/").absoluteHref()
+            Href("foo bar/baz qux.txt", "file:///root/base%20folder/").value
         )
         assertEquals(
             "file:///root/base folder/foo bar/baz%qux.txt",
-            Href("foo bar/baz%qux.txt", "file:///root/base%20folder/").absoluteHref()
+            Href("foo bar/baz%qux.txt", "file:///root/base%20folder/").value
         )
         assertEquals(
             "/foo bar.txt?query=param#anchor",
-            Href("/foo bar.txt?query=param#anchor", "/").absoluteHref()
+            Href("/foo bar.txt?query=param#anchor", "/").value
         )
         assertEquals(
             "http://example.com/foo bar.txt?query=param#anchor",
-            Href("/foo bar.txt?query=param#anchor", "http://example.com/").absoluteHref()
+            Href("/foo bar.txt?query=param#anchor", "http://example.com/").value
         )
         assertEquals(
             "http://example.com/foo bar.txt?query=param#anchor",
-            Href("/foo%20bar.txt?query=param#anchor", "http://example.com/").absoluteHref()
+            Href("/foo%20bar.txt?query=param#anchor", "http://example.com/").value
         )
         assertEquals(
             "http://absolute.com/foo bar.txt?query=param#Hello world £500",
             Href(
                 "http://absolute.com/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
                 "/"
-            ).absoluteHref()
+            ).value
         )
         assertEquals(
             "http://absolute.com/foo bar.txt?query=param#Hello world £500",
-            Href("http://absolute.com/foo bar.txt?query=param#Hello world £500", "/").absoluteHref()
+            Href("http://absolute.com/foo bar.txt?query=param#Hello world £500", "/").value
         )
         assertEquals(
             "file:///foo bar.txt?query=param#anchor",
-            Href("/foo bar.txt?query=param#anchor", "file:///root/").absoluteHref()
+            Href("/foo bar.txt?query=param#anchor", "file:///root/").value
         )
         assertEquals(
             "file:///foo bar.txt?query=param#anchor",
-            Href("/foo%20bar.txt?query=param#anchor", "file:///root/").absoluteHref()
+            Href("/foo%20bar.txt?query=param#anchor", "file:///root/").value
         )
         assertEquals(
             "file:///root/foo bar.txt?query=param#Hello world £500",
             Href(
                 "file:///root/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
                 "/"
-            ).absoluteHref()
+            ).value
         )
         assertEquals(
             "file:///root/foo bar.txt?query=param#Hello world £500",
-            Href("file:///root/foo bar.txt?query=param#Hello world £500", "/").absoluteHref()
+            Href("file:///root/foo bar.txt?query=param#Hello world £500", "/").value
         )
     }
 
     @Test
     fun getPercentEncodedString() {
-        assertEquals("/folder/", Href("", "/folder/").absoluteHref(percentEncoded = true))
-        assertEquals("/", Href("/", "/folder/").absoluteHref(percentEncoded = true))
+        assertEquals("/folder/", Href("", "/folder/").percentEncoded)
+        assertEquals("/", Href("/", "/folder/").percentEncoded)
 
-        assertEquals("/foo/bar.txt", Href("foo/bar.txt", "").absoluteHref(percentEncoded = true))
-        assertEquals("/foo/bar.txt", Href("foo/bar.txt", "/").absoluteHref(percentEncoded = true))
+        assertEquals("/foo/bar.txt", Href("foo/bar.txt", "").percentEncoded)
+        assertEquals("/foo/bar.txt", Href("foo/bar.txt", "/").percentEncoded)
         assertEquals(
             "/foo/bar.txt",
-            Href("foo/bar.txt", "/file.txt").absoluteHref(percentEncoded = true)
+            Href("foo/bar.txt", "/file.txt").percentEncoded
         )
         assertEquals(
             "/foo/bar.txt",
-            Href("foo/bar.txt", "/folder").absoluteHref(percentEncoded = true)
+            Href("foo/bar.txt", "/folder").percentEncoded
         )
         assertEquals(
             "/folder/foo/bar.txt",
-            Href("foo/bar.txt", "/folder/").absoluteHref(percentEncoded = true)
+            Href("foo/bar.txt", "/folder/").percentEncoded
         )
         assertEquals(
             "http://example.com/folder/foo/bar.txt",
             Href(
                 "foo/bar.txt",
                 "http://example.com/folder/file.txt"
-            ).absoluteHref(percentEncoded = true)
+            ).percentEncoded
         )
         assertEquals(
             "http://example.com/foo/bar.txt",
-            Href("foo/bar.txt", "http://example.com/folder").absoluteHref(percentEncoded = true)
+            Href("foo/bar.txt", "http://example.com/folder").percentEncoded
         )
         assertEquals(
             "http://example.com/folder/foo/bar.txt",
-            Href("foo/bar.txt", "http://example.com/folder/").absoluteHref(percentEncoded = true)
+            Href("foo/bar.txt", "http://example.com/folder/").percentEncoded
         )
         assertEquals(
             "file:///root/folder/foo/bar.txt",
-            Href("foo/bar.txt", "file:///root/folder").absoluteHref(percentEncoded = true)
+            Href("foo/bar.txt", "file:///root/folder").percentEncoded
         )
         assertEquals(
             "file:///root/folder/foo/bar.txt",
-            Href("foo/bar.txt", "file:///root/folder/").absoluteHref(percentEncoded = true)
+            Href("foo/bar.txt", "file:///root/folder/").percentEncoded
         )
 
-        assertEquals("/foo/bar.txt", Href("/foo/bar.txt", "").absoluteHref(percentEncoded = true))
-        assertEquals("/foo/bar.txt", Href("/foo/bar.txt", "/").absoluteHref(percentEncoded = true))
+        assertEquals("/foo/bar.txt", Href("/foo/bar.txt", "").percentEncoded)
+        assertEquals("/foo/bar.txt", Href("/foo/bar.txt", "/").percentEncoded)
         assertEquals(
             "/foo/bar.txt",
-            Href("/foo/bar.txt", "/file.txt").absoluteHref(percentEncoded = true)
+            Href("/foo/bar.txt", "/file.txt").percentEncoded
         )
         assertEquals(
             "/foo/bar.txt",
-            Href("/foo/bar.txt", "/folder").absoluteHref(percentEncoded = true)
+            Href("/foo/bar.txt", "/folder").percentEncoded
         )
         assertEquals(
             "/foo/bar.txt",
-            Href("/foo/bar.txt", "/folder/").absoluteHref(percentEncoded = true)
+            Href("/foo/bar.txt", "/folder/").percentEncoded
         )
         assertEquals(
             "http://example.com/foo/bar.txt",
             Href(
                 "/foo/bar.txt",
                 "http://example.com/folder/file.txt"
-            ).absoluteHref(percentEncoded = true)
+            ).percentEncoded
         )
         assertEquals(
             "http://example.com/foo/bar.txt",
-            Href("/foo/bar.txt", "http://example.com/folder").absoluteHref(percentEncoded = true)
+            Href("/foo/bar.txt", "http://example.com/folder").percentEncoded
         )
         assertEquals(
             "http://example.com/foo/bar.txt",
-            Href("/foo/bar.txt", "http://example.com/folder/").absoluteHref(percentEncoded = true)
+            Href("/foo/bar.txt", "http://example.com/folder/").percentEncoded
         )
         assertEquals(
             "file:///foo/bar.txt",
-            Href("/foo/bar.txt", "file:///root/folder/file.txt").absoluteHref(percentEncoded = true)
+            Href("/foo/bar.txt", "file:///root/folder/file.txt").percentEncoded
         )
         assertEquals(
             "file:///foo/bar.txt",
-            Href("/foo/bar.txt", "file:///root/folder").absoluteHref(percentEncoded = true)
+            Href("/foo/bar.txt", "file:///root/folder").percentEncoded
         )
         assertEquals(
             "file:///foo/bar.txt",
-            Href("/foo/bar.txt", "file:///root/folder/").absoluteHref(percentEncoded = true)
+            Href("/foo/bar.txt", "file:///root/folder/").percentEncoded
         )
 
-        assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "").absoluteHref(percentEncoded = true))
+        assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "").percentEncoded)
         assertEquals(
             "/foo/bar.txt",
-            Href("../foo/bar.txt", "/").absoluteHref(percentEncoded = true)
+            Href("../foo/bar.txt", "/").percentEncoded
         )
         assertEquals(
             "/foo/bar.txt",
-            Href("../foo/bar.txt", "/file.txt").absoluteHref(percentEncoded = true)
+            Href("../foo/bar.txt", "/file.txt").percentEncoded
         )
         assertEquals(
             "/foo/bar.txt",
-            Href("../foo/bar.txt", "/folder").absoluteHref(percentEncoded = true)
+            Href("../foo/bar.txt", "/folder").percentEncoded
         )
         assertEquals(
             "/foo/bar.txt",
-            Href("../foo/bar.txt", "/folder/").absoluteHref(percentEncoded = true)
+            Href("../foo/bar.txt", "/folder/").percentEncoded
         )
         assertEquals(
             "http://example.com/foo/bar.txt",
             Href(
                 "../foo/bar.txt",
                 "http://example.com/folder/file.txt"
-            ).absoluteHref(percentEncoded = true)
+            ).percentEncoded
         )
         assertEquals(
             "http://example.com/foo/bar.txt",
-            Href("../foo/bar.txt", "http://example.com/folder").absoluteHref(percentEncoded = true)
+            Href("../foo/bar.txt", "http://example.com/folder").percentEncoded
         )
         assertEquals(
             "http://example.com/foo/bar.txt",
-            Href("../foo/bar.txt", "http://example.com/folder/").absoluteHref(percentEncoded = true)
+            Href("../foo/bar.txt", "http://example.com/folder/").percentEncoded
         )
         assertEquals(
             "file:///root/folder/foo/bar.txt",
             Href(
                 "../foo/bar.txt",
                 "file:///root/folder/file.txt"
-            ).absoluteHref(percentEncoded = true)
+            ).percentEncoded
         )
         assertEquals(
             "file:///root/foo/bar.txt",
-            Href("../foo/bar.txt", "file:///root/folder").absoluteHref(percentEncoded = true)
+            Href("../foo/bar.txt", "file:///root/folder").percentEncoded
         )
         assertEquals(
             "file:///root/foo/bar.txt",
-            Href("../foo/bar.txt", "file:///root/folder/").absoluteHref(percentEncoded = true)
+            Href("../foo/bar.txt", "file:///root/folder/").percentEncoded
         )
 
-        assertEquals("/bar.txt", Href("foo/../bar.txt", "").absoluteHref(percentEncoded = true))
-        assertEquals("/bar.txt", Href("foo/../bar.txt", "/").absoluteHref(percentEncoded = true))
+        assertEquals("/bar.txt", Href("foo/../bar.txt", "").percentEncoded)
+        assertEquals("/bar.txt", Href("foo/../bar.txt", "/").percentEncoded)
         assertEquals(
             "/bar.txt",
-            Href("foo/../bar.txt", "/file.txt").absoluteHref(percentEncoded = true)
+            Href("foo/../bar.txt", "/file.txt").percentEncoded
         )
         assertEquals(
             "/bar.txt",
-            Href("foo/../bar.txt", "/folder").absoluteHref(percentEncoded = true)
+            Href("foo/../bar.txt", "/folder").percentEncoded
         )
         assertEquals(
             "/folder/bar.txt",
-            Href("foo/../bar.txt", "/folder/").absoluteHref(percentEncoded = true)
+            Href("foo/../bar.txt", "/folder/").percentEncoded
         )
         assertEquals(
             "http://example.com/folder/bar.txt",
             Href(
                 "foo/../bar.txt",
                 "http://example.com/folder/file.txt"
-            ).absoluteHref(percentEncoded = true)
+            ).percentEncoded
         )
         assertEquals(
             "http://example.com/bar.txt",
-            Href("foo/../bar.txt", "http://example.com/folder").absoluteHref(percentEncoded = true)
+            Href("foo/../bar.txt", "http://example.com/folder").percentEncoded
         )
         assertEquals(
             "http://example.com/folder/bar.txt",
-            Href("foo/../bar.txt", "http://example.com/folder/").absoluteHref(percentEncoded = true)
+            Href("foo/../bar.txt", "http://example.com/folder/").percentEncoded
         )
         assertEquals(
             "file:///root/folder/file.txt/bar.txt",
             Href(
                 "foo/../bar.txt",
                 "file:///root/folder/file.txt"
-            ).absoluteHref(percentEncoded = true)
+            ).percentEncoded
         )
         assertEquals(
             "file:///root/folder/bar.txt",
-            Href("foo/../bar.txt", "file:///root/folder").absoluteHref(percentEncoded = true)
+            Href("foo/../bar.txt", "file:///root/folder").percentEncoded
         )
         assertEquals(
             "file:///root/folder/bar.txt",
-            Href("foo/../bar.txt", "file:///root/folder/").absoluteHref(percentEncoded = true)
+            Href("foo/../bar.txt", "file:///root/folder/").percentEncoded
         )
 
         assertEquals(
             "http://absolute.com/foo/bar.txt",
-            Href("http://absolute.com/foo/bar.txt", "/").absoluteHref(percentEncoded = true)
+            Href("http://absolute.com/foo/bar.txt", "/").percentEncoded
         )
         assertEquals(
             "http://absolute.com/foo/bar.txt",
-            Href("http://absolute.com/foo/bar.txt", "https://example.com/").absoluteHref(
-                percentEncoded = true
-            )
+            Href("http://absolute.com/foo/bar.txt", "https://example.com/").percentEncoded
         )
         assertEquals(
             "file:///root/foo/bar.txt",
-            Href("file:///root/foo/bar.txt", "/").absoluteHref(percentEncoded = true)
+            Href("file:///root/foo/bar.txt", "/").percentEncoded
         )
         assertEquals(
             "file:///root/foo/bar.txt",
-            Href("file:///root/foo/bar.txt", "file:///root/").absoluteHref(percentEncoded = true)
+            Href("file:///root/foo/bar.txt", "file:///root/").percentEncoded
         )
 
         // Anchor and query parameters are preserved
         assertEquals(
             "/foo/bar.txt#anchor",
-            Href("foo/bar.txt#anchor", "/").absoluteHref(percentEncoded = true)
+            Href("foo/bar.txt#anchor", "/").percentEncoded
         )
         assertEquals(
             "/foo/bar.txt?query=param#anchor",
-            Href("foo/bar.txt?query=param#anchor", "/").absoluteHref(percentEncoded = true)
+            Href("foo/bar.txt?query=param#anchor", "/").percentEncoded
         )
         assertEquals(
             "/foo/bar.txt?query=param#anchor",
-            Href("/foo/bar.txt?query=param#anchor", "/").absoluteHref(percentEncoded = true)
+            Href("/foo/bar.txt?query=param#anchor", "/").percentEncoded
         )
         assertEquals(
             "http://absolute.com/foo/bar.txt?query=param#anchor",
-            Href("http://absolute.com/foo/bar.txt?query=param#anchor", "/").absoluteHref(
-                percentEncoded = true
-            )
+            Href("http://absolute.com/foo/bar.txt?query=param#anchor", "/").percentEncoded
         )
         assertEquals(
             "file:///root/foo/bar.txt?query=param#anchor",
             Href(
                 "file:///root/foo/bar.txt?query=param#anchor",
                 "/"
-            ).absoluteHref(percentEncoded = true)
+            ).percentEncoded
         )
 
         assertEquals(
             "/foo/bar.txt#anchor",
-            Href("foo/bar.txt#anchor", "/").absoluteHref(percentEncoded = true)
+            Href("foo/bar.txt#anchor", "/").percentEncoded
         )
         assertEquals(
             "/foo/bar.txt?query=param#anchor",
-            Href("foo/bar.txt?query=param#anchor", "/").absoluteHref(percentEncoded = true)
+            Href("foo/bar.txt?query=param#anchor", "/").percentEncoded
         )
         assertEquals(
             "/foo/bar.txt?query=param#anchor",
-            Href("/foo/bar.txt?query=param#anchor", "/").absoluteHref(percentEncoded = true)
+            Href("/foo/bar.txt?query=param#anchor", "/").percentEncoded
         )
         assertEquals(
             "http://absolute.com/foo/bar.txt?query=param#anchor",
-            Href("http://absolute.com/foo/bar.txt?query=param#anchor", "/").absoluteHref(
-                percentEncoded = true
-            )
+            Href("http://absolute.com/foo/bar.txt?query=param#anchor", "/").percentEncoded
         )
         assertEquals(
             "file:///root/foo/bar.txt?query=param#anchor",
             Href(
                 "file:///root/foo/bar.txt?query=param#anchor",
                 "/"
-            ).absoluteHref(percentEncoded = true)
+            ).percentEncoded
         )
 
         // HREF that is just an anchor
-        assertEquals("/#anchor", Href("#anchor", "").absoluteHref(percentEncoded = true))
-        assertEquals("/#anchor", Href("#anchor", "/").absoluteHref(percentEncoded = true))
+        assertEquals("/#anchor", Href("#anchor", "").percentEncoded)
+        assertEquals("/#anchor", Href("#anchor", "/").percentEncoded)
         assertEquals(
             "/file.txt#anchor",
-            Href("#anchor", "/file.txt").absoluteHref(percentEncoded = true)
+            Href("#anchor", "/file.txt").percentEncoded
         )
         assertEquals(
             "/folder#anchor",
-            Href("#anchor", "/folder").absoluteHref(percentEncoded = true)
+            Href("#anchor", "/folder").percentEncoded
         )
         assertEquals(
             "/folder/#anchor",
-            Href("#anchor", "/folder/").absoluteHref(percentEncoded = true)
+            Href("#anchor", "/folder/").percentEncoded
         )
         assertEquals(
             "http://example.com/folder/file.txt#anchor",
             Href(
                 "#anchor",
                 "http://example.com/folder/file.txt"
-            ).absoluteHref(percentEncoded = true)
+            ).percentEncoded
         )
         assertEquals(
             "http://example.com/folder#anchor",
-            Href("#anchor", "http://example.com/folder").absoluteHref(percentEncoded = true)
+            Href("#anchor", "http://example.com/folder").percentEncoded
         )
         assertEquals(
             "http://example.com/folder/#anchor",
-            Href("#anchor", "http://example.com/folder/").absoluteHref(percentEncoded = true)
+            Href("#anchor", "http://example.com/folder/").percentEncoded
         )
         assertEquals(
             "file:///root/folder/file.txt#anchor",
-            Href("#anchor", "file:///root/folder/file.txt").absoluteHref(percentEncoded = true)
+            Href("#anchor", "file:///root/folder/file.txt").percentEncoded
         )
         assertEquals(
             "file:///root/folder#anchor",
-            Href("#anchor", "file:///root/folder").absoluteHref(percentEncoded = true)
+            Href("#anchor", "file:///root/folder").percentEncoded
         )
         assertEquals(
             "file:///root/folder/#anchor",
-            Href("#anchor", "file:///root/folder/").absoluteHref(percentEncoded = true)
+            Href("#anchor", "file:///root/folder/").percentEncoded
         )
 
         // HREF containing spaces.
-        assertEquals("/foo%20bar.txt", Href("foo bar.txt", "").absoluteHref(percentEncoded = true))
-        assertEquals("/foo%20bar.txt", Href("foo bar.txt", "/").absoluteHref(percentEncoded = true))
+        assertEquals("/foo%20bar.txt", Href("foo bar.txt", "").percentEncoded)
+        assertEquals("/foo%20bar.txt", Href("foo bar.txt", "/").percentEncoded)
         assertEquals(
             "/foo%20bar.txt",
-            Href("foo bar.txt", "/file.txt").absoluteHref(percentEncoded = true)
+            Href("foo bar.txt", "/file.txt").percentEncoded
         )
         assertEquals(
             "/foo%20bar.txt",
-            Href("foo bar.txt", "/base folder").absoluteHref(percentEncoded = true)
+            Href("foo bar.txt", "/base folder").percentEncoded
         )
         assertEquals(
             "/base%20folder/foo%20bar.txt",
-            Href("foo bar.txt", "/base folder/").absoluteHref(percentEncoded = true)
+            Href("foo bar.txt", "/base folder/").percentEncoded
         )
         assertEquals(
             "/base%20folder/foo%20bar.txt",
-            Href("foo bar.txt", "/base folder/file.txt").absoluteHref(percentEncoded = true)
+            Href("foo bar.txt", "/base folder/file.txt").percentEncoded
         )
         assertEquals(
             "/base%20folder/foo%20bar.txt",
-            Href("foo bar.txt", "base folder/file.txt").absoluteHref(percentEncoded = true)
+            Href("foo bar.txt", "base folder/file.txt").percentEncoded
         )
 
         // HREF containing special characters
         assertEquals(
             "/base%25folder/foo%20bar/baz%25qux.txt",
-            Href("foo bar/baz%qux.txt", "/base%folder/").absoluteHref(percentEncoded = true)
+            Href("foo bar/baz%qux.txt", "/base%folder/").percentEncoded
         )
         assertEquals(
             "/base%20folder/foo%20bar/baz%25qux.txt",
-            Href("foo%20bar/baz%25qux.txt", "/base%20folder/").absoluteHref(percentEncoded = true)
+            Href("foo%20bar/baz%25qux.txt", "/base%20folder/").percentEncoded
         )
         assertEquals(
             "http://example.com/foo%20bar/baz%20qux.txt",
-            Href("foo bar/baz qux.txt", "http://example.com/base%20folder").absoluteHref(
-                percentEncoded = true
-            )
+            Href("foo bar/baz qux.txt", "http://example.com/base%20folder").percentEncoded
         )
         assertEquals(
             "http://example.com/base%20folder/foo%20bar/baz%20qux.txt",
-            Href("foo bar/baz qux.txt", "http://example.com/base%20folder/").absoluteHref(
-                percentEncoded = true
-            )
+            Href("foo bar/baz qux.txt", "http://example.com/base%20folder/").percentEncoded
         )
         assertEquals(
             "http://example.com/base%20folder/foo%20bar/baz%25qux.txt",
-            Href("foo bar/baz%qux.txt", "http://example.com/base%20folder/").absoluteHref(
-                percentEncoded = true
-            )
+            Href("foo bar/baz%qux.txt", "http://example.com/base%20folder/").percentEncoded
         )
         assertEquals(
             "file:///root/base%20folder/foo%20bar/baz%20qux.txt",
             Href(
                 "foo bar/baz qux.txt",
                 "file:///root/base%20folder"
-            ).absoluteHref(percentEncoded = true)
+            ).percentEncoded
         )
         assertEquals(
             "file:///root/base%20folder/foo%20bar/baz%20qux.txt",
             Href(
                 "foo bar/baz qux.txt",
                 "file:///root/base%20folder/"
-            ).absoluteHref(percentEncoded = true)
+            ).percentEncoded
         )
         assertEquals(
             "file:///root/base%20folder/foo%20bar/baz%25qux.txt",
             Href(
                 "foo bar/baz%qux.txt",
                 "file:///root/base%20folder/"
-            ).absoluteHref(percentEncoded = true)
+            ).percentEncoded
         )
         assertEquals(
             "/foo%20bar.txt?query=param#anchor",
-            Href("/foo bar.txt?query=param#anchor", "/").absoluteHref(percentEncoded = true)
+            Href("/foo bar.txt?query=param#anchor", "/").percentEncoded
         )
         assertEquals(
             "http://example.com/foo%20bar.txt?query=param#anchor",
-            Href("/foo bar.txt?query=param#anchor", "http://example.com/").absoluteHref(
-                percentEncoded = true
-            )
+            Href("/foo bar.txt?query=param#anchor", "http://example.com/").percentEncoded
         )
         assertEquals(
             "http://example.com/foo%20bar.txt?query=param#anchor",
-            Href("/foo%20bar.txt?query=param#anchor", "http://example.com/").absoluteHref(
-                percentEncoded = true
-            )
+            Href("/foo%20bar.txt?query=param#anchor", "http://example.com/").percentEncoded
         )
         assertEquals(
             "http://absolute.com/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
             Href(
                 "http://absolute.com/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
                 "/"
-            ).absoluteHref(percentEncoded = true)
+            ).percentEncoded
         )
         assertEquals(
             "http://absolute.com/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
-            Href("http://absolute.com/foo bar.txt?query=param#Hello world £500", "/").absoluteHref(
-                percentEncoded = true
-            )
+            Href("http://absolute.com/foo bar.txt?query=param#Hello world £500", "/").percentEncoded
         )
         assertEquals(
             "file:///foo%20bar.txt?query=param#anchor",
             Href(
                 "/foo bar.txt?query=param#anchor",
                 "file:///root/"
-            ).absoluteHref(percentEncoded = true)
+            ).percentEncoded
         )
         assertEquals(
             "file:///foo%20bar.txt?query=param#anchor",
             Href(
                 "/foo%20bar.txt?query=param#anchor",
                 "file:///root/"
-            ).absoluteHref(percentEncoded = true)
+            ).percentEncoded
         )
         assertEquals(
             "file:///root/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
             Href(
                 "file:///root/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
                 "/"
-            ).absoluteHref(percentEncoded = true)
+            ).percentEncoded
         )
         assertEquals(
             "file:///root/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
-            Href("file:///root/foo bar.txt?query=param#Hello world £500", "/").absoluteHref(
-                percentEncoded = true
-            )
+            Href("file:///root/foo bar.txt?query=param#Hello world £500", "/").percentEncoded
         )
     }
 
