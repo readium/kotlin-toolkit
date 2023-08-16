@@ -71,7 +71,7 @@ internal class LicensesService(
         }
 
     override fun contentProtection(
-        authentication: LcpAuthenticating,
+        authentication: LcpAuthenticating
     ): ContentProtection =
         LcpContentProtection(this, authentication, resourceFactory, archiveFactory)
 
@@ -93,7 +93,13 @@ internal class LicensesService(
     ): Try<LcpLicense, LcpException> =
         try {
             val container = createLicenseContainer(file, mediaType)
-            val license = retrieveLicense(container, authentication, allowUserInteraction, true, sender)
+            val license = retrieveLicense(
+                container,
+                authentication,
+                allowUserInteraction,
+                true,
+                sender
+            )
             Try.success(license)
         } catch (e: Exception) {
             Try.failure(LcpException.wrap(e))
@@ -107,7 +113,13 @@ internal class LicensesService(
     ): Try<LcpLicense, LcpException> =
         try {
             val licenseContainer = createLicenseContainer(asset)
-            val license = retrieveLicense(licenseContainer, authentication, allowUserInteraction, false, sender)
+            val license = retrieveLicense(
+                licenseContainer,
+                authentication,
+                allowUserInteraction,
+                false,
+                sender
+            )
             Try.success(license)
         } catch (e: Exception) {
             Try.failure(LcpException.wrap(e))
@@ -167,7 +179,6 @@ internal class LicensesService(
         sender: Any?,
         completion: (License) -> Unit
     ) {
-
         var initialData = container.read()
         Timber.d("license ${LicenseDocument(data = initialData).json}")
 
@@ -203,7 +214,15 @@ internal class LicensesService(
                 Timber.d("validated documents $it")
                 try {
                     documents.getContext()
-                    completion(License(documents = it, validation = validation, licenses = this.licenses, device = this.device, network = this.network))
+                    completion(
+                        License(
+                            documents = it,
+                            validation = validation,
+                            licenses = this.licenses,
+                            device = this.device,
+                            network = this.network
+                        )
+                    )
                 } catch (e: Exception) {
                     throw e
                 }
@@ -218,16 +237,21 @@ internal class LicensesService(
     }
 
     private suspend fun fetchPublication(license: LicenseDocument, onProgress: (Double) -> Unit): LcpService.AcquiredPublication {
-        val link = license.link(LicenseDocument.Rel.publication)
+        val link = license.link(LicenseDocument.Rel.Publication)
         val url = link?.url
-            ?: throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.value)
+            ?: throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.Publication.value)
 
         val destination = withContext(Dispatchers.IO) {
             File.createTempFile("lcp-${System.currentTimeMillis()}", ".tmp")
         }
         Timber.i("LCP destination $destination")
 
-        val mediaType = network.download(url, destination, mediaType = link.type, onProgress = onProgress)
+        val mediaType = network.download(
+            url,
+            destination,
+            mediaType = link.type,
+            onProgress = onProgress
+        )
             ?: mediaTypeRetriever.retrieve(mediaType = link.type)
             ?: MediaType.EPUB
 

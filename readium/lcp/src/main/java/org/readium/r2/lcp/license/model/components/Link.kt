@@ -75,9 +75,10 @@ public data class Link(val json: JSONObject) {
      * List of URI template parameter keys, if the [Link] is templated.
      */
     internal val templateParameters: List<String> by lazy {
-        if (!templated)
+        if (!templated) {
             emptyList()
-        else
+        } else {
             URITemplate(href).parameters
+        }
     }
 }

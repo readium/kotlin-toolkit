@@ -23,7 +23,10 @@ import androidx.viewpager.widget.PagerAdapter
 
 // This class will be going away when the navigator is rewritten
 @Suppress("DEPRECATION")
-internal abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentManager) : androidx.fragment.app.FragmentStatePagerAdapter(mFragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+internal abstract class R2FragmentPagerAdapter(private val mFragmentManager: FragmentManager) : androidx.fragment.app.FragmentStatePagerAdapter(
+    mFragmentManager,
+    BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT
+) {
 
     val mFragments = LongSparseArray<Fragment>()
     private val mSavedStates = LongSparseArray<Fragment.SavedState>()
@@ -119,7 +122,6 @@ internal abstract class R2FragmentPagerAdapter(private val mFragmentManager: Fra
     override fun saveState(): Parcelable? {
         var state: Bundle? = null
         if (mSavedStates.size() > 0) {
-
             state = Bundle()
             val stateIds = LongArray(mSavedStates.size())
             for (i in 0 until mSavedStates.size()) {
@@ -151,7 +153,14 @@ internal abstract class R2FragmentPagerAdapter(private val mFragmentManager: Fra
             mFragments.clear()
             if (fss != null) {
                 for (fs in fss) {
-                    mSavedStates.put(fs, BundleCompat.getParcelable(bundle, fs.toString(), Fragment.SavedState::class.java))
+                    mSavedStates.put(
+                        fs,
+                        BundleCompat.getParcelable(
+                            bundle,
+                            fs.toString(),
+                            Fragment.SavedState::class.java
+                        )
+                    )
                 }
             }
             val keys = bundle.keySet()

@@ -79,7 +79,6 @@ public class PdfiumDocumentFragment internal constructor(
         val context = context?.applicationContext ?: return
 
         viewLifecycleOwner.lifecycleScope.launch {
-
             try {
                 val document = PdfiumDocumentFactory(context)
                     // PDFium crashes when reusing the same PdfDocument, so we must not cache it.
@@ -141,8 +140,11 @@ public class PdfiumDocumentFragment internal constructor(
     override val pageIndex: Int get() = viewPageIndex ?: initialPageIndex
 
     private val viewPageIndex: Int? get() =
-        if (pdfView.isRecycled) null
-        else convertPageIndexFromView(pdfView.currentPage)
+        if (pdfView.isRecycled) {
+            null
+        } else {
+            convertPageIndexFromView(pdfView.currentPage)
+        }
 
     override fun goToPageIndex(index: Int, animated: Boolean): Boolean {
         if (!isValidPageIndex(index)) {

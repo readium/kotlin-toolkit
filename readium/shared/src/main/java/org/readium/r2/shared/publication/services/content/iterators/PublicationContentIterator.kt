@@ -86,7 +86,9 @@ public class PublicationContentIterator(
     override fun previous(): Content.Element =
         currentElement
             ?.takeIf { it.direction == Direction.Backward }?.element
-            ?: throw IllegalStateException("Called previous() without a successful call to hasPrevious() first")
+            ?: throw IllegalStateException(
+                "Called previous() without a successful call to hasPrevious() first"
+            )
 
     override suspend fun hasNext(): Boolean {
         currentElement = nextIn(Direction.Forward)
@@ -96,7 +98,9 @@ public class PublicationContentIterator(
     override fun next(): Content.Element =
         currentElement
             ?.takeIf { it.direction == Direction.Forward }?.element
-            ?: throw IllegalStateException("Called next() without a successful call to hasNext() first")
+            ?: throw IllegalStateException(
+                "Called next() without a successful call to hasNext() first"
+            )
 
     private suspend fun nextIn(direction: Direction): ElementInDirection? {
         val iterator = currentIterator() ?: return null

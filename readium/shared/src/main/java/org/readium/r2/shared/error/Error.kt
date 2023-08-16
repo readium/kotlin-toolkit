@@ -42,7 +42,7 @@ public class ThrowableError(
  * A basic [Error] implementation with a message.
  */
 public class MessageError(
-    override val message: String,
+    override val message: String
 ) : Error {
 
     override val cause: Error? = null

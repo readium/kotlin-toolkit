@@ -315,8 +315,11 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
                     val isUnderline = (decoration.style is Decoration.Style.Underline)
                     showHighlightPopup(
                         rect,
-                        style = if (isUnderline) Highlight.Style.UNDERLINE
-                        else Highlight.Style.HIGHLIGHT,
+                        style = if (isUnderline) {
+                            Highlight.Style.UNDERLINE
+                        } else {
+                            Highlight.Style.HIGHLIGHT
+                        },
                         highlightId = id
                     )
                 }
@@ -337,7 +340,7 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         R.id.green to Color.rgb(173, 247, 123),
         R.id.blue to Color.rgb(124, 198, 247),
         R.id.yellow to Color.rgb(249, 239, 125),
-        R.id.purple to Color.rgb(182, 153, 255),
+        R.id.purple to Color.rgb(182, 153, 255)
     )
 
     val customSelectionActionModeCallback: ActionMode.Callback by lazy { SelectionActionModeCallback() }
@@ -537,10 +540,11 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
         }
 
     fun updateSystemUiVisibility() {
-        if (navigatorFragment.isHidden)
+        if (navigatorFragment.isHidden) {
             requireActivity().showSystemUi()
-        else
+        } else {
             requireActivity().hideSystemUi()
+        }
 
         requireView().requestApplyInsets()
     }

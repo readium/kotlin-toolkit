@@ -30,10 +30,12 @@ public class RoutingContainer(private val routes: List<Route>) : Container {
     )
 
     public constructor(local: Container, remote: Container) :
-        this(listOf(
-            Route(local, accepts = ::isLocal),
-            Route(remote)
-        ))
+        this(
+            listOf(
+                Route(local, accepts = ::isLocal),
+                Route(remote)
+            )
+        )
 
     override suspend fun entries(): Set<Container.Entry>? =
         null // We can't guarantee the list of entries is exhaustive, so we return null

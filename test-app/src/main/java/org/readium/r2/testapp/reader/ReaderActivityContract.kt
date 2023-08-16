@@ -30,8 +30,9 @@ class ReaderActivityContract :
     }
 
     override fun parseResult(resultCode: Int, intent: Intent?): Arguments? {
-        if (intent == null)
+        if (intent == null) {
             return null
+        }
 
         val extras = requireNotNull(intent.extras)
         return parseExtras(extras)

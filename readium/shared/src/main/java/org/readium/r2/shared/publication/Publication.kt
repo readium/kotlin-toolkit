@@ -66,10 +66,16 @@ public class Publication(
     manifest: Manifest,
     private val container: Container = EmptyContainer(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
-    @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Migrate to the new Settings API (see migration guide)",
+        level = DeprecationLevel.ERROR
+    )
     public var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(),
-    @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-    public var cssStyle: String? = null,
+    @Deprecated(
+        "Migrate to the new Settings API (see migration guide)",
+        level = DeprecationLevel.ERROR
+    )
+    public var cssStyle: String? = null
 ) : PublicationServicesHolder {
 
     private val _manifest: Manifest
@@ -78,7 +84,9 @@ public class Publication(
 
     init {
         services.services = servicesBuilder.build(Service.Context(manifest, container, services))
-        _manifest = manifest.copy(links = manifest.links + services.services.map(Service::links).flatten())
+        _manifest = manifest.copy(
+            links = manifest.links + services.services.map(Service::links).flatten()
+        )
     }
 
     // Shortcuts to manifest properties
@@ -98,7 +106,10 @@ public class Publication(
 
     public val subcollections: Map<String, List<PublicationCollection>> get() = _manifest.subcollections
 
-    @Deprecated("Use conformsTo() to check the kind of a publication.", level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use conformsTo() to check the kind of a publication.",
+        level = DeprecationLevel.ERROR
+    )
     public var type: TYPE = TYPE.EPUB
 
     @Deprecated("Version is not available any more.", level = DeprecationLevel.ERROR)
@@ -240,7 +251,10 @@ public class Publication(
          * in the navigator at the moment without changing the code in reading apps.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated("The HTTP server is not needed anymore (see migration guide)", level = DeprecationLevel.ERROR)
+        @Deprecated(
+            "The HTTP server is not needed anymore (see migration guide)",
+            level = DeprecationLevel.ERROR
+        )
         public fun localBaseUrlOf(filename: String, port: Int): String {
             throw NotImplementedError()
         }
@@ -249,7 +263,10 @@ public class Publication(
          * Gets the absolute URL of a resource locally served through HTTP.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated("The HTTP server is not needed anymore (see migration guide)", level = DeprecationLevel.ERROR)
+        @Deprecated(
+            "The HTTP server is not needed anymore (see migration guide)",
+            level = DeprecationLevel.ERROR
+        )
         public fun localUrlOf(filename: String, port: Int, href: String): String {
             throw NotImplementedError()
         }
@@ -259,7 +276,8 @@ public class Publication(
             "Parse a RWPM with [Manifest::fromJSON] and then instantiate a Publication",
             ReplaceWith(
                 "Manifest.fromJSON(json)",
-                "org.readium.r2.shared.publication.Publication", "org.readium.r2.shared.publication.Manifest"
+                "org.readium.r2.shared.publication.Publication",
+                "org.readium.r2.shared.publication.Manifest"
             ),
             level = DeprecationLevel.ERROR
         )
@@ -282,10 +300,17 @@ public class Publication(
         public companion object {
             /** Profile for EPUB publications. */
             public val EPUB: Profile = Profile("https://readium.org/webpub-manifest/profiles/epub")
+
             /** Profile for audiobooks. */
-            public val AUDIOBOOK: Profile = Profile("https://readium.org/webpub-manifest/profiles/audiobook")
+            public val AUDIOBOOK: Profile = Profile(
+                "https://readium.org/webpub-manifest/profiles/audiobook"
+            )
+
             /** Profile for visual narratives (comics, manga and bandes dessinées). */
-            public val DIVINA: Profile = Profile("https://readium.org/webpub-manifest/profiles/divina")
+            public val DIVINA: Profile = Profile(
+                "https://readium.org/webpub-manifest/profiles/divina"
+            )
+
             /** Profile for PDF documents. */
             public val PDF: Profile = Profile("https://readium.org/webpub-manifest/profiles/pdf")
         }
@@ -365,7 +390,7 @@ public class Publication(
             cover: ServiceFactory? = null,
             locator: ServiceFactory? = null,
             positions: ServiceFactory? = null,
-            search: ServiceFactory? = null,
+            search: ServiceFactory? = null
         ) : this(
             mapOf(
                 CacheService::class.java.simpleName to cache,
@@ -374,7 +399,7 @@ public class Publication(
                 CoverService::class.java.simpleName to cover,
                 LocatorService::class.java.simpleName to locator,
                 PositionsService::class.java.simpleName to positions,
-                SearchService::class.java.simpleName to search,
+                SearchService::class.java.simpleName to search
             ).filterValues { it != null }.toMutableMap() as MutableMap<String, ServiceFactory>
         )
 
@@ -536,7 +561,11 @@ public class Publication(
     /**
      * Finds the first [Link] to the publication's cover (rel = cover).
      */
-    @Deprecated("Use [Publication.cover] to get the cover as a [Bitmap]", ReplaceWith("cover"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [Publication.cover] to get the cover as a [Bitmap]",
+        ReplaceWith("cover"),
+        level = DeprecationLevel.ERROR
+    )
     public val coverLink: Link? get() = linkWithRel("cover")
 
     /**
@@ -544,51 +573,98 @@ public class Publication(
      * The provided closure will be used to build the [PositionListFactory], with this being the
      * [Publication].
      */
-    @Deprecated("Use [Publication.copy(serviceFactories)] instead", ReplaceWith("Publication.copy(serviceFactories = listOf(positionsServiceFactory)"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [Publication.copy(serviceFactories)] instead",
+        ReplaceWith("Publication.copy(serviceFactories = listOf(positionsServiceFactory)"),
+        level = DeprecationLevel.ERROR
+    )
     public fun copyWithPositionsFactory(): Publication {
         throw NotImplementedError()
     }
 
-    @Deprecated("Renamed to [listOfAudioClips]", ReplaceWith("listOfAudioClips"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Renamed to [listOfAudioClips]",
+        ReplaceWith("listOfAudioClips"),
+        level = DeprecationLevel.ERROR
+    )
     public val listOfAudioFiles: List<Link> = listOfAudioClips
 
-    @Deprecated("Renamed to [listOfVideoClips]", ReplaceWith("listOfVideoClips"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Renamed to [listOfVideoClips]",
+        ReplaceWith("listOfVideoClips"),
+        level = DeprecationLevel.ERROR
+    )
     public val listOfVideos: List<Link> = listOfVideoClips
 
-    @Deprecated("Renamed to [linkWithHref]", ReplaceWith("linkWithHref(href)"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Renamed to [linkWithHref]",
+        ReplaceWith("linkWithHref(href)"),
+        level = DeprecationLevel.ERROR
+    )
     public fun resource(href: String): Link? = linkWithHref(href)
 
     @Deprecated("Refactored as a property", ReplaceWith("baseUrl"), level = DeprecationLevel.ERROR)
     public fun baseUrl(): URL? = baseUrl
 
-    @Deprecated("Renamed [subcollections]", ReplaceWith("subcollections"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Renamed [subcollections]",
+        ReplaceWith("subcollections"),
+        level = DeprecationLevel.ERROR
+    )
     public val otherCollections: Map<String, List<PublicationCollection>> get() = subcollections
 
-    @Deprecated("Use [setSelfLink] instead", ReplaceWith("setSelfLink"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [setSelfLink] instead",
+        ReplaceWith("setSelfLink"),
+        level = DeprecationLevel.ERROR
+    )
     @Suppress("UNUSED_PARAMETER")
     public fun addSelfLink(endPoint: String, baseURL: URL) {
         throw NotImplementedError()
     }
 
-    @Deprecated("Use [linkWithHref] instead.", ReplaceWith("linkWithHref(href)"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [linkWithHref] instead.",
+        ReplaceWith("linkWithHref(href)"),
+        level = DeprecationLevel.ERROR
+    )
     public fun resourceWithHref(href: String): Link? = linkWithHref(href)
 
-    @Deprecated("Use a [ServiceFactory] for a [PositionsService] instead.", level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use a [ServiceFactory] for a [PositionsService] instead.",
+        level = DeprecationLevel.ERROR
+    )
     public interface PositionListFactory {
         public fun create(): List<Locator>
     }
 
-    @Deprecated("Use [linkWithHref()] to find a link with the given HREF", replaceWith = ReplaceWith("linkWithHref"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [linkWithHref()] to find a link with the given HREF",
+        replaceWith = ReplaceWith("linkWithHref"),
+        level = DeprecationLevel.ERROR
+    )
     @Suppress("UNUSED_PARAMETER")
     public fun link(predicate: (Link) -> Boolean): Link? = null
 
-    @Deprecated("Use [jsonManifest] instead", ReplaceWith("jsonManifest"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [jsonManifest] instead",
+        ReplaceWith("jsonManifest"),
+        level = DeprecationLevel.ERROR
+    )
     public fun toJSON(): JSONObject = JSONObject(jsonManifest)
 
-    @Deprecated("Use `metadata.effectiveReadingProgression` instead", ReplaceWith("metadata.effectiveReadingProgression"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use `metadata.effectiveReadingProgression` instead",
+        ReplaceWith("metadata.effectiveReadingProgression"),
+        level = DeprecationLevel.ERROR
+    )
     public val contentLayout: ReadingProgression get() = metadata.effectiveReadingProgression
 
-    @Deprecated("Use `metadata.effectiveReadingProgression` instead", ReplaceWith("metadata.effectiveReadingProgression"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use `metadata.effectiveReadingProgression` instead",
+        ReplaceWith("metadata.effectiveReadingProgression"),
+        level = DeprecationLevel.ERROR
+    )
     @Suppress("UNUSED_PARAMETER")
     public fun contentLayoutForLanguage(language: String?): ReadingProgression = metadata.effectiveReadingProgression
 }

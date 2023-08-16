@@ -22,10 +22,11 @@ public data class MediaOverlays(private val nodes: List<MediaOverlayNode> = list
 
     private fun findNode(ref: String?, inNodes: List<MediaOverlayNode>): MediaOverlayNode? {
         for (node in inNodes) {
-            if (node.role.contains("section"))
+            if (node.role.contains("section")) {
                 return findNode(ref, node.children)
-            else if (ref == null || node.text == ref)
+            } else if (ref == null || node.text == ref) {
                 return node
+            }
         }
         return null
     }
@@ -40,10 +41,11 @@ public data class MediaOverlays(private val nodes: List<MediaOverlayNode> = list
         for (node in inNodes) {
             if (prevNodeFoundFlag) {
                 //  If the node is a section, we get the first non section child.
-                if (node.role.contains("section"))
+                if (node.role.contains("section")) {
                     getFirstNonSectionChild(node)?.let { return NextNodeResult(it, false) }
-                else
+                } else {
                     return NextNodeResult(node, false)
+                }
             } else {
                 //  If the node is a "section" (<seq> sequence element)
                 if (node.role.contains("section")) {

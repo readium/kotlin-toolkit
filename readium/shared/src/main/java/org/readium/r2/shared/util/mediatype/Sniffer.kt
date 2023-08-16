@@ -43,7 +43,10 @@ public object Sniffers {
      * Must precede the HTML sniffer.
      */
     public suspend fun xhtml(context: SnifferContext): MediaType? {
-        if (context.hasFileExtension("xht", "xhtml") || context.hasMediaType("application/xhtml+xml")) {
+        if (context.hasFileExtension("xht", "xhtml") || context.hasMediaType(
+                "application/xhtml+xml"
+            )
+        ) {
             return MediaType.XHTML
         }
 
@@ -52,7 +55,10 @@ public object Sniffers {
         }
 
         context.contentAsXml()?.let {
-            if (it.name.lowercase(Locale.ROOT) == "html" && it.namespace.lowercase(Locale.ROOT).contains("xhtml")) {
+            if (it.name.lowercase(Locale.ROOT) == "html" && it.namespace.lowercase(Locale.ROOT).contains(
+                    "xhtml"
+                )
+            ) {
                 return MediaType.XHTML
             }
         }
@@ -98,7 +104,10 @@ public object Sniffers {
         }
 
         // OPDS Authentication Document.
-        if (context.hasMediaType("application/opds-authentication+json") || context.hasMediaType("application/vnd.opds.authentication.v1.0+json")) {
+        if (context.hasMediaType("application/opds-authentication+json") || context.hasMediaType(
+                "application/vnd.opds.authentication.v1.0+json"
+            )
+        ) {
             return MediaType.OPDS_AUTHENTICATION
         }
 
@@ -137,7 +146,10 @@ public object Sniffers {
 
     /** Sniffs an LCP License Document. */
     public suspend fun lcpLicense(context: SnifferContext): MediaType? {
-        if (context.hasFileExtension("lcpl") || context.hasMediaType("application/vnd.readium.lcp.license.v1.0+json")) {
+        if (context.hasFileExtension("lcpl") || context.hasMediaType(
+                "application/vnd.readium.lcp.license.v1.0+json"
+            )
+        ) {
             return MediaType.LCP_LICENSE_DOCUMENT
         }
 
@@ -157,13 +169,20 @@ public object Sniffers {
         if (context.hasFileExtension("avif") || context.hasMediaType("image/avif")) {
             return MediaType.AVIF
         }
-        if (context.hasFileExtension("bmp", "dib") || context.hasMediaType("image/bmp", "image/x-bmp")) {
+        if (context.hasFileExtension("bmp", "dib") || context.hasMediaType(
+                "image/bmp",
+                "image/x-bmp"
+            )
+        ) {
             return MediaType.BMP
         }
         if (context.hasFileExtension("gif") || context.hasMediaType("image/gif")) {
             return MediaType.GIF
         }
-        if (context.hasFileExtension("jpg", "jpeg", "jpe", "jif", "jfif", "jfi") || context.hasMediaType("image/jpeg")) {
+        if (context.hasFileExtension("jpg", "jpeg", "jpe", "jif", "jfif", "jfi") || context.hasMediaType(
+                "image/jpeg"
+            )
+        ) {
             return MediaType.JPEG
         }
         if (context.hasFileExtension("jxl") || context.hasMediaType("image/jxl")) {
@@ -172,7 +191,11 @@ public object Sniffers {
         if (context.hasFileExtension("png") || context.hasMediaType("image/png")) {
             return MediaType.PNG
         }
-        if (context.hasFileExtension("tiff", "tif") || context.hasMediaType("image/tiff", "image/tiff-fx")) {
+        if (context.hasFileExtension("tiff", "tif") || context.hasMediaType(
+                "image/tiff",
+                "image/tiff-fx"
+            )
+        ) {
             return MediaType.TIFF
         }
         if (context.hasFileExtension("webp") || context.hasMediaType("image/webp")) {
@@ -218,7 +241,10 @@ public object Sniffers {
 
     /** Sniffs a Readium Web Publication, protected or not by LCP. */
     public suspend fun webpub(context: SnifferContext): MediaType? {
-        if (context.hasFileExtension("audiobook") || context.hasMediaType("application/audiobook+zip")) {
+        if (context.hasFileExtension("audiobook") || context.hasMediaType(
+                "application/audiobook+zip"
+            )
+        ) {
             return MediaType.READIUM_AUDIOBOOK
         }
 
@@ -332,7 +358,10 @@ public object Sniffers {
         context.readArchiveEntryAt("publication.json")
             ?.let { String(it) }
             ?.let { manifest ->
-                if (manifest.contains("@context") && manifest.contains("https://www.w3.org/ns/pub-context")) {
+                if (manifest.contains("@context") && manifest.contains(
+                        "https://www.w3.org/ns/pub-context"
+                    )
+                ) {
                     return MediaType.LPF
                 }
             }
@@ -367,7 +396,12 @@ public object Sniffers {
      * Reference: https://wiki.mobileread.com/wiki/CBR_and_CBZ
      */
     public suspend fun archive(context: SnifferContext): MediaType? {
-        if (context.hasFileExtension("cbz") || context.hasMediaType("application/vnd.comicbook+zip", "application/x-cbz", "application/x-cbr")) {
+        if (context.hasFileExtension("cbz") || context.hasMediaType(
+                "application/vnd.comicbook+zip",
+                "application/x-cbz",
+                "application/x-cbr"
+            )
+        ) {
             return MediaType.CBZ
         }
         if (context.hasFileExtension("zab")) {

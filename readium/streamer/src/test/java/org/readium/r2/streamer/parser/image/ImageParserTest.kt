@@ -92,6 +92,9 @@ class ImageParserTest {
     fun `title is based on archive's root directory when any`() {
         val builder = parser.parseBlocking(cbzAsset)
         assertNotNull(builder)
-        assertEquals("Cory Doctorow's Futuristic Tales of the Here and Now", builder!!.manifest.metadata.title)
+        assertEquals(
+            "Cory Doctorow's Futuristic Tales of the Here and Now",
+            builder!!.manifest.metadata.title
+        )
     }
 }

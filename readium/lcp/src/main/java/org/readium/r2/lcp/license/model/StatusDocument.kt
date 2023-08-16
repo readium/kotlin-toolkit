@@ -37,12 +37,12 @@ public class StatusDocument(public val data: ByteArray) {
     public val json: JSONObject
 
     public enum class Status(public val value: String) {
-        ready("ready"),
-        active("active"),
-        revoked("revoked"),
-        returned("returned"),
-        cancelled("cancelled"),
-        expired("expired");
+        Ready("ready"),
+        Active("active"),
+        Revoked("revoked"),
+        Returned("returned"),
+        Cancelled("cancelled"),
+        Expired("expired");
 
         @Deprecated("Use [value] instead", ReplaceWith("value"), level = DeprecationLevel.ERROR)
         public val rawValue: String get() = value
@@ -53,10 +53,10 @@ public class StatusDocument(public val data: ByteArray) {
     }
 
     public enum class Rel(public val value: String) {
-        register("register"),
-        license("license"),
-        `return`("return"),
-        renew("renew");
+        Register("register"),
+        License("license"),
+        Return("return"),
+        Renew("renew");
 
         @Deprecated("Use [value] instead", ReplaceWith("value"), level = DeprecationLevel.ERROR)
         public val rawValue: String get() = value

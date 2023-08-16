@@ -36,11 +36,11 @@ public data class URITemplate(val uri: String) {
      * Expands the HREF by replacing URI template variables by the given parameters.
      */
     public fun expand(parameters: Map<String, String>): String {
-        @Suppress("NAME_SHADOWING")
         // `+` is considered like an encoded space, and will not be properly encoded in parameters.
         // This is an issue for ISO 8601 date for example.
         // As a workaround, we encode manually this character. We don't do it in the full URI,
         // because it could contain some legitimate +-as-space characters.
+        @Suppress("NAME_SHADOWING")
         val parameters = parameters.mapValues {
             it.value.replace("+", "~~+~~")
         }
@@ -54,10 +54,11 @@ public data class URITemplate(val uri: String) {
         // Escaping the last } is somehow required, otherwise the regex can't be parsed on a Pixel
         // 3a. However, without it works with the unit tests.
         val expanded = "\\{(\\??)([^}]+)\\}".toRegex().replace(uri) {
-            if (it.groupValues[1].isEmpty())
+            if (it.groupValues[1].isEmpty()) {
                 expandSimpleString(it.groupValues[2], parameters)
-            else
+            } else {
                 expandFormStyle(it.groupValues[2], parameters)
+            }
         }
 
         return Href(expanded).percentEncodedString

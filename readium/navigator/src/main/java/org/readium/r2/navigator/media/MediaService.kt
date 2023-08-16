@@ -153,13 +153,21 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
                 return null
             }
 
-            val locator = extras?.let { BundleCompat.getParcelable(it, EXTRA_LOCATOR, Locator::class.java) }
+            val locator = extras?.let {
+                BundleCompat.getParcelable(
+                    it,
+                    EXTRA_LOCATOR,
+                    Locator::class.java
+                )
+            }
                 ?: href
                     ?.let { navigator.publication.linkWithHref(it) }
                     ?.let { navigator.publication.locatorFromLink(it) }
 
             if (locator != null && href != null && locator.href != href) {
-                Timber.e("Ambiguous playback location provided. HREF `$href` doesn't match locator $locator.")
+                Timber.e(
+                    "Ambiguous playback location provided. HREF `$href` doesn't match locator $locator."
+                )
             }
 
             return locator
@@ -251,7 +259,10 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
                             startForeground(id, note)
                         }
                     } else {
-                        ServiceCompat.stopForeground(this@MediaService, ServiceCompat.STOP_FOREGROUND_DETACH)
+                        ServiceCompat.stopForeground(
+                            this@MediaService,
+                            ServiceCompat.STOP_FOREGROUND_DETACH
+                        )
                     }
                 }
         }
@@ -289,6 +300,7 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
         internal const val EXTRA_PUBLICATION_ID = "org.readium.r2.navigator.EXTRA_PUBLICATION_ID"
 
         @Volatile private var connection: Connection? = null
+
         @Volatile private var mediaSession: MediaSessionCompat? = null
 
         private val currentNavigator = MutableStateFlow<MediaSessionNavigator?>(null)
@@ -337,7 +349,11 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
                 ?.takeIf { it.publicationId == publicationId }
                 ?.let { return it }
 
-            val navigator = MediaSessionNavigator(publication, publicationId, getMediaSession(context, serviceClass).controller)
+            val navigator = MediaSessionNavigator(
+                publication,
+                publicationId,
+                getMediaSession(context, serviceClass).controller
+            )
             pendingNavigator.trySend(
                 PendingNavigator(
                     navigator = navigator,
@@ -345,7 +361,9 @@ public open class MediaService : MediaBrowserServiceCompat(), CoroutineScope by 
                         publication = publication,
                         publicationId = publicationId,
                         locator = initialLocator
-                            ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
+                            ?: requireNotNull(
+                                publication.locatorFromLink(publication.readingOrder.first())
+                            )
                     )
                 )
             )

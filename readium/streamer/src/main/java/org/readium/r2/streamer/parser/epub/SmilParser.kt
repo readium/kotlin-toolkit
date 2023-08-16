@@ -27,10 +27,11 @@ internal object SmilParser {
     private fun parseSeq(node: ElementNode, filePath: String): List<MediaOverlayNode>? {
         val children: MutableList<MediaOverlayNode> = mutableListOf()
         for (child in node.getAll()) {
-            if (child.name == "par" && child.namespace == Namespaces.SMIL)
+            if (child.name == "par" && child.namespace == Namespaces.SMIL) {
                 parsePar(child, filePath)?.let { children.add(it) }
-            else if (child.name == "seq" && child.namespace == Namespaces.SMIL)
+            } else if (child.name == "seq" && child.namespace == Namespaces.SMIL) {
                 parseSeq(child, filePath)?.let { children.addAll(it) }
+            }
         }
 
         /* No wrapping media overlay can be created unless:
@@ -42,7 +43,9 @@ internal object SmilParser {
         return if (textref != null && audioFiles.distinct().size == 1) { // hierarchy
             val normalizedTextref = Href(textref, baseHref = filePath).string
             listOf(mediaOverlayFromChildren(normalizedTextref, children))
-        } else children
+        } else {
+            children
+        }
     }
 
     private fun parsePar(node: ElementNode, filePath: String): MediaOverlayNode? {

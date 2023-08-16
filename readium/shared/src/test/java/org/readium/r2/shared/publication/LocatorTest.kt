@@ -195,25 +195,64 @@ class LocatorTest {
     }
 
     @Test fun `parse {Locations} ignores {position} smaller than 1`() {
-        assertEquals(Locator.Locations(position = 1), Locator.Locations.fromJSON(JSONObject("{ 'position': 1 }")))
-        assertEquals(Locator.Locations(), Locator.Locations.fromJSON(JSONObject("{ 'position': 0 }")))
-        assertEquals(Locator.Locations(), Locator.Locations.fromJSON(JSONObject("{ 'position': -1 }")))
+        assertEquals(
+            Locator.Locations(position = 1),
+            Locator.Locations.fromJSON(JSONObject("{ 'position': 1 }"))
+        )
+        assertEquals(
+            Locator.Locations(),
+            Locator.Locations.fromJSON(JSONObject("{ 'position': 0 }"))
+        )
+        assertEquals(
+            Locator.Locations(),
+            Locator.Locations.fromJSON(JSONObject("{ 'position': -1 }"))
+        )
     }
 
     @Test fun `parse {Locations} ignores {progression} outside of 0-1 range`() {
-        assertEquals(Locator.Locations(progression = 0.5), Locator.Locations.fromJSON(JSONObject("{ 'progression': 0.5 }")))
-        assertEquals(Locator.Locations(progression = 0.0), Locator.Locations.fromJSON(JSONObject("{ 'progression': 0 }")))
-        assertEquals(Locator.Locations(progression = 1.0), Locator.Locations.fromJSON(JSONObject("{ 'progression': 1 }")))
-        assertEquals(Locator.Locations(), Locator.Locations.fromJSON(JSONObject("{ 'progression': -0.5 }")))
-        assertEquals(Locator.Locations(), Locator.Locations.fromJSON(JSONObject("{ 'progression': 1.2 }")))
+        assertEquals(
+            Locator.Locations(progression = 0.5),
+            Locator.Locations.fromJSON(JSONObject("{ 'progression': 0.5 }"))
+        )
+        assertEquals(
+            Locator.Locations(progression = 0.0),
+            Locator.Locations.fromJSON(JSONObject("{ 'progression': 0 }"))
+        )
+        assertEquals(
+            Locator.Locations(progression = 1.0),
+            Locator.Locations.fromJSON(JSONObject("{ 'progression': 1 }"))
+        )
+        assertEquals(
+            Locator.Locations(),
+            Locator.Locations.fromJSON(JSONObject("{ 'progression': -0.5 }"))
+        )
+        assertEquals(
+            Locator.Locations(),
+            Locator.Locations.fromJSON(JSONObject("{ 'progression': 1.2 }"))
+        )
     }
 
     @Test fun `parse {Locations} ignores {totalProgression} outside of 0-1 range`() {
-        assertEquals(Locator.Locations(totalProgression = 0.5), Locator.Locations.fromJSON(JSONObject("{ 'totalProgression': 0.5 }")))
-        assertEquals(Locator.Locations(totalProgression = 0.0), Locator.Locations.fromJSON(JSONObject("{ 'totalProgression': 0 }")))
-        assertEquals(Locator.Locations(totalProgression = 1.0), Locator.Locations.fromJSON(JSONObject("{ 'totalProgression': 1 }")))
-        assertEquals(Locator.Locations(), Locator.Locations.fromJSON(JSONObject("{ 'totalProgression': -0.5 }")))
-        assertEquals(Locator.Locations(), Locator.Locations.fromJSON(JSONObject("{ 'totalProgression': 1.2 }")))
+        assertEquals(
+            Locator.Locations(totalProgression = 0.5),
+            Locator.Locations.fromJSON(JSONObject("{ 'totalProgression': 0.5 }"))
+        )
+        assertEquals(
+            Locator.Locations(totalProgression = 0.0),
+            Locator.Locations.fromJSON(JSONObject("{ 'totalProgression': 0 }"))
+        )
+        assertEquals(
+            Locator.Locations(totalProgression = 1.0),
+            Locator.Locations.fromJSON(JSONObject("{ 'totalProgression': 1 }"))
+        )
+        assertEquals(
+            Locator.Locations(),
+            Locator.Locations.fromJSON(JSONObject("{ 'totalProgression': -0.5 }"))
+        )
+        assertEquals(
+            Locator.Locations(),
+            Locator.Locations.fromJSON(JSONObject("{ 'totalProgression': 1.2 }"))
+        )
     }
 
     @Test fun `get {Locations} minimal JSON`() {
@@ -325,8 +364,16 @@ class LocatorCollectionTest {
                     )
                 ),
                 links = listOf(
-                    Link(rels = setOf("self"), href = "/978-1503222687/search?query=apple", type = "application/vnd.readium.locators+json"),
-                    Link(rels = setOf("next"), href = "/978-1503222687/search?query=apple&page=2", type = "application/vnd.readium.locators+json"),
+                    Link(
+                        rels = setOf("self"),
+                        href = "/978-1503222687/search?query=apple",
+                        type = "application/vnd.readium.locators+json"
+                    ),
+                    Link(
+                        rels = setOf("next"),
+                        href = "/978-1503222687/search?query=apple&page=2",
+                        type = "application/vnd.readium.locators+json"
+                    )
                 ),
                 locators = listOf(
                     Locator(
@@ -485,8 +532,16 @@ class LocatorCollectionTest {
                     )
                 ),
                 links = listOf(
-                    Link(rels = setOf("self"), href = "/978-1503222687/search?query=apple", type = "application/vnd.readium.locators+json"),
-                    Link(rels = setOf("next"), href = "/978-1503222687/search?query=apple&page=2", type = "application/vnd.readium.locators+json"),
+                    Link(
+                        rels = setOf("self"),
+                        href = "/978-1503222687/search?query=apple",
+                        type = "application/vnd.readium.locators+json"
+                    ),
+                    Link(
+                        rels = setOf("next"),
+                        href = "/978-1503222687/search?query=apple&page=2",
+                        type = "application/vnd.readium.locators+json"
+                    )
                 ),
                 locators = listOf(
                     Locator(

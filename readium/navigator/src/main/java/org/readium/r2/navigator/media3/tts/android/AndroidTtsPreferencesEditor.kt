@@ -23,7 +23,7 @@ import org.readium.r2.shared.util.Language
 public class AndroidTtsPreferencesEditor(
     initialPreferences: AndroidTtsPreferences,
     publicationMetadata: Metadata,
-    defaults: AndroidTtsDefaults,
+    defaults: AndroidTtsDefaults
 ) : PreferencesEditor<AndroidTtsPreferences> {
 
     private data class State(
@@ -49,7 +49,7 @@ public class AndroidTtsPreferencesEditor(
             getValue = { preferences.language },
             getEffectiveValue = { state.settings.language },
             getIsEffective = { true },
-            updateValue = { value -> updateValues { it.copy(language = value) } },
+            updateValue = { value -> updateValues { it.copy(language = value) } }
         )
 
     public val pitch: RangePreference<Double> =
@@ -60,7 +60,7 @@ public class AndroidTtsPreferencesEditor(
             updateValue = { value -> updateValues { it.copy(pitch = value) } },
             supportedRange = 0.1..Double.MAX_VALUE,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = { "${it.format(2)}x" },
+            valueFormatter = { "${it.format(2)}x" }
         )
 
     public val speed: RangePreference<Double> =
@@ -71,7 +71,7 @@ public class AndroidTtsPreferencesEditor(
             updateValue = { value -> updateValues { it.copy(speed = value) } },
             supportedRange = 0.1..Double.MAX_VALUE,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = { "${it.format(2)}x" },
+            valueFormatter = { "${it.format(2)}x" }
         )
 
     public val voices: Preference<Map<Language, AndroidTtsEngine.Voice.Id>> =
@@ -79,7 +79,7 @@ public class AndroidTtsPreferencesEditor(
             getValue = { preferences.voices },
             getEffectiveValue = { state.settings.voices },
             getIsEffective = { true },
-            updateValue = { value -> updateValues { it.copy(voices = value) } },
+            updateValue = { value -> updateValues { it.copy(voices = value) } }
         )
 
     private fun updateValues(updater: (AndroidTtsPreferences) -> AndroidTtsPreferences) {

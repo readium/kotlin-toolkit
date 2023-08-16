@@ -50,7 +50,11 @@ public suspend fun HttpURLConnection.sniffMediaType(
         mediaTypeRetriever.doRetrieve(
             {
                 BytesSnifferContextFactory(DefaultArchiveFactory())
-                    .createContext(bytes.invoke(), mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
+                    .createContext(
+                        bytes.invoke(),
+                        mediaTypes = allMediaTypes,
+                        fileExtensions = allFileExtensions
+                    )
             },
             mediaTypes = allMediaTypes,
             fileExtensions = allFileExtensions

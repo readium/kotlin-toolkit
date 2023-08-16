@@ -21,8 +21,9 @@ import org.readium.r2.shared.InternalReadiumApi
  * Resizes a bitmap to fit [maxSize] with bilinear filtering.
  */
 internal fun Bitmap.scaleToFit(maxSize: Size): Bitmap {
-    if (width <= maxSize.width && height <= maxSize.height)
+    if (width <= maxSize.width && height <= maxSize.height) {
         return this
+    }
 
     val ratio = min(
         maxSize.width / width.toFloat(),

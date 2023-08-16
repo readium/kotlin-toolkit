@@ -148,10 +148,12 @@ private class LinksAdapter {
     private fun mapLink(link: MetadataItem.Link): Link {
         val contains: MutableList<String> = mutableListOf()
         if (link.rels.contains(Vocabularies.LINK + "record")) {
-            if (link.properties.contains(Vocabularies.LINK + "onix"))
+            if (link.properties.contains(Vocabularies.LINK + "onix")) {
                 contains.add("onix")
-            if (link.properties.contains(Vocabularies.LINK + "xmp"))
+            }
+            if (link.properties.contains(Vocabularies.LINK + "xmp")) {
                 contains.add("xmp")
+            }
         }
         return Link(
             href = link.href,
@@ -296,8 +298,11 @@ private fun MetadataItem.Meta.toContributor(): Pair<String?, Contributor> {
     }
 
     val contributor = Contributor(
-        localizedString, localizedSortAs = localizedSortAs,
-        roles = roles, identifier = identifier, position = groupPosition
+        localizedString,
+        localizedSortAs = localizedSortAs,
+        roles = roles,
+        identifier = identifier,
+        position = groupPosition
     )
 
     return Pair(type, contributor)
@@ -359,9 +364,9 @@ private class OtherMetadataAdapter {
             }
 
     private fun MetadataItem.Meta.toMap(): Any =
-        if (children.isEmpty())
+        if (children.isEmpty()) {
             value
-        else {
+        } else {
             val mappedMetaChildren = children
                 .filterIsInstance(MetadataItem.Meta::class.java)
                 .associate { Pair(it.property, it.toMap()) }

@@ -100,8 +100,9 @@ public abstract class GeneratedCoverService : CoverService {
     abstract override suspend fun cover(): Bitmap
 
     override fun get(link: Link): Resource? {
-        if (link.href != coverLink.href)
+        if (link.href != coverLink.href) {
             return null
+        }
 
         return LazyResource(source = Url(link.href)) {
             val cover = cover()
@@ -123,7 +124,13 @@ public abstract class GeneratedCoverService : CoverService {
 public class InMemoryCoverService internal constructor(private val cover: Bitmap) : GeneratedCoverService() {
 
     public companion object {
-        public fun createFactory(cover: Bitmap?): ServiceFactory = { cover?.let { InMemoryCoverService(it) } }
+        public fun createFactory(cover: Bitmap?): ServiceFactory = {
+            cover?.let {
+                InMemoryCoverService(
+                    it
+                )
+            }
+        }
     }
 
     override suspend fun cover(): Bitmap = cover

@@ -103,8 +103,9 @@ public class EpubPositionsService(
     }
 
     override suspend fun positionsByReadingOrder(): List<List<Locator>> {
-        if (!::_positions.isInitialized)
+        if (!::_positions.isInitialized) {
             _positions = computePositions()
+        }
 
         return _positions
     }

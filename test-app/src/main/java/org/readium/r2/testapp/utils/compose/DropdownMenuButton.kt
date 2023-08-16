@@ -21,7 +21,7 @@ fun DropdownMenuButton(
     fun dismiss() { isExpanded = false }
 
     OutlinedButton(
-        onClick = { isExpanded = true },
+        onClick = { isExpanded = true }
     ) {
         text()
         DropdownMenu(

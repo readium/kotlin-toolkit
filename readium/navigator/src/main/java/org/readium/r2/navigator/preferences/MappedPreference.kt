@@ -71,10 +71,12 @@ public fun <T : Comparable<T>, V : Comparable<V>> RangePreference<T>.map(
     supportedRange: (ClosedRange<T>) -> ClosedRange<V> = { from(it.start)..from(it.endInclusive) },
     formatValue: ((V) -> String)? = null,
     increment: (RangePreference<V>.() -> Unit)? = null,
-    decrement: (RangePreference<V>.() -> Unit)? = null,
+    decrement: (RangePreference<V>.() -> Unit)? = null
 ): RangePreference<V> =
     MappedRangePreference(
-        this, from, to,
+        this,
+        from,
+        to,
         transformSupportedRange = supportedRange,
         valueFormatter = formatValue,
         incrementer = increment,
@@ -90,10 +92,12 @@ public fun <T : Comparable<T>> RangePreference<T>.map(
     supportedRange: (ClosedRange<T>) -> ClosedRange<T> = { it },
     formatValue: ((T) -> String)? = null,
     increment: (RangePreference<T>.() -> Unit)? = null,
-    decrement: (RangePreference<T>.() -> Unit)? = null,
+    decrement: (RangePreference<T>.() -> Unit)? = null
 ): RangePreference<T> =
     MappedRangePreference(
-        this, { it }, { it },
+        this,
+        { it },
+        { it },
         transformSupportedRange = supportedRange,
         valueFormatter = formatValue,
         incrementer = increment,
@@ -143,7 +147,7 @@ private open class MappedPreference<T, V>(
 @ExperimentalReadiumApi
 private class PreferenceWithSupportedValues<T>(
     override val original: Preference<T>,
-    override val supportedValues: List<T>,
+    override val supportedValues: List<T>
 ) : MappedPreference<T, T>(original, from = { it }, to = { it }), EnumPreference<T>
 
 @ExperimentalReadiumApi

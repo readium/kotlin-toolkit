@@ -53,7 +53,11 @@ internal class EpubDeobfuscator(
                     else -> HASH.sha1(pubId).toHexBytes()
                 }
 
-                deobfuscate(bytes = bytes, obfuscationKey = obfuscationKey, obfuscationLength = obfuscationLength)
+                deobfuscate(
+                    bytes = bytes,
+                    obfuscationKey = obfuscationKey,
+                    obfuscationLength = obfuscationLength
+                )
                 bytes
             }
     }

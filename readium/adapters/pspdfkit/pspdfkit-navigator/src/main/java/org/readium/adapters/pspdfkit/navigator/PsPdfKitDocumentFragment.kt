@@ -123,8 +123,11 @@ internal class PsPdfKitDocumentFragment(
             .pagePadding(settings.pageSpacing.roundToInt())
             .restoreLastViewedPage(false)
             .scrollDirection(
-                if (!settings.scroll) PageScrollDirection.HORIZONTAL
-                else settings.scrollAxis.scrollDirection
+                if (!settings.scroll) {
+                    PageScrollDirection.HORIZONTAL
+                } else {
+                    settings.scrollAxis.scrollDirection
+                }
             )
             .scrollMode(settings.scroll.scrollMode)
             .scrollOnEdgeTapEnabled(false)
@@ -185,7 +188,9 @@ internal class PsPdfKitDocumentFragment(
             if (
                 pagePosition == null || clickedAnnotation is LinkAnnotation ||
                 clickedAnnotation is SoundAnnotation
-            ) return false
+            ) {
+                return false
+            }
 
             pdfFragment.viewProjection.toViewPoint(pagePosition, pageIndex)
             return listener?.onTap(pagePosition) ?: false

@@ -46,20 +46,23 @@ public abstract class TransformingResource(
     public abstract suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray>
 
     private suspend fun bytes(): ResourceTry<ByteArray> {
-        if (::_bytes.isInitialized)
+        if (::_bytes.isInitialized) {
             return _bytes
+        }
 
         val bytes = transform(resource.read())
-        if (cacheBytes)
+        if (cacheBytes) {
             _bytes = bytes
+        }
 
         return bytes
     }
 
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
         bytes().map {
-            if (range == null)
+            if (range == null) {
                 return bytes()
+            }
 
             @Suppress("NAME_SHADOWING")
             val range = range

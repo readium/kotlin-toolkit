@@ -131,7 +131,11 @@ public data class Contributor(
         }
     }
 
-    @Deprecated("Use [localizedName] instead.", ReplaceWith("localizedName"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [localizedName] instead.",
+        ReplaceWith("localizedName"),
+        level = DeprecationLevel.ERROR
+    )
     val multilanguageName: LocalizedString
         get() = localizedName
 }

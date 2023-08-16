@@ -26,7 +26,12 @@ internal object LcpClient {
 
         fun toDRMContext(): Any =
             Class.forName("org.readium.lcp.sdk.DRMContext")
-                .getConstructor(String::class.java, String::class.java, String::class.java, String::class.java)
+                .getConstructor(
+                    String::class.java,
+                    String::class.java,
+                    String::class.java,
+                    String::class.java
+                )
                 .newInstance(hashedPassphrase, encryptedContentKey, token, profile)
     }
 
@@ -46,7 +51,12 @@ internal object LcpClient {
     fun createContext(jsonLicense: String, hashedPassphrases: String, pemCrl: String): Context =
         try {
             val drmContext = klass
-                .getMethod("createContext", String::class.java, String::class.java, String::class.java)
+                .getMethod(
+                    "createContext",
+                    String::class.java,
+                    String::class.java,
+                    String::class.java
+                )
                 .invoke(instance, jsonLicense, hashedPassphrases, pemCrl)!!
 
             Context.fromDRMContext(drmContext)
@@ -57,7 +67,11 @@ internal object LcpClient {
     fun decrypt(context: Context, encryptedData: ByteArray): ByteArray =
         try {
             klass
-                .getMethod("decrypt", Class.forName("org.readium.lcp.sdk.DRMContext"), ByteArray::class.java)
+                .getMethod(
+                    "decrypt",
+                    Class.forName("org.readium.lcp.sdk.DRMContext"),
+                    ByteArray::class.java
+                )
                 .invoke(instance, context.toDRMContext(), encryptedData)
                 as ByteArray
         } catch (e: InvocationTargetException) {
@@ -74,11 +88,11 @@ internal object LcpClient {
         }
 
     private fun mapException(e: Throwable): LcpException {
-
         val drmExceptionClass = Class.forName("org.readium.lcp.sdk.DRMException")
 
-        if (!drmExceptionClass.isInstance(e))
+        if (!drmExceptionClass.isInstance(e)) {
             return LcpException.Runtime("the Lcp client threw an unhandled exception")
+        }
 
         val drmError = drmExceptionClass
             .getMethod("getDrmError")

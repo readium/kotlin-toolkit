@@ -34,7 +34,6 @@ public class PsPdfKitEngineProvider(
     override suspend fun createDocumentFragment(
         input: PdfDocumentFragmentInput<PsPdfKitSettings>
     ): PdfDocumentFragment<PsPdfKitSettings> {
-
         val publication = input.publication
         val document = PsPdfKitDocumentFactory(context)
             .cachedIn(publication)

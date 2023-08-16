@@ -61,7 +61,12 @@ public class DefaultContentService(
         public fun createFactory(
             resourceContentIteratorFactories: List<ResourceContentIteratorFactory>
         ): (Publication.Service.Context) -> DefaultContentService = { context ->
-            DefaultContentService(context.manifest, context.container, context.services, resourceContentIteratorFactories)
+            DefaultContentService(
+                context.manifest,
+                context.container,
+                context.services,
+                resourceContentIteratorFactories
+            )
         }
     }
 
@@ -73,7 +78,7 @@ public class DefaultContentService(
         val manifest: Manifest,
         val container: Container,
         val services: PublicationServicesHolder,
-        val start: Locator?,
+        val start: Locator?
     ) : Content {
         override fun iterator(): Content.Iterator =
             PublicationContentIterator(

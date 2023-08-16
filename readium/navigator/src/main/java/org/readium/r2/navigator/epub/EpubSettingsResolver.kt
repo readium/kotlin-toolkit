@@ -53,7 +53,7 @@ internal class EpubSettingsResolver(
             theme = theme,
             typeScale = preferences.typeScale ?: defaults.typeScale,
             verticalText = verticalText,
-            wordSpacing = preferences.wordSpacing ?: defaults.wordSpacing,
+            wordSpacing = preferences.wordSpacing ?: defaults.wordSpacing
         )
     }
 

@@ -44,7 +44,7 @@ import timber.log.Timber
 internal class SessionPlayerFacade(
     private val sessionPlayer: SessionPlayer,
     private val seekCompletedReceiver: ReceiveChannel<Long>,
-    playerStateFlow: Flow<SessionPlayerState>,
+    playerStateFlow: Flow<SessionPlayerState>
 ) {
     private val coroutineScope = MainScope()
 

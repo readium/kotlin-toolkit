@@ -18,7 +18,7 @@ import org.readium.r2.shared.resource.Resource
  */
 internal class ContainerLicenseContainer(
     private val container: Container,
-    private val entryPath: String,
+    private val entryPath: String
 ) : LicenseContainer {
 
     override fun read(): ByteArray {
@@ -28,7 +28,9 @@ internal class ContainerLicenseContainer(
                 .read()
                 .mapFailure {
                     when (it) {
-                        is Resource.Exception.NotFound -> LcpException.Container.FileNotFound(entryPath)
+                        is Resource.Exception.NotFound -> LcpException.Container.FileNotFound(
+                            entryPath
+                        )
                         else -> LcpException.Container.ReadFailed(entryPath)
                     }
                 }

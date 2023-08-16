@@ -58,8 +58,8 @@ public interface Resource : SuspendingCloseable {
         public inline fun copy(build: Builder.() -> Unit): Properties =
             Properties(Builder(this).apply(build))
 
-        public class Builder(properties: Map<String, Any> = emptyMap())
-            : MutableMap<String, Any> by properties.toMutableMap()
+        public class Builder(properties: Map<String, Any> = emptyMap()) :
+            MutableMap<String, Any> by properties.toMutableMap()
     }
 
     /**
@@ -81,7 +81,10 @@ public interface Resource : SuspendingCloseable {
     /**
      * Errors occurring while accessing a resource.
      */
-    public sealed class Exception(@StringRes userMessageId: Int, cause: Throwable? = null) : UserException(userMessageId, cause = cause) {
+    public sealed class Exception(@StringRes userMessageId: Int, cause: Throwable? = null) : UserException(
+        userMessageId,
+        cause = cause
+    ) {
 
         /** Equivalent to a 400 HTTP error. */
         public class BadRequest(
@@ -126,7 +129,10 @@ public interface Resource : SuspendingCloseable {
             Exception(R.string.readium_shared_resource_exception_out_of_memory)
 
         /** For any other error, such as HTTP 500. */
-        public class Other(cause: Throwable) : Exception(R.string.readium_shared_resource_exception_other, cause)
+        public class Other(cause: Throwable) : Exception(
+            R.string.readium_shared_resource_exception_other,
+            cause
+        )
 
         public companion object {
 

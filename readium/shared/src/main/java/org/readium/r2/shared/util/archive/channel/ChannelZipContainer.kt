@@ -47,13 +47,15 @@ internal class ChannelZipContainer(
         override val source: Url? get() = null
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
-            ResourceTry.success(Resource.Properties {
-                archive = ArchiveProperties(
-                    entryLength = compressedLength
-                        ?: length().getOrElse { return ResourceTry.failure(it) },
-                    isEntryCompressed = compressedLength != null
-                )
-            })
+            ResourceTry.success(
+                Resource.Properties {
+                    archive = ArchiveProperties(
+                        entryLength = compressedLength
+                            ?: length().getOrElse { return ResourceTry.failure(it) },
+                        isEntryCompressed = compressedLength != null
+                    )
+                }
+            )
 
         // FIXME: Implement with a sniffer.
         override suspend fun mediaType(): ResourceTry<MediaType?> =
@@ -66,19 +68,21 @@ internal class ChannelZipContainer(
 
         override val compressedLength: Long?
             get() =
-                if (entry.method == ZipArchiveEntry.STORED || entry.method == -1)
+                if (entry.method == ZipArchiveEntry.STORED || entry.method == -1) {
                     null
-                else
+                } else {
                     entry.compressedSize.takeUnless { it == -1L }
+                }
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
             withContext(Dispatchers.IO) {
                 try {
                     val bytes =
-                        if (range == null)
+                        if (range == null) {
                             readFully()
-                        else
+                        } else {
                             readRange(range)
+                        }
                     Try.success(bytes)
                 } catch (e: Exception) {
                     Try.failure(Resource.Exception.wrap(e))

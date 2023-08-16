@@ -43,7 +43,7 @@ internal fun createLicenseContainer(
     }
 
 internal fun createLicenseContainer(
-    asset: Asset,
+    asset: Asset
 ): LicenseContainer =
     when (asset) {
         is Asset.Resource -> createLicenseContainer(asset.resource, asset.mediaType)
@@ -62,7 +62,7 @@ internal fun createLicenseContainer(
 
 internal fun createLicenseContainer(
     container: Container,
-    mediaType: MediaType,
+    mediaType: MediaType
 ): LicenseContainer {
     val licensePath = when (mediaType) {
         MediaType.EPUB -> LICENSE_IN_EPUB.addPrefix("/")

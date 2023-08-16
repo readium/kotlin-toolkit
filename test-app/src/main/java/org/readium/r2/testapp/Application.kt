@@ -61,7 +61,7 @@ class Application : android.app.Application() {
                         readium.lcpService,
                         readium.publicationFactory,
                         readium.assetRetriever,
-                        readium.protectionRetriever,
+                        readium.protectionRetriever
                     )
                 }
 
@@ -71,7 +71,7 @@ class Application : android.app.Application() {
                     this@Application,
                     readium,
                     bookRepository,
-                    navigatorPreferences,
+                    navigatorPreferences
                 )
             }
     }
@@ -84,8 +84,11 @@ class Application : android.app.Application() {
             properties.getProperty("useExternalFileDir", "false")!!.toBoolean()
 
         return File(
-            if (useExternalFileDir) getExternalFilesDir(null)?.path + "/"
-            else filesDir?.path + "/"
+            if (useExternalFileDir) {
+                getExternalFilesDir(null)?.path + "/"
+            } else {
+                filesDir?.path + "/"
+            }
         )
     }
 }

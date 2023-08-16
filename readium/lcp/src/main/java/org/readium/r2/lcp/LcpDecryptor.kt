@@ -115,8 +115,9 @@ internal class LcpDecryptor(
 
         /** Plain text size. */
         override suspend fun length(): ResourceTry<Long> {
-            if (::_length.isInitialized)
+            if (::_length.isInitialized) {
                 return _length
+            }
 
             _length = encryption.originalLength?.let { Try.success(it) }
                 ?: lengthFromPadding()
@@ -134,7 +135,12 @@ internal class LcpDecryptor(
                 resource.read(readOffset..length)
                     .mapCatching { bytes ->
                         val decryptedBytes = license.decrypt(bytes)
-                            .getOrElse { throw Exception("Can't decrypt trailing size of CBC-encrypted stream", it) }
+                            .getOrElse {
+                                throw Exception(
+                                    "Can't decrypt trailing size of CBC-encrypted stream",
+                                    it
+                                )
+                            }
                         check(decryptedBytes.size == AES_BLOCK_SIZE)
 
                         return@mapCatching length -
@@ -144,16 +150,18 @@ internal class LcpDecryptor(
             }
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
-            if (range == null)
+            if (range == null) {
                 return license.decryptFully(resource.read(), isDeflated = false)
+            }
 
             @Suppress("NAME_SHADOWING")
             val range = range
                 .coerceFirstNonNegative()
                 .requireLengthFitInt()
 
-            if (range.isEmpty())
+            if (range.isEmpty()) {
                 return Try.success(ByteArray(0))
+            }
 
             return resource.length().flatMapCatching { encryptedLength ->
                 // encrypted data is shifted by AES_BLOCK_SIZE because of IV and
@@ -170,7 +178,12 @@ internal class LcpDecryptor(
                     }
 
                     val bytes = license.decrypt(encryptedData)
-                        .getOrElse { throw IOException("Can't decrypt the content for resource with key: ${resource.source}", it) }
+                        .getOrElse {
+                            throw IOException(
+                                "Can't decrypt the content for resource with key: ${resource.source}",
+                                it
+                            )
+                        }
 
                     // exclude the bytes added to match a multiple of AES_BLOCK_SIZE
                     val sliceStart = (range.first - encryptedStart).toInt()
@@ -179,12 +192,13 @@ internal class LcpDecryptor(
                     val lastBlockRead = encryptedLength - encryptedEndExclusive <= AES_BLOCK_SIZE
 
                     val rangeLength =
-                        if (lastBlockRead)
-                        // use decrypted length to ensure range.last doesn't exceed decrypted length - 1
+                        if (lastBlockRead) {
+                            // use decrypted length to ensure range.last doesn't exceed decrypted length - 1
                             range.last.coerceAtMost(length().getOrThrow() - 1) - range.first + 1
-                        else
-                        // the last block won't be read, so there's no need to compute length
+                        } else {
+                            // the last block won't be read, so there's no need to compute length
                             range.last - range.first + 1
+                        }
 
                     // keep only enough bytes to fit the length corrected request in order to never include padding
                     val sliceEnd = sliceStart + rangeLength.toInt()
@@ -224,8 +238,9 @@ private suspend fun LcpLicense.decryptFully(data: ResourceTry<ByteArray>, isDefl
         var bytes = decrypt(encryptedData)
             .getOrElse { throw Exception("Failed to decrypt the resource", it) }
 
-        if (bytes.isEmpty())
+        if (bytes.isEmpty()) {
             throw IllegalStateException("Lcp.nativeDecrypt returned an empty ByteArray")
+        }
 
         // Removes the padding.
         val padding = bytes.last().toInt()

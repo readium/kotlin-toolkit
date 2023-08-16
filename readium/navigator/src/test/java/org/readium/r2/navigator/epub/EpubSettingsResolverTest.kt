@@ -53,47 +53,91 @@ class EpubSettingsResolverTest {
             resolveLayout()
         )
         assertEquals(
-            Layout(language = Language("en"), stylesheets = Stylesheets.Default, readingProgression = LTR),
+            Layout(
+                language = Language("en"),
+                stylesheets = Stylesheets.Default,
+                readingProgression = LTR
+            ),
             resolveLayout(languages = listOf("en"))
         )
         assertEquals(
-            Layout(language = Language("ar"), stylesheets = Stylesheets.Rtl, readingProgression = RTL),
+            Layout(
+                language = Language("ar"),
+                stylesheets = Stylesheets.Rtl,
+                readingProgression = RTL
+            ),
             resolveLayout(languages = listOf("ar"))
         )
         assertEquals(
-            Layout(language = Language("fa"), stylesheets = Stylesheets.Rtl, readingProgression = RTL),
+            Layout(
+                language = Language("fa"),
+                stylesheets = Stylesheets.Rtl,
+                readingProgression = RTL
+            ),
             resolveLayout(languages = listOf("fa"))
         )
         assertEquals(
-            Layout(language = Language("he"), stylesheets = Stylesheets.Rtl, readingProgression = RTL),
+            Layout(
+                language = Language("he"),
+                stylesheets = Stylesheets.Rtl,
+                readingProgression = RTL
+            ),
             resolveLayout(languages = listOf("he"))
         )
         assertEquals(
-            Layout(language = Language("ja"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
+            Layout(
+                language = Language("ja"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
             resolveLayout(languages = listOf("ja"))
         )
         assertEquals(
-            Layout(language = Language("ko"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
+            Layout(
+                language = Language("ko"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
             resolveLayout(languages = listOf("ko"))
         )
         assertEquals(
-            Layout(language = Language("zh"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
+            Layout(
+                language = Language("zh"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
             resolveLayout(languages = listOf("zh"))
         )
         assertEquals(
-            Layout(language = Language("zh-HK"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
+            Layout(
+                language = Language("zh-HK"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
             resolveLayout(languages = listOf("zh-HK"))
         )
         assertEquals(
-            Layout(language = Language("zh-Hans"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
+            Layout(
+                language = Language("zh-Hans"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
             resolveLayout(languages = listOf("zh-Hans"))
         )
         assertEquals(
-            Layout(language = Language("zh-Hant"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
+            Layout(
+                language = Language("zh-Hant"),
+                stylesheets = Stylesheets.CjkVertical,
+                readingProgression = RTL
+            ),
             resolveLayout(languages = listOf("zh-Hant"))
         )
         assertEquals(
-            Layout(language = Language("zh-TW"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
+            Layout(
+                language = Language("zh-TW"),
+                stylesheets = Stylesheets.CjkVertical,
+                readingProgression = RTL
+            ),
             resolveLayout(languages = listOf("zh-TW"))
         )
     }
@@ -105,47 +149,91 @@ class EpubSettingsResolverTest {
             resolveLayout(readingProgression = PublicationLTR)
         )
         assertEquals(
-            Layout(language = Language("en"), stylesheets = Stylesheets.Default, readingProgression = LTR),
+            Layout(
+                language = Language("en"),
+                stylesheets = Stylesheets.Default,
+                readingProgression = LTR
+            ),
             resolveLayout(readingProgression = PublicationLTR, languages = listOf("en"))
         )
         assertEquals(
-            Layout(language = Language("ar"), stylesheets = Stylesheets.Default, readingProgression = LTR),
+            Layout(
+                language = Language("ar"),
+                stylesheets = Stylesheets.Default,
+                readingProgression = LTR
+            ),
             resolveLayout(readingProgression = PublicationLTR, languages = listOf("ar"))
         )
         assertEquals(
-            Layout(language = Language("fa"), stylesheets = Stylesheets.Default, readingProgression = LTR),
+            Layout(
+                language = Language("fa"),
+                stylesheets = Stylesheets.Default,
+                readingProgression = LTR
+            ),
             resolveLayout(readingProgression = PublicationLTR, languages = listOf("fa"))
         )
         assertEquals(
-            Layout(language = Language("he"), stylesheets = Stylesheets.Default, readingProgression = LTR),
+            Layout(
+                language = Language("he"),
+                stylesheets = Stylesheets.Default,
+                readingProgression = LTR
+            ),
             resolveLayout(readingProgression = PublicationLTR, languages = listOf("he"))
         )
         assertEquals(
-            Layout(language = Language("ja"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
+            Layout(
+                language = Language("ja"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
             resolveLayout(readingProgression = PublicationLTR, languages = listOf("ja"))
         )
         assertEquals(
-            Layout(language = Language("ko"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
+            Layout(
+                language = Language("ko"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
             resolveLayout(readingProgression = PublicationLTR, languages = listOf("ko"))
         )
         assertEquals(
-            Layout(language = Language("zh"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
+            Layout(
+                language = Language("zh"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
             resolveLayout(readingProgression = PublicationLTR, languages = listOf("zh"))
         )
         assertEquals(
-            Layout(language = Language("zh-HK"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
+            Layout(
+                language = Language("zh-HK"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
             resolveLayout(readingProgression = PublicationLTR, languages = listOf("zh-HK"))
         )
         assertEquals(
-            Layout(language = Language("zh-Hans"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
+            Layout(
+                language = Language("zh-Hans"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
             resolveLayout(readingProgression = PublicationLTR, languages = listOf("zh-Hans"))
         )
         assertEquals(
-            Layout(language = Language("zh-Hant"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
+            Layout(
+                language = Language("zh-Hant"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
             resolveLayout(readingProgression = PublicationLTR, languages = listOf("zh-Hant"))
         )
         assertEquals(
-            Layout(language = Language("zh-TW"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
+            Layout(
+                language = Language("zh-TW"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
             resolveLayout(readingProgression = PublicationLTR, languages = listOf("zh-TW"))
         )
     }
@@ -157,47 +245,91 @@ class EpubSettingsResolverTest {
             resolveLayout(readingProgression = PublicationRTL)
         )
         assertEquals(
-            Layout(language = Language("en"), stylesheets = Stylesheets.Rtl, readingProgression = RTL),
+            Layout(
+                language = Language("en"),
+                stylesheets = Stylesheets.Rtl,
+                readingProgression = RTL
+            ),
             resolveLayout(readingProgression = PublicationRTL, languages = listOf("en"))
         )
         assertEquals(
-            Layout(language = Language("ar"), stylesheets = Stylesheets.Rtl, readingProgression = RTL),
+            Layout(
+                language = Language("ar"),
+                stylesheets = Stylesheets.Rtl,
+                readingProgression = RTL
+            ),
             resolveLayout(readingProgression = PublicationRTL, languages = listOf("ar"))
         )
         assertEquals(
-            Layout(language = Language("fa"), stylesheets = Stylesheets.Rtl, readingProgression = RTL),
+            Layout(
+                language = Language("fa"),
+                stylesheets = Stylesheets.Rtl,
+                readingProgression = RTL
+            ),
             resolveLayout(readingProgression = PublicationRTL, languages = listOf("fa"))
         )
         assertEquals(
-            Layout(language = Language("he"), stylesheets = Stylesheets.Rtl, readingProgression = RTL),
+            Layout(
+                language = Language("he"),
+                stylesheets = Stylesheets.Rtl,
+                readingProgression = RTL
+            ),
             resolveLayout(readingProgression = PublicationRTL, languages = listOf("he"))
         )
         assertEquals(
-            Layout(language = Language("ja"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
+            Layout(
+                language = Language("ja"),
+                stylesheets = Stylesheets.CjkVertical,
+                readingProgression = RTL
+            ),
             resolveLayout(readingProgression = PublicationRTL, languages = listOf("ja"))
         )
         assertEquals(
-            Layout(language = Language("ko"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
+            Layout(
+                language = Language("ko"),
+                stylesheets = Stylesheets.CjkVertical,
+                readingProgression = RTL
+            ),
             resolveLayout(readingProgression = PublicationRTL, languages = listOf("ko"))
         )
         assertEquals(
-            Layout(language = Language("zh"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
+            Layout(
+                language = Language("zh"),
+                stylesheets = Stylesheets.CjkVertical,
+                readingProgression = RTL
+            ),
             resolveLayout(readingProgression = PublicationRTL, languages = listOf("zh"))
         )
         assertEquals(
-            Layout(language = Language("zh-HK"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
+            Layout(
+                language = Language("zh-HK"),
+                stylesheets = Stylesheets.CjkVertical,
+                readingProgression = RTL
+            ),
             resolveLayout(readingProgression = PublicationRTL, languages = listOf("zh-HK"))
         )
         assertEquals(
-            Layout(language = Language("zh-Hans"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
+            Layout(
+                language = Language("zh-Hans"),
+                stylesheets = Stylesheets.CjkVertical,
+                readingProgression = RTL
+            ),
             resolveLayout(readingProgression = PublicationRTL, languages = listOf("zh-Hans"))
         )
         assertEquals(
-            Layout(language = Language("zh-Hant"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
+            Layout(
+                language = Language("zh-Hant"),
+                stylesheets = Stylesheets.CjkVertical,
+                readingProgression = RTL
+            ),
             resolveLayout(readingProgression = PublicationRTL, languages = listOf("zh-Hant"))
         )
         assertEquals(
-            Layout(language = Language("zh-TW"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
+            Layout(
+                language = Language("zh-TW"),
+                stylesheets = Stylesheets.CjkVertical,
+                readingProgression = RTL
+            ),
             resolveLayout(readingProgression = PublicationRTL, languages = listOf("zh-TW"))
         )
     }
@@ -210,15 +342,29 @@ class EpubSettingsResolverTest {
         )
         assertEquals(
             Layout(language = null, stylesheets = Stylesheets.CjkVertical, readingProgression = LTR),
-            resolveLayout(readingProgression = PublicationLTR, preferences = EpubPreferences(verticalText = true))
+            resolveLayout(
+                readingProgression = PublicationLTR,
+                preferences = EpubPreferences(verticalText = true)
+            )
         )
         assertEquals(
             Layout(language = null, stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
-            resolveLayout(readingProgression = PublicationRTL, preferences = EpubPreferences(verticalText = true))
+            resolveLayout(
+                readingProgression = PublicationRTL,
+                preferences = EpubPreferences(verticalText = true)
+            )
         )
         assertEquals(
-            Layout(language = Language("en"), stylesheets = Stylesheets.CjkVertical, readingProgression = LTR),
-            resolveLayout(readingProgression = PublicationLTR, languages = listOf("en"), preferences = EpubPreferences(verticalText = true))
+            Layout(
+                language = Language("en"),
+                stylesheets = Stylesheets.CjkVertical,
+                readingProgression = LTR
+            ),
+            resolveLayout(
+                readingProgression = PublicationLTR,
+                languages = listOf("en"),
+                preferences = EpubPreferences(verticalText = true)
+            )
         )
     }
 
@@ -230,31 +376,77 @@ class EpubSettingsResolverTest {
         )
         assertEquals(
             Layout(language = null, stylesheets = Stylesheets.Default, readingProgression = LTR),
-            resolveLayout(readingProgression = PublicationLTR, preferences = EpubPreferences(verticalText = false))
+            resolveLayout(
+                readingProgression = PublicationLTR,
+                preferences = EpubPreferences(verticalText = false)
+            )
         )
         assertEquals(
             Layout(language = null, stylesheets = Stylesheets.Rtl, readingProgression = RTL),
-            resolveLayout(readingProgression = PublicationRTL, preferences = EpubPreferences(verticalText = false))
+            resolveLayout(
+                readingProgression = PublicationRTL,
+                preferences = EpubPreferences(verticalText = false)
+            )
         )
         assertEquals(
-            Layout(language = Language("en"), stylesheets = Stylesheets.Default, readingProgression = LTR),
-            resolveLayout(readingProgression = PublicationLTR, languages = listOf("en"), preferences = EpubPreferences(verticalText = false))
+            Layout(
+                language = Language("en"),
+                stylesheets = Stylesheets.Default,
+                readingProgression = LTR
+            ),
+            resolveLayout(
+                readingProgression = PublicationLTR,
+                languages = listOf("en"),
+                preferences = EpubPreferences(verticalText = false)
+            )
         )
         assertEquals(
-            Layout(language = Language("ar"), stylesheets = Stylesheets.Rtl, readingProgression = RTL),
-            resolveLayout(readingProgression = PublicationRTL, languages = listOf("ar"), preferences = EpubPreferences(verticalText = false))
+            Layout(
+                language = Language("ar"),
+                stylesheets = Stylesheets.Rtl,
+                readingProgression = RTL
+            ),
+            resolveLayout(
+                readingProgression = PublicationRTL,
+                languages = listOf("ar"),
+                preferences = EpubPreferences(verticalText = false)
+            )
         )
         assertEquals(
-            Layout(language = Language("ja"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
-            resolveLayout(readingProgression = PublicationLTR, languages = listOf("ja"), preferences = EpubPreferences(verticalText = false))
+            Layout(
+                language = Language("ja"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
+            resolveLayout(
+                readingProgression = PublicationLTR,
+                languages = listOf("ja"),
+                preferences = EpubPreferences(verticalText = false)
+            )
         )
         assertEquals(
-            Layout(language = Language("ja"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
-            resolveLayout(readingProgression = PublicationLTR, languages = listOf("ja"), preferences = EpubPreferences(verticalText = false))
+            Layout(
+                language = Language("ja"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
+            resolveLayout(
+                readingProgression = PublicationLTR,
+                languages = listOf("ja"),
+                preferences = EpubPreferences(verticalText = false)
+            )
         )
         assertEquals(
-            Layout(language = Language("ja"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = RTL),
-            resolveLayout(readingProgression = PublicationRTL, languages = listOf("ja"), preferences = EpubPreferences(verticalText = false))
+            Layout(
+                language = Language("ja"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = RTL
+            ),
+            resolveLayout(
+                readingProgression = PublicationRTL,
+                languages = listOf("ja"),
+                preferences = EpubPreferences(verticalText = false)
+            )
         )
     }
 
@@ -262,11 +454,22 @@ class EpubSettingsResolverTest {
     fun `RTL readingProgression preference takes precedence over LTR readingProgression hint`() {
         assertEquals(
             Layout(language = null, stylesheets = Stylesheets.Rtl, readingProgression = RTL),
-            resolveLayout(readingProgression = PublicationLTR, preferences = EpubPreferences(readingProgression = RTL))
+            resolveLayout(
+                readingProgression = PublicationLTR,
+                preferences = EpubPreferences(readingProgression = RTL)
+            )
         )
         assertEquals(
-            Layout(language = Language("zh-tw"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
-            resolveLayout(readingProgression = PublicationLTR, languages = listOf("zh-tw"), preferences = EpubPreferences(readingProgression = RTL))
+            Layout(
+                language = Language("zh-tw"),
+                stylesheets = Stylesheets.CjkVertical,
+                readingProgression = RTL
+            ),
+            resolveLayout(
+                readingProgression = PublicationLTR,
+                languages = listOf("zh-tw"),
+                preferences = EpubPreferences(readingProgression = RTL)
+            )
         )
     }
 
@@ -274,11 +477,22 @@ class EpubSettingsResolverTest {
     fun `LTR readingProgression setting takes precedence over RTL readingProgression hint`() {
         assertEquals(
             Layout(language = null, stylesheets = Stylesheets.Default, readingProgression = LTR),
-            resolveLayout(readingProgression = PublicationRTL, preferences = EpubPreferences(readingProgression = LTR))
+            resolveLayout(
+                readingProgression = PublicationRTL,
+                preferences = EpubPreferences(readingProgression = LTR)
+            )
         )
         assertEquals(
-            Layout(language = Language("zh-tw"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
-            resolveLayout(readingProgression = PublicationRTL, languages = listOf("zh-tw"), preferences = EpubPreferences(readingProgression = LTR))
+            Layout(
+                language = Language("zh-tw"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
+            resolveLayout(
+                readingProgression = PublicationRTL,
+                languages = listOf("zh-tw"),
+                preferences = EpubPreferences(readingProgression = LTR)
+            )
         )
     }
 
@@ -286,11 +500,22 @@ class EpubSettingsResolverTest {
     fun `LTR readingProgression hint takes precedence over default RTL readingProgression`() {
         assertEquals(
             Layout(language = null, stylesheets = Stylesheets.Default, readingProgression = LTR),
-            resolveLayout(readingProgression = PublicationLTR, defaults = EpubDefaults(readingProgression = RTL))
+            resolveLayout(
+                readingProgression = PublicationLTR,
+                defaults = EpubDefaults(readingProgression = RTL)
+            )
         )
         assertEquals(
-            Layout(language = Language("ja"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
-            resolveLayout(readingProgression = PublicationLTR, languages = listOf("ja"), defaults = EpubDefaults(readingProgression = RTL))
+            Layout(
+                language = Language("ja"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
+            resolveLayout(
+                readingProgression = PublicationLTR,
+                languages = listOf("ja"),
+                defaults = EpubDefaults(readingProgression = RTL)
+            )
         )
     }
 
@@ -298,11 +523,22 @@ class EpubSettingsResolverTest {
     fun `RTL readingProgression hint takes precedence over default LTR readingProgression`() {
         assertEquals(
             Layout(language = null, stylesheets = Stylesheets.Rtl, readingProgression = RTL),
-            resolveLayout(readingProgression = PublicationRTL, defaults = EpubDefaults(readingProgression = LTR))
+            resolveLayout(
+                readingProgression = PublicationRTL,
+                defaults = EpubDefaults(readingProgression = LTR)
+            )
         )
         assertEquals(
-            Layout(language = Language("zh-tw"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
-            resolveLayout(readingProgression = PublicationRTL, languages = listOf("zh-tw"), defaults = EpubDefaults(readingProgression = LTR))
+            Layout(
+                language = Language("zh-tw"),
+                stylesheets = Stylesheets.CjkVertical,
+                readingProgression = RTL
+            ),
+            resolveLayout(
+                readingProgression = PublicationRTL,
+                languages = listOf("zh-tw"),
+                defaults = EpubDefaults(readingProgression = LTR)
+            )
         )
     }
 
@@ -325,69 +561,139 @@ class EpubSettingsResolverTest {
     @Test
     fun `metadata language takes precedence over default readingProgression`() {
         assertEquals(
-            Layout(language = Language("en"), stylesheets = Stylesheets.Default, readingProgression = LTR),
-            resolveLayout(languages = listOf("en"), defaults = EpubDefaults(readingProgression = RTL))
+            Layout(
+                language = Language("en"),
+                stylesheets = Stylesheets.Default,
+                readingProgression = LTR
+            ),
+            resolveLayout(
+                languages = listOf("en"),
+                defaults = EpubDefaults(readingProgression = RTL)
+            )
 
         )
         assertEquals(
-            Layout(language = Language("zh"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
-            resolveLayout(languages = listOf("zh"), defaults = EpubDefaults(readingProgression = RTL))
+            Layout(
+                language = Language("zh"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
+            resolveLayout(
+                languages = listOf("zh"),
+                defaults = EpubDefaults(readingProgression = RTL)
+            )
         )
     }
 
     @Test
     fun `RTL readingProgression preference takes precedence over metadata language`() {
         assertEquals(
-            Layout(language = Language("en"), stylesheets = Stylesheets.Rtl, readingProgression = RTL),
-            resolveLayout(languages = listOf("en"), preferences = EpubPreferences(readingProgression = RTL))
+            Layout(
+                language = Language("en"),
+                stylesheets = Stylesheets.Rtl,
+                readingProgression = RTL
+            ),
+            resolveLayout(
+                languages = listOf("en"),
+                preferences = EpubPreferences(readingProgression = RTL)
+            )
         )
         assertEquals(
-            Layout(language = Language("zh"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
-            resolveLayout(languages = listOf("zh"), preferences = EpubPreferences(readingProgression = RTL))
+            Layout(
+                language = Language("zh"),
+                stylesheets = Stylesheets.CjkVertical,
+                readingProgression = RTL
+            ),
+            resolveLayout(
+                languages = listOf("zh"),
+                preferences = EpubPreferences(readingProgression = RTL)
+            )
         )
     }
 
     @Test
     fun `LTR readingProgression preference takes precedence over metadata language`() {
         assertEquals(
-            Layout(language = Language("he"), stylesheets = Stylesheets.Default, readingProgression = LTR),
-            resolveLayout(languages = listOf("he"), preferences = EpubPreferences(readingProgression = LTR))
+            Layout(
+                language = Language("he"),
+                stylesheets = Stylesheets.Default,
+                readingProgression = LTR
+            ),
+            resolveLayout(
+                languages = listOf("he"),
+                preferences = EpubPreferences(readingProgression = LTR)
+            )
         )
         assertEquals(
-            Layout(language = Language("zh-tw"), stylesheets = Stylesheets.CjkHorizontal, readingProgression = LTR),
-            resolveLayout(languages = listOf("zh-tw"), preferences = EpubPreferences(readingProgression = LTR))
+            Layout(
+                language = Language("zh-tw"),
+                stylesheets = Stylesheets.CjkHorizontal,
+                readingProgression = LTR
+            ),
+            resolveLayout(
+                languages = listOf("zh-tw"),
+                preferences = EpubPreferences(readingProgression = LTR)
+            )
         )
     }
 
     @Test
     fun `RTL readingProgression preference takes precedence over language preference`() {
         assertEquals(
-            Layout(language = Language("en"), stylesheets = Stylesheets.Rtl, readingProgression = RTL),
-            resolveLayout(preferences = EpubPreferences(readingProgression = RTL, language = Language("en")))
+            Layout(
+                language = Language("en"),
+                stylesheets = Stylesheets.Rtl,
+                readingProgression = RTL
+            ),
+            resolveLayout(
+                preferences = EpubPreferences(readingProgression = RTL, language = Language("en"))
+            )
         )
     }
 
     @Test
     fun `LTR readingProgression preference takes precedence over language preference`() {
         assertEquals(
-            Layout(language = Language("he"), stylesheets = Stylesheets.Default, readingProgression = LTR),
-            resolveLayout(preferences = EpubPreferences(readingProgression = LTR, language = Language("he")))
+            Layout(
+                language = Language("he"),
+                stylesheets = Stylesheets.Default,
+                readingProgression = LTR
+            ),
+            resolveLayout(
+                preferences = EpubPreferences(readingProgression = LTR, language = Language("he"))
+            )
         )
     }
 
     @Test
     fun `he language preference takes precedence over language metadata`() {
         assertEquals(
-            Layout(language = Language("he"), stylesheets = Stylesheets.Rtl, readingProgression = RTL),
-            resolveLayout(readingProgression = PublicationLTR, languages = listOf("en"), preferences = EpubPreferences(language = Language("he")))
+            Layout(
+                language = Language("he"),
+                stylesheets = Stylesheets.Rtl,
+                readingProgression = RTL
+            ),
+            resolveLayout(
+                readingProgression = PublicationLTR,
+                languages = listOf("en"),
+                preferences = EpubPreferences(language = Language("he"))
+            )
         )
     }
 
     @Test
     fun `zh-tw language preference takes precedence over language metadata`() {
         assertEquals(
-            Layout(language = Language("zh-tw"), stylesheets = Stylesheets.CjkVertical, readingProgression = RTL),
-            resolveLayout(readingProgression = PublicationLTR, languages = listOf("en"), preferences = EpubPreferences(language = Language("zh-tw")))
+            Layout(
+                language = Language("zh-tw"),
+                stylesheets = Stylesheets.CjkVertical,
+                readingProgression = RTL
+            ),
+            resolveLayout(
+                readingProgression = PublicationLTR,
+                languages = listOf("en"),
+                preferences = EpubPreferences(language = Language("zh-tw"))
+            )
         )
     }
 }

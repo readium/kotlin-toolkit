@@ -52,7 +52,6 @@ internal class R2CbzPageFragment(
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
         _binding = ReadiumNavigatorViewpagerFragmentCbzBinding.inflate(inflater, container, false)
         containerView = binding.root
         photoView = binding.imageView

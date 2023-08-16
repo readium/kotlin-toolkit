@@ -132,7 +132,7 @@ class DirectoryContainerTest {
             assertThat(entries.map { it.path }).containsExactly(
                 "/subdirectory/hello.mp3",
                 "/subdirectory/text2.txt",
-                "/text1.txt",
+                "/text1.txt"
             )
         }
     }

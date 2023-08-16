@@ -61,10 +61,11 @@ public sealed class Asset {
     ) : Asset() {
 
         override val assetType: AssetType =
-            if (exploded)
+            if (exploded) {
                 AssetType.Directory
-            else
+            } else {
                 AssetType.Archive
+            }
 
         override suspend fun close() {
             container.close()

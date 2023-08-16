@@ -43,7 +43,12 @@ public class TextContentTokenizer(
         overrideContentLanguage: Boolean = false
     ) : this(
         language = language,
-        textTokenizerFactory = { contentLanguage -> DefaultTextContentTokenizer(unit, contentLanguage) },
+        textTokenizerFactory = { contentLanguage ->
+            DefaultTextContentTokenizer(
+                unit,
+                contentLanguage
+            )
+        },
         overrideContentLanguage = overrideContentLanguage
     )
 
@@ -70,8 +75,14 @@ public class TextContentTokenizer(
         segment.language.takeUnless { overrideContentLanguage } ?: language
 
     private fun extractTextContextIn(string: String, range: IntRange): Locator.Text {
-        val after = string.substring(range.last, (range.last + contextSnippetLength).coerceAtMost(string.length))
-        val before = string.substring((range.first - contextSnippetLength).coerceAtLeast(0), range.first)
+        val after = string.substring(
+            range.last,
+            (range.last + contextSnippetLength).coerceAtMost(string.length)
+        )
+        val before = string.substring(
+            (range.first - contextSnippetLength).coerceAtLeast(0),
+            range.first
+        )
         return Locator.Text(
             after = after.takeIf { it.isNotEmpty() },
             before = before.takeIf { it.isNotEmpty() },

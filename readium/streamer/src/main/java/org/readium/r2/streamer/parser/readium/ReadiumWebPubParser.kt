@@ -24,16 +24,16 @@ import org.readium.r2.streamer.parser.audio.AudioLocatorService
  */
 public class ReadiumWebPubParser(
     private val context: Context? = null,
-    private val pdfFactory: PdfDocumentFactory<*>?,
+    private val pdfFactory: PdfDocumentFactory<*>?
 ) : PublicationParser {
 
     override suspend fun parse(
         asset: PublicationParser.Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
-
-        if (!asset.mediaType.isReadiumWebPublication)
+        if (!asset.mediaType.isReadiumWebPublication) {
             return Try.failure(PublicationParser.Error.FormatNotSupported())
+        }
 
         val manifestJson = asset.container
             .get("/manifest.json")
@@ -76,6 +76,9 @@ public class ReadiumWebPubParser(
 
 /** Returns whether this media type is of a Readium Web Publication profile. */
 private val MediaType.isReadiumWebPublication: Boolean get() = matchesAny(
-    MediaType.READIUM_WEBPUB, MediaType.DIVINA, MediaType.LCP_PROTECTED_PDF,
-    MediaType.READIUM_AUDIOBOOK, MediaType.LCP_PROTECTED_AUDIOBOOK,
+    MediaType.READIUM_WEBPUB,
+    MediaType.DIVINA,
+    MediaType.LCP_PROTECTED_PDF,
+    MediaType.READIUM_AUDIOBOOK,
+    MediaType.LCP_PROTECTED_AUDIOBOOK
 )

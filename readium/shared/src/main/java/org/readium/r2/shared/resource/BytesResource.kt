@@ -32,11 +32,13 @@ public sealed class BaseBytesResource(
     private lateinit var _bytes: Try<ByteArray, Resource.Exception>
 
     override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
-        if (!::_bytes.isInitialized)
+        if (!::_bytes.isInitialized) {
             _bytes = bytes()
+        }
 
-        if (range == null)
+        if (range == null) {
             return _bytes
+        }
 
         return _bytes.map { it.read(range) }
     }
@@ -79,7 +81,12 @@ public class StringResource(
     mediaType: MediaType? = null,
     properties: Resource.Properties = Resource.Properties(),
     string: suspend () -> ResourceTry<String>
-) : BaseBytesResource(source = url, mediaType = mediaType, properties = properties, { string().map { it.toByteArray() } }) {
+) : BaseBytesResource(
+    source = url,
+    mediaType = mediaType,
+    properties = properties,
+    { string().map { it.toByteArray() } }
+) {
 
     public constructor(
         string: String,

@@ -50,8 +50,11 @@ public class XmlParser(
                     text = ""
                     val attributes = buildAttributeMap(parser)
                     val langAttr =
-                        if (isNamespaceAware) attributes[XMLConstants.XML_NS_URI]?.get("lang")
-                        else attributes[""]?.get("xml:lang")
+                        if (isNamespaceAware) {
+                            attributes[XMLConstants.XML_NS_URI]?.get("lang")
+                        } else {
+                            attributes[""]?.get("xml:lang")
+                        }
                     stack.push(Triple(mutableListOf(), attributes, langAttr ?: stack.peek().third))
                 }
                 XmlPullParser.END_TAG -> {
@@ -144,7 +147,9 @@ public data class ElementNode(
     public fun getAttr(name: String): String? = getAttrNs(name, namespace) ?: getAttrNs(name, "")
 
     /** Return the value of an attribute picked in a specific namespace or null if it does not exist */
-    public fun getAttrNs(name: String, namespace: String): String? = attributes[namespace]?.get(name)
+    public fun getAttrNs(name: String, namespace: String): String? = attributes[namespace]?.get(
+        name
+    )
 
     /** Return a list of all ElementNode children */
     public fun getAll(): List<ElementNode> = children.filterIsInstance<ElementNode>()

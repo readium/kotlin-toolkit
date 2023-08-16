@@ -63,10 +63,11 @@ public class OPDS1Parser {
 
         public fun parse(xmlData: ByteArray, url: URL): ParseData {
             val root = XmlParser().parse(xmlData.inputStream())
-            return if (root.name == "feed")
+            return if (root.name == "feed") {
                 ParseData(parseFeed(root, url), null, 1)
-            else
+            } else {
                 ParseData(null, parseEntry(root, url), 1)
+            }
         }
 
         private fun parseFeed(root: ElementNode, url: URL): Feed {
@@ -186,7 +187,6 @@ public class OPDS1Parser {
 
         @Suppress("unused")
         public suspend fun retrieveOpenSearchTemplate(feed: Feed): Try<String?, Exception> {
-
             var openSearchURL: URL? = null
             var selfMimeType: String? = null
 
@@ -205,7 +205,6 @@ public class OPDS1Parser {
             }
 
             return DefaultHttpClient().fetchWithDecoder(HttpRequest(unwrappedURL.toString())) {
-
                 val document = XmlParser().parse(it.body.inputStream())
 
                 val urls = document.get("Url", Namespaces.Search)
@@ -277,7 +276,9 @@ public class OPDS1Parser {
                 }
 
             val images = links.filter {
-                it.rels.contains("http://opds-spec.org/image") || it.rels.contains("http://opds-spec.org/image-thumbnail")
+                it.rels.contains("http://opds-spec.org/image") || it.rels.contains(
+                    "http://opds-spec.org/image-thumbnail"
+                )
             }
 
             links = links - images
@@ -300,7 +301,11 @@ public class OPDS1Parser {
 
                     publishers = entry.get("publisher", Namespaces.Dcterms)
                         .mapNotNull {
-                            it.text?.let { name -> Contributor(localizedName = LocalizedString(name)) }
+                            it.text?.let { name ->
+                                Contributor(
+                                    localizedName = LocalizedString(name)
+                                )
+                            }
                         },
 
                     subjects = entry.get("category", Namespaces.Atom)

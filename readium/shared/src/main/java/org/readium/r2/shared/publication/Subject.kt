@@ -98,7 +98,11 @@ public data class Subject(
                 localizedSortAs = LocalizedString.fromJSON(jsonObject.remove("sortAs"), warnings),
                 scheme = jsonObject.optNullableString("scheme"),
                 code = jsonObject.optNullableString("code"),
-                links = Link.fromJSONArray(jsonObject.optJSONArray("links"), normalizeHref, warnings)
+                links = Link.fromJSONArray(
+                    jsonObject.optJSONArray("links"),
+                    normalizeHref,
+                    warnings
+                )
             )
         }
 

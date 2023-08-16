@@ -34,7 +34,7 @@ public class HttpContainer(
         val url = Href(path.removePrefix("/"), baseHref = baseUrl ?: "/").toUrl()
 
         return if (url == null || !url.isHttp()) {
-            val cause = IllegalArgumentException("Invalid HREF: ${path}, produced URL: $url")
+            val cause = IllegalArgumentException("Invalid HREF: $path, produced URL: $url")
             Timber.e(cause)
             FailureResource(Resource.Exception.BadRequest(cause = cause))
         } else {

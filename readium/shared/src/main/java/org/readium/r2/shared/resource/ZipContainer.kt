@@ -68,7 +68,10 @@ public data class ArchiveProperties(
             if (entryLength == null || isEntryCompressed == null) {
                 return null
             }
-            return ArchiveProperties(entryLength = entryLength, isEntryCompressed = isEntryCompressed)
+            return ArchiveProperties(
+                entryLength = entryLength,
+                isEntryCompressed = isEntryCompressed
+            )
         }
     }
 }
@@ -120,20 +123,22 @@ internal class JavaZipContainer(private val archive: ZipFile, file: File) : ZipC
         override val path: String =
             entry.name.addPrefix("/")
 
-        override val source: Url? =null
+        override val source: Url? = null
 
         // FIXME: Implement with a sniffer.
         override suspend fun mediaType(): ResourceTry<MediaType?> =
             Try.success(null)
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
-            ResourceTry.success(Resource.Properties {
-                archive = ArchiveProperties(
-                    entryLength = compressedLength
-                        ?: length().getOrElse { return ResourceTry.failure(it) },
-                    isEntryCompressed = compressedLength != null
-                )
-            })
+            ResourceTry.success(
+                Resource.Properties {
+                    archive = ArchiveProperties(
+                        entryLength = compressedLength
+                            ?: length().getOrElse { return ResourceTry.failure(it) },
+                        isEntryCompressed = compressedLength != null
+                    )
+                }
+            )
 
         override suspend fun length(): Try<Long, Resource.Exception> =
             entry.size.takeUnless { it == -1L }
@@ -141,19 +146,21 @@ internal class JavaZipContainer(private val archive: ZipFile, file: File) : ZipC
                 ?: Try.failure(Resource.Exception.Other(Exception("Unsupported operation")))
 
         override val compressedLength: Long? =
-            if (entry.method == ZipEntry.STORED || entry.method == -1)
+            if (entry.method == ZipEntry.STORED || entry.method == -1) {
                 null
-            else
+            } else {
                 entry.compressedSize.takeUnless { it == -1L }
+            }
 
         override suspend fun read(range: LongRange?): Try<ByteArray, Resource.Exception> =
             try {
                 withContext(Dispatchers.IO) {
                     val bytes =
-                        if (range == null)
+                        if (range == null) {
                             readFully()
-                        else
+                        } else {
                             readRange(range)
+                        }
                     Try.success(bytes)
                 }
             } catch (e: IOException) {

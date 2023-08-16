@@ -19,12 +19,12 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrThrow
-import org.readium.r2.shared.resource.content.DefaultResourceContentExtractorFactory
-import org.readium.r2.shared.resource.content.ResourceContentExtractor
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.publication.services.search.SearchService.Options
 import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.content.DefaultResourceContentExtractorFactory
+import org.readium.r2.shared.resource.content.ResourceContentExtractor
 import timber.log.Timber
 
 /**
@@ -45,14 +45,14 @@ public class StringSearchService(
     private val language: String?,
     private val snippetLength: Int,
     private val searchAlgorithm: Algorithm,
-    private val extractorFactory: ResourceContentExtractor.Factory,
+    private val extractorFactory: ResourceContentExtractor.Factory
 ) : SearchService {
 
     public companion object {
         public fun createDefaultFactory(
             snippetLength: Int = 200,
             searchAlgorithm: Algorithm? = null,
-            extractorFactory: ResourceContentExtractor.Factory = DefaultResourceContentExtractorFactory(),
+            extractorFactory: ResourceContentExtractor.Factory = DefaultResourceContentExtractorFactory()
         ): (Publication.Service.Context) -> StringSearchService =
             { context ->
                 StringSearchService(
@@ -81,7 +81,7 @@ public class StringSearchService(
                     container = container,
                     query = query,
                     options = options ?: Options(),
-                    locale = options?.language?.let { Locale.forLanguageTag(it) } ?: locale,
+                    locale = options?.language?.let { Locale.forLanguageTag(it) } ?: locale
                 )
             )
         } catch (e: Exception) {
@@ -137,8 +137,9 @@ public class StringSearchService(
         }
 
         private suspend fun findLocators(resourceIndex: Int, link: Link, text: String): List<Locator> {
-            if (text == "")
+            if (text == "") {
                 return emptyList()
+            }
 
             val resourceTitle = manifest.tableOfContents.titleMatching(link.href)
             var resourceLocator = manifest.locatorFromLink(link) ?: return emptyList()
@@ -146,7 +147,12 @@ public class StringSearchService(
             val locators = mutableListOf<Locator>()
 
             withContext(Dispatchers.IO) {
-                for (range in searchAlgorithm.findRanges(query = query, options = options, text = text, locale = locale)) {
+                for (range in searchAlgorithm.findRanges(
+                    query = query,
+                    options = options,
+                    text = text,
+                    locale = locale
+                )) {
                     locators.add(createLocator(resourceIndex, resourceLocator, text, range))
                 }
             }
@@ -173,9 +179,9 @@ public class StringSearchService(
             return resourceLocator.copy(
                 locations = resourceLocator.locations.copy(
                     progression = progression,
-                    totalProgression = totalProgression,
+                    totalProgression = totalProgression
                 ),
-                text = createSnippet(text, range),
+                text = createSnippet(text, range)
             )
         }
 
@@ -210,7 +216,7 @@ public class StringSearchService(
             return Locator.Text(
                 highlight = text.substring(range),
                 before = before,
-                after = after,
+                after = after
             )
         }
 
@@ -248,7 +254,7 @@ public class StringSearchService(
         override val options: Options = Options(
             caseSensitive = false,
             diacriticSensitive = false,
-            wholeWord = false,
+            wholeWord = false
         )
 
         override suspend fun findRanges(
@@ -299,8 +305,11 @@ public class StringSearchService(
             }
 
             val breakIterator: BreakIterator? =
-                if (wholeWord) BreakIterator.getWordInstance()
-                else null
+                if (wholeWord) {
+                    BreakIterator.getWordInstance()
+                } else {
+                    null
+                }
 
             return StringSearch(query, StringCharacterIterator(text), collator, breakIterator)
         }

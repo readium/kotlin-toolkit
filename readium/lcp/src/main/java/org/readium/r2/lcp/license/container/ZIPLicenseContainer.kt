@@ -20,11 +20,10 @@ import org.zeroturnaround.zip.ZipUtil
  */
 internal class ZIPLicenseContainer(
     private val zip: String,
-    private val pathInZIP: String,
+    private val pathInZIP: String
 ) : LicenseContainer {
 
     override fun read(): ByteArray {
-
         val archive = try {
             ZipFile(zip)
         } catch (e: Exception) {

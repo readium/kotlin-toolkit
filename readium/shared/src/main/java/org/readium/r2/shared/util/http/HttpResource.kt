@@ -38,7 +38,9 @@ public class HttpResource(
 
     override suspend fun close() {}
 
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = withContext(Dispatchers.IO) {
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = withContext(
+        Dispatchers.IO
+    ) {
         try {
             stream(range?.first.takeUnless { it == 0L }).map { stream ->
                 if (range != null) {
@@ -58,10 +60,13 @@ public class HttpResource(
     private lateinit var _headResponse: ResourceTry<HttpResponse>
 
     private suspend fun headResponse(): ResourceTry<HttpResponse> {
-        if (::_headResponse.isInitialized)
+        if (::_headResponse.isInitialized) {
             return _headResponse
+        }
 
-        _headResponse = client.fetch(HttpRequest(source.toString(), method = HttpRequest.Method.HEAD))
+        _headResponse = client.fetch(
+            HttpRequest(source.toString(), method = HttpRequest.Method.HEAD)
+        )
             .map { it.response }
             .mapFailure { Resource.Exception.wrapHttp(it) }
 

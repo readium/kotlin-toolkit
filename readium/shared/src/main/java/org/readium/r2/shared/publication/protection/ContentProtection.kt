@@ -70,7 +70,7 @@ public interface ContentProtection {
      */
     @JvmInline
     public value class Scheme(
-        public val uri: String,
+        public val uri: String
     ) {
 
         @Deprecated("Define yourself the name to print to users.", level = DeprecationLevel.ERROR)
@@ -79,6 +79,7 @@ public interface ContentProtection {
         public companion object {
             /** Readium LCP DRM scheme. */
             public val Lcp: Scheme = Scheme(uri = "http://readium.org/2014/01/lcp")
+
             /** Adobe ADEPT DRM scheme. */
             public val Adept: Scheme = Scheme(uri = "http://ns.adobe.com/adept")
         }
@@ -101,8 +102,11 @@ public interface ContentProtection {
          * app.
          */
         public class SchemeNotSupported(public val scheme: Scheme? = null, name: String?) : Exception(
-            if (name == null) R.string.readium_shared_publication_content_protection_exception_not_supported_unknown
-            else R.string.readium_shared_publication_content_protection_exception_not_supported,
+            if (name == null) {
+                R.string.readium_shared_publication_content_protection_exception_not_supported_unknown
+            } else {
+                R.string.readium_shared_publication_content_protection_exception_not_supported
+            },
             name
         )
     }

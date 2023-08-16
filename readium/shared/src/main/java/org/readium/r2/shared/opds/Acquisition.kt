@@ -84,10 +84,18 @@ public data class Acquisition(
         get() = children
 }
 
-@Deprecated("Renamed into [Acquisition]", ReplaceWith("Acquisition"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Renamed into [Acquisition]",
+    ReplaceWith("Acquisition"),
+    level = DeprecationLevel.ERROR
+)
 public typealias IndirectAcquisition = Acquisition
 
-@Deprecated("Use [Acquisition::fromJSON] instead", ReplaceWith("Acquisition.fromJSON"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Use [Acquisition::fromJSON] instead",
+    ReplaceWith("Acquisition.fromJSON"),
+    level = DeprecationLevel.ERROR
+)
 public fun parseIndirectAcquisition(indirectAcquisitionDict: JSONObject): Acquisition =
     Acquisition.fromJSON(indirectAcquisitionDict)
         ?: throw Exception("Invalid indirect acquisition")

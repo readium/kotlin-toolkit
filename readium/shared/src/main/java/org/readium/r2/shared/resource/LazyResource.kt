@@ -20,8 +20,9 @@ public open class LazyResource<R : Resource>(
     private lateinit var _resource: R
 
     protected suspend fun resource(): R {
-        if (!::_resource.isInitialized)
+        if (!::_resource.isInitialized) {
             _resource = factory()
+        }
 
         return _resource
     }
@@ -39,8 +40,9 @@ public open class LazyResource<R : Resource>(
         resource().read(range)
 
     override suspend fun close() {
-        if (::_resource.isInitialized)
+        if (::_resource.isInitialized) {
             _resource.close()
+        }
     }
 
     override fun toString(): String =

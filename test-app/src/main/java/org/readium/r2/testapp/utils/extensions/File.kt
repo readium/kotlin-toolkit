@@ -26,8 +26,9 @@ import org.readium.r2.testapp.BuildConfig
 import timber.log.Timber
 
 suspend fun File.moveTo(target: File) = withContext(Dispatchers.IO) {
-    if (!this@moveTo.renameTo(target))
+    if (!this@moveTo.renameTo(target)) {
         throw IOException()
+    }
 }
 
 /**

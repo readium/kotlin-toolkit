@@ -33,7 +33,7 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
             readerData.navigatorFactory.createFragmentFactory(
                 initialLocator = readerData.initialLocation,
                 initialPreferences = readerData.preferencesManager.preferences.value,
-                listener = this,
+                listener = this
             )
 
         super.onCreate(savedInstanceState)
@@ -47,7 +47,12 @@ class PdfReaderFragment : VisualReaderFragment(), PdfNavigatorFragment.Listener 
         val view = super.onCreateView(inflater, container, savedInstanceState)
         if (savedInstanceState == null) {
             childFragmentManager.commitNow {
-                replace(R.id.fragment_reader_container, PdfNavigatorFragment::class.java, Bundle(), NAVIGATOR_FRAGMENT_TAG)
+                replace(
+                    R.id.fragment_reader_container,
+                    PdfNavigatorFragment::class.java,
+                    Bundle(),
+                    NAVIGATOR_FRAGMENT_TAG
+                )
             }
         }
         @Suppress("Unchecked_cast")

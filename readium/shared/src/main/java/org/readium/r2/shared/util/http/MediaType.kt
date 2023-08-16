@@ -21,7 +21,7 @@ public suspend fun MediaTypeRetriever.retrieve(
     connection: HttpURLConnection,
     bytes: (() -> ByteArray)?,
     mediaTypes: List<String>,
-    fileExtensions: List<String>,
+    fileExtensions: List<String>
 ): MediaType? {
     val allMediaTypes = mediaTypes.toMutableList()
     val allFileExtensions = fileExtensions.toMutableList()
@@ -42,7 +42,11 @@ public suspend fun MediaTypeRetriever.retrieve(
         doRetrieve(
             {
                 BytesSnifferContextFactory(DefaultArchiveFactory())
-                    .createContext(bytes.invoke(), mediaTypes = allMediaTypes, fileExtensions = allFileExtensions)
+                    .createContext(
+                        bytes.invoke(),
+                        mediaTypes = allMediaTypes,
+                        fileExtensions = allFileExtensions
+                    )
             },
             mediaTypes = allMediaTypes,
             fileExtensions = allFileExtensions

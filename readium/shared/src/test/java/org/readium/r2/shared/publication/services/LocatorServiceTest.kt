@@ -27,14 +27,22 @@ class LocatorServiceTest {
                 Link(href = "chap3", type = "application/xml")
             )
         )
-        val locator = Locator(href = "chap2", type = "text/html", text = Locator.Text(highlight = "Highlight"))
+        val locator = Locator(
+            href = "chap2",
+            type = "text/html",
+            text = Locator.Text(highlight = "Highlight")
+        )
         assertEquals(locator, service.locate(locator))
     }
 
     @Test
     fun `locate from Locator with empty reading order`() = runTest {
         val service = createService(readingOrder = emptyList())
-        val locator = Locator(href = "chap2", type = "text/html", text = Locator.Text(highlight = "Highlight"))
+        val locator = Locator(
+            href = "chap2",
+            type = "text/html",
+            text = Locator.Text(highlight = "Highlight")
+        )
         assertNull(service.locate(locator))
     }
 
@@ -46,7 +54,11 @@ class LocatorServiceTest {
                 Link(href = "chap3", type = "application/xml")
             )
         )
-        val locator = Locator(href = "chap2", type = "text/html", text = Locator.Text(highlight = "Highlight"))
+        val locator = Locator(
+            href = "chap2",
+            type = "text/html",
+            text = Locator.Text(highlight = "Highlight")
+        )
         assertNull(service.locate(locator))
     }
 

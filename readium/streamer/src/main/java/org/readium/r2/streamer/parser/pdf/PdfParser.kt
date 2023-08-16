@@ -36,8 +36,9 @@ public class PdfParser(
         asset: PublicationParser.Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
-        if (asset.mediaType != MediaType.PDF)
+        if (asset.mediaType != MediaType.PDF) {
             return Try.failure(PublicationParser.Error.FormatNotSupported())
+        }
 
         val resource = asset.container.entries()?.firstOrNull()
             ?: return Try.failure(
@@ -53,7 +54,7 @@ public class PdfParser(
                 localizedTitle = document.title?.ifBlank { null }?.let { LocalizedString(it) },
                 authors = listOfNotNull(document.author).map { Contributor(name = it) },
                 readingProgression = document.readingProgression,
-                numberOfPages = document.pageCount,
+                numberOfPages = document.pageCount
             ),
             readingOrder = listOf(resource.toLink(MediaType.PDF)),
             tableOfContents = tableOfContents

@@ -79,10 +79,11 @@ public data class Link(
      */
     @IgnoredOnParcel
     val templateParameters: List<String> by lazy {
-        if (!templated)
+        if (!templated) {
             emptyList()
-        else
+        } else {
             URITemplate(href).parameters
+        }
     }
 
     /**

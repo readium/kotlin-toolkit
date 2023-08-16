@@ -105,27 +105,49 @@ public interface LcpLicense : ContentProtectionService.UserRights {
         public suspend fun openWebPage(url: URL)
     }
 
-    @Deprecated("Use `license.encryption.profile` instead", ReplaceWith("license.encryption.profile"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use `license.encryption.profile` instead",
+        ReplaceWith("license.encryption.profile"),
+        level = DeprecationLevel.ERROR
+    )
     public val encryptionProfile: String? get() =
         license.encryption.profile
 
-    @Deprecated("Use `decrypt()` with coroutines instead", ReplaceWith("decrypt(data)"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use `decrypt()` with coroutines instead",
+        ReplaceWith("decrypt(data)"),
+        level = DeprecationLevel.ERROR
+    )
     public fun decipher(data: ByteArray): ByteArray? =
         runBlocking { decrypt(data) }
             .onFailure { Timber.e(it) }
             .getOrNull()
 
-    @Deprecated("Use `renewLoan` with `RenewListener` instead", ReplaceWith("renewLoan(LcpLicense.RenewListener)"), level = DeprecationLevel.ERROR)
-    public suspend fun renewLoan(end: DateTime?, urlPresenter: suspend (URL) -> Unit): Try<Unit, LcpException> = Try.success(Unit)
+    @Deprecated(
+        "Use `renewLoan` with `RenewListener` instead",
+        ReplaceWith("renewLoan(LcpLicense.RenewListener)"),
+        level = DeprecationLevel.ERROR
+    )
+    public suspend fun renewLoan(end: DateTime?, urlPresenter: suspend (URL) -> Unit): Try<Unit, LcpException> = Try.success(
+        Unit
+    )
 
-    @Deprecated("Use `renewLoan` with `RenewListener` instead", ReplaceWith("renewLoan(LcpLicense.RenewListener)"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use `renewLoan` with `RenewListener` instead",
+        ReplaceWith("renewLoan(LcpLicense.RenewListener)"),
+        level = DeprecationLevel.ERROR
+    )
     public fun renewLoan(
         end: DateTime?,
         present: (URL, dismissed: () -> Unit) -> Unit,
         completion: (LcpException?) -> Unit
     ) {}
 
-    @Deprecated("Use `returnPublication()` with coroutines instead", ReplaceWith("returnPublication"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use `returnPublication()` with coroutines instead",
+        ReplaceWith("returnPublication"),
+        level = DeprecationLevel.ERROR
+    )
     @DelicateCoroutinesApi
     public fun returnPublication(completion: (LcpException?) -> Unit) {
         GlobalScope.launch {
@@ -134,8 +156,16 @@ public interface LcpLicense : ContentProtectionService.UserRights {
     }
 }
 
-@Deprecated("Renamed to `LcpService`", replaceWith = ReplaceWith("LcpService"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Renamed to `LcpService`",
+    replaceWith = ReplaceWith("LcpService"),
+    level = DeprecationLevel.ERROR
+)
 public typealias LCPService = LcpService
 
-@Deprecated("Renamed to `LcpLicense`", replaceWith = ReplaceWith("LcpLicense"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Renamed to `LcpLicense`",
+    replaceWith = ReplaceWith("LcpLicense"),
+    level = DeprecationLevel.ERROR
+)
 public typealias LCPLicense = LcpLicense

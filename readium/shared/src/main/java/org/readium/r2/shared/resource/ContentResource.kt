@@ -44,7 +44,7 @@ public class ContentResourceFactory(
  */
 public class ContentResource(
     private val uri: Uri,
-    private val contentResolver: ContentResolver,
+    private val contentResolver: ContentResolver
 ) : Resource {
 
     private lateinit var _length: ResourceTry<Long>

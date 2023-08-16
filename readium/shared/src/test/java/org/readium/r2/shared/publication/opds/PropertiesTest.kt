@@ -39,7 +39,9 @@ class PropertiesTest {
     @Test fun `get Properties {price} when available`() {
         assertEquals(
             Price(currency = "EUR", value = 4.36),
-            Properties(otherProperties = mapOf("price" to mapOf("currency" to "EUR", "value" to 4.36))).price
+            Properties(
+                otherProperties = mapOf("price" to mapOf("currency" to "EUR", "value" to 4.36))
+            ).price
         )
     }
 
@@ -115,7 +117,7 @@ class PropertiesTest {
                 otherProperties = mapOf(
                     "authenticate" to mapOf(
                         "href" to "https://example.com/authentication.json",
-                        "type" to "application/opds-authentication+json",
+                        "type" to "application/opds-authentication+json"
                     )
                 )
             ).authenticate
@@ -127,7 +129,7 @@ class PropertiesTest {
             Properties(
                 otherProperties = mapOf(
                     "authenticate" to mapOf(
-                        "type" to "application/opds-authentication+json",
+                        "type" to "application/opds-authentication+json"
                     )
                 )
             ).authenticate

@@ -118,7 +118,11 @@ public class MediaType(
      *
      * Non-significant parameters are also discarded.
      */
-    @Deprecated("Use MediaTypeRetriever instead", replaceWith = ReplaceWith("mediaTypeRetriever.canonicalMediaType()"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use MediaTypeRetriever instead",
+        replaceWith = ReplaceWith("mediaTypeRetriever.canonicalMediaType()"),
+        level = DeprecationLevel.ERROR
+    )
     public fun canonicalMediaType(): MediaType {
         TODO()
     }
@@ -252,7 +256,11 @@ public class MediaType(
         LCP_PROTECTED_PDF, LPF, PDF, W3C_WPUB_MANIFEST, READIUM_WEBPUB, READIUM_WEBPUB_MANIFEST, ZAB
     )
 
-    @Deprecated("Format and MediaType got merged together", replaceWith = ReplaceWith(""), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Format and MediaType got merged together",
+        replaceWith = ReplaceWith(""),
+        level = DeprecationLevel.ERROR
+    )
     public val mediaType: MediaType
         get() = this
 
@@ -272,29 +280,67 @@ public class MediaType(
         // Reading apps are welcome to extend the static constants with additional media types.
 
         public val AAC: MediaType = MediaType("audio/aac", fileExtension = "aac")
-        public val ACSM: MediaType = MediaType("application/vnd.adobe.adept+xml", name = "Adobe Content Server Message", fileExtension = "acsm")
+        public val ACSM: MediaType = MediaType(
+            "application/vnd.adobe.adept+xml",
+            name = "Adobe Content Server Message",
+            fileExtension = "acsm"
+        )
         public val AIFF: MediaType = MediaType("audio/aiff", fileExtension = "aiff")
         public val AVI: MediaType = MediaType("video/x-msvideo", fileExtension = "avi")
         public val AVIF: MediaType = MediaType("image/avif", fileExtension = "avif")
         public val BINARY: MediaType = MediaType("application/octet-stream")
         public val BMP: MediaType = MediaType("image/bmp", fileExtension = "bmp")
-        public val CBZ: MediaType = MediaType("application/vnd.comicbook+zip", name = "Comic Book Archive", fileExtension = "cbz")
+        public val CBZ: MediaType = MediaType(
+            "application/vnd.comicbook+zip",
+            name = "Comic Book Archive",
+            fileExtension = "cbz"
+        )
         public val CSS: MediaType = MediaType("text/css", fileExtension = "css")
-        public val DIVINA: MediaType = MediaType("application/divina+zip", name = "Digital Visual Narratives", fileExtension = "divina")
-        public val DIVINA_MANIFEST: MediaType = MediaType("application/divina+json", name = "Digital Visual Narratives", fileExtension = "json")
-        public val EPUB: MediaType = MediaType("application/epub+zip", name = "EPUB", fileExtension = "epub")
+        public val DIVINA: MediaType = MediaType(
+            "application/divina+zip",
+            name = "Digital Visual Narratives",
+            fileExtension = "divina"
+        )
+        public val DIVINA_MANIFEST: MediaType = MediaType(
+            "application/divina+json",
+            name = "Digital Visual Narratives",
+            fileExtension = "json"
+        )
+        public val EPUB: MediaType = MediaType(
+            "application/epub+zip",
+            name = "EPUB",
+            fileExtension = "epub"
+        )
         public val GIF: MediaType = MediaType("image/gif", fileExtension = "gif")
         public val GZ: MediaType = MediaType("application/gzip", fileExtension = "gz")
         public val HTML: MediaType = MediaType("text/html", fileExtension = "html")
         public val JAVASCRIPT: MediaType = MediaType("text/javascript", fileExtension = "js")
         public val JPEG: MediaType = MediaType("image/jpeg", fileExtension = "jpeg")
         public val JSON: MediaType = MediaType("application/json")
-        public val JSON_PROBLEM_DETAILS: MediaType = MediaType("application/problem+json", name = "HTTP Problem Details", fileExtension = "json")
+        public val JSON_PROBLEM_DETAILS: MediaType = MediaType(
+            "application/problem+json",
+            name = "HTTP Problem Details",
+            fileExtension = "json"
+        )
         public val JXL: MediaType = MediaType("image/jxl", fileExtension = "jxl")
-        public val LCP_LICENSE_DOCUMENT: MediaType = MediaType("application/vnd.readium.lcp.license.v1.0+json", name = "LCP License", fileExtension = "lcpl")
-        public val LCP_PROTECTED_AUDIOBOOK: MediaType = MediaType("application/audiobook+lcp", name = "LCP Protected Audiobook", fileExtension = "lcpa")
-        public val LCP_PROTECTED_PDF: MediaType = MediaType("application/pdf+lcp", name = "LCP Protected PDF", fileExtension = "lcpdf")
-        public val LCP_STATUS_DOCUMENT: MediaType = MediaType("application/vnd.readium.license.status.v1.0+json")
+        public val LCP_LICENSE_DOCUMENT: MediaType = MediaType(
+            "application/vnd.readium.lcp.license.v1.0+json",
+            name = "LCP License",
+            fileExtension = "lcpl"
+        )
+        public val LCP_PROTECTED_AUDIOBOOK: MediaType = MediaType(
+            "application/audiobook+lcp",
+            name = "LCP Protected Audiobook",
+            fileExtension = "lcpa"
+        )
+        public val LCP_PROTECTED_PDF: MediaType = MediaType(
+            "application/pdf+lcp",
+            name = "LCP Protected PDF",
+            fileExtension = "lcpdf"
+        )
+        public val LCP_STATUS_DOCUMENT: MediaType = MediaType(
+            "application/vnd.readium.license.status.v1.0+json"
+        )
         public val LPF: MediaType = MediaType("application/lpf+zip", fileExtension = "lpf")
         public val MP3: MediaType = MediaType("audio/mpeg", fileExtension = "mp3")
         public val MPEG: MediaType = MediaType("video/mpeg", fileExtension = "mpeg")
@@ -302,24 +348,52 @@ public class MediaType(
         public val OGG: MediaType = MediaType("audio/ogg", fileExtension = "oga")
         public val OGV: MediaType = MediaType("video/ogg", fileExtension = "ogv")
         public val OPDS1: MediaType = MediaType("application/atom+xml;profile=opds-catalog")
-        public val OPDS1_ENTRY: MediaType = MediaType("application/atom+xml;type=entry;profile=opds-catalog")
+        public val OPDS1_ENTRY: MediaType = MediaType(
+            "application/atom+xml;type=entry;profile=opds-catalog"
+        )
         public val OPDS2: MediaType = MediaType("application/opds+json")
         public val OPDS2_PUBLICATION: MediaType = MediaType("application/opds-publication+json")
-        public val OPDS_AUTHENTICATION: MediaType = MediaType("application/opds-authentication+json")
+        public val OPDS_AUTHENTICATION: MediaType = MediaType(
+            "application/opds-authentication+json"
+        )
         public val OPUS: MediaType = MediaType("audio/opus", fileExtension = "opus")
         public val OTF: MediaType = MediaType("font/otf", fileExtension = "otf")
-        public val PDF: MediaType = MediaType("application/pdf", name = "PDF", fileExtension = "pdf")
+        public val PDF: MediaType = MediaType(
+            "application/pdf",
+            name = "PDF",
+            fileExtension = "pdf"
+        )
         public val PNG: MediaType = MediaType("image/png", fileExtension = "png")
-        public val READIUM_AUDIOBOOK: MediaType = MediaType("application/audiobook+zip", name = "Readium Audiobook", fileExtension = "audiobook")
-        public val READIUM_AUDIOBOOK_MANIFEST: MediaType = MediaType("application/audiobook+json", name = "Readium Audiobook", fileExtension = "json")
-        public val READIUM_WEBPUB: MediaType = MediaType("application/webpub+zip", name = "Readium Web Publication", fileExtension = "webpub")
-        public val READIUM_WEBPUB_MANIFEST: MediaType = MediaType("application/webpub+json", name = "Readium Web Publication", fileExtension = "json")
+        public val READIUM_AUDIOBOOK: MediaType = MediaType(
+            "application/audiobook+zip",
+            name = "Readium Audiobook",
+            fileExtension = "audiobook"
+        )
+        public val READIUM_AUDIOBOOK_MANIFEST: MediaType = MediaType(
+            "application/audiobook+json",
+            name = "Readium Audiobook",
+            fileExtension = "json"
+        )
+        public val READIUM_WEBPUB: MediaType = MediaType(
+            "application/webpub+zip",
+            name = "Readium Web Publication",
+            fileExtension = "webpub"
+        )
+        public val READIUM_WEBPUB_MANIFEST: MediaType = MediaType(
+            "application/webpub+json",
+            name = "Readium Web Publication",
+            fileExtension = "json"
+        )
         public val SMIL: MediaType = MediaType("application/smil+xml", fileExtension = "smil")
         public val SVG: MediaType = MediaType("image/svg+xml", fileExtension = "svg")
         public val TEXT: MediaType = MediaType("text/plain", fileExtension = "txt")
         public val TIFF: MediaType = MediaType("image/tiff", fileExtension = "tiff")
         public val TTF: MediaType = MediaType("font/ttf", fileExtension = "ttf")
-        public val W3C_WPUB_MANIFEST: MediaType = MediaType("application/x.readium.w3c.wpub+json", name = "Web Publication", fileExtension = "json") // non-existent
+        public val W3C_WPUB_MANIFEST: MediaType = MediaType(
+            "application/x.readium.w3c.wpub+json",
+            name = "Web Publication",
+            fileExtension = "json"
+        ) // non-existent
         public val WAV: MediaType = MediaType("audio/wav", fileExtension = "wav")
         public val WEBM_AUDIO: MediaType = MediaType("audio/webm", fileExtension = "webm")
         public val WEBM_VIDEO: MediaType = MediaType("video/webm", fileExtension = "webm")
@@ -328,7 +402,11 @@ public class MediaType(
         public val WOFF2: MediaType = MediaType("font/woff2", fileExtension = "woff2")
         public val XHTML: MediaType = MediaType("application/xhtml+xml", fileExtension = "xhtml")
         public val XML: MediaType = MediaType("application/xml", fileExtension = "xml")
-        public val ZAB: MediaType = MediaType("application/x.readium.zab+zip", name = "Zipped Audio Book", fileExtension = "zab") // non-existent
+        public val ZAB: MediaType = MediaType(
+            "application/x.readium.zab+zip",
+            name = "Zipped Audio Book",
+            fileExtension = "zab"
+        ) // non-existent
         public val ZIP: MediaType = MediaType("application/zip", fileExtension = "zip")
 
         // Sniffing
@@ -344,7 +422,13 @@ public class MediaType(
          * Resolves a format from a single file extension and media type hint, without checking the actual
          * content.
          */
-        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(mediaType = mediaType, fileExtension = fileExtension)"), level = DeprecationLevel.ERROR)
+        @Deprecated(
+            message = "Use MediaTypeRetriever instead",
+            replaceWith = ReplaceWith(
+                "MediaTypeRetriever().retrieve(mediaType = mediaType, fileExtension = fileExtension)"
+            ),
+            level = DeprecationLevel.ERROR
+        )
         @Suppress("UNUSED_PARAMETER")
         public fun of(
             mediaType: String? = null,
@@ -358,7 +442,13 @@ public class MediaType(
          * Resolves a format from file extension and media type hints, without checking the actual
          * content.
          */
-        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(mediaTypes = mediaTypes, fileExtensions = fileExtensions)"), level = DeprecationLevel.ERROR)
+        @Deprecated(
+            message = "Use MediaTypeRetriever instead",
+            replaceWith = ReplaceWith(
+                "MediaTypeRetriever().retrieve(mediaTypes = mediaTypes, fileExtensions = fileExtensions)"
+            ),
+            level = DeprecationLevel.ERROR
+        )
         @Suppress("UNUSED_PARAMETER")
         public fun of(
             mediaTypes: List<String>,
@@ -372,7 +462,11 @@ public class MediaType(
          * Resolves a format from a local file path.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(file)"), level = DeprecationLevel.ERROR)
+        @Deprecated(
+            message = "Use MediaTypeRetriever instead",
+            replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(file)"),
+            level = DeprecationLevel.ERROR
+        )
         public fun ofFile(
             file: File,
             mediaType: String? = null,
@@ -385,7 +479,13 @@ public class MediaType(
         /**
          * Resolves a format from a local file path.
          */
-        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(file, mediaTypes = mediaTypes, fileExtensions = fileExtensions)"), level = DeprecationLevel.ERROR)
+        @Deprecated(
+            message = "Use MediaTypeRetriever instead",
+            replaceWith = ReplaceWith(
+                "MediaTypeRetriever().retrieve(file, mediaTypes = mediaTypes, fileExtensions = fileExtensions)"
+            ),
+            level = DeprecationLevel.ERROR
+        )
         @Suppress("UNUSED_PARAMETER")
         public fun ofFile(
             file: File,
@@ -400,7 +500,11 @@ public class MediaType(
          * Resolves a format from a local file path.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(File(path))"), level = DeprecationLevel.ERROR)
+        @Deprecated(
+            message = "Use MediaTypeRetriever instead",
+            replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(File(path))"),
+            level = DeprecationLevel.ERROR
+        )
         public fun ofFile(
             path: String,
             mediaType: String? = null,
@@ -414,7 +518,13 @@ public class MediaType(
          * Resolves a format from a local file path.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(File(path), mediaTypes = mediaTypes, fileExtensions = fileExtensions)"), level = DeprecationLevel.ERROR)
+        @Deprecated(
+            message = "Use MediaTypeRetriever instead",
+            replaceWith = ReplaceWith(
+                "MediaTypeRetriever().retrieve(File(path), mediaTypes = mediaTypes, fileExtensions = fileExtensions)"
+            ),
+            level = DeprecationLevel.ERROR
+        )
         public fun ofFile(
             path: String,
             mediaTypes: List<String>,
@@ -428,7 +538,11 @@ public class MediaType(
          * Resolves a format from bytes, e.g. from an HTTP response.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(bytes)"), level = DeprecationLevel.ERROR)
+        @Deprecated(
+            message = "Use MediaTypeRetriever instead",
+            replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(bytes)"),
+            level = DeprecationLevel.ERROR
+        )
         public fun ofBytes(
             bytes: () -> ByteArray,
             mediaType: String? = null,
@@ -442,7 +556,13 @@ public class MediaType(
          * Resolves a format from bytes, e.g. from an HTTP response.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever().retrieve(bytes, mediaTypes = mediaTypes, fileExtensions = fileExtensions)"), level = DeprecationLevel.ERROR)
+        @Deprecated(
+            message = "Use MediaTypeRetriever instead",
+            replaceWith = ReplaceWith(
+                "MediaTypeRetriever().retrieve(bytes, mediaTypes = mediaTypes, fileExtensions = fileExtensions)"
+            ),
+            level = DeprecationLevel.ERROR
+        )
         public fun ofBytes(
             bytes: () -> ByteArray,
             mediaTypes: List<String>,
@@ -457,7 +577,13 @@ public class MediaType(
          * Accepts the following URI schemes: content, android.resource, file.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever(contentResolver = contentResolver).retrieve(uri)"), level = DeprecationLevel.ERROR)
+        @Deprecated(
+            message = "Use MediaTypeRetriever instead",
+            replaceWith = ReplaceWith(
+                "MediaTypeRetriever(contentResolver = contentResolver).retrieve(uri)"
+            ),
+            level = DeprecationLevel.ERROR
+        )
         public fun ofUri(
             uri: Uri,
             contentResolver: ContentResolver,
@@ -473,7 +599,13 @@ public class MediaType(
          * Accepts the following URI schemes: content, android.resource, file.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated(message = "Use MediaTypeRetriever instead", replaceWith = ReplaceWith("MediaTypeRetriever(contentResolver = contentResolver).retrieve(uri, mediaTypes = mediaTypes, fileExtensions = fileExtensions)"), level = DeprecationLevel.ERROR)
+        @Deprecated(
+            message = "Use MediaTypeRetriever instead",
+            replaceWith = ReplaceWith(
+                "MediaTypeRetriever(contentResolver = contentResolver).retrieve(uri, mediaTypes = mediaTypes, fileExtensions = fileExtensions)"
+            ),
+            level = DeprecationLevel.ERROR
+        )
         public fun ofUri(
             uri: Uri,
             contentResolver: ContentResolver,
@@ -486,19 +618,53 @@ public class MediaType(
 
         /* Deprecated */
 
-        @Deprecated("Use [READIUM_AUDIOBOOK] instead", ReplaceWith("MediaType.READIUM_AUDIOBOOK"), level = DeprecationLevel.ERROR)
+        @Deprecated(
+            "Use [READIUM_AUDIOBOOK] instead",
+            ReplaceWith("MediaType.READIUM_AUDIOBOOK"),
+            level = DeprecationLevel.ERROR
+        )
         public val AUDIOBOOK: MediaType get() = READIUM_AUDIOBOOK
-        @Deprecated("Use [READIUM_AUDIOBOOK_MANIFEST] instead", ReplaceWith("MediaType.READIUM_AUDIOBOOK_MANIFEST"), level = DeprecationLevel.ERROR)
+
+        @Deprecated(
+            "Use [READIUM_AUDIOBOOK_MANIFEST] instead",
+            ReplaceWith("MediaType.READIUM_AUDIOBOOK_MANIFEST"),
+            level = DeprecationLevel.ERROR
+        )
         public val AUDIOBOOK_MANIFEST: MediaType get() = READIUM_AUDIOBOOK_MANIFEST
-        @Deprecated("Use [READIUM_WEBPUB] instead", ReplaceWith("MediaType.READIUM_WEBPUB"), level = DeprecationLevel.ERROR)
+
+        @Deprecated(
+            "Use [READIUM_WEBPUB] instead",
+            ReplaceWith("MediaType.READIUM_WEBPUB"),
+            level = DeprecationLevel.ERROR
+        )
         public val WEBPUB: MediaType get() = READIUM_WEBPUB
-        @Deprecated("Use [READIUM_WEBPUB_MANIFEST] instead", ReplaceWith("MediaType.READIUM_WEBPUB_MANIFEST"), level = DeprecationLevel.ERROR)
+
+        @Deprecated(
+            "Use [READIUM_WEBPUB_MANIFEST] instead",
+            ReplaceWith("MediaType.READIUM_WEBPUB_MANIFEST"),
+            level = DeprecationLevel.ERROR
+        )
         public val WEBPUB_MANIFEST: MediaType get() = READIUM_WEBPUB_MANIFEST
-        @Deprecated("Use [OPDS1] instead", ReplaceWith("MediaType.OPDS1"), level = DeprecationLevel.ERROR)
+
+        @Deprecated(
+            "Use [OPDS1] instead",
+            ReplaceWith("MediaType.OPDS1"),
+            level = DeprecationLevel.ERROR
+        )
         public val OPDS1_FEED: MediaType get() = OPDS1
-        @Deprecated("Use [OPDS2] instead", ReplaceWith("MediaType.OPDS2"), level = DeprecationLevel.ERROR)
+
+        @Deprecated(
+            "Use [OPDS2] instead",
+            ReplaceWith("MediaType.OPDS2"),
+            level = DeprecationLevel.ERROR
+        )
         public val OPDS2_FEED: MediaType get() = OPDS2
-        @Deprecated("Use [LCP_LICENSE_DOCUMENT] instead", ReplaceWith("MediaType.LCP_LICENSE_DOCUMENT"), level = DeprecationLevel.ERROR)
+
+        @Deprecated(
+            "Use [LCP_LICENSE_DOCUMENT] instead",
+            ReplaceWith("MediaType.LCP_LICENSE_DOCUMENT"),
+            level = DeprecationLevel.ERROR
+        )
         public val LCP_LICENSE: MediaType get() = LCP_LICENSE_DOCUMENT
 
         @Suppress("UNUSED_PARAMETER")

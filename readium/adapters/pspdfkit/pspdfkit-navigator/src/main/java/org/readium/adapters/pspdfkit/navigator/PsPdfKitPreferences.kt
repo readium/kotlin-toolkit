@@ -30,7 +30,7 @@ public data class PsPdfKitPreferences(
     val readingProgression: ReadingProgression? = null,
     val scroll: Boolean? = null,
     val scrollAxis: Axis? = null,
-    val spread: Spread? = null,
+    val spread: Spread? = null
 ) : Configurable.Preferences<PsPdfKitPreferences> {
 
     init {
@@ -46,6 +46,6 @@ public data class PsPdfKitPreferences(
             readingProgression = other.readingProgression ?: readingProgression,
             scroll = other.scroll ?: scroll,
             scrollAxis = other.scrollAxis ?: scrollAxis,
-            spread = other.spread ?: spread,
+            spread = other.spread ?: spread
         )
 }

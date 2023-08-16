@@ -150,7 +150,11 @@ public data class LocalizedString(val translations: Map<String?, Translation> = 
             for (key in json.keys()) {
                 val string = json.optNullableString(key)
                 if (string == null) {
-                    warnings?.log(LocalizedString::class.java, "invalid localized string object", json)
+                    warnings?.log(
+                        LocalizedString::class.java,
+                        "invalid localized string object",
+                        json
+                    )
                 } else {
                     translations[key] = Translation(string = string)
                 }

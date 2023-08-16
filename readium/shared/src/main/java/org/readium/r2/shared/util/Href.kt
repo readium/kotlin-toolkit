@@ -88,8 +88,6 @@ public value class Href private constructor(
          */
         private fun String.percentEncodedPath(): String =
             Uri.encode(this, "$&+,/:=@")
-
-
     }
 
     public data class QueryParameter(val name: String, val value: String?)
@@ -106,7 +104,8 @@ public value class Href private constructor(
      * Taken from https://stackoverflow.com/a/49796882/1474476
      */
     private fun percentEncode(href: String): String {
-        @Suppress("NAME_SHADOWING") var href = href
+        @Suppress("NAME_SHADOWING")
+        var href = href
         val hasScheme = !href.startsWith("/")
         if (!hasScheme) {
             href = href.addPrefix("file://")
@@ -114,7 +113,15 @@ public value class Href private constructor(
 
         return try {
             val url = URL(href)
-            val uri = URI(url.protocol, url.userInfo, IDN.toASCII(url.host), url.port, url.path, url.query, url.ref)
+            val uri = URI(
+                url.protocol,
+                url.userInfo,
+                IDN.toASCII(url.host),
+                url.port,
+                url.path,
+                url.query,
+                url.ref
+            )
             var result = uri.toASCIIString()
             if (!hasScheme) {
                 result = result.removePrefix("file://")
@@ -130,9 +137,13 @@ public value class Href private constructor(
     public val queryParameters: List<QueryParameter> get() {
         val url = percentEncodedString.substringBefore("#")
         return UrlQuerySanitizer(url).parameterList
-            .map { p -> QueryParameter(name = p.mParameter, value = p.mValue.takeUnless { it.isBlank() }) }
+            .map { p ->
+                QueryParameter(
+                    name = p.mParameter,
+                    value = p.mValue.takeUnless { it.isBlank() }
+                )
+            }
     }
-
 
     /**
      * Expands percent-encoded characters.

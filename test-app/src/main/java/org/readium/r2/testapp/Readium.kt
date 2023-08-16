@@ -85,7 +85,7 @@ class Readium(context: Context) {
         context,
         contentProtections = contentProtections,
         // Only required if you want to support PDF files using the PDFium adapter.
-        pdfFactory = PdfiumDocumentFactory(context),
+        pdfFactory = PdfiumDocumentFactory(context)
     )
 }
 

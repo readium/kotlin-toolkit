@@ -54,7 +54,7 @@ public class PublicationFactory constructor(
     contentProtections: List<ContentProtection> = emptyList(),
     pdfFactory: PdfDocumentFactory<*>? = null,
     httpClient: HttpClient = DefaultHttpClient(),
-    private val onCreatePublication: Publication.Builder.() -> Unit = {},
+    private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
 
     private val contentProtections: Map<ContentProtection.Scheme, ContentProtection> =

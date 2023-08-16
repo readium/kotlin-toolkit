@@ -63,7 +63,9 @@ internal class R2EpubPageFragment : Fragment() {
 
     private lateinit var containerView: View
     private lateinit var preferences: SharedPreferences
-    private val viewModel: EpubNavigatorViewModel by viewModels(ownerProducer = { requireParentFragment() })
+    private val viewModel: EpubNavigatorViewModel by viewModels(
+        ownerProducer = { requireParentFragment() }
+    )
 
     private var _binding: ReadiumNavigatorViewpagerFragmentEpubBinding? = null
     private val binding get() = _binding!!
@@ -119,7 +121,11 @@ internal class R2EpubPageFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        pendingLocator = BundleCompat.getParcelable(requireArguments(), "initialLocator", Locator::class.java)
+        pendingLocator = BundleCompat.getParcelable(
+            requireArguments(),
+            "initialLocator",
+            Locator::class.java
+        )
     }
 
     @SuppressLint("SetJavaScriptEnabled", "JavascriptInterface")
@@ -130,7 +136,10 @@ internal class R2EpubPageFragment : Fragment() {
     ): View {
         _binding = ReadiumNavigatorViewpagerFragmentEpubBinding.inflate(inflater, container, false)
         containerView = binding.root
-        preferences = activity?.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)!!
+        preferences = activity?.getSharedPreferences(
+            "org.readium.r2.settings",
+            Context.MODE_PRIVATE
+        )!!
 
         val webView = binding.webView
         this.webView = webView
@@ -403,8 +412,11 @@ internal class R2EpubPageFragment : Fragment() {
         // We need to reverse the progression with RTL because the Web View
         // always scrolls from left to right, no matter the reading direction.
         progression =
-            if (webView.scrollMode || readingProgression == ReadingProgression.LTR) progression
-            else 1 - progression
+            if (webView.scrollMode || readingProgression == ReadingProgression.LTR) {
+                progression
+            } else {
+                1 - progression
+            }
 
         if (webView.scrollMode) {
             webView.scrollToPosition(progression)

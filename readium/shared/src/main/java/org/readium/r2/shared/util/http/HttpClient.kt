@@ -85,12 +85,12 @@ public suspend fun HttpClient.fetchJSONObject(request: HttpRequest): HttpTry<JSO
 
 public class HttpStreamResponse(
     public val response: HttpResponse,
-    public val body: InputStream,
+    public val body: InputStream
 )
 
 public class HttpFetchResponse(
     public val response: HttpResponse,
-    public val body: ByteArray,
+    public val body: ByteArray
 )
 
 /**
@@ -108,7 +108,7 @@ public data class HttpResponse(
     val url: String,
     val statusCode: Int,
     val headers: Map<String, List<String>>,
-    val mediaType: MediaType,
+    val mediaType: MediaType
 ) {
 
     private val httpHeaders = HttpHeaders(headers)

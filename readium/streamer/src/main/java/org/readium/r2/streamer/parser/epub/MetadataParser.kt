@@ -39,7 +39,13 @@ internal class MetadataParser(
         val relAttr = element.getAttr("rel").orEmpty()
         val rel = parseProperties(relAttr).map { resolveProperty(it, prefixMap, DEFAULT_VOCAB.LINK) }
         val propAttr = element.getAttr("properties").orEmpty()
-        val properties = parseProperties(propAttr).map { resolveProperty(it, prefixMap, DEFAULT_VOCAB.LINK) }
+        val properties = parseProperties(propAttr).map {
+            resolveProperty(
+                it,
+                prefixMap,
+                DEFAULT_VOCAB.LINK
+            )
+        }
         val mediaType = element.getAttr("media-type")
         val refines = element.getAttr("refines")?.removePrefix("#")
         return MetadataItem.Link(
@@ -73,7 +79,12 @@ internal class MetadataParser(
                 ?: return null
             val resolvedProp = resolveProperty(propName, prefixMap, DEFAULT_VOCAB.META)
             val resolvedScheme =
-                element.getAttr("scheme")?.trim()?.ifEmpty { null }?.let { resolveProperty(it, prefixMap) }
+                element.getAttr("scheme")?.trim()?.ifEmpty { null }?.let {
+                    resolveProperty(
+                        it,
+                        prefixMap
+                    )
+                }
             val refines = element.getAttr("refines")?.removePrefix("#")
             MetadataItem.Meta(
                 id = element.id,
@@ -90,7 +101,11 @@ internal class MetadataParser(
         val propValue = element.text?.trim()?.ifEmpty { null } ?: return null
         val propName = Vocabularies.DCTERMS + element.name
         return when (element.name) {
-            "creator", "contributor", "publisher" -> contributorWithLegacyAttr(element, propName, propValue)
+            "creator", "contributor", "publisher" -> contributorWithLegacyAttr(
+                element,
+                propName,
+                propValue
+            )
             "date" -> dateWithLegacyAttr(element, propName, propValue)
             else -> MetadataItem.Meta(
                 id = element.id,
@@ -141,6 +156,7 @@ internal class MetadataParser(
     private fun resolveItemsHierarchy(items: List<MetadataItem>): List<MetadataItem> {
         val metadataIds = items.mapNotNull { it.id }
         val rootExpr = items.filter { it.refines == null || it.refines !in metadataIds }
+
         @Suppress("Unchecked_cast")
         val exprByRefines = items.groupBy(MetadataItem::refines) as Map<String, List<MetadataItem.Meta>>
         return rootExpr.map { computeMetadataItem(it, exprByRefines, emptySet()) }
@@ -176,7 +192,7 @@ internal sealed class MetadataItem {
         val href: String,
         val rels: Set<String>,
         val mediaType: String?,
-        val properties: List<String> = emptyList(),
+        val properties: List<String> = emptyList()
     ) : MetadataItem()
 
     data class Meta(
@@ -186,6 +202,6 @@ internal sealed class MetadataItem {
         val property: String,
         val value: String,
         val lang: String,
-        val scheme: String? = null,
+        val scheme: String? = null
     ) : MetadataItem()
 }

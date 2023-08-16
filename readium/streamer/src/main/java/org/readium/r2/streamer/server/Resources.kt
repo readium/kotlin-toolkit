@@ -9,5 +9,8 @@
 
 package org.readium.r2.streamer.server
 
-@Deprecated("The HTTP server is not needed anymore (see migration guide)", level = DeprecationLevel.ERROR)
+@Deprecated(
+    "The HTTP server is not needed anymore (see migration guide)",
+    level = DeprecationLevel.ERROR
+)
 public class Resources

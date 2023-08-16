@@ -92,18 +92,26 @@ internal class WebViewServer(
             .fallback { errorResource(link, error = it) }
         if (link.mediaType.isHtml) {
             resource = resource.injectHtml(
-                publication, css,
+                publication,
+                css,
                 baseHref = assetsBaseHref,
                 disableSelectionWhenProtected = disableSelectionWhenProtected
             )
         }
 
         val headers = mutableMapOf(
-            "Accept-Ranges" to "bytes",
+            "Accept-Ranges" to "bytes"
         )
 
         if (range == null) {
-            return WebResourceResponse(link.type, null, 200, "OK", headers, ResourceInputStream(resource))
+            return WebResourceResponse(
+                link.type,
+                null,
+                200,
+                "OK",
+                headers,
+                ResourceInputStream(resource)
+            )
         } else { // Byte range request
             val stream = ResourceInputStream(resource)
             val length = stream.available()

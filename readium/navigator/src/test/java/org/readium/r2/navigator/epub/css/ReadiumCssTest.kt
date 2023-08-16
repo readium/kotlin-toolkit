@@ -608,7 +608,7 @@ class ReadiumCssTest {
             googleFonts = listOf(
                 FontFamily.OPEN_DYSLEXIC,
                 FontFamily.SANS_SERIF,
-                FontFamily.SERIF,
+                FontFamily.SERIF
             ),
             assetsBaseHref = "/assets/"
         )

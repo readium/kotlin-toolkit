@@ -68,9 +68,9 @@ public data class Manifest(
     public fun linkWithHref(href: String): Link? {
         fun List<Link>.deepLinkWithHref(href: String): Link? {
             for (l in this) {
-                if (l.href == href)
+                if (l.href == href) {
                     return l
-                else {
+                } else {
                     l.alternates.deepLinkWithHref(href)?.let { return it }
                     l.children.deepLinkWithHref(href)?.let { return it }
                 }
@@ -160,9 +160,9 @@ public data class Manifest(
             json ?: return null
 
             val baseUrl =
-                if (packaged)
+                if (packaged) {
                     "/"
-                else
+                } else {
                     Link.fromJSONArray(json.optJSONArray("links"), warnings = warnings)
                         .firstWithRel("self")
                         ?.href
@@ -170,32 +170,61 @@ public data class Manifest(
                         ?.removeLastComponent()
                         ?.toString()
                         ?: "/"
+                }
 
             val normalizeHref = { href: String -> Href(href, baseUrl).string }
 
             val context = json.optStringsFromArrayOrSingle("@context", remove = true)
 
-            val metadata = Metadata.fromJSON(json.remove("metadata") as? JSONObject, normalizeHref, warnings)
+            val metadata = Metadata.fromJSON(
+                json.remove("metadata") as? JSONObject,
+                normalizeHref,
+                warnings
+            )
             if (metadata == null) {
                 warnings?.log(Manifest::class.java, "[metadata] is required", json)
                 return null
             }
 
-            val links = Link.fromJSONArray(json.remove("links") as? JSONArray, normalizeHref, warnings)
-                .map { if (!packaged || "self" !in it.rels) it else it.copy(rels = it.rels - "self" + "alternate") }
+            val links = Link.fromJSONArray(
+                json.remove("links") as? JSONArray,
+                normalizeHref,
+                warnings
+            )
+                .map {
+                    if (!packaged || "self" !in it.rels) {
+                        it
+                    } else {
+                        it.copy(
+                            rels = it.rels - "self" + "alternate"
+                        )
+                    }
+                }
 
             // [readingOrder] used to be [spine], so we parse [spine] as a fallback.
             val readingOrderJSON = (json.remove("readingOrder") ?: json.remove("spine")) as? JSONArray
             val readingOrder = Link.fromJSONArray(readingOrderJSON, normalizeHref, warnings)
                 .filter { it.type != null }
 
-            val resources = Link.fromJSONArray(json.remove("resources") as? JSONArray, normalizeHref, warnings)
+            val resources = Link.fromJSONArray(
+                json.remove("resources") as? JSONArray,
+                normalizeHref,
+                warnings
+            )
                 .filter { it.type != null }
 
-            val tableOfContents = Link.fromJSONArray(json.remove("toc") as? JSONArray, normalizeHref, warnings)
+            val tableOfContents = Link.fromJSONArray(
+                json.remove("toc") as? JSONArray,
+                normalizeHref,
+                warnings
+            )
 
             // Parses subcollections from the remaining JSON properties.
-            val subcollections = PublicationCollection.collectionsFromJSON(json, normalizeHref, warnings)
+            val subcollections = PublicationCollection.collectionsFromJSON(
+                json,
+                normalizeHref,
+                warnings
+            )
 
             return Manifest(
                 context = context,

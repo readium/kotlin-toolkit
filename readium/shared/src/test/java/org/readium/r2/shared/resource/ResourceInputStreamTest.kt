@@ -11,7 +11,9 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class ResourceInputStreamTest {
 
-    private val file = File(assertNotNull(ResourceInputStreamTest::class.java.getResource("epub.epub")?.path))
+    private val file = File(
+        assertNotNull(ResourceInputStreamTest::class.java.getResource("epub.epub")?.path)
+    )
     private val fileContent: ByteArray = file.readBytes()
     private val bufferSize = 16384 // This is the size used by NanoHTTPd for chunked responses
 

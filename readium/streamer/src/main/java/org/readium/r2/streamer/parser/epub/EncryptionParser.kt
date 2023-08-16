@@ -23,8 +23,11 @@ internal object EncryptionParser {
             ?: return null
         val retrievalMethod = node.getFirst("KeyInfo", Namespaces.SIG)
             ?.getFirst("RetrievalMethod", Namespaces.SIG)?.getAttr("URI")
-        val scheme = if (retrievalMethod == "license.lcpl#/encryption/content_key")
-            ContentProtection.Scheme.Lcp.uri else null
+        val scheme = if (retrievalMethod == "license.lcpl#/encryption/content_key") {
+            ContentProtection.Scheme.Lcp.uri
+        } else {
+            null
+        }
         val algorithm = node.getFirst("EncryptionMethod", Namespaces.ENC)
             ?.getAttr("Algorithm")
             ?: return null

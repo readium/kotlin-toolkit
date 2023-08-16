@@ -43,8 +43,9 @@ internal class HttpChannel(
     private lateinit var _headResponse: Try<HttpResponse, HttpException>
 
     private suspend fun headResponse(): Try<HttpResponse, HttpException> {
-        if (::_headResponse.isInitialized)
+        if (::_headResponse.isInitialized) {
             return _headResponse
+        }
 
         _headResponse = client.fetch(HttpRequest(url, method = HttpRequest.Method.HEAD))
             .map { it.response }

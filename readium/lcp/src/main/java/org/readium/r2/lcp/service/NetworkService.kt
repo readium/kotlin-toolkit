@@ -28,7 +28,10 @@ import timber.log.Timber
 
 internal typealias URLParameters = Map<String, String?>
 
-internal class NetworkException(val status: Int?, cause: Throwable? = null) : Exception("Network failure with status $status", cause)
+internal class NetworkException(val status: Int?, cause: Throwable? = null) : Exception(
+    "Network failure with status $status",
+    cause
+)
 
 internal class NetworkService(
     private val mediaTypeRetriever: MediaTypeRetriever
@@ -51,7 +54,9 @@ internal class NetworkService(
         withContext(Dispatchers.IO) {
             try {
                 @Suppress("NAME_SHADOWING")
-                val url = URL(Uri.parse(url).buildUpon().appendQueryParameters(parameters).build().toString())
+                val url = URL(
+                    Uri.parse(url).buildUpon().appendQueryParameters(parameters).build().toString()
+                )
 
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = method.value

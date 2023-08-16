@@ -64,7 +64,9 @@ class PublicationTest {
                 servicesBuilder = Publication.ServicesBuilder(
                     positions = {
                         object : PositionsService {
-                            override suspend fun positionsByReadingOrder(): List<List<Locator>> = listOf(listOf(Locator(href = "locator", type = "")))
+                            override suspend fun positionsByReadingOrder(): List<List<Locator>> = listOf(
+                                listOf(Locator(href = "locator", type = ""))
+                            )
                         }
                     }
                 )
@@ -103,7 +105,9 @@ class PublicationTest {
 
     @Test fun `get {baseUrl} computes the URL from the {self} link`() {
         val publication = createPublication(
-            links = listOf(Link(href = "http://domain.com/path/manifest.json", rels = setOf("self")))
+            links = listOf(
+                Link(href = "http://domain.com/path/manifest.json", rels = setOf("self"))
+            )
         )
         assertEquals(
             URL("http://domain.com/path/"),
@@ -136,7 +140,7 @@ class PublicationTest {
             createPublication(
                 readingOrder = listOf(
                     Link(href = "c1.mp3", type = "audio/mpeg"),
-                    Link(href = "c2.aac", type = "audio/aac"),
+                    Link(href = "c2.aac", type = "audio/aac")
                 )
             ).conformsTo(Profile.AUDIOBOOK)
         )
@@ -144,7 +148,7 @@ class PublicationTest {
             createPublication(
                 readingOrder = listOf(
                     Link(href = "c1.jpg", type = "image/jpeg"),
-                    Link(href = "c2.png", type = "image/png"),
+                    Link(href = "c2.png", type = "image/png")
                 )
             ).conformsTo(Profile.DIVINA)
         )
@@ -152,7 +156,7 @@ class PublicationTest {
             createPublication(
                 readingOrder = listOf(
                     Link(href = "c1.pdf", type = "application/pdf"),
-                    Link(href = "c2.pdf", type = "application/pdf"),
+                    Link(href = "c2.pdf", type = "application/pdf")
                 )
             ).conformsTo(Profile.PDF)
         )
@@ -162,7 +166,7 @@ class PublicationTest {
             createPublication(
                 readingOrder = listOf(
                     Link(href = "c1.mp3", type = "audio/mpeg"),
-                    Link(href = "c2.jpg", type = "image/jpeg"),
+                    Link(href = "c2.jpg", type = "image/jpeg")
                 )
             ).conformsTo(Profile.AUDIOBOOK)
         )
@@ -170,7 +174,7 @@ class PublicationTest {
             createPublication(
                 readingOrder = listOf(
                     Link(href = "c1.mp3", type = "audio/mpeg"),
-                    Link(href = "c2.jpg", type = "image/jpeg"),
+                    Link(href = "c2.jpg", type = "image/jpeg")
                 )
             ).conformsTo(Profile.DIVINA)
         )
@@ -180,7 +184,7 @@ class PublicationTest {
             createPublication(
                 readingOrder = listOf(
                     Link(href = "c1.xhtml", type = "application/xhtml+xml"),
-                    Link(href = "c2.xhtml", type = "application/xhtml+xml"),
+                    Link(href = "c2.xhtml", type = "application/xhtml+xml")
                 ),
                 conformsTo = setOf(Profile.EPUB)
             ).conformsTo(Profile.EPUB)
@@ -189,7 +193,7 @@ class PublicationTest {
             createPublication(
                 readingOrder = listOf(
                     Link(href = "c1.html", type = "text/html"),
-                    Link(href = "c2.html", type = "text/html"),
+                    Link(href = "c2.html", type = "text/html")
                 ),
                 conformsTo = setOf(Profile.EPUB)
             ).conformsTo(Profile.EPUB)
@@ -198,7 +202,7 @@ class PublicationTest {
             createPublication(
                 readingOrder = listOf(
                     Link(href = "c1.xhtml", type = "application/xhtml+xml"),
-                    Link(href = "c2.xhtml", type = "application/xhtml+xml"),
+                    Link(href = "c2.xhtml", type = "application/xhtml+xml")
                 )
             ).conformsTo(Profile.EPUB)
         )
@@ -206,7 +210,7 @@ class PublicationTest {
             createPublication(
                 readingOrder = listOf(
                     Link(href = "c1.html", type = "text/html"),
-                    Link(href = "c2.html", type = "text/html"),
+                    Link(href = "c2.html", type = "text/html")
                 )
             ).conformsTo(Profile.EPUB)
         )
@@ -214,7 +218,7 @@ class PublicationTest {
             createPublication(
                 readingOrder = listOf(
                     Link(href = "c1.pdf", type = "application/pdf"),
-                    Link(href = "c2.pdf", type = "application/pdf"),
+                    Link(href = "c2.pdf", type = "application/pdf")
                 ),
                 conformsTo = setOf(Profile.EPUB)
             ).conformsTo(Profile.EPUB)
@@ -225,7 +229,7 @@ class PublicationTest {
             createPublication(
                 readingOrder = listOf(
                     Link(href = "c1.mp3", type = "audio/mpeg"),
-                    Link(href = "c2.aac", type = "audio/aac"),
+                    Link(href = "c2.aac", type = "audio/aac")
                 ),
                 conformsTo = setOf(Profile.DIVINA)
             ).conformsTo(Profile.AUDIOBOOK)
@@ -234,7 +238,7 @@ class PublicationTest {
             createPublication(
                 readingOrder = listOf(
                     Link(href = "c1.mp3", type = "audio/mpeg"),
-                    Link(href = "c2.aac", type = "audio/aac"),
+                    Link(href = "c2.aac", type = "audio/aac")
                 ),
                 conformsTo = setOf(Profile.DIVINA)
             ).conformsTo(Profile.DIVINA)
@@ -355,7 +359,10 @@ class PublicationTest {
             readingOrder = listOf(Link(href = "other"), link)
         )
 
-        assertEquals(link, publication.linkWithHref("http://example.com/index.html?title=titre&action=edit"))
+        assertEquals(
+            link,
+            publication.linkWithHref("http://example.com/index.html?title=titre&action=edit")
+        )
     }
 
     @Test fun `find the first {Link} with the given {href} without anchor`() {
@@ -387,7 +394,10 @@ class PublicationTest {
                 positions = { service }
             )
         )
-        assertEquals("test passed", runBlocking { publication.get(link).readAsString().getOrNull() })
+        assertEquals(
+            "test passed",
+            runBlocking { publication.get(link).readAsString().getOrNull() }
+        )
     }
 
     @Test fun `find the first resource {Link} with the given {href}`() {

@@ -97,9 +97,11 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
             pdfEngineProvider: PdfEngineProvider<S, P, E>
         ): FragmentFactory = createFragmentFactory {
             PdfNavigatorFragment(
-                publication, initialLocator,
+                publication,
+                initialLocator,
                 preferences ?: pdfEngineProvider.createEmptyPreferences(),
-                listener, pdfEngineProvider
+                listener,
+                pdfEngineProvider
             )
         }
     }
@@ -119,7 +121,7 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
             publication,
             initialLocator,
             initialPreferences = initialPreferences,
-            pdfEngineProvider = pdfEngineProvider,
+            pdfEngineProvider = pdfEngineProvider
         )
     }
 

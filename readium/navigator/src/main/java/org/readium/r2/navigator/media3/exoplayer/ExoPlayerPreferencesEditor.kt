@@ -25,7 +25,7 @@ import org.readium.r2.shared.publication.Metadata
 public class ExoPlayerPreferencesEditor(
     initialPreferences: ExoPlayerPreferences,
     @Suppress("UNUSED_PARAMETER") publicationMetadata: Metadata,
-    defaults: ExoPlayerDefaults,
+    defaults: ExoPlayerDefaults
 ) : PreferencesEditor<ExoPlayerPreferences> {
 
     private data class State(
@@ -54,7 +54,7 @@ public class ExoPlayerPreferencesEditor(
             updateValue = { value -> updateValues { it.copy(pitch = value) } },
             supportedRange = 0.1..Double.MAX_VALUE,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = { "${it.format(2)}x" },
+            valueFormatter = { "${it.format(2)}x" }
         )
 
     public val speed: RangePreference<Double> =
@@ -65,7 +65,7 @@ public class ExoPlayerPreferencesEditor(
             updateValue = { value -> updateValues { it.copy(speed = value) } },
             supportedRange = 0.1..Double.MAX_VALUE,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = { "${it.format(2)}x" },
+            valueFormatter = { "${it.format(2)}x" }
         )
 
     private fun updateValues(updater: (ExoPlayerPreferences) -> ExoPlayerPreferences) {

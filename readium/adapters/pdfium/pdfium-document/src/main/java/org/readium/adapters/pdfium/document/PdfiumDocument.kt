@@ -107,7 +107,10 @@ public class PdfiumDocumentFactory(context: Context) : PdfDocumentFactory<Pdfium
 
     private fun PdfiumCore.fromFile(file: File, password: String?): PdfiumDocument =
         fromDocument(
-            newDocument(ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY), password),
+            newDocument(
+                ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY),
+                password
+            ),
             identifier = file.md5()
         )
 

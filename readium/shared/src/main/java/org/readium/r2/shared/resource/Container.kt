@@ -78,7 +78,7 @@ public class ResourceContainer(path: String, resource: Resource) : Container {
 }
 
 /** Convenience helper to wrap a [Resource] and a [path] into a [Container.Entry]. */
-internal fun Resource.toEntry(path: String) : Container.Entry =
+internal fun Resource.toEntry(path: String): Container.Entry =
     object : Container.Entry, Resource by this {
         override val path: String = path
     }

@@ -42,8 +42,9 @@ public class EpubParser(
         asset: PublicationParser.Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
-        if (asset.mediaType != MediaType.EPUB)
+        if (asset.mediaType != MediaType.EPUB) {
             return Try.failure(PublicationParser.Error.FormatNotSupported())
+        }
 
         val opfPath = getRootFilePath(asset.container)
             .getOrElse { return Try.failure(it) }
@@ -80,7 +81,7 @@ public class EpubParser(
                     resourceContentIteratorFactories = listOf(
                         HtmlResourceContentIterator.Factory()
                     )
-                ),
+                )
             )
         )
 

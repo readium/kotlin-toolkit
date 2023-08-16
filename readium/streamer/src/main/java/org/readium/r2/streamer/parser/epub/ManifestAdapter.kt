@@ -42,7 +42,7 @@ internal class ManifestAdapter(
             packageDocument.manifest,
             encryptionData,
             metadata.coverId,
-            metadata.durationById,
+            metadata.durationById
         ).adapt()
 
         // Compute toc and otherCollections

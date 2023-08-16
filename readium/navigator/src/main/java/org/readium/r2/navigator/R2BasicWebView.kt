@@ -79,10 +79,13 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
 
         @InternalReadiumApi
         fun javascriptInterfacesForResource(link: Link): Map<String, Any?> = emptyMap()
+
         @InternalReadiumApi
         fun shouldOverrideUrlLoading(webView: WebView, request: WebResourceRequest): Boolean = false
+
         @InternalReadiumApi
         fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? = null
+
         @InternalReadiumApi
         fun resourceAtUrl(url: String): Resource? = null
 
@@ -94,13 +97,16 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
          */
         @InternalReadiumApi
         fun goToNextResource(jump: Boolean, animated: Boolean): Boolean = false
+
         @InternalReadiumApi
         fun goToPreviousResource(jump: Boolean, animated: Boolean): Boolean = false
 
         @Deprecated("Not available anymore", level = DeprecationLevel.ERROR)
         fun onScroll() {}
+
         @Deprecated("Not available anymore", level = DeprecationLevel.ERROR)
         fun onHighlightActivated(id: String) {}
+
         @Deprecated("Not available anymore", level = DeprecationLevel.ERROR)
         fun onHighlightAnnotationMarkActivated(id: String) {}
     }
@@ -637,7 +643,10 @@ internal open class R2BasicWebView(context: Context, attrs: AttributeSet) : WebV
             ?: return super.startActionMode(callback, type)
 
         val parent = parent ?: return null
-        val wrapper = Callback2Wrapper(customCallback, callback2 = callback as? ActionMode.Callback2)
+        val wrapper = Callback2Wrapper(
+            customCallback,
+            callback2 = callback as? ActionMode.Callback2
+        )
         return parent.startActionModeForChild(this, wrapper, type)
     }
 

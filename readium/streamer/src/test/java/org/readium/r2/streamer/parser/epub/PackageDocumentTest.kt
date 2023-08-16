@@ -44,7 +44,9 @@ class ReadingProgressionTest {
 
     @Test
     fun `Default page progression direction is rightly parsed`() {
-        assertThat(parsePackageDocument("package/progression-default.opf").metadata.readingProgression)
+        assertThat(
+            parsePackageDocument("package/progression-default.opf").metadata.readingProgression
+        )
             .isEqualTo(null)
     }
 
@@ -69,7 +71,9 @@ class LinkPropertyTest {
     fun `contains is rightly filled`() {
         with(propertiesPub) {
             assertThat(readingOrder[0].properties.contains).containsExactlyInAnyOrder("mathml")
-            assertThat(readingOrder[1].properties.contains).containsExactlyInAnyOrder("remote-resources")
+            assertThat(readingOrder[1].properties.contains).containsExactlyInAnyOrder(
+                "remote-resources"
+            )
             assertThat(readingOrder[2].properties.contains).containsExactlyInAnyOrder("js", "svg")
             assertThat(readingOrder[3].properties.contains).isEmpty()
             assertThat(readingOrder[4].properties.contains).isEmpty()
@@ -93,24 +97,36 @@ class LinkPropertyTest {
         with(propertiesPub) {
             assertThat(readingOrder[0].properties.layout).isEqualTo(EpubLayout.FIXED)
             assertThat(readingOrder[0].properties.overflow).isEqualTo(Presentation.Overflow.AUTO)
-            assertThat(readingOrder[0].properties.orientation).isEqualTo(Presentation.Orientation.AUTO)
+            assertThat(readingOrder[0].properties.orientation).isEqualTo(
+                Presentation.Orientation.AUTO
+            )
             assertThat(readingOrder[0].properties.page).isEqualTo(Presentation.Page.RIGHT)
             assertThat(readingOrder[0].properties.spread).isNull()
 
             assertThat(readingOrder[1].properties.layout).isEqualTo(EpubLayout.REFLOWABLE)
-            assertThat(readingOrder[1].properties.overflow).isEqualTo(Presentation.Overflow.PAGINATED)
-            assertThat(readingOrder[1].properties.orientation).isEqualTo(Presentation.Orientation.LANDSCAPE)
+            assertThat(readingOrder[1].properties.overflow).isEqualTo(
+                Presentation.Overflow.PAGINATED
+            )
+            assertThat(readingOrder[1].properties.orientation).isEqualTo(
+                Presentation.Orientation.LANDSCAPE
+            )
             assertThat(readingOrder[1].properties.page).isEqualTo(Presentation.Page.LEFT)
             assertThat(readingOrder[0].properties.spread).isNull()
 
             assertThat(readingOrder[2].properties.layout).isNull()
-            assertThat(readingOrder[2].properties.overflow).isEqualTo(Presentation.Overflow.SCROLLED)
-            assertThat(readingOrder[2].properties.orientation).isEqualTo(Presentation.Orientation.PORTRAIT)
+            assertThat(readingOrder[2].properties.overflow).isEqualTo(
+                Presentation.Overflow.SCROLLED
+            )
+            assertThat(readingOrder[2].properties.orientation).isEqualTo(
+                Presentation.Orientation.PORTRAIT
+            )
             assertThat(readingOrder[2].properties.page).isEqualTo(Presentation.Page.CENTER)
             assertThat(readingOrder[2].properties.spread).isNull()
 
             assertThat(readingOrder[3].properties.layout).isNull()
-            assertThat(readingOrder[3].properties.overflow).isEqualTo(Presentation.Overflow.SCROLLED)
+            assertThat(readingOrder[3].properties.overflow).isEqualTo(
+                Presentation.Overflow.SCROLLED
+            )
             assertThat(readingOrder[3].properties.orientation).isNull()
             assertThat(readingOrder[3].properties.page).isNull()
             assertThat(readingOrder[3].properties.spread).isEqualTo(Presentation.Spread.AUTO)

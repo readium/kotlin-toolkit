@@ -29,13 +29,14 @@ class BookshelfAdapter(
     ): ViewHolder {
         return ViewHolder(
             ItemRecycleBookBinding.inflate(
-                LayoutInflater.from(parent.context), parent, false
+                LayoutInflater.from(parent.context),
+                parent,
+                false
             )
         )
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
-
         val book = getItem(position)
 
         viewHolder.bind(book)

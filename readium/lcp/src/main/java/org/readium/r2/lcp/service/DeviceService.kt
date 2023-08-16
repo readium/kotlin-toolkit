@@ -29,7 +29,10 @@ internal class DeviceService(
     val context: Context
 ) : Serializable {
 
-    private val preferences: SharedPreferences = context.getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
+    private val preferences: SharedPreferences = context.getSharedPreferences(
+        "org.readium.r2.settings",
+        Context.MODE_PRIVATE
+    )
 
     val id: String
         get() {

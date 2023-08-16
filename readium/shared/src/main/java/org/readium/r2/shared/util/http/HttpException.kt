@@ -32,32 +32,43 @@ public class HttpException(
     public val kind: Kind,
     public val mediaType: MediaType? = null,
     public val body: ByteArray? = null,
-    cause: Throwable? = null,
+    cause: Throwable? = null
 ) : UserException(kind.userMessageId, cause = cause) {
 
     public enum class Kind(@StringRes public val userMessageId: Int) {
         /** The provided request was not valid. */
         MalformedRequest(R.string.readium_shared_http_exception_malformed_request),
+
         /** The received response couldn't be decoded. */
         MalformedResponse(R.string.readium_shared_http_exception_malformed_response),
+
         /** The client, server or gateways timed out. */
         Timeout(R.string.readium_shared_http_exception_timeout),
+
         /** (400) The server cannot or will not process the request due to an apparent client error. */
         BadRequest(R.string.readium_shared_http_exception_bad_request),
+
         /** (401) Authentication is required and has failed or has not yet been provided. */
         Unauthorized(R.string.readium_shared_http_exception_unauthorized),
+
         /** (403) The server refuses the action, probably because we don't have the necessary permissions. */
         Forbidden(R.string.readium_shared_http_exception_forbidden),
+
         /** (404) The requested resource could not be found. */
         NotFound(R.string.readium_shared_http_exception_not_found),
+
         /** (4xx) Other client errors */
         ClientError(R.string.readium_shared_http_exception_client_error),
+
         /** (5xx) Server errors */
         ServerError(R.string.readium_shared_http_exception_server_error),
+
         /** The device is offline. */
         Offline(R.string.readium_shared_http_exception_offline),
+
         /** The request was cancelled. */
         Cancelled(R.string.readium_shared_http_exception_cancelled),
+
         /** An error whose kind is not recognized. */
         Other(R.string.readium_shared_http_exception_other);
 

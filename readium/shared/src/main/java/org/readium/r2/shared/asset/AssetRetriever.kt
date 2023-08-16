@@ -38,7 +38,7 @@ public class AssetRetriever(
 
         public class SchemeNotSupported(
             public val scheme: String,
-            override val cause: org.readium.r2.shared.error.Error?,
+            override val cause: org.readium.r2.shared.error.Error?
         ) : Error() {
 
             public constructor(scheme: String, exception: Exception) :
@@ -195,7 +195,7 @@ public class AssetRetriever(
     }
 
     private suspend fun retrieveResource(
-        url: Url,
+        url: Url
     ): Try<Resource, Error> {
         return resourceFactory.create(url)
             .mapFailure { error ->
@@ -231,7 +231,13 @@ public class AssetRetriever(
         UrlSnifferContextFactory(resourceFactory, containerFactory, archiveFactory)
 
     private val mediaTypeRetriever: MediaTypeRetriever =
-        MediaTypeRetriever(resourceFactory, containerFactory, archiveFactory, contentResolver, sniffers)
+        MediaTypeRetriever(
+            resourceFactory,
+            containerFactory,
+            archiveFactory,
+            contentResolver,
+            sniffers
+        )
 
     /**
      * Retrieves an asset from a local file.
@@ -239,7 +245,7 @@ public class AssetRetriever(
     public suspend fun retrieve(
         file: File,
         mediaType: String? = null,
-        fileExtension: String? = null,
+        fileExtension: String? = null
     ): Asset? =
         retrieve(
             file,
@@ -253,7 +259,7 @@ public class AssetRetriever(
     public suspend fun retrieve(
         file: File,
         mediaTypes: List<String>,
-        fileExtensions: List<String>,
+        fileExtensions: List<String>
     ): Asset? {
         val context = snifferContextFactory
             .createContext(
@@ -271,7 +277,7 @@ public class AssetRetriever(
     public suspend fun retrieve(
         uri: Uri,
         mediaType: String? = null,
-        fileExtension: String? = null,
+        fileExtension: String? = null
     ): Asset? =
         retrieve(
             uri,
@@ -285,7 +291,7 @@ public class AssetRetriever(
     public suspend fun retrieve(
         uri: Uri,
         mediaTypes: List<String>,
-        fileExtensions: List<String>,
+        fileExtensions: List<String>
     ): Asset? {
         val url = uri.toUrl()
             ?: return null
@@ -327,7 +333,6 @@ public class AssetRetriever(
     }
 
     private suspend fun retrieve(context: ContentAwareSnifferContext): Asset? {
-
         val mediaType = mediaTypeRetriever.doRetrieve(
             fullContext = { context },
             mediaTypes = context.mediaTypes.map(MediaType::toString),

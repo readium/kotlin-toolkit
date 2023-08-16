@@ -14,10 +14,9 @@ internal class ExoPlayerSettingsResolver(
 ) : ExoPlayerEngine.SettingsResolver {
 
     override fun settings(preferences: ExoPlayerPreferences): ExoPlayerSettings {
-
         return ExoPlayerSettings(
             pitch = preferences.pitch ?: defaults.pitch ?: 1.0,
-            speed = preferences.speed ?: defaults.speed ?: 1.0,
+            speed = preferences.speed ?: defaults.speed ?: 1.0
         )
     }
 }

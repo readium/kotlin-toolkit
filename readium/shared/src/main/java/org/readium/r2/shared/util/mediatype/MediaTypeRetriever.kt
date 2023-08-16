@@ -22,7 +22,7 @@ public class MediaTypeRetriever(
     containerFactory: ContainerFactory = DirectoryContainerFactory(),
     archiveFactory: ArchiveFactory = DefaultArchiveFactory(),
     private val contentResolver: ContentResolver? = null,
-    private val sniffers: List<Sniffer> = Sniffers.all,
+    private val sniffers: List<Sniffer> = Sniffers.all
 ) {
     private val urlSnifferContextFactory: UrlSnifferContextFactory =
         UrlSnifferContextFactory(resourceFactory, containerFactory, archiveFactory)
@@ -39,12 +39,17 @@ public class MediaTypeRetriever(
      */
     public suspend fun retrieve(
         mediaType: String? = null,
-        fileExtension: String? = null,
+        fileExtension: String? = null
     ): MediaType? {
         if (BuildConfig.DEBUG && mediaType?.startsWith("/") == true) {
-            throw IllegalArgumentException("The provided media type is incorrect: $mediaType. To pass a file path, you must wrap it in a File().")
+            throw IllegalArgumentException(
+                "The provided media type is incorrect: $mediaType. To pass a file path, you must wrap it in a File()."
+            )
         }
-        return retrieve(mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension))
+        return retrieve(
+            mediaTypes = listOfNotNull(mediaType),
+            fileExtensions = listOfNotNull(fileExtension)
+        )
     }
 
     /**
@@ -64,9 +69,13 @@ public class MediaTypeRetriever(
     public suspend fun retrieve(
         file: File,
         mediaType: String? = null,
-        fileExtension: String? = null,
+        fileExtension: String? = null
     ): MediaType? {
-        return retrieve(file, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension))
+        return retrieve(
+            file,
+            mediaTypes = listOfNotNull(mediaType),
+            fileExtensions = listOfNotNull(fileExtension)
+        )
     }
 
     /**
@@ -75,9 +84,13 @@ public class MediaTypeRetriever(
     public suspend fun retrieve(
         file: File,
         mediaTypes: List<String>,
-        fileExtensions: List<String>,
+        fileExtensions: List<String>
     ): MediaType? {
-        return retrieve(content = Either.Right(file.toUrl()), mediaTypes = mediaTypes, fileExtensions = listOf(file.extension) + fileExtensions)
+        return retrieve(
+            content = Either.Right(file.toUrl()),
+            mediaTypes = mediaTypes,
+            fileExtensions = listOf(file.extension) + fileExtensions
+        )
     }
 
     /**
@@ -86,9 +99,13 @@ public class MediaTypeRetriever(
     public suspend fun retrieve(
         bytes: () -> ByteArray,
         mediaType: String? = null,
-        fileExtension: String? = null,
+        fileExtension: String? = null
     ): MediaType? {
-        return retrieve(bytes, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension))
+        return retrieve(
+            bytes,
+            mediaTypes = listOfNotNull(mediaType),
+            fileExtensions = listOfNotNull(fileExtension)
+        )
     }
 
     /**
@@ -97,9 +114,13 @@ public class MediaTypeRetriever(
     public suspend fun retrieve(
         bytes: () -> ByteArray,
         mediaTypes: List<String>,
-        fileExtensions: List<String>,
+        fileExtensions: List<String>
     ): MediaType? {
-        return retrieve(content = Either.Left(bytes), mediaTypes = mediaTypes, fileExtensions = fileExtensions)
+        return retrieve(
+            content = Either.Left(bytes),
+            mediaTypes = mediaTypes,
+            fileExtensions = fileExtensions
+        )
     }
 
     /**
@@ -108,9 +129,13 @@ public class MediaTypeRetriever(
     public suspend fun retrieve(
         uri: Uri,
         mediaType: String? = null,
-        fileExtension: String? = null,
+        fileExtension: String? = null
     ): MediaType? {
-        return retrieve(uri, mediaTypes = listOfNotNull(mediaType), fileExtensions = listOfNotNull(fileExtension))
+        return retrieve(
+            uri,
+            mediaTypes = listOfNotNull(mediaType),
+            fileExtensions = listOfNotNull(fileExtension)
+        )
     }
 
     /**
@@ -119,10 +144,14 @@ public class MediaTypeRetriever(
     public suspend fun retrieve(
         uri: Uri,
         mediaTypes: List<String>,
-        fileExtensions: List<String>,
+        fileExtensions: List<String>
     ): MediaType? {
         val url = uri.toUrl() ?: return null
-        return retrieve(content = Either.Right(url), mediaTypes = mediaTypes, fileExtensions = fileExtensions)
+        return retrieve(
+            content = Either.Right(url),
+            mediaTypes = mediaTypes,
+            fileExtensions = fileExtensions
+        )
     }
 
     /**
@@ -208,7 +237,10 @@ public class MediaTypeRetriever(
 
         // Light sniffing with both media type hints and file extensions
         if (fileExtensions.isNotEmpty()) {
-            val context = HintSnifferContext(mediaTypes = mediaTypes, fileExtensions = fileExtensions)
+            val context = HintSnifferContext(
+                mediaTypes = mediaTypes,
+                fileExtensions = fileExtensions
+            )
             for (sniffer in sniffers) {
                 val mediaType = sniffer(context)
                 if (mediaType != null) {

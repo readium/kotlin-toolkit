@@ -55,8 +55,11 @@ public class AudioLocatorService(private val readingOrder: List<Link>) : Locator
             locations = Locator.Locations(
                 fragments = listOf("t=${positionInResource.toInt()}"),
                 progression = link.duration?.let { duration ->
-                    if (duration == 0.0) 0.0
-                    else positionInResource / duration
+                    if (duration == 0.0) {
+                        0.0
+                    } else {
+                        positionInResource / duration
+                    }
                 },
                 totalProgression = totalProgression
             )

@@ -23,16 +23,24 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.buffered
 
-internal sealed class PublicationDataSourceException(message: String, cause: Throwable?) : IOException(message, cause) {
+internal sealed class PublicationDataSourceException(message: String, cause: Throwable?) : IOException(
+    message,
+    cause
+) {
     class NotOpened(message: String) : PublicationDataSourceException(message, null)
     class NotFound(message: String) : PublicationDataSourceException(message, null)
-    class ReadFailed(uri: Uri, offset: Int, readLength: Int, cause: Throwable) : PublicationDataSourceException("Failed to read $readLength bytes of URI $uri at offset $offset.", cause)
+    class ReadFailed(uri: Uri, offset: Int, readLength: Int, cause: Throwable) : PublicationDataSourceException(
+        "Failed to read $readLength bytes of URI $uri at offset $offset.",
+        cause
+    )
 }
 
 /**
  * An ExoPlayer's [DataSource] which retrieves resources from a [Publication].
  */
-internal class PublicationDataSource(private val publication: Publication) : BaseDataSource(/* isNetwork = */ true) {
+internal class PublicationDataSource(private val publication: Publication) : BaseDataSource(/* isNetwork = */
+    true
+) {
 
     class Factory(
         private val publication: Publication,
@@ -50,14 +58,16 @@ internal class PublicationDataSource(private val publication: Publication) : Bas
     private data class OpenedResource(
         val resource: Resource,
         val uri: Uri,
-        var position: Long,
+        var position: Long
     )
 
     private var openedResource: OpenedResource? = null
 
     override fun open(dataSpec: DataSpec): Long {
         val link = publication.linkWithHref(dataSpec.uri.toString())
-            ?: throw PublicationDataSourceException.NotFound("Can't find a [Link] for URI: ${dataSpec.uri}. Make sure you only request resources declared in the manifest.")
+            ?: throw PublicationDataSourceException.NotFound(
+                "Can't find a [Link] for URI: ${dataSpec.uri}. Make sure you only request resources declared in the manifest."
+            )
 
         val resource = publication.get(link)
             // Significantly improves performances, in particular with deflated ZIP entries.
@@ -66,7 +76,7 @@ internal class PublicationDataSource(private val publication: Publication) : Bas
         openedResource = OpenedResource(
             resource = resource,
             uri = dataSpec.uri,
-            position = dataSpec.position,
+            position = dataSpec.position
         )
 
         val bytesToRead =
@@ -99,7 +109,9 @@ internal class PublicationDataSource(private val publication: Publication) : Bas
             return 0
         }
 
-        val openedResource = openedResource ?: throw PublicationDataSourceException.NotOpened("No opened resource to read from. Did you call open()?")
+        val openedResource = openedResource ?: throw PublicationDataSourceException.NotOpened(
+            "No opened resource to read from. Did you call open()?"
+        )
 
         try {
             val data = runBlocking {
@@ -125,7 +137,12 @@ internal class PublicationDataSource(private val publication: Publication) : Bas
             if (e is InterruptedException) {
                 return 0
             }
-            throw PublicationDataSourceException.ReadFailed(uri = openedResource.uri, offset = offset, readLength = length, cause = e)
+            throw PublicationDataSourceException.ReadFailed(
+                uri = openedResource.uri,
+                offset = offset,
+                readLength = length,
+                cause = e
+            )
         }
     }
 

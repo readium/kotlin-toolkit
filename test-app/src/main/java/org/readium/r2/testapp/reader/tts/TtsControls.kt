@@ -57,39 +57,45 @@ fun TtsControls(
     onPrevious: () -> Unit,
     onNext: () -> Unit,
     onPreferences: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
     ) {
         Row(
             horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             val largeButtonModifier = Modifier.size(40.dp)
 
             IconButton(onClick = onPrevious) {
                 Icon(
                     imageVector = Icons.Default.SkipPrevious,
-                    contentDescription = stringResource(R.string.tts_previous),
+                    contentDescription = stringResource(R.string.tts_previous)
                 )
             }
 
             IconButton(
-                onClick = onPlayPause,
+                onClick = onPlayPause
             ) {
                 Icon(
-                    imageVector = if (playing) Icons.Default.Pause
-                    else Icons.Default.PlayArrow,
+                    imageVector = if (playing) {
+                        Icons.Default.Pause
+                    } else {
+                        Icons.Default.PlayArrow
+                    },
                     contentDescription = stringResource(
-                        if (playing) R.string.tts_pause
-                        else R.string.tts_play
+                        if (playing) {
+                            R.string.tts_pause
+                        } else {
+                            R.string.tts_play
+                        }
                     ),
                     modifier = Modifier.then(largeButtonModifier)
                 )
             }
             IconButton(
-                onClick = onStop,
+                onClick = onStop
             ) {
                 Icon(
                     imageVector = Icons.Default.Stop,

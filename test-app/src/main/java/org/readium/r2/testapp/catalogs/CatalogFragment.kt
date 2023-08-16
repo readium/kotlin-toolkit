@@ -49,7 +49,6 @@ class CatalogFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         catalogViewModel.eventChannel.receive(this) { handleEvent(it) }
 
         catalog = arguments?.let { BundleCompat.getParcelable(it, CATALOGFEED, Catalog::class.java) }!!

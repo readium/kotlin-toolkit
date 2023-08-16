@@ -30,8 +30,9 @@ internal suspend fun Container.guessTitle(): String? {
     val firstEntry = entries.firstOrNull() ?: return null
     val commonFirstComponent = entries.pathCommonFirstComponent() ?: return null
 
-    if (commonFirstComponent.name == firstEntry.path.removePrefix("/"))
+    if (commonFirstComponent.name == firstEntry.path.removePrefix("/")) {
         return null
+    }
 
     return commonFirstComponent.name
 }

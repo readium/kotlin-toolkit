@@ -88,7 +88,7 @@ class HtmlResourceContentIteratorTest {
                     ),
                     text = "INTRODUCTORY",
                     attributes = listOf(Attribute(LANGUAGE, Language("en")))
-                ),
+                )
             )
         ),
         TextElement(
@@ -108,8 +108,8 @@ class HtmlResourceContentIteratorTest {
                         highlight = "The difficulties of classification are very apparent here, and once more it must be noted that illustrative and practical purposes rather than logical ones are served by the arrangement adopted. The modern fanciful story is here placed next to the real folk story instead of after all the groups of folk products. The Hebrew stories at the beginning belong quite as well, perhaps even better, in Section V, while the stories at the end of Section VI shade off into the more modern types of short tales."
                     ),
                     text = "The difficulties of classification are very apparent here, and once more it must be noted that illustrative and practical purposes rather than logical ones are served by the arrangement adopted. The modern fanciful story is here placed next to the real folk story instead of after all the groups of folk products. The Hebrew stories at the beginning belong quite as well, perhaps even better, in Section V, while the stories at the end of Section VI shade off into the more modern types of short tales.",
-                    attributes = listOf(Attribute(LANGUAGE, Language("en"))),
-                ),
+                    attributes = listOf(Attribute(LANGUAGE, Language("en")))
+                )
             )
         ),
         TextElement(
@@ -130,7 +130,7 @@ class HtmlResourceContentIteratorTest {
                     ),
                     text = "The child's natural literature. The world has lost certain secrets as the price of an advancing civilization.",
                     attributes = listOf(Attribute(LANGUAGE, Language("en")))
-                ),
+                )
             )
         ),
         TextElement(
@@ -151,7 +151,7 @@ class HtmlResourceContentIteratorTest {
                     ),
                     text = "Without discussing the limits of the culture-epoch theory of human development as a complete guide in education, it is clear that the young child passes through a period when his mind looks out upon the world in a manner analogous to that of the folk as expressed in their literature.",
                     attributes = listOf(Attribute(LANGUAGE, Language("en")))
-                ),
+                )
             )
         )
     )
@@ -178,7 +178,11 @@ class HtmlResourceContentIteratorTest {
         startLocator: Locator = locator,
         totalProgressionRange: ClosedRange<Double>? = null
     ): HtmlResourceContentIterator =
-        HtmlResourceContentIterator(StringResource(html, link), totalProgressionRange = totalProgressionRange, startLocator)
+        HtmlResourceContentIterator(
+            StringResource(html, link),
+            totalProgressionRange = totalProgressionRange,
+            startLocator
+        )
 
     private suspend fun HtmlResourceContentIterator.elements(): List<Content.Element> =
         buildList {
@@ -305,7 +309,7 @@ class HtmlResourceContentIteratorTest {
                             progression = 0.5,
                             selector = "html > body > p:nth-child(2)",
                             before = "oin sur la chaussée, aussi loin qu’on pouvait voir",
-                            highlight = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée.",
+                            highlight = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée."
                         ),
                         text = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée.",
                         attributes = listOf(Attribute(LANGUAGE, Language("fr")))
@@ -346,7 +350,7 @@ class HtmlResourceContentIteratorTest {
                             progression = 0.5,
                             selector = "html > body > p:nth-child(2)",
                             before = "oin sur la chaussée, aussi loin qu’on pouvait voir",
-                            highlight = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée.",
+                            highlight = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée."
                         ),
                         text = "Lui, notre colonel, savait peut-être pourquoi ces deux gens-là tiraient [...] On buvait de la bière sucrée.",
                         attributes = listOf(Attribute(LANGUAGE, Language("fr")))
@@ -519,7 +523,7 @@ class HtmlResourceContentIteratorTest {
                             ),
                             text = "Let's start at the top—the source of ideas.",
                             attributes = emptyList()
-                        ),
+                        )
                     ),
                     attributes = emptyList()
                 ),

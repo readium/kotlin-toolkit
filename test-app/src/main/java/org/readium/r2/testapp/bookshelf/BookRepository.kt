@@ -61,7 +61,7 @@ class BookRepository(
     private val lcpService: Try<LcpService, UserException>,
     private val publicationFactory: PublicationFactory,
     private val assetRetriever: AssetRetriever,
-    private val protectionRetriever: ContentProtectionSchemeRetriever,
+    private val protectionRetriever: ContentProtectionSchemeRetriever
 ) {
     private val coverDir: File =
         File(storageDir, "covers/")
@@ -198,7 +198,9 @@ class BookRepository(
         val asset = assetRetriever.retrieve(url, fileExtension = url.extension)
             ?: return Try.failure(
                 ImportError.PublicationError(
-                    PublicationError.UnsupportedPublication(Publication.OpeningException.UnsupportedAsset())
+                    PublicationError.UnsupportedPublication(
+                        Publication.OpeningException.UnsupportedAsset()
+                    )
                 )
             )
         return addBook(url, asset)
@@ -206,7 +208,7 @@ class BookRepository(
 
     suspend fun addSharedStorageBook(
         url: Url,
-        coverUrl: String? = null,
+        coverUrl: String? = null
     ): Try<Unit, ImportError> {
         val asset = assetRetriever.retrieve(url)
             ?: return Try.failure(
@@ -222,12 +224,14 @@ class BookRepository(
 
     suspend fun addLocalBook(
         tempFile: File,
-        coverUrl: String? = null,
+        coverUrl: String? = null
     ): Try<Unit, ImportError> {
         val sourceAsset = assetRetriever.retrieve(tempFile)
             ?: return Try.failure(
                 ImportError.PublicationError(
-                    PublicationError.UnsupportedPublication(Publication.OpeningException.UnsupportedAsset())
+                    PublicationError.UnsupportedPublication(
+                        Publication.OpeningException.UnsupportedAsset()
+                    )
                 )
             )
 
@@ -278,7 +282,9 @@ class BookRepository(
         ).getOrElse { return Try.failure(ImportError.PublicationError(it)) }
 
         return addBook(
-            libraryUrl, libraryAsset, coverUrl
+            libraryUrl,
+            libraryAsset,
+            coverUrl
         ).onFailure {
             tryOrNull { libraryFile.delete() }
         }
@@ -287,7 +293,7 @@ class BookRepository(
     private suspend fun addBook(
         url: Url,
         asset: Asset,
-        coverUrl: String? = null,
+        coverUrl: String? = null
     ): Try<Unit, ImportError> {
         val drmScheme =
             protectionRetriever.retrieve(asset)

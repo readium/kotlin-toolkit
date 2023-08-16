@@ -17,7 +17,7 @@ public object PdfiumSharedPreferencesFilter : PreferencesFilter<PdfiumPreference
 
     override fun filter(preferences: PdfiumPreferences): PdfiumPreferences =
         preferences.copy(
-            readingProgression = null,
+            readingProgression = null
         )
 }
 
@@ -29,6 +29,6 @@ public object PdfiumPublicationPreferencesFilter : PreferencesFilter<PdfiumPrefe
 
     override fun filter(preferences: PdfiumPreferences): PdfiumPreferences =
         PdfiumPreferences(
-            readingProgression = preferences.readingProgression,
+            readingProgression = preferences.readingProgression
         )
 }

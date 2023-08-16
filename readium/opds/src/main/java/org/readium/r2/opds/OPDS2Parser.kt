@@ -30,7 +30,7 @@ public enum class OPDS2ParserError {
     InvalidLink,
     MissingTitle,
     InvalidFacet,
-    InvalidGroup,
+    InvalidGroup
 }
 
 public class OPDS2Parser {
@@ -58,7 +58,11 @@ public class OPDS2Parser {
             return if (isFeed(jsonData)) {
                 ParseData(parseFeed(jsonData, url), null, 2)
             } else {
-                ParseData(null, Manifest.fromJSON(JSONObject(String(jsonData)))?.let { Publication(it) }, 2)
+                ParseData(
+                    null,
+                    Manifest.fromJSON(JSONObject(String(jsonData)))?.let { Publication(it) },
+                    2
+                )
             }
         }
 

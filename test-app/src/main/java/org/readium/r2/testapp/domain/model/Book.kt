@@ -37,7 +37,7 @@ data class Book(
     @ColumnInfo(name = DRM)
     val drm: String? = null,
     @ColumnInfo(name = COVER)
-    val cover: String,
+    val cover: String
 ) {
 
     constructor(
@@ -51,7 +51,7 @@ data class Book(
         mediaType: MediaType,
         assetType: AssetType,
         drm: ContentProtection.Scheme?,
-        cover: String,
+        cover: String
     ) : this(
         id = id,
         creation = creation,
@@ -63,7 +63,7 @@ data class Book(
         rawMediaType = mediaType.toString(),
         rawAssetType = assetType.value,
         drm = drm?.uri,
-        cover = cover,
+        cover = cover
     )
 
     val mediaType: MediaType get() =

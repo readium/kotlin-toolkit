@@ -69,7 +69,9 @@ public interface LcpService {
      *
      * @param onProgress Callback to follow the acquisition progress from 0.0 to 1.0.
      */
-    public suspend fun acquirePublication(lcpl: File, onProgress: (Double) -> Unit = {}): Try<AcquiredPublication, LcpException> = withContext(Dispatchers.IO) {
+    public suspend fun acquirePublication(lcpl: File, onProgress: (Double) -> Unit = {}): Try<AcquiredPublication, LcpException> = withContext(
+        Dispatchers.IO
+    ) {
         try {
             acquirePublication(lcpl.readBytes(), onProgress)
         } catch (e: Exception) {
@@ -125,7 +127,7 @@ public interface LcpService {
      * user to enter their passphrase.
      */
     public fun contentProtection(
-        authentication: LcpAuthenticating = LcpDialogAuthentication(),
+        authentication: LcpAuthenticating = LcpDialogAuthentication()
     ): ContentProtection
 
     /**
@@ -142,7 +144,11 @@ public interface LcpService {
         val mediaType: MediaType,
         val licenseDocument: LicenseDocument
     ) {
-        @Deprecated("Use `localFile` instead", replaceWith = ReplaceWith("localFile"), level = DeprecationLevel.ERROR)
+        @Deprecated(
+            "Use `localFile` instead",
+            replaceWith = ReplaceWith("localFile"),
+            level = DeprecationLevel.ERROR
+        )
         val localURL: String get() = localFile.path
     }
 
@@ -157,15 +163,20 @@ public interface LcpService {
             resourceFactory: ResourceFactory = FileResourceFactory(),
             archiveFactory: ArchiveFactory = DefaultArchiveFactory()
         ): LcpService? {
-            if (!LcpClient.isAvailable())
+            if (!LcpClient.isAvailable()) {
                 return null
+            }
 
             val db = LcpDatabase.getDatabase(context).lcpDao()
             val deviceRepository = DeviceRepository(db)
             val passphraseRepository = PassphrasesRepository(db)
             val licenseRepository = LicensesRepository(db)
             val network = NetworkService(mediaTypeRetriever = mediaTypeRetriever)
-            val device = DeviceService(repository = deviceRepository, network = network, context = context)
+            val device = DeviceService(
+                repository = deviceRepository,
+                network = network,
+                context = context
+            )
             val crl = CRLService(network = network, context = context)
             val passphrases = PassphrasesService(repository = passphraseRepository)
             return LicensesService(
@@ -181,11 +192,19 @@ public interface LcpService {
             )
         }
 
-        @Deprecated("Use `LcpService()` instead", ReplaceWith("LcpService(context)"), level = DeprecationLevel.ERROR)
+        @Deprecated(
+            "Use `LcpService()` instead",
+            ReplaceWith("LcpService(context)"),
+            level = DeprecationLevel.ERROR
+        )
         public fun create(context: Context): LcpService? = invoke(context)
     }
 
-    @Deprecated("Use `acquirePublication()` with coroutines instead", ReplaceWith("acquirePublication(lcpl)"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use `acquirePublication()` with coroutines instead",
+        ReplaceWith("acquirePublication(lcpl)"),
+        level = DeprecationLevel.ERROR
+    )
     @DelicateCoroutinesApi
     public fun importPublication(
         lcpl: ByteArray,
@@ -199,7 +218,13 @@ public interface LcpService {
         }
     }
 
-    @Deprecated("Use `retrieveLicense()` with coroutines instead", ReplaceWith("retrieveLicense(File(publication), authentication, allowUserInteraction = true)"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use `retrieveLicense()` with coroutines instead",
+        ReplaceWith(
+            "retrieveLicense(File(publication), authentication, allowUserInteraction = true)"
+        ),
+        level = DeprecationLevel.ERROR
+    )
     @DelicateCoroutinesApi
     public fun retrieveLicense(
         publication: String,
@@ -210,9 +235,17 @@ public interface LcpService {
     }
 }
 
-@Deprecated("Renamed to `LcpService()`", replaceWith = ReplaceWith("LcpService(context)"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Renamed to `LcpService()`",
+    replaceWith = ReplaceWith("LcpService(context)"),
+    level = DeprecationLevel.ERROR
+)
 public fun R2MakeLCPService(context: Context): LcpService =
     LcpService(context) ?: throw Exception("liblcp is missing on the classpath")
 
-@Deprecated("Renamed to `LcpService.AcquiredPublication`", replaceWith = ReplaceWith("LcpService.AcquiredPublication"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Renamed to `LcpService.AcquiredPublication`",
+    replaceWith = ReplaceWith("LcpService.AcquiredPublication"),
+    level = DeprecationLevel.ERROR
+)
 public typealias LCPImportedPublication = LcpService.AcquiredPublication

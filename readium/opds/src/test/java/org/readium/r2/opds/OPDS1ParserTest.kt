@@ -196,7 +196,7 @@ class OPDS1ParserTest {
                             )
                         )
                     )
-                ),
+                )
             ).toJSON(),
             JSONObject(feed.publications[0].jsonManifest)
         )
@@ -232,7 +232,9 @@ class OPDS1ParserTest {
                         href = "https://example.com/content/buy/11241.epub",
                         type = "application/epub+zip",
                         rels = setOf("http://opds-spec.org/acquisition/buy"),
-                        properties = Properties(mapOf("price" to mapOf("currency" to "USD", "value" to 18.99)))
+                        properties = Properties(
+                            mapOf("price" to mapOf("currency" to "USD", "value" to 18.99))
+                        )
                     )
                 ),
                 subcollections = mapOf(
@@ -247,7 +249,7 @@ class OPDS1ParserTest {
                             )
                         )
                     )
-                ),
+                )
             ).toJSON(),
             JSONObject(feed.publications[1].jsonManifest)
         )
@@ -315,7 +317,7 @@ class OPDS1ParserTest {
                             )
                         )
                     )
-                ),
+                )
             ).toJSON(),
             JSONObject(publication!!.jsonManifest)
         )

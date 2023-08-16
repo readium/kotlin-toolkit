@@ -121,7 +121,9 @@ public class ExoMediaPlayer(
             MEDIA_CHANNEL_ID
         )
             .setChannelNameResourceId(R.string.readium_media_notification_channel_name)
-            .setChannelDescriptionResourceId(R.string.readium_media_notification_channel_description)
+            .setChannelDescriptionResourceId(
+                R.string.readium_media_notification_channel_description
+            )
             .setMediaDescriptionAdapter(DescriptionAdapter(mediaSession.controller, media))
             .setNotificationListener(NotificationListener())
             .setRewindActionIconResourceId(R.drawable.readium_media_notification_rewind)
@@ -130,7 +132,9 @@ public class ExoMediaPlayer(
             .apply {
                 setMediaSessionToken(mediaSession.sessionToken)
                 setPlayer(player)
-                setSmallIcon(com.google.android.exoplayer2.ui.R.drawable.exo_notification_small_icon)
+                setSmallIcon(
+                    com.google.android.exoplayer2.ui.R.drawable.exo_notification_small_icon
+                )
                 setUsePlayPauseActions(true)
                 setUseStopAction(false)
                 setUseChronometer(false)
@@ -238,7 +242,9 @@ public class ExoMediaPlayer(
         override fun onPrepareFromUri(uri: Uri, playWhenReady: Boolean, extras: Bundle?) {}
     }
 
-    private inner class QueueNavigator(mediaSession: MediaSessionCompat) : TimelineQueueNavigator(mediaSession) {
+    private inner class QueueNavigator(mediaSession: MediaSessionCompat) : TimelineQueueNavigator(
+        mediaSession
+    ) {
 
         override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat =
             createMediaMetadata(publication.readingOrder[windowIndex]).description

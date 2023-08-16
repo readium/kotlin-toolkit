@@ -27,12 +27,13 @@ import timber.log.Timber
 @OptIn(ExperimentalReadiumApi::class)
 internal class LcpdfPositionsService(
     private val pdfFactory: PdfDocumentFactory<*>,
-    private val context: Publication.Service.Context,
+    private val context: Publication.Service.Context
 ) : PositionsService {
 
     override suspend fun positionsByReadingOrder(): List<List<Locator>> {
-        if (!::_positions.isInitialized)
+        if (!::_positions.isInitialized) {
             _positions = computePositions()
+        }
 
         return _positions
     }
@@ -53,7 +54,12 @@ internal class LcpdfPositionsService(
 
         var lastPositionOfPreviousResource = 0
         return resources.map { (pageCount, link) ->
-            val positions = createPositionsOf(link, pageCount = pageCount, totalPageCount = totalPageCount, startPosition = lastPositionOfPreviousResource)
+            val positions = createPositionsOf(
+                link,
+                pageCount = pageCount,
+                totalPageCount = totalPageCount,
+                startPosition = lastPositionOfPreviousResource
+            )
             lastPositionOfPreviousResource += pageCount
             positions
         }

@@ -31,7 +31,7 @@ import org.readium.r2.shared.extensions.requireLengthFitInt
 public class BufferingResource(
     private val resource: Resource,
     resourceLength: Long? = null,
-    private val bufferSize: Long = DEFAULT_BUFFER_SIZE,
+    private val bufferSize: Long = DEFAULT_BUFFER_SIZE
 ) : Resource by resource {
 
     internal companion object {
@@ -46,8 +46,9 @@ public class BufferingResource(
 
     private lateinit var _cachedLength: ResourceTry<Long>
     private suspend fun cachedLength(): ResourceTry<Long> {
-        if (!::_cachedLength.isInitialized)
+        if (!::_cachedLength.isInitialized) {
             _cachedLength = resource.length()
+        }
         return _cachedLength
     }
 
@@ -104,10 +105,11 @@ public class BufferingResource(
         return resource.read(readRange).map { data ->
             saveBuffer(data, readRange)
 
-            val res = if (data.count() > requestedRange.count())
+            val res = if (data.count() > requestedRange.count()) {
                 data.copyOfRange(0, requestedRange.count())
-            else
+            } else {
                 data
+            }
 
             res
         }

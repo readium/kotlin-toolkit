@@ -109,7 +109,10 @@ class PerResourcePositionsServiceTest {
 
     @Test
     fun `Positions from an empty {readingOrder}`() {
-        val service = PerResourcePositionsService(readingOrder = emptyList(), fallbackMediaType = "")
+        val service = PerResourcePositionsService(
+            readingOrder = emptyList(),
+            fallbackMediaType = ""
+        )
 
         Assert.assertEquals(0, runBlocking { service.positions().size })
     }

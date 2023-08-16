@@ -53,8 +53,11 @@ internal class PdfNavigatorViewModel<S : Configurable.Settings, P : Configurable
     }
 
     fun findLink(locator: Locator): Link? =
-        if (isPDFFile) publication.readingOrder.first()
-        else publication.linkWithHref(locator.href)
+        if (isPDFFile) {
+            publication.readingOrder.first()
+        } else {
+            publication.linkWithHref(locator.href)
+        }
 
     /**
      * Historically, the reading order of a standalone PDF file contained a single link with the

@@ -286,7 +286,9 @@ private sealed class RouteHandler {
             templated = true
         )
 
-        override fun acceptRequest(link: Link): Boolean = link.href.startsWith("/~readium/rights/copy")
+        override fun acceptRequest(link: Link): Boolean = link.href.startsWith(
+            "/~readium/rights/copy"
+        )
 
         override fun handleRequest(link: Link, service: ContentProtectionService): Resource {
             val parameters = link.href.queryParameters()
@@ -307,10 +309,11 @@ private sealed class RouteHandler {
 
             val copyAllowed = with(service.rights) { if (peek) canCopy(text) else copy(text) }
 
-            return if (!copyAllowed)
+            return if (!copyAllowed) {
                 FailureResource(Resource.Exception.Forbidden())
-            else
+            } else {
                 StringResource("true")
+            }
         }
     }
 
@@ -322,7 +325,9 @@ private sealed class RouteHandler {
             templated = true
         )
 
-        override fun acceptRequest(link: Link): Boolean = link.href.startsWith("/~readium/rights/print")
+        override fun acceptRequest(link: Link): Boolean = link.href.startsWith(
+            "/~readium/rights/print"
+        )
 
         override fun handleRequest(link: Link, service: ContentProtectionService): Resource {
             val parameters = link.href.queryParameters()
@@ -349,12 +354,21 @@ private sealed class RouteHandler {
                     )
                 )
 
-            val printAllowed = with(service.rights) { if (peek) canPrint(pageCount) else print(pageCount) }
+            val printAllowed = with(service.rights) {
+                if (peek) {
+                    canPrint(pageCount)
+                } else {
+                    print(
+                        pageCount
+                    )
+                }
+            }
 
-            return if (!printAllowed)
+            return if (!printAllowed) {
                 FailureResource(Resource.Exception.Forbidden())
-            else
+            } else {
                 StringResource("true", mediaType = MediaType.JSON)
+            }
         }
     }
 

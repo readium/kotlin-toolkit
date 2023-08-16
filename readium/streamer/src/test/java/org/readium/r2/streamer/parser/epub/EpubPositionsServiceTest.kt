@@ -198,7 +198,9 @@ class EpubPositionsServiceTest {
                 ReadingOrderItem("chap4", length = 51),
                 ReadingOrderItem("chap5", length = 120)
             ),
-            reflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(pageLength = 50)
+            reflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(
+                pageLength = 50
+            )
         )
 
         assertEquals(
@@ -289,7 +291,9 @@ class EpubPositionsServiceTest {
             readingOrder = listOf(
                 ReadingOrderItem("chap1", length = 60)
             ),
-            reflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(pageLength = 50)
+            reflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(
+                pageLength = 50
+            )
         )
 
         assertEquals(
@@ -326,7 +330,9 @@ class EpubPositionsServiceTest {
                 ReadingOrderItem("chap2", length = 60, layout = EpubLayout.REFLOWABLE),
                 ReadingOrderItem("chap3", length = 20000, layout = EpubLayout.FIXED)
             ),
-            reflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(pageLength = 50)
+            reflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(
+                pageLength = 50
+            )
         )
 
         assertEquals(
@@ -380,7 +386,9 @@ class EpubPositionsServiceTest {
                 ReadingOrderItem("chap1", length = 60, archiveEntryLength = 20L),
                 ReadingOrderItem("chap2", length = 60)
             ),
-            reflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(pageLength = 50)
+            reflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(
+                pageLength = 50
+            )
         )
 
         assertEquals(
@@ -394,7 +402,7 @@ class EpubPositionsServiceTest {
                             position = 1,
                             totalProgression = 0.0
                         )
-                    ),
+                    )
                 ),
                 listOf(
                     Locator(
@@ -429,7 +437,9 @@ class EpubPositionsServiceTest {
                 ReadingOrderItem("chap1", length = 60, originalLength = 20L),
                 ReadingOrderItem("chap2", length = 60)
             ),
-            reflowableStrategy = EpubPositionsService.ReflowableStrategy.OriginalLength(pageLength = 50)
+            reflowableStrategy = EpubPositionsService.ReflowableStrategy.OriginalLength(
+                pageLength = 50
+            )
         )
 
         assertEquals(
@@ -469,7 +479,9 @@ class EpubPositionsServiceTest {
     private fun createService(
         layout: EpubLayout? = null,
         readingOrder: List<ReadingOrderItem>,
-        reflowableStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(pageLength = 50)
+        reflowableStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.ArchiveEntryLength(
+            pageLength = 50
+        )
     ) = EpubPositionsService(
         readingOrder = readingOrder.map { it.link },
         container = object : Container {
@@ -515,7 +527,7 @@ class EpubPositionsServiceTest {
         val title: String? = null,
         val archiveEntryLength: Long? = null,
         val originalLength: Long? = null,
-        val layout: EpubLayout? = null,
+        val layout: EpubLayout? = null
     ) {
         val link: Link = Link(
             href = href,

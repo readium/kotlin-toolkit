@@ -67,7 +67,11 @@ public data class PublicationCollection(
             when (json) {
                 // Parses a sub-collection object.
                 is JSONObject -> {
-                    links = Link.fromJSONArray(json.remove("links") as? JSONArray, normalizeHref, warnings)
+                    links = Link.fromJSONArray(
+                        json.remove("links") as? JSONArray,
+                        normalizeHref,
+                        warnings
+                    )
                     metadata = (json.remove("metadata") as? JSONObject)?.toMap()
                     subcollections = collectionsFromJSON(json, normalizeHref, warnings)
                 }
@@ -84,7 +88,10 @@ public data class PublicationCollection(
             }
 
             if (links.isEmpty()) {
-                warnings?.log(PublicationCollection::class.java, "core collection's [links] must not be empty")
+                warnings?.log(
+                    PublicationCollection::class.java,
+                    "core collection's [links] must not be empty"
+                )
                 return null
             }
 
@@ -149,10 +156,18 @@ internal fun Map<String, List<PublicationCollection>>.appendToJSONObject(jsonObj
         }
     }
 
-@Deprecated("Use [subcollections[role].firstOrNull()] instead", ReplaceWith("subcollections[role].firstOrNull()"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Use [subcollections[role].firstOrNull()] instead",
+    ReplaceWith("subcollections[role].firstOrNull()"),
+    level = DeprecationLevel.ERROR
+)
 public fun Map<String, List<PublicationCollection>>.firstWithRole(role: String): PublicationCollection? =
     get(role)?.firstOrNull()
 
-@Deprecated("Use [subcollections[role]] instead", ReplaceWith("subcollections[role]"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Use [subcollections[role]] instead",
+    ReplaceWith("subcollections[role]"),
+    level = DeprecationLevel.ERROR
+)
 public fun Map<String, List<PublicationCollection>>.findAllWithRole(role: String): List<PublicationCollection> =
     get(role) ?: emptyList()

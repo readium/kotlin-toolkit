@@ -66,7 +66,6 @@ public data class EpubSettings(
 
 @OptIn(ExperimentalReadiumApi::class)
 internal fun ReadiumCss.update(settings: EpubSettings, useReadiumCssFontSize: Boolean): ReadiumCss {
-
     fun resolveFontStack(fontFamily: String): List<String> = buildList {
         add(fontFamily)
 
@@ -109,8 +108,11 @@ internal fun ReadiumCss.update(settings: EpubSettings, useReadiumCssFontSize: Bo
                 backgroundColor = backgroundColor?.toCss(),
                 fontOverride = (fontFamily != null || textNormalization),
                 fontFamily = fontFamily?.toCss(),
-                fontSize = if (useReadiumCssFontSize) Length.Percent(fontSize)
-                else null,
+                fontSize = if (useReadiumCssFontSize) {
+                    Length.Percent(fontSize)
+                } else {
+                    null
+                },
                 advancedSettings = !publisherStyles,
                 typeScale = typeScale,
                 textAlign = when (textAlign) {
@@ -130,9 +132,11 @@ internal fun ReadiumCss.update(settings: EpubSettings, useReadiumCssFontSize: Bo
                 a11yNormalize = textNormalization,
                 overrides = mapOf(
                     "font-weight" to
-                        if (fontWeight != null)
+                        if (fontWeight != null) {
                             (FontWeight.NORMAL.value * fontWeight).toInt().coerceIn(1, 1000).toString()
-                        else ""
+                        } else {
+                            ""
+                        }
                 )
             )
         )

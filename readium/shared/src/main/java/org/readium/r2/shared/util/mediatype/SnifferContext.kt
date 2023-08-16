@@ -229,7 +229,7 @@ public class ContainerSnifferContext internal constructor(
 internal class UrlSnifferContextFactory(
     private val resourceFactory: ResourceFactory,
     private val containerFactory: ContainerFactory,
-    private val archiveFactory: ArchiveFactory,
+    private val archiveFactory: ArchiveFactory
 ) {
 
     suspend fun createContext(
@@ -298,7 +298,7 @@ internal class BytesSnifferContextFactory(
     suspend fun createContext(
         bytes: ByteArray,
         mediaTypes: List<String> = emptyList(),
-        fileExtensions: List<String> = emptyList(),
+        fileExtensions: List<String> = emptyList()
     ): ContentAwareSnifferContext {
         val resource: Resource = BytesResource(bytes)
         return archiveFactory.create(resource, password = null)

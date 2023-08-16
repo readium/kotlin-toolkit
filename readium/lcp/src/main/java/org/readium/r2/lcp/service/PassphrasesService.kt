@@ -29,7 +29,13 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
         }
         return when {
             passphrase != null -> passphrase
-            authentication != null -> this@PassphrasesService.authenticate(license, LcpAuthenticating.AuthenticationReason.PassphraseNotFound, authentication, allowUserInteraction, sender)
+            authentication != null -> this@PassphrasesService.authenticate(
+                license,
+                LcpAuthenticating.AuthenticationReason.PassphraseNotFound,
+                authentication,
+                allowUserInteraction,
+                sender
+            )
             else -> null
         }
     }
@@ -42,7 +48,12 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
         sender: Any?
     ): String? {
         val authenticatedLicense = LcpAuthenticating.AuthenticatedLicense(document = license)
-        val clearPassphrase = authentication.retrievePassphrase(authenticatedLicense, reason, allowUserInteraction, sender)
+        val clearPassphrase = authentication.retrievePassphrase(
+            authenticatedLicense,
+            reason,
+            allowUserInteraction,
+            sender
+        )
             ?: return null
         val hashedPassphrase = HASH.sha256(clearPassphrase)
         val passphrases = mutableListOf(hashedPassphrase)
@@ -57,7 +68,13 @@ internal class PassphrasesService(private val repository: PassphrasesRepository)
             addPassphrase(passphrase, true, license.id, license.provider, license.user.id)
             passphrase
         } catch (e: Exception) {
-            authenticate(license, LcpAuthenticating.AuthenticationReason.InvalidPassphrase, authentication, allowUserInteraction, sender)
+            authenticate(
+                license,
+                LcpAuthenticating.AuthenticationReason.InvalidPassphrase,
+                authentication,
+                allowUserInteraction,
+                sender
+            )
         }
     }
 

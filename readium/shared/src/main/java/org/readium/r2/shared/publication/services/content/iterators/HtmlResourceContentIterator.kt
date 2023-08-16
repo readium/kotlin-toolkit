@@ -114,7 +114,9 @@ public class HtmlResourceContentIterator internal constructor(
         currentElement
             ?.takeIf { it.delta == -1 }?.element
             ?.also { currentElement = null }
-            ?: throw IllegalStateException("Called previous() without a successful call to hasPrevious() first")
+            ?: throw IllegalStateException(
+                "Called previous() without a successful call to hasPrevious() first"
+            )
 
     override suspend fun hasNext(): Boolean {
         if (currentElement?.delta == +1) return true
@@ -134,7 +136,9 @@ public class HtmlResourceContentIterator internal constructor(
         currentElement
             ?.takeIf { it.delta == +1 }?.element
             ?.also { currentElement = null }
-            ?: throw IllegalStateException("Called next() without a successful call to hasNext() first")
+            ?: throw IllegalStateException(
+                "Called next() without a successful call to hasNext() first"
+            )
 
     private var currentIndex: Int? = null
 
@@ -206,7 +210,7 @@ public class HtmlResourceContentIterator internal constructor(
      */
     public data class ParsedElements(
         val elements: List<Content.Element>,
-        val startIndex: Int,
+        val startIndex: Int
     )
 
     private class ContentParser(
@@ -217,8 +221,11 @@ public class HtmlResourceContentIterator internal constructor(
 
         fun result() = ParsedElements(
             elements = elements,
-            startIndex = if (baseLocator.locations.progression == 1.0) elements.size
-            else startIndex
+            startIndex = if (baseLocator.locations.progression == 1.0) {
+                elements.size
+            } else {
+                startIndex
+            }
         )
 
         private val elements = mutableListOf<Content.Element>()
@@ -226,16 +233,22 @@ public class HtmlResourceContentIterator internal constructor(
 
         /** Segments accumulated for the current element. */
         private val segmentsAcc = mutableListOf<TextElement.Segment>()
+
         /** Text since the beginning of the current segment, after coalescing whitespaces. */
         private var textAcc = StringBuilder()
+
         /** Text content since the beginning of the resource, including whitespaces. */
         private var wholeRawTextAcc: String? = null
+
         /** Text content since the beginning of the current element, including whitespaces. */
         private var elementRawTextAcc: String = ""
+
         /** Text content since the beginning of the current segment, including whitespaces. */
         private var rawTextAcc: String = ""
+
         /** Language of the current segment. */
         private var currentLanguage: String? = null
+
         /** CSS selector of the current element. */
         private var currentCssSelector: String? = null
 
@@ -296,7 +309,10 @@ public class HtmlResourceContentIterator internal constructor(
                                 val sources = node.select("source")
                                     .mapNotNull { source ->
                                         source.srcRelativeToHref(baseLocator.href)?.let { href ->
-                                            Link(href = href, type = source.attr("type").takeUnless { it.isBlank() })
+                                            Link(
+                                                href = href,
+                                                type = source.attr("type").takeUnless { it.isBlank() }
+                                            )
                                         }
                                     }
 
@@ -305,8 +321,20 @@ public class HtmlResourceContentIterator internal constructor(
 
                         if (link != null) {
                             when (tag) {
-                                "audio" -> elements.add(AudioElement(locator = elementLocator, embeddedLink = link, attributes = emptyList()))
-                                "video" -> elements.add(VideoElement(locator = elementLocator, embeddedLink = link, attributes = emptyList()))
+                                "audio" -> elements.add(
+                                    AudioElement(
+                                        locator = elementLocator,
+                                        embeddedLink = link,
+                                        attributes = emptyList()
+                                    )
+                                )
+                                "video" -> elements.add(
+                                    VideoElement(
+                                        locator = elementLocator,
+                                        embeddedLink = link,
+                                        attributes = emptyList()
+                                    )
+                                )
                                 else -> {}
                             }
                         }
@@ -418,7 +446,7 @@ public class HtmlResourceContentIterator internal constructor(
                             currentLanguage?.let {
                                 add(Attribute(AttributeKey.LANGUAGE, Language(it)))
                             }
-                        },
+                        }
                     )
                 )
             }
@@ -438,7 +466,10 @@ private fun Locator.Text.Companion.trimmingText(text: String, before: String?): 
     val trailingWhitespace = text.takeLastWhile { it.isWhitespace() }
     return Locator.Text(
         before = ((before ?: "") + leadingWhitespace).takeUnless { it.isBlank() },
-        highlight = text.substring(leadingWhitespace.length, text.length - trailingWhitespace.length),
+        highlight = text.substring(
+            leadingWhitespace.length,
+            text.length - trailingWhitespace.length
+        ),
         after = trailingWhitespace.takeUnless { it.isBlank() }
     )
 }

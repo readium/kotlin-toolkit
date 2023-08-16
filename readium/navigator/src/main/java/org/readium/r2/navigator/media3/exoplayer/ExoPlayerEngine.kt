@@ -231,7 +231,8 @@ public class ExoPlayerEngine private constructor(
     override fun submitPreferences(preferences: ExoPlayerPreferences) {
         val newSettings = settingsResolver.settings(preferences)
         exoPlayer.playbackParameters = PlaybackParameters(
-            newSettings.speed.toFloat(), newSettings.pitch.toFloat()
+            newSettings.speed.toFloat(),
+            newSettings.pitch.toFloat()
         )
     }
 

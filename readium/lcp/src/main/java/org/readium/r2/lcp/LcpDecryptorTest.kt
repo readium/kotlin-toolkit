@@ -20,7 +20,6 @@ import org.readium.r2.shared.util.use
 import timber.log.Timber
 
 internal suspend fun Publication.checkDecryption() {
-
     checkResourcesAreReadableInOneBlock(this)
 
     checkLengthComputationIsCorrect(this)
@@ -70,7 +69,10 @@ internal suspend fun checkAllResourcesAreReadableByChunks(publication: Publicati
             for (chunkSize in listOf(4096L, 2050L)) {
                 publication.get(link).use { resource ->
                     resource.readByChunks(chunkSize, groundTruth).onFailure {
-                        throw IllegalStateException("failed to read ${link.href} by chunks of size $chunkSize", it)
+                        throw IllegalStateException(
+                            "failed to read ${link.href} by chunks of size $chunkSize",
+                            it
+                        )
                     }
                 }
             }
@@ -86,20 +88,24 @@ internal suspend fun checkExceedingRangesAreAllowed(publication: Publication) {
                 val length = resource.length().getOrThrow()
                 val fullTruth = resource.read().getOrThrow()
                 for (
-                    range in listOf(
-                        0 until length + 100,
-                        0 until length + 2048,
-                        length - 500 until length + 200,
-                        length until length + 5028,
-                        length + 200 until length + 500
-                    )
+                range in listOf(
+                    0 until length + 100,
+                    0 until length + 2048,
+                    length - 500 until length + 200,
+                    length until length + 5028,
+                    length + 200 until length + 500
+                )
                 ) {
                     resource.read(range)
                         .onFailure {
-                            throw IllegalStateException("unable to decrypt range $range from ${link.href}")
+                            throw IllegalStateException(
+                                "unable to decrypt range $range from ${link.href}"
+                            )
                         }.onSuccess {
                             val coercedRange = range.coerceIn(0L until fullTruth.size)
-                            val truth = fullTruth.sliceArray(coercedRange.first.toInt()..coercedRange.last.toInt())
+                            val truth = fullTruth.sliceArray(
+                                coercedRange.first.toInt()..coercedRange.last.toInt()
+                            )
                             check(it.contentEquals(truth)) {
                                 Timber.d("decrypted length: ${it.size}")
                                 Timber.d("expected length: ${truth.size}")
@@ -132,12 +138,17 @@ internal suspend fun Resource.readByChunks(
         blocks.forEach {
             Timber.d("block index ${it.first}: ${it.second}")
             val decryptedBytes = read(it.second).getOrElse { error ->
-                throw IllegalStateException("unable to decrypt chunk ${it.second} from $source", error)
+                throw IllegalStateException(
+                    "unable to decrypt chunk ${it.second} from $source",
+                    error
+                )
             }
             check(decryptedBytes.isNotEmpty()) { "empty decrypted bytearray" }
             check(decryptedBytes.contentEquals(groundTruth.sliceArray(it.second.map(Long::toInt)))) {
                 Timber.d("decrypted length: ${decryptedBytes.size}")
-                Timber.d("expected length: ${groundTruth.sliceArray(it.second.map(Long::toInt)).size}")
+                Timber.d(
+                    "expected length: ${groundTruth.sliceArray(it.second.map(Long::toInt)).size}"
+                )
                 "decrypted chunk ${it.first}: ${it.second} seems to be wrong in $source"
             }
             Pair(it.first, decryptedBytes)

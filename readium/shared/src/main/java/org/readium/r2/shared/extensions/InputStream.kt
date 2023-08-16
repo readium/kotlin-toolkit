@@ -62,8 +62,9 @@ internal suspend fun InputStream.readRange(range: LongRange): ByteArray {
         .coerceFirstNonNegative()
         .requireLengthFitInt()
 
-    if (range.isEmpty())
+    if (range.isEmpty()) {
         return ByteArray(0)
+    }
 
     return withContext(Dispatchers.IO) {
         val skipped = skip(range.first)

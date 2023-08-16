@@ -50,12 +50,13 @@ public interface PositionsService : Publication.Service {
     override val links: List<Link> get() = listOf(positionsLink)
 
     override fun get(link: Link): Resource? {
-        if (link.href != positionsLink.href)
+        if (link.href != positionsLink.href) {
             return null
+        }
 
         return StringResource(
             url = Url(positionsLink.href),
-            mediaType = positionsLink.mediaType,
+            mediaType = positionsLink.mediaType
         ) {
             val positions = positions()
             Try.success(
@@ -87,7 +88,11 @@ public suspend fun PublicationServicesHolder.positions(): List<Locator> {
 /**
  * List of all the positions in each resource, indexed by their href.
  */
-@Deprecated("Use [positionsByReadingOrder] instead", ReplaceWith("positionsByReadingOrder"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Use [positionsByReadingOrder] instead",
+    ReplaceWith("positionsByReadingOrder"),
+    level = DeprecationLevel.ERROR
+)
 public val Publication.positionsByResource: Map<String, List<Locator>>
     get() = runBlocking { positions().groupBy { it.href } }
 
@@ -149,8 +154,9 @@ internal class WebPositionsService(
         )
 
     override suspend fun positions(): List<Locator> {
-        if (!::_positions.isInitialized)
+        if (!::_positions.isInitialized) {
             _positions = computePositions()
+        }
 
         return _positions
     }

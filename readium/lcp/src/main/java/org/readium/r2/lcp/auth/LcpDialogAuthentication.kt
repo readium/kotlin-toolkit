@@ -51,22 +51,36 @@ public class LcpDialogAuthentication : LcpAuthenticating {
         allowUserInteraction: Boolean,
         sender: Any?
     ): String? =
-        if (allowUserInteraction) withContext(Dispatchers.Main) { askPassphrase(license, reason, sender) }
-        else null
+        if (allowUserInteraction) {
+            withContext(Dispatchers.Main) {
+                askPassphrase(
+                    license,
+                    reason,
+                    sender
+                )
+            }
+        } else {
+            null
+        }
 
     private suspend fun askPassphrase(
         license: LcpAuthenticating.AuthenticatedLicense,
         reason: LcpAuthenticating.AuthenticationReason,
         sender: Any?
     ): String? {
-        val hostView = (sender as? View) ?: (sender as? Activity)?.findViewById<ViewGroup>(android.R.id.content)?.getChildAt(0) ?: (sender as? Fragment)?.view
+        val hostView = (sender as? View) ?: (sender as? Activity)?.findViewById<ViewGroup>(
+            android.R.id.content
+        )?.getChildAt(0) ?: (sender as? Fragment)?.view
             ?: run {
-                Timber.e("No valid [sender] was passed to `LcpDialogAuthentication::retrievePassphrase()`. Make sure it is an Activity, a Fragment or a View.")
+                Timber.e(
+                    "No valid [sender] was passed to `LcpDialogAuthentication::retrievePassphrase()`. Make sure it is an Activity, a Fragment or a View."
+                )
                 return null
             }
         val context = hostView.context
 
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+
         @SuppressLint("InflateParams") // https://stackoverflow.com/q/26404951/1474476
         val dialogView = inflater.inflate(R.layout.readium_lcp_auth_dialog, null)
 
@@ -85,11 +99,15 @@ public class LcpDialogAuthentication : LcpAuthenticating {
 
         when (reason) {
             LcpAuthenticating.AuthenticationReason.PassphraseNotFound -> {
-                title.text = context.getString(R.string.readium_lcp_dialog_reason_passphraseNotFound)
+                title.text = context.getString(
+                    R.string.readium_lcp_dialog_reason_passphraseNotFound
+                )
             }
             LcpAuthenticating.AuthenticationReason.InvalidPassphrase -> {
                 title.text = context.getString(R.string.readium_lcp_dialog_reason_invalidPassphrase)
-                passwordLayout.error = context.getString(R.string.readium_lcp_dialog_reason_invalidPassphrase)
+                passwordLayout.error = context.getString(
+                    R.string.readium_lcp_dialog_reason_invalidPassphrase
+                )
             }
         }
 
@@ -99,7 +117,11 @@ public class LcpDialogAuthentication : LcpAuthenticating {
         hint.text = license.hint
 
         return suspendCoroutine { cont ->
-            val popupWindow = PopupWindow(dialogView, ListPopupWindow.MATCH_PARENT, ListPopupWindow.MATCH_PARENT).apply {
+            val popupWindow = PopupWindow(
+                dialogView,
+                ListPopupWindow.MATCH_PARENT,
+                ListPopupWindow.MATCH_PARENT
+            ).apply {
                 isOutsideTouchable = false
                 isFocusable = true
                 elevation = 5.0f

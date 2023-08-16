@@ -57,7 +57,13 @@ internal data class Item(
             val href = element.getAttr("href")?.let { Href(it, baseHref = filePath).string }
                 ?: return null
             val propAttr = element.getAttr("properties").orEmpty()
-            val properties = parseProperties(propAttr).map { resolveProperty(it, prefixMap, DEFAULT_VOCAB.ITEM) }
+            val properties = parseProperties(propAttr).map {
+                resolveProperty(
+                    it,
+                    prefixMap,
+                    DEFAULT_VOCAB.ITEM
+                )
+            }
             return Item(
                 href = href,
                 id = element.id,
@@ -77,7 +83,12 @@ internal data class Spine(
 ) {
     companion object {
         fun parse(element: ElementNode, prefixMap: Map<String, String>, epubVersion: Double): Spine {
-            val itemrefs = element.get("itemref", Namespaces.OPF).mapNotNull { Itemref.parse(it, prefixMap) }
+            val itemrefs = element.get("itemref", Namespaces.OPF).mapNotNull {
+                Itemref.parse(
+                    it,
+                    prefixMap
+                )
+            }
             val pageProgressionDirection = when (element.getAttr("page-progression-direction")) {
                 "rtl" -> ReadingProgression.RTL
                 "ltr" -> ReadingProgression.LTR

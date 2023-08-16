@@ -97,8 +97,15 @@ public open class UserException protected constructor(
                 }
 
                 var message =
-                    if (quantity != null) context.resources.getQuantityString(userMessageId, quantity, *(args.toTypedArray()))
-                    else context.getString(userMessageId, *(args.toTypedArray()))
+                    if (quantity != null) {
+                        context.resources.getQuantityString(
+                            userMessageId,
+                            quantity,
+                            *(args.toTypedArray())
+                        )
+                    } else {
+                        context.getString(userMessageId, *(args.toTypedArray()))
+                    }
 
                 // Includes nested causes if they are also [UserException].
                 val userException = cause?.asInstance<UserException>()

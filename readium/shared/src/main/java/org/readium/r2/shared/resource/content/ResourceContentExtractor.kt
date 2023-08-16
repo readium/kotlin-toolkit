@@ -55,7 +55,9 @@ public class DefaultResourceContentExtractorFactory : ResourceContentExtractor.F
 @ExperimentalReadiumApi
 public class HtmlResourceContentExtractor : ResourceContentExtractor {
 
-    override suspend fun extractText(resource: Resource): ResourceTry<String> = withContext(Dispatchers.IO) {
+    override suspend fun extractText(resource: Resource): ResourceTry<String> = withContext(
+        Dispatchers.IO
+    ) {
         resource.readAsString().mapCatching { html ->
             val body = Jsoup.parse(html).body().text()
             // Transform HTML entities into their actual characters.

@@ -48,7 +48,9 @@ internal class R2FXLPageFragment : Fragment() {
     private val navigator: EpubNavigatorFragment?
         get() = parentFragment as? EpubNavigatorFragment
 
-    private val viewModel: EpubNavigatorViewModel by viewModels(ownerProducer = { requireParentFragment() })
+    private val viewModel: EpubNavigatorViewModel by viewModels(
+        ownerProducer = { requireParentFragment() }
+    )
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(
@@ -56,9 +58,12 @@ internal class R2FXLPageFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         secondResourceUrl?.let {
-            _doubleBinding = ReadiumNavigatorFragmentFxllayoutDoubleBinding.inflate(inflater, container, false)
+            _doubleBinding = ReadiumNavigatorFragmentFxllayoutDoubleBinding.inflate(
+                inflater,
+                container,
+                false
+            )
             val view: View = doubleBinding.root
             view.setPadding(0, 0, 0, 0)
 
@@ -80,7 +85,11 @@ internal class R2FXLPageFragment : Fragment() {
 
             return view
         } ?: run {
-            _singleBinding = ReadiumNavigatorFragmentFxllayoutSingleBinding.inflate(inflater, container, false)
+            _singleBinding = ReadiumNavigatorFragmentFxllayoutSingleBinding.inflate(
+                inflater,
+                container,
+                false
+            )
             val view: View = singleBinding.root
             view.setPadding(0, 0, 0, 0)
 

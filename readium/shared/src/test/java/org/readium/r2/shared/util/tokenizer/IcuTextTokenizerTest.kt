@@ -23,7 +23,10 @@ class IcuTextTokenizerTest {
 
     @Test
     fun tokenizeEmptyContent() = runBlocking {
-        val tokenizer = IcuTextTokenizer(language = Language(Locale.ENGLISH), unit = TextUnit.Sentence)
+        val tokenizer = IcuTextTokenizer(
+            language = Language(Locale.ENGLISH),
+            unit = TextUnit.Sentence
+        )
         assertEquals(emptyList(), tokenizer.tokenize(""))
     }
 
@@ -40,7 +43,10 @@ class IcuTextTokenizerTest {
 
     @Test
     fun tokenizeBySentences() = runBlocking {
-        val tokenizer = IcuTextTokenizer(language = Language(Locale.ENGLISH), unit = TextUnit.Sentence)
+        val tokenizer = IcuTextTokenizer(
+            language = Language(Locale.ENGLISH),
+            unit = TextUnit.Sentence
+        )
         val source = """
             Alice said, looking above: "and what is the use of a book?". So she was considering (as well as she could), whether making a daisy-chain would be worth the trouble
             In the end, she went ahead.
@@ -49,7 +55,7 @@ class IcuTextTokenizerTest {
             listOf(
                 "Alice said, looking above: \"and what is the use of a book?\".",
                 "So she was considering (as well as she could), whether making a daisy-chain would be worth the trouble",
-                "In the end, she went ahead.",
+                "In the end, she went ahead."
             ),
             tokenizer.tokenize(source)
                 .map { source.substring(it) }

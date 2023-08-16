@@ -51,7 +51,10 @@ class CoverServiceTest {
                     Link(href = coverPath, rels = setOf("cover"))
                 )
             ),
-            container = ResourceContainer(coverPath, FileResource(File(coverPath), mediaType = null))
+            container = ResourceContainer(
+                coverPath,
+                FileResource(File(coverPath), mediaType = null)
+            )
         )
     }
 

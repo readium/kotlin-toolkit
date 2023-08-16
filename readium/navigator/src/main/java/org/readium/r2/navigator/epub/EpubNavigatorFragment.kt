@@ -109,7 +109,7 @@ public class EpubNavigatorFragment internal constructor(
     internal val paginationListener: PaginationListener?,
     epubLayout: EpubLayout,
     private val defaults: EpubDefaults,
-    configuration: Configuration,
+    configuration: Configuration
 ) : Fragment(), VisualNavigator, SelectableNavigator, DecorableNavigator, Configurable<EpubSettings, EpubPreferences> {
 
     // Make a copy to prevent the user from modifying the configuration after initialization.
@@ -197,7 +197,7 @@ public class EpubNavigatorFragment internal constructor(
             readiumCssRsProperties: RsProperties = RsProperties(),
             decorationTemplates: HtmlDecorationTemplates = HtmlDecorationTemplates.defaultTemplates(),
             selectionActionModeCallback: ActionMode.Callback? = null,
-            shouldApplyInsetsPadding: Boolean? = true,
+            shouldApplyInsetsPadding: Boolean? = true
         ) : this(
             servedAssets = servedAssets,
             readiumCssRsProperties = readiumCssRsProperties,
@@ -277,7 +277,8 @@ public class EpubNavigatorFragment internal constructor(
 
     private val viewModel: EpubNavigatorViewModel by viewModels {
         EpubNavigatorViewModel.createFactory(
-            requireActivity().application, publication,
+            requireActivity().application,
+            publication,
             config = this.config,
             initialPreferences = initialPreferences,
             layout = epubLayout,
@@ -293,7 +294,10 @@ public class EpubNavigatorFragment internal constructor(
     private lateinit var resourcesSingle: List<PageResource>
     private lateinit var resourcesDouble: List<PageResource>
 
-    @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Migrate to the new Settings API (see migration guide)",
+        level = DeprecationLevel.ERROR
+    )
     public val preferences: SharedPreferences get() = throw NotImplementedError()
 
     internal var currentPagerPosition: Int = 0
@@ -352,7 +356,7 @@ public class EpubNavigatorFragment internal constructor(
                                     leftLink = doublePageLeft,
                                     leftUrl = viewModel.urlTo(doublePageLeft),
                                     rightLink = doublePageRight,
-                                    rightUrl = viewModel.urlTo(doublePageRight),
+                                    rightUrl = viewModel.urlTo(doublePageRight)
                                 )
                             )
                             doublePageLeft = null
@@ -488,7 +492,13 @@ public class EpubNavigatorFragment internal constructor(
             withStarted {
                 // Restore the last locator before a configuration change (e.g. screen rotation), or the
                 // initial locator when given.
-                val locator = savedInstanceState?.let { BundleCompat.getParcelable(it, "locator", Locator::class.java) }
+                val locator = savedInstanceState?.let {
+                    BundleCompat.getParcelable(
+                        it,
+                        "locator",
+                        Locator::class.java
+                    )
+                }
                     ?: initialLocator
                 if (locator != null) {
                     go(locator)
@@ -588,7 +598,6 @@ public class EpubNavigatorFragment internal constructor(
         if (publication.metadata.presentation.layout != EpubLayout.FIXED) {
             setCurrent(resourcesSingle)
         } else {
-
             when (viewModel.dualPageMode) {
                 // FIXME: Properly implement DualPage.AUTO depending on the device orientation.
                 DualPage.OFF, DualPage.AUTO -> {
@@ -897,8 +906,11 @@ public class EpubNavigatorFragment internal constructor(
             ?.let { publication.locatorFromLink(it) }
 
     private val r2PagerAdapter: R2PagerAdapter?
-        get() = if (::resourcePager.isInitialized) resourcePager.adapter as? R2PagerAdapter
-        else null
+        get() = if (::resourcePager.isInitialized) {
+            resourcePager.adapter as? R2PagerAdapter
+        } else {
+            null
+        }
 
     private val currentReflowablePageFragment: R2EpubPageFragment? get() =
         currentFragment as? R2EpubPageFragment
@@ -999,9 +1011,13 @@ public class EpubNavigatorFragment internal constructor(
             } ?: 0.0
 
             val link = when (val pageResource = adapter.getResource(resourcePager.currentItem)) {
-                is PageResource.EpubFxl -> checkNotNull(pageResource.leftLink ?: pageResource.rightLink)
+                is PageResource.EpubFxl -> checkNotNull(
+                    pageResource.leftLink ?: pageResource.rightLink
+                )
                 is PageResource.EpubReflowable -> pageResource.link
-                else -> throw IllegalStateException("Expected EpubFxl or EpubReflowable page resources")
+                else -> throw IllegalStateException(
+                    "Expected EpubFxl or EpubReflowable page resources"
+                )
             }
             val positionLocator = publication.positionsByResource[link.href]?.let { positions ->
                 val index = ceil(progression * (positions.size - 1)).toInt()
@@ -1044,7 +1060,10 @@ public class EpubNavigatorFragment internal constructor(
          * @param listener Optional listener to implement to observe events, such as user taps.
          * @param config Additional configuration.
          */
-        @Deprecated("Use `EpubNavigatorFactory().createFragmentFactory()` instead", level = DeprecationLevel.ERROR)
+        @Deprecated(
+            "Use `EpubNavigatorFactory().createFragmentFactory()` instead",
+            level = DeprecationLevel.ERROR
+        )
         @Suppress("UNUSED_PARAMETER")
         public fun createFactory(
             publication: Publication,

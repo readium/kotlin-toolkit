@@ -13,10 +13,13 @@ import java.io.InputStream
 import org.readium.r2.shared.publication.Publication
 
 @Suppress("UNUSED_PARAMETER", "unused")
-@Deprecated("Use [publication.get(link)] to access publication content.", level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Use [publication.get(link)] to access publication content.",
+    level = DeprecationLevel.ERROR
+)
 public class Fetcher(
     public var publication: Publication,
-    private val userPropertiesPath: String?,
+    private val userPropertiesPath: String?
 ) {
 
     public fun data(path: String): ByteArray? = throw NotImplementedError()

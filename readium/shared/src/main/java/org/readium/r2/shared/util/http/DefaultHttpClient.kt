@@ -37,7 +37,7 @@ public class DefaultHttpClient(
     private val additionalHeaders: Map<String, String> = mapOf(),
     private val connectTimeout: Duration? = null,
     private val readTimeout: Duration? = null,
-    public var callback: Callback = object : Callback {},
+    public var callback: Callback = object : Callback {}
 ) : HttpClient {
     public companion object {
         /**
@@ -117,7 +117,6 @@ public class DefaultHttpClient(
 
     // We are using Dispatchers.IO but we still get this warning...
     override suspend fun stream(request: HttpRequest): HttpTry<HttpStreamResponse> {
-
         suspend fun tryStream(request: HttpRequest): HttpTry<HttpStreamResponse> =
             withContext(Dispatchers.IO) {
                 Timber.i("HTTP ${request.method.name} ${request.url}, headers: ${request.headers}")
@@ -171,7 +170,7 @@ public class DefaultHttpClient(
                         Try.success(
                             HttpStreamResponse(
                                 response = response,
-                                body = connection.inputStream,
+                                body = connection.inputStream
                             )
                         )
                     }

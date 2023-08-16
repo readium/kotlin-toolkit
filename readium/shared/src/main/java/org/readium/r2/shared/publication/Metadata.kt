@@ -176,7 +176,10 @@ public data class Metadata(
      *
      * See this issue for more details: https://github.com/readium/architecture/issues/113
      */
-    @Deprecated("You should resolve [ReadingProgression.AUTO] by yourself.", level = DeprecationLevel.WARNING)
+    @Deprecated(
+        "You should resolve [ReadingProgression.AUTO] by yourself.",
+        level = DeprecationLevel.WARNING
+    )
     @IgnoredOnParcel
     val effectiveReadingProgression: ReadingProgression get() {
         if (readingProgression != null) {
@@ -275,19 +278,57 @@ public data class Metadata(
             val localizedSortAs = LocalizedString.fromJSON(json.remove("sortAs"), warnings)
             val subjects = Subject.fromJSONArray(json.remove("subject"), normalizeHref, warnings)
             val authors = Contributor.fromJSONArray(json.remove("author"), normalizeHref, warnings)
-            val translators = Contributor.fromJSONArray(json.remove("translator"), normalizeHref, warnings)
+            val translators = Contributor.fromJSONArray(
+                json.remove("translator"),
+                normalizeHref,
+                warnings
+            )
             val editors = Contributor.fromJSONArray(json.remove("editor"), normalizeHref, warnings)
             val artists = Contributor.fromJSONArray(json.remove("artist"), normalizeHref, warnings)
-            val illustrators = Contributor.fromJSONArray(json.remove("illustrator"), normalizeHref, warnings)
-            val letterers = Contributor.fromJSONArray(json.remove("letterer"), normalizeHref, warnings)
-            val pencilers = Contributor.fromJSONArray(json.remove("penciler"), normalizeHref, warnings)
-            val colorists = Contributor.fromJSONArray(json.remove("colorist"), normalizeHref, warnings)
+            val illustrators = Contributor.fromJSONArray(
+                json.remove("illustrator"),
+                normalizeHref,
+                warnings
+            )
+            val letterers = Contributor.fromJSONArray(
+                json.remove("letterer"),
+                normalizeHref,
+                warnings
+            )
+            val pencilers = Contributor.fromJSONArray(
+                json.remove("penciler"),
+                normalizeHref,
+                warnings
+            )
+            val colorists = Contributor.fromJSONArray(
+                json.remove("colorist"),
+                normalizeHref,
+                warnings
+            )
             val inkers = Contributor.fromJSONArray(json.remove("inker"), normalizeHref, warnings)
-            val narrators = Contributor.fromJSONArray(json.remove("narrator"), normalizeHref, warnings)
-            val contributors = Contributor.fromJSONArray(json.remove("contributor"), normalizeHref, warnings)
-            val publishers = Contributor.fromJSONArray(json.remove("publisher"), normalizeHref, warnings)
-            val imprints = Contributor.fromJSONArray(json.remove("imprint"), normalizeHref, warnings)
-            val readingProgression = ReadingProgression(json.remove("readingProgression") as? String)
+            val narrators = Contributor.fromJSONArray(
+                json.remove("narrator"),
+                normalizeHref,
+                warnings
+            )
+            val contributors = Contributor.fromJSONArray(
+                json.remove("contributor"),
+                normalizeHref,
+                warnings
+            )
+            val publishers = Contributor.fromJSONArray(
+                json.remove("publisher"),
+                normalizeHref,
+                warnings
+            )
+            val imprints = Contributor.fromJSONArray(
+                json.remove("imprint"),
+                normalizeHref,
+                warnings
+            )
+            val readingProgression = ReadingProgression(
+                json.remove("readingProgression") as? String
+            )
             val description = json.remove("description") as? String
             val duration = json.optPositiveDouble("duration", remove = true)
             val numberOfPages = json.optPositiveInt("numberOfPages", remove = true)
@@ -344,29 +385,53 @@ public data class Metadata(
     @Deprecated("Use [type] instead", ReplaceWith("type"), level = DeprecationLevel.ERROR)
     val rdfType: String? get() = type
 
-    @Deprecated("Use [localizeTitle] instead.", ReplaceWith("localizedTitle"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [localizeTitle] instead.",
+        ReplaceWith("localizedTitle"),
+        level = DeprecationLevel.ERROR
+    )
     val multilanguageTitle: LocalizedString?
         get() = localizedTitle
 
-    @Deprecated("Use [localizedTitle.get] instead", ReplaceWith("localizedTitle.translationForLanguage(key)?.string"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [localizedTitle.get] instead",
+        ReplaceWith("localizedTitle.translationForLanguage(key)?.string"),
+        level = DeprecationLevel.ERROR
+    )
     public fun titleForLang(key: String): String? =
         localizedTitle?.getOrFallback(key)?.string
 
-    @Deprecated("Use [readingProgression] instead.", ReplaceWith("readingProgression"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [readingProgression] instead.",
+        ReplaceWith("readingProgression"),
+        level = DeprecationLevel.ERROR
+    )
     val direction: String
         get() {
             throw NotImplementedError()
         }
 
-    @Deprecated("Use [published] instead", ReplaceWith("published?.toIso8601String()"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [published] instead",
+        ReplaceWith("published?.toIso8601String()"),
+        level = DeprecationLevel.ERROR
+    )
     val publicationDate: String?
         get() = published?.toIso8601String()
 
-    @Deprecated("Use [presentation] instead", ReplaceWith("presentation", "org.readium.r2.shared.publication.presentation.presentation"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [presentation] instead",
+        ReplaceWith("presentation", "org.readium.r2.shared.publication.presentation.presentation"),
+        level = DeprecationLevel.ERROR
+    )
     val rendition: Presentation
         get() = presentation
 
-    @Deprecated("Access from [otherMetadata] instead", ReplaceWith("otherMetadata[\"source\"] as? String"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Access from [otherMetadata] instead",
+        ReplaceWith("otherMetadata[\"source\"] as? String"),
+        level = DeprecationLevel.ERROR
+    )
     val source: String?
         get() = otherMetadata["source"] as? String
 

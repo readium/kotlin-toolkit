@@ -31,7 +31,7 @@ internal class ParserAssetFactory(
 ) {
 
     suspend fun createParserAsset(
-        asset: Asset,
+        asset: Asset
     ): Try<PublicationParser.Asset, Publication.OpeningException> {
         return when (asset) {
             is Asset.Container ->
@@ -74,7 +74,9 @@ internal class ParserAssetFactory(
 
         if (!baseUrl.startsWith("http")) {
             return Try.failure(
-                Publication.OpeningException.UnsupportedAsset("Self link doesn't use the HTTP(S) scheme.")
+                Publication.OpeningException.UnsupportedAsset(
+                    "Self link doesn't use the HTTP(S) scheme."
+                )
             )
         }
 

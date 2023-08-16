@@ -31,7 +31,11 @@ public class FileResource internal constructor(
 ) : Resource {
 
     public constructor(file: File, mediaType: MediaType?) : this(file, mediaType, null)
-    public constructor(file: File, mediaTypeRetriever: MediaTypeRetriever?) : this(file, null, mediaTypeRetriever)
+    public constructor(file: File, mediaTypeRetriever: MediaTypeRetriever?) : this(
+        file,
+        null,
+        mediaTypeRetriever
+    )
 
     private val randomAccessFile by lazy {
         ResourceTry.catching {
@@ -96,10 +100,11 @@ public class FileResource internal constructor(
 
     private val metadataLength: Long? =
         tryOrNull {
-            if (file.isFile)
+            if (file.isFile) {
                 file.length()
-            else
+            } else {
                 null
+            }
         }
 
     private inline fun <T> Try.Companion.catching(closure: () -> T): ResourceTry<T> =

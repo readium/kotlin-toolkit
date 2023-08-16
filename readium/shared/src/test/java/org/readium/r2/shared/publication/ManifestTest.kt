@@ -50,7 +50,9 @@ class ManifestTest {
                 readingOrder = listOf(Link(href = "/chap1.html", type = "text/html")),
                 resources = listOf(Link(href = "/image.png", type = "image/png")),
                 tableOfContents = listOf(Link(href = "/cover.html"), Link(href = "/chap1.html")),
-                subcollections = mapOf("sub" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))))
+                subcollections = mapOf(
+                    "sub" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink"))))
+                )
             ),
             Manifest.fromJSON(
                 JSONObject(
@@ -257,7 +259,9 @@ class ManifestTest {
                 readingOrder = listOf(Link(href = "/chap1.html", type = "text/html")),
                 resources = listOf(Link(href = "/image.png", type = "image/png")),
                 tableOfContents = listOf(Link(href = "/cover.html"), Link(href = "/chap1.html")),
-                subcollections = mapOf("sub" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))))
+                subcollections = mapOf(
+                    "sub" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink"))))
+                )
             ).toJSON()
         )
     }
@@ -349,7 +353,12 @@ class ManifestTest {
             readingOrder = listOf(Link(href = "/href", type = "text/html", title = "Resource"))
         )
         Assert.assertEquals(
-            Locator(href = "/href", type = "text/html", title = "Resource", locations = Locator.Locations(progression = 0.0)),
+            Locator(
+                href = "/href",
+                type = "text/html",
+                title = "Resource",
+                locations = Locator.Locations(progression = 0.0)
+            ),
             manifest.locatorFromLink(Link(href = "/href"))
         )
     }
@@ -359,18 +368,30 @@ class ManifestTest {
             metadata = Metadata(localizedTitle = LocalizedString()),
             readingOrder = listOf(Link(href = "/href1", type = "text/html")),
             resources = listOf(Link(href = "/href2", type = "text/html")),
-            links = listOf(Link(href = "/href3", type = "text/html")),
+            links = listOf(Link(href = "/href3", type = "text/html"))
         )
         Assert.assertEquals(
-            Locator(href = "/href1", type = "text/html", locations = Locator.Locations(progression = 0.0)),
+            Locator(
+                href = "/href1",
+                type = "text/html",
+                locations = Locator.Locations(progression = 0.0)
+            ),
             manifest.locatorFromLink(Link(href = "/href1"))
         )
         Assert.assertEquals(
-            Locator(href = "/href2", type = "text/html", locations = Locator.Locations(progression = 0.0)),
+            Locator(
+                href = "/href2",
+                type = "text/html",
+                locations = Locator.Locations(progression = 0.0)
+            ),
             manifest.locatorFromLink(Link(href = "/href2"))
         )
         Assert.assertEquals(
-            Locator(href = "/href3", type = "text/html", locations = Locator.Locations(progression = 0.0)),
+            Locator(
+                href = "/href3",
+                type = "text/html",
+                locations = Locator.Locations(progression = 0.0)
+            ),
             manifest.locatorFromLink(Link(href = "/href3"))
         )
     }
@@ -381,8 +402,15 @@ class ManifestTest {
             readingOrder = listOf(Link(href = "/href", type = "text/html", title = "Resource"))
         )
         Assert.assertEquals(
-            Locator(href = "/href", type = "text/html", title = "Resource", locations = Locator.Locations(fragments = listOf("page=42"))),
-            manifest.locatorFromLink(Link(href = "/href#page=42", type = "text/xml", title = "My link"))
+            Locator(
+                href = "/href",
+                type = "text/html",
+                title = "Resource",
+                locations = Locator.Locations(fragments = listOf("page=42"))
+            ),
+            manifest.locatorFromLink(
+                Link(href = "/href#page=42", type = "text/xml", title = "My link")
+            )
         )
     }
 
@@ -392,8 +420,15 @@ class ManifestTest {
             readingOrder = listOf(Link(href = "/href", type = "text/html"))
         )
         Assert.assertEquals(
-            Locator(href = "/href", type = "text/html", title = "My link", locations = Locator.Locations(fragments = listOf("page=42"))),
-            manifest.locatorFromLink(Link(href = "/href#page=42", type = "text/xml", title = "My link"))
+            Locator(
+                href = "/href",
+                type = "text/html",
+                title = "My link",
+                locations = Locator.Locations(fragments = listOf("page=42"))
+            ),
+            manifest.locatorFromLink(
+                Link(href = "/href#page=42", type = "text/xml", title = "My link")
+            )
         )
     }
 
