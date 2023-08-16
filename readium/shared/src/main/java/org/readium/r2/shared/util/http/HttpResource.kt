@@ -1,6 +1,5 @@
 package org.readium.r2.shared.util.http
 
-import java.io.File
 import java.io.InputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

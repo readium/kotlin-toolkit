@@ -10,22 +10,17 @@
 package org.readium.r2.shared.resource
 
 import android.webkit.MimeTypeMap
-import java.io.File
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.lengthBlocking
-import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.readBlocking
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 
@@ -34,9 +29,7 @@ class DirectoryContainerTest {
 
     private val directory = assertNotNull(
         DirectoryContainerTest::class.java.getResource("directory")
-            ?.let { Url(it.toString()) }
-    )
-
+    ).let { Url(it) }
 
     private fun sut(): Container = runBlocking {
         assertNotNull(DirectoryContainerFactory().create(directory).getOrNull())

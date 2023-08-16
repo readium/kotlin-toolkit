@@ -23,7 +23,6 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.Subject
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.presentation.Presentation
-import org.readium.r2.shared.util.Href
 
 @Deprecated("Moved to another package", ReplaceWith("org.readium.r2.shared.publication.Locator"), level = DeprecationLevel.ERROR)
 public typealias Locator = org.readium.r2.shared.publication.Locator
@@ -91,19 +90,17 @@ public fun parsePublication(pubDict: JSONObject): org.readium.r2.shared.publicat
         ?: throw Exception("Invalid publication")
 }
 
+@Suppress("Unused_parameter")
 @Deprecated("Use [Link::fromJSON] instead", ReplaceWith("Link.fromJSON(linkDict)", "org.readium.r2.shared.publication.Link"), level = DeprecationLevel.ERROR)
-public fun parseLink(linkDict: JSONObject, feedUrl: URL? = null): Link =
-    Link.fromJSON(linkDict, normalizeHref = {
-        if (feedUrl == null) {
-            it
-        } else {
-            Href(it, baseHref = feedUrl.toString()).absoluteHref()
-        }
-    }) ?: Link(href = "#")
+public fun parseLink(linkDict: JSONObject, feedUrl: URL? = null): Link {
+    throw NotImplementedError()
+}
 
 @Deprecated("Moved to another package", ReplaceWith("removeLastComponent()", "org.readium.r2.shared.extensions.removeLastComponent"), level = DeprecationLevel.ERROR)
 public fun URL.removeLastComponent(): URL = removeLastComponent()
 
+@Suppress("Unused_parameter")
 @Deprecated("Use `Href().string` instead", replaceWith = ReplaceWith("Href(href, base).string"), level = DeprecationLevel.ERROR)
-public fun normalize(base: String, href: String?): String =
-    Href(href ?: "", baseHref = base).absoluteHref()
+public fun normalize(base: String, href: String?): String {
+    throw NotImplementedError()
+}

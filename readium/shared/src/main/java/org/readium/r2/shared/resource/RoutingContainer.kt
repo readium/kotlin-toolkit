@@ -49,5 +49,5 @@ public class RoutingContainer(private val routes: List<Route>) : Container {
 
 private fun isLocal(path: String): Boolean {
     val url = Url(path) ?: return false
-    return url.scheme == null || url.isFile()
+    return url.isFile()
 }

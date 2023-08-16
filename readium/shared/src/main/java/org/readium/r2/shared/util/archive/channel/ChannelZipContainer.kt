@@ -10,15 +10,18 @@ import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.resource.ArchiveFactory
+import org.readium.r2.shared.resource.ArchiveProperties
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.ZipContainer
+import org.readium.r2.shared.resource.archive
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArchiveEntry
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipFile
@@ -41,10 +44,16 @@ internal class ChannelZipContainer(
 
         override val path: String = entry.name.addPrefix("/")
 
-        override val source: Url? get() = Url(path)
+        override val source: Url? get() = null
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
-            ResourceTry.success(Resource.Properties())
+            ResourceTry.success(Resource.Properties {
+                archive = ArchiveProperties(
+                    entryLength = compressedLength
+                        ?: length().getOrElse { return ResourceTry.failure(it) },
+                    isEntryCompressed = compressedLength != null
+                )
+            })
 
         // FIXME: Implement with a sniffer.
         override suspend fun mediaType(): ResourceTry<MediaType?> =

@@ -39,11 +39,11 @@ internal class WebViewServer(
     private val disableSelectionWhenProtected: Boolean
 ) {
     companion object {
-        val publicationBaseHref = "https://readium/publication/"
-        val assetsBaseHref = "https://readium/assets/"
+        const val publicationBaseHref = "https://readium/publication/"
+        const val assetsBaseHref = "https://readium/assets/"
 
         fun assetUrl(path: String): String =
-            Href(path, baseHref = assetsBaseHref).absoluteHref(percentEncoded = true)
+            Href(path, baseHref = assetsBaseHref).percentEncodedString
     }
 
     private val assetManager: AssetManager = application.assets

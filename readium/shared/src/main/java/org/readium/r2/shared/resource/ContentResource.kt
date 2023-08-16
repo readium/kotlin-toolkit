@@ -8,8 +8,6 @@ package org.readium.r2.shared.resource
 
 import android.content.ContentResolver
 import android.net.Uri
-import android.provider.OpenableColumns
-import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
@@ -18,10 +16,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.extensions.read
-import org.readium.r2.shared.extensions.readFully
-import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUri

@@ -60,7 +60,7 @@ public data class URITemplate(val uri: String) {
                 expandFormStyle(it.groupValues[2], parameters)
         }
 
-        return Href(expanded).absoluteHref(percentEncoded = true)
+        return Href(expanded).percentEncodedString
             .replace("~~%20~~", "%2B")
             .replace("~~+~~", "%2B")
     }

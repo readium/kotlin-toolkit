@@ -20,7 +20,6 @@ import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.services.content.Content
@@ -452,4 +451,4 @@ private val Node.language: String? get() =
 private fun Node.srcRelativeToHref(baseHref: String): String? =
     attr("src")
         .takeIf { it.isNotBlank() }
-        ?.let { Href(it, baseHref).absoluteHref() }
+        ?.let { Href(it, baseHref).string }

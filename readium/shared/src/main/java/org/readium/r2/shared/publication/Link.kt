@@ -104,7 +104,7 @@ public data class Link(
             return null
         }
 
-        return Href(href, baseHref = baseUrl ?: "/").absoluteHref(percentEncoded = true)
+        return Href(href, baseHref = baseUrl ?: "/").percentEncodedString
     }
 
     /**
@@ -275,4 +275,17 @@ public fun List<Link>.allMatchMediaType(mediaType: MediaType): Boolean = isNotEm
  */
 public fun List<Link>.allMatchMediaTypes(mediaTypes: List<MediaType>): Boolean = isNotEmpty() && all {
     mediaTypes.any { mediaType -> mediaType.matches(it.mediaType) }
+}
+
+/**
+ * Returns a list of `Link` after flattening the `children` and `alternates` links of the receiver.
+ */
+public fun List<Link>.flatten(): List<Link> {
+    fun Link.flatten(): List<Link> {
+        val children = children.flatten()
+        val alternates = alternates.flatten()
+        return listOf(this) + children.flatten() + alternates.flatten()
+    }
+
+    return flatMap { it.flatten() }
 }

@@ -14,7 +14,6 @@ import android.content.Intent
 import android.os.Bundle
 import java.util.*
 import org.readium.r2.shared.BuildConfig
-import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication

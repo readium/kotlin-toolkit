@@ -99,9 +99,7 @@ public class OPDS1Parser {
                         }
                         if (href != null && (rel == "collection" || rel == "http://opds-spec.org/group")) {
                             collectionLink = Link(
-                                href = Href(href, baseHref = feed.href.toString()).absoluteHref(
-                                    percentEncoded = true
-                                ),
+                                href = Href(href, baseHref = feed.href.toString()).percentEncodedString,
                                 title = link.getAttr("title"),
                                 rels = setOf("collection")
                             )
@@ -128,9 +126,7 @@ public class OPDS1Parser {
                         }
 
                         val newLink = Link(
-                            href = Href(href, baseHref = feed.href.toString()).absoluteHref(
-                                percentEncoded = true
-                            ),
+                            href = Href(href, baseHref = feed.href.toString()).percentEncodedString,
                             type = link.getAttr("type"),
                             title = entry.getFirst("title", Namespaces.Atom)?.text,
                             rels = listOfNotNull(link.getAttr("rel")).toSet(),
@@ -148,10 +144,7 @@ public class OPDS1Parser {
             // Parse links
             for (link in root.get("link", Namespaces.Atom)) {
                 val hrefAttr = link.getAttr("href") ?: continue
-                val href = Href(
-                    hrefAttr,
-                    baseHref = feed.href.toString()
-                ).absoluteHref(percentEncoded = true)
+                val href = Href(hrefAttr, baseHref = feed.href.toString()).percentEncodedString
                 val title = link.getAttr("title")
                 val type = link.getAttr("type")
                 val rels = listOfNotNull(link.getAttr("rel")).toSet()
@@ -275,10 +268,7 @@ public class OPDS1Parser {
                     }
 
                     Link(
-                        href = Href(
-                            href,
-                            baseHref = baseUrl.toString()
-                        ).absoluteHref(percentEncoded = true),
+                        href = Href(href, baseHref = baseUrl.toString()).percentEncodedString,
                         type = element.getAttr("type"),
                         title = element.getAttr("title"),
                         rels = listOfNotNull(rel).toSet(),

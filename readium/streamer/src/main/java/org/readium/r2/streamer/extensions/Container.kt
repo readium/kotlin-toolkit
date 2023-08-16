@@ -12,9 +12,7 @@ package org.readium.r2.streamer.extensions
 import java.io.File
 import org.json.JSONObject
 import org.readium.r2.shared.parser.xml.ElementNode
-import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.resource.Container
-import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.readAsJson
 import org.readium.r2.shared.resource.readAsXml
 import org.readium.r2.shared.util.use

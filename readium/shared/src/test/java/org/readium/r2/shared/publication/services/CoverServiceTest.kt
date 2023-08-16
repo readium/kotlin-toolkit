@@ -23,7 +23,6 @@ import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.readBlocking
 import org.readium.r2.shared.resource.FileResource
 import org.readium.r2.shared.resource.ResourceContainer
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
