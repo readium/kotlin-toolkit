@@ -26,6 +26,7 @@ import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.logging.log
 
 /**
  * https://readium.org/webpub-manifest/schema/metadata.schema.json

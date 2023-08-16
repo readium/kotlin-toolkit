@@ -25,6 +25,7 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.Url
 
 private val positionsLink = Link(
     href = "/~readium/positions",
@@ -52,7 +53,10 @@ public interface PositionsService : Publication.Service {
         if (link.href != positionsLink.href)
             return null
 
-        return StringResource(positionsLink) {
+        return StringResource(
+            url = Url(positionsLink.href),
+            mediaType = positionsLink.mediaType,
+        ) {
             val positions = positions()
             Try.success(
                 JSONObject().apply {
