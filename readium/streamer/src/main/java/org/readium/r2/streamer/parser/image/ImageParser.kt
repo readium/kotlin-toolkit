@@ -35,11 +35,11 @@ public class ImageParser : PublicationParser {
 
         val readingOrder =
             if (asset.mediaType.matches(MediaType.CBZ)) {
-                asset.container.entries()
+                (asset.container.entries() ?: emptySet())
                     .filter { !File(it.path).isHiddenOrThumbs && it.mediaType().getOrNull()?.isBitmap == true }
                     .sortedBy { it.path }
             } else {
-                listOfNotNull(asset.container.entries().firstOrNull())
+                listOfNotNull(asset.container.entries()?.firstOrNull())
             }
                 .map { it.toLink() }
                 .toMutableList()

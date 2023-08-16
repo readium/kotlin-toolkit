@@ -27,7 +27,7 @@ public class TransformingContainer(
     public constructor(fetcher: Container, transformer: ResourceTransformer) :
         this(fetcher, listOf(transformer))
 
-    override suspend fun entries(): Iterable<Container.Entry> =
+    override suspend fun entries(): Set<Container.Entry>? =
         container.entries()
 
     override fun get(path: String): Container.Entry =

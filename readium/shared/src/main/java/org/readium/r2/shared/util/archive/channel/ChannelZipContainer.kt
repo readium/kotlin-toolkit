@@ -125,10 +125,11 @@ internal class ChannelZipContainer(
         }
     }
 
-    override suspend fun entries(): List<Container.Entry> =
+    override suspend fun entries(): Set<Container.Entry> =
         archive.entries.toList()
             .filterNot { it.isDirectory }
             .mapNotNull { Entry(it) }
+            .toSet()
 
     override fun get(path: String): Container.Entry =
         archive.getEntry(path.removePrefix("/"))

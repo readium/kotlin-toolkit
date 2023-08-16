@@ -39,7 +39,7 @@ public class PdfParser(
         if (asset.mediaType != MediaType.PDF)
             return Try.failure(PublicationParser.Error.FormatNotSupported())
 
-        val resource = asset.container.entries().firstOrNull()
+        val resource = asset.container.entries()?.firstOrNull()
             ?: return Try.failure(
                 PublicationParser.Error.ParsingFailed("No PDF found in the publication.")
             )

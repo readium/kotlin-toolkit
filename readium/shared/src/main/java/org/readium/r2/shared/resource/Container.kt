@@ -33,14 +33,9 @@ public interface Container : SuspendingCloseable {
     public val source: Url? get() = null
 
     /**
-     * Known entries available in the container, such as file paths on the file system or entries in
-     * a ZIP archive. This list is not exhaustive, and additional unknown resources might be
-     * reachable.
-     *
-     * If the container has an inherent resource order, it should be followed. Otherwise, entries
-     * are sorted alphabetically.
+     * List of all the container entries of null if such a list is not available.
      */
-    public suspend fun entries(): Iterable<Entry>
+    public suspend fun entries(): Set<Entry>?
 
     /**
      * Returns the [Entry] at the given [path].
@@ -54,7 +49,7 @@ public interface Container : SuspendingCloseable {
 /** A [Container] providing no resources at all. */
 public class EmptyContainer : Container {
 
-    override suspend fun entries(): Iterable<Container.Entry> = emptyList()
+    override suspend fun entries(): Set<Container.Entry> = emptySet()
 
     override fun get(path: String): Container.Entry =
         FailureResource(Resource.Exception.NotFound()).toEntry(path)
@@ -67,7 +62,7 @@ public class ResourceContainer(path: String, resource: Resource) : Container {
 
     private val entry = resource.toEntry(path)
 
-    override suspend fun entries(): Iterable<Container.Entry> = listOf(entry)
+    override suspend fun entries(): Set<Container.Entry> = setOf(entry)
 
     override fun get(path: String): Container.Entry {
         if (path.takeWhile { it !in "#?" } != entry.path) {

@@ -28,7 +28,7 @@ internal suspend fun Container.readAsJsonOrNull(path: String): JSONObject? =
     get(path).use { it.readAsJson().getOrNull() }
 
 internal suspend fun Container.guessTitle(): String? {
-    val entries = entries()
+    val entries = entries() ?: return null
     val firstEntry = entries.firstOrNull() ?: return null
     val commonFirstComponent = entries.pathCommonFirstComponent() ?: return null
 

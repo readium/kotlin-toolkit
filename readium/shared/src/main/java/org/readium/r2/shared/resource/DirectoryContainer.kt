@@ -33,8 +33,8 @@ internal class DirectoryContainer(
         override suspend fun close() {}
     }
 
-    override suspend fun entries(): List<Container.Entry> =
-        entries.map { FileEntry(it) }.toList()
+    override suspend fun entries(): Set<Container.Entry> =
+        entries.map { FileEntry(it) }.toSet()
 
     override fun get(path: String): Container.Entry {
         val file = File(root, path.removePrefix("/"))

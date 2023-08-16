@@ -219,7 +219,7 @@ public class ContainerSnifferContext internal constructor(
      * Returns whether all the Archive entry paths satisfy the given `predicate`.
      */
     internal suspend fun archiveEntriesAllSatisfy(predicate: (Container.Entry) -> Boolean): Boolean =
-        container.entries().all(predicate)
+        container.entries()?.all(predicate) ?: false
 
     override suspend fun release() {
         container.close()

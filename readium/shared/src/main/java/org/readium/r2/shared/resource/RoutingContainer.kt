@@ -35,8 +35,8 @@ public class RoutingContainer(private val routes: List<Route>) : Container {
             Route(remote)
         ))
 
-    override suspend fun entries(): Iterable<Container.Entry> =
-        routes.flatMap { it.container.entries() }
+    override suspend fun entries(): Set<Container.Entry>? =
+        null // We can't guarantee the list of entries is exhaustive, so we return null
 
     override fun get(path: String): Container.Entry =
         routes.firstOrNull { it.accepts(path) }?.container?.get(path)

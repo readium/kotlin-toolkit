@@ -22,16 +22,13 @@ import timber.log.Timber
  *
  * @param client HTTP client used to perform HTTP requests.
  * @param baseUrl Base URL from which relative HREF are served.
- * @param paths A set of paths that are known to be available through this container.
  */
 public class HttpContainer(
     private val client: HttpClient,
-    private val baseUrl: String? = null,
-    private val paths: List<String> = emptyList(),
+    private val baseUrl: String? = null
 ) : Container {
 
-    override suspend fun entries(): Iterable<Container.Entry> =
-        paths.map { get(it) }
+    override suspend fun entries(): Set<Container.Entry>? = null
 
     override fun get(path: String): Container.Entry {
         val url = Href(path.removePrefix("/"), baseHref = baseUrl ?: "/").toUrl()

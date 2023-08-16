@@ -39,13 +39,13 @@ public class AudioParser : PublicationParser {
 
         val readingOrder =
             if (asset.mediaType.matches(MediaType.ZAB)) {
-                asset.container.entries()
+                (asset.container.entries() ?: emptySet())
                     .filter { entry -> zabCanContain(entry.path) }
                     .sortedBy { it.path }
                     .toMutableList()
             } else {
                 listOfNotNull(
-                    asset.container.entries().firstOrNull()
+                    asset.container.entries()?.firstOrNull()
                 )
             }
 
