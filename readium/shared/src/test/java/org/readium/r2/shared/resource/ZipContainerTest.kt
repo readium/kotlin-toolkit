@@ -65,7 +65,7 @@ class ZipContainerTest(val sut: suspend () -> Container) {
     @Test
     fun `Entry list is correct`(): Unit = runBlocking {
         sut().use { container ->
-            assertThat(container.entries().map { it.path })
+            assertThat(container.entries()?.map { it.path })
                 .contains(
                     "/mimetype",
                     "/EPUB/cover.xhtml",

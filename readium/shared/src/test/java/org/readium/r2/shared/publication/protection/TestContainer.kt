@@ -19,8 +19,8 @@ class TestContainer(resources: Map<String, String> = emptyMap()) : Container {
     private val entries: Map<String, Entry> =
         resources.mapValues { Entry(it.key, StringResource(it.value)) }
 
-    override suspend fun entries(): Iterable<Container.Entry> =
-        entries.values
+    override suspend fun entries(): Set<Container.Entry> =
+        entries.values.toSet()
 
     override fun get(path: String): Container.Entry =
         entries[path] ?: NotFoundEntry(path)

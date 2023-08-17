@@ -129,7 +129,7 @@ class DirectoryContainerTest {
             }
 
             val entries = sut().entries()
-            assertThat(entries.map { it.path }).containsExactly(
+            assertThat(entries?.map { it.path }).containsExactly(
                 "/subdirectory/hello.mp3",
                 "/subdirectory/text2.txt",
                 "/text1.txt"

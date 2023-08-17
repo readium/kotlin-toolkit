@@ -489,7 +489,7 @@ class EpubPositionsServiceTest {
             private fun find(relativePath: String): ReadingOrderItem? =
                 readingOrder.find { it.link.href == relativePath }
 
-            override suspend fun entries(): Iterable<Container.Entry> = emptyList()
+            override suspend fun entries(): Set<Container.Entry>? = null
 
             override fun get(path: String): Container.Entry {
                 val item = requireNotNull(find(path))
