@@ -89,6 +89,7 @@ typealias JavascriptInterfaceFactory = (resource: Link) -> Any?
 @OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class, DelicateReadiumApi::class)
 class EpubNavigatorFragment internal constructor(
     override val publication: Publication,
+    private val readingOrder: List<Link>,
     private val baseUrl: String?,
     private val initialLocator: Locator?,
     private val initialPreferences: EpubPreferences,
@@ -306,13 +307,15 @@ class EpubNavigatorFragment internal constructor(
         _binding = ActivityR2ViewpagerBinding.inflate(inflater, container, false)
         val view = binding.root
 
+        // FIXME: If readingOrder is provided as input to the fragment, we might not want
+        // to map through the publication's readingOrder:
         positionsByReadingOrder = runBlocking { publication.positionsByReadingOrder() }
         positions = positionsByReadingOrder.flatten()
         publicationIdentifier = publication.metadata.identifier ?: publication.metadata.title
 
         when (viewModel.layout) {
             EpubLayout.REFLOWABLE -> {
-                resourcesSingle = publication.readingOrder.mapIndexed { index, link ->
+                resourcesSingle = readingOrder.mapIndexed { index, link ->
                     PageResource.EpubReflowable(
                         link = link,
                         url = viewModel.urlTo(link),
@@ -329,7 +332,7 @@ class EpubNavigatorFragment internal constructor(
                 var doublePageLeft: Link? = null
                 var doublePageRight: Link? = null
 
-                for ((index, link) in publication.readingOrder.withIndex()) {
+                for ((index, link) in readingOrder.withIndex()) {
                     val url = viewModel.urlTo(link)
                     resourcesSingle.add(PageResource.EpubFxl(leftLink = link, leftUrl = url))
 
@@ -881,7 +884,7 @@ class EpubNavigatorFragment internal constructor(
         locatorToResourceAtIndex(resourcePager.currentItem + 1)
 
     private fun locatorToResourceAtIndex(index: Int): Locator? =
-        publication.readingOrder.getOrNull(index)
+        readingOrder.getOrNull(index)
             ?.let { publication.locatorFromLink(it) }
 
     private val r2PagerAdapter: R2PagerAdapter?
@@ -919,7 +922,7 @@ class EpubNavigatorFragment internal constructor(
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
     private val _currentLocator = MutableStateFlow(
         initialLocator
-            ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
+            ?: requireNotNull(publication.locatorFromLink(readingOrder.first()))
     )
 
     /**
@@ -930,7 +933,7 @@ class EpubNavigatorFragment internal constructor(
     override suspend fun firstVisibleElementLocator(): Locator? {
         if (!::resourcePager.isInitialized) return null
 
-        val resource = publication.readingOrder[resourcePager.currentItem]
+        val resource = readingOrder[resourcePager.currentItem]
         return currentReflowablePageFragment?.webView?.findFirstVisibleLocator()
             ?.copy(
                 href = resource.href,
@@ -1040,6 +1043,7 @@ class EpubNavigatorFragment internal constructor(
          */
         fun createFactory(
             publication: Publication,
+            readingOrder: List<Link> = publication.readingOrder,
             baseUrl: String? = null,
             initialLocator: Locator? = null,
             listener: Listener? = null,
@@ -1049,7 +1053,7 @@ class EpubNavigatorFragment internal constructor(
         ): FragmentFactory =
             createFragmentFactory {
                 EpubNavigatorFragment(
-                    publication, baseUrl, initialLocator, initialPreferences,
+                    publication, readingOrder, baseUrl, initialLocator, initialPreferences,
                     listener, paginationListener,
                     epubLayout = publication.metadata.presentation.layout ?: EpubLayout.REFLOWABLE,
                     defaults = EpubDefaults(),

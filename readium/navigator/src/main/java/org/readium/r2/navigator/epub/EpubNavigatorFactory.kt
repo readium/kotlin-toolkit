@@ -7,6 +7,7 @@
 package org.readium.r2.navigator.epub
 
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
@@ -37,6 +38,7 @@ class EpubNavigatorFactory(
         publication.metadata.presentation.layout ?: EpubLayout.REFLOWABLE
 
     fun createFragmentFactory(
+        readingOrder: List<Link> = publication.readingOrder,
         initialLocator: Locator?,
         initialPreferences: EpubPreferences = EpubPreferences(),
         listener: EpubNavigatorFragment.Listener? = null,
@@ -45,6 +47,7 @@ class EpubNavigatorFactory(
     ) = org.readium.r2.navigator.util.createFragmentFactory {
         EpubNavigatorFragment(
             publication = publication,
+            readingOrder = readingOrder,
             baseUrl = null,
             initialLocator = initialLocator,
             initialPreferences = initialPreferences,
