@@ -30,7 +30,7 @@ import org.readium.r2.shared.publication.services.search.SearchIterator
 import org.readium.r2.shared.publication.services.search.SearchTry
 import org.readium.r2.shared.publication.services.search.search
 import org.readium.r2.testapp.Application
-import org.readium.r2.testapp.bookshelf.BookRepository
+import org.readium.r2.testapp.BookRepository
 import org.readium.r2.testapp.domain.model.Highlight
 import org.readium.r2.testapp.reader.preferences.UserPreferencesViewModel
 import org.readium.r2.testapp.reader.tts.TtsViewModel

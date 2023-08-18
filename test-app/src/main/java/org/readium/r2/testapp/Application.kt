@@ -15,7 +15,6 @@ import java.io.File
 import java.util.*
 import kotlinx.coroutines.*
 import org.readium.r2.testapp.BuildConfig.DEBUG
-import org.readium.r2.testapp.bookshelf.BookRepository
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.reader.ReaderRepository
 import timber.log.Timber
@@ -28,6 +27,9 @@ class Application : android.app.Application() {
     lateinit var storageDir: File
 
     lateinit var bookRepository: BookRepository
+        private set
+
+    lateinit var bookImporter: BookImporter
         private set
 
     lateinit var readerRepository: Deferred<ReaderRepository>
@@ -53,17 +55,18 @@ class Application : android.app.Application() {
          */
         bookRepository =
             BookDatabase.getDatabase(this).booksDao()
-                .let { dao ->
-                    BookRepository(
-                        applicationContext,
-                        dao,
-                        storageDir,
-                        readium.lcpService,
-                        readium.publicationFactory,
-                        readium.assetRetriever,
-                        readium.protectionRetriever,
-                    )
-                }
+                .let { dao -> BookRepository(dao) }
+
+        bookImporter =
+            BookImporter(
+                applicationContext,
+                bookRepository,
+                storageDir,
+                readium.lcpService,
+                readium.publicationFactory,
+                readium.assetRetriever,
+                readium.protectionRetriever,
+            )
 
         readerRepository =
             coroutineScope.async {

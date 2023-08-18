@@ -17,6 +17,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.Url
+import org.readium.r2.testapp.BookImporter
+import org.readium.r2.testapp.BookRepository
 import org.readium.r2.testapp.BuildConfig
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.reader.ReaderActivityContract
@@ -50,7 +52,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
                     val file =
                         app.assets.open("Samples/$element").copyToTempFile(app.storageDir)
                     if (file != null)
-                        app.bookRepository.addLocalBook(file)
+                        app.bookImporter.addLocalBook(file)
                     else if (BuildConfig.DEBUG)
                         error("Unable to load sample into the library")
                 }
@@ -66,7 +68,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun importPublicationFromUri(uri: Uri) =
         viewModelScope.launch {
-            app.bookRepository
+            app.bookImporter
                 .importBook(uri)
                 .failureOrNull()
                 .let { sendImportFeedback(it) }
@@ -74,7 +76,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun addSharedStoragePublication(uri: Uri) =
         viewModelScope.launch {
-            app.bookRepository
+            app.bookImporter
                 .addSharedStorageBook(Url(uri.toString())!!)
                 .failureOrNull()
                 .let { sendImportFeedback(it) }
@@ -82,14 +84,14 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun addRemotePublication(url: Url) {
         viewModelScope.launch {
-            val exception = app.bookRepository
+            val exception = app.bookImporter
                 .addRemoteBook(url)
                 .failureOrNull()
             sendImportFeedback(exception)
         }
     }
 
-    private fun sendImportFeedback(error: BookRepository.ImportError?) {
+    private fun sendImportFeedback(error: BookImporter.ImportError?) {
         if (error == null) {
             channel.send(Event.ImportPublicationSuccess)
         } else {
