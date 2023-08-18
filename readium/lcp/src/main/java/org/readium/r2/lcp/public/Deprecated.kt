@@ -75,5 +75,6 @@ public typealias LCPError = LcpException
     ReplaceWith("LcpService()"),
     level = DeprecationLevel.ERROR
 )
+@Suppress("UNUSED_PARAMETER")
 public fun R2MakeLCPService(context: Context): LcpService? =
-    LcpService(context)
+    throw NotImplementedError()

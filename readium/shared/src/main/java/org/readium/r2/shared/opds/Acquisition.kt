@@ -34,7 +34,7 @@ public data class Acquisition(
 
     /** Media type of the resource to acquire. */
     val mediaType: MediaType get() =
-        MediaType.parse(type) ?: MediaType.BINARY
+        MediaType(type) ?: MediaType.BINARY
 
     /**
      * Serializes an [Acquisition] to its JSON representation.

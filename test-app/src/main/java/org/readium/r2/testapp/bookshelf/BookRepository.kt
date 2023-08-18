@@ -195,7 +195,7 @@ class BookRepository(
     suspend fun addRemoteBook(
         url: Url
     ): Try<Unit, ImportError> {
-        val asset = assetRetriever.retrieve(url, fileExtension = url.extension)
+        val asset = assetRetriever.retrieve(url)
             ?: return Try.failure(
                 ImportError.PublicationError(
                     PublicationError.UnsupportedPublication(
@@ -236,7 +236,7 @@ class BookRepository(
             )
 
         val (publicationTempFile, publicationTempAsset) =
-            if (sourceAsset.mediaType != MediaType.LCP_LICENSE_DOCUMENT) {
+            if (sourceAsset.format.mediaType != MediaType.LCP_LICENSE_DOCUMENT) {
                 tempFile to sourceAsset
             } else {
                 lcpService
@@ -263,7 +263,7 @@ class BookRepository(
                     )
             }
 
-        val fileName = "${UUID.randomUUID()}.${publicationTempAsset.mediaType.fileExtension}"
+        val fileName = "${UUID.randomUUID()}.${publicationTempAsset.format.fileExtension}"
         val libraryFile = File(storageDir, fileName)
         val libraryUrl = libraryFile.toUrl()
 
@@ -277,8 +277,8 @@ class BookRepository(
 
         val libraryAsset = assetRetriever.retrieve(
             libraryUrl,
-            publicationTempAsset.mediaType,
-            publicationTempAsset.assetType
+            publicationTempAsset.format.mediaType,
+            publicationTempAsset.type
         ).getOrElse { return Try.failure(ImportError.PublicationError(it)) }
 
         return addBook(
@@ -315,8 +315,8 @@ class BookRepository(
 
             val id = insertBookIntoDatabase(
                 url.toString(),
-                asset.mediaType,
-                asset.assetType,
+                asset.format.mediaType,
+                asset.type,
                 drmScheme,
                 publication,
                 coverFile.path

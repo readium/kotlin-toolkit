@@ -16,7 +16,6 @@ import org.readium.r2.shared.publication.protection.AdeptFallbackContentProtecti
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.LcpFallbackContentProtection
 import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
@@ -38,22 +37,22 @@ internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningE
  * of a default parser.
  *
  * @param context Application context.
- * @param parsers Parsers used to open a publication, in addition to the default parsers.
- * @param ignoreDefaultParsers When true, only parsers provided in parsers will be used.
+ * @param httpClient Service performing HTTP requests.
  * @param pdfFactory Parses a PDF document, optionally protected by password.
  * @param contentProtections Opens DRM-protected publications.
- * @param httpClient Service performing HTTP requests.
+ * @param parsers Parsers used to open a publication, in addition to the default parsers.
+ * @param ignoreDefaultParsers When true, only parsers provided in parsers will be used.
  * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
  *   the manifest, the root container or the list of service factories of a [Publication].
  */
 @OptIn(PdfSupport::class)
-public class PublicationFactory constructor(
+public class PublicationFactory(
     context: Context,
+    httpClient: HttpClient,
+    pdfFactory: PdfDocumentFactory<*>? = null,
+    contentProtections: List<ContentProtection> = emptyList(),
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
-    contentProtections: List<ContentProtection> = emptyList(),
-    pdfFactory: PdfDocumentFactory<*>? = null,
-    httpClient: HttpClient = DefaultHttpClient(),
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
 

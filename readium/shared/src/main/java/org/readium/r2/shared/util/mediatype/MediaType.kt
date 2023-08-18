@@ -14,7 +14,6 @@ import android.net.Uri
 import java.io.File
 import java.nio.charset.Charset
 import java.util.*
-import org.readium.r2.shared.extensions.tryOrNull
 
 /**
  * Represents a document format, identified by a unique RFC 6838 media type.
@@ -29,68 +28,15 @@ import org.readium.r2.shared.extensions.tryOrNull
  *
  * Specification: https://tools.ietf.org/html/rfc6838
  *
- * @param string String representation for this media type.
- * @param name A human readable name identifying the media type, which may be presented to the user.
- * @param fileExtension The default file extension to use for this media type.
+ * @param type The type component, e.g. `application` in `application/epub+zip`.
+ * @param subtype The subtype component, e.g. `epub+zip` in `application/epub+zip`.
+ * @param parameters The parameters in the media type, such as `charset=utf-8`.
  */
-public class MediaType(
-    string: String,
-    public val name: String? = null,
-    public val fileExtension: String? = null
-) {
-
-    /** The type component, e.g. `application` in `application/epub+zip`. */
-    public val type: String
-
-    /** The subtype component, e.g. `epub+zip` in `application/epub+zip`. */
-    public val subtype: String
-
-    /** The parameters in the media type, such as `charset=utf-8`. */
+public class MediaType private constructor(
+    public val type: String,
+    public val subtype: String,
     public val parameters: Map<String, String>
-
-    init {
-        if (string.isEmpty()) {
-            throw IllegalArgumentException("Invalid media type: $string")
-        }
-
-        // Grammar: https://tools.ietf.org/html/rfc2045#section-5.1
-        val components = string.split(";")
-            .map { it.trim() }
-        val types = components[0].split("/")
-        if (types.size != 2) {
-            throw IllegalArgumentException("Invalid media type: $string")
-        }
-
-        // > Both top-level type and subtype names are case-insensitive.
-        this.type = types[0].lowercase(Locale.ROOT)
-        this.subtype = types[1].lowercase(Locale.ROOT)
-
-        // > Parameter names are case-insensitive and no meaning is attached to the order in which
-        // > they appear.
-        val parameters = components.drop(1)
-            .map { it.split("=") }
-            .filter { it.size == 2 }
-            .associate { Pair(it[0].lowercase(Locale.ROOT), it[1]) }
-            .toMutableMap()
-
-        // For now, we only support case-insensitive `charset`.
-        //
-        // > Parameter values might or might not be case-sensitive, depending on the semantics of
-        // > the parameter name.
-        // > https://tools.ietf.org/html/rfc2616#section-3.7
-        //
-        // > The character set names may be up to 40 characters taken from the printable characters
-        // > of US-ASCII.  However, no distinction is made between use of upper and lower case
-        // > letters.
-        // > https://www.iana.org/assignments/character-sets/character-sets.xhtml
-        parameters["charset"]?.let {
-            parameters["charset"] =
-                (try { Charset.forName(it).name() } catch (e: Exception) { it })
-                    .uppercase(Locale.ROOT)
-        }
-
-        this.parameters = parameters
-    }
+) {
 
     /**
      * Structured syntax suffix, e.g. `+zip` in `application/epub+zip`.
@@ -119,13 +65,11 @@ public class MediaType(
      * Non-significant parameters are also discarded.
      */
     @Deprecated(
-        "Use MediaTypeRetriever instead",
-        replaceWith = ReplaceWith("mediaTypeRetriever.canonicalMediaType()"),
+        "Use FormatRegistry.canonicalize() instead",
+        replaceWith = ReplaceWith("formatRegistry.canonicalize(this)"),
         level = DeprecationLevel.ERROR
     )
-    public fun canonicalMediaType(): MediaType {
-        TODO()
-    }
+    public fun canonicalMediaType(): MediaType = TODO()
 
     /** The string representation of this media type. */
     override fun toString(): String {
@@ -182,7 +126,7 @@ public class MediaType(
      * Returns whether the given [other] media type is included in this media type.
      */
     public fun contains(other: String?): Boolean {
-        val mediaType = other?.let { parse(it) }
+        val mediaType = other?.let { MediaType(it) }
             ?: return false
 
         return contains(mediaType)
@@ -203,7 +147,7 @@ public class MediaType(
      * in both media types.
      */
     public fun matches(other: String?): Boolean =
-        matches(other?.let { parse(it) })
+        matches(other?.let { MediaType(it) })
 
     /**
      * Returns whether this media type matches any of the `others` media types.
@@ -268,146 +212,135 @@ public class MediaType(
 
         /**
          * Creates a [MediaType] from its RFC 6838 string representation.
-         *
-         * @param name A human readable name identifying the media type, which may be presented to the user.
-         * @param fileExtension The default file extension to use for this media type.
          */
+        public operator fun invoke(string: String): MediaType? {
+            if (string.isEmpty()) {
+                return null
+            }
+
+            // Grammar: https://tools.ietf.org/html/rfc2045#section-5.1
+            val components = string.split(";")
+                .map { it.trim() }
+            val types = components[0].split("/")
+            if (types.size != 2) {
+                return null
+            }
+
+            // > Both top-level type and subtype names are case-insensitive.
+            val type = types[0].lowercase(Locale.ROOT)
+            val subtype = types[1].lowercase(Locale.ROOT)
+
+            // > Parameter names are case-insensitive and no meaning is attached to the order in which
+            // > they appear.
+            val parameters = components.drop(1)
+                .map { it.split("=") }
+                .filter { it.size == 2 }
+                .associate { Pair(it[0].lowercase(Locale.ROOT), it[1]) }
+                .toMutableMap()
+
+            // For now, we only support case-insensitive `charset`.
+            //
+            // > Parameter values might or might not be case-sensitive, depending on the semantics of
+            // > the parameter name.
+            // > https://tools.ietf.org/html/rfc2616#section-3.7
+            //
+            // > The character set names may be up to 40 characters taken from the printable characters
+            // > of US-ASCII.  However, no distinction is made between use of upper and lower case
+            // > letters.
+            // > https://www.iana.org/assignments/character-sets/character-sets.xhtml
+            parameters["charset"]?.let {
+                parameters["charset"] =
+                    (try { Charset.forName(it).name() } catch (e: Exception) { it })
+                        .uppercase(Locale.ROOT)
+            }
+
+            return MediaType(
+                type = type,
+                subtype = subtype,
+                parameters = parameters
+            )
+        }
+
+        @Suppress("UNUSED_PARAMETER")
+        @Deprecated(
+            "Use `MediaType(string)` instead",
+            replaceWith = ReplaceWith("MediaType(string)"),
+            level = DeprecationLevel.ERROR
+        )
         public fun parse(string: String, name: String? = null, fileExtension: String? = null): MediaType? =
-            tryOrNull { MediaType(string = string, name = name, fileExtension = fileExtension) }
+            MediaType(string)
 
         // Known Media Types
         //
         // Reading apps are welcome to extend the static constants with additional media types.
 
-        public val AAC: MediaType = MediaType("audio/aac", fileExtension = "aac")
-        public val ACSM: MediaType = MediaType(
-            "application/vnd.adobe.adept+xml",
-            name = "Adobe Content Server Message",
-            fileExtension = "acsm"
-        )
-        public val AIFF: MediaType = MediaType("audio/aiff", fileExtension = "aiff")
-        public val AVI: MediaType = MediaType("video/x-msvideo", fileExtension = "avi")
-        public val AVIF: MediaType = MediaType("image/avif", fileExtension = "avif")
-        public val BINARY: MediaType = MediaType("application/octet-stream")
-        public val BMP: MediaType = MediaType("image/bmp", fileExtension = "bmp")
-        public val CBZ: MediaType = MediaType(
-            "application/vnd.comicbook+zip",
-            name = "Comic Book Archive",
-            fileExtension = "cbz"
-        )
-        public val CSS: MediaType = MediaType("text/css", fileExtension = "css")
-        public val DIVINA: MediaType = MediaType(
-            "application/divina+zip",
-            name = "Digital Visual Narratives",
-            fileExtension = "divina"
-        )
-        public val DIVINA_MANIFEST: MediaType = MediaType(
-            "application/divina+json",
-            name = "Digital Visual Narratives",
-            fileExtension = "json"
-        )
-        public val EPUB: MediaType = MediaType(
-            "application/epub+zip",
-            name = "EPUB",
-            fileExtension = "epub"
-        )
-        public val GIF: MediaType = MediaType("image/gif", fileExtension = "gif")
-        public val GZ: MediaType = MediaType("application/gzip", fileExtension = "gz")
-        public val HTML: MediaType = MediaType("text/html", fileExtension = "html")
-        public val JAVASCRIPT: MediaType = MediaType("text/javascript", fileExtension = "js")
-        public val JPEG: MediaType = MediaType("image/jpeg", fileExtension = "jpeg")
-        public val JSON: MediaType = MediaType("application/json")
-        public val JSON_PROBLEM_DETAILS: MediaType = MediaType(
-            "application/problem+json",
-            name = "HTTP Problem Details",
-            fileExtension = "json"
-        )
-        public val JXL: MediaType = MediaType("image/jxl", fileExtension = "jxl")
+        public val AAC: MediaType = MediaType("audio/aac")!!
+        public val ACSM: MediaType = MediaType("application/vnd.adobe.adept+xml")!!
+        public val AIFF: MediaType = MediaType("audio/aiff")!!
+        public val AVI: MediaType = MediaType("video/x-msvideo")!!
+        public val AVIF: MediaType = MediaType("image/avif")!!
+        public val BINARY: MediaType = MediaType("application/octet-stream")!!
+        public val BMP: MediaType = MediaType("image/bmp")!!
+        public val CBZ: MediaType = MediaType("application/vnd.comicbook+zip")!!
+        public val CSS: MediaType = MediaType("text/css")!!
+        public val DIVINA: MediaType = MediaType("application/divina+zip")!!
+        public val DIVINA_MANIFEST: MediaType = MediaType("application/divina+json")!!
+        public val EPUB: MediaType = MediaType("application/epub+zip")!!
+        public val GIF: MediaType = MediaType("image/gif")!!
+        public val GZ: MediaType = MediaType("application/gzip")!!
+        public val HTML: MediaType = MediaType("text/html")!!
+        public val JAVASCRIPT: MediaType = MediaType("text/javascript")!!
+        public val JPEG: MediaType = MediaType("image/jpeg")!!
+        public val JSON: MediaType = MediaType("application/json")!!
+        public val JSON_PROBLEM_DETAILS: MediaType = MediaType("application/problem+json")!!
+        public val JXL: MediaType = MediaType("image/jxl")!!
         public val LCP_LICENSE_DOCUMENT: MediaType = MediaType(
-            "application/vnd.readium.lcp.license.v1.0+json",
-            name = "LCP License",
-            fileExtension = "lcpl"
-        )
-        public val LCP_PROTECTED_AUDIOBOOK: MediaType = MediaType(
-            "application/audiobook+lcp",
-            name = "LCP Protected Audiobook",
-            fileExtension = "lcpa"
-        )
-        public val LCP_PROTECTED_PDF: MediaType = MediaType(
-            "application/pdf+lcp",
-            name = "LCP Protected PDF",
-            fileExtension = "lcpdf"
-        )
+            "application/vnd.readium.lcp.license.v1.0+json"
+        )!!
+        public val LCP_PROTECTED_AUDIOBOOK: MediaType = MediaType("application/audiobook+lcp")!!
+        public val LCP_PROTECTED_PDF: MediaType = MediaType("application/pdf+lcp")!!
         public val LCP_STATUS_DOCUMENT: MediaType = MediaType(
             "application/vnd.readium.license.status.v1.0+json"
-        )
-        public val LPF: MediaType = MediaType("application/lpf+zip", fileExtension = "lpf")
-        public val MP3: MediaType = MediaType("audio/mpeg", fileExtension = "mp3")
-        public val MPEG: MediaType = MediaType("video/mpeg", fileExtension = "mpeg")
-        public val NCX: MediaType = MediaType("application/x-dtbncx+xml", fileExtension = "ncx")
-        public val OGG: MediaType = MediaType("audio/ogg", fileExtension = "oga")
-        public val OGV: MediaType = MediaType("video/ogg", fileExtension = "ogv")
-        public val OPDS1: MediaType = MediaType("application/atom+xml;profile=opds-catalog")
+        )!!
+        public val LPF: MediaType = MediaType("application/lpf+zip")!!
+        public val MP3: MediaType = MediaType("audio/mpeg")!!
+        public val MPEG: MediaType = MediaType("video/mpeg")!!
+        public val NCX: MediaType = MediaType("application/x-dtbncx+xml")!!
+        public val OGG: MediaType = MediaType("audio/ogg")!!
+        public val OGV: MediaType = MediaType("video/ogg")!!
+        public val OPDS1: MediaType = MediaType("application/atom+xml;profile=opds-catalog")!!
         public val OPDS1_ENTRY: MediaType = MediaType(
             "application/atom+xml;type=entry;profile=opds-catalog"
-        )
-        public val OPDS2: MediaType = MediaType("application/opds+json")
-        public val OPDS2_PUBLICATION: MediaType = MediaType("application/opds-publication+json")
+        )!!
+        public val OPDS2: MediaType = MediaType("application/opds+json")!!
+        public val OPDS2_PUBLICATION: MediaType = MediaType("application/opds-publication+json")!!
         public val OPDS_AUTHENTICATION: MediaType = MediaType(
             "application/opds-authentication+json"
-        )
-        public val OPUS: MediaType = MediaType("audio/opus", fileExtension = "opus")
-        public val OTF: MediaType = MediaType("font/otf", fileExtension = "otf")
-        public val PDF: MediaType = MediaType(
-            "application/pdf",
-            name = "PDF",
-            fileExtension = "pdf"
-        )
-        public val PNG: MediaType = MediaType("image/png", fileExtension = "png")
-        public val READIUM_AUDIOBOOK: MediaType = MediaType(
-            "application/audiobook+zip",
-            name = "Readium Audiobook",
-            fileExtension = "audiobook"
-        )
-        public val READIUM_AUDIOBOOK_MANIFEST: MediaType = MediaType(
-            "application/audiobook+json",
-            name = "Readium Audiobook",
-            fileExtension = "json"
-        )
-        public val READIUM_WEBPUB: MediaType = MediaType(
-            "application/webpub+zip",
-            name = "Readium Web Publication",
-            fileExtension = "webpub"
-        )
-        public val READIUM_WEBPUB_MANIFEST: MediaType = MediaType(
-            "application/webpub+json",
-            name = "Readium Web Publication",
-            fileExtension = "json"
-        )
-        public val SMIL: MediaType = MediaType("application/smil+xml", fileExtension = "smil")
-        public val SVG: MediaType = MediaType("image/svg+xml", fileExtension = "svg")
-        public val TEXT: MediaType = MediaType("text/plain", fileExtension = "txt")
-        public val TIFF: MediaType = MediaType("image/tiff", fileExtension = "tiff")
-        public val TTF: MediaType = MediaType("font/ttf", fileExtension = "ttf")
-        public val W3C_WPUB_MANIFEST: MediaType = MediaType(
-            "application/x.readium.w3c.wpub+json",
-            name = "Web Publication",
-            fileExtension = "json"
-        ) // non-existent
-        public val WAV: MediaType = MediaType("audio/wav", fileExtension = "wav")
-        public val WEBM_AUDIO: MediaType = MediaType("audio/webm", fileExtension = "webm")
-        public val WEBM_VIDEO: MediaType = MediaType("video/webm", fileExtension = "webm")
-        public val WEBP: MediaType = MediaType("image/webp", fileExtension = "webp")
-        public val WOFF: MediaType = MediaType("font/woff", fileExtension = "woff")
-        public val WOFF2: MediaType = MediaType("font/woff2", fileExtension = "woff2")
-        public val XHTML: MediaType = MediaType("application/xhtml+xml", fileExtension = "xhtml")
-        public val XML: MediaType = MediaType("application/xml", fileExtension = "xml")
-        public val ZAB: MediaType = MediaType(
-            "application/x.readium.zab+zip",
-            name = "Zipped Audio Book",
-            fileExtension = "zab"
-        ) // non-existent
-        public val ZIP: MediaType = MediaType("application/zip", fileExtension = "zip")
+        )!!
+        public val OPUS: MediaType = MediaType("audio/opus")!!
+        public val OTF: MediaType = MediaType("font/otf")!!
+        public val PDF: MediaType = MediaType("application/pdf")!!
+        public val PNG: MediaType = MediaType("image/png")!!
+        public val READIUM_AUDIOBOOK: MediaType = MediaType("application/audiobook+zip")!!
+        public val READIUM_AUDIOBOOK_MANIFEST: MediaType = MediaType("application/audiobook+json")!!
+        public val READIUM_WEBPUB: MediaType = MediaType("application/webpub+zip")!!
+        public val READIUM_WEBPUB_MANIFEST: MediaType = MediaType("application/webpub+json")!!
+        public val SMIL: MediaType = MediaType("application/smil+xml")!!
+        public val SVG: MediaType = MediaType("image/svg+xml")!!
+        public val TEXT: MediaType = MediaType("text/plain")!!
+        public val TIFF: MediaType = MediaType("image/tiff")!!
+        public val TTF: MediaType = MediaType("font/ttf")!!
+        public val W3C_WPUB_MANIFEST: MediaType = MediaType("application/x.readium.w3c.wpub+json")!! // non-existent
+        public val WAV: MediaType = MediaType("audio/wav")!!
+        public val WEBM_AUDIO: MediaType = MediaType("audio/webm")!!
+        public val WEBM_VIDEO: MediaType = MediaType("video/webm")!!
+        public val WEBP: MediaType = MediaType("image/webp")!!
+        public val WOFF: MediaType = MediaType("font/woff")!!
+        public val WOFF2: MediaType = MediaType("font/woff2")!!
+        public val XHTML: MediaType = MediaType("application/xhtml+xml")!!
+        public val XML: MediaType = MediaType("application/xml")!!
+        public val ZAB: MediaType = MediaType("application/x.readium.zab+zip")!! // non-existent
+        public val ZIP: MediaType = MediaType("application/zip")!!
 
         // Sniffing
 
@@ -416,7 +349,8 @@ public class MediaType(
          * You can register additional sniffers globally by modifying this list.
          * The sniffers order is important, because some formats are subsets of other formats.
          */
-        public val sniffers: MutableList<Sniffer> = Sniffers.all.toMutableList()
+        @Deprecated(message = "Use FormatRegistry instead", level = DeprecationLevel.ERROR)
+        public val sniffers: MutableList<MediaTypeSniffer> = mutableListOf()
 
         /**
          * Resolves a format from a single file extension and media type hint, without checking the actual
@@ -432,8 +366,7 @@ public class MediaType(
         @Suppress("UNUSED_PARAMETER")
         public fun of(
             mediaType: String? = null,
-            fileExtension: String? = null,
-            sniffers: List<Sniffer> = MediaType.sniffers
+            fileExtension: String? = null
         ): MediaType? {
             TODO()
         }
@@ -452,8 +385,7 @@ public class MediaType(
         @Suppress("UNUSED_PARAMETER")
         public fun of(
             mediaTypes: List<String>,
-            fileExtensions: List<String>,
-            sniffers: List<Sniffer> = MediaType.sniffers
+            fileExtensions: List<String>
         ): MediaType? {
             TODO()
         }
@@ -470,8 +402,7 @@ public class MediaType(
         public fun ofFile(
             file: File,
             mediaType: String? = null,
-            fileExtension: String? = null,
-            sniffers: List<Sniffer> = MediaType.sniffers
+            fileExtension: String? = null
         ): MediaType? {
             TODO()
         }
@@ -490,8 +421,7 @@ public class MediaType(
         public fun ofFile(
             file: File,
             mediaTypes: List<String>,
-            fileExtensions: List<String>,
-            sniffers: List<Sniffer> = MediaType.sniffers
+            fileExtensions: List<String>
         ): MediaType? {
             TODO()
         }
@@ -508,8 +438,7 @@ public class MediaType(
         public fun ofFile(
             path: String,
             mediaType: String? = null,
-            fileExtension: String? = null,
-            sniffers: List<Sniffer> = MediaType.sniffers
+            fileExtension: String? = null
         ): MediaType? {
             TODO()
         }
@@ -528,8 +457,7 @@ public class MediaType(
         public fun ofFile(
             path: String,
             mediaTypes: List<String>,
-            fileExtensions: List<String>,
-            sniffers: List<Sniffer> = MediaType.sniffers
+            fileExtensions: List<String>
         ): MediaType? {
             TODO()
         }
@@ -546,8 +474,7 @@ public class MediaType(
         public fun ofBytes(
             bytes: () -> ByteArray,
             mediaType: String? = null,
-            fileExtension: String? = null,
-            sniffers: List<Sniffer> = MediaType.sniffers
+            fileExtension: String? = null
         ): MediaType? {
             TODO()
         }
@@ -566,8 +493,7 @@ public class MediaType(
         public fun ofBytes(
             bytes: () -> ByteArray,
             mediaTypes: List<String>,
-            fileExtensions: List<String>,
-            sniffers: List<Sniffer> = MediaType.sniffers
+            fileExtensions: List<String>
         ): MediaType? {
             TODO()
         }
@@ -588,8 +514,7 @@ public class MediaType(
             uri: Uri,
             contentResolver: ContentResolver,
             mediaType: String? = null,
-            fileExtension: String? = null,
-            sniffers: List<Sniffer> = MediaType.sniffers
+            fileExtension: String? = null
         ): MediaType? {
             TODO()
         }
@@ -610,8 +535,7 @@ public class MediaType(
             uri: Uri,
             contentResolver: ContentResolver,
             mediaTypes: List<String>,
-            fileExtensions: List<String>,
-            sniffers: List<Sniffer> = MediaType.sniffers
+            fileExtensions: List<String>
         ): MediaType? {
             TODO()
         }
@@ -672,8 +596,7 @@ public class MediaType(
         public fun of(
             file: File,
             mediaType: String? = null,
-            fileExtension: String? = null,
-            sniffers: List<Sniffer> = MediaType.sniffers
+            fileExtension: String? = null
         ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
@@ -681,8 +604,7 @@ public class MediaType(
         public fun of(
             file: File,
             mediaTypes: List<String>,
-            fileExtensions: List<String>,
-            sniffers: List<Sniffer> = MediaType.sniffers
+            fileExtensions: List<String>
         ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
@@ -690,8 +612,7 @@ public class MediaType(
         public fun of(
             bytes: () -> ByteArray,
             mediaType: String? = null,
-            fileExtension: String? = null,
-            sniffers: List<Sniffer> = MediaType.sniffers
+            fileExtension: String? = null
         ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
@@ -699,8 +620,7 @@ public class MediaType(
         public fun of(
             bytes: () -> ByteArray,
             mediaTypes: List<String>,
-            fileExtensions: List<String>,
-            sniffers: List<Sniffer> = MediaType.sniffers
+            fileExtensions: List<String>
         ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
@@ -709,8 +629,7 @@ public class MediaType(
             uri: Uri,
             contentResolver: ContentResolver,
             mediaType: String? = null,
-            fileExtension: String? = null,
-            sniffers: List<Sniffer> = MediaType.sniffers
+            fileExtension: String? = null
         ): MediaType? = null
 
         @Suppress("UNUSED_PARAMETER")
@@ -719,8 +638,7 @@ public class MediaType(
             uri: Uri,
             contentResolver: ContentResolver,
             mediaTypes: List<String>,
-            fileExtensions: List<String>,
-            sniffers: List<Sniffer> = MediaType.sniffers
+            fileExtensions: List<String>
         ): MediaType? = null
     }
 }

@@ -180,7 +180,6 @@ public class Publication(
                     null
                 }
             }
-            // FIXME: To remove when the `Resource` properly sniffs its content media type.
             .withMediaType(link.mediaType)
     }
 

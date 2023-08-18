@@ -6,7 +6,8 @@
 
 package org.readium.r2.shared.asset
 
-import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.format.Format
+import org.readium.r2.shared.resource.Resource as SharedResource
 
 /**
  * An asset which is either a single resource or a container that holds multiple resources.
@@ -14,14 +15,14 @@ import org.readium.r2.shared.util.mediatype.MediaType
 public sealed class Asset {
 
     /**
-     * Media type of the asset.
-     */
-    public abstract val mediaType: MediaType
-
-    /**
      * Type of the asset source.
      */
-    public abstract val assetType: AssetType
+    public abstract val type: AssetType
+
+    /**
+     * Media format of the asset.
+     */
+    public abstract val format: Format
 
     /**
      * Releases in-memory resources related to this asset.
@@ -31,15 +32,15 @@ public sealed class Asset {
     /**
      * A single resource asset.
      *
-     * @param mediaType Media type of the asset.
+     * @param format Media format of the asset.
      * @param resource Opened resource to access the asset.
      */
     public class Resource(
-        override val mediaType: MediaType,
-        public val resource: org.readium.r2.shared.resource.Resource
+        override val format: Format,
+        public val resource: SharedResource
     ) : Asset() {
 
-        override val assetType: AssetType =
+        override val type: AssetType =
             AssetType.Resource
 
         override suspend fun close() {
@@ -50,17 +51,17 @@ public sealed class Asset {
     /**
      * A container asset providing access to several resources.
      *
-     * @param mediaType Media type of the asset.
+     * @param format Media format of the asset.
      * @param exploded If this container is an exploded or packaged container.
      * @param container Opened container to access asset resources.
      */
     public class Container(
-        override val mediaType: MediaType,
+        override val format: Format,
         exploded: Boolean,
         public val container: org.readium.r2.shared.resource.Container
     ) : Asset() {
 
-        override val assetType: AssetType =
+        override val type: AssetType =
             if (exploded) {
                 AssetType.Directory
             } else {

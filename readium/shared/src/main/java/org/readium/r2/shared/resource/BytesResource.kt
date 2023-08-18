@@ -8,8 +8,7 @@ package org.readium.r2.shared.resource
 
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.extensions.coerceIn
-import org.readium.r2.shared.extensions.requireLengthFitInt
+import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -41,15 +40,6 @@ public sealed class BaseBytesResource(
         }
 
         return _bytes.map { it.read(range) }
-    }
-
-    private fun ByteArray.read(range: LongRange): ByteArray {
-        @Suppress("NAME_SHADOWING")
-        val range = range
-            .coerceIn(0L until size)
-            .requireLengthFitInt()
-
-        return sliceArray(range.map(Long::toInt))
     }
 
     override suspend fun close() {}

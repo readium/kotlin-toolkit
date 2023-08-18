@@ -6,17 +6,9 @@
 
 package org.readium.r2.shared.util.mediatype
 
-import android.content.ContentResolver
-import android.net.Uri
-import android.provider.MediaStore
-import java.io.File
-import org.readium.r2.shared.BuildConfig
-import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.resource.*
-import org.readium.r2.shared.util.Either
-import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.toUrl
 
+/*
 public class MediaTypeRetriever(
     resourceFactory: ResourceFactory = FileResourceFactory(),
     containerFactory: ContainerFactory = DirectoryContainerFactory(),
@@ -276,3 +268,5 @@ public class MediaTypeRetriever(
         return null
     }
 }
+
+ */

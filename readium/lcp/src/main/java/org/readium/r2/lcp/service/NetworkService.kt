@@ -21,9 +21,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.util.http.retrieve
+import org.readium.r2.shared.format.FormatHints
+import org.readium.r2.shared.format.FormatRegistry
+import org.readium.r2.shared.util.http.invoke
+import org.readium.r2.shared.util.mediatype.HintMediaTypeSnifferContext
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import timber.log.Timber
 
 internal typealias URLParameters = Map<String, String?>
@@ -34,7 +36,7 @@ internal class NetworkException(val status: Int?, cause: Throwable? = null) : Ex
 )
 
 internal class NetworkService(
-    private val mediaTypeRetriever: MediaTypeRetriever
+    private val formatRegistry: FormatRegistry
 ) {
     enum class Method(val value: String) {
         GET("GET"), POST("POST"), PUT("PUT");
@@ -138,10 +140,11 @@ internal class NetworkService(
                 }
             }
 
-            mediaTypeRetriever.retrieve(
-                connection = connection,
-                mediaType = mediaType
-            )
+            formatRegistry.retrieve(
+                HintMediaTypeSnifferContext(
+                    hints = FormatHints(connection, mediaType = mediaType)
+                )
+            )?.mediaType
         } catch (e: Exception) {
             Timber.e(e)
             throw LcpException.Network(e)

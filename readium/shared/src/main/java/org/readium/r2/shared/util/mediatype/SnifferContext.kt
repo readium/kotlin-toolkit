@@ -6,6 +6,7 @@
 
 package org.readium.r2.shared.util.mediatype
 
+/*
 import java.io.File
 import java.io.InputStream
 import java.nio.charset.Charset
@@ -27,7 +28,7 @@ public sealed class SnifferContext(
 ) {
     /** Media type hints. */
     public val mediaTypes: List<MediaType> = mediaTypes
-        .mapNotNull { MediaType.parse(it) }
+        .mapNotNull { MediaType(it) }
 
     /** File extension hints. */
     public val fileExtensions: List<String> = fileExtensions
@@ -55,7 +56,7 @@ public sealed class SnifferContext(
      */
     public fun hasMediaType(vararg mediaTypes: String): Boolean {
         @Suppress("NAME_SHADOWING")
-        val mediaTypes = mediaTypes.mapNotNull { MediaType.parse(it) }
+        val mediaTypes = mediaTypes.mapNotNull { MediaType(it) }
         for (mediaType in mediaTypes) {
             if (this.mediaTypes.any { mediaType.contains(it) }) {
                 return true
@@ -308,3 +309,4 @@ internal class BytesSnifferContextFactory(
             )
     }
 }
+ */

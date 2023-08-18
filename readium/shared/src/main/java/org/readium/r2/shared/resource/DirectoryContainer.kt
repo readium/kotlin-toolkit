@@ -14,6 +14,7 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.isParentOf
 import org.readium.r2.shared.extensions.tryOr
+import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.util.Url
 
 /**
@@ -21,11 +22,12 @@ import org.readium.r2.shared.util.Url
  */
 internal class DirectoryContainer(
     private val root: File,
-    private val entries: List<File>
+    private val entries: List<File>,
+    private val formatRegistry: FormatRegistry
 ) : Container {
 
     private inner class FileEntry(file: File) :
-        Container.Entry, Resource by FileResource(file, mediaType = null) {
+        Container.Entry, Resource by FileResource(file, formatRegistry) {
 
         override val path: String =
             file.relativeTo(root).path.addPrefix("/")
@@ -49,7 +51,9 @@ internal class DirectoryContainer(
     override suspend fun close() {}
 }
 
-public class DirectoryContainerFactory : ContainerFactory {
+public class DirectoryContainerFactory(
+    private val formatRegistry: FormatRegistry
+) : ContainerFactory {
 
     override suspend fun create(url: Url): Try<Container, ContainerFactory.Error> {
         if (url.scheme != ContentResolver.SCHEME_FILE) {
@@ -78,7 +82,7 @@ public class DirectoryContainerFactory : ContainerFactory {
                 return Try.failure(ContainerFactory.Error.Forbidden(e))
             }
 
-        val container = DirectoryContainer(file, entries)
+        val container = DirectoryContainer(file, entries, formatRegistry)
 
         return Try.success(container)
     }

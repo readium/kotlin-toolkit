@@ -9,8 +9,11 @@ package org.readium.r2.lcp
 import org.readium.r2.lcp.auth.LcpPassphraseAuthentication
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.asset.Asset
+import org.readium.r2.shared.asset.AssetRetriever
+import org.readium.r2.shared.asset.AssetType
 import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.encryption
@@ -27,8 +30,7 @@ import org.readium.r2.shared.util.toFile
 internal class LcpContentProtection(
     private val lcpService: LcpService,
     private val authentication: LcpAuthenticating,
-    private val resourceFactory: ResourceFactory,
-    private val archiveFactory: ArchiveFactory
+    private val assetRetriever: AssetRetriever
 ) : ContentProtection {
 
     override val scheme: ContentProtection.Scheme =
@@ -79,7 +81,7 @@ internal class LcpContentProtection(
             ?.let {
                 lcpService.retrieveLicense(
                     it,
-                    asset.mediaType,
+                    asset.format.mediaType,
                     authentication,
                     allowUserInteraction,
                     sender
@@ -88,7 +90,7 @@ internal class LcpContentProtection(
             ?: lcpService.retrieveLicense(asset, authentication, allowUserInteraction, sender)
     }
 
-    private fun createResultAsset(
+    private suspend fun createResultAsset(
         asset: Asset.Container,
         license: Try<LcpLicense, LcpException>
     ): Try<ContentProtection.Asset, Publication.OpeningException> {
@@ -100,7 +102,7 @@ internal class LcpContentProtection(
         val container = TransformingContainer(asset.container, decryptor::transform)
 
         val protectedFile = ContentProtection.Asset(
-            mediaType = asset.mediaType,
+            mediaType = asset.format.mediaType,
             container = container,
             onCreatePublication = {
                 decryptor.encryptionData = (manifest.readingOrder + manifest.resources + manifest.links)
@@ -152,15 +154,13 @@ internal class LcpContentProtection(
                 )
             )
 
-        val resource = resourceFactory.create(url)
-            .getOrElse { return Try.failure(it.wrap()) }
-
-        val container = archiveFactory.create(resource, password = null)
-            .getOrElse { return Try.failure(it.wrap()) }
-
-        val publicationAsset = Asset.Container(link.mediaType, exploded = false, container)
-
-        return createResultAsset(publicationAsset, license)
+        return assetRetriever.retrieve(
+            url,
+            mediaType = link.mediaType,
+            assetType = AssetType.Archive
+        )
+            .mapFailure { Publication.OpeningException.ParsingFailed(it) }
+            .flatMap { createResultAsset(it as Asset.Container, license) }
     }
 
     private fun ResourceFactory.Error.wrap(): Publication.OpeningException =

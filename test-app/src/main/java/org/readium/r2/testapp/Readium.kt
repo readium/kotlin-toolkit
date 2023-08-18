@@ -14,6 +14,7 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
 import org.readium.r2.shared.resource.CompositeArchiveFactory
 import org.readium.r2.shared.resource.CompositeResourceFactory
@@ -24,8 +25,6 @@ import org.readium.r2.shared.resource.FileResourceFactory
 import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpResourceFactory
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.streamer.PublicationFactory
 
 /**
@@ -33,7 +32,11 @@ import org.readium.r2.streamer.PublicationFactory
  */
 class Readium(context: Context) {
 
-    private val httpClient = DefaultHttpClient()
+    private val formatRegistry = FormatRegistry()
+
+    val httpClient = DefaultHttpClient(
+        formatRegistry = formatRegistry
+    )
 
     private val archiveFactory = CompositeArchiveFactory(
         DefaultArchiveFactory(),
@@ -41,34 +44,29 @@ class Readium(context: Context) {
     )
 
     private val resourceFactory = CompositeResourceFactory(
-        FileResourceFactory(),
+        FileResourceFactory(formatRegistry),
         CompositeResourceFactory(
             ContentResourceFactory(context.contentResolver),
             HttpResourceFactory(httpClient)
         )
     )
 
-    private val containerFactory = DirectoryContainerFactory()
-
-    private val mediaTypeRetriever = MediaTypeRetriever(
-        resourceFactory,
-        containerFactory,
-        archiveFactory
+    private val containerFactory = DirectoryContainerFactory(
+        formatRegistry
     )
 
     val assetRetriever = AssetRetriever(
+        formatRegistry,
         resourceFactory,
         containerFactory,
-        archiveFactory,
-        context.contentResolver,
-        MediaType.sniffers
+        archiveFactory
     )
 
     /**
      * The LCP service decrypts LCP-protected publication and acquire publications from a
      * license file.
      */
-    val lcpService = LcpService(context, mediaTypeRetriever, resourceFactory, archiveFactory)
+    val lcpService = LcpService(context, assetRetriever, formatRegistry)
         ?.let { Try.success(it) }
         ?: Try.failure(UserException("liblcp is missing on the classpath"))
 
@@ -83,9 +81,10 @@ class Readium(context: Context) {
      */
     val publicationFactory = PublicationFactory(
         context,
-        contentProtections = contentProtections,
+        httpClient = httpClient,
         // Only required if you want to support PDF files using the PDFium adapter.
-        pdfFactory = PdfiumDocumentFactory(context)
+        pdfFactory = PdfiumDocumentFactory(context),
+        contentProtections = contentProtections
     )
 }
 

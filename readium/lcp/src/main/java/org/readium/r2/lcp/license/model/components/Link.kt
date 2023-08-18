@@ -69,7 +69,7 @@ public data class Link(val json: JSONObject) {
         get() = url(parameters = emptyMap())
 
     val mediaType: MediaType
-        get() = type?.let { MediaType.parse(it) } ?: MediaType.BINARY
+        get() = type?.let { MediaType(it) } ?: MediaType.BINARY
 
     /**
      * List of URI template parameter keys, if the [Link] is templated.

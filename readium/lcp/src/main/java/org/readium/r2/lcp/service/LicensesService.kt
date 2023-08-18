@@ -30,13 +30,12 @@ import org.readium.r2.lcp.license.container.LicenseContainer
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.asset.Asset
+import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.tryOr
+import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.publication.protection.ContentProtection
-import org.readium.r2.shared.resource.ArchiveFactory
-import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import timber.log.Timber
 
 internal class LicensesService(
@@ -46,25 +45,22 @@ internal class LicensesService(
     private val network: NetworkService,
     private val passphrases: PassphrasesService,
     private val context: Context,
-    private val mediaTypeRetriever: MediaTypeRetriever,
-    private val resourceFactory: ResourceFactory,
-    private val archiveFactory: ArchiveFactory
+    private val assetRetriever: AssetRetriever,
+    private val formatRegistry: FormatRegistry
 ) : LcpService, CoroutineScope by MainScope() {
 
-    override suspend fun isLcpProtected(file: File): Boolean =
-        tryOr(false) {
-            val mediaType = mediaTypeRetriever.retrieve(file) ?: return false
-            createLicenseContainer(file, mediaType).read()
-            true
-        }
+    override suspend fun isLcpProtected(file: File): Boolean {
+        val asset = assetRetriever.retrieve(file) ?: return false
+        return isLcpProtected(asset)
+    }
 
     override suspend fun isLcpProtected(asset: Asset): Boolean =
         tryOr(false) {
             when (asset) {
                 is Asset.Resource ->
-                    asset.mediaType == MediaType.LCP_LICENSE_DOCUMENT
+                    asset.format.mediaType == MediaType.LCP_LICENSE_DOCUMENT
                 is Asset.Container -> {
-                    createLicenseContainer(asset.container, asset.mediaType).read()
+                    createLicenseContainer(asset.container, asset.format.mediaType).read()
                     true
                 }
             }
@@ -73,7 +69,7 @@ internal class LicensesService(
     override fun contentProtection(
         authentication: LcpAuthenticating
     ): ContentProtection =
-        LcpContentProtection(this, authentication, resourceFactory, archiveFactory)
+        LcpContentProtection(this, authentication, assetRetriever)
 
     override suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit): Try<LcpService.AcquiredPublication, LcpException> =
         try {
@@ -251,9 +247,9 @@ internal class LicensesService(
             destination,
             mediaType = link.type,
             onProgress = onProgress
-        )
-            ?: mediaTypeRetriever.retrieve(mediaType = link.type)
-            ?: MediaType.EPUB
+        ) ?: link.mediaType
+
+        val format = formatRegistry.retrieve(mediaType)
 
         // Saves the License Document into the downloaded publication
         val container = createLicenseContainer(destination, mediaType)
@@ -261,7 +257,7 @@ internal class LicensesService(
 
         return LcpService.AcquiredPublication(
             localFile = destination,
-            suggestedFilename = "${license.id}.${mediaType.fileExtension}",
+            suggestedFilename = "${license.id}.${format.fileExtension ?: "epub"}",
             mediaType = mediaType,
             licenseDocument = license
         )

@@ -35,9 +35,9 @@ internal class ParserAssetFactory(
     ): Try<PublicationParser.Asset, Publication.OpeningException> {
         return when (asset) {
             is Asset.Container ->
-                createParserAssetForContainer(asset.container, asset.mediaType)
+                createParserAssetForContainer(asset.container, asset.format.mediaType)
             is Asset.Resource ->
-                createParserAssetForResource(asset.resource, asset.mediaType)
+                createParserAssetForResource(asset.resource, asset.format.mediaType)
         }
     }
 

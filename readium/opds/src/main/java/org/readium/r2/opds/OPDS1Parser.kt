@@ -20,7 +20,6 @@ import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.Href
-import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
@@ -46,7 +45,7 @@ public object Namespaces {
 public class OPDS1Parser {
     public companion object {
 
-        public suspend fun parseUrlString(url: String, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
+        public suspend fun parseUrlString(url: String, client: HttpClient): Try<ParseData, Exception> {
             return client.fetchWithDecoder(HttpRequest(url)) {
                 this.parse(it.body, URL(url))
             }
@@ -54,7 +53,7 @@ public class OPDS1Parser {
 
         public suspend fun parseRequest(
             request: HttpRequest,
-            client: HttpClient = DefaultHttpClient()
+            client: HttpClient
         ): Try<ParseData, Exception> {
             return client.fetchWithDecoder(request) {
                 this.parse(it.body, URL(request.url))
@@ -186,7 +185,7 @@ public class OPDS1Parser {
         }
 
         @Suppress("unused")
-        public suspend fun retrieveOpenSearchTemplate(feed: Feed): Try<String?, Exception> {
+        public suspend fun retrieveOpenSearchTemplate(feed: Feed, client: HttpClient): Try<String?, Exception> {
             var openSearchURL: URL? = null
             var selfMimeType: String? = null
 
@@ -204,7 +203,7 @@ public class OPDS1Parser {
                 return@let it
             }
 
-            return DefaultHttpClient().fetchWithDecoder(HttpRequest(unwrappedURL.toString())) {
+            return client.fetchWithDecoder(HttpRequest(unwrappedURL.toString())) {
                 val document = XmlParser().parse(it.body.inputStream())
 
                 val urls = document.get("Url", Namespaces.Search)

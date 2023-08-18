@@ -16,10 +16,10 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.*
+import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.isLazyInitialized
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * A [Resource] to access a [file].
@@ -27,14 +27,15 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 public class FileResource internal constructor(
     private val file: File,
     private val mediaType: MediaType?,
-    private val mediaTypeRetriever: MediaTypeRetriever?
+    private val formatRegistry: FormatRegistry?
 ) : Resource {
 
-    public constructor(file: File, mediaType: MediaType?) : this(file, mediaType, null)
-    public constructor(file: File, mediaTypeRetriever: MediaTypeRetriever?) : this(
+    public constructor(file: File, mediaType: MediaType) : this(file, mediaType, null)
+
+    public constructor(file: File, formatRegistry: FormatRegistry) : this(
         file,
         null,
-        mediaTypeRetriever
+        formatRegistry
     )
 
     private val randomAccessFile by lazy {
@@ -48,8 +49,10 @@ public class FileResource internal constructor(
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         ResourceTry.success(Resource.Properties())
 
-    override suspend fun mediaType(): ResourceTry<MediaType?> =
-        Try.success(mediaType ?: mediaTypeRetriever?.retrieve(file))
+    override suspend fun mediaType(): ResourceTry<MediaType?> = Try.success(
+        mediaType
+            ?: formatRegistry?.retrieve(ResourceMediaTypeSnifferContext(this))?.mediaType
+    )
 
     override suspend fun close() {
         withContext(Dispatchers.IO) {
@@ -124,7 +127,9 @@ public class FileResource internal constructor(
         "${javaClass.simpleName}(${file.path})"
 }
 
-public class FileResourceFactory : ResourceFactory {
+public class FileResourceFactory(
+    private val formatRegistry: FormatRegistry
+) : ResourceFactory {
 
     override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
         if (url.scheme != ContentResolver.SCHEME_FILE) {
@@ -141,6 +146,6 @@ public class FileResourceFactory : ResourceFactory {
             return Try.failure(ResourceFactory.Error.Forbidden(e))
         }
 
-        return Try.success(FileResource(file, mediaTypeRetriever = null))
+        return Try.success(FileResource(file, formatRegistry))
     }
 }

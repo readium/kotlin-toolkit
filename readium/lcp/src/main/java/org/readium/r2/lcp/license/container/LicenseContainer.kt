@@ -42,12 +42,12 @@ internal fun createLicenseContainer(
         else -> ZIPLicenseContainer(file.path, LICENSE_IN_RPF)
     }
 
-internal fun createLicenseContainer(
+internal suspend fun createLicenseContainer(
     asset: Asset
 ): LicenseContainer =
     when (asset) {
-        is Asset.Resource -> createLicenseContainer(asset.resource, asset.mediaType)
-        is Asset.Container -> createLicenseContainer(asset.container, asset.mediaType)
+        is Asset.Resource -> createLicenseContainer(asset.resource, asset.format.mediaType)
+        is Asset.Container -> createLicenseContainer(asset.container, asset.format.mediaType)
     }
 
 internal fun createLicenseContainer(
