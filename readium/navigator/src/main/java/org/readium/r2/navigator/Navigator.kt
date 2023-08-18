@@ -96,7 +96,7 @@ interface Navigator {
          * By returning false the navigator wont try to open the link itself and it is up
          * to the calling app to decide how to display the link.
          */
-        fun shouldJumpToLink(link: Link): Boolean {  return true }
+        fun shouldJumpToLink(link: Link): Boolean { return true }
     }
 
     @Deprecated("Use [currentLocator.value] instead", ReplaceWith("currentLocator.value"))
