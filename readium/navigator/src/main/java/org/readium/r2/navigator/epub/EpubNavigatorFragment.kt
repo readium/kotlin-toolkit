@@ -594,6 +594,7 @@ class EpubNavigatorFragment internal constructor(
             return go(locator, animated, completion)
         }
         return false
+    }
 
     private fun run(commands: List<RunScriptCommand>) {
         commands.forEach { run(it) }
