@@ -10,7 +10,6 @@ import android.app.DownloadManager as SystemDownloadManager
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
-import android.util.Log
 import java.util.Locale
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
@@ -23,6 +22,7 @@ import org.readium.r2.shared.units.Hz
 
 public class AndroidDownloadManager(
     private val context: Context,
+    private val name: String,
     private val destStorage: Storage,
     private val dirType: String,
     private val refreshRate: Hz,
@@ -39,7 +39,10 @@ public class AndroidDownloadManager(
 
     private val progressJob: Job = coroutineScope.launch {
         while (true) {
-            val cursor = downloadManager.query(SystemDownloadManager.Query())
+            val cursor = downloadManager.query(
+                SystemDownloadManager.Query()
+                    .setFilterById(*downloadsRepository.idsForName(name).toLongArray())
+            )
             notify(cursor)
             delay((1.0 / refreshRate.value).seconds)
         }
@@ -48,11 +51,15 @@ public class AndroidDownloadManager(
     private val downloadManager: SystemDownloadManager =
         context.getSystemService(Context.DOWNLOAD_SERVICE) as SystemDownloadManager
 
-    override fun submit(request: DownloadManager.Request): DownloadManager.RequestId {
+    private val downloadsRepository: DownloadsRepository =
+        DownloadsRepository(context)
+
+    public override suspend fun submit(request: DownloadManager.Request): DownloadManager.RequestId {
         val uri = Uri.parse(request.url.toString())
         val filename = filenameForUri(uri.toString())
         val androidRequest = createRequest(uri, filename, request.headers, request.title, request.description)
         val downloadId = downloadManager.enqueue(androidRequest)
+        downloadsRepository.addId(name, downloadId)
         return DownloadManager.RequestId(downloadId)
     }
 
@@ -100,13 +107,11 @@ public class AndroidDownloadManager(
         return this
     }
 
-    private fun notify(cursor: Cursor) = cursor.use {
+    private suspend fun notify(cursor: Cursor) = cursor.use {
         while (cursor.moveToNext()) {
             val facade = DownloadCursorFacade(cursor)
 
             val id = DownloadManager.RequestId(facade.id)
-
-            Log.d("AndroidDownloadManager", "${facade.id} ${facade.localUri}")
 
             when (facade.status) {
                 SystemDownloadManager.STATUS_FAILED -> {
@@ -119,6 +124,7 @@ public class AndroidDownloadManager(
                     val destUri = Uri.parse(facade.localUri!!)
                     listener.onDownloadCompleted(id, destUri)
                     downloadManager.remove(id.value)
+                    downloadsRepository.removeId(name, id.value)
                 }
                 SystemDownloadManager.STATUS_RUNNING -> {
                     val total = facade.total
@@ -160,7 +166,7 @@ public class AndroidDownloadManager(
                 DownloadManager.Error.Unknown
         }
 
-    public override fun close() {
+    public override suspend fun close() {
         progressJob.cancel()
     }
 }

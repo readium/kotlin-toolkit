@@ -54,4 +54,5 @@ dependencies {
     api(project(":readium:readium-shared"))
 
     implementation(libs.bundles.coroutines)
+    implementation(libs.androidx.datastore.preferences)
 }

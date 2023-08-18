@@ -17,12 +17,16 @@ public class AndroidDownloadManagerProvider(
     private val context: Context,
     private val destStorage: AndroidDownloadManager.Storage = AndroidDownloadManager.Storage.App,
     private val dirType: String = Environment.DIRECTORY_DOWNLOADS,
-    private val refreshRate: Hz = 1.0.hz
+    private val refreshRate: Hz = 0.1.hz
 ) : DownloadManagerProvider {
 
-    override fun createDownloadManager(listener: DownloadManager.Listener): DownloadManager {
+    override fun createDownloadManager(
+        listener: DownloadManager.Listener,
+        name: String
+    ): DownloadManager {
         return AndroidDownloadManager(
             context,
+            name,
             destStorage,
             dirType,
             refreshRate,

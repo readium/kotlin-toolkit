@@ -9,7 +9,6 @@
 
 package org.readium.r2.lcp
 
-import android.app.DownloadManager
 import android.content.Context
 import java.io.File
 import kotlinx.coroutines.DelicateCoroutinesApi

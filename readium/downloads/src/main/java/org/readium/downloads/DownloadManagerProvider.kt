@@ -8,5 +8,8 @@ package org.readium.downloads
 
 public interface DownloadManagerProvider {
 
-    public fun createDownloadManager(listener: DownloadManager.Listener): DownloadManager
+    public fun createDownloadManager(
+        listener: DownloadManager.Listener,
+        name: String = "default"
+    ): DownloadManager
 }

@@ -29,7 +29,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import timber.log.Timber
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "licenses")
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "readium-lcp-licenses")
 
 private val licensesKey: Preferences.Key<String> = stringPreferencesKey("licenses")
 
@@ -39,12 +39,6 @@ public class LcpPublicationRetriever(
     private val downloadManagerProvider: DownloadManagerProvider,
     private val mediaTypeRetriever: MediaTypeRetriever
 ) {
-
-    public data class AcquiredPublication(
-        val localFile: File,
-        val suggestedFilename: String,
-        val mediaType: MediaType
-    )
 
     @JvmInline
     public value class RequestId(public val value: Long)
@@ -155,11 +149,6 @@ public class LcpPublicationRetriever(
         val link = license.link(LicenseDocument.Rel.publication)
         val url = link?.url
             ?: throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.value)
-
-        val destination = withContext(Dispatchers.IO) {
-            File.createTempFile("lcp-${System.currentTimeMillis()}", ".tmp")
-        }
-        Timber.i("LCP destination $destination")
 
         val requestId = downloadManager.submit(
             DownloadManager.Request(

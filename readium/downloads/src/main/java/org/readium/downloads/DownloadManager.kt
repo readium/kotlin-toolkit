@@ -103,7 +103,7 @@ public interface DownloadManager {
         public fun onDownloadFailed(requestId: RequestId, error: Error)
     }
 
-    public fun submit(request: Request): RequestId
+    public suspend fun submit(request: Request): RequestId
 
-    public fun close()
+    public suspend fun close()
 }

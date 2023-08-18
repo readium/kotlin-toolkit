@@ -19,13 +19,12 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import org.readium.downloads.DownloadManager
 import org.readium.downloads.DownloadManagerProvider
-import org.readium.r2.lcp.LcpPublicationRetriever
 import org.readium.r2.lcp.LcpAuthenticating
 import org.readium.r2.lcp.LcpContentProtection
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpLicense
+import org.readium.r2.lcp.LcpPublicationRetriever
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.lcp.license.License
 import org.readium.r2.lcp.license.LicenseValidation
