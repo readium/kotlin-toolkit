@@ -43,7 +43,7 @@ public class AssetRetriever(
                 formatRegistry = formatRegistry,
                 resourceFactory = FileResourceFactory(formatRegistry),
                 containerFactory = DirectoryContainerFactory(formatRegistry),
-                archiveFactory = DefaultArchiveFactory()
+                archiveFactory = DefaultArchiveFactory(formatRegistry)
             )
         }
     }

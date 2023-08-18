@@ -19,7 +19,7 @@ public class ResourceMediaTypeSnifferContext(
 
 public class ContainerMediaTypeSnifferContext(
     private val container: Container,
-    override val hints: FormatHints
+    override val hints: FormatHints = FormatHints()
 ) : BaseContainerMediaTypeSnifferContext {
 
     override suspend fun entries(): Set<String>? =

@@ -13,9 +13,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.MessageError
 import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.util.toFile
 
-public class DefaultArchiveFactory : ArchiveFactory {
+public class DefaultArchiveFactory(
+    private val formatRegistry: FormatRegistry
+) : ArchiveFactory {
 
     override suspend fun create(resource: Resource, password: String?): Try<Container, ArchiveFactory.Error> {
         if (password != null) {
@@ -35,7 +38,7 @@ public class DefaultArchiveFactory : ArchiveFactory {
     internal suspend fun open(file: File): Try<Container, ArchiveFactory.Error> =
         withContext(Dispatchers.IO) {
             try {
-                val archive = JavaZipContainer(ZipFile(file), file)
+                val archive = JavaZipContainer(ZipFile(file), file, formatRegistry)
                 Try.success(archive)
             } catch (e: ZipException) {
                 Try.failure(ArchiveFactory.Error.FormatNotSupported(e))
