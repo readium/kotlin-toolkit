@@ -31,26 +31,25 @@ internal class DownloadsRepository(
             .map { data -> data[downloadIdsKey]!! }
             .map { string -> string.toData() }
 
-
-    public suspend fun addId(name: String, id: Long) {
+    suspend fun addId(name: String, id: Long) {
         context.dataStore.edit { data ->
             val current = downloadIds.first()
             val currentThisName = downloadIds.first()[name].orEmpty()
-            val newEntryThisName =  name to (currentThisName + id)
+            val newEntryThisName = name to (currentThisName + id)
             data[downloadIdsKey] = (current + newEntryThisName).toJson()
         }
     }
 
-    public suspend fun removeId(name: String, id: Long) {
+    suspend fun removeId(name: String, id: Long) {
         context.dataStore.edit { data ->
             val current = downloadIds.first()
             val currentThisName = downloadIds.first()[name].orEmpty()
-            val newEntryThisName =  name to (currentThisName - id)
+            val newEntryThisName = name to (currentThisName - id)
             data[downloadIdsKey] = (current + newEntryThisName).toJson()
         }
     }
 
-    public suspend fun idsForName(name: String): List<Long> {
+    suspend fun idsForName(name: String): List<Long> {
         return downloadIds.first()[name].orEmpty()
     }
 

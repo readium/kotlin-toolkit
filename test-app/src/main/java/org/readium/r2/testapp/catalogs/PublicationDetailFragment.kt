@@ -54,7 +54,6 @@ class PublicationDetailFragment : Fragment() {
 
         binding.catalogDetailDownloadButton.setOnClickListener {
             publication?.let { it1 ->
-                binding.catalogDetailProgressBar.visibility = View.VISIBLE
                 catalogViewModel.downloadPublication(
                     it1
                 )

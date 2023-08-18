@@ -29,7 +29,7 @@ class Application : android.app.Application() {
     lateinit var bookRepository: BookRepository
         private set
 
-    lateinit var bookImporter: BookImporter
+    lateinit var bookshelf: Bookshelf
         private set
 
     lateinit var readerRepository: Deferred<ReaderRepository>
@@ -57,8 +57,8 @@ class Application : android.app.Application() {
             BookDatabase.getDatabase(this).booksDao()
                 .let { dao -> BookRepository(dao) }
 
-        bookImporter =
-            BookImporter(
+        bookshelf =
+            Bookshelf(
                 applicationContext,
                 bookRepository,
                 storageDir,

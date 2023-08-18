@@ -14,11 +14,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.Url
-import org.readium.r2.testapp.BookImporter
-import org.readium.r2.testapp.BookRepository
+import org.readium.r2.testapp.Bookshelf
 import org.readium.r2.testapp.BuildConfig
 import org.readium.r2.testapp.domain.model.Book
 import org.readium.r2.testapp.reader.ReaderActivityContract
@@ -38,6 +40,9 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
 
     init {
         copySamplesFromAssetsToStorage()
+        app.bookshelf.channel.receiveAsFlow()
+            .onEach { sendImportFeedback(it) }
+            .launchIn(viewModelScope)
     }
 
     private fun copySamplesFromAssetsToStorage() = viewModelScope.launch(Dispatchers.IO) {
@@ -52,7 +57,7 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
                     val file =
                         app.assets.open("Samples/$element").copyToTempFile(app.storageDir)
                     if (file != null)
-                        app.bookImporter.addLocalBook(file)
+                        app.bookshelf.addLocalBook(file)
                     else if (BuildConfig.DEBUG)
                         error("Unable to load sample into the library")
                 }
@@ -68,35 +73,29 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun importPublicationFromUri(uri: Uri) =
         viewModelScope.launch {
-            app.bookImporter
-                .importBook(uri)
-                .failureOrNull()
-                .let { sendImportFeedback(it) }
+            app.bookshelf.importBook(uri)
         }
 
     fun addSharedStoragePublication(uri: Uri) =
         viewModelScope.launch {
-            app.bookImporter
-                .addSharedStorageBook(Url(uri.toString())!!)
-                .failureOrNull()
-                .let { sendImportFeedback(it) }
+            app.bookshelf.addSharedStorageBook(Url(uri.toString())!!)
         }
 
     fun addRemotePublication(url: Url) {
         viewModelScope.launch {
-            val exception = app.bookImporter
-                .addRemoteBook(url)
-                .failureOrNull()
-            sendImportFeedback(exception)
+            app.bookshelf.addRemoteBook(url)
         }
     }
 
-    private fun sendImportFeedback(error: BookImporter.ImportError?) {
-        if (error == null) {
-            channel.send(Event.ImportPublicationSuccess)
-        } else {
-            val errorMessage = error.getUserMessage(app)
-            channel.send(Event.ImportPublicationError(errorMessage))
+    private fun sendImportFeedback(event: Bookshelf.Event) {
+        when (event) {
+            is Bookshelf.Event.ImportPublicationError -> {
+                val errorMessage = event.error.getUserMessage(app)
+                channel.send(Event.ImportPublicationError(errorMessage))
+            }
+            Bookshelf.Event.ImportPublicationSuccess -> {
+                channel.send(Event.ImportPublicationSuccess)
+            }
         }
     }
 

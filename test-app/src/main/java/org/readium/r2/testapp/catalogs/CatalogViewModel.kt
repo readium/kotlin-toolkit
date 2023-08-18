@@ -9,24 +9,21 @@ package org.readium.r2.testapp.catalogs
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import java.io.File
 import java.net.MalformedURLException
-import java.net.URL
-import java.util.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.shared.util.http.HttpRequest
-import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.testapp.Bookshelf
 import org.readium.r2.testapp.domain.model.Catalog
 import org.readium.r2.testapp.utils.EventChannel
-import org.readium.r2.testapp.utils.extensions.downloadTo
 import timber.log.Timber
 
 class CatalogViewModel(application: Application) : AndroidViewModel(application) {
@@ -36,6 +33,13 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
 
     val detailChannel = EventChannel(Channel<Event.DetailEvent>(Channel.BUFFERED), viewModelScope)
     val eventChannel = EventChannel(Channel<Event.FeedEvent>(Channel.BUFFERED), viewModelScope)
+
+    init {
+        app.bookshelf.channel.receiveAsFlow()
+            .onEach { sendImportFeedback(it) }
+            .launchIn(viewModelScope)
+    }
+
     lateinit var publication: Publication
 
     fun parseCatalog(catalog: Catalog) = viewModelScope.launch {
@@ -62,32 +66,20 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun downloadPublication(publication: Publication) = viewModelScope.launch {
-        val filename = UUID.randomUUID().toString()
-        val dest = File(app.storageDir, filename)
-
-        getDownloadURL(publication)
-            .flatMap { url ->
-                url.downloadTo(dest)
-            }.flatMap {
-                val opdsCover = publication.images.firstOrNull()?.href
-                app.bookImporter.addLocalBook(dest, opdsCover)
-            }.onSuccess {
-                detailChannel.send(Event.DetailEvent.ImportPublicationSuccess)
-            }.onFailure {
-                detailChannel.send(Event.DetailEvent.ImportPublicationFailed)
-            }
+        app.bookshelf.importOpdsPublication(publication)
     }
 
-    private fun getDownloadURL(publication: Publication): Try<URL, Exception> =
-        publication.links
-            .firstOrNull { it.mediaType.isPublication || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
-            ?.let {
-                try {
-                    Try.success(URL(it.href))
-                } catch (e: Exception) {
-                    Try.failure(e)
-                }
-            } ?: Try.failure(Exception("No supported link to acquire publication."))
+    private fun sendImportFeedback(event: Bookshelf.Event) {
+        when (event) {
+            is Bookshelf.Event.ImportPublicationError -> {
+                val errorMessage = event.error.getUserMessage(app)
+                detailChannel.send(Event.DetailEvent.ImportPublicationFailed(errorMessage))
+            }
+            Bookshelf.Event.ImportPublicationSuccess -> {
+                detailChannel.send(Event.DetailEvent.ImportPublicationSuccess)
+            }
+        }
+    }
 
     sealed class Event {
 
@@ -102,7 +94,9 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
 
             object ImportPublicationSuccess : DetailEvent()
 
-            object ImportPublicationFailed : DetailEvent()
+            class ImportPublicationFailed(
+                private val message: String
+            ) : DetailEvent()
         }
     }
 }

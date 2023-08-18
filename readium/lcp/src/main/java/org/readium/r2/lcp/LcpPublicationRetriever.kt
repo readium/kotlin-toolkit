@@ -9,20 +9,17 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.downloads.DownloadManager
 import org.readium.downloads.DownloadManagerProvider
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
-import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -163,7 +160,7 @@ public class LcpPublicationRetriever(
 
         return RequestId(requestId.value)
     }
-    
+
     private suspend fun onDownloadCompleted(id: Long, dest: Url): LcpService.AcquiredPublication {
         val license = LicenseDocument(licenses.first()[id]!!.toByteArray())
         removeLicense(id)
@@ -190,14 +187,14 @@ public class LcpPublicationRetriever(
     private suspend fun persistLicense(id: Long, license: String) {
         context.dataStore.edit { data ->
             val newEntry = id to licenseToJson(id, license).toString()
-            val licenses =  licenses.first() + newEntry
+            val licenses = licenses.first() + newEntry
             data[licensesKey] = licenses.toJson()
         }
     }
 
     private suspend fun removeLicense(id: Long) {
         context.dataStore.edit { data ->
-            val uris =  licenses.first() - id
+            val uris = licenses.first() - id
             data[licensesKey] = uris.toJson()
         }
     }
