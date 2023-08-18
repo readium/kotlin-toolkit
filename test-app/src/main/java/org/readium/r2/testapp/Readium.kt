@@ -59,7 +59,8 @@ class Readium(context: Context) {
         formatRegistry,
         resourceFactory,
         containerFactory,
-        archiveFactory
+        archiveFactory,
+        context.contentResolver
     )
 
     /**

@@ -110,9 +110,9 @@ public object MediaTypeSniffers {
         }
 
         // OPDS Authentication Document.
-        if (context.hasMediaType("application/opds-authentication+json") || context.hasMediaType(
-                "application/vnd.opds.authentication.v1.0+json"
-            )
+        if (
+            context.hasMediaType("application/opds-authentication+json") ||
+            context.hasMediaType("application/vnd.opds.authentication.v1.0+json")
         ) {
             return@MediaTypeSniffer MediaType.OPDS_AUTHENTICATION
         }
@@ -159,9 +159,9 @@ public object MediaTypeSniffers {
 
     /** Sniffs an LCP License Document. */
     public val lcpLicense: MediaTypeSniffer = MediaTypeSniffer { context ->
-        if (context.hasFileExtension("lcpl") || context.hasMediaType(
-                "application/vnd.readium.lcp.license.v1.0+json"
-            )
+        if (
+            context.hasFileExtension("lcpl") ||
+            context.hasMediaType("application/vnd.readium.lcp.license.v1.0+json")
         ) {
             return@MediaTypeSniffer MediaType.LCP_LICENSE_DOCUMENT
         }
@@ -178,39 +178,52 @@ public object MediaTypeSniffers {
 
     /** Sniffs a bitmap image. */
     public val bitmap: MediaTypeSniffer = MediaTypeSniffer { context ->
-        if (context.hasFileExtension("avif") || context.hasMediaType("image/avif")) {
+        if (
+            context.hasFileExtension("avif") ||
+            context.hasMediaType("image/avif")
+        ) {
             return@MediaTypeSniffer MediaType.AVIF
         }
-        if (context.hasFileExtension("bmp", "dib") || context.hasMediaType(
-                "image/bmp",
-                "image/x-bmp"
-            )
+        if (
+            context.hasFileExtension("bmp", "dib") ||
+            context.hasMediaType("image/bmp", "image/x-bmp")
         ) {
             return@MediaTypeSniffer MediaType.BMP
         }
-        if (context.hasFileExtension("gif") || context.hasMediaType("image/gif")) {
+        if (
+            context.hasFileExtension("gif") ||
+            context.hasMediaType("image/gif")
+        ) {
             return@MediaTypeSniffer MediaType.GIF
         }
-        if (context.hasFileExtension("jpg", "jpeg", "jpe", "jif", "jfif", "jfi") || context.hasMediaType(
-                "image/jpeg"
-            )
+        if (
+            context.hasFileExtension("jpg", "jpeg", "jpe", "jif", "jfif", "jfi") ||
+            context.hasMediaType("image/jpeg")
         ) {
             return@MediaTypeSniffer MediaType.JPEG
         }
-        if (context.hasFileExtension("jxl") || context.hasMediaType("image/jxl")) {
+        if (
+            context.hasFileExtension("jxl") ||
+            context.hasMediaType("image/jxl")
+        ) {
             return@MediaTypeSniffer MediaType.JXL
         }
-        if (context.hasFileExtension("png") || context.hasMediaType("image/png")) {
+        if (
+            context.hasFileExtension("png") ||
+            context.hasMediaType("image/png")
+        ) {
             return@MediaTypeSniffer MediaType.PNG
         }
-        if (context.hasFileExtension("tiff", "tif") || context.hasMediaType(
-                "image/tiff",
-                "image/tiff-fx"
-            )
+        if (
+            context.hasFileExtension("tiff", "tif") ||
+            context.hasMediaType("image/tiff", "image/tiff-fx")
         ) {
             return@MediaTypeSniffer MediaType.TIFF
         }
-        if (context.hasFileExtension("webp") || context.hasMediaType("image/webp")) {
+        if (
+            context.hasFileExtension("webp") ||
+            context.hasMediaType("image/webp")
+        ) {
             return@MediaTypeSniffer MediaType.WEBP
         }
         return@MediaTypeSniffer null
@@ -253,29 +266,43 @@ public object MediaTypeSniffers {
 
     /** Sniffs a Readium Web Publication, protected or not by LCP. */
     public val webpub: MediaTypeSniffer = MediaTypeSniffer { context ->
-        if (context.hasFileExtension("audiobook") || context.hasMediaType(
-                "application/audiobook+zip"
-            )
+        if (
+            context.hasFileExtension("audiobook") ||
+            context.hasMediaType("application/audiobook+zip")
         ) {
             return@MediaTypeSniffer MediaType.READIUM_AUDIOBOOK
         }
 
-        if (context.hasFileExtension("divina") || context.hasMediaType("application/divina+zip")) {
+        if (
+            context.hasFileExtension("divina") ||
+            context.hasMediaType("application/divina+zip")
+        ) {
             return@MediaTypeSniffer MediaType.DIVINA
         }
 
-        if (context.hasFileExtension("webpub") || context.hasMediaType("application/webpub+zip")) {
+        if (
+            context.hasFileExtension("webpub") ||
+            context.hasMediaType("application/webpub+zip")
+        ) {
             return@MediaTypeSniffer MediaType.READIUM_WEBPUB
         }
 
-        if (context.hasFileExtension("lcpa") || context.hasMediaType("application/audiobook+lcp")) {
+        if (
+            context.hasFileExtension("lcpa") ||
+            context.hasMediaType("application/audiobook+lcp")
+        ) {
             return@MediaTypeSniffer MediaType.LCP_PROTECTED_AUDIOBOOK
         }
-        if (context.hasFileExtension("lcpdf") || context.hasMediaType("application/pdf+lcp")) {
+        if (
+            context.hasFileExtension("lcpdf") ||
+            context.hasMediaType("application/pdf+lcp")
+        ) {
             return@MediaTypeSniffer MediaType.LCP_PROTECTED_PDF
         }
 
-        if (context !is ContainerMediaTypeSnifferContext) {
+        if (
+            context !is ContainerMediaTypeSnifferContext
+        ) {
             return@MediaTypeSniffer null
         }
 
@@ -289,10 +316,14 @@ public object MediaTypeSniffers {
             }
 
         if (manifest != null) {
-            val isLcpProtected = context.contains("license.lcpl")
+            val isLcpProtected = context.contains("/license.lcpl")
 
             if (manifest.conformsTo(Publication.Profile.AUDIOBOOK)) {
-                return@MediaTypeSniffer if (isLcpProtected) MediaType.LCP_PROTECTED_AUDIOBOOK else MediaType.READIUM_AUDIOBOOK
+                return@MediaTypeSniffer if (isLcpProtected) {
+                    MediaType.LCP_PROTECTED_AUDIOBOOK
+                } else {
+                    MediaType.READIUM_AUDIOBOOK
+                }
             }
             if (manifest.conformsTo(Publication.Profile.DIVINA)) {
                 return@MediaTypeSniffer MediaType.DIVINA
@@ -316,7 +347,10 @@ public object MediaTypeSniffers {
 
         // Somehow, [JSONObject] can't access JSON-LD keys such as `@context`.
         val content = context.contentAsString() ?: ""
-        if (content.contains("@context") && content.contains("https://www.w3.org/ns/wp-context")) {
+        if (
+            content.contains("@context") &&
+            content.contains("https://www.w3.org/ns/wp-context")
+        ) {
             return@MediaTypeSniffer MediaType.W3C_WPUB_MANIFEST
         }
 
@@ -329,7 +363,10 @@ public object MediaTypeSniffers {
      * Reference: https://www.w3.org/publishing/epub3/epub-ocf.html#sec-zip-container-mime
      */
     public val epub: MediaTypeSniffer = MediaTypeSniffer { context ->
-        if (context.hasFileExtension("epub") || context.hasMediaType("application/epub+zip")) {
+        if (
+            context.hasFileExtension("epub") ||
+            context.hasMediaType("application/epub+zip")
+        ) {
             return@MediaTypeSniffer MediaType.EPUB
         }
 
@@ -354,7 +391,10 @@ public object MediaTypeSniffers {
      *  - https://www.w3.org/TR/pub-manifest/
      */
     public val lpf: MediaTypeSniffer = MediaTypeSniffer { context ->
-        if (context.hasFileExtension("lpf") || context.hasMediaType("application/lpf+zip")) {
+        if (
+            context.hasFileExtension("lpf") ||
+            context.hasMediaType("application/lpf+zip")
+        ) {
             return@MediaTypeSniffer MediaType.LPF
         }
 
@@ -362,7 +402,7 @@ public object MediaTypeSniffers {
             return@MediaTypeSniffer null
         }
 
-        if (context.contains("index.html")) {
+        if (context.contains("/index.html")) {
             return@MediaTypeSniffer MediaType.LPF
         }
 
@@ -408,7 +448,9 @@ public object MediaTypeSniffers {
      * Reference: https://wiki.mobileread.com/wiki/CBR_and_CBZ
      */
     public val archive: MediaTypeSniffer = MediaTypeSniffer { context ->
-        if (context.hasFileExtension("cbz") || context.hasMediaType(
+        if (
+            context.hasFileExtension("cbz") ||
+            context.hasMediaType(
                 "application/vnd.comicbook+zip",
                 "application/x-cbz",
                 "application/x-cbr"
@@ -449,7 +491,10 @@ public object MediaTypeSniffers {
      * Reference: https://www.loc.gov/preservation/digital/formats/fdd/fdd000123.shtml
      */
     public val pdf: MediaTypeSniffer = MediaTypeSniffer { context ->
-        if (context.hasFileExtension("pdf") || context.hasMediaType("application/pdf")) {
+        if (
+            context.hasFileExtension("pdf") ||
+            context.hasMediaType("application/pdf")
+        ) {
             return@MediaTypeSniffer MediaType.PDF
         }
 
@@ -490,7 +535,9 @@ public object MediaTypeSniffers {
 
     /** Sniffs a ZIP archive. */
     public val zip: MediaTypeSniffer = MediaTypeSniffer { context ->
-        if (context.hasMediaType("application/zip") && context is ContainerMediaTypeSnifferContext) {
+        if (
+            context.hasMediaType("application/zip") && context is ContainerMediaTypeSnifferContext
+        ) {
             return@MediaTypeSniffer MediaType.ZIP
         }
         return@MediaTypeSniffer null

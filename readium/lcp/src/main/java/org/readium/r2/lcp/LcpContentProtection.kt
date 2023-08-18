@@ -90,7 +90,7 @@ internal class LcpContentProtection(
             ?: lcpService.retrieveLicense(asset, authentication, allowUserInteraction, sender)
     }
 
-    private suspend fun createResultAsset(
+    private fun createResultAsset(
         asset: Asset.Container,
         license: Try<LcpLicense, LcpException>
     ): Try<ContentProtection.Asset, Publication.OpeningException> {

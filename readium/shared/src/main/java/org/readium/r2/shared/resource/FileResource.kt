@@ -6,7 +6,6 @@
 
 package org.readium.r2.shared.resource
 
-import android.content.ContentResolver
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.RandomAccessFile
@@ -16,8 +15,10 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.*
+import org.readium.r2.shared.format.FormatHints
 import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.isFile
 import org.readium.r2.shared.util.isLazyInitialized
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -51,7 +52,12 @@ public class FileResource internal constructor(
 
     override suspend fun mediaType(): ResourceTry<MediaType?> = Try.success(
         mediaType
-            ?: formatRegistry?.retrieve(ResourceMediaTypeSnifferContext(this))?.mediaType
+            ?: formatRegistry?.retrieve(
+                ResourceMediaTypeSnifferContext(
+                    resource = this,
+                    hints = FormatHints(fileExtension = file.extension)
+                )
+            )?.mediaType
     )
 
     override suspend fun close() {
@@ -132,7 +138,7 @@ public class FileResourceFactory(
 ) : ResourceFactory {
 
     override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
-        if (url.scheme != ContentResolver.SCHEME_FILE) {
+        if (!url.isFile()) {
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
         }
 

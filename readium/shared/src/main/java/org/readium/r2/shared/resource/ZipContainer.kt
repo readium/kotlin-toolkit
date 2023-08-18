@@ -22,6 +22,7 @@ import org.readium.r2.shared.extensions.optNullableLong
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.format.FormatHints
 import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.io.CountingInputStream
@@ -107,7 +108,14 @@ internal class JavaZipContainer(
         override val source: Url? = null
 
         override suspend fun mediaType(): ResourceTry<MediaType?> =
-            Try.success(formatRegistry.retrieve(ResourceMediaTypeSnifferContext(this))?.mediaType)
+            Try.success(
+                formatRegistry.retrieve(
+                    ResourceMediaTypeSnifferContext(
+                        resource = this,
+                        hints = FormatHints(fileExtension = File(path).extension)
+                    )
+                )?.mediaType
+            )
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
             Try.failure(Resource.Exception.NotFound())
@@ -130,7 +138,14 @@ internal class JavaZipContainer(
         override val source: Url? = null
 
         override suspend fun mediaType(): ResourceTry<MediaType?> =
-            Try.success(formatRegistry.retrieve(ResourceMediaTypeSnifferContext(this))?.mediaType)
+            Try.success(
+                formatRegistry.retrieve(
+                    ResourceMediaTypeSnifferContext(
+                        resource = this,
+                        hints = FormatHints(fileExtension = File(path).extension)
+                    )
+                )?.mediaType
+            )
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
             ResourceTry.success(

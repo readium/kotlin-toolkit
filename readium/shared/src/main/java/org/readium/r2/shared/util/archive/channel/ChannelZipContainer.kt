@@ -14,6 +14,7 @@ import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.format.FormatHints
 import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.ArchiveProperties
@@ -61,7 +62,14 @@ internal class ChannelZipContainer(
             )
 
         override suspend fun mediaType(): ResourceTry<MediaType?> =
-            Try.success(formatRegistry.retrieve(ResourceMediaTypeSnifferContext(this))?.mediaType)
+            Try.success(
+                formatRegistry.retrieve(
+                    ResourceMediaTypeSnifferContext(
+                        resource = this,
+                        hints = FormatHints(fileExtension = File(path).extension)
+                    )
+                )?.mediaType
+            )
 
         override suspend fun length(): ResourceTry<Long> =
             entry.size.takeUnless { it == -1L }

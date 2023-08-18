@@ -6,12 +6,16 @@
 
 package org.readium.r2.shared.asset
 
+import android.content.ContentResolver
+import android.content.Context
 import android.net.Uri
+import android.provider.MediaStore
 import java.io.File
 import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.error.getOrElse
+import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.FormatHints
 import org.readium.r2.shared.format.FormatRegistry
@@ -33,17 +37,19 @@ public class AssetRetriever(
     private val formatRegistry: FormatRegistry,
     private val resourceFactory: ResourceFactory,
     private val containerFactory: ContainerFactory,
-    private val archiveFactory: ArchiveFactory
+    private val archiveFactory: ArchiveFactory,
+    private val contentResolver: ContentResolver
 ) {
 
     public companion object {
-        public operator fun invoke(): AssetRetriever {
+        public operator fun invoke(context: Context): AssetRetriever {
             val formatRegistry = FormatRegistry()
             return AssetRetriever(
                 formatRegistry = formatRegistry,
                 resourceFactory = FileResourceFactory(formatRegistry),
                 containerFactory = DirectoryContainerFactory(formatRegistry),
-                archiveFactory = DefaultArchiveFactory(formatRegistry)
+                archiveFactory = DefaultArchiveFactory(formatRegistry),
+                contentResolver = context.contentResolver
             )
         }
     }
@@ -275,9 +281,41 @@ public class AssetRetriever(
         url: Url,
         hints: FormatHints = FormatHints()
     ): Asset? {
-        @Suppress("NAME_SHADOWING")
-        val hints =
-            hints + FormatHints(fileExtension = url.extension)
+        val allHints = FormatHints(
+            mediaTypes = buildList {
+                addAll(hints.mediaTypes)
+
+                if (url.scheme == ContentResolver.SCHEME_CONTENT) {
+                    contentResolver.getType(url.uri)
+                        ?.let { MediaType(it) }
+                        // Note: We exclude JSON, XML or ZIP formats otherwise they will be detected
+                        // during the light sniffing step and bypass the RWPM or EPUB heavy
+                        // sniffing.
+                        ?.takeUnless {
+                            it.matchesAny(
+                                MediaType.BINARY,
+                                MediaType.JSON,
+                                MediaType.ZIP,
+                                MediaType.XML
+                            )
+                        }
+                        ?.let { add(it) }
+                }
+            },
+            fileExtensions = buildList {
+                addAll(hints.fileExtensions)
+
+                url.extension?.let { add(it) }
+
+                if (url.scheme == ContentResolver.SCHEME_CONTENT) {
+                    contentResolver.queryProjection(url.uri, MediaStore.MediaColumns.DISPLAY_NAME)?.let { filename ->
+                        File(filename).extension
+                            .takeUnless { it.isBlank() }
+                            ?.let { add(it) }
+                    }
+                }
+            }
+        )
 
         val resource = resourceFactory
             .create(url)
@@ -285,15 +323,15 @@ public class AssetRetriever(
                 when (error) {
                     is ResourceFactory.Error.NotAResource ->
                         return containerFactory.create(url).getOrNull()
-                            ?.let { retrieve(it, exploded = true, hints) }
+                            ?.let { retrieve(it, exploded = true, allHints) }
                     else -> return null
                 }
             }
 
         return archiveFactory.create(resource, password = null)
             .fold(
-                { retrieve(container = it, exploded = false, hints) },
-                { retrieve(resource, hints) }
+                { retrieve(container = it, exploded = false, allHints) },
+                { retrieve(resource, allHints) }
             )
     }
 

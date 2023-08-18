@@ -14,8 +14,8 @@ import org.readium.r2.shared.util.mediatype.MediaTypeSnifferContext
 
 public class FormatRegistry(
     formats: List<Format> = listOf(
-        // The known formats are not declared as constants to discourage comparing the format
-        // instance instead of the media type for equality.
+        // The known formats are not declared as public constants to discourage comparing the format
+        // instead of the media type for equality.
         Format(
             MediaType.ACSM,
             name = "Adobe Content Server Message",
@@ -108,10 +108,31 @@ public class FormatRegistry(
         retrieve(HintMediaTypeSnifferContext(hints = FormatHints(mediaType)))
             ?: Format(mediaType)
 
-    public suspend fun retrieve(context: MediaTypeSnifferContext): Format? =
-        sniffer.sniff(context)?.let {
-            formats[it] ?: Format(it)
+    public suspend fun retrieve(context: MediaTypeSnifferContext): Format? {
+        suspend fun doRetrieve(context: MediaTypeSnifferContext): Format? =
+            sniffer.sniff(context)?.let {
+                formats[it] ?: Format(it)
+            }
+
+        // Light sniffing with only media type hints
+        if (context.hints.mediaTypes.isNotEmpty()) {
+            doRetrieve(
+                HintMediaTypeSnifferContext(
+                    hints = context.hints.copy(fileExtensions = emptyList())
+                )
+            )
+                ?.let { return it }
         }
+
+        // Light sniffing with both media type hints and file extensions
+        if (context.hints.fileExtensions.isNotEmpty()) {
+            doRetrieve(HintMediaTypeSnifferContext(hints = context.hints))
+                ?.let { return it }
+        }
+
+        // Fallback on heavy sniffing
+        return doRetrieve(context)
+    }
 }
 
 /**
