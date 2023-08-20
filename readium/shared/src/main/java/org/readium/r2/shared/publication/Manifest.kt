@@ -192,12 +192,10 @@ public data class Manifest(
                 warnings
             )
                 .map {
-                    if (!packaged || "self" !in it.rels) {
-                        it
+                    if (packaged && "self" in it.rels) {
+                        it.copy(rels = it.rels - "self" + "alternate")
                     } else {
-                        it.copy(
-                            rels = it.rels - "self" + "alternate"
-                        )
+                        it
                     }
                 }
 

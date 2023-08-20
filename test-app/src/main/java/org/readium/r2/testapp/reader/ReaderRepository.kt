@@ -25,6 +25,7 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.allAreHtml
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.Url
 import org.readium.r2.testapp.PublicationError
@@ -118,7 +119,7 @@ class ReaderRepository(
         val readerInitData = when {
             publication.conformsTo(Publication.Profile.AUDIOBOOK) ->
                 openAudio(bookId, publication, initialLocator)
-            publication.conformsTo(Publication.Profile.EPUB) ->
+            publication.conformsTo(Publication.Profile.EPUB) || publication.readingOrder.allAreHtml ->
                 openEpub(bookId, publication, initialLocator)
             publication.conformsTo(Publication.Profile.PDF) ->
                 openPdf(bookId, publication, initialLocator)
