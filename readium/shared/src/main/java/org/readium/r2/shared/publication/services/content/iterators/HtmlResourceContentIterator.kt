@@ -311,7 +311,7 @@ public class HtmlResourceContentIterator internal constructor(
                                         source.srcRelativeToHref(baseLocator.href)?.let { href ->
                                             Link(
                                                 href = href,
-                                                type = source.attr("type").takeUnless { it.isBlank() }
+                                                mediaType = MediaType(source.attr("type"))
                                             )
                                         }
                                     }

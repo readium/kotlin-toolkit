@@ -24,6 +24,10 @@ import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
+import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
+import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 
 public enum class OPDSParserError {
     MissingTitle
@@ -128,7 +132,7 @@ public class OPDS1Parser {
 
                         val newLink = Link(
                             href = Href(href, baseHref = feed.href.toString()).percentEncodedString,
-                            type = link.getAttr("type"),
+                            mediaType = sniff(link.getAttr("type")),
                             title = entry.getFirst("title", Namespaces.Atom)?.text,
                             rels = listOfNotNull(link.getAttr("rel")).toSet(),
                             properties = Properties(otherProperties = otherProperties)
@@ -147,7 +151,7 @@ public class OPDS1Parser {
                 val hrefAttr = link.getAttr("href") ?: continue
                 val href = Href(hrefAttr, baseHref = feed.href.toString()).percentEncodedString
                 val title = link.getAttr("title")
-                val type = link.getAttr("type")
+                val type = sniff(link.getAttr("type"))
                 val rels = listOfNotNull(link.getAttr("rel")).toSet()
 
                 val facetGroupName = link.getAttrNs("facetGroup", Namespaces.Opds)
@@ -159,14 +163,14 @@ public class OPDS1Parser {
                     }
                     val newLink = Link(
                         href = href,
-                        type = type,
+                        mediaType = type,
                         title = title,
                         rels = rels,
                         properties = Properties(otherProperties = otherProperties)
                     )
                     addFacet(feed, newLink, facetGroupName)
                 } else {
-                    feed.links.add(Link(href = href, type = type, title = title, rels = rels))
+                    feed.links.add(Link(href = href, mediaType = type, title = title, rels = rels))
                 }
             }
             return feed
@@ -191,12 +195,12 @@ public class OPDS1Parser {
             client: HttpClient = DefaultHttpClient()
         ): Try<String?, Exception> {
             var openSearchURL: URL? = null
-            var selfMimeType: String? = null
+            var selfMimeType: MediaType? = null
 
             for (link in feed.links) {
                 if (link.rels.contains("self")) {
-                    if (link.type != null) {
-                        selfMimeType = link.type
+                    if (link.mediaType != null) {
+                        selfMimeType = link.mediaType
                     }
                 } else if (link.rels.contains("search")) {
                     openSearchURL = URL(link.href)
@@ -217,7 +221,7 @@ public class OPDS1Parser {
 
                 selfMimeType?.let { s ->
 
-                    val selfMimeParams = parseMimeType(mimeTypeString = s)
+                    val selfMimeParams = parseMimeType(mimeTypeString = s.toString())
                     for (url in urls) {
                         val urlMimeType = url.getAttr("type") ?: continue
                         val otherMimeParams = parseMimeType(mimeTypeString = urlMimeType)
@@ -271,7 +275,7 @@ public class OPDS1Parser {
 
                     Link(
                         href = Href(href, baseHref = baseUrl.toString()).percentEncodedString,
-                        type = element.getAttr("type"),
+                        mediaType = sniff(element.getAttr("type")),
                         title = element.getAttr("title"),
                         rels = listOfNotNull(rel).toSet(),
                         properties = Properties(otherProperties = properties)
@@ -418,5 +422,11 @@ public class OPDS1Parser {
                     children = fromXML(child)
                 )
             }
+
+        public var mediaTypeSniffer: MediaTypeSniffer = DefaultMediaTypeSniffer()
+
+        private fun sniff(mediaType: String?): MediaType? =
+            mediaType?.let { MediaType(it) }
+                ?.let { mediaTypeSniffer.sniffHints(MediaTypeHints(mediaType = it)) ?: it }
     }
 }

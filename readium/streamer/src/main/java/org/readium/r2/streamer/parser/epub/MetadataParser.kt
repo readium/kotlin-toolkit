@@ -8,10 +8,13 @@ package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.sniff
 
 internal class MetadataParser(
-    private val epubVersion: Double,
-    private val prefixMap: Map<String, String>
+    private val prefixMap: Map<String, String>,
+    private val mediaTypeSniffer: MediaTypeSniffer
 ) {
 
     fun parse(document: ElementNode, filePath: String): List<MetadataItem>? {
@@ -53,7 +56,7 @@ internal class MetadataParser(
             refines = refines,
             href = Href(href, baseHref = filePath).string,
             rels = rel.toSet(),
-            mediaType = mediaType,
+            mediaType = mediaType?.let { MediaType(it) }?.let { mediaTypeSniffer.sniff(it) },
             properties = properties
         )
     }
@@ -191,7 +194,7 @@ internal sealed class MetadataItem {
         override val children: List<MetadataItem> = emptyList(),
         val href: String,
         val rels: Set<String>,
-        val mediaType: String?,
+        val mediaType: MediaType?,
         val properties: List<String> = emptyList()
     ) : MetadataItem()
 

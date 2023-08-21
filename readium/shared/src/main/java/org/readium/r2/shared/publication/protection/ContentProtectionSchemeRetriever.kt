@@ -7,16 +7,18 @@
 package org.readium.r2.shared.publication.protection
 
 import org.readium.r2.shared.asset.Asset
+import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 
 /**
  * Retrieves [ContentProtection] schemes of assets.
  */
 public class ContentProtectionSchemeRetriever(
-    contentProtections: List<ContentProtection>
+    contentProtections: List<ContentProtection>,
+    mediaTypeSniffer: MediaTypeSniffer
 ) {
     private val contentProtections: List<ContentProtection> =
         contentProtections + listOf(
-            LcpFallbackContentProtection(),
+            LcpFallbackContentProtection(mediaTypeSniffer),
             AdeptFallbackContentProtection()
         )
 

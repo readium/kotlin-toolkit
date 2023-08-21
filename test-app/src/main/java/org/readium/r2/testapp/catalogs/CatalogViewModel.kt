@@ -81,7 +81,7 @@ class CatalogViewModel(private val application: Application) : AndroidViewModel(
 
     private fun getDownloadURL(publication: Publication): Try<URL, Exception> =
         publication.links
-            .firstOrNull { it.mediaType.isPublication || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
+            .firstOrNull { it.mediaType?.isPublication == true || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
             ?.let {
                 try {
                     Try.success(URL(it.href))

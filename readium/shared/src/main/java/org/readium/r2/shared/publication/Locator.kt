@@ -19,6 +19,8 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
+import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 
 /**
  * Represents a precise location in a publication in a format that can be stored and shared.
@@ -215,17 +217,7 @@ public data class Locator(
     "This may create an incorrect `Locator` if the link `type` is missing. Use `publication.locatorFromLink()` instead.",
     level = DeprecationLevel.ERROR
 )
-public fun Link.toLocator(): Locator {
-    val components = href.split("#", limit = 2)
-    return Locator(
-        href = components.firstOrNull() ?: href,
-        type = type ?: "",
-        title = title,
-        locations = Locator.Locations(
-            fragments = listOfNotNull(components.getOrNull(1))
-        )
-    )
-}
+public fun Link.toLocator(): Locator = throw NotImplementedError()
 
 /**
  * Represents a sequential list of `Locator` objects.
@@ -286,10 +278,18 @@ public data class LocatorCollection(
 
     public companion object {
 
-        public fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): LocatorCollection {
+        public fun fromJSON(
+            json: JSONObject?,
+            mediaTypeSniffer: MediaTypeSniffer = DefaultMediaTypeSniffer(),
+            warnings: WarningLogger? = null
+        ): LocatorCollection {
             return LocatorCollection(
                 metadata = Metadata.fromJSON(json?.optJSONObject("metadata"), warnings),
-                links = Link.fromJSONArray(json?.optJSONArray("links"), warnings = warnings),
+                links = Link.fromJSONArray(
+                    json?.optJSONArray("links"),
+                    mediaTypeSniffer,
+                    warnings = warnings
+                ),
                 locators = Locator.fromJSONArray(json?.optJSONArray("locators"), warnings)
             )
         }

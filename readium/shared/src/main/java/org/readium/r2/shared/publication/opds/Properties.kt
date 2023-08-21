@@ -13,6 +13,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.opds.*
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 
 // OPDS extensions for link [Properties].
 // https://drafts.opds.io/schema/properties.schema.json
@@ -83,4 +84,4 @@ public val Properties.availability: Availability?
  */
 public val Properties.authenticate: Link?
     get() = (this["authenticate"] as? Map<*, *>)
-        ?.let { Link.fromJSON(JSONObject(it)) }
+        ?.let { Link.fromJSON(JSONObject(it), mediaTypeSniffer = DefaultMediaTypeSniffer()) }

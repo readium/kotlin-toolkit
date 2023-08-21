@@ -19,7 +19,7 @@ import org.readium.r2.shared.resource.ArchiveProperties
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.resource.ResourceMediaTypeSnifferContext
+import org.readium.r2.shared.resource.ResourceMediaTypeSnifferContent
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.ZipContainer
 import org.readium.r2.shared.resource.archive
@@ -28,6 +28,7 @@ import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArch
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipFile
 import org.readium.r2.shared.util.archive.channel.jvm.SeekableByteChannel
 import org.readium.r2.shared.util.io.CountingInputStream
+import org.readium.r2.shared.util.mediatype.EpubMediaTypeSniffer.sniff
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
@@ -64,10 +65,8 @@ internal class ChannelZipContainer(
         override suspend fun mediaType(): ResourceTry<MediaType> =
             Try.success(
                 mediaTypeSniffer.sniff(
-                    ResourceMediaTypeSnifferContext(
-                        resource = this,
-                        hints = MediaTypeHints(fileExtension = File(path).extension)
-                    )
+                    hints = MediaTypeHints(fileExtension = File(path).extension),
+                    content = ResourceMediaTypeSnifferContent(this)
                 ) ?: MediaType.BINARY
             )
 

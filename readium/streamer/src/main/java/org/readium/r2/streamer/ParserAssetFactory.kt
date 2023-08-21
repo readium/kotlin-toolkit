@@ -23,10 +23,12 @@ import org.readium.r2.shared.resource.RoutingContainer
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpContainer
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import org.readium.r2.streamer.parser.PublicationParser
 
 internal class ParserAssetFactory(
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
+    private val mediaTypeSniffer: MediaTypeSniffer
 ) {
 
     suspend fun createParserAsset(
@@ -120,7 +122,11 @@ internal class ParserAssetFactory(
             val bytes = read().getOrThrow()
             val string = String(bytes, Charset.defaultCharset())
             val json = JSONObject(string)
-            val manifest = Manifest.fromJSON(json, packaged = packaged)
+            val manifest = Manifest.fromJSON(
+                json,
+                packaged = packaged,
+                mediaTypeSniffer = mediaTypeSniffer
+            )
                 ?: throw Exception("Failed to parse the RWPM Manifest")
             Try.success(manifest)
         } catch (e: Exception) {

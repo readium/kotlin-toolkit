@@ -24,6 +24,7 @@ import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.io.CountingInputStream
+import org.readium.r2.shared.util.mediatype.EpubMediaTypeSniffer.sniff
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
@@ -110,10 +111,8 @@ internal class JavaZipContainer(
         override suspend fun mediaType(): ResourceTry<MediaType> =
             Try.success(
                 mediaTypeSniffer.sniff(
-                    ResourceMediaTypeSnifferContext(
-                        resource = this,
-                        hints = MediaTypeHints(fileExtension = File(path).extension)
-                    )
+                    hints = MediaTypeHints(fileExtension = File(path).extension),
+                    content = ResourceMediaTypeSnifferContent(this)
                 ) ?: MediaType.BINARY
             )
 
@@ -140,10 +139,8 @@ internal class JavaZipContainer(
         override suspend fun mediaType(): ResourceTry<MediaType> =
             Try.success(
                 mediaTypeSniffer.sniff(
-                    ResourceMediaTypeSnifferContext(
-                        resource = this,
-                        hints = MediaTypeHints(fileExtension = File(path).extension)
-                    )
+                    hints = MediaTypeHints(fileExtension = File(path).extension),
+                    content = ResourceMediaTypeSnifferContent(this)
                 ) ?: MediaType.BINARY
             )
 

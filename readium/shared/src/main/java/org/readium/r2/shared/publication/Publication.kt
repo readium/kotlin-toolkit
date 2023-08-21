@@ -668,8 +668,13 @@ public class Publication(
     public fun contentLayoutForLanguage(language: String?): ReadingProgression = metadata.effectiveReadingProgression
 }
 
-private fun Resource.withMediaType(mediaType: MediaType): Resource =
-    object : Resource by this {
+private fun Resource.withMediaType(mediaType: MediaType?): Resource {
+    if (mediaType == null) {
+        return this
+    }
+
+    return object : Resource by this {
         override suspend fun mediaType(): ResourceTry<MediaType> =
             ResourceTry.success(mediaType)
     }
+}

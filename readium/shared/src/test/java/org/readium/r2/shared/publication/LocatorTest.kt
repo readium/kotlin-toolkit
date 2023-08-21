@@ -15,6 +15,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -367,12 +368,12 @@ class LocatorCollectionTest {
                     Link(
                         rels = setOf("self"),
                         href = "/978-1503222687/search?query=apple",
-                        type = "application/vnd.readium.locators+json"
+                        mediaType = MediaType("application/vnd.readium.locators+json")!!
                     ),
                     Link(
                         rels = setOf("next"),
                         href = "/978-1503222687/search?query=apple&page=2",
-                        type = "application/vnd.readium.locators+json"
+                        mediaType = MediaType("application/vnd.readium.locators+json")!!
                     )
                 ),
                 locators = listOf(
@@ -535,12 +536,12 @@ class LocatorCollectionTest {
                     Link(
                         rels = setOf("self"),
                         href = "/978-1503222687/search?query=apple",
-                        type = "application/vnd.readium.locators+json"
+                        mediaType = MediaType("application/vnd.readium.locators+json")!!
                     ),
                     Link(
                         rels = setOf("next"),
                         href = "/978-1503222687/search?query=apple&page=2",
-                        type = "application/vnd.readium.locators+json"
+                        mediaType = MediaType("application/vnd.readium.locators+json")!!
                     )
                 ),
                 locators = listOf(

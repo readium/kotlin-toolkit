@@ -11,9 +11,11 @@ package org.readium.r2.shared.util.mediatype
 
 import android.content.ContentResolver
 import android.net.Uri
+import android.os.Parcelable
 import java.io.File
 import java.nio.charset.Charset
 import java.util.*
+import kotlinx.parcelize.Parcelize
 
 /**
  * Represents a document format, identified by a unique RFC 6838 media type.
@@ -32,11 +34,12 @@ import java.util.*
  * @param subtype The subtype component, e.g. `epub+zip` in `application/epub+zip`.
  * @param parameters The parameters in the media type, such as `charset=utf-8`.
  */
+@Parcelize
 public class MediaType private constructor(
     public val type: String,
     public val subtype: String,
     public val parameters: Map<String, String>
-) {
+) : Parcelable {
 
     /**
      * Structured syntax suffix, e.g. `+zip` in `application/epub+zip`.

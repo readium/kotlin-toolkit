@@ -18,6 +18,7 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.isFile
 import org.readium.r2.shared.util.isLazyInitialized
+import org.readium.r2.shared.util.mediatype.EpubMediaTypeSniffer.sniff
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
@@ -53,10 +54,8 @@ public class FileResource private constructor(
     override suspend fun mediaType(): ResourceTry<MediaType> = Try.success(
         mediaType
             ?: mediaTypeSniffer?.sniff(
-                ResourceMediaTypeSnifferContext(
-                    resource = this,
-                    hints = MediaTypeHints(fileExtension = file.extension)
-                )
+                hints = MediaTypeHints(fileExtension = file.extension),
+                content = ResourceMediaTypeSnifferContent(this)
             )
             ?: MediaType.BINARY
     )

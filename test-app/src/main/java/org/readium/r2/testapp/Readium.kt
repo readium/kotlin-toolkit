@@ -78,17 +78,18 @@ class Readium(context: Context) {
         lcpService.getOrNull()?.contentProtection()
     )
 
-    val protectionRetriever = ContentProtectionSchemeRetriever(contentProtections)
+    val protectionRetriever = ContentProtectionSchemeRetriever(contentProtections, mediaTypeSniffer)
 
     /**
      * The PublicationFactory is used to parse and open publications.
      */
     val publicationFactory = PublicationFactory(
         context,
+        contentProtections = contentProtections,
+        mediaTypeSniffer = mediaTypeSniffer,
         httpClient = httpClient,
         // Only required if you want to support PDF files using the PDFium adapter.
-        pdfFactory = PdfiumDocumentFactory(context),
-        contentProtections = contentProtections
+        pdfFactory = PdfiumDocumentFactory(context)
     )
 }
 

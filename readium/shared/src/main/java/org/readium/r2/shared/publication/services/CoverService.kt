@@ -22,6 +22,7 @@ import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.LazyResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Provides an easy access to a bitmap version of the publication cover.
@@ -91,7 +92,7 @@ public abstract class GeneratedCoverService : CoverService {
 
     private val coverLink = Link(
         href = "/~readium/cover",
-        type = "image/png",
+        mediaType = MediaType.PNG,
         rels = setOf("cover")
     )
 
@@ -112,7 +113,7 @@ public abstract class GeneratedCoverService : CoverService {
                 val error = Exception("Unable to convert cover to PNG.")
                 FailureResource(error)
             } else {
-                BytesResource(png, url = Url(coverLink.href), mediaType = coverLink.mediaType)
+                BytesResource(png, url = Url(coverLink.href), mediaType = MediaType.PNG)
             }
         }
     }

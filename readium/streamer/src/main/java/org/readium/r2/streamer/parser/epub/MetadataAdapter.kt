@@ -157,7 +157,7 @@ private class LinksAdapter {
         }
         return Link(
             href = link.href,
-            type = link.mediaType,
+            mediaType = link.mediaType,
             rels = link.rels,
             properties = Properties(mapOf("contains" to contains))
         )

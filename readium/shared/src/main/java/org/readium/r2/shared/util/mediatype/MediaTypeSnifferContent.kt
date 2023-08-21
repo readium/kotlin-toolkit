@@ -2,7 +2,6 @@ package org.readium.r2.shared.util.mediatype
 
 import java.io.ByteArrayInputStream
 import java.io.InputStream
-import java.nio.charset.Charset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -12,44 +11,9 @@ import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Manifest
 
-public interface MediaTypeSnifferContext {
-    /** Format hints. */
-    public val hints: MediaTypeHints
-}
+public sealed interface MediaTypeSnifferContent
 
-/** Finds the first [Charset] declared in the media types' `charset` parameter. */
-public val MediaTypeSnifferContext.charset: Charset? get() =
-    hints.mediaTypes.firstNotNullOfOrNull { it.charset }
-
-/** Returns whether this context has any of the given file extensions, ignoring case. */
-public fun MediaTypeSnifferContext.hasFileExtension(vararg fileExtensions: String): Boolean {
-    val fileExtensionsHints = hints.fileExtensions.map { it.lowercase() }
-    for (fileExtension in fileExtensions.map { it.lowercase() }) {
-        if (fileExtensionsHints.contains(fileExtension)) {
-            return true
-        }
-    }
-    return false
-}
-
-/**
- * Returns whether this context has any of the given media type, ignoring case and extra
- * parameters.
- *
- * Implementation note: Use [MediaType] to handle the comparison to avoid edge cases.
- */
-public fun MediaTypeSnifferContext.hasMediaType(vararg mediaTypes: String): Boolean {
-    @Suppress("NAME_SHADOWING")
-    val mediaTypes = mediaTypes.mapNotNull { MediaType(it) }
-    for (mediaType in mediaTypes) {
-        if (hints.mediaTypes.any { mediaType.contains(it) }) {
-            return true
-        }
-    }
-    return false
-}
-
-public interface ContentMediaTypeSnifferContext : MediaTypeSnifferContext {
+public interface ResourceMediaTypeSnifferContent : MediaTypeSnifferContent {
 
     /**
      * Reads all the bytes or the given [range].
@@ -68,9 +32,7 @@ public interface ContentMediaTypeSnifferContext : MediaTypeSnifferContext {
     public suspend fun contentAsString(): String? =
         read()?.let {
             tryOrNull {
-                withContext(Dispatchers.Default) {
-                    String(it, charset = charset ?: Charsets.UTF_8)
-                }
+                withContext(Dispatchers.Default) { String(it) }
             }
         }
 
@@ -98,7 +60,7 @@ public interface ContentMediaTypeSnifferContext : MediaTypeSnifferContext {
 
     /** Readium Web Publication Manifest parsed from the content. */
     public suspend fun contentAsRwpm(): Manifest? =
-        Manifest.fromJSON(contentAsJson())
+        Manifest.fromJSON(contentAsJson(), mediaTypeSniffer = DefaultMediaTypeSniffer())
 
     /**
      * Raw bytes stream of the content.
@@ -113,12 +75,12 @@ public interface ContentMediaTypeSnifferContext : MediaTypeSnifferContext {
 /**
  * Returns whether the content is a JSON object containing all of the given root keys.
  */
-public suspend fun ContentMediaTypeSnifferContext.containsJsonKeys(vararg keys: String): Boolean {
+public suspend fun ResourceMediaTypeSnifferContent.containsJsonKeys(vararg keys: String): Boolean {
     val json = contentAsJson() ?: return false
     return json.keys().asSequence().toSet().containsAll(keys.toList())
 }
 
-public interface ContainerMediaTypeSnifferContext : MediaTypeSnifferContext {
+public interface ContainerMediaTypeSnifferContent : MediaTypeSnifferContent {
     /**
      * Returns all the known entry paths in the container.
      */
@@ -133,18 +95,13 @@ public interface ContainerMediaTypeSnifferContext : MediaTypeSnifferContext {
 /**
  * Returns whether an entry exists in the container.
  */
-public suspend fun ContainerMediaTypeSnifferContext.contains(path: String): Boolean =
+public suspend fun ContainerMediaTypeSnifferContent.contains(path: String): Boolean =
     entries()?.contains(path)
         ?: (read(path) != null)
 
-public class HintMediaTypeSnifferContext(
-    override val hints: MediaTypeHints
-) : MediaTypeSnifferContext
-
-public class BytesContentMediaTypeSnifferContext(
-    override val hints: MediaTypeHints = MediaTypeHints(),
+public class BytesResourceMediaTypeSnifferContent(
     bytes: suspend () -> ByteArray
-) : ContentMediaTypeSnifferContext {
+) : ResourceMediaTypeSnifferContent {
 
     private val bytesFactory = bytes
     private lateinit var _bytes: ByteArray

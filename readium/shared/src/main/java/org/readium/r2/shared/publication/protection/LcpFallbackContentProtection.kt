@@ -21,13 +21,16 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.readAsJson
 import org.readium.r2.shared.resource.readAsXml
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 
 /**
  * [ContentProtection] implementation used as a fallback by the Streamer to detect LCP DRM
  * if it is not supported by the app.
  */
 @InternalReadiumApi
-public class LcpFallbackContentProtection : ContentProtection {
+public class LcpFallbackContentProtection(
+    private val mediaTypeSniffer: MediaTypeSniffer
+) : ContentProtection {
 
     override val scheme: Scheme =
         Scheme.Lcp
@@ -74,7 +77,10 @@ public class LcpFallbackContentProtection : ContentProtection {
                 val manifestAsJson = container.get("/manifest.json").readAsJsonOrNull()
                     ?: return false
 
-                val manifest = Manifest.fromJSON(manifestAsJson)
+                val manifest = Manifest.fromJSON(
+                    manifestAsJson,
+                    mediaTypeSniffer = mediaTypeSniffer
+                )
                     ?: return false
 
                 return manifest

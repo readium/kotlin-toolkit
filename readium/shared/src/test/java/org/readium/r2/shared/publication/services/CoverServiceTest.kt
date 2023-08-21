@@ -41,7 +41,7 @@ class CoverServiceTest {
         coverBytes = cover.readBytes()
         coverBitmap = BitmapFactory.decodeByteArray(coverBytes, 0, coverBytes.size)
         coverPath = cover.path
-        coverLink = Link(href = coverPath, type = "image/jpeg", width = 598, height = 800)
+        coverLink = Link(href = coverPath, mediaType = MediaType.JPEG, width = 598, height = 800)
 
         publication = Publication(
             manifest = Manifest(

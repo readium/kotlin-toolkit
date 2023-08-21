@@ -18,9 +18,9 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.error.tryRecover
 import org.readium.r2.shared.util.http.HttpRequest.Method
-import org.readium.r2.shared.util.mediatype.BytesContentMediaTypeSnifferContext
+import org.readium.r2.shared.util.mediatype.BytesResourceMediaTypeSnifferContent
 import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.HintMediaTypeSnifferContext
+import org.readium.r2.shared.util.mediatype.EpubMediaTypeSniffer.sniff
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
@@ -145,20 +145,14 @@ public class DefaultHttpClient(
                         val body = connection.errorStream?.use { it.readBytes() }
                         val mediaType = body?.let {
                             mediaTypeSniffer.sniff(
-                                BytesContentMediaTypeSnifferContext(
-                                    hints = MediaTypeHints(connection),
-                                    bytes = { it }
-                                )
+                                hints = MediaTypeHints(connection),
+                                content = BytesResourceMediaTypeSnifferContent { it }
                             )
                         }
                         throw HttpException(kind, mediaType, body)
                     }
 
-                    val mediaType = mediaTypeSniffer.sniff(
-                        HintMediaTypeSnifferContext(
-                            hints = MediaTypeHints(connection)
-                        )
-                    )
+                    val mediaType = mediaTypeSniffer.sniff(MediaTypeHints(connection))
 
                     val response = HttpResponse(
                         request = request,

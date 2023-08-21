@@ -28,6 +28,8 @@ import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
+import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 
 public enum class OPDS2ParserError {
     MetadataNotFound,
@@ -64,7 +66,10 @@ public class OPDS2Parser {
             } else {
                 ParseData(
                     null,
-                    Manifest.fromJSON(JSONObject(String(jsonData)))?.let { Publication(it) },
+                    Manifest.fromJSON(
+                        JSONObject(String(jsonData)),
+                        mediaTypeSniffer = mediaTypeSniffer
+                    )?.let { Publication(it) },
                     2
                 )
             }
@@ -207,7 +212,7 @@ public class OPDS2Parser {
         private fun parsePublications(feed: Feed, publications: JSONArray) {
             for (i in 0 until publications.length()) {
                 val pubDict = publications.getJSONObject(i)
-                Manifest.fromJSON(pubDict)?.let { manifest ->
+                Manifest.fromJSON(pubDict, mediaTypeSniffer = mediaTypeSniffer)?.let { manifest ->
                     feed.publications.add(Publication(manifest))
                 }
             }
@@ -257,7 +262,7 @@ public class OPDS2Parser {
                         ?: throw Exception(OPDS2ParserError.InvalidGroup.name)
                     for (j in 0 until publications.length()) {
                         val pubDict = publications.getJSONObject(j)
-                        Manifest.fromJSON(pubDict)?.let { manifest ->
+                        Manifest.fromJSON(pubDict, mediaTypeSniffer = mediaTypeSniffer)?.let { manifest ->
                             group.publications.add(Publication(manifest))
                         }
                     }
@@ -268,12 +273,14 @@ public class OPDS2Parser {
 
         private fun parseLink(feed: Feed, json: JSONObject): Link? {
             val baseUrl = feed.href.removeLastComponent()
-            return Link.fromJSON(json, normalizeHref = {
+            return Link.fromJSON(json, mediaTypeSniffer, normalizeHref = {
                 Href(
                     it,
                     baseUrl.toString()
                 ).string
             })
         }
+
+        public var mediaTypeSniffer: MediaTypeSniffer = DefaultMediaTypeSniffer()
     }
 }

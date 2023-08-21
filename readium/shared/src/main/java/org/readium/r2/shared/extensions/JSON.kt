@@ -302,7 +302,7 @@ public fun <T> JSONObject.mapNotNull(transform: (Pair<String, Any>) -> T?): List
  * If the tranform returns `null`, it is not included in the output list.
  */
 @InternalReadiumApi
-public fun <T> JSONArray.mapNotNull(transform: (Any) -> T?): List<T> {
+public inline fun <T> JSONArray.mapNotNull(transform: (Any) -> T?): List<T> {
     val result = mutableListOf<T>()
     for (i in 0 until length()) {
         val transformedValue = transform(get(i))
@@ -331,7 +331,7 @@ internal fun <T> JSONArray.filterIsInstance(klass: Class<T>): List<T> {
 /**
  * Parses a [JSONArray] of [JSONObject] into a [List] of models using the given [factory].
  */
-internal fun <T> JSONArray?.parseObjects(factory: (Any) -> T?): List<T> {
+internal inline fun <T> JSONArray?.parseObjects(factory: (Any) -> T?): List<T> {
     this ?: return emptyList()
 
     val models = mutableListOf<T>()

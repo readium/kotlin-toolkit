@@ -16,8 +16,11 @@ import org.readium.r2.shared.publication.protection.AdeptFallbackContentProtecti
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.LcpFallbackContentProtection
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioParser
@@ -37,37 +40,56 @@ internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningE
  * of a default parser.
  *
  * @param context Application context.
- * @param httpClient Service performing HTTP requests.
- * @param pdfFactory Parses a PDF document, optionally protected by password.
- * @param contentProtections Opens DRM-protected publications.
  * @param parsers Parsers used to open a publication, in addition to the default parsers.
  * @param ignoreDefaultParsers When true, only parsers provided in parsers will be used.
+ * @param contentProtections Opens DRM-protected publications.
+ * @param httpClient Service performing HTTP requests.
+ * @param pdfFactory Parses a PDF document, optionally protected by password.
  * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
  *   the manifest, the root container or the list of service factories of a [Publication].
  */
 @OptIn(PdfSupport::class)
 public class PublicationFactory(
     context: Context,
-    httpClient: HttpClient,
-    pdfFactory: PdfDocumentFactory<*>? = null,
-    contentProtections: List<ContentProtection> = emptyList(),
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
+    contentProtections: List<ContentProtection>,
+    mediaTypeSniffer: MediaTypeSniffer,
+    httpClient: HttpClient,
+    pdfFactory: PdfDocumentFactory<*>?,
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
 
+    public companion object {
+        public operator fun invoke(
+            context: Context,
+            contentProtections: List<ContentProtection> = emptyList(),
+            onCreatePublication: Publication.Builder.() -> Unit
+        ): PublicationFactory {
+            val mediaTypeSniffer = DefaultMediaTypeSniffer()
+            return PublicationFactory(
+                context = context,
+                contentProtections = contentProtections,
+                mediaTypeSniffer = mediaTypeSniffer,
+                httpClient = DefaultHttpClient(mediaTypeSniffer),
+                pdfFactory = null,
+                onCreatePublication = onCreatePublication
+            )
+        }
+    }
+
     private val contentProtections: Map<ContentProtection.Scheme, ContentProtection> =
         buildList {
-            add(LcpFallbackContentProtection())
+            add(LcpFallbackContentProtection(mediaTypeSniffer))
             add(AdeptFallbackContentProtection())
             addAll(contentProtections.asReversed())
         }.associateBy(ContentProtection::scheme)
 
     private val defaultParsers: List<PublicationParser> =
         listOfNotNull(
-            EpubParser(),
+            EpubParser(mediaTypeSniffer),
             pdfFactory?.let { PdfParser(context, it) },
-            ReadiumWebPubParser(context, pdfFactory),
+            ReadiumWebPubParser(context, pdfFactory, mediaTypeSniffer),
             ImageParser(),
             AudioParser()
         )
@@ -76,7 +98,7 @@ public class PublicationFactory(
         if (!ignoreDefaultParsers) defaultParsers else emptyList()
 
     private val parserAssetFactory: ParserAssetFactory =
-        ParserAssetFactory(httpClient)
+        ParserAssetFactory(httpClient, mediaTypeSniffer)
 
     /**
      * Opens a [Publication] from the given asset.

@@ -19,13 +19,14 @@ import org.readium.r2.shared.publication.services.content.Content.TextElement.Se
 import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
 @OptIn(ExperimentalReadiumApi::class)
 @RunWith(RobolectricTestRunner::class)
 class HtmlResourceContentIteratorTest {
 
-    private val link = Link(href = "/dir/res.xhtml", type = "application/xhtml+xml")
+    private val link = Link(href = "/dir/res.xhtml", mediaType = MediaType.XHTML)
     private val locator = Locator(href = "/dir/res.xhtml", type = "application/xhtml+xml")
 
     private val html = """
@@ -407,7 +408,7 @@ class HtmlResourceContentIteratorTest {
             <body>
                 <audio src="audio.mp3" />
                 <audio>
-                    <source src="audio.mp3" type="audio/mp3" />
+                    <source src="audio.mp3" type="audio/mpeg" />
                     <source src="audio.ogg" type="audio/ogg" />
                 </audio>
             </body>
@@ -431,9 +432,9 @@ class HtmlResourceContentIteratorTest {
                     ),
                     embeddedLink = Link(
                         href = "/dir/audio.mp3",
-                        type = "audio/mp3",
+                        mediaType = MediaType.MP3,
                         alternates = listOf(
-                            Link(href = "/dir/audio.ogg", type = "audio/ogg")
+                            Link(href = "/dir/audio.ogg", mediaType = MediaType.OGG)
                         )
                     ),
                     attributes = emptyList()
@@ -475,9 +476,9 @@ class HtmlResourceContentIteratorTest {
                     ),
                     embeddedLink = Link(
                         href = "/dir/video.mp4",
-                        type = "video/mp4",
+                        mediaType = MediaType("video/mp4")!!,
                         alternates = listOf(
-                            Link(href = "/dir/video.m4v", type = "video/x-m4v")
+                            Link(href = "/dir/video.m4v", mediaType = MediaType("video/x-m4v")!!)
                         )
                     ),
                     attributes = emptyList()

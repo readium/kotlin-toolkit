@@ -19,16 +19,17 @@ import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.ContainerFactory
-import org.readium.r2.shared.resource.ContainerMediaTypeSnifferContext
+import org.readium.r2.shared.resource.ContainerMediaTypeSnifferContent
 import org.readium.r2.shared.resource.DefaultArchiveFactory
 import org.readium.r2.shared.resource.DirectoryContainerFactory
 import org.readium.r2.shared.resource.FileResourceFactory
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
-import org.readium.r2.shared.resource.ResourceMediaTypeSnifferContext
+import org.readium.r2.shared.resource.ResourceMediaTypeSnifferContent
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.EpubMediaTypeSniffer.sniff
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
@@ -356,13 +357,14 @@ public class AssetRetriever(
         asset: Either<Resource, Container>,
         hints: MediaTypeHints
     ): MediaType? {
-        suspend fun sniff(hints: MediaTypeHints): MediaType? {
-            val context = when (asset) {
-                is Either.Left -> ResourceMediaTypeSnifferContext(asset.value, hints)
-                is Either.Right -> ContainerMediaTypeSnifferContext(asset.value, hints)
-            }
-            return mediaTypeSniffer.sniff(context)
-        }
+        suspend fun sniff(hints: MediaTypeHints): MediaType? =
+            mediaTypeSniffer.sniff(
+                hints = hints,
+                content = when (asset) {
+                    is Either.Left -> ResourceMediaTypeSnifferContent(asset.value)
+                    is Either.Right -> ContainerMediaTypeSnifferContent(asset.value)
+                }
+            )
 
         sniff(hints)?.let { return it }
 

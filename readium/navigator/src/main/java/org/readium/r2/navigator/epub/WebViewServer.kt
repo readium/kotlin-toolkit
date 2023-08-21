@@ -90,7 +90,7 @@ internal class WebViewServer(
 
         var resource = publication.get(linkWithoutAnchor)
             .fallback { errorResource(link, error = it) }
-        if (link.mediaType.isHtml) {
+        if (link.mediaType?.isHtml == true) {
             resource = resource.injectHtml(
                 publication,
                 css,
@@ -105,7 +105,7 @@ internal class WebViewServer(
 
         if (range == null) {
             return WebResourceResponse(
-                link.type,
+                link.mediaType?.toString(),
                 null,
                 200,
                 "OK",
@@ -119,7 +119,14 @@ internal class WebViewServer(
             headers["Content-Range"] = "bytes ${longRange.first}-${longRange.last}/$length"
             // Content-Length will automatically be filled by the WebView using the Content-Range header.
 //            headers["Content-Length"] = (longRange.last - longRange.first + 1).toString()
-            return WebResourceResponse(link.type, null, 206, "Partial Content", headers, stream)
+            return WebResourceResponse(
+                link.mediaType?.toString(),
+                null,
+                206,
+                "Partial Content",
+                headers,
+                stream
+            )
         }
     }
 

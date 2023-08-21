@@ -6,6 +6,8 @@
 
 package org.readium.r2.shared.util.mediatype
 
+import java.nio.charset.Charset
+
 public data class MediaTypeHints(
     val mediaTypes: List<MediaType> = emptyList(),
     val fileExtensions: List<String> = emptyList()
@@ -29,4 +31,36 @@ public data class MediaTypeHints(
             mediaTypes = mediaTypes + other.mediaTypes,
             fileExtensions = fileExtensions + other.fileExtensions
         )
+
+    /** Finds the first [Charset] declared in the media types' `charset` parameter. */
+    public val charset: Charset? get() =
+        mediaTypes.firstNotNullOfOrNull { it.charset }
+
+    /** Returns whether this context has any of the given file extensions, ignoring case. */
+    public fun hasFileExtension(vararg fileExtensions: String): Boolean {
+        val fileExtensionsHints = this.fileExtensions.map { it.lowercase() }
+        for (fileExtension in fileExtensions.map { it.lowercase() }) {
+            if (fileExtensionsHints.contains(fileExtension)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    /**
+     * Returns whether this context has any of the given media type, ignoring case and extra
+     * parameters.
+     *
+     * Implementation note: Use [MediaType] to handle the comparison to avoid edge cases.
+     */
+    public fun hasMediaType(vararg mediaTypes: String): Boolean {
+        @Suppress("NAME_SHADOWING")
+        val mediaTypes = mediaTypes.mapNotNull { MediaType(it) }
+        for (mediaType in mediaTypes) {
+            if (this.mediaTypes.any { mediaType.contains(it) }) {
+                return true
+            }
+        }
+        return false
+    }
 }
