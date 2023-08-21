@@ -42,7 +42,7 @@ public class ReadiumWebPubParser(
 
         val manifest = Manifest.fromJSON(
             manifestJson,
-            packaged = !asset.sourceAsset.format.mediaType.isRwpm
+            packaged = !asset.sourceAsset.mediaType.isRwpm
         )
             ?: return Try.failure(
                 PublicationParser.Error.ParsingFailed("Failed to parse the RWPM Manifest")

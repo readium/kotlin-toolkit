@@ -46,8 +46,8 @@ internal fun createLicenseContainer(
     asset: Asset
 ): LicenseContainer =
     when (asset) {
-        is Asset.Resource -> createLicenseContainer(asset.resource, asset.format.mediaType)
-        is Asset.Container -> createLicenseContainer(asset.container, asset.format.mediaType)
+        is Asset.Resource -> createLicenseContainer(asset.resource, asset.mediaType)
+        is Asset.Container -> createLicenseContainer(asset.container, asset.mediaType)
     }
 
 internal fun createLicenseContainer(

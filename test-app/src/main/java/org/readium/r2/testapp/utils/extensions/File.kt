@@ -95,7 +95,7 @@ private suspend fun HttpClient.download(
                 }
                 var response = res.response
                 if (response.mediaType.matches(MediaType.BINARY)) {
-                    assetRetriever.retrieve(destination)?.format?.mediaType?.let {
+                    assetRetriever.retrieve(destination)?.mediaType?.let {
                         response = response.copy(mediaType = it)
                     }
                 }

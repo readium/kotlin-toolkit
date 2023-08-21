@@ -31,9 +31,9 @@ import org.readium.r2.lcp.service.PassphrasesService
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 
 /**
  * Service used to acquire and open publications protected with LCP.
@@ -157,7 +157,7 @@ public interface LcpService {
         public operator fun invoke(
             context: Context,
             assetRetriever: AssetRetriever,
-            formatRegistry: FormatRegistry
+            mediaTypeSniffer: MediaTypeSniffer
         ): LcpService? {
             if (!LcpClient.isAvailable()) {
                 return null
@@ -167,9 +167,7 @@ public interface LcpService {
             val deviceRepository = DeviceRepository(db)
             val passphraseRepository = PassphrasesRepository(db)
             val licenseRepository = LicensesRepository(db)
-            val network = NetworkService(
-                mediaTypeSniffer = { formatRegistry.retrieve(it)?.mediaType }
-            )
+            val network = NetworkService(mediaTypeSniffer)
             val device = DeviceService(
                 repository = deviceRepository,
                 network = network,
@@ -184,15 +182,14 @@ public interface LcpService {
                 network = network,
                 passphrases = passphrases,
                 context = context,
-                assetRetriever = assetRetriever,
-                formatRegistry = formatRegistry
+                assetRetriever = assetRetriever
             )
         }
 
         @Suppress("UNUSED_PARAMETER")
         @Deprecated(
             "Use `LcpService()` instead",
-            ReplaceWith("LcpService(context, AssetRetriever(), FormatRegistry())"),
+            ReplaceWith("LcpService(context, AssetRetriever(), DefaultMediaTypeSniffer())"),
             level = DeprecationLevel.ERROR
         )
         public fun create(context: Context): LcpService? = throw NotImplementedError()

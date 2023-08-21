@@ -35,7 +35,7 @@ class Readium(context: Context) {
 
     private val mediaTypeSniffer = DefaultMediaTypeSniffer()
 
-    private val formatRegistry = FormatRegistry(mediaTypeSniffer)
+    val formatRegistry = FormatRegistry(mediaTypeSniffer)
 
     val httpClient = DefaultHttpClient(
         mediaTypeSniffer = mediaTypeSniffer
@@ -59,7 +59,7 @@ class Readium(context: Context) {
     )
 
     val assetRetriever = AssetRetriever(
-        formatRegistry,
+        mediaTypeSniffer,
         resourceFactory,
         containerFactory,
         archiveFactory,
@@ -70,7 +70,7 @@ class Readium(context: Context) {
      * The LCP service decrypts LCP-protected publication and acquire publications from a
      * license file.
      */
-    val lcpService = LcpService(context, assetRetriever, formatRegistry)
+    val lcpService = LcpService(context, assetRetriever, mediaTypeSniffer)
         ?.let { Try.success(it) }
         ?: Try.failure(UserException("liblcp is missing on the classpath"))
 

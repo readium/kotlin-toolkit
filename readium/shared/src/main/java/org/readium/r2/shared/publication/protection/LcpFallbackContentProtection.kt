@@ -34,8 +34,8 @@ public class LcpFallbackContentProtection : ContentProtection {
 
     override suspend fun supports(asset: Asset): Boolean =
         when (asset) {
-            is Asset.Container -> isLcpProtected(asset.container, asset.format.mediaType)
-            is Asset.Resource -> asset.format.mediaType.matches(MediaType.LCP_LICENSE_DOCUMENT)
+            is Asset.Container -> isLcpProtected(asset.container, asset.mediaType)
+            is Asset.Resource -> asset.mediaType.matches(MediaType.LCP_LICENSE_DOCUMENT)
         }
 
     override suspend fun open(
@@ -51,7 +51,7 @@ public class LcpFallbackContentProtection : ContentProtection {
         }
 
         val protectedFile = ContentProtection.Asset(
-            asset.format.mediaType,
+            asset.mediaType,
             asset.container,
             onCreatePublication = {
                 servicesBuilder.contentProtectionServiceFactory =

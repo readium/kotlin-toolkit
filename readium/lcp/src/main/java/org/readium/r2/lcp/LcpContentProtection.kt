@@ -81,7 +81,7 @@ internal class LcpContentProtection(
             ?.let {
                 lcpService.retrieveLicense(
                     it,
-                    asset.format.mediaType,
+                    asset.mediaType,
                     authentication,
                     allowUserInteraction,
                     sender
@@ -102,7 +102,7 @@ internal class LcpContentProtection(
         val container = TransformingContainer(asset.container, decryptor::transform)
 
         val protectedFile = ContentProtection.Asset(
-            mediaType = asset.format.mediaType,
+            mediaType = asset.mediaType,
             container = container,
             onCreatePublication = {
                 decryptor.encryptionData = (manifest.readingOrder + manifest.resources + manifest.links)

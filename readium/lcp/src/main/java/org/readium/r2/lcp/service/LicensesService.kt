@@ -33,7 +33,6 @@ import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.tryOr
-import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
@@ -45,8 +44,7 @@ internal class LicensesService(
     private val network: NetworkService,
     private val passphrases: PassphrasesService,
     private val context: Context,
-    private val assetRetriever: AssetRetriever,
-    private val formatRegistry: FormatRegistry
+    private val assetRetriever: AssetRetriever
 ) : LcpService, CoroutineScope by MainScope() {
 
     override suspend fun isLcpProtected(file: File): Boolean {
@@ -58,9 +56,9 @@ internal class LicensesService(
         tryOr(false) {
             when (asset) {
                 is Asset.Resource ->
-                    asset.format.mediaType == MediaType.LCP_LICENSE_DOCUMENT
+                    asset.mediaType == MediaType.LCP_LICENSE_DOCUMENT
                 is Asset.Container -> {
-                    createLicenseContainer(asset.container, asset.format.mediaType).read()
+                    createLicenseContainer(asset.container, asset.mediaType).read()
                     true
                 }
             }
@@ -249,17 +247,25 @@ internal class LicensesService(
             onProgress = onProgress
         ) ?: link.mediaType
 
-        val format = formatRegistry.retrieve(mediaType)
-
         // Saves the License Document into the downloaded publication
         val container = createLicenseContainer(destination, mediaType)
         container.write(license)
 
         return LcpService.AcquiredPublication(
             localFile = destination,
-            suggestedFilename = "${license.id}.${format.fileExtension ?: "epub"}",
+            suggestedFilename = "${license.id}.${mediaType.fileExtension}",
             mediaType = mediaType,
             licenseDocument = license
         )
     }
+
+    private val MediaType.fileExtension: String get() =
+        when {
+            matches(MediaType.DIVINA) -> "divina"
+            matches(MediaType.EPUB) -> "epub"
+            matches(MediaType.LCP_PROTECTED_PDF) -> "pdf"
+            matches(MediaType.READIUM_AUDIOBOOK) -> "audiobook"
+            matches(MediaType.READIUM_WEBPUB) -> "webpub"
+            else -> "epub"
+        }
 }

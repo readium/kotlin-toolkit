@@ -31,6 +31,7 @@ import org.readium.r2.shared.asset.AssetType
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.error.getOrElse
+import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
@@ -61,7 +62,8 @@ class BookRepository(
     private val lcpService: Try<LcpService, UserException>,
     private val publicationFactory: PublicationFactory,
     private val assetRetriever: AssetRetriever,
-    private val protectionRetriever: ContentProtectionSchemeRetriever
+    private val protectionRetriever: ContentProtectionSchemeRetriever,
+    private val formatRegistry: FormatRegistry
 ) {
     private val coverDir: File =
         File(storageDir, "covers/")
@@ -236,7 +238,7 @@ class BookRepository(
             )
 
         val (publicationTempFile, publicationTempAsset) =
-            if (sourceAsset.format.mediaType != MediaType.LCP_LICENSE_DOCUMENT) {
+            if (sourceAsset.mediaType != MediaType.LCP_LICENSE_DOCUMENT) {
                 tempFile to sourceAsset
             } else {
                 lcpService
@@ -263,7 +265,9 @@ class BookRepository(
                     )
             }
 
-        val fileName = "${UUID.randomUUID()}.${publicationTempAsset.format.fileExtension}"
+        val format = formatRegistry.retrieve(publicationTempAsset.mediaType)
+        val fileExtension = format.fileExtension ?: "epub"
+        val fileName = "${UUID.randomUUID()}.$fileExtension"
         val libraryFile = File(storageDir, fileName)
         val libraryUrl = libraryFile.toUrl()
 
@@ -277,8 +281,8 @@ class BookRepository(
 
         val libraryAsset = assetRetriever.retrieve(
             libraryUrl,
-            publicationTempAsset.format.mediaType,
-            publicationTempAsset.type
+            publicationTempAsset.mediaType,
+            publicationTempAsset.assetType
         ).getOrElse { return Try.failure(ImportError.PublicationError(it)) }
 
         return addBook(
@@ -315,8 +319,8 @@ class BookRepository(
 
             val id = insertBookIntoDatabase(
                 url.toString(),
-                asset.format.mediaType,
-                asset.type,
+                asset.mediaType,
+                asset.assetType,
                 drmScheme,
                 publication,
                 coverFile.path

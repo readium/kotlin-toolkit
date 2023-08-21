@@ -46,7 +46,7 @@ internal class ParserAssetFactory(
         Try.success(
             PublicationParser.Asset(
                 sourceAsset = asset,
-                mediaType = asset.format.mediaType,
+                mediaType = asset.mediaType,
                 container = asset.container
             )
         )
@@ -54,7 +54,7 @@ internal class ParserAssetFactory(
     private suspend fun createParserAssetForResource(
         asset: Asset.Resource
     ): Try<PublicationParser.Asset, Publication.OpeningException> =
-        if (asset.format.mediaType.isRwpm) {
+        if (asset.mediaType.isRwpm) {
             createParserAssetForManifest(asset)
         } else {
             createParserAssetForContent(asset)
@@ -109,7 +109,7 @@ internal class ParserAssetFactory(
         return Try.success(
             PublicationParser.Asset(
                 sourceAsset = asset,
-                mediaType = asset.format.mediaType,
+                mediaType = asset.mediaType,
                 container = container
             )
         )

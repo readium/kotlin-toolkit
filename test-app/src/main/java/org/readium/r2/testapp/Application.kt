@@ -61,7 +61,8 @@ class Application : android.app.Application() {
                         readium.lcpService,
                         readium.publicationFactory,
                         readium.assetRetriever,
-                        readium.protectionRetriever
+                        readium.protectionRetriever,
+                        readium.formatRegistry
                     )
                 }
 

@@ -16,9 +16,7 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.extensions.queryProjection
-import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.format.FormatHints
-import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.ContainerFactory
@@ -32,10 +30,11 @@ import org.readium.r2.shared.resource.ResourceMediaTypeSnifferContext
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import org.readium.r2.shared.util.toUrl
 
 public class AssetRetriever(
-    private val formatRegistry: FormatRegistry,
+    private val mediaTypeSniffer: MediaTypeSniffer,
     private val resourceFactory: ResourceFactory,
     private val containerFactory: ContainerFactory,
     private val archiveFactory: ArchiveFactory,
@@ -45,9 +44,8 @@ public class AssetRetriever(
     public companion object {
         public operator fun invoke(context: Context): AssetRetriever {
             val mediaTypeSniffer = DefaultMediaTypeSniffer()
-            val formatRegistry = FormatRegistry(mediaTypeSniffer)
             return AssetRetriever(
-                formatRegistry = formatRegistry,
+                mediaTypeSniffer = mediaTypeSniffer,
                 resourceFactory = FileResourceFactory(mediaTypeSniffer),
                 containerFactory = DirectoryContainerFactory(mediaTypeSniffer),
                 archiveFactory = DefaultArchiveFactory(mediaTypeSniffer),
@@ -158,23 +156,21 @@ public class AssetRetriever(
         mediaType: MediaType,
         assetType: AssetType
     ): Try<Asset, Error> {
-        val format = formatRegistry.retrieve(mediaType)
-
         return when (assetType) {
             AssetType.Archive ->
-                retrieveArchiveAsset(url, format)
+                retrieveArchiveAsset(url, mediaType)
 
             AssetType.Directory ->
-                retrieveDirectoryAsset(url, format)
+                retrieveDirectoryAsset(url, mediaType)
 
             AssetType.Resource ->
-                retrieveResourceAsset(url, format)
+                retrieveResourceAsset(url, mediaType)
         }
     }
 
     private suspend fun retrieveArchiveAsset(
         url: Url,
-        format: Format
+        mediaType: MediaType
     ): Try<Asset.Container, Error> {
         return retrieveResource(url)
             .flatMap { resource: Resource ->
@@ -190,16 +186,16 @@ public class AssetRetriever(
                         }
                     }
             }
-            .map { container -> Asset.Container(format, exploded = false, container) }
+            .map { container -> Asset.Container(mediaType, exploded = false, container) }
     }
 
     private suspend fun retrieveDirectoryAsset(
         url: Url,
-        format: Format
+        mediaType: MediaType
     ): Try<Asset.Container, Error> {
         return containerFactory.create(url)
             .map { container ->
-                Asset.Container(format, exploded = true, container)
+                Asset.Container(mediaType, exploded = true, container)
             }
             .mapFailure { error ->
                 when (error) {
@@ -215,10 +211,10 @@ public class AssetRetriever(
 
     private suspend fun retrieveResourceAsset(
         url: Url,
-        format: Format
+        mediaType: MediaType
     ): Try<Asset.Resource, Error> {
         return retrieveResource(url)
-            .map { resource -> Asset.Resource(format, resource) }
+            .map { resource -> Asset.Resource(mediaType, resource) }
     }
 
     private suspend fun retrieveResource(
@@ -338,14 +334,14 @@ public class AssetRetriever(
     }
 
     private suspend fun retrieve(container: Container, exploded: Boolean, hints: FormatHints): Asset? {
-        val format = formatRegistry.retrieve(ContainerMediaTypeSnifferContext(container, hints))
+        val mediaType = mediaTypeSniffer.sniff(ContainerMediaTypeSnifferContext(container, hints))
             ?: return null
-        return Asset.Container(format, exploded = exploded, container = container)
+        return Asset.Container(mediaType, exploded = exploded, container = container)
     }
 
     private suspend fun retrieve(resource: Resource, hints: FormatHints): Asset? {
-        val format = formatRegistry.retrieve(ResourceMediaTypeSnifferContext(resource, hints))
+        val mediaType = mediaTypeSniffer.sniff(ResourceMediaTypeSnifferContext(resource, hints))
             ?: return null
-        return Asset.Resource(format, resource = resource)
+        return Asset.Resource(mediaType, resource = resource)
     }
 }

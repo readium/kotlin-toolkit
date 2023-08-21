@@ -6,8 +6,8 @@
 
 package org.readium.r2.shared.asset
 
-import org.readium.r2.shared.format.Format
 import org.readium.r2.shared.resource.Resource as SharedResource
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * An asset which is either a single resource or a container that holds multiple resources.
@@ -17,12 +17,12 @@ public sealed class Asset {
     /**
      * Type of the asset source.
      */
-    public abstract val type: AssetType
+    public abstract val assetType: AssetType
 
     /**
-     * Media format of the asset.
+     * Media type of the asset.
      */
-    public abstract val format: Format
+    public abstract val mediaType: MediaType
 
     /**
      * Releases in-memory resources related to this asset.
@@ -32,15 +32,15 @@ public sealed class Asset {
     /**
      * A single resource asset.
      *
-     * @param format Media format of the asset.
+     * @param mediaType Media type of the asset.
      * @param resource Opened resource to access the asset.
      */
     public class Resource(
-        override val format: Format,
+        override val mediaType: MediaType,
         public val resource: SharedResource
     ) : Asset() {
 
-        override val type: AssetType =
+        override val assetType: AssetType =
             AssetType.Resource
 
         override suspend fun close() {
@@ -51,17 +51,17 @@ public sealed class Asset {
     /**
      * A container asset providing access to several resources.
      *
-     * @param format Media format of the asset.
+     * @param mediaType Media type of the asset.
      * @param exploded If this container is an exploded or packaged container.
      * @param container Opened container to access asset resources.
      */
     public class Container(
-        override val format: Format,
+        override val mediaType: MediaType,
         exploded: Boolean,
         public val container: org.readium.r2.shared.resource.Container
     ) : Asset() {
 
-        override val type: AssetType =
+        override val assetType: AssetType =
             if (exploded) {
                 AssetType.Directory
             } else {

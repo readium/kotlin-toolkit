@@ -47,7 +47,7 @@ public class AdeptFallbackContentProtection : ContentProtection {
         }
 
         val protectedFile = ContentProtection.Asset(
-            asset.format.mediaType,
+            asset.mediaType,
             asset.container,
             onCreatePublication = {
                 servicesBuilder.contentProtectionServiceFactory =
@@ -59,7 +59,7 @@ public class AdeptFallbackContentProtection : ContentProtection {
     }
 
     private suspend fun isAdept(asset: Asset.Container): Boolean {
-        if (asset.format.mediaType.matches(MediaType.EPUB)) {
+        if (asset.mediaType.matches(MediaType.EPUB)) {
             return false
         }
         val rightsXml = asset.container.get("/META-INF/rights.xml").readAsXmlOrNull()
