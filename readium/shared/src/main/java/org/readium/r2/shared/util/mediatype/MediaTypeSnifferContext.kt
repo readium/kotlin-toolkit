@@ -3,7 +3,6 @@ package org.readium.r2.shared.util.mediatype
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.nio.charset.Charset
-import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -24,8 +23,9 @@ public val MediaTypeSnifferContext.charset: Charset? get() =
 
 /** Returns whether this context has any of the given file extensions, ignoring case. */
 public fun MediaTypeSnifferContext.hasFileExtension(vararg fileExtensions: String): Boolean {
+    val fileExtensionsHints = hints.fileExtensions.map { it.lowercase() }
     for (fileExtension in fileExtensions.map { it.lowercase() }) {
-        if (hints.fileExtensions.contains(fileExtension.lowercase(Locale.ROOT))) {
+        if (fileExtensionsHints.contains(fileExtension)) {
             return true
         }
     }

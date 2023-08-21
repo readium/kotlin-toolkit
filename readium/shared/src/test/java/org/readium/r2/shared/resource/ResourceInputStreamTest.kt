@@ -6,6 +6,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -19,7 +20,7 @@ class ResourceInputStreamTest {
 
     @Test
     fun `stream can be read by chunks`() {
-        val resource = FileResource(file, mediaType = null)
+        val resource = FileResource(file, mediaType = MediaType.EPUB)
         val resourceStream = ResourceInputStream(resource)
         val outputStream = ByteArrayOutputStream(fileContent.size)
         resourceStream.copyTo(outputStream, bufferSize = bufferSize)

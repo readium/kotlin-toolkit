@@ -21,6 +21,7 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.lengthBlocking
 import org.readium.r2.shared.readBlocking
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 
@@ -32,7 +33,9 @@ class DirectoryContainerTest {
     ).let { Url(it) }
 
     private fun sut(): Container = runBlocking {
-        assertNotNull(DirectoryContainerFactory().create(directory).getOrNull())
+        assertNotNull(
+            DirectoryContainerFactory(DefaultMediaTypeSniffer()).create(directory).getOrNull()
+        )
     }
 
     @Test

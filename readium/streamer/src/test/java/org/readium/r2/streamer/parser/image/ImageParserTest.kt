@@ -40,13 +40,17 @@ class ImageParserTest {
             resource,
             password = null
         ).getOrNull()!!
-        PublicationParser.Asset(sourceAsset = MediaType.CBZ, mediaType = MediaType.CBZ, archive)
+        PublicationParser.Asset(mediaType = MediaType.CBZ, sourceMediaType = MediaType.CBZ, archive)
     }
 
     private val jpgAsset = runBlocking {
         val path = pathForResource("futuristic_tales.jpg")
         val resource = FileResource(File(path), mediaType = MediaType.JPEG)
-        PublicationParser.Asset(MediaType.JPEG, ResourceContainer(path, resource))
+        PublicationParser.Asset(
+            mediaType = MediaType.JPEG,
+            sourceMediaType = MediaType.JPEG,
+            ResourceContainer(path, resource)
+        )
     }
     private fun pathForResource(resource: String): String {
         val path = ImageParserTest::class.java.getResource(resource)?.path
