@@ -512,7 +512,10 @@ class MediaTypeSnifferTest {
     private suspend fun MediaTypeSniffer.sniffResource(file: File): MediaType? =
         sniff(BytesContentMediaTypeSnifferContext { file.readBytes() })
 
-    private suspend fun MediaTypeSniffer.sniffArchive(file: File): MediaType? {
+    private suspend fun MediaTypeSniffer.sniffArchive(
+        file: File,
+        hints: MediaTypeHints = MediaTypeHints()
+    ): MediaType? {
         val archive = assertNotNull(DefaultArchiveFactory(this).open(file).getOrNull())
 
         return sniff(object : ContainerMediaTypeSnifferContext {
@@ -522,7 +525,7 @@ class MediaTypeSnifferTest {
             override suspend fun read(path: String): ByteArray? =
                 archive.get(path).read().getOrNull()
 
-            override val hints: MediaTypeHints = MediaTypeHints()
+            override val hints: MediaTypeHints = hints
         })
     }
 }

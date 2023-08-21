@@ -25,10 +25,27 @@ public fun interface MediaTypeSniffer {
 /**
  * The default sniffer provided by Readium 2 to resolve a [MediaType].
  */
-public class DefaultMediaTypeSniffer :
-    OptimizedRoundsMediaTypeSniffer(CompositeMediaTypeSniffer(MediaTypeSniffers.all))
+public class DefaultMediaTypeSniffer : MediaTypeSniffer {
+    private val sniffer = OptimizedRoundsMediaTypeSniffer(
+        CompositeMediaTypeSniffer(MediaTypeSniffers.all)
+    )
 
-public open class CompositeMediaTypeSniffer(
+    override suspend fun sniff(context: MediaTypeSnifferContext): MediaType? {
+        sniffer.sniff(context)
+            ?.let { return it }
+
+        // Falls back on the system-wide registered media types using MimeTypeMap.
+        // Note: This is done after the default sniffers, because otherwise it will detect JSON, XML
+        // or ZIP formats before we have a chance of sniffing their content (for example, for RWPM).
+        MediaTypeSniffers.system.sniff(context)
+            ?.let { return it }
+
+        // If nothing else worked, we return the first media type hint.
+        return context.hints.mediaTypes.firstOrNull()
+    }
+}
+
+public class CompositeMediaTypeSniffer(
     private val sniffers: List<MediaTypeSniffer>
 ) : MediaTypeSniffer {
 
@@ -36,7 +53,7 @@ public open class CompositeMediaTypeSniffer(
         sniffers.firstNotNullOfOrNull { it.sniff(context) }
 }
 
-public open class OptimizedRoundsMediaTypeSniffer(
+public class OptimizedRoundsMediaTypeSniffer(
     private val sniffer: MediaTypeSniffer
 ) : MediaTypeSniffer {
     override suspend fun sniff(context: MediaTypeSnifferContext): MediaType? {
@@ -572,14 +589,13 @@ public object MediaTypeSniffers {
      * Sniffs the system-wide registered media types using [MimeTypeMap] and
      * [URLConnection.guessContentTypeFromStream].
      */
-    public fun system(excluded: List<MediaType>): MediaTypeSniffer = MediaTypeSniffer { context ->
+    public val system: MediaTypeSniffer = MediaTypeSniffer { context ->
         val mimetypes = tryOrNull { MimeTypeMap.getSingleton() }
             ?: return@MediaTypeSniffer null
 
         fun sniffExtension(extension: String): MediaType? =
             mimetypes.getMimeTypeFromExtension(extension)
                 ?.let { MediaType(it) }
-                ?.takeUnless { it in excluded }
 
         fun sniffType(type: String): MediaType? {
             val extension = mimetypes.getExtensionFromMimeType(type)
@@ -587,7 +603,6 @@ public object MediaTypeSniffers {
             val preferredType = mimetypes.getMimeTypeFromExtension(extension)
                 ?: return null
             return MediaType(preferredType)
-                .takeUnless { it in excluded }
         }
 
         for (mediaType in context.hints.mediaTypes) {
@@ -628,9 +643,6 @@ public object MediaTypeSniffers {
         pdf,
         json,
         xml,
-        zip,
-        // Note: We exclude JSON, XML or ZIP formats otherwise they will be detected during the
-        // light sniffing step and bypass the RWPM or EPUB heavy sniffing.
-        system(excluded = listOf(MediaType.JSON, MediaType.XML, MediaType.ZIP))
+        zip
     )
 }
