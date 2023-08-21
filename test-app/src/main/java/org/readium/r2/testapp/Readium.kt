@@ -14,7 +14,6 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
 import org.readium.r2.shared.resource.CompositeArchiveFactory
 import org.readium.r2.shared.resource.CompositeResourceFactory
@@ -26,6 +25,7 @@ import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpResourceFactory
 import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.streamer.PublicationFactory
 
 /**

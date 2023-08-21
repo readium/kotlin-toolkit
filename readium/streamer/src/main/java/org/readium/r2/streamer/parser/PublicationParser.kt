@@ -6,7 +6,6 @@
 
 package org.readium.r2.streamer.parser
 
-import org.readium.r2.shared.asset.Asset as SharedAsset
 import org.readium.r2.shared.error.MessageError
 import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.error.Try
@@ -24,16 +23,16 @@ public interface PublicationParser {
     /**
      * Full publication asset.
      *
-     * @param sourceAsset Asset of the source used to build the publication. It can be a package,
-     * a JSON manifest, a LCP license, etc.
+     * @param sourceMediaType Media type of the source used to build the publication. It can be a
+     * package, a JSON manifest, a LCP license, etc.
      * @param mediaType Media type of the "virtual" publication asset, built from the source asset.
      * For example, if the source asset was a `application/audiobook+json`, the "virtual" asset
      * media type will be `application/audiobook+zip`.
      * @param container Container granting access to the resources of the publication.
      */
     public data class Asset(
-        val sourceAsset: SharedAsset,
         val mediaType: MediaType,
+        val sourceMediaType: MediaType,
         val container: Container
     )
 

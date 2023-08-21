@@ -19,6 +19,7 @@ import org.readium.r2.shared.resource.DirectoryContainerFactory
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.flatMap
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.readium.r2.streamer.readBlocking
 import org.robolectric.RobolectricTestRunner
 
@@ -35,7 +36,7 @@ class EpubDeobfuscatorTest {
 
     private val container = runBlocking {
         requireNotNull(
-            DirectoryContainerFactory().create(deobfuscationDir).getOrNull()
+            DirectoryContainerFactory(DefaultMediaTypeSniffer()).create(deobfuscationDir).getOrNull()
         )
     }
 

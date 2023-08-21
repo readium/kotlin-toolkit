@@ -31,7 +31,6 @@ import org.readium.r2.shared.asset.AssetType
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.error.getOrElse
-import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
@@ -39,6 +38,7 @@ import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.PublicationFactory
@@ -266,7 +266,7 @@ class BookRepository(
             }
 
         val format = formatRegistry.retrieve(publicationTempAsset.mediaType)
-        val fileExtension = format.fileExtension ?: "epub"
+        val fileExtension = format?.fileExtension ?: "epub"
         val fileName = "${UUID.randomUUID()}.$fileExtension"
         val libraryFile = File(storageDir, fileName)
         val libraryUrl = libraryFile.toUrl()

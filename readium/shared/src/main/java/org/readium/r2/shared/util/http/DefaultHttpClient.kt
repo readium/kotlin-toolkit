@@ -17,12 +17,12 @@ import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.error.tryRecover
-import org.readium.r2.shared.format.FormatHints
 import org.readium.r2.shared.util.http.HttpRequest.Method
 import org.readium.r2.shared.util.mediatype.BytesContentMediaTypeSnifferContext
 import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.HintMediaTypeSnifferContext
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import timber.log.Timber
 
@@ -146,7 +146,7 @@ public class DefaultHttpClient(
                         val mediaType = body?.let {
                             mediaTypeSniffer.sniff(
                                 BytesContentMediaTypeSnifferContext(
-                                    hints = FormatHints(connection),
+                                    hints = MediaTypeHints(connection),
                                     bytes = { it }
                                 )
                             )
@@ -156,7 +156,7 @@ public class DefaultHttpClient(
 
                     val mediaType = mediaTypeSniffer.sniff(
                         HintMediaTypeSnifferContext(
-                            hints = FormatHints(connection)
+                            hints = MediaTypeHints(connection)
                         )
                     )
 

@@ -22,10 +22,10 @@ import org.readium.r2.shared.extensions.optNullableLong
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.format.FormatHints
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import org.readium.r2.shared.util.toUrl
 
@@ -112,7 +112,7 @@ internal class JavaZipContainer(
                 mediaTypeSniffer.sniff(
                     ResourceMediaTypeSnifferContext(
                         resource = this,
-                        hints = FormatHints(fileExtension = File(path).extension)
+                        hints = MediaTypeHints(fileExtension = File(path).extension)
                     )
                 )
             )
@@ -142,7 +142,7 @@ internal class JavaZipContainer(
                 mediaTypeSniffer.sniff(
                     ResourceMediaTypeSnifferContext(
                         resource = this,
-                        hints = FormatHints(fileExtension = File(path).extension)
+                        hints = MediaTypeHints(fileExtension = File(path).extension)
                     )
                 )
             )

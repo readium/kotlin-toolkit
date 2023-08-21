@@ -9,7 +9,6 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.format.FormatHints
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Manifest
@@ -17,7 +16,7 @@ import org.readium.r2.shared.util.SuspendingCloseable
 
 public interface MediaTypeSnifferContext : SuspendingCloseable {
     /** Format hints. */
-    public val hints: FormatHints
+    public val hints: MediaTypeHints
 }
 
 /** Finds the first [Charset] declared in the media types' `charset` parameter. */
@@ -140,13 +139,13 @@ public suspend fun ContainerMediaTypeSnifferContext.contains(path: String): Bool
         ?: (read(path) != null)
 
 public class HintMediaTypeSnifferContext(
-    override val hints: FormatHints
+    override val hints: MediaTypeHints
 ) : MediaTypeSnifferContext {
     override suspend fun close() {}
 }
 
 public class BytesContentMediaTypeSnifferContext(
-    override val hints: FormatHints = FormatHints(),
+    override val hints: MediaTypeHints = MediaTypeHints(),
     bytes: suspend () -> ByteArray
 ) : ContentMediaTypeSnifferContext {
 

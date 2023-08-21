@@ -14,7 +14,6 @@ import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.format.FormatHints
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.ArchiveProperties
 import org.readium.r2.shared.resource.Container
@@ -30,6 +29,7 @@ import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipFile
 import org.readium.r2.shared.util.archive.channel.jvm.SeekableByteChannel
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 
 internal class ChannelZipContainer(
@@ -66,7 +66,7 @@ internal class ChannelZipContainer(
                 mediaTypeSniffer.sniff(
                     ResourceMediaTypeSnifferContext(
                         resource = this,
-                        hints = FormatHints(fileExtension = File(path).extension)
+                        hints = MediaTypeHints(fileExtension = File(path).extension)
                     )
                 )
             )

@@ -1,12 +1,12 @@
 package org.readium.r2.shared.resource
 
-import org.readium.r2.shared.format.FormatHints
 import org.readium.r2.shared.util.mediatype.ContainerMediaTypeSnifferContext as BaseContainerMediaTypeSnifferContext
 import org.readium.r2.shared.util.mediatype.ContentMediaTypeSnifferContext
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
 
 public class ResourceMediaTypeSnifferContext(
     private val resource: Resource,
-    override val hints: FormatHints = FormatHints()
+    override val hints: MediaTypeHints = MediaTypeHints()
 ) : ContentMediaTypeSnifferContext {
 
     override suspend fun read(range: LongRange?): ByteArray? =
@@ -19,7 +19,7 @@ public class ResourceMediaTypeSnifferContext(
 
 public class ContainerMediaTypeSnifferContext(
     private val container: Container,
-    override val hints: FormatHints = FormatHints()
+    override val hints: MediaTypeHints = MediaTypeHints()
 ) : BaseContainerMediaTypeSnifferContext {
 
     override suspend fun entries(): Set<String>? =

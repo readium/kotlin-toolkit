@@ -45,8 +45,8 @@ internal class ParserAssetFactory(
     ): Try<PublicationParser.Asset, Publication.OpeningException> =
         Try.success(
             PublicationParser.Asset(
-                sourceAsset = asset,
                 mediaType = asset.mediaType,
+                sourceMediaType = asset.mediaType,
                 container = asset.container
             )
         )
@@ -91,8 +91,8 @@ internal class ParserAssetFactory(
 
         return Try.success(
             PublicationParser.Asset(
-                sourceAsset = asset,
                 mediaType = MediaType.READIUM_WEBPUB,
+                sourceMediaType = asset.mediaType,
                 container = container
             )
         )
@@ -108,8 +108,8 @@ internal class ParserAssetFactory(
 
         return Try.success(
             PublicationParser.Asset(
-                sourceAsset = asset,
                 mediaType = asset.mediaType,
+                sourceMediaType = asset.mediaType,
                 container = container
             )
         )

@@ -16,7 +16,6 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.extensions.queryProjection
-import org.readium.r2.shared.format.FormatHints
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.ContainerFactory
@@ -30,6 +29,7 @@ import org.readium.r2.shared.resource.ResourceMediaTypeSnifferContext
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import org.readium.r2.shared.util.toUrl
 
@@ -255,7 +255,7 @@ public class AssetRetriever(
      */
     public suspend fun retrieve(
         file: File,
-        hints: FormatHints = FormatHints()
+        hints: MediaTypeHints = MediaTypeHints()
     ): Asset? =
         retrieve(file.toUrl(), hints)
 
@@ -264,7 +264,7 @@ public class AssetRetriever(
      */
     public suspend fun retrieve(
         uri: Uri,
-        hints: FormatHints = FormatHints()
+        hints: MediaTypeHints = MediaTypeHints()
     ): Asset? {
         val url = uri.toUrl()
             ?: return null
@@ -277,9 +277,9 @@ public class AssetRetriever(
      */
     public suspend fun retrieve(
         url: Url,
-        hints: FormatHints = FormatHints()
+        hints: MediaTypeHints = MediaTypeHints()
     ): Asset? {
-        val allHints = FormatHints(
+        val allHints = MediaTypeHints(
             mediaTypes = buildList {
                 addAll(hints.mediaTypes)
 
@@ -333,13 +333,13 @@ public class AssetRetriever(
             )
     }
 
-    private suspend fun retrieve(container: Container, exploded: Boolean, hints: FormatHints): Asset? {
+    private suspend fun retrieve(container: Container, exploded: Boolean, hints: MediaTypeHints): Asset? {
         val mediaType = mediaTypeSniffer.sniff(ContainerMediaTypeSnifferContext(container, hints))
             ?: return null
         return Asset.Container(mediaType, exploded = exploded, container = container)
     }
 
-    private suspend fun retrieve(resource: Resource, hints: FormatHints): Asset? {
+    private suspend fun retrieve(resource: Resource, hints: MediaTypeHints): Asset? {
         val mediaType = mediaTypeSniffer.sniff(ResourceMediaTypeSnifferContext(resource, hints))
             ?: return null
         return Asset.Resource(mediaType, resource = resource)

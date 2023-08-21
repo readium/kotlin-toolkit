@@ -8,13 +8,13 @@ package org.readium.r2.shared.util.http
 
 import java.net.HttpURLConnection
 import org.readium.r2.shared.extensions.extension
-import org.readium.r2.shared.format.FormatHints
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
 
-public operator fun FormatHints.Companion.invoke(
+public operator fun MediaTypeHints.Companion.invoke(
     connection: HttpURLConnection,
     mediaType: String? = null
-): FormatHints =
-    FormatHints(
+): MediaTypeHints =
+    MediaTypeHints(
         mediaTypes = listOfNotNull(connection.contentType, mediaType),
         fileExtensions = listOfNotNull(
             connection.url.extension

@@ -21,10 +21,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.format.FormatHints
 import org.readium.r2.shared.util.http.invoke
 import org.readium.r2.shared.util.mediatype.HintMediaTypeSnifferContext
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import timber.log.Timber
 
@@ -142,7 +142,7 @@ internal class NetworkService(
 
             mediaTypeSniffer.sniff(
                 HintMediaTypeSnifferContext(
-                    hints = FormatHints(connection, mediaType = mediaType)
+                    hints = MediaTypeHints(connection, mediaType = mediaType)
                 )
             )
         } catch (e: Exception) {
