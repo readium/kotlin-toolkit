@@ -35,7 +35,7 @@ class Readium(context: Context) {
 
     private val mediaTypeSniffer = DefaultMediaTypeSniffer()
 
-    val formatRegistry = FormatRegistry(mediaTypeSniffer)
+    val formatRegistry = FormatRegistry()
 
     val httpClient = DefaultHttpClient(
         mediaTypeSniffer = mediaTypeSniffer

@@ -6,49 +6,22 @@ import org.junit.Test
 
 class FormatRegistryTest {
 
-    private fun sut() = FormatRegistry(DefaultMediaTypeSniffer())
+    private fun sut() = FormatRegistry()
 
     @Test
-    fun `canonicalize media type`() = runBlocking {
+    fun `get known file extension from canonical media type`() = runBlocking {
         assertEquals(
-            MediaType("text/html")!!,
-            sut().canonicalize(MediaType("text/html;charset=utf-8")!!)
-        )
-        assertEquals(
-            MediaType("application/atom+xml;profile=opds-catalog")!!,
-            sut().canonicalize(
-                MediaType("application/atom+xml;profile=opds-catalog;charset=utf-8")!!
-            )
-        )
-        assertEquals(
-            MediaType("application/unknown;charset=utf-8")!!,
-            sut().canonicalize(MediaType("application/unknown;charset=utf-8")!!)
+            "epub",
+            sut().fileExtension(MediaType.EPUB)
         )
     }
 
     @Test
-    fun `get known format from canonical media type`() = runBlocking {
-        assertEquals(
-            Format(name = "EPUB", fileExtension = "epub"),
-            sut().retrieve(MediaType("application/epub+zip")!!)
-        )
-    }
-
-    @Test
-    fun `get known format from non-canonical media type`() = runBlocking {
-        assertEquals(
-            Format(name = "EPUB", fileExtension = "epub"),
-            sut().retrieve(MediaType("application/epub+zip;param=value")!!)
-        )
-    }
-
-    @Test
-    fun `register new format`() = runBlocking {
+    fun `register new file extensions`() = runBlocking {
         val mediaType = MediaType("application/test")!!
-        val format = Format(name = "Test", fileExtension = "tst")
         val sut = sut()
-        sut.register(mediaType, format)
+        sut.register(mediaType, fileExtension = "tst")
 
-        assertEquals(format, sut.retrieve(mediaType))
+        assertEquals(sut.fileExtension(mediaType), "tst")
     }
 }

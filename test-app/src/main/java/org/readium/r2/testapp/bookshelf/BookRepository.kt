@@ -265,8 +265,7 @@ class BookRepository(
                     )
             }
 
-        val format = formatRegistry.retrieve(publicationTempAsset.mediaType)
-        val fileExtension = format?.fileExtension ?: "epub"
+        val fileExtension = formatRegistry.fileExtension(publicationTempAsset.mediaType) ?: "epub"
         val fileName = "${UUID.randomUUID()}.$fileExtension"
         val libraryFile = File(storageDir, fileName)
         val libraryUrl = libraryFile.toUrl()
