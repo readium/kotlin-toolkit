@@ -22,6 +22,12 @@ public fun interface MediaTypeSniffer {
     public suspend fun sniff(context: MediaTypeSnifferContext): MediaType?
 }
 
+/**
+ * The default sniffer provided by Readium 2 to resolve a [MediaType].
+ */
+public class DefaultMediaTypeSniffer :
+    OptimizedRoundsMediaTypeSniffer(CompositeMediaTypeSniffer(MediaTypeSniffers.all))
+
 public open class CompositeMediaTypeSniffer(
     private val sniffers: List<MediaTypeSniffer>
 ) : MediaTypeSniffer {
@@ -30,10 +36,29 @@ public open class CompositeMediaTypeSniffer(
         sniffers.firstNotNullOfOrNull { it.sniff(context) }
 }
 
-/**
- * The default sniffer provided by Readium 2 to resolve a [MediaType].
- */
-public class DefaultMediaTypeSniffer : CompositeMediaTypeSniffer(MediaTypeSniffers.all)
+public open class OptimizedRoundsMediaTypeSniffer(
+    private val sniffer: MediaTypeSniffer
+) : MediaTypeSniffer {
+    override suspend fun sniff(context: MediaTypeSnifferContext): MediaType? {
+        // Light sniffing with only media type hints
+        if (context.hints.mediaTypes.isNotEmpty()) {
+            sniffer.sniff(
+                HintMediaTypeSnifferContext(
+                    hints = context.hints.copy(fileExtensions = emptyList())
+                )
+            )?.let { return it }
+        }
+
+        // Light sniffing with both media type hints and file extensions
+        if (context.hints.fileExtensions.isNotEmpty()) {
+            sniffer.sniff(HintMediaTypeSnifferContext(hints = context.hints))
+                ?.let { return it }
+        }
+
+        // Fallback on heavy sniffing
+        return sniffer.sniff(context)
+    }
+}
 
 /**
  * Default media type sniffers provided by Readium.

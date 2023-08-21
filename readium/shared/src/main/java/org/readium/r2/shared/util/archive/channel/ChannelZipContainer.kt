@@ -15,7 +15,6 @@ import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.format.FormatHints
-import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.ArchiveProperties
 import org.readium.r2.shared.resource.Container
@@ -31,10 +30,11 @@ import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipFile
 import org.readium.r2.shared.util.archive.channel.jvm.SeekableByteChannel
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 
 internal class ChannelZipContainer(
     private val archive: ZipFile,
-    private val formatRegistry: FormatRegistry
+    private val mediaTypeSniffer: MediaTypeSniffer
 ) : ZipContainer {
 
     private inner class FailureEntry(
@@ -63,12 +63,12 @@ internal class ChannelZipContainer(
 
         override suspend fun mediaType(): ResourceTry<MediaType?> =
             Try.success(
-                formatRegistry.retrieve(
+                mediaTypeSniffer.sniff(
                     ResourceMediaTypeSnifferContext(
                         resource = this,
                         hints = FormatHints(fileExtension = File(path).extension)
                     )
-                )?.mediaType
+                )
             )
 
         override suspend fun length(): ResourceTry<Long> =
@@ -171,7 +171,7 @@ internal class ChannelZipContainer(
  * An [ArchiveFactory] able to open a ZIP archive served through an HTTP server.
  */
 public class ChannelZipArchiveFactory(
-    private val formatRegistry: FormatRegistry
+    private val mediaTypeSniffer: MediaTypeSniffer
 ) : ArchiveFactory {
 
     override suspend fun create(
@@ -186,7 +186,7 @@ public class ChannelZipArchiveFactory(
             val resourceChannel = ResourceChannel(resource)
             val channel = wrapBaseChannel(resourceChannel)
             val zipFile = ZipFile(channel, true)
-            val channelZip = ChannelZipContainer(zipFile, formatRegistry)
+            val channelZip = ChannelZipContainer(zipFile, mediaTypeSniffer)
             Try.success(channelZip)
         } catch (e: Resource.Exception) {
             Try.failure(ArchiveFactory.Error.ResourceReading(e))
@@ -198,7 +198,7 @@ public class ChannelZipArchiveFactory(
     internal fun openFile(file: File): Container {
         val fileChannel = FileChannelAdapter(file, "r")
         val channel = wrapBaseChannel(fileChannel)
-        return ChannelZipContainer(ZipFile(channel), formatRegistry)
+        return ChannelZipContainer(ZipFile(channel), mediaTypeSniffer)
     }
 
     private fun wrapBaseChannel(channel: SeekableByteChannel): SeekableByteChannel {

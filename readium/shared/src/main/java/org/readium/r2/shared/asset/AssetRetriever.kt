@@ -30,6 +30,7 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.resource.ResourceMediaTypeSnifferContext
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUrl
 
@@ -43,12 +44,13 @@ public class AssetRetriever(
 
     public companion object {
         public operator fun invoke(context: Context): AssetRetriever {
-            val formatRegistry = FormatRegistry()
+            val mediaTypeSniffer = DefaultMediaTypeSniffer()
+            val formatRegistry = FormatRegistry(mediaTypeSniffer)
             return AssetRetriever(
                 formatRegistry = formatRegistry,
-                resourceFactory = FileResourceFactory(formatRegistry),
-                containerFactory = DirectoryContainerFactory(formatRegistry),
-                archiveFactory = DefaultArchiveFactory(formatRegistry),
+                resourceFactory = FileResourceFactory(mediaTypeSniffer),
+                containerFactory = DirectoryContainerFactory(mediaTypeSniffer),
+                archiveFactory = DefaultArchiveFactory(mediaTypeSniffer),
                 contentResolver = context.contentResolver
             )
         }

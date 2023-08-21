@@ -18,18 +18,17 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.error.tryRecover
 import org.readium.r2.shared.format.FormatHints
-import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.util.http.HttpRequest.Method
 import org.readium.r2.shared.util.mediatype.BytesContentMediaTypeSnifferContext
 import org.readium.r2.shared.util.mediatype.HintMediaTypeSnifferContext
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import timber.log.Timber
 
 /**
  * An implementation of [HttpClient] using the native [HttpURLConnection].
  *
- * @param formatRegistry Registry of supported media formats to resolve the media type of a
- *        response.
+ * @param mediaTypeSniffer Component used to sniff the media type of the HTTP response.
  * @param userAgent Custom user agent to use for requests.
  * @param additionalHeaders A dictionary of additional headers to send with requests.
  * @param connectTimeout Timeout used when establishing a connection to the resource. A null timeout
@@ -38,7 +37,7 @@ import timber.log.Timber
  *        as the default value, while a timeout of zero as an infinite timeout.
  */
 public class DefaultHttpClient(
-    private val formatRegistry: FormatRegistry,
+    private val mediaTypeSniffer: MediaTypeSniffer,
     private val userAgent: String? = null,
     private val additionalHeaders: Map<String, String> = mapOf(),
     private val connectTimeout: Duration? = null,
@@ -143,18 +142,18 @@ public class DefaultHttpClient(
                         // Reads the full body, since it might contain an error representation such as
                         // JSON Problem Details or OPDS Authentication Document
                         val body = connection.errorStream?.use { it.readBytes() }
-                        val format = body?.let {
-                            formatRegistry.retrieve(
+                        val mediaType = body?.let {
+                            mediaTypeSniffer.sniff(
                                 BytesContentMediaTypeSnifferContext(
                                     hints = FormatHints(connection),
                                     bytes = { it }
                                 )
                             )
                         }
-                        throw HttpException(kind, format?.mediaType, body)
+                        throw HttpException(kind, mediaType, body)
                     }
 
-                    val format = formatRegistry.retrieve(
+                    val mediaType = mediaTypeSniffer.sniff(
                         HintMediaTypeSnifferContext(
                             hints = FormatHints(connection)
                         )
@@ -165,7 +164,7 @@ public class DefaultHttpClient(
                         url = connection.url.toString(),
                         statusCode = statusCode,
                         headers = connection.safeHeaders,
-                        mediaType = format?.mediaType ?: MediaType.BINARY
+                        mediaType = mediaType ?: MediaType.BINARY
                     )
 
                     callback.onResponseReceived(request, response)

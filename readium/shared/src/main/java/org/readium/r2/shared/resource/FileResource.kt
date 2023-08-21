@@ -16,27 +16,27 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.format.FormatHints
-import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.isFile
 import org.readium.r2.shared.util.isLazyInitialized
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 
 /**
  * A [Resource] to access a [file].
  */
-public class FileResource internal constructor(
+public class FileResource private constructor(
     private val file: File,
     private val mediaType: MediaType?,
-    private val formatRegistry: FormatRegistry?
+    private val mediaTypeSniffer: MediaTypeSniffer?
 ) : Resource {
 
     public constructor(file: File, mediaType: MediaType) : this(file, mediaType, null)
 
-    public constructor(file: File, formatRegistry: FormatRegistry) : this(
+    public constructor(file: File, mediaTypeSniffer: MediaTypeSniffer) : this(
         file,
         null,
-        formatRegistry
+        mediaTypeSniffer
     )
 
     private val randomAccessFile by lazy {
@@ -52,12 +52,12 @@ public class FileResource internal constructor(
 
     override suspend fun mediaType(): ResourceTry<MediaType?> = Try.success(
         mediaType
-            ?: formatRegistry?.retrieve(
+            ?: mediaTypeSniffer?.sniff(
                 ResourceMediaTypeSnifferContext(
                     resource = this,
                     hints = FormatHints(fileExtension = file.extension)
                 )
-            )?.mediaType
+            )
     )
 
     override suspend fun close() {
@@ -134,7 +134,7 @@ public class FileResource internal constructor(
 }
 
 public class FileResourceFactory(
-    private val formatRegistry: FormatRegistry
+    private val mediaTypeSniffer: MediaTypeSniffer
 ) : ResourceFactory {
 
     override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
@@ -152,6 +152,6 @@ public class FileResourceFactory(
             return Try.failure(ResourceFactory.Error.Forbidden(e))
         }
 
-        return Try.success(FileResource(file, formatRegistry))
+        return Try.success(FileResource(file, mediaTypeSniffer))
     }
 }

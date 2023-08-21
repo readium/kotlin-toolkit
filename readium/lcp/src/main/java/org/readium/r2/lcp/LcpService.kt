@@ -167,7 +167,9 @@ public interface LcpService {
             val deviceRepository = DeviceRepository(db)
             val passphraseRepository = PassphrasesRepository(db)
             val licenseRepository = LicensesRepository(db)
-            val network = NetworkService(formatRegistry = formatRegistry)
+            val network = NetworkService(
+                mediaTypeSniffer = { formatRegistry.retrieve(it)?.mediaType }
+            )
             val device = DeviceService(
                 repository = deviceRepository,
                 network = network,

@@ -42,7 +42,7 @@ internal fun createLicenseContainer(
         else -> ZIPLicenseContainer(file.path, LICENSE_IN_RPF)
     }
 
-internal suspend fun createLicenseContainer(
+internal fun createLicenseContainer(
     asset: Asset
 ): LicenseContainer =
     when (asset) {

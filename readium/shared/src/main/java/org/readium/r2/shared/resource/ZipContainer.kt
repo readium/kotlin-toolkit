@@ -23,10 +23,10 @@ import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.format.FormatHints
-import org.readium.r2.shared.format.FormatRegistry
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 import org.readium.r2.shared.util.toUrl
 
 /**
@@ -98,7 +98,7 @@ public var Resource.Properties.Builder.archive: ArchiveProperties?
 internal class JavaZipContainer(
     private val archive: ZipFile,
     file: File,
-    private val formatRegistry: FormatRegistry
+    private val mediaTypeSniffer: MediaTypeSniffer
 ) : ZipContainer {
 
     private inner class FailureEntry(override val path: String) : ZipContainer.Entry {
@@ -109,12 +109,12 @@ internal class JavaZipContainer(
 
         override suspend fun mediaType(): ResourceTry<MediaType?> =
             Try.success(
-                formatRegistry.retrieve(
+                mediaTypeSniffer.sniff(
                     ResourceMediaTypeSnifferContext(
                         resource = this,
                         hints = FormatHints(fileExtension = File(path).extension)
                     )
-                )?.mediaType
+                )
             )
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
@@ -139,12 +139,12 @@ internal class JavaZipContainer(
 
         override suspend fun mediaType(): ResourceTry<MediaType?> =
             Try.success(
-                formatRegistry.retrieve(
+                mediaTypeSniffer.sniff(
                     ResourceMediaTypeSnifferContext(
                         resource = this,
                         hints = FormatHints(fileExtension = File(path).extension)
                     )
-                )?.mediaType
+                )
             )
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =

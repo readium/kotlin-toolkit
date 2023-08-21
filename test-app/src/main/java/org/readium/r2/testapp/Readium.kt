@@ -25,6 +25,7 @@ import org.readium.r2.shared.resource.FileResourceFactory
 import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpResourceFactory
+import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.readium.r2.streamer.PublicationFactory
 
 /**
@@ -32,19 +33,21 @@ import org.readium.r2.streamer.PublicationFactory
  */
 class Readium(context: Context) {
 
-    private val formatRegistry = FormatRegistry()
+    private val mediaTypeSniffer = DefaultMediaTypeSniffer()
+
+    private val formatRegistry = FormatRegistry(mediaTypeSniffer)
 
     val httpClient = DefaultHttpClient(
-        formatRegistry = formatRegistry
+        mediaTypeSniffer = mediaTypeSniffer
     )
 
     private val archiveFactory = CompositeArchiveFactory(
-        DefaultArchiveFactory(formatRegistry),
-        ChannelZipArchiveFactory(formatRegistry)
+        DefaultArchiveFactory(mediaTypeSniffer),
+        ChannelZipArchiveFactory(mediaTypeSniffer)
     )
 
     private val resourceFactory = CompositeResourceFactory(
-        FileResourceFactory(formatRegistry),
+        FileResourceFactory(mediaTypeSniffer),
         CompositeResourceFactory(
             ContentResourceFactory(context.contentResolver),
             HttpResourceFactory(httpClient)
@@ -52,7 +55,7 @@ class Readium(context: Context) {
     )
 
     private val containerFactory = DirectoryContainerFactory(
-        formatRegistry
+        mediaTypeSniffer
     )
 
     val assetRetriever = AssetRetriever(
