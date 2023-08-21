@@ -107,14 +107,14 @@ internal class JavaZipContainer(
 
         override val source: Url? = null
 
-        override suspend fun mediaType(): ResourceTry<MediaType?> =
+        override suspend fun mediaType(): ResourceTry<MediaType> =
             Try.success(
                 mediaTypeSniffer.sniff(
                     ResourceMediaTypeSnifferContext(
                         resource = this,
                         hints = MediaTypeHints(fileExtension = File(path).extension)
                     )
-                )
+                ) ?: MediaType.BINARY
             )
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
@@ -137,14 +137,14 @@ internal class JavaZipContainer(
 
         override val source: Url? = null
 
-        override suspend fun mediaType(): ResourceTry<MediaType?> =
+        override suspend fun mediaType(): ResourceTry<MediaType> =
             Try.success(
                 mediaTypeSniffer.sniff(
                     ResourceMediaTypeSnifferContext(
                         resource = this,
                         hints = MediaTypeHints(fileExtension = File(path).extension)
                     )
-                )
+                ) ?: MediaType.BINARY
             )
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =

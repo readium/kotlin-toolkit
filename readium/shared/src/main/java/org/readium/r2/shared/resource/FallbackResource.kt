@@ -19,7 +19,7 @@ public class FallbackResource(
 
     override val source: Url? = null
 
-    override suspend fun mediaType(): ResourceTry<MediaType?> =
+    override suspend fun mediaType(): ResourceTry<MediaType> =
         withResource { mediaType() }
 
     override suspend fun properties(): ResourceTry<Resource.Properties> =

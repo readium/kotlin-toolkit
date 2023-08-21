@@ -33,7 +33,7 @@ class TestContainer(resources: Map<String, String> = emptyMap()) : Container {
 
         override val source: Url? = null
 
-        override suspend fun mediaType(): ResourceTry<MediaType?> =
+        override suspend fun mediaType(): ResourceTry<MediaType> =
             Try.failure(Resource.Exception.NotFound())
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =

@@ -14,7 +14,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 
 public sealed class BaseBytesResource(
     override val source: Url?,
-    private val mediaType: MediaType?,
+    private val mediaType: MediaType,
     private val properties: Resource.Properties,
     protected val bytes: suspend () -> Try<ByteArray, Resource.Exception>
 ) : Resource {
@@ -22,7 +22,7 @@ public sealed class BaseBytesResource(
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         Try.success(properties)
 
-    override suspend fun mediaType(): ResourceTry<MediaType?> =
+    override suspend fun mediaType(): ResourceTry<MediaType> =
         Try.success(mediaType)
 
     override suspend fun length(): ResourceTry<Long> =
@@ -48,7 +48,7 @@ public sealed class BaseBytesResource(
 /** Creates a Resource serving a [ByteArray]. */
 public class BytesResource(
     url: Url? = null,
-    mediaType: MediaType? = null,
+    mediaType: MediaType = MediaType.BINARY,
     properties: Resource.Properties = Resource.Properties(),
     bytes: suspend () -> ResourceTry<ByteArray>
 ) : BaseBytesResource(source = url, mediaType = mediaType, properties = properties, bytes = bytes) {
@@ -56,7 +56,7 @@ public class BytesResource(
     public constructor(
         bytes: ByteArray,
         url: Url? = null,
-        mediaType: MediaType? = null,
+        mediaType: MediaType = MediaType.BINARY,
         properties: Resource.Properties = Resource.Properties()
     ) :
         this(url = url, mediaType = mediaType, properties = properties, { Try.success(bytes) })
@@ -68,7 +68,7 @@ public class BytesResource(
 /** Creates a Resource serving a [String]. */
 public class StringResource(
     url: Url? = null,
-    mediaType: MediaType? = null,
+    mediaType: MediaType = MediaType.TEXT,
     properties: Resource.Properties = Resource.Properties(),
     string: suspend () -> ResourceTry<String>
 ) : BaseBytesResource(
@@ -81,7 +81,7 @@ public class StringResource(
     public constructor(
         string: String,
         url: Url? = null,
-        mediaType: MediaType? = null,
+        mediaType: MediaType = MediaType.TEXT,
         properties: Resource.Properties = Resource.Properties()
     ) :
         this(url = url, mediaType = mediaType, properties = properties, { Try.success(string) })

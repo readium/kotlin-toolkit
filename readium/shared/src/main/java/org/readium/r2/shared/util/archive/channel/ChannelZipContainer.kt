@@ -61,14 +61,14 @@ internal class ChannelZipContainer(
                 }
             )
 
-        override suspend fun mediaType(): ResourceTry<MediaType?> =
+        override suspend fun mediaType(): ResourceTry<MediaType> =
             Try.success(
                 mediaTypeSniffer.sniff(
                     ResourceMediaTypeSnifferContext(
                         resource = this,
                         hints = MediaTypeHints(fileExtension = File(path).extension)
                     )
-                )
+                ) ?: MediaType.BINARY
             )
 
         override suspend fun length(): ResourceTry<Long> =

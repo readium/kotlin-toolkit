@@ -50,7 +50,7 @@ public class FileResource private constructor(
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         ResourceTry.success(Resource.Properties())
 
-    override suspend fun mediaType(): ResourceTry<MediaType?> = Try.success(
+    override suspend fun mediaType(): ResourceTry<MediaType> = Try.success(
         mediaType
             ?: mediaTypeSniffer?.sniff(
                 ResourceMediaTypeSnifferContext(
@@ -58,6 +58,7 @@ public class FileResource private constructor(
                     hints = MediaTypeHints(fileExtension = file.extension)
                 )
             )
+            ?: MediaType.BINARY
     )
 
     override suspend fun close() {

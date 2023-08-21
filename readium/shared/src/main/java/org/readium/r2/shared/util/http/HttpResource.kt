@@ -20,7 +20,7 @@ public class HttpResource(
     private val maxSkipBytes: Long = MAX_SKIP_BYTES
 ) : Resource {
 
-    override suspend fun mediaType(): ResourceTry<MediaType?> =
+    override suspend fun mediaType(): ResourceTry<MediaType> =
         headResponse().map { it.mediaType }
 
     override suspend fun properties(): ResourceTry<Resource.Properties> =

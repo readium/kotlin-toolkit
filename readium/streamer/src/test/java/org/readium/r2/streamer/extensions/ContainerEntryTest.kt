@@ -22,7 +22,7 @@ class ContainerEntryTest {
 
     class Entry(override val path: String) : Container.Entry {
         override val source: Url? = null
-        override suspend fun mediaType(): ResourceTry<MediaType?> =
+        override suspend fun mediaType(): ResourceTry<MediaType> =
             throw NotImplementedError()
         override suspend fun properties(): ResourceTry<Resource.Properties> =
             throw NotImplementedError()
