@@ -12,9 +12,8 @@ import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Manifest
-import org.readium.r2.shared.util.SuspendingCloseable
 
-public interface MediaTypeSnifferContext : SuspendingCloseable {
+public interface MediaTypeSnifferContext {
     /** Format hints. */
     public val hints: MediaTypeHints
 }
@@ -140,9 +139,7 @@ public suspend fun ContainerMediaTypeSnifferContext.contains(path: String): Bool
 
 public class HintMediaTypeSnifferContext(
     override val hints: MediaTypeHints
-) : MediaTypeSnifferContext {
-    override suspend fun close() {}
-}
+) : MediaTypeSnifferContext
 
 public class BytesContentMediaTypeSnifferContext(
     override val hints: MediaTypeHints = MediaTypeHints(),
@@ -162,6 +159,4 @@ public class BytesContentMediaTypeSnifferContext(
 
     override suspend fun read(range: LongRange?): ByteArray =
         bytes().read(range)
-
-    override suspend fun close() {}
 }

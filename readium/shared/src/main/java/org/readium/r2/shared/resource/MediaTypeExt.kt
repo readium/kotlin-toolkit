@@ -11,10 +11,6 @@ public class ResourceMediaTypeSnifferContext(
 
     override suspend fun read(range: LongRange?): ByteArray? =
         resource.read(range).getOrNull()
-
-    override suspend fun close() {
-        // We don't own the resource, not our responsibility to close it.
-    }
 }
 
 public class ContainerMediaTypeSnifferContext(
@@ -27,8 +23,4 @@ public class ContainerMediaTypeSnifferContext(
 
     override suspend fun read(path: String): ByteArray? =
         container.get(path).read().getOrNull()
-
-    override suspend fun close() {
-        // We don't own the container, not our responsibility to close it.
-    }
 }
