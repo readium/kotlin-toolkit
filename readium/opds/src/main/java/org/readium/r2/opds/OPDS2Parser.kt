@@ -15,11 +15,16 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.removeLastComponent
-import org.readium.r2.shared.opds.*
+import org.readium.r2.shared.opds.Facet
+import org.readium.r2.shared.opds.Feed
+import org.readium.r2.shared.opds.Group
+import org.readium.r2.shared.opds.OpdsMetadata
+import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
@@ -38,7 +43,7 @@ public class OPDS2Parser {
 
         private lateinit var feed: Feed
 
-        public suspend fun parseUrlString(url: String, client: HttpClient): Try<ParseData, Exception> {
+        public suspend fun parseUrlString(url: String, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
             return client.fetchWithDecoder(HttpRequest(url)) {
                 this.parse(it.body, URL(url))
             }
@@ -46,7 +51,7 @@ public class OPDS2Parser {
 
         public suspend fun parseRequest(
             request: HttpRequest,
-            client: HttpClient
+            client: HttpClient = DefaultHttpClient()
         ): Try<ParseData, Exception> {
             return client.fetchWithDecoder(request) {
                 this.parse(it.body, URL(request.url))

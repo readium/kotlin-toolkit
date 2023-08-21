@@ -20,6 +20,7 @@ import org.readium.r2.shared.error.tryRecover
 import org.readium.r2.shared.format.FormatHints
 import org.readium.r2.shared.util.http.HttpRequest.Method
 import org.readium.r2.shared.util.mediatype.BytesContentMediaTypeSnifferContext
+import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.HintMediaTypeSnifferContext
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
@@ -37,7 +38,7 @@ import timber.log.Timber
  *        as the default value, while a timeout of zero as an infinite timeout.
  */
 public class DefaultHttpClient(
-    private val mediaTypeSniffer: MediaTypeSniffer,
+    private val mediaTypeSniffer: MediaTypeSniffer = DefaultMediaTypeSniffer(),
     private val userAgent: String? = null,
     private val additionalHeaders: Map<String, String> = mapOf(),
     private val connectTimeout: Duration? = null,
