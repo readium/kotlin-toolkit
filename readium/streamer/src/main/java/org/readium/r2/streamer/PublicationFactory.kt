@@ -190,7 +190,6 @@ public class PublicationFactory(
 
         val parserAsset = PublicationParser.Asset(
             protectedAsset.mediaType,
-            sourceMediaType = asset.mediaType,
             protectedAsset.container
         )
 

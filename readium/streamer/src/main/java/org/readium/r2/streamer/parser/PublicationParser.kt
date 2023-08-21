@@ -23,8 +23,6 @@ public interface PublicationParser {
     /**
      * Full publication asset.
      *
-     * @param sourceMediaType Media type of the source used to build the publication. It can be a
-     * package, a JSON manifest, a LCP license, etc.
      * @param mediaType Media type of the "virtual" publication asset, built from the source asset.
      * For example, if the source asset was a `application/audiobook+json`, the "virtual" asset
      * media type will be `application/audiobook+zip`.
@@ -32,7 +30,6 @@ public interface PublicationParser {
      */
     public data class Asset(
         val mediaType: MediaType,
-        val sourceMediaType: MediaType,
         val container: Container
     )
 

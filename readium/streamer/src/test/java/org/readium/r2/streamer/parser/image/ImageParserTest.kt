@@ -40,7 +40,7 @@ class ImageParserTest {
             resource,
             password = null
         ).getOrNull()!!
-        PublicationParser.Asset(mediaType = MediaType.CBZ, sourceMediaType = MediaType.CBZ, archive)
+        PublicationParser.Asset(mediaType = MediaType.CBZ, archive)
     }
 
     private val jpgAsset = runBlocking {
@@ -48,7 +48,6 @@ class ImageParserTest {
         val resource = FileResource(File(path), mediaType = MediaType.JPEG)
         PublicationParser.Asset(
             mediaType = MediaType.JPEG,
-            sourceMediaType = MediaType.JPEG,
             ResourceContainer(path, resource)
         )
     }

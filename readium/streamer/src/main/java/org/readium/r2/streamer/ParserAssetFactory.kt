@@ -20,6 +20,7 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceContainer
 import org.readium.r2.shared.resource.RoutingContainer
+import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpContainer
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -48,7 +49,6 @@ internal class ParserAssetFactory(
         Try.success(
             PublicationParser.Asset(
                 mediaType = asset.mediaType,
-                sourceMediaType = asset.mediaType,
                 container = asset.container
             )
         )
@@ -87,14 +87,16 @@ internal class ParserAssetFactory(
 
         val container =
             RoutingContainer(
-                local = ResourceContainer("/manifest.json", asset.resource),
+                local = ResourceContainer(
+                    path = "/manifest.json",
+                    resource = StringResource(manifest.toJSON().toString(), asset.mediaType)
+                ),
                 remote = HttpContainer(httpClient, baseUrl)
             )
 
         return Try.success(
             PublicationParser.Asset(
                 mediaType = MediaType.READIUM_WEBPUB,
-                sourceMediaType = asset.mediaType,
                 container = container
             )
         )
@@ -111,7 +113,6 @@ internal class ParserAssetFactory(
         return Try.success(
             PublicationParser.Asset(
                 mediaType = asset.mediaType,
-                sourceMediaType = asset.mediaType,
                 container = container
             )
         )
