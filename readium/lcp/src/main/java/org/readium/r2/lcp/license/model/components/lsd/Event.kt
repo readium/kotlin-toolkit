@@ -21,11 +21,11 @@ public data class Event(val json: JSONObject) {
     val date: Date? = json.optNullableString("timestamp")?.iso8601ToDate()
 
     public enum class EventType(public val value: String) {
-        register("register"),
-        renew("renew"),
-        `return`("return"),
-        revoke("revoke"),
-        cancel("cancel");
+        Register("register"),
+        Renew("renew"),
+        Return("return"),
+        Revoke("revoke"),
+        Cancel("cancel");
 
         @Deprecated("Use [value] instead", ReplaceWith("value"), level = DeprecationLevel.ERROR)
         public val rawValue: String get() = value

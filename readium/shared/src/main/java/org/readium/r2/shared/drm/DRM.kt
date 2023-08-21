@@ -15,14 +15,10 @@ import java.io.Serializable
 public class DRM {
 
     @Deprecated("Not used anymore", level = DeprecationLevel.ERROR)
-    public enum class Brand(public val rawValue: String) : Serializable {
-        lcp("lcp");
-    }
+    public enum class Brand(public val rawValue: String) : Serializable
 
     @Deprecated("Not used anymore", level = DeprecationLevel.ERROR)
-    public enum class Scheme(public val rawValue: String) : Serializable {
-        lcp("http://readium.org/2014/01/lcp");
-    }
+    public enum class Scheme(public val rawValue: String) : Serializable
 }
 
 @Deprecated("Not used anymore", level = DeprecationLevel.ERROR)
