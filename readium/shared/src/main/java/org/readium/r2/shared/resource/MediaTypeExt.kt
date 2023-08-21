@@ -18,6 +18,6 @@ public class ContainerMediaTypeSnifferContent(
     override suspend fun entries(): Set<String>? =
         container.entries()?.map { it.path }?.toSet()
 
-    override suspend fun read(path: String): ByteArray? =
-        container.get(path).read().getOrNull()
+    override suspend fun read(path: String, range: LongRange?): ByteArray? =
+        container.get(path).read(range).getOrNull()
 }

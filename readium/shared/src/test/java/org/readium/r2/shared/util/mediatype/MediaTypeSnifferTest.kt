@@ -234,6 +234,14 @@ class MediaTypeSnifferTest {
             sniffer.sniff(mediaType = "application/atom+xml;profile=opds-catalog")
         )
         assertEquals(
+            MediaType.OPDS1_NAVIGATION_FEED,
+            sniffer.sniff("application/atom+xml;profile=opds-catalog;kind=navigation")
+        )
+        assertEquals(
+            MediaType.OPDS1_ACQUISITION_FEED,
+            sniffer.sniff("application/atom+xml;profile=opds-catalog;kind=acquisition")
+        )
+        assertEquals(
             MediaType.OPDS1,
             sniffer.sniffResource(fixtures.fileAt("opds1-feed.unknown"))
         )
@@ -514,8 +522,8 @@ class MediaTypeSnifferTest {
                 override suspend fun entries(): Set<String>? =
                     archive.entries()?.map { it.path }?.toSet()
 
-                override suspend fun read(path: String): ByteArray? =
-                    archive.get(path).read().getOrNull()
+                override suspend fun read(path: String, range: LongRange?): ByteArray? =
+                    archive.get(path).read(range).getOrNull()
             }
         )
     }

@@ -48,15 +48,15 @@ public sealed class BaseBytesResource(
 /** Creates a Resource serving a [ByteArray]. */
 public class BytesResource(
     url: Url? = null,
-    mediaType: MediaType = MediaType.BINARY,
+    mediaType: MediaType,
     properties: Resource.Properties = Resource.Properties(),
     bytes: suspend () -> ResourceTry<ByteArray>
 ) : BaseBytesResource(source = url, mediaType = mediaType, properties = properties, bytes = bytes) {
 
     public constructor(
         bytes: ByteArray,
+        mediaType: MediaType,
         url: Url? = null,
-        mediaType: MediaType = MediaType.BINARY,
         properties: Resource.Properties = Resource.Properties()
     ) :
         this(url = url, mediaType = mediaType, properties = properties, { Try.success(bytes) })
@@ -68,7 +68,7 @@ public class BytesResource(
 /** Creates a Resource serving a [String]. */
 public class StringResource(
     url: Url? = null,
-    mediaType: MediaType = MediaType.TEXT,
+    mediaType: MediaType,
     properties: Resource.Properties = Resource.Properties(),
     string: suspend () -> ResourceTry<String>
 ) : BaseBytesResource(
@@ -80,8 +80,8 @@ public class StringResource(
 
     public constructor(
         string: String,
+        mediaType: MediaType,
         url: Url? = null,
-        mediaType: MediaType = MediaType.TEXT,
         properties: Resource.Properties = Resource.Properties()
     ) :
         this(url = url, mediaType = mediaType, properties = properties, { Try.success(string) })

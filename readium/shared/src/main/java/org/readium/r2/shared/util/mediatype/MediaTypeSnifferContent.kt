@@ -89,7 +89,7 @@ public interface ContainerMediaTypeSnifferContent : MediaTypeSnifferContent {
     /**
      * Returns the entry data at the given [path] in this container.
      */
-    public suspend fun read(path: String): ByteArray?
+    public suspend fun read(path: String, range: LongRange? = null): ByteArray?
 }
 
 /**
@@ -97,7 +97,7 @@ public interface ContainerMediaTypeSnifferContent : MediaTypeSnifferContent {
  */
 public suspend fun ContainerMediaTypeSnifferContent.contains(path: String): Boolean =
     entries()?.contains(path)
-        ?: (read(path) != null)
+        ?: (read(path, range = 0L..1L) != null)
 
 public class BytesResourceMediaTypeSnifferContent(
     bytes: suspend () -> ByteArray

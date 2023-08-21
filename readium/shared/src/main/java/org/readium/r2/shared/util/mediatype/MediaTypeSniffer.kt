@@ -165,6 +165,12 @@ public object OpdsMediaTypeSniffer : MediaTypeSniffer {
         if (hints.hasMediaType("application/atom+xml;type=entry;profile=opds-catalog")) {
             return MediaType.OPDS1_ENTRY
         }
+        if (hints.hasMediaType("application/atom+xml;profile=opds-catalog;kind=navigation")) {
+            return MediaType.OPDS1_NAVIGATION_FEED
+        }
+        if (hints.hasMediaType("application/atom+xml;profile=opds-catalog;kind=acquisition")) {
+            return MediaType.OPDS1_ACQUISITION_FEED
+        }
         if (hints.hasMediaType("application/atom+xml;profile=opds-catalog")) {
             return MediaType.OPDS1
         }

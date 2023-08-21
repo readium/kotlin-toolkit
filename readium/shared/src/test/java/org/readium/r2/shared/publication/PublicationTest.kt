@@ -385,7 +385,7 @@ class PublicationTest {
             override fun get(link: Link): Resource? {
                 assertFalse(link.templated)
                 assertEquals("param1=a&param2=b", link.href.substringAfter("?"))
-                return StringResource("test passed", url = Url(link.href))
+                return StringResource("test passed", MediaType.TEXT, url = Url(link.href))
             }
         }
 

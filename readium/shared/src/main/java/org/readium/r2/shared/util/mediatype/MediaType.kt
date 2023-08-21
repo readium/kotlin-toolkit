@@ -312,6 +312,12 @@ public class MediaType private constructor(
         public val OGG: MediaType = MediaType("audio/ogg")!!
         public val OGV: MediaType = MediaType("video/ogg")!!
         public val OPDS1: MediaType = MediaType("application/atom+xml;profile=opds-catalog")!!
+        public val OPDS1_NAVIGATION_FEED: MediaType = MediaType(
+            "application/atom+xml;profile=opds-catalog;kind=navigation"
+        )!!
+        public val OPDS1_ACQUISITION_FEED: MediaType = MediaType(
+            "application/atom+xml;profile=opds-catalog;kind=acquisition"
+        )!!
         public val OPDS1_ENTRY: MediaType = MediaType(
             "application/atom+xml;type=entry;profile=opds-catalog"
         )!!

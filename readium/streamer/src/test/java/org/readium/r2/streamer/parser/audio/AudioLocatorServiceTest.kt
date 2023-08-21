@@ -12,6 +12,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.mediatype.MediaType
 
 class AudioLocatorServiceTest {
 
@@ -53,8 +54,8 @@ class AudioLocatorServiceTest {
     fun `locate(Locator) uses totalProgression`() = runBlocking {
         val service = AudioLocatorService(
             listOf(
-                Link("l1", type = "audio/mpeg", duration = 100.0),
-                Link("l2", type = "audio/mpeg", duration = 100.0)
+                Link("l1", mediaType = MediaType.MP3, duration = 100.0),
+                Link("l2", mediaType = MediaType.MP3, duration = 100.0)
             )
         )
 
@@ -120,8 +121,8 @@ class AudioLocatorServiceTest {
     fun `locate(Locator) using totalProgression keeps title and text`() = runBlocking {
         val service = AudioLocatorService(
             listOf(
-                Link("l1", type = "audio/mpeg", duration = 100.0),
-                Link("l2", type = "audio/mpeg", duration = 100.0)
+                Link("l1", mediaType = MediaType.MP3, duration = 100.0),
+                Link("l2", mediaType = MediaType.MP3, duration = 100.0)
             )
         )
 
@@ -159,8 +160,8 @@ class AudioLocatorServiceTest {
     fun `locate progression`() = runBlocking {
         val service = AudioLocatorService(
             listOf(
-                Link("l1", type = "audio/mpeg", duration = 100.0),
-                Link("l2", type = "audio/mpeg", duration = 100.0)
+                Link("l1", mediaType = MediaType.MP3, duration = 100.0),
+                Link("l2", mediaType = MediaType.MP3, duration = 100.0)
             )
         )
 
@@ -234,8 +235,8 @@ class AudioLocatorServiceTest {
     fun `locate invalid progression`() = runBlocking {
         val service = AudioLocatorService(
             listOf(
-                Link("l1", type = "audio/mpeg", duration = 100.0),
-                Link("l2", type = "audio/mpeg", duration = 100.0)
+                Link("l1", mediaType = MediaType.MP3, duration = 100.0),
+                Link("l2", mediaType = MediaType.MP3, duration = 100.0)
             )
         )
 

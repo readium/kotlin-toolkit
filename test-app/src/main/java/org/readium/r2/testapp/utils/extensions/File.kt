@@ -46,31 +46,12 @@ fun File.listFilesSafely(filter: FileFilter? = null): List<File> {
 
 suspend fun URL.downloadTo(
     dest: File,
-    maxRedirections: Int = 2,
     httpClient: HttpClient,
     assetRetriever: AssetRetriever
 ): Try<Unit, Exception> {
-    if (maxRedirections == 0) {
-        return Try.Failure(Exception("Too many HTTP redirections."))
-    }
-
-    val urlString = toString()
-
-    if (BuildConfig.DEBUG) Timber.i("download url $urlString")
+    if (BuildConfig.DEBUG) Timber.i("download url $this")
     return httpClient.download(HttpRequest(toString()), dest, assetRetriever)
-        .flatMap {
-            try {
-                if (BuildConfig.DEBUG) Timber.i("response url ${it.url}")
-                if (BuildConfig.DEBUG) Timber.i("download destination ${dest.path}")
-                if (urlString == it.url) {
-                    Try.success(Unit)
-                } else {
-                    URL(it.url).downloadTo(dest, maxRedirections - 1, httpClient, assetRetriever)
-                }
-            } catch (e: Exception) {
-                Try.failure(e)
-            }
-        }
+        .map { }
 }
 
 private suspend fun HttpClient.download(

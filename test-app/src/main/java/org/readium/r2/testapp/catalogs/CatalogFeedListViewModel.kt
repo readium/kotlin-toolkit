@@ -6,6 +6,7 @@
 
 package org.readium.r2.testapp.catalogs
 
+import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import java.net.URL
@@ -18,13 +19,13 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
-import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.domain.model.Catalog
 import org.readium.r2.testapp.utils.EventChannel
 
-class CatalogFeedListViewModel(private val application: Application) : AndroidViewModel(application) {
+class CatalogFeedListViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val httpClient = getApplication<org.readium.r2.testapp.Application>().readium.httpClient
     private val catalogDao = BookDatabase.getDatabase(application).catalogDao()
     private val repository = CatalogRepository(catalogDao)
     val eventChannel = EventChannel(Channel<Event>(Channel.BUFFERED), viewModelScope)
@@ -55,7 +56,7 @@ class CatalogFeedListViewModel(private val application: Application) : AndroidVi
     }
 
     private suspend fun parseURL(url: URL): Try<ParseData, Exception> {
-        return application.readium.httpClient.fetchWithDecoder(HttpRequest(url.toString())) {
+        return httpClient.fetchWithDecoder(HttpRequest(url.toString())) {
             val result = it.body
             if (isJson(result)) {
                 OPDS2Parser.parse(result, url)

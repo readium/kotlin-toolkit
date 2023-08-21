@@ -13,6 +13,7 @@ import org.readium.r2.shared.opds.OpdsMetadata
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -35,32 +36,42 @@ class OPDS1ParserTest {
                     links = mutableListOf(
                         Link(
                             href = "https://example.com/opds-catalogs/root.xml",
-                            type = "application/atom+xml;profile=opds-catalog;kind=navigation",
+                            mediaType = MediaType(
+                                "application/atom+xml;profile=opds-catalog;kind=navigation"
+                            )!!,
                             rels = setOf("self"),
                             properties = Properties()
                         ),
                         Link(
                             href = "https://example.com/opds-catalogs/root.xml",
-                            type = "application/atom+xml;profile=opds-catalog;kind=navigation",
+                            mediaType = MediaType(
+                                "application/atom+xml;profile=opds-catalog;kind=navigation"
+                            )!!,
                             rels = setOf("start")
                         )
                     ),
                     navigation = mutableListOf(
                         Link(
                             href = "https://example.com/opds-catalogs/popular.xml",
-                            type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
+                            mediaType = MediaType(
+                                "application/atom+xml;profile=opds-catalog;kind=acquisition"
+                            )!!,
                             title = "Popular Publications",
                             rels = setOf("http://opds-spec.org/sort/popular")
                         ),
                         Link(
                             href = "https://example.com/opds-catalogs/new.xml",
-                            type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
+                            mediaType = MediaType(
+                                "application/atom+xml;profile=opds-catalog;kind=acquisition"
+                            )!!,
                             title = "New Publications",
                             rels = setOf("http://opds-spec.org/sort/new")
                         ),
                         Link(
                             href = "https://example.com/opds-catalogs/unpopular.xml",
-                            type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
+                            mediaType = MediaType(
+                                "application/atom+xml;profile=opds-catalog;kind=acquisition"
+                            )!!,
                             title = "Unpopular Publications",
                             rels = setOf("subsection")
                         )
@@ -93,22 +104,30 @@ class OPDS1ParserTest {
             mutableListOf(
                 Link(
                     href = "https://example.com/opds-catalogs/vampire.farming.xml",
-                    type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
+                    mediaType = MediaType(
+                        "application/atom+xml;profile=opds-catalog;kind=acquisition"
+                    )!!,
                     rels = setOf("related")
                 ),
                 Link(
                     href = "https://example.com/opds-catalogs/unpopular.xml",
-                    type = "application/atom+xml;profile=opds-catalog;kind=acquisition",
+                    mediaType = MediaType(
+                        "application/atom+xml;profile=opds-catalog;kind=acquisition"
+                    )!!,
                     rels = setOf("self")
                 ),
                 Link(
                     href = "https://example.com/opds-catalogs/root.xml",
-                    type = "application/atom+xml;profile=opds-catalog;kind=navigation",
+                    mediaType = MediaType(
+                        "application/atom+xml;profile=opds-catalog;kind=navigation"
+                    )!!,
                     rels = setOf("start")
                 ),
                 Link(
                     href = "https://example.com/opds-catalogs/root.xml",
-                    type = "application/atom+xml;profile=opds-catalog;kind=navigation",
+                    mediaType = MediaType(
+                        "application/atom+xml;profile=opds-catalog;kind=navigation"
+                    )!!,
                     rels = setOf("up")
                 )
             ),
@@ -164,23 +183,25 @@ class OPDS1ParserTest {
                 links = listOf(
                     Link(
                         href = "https://example.com/covers/4561.thmb.gif",
-                        type = "image/gif",
+                        mediaType = MediaType("image/gif")!!,
                         rels = setOf("http://opds-spec.org/image/thumbnail")
                     ),
                     Link(
                         href = "https://example.com/opds-catalogs/entries/4571.complete.xml",
-                        type = "application/atom+xml;type=entry;profile=opds-catalog",
+                        mediaType = MediaType(
+                            "application/atom+xml;type=entry;profile=opds-catalog"
+                        )!!,
                         title = "Complete Catalog Entry for Bob, Son of Bob",
                         rels = setOf("alternate")
                     ),
                     Link(
                         href = "https://example.com/content/free/4561.epub",
-                        type = "application/epub+zip",
+                        mediaType = MediaType("application/epub+zip")!!,
                         rels = setOf("http://opds-spec.org/acquisition")
                     ),
                     Link(
                         href = "https://example.com/content/free/4561.mobi",
-                        type = "application/x-mobipocket-ebook",
+                        mediaType = MediaType("application/x-mobipocket-ebook")!!,
                         rels = setOf("http://opds-spec.org/acquisition")
                     )
                 ),
@@ -190,7 +211,7 @@ class OPDS1ParserTest {
                             links = listOf(
                                 Link(
                                     href = "https://example.com/covers/4561.lrg.png",
-                                    type = "image/png",
+                                    mediaType = MediaType("image/png")!!,
                                     rels = setOf("http://opds-spec.org/image")
                                 )
                             )
@@ -230,7 +251,7 @@ class OPDS1ParserTest {
                 links = listOf(
                     Link(
                         href = "https://example.com/content/buy/11241.epub",
-                        type = "application/epub+zip",
+                        mediaType = MediaType("application/epub+zip")!!,
                         rels = setOf("http://opds-spec.org/acquisition/buy"),
                         properties = Properties(
                             mapOf("price" to mapOf("currency" to "USD", "value" to 18.99))
@@ -243,7 +264,7 @@ class OPDS1ParserTest {
                             links = listOf(
                                 Link(
                                     href = "https://example.com/covers/11241.lrg.jpg",
-                                    type = "image/jpeg",
+                                    mediaType = MediaType("image/jpeg")!!,
                                     rels = setOf("http://opds-spec.org/image")
                                 )
                             )
@@ -286,22 +307,24 @@ class OPDS1ParserTest {
                 links = listOf(
                     Link(
                         href = "https://example.com/covers/4561.thmb.gif",
-                        type = "image/gif",
+                        mediaType = MediaType("image/gif")!!,
                         rels = setOf("http://opds-spec.org/image/thumbnail")
                     ),
                     Link(
                         href = "https://example.com/opds-catalogs/entries/4571.complete.xml",
-                        type = "application/atom+xml;type=entry;profile=opds-catalog",
+                        mediaType = MediaType(
+                            "application/atom+xml;type=entry;profile=opds-catalog"
+                        )!!,
                         rels = setOf("self")
                     ),
                     Link(
                         href = "https://example.com/content/free/4561.epub",
-                        type = "application/epub+zip",
+                        mediaType = MediaType("application/epub+zip")!!,
                         rels = setOf("http://opds-spec.org/acquisition")
                     ),
                     Link(
                         href = "https://example.com/content/free/4561.mobi",
-                        type = "application/x-mobipocket-ebook",
+                        mediaType = MediaType("application/x-mobipocket-ebook")!!,
                         rels = setOf("http://opds-spec.org/acquisition")
                     )
                 ),
@@ -311,7 +334,7 @@ class OPDS1ParserTest {
                             links = listOf(
                                 Link(
                                     href = "https://example.com/covers/4561.lrg.png",
-                                    type = "image/png",
+                                    mediaType = MediaType("image/png")!!,
                                     rels = setOf("http://opds-spec.org/image")
                                 )
                             )

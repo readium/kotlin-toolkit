@@ -6,6 +6,7 @@
 
 package org.readium.r2.shared.asset
 
+import org.readium.r2.shared.resource.Container as SharedContainer
 import org.readium.r2.shared.resource.Resource as SharedResource
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -58,7 +59,7 @@ public sealed class Asset {
     public class Container(
         override val mediaType: MediaType,
         exploded: Boolean,
-        public val container: org.readium.r2.shared.resource.Container
+        public val container: SharedContainer
     ) : Asset() {
 
         override val assetType: AssetType =

@@ -316,7 +316,7 @@ private sealed class RouteHandler {
             return if (!copyAllowed) {
                 FailureResource(Resource.Exception.Forbidden())
             } else {
-                StringResource("true")
+                StringResource("true", MediaType.JSON)
             }
         }
     }

@@ -45,7 +45,12 @@ public class OPDS2Parser {
 
         private lateinit var feed: Feed
 
-        public suspend fun parseUrlString(url: String, client: HttpClient = DefaultHttpClient()): Try<ParseData, Exception> {
+        public suspend fun parseUrlString(
+            url: String,
+            client: HttpClient = DefaultHttpClient(
+                DefaultMediaTypeSniffer()
+            )
+        ): Try<ParseData, Exception> {
             return client.fetchWithDecoder(HttpRequest(url)) {
                 this.parse(it.body, URL(url))
             }
@@ -53,7 +58,7 @@ public class OPDS2Parser {
 
         public suspend fun parseRequest(
             request: HttpRequest,
-            client: HttpClient = DefaultHttpClient()
+            client: HttpClient = DefaultHttpClient(DefaultMediaTypeSniffer())
         ): Try<ParseData, Exception> {
             return client.fetchWithDecoder(request) {
                 this.parse(it.body, URL(request.url))

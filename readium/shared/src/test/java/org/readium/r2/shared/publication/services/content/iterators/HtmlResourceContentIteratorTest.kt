@@ -181,7 +181,7 @@ class HtmlResourceContentIteratorTest {
         totalProgressionRange: ClosedRange<Double>? = null
     ): HtmlResourceContentIterator =
         HtmlResourceContentIterator(
-            StringResource(html, Url(link.href)),
+            StringResource(html, MediaType.HTML, Url(link.href)),
             totalProgressionRange = totalProgressionRange,
             startLocator
         )

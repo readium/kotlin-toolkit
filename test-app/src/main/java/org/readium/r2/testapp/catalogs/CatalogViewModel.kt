@@ -6,6 +6,7 @@
 
 package org.readium.r2.testapp.catalogs
 
+import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import java.io.File
@@ -23,17 +24,17 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.opds.images
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.testapp.Application
 import org.readium.r2.testapp.domain.model.Catalog
 import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.extensions.downloadTo
 import timber.log.Timber
 
-class CatalogViewModel(private val application: Application) : AndroidViewModel(application) {
+class CatalogViewModel(application: Application) : AndroidViewModel(application) {
 
     val detailChannel = EventChannel(Channel<Event.DetailEvent>(Channel.BUFFERED), viewModelScope)
     val eventChannel = EventChannel(Channel<Event.FeedEvent>(Channel.BUFFERED), viewModelScope)
     lateinit var publication: Publication
+    private val app = getApplication<org.readium.r2.testapp.Application>()
 
     fun parseCatalog(catalog: Catalog) = viewModelScope.launch {
         var parseRequest: Try<ParseData, Exception>? = null
@@ -41,9 +42,9 @@ class CatalogViewModel(private val application: Application) : AndroidViewModel(
             val request = HttpRequest(it)
             try {
                 parseRequest = if (catalog.type == 1) {
-                    OPDS1Parser.parseRequest(request, application.readium.httpClient)
+                    OPDS1Parser.parseRequest(request, app.readium.httpClient)
                 } else {
-                    OPDS2Parser.parseRequest(request, application.readium.httpClient)
+                    OPDS2Parser.parseRequest(request, app.readium.httpClient)
                 }
             } catch (e: MalformedURLException) {
                 eventChannel.send(Event.FeedEvent.CatalogParseFailed)
@@ -60,18 +61,18 @@ class CatalogViewModel(private val application: Application) : AndroidViewModel(
 
     fun downloadPublication(publication: Publication) = viewModelScope.launch {
         val filename = UUID.randomUUID().toString()
-        val dest = File(application.storageDir, filename)
+        val dest = File(app.storageDir, filename)
 
         getDownloadURL(publication)
             .flatMap { url ->
                 url.downloadTo(
                     dest,
-                    httpClient = application.readium.httpClient,
-                    assetRetriever = application.readium.assetRetriever
+                    httpClient = app.readium.httpClient,
+                    assetRetriever = app.readium.assetRetriever
                 )
             }.flatMap {
                 val opdsCover = publication.images.firstOrNull()?.href
-                application.bookRepository.addLocalBook(dest, opdsCover)
+                app.bookRepository.addLocalBook(dest, opdsCover)
             }.onSuccess {
                 detailChannel.send(Event.DetailEvent.ImportPublicationSuccess)
             }.onFailure {
