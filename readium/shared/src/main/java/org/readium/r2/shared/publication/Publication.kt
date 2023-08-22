@@ -16,9 +16,6 @@ import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.*
 import org.readium.r2.shared.BuildConfig.DEBUG
-import org.readium.r2.shared.error.Error
-import org.readium.r2.shared.error.MessageError
-import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.removeLastComponent
 import org.readium.r2.shared.publication.epub.listOfAudioClips
@@ -38,6 +35,9 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.fallback
 import org.readium.r2.shared.util.Closeable
+import org.readium.r2.shared.util.Error
+import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.mediatype.MediaType
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?

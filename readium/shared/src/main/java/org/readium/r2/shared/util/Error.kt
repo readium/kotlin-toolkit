@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.error
+package org.readium.r2.shared.util
 
 /**
  * Describes an error.
