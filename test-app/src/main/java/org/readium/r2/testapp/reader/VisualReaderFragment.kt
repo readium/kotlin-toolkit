@@ -145,13 +145,15 @@ abstract class VisualReaderFragment : BaseReaderFragment(), VisualNavigator.List
 
                 override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                     when (menuItem.itemId) {
-                        R.id.tts -> checkNotNull(model.tts).start(navigator)
+                        R.id.tts -> {
+                            checkNotNull(model.tts).start(navigator)
+                            return true
+                        }
                     }
-                    return true
+                    return false
                 }
             },
-            viewLifecycleOwner,
-            Lifecycle.State.RESUMED
+            viewLifecycleOwner
         )
     }
 
