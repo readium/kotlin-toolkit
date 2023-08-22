@@ -31,9 +31,9 @@ public class ResourceInputStream(
             throw IOException("Can't get resource length", e)
         }
 
-        if (range == null)
+        if (range == null) {
             resourceLength
-        else {
+        } else {
             kotlin.math.min(resourceLength, range.last + 1)
         }
     }
@@ -127,8 +127,9 @@ public class ResourceInputStream(
      */
     override fun close() {
         synchronized(this) {
-            if (isClosed)
+            if (isClosed) {
                 return
+            }
 
             isClosed = true
             runBlocking { resource.close() }
@@ -136,7 +137,8 @@ public class ResourceInputStream(
     }
 
     private fun checkNotClosed() {
-        if (isClosed)
+        if (isClosed) {
             throw IOException("InputStream is closed.")
+        }
     }
 }

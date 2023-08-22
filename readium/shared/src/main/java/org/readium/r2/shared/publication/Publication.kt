@@ -21,8 +21,6 @@ import org.readium.r2.shared.error.MessageError
 import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.extensions.removeLastComponent
-import org.readium.r2.shared.fetcher.EmptyFetcher
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.CacheService
@@ -34,8 +32,13 @@ import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.publication.services.WebPositionsService
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.publication.services.search.SearchService
+import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.EmptyContainer
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.resource.fallback
 import org.readium.r2.shared.util.Closeable
-import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.mediatype.MediaType
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
 
@@ -54,19 +57,25 @@ public typealias PublicationId = String
  * related to a Readium publication.
  *
  * @param manifest The manifest holding the publication metadata extracted from the publication file.
- * @param fetcher The underlying fetcher used to read publication resources.
+ * @param container The underlying container used to read publication resources.
  * The default implementation returns Resource.Exception.NotFound for all HREFs.
  * @param servicesBuilder Holds the list of service factories used to create the instances of
  * Publication.Service attached to this Publication.
  */
 public class Publication(
     manifest: Manifest,
-    private val fetcher: Fetcher = EmptyFetcher(),
+    private val container: Container = EmptyContainer(),
     private val servicesBuilder: ServicesBuilder = ServicesBuilder(),
-    @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Migrate to the new Settings API (see migration guide)",
+        level = DeprecationLevel.ERROR
+    )
     public var userSettingsUIPreset: MutableMap<ReadiumCSSName, Boolean> = mutableMapOf(),
-    @Deprecated("Migrate to the new Settings API (see migration guide)", level = DeprecationLevel.ERROR)
-    public var cssStyle: String? = null,
+    @Deprecated(
+        "Migrate to the new Settings API (see migration guide)",
+        level = DeprecationLevel.ERROR
+    )
+    public var cssStyle: String? = null
 ) : PublicationServicesHolder {
 
     private val _manifest: Manifest
@@ -74,8 +83,10 @@ public class Publication(
     private val services = ListPublicationServicesHolder()
 
     init {
-        services.services = servicesBuilder.build(Service.Context(manifest, fetcher, services))
-        _manifest = manifest.copy(links = manifest.links + services.services.map(Service::links).flatten())
+        services.services = servicesBuilder.build(Service.Context(manifest, container, services))
+        _manifest = manifest.copy(
+            links = manifest.links + services.services.map(Service::links).flatten()
+        )
     }
 
     // Shortcuts to manifest properties
@@ -95,7 +106,10 @@ public class Publication(
 
     public val subcollections: Map<String, List<PublicationCollection>> get() = _manifest.subcollections
 
-    @Deprecated("Use conformsTo() to check the kind of a publication.", level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use conformsTo() to check the kind of a publication.",
+        level = DeprecationLevel.ERROR
+    )
     public var type: TYPE = TYPE.EPUB
 
     @Deprecated("Version is not available any more.", level = DeprecationLevel.ERROR)
@@ -152,18 +166,28 @@ public class Publication(
     /**
      * Returns the resource targeted by the given non-templated [link].
      */
-    public fun get(link: Link): Fetcher.Resource {
+    public fun get(link: Link): Resource {
         if (DEBUG) { require(!link.templated) { "You must expand templated links before calling [Publication.get]" } }
 
         services.services.forEach { service -> service.get(link)?.let { return it } }
-        return fetcher.get(link)
+
+        return container.get(link.href)
+            .fallback { error ->
+                if (error is Resource.Exception.NotFound) {
+                    // Try again after removing query and fragment.
+                    container.get(link.href.takeWhile { it !in "#?" })
+                } else {
+                    null
+                }
+            }
+            .withMediaType(link.mediaType)
     }
 
     /**
      * Closes any opened resource associated with the [Publication], including services.
      */
     override suspend fun close() {
-        fetcher.close()
+        container.close()
         services.close()
     }
 
@@ -226,7 +250,10 @@ public class Publication(
          * in the navigator at the moment without changing the code in reading apps.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated("The HTTP server is not needed anymore (see migration guide)", level = DeprecationLevel.ERROR)
+        @Deprecated(
+            "The HTTP server is not needed anymore (see migration guide)",
+            level = DeprecationLevel.ERROR
+        )
         public fun localBaseUrlOf(filename: String, port: Int): String {
             throw NotImplementedError()
         }
@@ -235,7 +262,10 @@ public class Publication(
          * Gets the absolute URL of a resource locally served through HTTP.
          */
         @Suppress("UNUSED_PARAMETER")
-        @Deprecated("The HTTP server is not needed anymore (see migration guide)", level = DeprecationLevel.ERROR)
+        @Deprecated(
+            "The HTTP server is not needed anymore (see migration guide)",
+            level = DeprecationLevel.ERROR
+        )
         public fun localUrlOf(filename: String, port: Int, href: String): String {
             throw NotImplementedError()
         }
@@ -245,7 +275,8 @@ public class Publication(
             "Parse a RWPM with [Manifest::fromJSON] and then instantiate a Publication",
             ReplaceWith(
                 "Manifest.fromJSON(json)",
-                "org.readium.r2.shared.publication.Publication", "org.readium.r2.shared.publication.Manifest"
+                "org.readium.r2.shared.publication.Publication",
+                "org.readium.r2.shared.publication.Manifest"
             ),
             level = DeprecationLevel.ERROR
         )
@@ -268,10 +299,17 @@ public class Publication(
         public companion object {
             /** Profile for EPUB publications. */
             public val EPUB: Profile = Profile("https://readium.org/webpub-manifest/profiles/epub")
+
             /** Profile for audiobooks. */
-            public val AUDIOBOOK: Profile = Profile("https://readium.org/webpub-manifest/profiles/audiobook")
+            public val AUDIOBOOK: Profile = Profile(
+                "https://readium.org/webpub-manifest/profiles/audiobook"
+            )
+
             /** Profile for visual narratives (comics, manga and bandes dessinées). */
-            public val DIVINA: Profile = Profile("https://readium.org/webpub-manifest/profiles/divina")
+            public val DIVINA: Profile = Profile(
+                "https://readium.org/webpub-manifest/profiles/divina"
+            )
+
             /** Profile for PDF documents. */
             public val PDF: Profile = Profile("https://readium.org/webpub-manifest/profiles/pdf")
         }
@@ -287,7 +325,7 @@ public class Publication(
          */
         public class Context(
             public val manifest: Manifest,
-            public val fetcher: Fetcher,
+            public val container: Container,
             public val services: PublicationServicesHolder
         )
 
@@ -319,13 +357,13 @@ public class Publication(
          * Called by [Publication.get] for each request.
          *
          * Warning: If you need to request one of the publication resources to answer the request,
-         * use the [Fetcher] provided by the [Publication.Service.Context] instead of
+         * use the [Container] provided by the [Publication.Service.Context] instead of
          * [Publication.get], otherwise it will trigger an infinite loop.
          *
-         * @return The [Fetcher.Resource] containing the response, or null if the service doesn't
+         * @return The [Resource] containing the response, or null if the service doesn't
          * recognize this request.
          */
-        public fun get(link: Link): Fetcher.Resource? = null
+        public fun get(link: Link): Resource? = null
 
         /**
          * Closes any opened file handles, removes temporary files, etc.
@@ -351,7 +389,7 @@ public class Publication(
             cover: ServiceFactory? = null,
             locator: ServiceFactory? = null,
             positions: ServiceFactory? = null,
-            search: ServiceFactory? = null,
+            search: ServiceFactory? = null
         ) : this(
             mapOf(
                 CacheService::class.java.simpleName to cache,
@@ -360,7 +398,7 @@ public class Publication(
                 CoverService::class.java.simpleName to cover,
                 LocatorService::class.java.simpleName to locator,
                 PositionsService::class.java.simpleName to positions,
-                SearchService::class.java.simpleName to search,
+                SearchService::class.java.simpleName to search
             ).filterValues { it != null }.toMutableMap() as MutableMap<String, ServiceFactory>
         )
 
@@ -508,13 +546,13 @@ public class Publication(
      */
     public class Builder(
         public var manifest: Manifest,
-        public var fetcher: Fetcher,
+        public var container: Container,
         public var servicesBuilder: ServicesBuilder = ServicesBuilder()
     ) {
 
         public fun build(): Publication = Publication(
             manifest = manifest,
-            fetcher = fetcher,
+            container = container,
             servicesBuilder = servicesBuilder
         )
     }
@@ -522,7 +560,11 @@ public class Publication(
     /**
      * Finds the first [Link] to the publication's cover (rel = cover).
      */
-    @Deprecated("Use [Publication.cover] to get the cover as a [Bitmap]", ReplaceWith("cover"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [Publication.cover] to get the cover as a [Bitmap]",
+        ReplaceWith("cover"),
+        level = DeprecationLevel.ERROR
+    )
     public val coverLink: Link? get() = linkWithRel("cover")
 
     /**
@@ -530,82 +572,109 @@ public class Publication(
      * The provided closure will be used to build the [PositionListFactory], with this being the
      * [Publication].
      */
-    @Deprecated("Use [Publication.copy(serviceFactories)] instead", ReplaceWith("Publication.copy(serviceFactories = listOf(positionsServiceFactory)"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [Publication.copy(serviceFactories)] instead",
+        ReplaceWith("Publication.copy(serviceFactories = listOf(positionsServiceFactory)"),
+        level = DeprecationLevel.ERROR
+    )
     public fun copyWithPositionsFactory(): Publication {
         throw NotImplementedError()
     }
 
-    @Deprecated("Renamed to [listOfAudioClips]", ReplaceWith("listOfAudioClips"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Renamed to [listOfAudioClips]",
+        ReplaceWith("listOfAudioClips"),
+        level = DeprecationLevel.ERROR
+    )
     public val listOfAudioFiles: List<Link> = listOfAudioClips
 
-    @Deprecated("Renamed to [listOfVideoClips]", ReplaceWith("listOfVideoClips"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Renamed to [listOfVideoClips]",
+        ReplaceWith("listOfVideoClips"),
+        level = DeprecationLevel.ERROR
+    )
     public val listOfVideos: List<Link> = listOfVideoClips
 
-    @Deprecated("Renamed to [linkWithHref]", ReplaceWith("linkWithHref(href)"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Renamed to [linkWithHref]",
+        ReplaceWith("linkWithHref(href)"),
+        level = DeprecationLevel.ERROR
+    )
     public fun resource(href: String): Link? = linkWithHref(href)
 
     @Deprecated("Refactored as a property", ReplaceWith("baseUrl"), level = DeprecationLevel.ERROR)
     public fun baseUrl(): URL? = baseUrl
 
-    @Deprecated("Renamed [subcollections]", ReplaceWith("subcollections"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Renamed [subcollections]",
+        ReplaceWith("subcollections"),
+        level = DeprecationLevel.ERROR
+    )
     public val otherCollections: Map<String, List<PublicationCollection>> get() = subcollections
 
-    @Deprecated("Use [setSelfLink] instead", ReplaceWith("setSelfLink"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [setSelfLink] instead",
+        ReplaceWith("setSelfLink"),
+        level = DeprecationLevel.ERROR
+    )
     @Suppress("UNUSED_PARAMETER")
     public fun addSelfLink(endPoint: String, baseURL: URL) {
         throw NotImplementedError()
     }
 
-    @Deprecated("Use [linkWithHref] instead.", ReplaceWith("linkWithHref(href)"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [linkWithHref] instead.",
+        ReplaceWith("linkWithHref(href)"),
+        level = DeprecationLevel.ERROR
+    )
     public fun resourceWithHref(href: String): Link? = linkWithHref(href)
 
-    @Deprecated("Use a [ServiceFactory] for a [PositionsService] instead.", level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use a [ServiceFactory] for a [PositionsService] instead.",
+        level = DeprecationLevel.ERROR
+    )
     public interface PositionListFactory {
         public fun create(): List<Locator>
     }
 
-    @Deprecated("Use [linkWithHref()] to find a link with the given HREF", replaceWith = ReplaceWith("linkWithHref"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [linkWithHref()] to find a link with the given HREF",
+        replaceWith = ReplaceWith("linkWithHref"),
+        level = DeprecationLevel.ERROR
+    )
     @Suppress("UNUSED_PARAMETER")
     public fun link(predicate: (Link) -> Boolean): Link? = null
 
-    @Deprecated("Use [jsonManifest] instead", ReplaceWith("jsonManifest"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [jsonManifest] instead",
+        ReplaceWith("jsonManifest"),
+        level = DeprecationLevel.ERROR
+    )
     public fun toJSON(): JSONObject = JSONObject(jsonManifest)
 
-    @Deprecated("Use `metadata.effectiveReadingProgression` instead", ReplaceWith("metadata.effectiveReadingProgression"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use `metadata.effectiveReadingProgression` instead",
+        ReplaceWith("metadata.effectiveReadingProgression"),
+        level = DeprecationLevel.ERROR
+    )
     public val contentLayout: ReadingProgression get() = metadata.effectiveReadingProgression
 
-    @Deprecated("Use `metadata.effectiveReadingProgression` instead", ReplaceWith("metadata.effectiveReadingProgression"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use `metadata.effectiveReadingProgression` instead",
+        ReplaceWith("metadata.effectiveReadingProgression"),
+        level = DeprecationLevel.ERROR
+    )
     @Suppress("UNUSED_PARAMETER")
     public fun contentLayoutForLanguage(language: String?): ReadingProgression = metadata.effectiveReadingProgression
 }
 
-/**
- * Holds [Publication.Service] instances for a [Publication].
- */
-public interface PublicationServicesHolder : SuspendingCloseable {
-    /**
-     * Returns the first publication service that is an instance of [serviceType].
-     */
-    public fun <T : Publication.Service> findService(serviceType: KClass<T>): T?
+private fun Resource.withMediaType(mediaType: MediaType?): Resource {
+    if (mediaType == null) {
+        return this
+    }
 
-    /**
-     * Returns all the publication services that are instances of [serviceType].
-     */
-    public fun <T : Publication.Service> findServices(serviceType: KClass<T>): List<T>
-}
-
-internal class ListPublicationServicesHolder(
-    var services: List<Publication.Service> = emptyList()
-) : PublicationServicesHolder {
-    override fun <T : Publication.Service> findService(serviceType: KClass<T>): T? =
-        findServices(serviceType).firstOrNull()
-
-    override fun <T : Publication.Service> findServices(serviceType: KClass<T>): List<T> =
-        services.filterIsInstance(serviceType.java)
-
-    override suspend fun close() {
-        for (service in services) {
-            tryOrLog { service.close() }
-        }
+    return object : Resource by this {
+        override suspend fun mediaType(): ResourceTry<MediaType> =
+            ResourceTry.success(mediaType)
     }
 }

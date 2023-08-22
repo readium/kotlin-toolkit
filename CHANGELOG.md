@@ -26,6 +26,11 @@ All notable changes to this project will be documented in this file. Take a look
 
 * Readium resources are now prefixed with `readium_`. Take care of updating any overridden resource by following [the migration guide](docs/migration-guide.md#300).
 
+#### Shared
+
+* `Publication.localizedTitle` is nullable, as we cannot guarantee that all publication sources offer a title.
+* The `MediaType` sniffing helpers are deprecated in favor of `MediaTypeRetriever` (for media type and file extension hints and raw content) and `AssetRetriever` (for URLs). 
+
 #### Navigator
 
 * `EpubNavigatorFragment.firstVisibleElementLocator()` now returns the first *block* element that is visible on the screen, even if it starts on previous pages.
@@ -38,6 +43,10 @@ All notable changes to this project will be documented in this file. Take a look
 #### Navigator
 
 * All the navigator `Activity` are deprecated in favor of the `Fragment` variants.
+
+#### Streamer
+
+* The `Fetcher` interface was deprecated in favor of the `Container` one in `readium-shared`.
 
 ### Fixed
 

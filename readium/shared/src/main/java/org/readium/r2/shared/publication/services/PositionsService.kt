@@ -11,17 +11,29 @@ package org.readium.r2.shared.publication.services
 
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
+import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.toJsonOrNull
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.StringResource
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.PublicationServicesHolder
+import org.readium.r2.shared.publication.ServiceFactory
+import org.readium.r2.shared.publication.firstWithMediaType
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
+
+private val positionsMediaType =
+    MediaType("application/vnd.readium.position-list+json")!!
 
 private val positionsLink = Link(
     href = "/~readium/positions",
-    type = "application/vnd.readium.position-list+json"
+    mediaType = positionsMediaType
 )
 
 /**
@@ -41,16 +53,22 @@ public interface PositionsService : Publication.Service {
 
     override val links: List<Link> get() = listOf(positionsLink)
 
-    override fun get(link: Link): Fetcher.Resource? {
-        if (link.href != positionsLink.href)
+    override fun get(link: Link): Resource? {
+        if (link.href != positionsLink.href) {
             return null
+        }
 
-        return StringResource(positionsLink) {
+        return StringResource(
+            url = Url(positionsLink.href),
+            mediaType = positionsMediaType
+        ) {
             val positions = positions()
-            JSONObject().apply {
-                put("total", positions.size)
-                put("positions", positions.toJSON())
-            }.toString()
+            Try.success(
+                JSONObject().apply {
+                    put("total", positions.size)
+                    put("positions", positions.toJSON())
+                }.toString()
+            )
         }
     }
 }
@@ -74,7 +92,11 @@ public suspend fun PublicationServicesHolder.positions(): List<Locator> {
 /**
  * List of all the positions in each resource, indexed by their href.
  */
-@Deprecated("Use [positionsByReadingOrder] instead", ReplaceWith("positionsByReadingOrder"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Use [positionsByReadingOrder] instead",
+    ReplaceWith("positionsByReadingOrder"),
+    level = DeprecationLevel.ERROR
+)
 public val Publication.positionsByResource: Map<String, List<Locator>>
     get() = runBlocking { positions().groupBy { it.href } }
 
@@ -102,7 +124,7 @@ public class PerResourcePositionsService(
             listOf(
                 Locator(
                     href = link.href,
-                    type = link.type ?: fallbackMediaType,
+                    type = link.mediaType?.toString() ?: fallbackMediaType,
                     title = link.title,
                     locations = Locator.Locations(
                         position = index + 1,
@@ -132,12 +154,13 @@ internal class WebPositionsService(
 
     override val links: List<Link> =
         listOfNotNull(
-            manifest.links.firstWithMediaType(positionsLink.mediaType)
+            manifest.links.firstWithMediaType(positionsMediaType)
         )
 
     override suspend fun positions(): List<Locator> {
-        if (!::_positions.isInitialized)
+        if (!::_positions.isInitialized) {
             _positions = computePositions()
+        }
 
         return _positions
     }

@@ -22,7 +22,7 @@ import org.readium.r2.shared.publication.Metadata
 public class PdfiumPreferencesEditor internal constructor(
     initialPreferences: PdfiumPreferences,
     publicationMetadata: Metadata,
-    defaults: PdfiumDefaults,
+    defaults: PdfiumDefaults
 ) : PreferencesEditor<PdfiumPreferences> {
 
     private data class State(
@@ -55,7 +55,7 @@ public class PdfiumPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.fit },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(fit = value) } },
-            supportedValues = listOf(Fit.CONTAIN, Fit.WIDTH),
+            supportedValues = listOf(Fit.CONTAIN, Fit.WIDTH)
         )
 
     /**
@@ -69,7 +69,7 @@ public class PdfiumPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(pageSpacing = value) } },
             supportedRange = 0.0..50.0,
             progressionStrategy = DoubleIncrement(5.0),
-            valueFormatter = { "${it.format(1)} dp" },
+            valueFormatter = { "${it.format(1)} dp" }
         )
 
     /**
@@ -81,7 +81,7 @@ public class PdfiumPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.readingProgression },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(readingProgression = value) } },
-            supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL),
+            supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL)
         )
 
     /**
@@ -93,7 +93,7 @@ public class PdfiumPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.scrollAxis },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(scrollAxis = value) } },
-            supportedValues = listOf(Axis.VERTICAL, Axis.HORIZONTAL),
+            supportedValues = listOf(Axis.VERTICAL, Axis.HORIZONTAL)
         )
 
     private fun updateValues(updater: (PdfiumPreferences) -> PdfiumPreferences) {

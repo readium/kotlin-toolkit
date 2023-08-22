@@ -23,7 +23,7 @@ internal class ExoAudiobookPlayer(
     private val player: ExoPlayer,
     private val itemDurations: List<Duration>?,
     private val seekForwardIncrement: Duration,
-    private val seekBackwardIncrement: Duration,
+    private val seekBackwardIncrement: Duration
 ) : ForwardingPlayer(player) {
 
     fun seekBy(offset: Duration) {

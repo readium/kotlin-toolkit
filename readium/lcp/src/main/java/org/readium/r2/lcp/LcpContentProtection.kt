@@ -9,26 +9,28 @@ package org.readium.r2.lcp
 import org.readium.r2.lcp.auth.LcpPassphraseAuthentication
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.asset.Asset
+import org.readium.r2.shared.asset.AssetRetriever
+import org.readium.r2.shared.asset.AssetType
 import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.error.getOrElse
-import org.readium.r2.shared.fetcher.ContainerFetcher
-import org.readium.r2.shared.fetcher.TransformingFetcher
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.encryption.encryption
+import org.readium.r2.shared.publication.flatten
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
+import org.readium.r2.shared.resource.TransformingContainer
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.toFile
 
 internal class LcpContentProtection(
     private val lcpService: LcpService,
     private val authentication: LcpAuthenticating,
-    private val mediaTypeRetriever: MediaTypeRetriever,
-    private val resourceFactory: ResourceFactory,
-    private val archiveFactory: ArchiveFactory
+    private val assetRetriever: AssetRetriever
 ) : ContentProtection {
 
     override val scheme: ContentProtection.Scheme =
@@ -71,32 +73,43 @@ internal class LcpContentProtection(
             ?.let { LcpPassphraseAuthentication(it, fallback = this.authentication) }
             ?: this.authentication
 
-        val file = (asset as? Asset.Resource)?.resource?.file
-            ?: (asset as? Asset.Container)?.container?.file
+        val file = (asset as? Asset.Resource)?.resource?.source?.toFile()
+            ?: (asset as? Asset.Container)?.container?.source?.toFile()
 
         return file
             // This is less restrictive with regard to network availability.
-            ?.let { lcpService.retrieveLicense(it, asset.mediaType, authentication, allowUserInteraction, sender) }
+            ?.let {
+                lcpService.retrieveLicense(
+                    it,
+                    asset.mediaType,
+                    authentication,
+                    allowUserInteraction,
+                    sender
+                )
+            }
             ?: lcpService.retrieveLicense(asset, authentication, allowUserInteraction, sender)
     }
 
     private fun createResultAsset(
         asset: Asset.Container,
-        license: Try<LcpLicense, LcpException>,
+        license: Try<LcpLicense, LcpException>
     ): Try<ContentProtection.Asset, Publication.OpeningException> {
         val serviceFactory = LcpContentProtectionService
             .createFactory(license.getOrNull(), license.failureOrNull())
 
-        val fetcher = TransformingFetcher(
-            ContainerFetcher(asset.container, mediaTypeRetriever),
-            LcpDecryptor(license.getOrNull())::transform
-        )
+        val decryptor = LcpDecryptor(license.getOrNull())
+
+        val container = TransformingContainer(asset.container, decryptor::transform)
 
         val protectedFile = ContentProtection.Asset(
-            name = asset.name,
             mediaType = asset.mediaType,
-            fetcher = fetcher,
+            container = container,
             onCreatePublication = {
+                decryptor.encryptionData = (manifest.readingOrder + manifest.resources + manifest.links)
+                    .flatten()
+                    .mapNotNull { it.properties.encryption?.let { enc -> it.href to enc } }
+                    .toMap()
+
                 servicesBuilder.contentProtectionServiceFactory = serviceFactory
             }
         )
@@ -131,30 +144,23 @@ internal class LcpContentProtection(
                     )
                 }
 
-        val link = checkNotNull(licenseDoc.link(LicenseDocument.Rel.publication))
+        val link = checkNotNull(licenseDoc.link(LicenseDocument.Rel.Publication))
         val url = Url(link.url.toString())
             ?: return Try.failure(
                 Publication.OpeningException.ParsingFailed(
                     ThrowableError(
-                        LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.value)
+                        LcpException.Parsing.Url(rel = LicenseDocument.Rel.Publication.value)
                     )
                 )
             )
 
-        val resource = resourceFactory.create(url)
-            .getOrElse { return Try.failure(it.wrap()) }
-
-        val container = archiveFactory.create(resource, password = null)
-            .getOrElse { return Try.failure(it.wrap()) }
-
-        val publicationAsset = Asset.Container(
-            url.filename,
-            link.mediaType,
-            false,
-            container
+        return assetRetriever.retrieve(
+            url,
+            mediaType = link.mediaType,
+            assetType = AssetType.Archive
         )
-
-        return createResultAsset(publicationAsset, license)
+            .mapFailure { Publication.OpeningException.ParsingFailed(it) }
+            .flatMap { createResultAsset(it as Asset.Container, license) }
     }
 
     private fun ResourceFactory.Error.wrap(): Publication.OpeningException =

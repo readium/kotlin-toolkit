@@ -34,7 +34,7 @@ public data class Acquisition(
 
     /** Media type of the resource to acquire. */
     val mediaType: MediaType get() =
-        MediaType.parse(type) ?: MediaType.BINARY
+        MediaType(type) ?: MediaType.BINARY
 
     /**
      * Serializes an [Acquisition] to its JSON representation.
@@ -84,10 +84,18 @@ public data class Acquisition(
         get() = children
 }
 
-@Deprecated("Renamed into [Acquisition]", ReplaceWith("Acquisition"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Renamed into [Acquisition]",
+    ReplaceWith("Acquisition"),
+    level = DeprecationLevel.ERROR
+)
 public typealias IndirectAcquisition = Acquisition
 
-@Deprecated("Use [Acquisition::fromJSON] instead", ReplaceWith("Acquisition.fromJSON"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Use [Acquisition::fromJSON] instead",
+    ReplaceWith("Acquisition.fromJSON"),
+    level = DeprecationLevel.ERROR
+)
 public fun parseIndirectAcquisition(indirectAcquisitionDict: JSONObject): Acquisition =
     Acquisition.fromJSON(indirectAcquisitionDict)
         ?: throw Exception("Invalid indirect acquisition")

@@ -36,7 +36,7 @@ fun ColorPicker(onPick: (Int) -> Unit) {
         // Yellow
         listOf("#fff9c4", "#fff176", "#ffeb3b", "#fbc02d", "#f57f17"),
         // Orange
-        listOf("#ffe0b2", "#ffb74d", "#ff9800", "#f57c00", "#e65100"),
+        listOf("#ffe0b2", "#ffb74d", "#ff9800", "#f57c00", "#e65100")
     )
 
     Column {

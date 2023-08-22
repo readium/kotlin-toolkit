@@ -44,7 +44,7 @@ internal data class FontFaceDeclaration(
     val fontFamily: String,
     val sources: List<FontFaceSource>,
     var fontStyle: FontStyle? = null,
-    var fontWeight: Either<FontWeight, ClosedRange<Int>>? = null,
+    var fontWeight: Either<FontWeight, ClosedRange<Int>>? = null
 ) {
 
     fun links(urlNormalizer: (String) -> String): List<String> =

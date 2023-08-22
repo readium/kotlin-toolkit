@@ -69,8 +69,11 @@ fun ToggleButton(
             }
         ),
         elevation =
-        if (selected) ButtonDefaults.elevation(defaultElevation = 2.dp)
-        else null
+        if (selected) {
+            ButtonDefaults.elevation(defaultElevation = 2.dp)
+        } else {
+            null
+        }
     )
 }
 

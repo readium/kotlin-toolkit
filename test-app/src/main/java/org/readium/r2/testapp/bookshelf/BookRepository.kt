@@ -38,6 +38,7 @@ import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.PublicationFactory
@@ -62,6 +63,7 @@ class BookRepository(
     private val publicationFactory: PublicationFactory,
     private val assetRetriever: AssetRetriever,
     private val protectionRetriever: ContentProtectionSchemeRetriever,
+    private val formatRegistry: FormatRegistry
 ) {
     private val coverDir: File =
         File(storageDir, "covers/")
@@ -79,7 +81,6 @@ class BookRepository(
         val bookmark = Bookmark(
             creation = DateTime().toDate().time,
             bookId = bookId,
-            publicationId = publication.metadata.identifier ?: publication.metadata.title,
             resourceIndex = resource.toLong(),
             resourceHref = locator.href,
             resourceType = locator.type,
@@ -196,10 +197,12 @@ class BookRepository(
     suspend fun addRemoteBook(
         url: Url
     ): Try<Unit, ImportError> {
-        val asset = assetRetriever.retrieve(url, fileExtension = url.extension)
+        val asset = assetRetriever.retrieve(url)
             ?: return Try.failure(
                 ImportError.PublicationError(
-                    PublicationError.UnsupportedPublication(Publication.OpeningException.UnsupportedAsset())
+                    PublicationError.UnsupportedPublication(
+                        Publication.OpeningException.UnsupportedAsset()
+                    )
                 )
             )
         return addBook(url, asset)
@@ -207,7 +210,7 @@ class BookRepository(
 
     suspend fun addSharedStorageBook(
         url: Url,
-        coverUrl: String? = null,
+        coverUrl: String? = null
     ): Try<Unit, ImportError> {
         val asset = assetRetriever.retrieve(url)
             ?: return Try.failure(
@@ -223,12 +226,14 @@ class BookRepository(
 
     suspend fun addLocalBook(
         tempFile: File,
-        coverUrl: String? = null,
+        coverUrl: String? = null
     ): Try<Unit, ImportError> {
         val sourceAsset = assetRetriever.retrieve(tempFile)
             ?: return Try.failure(
                 ImportError.PublicationError(
-                    PublicationError.UnsupportedPublication(Publication.OpeningException.UnsupportedAsset())
+                    PublicationError.UnsupportedPublication(
+                        Publication.OpeningException.UnsupportedAsset()
+                    )
                 )
             )
 
@@ -260,7 +265,8 @@ class BookRepository(
                     )
             }
 
-        val fileName = "${UUID.randomUUID()}.${publicationTempAsset.mediaType.fileExtension}"
+        val fileExtension = formatRegistry.fileExtension(publicationTempAsset.mediaType) ?: "epub"
+        val fileName = "${UUID.randomUUID()}.$fileExtension"
         val libraryFile = File(storageDir, fileName)
         val libraryUrl = libraryFile.toUrl()
 
@@ -279,7 +285,9 @@ class BookRepository(
         ).getOrElse { return Try.failure(ImportError.PublicationError(it)) }
 
         return addBook(
-            libraryUrl, libraryAsset, coverUrl
+            libraryUrl,
+            libraryAsset,
+            coverUrl
         ).onFailure {
             tryOrNull { libraryFile.delete() }
         }
@@ -288,7 +296,7 @@ class BookRepository(
     private suspend fun addBook(
         url: Url,
         asset: Asset,
-        coverUrl: String? = null,
+        coverUrl: String? = null
     ): Try<Unit, ImportError> {
         val drmScheme =
             protectionRetriever.retrieve(asset)

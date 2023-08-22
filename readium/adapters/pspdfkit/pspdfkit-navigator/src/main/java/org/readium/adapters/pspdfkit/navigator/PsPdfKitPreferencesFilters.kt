@@ -19,7 +19,7 @@ public object PsPdfKitSharedPreferencesFilter : PreferencesFilter<PsPdfKitPrefer
         preferences.copy(
             readingProgression = null,
             offsetFirstPage = null,
-            spread = null,
+            spread = null
         )
 }
 
@@ -33,6 +33,6 @@ public object PsPdfKitPublicationPreferencesFilter : PreferencesFilter<PsPdfKitP
         PsPdfKitPreferences(
             readingProgression = preferences.readingProgression,
             offsetFirstPage = preferences.offsetFirstPage,
-            spread = preferences.spread,
+            spread = preferences.spread
         )
 }

@@ -43,11 +43,13 @@ abstract class ComposeBottomSheetDialogFragment(
                     composeView,
                     FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
                     )
                 )
             }
-        } else composeView
+        } else {
+            composeView
+        }
     }
 
     @Composable

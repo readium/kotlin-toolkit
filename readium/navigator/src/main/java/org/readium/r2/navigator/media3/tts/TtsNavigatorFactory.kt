@@ -42,7 +42,6 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
             defaults: AndroidTtsDefaults = AndroidTtsDefaults(),
             voiceSelector: (Language?, Set<AndroidTtsEngine.Voice>) -> AndroidTtsEngine.Voice? = defaultVoiceSelector
         ): AndroidTtsNavigatorFactory? {
-
             val engineProvider = AndroidTtsEngineProvider(
                 context = application,
                 defaults = defaults,
@@ -66,7 +65,6 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
             tokenizerFactory: (language: Language?) -> TextTokenizer = defaultTokenizerFactory,
             metadataProvider: MediaMetadataProvider = defaultMediaMetadataProvider
         ): TtsNavigatorFactory<S, P, E, F, V>? {
-
             return createNavigatorFactory(
                 application,
                 publication,
@@ -84,7 +82,6 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
             tokenizerFactory: (language: Language?) -> TextTokenizer,
             metadataProvider: MediaMetadataProvider
         ): TtsNavigatorFactory<S, P, E, F, V>? {
-
             publication.content()
                 ?.iterator()
                 ?.takeIf { it.hasNext() }
@@ -116,7 +113,7 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
     public suspend fun createNavigator(
         listener: TtsNavigator.Listener,
         initialLocator: Locator? = null,
-        initialPreferences: P? = null,
+        initialPreferences: P? = null
     ): TtsNavigator<S, P, F, V>? {
         return TtsNavigator(
             application,
@@ -126,7 +123,7 @@ public class TtsNavigatorFactory<S : TtsEngine.Settings, P : TtsEngine.Preferenc
             metadataProvider,
             listener,
             initialLocator,
-            initialPreferences,
+            initialPreferences
         )
     }
 

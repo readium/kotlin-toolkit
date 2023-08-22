@@ -26,8 +26,11 @@ public data class HttpHeaders(val headers: Map<String, List<String>>) {
     public operator fun get(name: String): String? {
         val n = name.lowercase()
         return headers.firstNotNullOfOrNull { (key, value) ->
-            if (key.lowercase() == n) value.firstOrNull()
-            else null
+            if (key.lowercase() == n) {
+                value.firstOrNull()
+            } else {
+                null
+            }
         }
     }
 
@@ -39,8 +42,11 @@ public data class HttpHeaders(val headers: Map<String, List<String>>) {
         val n = name.lowercase()
         return headers
             .mapNotNull { (key, value) ->
-                if (key.lowercase() == n) value
-                else null
+                if (key.lowercase() == n) {
+                    value
+                } else {
+                    null
+                }
             }
             .flatten()
     }

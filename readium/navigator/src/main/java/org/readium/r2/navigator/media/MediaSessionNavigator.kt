@@ -142,7 +142,10 @@ public class MediaSessionNavigator(
         override fun onSessionEvent(event: String?, extras: Bundle?) {
             super.onSessionEvent(event, extras)
 
-            if (event == MediaService.EVENT_PUBLICATION_CHANGED && extras?.getString(MediaService.EXTRA_PUBLICATION_ID) == publicationId && playWhenReady && needsPlaying) {
+            if (event == MediaService.EVENT_PUBLICATION_CHANGED && extras?.getString(
+                    MediaService.EXTRA_PUBLICATION_ID
+                ) == publicationId && playWhenReady && needsPlaying
+            ) {
                 play()
             }
         }
@@ -224,7 +227,11 @@ public class MediaSessionNavigator(
             // See https://github.com/Kotlin/kotlinx.coroutines/issues/2353
             val position = positionMs.milliseconds
 
-            val index = metadata.resourceHref?.let { publication.readingOrder.indexOfFirstWithHref(it) }
+            val index = metadata.resourceHref?.let {
+                publication.readingOrder.indexOfFirstWithHref(
+                    it
+                )
+            }
             if (index == null) {
                 Timber.e("Can't find resource index in publication for media ID `${metadata.id}`.")
             }

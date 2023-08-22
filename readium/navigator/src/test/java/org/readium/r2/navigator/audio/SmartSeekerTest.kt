@@ -11,7 +11,14 @@ import org.readium.r2.navigator.media3.audio.SmartSeeker
 class SmartSeekerTest {
 
     private val playlist: List<Duration> = listOf(
-        10, 20, 15, 800, 10, 230, 20, 10
+        10,
+        20,
+        15,
+        800,
+        10,
+        230,
+        20,
+        10
     ).map { it.seconds }
 
     private val forwardOffset = 50.seconds

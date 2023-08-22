@@ -71,8 +71,9 @@ public class CountingInputStream(
             .coerceFirstNonNegative()
             .requireLengthFitInt()
 
-        if (range.isEmpty())
+        if (range.isEmpty()) {
             return ByteArray(0)
+        }
 
         skip(range.first - count)
         val length = range.last - range.first + 1

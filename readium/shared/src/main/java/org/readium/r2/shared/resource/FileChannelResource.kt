@@ -6,6 +6,7 @@
 
 package org.readium.r2.shared.resource
 
+import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.nio.channels.Channels
@@ -14,17 +15,22 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.extensions.read
-import org.readium.r2.shared.extensions.readFully
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 
 internal class FileChannelResource(
+    override val source: Url?,
+    private val file: File?,
     private val channel: FileChannel
 ) : Resource {
 
     private lateinit var _length: ResourceTry<Long>
 
-    override suspend fun name(): ResourceTry<String?> =
-        ResourceTry.success(null)
+    override suspend fun mediaType(): ResourceTry<MediaType> =
+        ResourceTry.success(MediaType.BINARY)
+
+    override suspend fun properties(): ResourceTry<Resource.Properties> =
+        ResourceTry.success(Resource.Properties())
 
     override suspend fun close() {
         withContext(Dispatchers.IO) {

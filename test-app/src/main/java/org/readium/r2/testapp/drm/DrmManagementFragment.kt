@@ -73,10 +73,11 @@ class DrmManagementFragment : Fragment() {
         binding.drmValueCopiesLeft.text = model.copiesLeft
 
         val datesVisibility =
-            if (model.start != null && model.end != null && model.start != model.end)
+            if (model.start != null && model.end != null && model.start != model.end) {
                 View.VISIBLE
-            else
+            } else {
                 View.GONE
+            }
 
         binding.drmStart.visibility = datesVisibility
         binding.drmValueStart.text = model.start.toFormattedString()
@@ -135,8 +136,9 @@ private fun Date?.toFormattedString() =
 
 // FIXME: the toast is drawn behind the navigation bar
 private fun Exception.toastUserMessage(view: View) {
-    if (this is UserException)
+    if (this is UserException) {
         Snackbar.make(view, getUserMessage(view.context), Snackbar.LENGTH_LONG).show()
+    }
 
     Timber.d(this)
 }

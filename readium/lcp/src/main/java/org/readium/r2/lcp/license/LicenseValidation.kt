@@ -32,7 +32,10 @@ internal sealed class Either<A, B> {
     class Right<A, B>(val right: B) : Either<A, B>()
 }
 
-private val supportedProfiles = listOf("http://readium.org/lcp/basic-profile", "http://readium.org/lcp/profile-1.0")
+private val supportedProfiles = listOf(
+    "http://readium.org/lcp/basic-profile",
+    "http://readium.org/lcp/profile-1.0"
+)
 
 internal typealias Context = Either<LcpClient.Context, LcpException.LicenseStatus>
 
@@ -41,8 +44,8 @@ internal typealias Observer = (ValidatedDocuments?, Exception?) -> Unit
 private var observers: MutableList<Pair<Observer, ObserverPolicy>> = mutableListOf()
 
 internal enum class ObserverPolicy {
-    once,
-    always
+    Once,
+    Always
 }
 
 internal data class ValidatedDocuments constructor(
@@ -207,8 +210,14 @@ internal class LicenseValidation(
         state<State.checkLicenseStatus> {
             on<Event.checkedLicenseStatus> {
                 it.error?.let { error ->
-                    if (DEBUG) Timber.d("State.valid(ValidatedDocuments(license, Either.Right(error), status))")
-                    transitionTo(State.valid(ValidatedDocuments(license, Either.Right(error), status)))
+                    if (DEBUG) {
+                        Timber.d(
+                            "State.valid(ValidatedDocuments(license, Either.Right(error), status))"
+                        )
+                    }
+                    transitionTo(
+                        State.valid(ValidatedDocuments(license, Either.Right(error), status))
+                    )
                 } ?: run {
                     if (DEBUG) Timber.d("State.requestPassphrase(license, status)")
                     transitionTo(State.retrievePassphrase(license, status))
@@ -232,7 +241,7 @@ internal class LicenseValidation(
         state<State.validateIntegrity> {
             on<Event.validatedIntegrity> {
                 val documents = ValidatedDocuments(license, Either.Left(it.context), status)
-                val link = status?.link(StatusDocument.Rel.register)
+                val link = status?.link(StatusDocument.Rel.Register)
                 link?.let {
                     if (DEBUG) Timber.d("State.registerDevice(documents, link)")
                     transitionTo(State.registerDevice(documents, link))
@@ -296,7 +305,11 @@ internal class LicenseValidation(
                     is State.fetchStatus -> fetchStatus(state.license)
                     is State.validateStatus -> validateStatus(state.data)
                     is State.fetchLicense -> fetchLicense(state.status)
-                    is State.checkLicenseStatus -> checkLicenseStatus(state.license, state.status, state.statusDocumentTakesPrecedence)
+                    is State.checkLicenseStatus -> checkLicenseStatus(
+                        state.license,
+                        state.status,
+                        state.statusDocumentTakesPrecedence
+                    )
                     is State.retrievePassphrase -> requestPassphrase(state.license)
                     is State.validateIntegrity -> validateIntegrity(state.license, state.passphrase)
                     is State.registerDevice -> registerDevice(state.documents.license, state.link)
@@ -313,7 +326,7 @@ internal class LicenseValidation(
 
     private fun observe(event: Event, observer: Observer) {
         raise(event)
-        Companion.observe(this, ObserverPolicy.once, observer)
+        Companion.observe(this, ObserverPolicy.Once, observer)
     }
 
     private fun notifyObservers(documents: ValidatedDocuments?, error: Exception?) {
@@ -322,7 +335,7 @@ internal class LicenseValidation(
             observer.first(documents, error)
         }
 //        Timber.d("observers $observers")
-        observers = (observers.filter { it.second != ObserverPolicy.once }).toMutableList()
+        observers = (observers.filter { it.second != ObserverPolicy.Once }).toMutableList()
 //        Timber.d("observers $observers")
     }
 
@@ -336,10 +349,17 @@ internal class LicenseValidation(
     }
 
     private suspend fun fetchStatus(license: LicenseDocument) {
-        val url = license.url(LicenseDocument.Rel.status, preferredType = MediaType.LCP_STATUS_DOCUMENT).toString()
+        val url = license.url(
+            LicenseDocument.Rel.Status,
+            preferredType = MediaType.LCP_STATUS_DOCUMENT
+        ).toString()
         // Short timeout to avoid blocking the License, when the LSD is optional.
         val timeout = 5.seconds.takeIf { ignoreInternetErrors }
-        val data = network.fetch(url, timeout = timeout, headers = mapOf("Accept" to MediaType.LCP_STATUS_DOCUMENT.toString()))
+        val data = network.fetch(
+            url,
+            timeout = timeout,
+            headers = mapOf("Accept" to MediaType.LCP_STATUS_DOCUMENT.toString())
+        )
             .getOrElse { throw LcpException.Network(it) }
 
         raise(Event.retrievedStatusData(data))
@@ -351,7 +371,10 @@ internal class LicenseValidation(
     }
 
     private suspend fun fetchLicense(status: StatusDocument) {
-        val url = status.url(StatusDocument.Rel.license, preferredType = MediaType.LCP_LICENSE_DOCUMENT).toString()
+        val url = status.url(
+            StatusDocument.Rel.License,
+            preferredType = MediaType.LCP_LICENSE_DOCUMENT
+        ).toString()
         // Short timeout to avoid blocking the License, since it can be updated next time.
         val data = network.fetch(url, timeout = 5.seconds)
             .getOrElse { throw LcpException.Network(it) }
@@ -369,7 +392,11 @@ internal class LicenseValidation(
         val start = license.rights.start ?: now
         val end = license.rights.end ?: now
         val isLicenseExpired = (start > now || now > end)
-        val isStatusValid = status?.status in listOf(null, StatusDocument.Status.active, StatusDocument.Status.ready)
+        val isStatusValid = status?.status in listOf(
+            null,
+            StatusDocument.Status.Active,
+            StatusDocument.Status.Ready
+        )
 
         // We only check the Status Document's status if the License itself is expired, to get a proper status error message.
         // But in the case where the Status Document takes precedence (eg. after a failed License update),
@@ -378,18 +405,20 @@ internal class LicenseValidation(
             error = if (status != null) {
                 val date = status.statusUpdated
                 when (status.status) {
-                    StatusDocument.Status.ready, StatusDocument.Status.active, StatusDocument.Status.expired ->
+                    StatusDocument.Status.Ready, StatusDocument.Status.Active, StatusDocument.Status.Expired ->
                         if (start > now) {
                             LcpException.LicenseStatus.NotStarted(start)
                         } else {
                             LcpException.LicenseStatus.Expired(end)
                         }
-                    StatusDocument.Status.returned -> LcpException.LicenseStatus.Returned(date)
-                    StatusDocument.Status.revoked -> {
-                        val devicesCount = status.events(org.readium.r2.lcp.license.model.components.lsd.Event.EventType.register).size
+                    StatusDocument.Status.Returned -> LcpException.LicenseStatus.Returned(date)
+                    StatusDocument.Status.Revoked -> {
+                        val devicesCount = status.events(
+                            org.readium.r2.lcp.license.model.components.lsd.Event.EventType.Register
+                        ).size
                         LcpException.LicenseStatus.Revoked(date, devicesCount = devicesCount)
                     }
-                    StatusDocument.Status.cancelled -> LcpException.LicenseStatus.Cancelled(date)
+                    StatusDocument.Status.Cancelled -> LcpException.LicenseStatus.Cancelled(date)
                 }
             } else {
                 if (start > now) {
@@ -405,10 +434,11 @@ internal class LicenseValidation(
     private suspend fun requestPassphrase(license: LicenseDocument) {
         if (DEBUG) Timber.d("requestPassphrase")
         val passphrase = passphrases.request(license, authentication, allowUserInteraction, sender)
-        if (passphrase == null)
+        if (passphrase == null) {
             raise(Event.cancelled)
-        else
+        } else {
             raise(Event.retrievedPassphrase(passphrase))
+        }
     }
 
     private suspend fun validateIntegrity(license: LicenseDocument, passphrase: String) {
@@ -430,17 +460,23 @@ internal class LicenseValidation(
     companion object {
         fun observe(
             licenseValidation: LicenseValidation,
-            policy: ObserverPolicy = ObserverPolicy.always,
+            policy: ObserverPolicy = ObserverPolicy.Always,
             observer: Observer
         ) {
             var notified = true
             when (licenseValidation.stateMachine.state) {
-                is State.valid -> observer((licenseValidation.stateMachine.state as State.valid).documents, null)
-                is State.failure -> observer(null, (licenseValidation.stateMachine.state as State.failure).error)
+                is State.valid -> observer(
+                    (licenseValidation.stateMachine.state as State.valid).documents,
+                    null
+                )
+                is State.failure -> observer(
+                    null,
+                    (licenseValidation.stateMachine.state as State.failure).error
+                )
                 is State.cancelled -> observer(null, null)
                 else -> notified = false
             }
-            if (notified && policy != ObserverPolicy.always) {
+            if (notified && policy != ObserverPolicy.Always) {
                 return
             }
             observers.add(Pair(observer, policy))

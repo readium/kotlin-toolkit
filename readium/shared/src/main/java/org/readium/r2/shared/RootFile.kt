@@ -12,6 +12,7 @@ package org.readium.r2.shared
 @Deprecated("Not used anymore", level = DeprecationLevel.ERROR)
 public class RootFile {
     public var rootPath: String = ""
+
     //  Path to OPF
     public var rootFilePath: String = ""
     public var mimetype: String = ""

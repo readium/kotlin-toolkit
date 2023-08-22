@@ -15,6 +15,10 @@ import org.readium.r2.shared.error.Try
  * if this instance represents failure or the original encapsulated value if it is success.
  */
 @Suppress("Unused_parameter")
-@Deprecated(message = "Use getOrElse instead.", level = DeprecationLevel.ERROR, replaceWith = ReplaceWith("getOrElse"))
+@Deprecated(
+    message = "Use getOrElse instead.",
+    level = DeprecationLevel.ERROR,
+    replaceWith = ReplaceWith("getOrElse")
+)
 public inline fun <R, S : R, F : Throwable> Try<S, F>.recover(transform: (exception: F) -> R): Try<R, Nothing> =
     TODO()

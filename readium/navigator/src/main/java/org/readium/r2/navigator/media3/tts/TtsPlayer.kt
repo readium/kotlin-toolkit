@@ -41,9 +41,8 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             E : TtsEngine.Error, V : TtsEngine.Voice> invoke(
             engine: TtsEngine<S, P, E, V>,
             contentIterator: TtsContentIterator,
-            initialPreferences: P,
+            initialPreferences: P
         ): TtsPlayer<S, P, E, V>? {
-
             val initialContext = tryOrNull { contentIterator.startContext() }
                 ?: return null
 
@@ -118,7 +117,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     data class Playback(
         val state: State,
-        val playWhenReady: Boolean,
+        val playWhenReady: Boolean
     )
 
     data class Utterance(
@@ -131,7 +130,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             val resourceIndex: Int,
             val locations: Locator.Locations,
             val textBefore: String?,
-            val textAfter: String?,
+            val textAfter: String?
         )
     }
 
@@ -481,7 +480,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private fun onEndReached() {
         playbackMutable.value = playbackMutable.value.copy(
-            state = State.Ended,
+            state = State.Ended
         )
     }
 

@@ -36,8 +36,9 @@ public class CursorList<E>(
      * Moves the cursor backward and returns the element, or null when reaching the beginning.
      */
     public fun previous(): E? {
-        if (!hasPrevious())
+        if (!hasPrevious()) {
             return null
+        }
 
         index--
         return list[index]
@@ -51,8 +52,9 @@ public class CursorList<E>(
      * Moves the cursor forward and returns the element, or null when reaching the end.
      */
     public fun next(): E? {
-        if (!hasNext())
+        if (!hasNext()) {
             return null
+        }
 
         index++
         return list[index]

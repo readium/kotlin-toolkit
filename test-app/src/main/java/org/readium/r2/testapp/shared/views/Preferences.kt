@@ -79,7 +79,7 @@ private fun <T> ButtonGroupItem(
     selectedOption: T?,
     formatValue: (T) -> String,
     onClear: (() -> Unit)?,
-    onSelectedOptionChanged: (T) -> Unit,
+    onSelectedOptionChanged: (T) -> Unit
 ) {
     Item(title, isActive = isActive, onClear = onClear) {
         ToggleButtonGroup(
@@ -174,7 +174,7 @@ fun <T : Comparable<T>> StepperItem(
         onDecrement = { preference.decrement(); commit() },
         onIncrement = { preference.increment(); commit() },
         onClear = { preference.clear(); commit() }
-            .takeIf { preference.value != null },
+            .takeIf { preference.value != null }
     )
 }
 
@@ -235,7 +235,7 @@ fun SwitchItem(
         onCheckedChange = { preference.set(it); commit() },
         onToggle = { preference.toggle(); commit() },
         onClear = { preference.clear(); commit() }
-            .takeIf { preference.value != null },
+            .takeIf { preference.value != null }
     )
 }
 
@@ -378,8 +378,11 @@ private fun Item(
 ) {
     ListItem(
         modifier =
-        if (onClick != null) Modifier.clickable(onClick = onClick)
-        else Modifier,
+        if (onClick != null) {
+            Modifier.clickable(onClick = onClick)
+        } else {
+            Modifier
+        },
         text = {
             val alpha = if (isActive) 1.0f else ContentAlpha.disabled
             CompositionLocalProvider(LocalContentAlpha provides alpha) {
@@ -432,7 +435,7 @@ private fun <T> SelectorListItem(
     selection: T,
     formatValue: (T) -> String,
     onSelected: (T) -> Unit,
-    enabled: Boolean = values.isNotEmpty(),
+    enabled: Boolean = values.isNotEmpty()
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     fun dismiss() { isExpanded = false }

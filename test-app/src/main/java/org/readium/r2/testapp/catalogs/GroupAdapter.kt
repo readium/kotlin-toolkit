@@ -33,7 +33,9 @@ class GroupAdapter(
     ): ViewHolder {
         return ViewHolder(
             ItemGroupViewBinding.inflate(
-                LayoutInflater.from(parent.context), parent, false
+                LayoutInflater.from(parent.context),
+                parent,
+                false
             )
         )
     }

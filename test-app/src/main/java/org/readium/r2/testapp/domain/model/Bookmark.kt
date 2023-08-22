@@ -17,7 +17,7 @@ import org.readium.r2.shared.publication.Locator
     tableName = Bookmark.TABLE_NAME,
     indices = [
         Index(
-            value = ["BOOK_ID", "LOCATION"],
+            value = [Bookmark.BOOK_ID, Bookmark.LOCATION],
             unique = true
         )
     ]
@@ -30,8 +30,6 @@ data class Bookmark(
     var creation: Long? = null,
     @ColumnInfo(name = BOOK_ID)
     val bookId: Long,
-    @ColumnInfo(name = PUBLICATION_ID)
-    val publicationId: String,
     @ColumnInfo(name = RESOURCE_INDEX)
     val resourceIndex: Long,
     @ColumnInfo(name = RESOURCE_HREF)
@@ -57,16 +55,15 @@ data class Bookmark(
 
     companion object {
 
-        const val TABLE_NAME = "BOOKMARKS"
-        const val ID = "ID"
-        const val CREATION_DATE = "CREATION_DATE"
-        const val BOOK_ID = "BOOK_ID"
-        const val PUBLICATION_ID = "PUBLICATION_ID"
-        const val RESOURCE_INDEX = "RESOURCE_INDEX"
-        const val RESOURCE_HREF = "RESOURCE_HREF"
-        const val RESOURCE_TYPE = "RESOURCE_TYPE"
-        const val RESOURCE_TITLE = "RESOURCE_TITLE"
-        const val LOCATION = "LOCATION"
-        const val LOCATOR_TEXT = "LOCATOR_TEXT"
+        const val TABLE_NAME = "bookmarks"
+        const val ID = "id"
+        const val CREATION_DATE = "creation_date"
+        const val BOOK_ID = "book_id"
+        const val RESOURCE_INDEX = "resource_index"
+        const val RESOURCE_HREF = "resource_href"
+        const val RESOURCE_TYPE = "resource_type"
+        const val RESOURCE_TITLE = "resource_title"
+        const val LOCATION = "location"
+        const val LOCATOR_TEXT = "locator_text"
     }
 }

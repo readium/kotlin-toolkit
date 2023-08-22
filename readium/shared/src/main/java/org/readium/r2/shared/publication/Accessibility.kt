@@ -64,11 +64,17 @@ public data class Accessibility(
 
         public companion object {
 
-            public val EPUB_A11Y_10_WCAG_20_A: Profile = Profile("http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a")
+            public val EPUB_A11Y_10_WCAG_20_A: Profile = Profile(
+                "http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-a"
+            )
 
-            public val EPUB_A11Y_10_WCAG_20_AA: Profile = Profile("http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aa")
+            public val EPUB_A11Y_10_WCAG_20_AA: Profile = Profile(
+                "http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aa"
+            )
 
-            public val EPUB_A11Y_10_WCAG_20_AAA: Profile = Profile("http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa")
+            public val EPUB_A11Y_10_WCAG_20_AAA: Profile = Profile(
+                "http://www.idpf.org/epub/a11y/accessibility-20170105.html#wcag-aaa"
+            )
 
             public fun Set<Profile>.toJSONArray(): JSONArray =
                 JSONArray(this.map(Profile::uri))
@@ -115,7 +121,11 @@ public data class Accessibility(
                 val report = json.optNullableString("report")
 
                 if (listOfNotNull(certifiedBy, credential, report).isEmpty()) {
-                    warnings?.log(Certification::class.java, "no valid property in certification object", json)
+                    warnings?.log(
+                        Certification::class.java,
+                        "no valid property in certification object",
+                        json
+                    )
                     return null
                 }
 
@@ -220,12 +230,14 @@ public data class Accessibility(
         /**
          * Indicates that auditory perception is necessary to consume the information.
          */
-        @SerialName("auditory") AUDITORY("auditory"),
+        @SerialName("auditory")
+        AUDITORY("auditory"),
 
         /**
          * Indicates that tactile perception is necessary to consume the information.
          */
-        @SerialName("tactile") TACTILE("tactile"),
+        @SerialName("tactile")
+        TACTILE("tactile"),
 
         /**
          * Indicates that the ability to read textual content is necessary to consume the information.
@@ -233,14 +245,19 @@ public data class Accessibility(
          * Note that reading textual content does not require visual perception, as textual content
          * can be rendered as audio using a text-to-speech capable device or assistive technology.
          */
-        @SerialName("textual") TEXTUAL("textual"),
+        @SerialName("textual")
+        TEXTUAL("textual"),
 
         /**
          * Indicates that visual perception is necessary to consume the information.
          */
-        @SerialName("visual") VISUAL("visual");
+        @SerialName("visual")
+        VISUAL("visual");
 
-        public companion object : MapCompanion<String, PrimaryAccessMode>(values(), PrimaryAccessMode::value) {
+        public companion object : MapCompanion<String, PrimaryAccessMode>(
+            values(),
+            PrimaryAccessMode::value
+        ) {
 
             /**
              * Creates a list of [PrimaryAccessMode] from its RWPM JSON representation.

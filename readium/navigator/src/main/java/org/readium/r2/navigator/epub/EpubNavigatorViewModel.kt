@@ -67,6 +67,7 @@ internal class EpubNavigatorViewModel(
     sealed class Event {
         data class GoTo(val target: Link) : Event()
         data class OpenExternalLink(val url: Uri) : Event()
+
         /** Refreshes all the resources in the view pager. */
         object InvalidateViewPager : Event()
         data class RunScript(val command: RunScriptCommand) : Event()
@@ -88,8 +89,11 @@ internal class EpubNavigatorViewModel(
             SimplePresentation(
                 readingProgression = settings.readingProgression,
                 scroll = settings.scroll,
-                axis = if (settings.scroll && !settings.verticalText) Axis.VERTICAL
-                else Axis.HORIZONTAL
+                axis = if (settings.scroll && !settings.verticalText) {
+                    Axis.VERTICAL
+                } else {
+                    Axis.HORIZONTAL
+                }
             )
         }
 
@@ -324,7 +328,10 @@ internal class EpubNavigatorViewModel(
             ?: return false
 
         val event = DecorableNavigator.OnActivatedEvent(
-            decoration = decoration, group = group, rect = rect, point = point
+            decoration = decoration,
+            group = group,
+            rect = rect,
+            point = point
         )
         for (listener in listeners) {
             if (listener.onDecorationActivated(event)) {
@@ -346,10 +353,15 @@ internal class EpubNavigatorViewModel(
             initialPreferences: EpubPreferences
         ) = createViewModelFactory {
             EpubNavigatorViewModel(
-                application, publication, config, initialPreferences, layout,
+                application,
+                publication,
+                config,
+                initialPreferences,
+                layout,
                 defaults = defaults,
                 server = WebViewServer(
-                    application, publication,
+                    application,
+                    publication,
                     servedAssets = config.servedAssets,
                     disableSelectionWhenProtected = config.disableSelectionWhenProtected
                 )

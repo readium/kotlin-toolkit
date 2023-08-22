@@ -106,7 +106,7 @@ internal data class ItemState(
     val index: Int,
     val position: Duration,
     val buffered: Duration,
-    val duration: Duration?,
+    val duration: Duration?
 )
 
 @OptIn(ExperimentalTime::class)
@@ -149,10 +149,11 @@ internal val SessionPlayer.currentDuration: Duration?
 
 @ExperimentalTime
 private fun msToDuration(ms: Long): Duration? =
-    if (ms == SessionPlayer.UNKNOWN_TIME)
+    if (ms == SessionPlayer.UNKNOWN_TIME) {
         null
-    else
+    } else {
         ms.milliseconds
+    }
 
 @ExperimentalTime
 internal val MediaMetadata.duration: Duration?

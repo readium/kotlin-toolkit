@@ -8,7 +8,6 @@ package org.readium.r2.streamer.parser.audio
 
 import java.io.File
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
@@ -18,6 +17,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
 import org.readium.r2.streamer.extensions.lowercasedExtension
+import org.readium.r2.streamer.extensions.toLink
 import org.readium.r2.streamer.parser.PublicationParser
 
 /**
@@ -32,19 +32,19 @@ public class AudioParser : PublicationParser {
         asset: PublicationParser.Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
-
-        if (!asset.mediaType.matches(MediaType.ZAB) && !asset.mediaType.isAudio)
+        if (!asset.mediaType.matches(MediaType.ZAB) && !asset.mediaType.isAudio) {
             return Try.failure(PublicationParser.Error.FormatNotSupported())
+        }
 
         val readingOrder =
             if (asset.mediaType.matches(MediaType.ZAB)) {
-                asset.fetcher.links()
-                    .filter { link -> zabCanContain(link.href) }
-                    .sortedBy(Link::href)
+                (asset.container.entries() ?: emptySet())
+                    .filter { entry -> zabCanContain(entry.path) }
+                    .sortedBy { it.path }
                     .toMutableList()
             } else {
                 listOfNotNull(
-                    asset.fetcher.links().firstOrNull()
+                    asset.container.entries()?.firstOrNull()
                 )
             }
 
@@ -54,19 +54,17 @@ public class AudioParser : PublicationParser {
             )
         }
 
-        val title = asset.fetcher.guessTitle() ?: asset.name
-
         val manifest = Manifest(
             metadata = Metadata(
                 conformsTo = setOf(Publication.Profile.AUDIOBOOK),
-                localizedTitle = LocalizedString(title)
+                localizedTitle = asset.container.guessTitle()?.let { LocalizedString(it) }
             ),
-            readingOrder = readingOrder
+            readingOrder = readingOrder.map { it.toLink() }
         )
 
         val publicationBuilder = Publication.Builder(
             manifest = manifest,
-            fetcher = asset.fetcher,
+            container = asset.container,
             servicesBuilder = Publication.ServicesBuilder(
                 locator = AudioLocatorService.createFactory()
             )

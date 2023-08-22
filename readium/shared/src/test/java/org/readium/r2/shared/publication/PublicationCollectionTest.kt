@@ -43,7 +43,11 @@ class PublicationCollectionTest {
                 links = listOf(Link(href = "/link")),
                 subcollections = mapOf(
                     "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
-                    "sub2" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2")))),
+                    "sub2" to listOf(
+                        PublicationCollection(
+                            links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))
+                        )
+                    ),
                     "sub3" to listOf(
                         PublicationCollection(links = listOf(Link(href = "/sublink3"))),
                         PublicationCollection(links = listOf(Link(href = "/sublink4")))
@@ -94,7 +98,11 @@ class PublicationCollectionTest {
         assertEquals(
             mapOf(
                 "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
-                "sub2" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2")))),
+                "sub2" to listOf(
+                    PublicationCollection(
+                        links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))
+                    )
+                ),
                 "sub3" to listOf(
                     PublicationCollection(links = listOf(Link(href = "/sublink3"))),
                     PublicationCollection(links = listOf(Link(href = "/sublink4")))
@@ -186,7 +194,11 @@ class PublicationCollectionTest {
                 links = listOf(Link(href = "/link")),
                 subcollections = mapOf(
                     "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
-                    "sub2" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2")))),
+                    "sub2" to listOf(
+                        PublicationCollection(
+                            links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))
+                        )
+                    ),
                     "sub3" to listOf(
                         PublicationCollection(links = listOf(Link(href = "/sublink3"))),
                         PublicationCollection(links = listOf(Link(href = "/sublink4")))
@@ -231,7 +243,11 @@ class PublicationCollectionTest {
             ),
             mapOf(
                 "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
-                "sub2" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2")))),
+                "sub2" to listOf(
+                    PublicationCollection(
+                        links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))
+                    )
+                ),
                 "sub3" to listOf(
                     PublicationCollection(links = listOf(Link(href = "/sublink3"))),
                     PublicationCollection(links = listOf(Link(href = "/sublink4")))

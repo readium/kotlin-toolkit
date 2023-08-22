@@ -33,7 +33,7 @@ import timber.log.Timber
 public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>> private constructor(
     override val publication: Publication,
     private val audioEngine: AudioEngine<S, P>,
-    override val readingOrder: ReadingOrder,
+    override val readingOrder: ReadingOrder
 ) :
     MediaNavigator<AudioNavigator.Location, AudioNavigator.Playback, AudioNavigator.ReadingOrder>,
     TimeBasedMediaNavigator<AudioNavigator.Location, AudioNavigator.Playback, AudioNavigator.ReadingOrder>,
@@ -47,13 +47,18 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
             audioEngineProvider: AudioEngineProvider<S, P, *>,
             readingOrder: List<Link> = publication.readingOrder,
             initialLocator: Locator? = null,
-            initialPreferences: P? = null,
+            initialPreferences: P? = null
         ): AudioNavigator<S, P>? {
             if (readingOrder.isEmpty()) {
                 return null
             }
 
-            val items = readingOrder.map { ReadingOrder.Item(Href(it.href), duration(it, publication)) }
+            val items = readingOrder.map {
+                ReadingOrder.Item(
+                    Href(it.href),
+                    duration(it, publication)
+                )
+            }
             val totalDuration = publication.metadata.duration?.seconds
                 ?: items.mapNotNull { it.duration }
                     .takeIf { it.size == items.size }
@@ -91,7 +96,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
 
     public data class Location(
         override val href: Href,
-        override val offset: Duration,
+        override val offset: Duration
     ) : TimeBasedMediaNavigator.Location
 
     public data class ReadingOrder(
@@ -110,7 +115,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
         override val playWhenReady: Boolean,
         override val index: Int,
         override val offset: Duration,
-        override val buffered: Duration?,
+        override val buffered: Duration?
     ) : TimeBasedMediaNavigator.Playback
 
     public sealed class State {
@@ -138,8 +143,11 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
                 .takeIf { it.size == readingOrder.items.size }
                 ?.sum()
             val totalProgression =
-                if (itemStartPosition == null) null
-                else readingOrder.duration?.let { (itemStartPosition + playback.offset) / it }
+                if (itemStartPosition == null) {
+                    null
+                } else {
+                    readingOrder.duration?.let { (itemStartPosition + playback.offset) / it }
+                }
 
             val locator = requireNotNull(publication.locatorFromLink(link))
             locator.copyWithLocations(

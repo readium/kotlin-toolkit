@@ -87,7 +87,9 @@ public class MaterialRenewListener(
 
     private var webPageContinuation: Continuation<Unit>? = null
 
-    private val webPageLauncher = caller.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+    private val webPageLauncher = caller.registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
         webPageContinuation?.resume(Unit)
     }
 }

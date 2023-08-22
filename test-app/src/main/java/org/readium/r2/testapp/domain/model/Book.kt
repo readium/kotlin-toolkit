@@ -23,7 +23,7 @@ data class Book(
     @ColumnInfo(name = HREF)
     val href: String,
     @ColumnInfo(name = TITLE)
-    val title: String,
+    val title: String?,
     @ColumnInfo(name = AUTHOR)
     val author: String? = null,
     @ColumnInfo(name = IDENTIFIER)
@@ -37,21 +37,21 @@ data class Book(
     @ColumnInfo(name = DRM)
     val drm: String? = null,
     @ColumnInfo(name = COVER)
-    val cover: String,
+    val cover: String
 ) {
 
     constructor(
         id: Long? = null,
         creation: Long? = null,
         href: String,
-        title: String,
+        title: String?,
         author: String? = null,
         identifier: String,
         progression: String? = null,
         mediaType: MediaType,
         assetType: AssetType,
         drm: ContentProtection.Scheme?,
-        cover: String,
+        cover: String
     ) : this(
         id = id,
         creation = creation,
@@ -63,11 +63,11 @@ data class Book(
         rawMediaType = mediaType.toString(),
         rawAssetType = assetType.value,
         drm = drm?.uri,
-        cover = cover,
+        cover = cover
     )
 
     val mediaType: MediaType get() =
-        MediaType(rawMediaType)
+        MediaType(rawMediaType) ?: MediaType.BINARY
 
     val drmScheme: ContentProtection.Scheme? get() =
         drm?.let { ContentProtection.Scheme(it) }

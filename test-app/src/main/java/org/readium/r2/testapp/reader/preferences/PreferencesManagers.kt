@@ -44,7 +44,7 @@ class PreferencesManager<P : Configurable.Preferences<P>> internal constructor(
     val preferences: StateFlow<P>,
     @Suppress("Unused") // Keep the scope alive until the PreferencesManager is garbage collected
     private val coroutineScope: CoroutineScope,
-    private val editPreferences: suspend (P) -> Unit,
+    private val editPreferences: suspend (P) -> Unit
 ) {
 
     suspend fun setPreferences(preferences: P) {
@@ -116,7 +116,7 @@ sealed class PreferencesManagerFactory<P : Configurable.Preferences<P>>(
 }
 
 class EpubPreferencesManagerFactory(
-    dataStore: DataStore<Preferences>,
+    dataStore: DataStore<Preferences>
 ) : PreferencesManagerFactory<EpubPreferences>(
     dataStore = dataStore,
     klass = EpubPreferences::class,
@@ -127,7 +127,7 @@ class EpubPreferencesManagerFactory(
 )
 
 class PdfiumPreferencesManagerFactory(
-    dataStore: DataStore<Preferences>,
+    dataStore: DataStore<Preferences>
 ) : PreferencesManagerFactory<PdfiumPreferences>(
     dataStore = dataStore,
     klass = PdfiumPreferences::class,

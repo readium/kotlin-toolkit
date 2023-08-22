@@ -19,6 +19,7 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * Represents a precise location in a publication in a format that can be stored and shared.
@@ -100,7 +101,11 @@ public data class Locator(
             }
         }
 
-        @Deprecated("Renamed to [fragments]", ReplaceWith("fragments"), level = DeprecationLevel.ERROR)
+        @Deprecated(
+            "Renamed to [fragments]",
+            ReplaceWith("fragments"),
+            level = DeprecationLevel.ERROR
+        )
         val fragment: String? get() = fragments.firstOrNull()
     }
 
@@ -207,18 +212,11 @@ public data class Locator(
 /**
  * Creates a [Locator] from a reading order [Link].
  */
-@Deprecated("This may create an incorrect `Locator` if the link `type` is missing. Use `publication.locatorFromLink()` instead.", level = DeprecationLevel.ERROR)
-public fun Link.toLocator(): Locator {
-    val components = href.split("#", limit = 2)
-    return Locator(
-        href = components.firstOrNull() ?: href,
-        type = type ?: "",
-        title = title,
-        locations = Locator.Locations(
-            fragments = listOfNotNull(components.getOrNull(1))
-        )
-    )
-}
+@Deprecated(
+    "This may create an incorrect `Locator` if the link `type` is missing. Use `publication.locatorFromLink()` instead.",
+    level = DeprecationLevel.ERROR
+)
+public fun Link.toLocator(): Locator = throw NotImplementedError()
 
 /**
  * Represents a sequential list of `Locator` objects.
@@ -229,7 +227,7 @@ public fun Link.toLocator(): Locator {
 public data class LocatorCollection(
     val metadata: Metadata = Metadata(),
     val links: List<Link> = emptyList(),
-    val locators: List<Locator> = emptyList(),
+    val locators: List<Locator> = emptyList()
 ) : JSONable, Parcelable {
 
     /**
@@ -241,7 +239,7 @@ public data class LocatorCollection(
     public data class Metadata(
         val localizedTitle: LocalizedString? = null,
         val numberOfItems: Int? = null,
-        val otherMetadata: @WriteWith<JSONParceler> Map<String, Any> = mapOf(),
+        val otherMetadata: @WriteWith<JSONParceler> Map<String, Any> = mapOf()
     ) : JSONable, Parcelable {
 
         /**
@@ -279,11 +277,19 @@ public data class LocatorCollection(
 
     public companion object {
 
-        public fun fromJSON(json: JSONObject?, warnings: WarningLogger? = null): LocatorCollection {
+        public fun fromJSON(
+            json: JSONObject?,
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
+            warnings: WarningLogger? = null
+        ): LocatorCollection {
             return LocatorCollection(
                 metadata = Metadata.fromJSON(json?.optJSONObject("metadata"), warnings),
-                links = Link.fromJSONArray(json?.optJSONArray("links"), warnings = warnings),
-                locators = Locator.fromJSONArray(json?.optJSONArray("locators"), warnings),
+                links = Link.fromJSONArray(
+                    json?.optJSONArray("links"),
+                    mediaTypeRetriever,
+                    warnings = warnings
+                ),
+                locators = Locator.fromJSONArray(json?.optJSONArray("locators"), warnings)
             )
         }
     }

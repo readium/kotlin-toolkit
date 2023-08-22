@@ -1,6 +1,5 @@
 package org.readium.r2.shared.util.http
 
-import java.io.File
 import java.io.InputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -10,30 +9,22 @@ import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.io.CountingInputStream
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /** Provides access to an external URL. */
 public class HttpResource(
     private val client: HttpClient,
-    private val url: String,
+    override val source: Url,
     private val maxSkipBytes: Long = MAX_SKIP_BYTES
 ) : Resource {
 
-    override suspend fun name(): ResourceTry<String?> =
-        headResponse().map { r ->
-            r.valuesForHeader("Content-Disposition")
-                .flatMap { it.split(";") }
-                .map { it.trim() }
-                .firstOrNull { it.startsWith("filename=") }
-                ?.dropWhile { it != '=' }
-                ?.trim('=', '"')
-                ?.let { File(it).name }
-        }
+    override suspend fun mediaType(): ResourceTry<MediaType> =
+        headResponse().map { it.mediaType }
 
-    override suspend fun mediaType(): ResourceTry<String?> =
-        headResponse().map {
-            it.mediaType.toString()
-        }
+    override suspend fun properties(): ResourceTry<Resource.Properties> =
+        ResourceTry.success(Resource.Properties())
 
     override suspend fun length(): ResourceTry<Long> =
         headResponse().flatMap {
@@ -47,7 +38,9 @@ public class HttpResource(
 
     override suspend fun close() {}
 
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = withContext(Dispatchers.IO) {
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = withContext(
+        Dispatchers.IO
+    ) {
         try {
             stream(range?.first.takeUnless { it == 0L }).map { stream ->
                 if (range != null) {
@@ -67,10 +60,13 @@ public class HttpResource(
     private lateinit var _headResponse: ResourceTry<HttpResponse>
 
     private suspend fun headResponse(): ResourceTry<HttpResponse> {
-        if (::_headResponse.isInitialized)
+        if (::_headResponse.isInitialized) {
             return _headResponse
+        }
 
-        _headResponse = client.fetch(HttpRequest(url, method = HttpRequest.Method.HEAD))
+        _headResponse = client.fetch(
+            HttpRequest(source.toString(), method = HttpRequest.Method.HEAD)
+        )
             .map { it.response }
             .mapFailure { Resource.Exception.wrapHttp(it) }
 
@@ -96,7 +92,7 @@ public class HttpResource(
         }
         tryOrLog { inputStream?.close() }
 
-        val request = HttpRequest(url) {
+        val request = HttpRequest(source.toString()) {
             from?.let { setRange(from..-1) }
         }
 

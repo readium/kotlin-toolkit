@@ -199,7 +199,8 @@ internal class StreamVolumeManager(context: Context, eventHandler: Handler, list
             } catch (e: RuntimeException) {
                 Log.w(
                     TAG,
-                    "Could not retrieve stream volume for stream type $streamType", e
+                    "Could not retrieve stream volume for stream type $streamType",
+                    e
                 )
                 audioManager.getStreamMaxVolume(streamType)
             }

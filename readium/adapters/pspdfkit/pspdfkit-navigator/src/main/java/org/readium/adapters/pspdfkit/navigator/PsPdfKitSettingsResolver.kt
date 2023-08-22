@@ -17,7 +17,7 @@ import org.readium.r2.shared.publication.ReadingProgression as PublicationReadin
 @ExperimentalReadiumApi
 internal class PsPdfKitSettingsResolver(
     private val metadata: Metadata,
-    private val defaults: PsPdfKitDefaults,
+    private val defaults: PsPdfKitDefaults
 ) {
     fun settings(preferences: PsPdfKitPreferences): PsPdfKitSettings {
         val readingProgression: ReadingProgression =
@@ -66,7 +66,7 @@ internal class PsPdfKitSettingsResolver(
             readingProgression = readingProgression,
             scroll = scroll,
             scrollAxis = scrollAxis,
-            spread = spread,
+            spread = spread
         )
     }
 }

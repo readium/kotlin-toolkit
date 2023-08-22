@@ -12,6 +12,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.mediatype.MediaType
 
 class AudioLocatorServiceTest {
 
@@ -24,7 +25,11 @@ class AudioLocatorServiceTest {
             )
         )
 
-        val locator = Locator("l1", type = "audio/mpeg", locations = Locator.Locations(totalProgression = 0.53))
+        val locator = Locator(
+            "l1",
+            type = "audio/mpeg",
+            locations = Locator.Locations(totalProgression = 0.53)
+        )
         assertEquals(locator, service.locate(locator))
     }
 
@@ -37,7 +42,11 @@ class AudioLocatorServiceTest {
             )
         )
 
-        val locator = Locator("l3", type = "audio/mpeg", locations = Locator.Locations(totalProgression = 0.53))
+        val locator = Locator(
+            "l3",
+            type = "audio/mpeg",
+            locations = Locator.Locations(totalProgression = 0.53)
+        )
         assertNull(service.locate(locator))
     }
 
@@ -45,45 +54,66 @@ class AudioLocatorServiceTest {
     fun `locate(Locator) uses totalProgression`() = runBlocking {
         val service = AudioLocatorService(
             listOf(
-                Link("l1", type = "audio/mpeg", duration = 100.0),
-                Link("l2", type = "audio/mpeg", duration = 100.0)
+                Link("l1", mediaType = MediaType.MP3, duration = 100.0),
+                Link("l2", mediaType = MediaType.MP3, duration = 100.0)
             )
         )
 
         assertEquals(
             Locator(
-                "l1", type = "audio/mpeg",
+                "l1",
+                type = "audio/mpeg",
                 locations = Locator.Locations(
                     fragments = listOf("t=98"),
                     progression = 98 / 100.0,
                     totalProgression = 0.49
                 )
             ),
-            service.locate(Locator("wrong", type = "audio/mpeg", locations = Locator.Locations(totalProgression = 0.49)))
+            service.locate(
+                Locator(
+                    "wrong",
+                    type = "audio/mpeg",
+                    locations = Locator.Locations(totalProgression = 0.49)
+                )
+            )
         )
 
         assertEquals(
             Locator(
-                "l2", type = "audio/mpeg",
+                "l2",
+                type = "audio/mpeg",
                 locations = Locator.Locations(
                     fragments = listOf("t=0"),
                     progression = 0.0,
                     totalProgression = 0.5
                 )
             ),
-            service.locate(Locator("wrong", type = "audio/mpeg", locations = Locator.Locations(totalProgression = 0.5)))
+            service.locate(
+                Locator(
+                    "wrong",
+                    type = "audio/mpeg",
+                    locations = Locator.Locations(totalProgression = 0.5)
+                )
+            )
         )
 
         assertEquals(
             Locator(
-                "l2", type = "audio/mpeg",
+                "l2",
+                type = "audio/mpeg",
                 locations = Locator.Locations(
                     fragments = listOf("t=2"),
                     progression = 0.02,
                     totalProgression = 0.51
                 )
             ),
-            service.locate(Locator("wrong", type = "audio/mpeg", locations = Locator.Locations(totalProgression = 0.51)))
+            service.locate(
+                Locator(
+                    "wrong",
+                    type = "audio/mpeg",
+                    locations = Locator.Locations(totalProgression = 0.51)
+                )
+            )
         )
     }
 
@@ -91,8 +121,8 @@ class AudioLocatorServiceTest {
     fun `locate(Locator) using totalProgression keeps title and text`() = runBlocking {
         val service = AudioLocatorService(
             listOf(
-                Link("l1", type = "audio/mpeg", duration = 100.0),
-                Link("l2", type = "audio/mpeg", duration = 100.0)
+                Link("l1", mediaType = MediaType.MP3, duration = 100.0),
+                Link("l2", mediaType = MediaType.MP3, duration = 100.0)
             )
         )
 
@@ -130,14 +160,15 @@ class AudioLocatorServiceTest {
     fun `locate progression`() = runBlocking {
         val service = AudioLocatorService(
             listOf(
-                Link("l1", type = "audio/mpeg", duration = 100.0),
-                Link("l2", type = "audio/mpeg", duration = 100.0)
+                Link("l1", mediaType = MediaType.MP3, duration = 100.0),
+                Link("l2", mediaType = MediaType.MP3, duration = 100.0)
             )
         )
 
         assertEquals(
             Locator(
-                "l1", type = "audio/mpeg",
+                "l1",
+                type = "audio/mpeg",
                 locations = Locator.Locations(
                     fragments = listOf("t=0"),
                     progression = 0.0,
@@ -149,7 +180,8 @@ class AudioLocatorServiceTest {
 
         assertEquals(
             Locator(
-                "l1", type = "audio/mpeg",
+                "l1",
+                type = "audio/mpeg",
                 locations = Locator.Locations(
                     fragments = listOf("t=98"),
                     progression = 98 / 100.0,
@@ -161,7 +193,8 @@ class AudioLocatorServiceTest {
 
         assertEquals(
             Locator(
-                "l2", type = "audio/mpeg",
+                "l2",
+                type = "audio/mpeg",
                 locations = Locator.Locations(
                     fragments = listOf("t=0"),
                     progression = 0.0,
@@ -173,7 +206,8 @@ class AudioLocatorServiceTest {
 
         assertEquals(
             Locator(
-                "l2", type = "audio/mpeg",
+                "l2",
+                type = "audio/mpeg",
                 locations = Locator.Locations(
                     fragments = listOf("t=2"),
                     progression = 0.02,
@@ -185,7 +219,8 @@ class AudioLocatorServiceTest {
 
         assertEquals(
             Locator(
-                "l2", type = "audio/mpeg",
+                "l2",
+                type = "audio/mpeg",
                 locations = Locator.Locations(
                     fragments = listOf("t=100"),
                     progression = 1.0,
@@ -200,8 +235,8 @@ class AudioLocatorServiceTest {
     fun `locate invalid progression`() = runBlocking {
         val service = AudioLocatorService(
             listOf(
-                Link("l1", type = "audio/mpeg", duration = 100.0),
-                Link("l2", type = "audio/mpeg", duration = 100.0)
+                Link("l1", mediaType = MediaType.MP3, duration = 100.0),
+                Link("l2", mediaType = MediaType.MP3, duration = 100.0)
             )
         )
 

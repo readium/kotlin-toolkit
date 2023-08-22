@@ -58,7 +58,10 @@ public class Language(code: String) {
         code.hashCode()
 
     internal object Serializer : KSerializer<Language> {
-        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Language", PrimitiveKind.STRING)
+        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(
+            "Language",
+            PrimitiveKind.STRING
+        )
 
         override fun serialize(encoder: Encoder, value: Language) {
             encoder.encodeString(value.code)

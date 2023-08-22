@@ -19,12 +19,12 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 @kotlinx.serialization.Serializable
 public data class ExoPlayerPreferences(
     val pitch: Double? = null,
-    val speed: Double? = null,
+    val speed: Double? = null
 ) : Configurable.Preferences<ExoPlayerPreferences> {
 
     override fun plus(other: ExoPlayerPreferences): ExoPlayerPreferences =
         ExoPlayerPreferences(
             pitch = other.pitch ?: pitch,
-            speed = other.speed ?: speed,
+            speed = other.speed ?: speed
         )
 }

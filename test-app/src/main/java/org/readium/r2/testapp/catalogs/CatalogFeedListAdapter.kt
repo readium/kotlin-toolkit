@@ -30,7 +30,6 @@ class CatalogFeedListAdapter(private val onLongClick: (Catalog) -> Unit) :
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
-
         val catalog = getItem(position)
 
         viewHolder.bind(catalog)

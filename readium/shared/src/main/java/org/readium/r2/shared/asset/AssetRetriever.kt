@@ -9,36 +9,60 @@ package org.readium.r2.shared.asset
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import android.provider.MediaStore
 import java.io.File
 import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.flatMap
-import org.readium.r2.shared.resource.*
+import org.readium.r2.shared.error.getOrElse
+import org.readium.r2.shared.extensions.queryProjection
+import org.readium.r2.shared.resource.ArchiveFactory
+import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.ContainerFactory
+import org.readium.r2.shared.resource.ContainerMediaTypeSnifferContent
+import org.readium.r2.shared.resource.DefaultArchiveFactory
+import org.readium.r2.shared.resource.DirectoryContainerFactory
+import org.readium.r2.shared.resource.FileResourceFactory
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.ResourceFactory
+import org.readium.r2.shared.resource.ResourceMediaTypeSnifferContent
+import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.mediatype.*
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.toUrl
 
+/**
+ * Retrieves an [Asset] instance providing reading access to the resource(s) of an asset stored at a
+ * given [Url].
+ */
 public class AssetRetriever(
+    private val mediaTypeRetriever: MediaTypeRetriever,
     private val resourceFactory: ResourceFactory,
     private val containerFactory: ContainerFactory,
     private val archiveFactory: ArchiveFactory,
-    contentResolver: ContentResolver,
-    sniffers: List<Sniffer>
+    private val contentResolver: ContentResolver
 ) {
 
-    public constructor(context: Context) : this(
-        resourceFactory = FileResourceFactory(),
-        containerFactory = DirectoryContainerFactory(),
-        archiveFactory = DefaultArchiveFactory(),
-        contentResolver = context.contentResolver,
-        sniffers = MediaType.sniffers
-    )
+    public companion object {
+        public operator fun invoke(context: Context): AssetRetriever {
+            val mediaTypeRetriever = MediaTypeRetriever()
+            return AssetRetriever(
+                mediaTypeRetriever = mediaTypeRetriever,
+                resourceFactory = FileResourceFactory(mediaTypeRetriever),
+                containerFactory = DirectoryContainerFactory(mediaTypeRetriever),
+                archiveFactory = DefaultArchiveFactory(mediaTypeRetriever),
+                contentResolver = context.contentResolver
+            )
+        }
+    }
 
     public sealed class Error : org.readium.r2.shared.error.Error {
 
         public class SchemeNotSupported(
             public val scheme: String,
-            override val cause: org.readium.r2.shared.error.Error?,
+            override val cause: org.readium.r2.shared.error.Error?
         ) : Error() {
 
             public constructor(scheme: String, exception: Exception) :
@@ -129,21 +153,24 @@ public class AssetRetriever(
     }
 
     /**
-     * Retrieves an asset from a known media and asset type again.
+     * Retrieves an asset from a known media and asset type.
      */
     public suspend fun retrieve(
         url: Url,
         mediaType: MediaType,
         assetType: AssetType
-    ): Try<Asset, Error> =
-        when (assetType) {
+    ): Try<Asset, Error> {
+        return when (assetType) {
             AssetType.Archive ->
                 retrieveArchiveAsset(url, mediaType)
+
             AssetType.Directory ->
                 retrieveDirectoryAsset(url, mediaType)
+
             AssetType.Resource ->
                 retrieveResourceAsset(url, mediaType)
         }
+    }
 
     private suspend fun retrieveArchiveAsset(
         url: Url,
@@ -163,7 +190,7 @@ public class AssetRetriever(
                         }
                     }
             }
-            .map { container -> Asset.Container(url.filename, mediaType, false, container) }
+            .map { container -> Asset.Container(mediaType, exploded = false, container) }
     }
 
     private suspend fun retrieveDirectoryAsset(
@@ -172,7 +199,7 @@ public class AssetRetriever(
     ): Try<Asset.Container, Error> {
         return containerFactory.create(url)
             .map { container ->
-                Asset.Container(url.filename, mediaType, true, container)
+                Asset.Container(mediaType, exploded = true, container)
             }
             .mapFailure { error ->
                 when (error) {
@@ -191,11 +218,11 @@ public class AssetRetriever(
         mediaType: MediaType
     ): Try<Asset.Resource, Error> {
         return retrieveResource(url)
-            .map { resource -> Asset.Resource(url.filename, mediaType, resource) }
+            .map { resource -> Asset.Resource(mediaType, resource) }
     }
 
     private suspend fun retrieveResource(
-        url: Url,
+        url: Url
     ): Try<Resource, Error> {
         return resourceFactory.create(url)
             .mapFailure { error ->
@@ -227,130 +254,94 @@ public class AssetRetriever(
 
     /* Sniff unknown assets */
 
-    private val snifferContextFactory: UrlSnifferContextFactory =
-        UrlSnifferContextFactory(resourceFactory, containerFactory, archiveFactory)
-
-    private val mediaTypeRetriever: MediaTypeRetriever =
-        MediaTypeRetriever(resourceFactory, containerFactory, archiveFactory, contentResolver, sniffers)
-
     /**
      * Retrieves an asset from a local file.
      */
-    public suspend fun retrieve(
-        file: File,
-        mediaType: String? = null,
-        fileExtension: String? = null,
-    ): Asset? =
-        retrieve(
-            file,
-            mediaTypes = listOfNotNull(mediaType),
-            fileExtensions = listOfNotNull(fileExtension)
-        )
+    public suspend fun retrieve(file: File): Asset? =
+        retrieve(file.toUrl())
 
     /**
-     * Retrieves an asset from a local file.
+     * Retrieves an asset from a [Uri].
      */
-    public suspend fun retrieve(
-        file: File,
-        mediaTypes: List<String>,
-        fileExtensions: List<String>,
-    ): Asset? {
-        val context = snifferContextFactory
-            .createContext(
-                file.toUrl(),
-                mediaTypes = mediaTypes,
-                fileExtensions = listOf(file.extension) + fileExtensions
-            ) ?: return null
-
-        return retrieve(context, file.name)
-    }
-
-    /**
-     * Retrieves an asset from an Uri.
-     */
-    public suspend fun retrieve(
-        uri: Uri,
-        mediaType: String? = null,
-        fileExtension: String? = null,
-    ): Asset? =
-        retrieve(
-            uri,
-            mediaTypes = listOfNotNull(mediaType),
-            fileExtensions = listOfNotNull(fileExtension)
-        )
-
-    /**
-     * Retrieves an asset from a Uri.
-     */
-    public suspend fun retrieve(
-        uri: Uri,
-        mediaTypes: List<String>,
-        fileExtensions: List<String>,
-    ): Asset? {
+    public suspend fun retrieve(uri: Uri): Asset? {
         val url = uri.toUrl()
             ?: return null
 
-        return retrieve(url, mediaTypes, fileExtensions)
+        return retrieve(url)
     }
 
     /**
-     * Retrieves an asset from a Url.
+     * Retrieves an asset from a [Url].
      */
-    public suspend fun retrieve(
-        url: Url,
-        mediaType: String? = null,
-        fileExtension: String? = null
-    ): Asset? {
-        return retrieve(url, listOfNotNull(mediaType), listOfNotNull(fileExtension))
-    }
-
-    /**
-     * Retrieves an asset from a Url.
-     */
-    public suspend fun retrieve(
-        url: Url,
-        mediaTypes: List<String>,
-        fileExtensions: List<String>
-    ): Asset? {
-        val context = snifferContextFactory
-            .createContext(
-                url,
-                mediaTypes = mediaTypes,
-                fileExtensions = buildList {
-                    addAll(fileExtensions)
-                    url.extension?.let { add(it) }
+    public suspend fun retrieve(url: Url): Asset? {
+        val resource = resourceFactory
+            .create(url)
+            .getOrElse { error ->
+                when (error) {
+                    is ResourceFactory.Error.NotAResource ->
+                        return containerFactory.create(url).getOrNull()
+                            ?.let { retrieve(url, it, exploded = true) }
+                    else -> return null
                 }
-            )
-            ?: return null
+            }
 
-        return retrieve(context, url.filename)
+        return archiveFactory.create(resource, password = null)
+            .fold(
+                { retrieve(url, container = it, exploded = false) },
+                { retrieve(url, resource) }
+            )
     }
 
     private suspend fun retrieve(
-        context: ContentAwareSnifferContext,
-        fallbackName: String
+        url: Url,
+        container: Container,
+        exploded: Boolean
     ): Asset? {
+        val mediaType = retrieveMediaType(url, Either(container))
+            ?: return null
+        return Asset.Container(mediaType, exploded = exploded, container = container)
+    }
 
-        val mediaType = mediaTypeRetriever.doRetrieve(
-            fullContext = { context },
-            mediaTypes = context.mediaTypes.map(MediaType::toString),
-            fileExtensions = context.fileExtensions
-        ) ?: return null
+    private suspend fun retrieve(url: Url, resource: Resource): Asset? {
+        val mediaType = retrieveMediaType(url, Either(resource))
+            ?: return null
+        return Asset.Resource(mediaType, resource = resource)
+    }
 
-        return when (context) {
-            is ContainerSnifferContext ->
-                Asset.Container(
-                    name = context.container.name().getOrNull() ?: fallbackName,
-                    mediaType = mediaType,
-                    exploded = context.isExploded,
-                    container = context.container
-                )
-            is ResourceSnifferContext ->
-                Asset.Resource(
-                    name = context.resource.name().getOrNull() ?: fallbackName,
-                    mediaType = mediaType,
-                    resource = context.resource
-                )
+    private suspend fun retrieveMediaType(
+        url: Url,
+        asset: Either<Resource, Container>
+    ): MediaType? {
+        suspend fun retrieve(hints: MediaTypeHints): MediaType? =
+            mediaTypeRetriever.retrieve(
+                hints = hints,
+                content = when (asset) {
+                    is Either.Left -> ResourceMediaTypeSnifferContent(asset.value)
+                    is Either.Right -> ContainerMediaTypeSnifferContent(asset.value)
+                }
+            )
+
+        retrieve(MediaTypeHints(fileExtensions = listOfNotNull(url.extension)))
+            ?.let { return it }
+
+        // Falls back on the [contentResolver] in case of content Uri.
+        // Note: This is done after the heavy sniffing of the provided [sniffers], because
+        // otherwise it will detect JSON, XML or ZIP formats before we have a chance of sniffing
+        // their content (for example, for RWPM).
+
+        if (url.scheme == ContentResolver.SCHEME_CONTENT) {
+            val contentHints = MediaTypeHints(
+                mediaType = contentResolver.getType(url.uri)
+                    ?.let { MediaType(it)!! }
+                    ?.takeUnless { it.matches(MediaType.BINARY) },
+                fileExtension = contentResolver
+                    .queryProjection(url.uri, MediaStore.MediaColumns.DISPLAY_NAME)
+                    ?.let { filename -> File(filename).extension }
+            )
+
+            retrieve(contentHints)?.let { return it }
         }
+
+        return null
     }
 }

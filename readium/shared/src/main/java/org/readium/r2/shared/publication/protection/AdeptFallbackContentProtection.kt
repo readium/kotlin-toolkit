@@ -9,25 +9,20 @@ package org.readium.r2.shared.publication.protection
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.fetcher.ContainerFetcher
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.ContentProtection.Scheme
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
-import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.readAsXml
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * [ContentProtection] implementation used as a fallback by the Streamer to detect Adept DRM,
  * if it is not supported by the app.
  */
 @InternalReadiumApi
-public class AdeptFallbackContentProtection(
-    private val mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
-) : ContentProtection {
+public class AdeptFallbackContentProtection : ContentProtection {
 
     override val scheme: Scheme = Scheme.Adept
 
@@ -36,7 +31,7 @@ public class AdeptFallbackContentProtection(
             return false
         }
 
-        return isAdept(asset.container, asset.mediaType)
+        return isAdept(asset)
     }
 
     override suspend fun open(
@@ -52,9 +47,8 @@ public class AdeptFallbackContentProtection(
         }
 
         val protectedFile = ContentProtection.Asset(
-            asset.name,
             asset.mediaType,
-            ContainerFetcher(asset.container, mediaTypeRetriever),
+            asset.container,
             onCreatePublication = {
                 servicesBuilder.contentProtectionServiceFactory =
                     FallbackContentProtectionService.createFactory(scheme, "Adobe ADEPT")
@@ -64,12 +58,12 @@ public class AdeptFallbackContentProtection(
         return Try.success(protectedFile)
     }
 
-    private suspend fun isAdept(container: Container, mediaType: MediaType): Boolean {
-        if (!mediaType.matches(MediaType.EPUB)) {
+    private suspend fun isAdept(asset: Asset.Container): Boolean {
+        if (!asset.mediaType.matches(MediaType.EPUB)) {
             return false
         }
-        val rightsXml = container.entry("/META-INF/rights.xml").readAsXmlOrNull()
-        val encryptionXml = container.entry("/META-INF/encryption.xml").readAsXmlOrNull()
+        val rightsXml = asset.container.get("/META-INF/rights.xml").readAsXmlOrNull()
+        val encryptionXml = asset.container.get("/META-INF/encryption.xml").readAsXmlOrNull()
 
         return encryptionXml != null && (
             rightsXml?.namespace == "http://ns.adobe.com/adept" ||

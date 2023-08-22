@@ -43,7 +43,7 @@ import timber.log.Timber
 class ReaderViewModel(
     private val bookId: Long,
     private val readerRepository: ReaderRepository,
-    private val bookRepository: BookRepository,
+    private val bookRepository: BookRepository
 ) : ViewModel() {
 
     val readerInitData =
@@ -145,15 +145,21 @@ class ReaderViewModel(
             createDecoration(
                 idSuffix = "highlight",
                 style = when (style) {
-                    Highlight.Style.HIGHLIGHT -> Decoration.Style.Highlight(tint = tint, isActive = isActive)
-                    Highlight.Style.UNDERLINE -> Decoration.Style.Underline(tint = tint, isActive = isActive)
+                    Highlight.Style.HIGHLIGHT -> Decoration.Style.Highlight(
+                        tint = tint,
+                        isActive = isActive
+                    )
+                    Highlight.Style.UNDERLINE -> Decoration.Style.Underline(
+                        tint = tint,
+                        isActive = isActive
+                    )
                 }
             ),
             // Additional page margin icon decoration, if the highlight has an associated note.
             annotation.takeIf { it.isNotEmpty() }?.let {
                 createDecoration(
                     idSuffix = "annotation",
-                    style = DecorationStyleAnnotationMark(tint = tint),
+                    style = DecorationStyleAnnotationMark(tint = tint)
                 )
             }
         )

@@ -32,10 +32,11 @@ public class DefaultTextContentTokenizer private constructor(
     private val tokenizer: TextTokenizer
 ) : TextTokenizer by tokenizer {
     public constructor(unit: TextUnit, language: Language?) : this(
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             IcuTextTokenizer(language = language, unit = unit)
-        else
+        } else {
             NaiveTextTokenizer(unit = unit)
+        }
     )
 }
 
@@ -54,7 +55,9 @@ public class IcuTextTokenizer(language: Language?, unit: TextUnit) : TextTokeniz
         iterator = when (unit) {
             TextUnit.Word -> BreakIterator.getWordInstance(loc)
             TextUnit.Sentence -> BreakIterator.getSentenceInstance(loc)
-            TextUnit.Paragraph -> throw IllegalArgumentException("IcuTextTokenizer does not handle TextContentUnit.Paragraph")
+            TextUnit.Paragraph -> throw IllegalArgumentException(
+                "IcuTextTokenizer does not handle TextContentUnit.Paragraph"
+            )
         }
     }
 
@@ -84,7 +87,9 @@ public class NaiveTextTokenizer(unit: TextUnit) : TextTokenizer {
     private val iterator: java.text.BreakIterator = when (unit) {
         TextUnit.Word -> java.text.BreakIterator.getWordInstance()
         TextUnit.Sentence -> java.text.BreakIterator.getSentenceInstance()
-        TextUnit.Paragraph -> throw IllegalArgumentException("NaiveTextTokenizer does not handle TextContentUnit.Paragraph")
+        TextUnit.Paragraph -> throw IllegalArgumentException(
+            "NaiveTextTokenizer does not handle TextContentUnit.Paragraph"
+        )
     }
 
     override fun tokenize(data: String): List<IntRange> {

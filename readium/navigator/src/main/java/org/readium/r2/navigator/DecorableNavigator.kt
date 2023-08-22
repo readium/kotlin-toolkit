@@ -118,6 +118,7 @@ public data class Decoration(
             @ColorInt override val tint: Int,
             override val isActive: Boolean = false
         ) : Style, Tinted, Activable
+
         @Parcelize
         public data class Underline(
             @ColorInt override val tint: Int,
@@ -161,7 +162,9 @@ public sealed class DecorationChange {
  * The changes need to be applied in the same order, one by one.
  */
 @ExperimentalDecorator
-public suspend fun List<Decoration>.changesByHref(target: List<Decoration>): Map<String, List<DecorationChange>> = withContext(Dispatchers.Default) {
+public suspend fun List<Decoration>.changesByHref(target: List<Decoration>): Map<String, List<DecorationChange>> = withContext(
+    Dispatchers.Default
+) {
     val source = this@changesByHref
     val result = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
         override fun getOldListSize(): Int = source.size
@@ -203,7 +206,14 @@ public suspend fun List<Decoration>.changesByHref(target: List<Decoration>): Map
 
         override fun onMoved(fromPosition: Int, toPosition: Int) {
             val decoration = target[toPosition]
-            registerChange(DecorationChange.Moved(decoration.id, fromPosition = fromPosition, toPosition = toPosition), decoration.locator)
+            registerChange(
+                DecorationChange.Moved(
+                    decoration.id,
+                    fromPosition = fromPosition,
+                    toPosition = toPosition
+                ),
+                decoration.locator
+            )
         }
 
         override fun onChanged(position: Int, count: Int, payload: Any?) {

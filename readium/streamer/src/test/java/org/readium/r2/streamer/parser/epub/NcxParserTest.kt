@@ -36,7 +36,10 @@ class NcxParserTest {
     @Test
     fun `Newlines are trimmed from title`() {
         Assertions.assertThat(ncxTitles["toc"]).contains(
-            Link(title = "A link with new lines splitting the text", href = "/OEBPS/xhtml/chapter1.xhtml")
+            Link(
+                title = "A link with new lines splitting the text",
+                href = "/OEBPS/xhtml/chapter1.xhtml"
+            )
         )
     }
 
@@ -66,14 +69,16 @@ class NcxParserTest {
         Assertions.assertThat(ncxChildren["toc"]).containsExactly(
             Link(title = "Introduction", href = "/OEBPS/xhtml/introduction.xhtml"),
             Link(
-                title = "Part I", href = "#",
+                title = "Part I",
+                href = "#",
                 children = listOf(
                     Link(title = "Chapter 1", href = "/OEBPS/xhtml/part1/chapter1.xhtml"),
                     Link(title = "Chapter 2", href = "/OEBPS/xhtml/part1/chapter2.xhtml")
                 )
             ),
             Link(
-                title = "Part II", href = "/OEBPS/xhtml/part2/chapter1.xhtml",
+                title = "Part II",
+                href = "/OEBPS/xhtml/part2/chapter1.xhtml",
                 children = listOf(
                     Link(title = "Chapter 1", href = "/OEBPS/xhtml/part2/chapter1.xhtml"),
                     Link(title = "Chapter 2", href = "/OEBPS/xhtml/part2/chapter2.xhtml")

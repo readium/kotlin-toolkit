@@ -17,10 +17,7 @@ import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.readium.r2.shared.extensions.toListTest
 import org.readium.r2.shared.extensions.toMapTest
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.util.use
 
 /**
  * Asserts that two [JSONObject] are equal.
@@ -52,12 +49,4 @@ class Fixtures(val path: String? = null) {
 
 internal fun Resource.readBlocking(range: LongRange? = null) = runBlocking { read(range) }
 
-internal fun Fetcher.readBlocking(href: String) = runBlocking { get(Link(href = href)).use { it.readBlocking() } }
-
 internal fun Resource.lengthBlocking() = runBlocking { length() }
-
-internal fun Fetcher.lengthBlocking(href: String) = runBlocking { get(Link(href = href)).use { it.lengthBlocking() } }
-
-internal fun Fetcher.Resource.linkBlocking() = runBlocking { link() }
-
-internal fun Fetcher.linkBlocking(href: String) = runBlocking { get(Link(href = href)).use { it.linkBlocking() } }

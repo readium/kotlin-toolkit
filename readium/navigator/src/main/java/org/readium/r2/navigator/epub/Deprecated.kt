@@ -8,7 +8,10 @@ package org.readium.r2.navigator.epub
 
 import org.readium.r2.shared.publication.Locator
 
-@Deprecated("Use EpubNavigatorFragment in your own activity instead.", level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Use EpubNavigatorFragment in your own activity instead.",
+    level = DeprecationLevel.ERROR
+)
 public open class R2EpubActivity
 
 @Deprecated("Use Decorator API instead.", level = DeprecationLevel.ERROR)
@@ -21,7 +24,7 @@ public data class Highlight(
 
 @Deprecated("Use Decorator API instead.", level = DeprecationLevel.ERROR)
 public enum class Style {
-    highlight, underline, strikethrough
+    Highlight, Underline, Strikethrough
 }
 
 @Deprecated("Use navigator fragments.", level = DeprecationLevel.ERROR)

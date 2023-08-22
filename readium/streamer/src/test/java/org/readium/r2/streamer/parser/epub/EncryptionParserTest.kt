@@ -50,12 +50,18 @@ class EncryptionParserTest {
 
     @Test
     fun `Check EncryptionParser with namespace prefixes`() {
-        assertThat(parseEncryption("encryption/encryption-lcp-prefixes.xml")).contains(lcpChap1, lcpChap2)
+        assertThat(parseEncryption("encryption/encryption-lcp-prefixes.xml")).contains(
+            lcpChap1,
+            lcpChap2
+        )
     }
 
     @Test
     fun `Check EncryptionParser with default namespaces`() {
-        assertThat(parseEncryption("encryption/encryption-lcp-xmlns.xml")).contains(lcpChap1, lcpChap2)
+        assertThat(parseEncryption("encryption/encryption-lcp-xmlns.xml")).contains(
+            lcpChap1,
+            lcpChap2
+        )
     }
 
     @Test

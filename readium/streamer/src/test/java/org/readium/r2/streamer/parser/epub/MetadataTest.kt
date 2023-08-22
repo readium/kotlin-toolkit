@@ -20,6 +20,7 @@ import org.readium.r2.shared.publication.Link as SharedLink
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -50,7 +51,10 @@ class ContributorParsingTest {
 
     @Test
     fun `Unknown roles are ignored`() {
-        val contributor = Contributor(localizedName = LocalizedString("Contributor 2"), roles = setOf("unknown"))
+        val contributor = Contributor(
+            localizedName = LocalizedString("Contributor 2"),
+            roles = setOf("unknown")
+        )
         assertThat(epub2Metadata.contributors).contains(contributor)
         assertThat(epub3Metadata.contributors).contains(contributor)
     }
@@ -224,7 +228,9 @@ class TitleTest {
     @Test
     fun `The selected subtitle has the lowest display-seq property (epub3 only)`() {
         val metadata = parsePackageDocument("package/title-multiple-subtitles.opf").metadata
-        assertThat(metadata.localizedSubtitle).isEqualTo(LocalizedString.fromStrings(mapOf(null to "Subtitle 2")))
+        assertThat(metadata.localizedSubtitle).isEqualTo(
+            LocalizedString.fromStrings(mapOf(null to "Subtitle 2"))
+        )
     }
 }
 
@@ -333,7 +339,7 @@ class MetadataMiscTest {
     fun `Cover link is rightly identified`() {
         val expected = SharedLink(
             href = "/OEBPS/cover.jpg",
-            type = "image/jpeg",
+            mediaType = MediaType.JPEG,
             rels = setOf("cover")
         )
         assertThat(parsePackageDocument("package/cover-epub2.opf").resources.firstWithRel("cover"))
@@ -416,7 +422,10 @@ class CollectionTest {
     @Test
     fun `Series with position are rightly computed`() {
         val expected =
-            Collection(localizedName = LocalizedString.fromStrings(mapOf("en" to "Series B")), position = 1.5)
+            Collection(
+                localizedName = LocalizedString.fromStrings(mapOf("en" to "Series B")),
+                position = 1.5
+            )
         assertThat(epub2Metadata.belongsToSeries).contains(expected)
         assertThat(epub3Metadata.belongsToSeries).contains(expected)
     }
@@ -434,8 +443,12 @@ class AccessibilityTest {
     }
 
     @Test fun `conformsTo contains WCAG profiles and only them`() {
-        assertThat(epub2Metadata.accessibility?.conformsTo).containsExactlyInAnyOrder(Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A)
-        assertThat(epub3Metadata.accessibility?.conformsTo).containsExactlyInAnyOrder(Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A)
+        assertThat(epub2Metadata.accessibility?.conformsTo).containsExactlyInAnyOrder(
+            Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A
+        )
+        assertThat(epub3Metadata.accessibility?.conformsTo).containsExactlyInAnyOrder(
+            Accessibility.Profile.EPUB_A11Y_10_WCAG_20_A
+        )
     }
 
     @Test fun `certification is rightly parsed`() {
@@ -450,32 +463,53 @@ class AccessibilityTest {
 
     @Test fun `features are rightly parsed`() {
         assertThat(epub2Metadata.accessibility?.features)
-            .containsExactlyInAnyOrder(Accessibility.Feature.ALTERNATIVE_TEXT, Accessibility.Feature.STRUCTURAL_NAVIGATION)
+            .containsExactlyInAnyOrder(
+                Accessibility.Feature.ALTERNATIVE_TEXT,
+                Accessibility.Feature.STRUCTURAL_NAVIGATION
+            )
     }
 
     @Test fun `hazards are rightly parsed`() {
         assertThat(epub2Metadata.accessibility?.hazards)
-            .containsExactlyInAnyOrder(Accessibility.Hazard.MOTION_SIMULATION, Accessibility.Hazard.NO_SOUND_HAZARD)
+            .containsExactlyInAnyOrder(
+                Accessibility.Hazard.MOTION_SIMULATION,
+                Accessibility.Hazard.NO_SOUND_HAZARD
+            )
         assertThat(epub3Metadata.accessibility?.hazards)
-            .containsExactlyInAnyOrder(Accessibility.Hazard.MOTION_SIMULATION, Accessibility.Hazard.NO_SOUND_HAZARD)
+            .containsExactlyInAnyOrder(
+                Accessibility.Hazard.MOTION_SIMULATION,
+                Accessibility.Hazard.NO_SOUND_HAZARD
+            )
     }
 
     @Test fun `accessModes are rightly parsed`() {
         assertThat(epub2Metadata.accessibility?.accessModes)
-            .containsExactlyInAnyOrder(Accessibility.AccessMode.VISUAL, Accessibility.AccessMode.TEXTUAL)
+            .containsExactlyInAnyOrder(
+                Accessibility.AccessMode.VISUAL,
+                Accessibility.AccessMode.TEXTUAL
+            )
         assertThat(epub3Metadata.accessibility?.accessModes)
-            .containsExactlyInAnyOrder(Accessibility.AccessMode.VISUAL, Accessibility.AccessMode.TEXTUAL)
+            .containsExactlyInAnyOrder(
+                Accessibility.AccessMode.VISUAL,
+                Accessibility.AccessMode.TEXTUAL
+            )
     }
 
     @Test fun `accessModesSufficient are rightly parsed`() {
         assertThat(epub2Metadata.accessibility?.accessModesSufficient)
             .containsExactlyInAnyOrder(
-                setOf(Accessibility.PrimaryAccessMode.VISUAL, Accessibility.PrimaryAccessMode.TEXTUAL),
+                setOf(
+                    Accessibility.PrimaryAccessMode.VISUAL,
+                    Accessibility.PrimaryAccessMode.TEXTUAL
+                ),
                 setOf(Accessibility.PrimaryAccessMode.TEXTUAL)
             )
         assertThat(epub3Metadata.accessibility?.accessModesSufficient)
             .containsExactlyInAnyOrder(
-                setOf(Accessibility.PrimaryAccessMode.VISUAL, Accessibility.PrimaryAccessMode.TEXTUAL),
+                setOf(
+                    Accessibility.PrimaryAccessMode.VISUAL,
+                    Accessibility.PrimaryAccessMode.TEXTUAL
+                ),
                 setOf(Accessibility.PrimaryAccessMode.TEXTUAL)
             )
     }

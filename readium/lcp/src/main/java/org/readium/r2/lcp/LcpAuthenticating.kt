@@ -78,13 +78,13 @@ public interface LcpAuthenticating {
          * about the User Passphrase.
          */
         val hintLink: Link?
-            get() = document.link(LicenseDocument.Rel.hint)
+            get() = document.link(LicenseDocument.Rel.Hint)
 
         /**
          * Support resources for the user (either a website, an email or a telephone number).
          */
         val supportLinks: List<Link>
-            get() = document.links(LicenseDocument.Rel.support)
+            get() = document.links(LicenseDocument.Rel.Support)
 
         /**
          * URI of the license provider.
@@ -100,22 +100,42 @@ public interface LcpAuthenticating {
     }
 }
 
-@Deprecated("Renamed to `LcpAuthenticating`", replaceWith = ReplaceWith("LcpAuthenticating"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Renamed to `LcpAuthenticating`",
+    replaceWith = ReplaceWith("LcpAuthenticating"),
+    level = DeprecationLevel.ERROR
+)
 public typealias LCPAuthenticating = LcpAuthenticating
 
 @Deprecated("Not used anymore", level = DeprecationLevel.ERROR)
 public interface LCPAuthenticationDelegate
 
-@Deprecated("Renamed to `LcpAuthenticating.AuthenticationReason`", replaceWith = ReplaceWith("LcpAuthenticating.AuthenticationReason"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Renamed to `LcpAuthenticating.AuthenticationReason`",
+    replaceWith = ReplaceWith("LcpAuthenticating.AuthenticationReason"),
+    level = DeprecationLevel.ERROR
+)
 public typealias LCPAuthenticationReason = LcpAuthenticating.AuthenticationReason
 
-@Deprecated("Renamed to `LcpAuthenticating.AuthenticatedLicense`", replaceWith = ReplaceWith("LcpAuthenticating.AuthenticatedLicense"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Renamed to `LcpAuthenticating.AuthenticatedLicense`",
+    replaceWith = ReplaceWith("LcpAuthenticating.AuthenticatedLicense"),
+    level = DeprecationLevel.ERROR
+)
 public typealias LCPAuthenticatedLicense = LcpAuthenticating.AuthenticatedLicense
 
-@Deprecated("Renamed to `PassphraseNotFound`", replaceWith = ReplaceWith("PassphraseNotFound"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Renamed to `PassphraseNotFound`",
+    replaceWith = ReplaceWith("PassphraseNotFound"),
+    level = DeprecationLevel.ERROR
+)
 public val LcpAuthenticating.AuthenticationReason.Companion.passphraseNotFound: LcpAuthenticating.AuthenticationReason
     get() = LcpAuthenticating.AuthenticationReason.PassphraseNotFound
 
-@Deprecated("Renamed to `InvalidPassphrase`", replaceWith = ReplaceWith("InvalidPassphrase"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Renamed to `InvalidPassphrase`",
+    replaceWith = ReplaceWith("InvalidPassphrase"),
+    level = DeprecationLevel.ERROR
+)
 public val LcpAuthenticating.AuthenticationReason.Companion.invalidPassphrase: LcpAuthenticating.AuthenticationReason
     get() = LcpAuthenticating.AuthenticationReason.InvalidPassphrase

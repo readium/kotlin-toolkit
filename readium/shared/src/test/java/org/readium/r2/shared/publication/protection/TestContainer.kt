@@ -6,25 +6,23 @@
 
 package org.readium.r2.shared.publication.protection
 
-import java.io.File
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.StringResource
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 
 class TestContainer(resources: Map<String, String> = emptyMap()) : Container {
 
     private val entries: Map<String, Entry> =
-        resources.mapValues { Entry(it.key, StringResource(it.value)) }
+        resources.mapValues { Entry(it.key, StringResource(it.value, MediaType.TEXT)) }
 
-    override suspend fun name(): ResourceTry<String?> =
-        Try.success(null)
+    override suspend fun entries(): Set<Container.Entry> =
+        entries.values.toSet()
 
-    override suspend fun entries(): Iterable<Container.Entry> =
-        entries.values
-
-    override suspend fun entry(path: String): Container.Entry =
+    override fun get(path: String): Container.Entry =
         entries[path] ?: NotFoundEntry(path)
 
     override suspend fun close() {}
@@ -33,8 +31,13 @@ class TestContainer(resources: Map<String, String> = emptyMap()) : Container {
         override val path: String
     ) : Container.Entry {
 
-        override suspend fun name(): ResourceTry<String?> =
-            ResourceTry.success(File(path).name)
+        override val source: Url? = null
+
+        override suspend fun mediaType(): ResourceTry<MediaType> =
+            Try.failure(Resource.Exception.NotFound())
+
+        override suspend fun properties(): ResourceTry<Resource.Properties> =
+            Try.failure(Resource.Exception.NotFound())
 
         override suspend fun length(): ResourceTry<Long> =
             Try.failure(Resource.Exception.NotFound())

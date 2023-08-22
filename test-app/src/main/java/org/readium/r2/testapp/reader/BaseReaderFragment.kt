@@ -50,7 +50,9 @@ abstract class BaseReaderFragment : Fragment() {
 
             when (event) {
                 is ReaderViewModel.FeedbackEvent.BookmarkFailed -> toast(R.string.bookmark_exists)
-                is ReaderViewModel.FeedbackEvent.BookmarkSuccessfullyAdded -> toast(R.string.bookmark_added)
+                is ReaderViewModel.FeedbackEvent.BookmarkSuccessfullyAdded -> toast(
+                    R.string.bookmark_added
+                )
             }
         }
     }
@@ -86,7 +88,9 @@ abstract class BaseReaderFragment : Fragment() {
                                 .show(childFragmentManager, "Settings")
                         }
                         R.id.drm -> {
-                            model.activityChannel.send(ReaderViewModel.Event.OpenDrmManagementRequested)
+                            model.activityChannel.send(
+                                ReaderViewModel.Event.OpenDrmManagementRequested
+                            )
                         }
                     }
                     return true

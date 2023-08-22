@@ -53,7 +53,7 @@ internal class ResourceChannel(
                     .getOrElse { throw IOException("Content length not available.", it) }
 
                 if (position >= size) {
-                    return@withContext - 1
+                    return@withContext -1
                 }
 
                 val available = size - position

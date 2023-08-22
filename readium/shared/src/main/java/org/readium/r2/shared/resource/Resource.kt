@@ -10,7 +10,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.annotation.StringRes
 import java.io.ByteArrayInputStream
-import java.io.File
 import java.nio.charset.Charset
 import org.json.JSONObject
 import org.readium.r2.shared.R
@@ -20,6 +19,8 @@ import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 
 public typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Exception>
 
@@ -29,24 +30,37 @@ public typealias ResourceTry<SuccessT> = Try<SuccessT, Resource.Exception>
 public interface Resource : SuspendingCloseable {
 
     /**
-     * Direct file to this resource, when available.
-     *
-     * This is meant to be used as an optimization for consumers which can't work efficiently
-     * with streams. However, [file] is not guaranteed to be set, for example if the resource
-     * underwent transformations or is being read from an archive. Therefore, consumers should
-     * always fallback on regular stream reading, using [read] or [ResourceInputStream].
+     * URL locating this resource, if any.
      */
-    public val file: File? get() = null
+    public val source: Url?
 
     /**
      * Returns the resource media type if known.
      */
-    public suspend fun mediaType(): ResourceTry<String?> = ResourceTry.success(null)
+    public suspend fun mediaType(): ResourceTry<MediaType>
 
     /**
-     * Returns the name of the resource if any.
+     * Properties associated to the resource.
+     *
+     * This is opened for extensions.
      */
-    public suspend fun name(): ResourceTry<String?> = ResourceTry.success(null)
+    public suspend fun properties(): ResourceTry<Properties>
+
+    public class Properties(
+        properties: Map<String, Any> = emptyMap()
+    ) : Map<String, Any> by properties {
+
+        public companion object {
+            public inline operator fun invoke(build: Builder.() -> Unit): Properties =
+                Properties(Builder().apply(build))
+        }
+
+        public inline fun copy(build: Builder.() -> Unit): Properties =
+            Properties(Builder(this).apply(build))
+
+        public class Builder(properties: Map<String, Any> = emptyMap()) :
+            MutableMap<String, Any> by properties.toMutableMap()
+    }
 
     /**
      * Returns data length from metadata if available, or calculated from reading the bytes otherwise.
@@ -67,7 +81,10 @@ public interface Resource : SuspendingCloseable {
     /**
      * Errors occurring while accessing a resource.
      */
-    public sealed class Exception(@StringRes userMessageId: Int, cause: Throwable? = null) : UserException(userMessageId, cause = cause) {
+    public sealed class Exception(@StringRes userMessageId: Int, cause: Throwable? = null) : UserException(
+        userMessageId,
+        cause = cause
+    ) {
 
         /** Equivalent to a 400 HTTP error. */
         public class BadRequest(
@@ -112,7 +129,10 @@ public interface Resource : SuspendingCloseable {
             Exception(R.string.readium_shared_resource_exception_out_of_memory)
 
         /** For any other error, such as HTTP 500. */
-        public class Other(cause: Throwable) : Exception(R.string.readium_shared_resource_exception_other, cause)
+        public class Other(cause: Throwable) : Exception(
+            R.string.readium_shared_resource_exception_other,
+            cause
+        )
 
         public companion object {
 
@@ -127,14 +147,17 @@ public interface Resource : SuspendingCloseable {
 }
 
 /** Creates a Resource that will always return the given [error]. */
-public class FailureResource(private val error: Resource.Exception) : Resource {
+public class FailureResource(
+    private val error: Resource.Exception
+) : Resource {
 
     internal constructor(cause: Throwable) : this(Resource.Exception.wrap(cause))
 
-    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = Try.failure(error)
-
+    override val source: Url? = null
+    override suspend fun mediaType(): ResourceTry<MediaType> = Try.failure(error)
+    override suspend fun properties(): ResourceTry<Resource.Properties> = Try.failure(error)
     override suspend fun length(): ResourceTry<Long> = Try.failure(error)
-
+    override suspend fun read(range: LongRange?): ResourceTry<ByteArray> = Try.failure(error)
     override suspend fun close() {}
 
     override fun toString(): String =

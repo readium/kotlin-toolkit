@@ -10,54 +10,83 @@ import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.tryOrLog
-import org.readium.r2.shared.resource.*
+import org.readium.r2.shared.resource.ArchiveFactory
+import org.readium.r2.shared.resource.ArchiveProperties
+import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.FailureResource
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.ResourceMediaTypeSnifferContent
+import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.resource.archive
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArchiveEntry
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipFile
 import org.readium.r2.shared.util.archive.channel.jvm.SeekableByteChannel
 import org.readium.r2.shared.util.io.CountingInputStream
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 internal class ChannelZipContainer(
     private val archive: ZipFile,
-    private val fetchName: suspend () -> ResourceTry<String?>
-) : ZipContainer {
+    private val mediaTypeRetriever: MediaTypeRetriever
+) : Container {
 
     private inner class FailureEntry(
         override val path: String
-    ) : ZipContainer.Entry, Resource by FailureResource(Resource.Exception.NotFound()) {
+    ) : Container.Entry, Resource by FailureResource(Resource.Exception.NotFound())
 
-        override val compressedLength: Long? = null
-    }
+    private inner class Entry(private val entry: ZipArchiveEntry) : Container.Entry {
 
-    private inner class Entry(private val entry: ZipArchiveEntry) : ZipContainer.Entry {
+        override val path: String = entry.name.addPrefix("/")
 
-        override val path: String get() = entry.name.addPrefix("/")
+        override val source: Url? get() = null
 
-        override suspend fun name(): ResourceTry<String?> =
-            ResourceTry.success(File(path).name)
+        override suspend fun properties(): ResourceTry<Resource.Properties> =
+            ResourceTry.success(
+                Resource.Properties {
+                    archive = ArchiveProperties(
+                        entryLength = compressedLength
+                            ?: length().getOrElse { return ResourceTry.failure(it) },
+                        isEntryCompressed = compressedLength != null
+                    )
+                }
+            )
+
+        override suspend fun mediaType(): ResourceTry<MediaType> =
+            Try.success(
+                mediaTypeRetriever.retrieve(
+                    hints = MediaTypeHints(fileExtension = File(path).extension),
+                    content = ResourceMediaTypeSnifferContent(this)
+                ) ?: MediaType.BINARY
+            )
 
         override suspend fun length(): ResourceTry<Long> =
             entry.size.takeUnless { it == -1L }
                 ?.let { Try.success(it) }
                 ?: Try.failure(Resource.Exception.Other(UnsupportedOperationException()))
 
-        override val compressedLength: Long?
+        private val compressedLength: Long?
             get() =
-                if (entry.method == ZipArchiveEntry.STORED || entry.method == -1)
+                if (entry.method == ZipArchiveEntry.STORED || entry.method == -1) {
                     null
-                else
+                } else {
                     entry.compressedSize.takeUnless { it == -1L }
+                }
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> =
             withContext(Dispatchers.IO) {
                 try {
                     val bytes =
-                        if (range == null)
+                        if (range == null) {
                             readFully()
-                        else
+                        } else {
                             readRange(range)
+                        }
                     Try.success(bytes)
                 } catch (e: Exception) {
                     Try.failure(Resource.Exception.wrap(e))
@@ -113,21 +142,17 @@ internal class ChannelZipContainer(
         }
     }
 
-    override suspend fun name(): ResourceTry<String?> {
-        return fetchName.invoke()
-    }
-
-    override suspend fun entries(): List<Container.Entry> =
+    override suspend fun entries(): Set<Container.Entry> =
         archive.entries.toList()
             .filterNot { it.isDirectory }
             .mapNotNull { Entry(it) }
+            .toSet()
 
-    override suspend fun entry(path: String): Container.Entry {
-        return archive.getEntry(path.removePrefix("/"))
+    override fun get(path: String): Container.Entry =
+        archive.getEntry(path.removePrefix("/"))
             ?.takeUnless { it.isDirectory }
             ?.let { Entry(it) }
             ?: FailureEntry(path)
-    }
 
     override suspend fun close() {
         withContext(Dispatchers.IO) {
@@ -139,7 +164,9 @@ internal class ChannelZipContainer(
 /**
  * An [ArchiveFactory] able to open a ZIP archive served through an HTTP server.
  */
-public class ChannelZipArchiveFactory : ArchiveFactory {
+public class ChannelZipArchiveFactory(
+    private val mediaTypeRetriever: MediaTypeRetriever
+) : ArchiveFactory {
 
     override suspend fun create(
         resource: Resource,
@@ -153,7 +180,7 @@ public class ChannelZipArchiveFactory : ArchiveFactory {
             val resourceChannel = ResourceChannel(resource)
             val channel = wrapBaseChannel(resourceChannel)
             val zipFile = ZipFile(channel, true)
-            val channelZip = ChannelZipContainer(zipFile, resource::name)
+            val channelZip = ChannelZipContainer(zipFile, mediaTypeRetriever)
             Try.success(channelZip)
         } catch (e: Resource.Exception) {
             Try.failure(ArchiveFactory.Error.ResourceReading(e))
@@ -165,7 +192,7 @@ public class ChannelZipArchiveFactory : ArchiveFactory {
     internal fun openFile(file: File): Container {
         val fileChannel = FileChannelAdapter(file, "r")
         val channel = wrapBaseChannel(fileChannel)
-        return ChannelZipContainer(ZipFile(channel)) { Try.success(file.name) }
+        return ChannelZipContainer(ZipFile(channel), mediaTypeRetriever)
     }
 
     private fun wrapBaseChannel(channel: SeekableByteChannel): SeekableByteChannel {

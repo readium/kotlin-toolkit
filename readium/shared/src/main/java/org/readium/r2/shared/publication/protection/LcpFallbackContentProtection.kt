@@ -10,7 +10,6 @@ import org.json.JSONObject
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.fetcher.ContainerFetcher
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
@@ -30,7 +29,7 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
  */
 @InternalReadiumApi
 public class LcpFallbackContentProtection(
-    private val mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) : ContentProtection {
 
     override val scheme: Scheme =
@@ -55,9 +54,8 @@ public class LcpFallbackContentProtection(
         }
 
         val protectedFile = ContentProtection.Asset(
-            asset.name,
             asset.mediaType,
-            ContainerFetcher(asset.container, mediaTypeRetriever),
+            asset.container,
             onCreatePublication = {
                 servicesBuilder.contentProtectionServiceFactory =
                     FallbackContentProtectionService.createFactory(scheme, "Readium LCP")
@@ -72,14 +70,17 @@ public class LcpFallbackContentProtection(
             mediaType.matches(MediaType.READIUM_WEBPUB) ||
                 mediaType.matches(MediaType.LCP_PROTECTED_PDF) ||
                 mediaType.matches(MediaType.LCP_PROTECTED_AUDIOBOOK) -> {
-                if (container.entry("/license.lcpl").readAsJsonOrNull() != null) {
+                if (container.get("/license.lcpl").readAsJsonOrNull() != null) {
                     return true
                 }
 
-                val manifestAsJson = container.entry("/manifest.json").readAsJsonOrNull()
+                val manifestAsJson = container.get("/manifest.json").readAsJsonOrNull()
                     ?: return false
 
-                val manifest = Manifest.fromJSON(manifestAsJson)
+                val manifest = Manifest.fromJSON(
+                    manifestAsJson,
+                    mediaTypeRetriever = mediaTypeRetriever
+                )
                     ?: return false
 
                 return manifest
@@ -87,11 +88,11 @@ public class LcpFallbackContentProtection(
                     .any { it.properties.encryption?.scheme == "http://readium.org/2014/01/lcp" }
             }
             mediaType.matches(MediaType.EPUB) -> {
-                if (container.entry("/META-INF/license.lcpl").readAsJsonOrNull() != null) {
+                if (container.get("/META-INF/license.lcpl").readAsJsonOrNull() != null) {
                     return true
                 }
 
-                val encryptionXml = container.entry("/META-INF/encryption.xml").readAsXmlOrNull()
+                val encryptionXml = container.get("/META-INF/encryption.xml").readAsXmlOrNull()
                     ?: return false
 
                 return encryptionXml

@@ -25,7 +25,9 @@ class ParsePrefixesTest {
 
     @Test
     fun `Space between prefixes and iris can be ommited`() {
-        val prefixes = parsePrefixes("foaf: http://xmlns.com/foaf/spec/ dbp:http://dbpedia.org/ontology/")
+        val prefixes = parsePrefixes(
+            "foaf: http://xmlns.com/foaf/spec/ dbp:http://dbpedia.org/ontology/"
+        )
         assertThat(prefixes).contains(
             entry("foaf", "http://xmlns.com/foaf/spec/"),
             entry("dbp", "http://dbpedia.org/ontology/")
@@ -35,7 +37,9 @@ class ParsePrefixesTest {
 
     @Test
     fun `Multiple prefixes are rightly parsed`() {
-        val prefixes = parsePrefixes("foaf: http://xmlns.com/foaf/spec/ dbp: http://dbpedia.org/ontology/")
+        val prefixes = parsePrefixes(
+            "foaf: http://xmlns.com/foaf/spec/ dbp: http://dbpedia.org/ontology/"
+        )
         assertThat(prefixes).contains(
             entry("foaf", "http://xmlns.com/foaf/spec/"),
             entry("dbp", "http://dbpedia.org/ontology/")

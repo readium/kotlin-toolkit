@@ -50,7 +50,8 @@ internal class AudioBecomingNoisyManager(
     fun setEnabled(enabled: Boolean) {
         if (enabled && !receiverRegistered) {
             context.registerReceiver(
-                receiver, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
+                receiver,
+                IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
             )
             receiverRegistered = true
         } else if (!enabled && receiverRegistered) {

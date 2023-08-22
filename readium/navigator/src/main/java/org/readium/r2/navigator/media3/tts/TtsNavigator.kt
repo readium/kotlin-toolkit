@@ -39,7 +39,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     coroutineScope: CoroutineScope,
     override val publication: Publication,
     private val player: TtsPlayer<S, P, E, V>,
-    private val sessionAdapter: TtsSessionAdapter<E>,
+    private val sessionAdapter: TtsSessionAdapter<E>
 ) :
     MediaNavigator<TtsNavigator.Location, TtsNavigator.Playback, TtsNavigator.ReadingOrder>,
     TextAwareMediaNavigator<TtsNavigator.Location, TtsNavigator.Playback, TtsNavigator.ReadingOrder>,
@@ -57,9 +57,8 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             metadataProvider: MediaMetadataProvider,
             listener: Listener,
             initialLocator: Locator? = null,
-            initialPreferences: P? = null,
+            initialPreferences: P? = null
         ): TtsNavigator<S, P, E, V>? {
-
             if (publication.findService(ContentService::class) == null) {
                 return null
             }
@@ -137,7 +136,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         override val textBefore: String?,
         override val textAfter: String?,
         override val utteranceLocator: Locator,
-        override val tokenLocator: Locator?,
+        override val tokenLocator: Locator?
     ) : TextAwareMediaNavigator.Location
 
     public data class Playback(
@@ -145,7 +144,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         override val playWhenReady: Boolean,
         override val index: Int,
         override val utterance: String,
-        override val range: IntRange?,
+        override val range: IntRange?
     ) : TextAwareMediaNavigator.Playback
 
     public data class ReadingOrder(
@@ -278,7 +277,6 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         }
 
     private fun TtsPlayer.Utterance.toPosition(): Location {
-
         val currentLink = publication.readingOrder[position.resourceIndex]
 
         val utteranceHighlight = publication

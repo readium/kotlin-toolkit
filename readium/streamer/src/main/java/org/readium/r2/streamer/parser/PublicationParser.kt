@@ -9,8 +9,8 @@ package org.readium.r2.streamer.parser
 import org.readium.r2.shared.error.MessageError
 import org.readium.r2.shared.error.ThrowableError
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -20,10 +20,17 @@ import org.readium.r2.shared.util.mediatype.MediaType
  */
 public interface PublicationParser {
 
+    /**
+     * Full publication asset.
+     *
+     * @param mediaType Media type of the "virtual" publication asset, built from the source asset.
+     * For example, if the source asset was a `application/audiobook+json`, the "virtual" asset
+     * media type will be `application/audiobook+zip`.
+     * @param container Container granting access to the resources of the publication.
+     */
     public data class Asset(
-        val name: String,
         val mediaType: MediaType,
-        val fetcher: Fetcher
+        val container: Container
     )
 
     /**

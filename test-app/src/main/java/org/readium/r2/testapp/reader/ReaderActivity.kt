@@ -39,7 +39,10 @@ open class ReaderActivity : AppCompatActivity() {
     private val model: ReaderViewModel by viewModels()
 
     override val defaultViewModelProviderFactory: ViewModelProvider.Factory
-        get() = ReaderViewModel.createFactory(application as Application, ReaderActivityContract.parseIntent(this))
+        get() = ReaderViewModel.createFactory(
+            application as Application,
+            ReaderActivityContract.parseIntent(this)
+        )
 
     private lateinit var binding: ActivityReaderBinding
     private lateinit var readerFragment: BaseReaderFragment
@@ -89,8 +92,9 @@ open class ReaderActivity : AppCompatActivity() {
             DrmManagementContract.REQUEST_KEY,
             this,
             FragmentResultListener { _, result ->
-                if (DrmManagementContract.parseResult(result).hasReturned)
+                if (DrmManagementContract.parseResult(result).hasReturned) {
                     finish()
+                }
             }
         )
 
@@ -165,7 +169,12 @@ open class ReaderActivity : AppCompatActivity() {
 
     private fun showOutlineFragment() {
         supportFragmentManager.commit {
-            add(R.id.activity_container, OutlineFragment::class.java, Bundle(), OUTLINE_FRAGMENT_TAG)
+            add(
+                R.id.activity_container,
+                OutlineFragment::class.java,
+                Bundle(),
+                OUTLINE_FRAGMENT_TAG
+            )
             hide(readerFragment)
             addToBackStack(null)
         }

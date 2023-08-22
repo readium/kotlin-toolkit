@@ -206,7 +206,7 @@ public class AndroidTtsEngine private constructor(
         val id: Id,
         override val language: Language,
         val quality: Quality = Quality.Normal,
-        val requiresNetwork: Boolean = false,
+        val requiresNetwork: Boolean = false
     ) : TtsEngine.Voice {
 
         @kotlinx.serialization.Serializable
@@ -231,7 +231,7 @@ public class AndroidTtsEngine private constructor(
         ) : State()
 
         data class WaitingForService(
-            val pendingRequests: MutableList<Request> = mutableListOf(),
+            val pendingRequests: MutableList<Request> = mutableListOf()
         ) : State()
 
         data class Error(
@@ -467,7 +467,11 @@ public class AndroidTtsEngine private constructor(
             listener?.onDone(TtsEngine.RequestId(utteranceId))
         }
 
-        @Deprecated("Deprecated in the interface", ReplaceWith("onError(utteranceId, -1)"), level = DeprecationLevel.ERROR)
+        @Deprecated(
+            "Deprecated in the interface",
+            ReplaceWith("onError(utteranceId, -1)"),
+            level = DeprecationLevel.ERROR
+        )
         override fun onError(utteranceId: String) {
             onError(utteranceId, -1)
         }

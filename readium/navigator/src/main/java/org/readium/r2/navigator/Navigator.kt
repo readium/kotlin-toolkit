@@ -89,9 +89,18 @@ public interface Navigator {
         public fun onJumpToLocator(locator: Locator) {}
     }
 
-    @Deprecated("Use [currentLocator.value] instead", ReplaceWith("currentLocator.value"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [currentLocator.value] instead",
+        ReplaceWith("currentLocator.value"),
+        level = DeprecationLevel.ERROR
+    )
     public val currentLocation: Locator? get() = currentLocator.value
-    @Deprecated("Use [VisualNavigator.Listener] instead", ReplaceWith("VisualNavigator.Listener"), level = DeprecationLevel.ERROR)
+
+    @Deprecated(
+        "Use [VisualNavigator.Listener] instead",
+        ReplaceWith("VisualNavigator.Listener"),
+        level = DeprecationLevel.ERROR
+    )
     public interface VisualListener : VisualNavigator.Listener
 }
 
@@ -159,10 +168,13 @@ public interface VisualNavigator : Navigator {
     public interface Listener : Navigator.Listener {
         @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
         public fun onTap(point: PointF): Boolean = false
+
         @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
         public fun onDragStart(startPoint: PointF, offset: PointF): Boolean = false
+
         @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
         public fun onDragMove(startPoint: PointF, offset: PointF): Boolean = false
+
         @Deprecated("Use `addInputListener` instead", level = DeprecationLevel.ERROR)
         public fun onDragEnd(startPoint: PointF, offset: PointF): Boolean = false
     }
@@ -170,7 +182,11 @@ public interface VisualNavigator : Navigator {
     /**
      * Current reading progression direction.
      */
-    @Deprecated("Use `presentation.value.readingProgression` instead", ReplaceWith("presentation.value.readingProgression"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use `presentation.value.readingProgression` instead",
+        ReplaceWith("presentation.value.readingProgression"),
+        level = DeprecationLevel.ERROR
+    )
     public val readingProgression: PublicationReadingProgression
 }
 

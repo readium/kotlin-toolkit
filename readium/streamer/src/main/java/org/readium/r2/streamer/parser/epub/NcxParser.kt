@@ -27,19 +27,27 @@ internal object NcxParser {
         element.get("pageTarget", Namespaces.NCX).mapNotNull {
             val href = extractHref(it, filePath)
             val title = extractTitle(it)
-            if (href.isNullOrBlank() || title.isNullOrBlank())
+            if (href.isNullOrBlank() || title.isNullOrBlank()) {
                 null
-            else Link(title = title, href = href)
+            } else {
+                Link(title = title, href = href)
+            }
         }
 
     private fun parseNavPointElement(element: ElementNode, filePath: String): Link? {
         val title = extractTitle(element)
         val href = extractHref(element, filePath)
-        val children = element.get("navPoint", Namespaces.NCX).mapNotNull { parseNavPointElement(it, filePath) }
-        return if (children.isEmpty() && (href == null || title == null))
+        val children = element.get("navPoint", Namespaces.NCX).mapNotNull {
+            parseNavPointElement(
+                it,
+                filePath
+            )
+        }
+        return if (children.isEmpty() && (href == null || title == null)) {
             null
-        else
+        } else {
             Link(title = title, href = href ?: "#", children = children)
+        }
     }
 
     private fun extractTitle(element: ElementNode) =

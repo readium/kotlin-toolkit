@@ -34,7 +34,9 @@ class PublicationDetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPublicationDetailBinding.inflate(
-            inflater, container, false
+            inflater,
+            container,
+            false
         )
         catalogViewModel.detailChannel.receive(this) { handleEvent(it) }
         publication = catalogViewModel.publication
@@ -65,8 +67,12 @@ class PublicationDetailFragment : Fragment() {
     private fun handleEvent(event: CatalogViewModel.Event.DetailEvent) {
         val message =
             when (event) {
-                is CatalogViewModel.Event.DetailEvent.ImportPublicationSuccess -> getString(R.string.import_publication_success)
-                is CatalogViewModel.Event.DetailEvent.ImportPublicationFailed -> getString(R.string.import_publication_unable_add_pub_database)
+                is CatalogViewModel.Event.DetailEvent.ImportPublicationSuccess -> getString(
+                    R.string.import_publication_success
+                )
+                is CatalogViewModel.Event.DetailEvent.ImportPublicationFailed -> getString(
+                    R.string.import_publication_unable_add_pub_database
+                )
             }
         binding.catalogDetailProgressBar.visibility = View.GONE
         Snackbar.make(

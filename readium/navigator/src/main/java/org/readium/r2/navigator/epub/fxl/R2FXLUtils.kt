@@ -43,7 +43,12 @@ internal object R2FXLUtils {
      * @param bottom bottom
      */
     fun setRect(rect: RectF, left: Float, top: Float, right: Float, bottom: Float) {
-        rect.set(left.roundToLong().toFloat(), top.roundToLong().toFloat(), right.roundToLong().toFloat(), bottom.roundToLong().toFloat())
+        rect.set(
+            left.roundToLong().toFloat(),
+            top.roundToLong().toFloat(),
+            right.roundToLong().toFloat(),
+            bottom.roundToLong().toFloat()
+        )
     }
 
     /**

@@ -17,7 +17,6 @@ import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.opds.ParseData
-import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
 import org.readium.r2.testapp.db.BookDatabase
@@ -26,6 +25,7 @@ import org.readium.r2.testapp.utils.EventChannel
 
 class CatalogFeedListViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val httpClient = getApplication<org.readium.r2.testapp.Application>().readium.httpClient
     private val catalogDao = BookDatabase.getDatabase(application).catalogDao()
     private val repository = CatalogRepository(catalogDao)
     val eventChannel = EventChannel(Channel<Event>(Channel.BUFFERED), viewModelScope)
@@ -56,7 +56,7 @@ class CatalogFeedListViewModel(application: Application) : AndroidViewModel(appl
     }
 
     private suspend fun parseURL(url: URL): Try<ParseData, Exception> {
-        return DefaultHttpClient().fetchWithDecoder(HttpRequest(url.toString())) {
+        return httpClient.fetchWithDecoder(HttpRequest(url.toString())) {
             val result = it.body
             if (isJson(result)) {
                 OPDS2Parser.parse(result, url)

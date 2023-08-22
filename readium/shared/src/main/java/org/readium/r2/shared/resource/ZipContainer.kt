@@ -12,33 +12,94 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.extensions.addPrefix
+import org.readium.r2.shared.extensions.optNullableBoolean
+import org.readium.r2.shared.extensions.optNullableLong
 import org.readium.r2.shared.extensions.readFully
+import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.io.CountingInputStream
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.toUrl
 
 /**
- * A [Container] representing a Zip archive.
+ * Holds information about how the resource is stored in the archive.
+ *
+ * @param entryLength The length of the entry stored in the archive. It might be a compressed length
+ *        if the entry is deflated.
+ * @param isEntryCompressed Indicates whether the entry was compressed before being stored in the
+ *        archive.
  */
-public interface ZipContainer : Container {
+public data class ArchiveProperties(
+    val entryLength: Long,
+    val isEntryCompressed: Boolean
+) : JSONable {
 
-    public interface Entry : Container.Entry {
+    override fun toJSON(): JSONObject = JSONObject().apply {
+        put("entryLength", entryLength)
+        put("isEntryCompressed", isEntryCompressed)
+    }
 
-        /**
-         * Compressed data length.
-         */
-        public val compressedLength: Long?
+    public companion object {
+        public fun fromJSON(json: JSONObject?): ArchiveProperties? {
+            json ?: return null
+
+            val entryLength = json.optNullableLong("entryLength")
+            val isEntryCompressed = json.optNullableBoolean("isEntryCompressed")
+            if (entryLength == null || isEntryCompressed == null) {
+                return null
+            }
+            return ArchiveProperties(
+                entryLength = entryLength,
+                isEntryCompressed = isEntryCompressed
+            )
+        }
     }
 }
 
-internal class JavaZipContainer(private val archive: ZipFile, source: File) : ZipContainer {
+private const val archiveKey = "archive"
 
-    private inner class FailureEntry(override val path: String) : ZipContainer.Entry {
+public val Resource.Properties.archive: ArchiveProperties?
+    get() = (this[archiveKey] as? Map<*, *>)
+        ?.let { ArchiveProperties.fromJSON(JSONObject(it)) }
 
-        override val compressedLength: Long? = null
+public var Resource.Properties.Builder.archive: ArchiveProperties?
+    get() = (this[archiveKey] as? Map<*, *>)
+        ?.let { ArchiveProperties.fromJSON(JSONObject(it)) }
+    set(value) {
+        if (value == null) {
+            remove(archiveKey)
+        } else {
+            put(archiveKey, value.toJSON().toMap())
+        }
+    }
 
-        override suspend fun name(): ResourceTry<String?> =
+internal class JavaZipContainer(
+    private val archive: ZipFile,
+    file: File,
+    private val mediaTypeRetriever: MediaTypeRetriever
+) : Container {
+
+    private inner class FailureEntry(override val path: String) : Container.Entry {
+
+        override val source: Url? = null
+
+        override suspend fun mediaType(): ResourceTry<MediaType> =
+            Try.success(
+                mediaTypeRetriever.retrieve(
+                    hints = MediaTypeHints(fileExtension = File(path).extension),
+                    content = ResourceMediaTypeSnifferContent(this)
+                ) ?: MediaType.BINARY
+            )
+
+        override suspend fun properties(): ResourceTry<Resource.Properties> =
             Try.failure(Resource.Exception.NotFound())
 
         override suspend fun length(): ResourceTry<Long> =
@@ -51,33 +112,53 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         }
     }
 
-    private inner class Entry(private val entry: ZipEntry) : ZipContainer.Entry {
+    private inner class Entry(private val entry: ZipEntry) : Container.Entry {
 
         override val path: String =
             entry.name.addPrefix("/")
 
-        override suspend fun name(): ResourceTry<String?> =
-            ResourceTry.success(File(path).name)
+        override val source: Url? = null
+
+        override suspend fun mediaType(): ResourceTry<MediaType> =
+            Try.success(
+                mediaTypeRetriever.retrieve(
+                    hints = MediaTypeHints(fileExtension = File(path).extension),
+                    content = ResourceMediaTypeSnifferContent(this)
+                ) ?: MediaType.BINARY
+            )
+
+        override suspend fun properties(): ResourceTry<Resource.Properties> =
+            ResourceTry.success(
+                Resource.Properties {
+                    archive = ArchiveProperties(
+                        entryLength = compressedLength
+                            ?: length().getOrElse { return ResourceTry.failure(it) },
+                        isEntryCompressed = compressedLength != null
+                    )
+                }
+            )
 
         override suspend fun length(): Try<Long, Resource.Exception> =
             entry.size.takeUnless { it == -1L }
                 ?.let { Try.success(it) }
                 ?: Try.failure(Resource.Exception.Other(Exception("Unsupported operation")))
 
-        override val compressedLength: Long? =
-            if (entry.method == ZipEntry.STORED || entry.method == -1)
+        private val compressedLength: Long? =
+            if (entry.method == ZipEntry.STORED || entry.method == -1) {
                 null
-            else
+            } else {
                 entry.compressedSize.takeUnless { it == -1L }
+            }
 
         override suspend fun read(range: LongRange?): Try<ByteArray, Resource.Exception> =
             try {
                 withContext(Dispatchers.IO) {
                     val bytes =
-                        if (range == null)
+                        if (range == null) {
                             readFully()
-                        else
+                        } else {
                             readRange(range)
+                        }
                     Try.success(bytes)
                 }
             } catch (e: IOException) {
@@ -128,21 +209,18 @@ internal class JavaZipContainer(private val archive: ZipFile, source: File) : Zi
         }
     }
 
-    override val file: File = source
+    override val source: Url = file.toUrl()
 
-    override suspend fun name(): ResourceTry<String> =
-        ResourceTry.success(file.name)
-
-    override suspend fun entries(): List<Container.Entry> =
+    override suspend fun entries(): Set<Container.Entry> =
         archive.entries().toList()
             .filterNot { it.isDirectory }
             .mapNotNull { Entry(it) }
+            .toSet()
 
-    override suspend fun entry(path: String): Container.Entry {
-        return archive.getEntry(path.removePrefix("/"))
+    override fun get(path: String): Container.Entry =
+        archive.getEntry(path.removePrefix("/"))
             ?.let { Entry(it) }
             ?: FailureEntry(path)
-    }
 
     override suspend fun close() {
         tryOrLog {

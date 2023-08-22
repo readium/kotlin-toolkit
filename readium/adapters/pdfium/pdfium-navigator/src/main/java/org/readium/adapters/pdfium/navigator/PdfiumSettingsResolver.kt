@@ -48,7 +48,7 @@ internal class PdfiumSettingsResolver(
             fit = fit,
             pageSpacing = pageSpacing,
             readingProgression = readingProgression,
-            scrollAxis = scrollAxis,
+            scrollAxis = scrollAxis
         )
     }
 }

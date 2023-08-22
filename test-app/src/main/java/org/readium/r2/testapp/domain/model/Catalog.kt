@@ -27,10 +27,10 @@ data class Catalog(
 ) : Parcelable {
     companion object {
 
-        const val TABLE_NAME = "CATALOG"
-        const val ID = "ID"
-        const val TITLE = "TITLE"
-        const val HREF = "HREF"
-        const val TYPE = "TYPE"
+        const val TABLE_NAME = "catalogs"
+        const val ID = "id"
+        const val TITLE = "title"
+        const val HREF = "href"
+        const val TYPE = "type"
     }
 }

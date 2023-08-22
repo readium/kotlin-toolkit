@@ -21,7 +21,7 @@ public class HttpResourceFactory(
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
         }
 
-        val resource = HttpResource(httpClient, url.toString())
+        val resource = HttpResource(httpClient, url)
         return Try.success(resource)
     }
 }

@@ -13,17 +13,17 @@ import androidx.annotation.StringRes
 import org.readium.r2.shared.R
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.fetcher.Fetcher
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
+import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Bridge between a Content Protection technology and the Readium toolkit.
  *
  * Its responsibilities are to:
- * - Create a [Fetcher] one can access the publication through.
+ * - Create a [Container] one can access the publication through.
  * - Create a [ContentProtectionService] publication service.
  */
 public interface ContentProtection {
@@ -53,17 +53,15 @@ public interface ContentProtection {
     /**
      * Holds the result of opening an [Asset] with a [ContentProtection].
      *
-     * @property name Asset name
      * @property mediaType Media type of the asset
-     * @property fetcher Fetcher to access the publication through
+     * @property container Container to access the publication through
      * @property onCreatePublication Called on every parsed Publication.Builder
-     * It can be used to modify the `Manifest`, the root [Fetcher] or the list of service factories
-     * of a [Publication].
+     * It can be used to modify the `Manifest`, the root [Container] or the list of service
+     * factories of a [Publication].
      */
     public data class Asset(
-        val name: String,
         val mediaType: MediaType,
-        val fetcher: Fetcher,
+        val container: Container,
         val onCreatePublication: Publication.Builder.() -> Unit = {}
     )
 
@@ -72,7 +70,7 @@ public interface ContentProtection {
      */
     @JvmInline
     public value class Scheme(
-        public val uri: String,
+        public val uri: String
     ) {
 
         @Deprecated("Define yourself the name to print to users.", level = DeprecationLevel.ERROR)
@@ -81,6 +79,7 @@ public interface ContentProtection {
         public companion object {
             /** Readium LCP DRM scheme. */
             public val Lcp: Scheme = Scheme(uri = "http://readium.org/2014/01/lcp")
+
             /** Adobe ADEPT DRM scheme. */
             public val Adept: Scheme = Scheme(uri = "http://ns.adobe.com/adept")
         }
@@ -103,8 +102,11 @@ public interface ContentProtection {
          * app.
          */
         public class SchemeNotSupported(public val scheme: Scheme? = null, name: String?) : Exception(
-            if (name == null) R.string.readium_shared_publication_content_protection_exception_not_supported_unknown
-            else R.string.readium_shared_publication_content_protection_exception_not_supported,
+            if (name == null) {
+                R.string.readium_shared_publication_content_protection_exception_not_supported_unknown
+            } else {
+                R.string.readium_shared_publication_content_protection_exception_not_supported
+            },
             name
         )
     }
