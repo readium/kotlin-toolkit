@@ -414,7 +414,7 @@ internal class LicenseValidation(
                     StatusDocument.Status.Returned -> LcpException.LicenseStatus.Returned(date)
                     StatusDocument.Status.Revoked -> {
                         val devicesCount = status.events(
-                            org.readium.r2.lcp.license.model.components.lsd.Event.EventType.register
+                            org.readium.r2.lcp.license.model.components.lsd.Event.EventType.Register
                         ).size
                         LcpException.LicenseStatus.Revoked(date, devicesCount = devicesCount)
                     }

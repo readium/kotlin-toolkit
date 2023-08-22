@@ -14,9 +14,14 @@ import kotlinx.parcelize.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.extensions.*
+import org.readium.r2.shared.extensions.optNullableDouble
+import org.readium.r2.shared.extensions.optNullableString
+import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
+import org.readium.r2.shared.extensions.parseObjects
+import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * Contributor Object for the Readium Web Publication Manifest.
@@ -81,6 +86,7 @@ public data class Contributor(
          */
         public fun fromJSON(
             json: Any?,
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): Contributor? {
@@ -103,7 +109,12 @@ public data class Contributor(
                 localizedSortAs = LocalizedString.fromJSON(jsonObject.remove("sortAs"), warnings),
                 roles = jsonObject.optStringsFromArrayOrSingle("role").toSet(),
                 position = jsonObject.optNullableDouble("position"),
-                links = Link.fromJSONArray(jsonObject.optJSONArray("links"), normalizeHref)
+                links = Link.fromJSONArray(
+                    jsonObject.optJSONArray("links"),
+                    mediaTypeRetriever,
+                    normalizeHref,
+                    warnings
+                )
             )
         }
 
@@ -116,15 +127,23 @@ public data class Contributor(
          */
         public fun fromJSONArray(
             json: Any?,
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): List<Contributor> {
             return when (json) {
                 is String, is JSONObject ->
-                    listOf(json).mapNotNull { fromJSON(it, normalizeHref, warnings) }
+                    listOf(json).mapNotNull {
+                        fromJSON(
+                            it,
+                            mediaTypeRetriever,
+                            normalizeHref,
+                            warnings
+                        )
+                    }
 
                 is JSONArray ->
-                    json.parseObjects { fromJSON(it, normalizeHref, warnings) }
+                    json.parseObjects { fromJSON(it, mediaTypeRetriever, normalizeHref, warnings) }
 
                 else -> emptyList()
             }

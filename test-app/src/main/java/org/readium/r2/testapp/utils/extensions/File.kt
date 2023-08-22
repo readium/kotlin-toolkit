@@ -17,11 +17,15 @@ import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
+import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.flatMap
-import org.readium.r2.shared.util.http.*
+import org.readium.r2.shared.util.http.HttpClient
+import org.readium.r2.shared.util.http.HttpException
+import org.readium.r2.shared.util.http.HttpRequest
+import org.readium.r2.shared.util.http.HttpResponse
+import org.readium.r2.shared.util.http.HttpTry
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.testapp.BuildConfig
 import timber.log.Timber
 
@@ -42,35 +46,18 @@ fun File.listFilesSafely(filter: FileFilter? = null): List<File> {
 
 suspend fun URL.downloadTo(
     dest: File,
-    maxRedirections: Int = 2
+    httpClient: HttpClient,
+    assetRetriever: AssetRetriever
 ): Try<Unit, Exception> {
-    if (maxRedirections == 0) {
-        return Try.Failure(Exception("Too many HTTP redirections."))
-    }
-
-    val urlString = toString()
-
-    if (BuildConfig.DEBUG) Timber.i("download url $urlString")
-    return DefaultHttpClient().download(HttpRequest(toString()), dest, MediaTypeRetriever())
-        .flatMap {
-            try {
-                if (BuildConfig.DEBUG) Timber.i("response url ${it.url}")
-                if (BuildConfig.DEBUG) Timber.i("download destination ${dest.path}")
-                if (urlString == it.url) {
-                    Try.success(Unit)
-                } else {
-                    URL(it.url).downloadTo(dest, maxRedirections - 1)
-                }
-            } catch (e: Exception) {
-                Try.failure(e)
-            }
-        }
+    if (BuildConfig.DEBUG) Timber.i("download url $this")
+    return httpClient.download(HttpRequest(toString()), dest, assetRetriever)
+        .map { }
 }
 
 private suspend fun HttpClient.download(
     request: HttpRequest,
     destination: File,
-    mediaTypeRetriever: MediaTypeRetriever
+    assetRetriever: AssetRetriever
 ): HttpTry<HttpResponse> =
     try {
         stream(request).flatMap { res ->
@@ -89,9 +76,9 @@ private suspend fun HttpClient.download(
                 }
                 var response = res.response
                 if (response.mediaType.matches(MediaType.BINARY)) {
-                    response = response.copy(
-                        mediaType = mediaTypeRetriever.retrieve(destination) ?: response.mediaType
-                    )
+                    assetRetriever.retrieve(destination)?.mediaType?.let {
+                        response = response.copy(mediaType = it)
+                    }
                 }
                 Try.success(response)
             }

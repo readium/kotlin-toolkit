@@ -20,6 +20,7 @@ import org.readium.r2.shared.publication.Link as SharedLink
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -338,7 +339,7 @@ class MetadataMiscTest {
     fun `Cover link is rightly identified`() {
         val expected = SharedLink(
             href = "/OEBPS/cover.jpg",
-            type = "image/jpeg",
+            mediaType = MediaType.JPEG,
             rels = setOf("cover")
         )
         assertThat(parsePackageDocument("package/cover-epub2.opf").resources.firstWithRel("cover"))

@@ -26,10 +26,14 @@ import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
+
+private val positionsMediaType =
+    MediaType("application/vnd.readium.position-list+json")!!
 
 private val positionsLink = Link(
     href = "/~readium/positions",
-    type = "application/vnd.readium.position-list+json"
+    mediaType = positionsMediaType
 )
 
 /**
@@ -56,7 +60,7 @@ public interface PositionsService : Publication.Service {
 
         return StringResource(
             url = Url(positionsLink.href),
-            mediaType = positionsLink.mediaType
+            mediaType = positionsMediaType
         ) {
             val positions = positions()
             Try.success(
@@ -120,7 +124,7 @@ public class PerResourcePositionsService(
             listOf(
                 Locator(
                     href = link.href,
-                    type = link.type ?: fallbackMediaType,
+                    type = link.mediaType?.toString() ?: fallbackMediaType,
                     title = link.title,
                     locations = Locator.Locations(
                         position = index + 1,
@@ -150,7 +154,7 @@ internal class WebPositionsService(
 
     override val links: List<Link> =
         listOfNotNull(
-            manifest.links.firstWithMediaType(positionsLink.mediaType)
+            manifest.links.firstWithMediaType(positionsMediaType)
         )
 
     override suspend fun positions(): List<Locator> {

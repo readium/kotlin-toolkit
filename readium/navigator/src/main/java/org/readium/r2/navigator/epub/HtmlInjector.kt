@@ -36,7 +36,7 @@ internal fun Resource.injectHtml(
             .getOrElse {
                 return@TransformingResource ResourceTry.failure(it)
             }
-            ?.takeIf { it.isHtml }
+            .takeIf { it.isHtml }
             ?: return@TransformingResource ResourceTry.success(bytes)
 
         var content = bytes.toString(mediaType.charset ?: Charsets.UTF_8).trim()

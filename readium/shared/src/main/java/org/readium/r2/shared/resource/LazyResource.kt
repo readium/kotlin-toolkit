@@ -27,7 +27,7 @@ public open class LazyResource<R : Resource>(
         return _resource
     }
 
-    override suspend fun mediaType(): ResourceTry<MediaType?> =
+    override suspend fun mediaType(): ResourceTry<MediaType> =
         resource().mediaType()
 
     override suspend fun properties(): ResourceTry<Resource.Properties> =

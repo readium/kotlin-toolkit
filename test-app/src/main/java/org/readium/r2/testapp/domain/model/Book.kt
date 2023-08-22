@@ -67,7 +67,7 @@ data class Book(
     )
 
     val mediaType: MediaType get() =
-        MediaType(rawMediaType)
+        MediaType(rawMediaType) ?: MediaType.BINARY
 
     val drmScheme: ContentProtection.Scheme? get() =
         drm?.let { ContentProtection.Scheme(it) }

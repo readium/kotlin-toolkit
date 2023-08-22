@@ -23,6 +23,7 @@ import org.readium.r2.shared.resource.readAsXml
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.use
 import org.readium.r2.streamer.extensions.readAsXmlOrNull
 import org.readium.r2.streamer.parser.PublicationParser
@@ -35,6 +36,7 @@ import org.readium.r2.streamer.parser.PublicationParser
  */
 @OptIn(ExperimentalReadiumApi::class)
 public class EpubParser(
+    private val mediaTypeRetriever: MediaTypeRetriever,
     private val reflowablePositionsStrategy: EpubPositionsService.ReflowableStrategy = EpubPositionsService.ReflowableStrategy.recommended
 ) : PublicationParser {
 
@@ -51,14 +53,15 @@ public class EpubParser(
             .addPrefix("/")
         val opfXmlDocument = asset.container.get(opfPath).readAsXml()
             .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
-        val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath)
+        val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath, mediaTypeRetriever)
             ?: return Try.failure(PublicationParser.Error.ParsingFailed("Invalid OPF file."))
 
         val manifest = ManifestAdapter(
             packageDocument = packageDocument,
             navigationData = parseNavigationData(packageDocument, asset.container),
             encryptionData = parseEncryptionData(asset.container),
-            displayOptions = parseDisplayOptions(asset.container)
+            displayOptions = parseDisplayOptions(asset.container),
+            mediaTypeRetriever = mediaTypeRetriever
         ).adapt()
 
         var container = asset.container

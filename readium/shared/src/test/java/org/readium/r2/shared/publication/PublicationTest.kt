@@ -25,6 +25,7 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -140,24 +141,24 @@ class PublicationTest {
         assertTrue(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = "c1.mp3", type = "audio/mpeg"),
-                    Link(href = "c2.aac", type = "audio/aac")
+                    Link(href = "c1.mp3", mediaType = MediaType.MP3),
+                    Link(href = "c2.aac", mediaType = MediaType.AAC)
                 )
             ).conformsTo(Profile.AUDIOBOOK)
         )
         assertTrue(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = "c1.jpg", type = "image/jpeg"),
-                    Link(href = "c2.png", type = "image/png")
+                    Link(href = "c1.jpg", mediaType = MediaType.JPEG),
+                    Link(href = "c2.png", mediaType = MediaType.PNG)
                 )
             ).conformsTo(Profile.DIVINA)
         )
         assertTrue(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = "c1.pdf", type = "application/pdf"),
-                    Link(href = "c2.pdf", type = "application/pdf")
+                    Link(href = "c1.pdf", mediaType = MediaType.PDF),
+                    Link(href = "c2.pdf", mediaType = MediaType.PDF)
                 )
             ).conformsTo(Profile.PDF)
         )
@@ -166,16 +167,16 @@ class PublicationTest {
         assertFalse(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = "c1.mp3", type = "audio/mpeg"),
-                    Link(href = "c2.jpg", type = "image/jpeg")
+                    Link(href = "c1.mp3", mediaType = MediaType.MP3),
+                    Link(href = "c2.jpg", mediaType = MediaType.JPEG)
                 )
             ).conformsTo(Profile.AUDIOBOOK)
         )
         assertFalse(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = "c1.mp3", type = "audio/mpeg"),
-                    Link(href = "c2.jpg", type = "image/jpeg")
+                    Link(href = "c1.mp3", mediaType = MediaType.MP3),
+                    Link(href = "c2.jpg", mediaType = MediaType.JPEG)
                 )
             ).conformsTo(Profile.DIVINA)
         )
@@ -184,8 +185,8 @@ class PublicationTest {
         assertTrue(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = "c1.xhtml", type = "application/xhtml+xml"),
-                    Link(href = "c2.xhtml", type = "application/xhtml+xml")
+                    Link(href = "c1.xhtml", mediaType = MediaType.XHTML),
+                    Link(href = "c2.xhtml", mediaType = MediaType.XHTML)
                 ),
                 conformsTo = setOf(Profile.EPUB)
             ).conformsTo(Profile.EPUB)
@@ -193,8 +194,8 @@ class PublicationTest {
         assertTrue(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = "c1.html", type = "text/html"),
-                    Link(href = "c2.html", type = "text/html")
+                    Link(href = "c1.html", mediaType = MediaType.HTML),
+                    Link(href = "c2.html", mediaType = MediaType.HTML)
                 ),
                 conformsTo = setOf(Profile.EPUB)
             ).conformsTo(Profile.EPUB)
@@ -202,24 +203,24 @@ class PublicationTest {
         assertFalse(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = "c1.xhtml", type = "application/xhtml+xml"),
-                    Link(href = "c2.xhtml", type = "application/xhtml+xml")
+                    Link(href = "c1.xhtml", mediaType = MediaType.XHTML),
+                    Link(href = "c2.xhtml", mediaType = MediaType.XHTML)
                 )
             ).conformsTo(Profile.EPUB)
         )
         assertFalse(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = "c1.html", type = "text/html"),
-                    Link(href = "c2.html", type = "text/html")
+                    Link(href = "c1.html", mediaType = MediaType.HTML),
+                    Link(href = "c2.html", mediaType = MediaType.HTML)
                 )
             ).conformsTo(Profile.EPUB)
         )
         assertFalse(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = "c1.pdf", type = "application/pdf"),
-                    Link(href = "c2.pdf", type = "application/pdf")
+                    Link(href = "c1.pdf", mediaType = MediaType.PDF),
+                    Link(href = "c2.pdf", mediaType = MediaType.PDF)
                 ),
                 conformsTo = setOf(Profile.EPUB)
             ).conformsTo(Profile.EPUB)
@@ -229,8 +230,8 @@ class PublicationTest {
         assertTrue(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = "c1.mp3", type = "audio/mpeg"),
-                    Link(href = "c2.aac", type = "audio/aac")
+                    Link(href = "c1.mp3", mediaType = MediaType.MP3),
+                    Link(href = "c2.aac", mediaType = MediaType.AAC)
                 ),
                 conformsTo = setOf(Profile.DIVINA)
             ).conformsTo(Profile.AUDIOBOOK)
@@ -238,8 +239,8 @@ class PublicationTest {
         assertFalse(
             createPublication(
                 readingOrder = listOf(
-                    Link(href = "c1.mp3", type = "audio/mpeg"),
-                    Link(href = "c2.aac", type = "audio/aac")
+                    Link(href = "c1.mp3", mediaType = MediaType.MP3),
+                    Link(href = "c2.aac", mediaType = MediaType.AAC)
                 ),
                 conformsTo = setOf(Profile.DIVINA)
             ).conformsTo(Profile.DIVINA)
@@ -384,7 +385,7 @@ class PublicationTest {
             override fun get(link: Link): Resource? {
                 assertFalse(link.templated)
                 assertEquals("param1=a&param2=b", link.href.substringAfter("?"))
-                return StringResource("test passed", url = Url(link.href))
+                return StringResource("test passed", MediaType.TEXT, url = Url(link.href))
             }
         }
 

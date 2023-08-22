@@ -180,7 +180,6 @@ public class Publication(
                     null
                 }
             }
-            // FIXME: To remove when the `Resource` properly sniffs its content media type.
             .withMediaType(link.mediaType)
     }
 
@@ -669,8 +668,13 @@ public class Publication(
     public fun contentLayoutForLanguage(language: String?): ReadingProgression = metadata.effectiveReadingProgression
 }
 
-private fun Resource.withMediaType(mediaType: MediaType): Resource =
-    object : Resource by this {
-        override suspend fun mediaType(): ResourceTry<MediaType?> =
+private fun Resource.withMediaType(mediaType: MediaType?): Resource {
+    if (mediaType == null) {
+        return this
+    }
+
+    return object : Resource by this {
+        override suspend fun mediaType(): ResourceTry<MediaType> =
             ResourceTry.success(mediaType)
     }
+}

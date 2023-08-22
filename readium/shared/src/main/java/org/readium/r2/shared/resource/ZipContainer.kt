@@ -25,21 +25,9 @@ import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.toUrl
-
-/**
- * A [Container] representing a Zip archive.
- */
-public interface ZipContainer : Container {
-
-    public interface Entry : Container.Entry {
-
-        /**
-         * Compressed data length.
-         */
-        public val compressedLength: Long?
-    }
-}
 
 /**
  * Holds information about how the resource is stored in the archive.
@@ -93,17 +81,23 @@ public var Resource.Properties.Builder.archive: ArchiveProperties?
         }
     }
 
-internal class JavaZipContainer(private val archive: ZipFile, file: File) : ZipContainer {
+internal class JavaZipContainer(
+    private val archive: ZipFile,
+    file: File,
+    private val mediaTypeRetriever: MediaTypeRetriever
+) : Container {
 
-    private inner class FailureEntry(override val path: String) : ZipContainer.Entry {
-
-        override val compressedLength: Long? = null
+    private inner class FailureEntry(override val path: String) : Container.Entry {
 
         override val source: Url? = null
 
-        // FIXME: Implement with a sniffer.
-        override suspend fun mediaType(): ResourceTry<MediaType?> =
-            Try.success(null)
+        override suspend fun mediaType(): ResourceTry<MediaType> =
+            Try.success(
+                mediaTypeRetriever.retrieve(
+                    hints = MediaTypeHints(fileExtension = File(path).extension),
+                    content = ResourceMediaTypeSnifferContent(this)
+                ) ?: MediaType.BINARY
+            )
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
             Try.failure(Resource.Exception.NotFound())
@@ -118,16 +112,20 @@ internal class JavaZipContainer(private val archive: ZipFile, file: File) : ZipC
         }
     }
 
-    private inner class Entry(private val entry: ZipEntry) : ZipContainer.Entry {
+    private inner class Entry(private val entry: ZipEntry) : Container.Entry {
 
         override val path: String =
             entry.name.addPrefix("/")
 
         override val source: Url? = null
 
-        // FIXME: Implement with a sniffer.
-        override suspend fun mediaType(): ResourceTry<MediaType?> =
-            Try.success(null)
+        override suspend fun mediaType(): ResourceTry<MediaType> =
+            Try.success(
+                mediaTypeRetriever.retrieve(
+                    hints = MediaTypeHints(fileExtension = File(path).extension),
+                    content = ResourceMediaTypeSnifferContent(this)
+                ) ?: MediaType.BINARY
+            )
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
             ResourceTry.success(
@@ -145,7 +143,7 @@ internal class JavaZipContainer(private val archive: ZipFile, file: File) : ZipC
                 ?.let { Try.success(it) }
                 ?: Try.failure(Resource.Exception.Other(Exception("Unsupported operation")))
 
-        override val compressedLength: Long? =
+        private val compressedLength: Long? =
             if (entry.method == ZipEntry.STORED || entry.method == -1) {
                 null
             } else {

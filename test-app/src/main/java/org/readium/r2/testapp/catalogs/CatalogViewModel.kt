@@ -31,12 +31,10 @@ import timber.log.Timber
 
 class CatalogViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val app get() =
-        getApplication<org.readium.r2.testapp.Application>()
-
     val detailChannel = EventChannel(Channel<Event.DetailEvent>(Channel.BUFFERED), viewModelScope)
     val eventChannel = EventChannel(Channel<Event.FeedEvent>(Channel.BUFFERED), viewModelScope)
     lateinit var publication: Publication
+    private val app = getApplication<org.readium.r2.testapp.Application>()
 
     fun parseCatalog(catalog: Catalog) = viewModelScope.launch {
         var parseRequest: Try<ParseData, Exception>? = null
@@ -44,9 +42,9 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
             val request = HttpRequest(it)
             try {
                 parseRequest = if (catalog.type == 1) {
-                    OPDS1Parser.parseRequest(request)
+                    OPDS1Parser.parseRequest(request, app.readium.httpClient)
                 } else {
-                    OPDS2Parser.parseRequest(request)
+                    OPDS2Parser.parseRequest(request, app.readium.httpClient)
                 }
             } catch (e: MalformedURLException) {
                 eventChannel.send(Event.FeedEvent.CatalogParseFailed)
@@ -67,7 +65,11 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
 
         getDownloadURL(publication)
             .flatMap { url ->
-                url.downloadTo(dest)
+                url.downloadTo(
+                    dest,
+                    httpClient = app.readium.httpClient,
+                    assetRetriever = app.readium.assetRetriever
+                )
             }.flatMap {
                 val opdsCover = publication.images.firstOrNull()?.href
                 app.bookRepository.addLocalBook(dest, opdsCover)
@@ -80,7 +82,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
 
     private fun getDownloadURL(publication: Publication): Try<URL, Exception> =
         publication.links
-            .firstOrNull { it.mediaType.isPublication || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
+            .firstOrNull { it.mediaType?.isPublication == true || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
             ?.let {
                 try {
                     Try.success(URL(it.href))

@@ -26,8 +26,8 @@ internal class FileChannelResource(
 
     private lateinit var _length: ResourceTry<Long>
 
-    override suspend fun mediaType(): ResourceTry<MediaType?> =
-        ResourceTry.success(null)
+    override suspend fun mediaType(): ResourceTry<MediaType> =
+        ResourceTry.success(MediaType.BINARY)
 
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         ResourceTry.success(Resource.Properties())

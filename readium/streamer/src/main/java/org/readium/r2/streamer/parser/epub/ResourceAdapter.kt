@@ -10,14 +10,15 @@ import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 internal class ResourceAdapter(
-    private val epubVersion: Double,
     private val spine: Spine,
     private val manifest: List<Item>,
     private val encryptionData: Map<String, Encryption>,
     private val coverId: String?,
-    private val durationById: Map<String, Double?>
+    private val durationById: Map<String, Double?>,
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) {
     data class Links(
         val readingOrder: List<Link>,
@@ -70,7 +71,7 @@ internal class ResourceAdapter(
 
         return Link(
             href = item.href,
-            type = item.mediaType,
+            mediaType = mediaTypeRetriever.retrieve(item.mediaType),
             duration = durationById[item.id],
             rels = rels,
             properties = properties,

@@ -111,7 +111,7 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
 
         require(
             publication.readingOrder.count() == 1 &&
-                publication.readingOrder.first().mediaType.matches(MediaType.PDF)
+                publication.readingOrder.first().mediaType?.matches(MediaType.PDF) == true
         ) { "[PdfNavigatorFragment] currently supports only publications with a single PDF for reading order" }
     }
 

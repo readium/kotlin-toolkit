@@ -19,6 +19,7 @@ import org.readium.r2.shared.extensions.parseObjects
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * https://github.com/readium/webpub-manifest/tree/master/contexts/default#subjects
@@ -77,6 +78,7 @@ public data class Subject(
          */
         public fun fromJSON(
             json: Any?,
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): Subject? {
@@ -100,6 +102,7 @@ public data class Subject(
                 code = jsonObject.optNullableString("code"),
                 links = Link.fromJSONArray(
                     jsonObject.optJSONArray("links"),
+                    mediaTypeRetriever,
                     normalizeHref,
                     warnings
                 )
@@ -115,15 +118,23 @@ public data class Subject(
          */
         public fun fromJSONArray(
             json: Any?,
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): List<Subject> {
             return when (json) {
                 is String, is JSONObject ->
-                    listOf(json).mapNotNull { fromJSON(it, normalizeHref, warnings) }
+                    listOf(json).mapNotNull {
+                        fromJSON(
+                            it,
+                            mediaTypeRetriever,
+                            normalizeHref,
+                            warnings
+                        )
+                    }
 
                 is JSONArray ->
-                    json.parseObjects { fromJSON(it, normalizeHref, warnings) }
+                    json.parseObjects { fromJSON(it, mediaTypeRetriever, normalizeHref, warnings) }
 
                 else -> emptyList()
             }

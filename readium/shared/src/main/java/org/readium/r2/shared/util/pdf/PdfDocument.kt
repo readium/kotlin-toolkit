@@ -151,7 +151,7 @@ public fun List<PdfDocument.OutlineNode>.toLinks(documentHref: String): List<Lin
 public fun PdfDocument.OutlineNode.toLink(documentHref: String): Link =
     Link(
         href = "$documentHref#page=$pageNumber",
-        type = MediaType.PDF.toString(),
+        mediaType = MediaType.PDF,
         title = title,
         children = children.toLinks(documentHref)
     )

@@ -21,6 +21,7 @@ import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * Core Collection Model
@@ -55,6 +56,7 @@ public data class PublicationCollection(
          */
         public fun fromJSON(
             json: Any?,
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): PublicationCollection? {
@@ -69,16 +71,22 @@ public data class PublicationCollection(
                 is JSONObject -> {
                     links = Link.fromJSONArray(
                         json.remove("links") as? JSONArray,
+                        mediaTypeRetriever,
                         normalizeHref,
                         warnings
                     )
                     metadata = (json.remove("metadata") as? JSONObject)?.toMap()
-                    subcollections = collectionsFromJSON(json, normalizeHref, warnings)
+                    subcollections = collectionsFromJSON(
+                        json,
+                        mediaTypeRetriever,
+                        normalizeHref,
+                        warnings
+                    )
                 }
 
                 // Parses an array of links.
                 is JSONArray -> {
-                    links = Link.fromJSONArray(json, normalizeHref, warnings)
+                    links = Link.fromJSONArray(json, mediaTypeRetriever, normalizeHref, warnings)
                 }
 
                 else -> {
@@ -111,6 +119,7 @@ public data class PublicationCollection(
          */
         public fun collectionsFromJSON(
             json: JSONObject,
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): Map<String, List<PublicationCollection>> {
@@ -119,14 +128,21 @@ public data class PublicationCollection(
                 val subJSON = json.get(role)
 
                 // Parses a list of links or a single collection object.
-                val collection = fromJSON(subJSON, normalizeHref, warnings)
+                val collection = fromJSON(subJSON, mediaTypeRetriever, normalizeHref, warnings)
                 if (collection != null) {
                     collections.getOrPut(role) { mutableListOf() }.add(collection)
 
                     // Parses a list of collection objects.
                 } else if (subJSON is JSONArray) {
                     collections.getOrPut(role) { mutableListOf() }.addAll(
-                        subJSON.mapNotNull { fromJSON(it, normalizeHref, warnings) }
+                        subJSON.mapNotNull {
+                            fromJSON(
+                                it,
+                                mediaTypeRetriever,
+                                normalizeHref,
+                                warnings
+                            )
+                        }
                     )
                 }
             }

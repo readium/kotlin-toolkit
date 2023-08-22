@@ -10,6 +10,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.PublicationCollection
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * Creates a [Manifest] model from an EPUB package's document.
@@ -21,7 +22,8 @@ internal class ManifestAdapter(
     private val packageDocument: PackageDocument,
     private val navigationData: Map<String, List<Link>> = emptyMap(),
     private val encryptionData: Map<String, Encryption> = emptyMap(),
-    private val displayOptions: Map<String, String> = emptyMap()
+    private val displayOptions: Map<String, String> = emptyMap(),
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) {
     private val epubVersion = packageDocument.epubVersion
     private val spine = packageDocument.spine
@@ -37,12 +39,12 @@ internal class ManifestAdapter(
 
         // Compute links
         val (readingOrder, resources) = ResourceAdapter(
-            epubVersion,
             packageDocument.spine,
             packageDocument.manifest,
             encryptionData,
             metadata.coverId,
-            metadata.durationById
+            metadata.durationById,
+            mediaTypeRetriever = mediaTypeRetriever
         ).adapt()
 
         // Compute toc and otherCollections

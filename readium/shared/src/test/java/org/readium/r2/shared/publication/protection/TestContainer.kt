@@ -17,7 +17,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 class TestContainer(resources: Map<String, String> = emptyMap()) : Container {
 
     private val entries: Map<String, Entry> =
-        resources.mapValues { Entry(it.key, StringResource(it.value)) }
+        resources.mapValues { Entry(it.key, StringResource(it.value, MediaType.TEXT)) }
 
     override suspend fun entries(): Set<Container.Entry> =
         entries.values.toSet()
@@ -33,7 +33,7 @@ class TestContainer(resources: Map<String, String> = emptyMap()) : Container {
 
         override val source: Url? = null
 
-        override suspend fun mediaType(): ResourceTry<MediaType?> =
+        override suspend fun mediaType(): ResourceTry<MediaType> =
             Try.failure(Resource.Exception.NotFound())
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =

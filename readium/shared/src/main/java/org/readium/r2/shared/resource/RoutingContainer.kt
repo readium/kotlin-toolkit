@@ -7,7 +7,7 @@
 package org.readium.r2.shared.resource
 
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.isFile
+import org.readium.r2.shared.util.isHttp
 
 /**
  * Routes requests to child containers, depending on a provided predicate.
@@ -50,6 +50,6 @@ public class RoutingContainer(private val routes: List<Route>) : Container {
 }
 
 private fun isLocal(path: String): Boolean {
-    val url = Url(path) ?: return false
-    return url.isFile()
+    val url = Url(path) ?: return true
+    return !url.isHttp()
 }

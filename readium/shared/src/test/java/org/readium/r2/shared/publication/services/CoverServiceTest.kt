@@ -23,6 +23,7 @@ import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.readBlocking
 import org.readium.r2.shared.resource.FileResource
 import org.readium.r2.shared.resource.ResourceContainer
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -40,7 +41,7 @@ class CoverServiceTest {
         coverBytes = cover.readBytes()
         coverBitmap = BitmapFactory.decodeByteArray(coverBytes, 0, coverBytes.size)
         coverPath = cover.path
-        coverLink = Link(href = coverPath, type = "image/jpeg", width = 598, height = 800)
+        coverLink = Link(href = coverPath, mediaType = MediaType.JPEG, width = 598, height = 800)
 
         publication = Publication(
             manifest = Manifest(
@@ -53,7 +54,7 @@ class CoverServiceTest {
             ),
             container = ResourceContainer(
                 coverPath,
-                FileResource(File(coverPath), mediaType = null)
+                FileResource(File(coverPath), mediaType = MediaType.JPEG)
             )
         )
     }

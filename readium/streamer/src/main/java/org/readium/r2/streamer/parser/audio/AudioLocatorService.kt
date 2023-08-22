@@ -51,7 +51,7 @@ public class AudioLocatorService(private val readingOrder: List<Link>) : Locator
 
         return Locator(
             href = link.href,
-            type = link.type ?: MediaType.BINARY.toString(),
+            type = (link.mediaType ?: MediaType.BINARY).toString(),
             locations = Locator.Locations(
                 fragments = listOf("t=${positionInResource.toInt()}"),
                 progression = link.duration?.let { duration ->

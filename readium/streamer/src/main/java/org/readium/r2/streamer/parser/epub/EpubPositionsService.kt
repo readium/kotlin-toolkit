@@ -19,6 +19,7 @@ import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.archive
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
 
 /**
@@ -171,7 +172,7 @@ public class EpubPositionsService(
 
     private fun createLocator(link: Link, progression: Double, position: Int) = Locator(
         href = link.href,
-        type = link.type ?: "text/html",
+        type = (link.mediaType ?: MediaType.HTML).toString(),
         title = link.title,
         locations = Locator.Locations(
             progression = progression,

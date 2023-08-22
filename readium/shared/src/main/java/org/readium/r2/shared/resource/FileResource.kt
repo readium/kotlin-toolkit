@@ -6,7 +6,6 @@
 
 package org.readium.r2.shared.resource
 
-import android.content.ContentResolver
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.RandomAccessFile
@@ -17,21 +16,24 @@ import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.isFile
 import org.readium.r2.shared.util.isLazyInitialized
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * A [Resource] to access a [file].
  */
-public class FileResource internal constructor(
+public class FileResource private constructor(
     private val file: File,
     private val mediaType: MediaType?,
     private val mediaTypeRetriever: MediaTypeRetriever?
 ) : Resource {
 
-    public constructor(file: File, mediaType: MediaType?) : this(file, mediaType, null)
-    public constructor(file: File, mediaTypeRetriever: MediaTypeRetriever?) : this(
+    public constructor(file: File, mediaType: MediaType) : this(file, mediaType, null)
+
+    public constructor(file: File, mediaTypeRetriever: MediaTypeRetriever) : this(
         file,
         null,
         mediaTypeRetriever
@@ -48,8 +50,14 @@ public class FileResource internal constructor(
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         ResourceTry.success(Resource.Properties())
 
-    override suspend fun mediaType(): ResourceTry<MediaType?> =
-        Try.success(mediaType ?: mediaTypeRetriever?.retrieve(file))
+    override suspend fun mediaType(): ResourceTry<MediaType> = Try.success(
+        mediaType
+            ?: mediaTypeRetriever?.retrieve(
+                hints = MediaTypeHints(fileExtension = file.extension),
+                content = ResourceMediaTypeSnifferContent(this)
+            )
+            ?: MediaType.BINARY
+    )
 
     override suspend fun close() {
         withContext(Dispatchers.IO) {
@@ -124,10 +132,12 @@ public class FileResource internal constructor(
         "${javaClass.simpleName}(${file.path})"
 }
 
-public class FileResourceFactory : ResourceFactory {
+public class FileResourceFactory(
+    private val mediaTypeRetriever: MediaTypeRetriever
+) : ResourceFactory {
 
     override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
-        if (url.scheme != ContentResolver.SCHEME_FILE) {
+        if (!url.isFile()) {
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
         }
 
@@ -141,6 +151,6 @@ public class FileResourceFactory : ResourceFactory {
             return Try.failure(ResourceFactory.Error.Forbidden(e))
         }
 
-        return Try.success(FileResource(file, mediaTypeRetriever = null))
+        return Try.success(FileResource(file, mediaTypeRetriever))
     }
 }

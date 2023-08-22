@@ -38,6 +38,7 @@ import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.PublicationFactory
@@ -61,7 +62,8 @@ class BookRepository(
     private val lcpService: Try<LcpService, UserException>,
     private val publicationFactory: PublicationFactory,
     private val assetRetriever: AssetRetriever,
-    private val protectionRetriever: ContentProtectionSchemeRetriever
+    private val protectionRetriever: ContentProtectionSchemeRetriever,
+    private val formatRegistry: FormatRegistry
 ) {
     private val coverDir: File =
         File(storageDir, "covers/")
@@ -195,7 +197,7 @@ class BookRepository(
     suspend fun addRemoteBook(
         url: Url
     ): Try<Unit, ImportError> {
-        val asset = assetRetriever.retrieve(url, fileExtension = url.extension)
+        val asset = assetRetriever.retrieve(url)
             ?: return Try.failure(
                 ImportError.PublicationError(
                     PublicationError.UnsupportedPublication(
@@ -263,7 +265,8 @@ class BookRepository(
                     )
             }
 
-        val fileName = "${UUID.randomUUID()}.${publicationTempAsset.mediaType.fileExtension}"
+        val fileExtension = formatRegistry.fileExtension(publicationTempAsset.mediaType) ?: "epub"
+        val fileName = "${UUID.randomUUID()}.$fileExtension"
         val libraryFile = File(storageDir, fileName)
         val libraryUrl = libraryFile.toUrl()
 

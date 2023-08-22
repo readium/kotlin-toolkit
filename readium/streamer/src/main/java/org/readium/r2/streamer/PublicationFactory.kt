@@ -19,6 +19,7 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioParser
@@ -40,35 +41,54 @@ internal typealias PublicationTry<SuccessT> = Try<SuccessT, Publication.OpeningE
  * @param context Application context.
  * @param parsers Parsers used to open a publication, in addition to the default parsers.
  * @param ignoreDefaultParsers When true, only parsers provided in parsers will be used.
- * @param pdfFactory Parses a PDF document, optionally protected by password.
  * @param contentProtections Opens DRM-protected publications.
  * @param httpClient Service performing HTTP requests.
+ * @param pdfFactory Parses a PDF document, optionally protected by password.
  * @param onCreatePublication Called on every parsed [Publication.Builder]. It can be used to modify
  *   the manifest, the root container or the list of service factories of a [Publication].
  */
 @OptIn(PdfSupport::class)
-public class PublicationFactory constructor(
+public class PublicationFactory(
     context: Context,
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
-    contentProtections: List<ContentProtection> = emptyList(),
-    pdfFactory: PdfDocumentFactory<*>? = null,
-    httpClient: HttpClient = DefaultHttpClient(),
+    contentProtections: List<ContentProtection>,
+    mediaTypeRetriever: MediaTypeRetriever,
+    httpClient: HttpClient,
+    pdfFactory: PdfDocumentFactory<*>?,
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
 ) {
 
+    public companion object {
+        public operator fun invoke(
+            context: Context,
+            contentProtections: List<ContentProtection> = emptyList(),
+            onCreatePublication: Publication.Builder.() -> Unit
+        ): PublicationFactory {
+            val mediaTypeRetriever = MediaTypeRetriever()
+            return PublicationFactory(
+                context = context,
+                contentProtections = contentProtections,
+                mediaTypeRetriever = mediaTypeRetriever,
+                httpClient = DefaultHttpClient(mediaTypeRetriever),
+                pdfFactory = null,
+                onCreatePublication = onCreatePublication
+            )
+        }
+    }
+
     private val contentProtections: Map<ContentProtection.Scheme, ContentProtection> =
         buildList {
-            add(LcpFallbackContentProtection())
+            add(LcpFallbackContentProtection(mediaTypeRetriever))
             add(AdeptFallbackContentProtection())
             addAll(contentProtections.asReversed())
         }.associateBy(ContentProtection::scheme)
 
     private val defaultParsers: List<PublicationParser> =
         listOfNotNull(
-            EpubParser(),
+            EpubParser(mediaTypeRetriever),
             pdfFactory?.let { PdfParser(context, it) },
-            ReadiumWebPubParser(context, pdfFactory),
+            ReadiumWebPubParser(context, pdfFactory, mediaTypeRetriever),
             ImageParser(),
             AudioParser()
         )
@@ -77,7 +97,7 @@ public class PublicationFactory constructor(
         if (!ignoreDefaultParsers) defaultParsers else emptyList()
 
     private val parserAssetFactory: ParserAssetFactory =
-        ParserAssetFactory(httpClient)
+        ParserAssetFactory(httpClient, mediaTypeRetriever)
 
     /**
      * Opens a [Publication] from the given asset.

@@ -27,6 +27,7 @@ import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * https://readium.org/webpub-manifest/schema/metadata.schema.json
@@ -255,6 +256,7 @@ public data class Metadata(
          */
         public fun fromJSON(
             json: JSONObject?,
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): Metadata? {
@@ -276,53 +278,87 @@ public data class Metadata(
             val accessibility = Accessibility.fromJSON(json.remove("accessibility"))
             val languages = json.optStringsFromArrayOrSingle("language", remove = true)
             val localizedSortAs = LocalizedString.fromJSON(json.remove("sortAs"), warnings)
-            val subjects = Subject.fromJSONArray(json.remove("subject"), normalizeHref, warnings)
-            val authors = Contributor.fromJSONArray(json.remove("author"), normalizeHref, warnings)
-            val translators = Contributor.fromJSONArray(
-                json.remove("translator"),
+            val subjects = Subject.fromJSONArray(
+                json.remove("subject"),
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
-            val editors = Contributor.fromJSONArray(json.remove("editor"), normalizeHref, warnings)
-            val artists = Contributor.fromJSONArray(json.remove("artist"), normalizeHref, warnings)
+            val authors = Contributor.fromJSONArray(
+                json.remove("author"),
+                mediaTypeRetriever,
+                normalizeHref,
+                warnings
+            )
+            val translators = Contributor.fromJSONArray(
+                json.remove("translator"),
+                mediaTypeRetriever,
+                normalizeHref,
+                warnings
+            )
+            val editors = Contributor.fromJSONArray(
+                json.remove("editor"),
+                mediaTypeRetriever,
+                normalizeHref,
+                warnings
+            )
+            val artists = Contributor.fromJSONArray(
+                json.remove("artist"),
+                mediaTypeRetriever,
+                normalizeHref,
+                warnings
+            )
             val illustrators = Contributor.fromJSONArray(
                 json.remove("illustrator"),
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
             val letterers = Contributor.fromJSONArray(
                 json.remove("letterer"),
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
             val pencilers = Contributor.fromJSONArray(
                 json.remove("penciler"),
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
             val colorists = Contributor.fromJSONArray(
                 json.remove("colorist"),
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
-            val inkers = Contributor.fromJSONArray(json.remove("inker"), normalizeHref, warnings)
+            val inkers = Contributor.fromJSONArray(
+                json.remove("inker"),
+                mediaTypeRetriever,
+                normalizeHref,
+                warnings
+            )
             val narrators = Contributor.fromJSONArray(
                 json.remove("narrator"),
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
             val contributors = Contributor.fromJSONArray(
                 json.remove("contributor"),
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
             val publishers = Contributor.fromJSONArray(
                 json.remove("publisher"),
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
             val imprints = Contributor.fromJSONArray(
                 json.remove("imprint"),
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
@@ -343,7 +379,12 @@ public data class Metadata(
             for (key in belongsToJson.keys()) {
                 if (!belongsToJson.isNull(key)) {
                     val value = belongsToJson.get(key)
-                    belongsTo[key] = Collection.fromJSONArray(value, normalizeHref, warnings)
+                    belongsTo[key] = Collection.fromJSONArray(
+                        value,
+                        mediaTypeRetriever,
+                        normalizeHref,
+                        warnings
+                    )
                 }
             }
 

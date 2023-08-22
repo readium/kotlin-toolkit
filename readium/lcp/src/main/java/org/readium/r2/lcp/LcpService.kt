@@ -29,12 +29,9 @@ import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.lcp.service.PassphrasesRepository
 import org.readium.r2.lcp.service.PassphrasesService
 import org.readium.r2.shared.asset.Asset
+import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.protection.ContentProtection
-import org.readium.r2.shared.resource.ArchiveFactory
-import org.readium.r2.shared.resource.DefaultArchiveFactory
-import org.readium.r2.shared.resource.FileResourceFactory
-import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
@@ -159,9 +156,8 @@ public interface LcpService {
          */
         public operator fun invoke(
             context: Context,
-            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
-            resourceFactory: ResourceFactory = FileResourceFactory(),
-            archiveFactory: ArchiveFactory = DefaultArchiveFactory()
+            assetRetriever: AssetRetriever,
+            mediaTypeRetriever: MediaTypeRetriever
         ): LcpService? {
             if (!LcpClient.isAvailable()) {
                 return null
@@ -171,7 +167,7 @@ public interface LcpService {
             val deviceRepository = DeviceRepository(db)
             val passphraseRepository = PassphrasesRepository(db)
             val licenseRepository = LicensesRepository(db)
-            val network = NetworkService(mediaTypeRetriever = mediaTypeRetriever)
+            val network = NetworkService(mediaTypeRetriever)
             val device = DeviceService(
                 repository = deviceRepository,
                 network = network,
@@ -186,18 +182,17 @@ public interface LcpService {
                 network = network,
                 passphrases = passphrases,
                 context = context,
-                mediaTypeRetriever = mediaTypeRetriever,
-                resourceFactory = resourceFactory,
-                archiveFactory = archiveFactory
+                assetRetriever = assetRetriever
             )
         }
 
+        @Suppress("UNUSED_PARAMETER")
         @Deprecated(
             "Use `LcpService()` instead",
-            ReplaceWith("LcpService(context)"),
+            ReplaceWith("LcpService(context, AssetRetriever(), MediaTypeRetriever())"),
             level = DeprecationLevel.ERROR
         )
-        public fun create(context: Context): LcpService? = invoke(context)
+        public fun create(context: Context): LcpService? = throw NotImplementedError()
     }
 
     @Deprecated(
@@ -235,13 +230,14 @@ public interface LcpService {
     }
 }
 
+@Suppress("UNUSED_PARAMETER")
 @Deprecated(
     "Renamed to `LcpService()`",
     replaceWith = ReplaceWith("LcpService(context)"),
     level = DeprecationLevel.ERROR
 )
 public fun R2MakeLCPService(context: Context): LcpService =
-    LcpService(context) ?: throw Exception("liblcp is missing on the classpath")
+    throw NotImplementedError()
 
 @Deprecated(
     "Renamed to `LcpService.AcquiredPublication`",

@@ -54,8 +54,8 @@ public class ContentResource(
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         ResourceTry.success(Resource.Properties())
 
-    override suspend fun mediaType(): ResourceTry<MediaType?> =
-        Try.success(contentResolver.getType(uri)?.let { MediaType.parse(it) })
+    override suspend fun mediaType(): ResourceTry<MediaType> =
+        Try.success(contentResolver.getType(uri)?.let { MediaType(it) } ?: MediaType.BINARY)
 
     override suspend fun close() {
     }

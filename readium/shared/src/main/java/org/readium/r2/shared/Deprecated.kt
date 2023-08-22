@@ -169,10 +169,8 @@ public typealias RenditionSpread = Presentation.Spread
     ReplaceWith("Manifest.fromJSON(pubDict)", "org.readium.r2.shared.publication.Manifest"),
     level = DeprecationLevel.ERROR
 )
-public fun parsePublication(pubDict: JSONObject): org.readium.r2.shared.publication.Publication {
-    return org.readium.r2.shared.publication.Manifest.fromJSON(pubDict)?.let { Publication(it) }
-        ?: throw Exception("Invalid publication")
-}
+public fun parsePublication(): org.readium.r2.shared.publication.Publication =
+    throw NotImplementedError()
 
 @Suppress("Unused_parameter")
 @Deprecated(

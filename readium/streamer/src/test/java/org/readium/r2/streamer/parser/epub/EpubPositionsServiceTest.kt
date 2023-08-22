@@ -499,8 +499,8 @@ class EpubPositionsServiceTest {
 
                     override val source: Url? = null
 
-                    override suspend fun mediaType(): ResourceTry<MediaType?> =
-                        Try.success(item.link.mediaType)
+                    override suspend fun mediaType(): ResourceTry<MediaType> =
+                        Try.success(item.link.mediaType ?: MediaType.BINARY)
 
                     override suspend fun properties(): ResourceTry<Resource.Properties> =
                         Try.success(item.resourceProperties)
@@ -531,7 +531,7 @@ class EpubPositionsServiceTest {
     ) {
         val link: Link = Link(
             href = href,
-            type = type?.toString(),
+            mediaType = type,
             title = title,
             properties = Properties(
                 buildMap {

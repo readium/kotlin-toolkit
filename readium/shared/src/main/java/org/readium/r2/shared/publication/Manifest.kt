@@ -21,6 +21,7 @@ import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * Holds the metadata of a Readium publication, as described in the Readium Web Publication Manifest.
@@ -111,7 +112,7 @@ public data class Manifest(
         val components = link.href.split("#", limit = 2)
         val href = components.firstOrNull() ?: link.href
         val resourceLink = linkWithHref(href) ?: return null
-        val type = resourceLink.type ?: return null
+        val type = resourceLink.mediaType?.toString() ?: return null
         val fragment = components.getOrNull(1)
 
         return Locator(
@@ -155,6 +156,7 @@ public data class Manifest(
         public fun fromJSON(
             json: JSONObject?,
             packaged: Boolean = false,
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             warnings: WarningLogger? = null
         ): Manifest? {
             json ?: return null
@@ -163,7 +165,11 @@ public data class Manifest(
                 if (packaged) {
                     "/"
                 } else {
-                    Link.fromJSONArray(json.optJSONArray("links"), warnings = warnings)
+                    Link.fromJSONArray(
+                        json.optJSONArray("links"),
+                        mediaTypeRetriever,
+                        warnings = warnings
+                    )
                         .firstWithRel("self")
                         ?.href
                         ?.toUrlOrNull()
@@ -178,6 +184,7 @@ public data class Manifest(
 
             val metadata = Metadata.fromJSON(
                 json.remove("metadata") as? JSONObject,
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
@@ -188,33 +195,39 @@ public data class Manifest(
 
             val links = Link.fromJSONArray(
                 json.remove("links") as? JSONArray,
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
                 .map {
-                    if (!packaged || "self" !in it.rels) {
-                        it
+                    if (packaged && "self" in it.rels) {
+                        it.copy(rels = it.rels - "self" + "alternate")
                     } else {
-                        it.copy(
-                            rels = it.rels - "self" + "alternate"
-                        )
+                        it
                     }
                 }
 
             // [readingOrder] used to be [spine], so we parse [spine] as a fallback.
             val readingOrderJSON = (json.remove("readingOrder") ?: json.remove("spine")) as? JSONArray
-            val readingOrder = Link.fromJSONArray(readingOrderJSON, normalizeHref, warnings)
-                .filter { it.type != null }
-
-            val resources = Link.fromJSONArray(
-                json.remove("resources") as? JSONArray,
+            val readingOrder = Link.fromJSONArray(
+                readingOrderJSON,
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
-                .filter { it.type != null }
+                .filter { it.mediaType != null }
+
+            val resources = Link.fromJSONArray(
+                json.remove("resources") as? JSONArray,
+                mediaTypeRetriever,
+                normalizeHref,
+                warnings
+            )
+                .filter { it.mediaType != null }
 
             val tableOfContents = Link.fromJSONArray(
                 json.remove("toc") as? JSONArray,
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
@@ -222,6 +235,7 @@ public data class Manifest(
             // Parses subcollections from the remaining JSON properties.
             val subcollections = PublicationCollection.collectionsFromJSON(
                 json,
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )

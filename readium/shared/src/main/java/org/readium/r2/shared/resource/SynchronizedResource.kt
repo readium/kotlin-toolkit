@@ -27,7 +27,7 @@ public class SynchronizedResource(
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         mutex.withLock { resource.properties() }
 
-    override suspend fun mediaType(): ResourceTry<MediaType?> =
+    override suspend fun mediaType(): ResourceTry<MediaType> =
         mutex.withLock { resource.mediaType() }
 
     override suspend fun length(): ResourceTry<Long> =

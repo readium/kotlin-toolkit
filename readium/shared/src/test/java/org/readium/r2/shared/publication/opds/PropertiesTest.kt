@@ -16,6 +16,7 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.opds.*
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -111,7 +112,7 @@ class PropertiesTest {
         assertEquals(
             Link(
                 href = "https://example.com/authentication.json",
-                type = "application/opds-authentication+json"
+                mediaType = MediaType("application/opds-authentication+json")!!
             ),
             Properties(
                 otherProperties = mapOf(

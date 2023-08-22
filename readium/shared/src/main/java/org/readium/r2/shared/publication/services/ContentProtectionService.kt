@@ -255,9 +255,11 @@ private sealed class RouteHandler {
 
     object ContentProtectionHandler : RouteHandler() {
 
+        private val mediaType = MediaType("application/vnd.readium.content-protection+json")!!
+
         override val link = Link(
             href = "/~readium/content-protection",
-            type = "application/vnd.readium.content-protection+json"
+            mediaType = mediaType
         )
 
         override fun acceptRequest(link: Link): Boolean = link.href == this.link.href
@@ -265,7 +267,7 @@ private sealed class RouteHandler {
         override fun handleRequest(link: Link, service: ContentProtectionService): Resource =
             StringResource(
                 url = Url(link.href),
-                mediaType = link.mediaType
+                mediaType = mediaType
             ) {
                 Try.success(
                     JSONObject().apply {
@@ -280,9 +282,11 @@ private sealed class RouteHandler {
 
     object RightsCopyHandler : RouteHandler() {
 
+        private val mediaType = MediaType("application/vnd.readium.rights.copy+json")!!
+
         override val link: Link = Link(
             href = "/~readium/rights/copy{?text,peek}",
-            type = "application/vnd.readium.rights.copy+json",
+            mediaType = mediaType,
             templated = true
         )
 
@@ -312,16 +316,18 @@ private sealed class RouteHandler {
             return if (!copyAllowed) {
                 FailureResource(Resource.Exception.Forbidden())
             } else {
-                StringResource("true")
+                StringResource("true", MediaType.JSON)
             }
         }
     }
 
     object RightsPrintHandler : RouteHandler() {
 
+        private val mediaType = MediaType("application/vnd.readium.rights.print+json")!!
+
         override val link = Link(
             href = "/~readium/rights/print{?pageCount,peek}",
-            type = "application/vnd.readium.rights.print+json",
+            mediaType = mediaType,
             templated = true
         )
 

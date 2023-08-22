@@ -81,7 +81,7 @@ internal class LcpdfPositionsService(
             val totalProgression = (startPosition + position - 1) / totalPageCount.toDouble()
             Locator(
                 href = link.href,
-                type = link.type ?: MediaType.PDF.toString(),
+                type = (link.mediaType ?: MediaType.PDF).toString(),
                 locations = Locator.Locations(
                     fragments = listOf("page=$position"),
                     progression = progression,
