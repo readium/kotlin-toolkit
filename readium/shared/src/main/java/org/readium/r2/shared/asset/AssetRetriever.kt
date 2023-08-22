@@ -279,57 +279,21 @@ public class AssetRetriever(
         url: Url,
         hints: MediaTypeHints = MediaTypeHints()
     ): Asset? {
-        val allHints = MediaTypeHints(
-            mediaTypes = buildList {
-                addAll(hints.mediaTypes)
-
-                if (url.scheme == ContentResolver.SCHEME_CONTENT) {
-                    contentResolver.getType(url.uri)
-                        ?.let { MediaType(it) }
-                        // Note: We exclude JSON, XML or ZIP formats otherwise they will be detected
-                        // during the light sniffing step and bypass the RWPM or EPUB heavy
-                        // sniffing.
-                        ?.takeUnless {
-                            it.matchesAny(
-                                MediaType.BINARY,
-                                MediaType.JSON,
-                                MediaType.ZIP,
-                                MediaType.XML
-                            )
-                        }
-                        ?.let { add(it) }
-                }
-            },
-            fileExtensions = buildList {
-                addAll(hints.fileExtensions)
-
-                url.extension?.let { add(it) }
-
-                if (url.scheme == ContentResolver.SCHEME_CONTENT) {
-                    contentResolver.queryProjection(url.uri, MediaStore.MediaColumns.DISPLAY_NAME)?.let { filename ->
-                        File(filename).extension
-                            .takeUnless { it.isBlank() }
-                            ?.let { add(it) }
-                    }
-                }
-            }
-        )
-
         val resource = resourceFactory
             .create(url)
             .getOrElse { error ->
                 when (error) {
                     is ResourceFactory.Error.NotAResource ->
                         return containerFactory.create(url).getOrNull()
-                            ?.let { retrieve(url, it, exploded = true, allHints) }
+                            ?.let { retrieve(url, it, exploded = true, hints) }
                     else -> return null
                 }
             }
 
         return archiveFactory.create(resource, password = null)
             .fold(
-                { retrieve(url, container = it, exploded = false, allHints) },
-                { retrieve(url, resource, allHints) }
+                { retrieve(url, container = it, exploded = false, hints) },
+                { retrieve(url, resource, hints) }
             )
     }
 
@@ -364,7 +328,8 @@ public class AssetRetriever(
                 }
             )
 
-        retrieve(hints)?.let { return it }
+        retrieve(hints.addFileExtension(url.extension))
+            ?.let { return it }
 
         // Falls back on the [contentResolver] in case of content Uri.
         // Note: This is done after the heavy sniffing of the provided [sniffers], because

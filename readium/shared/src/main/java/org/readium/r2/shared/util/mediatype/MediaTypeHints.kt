@@ -32,6 +32,11 @@ public data class MediaTypeHints(
             fileExtensions = fileExtensions + other.fileExtensions
         )
 
+    public fun addFileExtension(fileExtension: String?): MediaTypeHints {
+        fileExtension ?: return this
+        return copy(fileExtensions = fileExtensions + fileExtension)
+    }
+
     /** Finds the first [Charset] declared in the media types' `charset` parameter. */
     public val charset: Charset? get() =
         mediaTypes.firstNotNullOfOrNull { it.charset }
