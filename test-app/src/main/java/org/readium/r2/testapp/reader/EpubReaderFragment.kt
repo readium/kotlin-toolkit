@@ -175,11 +175,10 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                             return true
                         }
                     }
-                    return true
+                    return false
                 }
             },
-            viewLifecycleOwner,
-            Lifecycle.State.RESUMED
+            viewLifecycleOwner
         )
     }
 

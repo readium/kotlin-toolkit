@@ -16,7 +16,6 @@ import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
 import org.readium.r2.lcp.lcpLicense
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.navigator.preferences.Configurable
@@ -78,26 +77,29 @@ abstract class BaseReaderFragment : Fragment() {
                     when (menuItem.itemId) {
                         R.id.toc -> {
                             model.activityChannel.send(ReaderViewModel.Event.OpenOutlineRequested)
+                            return true
                         }
                         R.id.bookmark -> {
                             model.insertBookmark(navigator.currentLocator.value)
+                            return true
                         }
                         R.id.settings -> {
                             val settingsModel = checkNotNull(model.settings)
                             UserPreferencesBottomSheetDialogFragment(settingsModel, "User Settings")
                                 .show(childFragmentManager, "Settings")
+                            return true
                         }
                         R.id.drm -> {
                             model.activityChannel.send(
                                 ReaderViewModel.Event.OpenDrmManagementRequested
                             )
+                            return true
                         }
                     }
-                    return true
+                    return false
                 }
             },
-            viewLifecycleOwner,
-            Lifecycle.State.RESUMED
+            viewLifecycleOwner
         )
     }
 
