@@ -21,7 +21,6 @@ import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceMediaTypeSnifferContent
 import org.readium.r2.shared.resource.ResourceTry
-import org.readium.r2.shared.resource.ZipContainer
 import org.readium.r2.shared.resource.archive
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArchiveEntry
@@ -35,16 +34,13 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 internal class ChannelZipContainer(
     private val archive: ZipFile,
     private val mediaTypeRetriever: MediaTypeRetriever
-) : ZipContainer {
+) : Container {
 
     private inner class FailureEntry(
         override val path: String
-    ) : ZipContainer.Entry, Resource by FailureResource(Resource.Exception.NotFound()) {
+    ) : Container.Entry, Resource by FailureResource(Resource.Exception.NotFound())
 
-        override val compressedLength: Long? = null
-    }
-
-    private inner class Entry(private val entry: ZipArchiveEntry) : ZipContainer.Entry {
+    private inner class Entry(private val entry: ZipArchiveEntry) : Container.Entry {
 
         override val path: String = entry.name.addPrefix("/")
 
@@ -74,7 +70,7 @@ internal class ChannelZipContainer(
                 ?.let { Try.success(it) }
                 ?: Try.failure(Resource.Exception.Other(UnsupportedOperationException()))
 
-        override val compressedLength: Long?
+        private val compressedLength: Long?
             get() =
                 if (entry.method == ZipArchiveEntry.STORED || entry.method == -1) {
                     null

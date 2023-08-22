@@ -30,20 +30,6 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.toUrl
 
 /**
- * A [Container] representing a Zip archive.
- */
-public interface ZipContainer : Container {
-
-    public interface Entry : Container.Entry {
-
-        /**
-         * Compressed data length.
-         */
-        public val compressedLength: Long?
-    }
-}
-
-/**
  * Holds information about how the resource is stored in the archive.
  *
  * @param entryLength The length of the entry stored in the archive. It might be a compressed length
@@ -99,11 +85,9 @@ internal class JavaZipContainer(
     private val archive: ZipFile,
     file: File,
     private val mediaTypeRetriever: MediaTypeRetriever
-) : ZipContainer {
+) : Container {
 
-    private inner class FailureEntry(override val path: String) : ZipContainer.Entry {
-
-        override val compressedLength: Long? = null
+    private inner class FailureEntry(override val path: String) : Container.Entry {
 
         override val source: Url? = null
 
@@ -128,7 +112,7 @@ internal class JavaZipContainer(
         }
     }
 
-    private inner class Entry(private val entry: ZipEntry) : ZipContainer.Entry {
+    private inner class Entry(private val entry: ZipEntry) : Container.Entry {
 
         override val path: String =
             entry.name.addPrefix("/")
@@ -159,7 +143,7 @@ internal class JavaZipContainer(
                 ?.let { Try.success(it) }
                 ?: Try.failure(Resource.Exception.Other(Exception("Unsupported operation")))
 
-        override val compressedLength: Long? =
+        private val compressedLength: Long? =
             if (entry.method == ZipEntry.STORED || entry.method == -1) {
                 null
             } else {
