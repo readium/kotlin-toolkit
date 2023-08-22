@@ -7,7 +7,11 @@
 package org.readium.r2.shared.util.mediatype
 
 /**
- * The default sniffer provided by Readium 2 to resolve a [MediaType].
+ * Retrieves a canonical [MediaType] for the provided media type and file extension hints and/or
+ * asset content.
+ *
+ * The actual format sniffing is done by the provided [sniffers]. The [defaultSniffers] cover the
+ * formats supported with Readium by default.
  */
 public class MediaTypeRetriever(
     private val sniffers: List<MediaTypeSniffer> = defaultSniffers
@@ -35,6 +39,9 @@ public class MediaTypeRetriever(
         )
     }
 
+    /**
+     * Retrieves a canonical [MediaType] for the provided media type and file extension [hints].
+     */
     public fun retrieve(hints: MediaTypeHints): MediaType? {
         sniffers.firstNotNullOfOrNull { it.sniffHints(hints) }
             ?.let { return it }
@@ -49,6 +56,9 @@ public class MediaTypeRetriever(
         return hints.mediaTypes.firstOrNull()
     }
 
+    /**
+     * Retrieves a canonical [MediaType] for the provided [mediaType] and [fileExtension] hints.
+     */
     public fun retrieve(mediaType: String? = null, fileExtension: String? = null): MediaType? =
         retrieve(
             MediaTypeHints(
@@ -57,15 +67,25 @@ public class MediaTypeRetriever(
             )
         )
 
+    /**
+     * Retrieves a canonical [MediaType] for the provided [mediaType] and [fileExtension] hints.
+     */
     public fun retrieve(mediaType: MediaType, fileExtension: String? = null): MediaType =
         retrieve(MediaTypeHints(mediaType = mediaType, fileExtension = fileExtension)) ?: mediaType
 
+    /**
+     * Retrieves a canonical [MediaType] for the provided [mediaTypes] and [fileExtensions] hints.
+     */
     public fun retrieve(
         mediaTypes: List<String> = emptyList(),
         fileExtensions: List<String> = emptyList()
     ): MediaType? =
         retrieve(MediaTypeHints(mediaTypes = mediaTypes, fileExtensions = fileExtensions))
 
+    /**
+     * Retrieves a canonical [MediaType] for the provided media type and file extensions [hints] and
+     * asset [content].
+     */
     public suspend fun retrieve(
         hints: MediaTypeHints = MediaTypeHints(),
         content: MediaTypeSnifferContent? = null

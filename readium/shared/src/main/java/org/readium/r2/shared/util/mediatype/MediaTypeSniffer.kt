@@ -18,8 +18,19 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 
+/**
+ * Sniffs a [MediaType] from media type and file extension hints or asset content.
+ */
 public interface MediaTypeSniffer {
+
+    /**
+     * Sniffs a [MediaType] from media type and file extension hints.
+     */
     public fun sniffHints(hints: MediaTypeHints): MediaType? = null
+
+    /**
+     * Sniffs a [MediaType] from an asset [content].
+     */
     public suspend fun sniffContent(content: MediaTypeSnifferContent): MediaType? = null
 }
 

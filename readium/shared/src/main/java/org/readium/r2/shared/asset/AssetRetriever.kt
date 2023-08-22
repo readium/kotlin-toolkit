@@ -33,6 +33,10 @@ import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.toUrl
 
+/**
+ * Retrieves an [Asset] instance providing reading access to the resource(s) of an asset stored at a
+ * given [Url].
+ */
 public class AssetRetriever(
     private val mediaTypeRetriever: MediaTypeRetriever,
     private val resourceFactory: ResourceFactory,
@@ -149,7 +153,7 @@ public class AssetRetriever(
     }
 
     /**
-     * Retrieves an asset from a known media and asset type again.
+     * Retrieves an asset from a known media and asset type.
      */
     public suspend fun retrieve(
         url: Url,
@@ -253,71 +257,60 @@ public class AssetRetriever(
     /**
      * Retrieves an asset from a local file.
      */
-    public suspend fun retrieve(
-        file: File,
-        hints: MediaTypeHints = MediaTypeHints()
-    ): Asset? =
-        retrieve(file.toUrl(), hints)
+    public suspend fun retrieve(file: File): Asset? =
+        retrieve(file.toUrl())
 
     /**
-     * Retrieves an asset from a Uri.
+     * Retrieves an asset from a [Uri].
      */
-    public suspend fun retrieve(
-        uri: Uri,
-        hints: MediaTypeHints = MediaTypeHints()
-    ): Asset? {
+    public suspend fun retrieve(uri: Uri): Asset? {
         val url = uri.toUrl()
             ?: return null
 
-        return retrieve(url, hints)
+        return retrieve(url)
     }
 
     /**
-     * Retrieves an asset from a Url.
+     * Retrieves an asset from a [Url].
      */
-    public suspend fun retrieve(
-        url: Url,
-        hints: MediaTypeHints = MediaTypeHints()
-    ): Asset? {
+    public suspend fun retrieve(url: Url): Asset? {
         val resource = resourceFactory
             .create(url)
             .getOrElse { error ->
                 when (error) {
                     is ResourceFactory.Error.NotAResource ->
                         return containerFactory.create(url).getOrNull()
-                            ?.let { retrieve(url, it, exploded = true, hints) }
+                            ?.let { retrieve(url, it, exploded = true) }
                     else -> return null
                 }
             }
 
         return archiveFactory.create(resource, password = null)
             .fold(
-                { retrieve(url, container = it, exploded = false, hints) },
-                { retrieve(url, resource, hints) }
+                { retrieve(url, container = it, exploded = false) },
+                { retrieve(url, resource) }
             )
     }
 
     private suspend fun retrieve(
         url: Url,
         container: Container,
-        exploded: Boolean,
-        hints: MediaTypeHints
+        exploded: Boolean
     ): Asset? {
-        val mediaType = retrieveMediaType(url, Either(container), hints)
+        val mediaType = retrieveMediaType(url, Either(container))
             ?: return null
         return Asset.Container(mediaType, exploded = exploded, container = container)
     }
 
-    private suspend fun retrieve(url: Url, resource: Resource, hints: MediaTypeHints): Asset? {
-        val mediaType = retrieveMediaType(url, Either(resource), hints)
+    private suspend fun retrieve(url: Url, resource: Resource): Asset? {
+        val mediaType = retrieveMediaType(url, Either(resource))
             ?: return null
         return Asset.Resource(mediaType, resource = resource)
     }
 
     private suspend fun retrieveMediaType(
         url: Url,
-        asset: Either<Resource, Container>,
-        hints: MediaTypeHints
+        asset: Either<Resource, Container>
     ): MediaType? {
         suspend fun retrieve(hints: MediaTypeHints): MediaType? =
             mediaTypeRetriever.retrieve(
@@ -328,7 +321,7 @@ public class AssetRetriever(
                 }
             )
 
-        retrieve(hints.addFileExtension(url.extension))
+        retrieve(MediaTypeHints(fileExtensions = listOfNotNull(url.extension)))
             ?.let { return it }
 
         // Falls back on the [contentResolver] in case of content Uri.

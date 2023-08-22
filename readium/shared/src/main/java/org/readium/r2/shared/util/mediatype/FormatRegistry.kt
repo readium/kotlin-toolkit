@@ -6,6 +6,9 @@
 
 package org.readium.r2.shared.util.mediatype
 
+/**
+ * Registry of format metadata (e.g. file extension) associated to canonical media types.
+ */
 public class FormatRegistry(
     fileExtensions: Map<MediaType, String> = mapOf(
         MediaType.ACSM to "acsm",
@@ -28,6 +31,9 @@ public class FormatRegistry(
 
     private val fileExtensions: MutableMap<MediaType, String> = fileExtensions.toMutableMap()
 
+    /**
+     * Registers a new [fileExtension] for the given [mediaType].
+     */
     public fun register(mediaType: MediaType, fileExtension: String?) {
         if (fileExtension == null) {
             fileExtensions.remove(mediaType)
@@ -36,6 +42,9 @@ public class FormatRegistry(
         }
     }
 
+    /**
+     * Returns the file extension associated to this canonical [mediaType], if any.
+     */
     public fun fileExtension(mediaType: MediaType): String? =
         fileExtensions[mediaType]
 }

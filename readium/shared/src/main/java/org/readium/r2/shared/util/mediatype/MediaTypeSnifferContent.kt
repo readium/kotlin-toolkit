@@ -11,8 +11,14 @@ import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.Manifest
 
+/**
+ * Provides read access to an asset content.
+ */
 public sealed interface MediaTypeSnifferContent
 
+/**
+ * Provides read access to a resource content.
+ */
 public interface ResourceMediaTypeSnifferContent : MediaTypeSnifferContent {
 
     /**
@@ -80,6 +86,9 @@ public suspend fun ResourceMediaTypeSnifferContent.containsJsonKeys(vararg keys:
     return json.keys().asSequence().toSet().containsAll(keys.toList())
 }
 
+/**
+ * Provides read access to a container's resources.
+ */
 public interface ContainerMediaTypeSnifferContent : MediaTypeSnifferContent {
     /**
      * Returns all the known entry paths in the container.
@@ -99,6 +108,9 @@ public suspend fun ContainerMediaTypeSnifferContent.contains(path: String): Bool
     entries()?.contains(path)
         ?: (read(path, range = 0L..1L) != null)
 
+/**
+ * A [ResourceMediaTypeSnifferContent] built from a raw byte array.
+ */
 public class BytesResourceMediaTypeSnifferContent(
     bytes: suspend () -> ByteArray
 ) : ResourceMediaTypeSnifferContent {

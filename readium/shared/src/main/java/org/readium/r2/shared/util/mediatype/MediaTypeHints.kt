@@ -8,6 +8,9 @@ package org.readium.r2.shared.util.mediatype
 
 import java.nio.charset.Charset
 
+/**
+ * Bundle of media type and file extension hints for the [MediaTypeSniffer].
+ */
 public data class MediaTypeHints(
     val mediaTypes: List<MediaType> = emptyList(),
     val fileExtensions: List<String> = emptyList()
@@ -32,6 +35,9 @@ public data class MediaTypeHints(
             fileExtensions = fileExtensions + other.fileExtensions
         )
 
+    /**
+     * Returns a new [MediaTypeHints] after appending the given [fileExtension] hint.
+     */
     public fun addFileExtension(fileExtension: String?): MediaTypeHints {
         fileExtension ?: return this
         return copy(fileExtensions = fileExtensions + fileExtension)
