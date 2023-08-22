@@ -12,10 +12,10 @@ import java.io.RandomAccessFile
 import java.nio.channels.Channels
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.*
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.isFile
 import org.readium.r2.shared.util.isLazyInitialized
 import org.readium.r2.shared.util.mediatype.MediaType

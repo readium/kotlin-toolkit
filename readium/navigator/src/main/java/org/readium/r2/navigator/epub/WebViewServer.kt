@@ -16,7 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Resource
@@ -24,6 +23,7 @@ import org.readium.r2.shared.resource.ResourceInputStream
 import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.resource.fallback
 import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
 import org.readium.r2.shared.util.mediatype.MediaType

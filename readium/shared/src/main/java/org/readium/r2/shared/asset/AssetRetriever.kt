@@ -11,10 +11,6 @@ import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
 import java.io.File
-import org.readium.r2.shared.error.ThrowableError
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.flatMap
-import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.extensions.queryProjection
 import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.Container
@@ -27,7 +23,11 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.resource.ResourceMediaTypeSnifferContent
 import org.readium.r2.shared.util.Either
+import org.readium.r2.shared.util.ThrowableError
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -58,11 +58,11 @@ public class AssetRetriever(
         }
     }
 
-    public sealed class Error : org.readium.r2.shared.error.Error {
+    public sealed class Error : org.readium.r2.shared.util.Error {
 
         public class SchemeNotSupported(
             public val scheme: String,
-            override val cause: org.readium.r2.shared.error.Error?
+            override val cause: org.readium.r2.shared.util.Error?
         ) : Error() {
 
             public constructor(scheme: String, exception: Exception) :
@@ -74,7 +74,7 @@ public class AssetRetriever(
 
         public class NotFound(
             public val url: Url,
-            override val cause: org.readium.r2.shared.error.Error?
+            override val cause: org.readium.r2.shared.util.Error?
         ) : Error() {
 
             public constructor(url: Url, exception: Exception) :
@@ -85,7 +85,7 @@ public class AssetRetriever(
         }
 
         public class InvalidAsset(
-            override val cause: org.readium.r2.shared.error.Error?
+            override val cause: org.readium.r2.shared.util.Error?
         ) : Error() {
 
             public constructor(exception: Exception) :
@@ -96,7 +96,7 @@ public class AssetRetriever(
         }
 
         public class ArchiveFormatNotSupported(
-            override val cause: org.readium.r2.shared.error.Error?
+            override val cause: org.readium.r2.shared.util.Error?
         ) : Error() {
 
             public constructor(exception: Exception) :
@@ -108,7 +108,7 @@ public class AssetRetriever(
 
         public class Forbidden(
             public val url: Url,
-            override val cause: org.readium.r2.shared.error.Error
+            override val cause: org.readium.r2.shared.util.Error
         ) : Error() {
 
             public constructor(url: Url, exception: Exception) :
@@ -119,7 +119,7 @@ public class AssetRetriever(
         }
 
         public class Unavailable(
-            override val cause: org.readium.r2.shared.error.Error
+            override val cause: org.readium.r2.shared.util.Error
         ) : Error() {
 
             public constructor(exception: Exception) :
@@ -136,7 +136,7 @@ public class AssetRetriever(
             override val message: String =
                 "There is not enough memory on the device to load the asset."
 
-            override val cause: org.readium.r2.shared.error.Error =
+            override val cause: org.readium.r2.shared.util.Error =
                 ThrowableError(error)
         }
 
@@ -147,7 +147,7 @@ public class AssetRetriever(
             override val message: String =
                 exception.message ?: "Something unexpected happened."
 
-            override val cause: org.readium.r2.shared.error.Error =
+            override val cause: org.readium.r2.shared.util.Error =
                 ThrowableError(exception)
         }
     }

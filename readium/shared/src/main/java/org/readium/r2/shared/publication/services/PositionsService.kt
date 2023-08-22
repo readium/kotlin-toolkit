@@ -11,7 +11,6 @@ package org.readium.r2.shared.publication.services
 
 import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.toJsonOrNull
 import org.readium.r2.shared.publication.Link
@@ -25,6 +24,7 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 

@@ -11,10 +11,6 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.asset.AssetType
-import org.readium.r2.shared.error.ThrowableError
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.flatMap
-import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.encryption
 import org.readium.r2.shared.publication.flatten
@@ -24,7 +20,11 @@ import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.resource.TransformingContainer
+import org.readium.r2.shared.util.ThrowableError
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.flatMap
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.toFile
 
 internal class LcpContentProtection(

@@ -14,15 +14,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.optNullableBoolean
 import org.readium.r2.shared.extensions.optNullableLong
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints

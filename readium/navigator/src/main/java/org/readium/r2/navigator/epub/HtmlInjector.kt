@@ -8,8 +8,6 @@ package org.readium.r2.navigator.epub
 
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
@@ -17,6 +15,8 @@ import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.TransformingResource
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
 
 /**

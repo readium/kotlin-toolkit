@@ -7,12 +7,12 @@
 package org.readium.r2.streamer.parser.readium
 
 import android.content.Context
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.*
 import org.readium.r2.shared.resource.readAsJson
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever

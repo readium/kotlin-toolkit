@@ -7,11 +7,11 @@
 package org.readium.r2.streamer.parser.audio
 
 import java.io.File
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.extensions.guessTitle

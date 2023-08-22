@@ -30,8 +30,8 @@ import org.readium.r2.lcp.service.PassphrasesRepository
 import org.readium.r2.lcp.service.PassphrasesService
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.asset.AssetRetriever
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.protection.ContentProtection
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 

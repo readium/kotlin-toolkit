@@ -6,10 +6,10 @@
 
 package org.readium.r2.shared.resource
 
-import org.readium.r2.shared.error.ThrowableError
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.tryRecover
+import org.readium.r2.shared.util.ThrowableError
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.tryRecover
 
 /**
  * A factory to read [Resource]s from [Url]s.
@@ -19,11 +19,11 @@ import org.readium.r2.shared.util.Url
  */
 public fun interface ResourceFactory {
 
-    public sealed class Error : org.readium.r2.shared.error.Error {
+    public sealed class Error : org.readium.r2.shared.util.Error {
 
         public class SchemeNotSupported(
             public val scheme: String,
-            override val cause: org.readium.r2.shared.error.Error? = null
+            override val cause: org.readium.r2.shared.util.Error? = null
         ) : Error() {
 
             public constructor(scheme: String, exception: Exception) : this(
@@ -37,7 +37,7 @@ public fun interface ResourceFactory {
 
         public class NotAResource(
             public val url: Url,
-            override val cause: org.readium.r2.shared.error.Error? = null
+            override val cause: org.readium.r2.shared.util.Error? = null
         ) : Error() {
 
             public constructor(url: Url, exception: Exception) : this(
@@ -50,7 +50,7 @@ public fun interface ResourceFactory {
         }
 
         public class Forbidden(
-            override val cause: org.readium.r2.shared.error.Error
+            override val cause: org.readium.r2.shared.util.Error
         ) : Error() {
 
             public constructor(exception: Exception) : this(ThrowableError(exception))
@@ -71,11 +71,11 @@ public fun interface ResourceFactory {
  */
 public fun interface ContainerFactory {
 
-    public sealed class Error : org.readium.r2.shared.error.Error {
+    public sealed class Error : org.readium.r2.shared.util.Error {
 
         public class SchemeNotSupported(
             public val scheme: String,
-            override val cause: org.readium.r2.shared.error.Error? = null
+            override val cause: org.readium.r2.shared.util.Error? = null
         ) : Error() {
 
             public constructor(scheme: String, exception: Exception) : this(
@@ -89,7 +89,7 @@ public fun interface ContainerFactory {
 
         public class NotAContainer(
             public val url: Url,
-            override val cause: org.readium.r2.shared.error.Error? = null
+            override val cause: org.readium.r2.shared.util.Error? = null
         ) : Error() {
 
             public constructor(url: Url, exception: Exception) : this(
@@ -102,7 +102,7 @@ public fun interface ContainerFactory {
         }
 
         public class Forbidden(
-            override val cause: org.readium.r2.shared.error.Error
+            override val cause: org.readium.r2.shared.util.Error
         ) : Error() {
 
             public constructor(exception: Exception) : this(ThrowableError(exception))
@@ -122,10 +122,10 @@ public fun interface ContainerFactory {
  */
 public fun interface ArchiveFactory {
 
-    public sealed class Error : org.readium.r2.shared.error.Error {
+    public sealed class Error : org.readium.r2.shared.util.Error {
 
         public class FormatNotSupported(
-            override val cause: org.readium.r2.shared.error.Error? = null
+            override val cause: org.readium.r2.shared.util.Error? = null
         ) : Error() {
 
             public constructor(exception: Exception) : this(ThrowableError(exception))
@@ -135,7 +135,7 @@ public fun interface ArchiveFactory {
         }
 
         public class PasswordsNotSupported(
-            override val cause: org.readium.r2.shared.error.Error? = null
+            override val cause: org.readium.r2.shared.util.Error? = null
         ) : Error() {
 
             public constructor(exception: Exception) : this(ThrowableError(exception))
@@ -145,7 +145,7 @@ public fun interface ArchiveFactory {
         }
 
         public class ResourceReading(
-            override val cause: org.readium.r2.shared.error.Error?,
+            override val cause: org.readium.r2.shared.util.Error?,
             public val resourceException: Resource.Exception
         ) : Error() {
 

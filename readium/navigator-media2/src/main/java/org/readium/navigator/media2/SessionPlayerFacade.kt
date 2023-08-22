@@ -26,8 +26,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.flatMap
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.flatMap
 import timber.log.Timber
 
 /**

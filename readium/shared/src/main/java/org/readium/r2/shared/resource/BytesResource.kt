@@ -7,8 +7,8 @@
 package org.readium.r2.shared.resource
 
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.read
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
