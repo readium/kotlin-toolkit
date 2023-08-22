@@ -9,13 +9,13 @@ package org.readium.r2.streamer
 import android.content.Context
 import org.readium.r2.shared.PdfSupport
 import org.readium.r2.shared.asset.Asset
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.AdeptFallbackContentProtection
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.LcpFallbackContentProtection
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger

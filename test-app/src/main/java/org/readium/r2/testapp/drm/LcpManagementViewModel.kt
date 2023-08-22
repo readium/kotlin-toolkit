@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import java.util.*
 import org.readium.r2.lcp.LcpLicense
-import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.util.Try
 
 class LcpManagementViewModel(
     private val lcpLicense: LcpLicense,

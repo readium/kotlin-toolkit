@@ -12,7 +12,7 @@ import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.MessageError
-import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.toFile
 

@@ -12,7 +12,6 @@ package org.readium.r2.shared.publication.services
 import java.util.Locale
 import org.json.JSONObject
 import org.readium.r2.shared.UserException
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.queryParameters
 import org.readium.r2.shared.publication.Link
@@ -24,6 +23,7 @@ import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.StringResource
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 

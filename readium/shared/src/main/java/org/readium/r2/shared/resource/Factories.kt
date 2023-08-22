@@ -7,9 +7,9 @@
 package org.readium.r2.shared.resource
 
 import org.readium.r2.shared.error.ThrowableError
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.tryRecover
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.tryRecover
 
 /**
  * A factory to read [Resource]s from [Url]s.

@@ -31,9 +31,9 @@ import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.asset.AssetRetriever
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.publication.protection.ContentProtection
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 

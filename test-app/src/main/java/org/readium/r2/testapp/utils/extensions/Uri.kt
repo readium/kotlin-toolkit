@@ -12,7 +12,7 @@ import android.net.Uri
 import android.provider.MediaStore
 import java.io.File
 import java.util.*
-import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.util.Try
 import org.readium.r2.testapp.utils.ContentResolverUtil
 import org.readium.r2.testapp.utils.tryOrNull
 

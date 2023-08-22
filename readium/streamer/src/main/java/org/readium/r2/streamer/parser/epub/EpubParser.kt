@@ -7,8 +7,6 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
@@ -21,6 +19,8 @@ import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.TransformingContainer
 import org.readium.r2.shared.resource.readAsXml
 import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever

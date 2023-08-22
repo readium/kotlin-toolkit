@@ -6,10 +6,10 @@
 
 package org.readium.r2.shared.resource
 
-import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.requireLengthFitInt
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.flatMap
 
 /**
  * Transforms the bytes of [resource] on-the-fly.

@@ -41,7 +41,6 @@ import org.readium.r2.navigator.input.KeyEvent
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.InternalReadiumApi
-import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.extensions.tryOrNull
@@ -50,6 +49,7 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.use
 import timber.log.Timber
 

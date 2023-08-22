@@ -15,10 +15,10 @@ import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.TransferListener
 import java.io.IOException
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.buffered
+import org.readium.r2.shared.util.getOrThrow
 
 public sealed class ExoPlayerDataSourceException(message: String, cause: Throwable?) : IOException(
     message,

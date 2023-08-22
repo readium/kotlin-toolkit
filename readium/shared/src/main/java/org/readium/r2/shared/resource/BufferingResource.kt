@@ -6,10 +6,10 @@
 
 package org.readium.r2.shared.resource
 
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.contains
 import org.readium.r2.shared.extensions.requireLengthFitInt
+import org.readium.r2.shared.util.Try
 
 /**
  * Wraps a [Resource] and buffers its content.

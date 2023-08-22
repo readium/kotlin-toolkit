@@ -8,13 +8,13 @@ package org.readium.r2.shared.publication.protection
 
 import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.asset.Asset
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.protection.ContentProtection.Scheme
 import org.readium.r2.shared.publication.services.contentProtectionServiceFactory
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.readAsXml
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**

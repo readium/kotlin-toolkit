@@ -12,11 +12,11 @@ package org.readium.r2.shared.publication.protection
 import androidx.annotation.StringRes
 import org.readium.r2.shared.R
 import org.readium.r2.shared.UserException
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.ContentProtectionService
 import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
