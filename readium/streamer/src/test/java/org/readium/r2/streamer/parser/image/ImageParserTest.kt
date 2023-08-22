@@ -21,8 +21,8 @@ import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.resource.DefaultArchiveFactory
 import org.readium.r2.shared.resource.FileResource
 import org.readium.r2.shared.resource.ResourceContainer
-import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.streamer.parseBlocking
 import org.readium.r2.streamer.parser.PublicationParser
 import org.robolectric.RobolectricTestRunner
@@ -36,7 +36,7 @@ class ImageParserTest {
         val path = pathForResource("futuristic_tales.cbz")
         val file = File(path)
         val resource = FileResource(file, mediaType = MediaType.CBZ)
-        val archive = DefaultArchiveFactory(DefaultMediaTypeSniffer()).create(
+        val archive = DefaultArchiveFactory(MediaTypeRetriever()).create(
             resource,
             password = null
         ).getOrNull()!!

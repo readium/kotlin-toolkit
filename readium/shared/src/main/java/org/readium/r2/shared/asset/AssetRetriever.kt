@@ -28,15 +28,13 @@ import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.resource.ResourceMediaTypeSnifferContent
 import org.readium.r2.shared.util.Either
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.EpubMediaTypeSniffer.sniff
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.toUrl
 
 public class AssetRetriever(
-    private val mediaTypeSniffer: MediaTypeSniffer,
+    private val mediaTypeRetriever: MediaTypeRetriever,
     private val resourceFactory: ResourceFactory,
     private val containerFactory: ContainerFactory,
     private val archiveFactory: ArchiveFactory,
@@ -45,12 +43,12 @@ public class AssetRetriever(
 
     public companion object {
         public operator fun invoke(context: Context): AssetRetriever {
-            val mediaTypeSniffer = DefaultMediaTypeSniffer()
+            val mediaTypeRetriever = MediaTypeRetriever()
             return AssetRetriever(
-                mediaTypeSniffer = mediaTypeSniffer,
-                resourceFactory = FileResourceFactory(mediaTypeSniffer),
-                containerFactory = DirectoryContainerFactory(mediaTypeSniffer),
-                archiveFactory = DefaultArchiveFactory(mediaTypeSniffer),
+                mediaTypeRetriever = mediaTypeRetriever,
+                resourceFactory = FileResourceFactory(mediaTypeRetriever),
+                containerFactory = DirectoryContainerFactory(mediaTypeRetriever),
+                archiveFactory = DefaultArchiveFactory(mediaTypeRetriever),
                 contentResolver = context.contentResolver
             )
         }
@@ -341,24 +339,24 @@ public class AssetRetriever(
         exploded: Boolean,
         hints: MediaTypeHints
     ): Asset? {
-        val mediaType = sniffMediaType(url, Either(container), hints)
+        val mediaType = retrieveMediaType(url, Either(container), hints)
             ?: return null
         return Asset.Container(mediaType, exploded = exploded, container = container)
     }
 
     private suspend fun retrieve(url: Url, resource: Resource, hints: MediaTypeHints): Asset? {
-        val mediaType = sniffMediaType(url, Either(resource), hints)
+        val mediaType = retrieveMediaType(url, Either(resource), hints)
             ?: return null
         return Asset.Resource(mediaType, resource = resource)
     }
 
-    private suspend fun sniffMediaType(
+    private suspend fun retrieveMediaType(
         url: Url,
         asset: Either<Resource, Container>,
         hints: MediaTypeHints
     ): MediaType? {
-        suspend fun sniff(hints: MediaTypeHints): MediaType? =
-            mediaTypeSniffer.sniff(
+        suspend fun retrieve(hints: MediaTypeHints): MediaType? =
+            mediaTypeRetriever.retrieve(
                 hints = hints,
                 content = when (asset) {
                     is Either.Left -> ResourceMediaTypeSnifferContent(asset.value)
@@ -366,7 +364,7 @@ public class AssetRetriever(
                 }
             )
 
-        sniff(hints)?.let { return it }
+        retrieve(hints)?.let { return it }
 
         // Falls back on the [contentResolver] in case of content Uri.
         // Note: This is done after the heavy sniffing of the provided [sniffers], because
@@ -383,7 +381,7 @@ public class AssetRetriever(
                     ?.let { filename -> File(filename).extension }
             )
 
-            sniff(contentHints)?.let { return it }
+            retrieve(contentHints)?.let { return it }
         }
 
         return null

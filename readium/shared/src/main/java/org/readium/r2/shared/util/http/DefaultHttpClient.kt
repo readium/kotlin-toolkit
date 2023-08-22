@@ -19,16 +19,15 @@ import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.error.tryRecover
 import org.readium.r2.shared.util.http.HttpRequest.Method
 import org.readium.r2.shared.util.mediatype.BytesResourceMediaTypeSnifferContent
-import org.readium.r2.shared.util.mediatype.EpubMediaTypeSniffer.sniff
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import timber.log.Timber
 
 /**
  * An implementation of [HttpClient] using the native [HttpURLConnection].
  *
- * @param mediaTypeSniffer Component used to sniff the media type of the HTTP response.
+ * @param mediaTypeRetriever Component used to sniff the media type of the HTTP response.
  * @param userAgent Custom user agent to use for requests.
  * @param additionalHeaders A dictionary of additional headers to send with requests.
  * @param connectTimeout Timeout used when establishing a connection to the resource. A null timeout
@@ -37,7 +36,7 @@ import timber.log.Timber
  *        as the default value, while a timeout of zero as an infinite timeout.
  */
 public class DefaultHttpClient(
-    private val mediaTypeSniffer: MediaTypeSniffer,
+    private val mediaTypeRetriever: MediaTypeRetriever,
     private val userAgent: String? = null,
     private val additionalHeaders: Map<String, String> = mapOf(),
     private val connectTimeout: Duration? = null,
@@ -143,7 +142,7 @@ public class DefaultHttpClient(
                         // JSON Problem Details or OPDS Authentication Document
                         val body = connection.errorStream?.use { it.readBytes() }
                         val mediaType = body?.let {
-                            mediaTypeSniffer.sniff(
+                            mediaTypeRetriever.retrieve(
                                 hints = MediaTypeHints(connection),
                                 content = BytesResourceMediaTypeSnifferContent { it }
                             )
@@ -151,7 +150,7 @@ public class DefaultHttpClient(
                         throw HttpException(kind, mediaType, body)
                     }
 
-                    val mediaType = mediaTypeSniffer.sniff(MediaTypeHints(connection))
+                    val mediaType = mediaTypeRetriever.retrieve(MediaTypeHints(connection))
 
                     val response = HttpResponse(
                         request = request,

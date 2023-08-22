@@ -10,27 +10,26 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.resource.DefaultArchiveFactory
-import org.readium.r2.shared.util.mediatype.WebPubMediaTypeSniffer.sniff
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 
 @RunWith(RobolectricTestRunner::class)
-class MediaTypeSnifferTest {
+class MediaTypeRetrieverTest {
 
     val fixtures = Fixtures("format")
 
-    private val sniffer = DefaultMediaTypeSniffer()
+    private val retriever = MediaTypeRetriever()
 
     @Test
     fun `sniff ignores extension case`() = runBlocking {
-        assertEquals(MediaType.EPUB, sniffer.sniff(fileExtension = "EPUB"))
+        assertEquals(MediaType.EPUB, retriever.retrieve(fileExtension = "EPUB"))
     }
 
     @Test
     fun `sniff ignores media type case`() = runBlocking {
         assertEquals(
             MediaType.EPUB,
-            sniffer.sniff(mediaType = "APPLICATION/EPUB+ZIP")
+            retriever.retrieve(mediaType = "APPLICATION/EPUB+ZIP")
         )
     }
 
@@ -38,36 +37,36 @@ class MediaTypeSnifferTest {
     fun `sniff ignores media type extra parameters`() = runBlocking {
         assertEquals(
             MediaType.EPUB,
-            sniffer.sniff(mediaType = "application/epub+zip;param=value")
+            retriever.retrieve(mediaType = "application/epub+zip;param=value")
         )
     }
 
     @Test
     fun `sniff from metadata`() = runBlocking {
-        assertNull(sniffer.sniff(fileExtension = null))
+        assertNull(retriever.retrieve(fileExtension = null))
         assertEquals(
             MediaType.READIUM_AUDIOBOOK,
-            sniffer.sniff(fileExtension = "audiobook")
+            retriever.retrieve(fileExtension = "audiobook")
         )
-        assertNull(sniffer.sniff(mediaType = null))
+        assertNull(retriever.retrieve(mediaType = null))
         assertEquals(
             MediaType.READIUM_AUDIOBOOK,
-            sniffer.sniff(mediaType = "application/audiobook+zip")
-        )
-        assertEquals(
-            MediaType.READIUM_AUDIOBOOK,
-            sniffer.sniff(mediaType = "application/audiobook+zip")
+            retriever.retrieve(mediaType = "application/audiobook+zip")
         )
         assertEquals(
             MediaType.READIUM_AUDIOBOOK,
-            sniffer.sniff(
+            retriever.retrieve(mediaType = "application/audiobook+zip")
+        )
+        assertEquals(
+            MediaType.READIUM_AUDIOBOOK,
+            retriever.retrieve(
                 mediaType = "application/audiobook+zip",
                 fileExtension = "audiobook"
             )
         )
         assertEquals(
             MediaType.READIUM_AUDIOBOOK,
-            sniffer.sniff(
+            retriever.retrieve(
                 mediaTypes = listOf("application/audiobook+zip"),
                 fileExtensions = listOf("audiobook")
             )
@@ -78,29 +77,29 @@ class MediaTypeSnifferTest {
     fun `sniff from bytes`() = runBlocking {
         assertEquals(
             MediaType.READIUM_AUDIOBOOK_MANIFEST,
-            sniffer.sniffResource(fixtures.fileAt("audiobook.json"))
+            retriever.retrieveResource(fixtures.fileAt("audiobook.json"))
         )
     }
 
     @Test
     fun `sniff unknown format`() = runBlocking {
-        assertNull(sniffer.sniff(mediaType = "invalid"))
-        assertNull(sniffer.sniffResource(fixtures.fileAt("unknown")))
+        assertNull(retriever.retrieve(mediaType = "invalid"))
+        assertNull(retriever.retrieveResource(fixtures.fileAt("unknown")))
     }
 
     @Test
     fun `sniff audiobook`() = runBlocking {
         assertEquals(
             MediaType.READIUM_AUDIOBOOK,
-            sniffer.sniff(fileExtension = "audiobook")
+            retriever.retrieve(fileExtension = "audiobook")
         )
         assertEquals(
             MediaType.READIUM_AUDIOBOOK,
-            sniffer.sniff(mediaType = "application/audiobook+zip")
+            retriever.retrieve(mediaType = "application/audiobook+zip")
         )
         assertEquals(
             MediaType.READIUM_AUDIOBOOK,
-            sniffer.sniffArchive(fixtures.fileAt("audiobook-package.unknown"))
+            retriever.retrieveArchive(fixtures.fileAt("audiobook-package.unknown"))
         )
     }
 
@@ -108,48 +107,48 @@ class MediaTypeSnifferTest {
     fun `sniff audiobook manifest`() = runBlocking {
         assertEquals(
             MediaType.READIUM_AUDIOBOOK_MANIFEST,
-            sniffer.sniff(mediaType = "application/audiobook+json")
+            retriever.retrieve(mediaType = "application/audiobook+json")
         )
         assertEquals(
             MediaType.READIUM_AUDIOBOOK_MANIFEST,
-            sniffer.sniffResource(fixtures.fileAt("audiobook.json"))
+            retriever.retrieveResource(fixtures.fileAt("audiobook.json"))
         )
         assertEquals(
             MediaType.READIUM_AUDIOBOOK_MANIFEST,
-            sniffer.sniffResource(fixtures.fileAt("audiobook-wrongtype.json"))
+            retriever.retrieveResource(fixtures.fileAt("audiobook-wrongtype.json"))
         )
     }
 
     @Test
     fun `sniff BMP`() = runBlocking {
-        assertEquals(MediaType.BMP, sniffer.sniff(fileExtension = "bmp"))
-        assertEquals(MediaType.BMP, sniffer.sniff(fileExtension = "dib"))
-        assertEquals(MediaType.BMP, sniffer.sniff(mediaType = "image/bmp"))
-        assertEquals(MediaType.BMP, sniffer.sniff(mediaType = "image/x-bmp"))
+        assertEquals(MediaType.BMP, retriever.retrieve(fileExtension = "bmp"))
+        assertEquals(MediaType.BMP, retriever.retrieve(fileExtension = "dib"))
+        assertEquals(MediaType.BMP, retriever.retrieve(mediaType = "image/bmp"))
+        assertEquals(MediaType.BMP, retriever.retrieve(mediaType = "image/x-bmp"))
     }
 
     @Test
     fun `sniff CBZ`() = runBlocking {
-        assertEquals(MediaType.CBZ, sniffer.sniff(fileExtension = "cbz"))
+        assertEquals(MediaType.CBZ, retriever.retrieve(fileExtension = "cbz"))
         assertEquals(
             MediaType.CBZ,
-            sniffer.sniff(mediaType = "application/vnd.comicbook+zip")
+            retriever.retrieve(mediaType = "application/vnd.comicbook+zip")
         )
-        assertEquals(MediaType.CBZ, sniffer.sniff(mediaType = "application/x-cbz"))
-        assertEquals(MediaType.CBZ, sniffer.sniff(mediaType = "application/x-cbr"))
-        assertEquals(MediaType.CBZ, sniffer.sniffArchive(fixtures.fileAt("cbz.unknown")))
+        assertEquals(MediaType.CBZ, retriever.retrieve(mediaType = "application/x-cbz"))
+        assertEquals(MediaType.CBZ, retriever.retrieve(mediaType = "application/x-cbr"))
+        assertEquals(MediaType.CBZ, retriever.retrieveArchive(fixtures.fileAt("cbz.unknown")))
     }
 
     @Test
     fun `sniff DiViNa`() = runBlocking {
-        assertEquals(MediaType.DIVINA, sniffer.sniff(fileExtension = "divina"))
+        assertEquals(MediaType.DIVINA, retriever.retrieve(fileExtension = "divina"))
         assertEquals(
             MediaType.DIVINA,
-            sniffer.sniff(mediaType = "application/divina+zip")
+            retriever.retrieve(mediaType = "application/divina+zip")
         )
         assertEquals(
             MediaType.DIVINA,
-            sniffer.sniffArchive(fixtures.fileAt("divina-package.unknown"))
+            retriever.retrieveArchive(fixtures.fileAt("divina-package.unknown"))
         )
     }
 
@@ -157,93 +156,93 @@ class MediaTypeSnifferTest {
     fun `sniff DiViNa manifest`() = runBlocking {
         assertEquals(
             MediaType.DIVINA_MANIFEST,
-            sniffer.sniff(mediaType = "application/divina+json")
+            retriever.retrieve(mediaType = "application/divina+json")
         )
         assertEquals(
             MediaType.DIVINA_MANIFEST,
-            sniffer.sniffResource(fixtures.fileAt("divina.json"))
+            retriever.retrieveResource(fixtures.fileAt("divina.json"))
         )
     }
 
     @Test
     fun `sniff EPUB`() = runBlocking {
-        assertEquals(MediaType.EPUB, sniffer.sniff(fileExtension = "epub"))
+        assertEquals(MediaType.EPUB, retriever.retrieve(fileExtension = "epub"))
         assertEquals(
             MediaType.EPUB,
-            sniffer.sniff(mediaType = "application/epub+zip")
+            retriever.retrieve(mediaType = "application/epub+zip")
         )
-        assertEquals(MediaType.EPUB, sniffer.sniffArchive(fixtures.fileAt("epub.unknown")))
+        assertEquals(MediaType.EPUB, retriever.retrieveArchive(fixtures.fileAt("epub.unknown")))
     }
 
     @Test
     fun `sniff AVIF`() = runBlocking {
-        assertEquals(MediaType.AVIF, sniffer.sniff(fileExtension = "avif"))
-        assertEquals(MediaType.AVIF, sniffer.sniff(mediaType = "image/avif"))
+        assertEquals(MediaType.AVIF, retriever.retrieve(fileExtension = "avif"))
+        assertEquals(MediaType.AVIF, retriever.retrieve(mediaType = "image/avif"))
     }
 
     @Test
     fun `sniff GIF`() = runBlocking {
-        assertEquals(MediaType.GIF, sniffer.sniff(fileExtension = "gif"))
-        assertEquals(MediaType.GIF, sniffer.sniff(mediaType = "image/gif"))
+        assertEquals(MediaType.GIF, retriever.retrieve(fileExtension = "gif"))
+        assertEquals(MediaType.GIF, retriever.retrieve(mediaType = "image/gif"))
     }
 
     @Test
     fun `sniff HTML`() = runBlocking {
-        assertEquals(MediaType.HTML, sniffer.sniff(fileExtension = "htm"))
-        assertEquals(MediaType.HTML, sniffer.sniff(fileExtension = "html"))
-        assertEquals(MediaType.HTML, sniffer.sniff(mediaType = "text/html"))
-        assertEquals(MediaType.HTML, sniffer.sniffResource(fixtures.fileAt("html.unknown")))
+        assertEquals(MediaType.HTML, retriever.retrieve(fileExtension = "htm"))
+        assertEquals(MediaType.HTML, retriever.retrieve(fileExtension = "html"))
+        assertEquals(MediaType.HTML, retriever.retrieve(mediaType = "text/html"))
+        assertEquals(MediaType.HTML, retriever.retrieveResource(fixtures.fileAt("html.unknown")))
         assertEquals(
             MediaType.HTML,
-            sniffer.sniffResource(fixtures.fileAt("html-doctype-case.unknown"))
+            retriever.retrieveResource(fixtures.fileAt("html-doctype-case.unknown"))
         )
     }
 
     @Test
     fun `sniff XHTML`() = runBlocking {
-        assertEquals(MediaType.XHTML, sniffer.sniff(fileExtension = "xht"))
-        assertEquals(MediaType.XHTML, sniffer.sniff(fileExtension = "xhtml"))
+        assertEquals(MediaType.XHTML, retriever.retrieve(fileExtension = "xht"))
+        assertEquals(MediaType.XHTML, retriever.retrieve(fileExtension = "xhtml"))
         assertEquals(
             MediaType.XHTML,
-            sniffer.sniff(mediaType = "application/xhtml+xml")
+            retriever.retrieve(mediaType = "application/xhtml+xml")
         )
-        assertEquals(MediaType.XHTML, sniffer.sniffResource(fixtures.fileAt("xhtml.unknown")))
+        assertEquals(MediaType.XHTML, retriever.retrieveResource(fixtures.fileAt("xhtml.unknown")))
     }
 
     @Test
     fun `sniff JPEG`() = runBlocking {
-        assertEquals(MediaType.JPEG, sniffer.sniff(fileExtension = "jpg"))
-        assertEquals(MediaType.JPEG, sniffer.sniff(fileExtension = "jpeg"))
-        assertEquals(MediaType.JPEG, sniffer.sniff(fileExtension = "jpe"))
-        assertEquals(MediaType.JPEG, sniffer.sniff(fileExtension = "jif"))
-        assertEquals(MediaType.JPEG, sniffer.sniff(fileExtension = "jfif"))
-        assertEquals(MediaType.JPEG, sniffer.sniff(fileExtension = "jfi"))
-        assertEquals(MediaType.JPEG, sniffer.sniff(mediaType = "image/jpeg"))
+        assertEquals(MediaType.JPEG, retriever.retrieve(fileExtension = "jpg"))
+        assertEquals(MediaType.JPEG, retriever.retrieve(fileExtension = "jpeg"))
+        assertEquals(MediaType.JPEG, retriever.retrieve(fileExtension = "jpe"))
+        assertEquals(MediaType.JPEG, retriever.retrieve(fileExtension = "jif"))
+        assertEquals(MediaType.JPEG, retriever.retrieve(fileExtension = "jfif"))
+        assertEquals(MediaType.JPEG, retriever.retrieve(fileExtension = "jfi"))
+        assertEquals(MediaType.JPEG, retriever.retrieve(mediaType = "image/jpeg"))
     }
 
     @Test
     fun `sniff JXL`() = runBlocking {
-        assertEquals(MediaType.JXL, sniffer.sniff(fileExtension = "jxl"))
-        assertEquals(MediaType.JXL, sniffer.sniff(mediaType = "image/jxl"))
+        assertEquals(MediaType.JXL, retriever.retrieve(fileExtension = "jxl"))
+        assertEquals(MediaType.JXL, retriever.retrieve(mediaType = "image/jxl"))
     }
 
     @Test
     fun `sniff OPDS 1 feed`() = runBlocking {
         assertEquals(
             MediaType.OPDS1,
-            sniffer.sniff(mediaType = "application/atom+xml;profile=opds-catalog")
+            retriever.retrieve(mediaType = "application/atom+xml;profile=opds-catalog")
         )
         assertEquals(
             MediaType.OPDS1_NAVIGATION_FEED,
-            sniffer.sniff("application/atom+xml;profile=opds-catalog;kind=navigation")
+            retriever.retrieve("application/atom+xml;profile=opds-catalog;kind=navigation")
         )
         assertEquals(
             MediaType.OPDS1_ACQUISITION_FEED,
-            sniffer.sniff("application/atom+xml;profile=opds-catalog;kind=acquisition")
+            retriever.retrieve("application/atom+xml;profile=opds-catalog;kind=acquisition")
         )
         assertEquals(
             MediaType.OPDS1,
-            sniffer.sniffResource(fixtures.fileAt("opds1-feed.unknown"))
+            retriever.retrieveResource(fixtures.fileAt("opds1-feed.unknown"))
         )
     }
 
@@ -251,13 +250,13 @@ class MediaTypeSnifferTest {
     fun `sniff OPDS 1 entry`() = runBlocking {
         assertEquals(
             MediaType.OPDS1_ENTRY,
-            sniffer.sniff(
+            retriever.retrieve(
                 mediaType = "application/atom+xml;type=entry;profile=opds-catalog"
             )
         )
         assertEquals(
             MediaType.OPDS1_ENTRY,
-            sniffer.sniffResource(fixtures.fileAt("opds1-entry.unknown"))
+            retriever.retrieveResource(fixtures.fileAt("opds1-entry.unknown"))
         )
     }
 
@@ -265,11 +264,11 @@ class MediaTypeSnifferTest {
     fun `sniff OPDS 2 feed`() = runBlocking {
         assertEquals(
             MediaType.OPDS2,
-            sniffer.sniff(mediaType = "application/opds+json")
+            retriever.retrieve(mediaType = "application/opds+json")
         )
         assertEquals(
             MediaType.OPDS2,
-            sniffer.sniffResource(fixtures.fileAt("opds2-feed.json"))
+            retriever.retrieveResource(fixtures.fileAt("opds2-feed.json"))
         )
     }
 
@@ -277,11 +276,11 @@ class MediaTypeSnifferTest {
     fun `sniff OPDS 2 publication`() = runBlocking {
         assertEquals(
             MediaType.OPDS2_PUBLICATION,
-            sniffer.sniff(mediaType = "application/opds-publication+json")
+            retriever.retrieve(mediaType = "application/opds-publication+json")
         )
         assertEquals(
             MediaType.OPDS2_PUBLICATION,
-            sniffer.sniffResource(fixtures.fileAt("opds2-publication.json"))
+            retriever.retrieveResource(fixtures.fileAt("opds2-publication.json"))
         )
     }
 
@@ -289,15 +288,15 @@ class MediaTypeSnifferTest {
     fun `sniff OPDS authentication document`() = runBlocking {
         assertEquals(
             MediaType.OPDS_AUTHENTICATION,
-            sniffer.sniff(mediaType = "application/opds-authentication+json")
+            retriever.retrieve(mediaType = "application/opds-authentication+json")
         )
         assertEquals(
             MediaType.OPDS_AUTHENTICATION,
-            sniffer.sniff(mediaType = "application/vnd.opds.authentication.v1.0+json")
+            retriever.retrieve(mediaType = "application/vnd.opds.authentication.v1.0+json")
         )
         assertEquals(
             MediaType.OPDS_AUTHENTICATION,
-            sniffer.sniffResource(fixtures.fileAt("opds-authentication.json"))
+            retriever.retrieveResource(fixtures.fileAt("opds-authentication.json"))
         )
     }
 
@@ -305,15 +304,15 @@ class MediaTypeSnifferTest {
     fun `sniff LCP protected audiobook`() = runBlocking {
         assertEquals(
             MediaType.LCP_PROTECTED_AUDIOBOOK,
-            sniffer.sniff(fileExtension = "lcpa")
+            retriever.retrieve(fileExtension = "lcpa")
         )
         assertEquals(
             MediaType.LCP_PROTECTED_AUDIOBOOK,
-            sniffer.sniff(mediaType = "application/audiobook+lcp")
+            retriever.retrieve(mediaType = "application/audiobook+lcp")
         )
         assertEquals(
             MediaType.LCP_PROTECTED_AUDIOBOOK,
-            sniffer.sniffArchive(fixtures.fileAt("audiobook-lcp.unknown"))
+            retriever.retrieveArchive(fixtures.fileAt("audiobook-lcp.unknown"))
         )
     }
 
@@ -321,15 +320,15 @@ class MediaTypeSnifferTest {
     fun `sniff LCP protected PDF`() = runBlocking {
         assertEquals(
             MediaType.LCP_PROTECTED_PDF,
-            sniffer.sniff(fileExtension = "lcpdf")
+            retriever.retrieve(fileExtension = "lcpdf")
         )
         assertEquals(
             MediaType.LCP_PROTECTED_PDF,
-            sniffer.sniff(mediaType = "application/pdf+lcp")
+            retriever.retrieve(mediaType = "application/pdf+lcp")
         )
         assertEquals(
             MediaType.LCP_PROTECTED_PDF,
-            sniffer.sniffArchive(fixtures.fileAt("pdf-lcp.unknown"))
+            retriever.retrieveArchive(fixtures.fileAt("pdf-lcp.unknown"))
         )
     }
 
@@ -337,69 +336,69 @@ class MediaTypeSnifferTest {
     fun `sniff LCP license document`() = runBlocking {
         assertEquals(
             MediaType.LCP_LICENSE_DOCUMENT,
-            sniffer.sniff(fileExtension = "lcpl")
+            retriever.retrieve(fileExtension = "lcpl")
         )
         assertEquals(
             MediaType.LCP_LICENSE_DOCUMENT,
-            sniffer.sniff(mediaType = "application/vnd.readium.lcp.license.v1.0+json")
+            retriever.retrieve(mediaType = "application/vnd.readium.lcp.license.v1.0+json")
         )
         assertEquals(
             MediaType.LCP_LICENSE_DOCUMENT,
-            sniffer.sniffResource(fixtures.fileAt("lcpl.unknown"))
+            retriever.retrieveResource(fixtures.fileAt("lcpl.unknown"))
         )
     }
 
     @Test
     fun `sniff LPF`() = runBlocking {
-        assertEquals(MediaType.LPF, sniffer.sniff(fileExtension = "lpf"))
-        assertEquals(MediaType.LPF, sniffer.sniff(mediaType = "application/lpf+zip"))
-        assertEquals(MediaType.LPF, sniffer.sniffArchive(fixtures.fileAt("lpf.unknown")))
+        assertEquals(MediaType.LPF, retriever.retrieve(fileExtension = "lpf"))
+        assertEquals(MediaType.LPF, retriever.retrieve(mediaType = "application/lpf+zip"))
+        assertEquals(MediaType.LPF, retriever.retrieveArchive(fixtures.fileAt("lpf.unknown")))
         assertEquals(
             MediaType.LPF,
-            sniffer.sniffArchive(fixtures.fileAt("lpf-index-html.unknown"))
+            retriever.retrieveArchive(fixtures.fileAt("lpf-index-html.unknown"))
         )
     }
 
     @Test
     fun `sniff PDF`() = runBlocking {
-        assertEquals(MediaType.PDF, sniffer.sniff(fileExtension = "pdf"))
-        assertEquals(MediaType.PDF, sniffer.sniff(mediaType = "application/pdf"))
-        assertEquals(MediaType.PDF, sniffer.sniffResource(fixtures.fileAt("pdf.unknown")))
+        assertEquals(MediaType.PDF, retriever.retrieve(fileExtension = "pdf"))
+        assertEquals(MediaType.PDF, retriever.retrieve(mediaType = "application/pdf"))
+        assertEquals(MediaType.PDF, retriever.retrieveResource(fixtures.fileAt("pdf.unknown")))
     }
 
     @Test
     fun `sniff PNG`() = runBlocking {
-        assertEquals(MediaType.PNG, sniffer.sniff(fileExtension = "png"))
-        assertEquals(MediaType.PNG, sniffer.sniff(mediaType = "image/png"))
+        assertEquals(MediaType.PNG, retriever.retrieve(fileExtension = "png"))
+        assertEquals(MediaType.PNG, retriever.retrieve(mediaType = "image/png"))
     }
 
     @Test
     fun `sniff TIFF`() = runBlocking {
-        assertEquals(MediaType.TIFF, sniffer.sniff(fileExtension = "tiff"))
-        assertEquals(MediaType.TIFF, sniffer.sniff(fileExtension = "tif"))
-        assertEquals(MediaType.TIFF, sniffer.sniff(mediaType = "image/tiff"))
-        assertEquals(MediaType.TIFF, sniffer.sniff(mediaType = "image/tiff-fx"))
+        assertEquals(MediaType.TIFF, retriever.retrieve(fileExtension = "tiff"))
+        assertEquals(MediaType.TIFF, retriever.retrieve(fileExtension = "tif"))
+        assertEquals(MediaType.TIFF, retriever.retrieve(mediaType = "image/tiff"))
+        assertEquals(MediaType.TIFF, retriever.retrieve(mediaType = "image/tiff-fx"))
     }
 
     @Test
     fun `sniff WebP`() = runBlocking {
-        assertEquals(MediaType.WEBP, sniffer.sniff(fileExtension = "webp"))
-        assertEquals(MediaType.WEBP, sniffer.sniff(mediaType = "image/webp"))
+        assertEquals(MediaType.WEBP, retriever.retrieve(fileExtension = "webp"))
+        assertEquals(MediaType.WEBP, retriever.retrieve(mediaType = "image/webp"))
     }
 
     @Test
     fun `sniff WebPub`() = runBlocking {
         assertEquals(
             MediaType.READIUM_WEBPUB,
-            sniffer.sniff(fileExtension = "webpub")
+            retriever.retrieve(fileExtension = "webpub")
         )
         assertEquals(
             MediaType.READIUM_WEBPUB,
-            sniffer.sniff(mediaType = "application/webpub+zip")
+            retriever.retrieve(mediaType = "application/webpub+zip")
         )
         assertEquals(
             MediaType.READIUM_WEBPUB,
-            sniffer.sniffArchive(fixtures.fileAt("webpub-package.unknown"))
+            retriever.retrieveArchive(fixtures.fileAt("webpub-package.unknown"))
         )
     }
 
@@ -407,11 +406,11 @@ class MediaTypeSnifferTest {
     fun `sniff WebPub manifest`() = runBlocking {
         assertEquals(
             MediaType.READIUM_WEBPUB_MANIFEST,
-            sniffer.sniff(mediaType = "application/webpub+json")
+            retriever.retrieve(mediaType = "application/webpub+json")
         )
         assertEquals(
             MediaType.READIUM_WEBPUB_MANIFEST,
-            sniffer.sniffResource(fixtures.fileAt("webpub.json"))
+            retriever.retrieveResource(fixtures.fileAt("webpub.json"))
         )
     }
 
@@ -419,36 +418,36 @@ class MediaTypeSnifferTest {
     fun `sniff W3C WPUB manifest`() = runBlocking {
         assertEquals(
             MediaType.W3C_WPUB_MANIFEST,
-            sniffer.sniffResource(fixtures.fileAt("w3c-wpub.json"))
+            retriever.retrieveResource(fixtures.fileAt("w3c-wpub.json"))
         )
     }
 
     @Test
     fun `sniff ZAB`() = runBlocking {
-        assertEquals(MediaType.ZAB, sniffer.sniff(fileExtension = "zab"))
-        assertEquals(MediaType.ZAB, sniffer.sniffArchive(fixtures.fileAt("zab.unknown")))
+        assertEquals(MediaType.ZAB, retriever.retrieve(fileExtension = "zab"))
+        assertEquals(MediaType.ZAB, retriever.retrieveArchive(fixtures.fileAt("zab.unknown")))
     }
 
     @Test
     fun `sniff JSON`() = runBlocking {
-        assertEquals(MediaType.JSON, sniffer.sniffResource(fixtures.fileAt("any.json")))
+        assertEquals(MediaType.JSON, retriever.retrieveResource(fixtures.fileAt("any.json")))
     }
 
     @Test
     fun `sniff JSON problem details`() = runBlocking {
         assertEquals(
             MediaType.JSON_PROBLEM_DETAILS,
-            sniffer.sniff(mediaType = "application/problem+json")
+            retriever.retrieve(mediaType = "application/problem+json")
         )
         assertEquals(
             MediaType.JSON_PROBLEM_DETAILS,
-            sniffer.sniff(mediaType = "application/problem+json; charset=utf-8")
+            retriever.retrieve(mediaType = "application/problem+json; charset=utf-8")
         )
 
         // The sniffing of a JSON document should not take precedence over the JSON problem details.
         assertEquals(
             MediaType.JSON_PROBLEM_DETAILS,
-            sniffer.sniff(
+            retriever.retrieve(
                 hints = MediaTypeHints(mediaType = MediaType("application/problem+json")!!),
                 content = BytesResourceMediaTypeSnifferContent { """{"title": "Message"}""".toByteArray() }
             )
@@ -464,14 +463,14 @@ class MediaTypeSnifferTest {
         val xlsx = MediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")!!
         assertEquals(
             xlsx,
-            sniffer.sniff(
+            retriever.retrieve(
                 mediaTypes = emptyList(),
                 fileExtensions = listOf("foobar", "xlsx")
             )
         )
         assertEquals(
             xlsx,
-            sniffer.sniff(
+            retriever.retrieve(
                 mediaTypes = listOf(
                     "applicaton/foobar",
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -485,38 +484,21 @@ class MediaTypeSnifferTest {
     fun `sniff system media types from bytes`() = runBlocking {
         shadowOf(MimeTypeMap.getSingleton()).addExtensionMimeTypMapping("png", "image/png")
         val png = MediaType("image/png")!!
-        assertEquals(png, sniffer.sniffResource(fixtures.fileAt("png.unknown")))
+        assertEquals(png, retriever.retrieveResource(fixtures.fileAt("png.unknown")))
     }
 
     // Convenience
 
-    private suspend fun MediaTypeSniffer.sniff(
-        mediaType: String? = null,
-        fileExtension: String? = null
-    ): MediaType? =
-        sniff(
-            MediaTypeHints(
-                mediaType = mediaType?.let { MediaType(it) },
-                fileExtension = fileExtension
-            )
-        )
+    private suspend fun MediaTypeRetriever.retrieveResource(file: File): MediaType? =
+        retrieve(content = BytesResourceMediaTypeSnifferContent { file.readBytes() })
 
-    private suspend fun MediaTypeSniffer.sniff(
-        mediaTypes: List<String> = emptyList(),
-        fileExtensions: List<String> = emptyList()
-    ): MediaType? =
-        sniff(MediaTypeHints(mediaTypes = mediaTypes, fileExtensions = fileExtensions))
-
-    private suspend fun MediaTypeSniffer.sniffResource(file: File): MediaType? =
-        sniff(content = BytesResourceMediaTypeSnifferContent { file.readBytes() })
-
-    private suspend fun MediaTypeSniffer.sniffArchive(
+    private suspend fun MediaTypeRetriever.retrieveArchive(
         file: File,
         hints: MediaTypeHints = MediaTypeHints()
     ): MediaType? {
         val archive = assertNotNull(DefaultArchiveFactory(this).open(file).getOrNull())
 
-        return sniff(
+        return retrieve(
             hints,
             content = object : ContainerMediaTypeSnifferContent {
                 override suspend fun entries(): Set<String>? =

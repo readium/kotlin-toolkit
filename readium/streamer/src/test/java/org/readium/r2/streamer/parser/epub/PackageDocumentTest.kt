@@ -20,15 +20,15 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.contains
 import org.readium.r2.shared.publication.epub.layout
 import org.readium.r2.shared.publication.presentation.*
-import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.robolectric.RobolectricTestRunner
 
 fun parsePackageDocument(path: String): Manifest {
     val pub = PackageDocument::class.java.getResourceAsStream(path)
         ?.let { XmlParser().parse(it) }
-        ?.let { PackageDocument.parse(it, "OEBPS/content.opf", DefaultMediaTypeSniffer()) }
-        ?.let { ManifestAdapter(it, mediaTypeSniffer = DefaultMediaTypeSniffer()) }
+        ?.let { PackageDocument.parse(it, "OEBPS/content.opf", MediaTypeRetriever()) }
+        ?.let { ManifestAdapter(it, mediaTypeRetriever = MediaTypeRetriever()) }
         ?.adapt()
     checkNotNull(pub)
     return pub

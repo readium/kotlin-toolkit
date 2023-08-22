@@ -10,9 +10,7 @@ import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.encryption.Encryption
-import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.sniff
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 internal class ResourceAdapter(
     private val spine: Spine,
@@ -20,7 +18,7 @@ internal class ResourceAdapter(
     private val encryptionData: Map<String, Encryption>,
     private val coverId: String?,
     private val durationById: Map<String, Double?>,
-    private val mediaTypeSniffer: MediaTypeSniffer
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) {
     data class Links(
         val readingOrder: List<Link>,
@@ -73,7 +71,7 @@ internal class ResourceAdapter(
 
         return Link(
             href = item.href,
-            mediaType = item.mediaType?.let { MediaType(it) }?.let { mediaTypeSniffer.sniff(it) },
+            mediaType = mediaTypeRetriever.retrieve(item.mediaType),
             duration = durationById[item.id],
             rels = rels,
             properties = properties,

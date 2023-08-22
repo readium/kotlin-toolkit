@@ -9,7 +9,7 @@ package org.readium.r2.streamer.parser.epub
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Href
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 internal data class PackageDocument(
     val path: String,
@@ -21,11 +21,11 @@ internal data class PackageDocument(
 ) {
 
     companion object {
-        fun parse(document: ElementNode, filePath: String, mediaTypeSniffer: MediaTypeSniffer): PackageDocument? {
+        fun parse(document: ElementNode, filePath: String, mediaTypeRetriever: MediaTypeRetriever): PackageDocument? {
             val packagePrefixes = document.getAttr("prefix")?.let { parsePrefixes(it) }.orEmpty()
             val prefixMap = PACKAGE_RESERVED_PREFIXES + packagePrefixes // prefix element overrides reserved prefixes
             val epubVersion = document.getAttr("version")?.toDoubleOrNull() ?: 1.2
-            val metadata = MetadataParser(prefixMap, mediaTypeSniffer).parse(document, filePath)
+            val metadata = MetadataParser(prefixMap, mediaTypeRetriever).parse(document, filePath)
                 ?: return null
             val manifestElement = document.getFirst("manifest", Namespaces.OPF)
                 ?: return null

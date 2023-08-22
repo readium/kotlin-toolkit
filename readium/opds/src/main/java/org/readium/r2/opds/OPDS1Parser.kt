@@ -24,10 +24,8 @@ import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
-import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeHints
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 public enum class OPDSParserError {
     MissingTitle
@@ -52,9 +50,7 @@ public class OPDS1Parser {
 
         public suspend fun parseUrlString(
             url: String,
-            client: HttpClient = DefaultHttpClient(
-                DefaultMediaTypeSniffer()
-            )
+            client: HttpClient = DefaultHttpClient(MediaTypeRetriever())
         ): Try<ParseData, Exception> {
             return client.fetchWithDecoder(HttpRequest(url)) {
                 this.parse(it.body, URL(url))
@@ -63,7 +59,7 @@ public class OPDS1Parser {
 
         public suspend fun parseRequest(
             request: HttpRequest,
-            client: HttpClient = DefaultHttpClient(DefaultMediaTypeSniffer())
+            client: HttpClient = DefaultHttpClient(MediaTypeRetriever())
         ): Try<ParseData, Exception> {
             return client.fetchWithDecoder(request) {
                 this.parse(it.body, URL(request.url))
@@ -137,7 +133,9 @@ public class OPDS1Parser {
 
                         val newLink = Link(
                             href = Href(href, baseHref = feed.href.toString()).percentEncodedString,
-                            mediaType = sniff(link.getAttr("type")),
+                            mediaType = mediaTypeRetriever.retrieve(
+                                mediaType = link.getAttr("type")
+                            ),
                             title = entry.getFirst("title", Namespaces.Atom)?.text,
                             rels = listOfNotNull(link.getAttr("rel")).toSet(),
                             properties = Properties(otherProperties = otherProperties)
@@ -156,7 +154,7 @@ public class OPDS1Parser {
                 val hrefAttr = link.getAttr("href") ?: continue
                 val href = Href(hrefAttr, baseHref = feed.href.toString()).percentEncodedString
                 val title = link.getAttr("title")
-                val type = sniff(link.getAttr("type"))
+                val type = mediaTypeRetriever.retrieve(link.getAttr("type"))
                 val rels = listOfNotNull(link.getAttr("rel")).toSet()
 
                 val facetGroupName = link.getAttrNs("facetGroup", Namespaces.Opds)
@@ -197,7 +195,7 @@ public class OPDS1Parser {
         @Suppress("unused")
         public suspend fun retrieveOpenSearchTemplate(
             feed: Feed,
-            client: HttpClient = DefaultHttpClient(DefaultMediaTypeSniffer())
+            client: HttpClient = DefaultHttpClient(MediaTypeRetriever())
         ): Try<String?, Exception> {
             var openSearchURL: URL? = null
             var selfMimeType: MediaType? = null
@@ -280,7 +278,7 @@ public class OPDS1Parser {
 
                     Link(
                         href = Href(href, baseHref = baseUrl.toString()).percentEncodedString,
-                        mediaType = sniff(element.getAttr("type")),
+                        mediaType = mediaTypeRetriever.retrieve(element.getAttr("type")),
                         title = element.getAttr("title"),
                         rels = listOfNotNull(rel).toSet(),
                         properties = Properties(otherProperties = properties)
@@ -428,10 +426,6 @@ public class OPDS1Parser {
                 )
             }
 
-        public var mediaTypeSniffer: MediaTypeSniffer = DefaultMediaTypeSniffer()
-
-        private fun sniff(mediaType: String?): MediaType? =
-            mediaType?.let { MediaType(it) }
-                ?.let { mediaTypeSniffer.sniffHints(MediaTypeHints(mediaType = it)) ?: it }
+        public var mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
     }
 }

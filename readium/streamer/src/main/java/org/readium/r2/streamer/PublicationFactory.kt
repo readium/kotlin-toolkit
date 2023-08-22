@@ -19,8 +19,7 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
-import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioParser
@@ -54,7 +53,7 @@ public class PublicationFactory(
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
     contentProtections: List<ContentProtection>,
-    mediaTypeSniffer: MediaTypeSniffer,
+    mediaTypeRetriever: MediaTypeRetriever,
     httpClient: HttpClient,
     pdfFactory: PdfDocumentFactory<*>?,
     private val onCreatePublication: Publication.Builder.() -> Unit = {}
@@ -66,12 +65,12 @@ public class PublicationFactory(
             contentProtections: List<ContentProtection> = emptyList(),
             onCreatePublication: Publication.Builder.() -> Unit
         ): PublicationFactory {
-            val mediaTypeSniffer = DefaultMediaTypeSniffer()
+            val mediaTypeRetriever = MediaTypeRetriever()
             return PublicationFactory(
                 context = context,
                 contentProtections = contentProtections,
-                mediaTypeSniffer = mediaTypeSniffer,
-                httpClient = DefaultHttpClient(mediaTypeSniffer),
+                mediaTypeRetriever = mediaTypeRetriever,
+                httpClient = DefaultHttpClient(mediaTypeRetriever),
                 pdfFactory = null,
                 onCreatePublication = onCreatePublication
             )
@@ -80,16 +79,16 @@ public class PublicationFactory(
 
     private val contentProtections: Map<ContentProtection.Scheme, ContentProtection> =
         buildList {
-            add(LcpFallbackContentProtection(mediaTypeSniffer))
+            add(LcpFallbackContentProtection(mediaTypeRetriever))
             add(AdeptFallbackContentProtection())
             addAll(contentProtections.asReversed())
         }.associateBy(ContentProtection::scheme)
 
     private val defaultParsers: List<PublicationParser> =
         listOfNotNull(
-            EpubParser(mediaTypeSniffer),
+            EpubParser(mediaTypeRetriever),
             pdfFactory?.let { PdfParser(context, it) },
-            ReadiumWebPubParser(context, pdfFactory, mediaTypeSniffer),
+            ReadiumWebPubParser(context, pdfFactory, mediaTypeRetriever),
             ImageParser(),
             AudioParser()
         )
@@ -98,7 +97,7 @@ public class PublicationFactory(
         if (!ignoreDefaultParsers) defaultParsers else emptyList()
 
     private val parserAssetFactory: ParserAssetFactory =
-        ParserAssetFactory(httpClient, mediaTypeSniffer)
+        ParserAssetFactory(httpClient, mediaTypeRetriever)
 
     /**
      * Opens a [Publication] from the given asset.

@@ -19,8 +19,7 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
-import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * Represents a precise location in a publication in a format that can be stored and shared.
@@ -280,14 +279,14 @@ public data class LocatorCollection(
 
         public fun fromJSON(
             json: JSONObject?,
-            mediaTypeSniffer: MediaTypeSniffer = DefaultMediaTypeSniffer(),
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             warnings: WarningLogger? = null
         ): LocatorCollection {
             return LocatorCollection(
                 metadata = Metadata.fromJSON(json?.optJSONObject("metadata"), warnings),
                 links = Link.fromJSONArray(
                     json?.optJSONArray("links"),
-                    mediaTypeSniffer,
+                    mediaTypeRetriever,
                     warnings = warnings
                 ),
                 locators = Locator.fromJSONArray(json?.optJSONArray("locators"), warnings)

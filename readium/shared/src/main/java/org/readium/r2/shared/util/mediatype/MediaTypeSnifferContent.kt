@@ -60,7 +60,7 @@ public interface ResourceMediaTypeSnifferContent : MediaTypeSnifferContent {
 
     /** Readium Web Publication Manifest parsed from the content. */
     public suspend fun contentAsRwpm(): Manifest? =
-        Manifest.fromJSON(contentAsJson(), mediaTypeSniffer = DefaultMediaTypeSniffer())
+        Manifest.fromJSON(contentAsJson())
 
     /**
      * Raw bytes stream of the content.

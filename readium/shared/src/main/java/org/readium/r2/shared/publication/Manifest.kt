@@ -20,9 +20,8 @@ import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
-import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * Holds the metadata of a Readium publication, as described in the Readium Web Publication Manifest.
@@ -157,7 +156,7 @@ public data class Manifest(
         public fun fromJSON(
             json: JSONObject?,
             packaged: Boolean = false,
-            mediaTypeSniffer: MediaTypeSniffer = DefaultMediaTypeSniffer(),
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             warnings: WarningLogger? = null
         ): Manifest? {
             json ?: return null
@@ -168,7 +167,7 @@ public data class Manifest(
                 } else {
                     Link.fromJSONArray(
                         json.optJSONArray("links"),
-                        mediaTypeSniffer,
+                        mediaTypeRetriever,
                         warnings = warnings
                     )
                         .firstWithRel("self")
@@ -185,7 +184,7 @@ public data class Manifest(
 
             val metadata = Metadata.fromJSON(
                 json.remove("metadata") as? JSONObject,
-                mediaTypeSniffer,
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
@@ -196,7 +195,7 @@ public data class Manifest(
 
             val links = Link.fromJSONArray(
                 json.remove("links") as? JSONArray,
-                mediaTypeSniffer,
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
@@ -212,7 +211,7 @@ public data class Manifest(
             val readingOrderJSON = (json.remove("readingOrder") ?: json.remove("spine")) as? JSONArray
             val readingOrder = Link.fromJSONArray(
                 readingOrderJSON,
-                mediaTypeSniffer,
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
@@ -220,7 +219,7 @@ public data class Manifest(
 
             val resources = Link.fromJSONArray(
                 json.remove("resources") as? JSONArray,
-                mediaTypeSniffer,
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
@@ -228,7 +227,7 @@ public data class Manifest(
 
             val tableOfContents = Link.fromJSONArray(
                 json.remove("toc") as? JSONArray,
-                mediaTypeSniffer,
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )
@@ -236,7 +235,7 @@ public data class Manifest(
             // Parses subcollections from the remaining JSON properties.
             val subcollections = PublicationCollection.collectionsFromJSON(
                 json,
-                mediaTypeSniffer,
+                mediaTypeRetriever,
                 normalizeHref,
                 warnings
             )

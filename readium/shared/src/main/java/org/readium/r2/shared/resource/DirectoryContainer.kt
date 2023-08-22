@@ -15,7 +15,7 @@ import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.isParentOf
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * A file system directory as a [Container].
@@ -23,11 +23,11 @@ import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 internal class DirectoryContainer(
     private val root: File,
     private val entries: List<File>,
-    private val mediaTypeSniffer: MediaTypeSniffer
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) : Container {
 
     private inner class FileEntry(file: File) :
-        Container.Entry, Resource by FileResource(file, mediaTypeSniffer) {
+        Container.Entry, Resource by FileResource(file, mediaTypeRetriever) {
 
         override val path: String =
             file.relativeTo(root).path.addPrefix("/")
@@ -52,7 +52,7 @@ internal class DirectoryContainer(
 }
 
 public class DirectoryContainerFactory(
-    private val mediaTypeSniffer: MediaTypeSniffer
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) : ContainerFactory {
 
     override suspend fun create(url: Url): Try<Container, ContainerFactory.Error> {
@@ -82,7 +82,7 @@ public class DirectoryContainerFactory(
                 return Try.failure(ContainerFactory.Error.Forbidden(e))
             }
 
-        val container = DirectoryContainer(file, entries, mediaTypeSniffer)
+        val container = DirectoryContainer(file, entries, mediaTypeRetriever)
 
         return Try.success(container)
     }

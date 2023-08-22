@@ -21,8 +21,7 @@ import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
-import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * Core Collection Model
@@ -57,7 +56,7 @@ public data class PublicationCollection(
          */
         public fun fromJSON(
             json: Any?,
-            mediaTypeSniffer: MediaTypeSniffer = DefaultMediaTypeSniffer(),
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): PublicationCollection? {
@@ -72,14 +71,14 @@ public data class PublicationCollection(
                 is JSONObject -> {
                     links = Link.fromJSONArray(
                         json.remove("links") as? JSONArray,
-                        mediaTypeSniffer,
+                        mediaTypeRetriever,
                         normalizeHref,
                         warnings
                     )
                     metadata = (json.remove("metadata") as? JSONObject)?.toMap()
                     subcollections = collectionsFromJSON(
                         json,
-                        mediaTypeSniffer,
+                        mediaTypeRetriever,
                         normalizeHref,
                         warnings
                     )
@@ -87,7 +86,7 @@ public data class PublicationCollection(
 
                 // Parses an array of links.
                 is JSONArray -> {
-                    links = Link.fromJSONArray(json, mediaTypeSniffer, normalizeHref, warnings)
+                    links = Link.fromJSONArray(json, mediaTypeRetriever, normalizeHref, warnings)
                 }
 
                 else -> {
@@ -120,7 +119,7 @@ public data class PublicationCollection(
          */
         public fun collectionsFromJSON(
             json: JSONObject,
-            mediaTypeSniffer: MediaTypeSniffer = DefaultMediaTypeSniffer(),
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): Map<String, List<PublicationCollection>> {
@@ -129,14 +128,21 @@ public data class PublicationCollection(
                 val subJSON = json.get(role)
 
                 // Parses a list of links or a single collection object.
-                val collection = fromJSON(subJSON, mediaTypeSniffer, normalizeHref, warnings)
+                val collection = fromJSON(subJSON, mediaTypeRetriever, normalizeHref, warnings)
                 if (collection != null) {
                     collections.getOrPut(role) { mutableListOf() }.add(collection)
 
                     // Parses a list of collection objects.
                 } else if (subJSON is JSONArray) {
                     collections.getOrPut(role) { mutableListOf() }.addAll(
-                        subJSON.mapNotNull { fromJSON(it, mediaTypeSniffer, normalizeHref, warnings) }
+                        subJSON.mapNotNull {
+                            fromJSON(
+                                it,
+                                mediaTypeRetriever,
+                                normalizeHref,
+                                warnings
+                            )
+                        }
                     )
                 }
             }

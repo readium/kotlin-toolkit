@@ -25,10 +25,8 @@ import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.URITemplate
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
-import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.sniff
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * Function used to recursively transform the href of a [Link] when parsing its JSON
@@ -147,7 +145,7 @@ public data class Link(
          */
         public fun fromJSON(
             json: JSONObject?,
-            mediaTypeSniffer: MediaTypeSniffer = DefaultMediaTypeSniffer(),
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): Link? {
@@ -160,8 +158,7 @@ public data class Link(
             return Link(
                 href = normalizeHref(href),
                 mediaType = json.optNullableString("type")
-                    ?.let { MediaType(it) }
-                    ?.let { mediaTypeSniffer.sniff(it) },
+                    ?.let { mediaTypeRetriever.retrieve(it) },
                 templated = json.optBoolean("templated", false),
                 title = json.optNullableString("title"),
                 rels = json.optStringsFromArrayOrSingle("rel").toSet(),
@@ -173,12 +170,12 @@ public data class Link(
                 languages = json.optStringsFromArrayOrSingle("language"),
                 alternates = fromJSONArray(
                     json.optJSONArray("alternate"),
-                    mediaTypeSniffer,
+                    mediaTypeRetriever,
                     normalizeHref
                 ),
                 children = fromJSONArray(
                     json.optJSONArray("children"),
-                    mediaTypeSniffer,
+                    mediaTypeRetriever,
                     normalizeHref
                 )
             )
@@ -192,14 +189,14 @@ public data class Link(
          */
         public fun fromJSONArray(
             json: JSONArray?,
-            mediaTypeSniffer: MediaTypeSniffer = DefaultMediaTypeSniffer(),
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): List<Link> {
             return json.parseObjects {
                 fromJSON(
                     it as? JSONObject,
-                    mediaTypeSniffer,
+                    mediaTypeRetriever,
                     normalizeHref,
                     warnings
                 )

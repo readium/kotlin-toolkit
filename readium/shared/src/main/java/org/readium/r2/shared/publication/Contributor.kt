@@ -21,8 +21,7 @@ import org.readium.r2.shared.extensions.parseObjects
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
-import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * Contributor Object for the Readium Web Publication Manifest.
@@ -87,7 +86,7 @@ public data class Contributor(
          */
         public fun fromJSON(
             json: Any?,
-            mediaTypeSniffer: MediaTypeSniffer = DefaultMediaTypeSniffer(),
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): Contributor? {
@@ -112,7 +111,7 @@ public data class Contributor(
                 position = jsonObject.optNullableDouble("position"),
                 links = Link.fromJSONArray(
                     jsonObject.optJSONArray("links"),
-                    mediaTypeSniffer,
+                    mediaTypeRetriever,
                     normalizeHref,
                     warnings
                 )
@@ -128,7 +127,7 @@ public data class Contributor(
          */
         public fun fromJSONArray(
             json: Any?,
-            mediaTypeSniffer: MediaTypeSniffer = DefaultMediaTypeSniffer(),
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): List<Contributor> {
@@ -137,14 +136,14 @@ public data class Contributor(
                     listOf(json).mapNotNull {
                         fromJSON(
                             it,
-                            mediaTypeSniffer,
+                            mediaTypeRetriever,
                             normalizeHref,
                             warnings
                         )
                     }
 
                 is JSONArray ->
-                    json.parseObjects { fromJSON(it, mediaTypeSniffer, normalizeHref, warnings) }
+                    json.parseObjects { fromJSON(it, mediaTypeRetriever, normalizeHref, warnings) }
 
                 else -> emptyList()
             }

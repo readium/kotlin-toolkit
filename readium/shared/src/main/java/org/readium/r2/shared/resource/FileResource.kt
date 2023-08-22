@@ -18,10 +18,9 @@ import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.isFile
 import org.readium.r2.shared.util.isLazyInitialized
-import org.readium.r2.shared.util.mediatype.EpubMediaTypeSniffer.sniff
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * A [Resource] to access a [file].
@@ -29,15 +28,15 @@ import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
 public class FileResource private constructor(
     private val file: File,
     private val mediaType: MediaType?,
-    private val mediaTypeSniffer: MediaTypeSniffer?
+    private val mediaTypeRetriever: MediaTypeRetriever?
 ) : Resource {
 
     public constructor(file: File, mediaType: MediaType) : this(file, mediaType, null)
 
-    public constructor(file: File, mediaTypeSniffer: MediaTypeSniffer) : this(
+    public constructor(file: File, mediaTypeRetriever: MediaTypeRetriever) : this(
         file,
         null,
-        mediaTypeSniffer
+        mediaTypeRetriever
     )
 
     private val randomAccessFile by lazy {
@@ -53,7 +52,7 @@ public class FileResource private constructor(
 
     override suspend fun mediaType(): ResourceTry<MediaType> = Try.success(
         mediaType
-            ?: mediaTypeSniffer?.sniff(
+            ?: mediaTypeRetriever?.retrieve(
                 hints = MediaTypeHints(fileExtension = file.extension),
                 content = ResourceMediaTypeSnifferContent(this)
             )
@@ -134,7 +133,7 @@ public class FileResource private constructor(
 }
 
 public class FileResourceFactory(
-    private val mediaTypeSniffer: MediaTypeSniffer
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) : ResourceFactory {
 
     override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
@@ -152,6 +151,6 @@ public class FileResourceFactory(
             return Try.failure(ResourceFactory.Error.Forbidden(e))
         }
 
-        return Try.success(FileResource(file, mediaTypeSniffer))
+        return Try.success(FileResource(file, mediaTypeRetriever))
     }
 }

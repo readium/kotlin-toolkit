@@ -21,77 +21,6 @@ import org.readium.r2.shared.publication.Publication
 public interface MediaTypeSniffer {
     public fun sniffHints(hints: MediaTypeHints): MediaType? = null
     public suspend fun sniffContent(content: MediaTypeSnifferContent): MediaType? = null
-
-    public suspend fun MediaTypeSniffer.sniff(
-        hints: MediaTypeHints = MediaTypeHints(),
-        content: MediaTypeSnifferContent? = null
-    ): MediaType? =
-        sniffHints(hints)
-            ?: content?.let { sniffContent(it) }
-            ?: hints.mediaTypes.firstOrNull()
-}
-
-public fun MediaTypeSniffer.sniff(mediaType: MediaType, fileExtension: String? = null): MediaType =
-    sniffHints(MediaTypeHints(mediaType = mediaType, fileExtension = fileExtension)) ?: mediaType
-
-/**
- * The default sniffer provided by Readium 2 to resolve a [MediaType].
- */
-public class DefaultMediaTypeSniffer private constructor(
-    sniffer: MediaTypeSniffer
-) : MediaTypeSniffer by sniffer {
-
-    /**
-     * The default sniffers provided by Readium 2 for all known formats.
-     * The sniffers order is important, because some formats are subsets of other formats.
-     */
-    public constructor() : this(
-        CompositeMediaTypeSniffer(
-            listOf(
-                XhtmlMediaTypeSniffer,
-                HtmlMediaTypeSniffer,
-                OpdsMediaTypeSniffer,
-                LcpLicenseMediaTypeSniffer,
-                BitmapMediaTypeSniffer,
-                WebPubManifestMediaTypeSniffer,
-                WebPubMediaTypeSniffer,
-                W3cWpubMediaTypeSniffer,
-                EpubMediaTypeSniffer,
-                LpfMediaTypeSniffer,
-                ArchiveMediaTypeSniffer,
-                PdfMediaTypeSniffer,
-                JsonMediaTypeSniffer
-            )
-        )
-    )
-
-    override suspend fun MediaTypeSniffer.sniff(
-        hints: MediaTypeHints,
-        content: MediaTypeSnifferContent?
-    ): MediaType? {
-        (sniffHints(hints) ?: content?.let { sniffContent(it) })
-            ?.let { return it }
-
-        // Falls back on the system-wide registered media types using MimeTypeMap.
-        // Note: This is done after the default light sniffers, because otherwise it will detect
-        // JSON, XML or ZIP formats before we have a chance of sniffing their content (for example,
-        // for RWPM).
-        SystemMediaTypeSniffer.sniff(hints, content)
-            ?.let { return it }
-
-        return hints.mediaTypes.firstOrNull()
-    }
-}
-
-public class CompositeMediaTypeSniffer(
-    private val sniffers: List<MediaTypeSniffer>
-) : MediaTypeSniffer {
-
-    override fun sniffHints(hints: MediaTypeHints): MediaType? =
-        sniffers.firstNotNullOfOrNull { it.sniffHints(hints) }
-
-    override suspend fun sniffContent(content: MediaTypeSnifferContent): MediaType? =
-        sniffers.firstNotNullOfOrNull { it.sniffContent(content) }
 }
 
 /**
@@ -407,10 +336,7 @@ public object WebPubMediaTypeSniffer : MediaTypeSniffer {
             try {
                 content.read("manifest.json")
                     ?.let {
-                        Manifest.fromJSON(
-                            JSONObject(String(it)),
-                            mediaTypeSniffer = DefaultMediaTypeSniffer()
-                        )
+                        Manifest.fromJSON(JSONObject(String(it)))
                     }
             } catch (e: Exception) {
                 null

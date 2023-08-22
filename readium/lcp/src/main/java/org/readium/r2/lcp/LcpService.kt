@@ -33,7 +33,7 @@ import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * Service used to acquire and open publications protected with LCP.
@@ -157,7 +157,7 @@ public interface LcpService {
         public operator fun invoke(
             context: Context,
             assetRetriever: AssetRetriever,
-            mediaTypeSniffer: MediaTypeSniffer
+            mediaTypeRetriever: MediaTypeRetriever
         ): LcpService? {
             if (!LcpClient.isAvailable()) {
                 return null
@@ -167,7 +167,7 @@ public interface LcpService {
             val deviceRepository = DeviceRepository(db)
             val passphraseRepository = PassphrasesRepository(db)
             val licenseRepository = LicensesRepository(db)
-            val network = NetworkService(mediaTypeSniffer)
+            val network = NetworkService(mediaTypeRetriever)
             val device = DeviceService(
                 repository = deviceRepository,
                 network = network,
@@ -189,7 +189,7 @@ public interface LcpService {
         @Suppress("UNUSED_PARAMETER")
         @Deprecated(
             "Use `LcpService()` instead",
-            ReplaceWith("LcpService(context, AssetRetriever(), DefaultMediaTypeSniffer())"),
+            ReplaceWith("LcpService(context, AssetRetriever(), MediaTypeRetriever())"),
             level = DeprecationLevel.ERROR
         )
         public fun create(context: Context): LcpService? = throw NotImplementedError()

@@ -15,7 +15,7 @@ import org.readium.r2.shared.publication.services.*
 import org.readium.r2.shared.resource.readAsJson
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.streamer.parser.PublicationParser
 import org.readium.r2.streamer.parser.audio.AudioLocatorService
@@ -26,7 +26,7 @@ import org.readium.r2.streamer.parser.audio.AudioLocatorService
 public class ReadiumWebPubParser(
     private val context: Context? = null,
     private val pdfFactory: PdfDocumentFactory<*>?,
-    private val mediaTypeSniffer: MediaTypeSniffer
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) : PublicationParser {
 
     override suspend fun parse(
@@ -45,7 +45,7 @@ public class ReadiumWebPubParser(
         val manifest = Manifest.fromJSON(
             manifestJson,
             packaged = true,
-            mediaTypeSniffer = mediaTypeSniffer
+            mediaTypeRetriever = mediaTypeRetriever
         )
             ?: return Try.failure(
                 PublicationParser.Error.ParsingFailed("Failed to parse the RWPM Manifest")

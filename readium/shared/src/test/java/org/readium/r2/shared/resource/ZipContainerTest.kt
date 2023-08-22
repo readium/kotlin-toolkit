@@ -20,8 +20,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
-import org.readium.r2.shared.util.mediatype.DefaultMediaTypeSniffer
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.use
 import org.robolectric.ParameterizedRobolectricTestRunner
 
@@ -38,7 +38,7 @@ class ZipContainerTest(val sut: suspend () -> Container) {
 
             val zipArchive = suspend {
                 assertNotNull(
-                    DefaultArchiveFactory(DefaultMediaTypeSniffer())
+                    DefaultArchiveFactory(MediaTypeRetriever())
                         .create(
                             FileResource(File(epubZip.path), mediaType = MediaType.EPUB),
                             password = null
@@ -48,7 +48,7 @@ class ZipContainerTest(val sut: suspend () -> Container) {
             }
 
             val apacheZipArchive = suspend {
-                ChannelZipArchiveFactory(DefaultMediaTypeSniffer())
+                ChannelZipArchiveFactory(MediaTypeRetriever())
                     .openFile(File(epubZip.path))
             }
 
@@ -56,7 +56,7 @@ class ZipContainerTest(val sut: suspend () -> Container) {
             assertNotNull(epubExploded)
             val explodedArchive = suspend {
                 assertNotNull(
-                    DirectoryContainerFactory(DefaultMediaTypeSniffer())
+                    DirectoryContainerFactory(MediaTypeRetriever())
                         .create(File(epubExploded.path))
                         .getOrNull()
                 )

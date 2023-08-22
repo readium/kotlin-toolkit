@@ -13,11 +13,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.error.MessageError
 import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.util.mediatype.MediaTypeSniffer
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.toFile
 
 public class DefaultArchiveFactory(
-    private val mediaTypeSniffer: MediaTypeSniffer
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) : ArchiveFactory {
 
     override suspend fun create(resource: Resource, password: String?): Try<Container, ArchiveFactory.Error> {
@@ -38,7 +38,7 @@ public class DefaultArchiveFactory(
     internal suspend fun open(file: File): Try<Container, ArchiveFactory.Error> =
         withContext(Dispatchers.IO) {
             try {
-                val archive = JavaZipContainer(ZipFile(file), file, mediaTypeSniffer)
+                val archive = JavaZipContainer(ZipFile(file), file, mediaTypeRetriever)
                 Try.success(archive)
             } catch (e: ZipException) {
                 Try.failure(ArchiveFactory.Error.FormatNotSupported(e))
