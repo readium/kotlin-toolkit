@@ -45,8 +45,8 @@ private val skipBackwardInterval: Duration = 30.seconds
 @OptIn(ExperimentalTime::class)
 public class MediaSessionNavigator(
     override val publication: Publication,
-    internal val publicationId: PublicationId,
-    private val controller: MediaControllerCompat,
+    public val publicationId: PublicationId,
+    public val controller: MediaControllerCompat,
     public var listener: Listener? = null
 ) : MediaNavigator, CoroutineScope by MainScope() {
 
