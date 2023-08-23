@@ -127,7 +127,7 @@ public data class UserProperties(
     // Accessibility
     val a11yNormalize: Boolean? = null,
 
-    val overrides: Map<String, String?> = emptyMap(),
+    val overrides: Map<String, String?> = emptyMap()
 ) : Properties {
 
     override fun toCssProperties(): Map<String, String?> = buildMap {
@@ -282,7 +282,7 @@ public data class RsProperties(
     val compFontFamily: List<String>? = null,
     val codeFontFamily: List<String>? = null,
 
-    val overrides: Map<String, String?> = emptyMap(),
+    val overrides: Map<String, String?> = emptyMap()
 ) : Properties {
 
     override fun toCssProperties(): Map<String, String?> = buildMap {
@@ -560,8 +560,11 @@ private fun MutableMap<String, String?>.putCss(name: String, strings: List<Strin
 
 /** Readium CSS boolean flag. */
 private fun flag(name: String, value: Boolean?) = Cssable {
-    if (value == true) "readium-$name-on"
-    else null
+    if (value == true) {
+        "readium-$name-on"
+    } else {
+        null
+    }
 }
 
 /**

@@ -13,5 +13,10 @@ package org.readium.navigator.media2
     message = "The new Audiobook navigator is still experimental. The API may be changed in the future without notice."
 )
 @Retention(AnnotationRetention.BINARY)
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.TYPEALIAS, AnnotationTarget.PROPERTY)
+@Target(
+    AnnotationTarget.CLASS,
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.TYPEALIAS,
+    AnnotationTarget.PROPERTY
+)
 public annotation class ExperimentalMedia2

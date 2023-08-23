@@ -19,5 +19,5 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 @ExperimentalReadiumApi
 public data class PdfiumDefaults(
     val pageSpacing: Double? = null,
-    val readingProgression: ReadingProgression? = null,
+    val readingProgression: ReadingProgression? = null
 )

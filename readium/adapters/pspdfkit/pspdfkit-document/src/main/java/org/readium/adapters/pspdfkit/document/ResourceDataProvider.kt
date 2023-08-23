@@ -9,15 +9,14 @@ package org.readium.adapters.pspdfkit.document
 import com.pspdfkit.document.providers.DataProvider
 import java.util.*
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.shared.error.getOrElse
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.synchronized
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.synchronized
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.isLazyInitialized
 import timber.log.Timber
 
 internal class ResourceDataProvider(
-    resource: Fetcher.Resource,
+    resource: Resource,
     private val onResourceError: (Resource.Exception) -> Unit = { Timber.e(it) }
 ) : DataProvider {
 

@@ -100,10 +100,11 @@ class AudioReaderFragment : BaseReaderFragment(), SeekBar.OnSeekBarChangeListene
         binding.timelineDuration.isEnabled = true
         binding.timelinePosition.isEnabled = true
         binding.playPause.setImageResource(
-            if (playback.playWhenReady)
+            if (playback.playWhenReady) {
                 R.drawable.ic_baseline_pause_24
-            else
+            } else {
                 R.drawable.ic_baseline_play_arrow_24
+            }
         )
 
         if (seekingItem == null) {

@@ -150,7 +150,7 @@ class MetadataTest {
         assertEquals(
             Metadata(
                 conformsTo = setOf(Publication.Profile.DIVINA),
-                localizedTitle = LocalizedString("Title"),
+                localizedTitle = LocalizedString("Title")
             ),
             Metadata.fromJSON(
                 JSONObject(
@@ -178,10 +178,6 @@ class MetadataTest {
                 )
             )
         )
-    }
-
-    @Test fun `parse JSON requires {title}`() {
-        assertNull(Metadata.fromJSON(JSONObject("{'duration': 4.24}")))
     }
 
     @Test fun `parse JSON {duration} requires positive`() {
@@ -326,8 +322,12 @@ class MetadataTest {
 
     @Test fun `get primary language with no language`() {
         assertNull(createMetadata(languages = listOf(), readingProgression = null).language)
-        assertNull(createMetadata(languages = listOf(), readingProgression = ReadingProgression.LTR).language)
-        assertNull(createMetadata(languages = listOf(), readingProgression = ReadingProgression.RTL).language)
+        assertNull(
+            createMetadata(languages = listOf(), readingProgression = ReadingProgression.LTR).language
+        )
+        assertNull(
+            createMetadata(languages = listOf(), readingProgression = ReadingProgression.RTL).language
+        )
     }
 
     @Test fun `get primary language with a single language`() {
@@ -346,5 +346,9 @@ class MetadataTest {
     }
 
     private fun createMetadata(languages: List<String>, readingProgression: ReadingProgression?): Metadata =
-        Metadata(localizedTitle = LocalizedString("Title"), languages = languages, readingProgression = readingProgression)
+        Metadata(
+            localizedTitle = LocalizedString("Title"),
+            languages = languages,
+            readingProgression = readingProgression
+        )
 }

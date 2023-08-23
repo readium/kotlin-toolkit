@@ -27,7 +27,12 @@ class GridAutoFitLayoutManager : GridLayoutManager {
         setColumnWidth(checkedColumnWidth(context, columnWidth))
     } /* Initially set spanCount to 1, will be changed automatically later. */
 
-    constructor(context: Context, columnWidth: Int, orientation: Int, reverseLayout: Boolean) : super(context, 1, orientation, reverseLayout) {
+    constructor(context: Context, columnWidth: Int, orientation: Int, reverseLayout: Boolean) : super(
+        context,
+        1,
+        orientation,
+        reverseLayout
+    ) {
         setColumnWidth(checkedColumnWidth(context, columnWidth))
     } /* Initially set spanCount to 1, will be changed automatically later. */
 
@@ -35,12 +40,14 @@ class GridAutoFitLayoutManager : GridLayoutManager {
         var width = columnWidth
         width = if (width <= 0) {
             TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, sColumnWidth.toFloat(),
+                TypedValue.COMPLEX_UNIT_DIP,
+                sColumnWidth.toFloat(),
                 context.resources.displayMetrics
             ).toInt()
         } else {
             TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, width.toFloat(),
+                TypedValue.COMPLEX_UNIT_DIP,
+                width.toFloat(),
                 context.resources.displayMetrics
             ).toInt()
         }

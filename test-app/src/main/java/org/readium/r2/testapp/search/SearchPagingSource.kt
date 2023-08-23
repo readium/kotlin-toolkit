@@ -9,10 +9,10 @@ package org.readium.r2.testapp.search
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.LocatorCollection
 import org.readium.r2.shared.publication.services.search.SearchTry
+import org.readium.r2.shared.util.getOrThrow
 
 @OptIn(ExperimentalReadiumApi::class)
 class SearchPagingSource(

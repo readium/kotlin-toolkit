@@ -34,7 +34,7 @@ class MediaService : MediaSessionService() {
     class Session(
         val bookId: Long,
         val navigator: AnyMediaNavigator,
-        val mediaSession: MediaSession,
+        val mediaSession: MediaSession
     ) {
         val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     }
@@ -101,7 +101,9 @@ class MediaService : MediaSessionService() {
                 flags = flags or PendingIntent.FLAG_IMMUTABLE
             }
 
-            val intent = application.packageManager.getLaunchIntentForPackage(application.packageName)
+            val intent = application.packageManager.getLaunchIntentForPackage(
+                application.packageName
+            )
 
             return PendingIntent.getActivity(applicationContext, 0, intent, flags)
         }

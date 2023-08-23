@@ -131,6 +131,7 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
      * Determines speed during touch scrolling
      */
     private var mVelocityTracker: VelocityTracker? = null
+
     /** Initial velocity of the current movement. */
     private var mInitialVelocity: Int? = null
     private var mMinimumVelocity: Int = 0
@@ -246,7 +247,9 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
                     val count = childCount
                     while (i < count) {
                         val childInsets = ViewCompat
-                            .dispatchApplyWindowInsets(getChildAt(i), applied).getInsets(WindowInsetsCompat.Type.systemBars())
+                            .dispatchApplyWindowInsets(getChildAt(i), applied).getInsets(
+                                WindowInsetsCompat.Type.systemBars()
+                            )
                         // Now keep track of any consumed by tracking each dimension's min
                         // value
                         res.left = min(
@@ -270,7 +273,10 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
 
                     // Now return a new WindowInsets, using the consumed window insets
                     return WindowInsetsCompat.Builder(applied)
-                        .setInsets(WindowInsetsCompat.Type.systemBars(), Insets.of(res.left, res.top, res.right, res.bottom))
+                        .setInsets(
+                            WindowInsetsCompat.Type.systemBars(),
+                            Insets.of(res.left, res.top, res.right, res.bottom)
+                        )
                         .build()
                 }
             }
@@ -429,7 +435,6 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
     }
 
     private fun infoForPosition(position: Int): ItemInfo {
-
         val ii = ItemInfo()
         ii.position = position
         ii.offset = (position * (1 / numPages)).toFloat()
@@ -529,7 +534,8 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
                     }
                     childLeft += scrollX
                     child.layout(
-                        childLeft, childTop,
+                        childLeft,
+                        childTop,
                         childLeft + child.measuredWidth,
                         childTop + child.measuredHeight
                     )
@@ -681,7 +687,6 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
     }
 
     override fun onTouchEvent(ev: MotionEvent): Boolean {
-
         if (mVelocityTracker == null) {
             mVelocityTracker = VelocityTracker.obtain()
         }
@@ -689,7 +694,6 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
 
         val action = ev.action
         when (action and MotionEvent.ACTION_MASK) {
-
             MotionEvent.ACTION_DOWN -> {
                 mScroller?.let { scroller ->
                     mHasAbortedScroller = !scroller.isFinished
@@ -717,10 +721,11 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
                     if (xDiff > mTouchSlop) {
                         if (DEBUG) Timber.v("Starting drag!")
                         mIsBeingDragged = true
-                        mLastMotionX = if (x - mInitialMotionX > 0)
+                        mLastMotionX = if (x - mInitialMotionX > 0) {
                             mInitialMotionX + mTouchSlop
-                        else
+                        } else {
                             mInitialMotionX - mTouchSlop
+                        }
                         setScrollState(SCROLL_STATE_DRAGGING)
                     }
                 }
@@ -856,8 +861,11 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
         val isCancelled = (initialVelocity * currentVelocity) <= 0
 
         return if (!isCancelled && abs(deltaX) > mFlingDistance && abs(currentVelocity) > mMinimumVelocity) {
-            if (currentVelocity >= 0) currentPage - 1
-            else currentPage + 1
+            if (currentVelocity >= 0) {
+                currentPage - 1
+            } else {
+                currentPage + 1
+            }
         } else {
             currentPage
         }
@@ -898,7 +906,10 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
                 } else {
                     arrowScroll(View.FOCUS_LEFT)
                 }
-                KeyEvent.KEYCODE_DPAD_RIGHT -> handled = if (event.hasModifiers(KeyEvent.META_ALT_ON)) {
+                KeyEvent.KEYCODE_DPAD_RIGHT -> handled = if (event.hasModifiers(
+                        KeyEvent.META_ALT_ON
+                    )
+                ) {
                     pageRight()
                 } else {
                     arrowScroll(View.FOCUS_RIGHT)
@@ -945,7 +956,12 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
                     sb.append(" => ").append(parent.javaClass.simpleName)
                     parent = parent.parent
                 }
-                if (DEBUG) Timber.e("arrowScroll tried to find focus based on non-child current focused view %s", sb.toString())
+                if (DEBUG) {
+                    Timber.e(
+                        "arrowScroll tried to find focus based on non-child current focused view %s",
+                        sb.toString()
+                    )
+                }
                 currentFocused = null
             }
         }
@@ -953,7 +969,8 @@ internal class R2WebView(context: Context, attrs: AttributeSet) : R2BasicWebView
         var handled = false
 
         val nextFocused = FocusFinder.getInstance().findNextFocus(
-            this, currentFocused,
+            this,
+            currentFocused,
             direction
         )
         if (nextFocused != null && nextFocused !== currentFocused) {

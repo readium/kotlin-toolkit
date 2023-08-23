@@ -14,12 +14,17 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 
 // https://github.com/readium/readium-css/blob/master/css/src/modules/ReadiumCSS-day_mode.css
 @ColorInt private val dayContentColor: Int = AndroidColor.parseColor("#121212")
+
 @ColorInt private val dayBackgroundColor: Int = AndroidColor.parseColor("#FFFFFF")
+
 // https://github.com/readium/readium-css/blob/master/css/src/modules/ReadiumCSS-night_mode.css
 @ColorInt private val nightContentColor: Int = AndroidColor.parseColor("#FEFEFE")
+
 @ColorInt private val nightBackgroundColor: Int = AndroidColor.parseColor("#000000")
+
 // https://github.com/readium/readium-css/blob/master/css/src/modules/ReadiumCSS-sepia_mode.css
 @ColorInt private val sepiaContentColor: Int = AndroidColor.parseColor("#121212")
+
 @ColorInt private val sepiaBackgroundColor: Int = AndroidColor.parseColor("#faf4e8")
 
 @ExperimentalReadiumApi
@@ -28,41 +33,65 @@ public enum class Theme(
     @ColorInt public val contentColor: Int,
     @ColorInt public val backgroundColor: Int
 ) {
-    @SerialName("light") LIGHT(contentColor = dayContentColor, backgroundColor = dayBackgroundColor),
-    @SerialName("dark") DARK(contentColor = nightContentColor, backgroundColor = nightBackgroundColor),
-    @SerialName("sepia") SEPIA(contentColor = sepiaContentColor, backgroundColor = sepiaBackgroundColor);
+    @SerialName("light")
+    LIGHT(contentColor = dayContentColor, backgroundColor = dayBackgroundColor),
+
+    @SerialName("dark")
+    DARK(contentColor = nightContentColor, backgroundColor = nightBackgroundColor),
+
+    @SerialName("sepia")
+    SEPIA(contentColor = sepiaContentColor, backgroundColor = sepiaBackgroundColor);
 }
 
 @ExperimentalReadiumApi
 @Serializable
 public enum class TextAlign {
     /** Align the text in the center of the page. */
-    @SerialName("center") CENTER,
+    @SerialName("center")
+    CENTER,
+
     /** Stretch lines of text that end with a soft line break to fill the width of the page. */
-    @SerialName("justify") JUSTIFY,
+    @SerialName("justify")
+    JUSTIFY,
+
     /** Align the text on the leading edge of the page. */
-    @SerialName("start") START,
+    @SerialName("start")
+    START,
+
     /** Align the text on the trailing edge of the page. */
-    @SerialName("end") END,
+    @SerialName("end")
+    END,
+
     /** Align the text on the left edge of the page. */
-    @SerialName("left") LEFT,
+    @SerialName("left")
+    LEFT,
+
     /** Align the text on the right edge of the page. */
-    @SerialName("right") RIGHT;
+    @SerialName("right")
+    RIGHT;
 }
 
 @ExperimentalReadiumApi
 @Serializable
 public enum class ColumnCount {
-    @SerialName("auto") AUTO,
-    @SerialName("1") ONE,
-    @SerialName("2") TWO;
+    @SerialName("auto")
+    AUTO,
+
+    @SerialName("1")
+    ONE,
+
+    @SerialName("2")
+    TWO;
 }
 
 @ExperimentalReadiumApi
 @Serializable
 public enum class ImageFilter {
-    @SerialName("darken") DARKEN,
-    @SerialName("invert") INVERT;
+    @SerialName("darken")
+    DARKEN,
+
+    @SerialName("invert")
+    INVERT;
 }
 
 /**
@@ -105,8 +134,11 @@ public value class Color(@ColorInt public val int: Int)
 @ExperimentalReadiumApi
 @Serializable
 public enum class Axis(public val value: String) {
-    @SerialName("horizontal") HORIZONTAL("horizontal"),
-    @SerialName("vertical") VERTICAL("vertical");
+    @SerialName("horizontal")
+    HORIZONTAL("horizontal"),
+
+    @SerialName("vertical")
+    VERTICAL("vertical");
 }
 
 /**
@@ -115,9 +147,14 @@ public enum class Axis(public val value: String) {
 @ExperimentalReadiumApi
 @Serializable
 public enum class Spread(public val value: String) {
-    @SerialName("auto") AUTO("auto"),
-    @SerialName("never") NEVER("never"),
-    @SerialName("always") ALWAYS("always");
+    @SerialName("auto")
+    AUTO("auto"),
+
+    @SerialName("never")
+    NEVER("never"),
+
+    @SerialName("always")
+    ALWAYS("always");
 }
 
 /**
@@ -126,8 +163,11 @@ public enum class Spread(public val value: String) {
 @ExperimentalReadiumApi
 @Serializable
 public enum class ReadingProgression(public val value: String) {
-    @SerialName("ltr") LTR("ltr"),
-    @SerialName("rtl") RTL("rtl");
+    @SerialName("ltr")
+    LTR("ltr"),
+
+    @SerialName("rtl")
+    RTL("rtl");
 }
 
 /**
@@ -136,8 +176,15 @@ public enum class ReadingProgression(public val value: String) {
 @ExperimentalReadiumApi
 @Serializable
 public enum class Fit(public val value: String) {
-    @SerialName("cover") COVER("cover"),
-    @SerialName("contain") CONTAIN("contain"),
-    @SerialName("width") WIDTH("width"),
-    @SerialName("height") HEIGHT("height");
+    @SerialName("cover")
+    COVER("cover"),
+
+    @SerialName("contain")
+    CONTAIN("contain"),
+
+    @SerialName("width")
+    WIDTH("width"),
+
+    @SerialName("height")
+    HEIGHT("height");
 }

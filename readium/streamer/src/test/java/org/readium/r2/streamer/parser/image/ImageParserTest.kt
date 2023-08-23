@@ -15,18 +15,19 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Test
-import org.readium.r2.shared.fetcher.ContainerFetcher
-import org.readium.r2.shared.fetcher.ResourceFetcher
-import org.readium.r2.shared.publication.Link
+import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.firstWithRel
 import org.readium.r2.shared.resource.DefaultArchiveFactory
 import org.readium.r2.shared.resource.FileResource
+import org.readium.r2.shared.resource.ResourceContainer
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.streamer.parseBlocking
 import org.readium.r2.streamer.parser.PublicationParser
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class ImageParserTest {
 
     private val parser = ImageParser()
@@ -34,19 +35,21 @@ class ImageParserTest {
     private val cbzAsset = runBlocking {
         val path = pathForResource("futuristic_tales.cbz")
         val file = File(path)
-        val resource = FileResource(file)
-        val archive = DefaultArchiveFactory().create(resource, password = null).getOrNull()!!
-        val fetcher = ContainerFetcher(archive, MediaTypeRetriever())
-        PublicationParser.Asset(file.name, MediaType.CBZ, fetcher)
+        val resource = FileResource(file, mediaType = MediaType.CBZ)
+        val archive = DefaultArchiveFactory(MediaTypeRetriever()).create(
+            resource,
+            password = null
+        ).getOrNull()!!
+        PublicationParser.Asset(mediaType = MediaType.CBZ, archive)
     }
 
     private val jpgAsset = runBlocking {
         val path = pathForResource("futuristic_tales.jpg")
-        val file = File(path)
-        val resource = FileResource(file)
-        val link = Link(href = "/image.jpg", type = "image/jpeg")
-        val fetcher = ResourceFetcher(link, resource)
-        PublicationParser.Asset(file.name, MediaType.JPEG, fetcher)
+        val resource = FileResource(File(path), mediaType = MediaType.JPEG)
+        PublicationParser.Asset(
+            mediaType = MediaType.JPEG,
+            ResourceContainer(path, resource)
+        )
     }
     private fun pathForResource(resource: String): String {
         val path = ImageParserTest::class.java.getResource(resource)?.path
@@ -96,6 +99,9 @@ class ImageParserTest {
     fun `title is based on archive's root directory when any`() {
         val builder = parser.parseBlocking(cbzAsset)
         assertNotNull(builder)
-        assertEquals("Cory Doctorow's Futuristic Tales of the Here and Now", builder!!.manifest.metadata.title)
+        assertEquals(
+            "Cory Doctorow's Futuristic Tales of the Here and Now",
+            builder!!.manifest.metadata.title
+        )
     }
 }

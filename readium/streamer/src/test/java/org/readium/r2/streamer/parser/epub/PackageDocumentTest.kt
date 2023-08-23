@@ -20,13 +20,15 @@ import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.epub.contains
 import org.readium.r2.shared.publication.epub.layout
 import org.readium.r2.shared.publication.presentation.*
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.robolectric.RobolectricTestRunner
 
 fun parsePackageDocument(path: String): Manifest {
     val pub = PackageDocument::class.java.getResourceAsStream(path)
         ?.let { XmlParser().parse(it) }
-        ?.let { PackageDocument.parse(it, "OEBPS/content.opf") }
-        ?.let { ManifestAdapter("fallback title", it) }
+        ?.let { PackageDocument.parse(it, "OEBPS/content.opf", MediaTypeRetriever()) }
+        ?.let { ManifestAdapter(it, mediaTypeRetriever = MediaTypeRetriever()) }
         ?.adapt()
     checkNotNull(pub)
     return pub
@@ -44,7 +46,9 @@ class ReadingProgressionTest {
 
     @Test
     fun `Default page progression direction is rightly parsed`() {
-        assertThat(parsePackageDocument("package/progression-default.opf").metadata.readingProgression)
+        assertThat(
+            parsePackageDocument("package/progression-default.opf").metadata.readingProgression
+        )
             .isEqualTo(null)
     }
 
@@ -69,7 +73,9 @@ class LinkPropertyTest {
     fun `contains is rightly filled`() {
         with(propertiesPub) {
             assertThat(readingOrder[0].properties.contains).containsExactlyInAnyOrder("mathml")
-            assertThat(readingOrder[1].properties.contains).containsExactlyInAnyOrder("remote-resources")
+            assertThat(readingOrder[1].properties.contains).containsExactlyInAnyOrder(
+                "remote-resources"
+            )
             assertThat(readingOrder[2].properties.contains).containsExactlyInAnyOrder("js", "svg")
             assertThat(readingOrder[3].properties.contains).isEmpty()
             assertThat(readingOrder[4].properties.contains).isEmpty()
@@ -93,24 +99,36 @@ class LinkPropertyTest {
         with(propertiesPub) {
             assertThat(readingOrder[0].properties.layout).isEqualTo(EpubLayout.FIXED)
             assertThat(readingOrder[0].properties.overflow).isEqualTo(Presentation.Overflow.AUTO)
-            assertThat(readingOrder[0].properties.orientation).isEqualTo(Presentation.Orientation.AUTO)
+            assertThat(readingOrder[0].properties.orientation).isEqualTo(
+                Presentation.Orientation.AUTO
+            )
             assertThat(readingOrder[0].properties.page).isEqualTo(Presentation.Page.RIGHT)
             assertThat(readingOrder[0].properties.spread).isNull()
 
             assertThat(readingOrder[1].properties.layout).isEqualTo(EpubLayout.REFLOWABLE)
-            assertThat(readingOrder[1].properties.overflow).isEqualTo(Presentation.Overflow.PAGINATED)
-            assertThat(readingOrder[1].properties.orientation).isEqualTo(Presentation.Orientation.LANDSCAPE)
+            assertThat(readingOrder[1].properties.overflow).isEqualTo(
+                Presentation.Overflow.PAGINATED
+            )
+            assertThat(readingOrder[1].properties.orientation).isEqualTo(
+                Presentation.Orientation.LANDSCAPE
+            )
             assertThat(readingOrder[1].properties.page).isEqualTo(Presentation.Page.LEFT)
             assertThat(readingOrder[0].properties.spread).isNull()
 
             assertThat(readingOrder[2].properties.layout).isNull()
-            assertThat(readingOrder[2].properties.overflow).isEqualTo(Presentation.Overflow.SCROLLED)
-            assertThat(readingOrder[2].properties.orientation).isEqualTo(Presentation.Orientation.PORTRAIT)
+            assertThat(readingOrder[2].properties.overflow).isEqualTo(
+                Presentation.Overflow.SCROLLED
+            )
+            assertThat(readingOrder[2].properties.orientation).isEqualTo(
+                Presentation.Orientation.PORTRAIT
+            )
             assertThat(readingOrder[2].properties.page).isEqualTo(Presentation.Page.CENTER)
             assertThat(readingOrder[2].properties.spread).isNull()
 
             assertThat(readingOrder[3].properties.layout).isNull()
-            assertThat(readingOrder[3].properties.overflow).isEqualTo(Presentation.Overflow.SCROLLED)
+            assertThat(readingOrder[3].properties.overflow).isEqualTo(
+                Presentation.Overflow.SCROLLED
+            )
             assertThat(readingOrder[3].properties.orientation).isNull()
             assertThat(readingOrder[3].properties.page).isNull()
             assertThat(readingOrder[3].properties.spread).isEqualTo(Presentation.Spread.AUTO)
@@ -127,11 +145,11 @@ class LinkTest {
         assertThat(resourcesPub.readingOrder).containsExactly(
             Link(
                 href = "/titlepage.xhtml",
-                type = "application/xhtml+xml"
+                mediaType = MediaType.XHTML
             ),
             Link(
                 href = "/OEBPS/chapter01.xhtml",
-                type = "application/xhtml+xml"
+                mediaType = MediaType.XHTML
             )
         )
     }
@@ -141,38 +159,38 @@ class LinkTest {
         assertThat(resourcesPub.resources).containsExactlyInAnyOrder(
             Link(
                 href = "/OEBPS/fonts/MinionPro.otf",
-                type = "application/vnd.ms-opentype"
+                mediaType = MediaType("application/vnd.ms-opentype")!!
             ),
             Link(
                 href = "/OEBPS/nav.xhtml",
-                type = "application/xhtml+xml",
+                mediaType = MediaType.XHTML,
                 rels = setOf("contents")
             ),
             Link(
                 href = "/style.css",
-                type = "text/css"
+                mediaType = MediaType.CSS
             ),
             Link(
                 href = "/OEBPS/chapter01.smil",
-                type = "application/smil+xml"
+                mediaType = MediaType.SMIL
             ),
             Link(
                 href = "/OEBPS/chapter02.smil",
-                type = "application/smil+xml",
+                mediaType = MediaType.SMIL,
                 duration = 1949.0
             ),
             Link(
                 href = "/OEBPS/images/alice01a.png",
-                type = "image/png",
+                mediaType = MediaType.PNG,
                 rels = setOf("cover")
             ),
             Link(
                 href = "/OEBPS/images/alice02a.gif",
-                type = "image/gif"
+                mediaType = MediaType.GIF
             ),
             Link(
                 href = "/OEBPS/chapter02.xhtml",
-                type = "application/xhtml+xml"
+                mediaType = MediaType.XHTML
             ),
             Link(
                 href = "/OEBPS/nomediatype.txt"
@@ -187,15 +205,15 @@ class LinkMiscTest {
         assertThat(parsePackageDocument("package/fallbacks.opf")).isEqualTo(
             Link(
                 href = "/OEBPS/chap1_docbook.xml",
-                type = "application/docbook+xml",
+                mediaType = MediaType("application/docbook+xml")!!,
                 alternates = listOf(
                     Link(
                         href = "/OEBPS/chap1.xml",
-                        type = "application/z3998-auth+xml",
+                        mediaType = MediaType("application/z3998-auth+xml")!!,
                         alternates = listOf(
                             Link(
                                 href = "/OEBPS/chap1.xhtml",
-                                type = "application/xhtml+xml"
+                                mediaType = MediaType.XHTML
                             )
                         )
                     )

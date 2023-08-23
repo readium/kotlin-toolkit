@@ -16,14 +16,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.StringResource
-import org.readium.r2.shared.fetcher.fallback
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceInputStream
+import org.readium.r2.shared.resource.StringResource
+import org.readium.r2.shared.resource.fallback
 import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -39,8 +39,8 @@ internal class WebViewServer(
     private val disableSelectionWhenProtected: Boolean
 ) {
     companion object {
-        val publicationBaseHref = "https://readium/publication/"
-        val assetsBaseHref = "https://readium/assets/"
+        const val publicationBaseHref = "https://readium/publication/"
+        const val assetsBaseHref = "https://readium/assets/"
 
         fun assetUrl(path: String): String =
             Href(path, baseHref = assetsBaseHref).percentEncodedString
@@ -90,20 +90,28 @@ internal class WebViewServer(
 
         var resource = publication.get(linkWithoutAnchor)
             .fallback { errorResource(link, error = it) }
-        if (link.mediaType.isHtml) {
+        if (link.mediaType?.isHtml == true) {
             resource = resource.injectHtml(
-                publication, css,
+                publication,
+                css,
                 baseHref = assetsBaseHref,
                 disableSelectionWhenProtected = disableSelectionWhenProtected
             )
         }
 
         val headers = mutableMapOf(
-            "Accept-Ranges" to "bytes",
+            "Accept-Ranges" to "bytes"
         )
 
         if (range == null) {
-            return WebResourceResponse(link.type, null, 200, "OK", headers, ResourceInputStream(resource))
+            return WebResourceResponse(
+                link.mediaType?.toString(),
+                null,
+                200,
+                "OK",
+                headers,
+                ResourceInputStream(resource)
+            )
         } else { // Byte range request
             val stream = ResourceInputStream(resource)
             val length = stream.available()
@@ -111,18 +119,27 @@ internal class WebViewServer(
             headers["Content-Range"] = "bytes ${longRange.first}-${longRange.last}/$length"
             // Content-Length will automatically be filled by the WebView using the Content-Range header.
 //            headers["Content-Length"] = (longRange.last - longRange.first + 1).toString()
-            return WebResourceResponse(link.type, null, 206, "Partial Content", headers, stream)
+            return WebResourceResponse(
+                link.mediaType?.toString(),
+                null,
+                206,
+                "Partial Content",
+                headers,
+                stream
+            )
         }
     }
 
-    private fun errorResource(link: Link, error: Resource.Exception): Fetcher.Resource =
-        StringResource(link.copy(type = MediaType.XHTML.toString())) {
+    private fun errorResource(link: Link, error: Resource.Exception): Resource =
+        StringResource(mediaType = MediaType.XHTML) {
             withContext(Dispatchers.IO) {
-                assetManager
-                    .open("readium/error.xhtml").bufferedReader()
-                    .use { it.readText() }
-                    .replace("\${error}", error.getUserMessage(application))
-                    .replace("\${href}", link.href)
+                Try.success(
+                    assetManager
+                        .open("readium/error.xhtml").bufferedReader()
+                        .use { it.readText() }
+                        .replace("\${error}", error.getUserMessage(application))
+                        .replace("\${href}", link.href)
+                )
             }
         }
 

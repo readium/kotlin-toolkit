@@ -8,12 +8,15 @@ package org.readium.r2.navigator.epub
 
 import org.readium.r2.navigator.epub.css.ReadiumCss
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.TransformingResource
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isProtected
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.resource.TransformingResource
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
 
 /**
@@ -22,17 +25,21 @@ import timber.log.Timber
  * @param baseHref Base URL where the Readium CSS and scripts are served.
  */
 @OptIn(ExperimentalReadiumApi::class)
-internal fun Fetcher.Resource.injectHtml(
+internal fun Resource.injectHtml(
     publication: Publication,
     css: ReadiumCss,
     baseHref: String,
     disableSelectionWhenProtected: Boolean
-): Fetcher.Resource =
+): Resource =
     TransformingResource(this) { bytes ->
-        val link = link()
-        check(link.mediaType.isHtml)
+        val mediaType = mediaType()
+            .getOrElse {
+                return@TransformingResource ResourceTry.failure(it)
+            }
+            .takeIf { it.isHtml }
+            ?: return@TransformingResource ResourceTry.success(bytes)
 
-        var content = bytes.toString(link.mediaType.charset ?: Charsets.UTF_8).trim()
+        var content = bytes.toString(mediaType.charset ?: Charsets.UTF_8).trim()
         val injectables = mutableListOf<String>()
 
         val baseUri = baseHref.removeSuffix("/")
@@ -60,14 +67,14 @@ internal fun Fetcher.Resource.injectHtml(
 
         val headEndIndex = content.indexOf("</head>", 0, true)
         if (headEndIndex == -1) {
-            Timber.e("</head> closing tag not found in ${link.href}")
+            Timber.e("</head> closing tag not found in resource with href: $source")
         } else {
             content = StringBuilder(content)
                 .insert(headEndIndex, "\n" + injectables.joinToString("\n") + "\n")
                 .toString()
         }
 
-        content.toByteArray()
+        Try.success(content.toByteArray())
     }
 
 private fun script(src: String): String =

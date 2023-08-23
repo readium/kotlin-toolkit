@@ -49,14 +49,20 @@ public open class MapCompanion<K, E>(protected val map: Map<K, E>) {
      */
     public open operator fun invoke(key: K?): E? = get(key)
 
-    @Deprecated("Use `Enum(\"value\")` instead", ReplaceWith("get(key)"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use `Enum(\"value\")` instead",
+        ReplaceWith("get(key)"),
+        level = DeprecationLevel.ERROR
+    )
     public open fun from(key: K?): E? = get(key)
 }
 
 /**
  * Extends a [MapCompanion] by adding a [default] value as a fallback.
  */
-public open class MapWithDefaultCompanion<K, E>(map: Map<K, E>, public val default: E) : MapCompanion<K, E>(map) {
+public open class MapWithDefaultCompanion<K, E>(map: Map<K, E>, public val default: E) : MapCompanion<K, E>(
+    map
+) {
 
     public constructor(elements: Array<E>, keySelector: (E) -> K, default: E) :
         this(elements.associateBy(keySelector), default)
@@ -72,6 +78,10 @@ public open class MapWithDefaultCompanion<K, E>(map: Map<K, E>, public val defau
      */
     override operator fun invoke(key: K?): E = getOrDefault(key)
 
-    @Deprecated("Use `Enum(\"value\")` instead", ReplaceWith("getOrDefault(key)"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use `Enum(\"value\")` instead",
+        ReplaceWith("getOrDefault(key)"),
+        level = DeprecationLevel.ERROR
+    )
     override fun from(key: K?): E? = getOrDefault(key)
 }

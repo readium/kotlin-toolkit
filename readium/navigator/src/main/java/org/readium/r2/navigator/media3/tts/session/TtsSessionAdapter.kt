@@ -114,7 +114,10 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
             .onEach { playback ->
                 notifyListenersPlaybackChanged(lastPlayback, playback)
                 lastPlayback = playback
-                audioFocusManager.updateAudioFocus(playback.playWhenReady, playback.state.playerCode)
+                audioFocusManager.updateAudioFocus(
+                    playback.playWhenReady,
+                    playback.state.playerCode
+                )
             }.launchIn(coroutineScope)
 
         playbackParametersState
@@ -127,7 +130,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     private var listeners: ListenerSet<Listener> =
         ListenerSet(
             applicationLooper,
-            Clock.DEFAULT,
+            Clock.DEFAULT
         ) { listener: Listener, flags: FlagSet ->
             listener.onEvents(this, Events(flags))
         }
@@ -482,10 +485,11 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     override fun getCurrentManifest(): Any? {
         val timeline = currentTimeline
-        return if (timeline.isEmpty)
+        return if (timeline.isEmpty) {
             null
-        else
+        } else {
             timeline.getWindow(currentMediaItemIndex, window).manifest
+        }
     }
 
     override fun getCurrentTimeline(): Timeline {
@@ -513,14 +517,15 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     override fun getNextMediaItemIndex(): Int {
         val timeline = currentTimeline
-        return if (timeline.isEmpty)
+        return if (timeline.isEmpty) {
             INDEX_UNSET
-        else
+        } else {
             timeline.getNextWindowIndex(
                 currentMediaItemIndex,
                 getRepeatModeForNavigation(),
                 shuffleModeEnabled
             )
+        }
     }
 
     @Deprecated("Deprecated in Java", ReplaceWith("previousMediaItemIndex"))
@@ -530,20 +535,24 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     override fun getPreviousMediaItemIndex(): Int {
         val timeline = currentTimeline
-        return if (timeline.isEmpty)
+        return if (timeline.isEmpty) {
             INDEX_UNSET
-        else
+        } else {
             timeline.getPreviousWindowIndex(
-                currentMediaItemIndex, getRepeatModeForNavigation(), shuffleModeEnabled
+                currentMediaItemIndex,
+                getRepeatModeForNavigation(),
+                shuffleModeEnabled
             )
+        }
     }
 
     override fun getCurrentMediaItem(): MediaItem? {
         val timeline = currentTimeline
-        return if (timeline.isEmpty)
+        return if (timeline.isEmpty) {
             null
-        else
+        } else {
             timeline.getWindow(currentMediaItemIndex, window).mediaItem
+        }
     }
 
     override fun getMediaItemCount(): Int {
@@ -569,15 +578,17 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
     override fun getBufferedPercentage(): Int {
         val position = bufferedPosition
         val duration = duration
-        return if (position == TIME_UNSET || duration == TIME_UNSET)
+        return if (position == TIME_UNSET || duration == TIME_UNSET) {
             0
-        else if (duration == 0L)
+        } else if (duration == 0L) {
             100
-        else Util.constrainValue(
-            (position * 100 / duration).toInt(),
-            0,
-            100
-        )
+        } else {
+            Util.constrainValue(
+                (position * 100 / duration).toInt(),
+                0,
+                100
+            )
+        }
     }
 
     override fun getTotalBufferedDuration(): Long {
@@ -612,7 +623,9 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
         val windowStartTimeMs = timeline.getWindow(currentMediaItemIndex, window).windowStartTimeMs
         return if (windowStartTimeMs == TIME_UNSET) {
             TIME_UNSET
-        } else window.currentUnixTimeMs - window.windowStartTimeMs - contentPosition
+        } else {
+            window.currentUnixTimeMs - window.windowStartTimeMs - contentPosition
+        }
     }
 
     @Deprecated("Deprecated in Java", ReplaceWith("isCurrentMediaItemSeekable"))
@@ -639,10 +652,11 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     override fun getContentDuration(): Long {
         val timeline = currentTimeline
-        return if (timeline.isEmpty)
+        return if (timeline.isEmpty) {
             TIME_UNSET
-        else
+        } else {
             timeline.getWindow(currentMediaItemIndex, window).durationMs
+        }
     }
 
     override fun getContentPosition(): Long {
@@ -753,7 +767,7 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
 
     private fun notifyListenersPlaybackChanged(
         previousPlaybackInfo: TtsPlayer.Playback,
-        playbackInfo: TtsPlayer.Playback,
+        playbackInfo: TtsPlayer.Playback
         // playWhenReadyChangeReason: @Player.PlayWhenReadyChangeReason Int,
     ) {
         if (previousPlaybackInfo.state as? TtsPlayer.State.Error != playbackInfo.state as? Error) {
@@ -905,11 +919,23 @@ internal class TtsSessionAdapter<E : TtsEngine.Error>(
             is Resource.Exception.NotFound ->
                 PlaybackException(exception.message, exception.cause, ERROR_CODE_IO_BAD_HTTP_STATUS)
             is Resource.Exception.Forbidden ->
-                PlaybackException(exception.message, exception.cause, ERROR_CODE_DRM_DISALLOWED_OPERATION)
+                PlaybackException(
+                    exception.message,
+                    exception.cause,
+                    ERROR_CODE_DRM_DISALLOWED_OPERATION
+                )
             is Resource.Exception.Unavailable ->
-                PlaybackException(exception.message, exception.cause, ERROR_CODE_IO_NETWORK_CONNECTION_FAILED)
+                PlaybackException(
+                    exception.message,
+                    exception.cause,
+                    ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
+                )
             is Resource.Exception.Offline ->
-                PlaybackException(exception.message, exception.cause, ERROR_CODE_IO_NETWORK_CONNECTION_FAILED)
+                PlaybackException(
+                    exception.message,
+                    exception.cause,
+                    ERROR_CODE_IO_NETWORK_CONNECTION_FAILED
+                )
             is Resource.Exception.OutOfMemory ->
                 PlaybackException(exception.message, exception.cause, ERROR_CODE_UNSPECIFIED)
             is Resource.Exception.Other ->

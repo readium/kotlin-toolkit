@@ -14,7 +14,6 @@ import org.readium.r2.shared.publication.presentation.Presentation
 
 internal class MetadataAdapter(
     private val epubVersion: Double,
-    private val fallbackTitle: String,
     private val uniqueIdentifierId: String?,
     private val readingProgression: ReadingProgression?,
     private val displayOptions: Map<String, String>
@@ -65,7 +64,7 @@ internal class MetadataAdapter(
             ?.value
 
         val (localizedTitle, localizedSortAs, localizedSubtitle) = globalItemsHolder
-            .adapt(TitleAdapter(fallbackTitle)::adapt)
+            .adapt(TitleAdapter()::adapt)
 
         val (belongsToCollections, belongsToSeries) = globalItemsHolder
             .adapt(CollectionAdapter()::adapt)
@@ -149,14 +148,16 @@ private class LinksAdapter {
     private fun mapLink(link: MetadataItem.Link): Link {
         val contains: MutableList<String> = mutableListOf()
         if (link.rels.contains(Vocabularies.LINK + "record")) {
-            if (link.properties.contains(Vocabularies.LINK + "onix"))
+            if (link.properties.contains(Vocabularies.LINK + "onix")) {
                 contains.add("onix")
-            if (link.properties.contains(Vocabularies.LINK + "xmp"))
+            }
+            if (link.properties.contains(Vocabularies.LINK + "xmp")) {
                 contains.add("xmp")
+            }
         }
         return Link(
             href = link.href,
-            type = link.mediaType,
+            mediaType = link.mediaType,
             rels = link.rels,
             properties = Properties(mapOf("contains" to contains))
         )
@@ -187,10 +188,10 @@ private class LanguageAdapter {
         .mapFirst { it.map(MetadataItem.Meta::value) }
 }
 
-private class TitleAdapter(private val fallbackTitle: String) {
+private class TitleAdapter() {
 
     data class Result(
-        val localizedTitle: LocalizedString,
+        val localizedTitle: LocalizedString?,
         val localizedSortAs: LocalizedString?,
         val localizedSubtitle: LocalizedString?
     )
@@ -205,7 +206,6 @@ private class TitleAdapter(private val fallbackTitle: String) {
         val mainTitleItem = mainTitleWithItem?.second
 
         val localizedTitle = mainTitle?.value
-            ?: LocalizedString(fallbackTitle)
         val localizedSortAs = mainTitle?.fileAs
             ?: items.firstWithProperty("calibre:title_sort")
                 ?.let { LocalizedString(it.value) }
@@ -221,7 +221,11 @@ private class TitleAdapter(private val fallbackTitle: String) {
             .removeFirstOrNull { it == mainTitleItem }.second
             .removeFirstOrNull { it == subtitleItem }.second
 
-        return Result(localizedTitle, localizedSortAs, localizedSubtitle) to remainingItems
+        return Result(
+            localizedTitle = localizedTitle,
+            localizedSortAs = localizedSortAs,
+            localizedSubtitle = localizedSubtitle
+        ) to remainingItems
     }
 }
 
@@ -294,8 +298,11 @@ private fun MetadataItem.Meta.toContributor(): Pair<String?, Contributor> {
     }
 
     val contributor = Contributor(
-        localizedString, localizedSortAs = localizedSortAs,
-        roles = roles, identifier = identifier, position = groupPosition
+        localizedString,
+        localizedSortAs = localizedSortAs,
+        roles = roles,
+        identifier = identifier,
+        position = groupPosition
     )
 
     return Pair(type, contributor)
@@ -357,9 +364,9 @@ private class OtherMetadataAdapter {
             }
 
     private fun MetadataItem.Meta.toMap(): Any =
-        if (children.isEmpty())
+        if (children.isEmpty()) {
             value
-        else {
+        } else {
             val mappedMetaChildren = children
                 .filterIsInstance(MetadataItem.Meta::class.java)
                 .associate { Pair(it.property, it.toMap()) }

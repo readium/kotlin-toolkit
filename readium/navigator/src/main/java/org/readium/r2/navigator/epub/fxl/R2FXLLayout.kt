@@ -67,8 +67,10 @@ internal class R2FXLLayout : FrameLayout {
 
     // allow parent views to intercept any touch events that we do not consume
     var isAllowParentInterceptOnEdge = true
+
     // allow parent views to intercept any touch events that we do not consume even if we are in a scaled state
     var isAllowParentInterceptOnScaled = false
+
     // minimum scale of the content
     var minScale = 1.0f
         set(minScale) {
@@ -77,6 +79,7 @@ internal class R2FXLLayout : FrameLayout {
                 maxScale = this.minScale
             }
         }
+
     // maximum scale of the content
     var maxScale = 3.0f
         set(maxScale) {
@@ -181,7 +184,11 @@ internal class R2FXLLayout : FrameLayout {
         init(context)
     }
 
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    ) {
         init(context)
     }
 
@@ -242,7 +249,9 @@ internal class R2FXLLayout : FrameLayout {
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         return if (isScrollingAllowed) {
             super.onInterceptTouchEvent(ev)
-        } else isAllowZoom
+        } else {
+            isAllowZoom
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -365,8 +374,9 @@ internal class R2FXLLayout : FrameLayout {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             val scale = scale * detector.scaleFactor
             val scaleFactor = detector.scaleFactor
-            if (java.lang.Float.isNaN(scaleFactor) || java.lang.Float.isInfinite(scaleFactor))
+            if (java.lang.Float.isNaN(scaleFactor) || java.lang.Float.isInfinite(scaleFactor)) {
                 return false
+            }
 
             internalScale(scale, focusX, focusY)
             zoomDispatcher.onZoom(scale)
@@ -484,7 +494,13 @@ internal class R2FXLLayout : FrameLayout {
 
         val child = getChildAt(0)
         if (child != null) {
-            R2FXLUtils.setRect(drawRect, child.left.toFloat(), child.top.toFloat(), child.right.toFloat(), child.bottom.toFloat())
+            R2FXLUtils.setRect(
+                drawRect,
+                child.left.toFloat(),
+                child.top.toFloat(),
+                child.right.toFloat(),
+                child.bottom.toFloat()
+            )
             scaledPointsToScreenPoints(drawRect)
         } else {
             // If no child is added, then center the drawrect, and let it be empty
@@ -565,7 +581,12 @@ internal class R2FXLLayout : FrameLayout {
                 mTargetX = p.x
                 mTargetY = p.y
                 if (scale) {
-                    scaleMatrix.setScale(mZoomStart, mZoomStart, this@R2FXLLayout.focusX, this@R2FXLLayout.focusY)
+                    scaleMatrix.setScale(
+                        mZoomStart,
+                        mZoomStart,
+                        this@R2FXLLayout.focusX,
+                        this@R2FXLLayout.focusY
+                    )
                     matrixUpdated()
                 }
                 if (doTranslate()) {
@@ -593,7 +614,6 @@ internal class R2FXLLayout : FrameLayout {
         }
 
         override fun run() {
-
             if (mCancelled || !doScale() && !doTranslate()) {
                 return
             }
@@ -633,7 +653,6 @@ internal class R2FXLLayout : FrameLayout {
         private var mFinished = false
 
         internal fun fling(velocityX: Int, velocityY: Int) {
-
             val startX = viewPortRect.left.roundToInt()
             val minX: Int
             val maxX: Int
@@ -681,7 +700,6 @@ internal class R2FXLLayout : FrameLayout {
 
         override fun run() {
             if (!mScroller.isFinished && mScroller.computeScrollOffset()) {
-
                 val newX = mScroller.currX
                 val newY = mScroller.currY
 

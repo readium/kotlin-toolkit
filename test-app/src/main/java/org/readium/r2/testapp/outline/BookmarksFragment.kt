@@ -58,13 +58,20 @@ class BookmarksFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        bookmarkAdapter = BookmarkAdapter(publication, onBookmarkDeleteRequested = { bookmark -> viewModel.deleteBookmark(bookmark.id!!) }, onBookmarkSelectedRequested = { bookmark -> onBookmarkSelected(bookmark) })
+        bookmarkAdapter = BookmarkAdapter(
+            publication,
+            onBookmarkDeleteRequested = { bookmark -> viewModel.deleteBookmark(bookmark.id!!) },
+            onBookmarkSelectedRequested = { bookmark -> onBookmarkSelected(bookmark) }
+        )
         binding.listView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = bookmarkAdapter
         }
 
-        val comparator: Comparator<Bookmark> = compareBy({ it.resourceIndex }, { it.locator.locations.progression })
+        val comparator: Comparator<Bookmark> = compareBy(
+            { it.resourceIndex },
+            { it.locator.locations.progression }
+        )
         viewModel.getBookmarks().observe(viewLifecycleOwner) {
             val bookmarks = it.sortedWith(comparator)
             bookmarkAdapter.submitList(bookmarks)
@@ -92,7 +99,9 @@ class BookmarkAdapter(
     ): ViewHolder {
         return ViewHolder(
             ItemRecycleBookmarkBinding.inflate(
-                LayoutInflater.from(parent.context), parent, false
+                LayoutInflater.from(parent.context),
+                parent,
+                false
             )
         )
     }
@@ -104,7 +113,9 @@ class BookmarkAdapter(
         holder.bind(item)
     }
 
-    inner class ViewHolder(val binding: ItemRecycleBookmarkBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ViewHolder(val binding: ItemRecycleBookmarkBinding) : RecyclerView.ViewHolder(
+        binding.root
+    ) {
 
         fun bind(bookmark: Bookmark) {
             val title = getBookSpineItem(bookmark.resourceHref)
@@ -120,7 +131,6 @@ class BookmarkAdapter(
             binding.bookmarkTimestamp.text = formattedDate
 
             binding.overflow.setOnClickListener {
-
                 val popupMenu = PopupMenu(binding.overflow.context, binding.overflow)
                 popupMenu.menuInflater.inflate(R.menu.menu_bookmark, popupMenu.menu)
                 popupMenu.show()

@@ -25,7 +25,7 @@ public data class AndroidTtsPreferences(
     override val language: Language? = null,
     val pitch: Double? = null,
     val speed: Double? = null,
-    val voices: Map<Language, AndroidTtsEngine.Voice.Id>? = null,
+    val voices: Map<Language, AndroidTtsEngine.Voice.Id>? = null
 ) : TtsEngine.Preferences<AndroidTtsPreferences> {
 
     init {
@@ -38,6 +38,6 @@ public data class AndroidTtsPreferences(
             language = other.language ?: language,
             pitch = other.pitch ?: pitch,
             speed = other.speed ?: speed,
-            voices = other.voices ?: voices,
+            voices = other.voices ?: voices
         )
 }

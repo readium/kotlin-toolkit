@@ -64,7 +64,11 @@ public open class DefaultLocatorService(
             ?: return null
 
         return position.copyWithLocations(
-            progression = resourceProgressionFor(totalProgression, positions, readingOrderIndex = readingOrderIndex)
+            progression = resourceProgressionFor(
+                totalProgression,
+                positions,
+                readingOrderIndex = readingOrderIndex
+            )
                 ?: position.locations.progression,
             totalProgression = totalProgression
         )

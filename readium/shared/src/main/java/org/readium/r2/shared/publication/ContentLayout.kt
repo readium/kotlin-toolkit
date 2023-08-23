@@ -28,10 +28,13 @@ import kotlinx.parcelize.Parcelize
 public enum class ContentLayout(private val cssId: String) : Parcelable {
     // Right to left
     RTL("rtl"),
+
     // Left to right
     LTR("ltr"),
+
     // Asian language, vertically laid out
     CJK_VERTICAL("cjk-vertical"),
+
     // Asian language, horizontally laid out
     CJK_HORIZONTAL("cjk-horizontal");
 }

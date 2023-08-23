@@ -12,12 +12,12 @@ import kotlinx.parcelize.Parcelize
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.R
 import org.readium.r2.shared.UserException
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.LocatorCollection
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.SuspendingCloseable
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.HttpException
 
 @ExperimentalReadiumApi
@@ -27,7 +27,10 @@ public typealias SearchTry<SuccessT> = Try<SuccessT, SearchException>
  * Represents an error which might occur during a search activity.
  */
 @ExperimentalReadiumApi
-public sealed class SearchException(content: Content, cause: Throwable? = null) : UserException(content, cause) {
+public sealed class SearchException(content: Content, cause: Throwable? = null) : UserException(
+    content,
+    cause
+) {
     protected constructor(@StringRes userMessageId: Int, vararg args: Any, cause: Throwable? = null) :
         this(Content(userMessageId, *args), cause)
     protected constructor(cause: UserException) :
@@ -36,7 +39,9 @@ public sealed class SearchException(content: Content, cause: Throwable? = null) 
     /**
      * The publication is not searchable.
      */
-    public object PublicationNotSearchable : SearchException(R.string.readium_shared_search_exception_publication_not_searchable)
+    public object PublicationNotSearchable : SearchException(
+        R.string.readium_shared_search_exception_publication_not_searchable
+    )
 
     /**
      * The provided search query cannot be handled by the service.
@@ -61,7 +66,10 @@ public sealed class SearchException(content: Content, cause: Throwable? = null) 
     public object Cancelled : SearchException(R.string.readium_shared_search_exception_cancelled)
 
     /** For any other custom service error. */
-    public class Other(cause: Throwable) : SearchException(R.string.readium_shared_search_exception_other, cause = cause)
+    public class Other(cause: Throwable) : SearchException(
+        R.string.readium_shared_search_exception_other,
+        cause = cause
+    )
 
     public companion object {
         public fun wrap(e: Throwable): SearchException =

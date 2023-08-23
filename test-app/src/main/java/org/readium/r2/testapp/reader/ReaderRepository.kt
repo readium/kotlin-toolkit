@@ -21,12 +21,13 @@ import org.readium.r2.navigator.pdf.PdfNavigatorFactory
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.asset.AssetRetriever
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.getOrElse
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.allAreHtml
 import org.readium.r2.shared.publication.services.isRestricted
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.testapp.BookRepository
 import org.readium.r2.testapp.PublicationError
 import org.readium.r2.testapp.Readium
@@ -48,7 +49,7 @@ class ReaderRepository(
     private val application: Application,
     private val readium: Readium,
     private val bookRepository: BookRepository,
-    private val preferencesDataStore: DataStore<JetpackPreferences>,
+    private val preferencesDataStore: DataStore<JetpackPreferences>
 ) {
     sealed class OpeningError(
         content: Content,
@@ -95,7 +96,9 @@ class ReaderRepository(
         val book = checkNotNull(bookRepository.get(bookId)) { "Cannot find book in database." }
 
         val asset = readium.assetRetriever.retrieve(
-            Url(book.href)!!, book.mediaType, book.assetType
+            Url(book.href)!!,
+            book.mediaType,
+            book.assetType
         ).getOrElse { return Try.failure(OpeningError.PublicationError(it)) }
 
         val publication = readium.publicationFactory.open(
@@ -116,7 +119,7 @@ class ReaderRepository(
         val readerInitData = when {
             publication.conformsTo(Publication.Profile.AUDIOBOOK) ->
                 openAudio(bookId, publication, initialLocator)
-            publication.conformsTo(Publication.Profile.EPUB) ->
+            publication.conformsTo(Publication.Profile.EPUB) || publication.readingOrder.allAreHtml ->
                 openEpub(bookId, publication, initialLocator)
             publication.conformsTo(Publication.Profile.PDF) ->
                 openPdf(bookId, publication, initialLocator)
@@ -136,20 +139,23 @@ class ReaderRepository(
         publication: Publication,
         initialLocator: Locator?
     ): Try<MediaReaderInitData, OpeningError> {
-
         val preferencesManager = ExoPlayerPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)
         val initialPreferences = preferencesManager.preferences.value
 
         val navigatorFactory = AudioNavigatorFactory(
             publication,
-            ExoPlayerEngineProvider(application),
-        ) ?: return Try.failure(OpeningError.PublicationError(PublicationError.UnsupportedPublication()))
+            ExoPlayerEngineProvider(application)
+        ) ?: return Try.failure(
+            OpeningError.PublicationError(PublicationError.UnsupportedPublication())
+        )
 
         val navigator = navigatorFactory.createNavigator(
             initialLocator,
             initialPreferences
-        ) ?: return Try.failure(OpeningError.PublicationError(PublicationError.UnsupportedPublication()))
+        ) ?: return Try.failure(
+            OpeningError.PublicationError(PublicationError.UnsupportedPublication())
+        )
 
         mediaServiceFacade.openSession(bookId, navigator)
         val initData = MediaReaderInitData(
@@ -167,15 +173,18 @@ class ReaderRepository(
         publication: Publication,
         initialLocator: Locator?
     ): Try<EpubReaderInitData, OpeningError> {
-
         val preferencesManager = EpubPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)
         val navigatorFactory = EpubNavigatorFactory(publication)
         val ttsInitData = getTtsInitData(bookId, publication)
 
         val initData = EpubReaderInitData(
-            bookId, publication, initialLocator,
-            preferencesManager, navigatorFactory, ttsInitData
+            bookId,
+            publication,
+            initialLocator,
+            preferencesManager,
+            navigatorFactory,
+            ttsInitData
         )
         return Try.success(initData)
     }
@@ -185,7 +194,6 @@ class ReaderRepository(
         publication: Publication,
         initialLocator: Locator?
     ): Try<PdfReaderInitData, OpeningError> {
-
         val preferencesManager = PdfiumPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)
         val pdfEngine = PdfiumEngineProvider()
@@ -193,8 +201,11 @@ class ReaderRepository(
         val ttsInitData = getTtsInitData(bookId, publication)
 
         val initData = PdfReaderInitData(
-            bookId, publication, initialLocator,
-            preferencesManager, navigatorFactory,
+            bookId,
+            publication,
+            initialLocator,
+            preferencesManager,
+            navigatorFactory,
             ttsInitData
         )
         return Try.success(initData)
@@ -216,7 +227,7 @@ class ReaderRepository(
 
     private suspend fun getTtsInitData(
         bookId: Long,
-        publication: Publication,
+        publication: Publication
     ): TtsInitData? {
         val preferencesManager = AndroidTtsPreferencesManagerFactory(preferencesDataStore)
             .createPreferenceManager(bookId)

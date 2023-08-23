@@ -59,7 +59,9 @@ interface BooksDao {
     /**
      * Retrieve all highlights for a specific book
      */
-    @Query("SELECT * FROM ${Highlight.TABLE_NAME} WHERE ${Highlight.BOOK_ID} = :bookId ORDER BY ${Highlight.TOTAL_PROGRESSION} ASC")
+    @Query(
+        "SELECT * FROM ${Highlight.TABLE_NAME} WHERE ${Highlight.BOOK_ID} = :bookId ORDER BY ${Highlight.TOTAL_PROGRESSION} ASC"
+    )
     fun getHighlightsForBook(bookId: Long): Flow<List<Highlight>>
 
     /**
@@ -87,13 +89,17 @@ interface BooksDao {
     /**
      * Updates a highlight's annotation.
      */
-    @Query("UPDATE ${Highlight.TABLE_NAME} SET ${Highlight.ANNOTATION} = :annotation WHERE ${Highlight.ID} = :id")
+    @Query(
+        "UPDATE ${Highlight.TABLE_NAME} SET ${Highlight.ANNOTATION} = :annotation WHERE ${Highlight.ID} = :id"
+    )
     suspend fun updateHighlightAnnotation(id: Long, annotation: String)
 
     /**
      * Updates a highlight's tint and style.
      */
-    @Query("UPDATE ${Highlight.TABLE_NAME} SET ${Highlight.TINT} = :tint, ${Highlight.STYLE} = :style WHERE ${Highlight.ID} = :id")
+    @Query(
+        "UPDATE ${Highlight.TABLE_NAME} SET ${Highlight.TINT} = :tint, ${Highlight.STYLE} = :style WHERE ${Highlight.ID} = :id"
+    )
     suspend fun updateHighlightStyle(id: Long, style: Highlight.Style, @ColorInt tint: Int)
 
     /**
@@ -113,6 +119,8 @@ interface BooksDao {
      * @param locator Location of the book
      * @param id The book to update
      */
-    @Query("UPDATE " + Book.TABLE_NAME + " SET " + Book.PROGRESSION + " = :locator WHERE " + Book.ID + "= :id")
+    @Query(
+        "UPDATE " + Book.TABLE_NAME + " SET " + Book.PROGRESSION + " = :locator WHERE " + Book.ID + "= :id"
+    )
     suspend fun saveProgression(locator: String, id: Long)
 }

@@ -34,12 +34,12 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.readium.navigator.media2.MediaNavigator.Companion.create
 import org.readium.r2.navigator.Navigator
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.flatMap
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.flatMap
 import timber.log.Timber
 
 /**
@@ -127,15 +127,18 @@ public class MediaNavigator private constructor(
         this.playerFacade.playlist!!.metadata.durations?.sum()
 
     private fun computeLocator(
-        item: ItemState,
+        item: ItemState
     ): Locator {
         val playlist = this.playerFacade.playlist!!.map { it.metadata!! }
         val position = item.position
         val link = publication.readingOrder[item.index]
         val itemStartPosition = playlist.slice(0 until item.index).durations?.sum()
         val totalProgression =
-            if (itemStartPosition == null) null
-            else totalDuration?.let { (itemStartPosition + position) / it }
+            if (itemStartPosition == null) {
+                null
+            } else {
+                totalDuration?.let { (itemStartPosition + position) / it }
+            }
 
         val locator = requireNotNull(publication.locatorFromLink(link))
         return locator.copyWithLocations(
@@ -317,7 +320,7 @@ public class MediaNavigator private constructor(
     public data class Configuration(
         val positionRefreshRate: Double = 2.0, // Hz
         val skipForwardInterval: Duration = 30.seconds,
-        val skipBackwardInterval: Duration = 30.seconds,
+        val skipBackwardInterval: Duration = 30.seconds
     )
 
     @ExperimentalTime
@@ -394,7 +397,6 @@ public class MediaNavigator private constructor(
             player: SessionPlayer = createPlayer(context, publication),
             metadataFactory: MediaMetadataFactory = DefaultMetadataFactory(publication)
         ): Try<MediaNavigator, Exception> {
-
             val positionRefreshDelay = (1.0 / configuration.positionRefreshRate).seconds
             val seekCompletedChannel = Channel<Long>(Channel.UNLIMITED)
             val callback = SessionPlayerCallback(positionRefreshDelay, seekCompletedChannel)
@@ -462,9 +464,10 @@ public class MediaNavigator private constructor(
         }
 
         internal fun SessionPlayerResult.toNavigatorResult(): Try<Unit, Exception> =
-            if (isSuccess)
+            if (isSuccess) {
                 Try.success(Unit)
-            else
+            } else {
                 this.mapFailure { Exception.SessionPlayer(it.error) }
+            }
     }
 }

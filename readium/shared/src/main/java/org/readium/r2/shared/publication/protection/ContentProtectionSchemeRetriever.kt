@@ -19,7 +19,7 @@ public class ContentProtectionSchemeRetriever(
     private val contentProtections: List<ContentProtection> =
         contentProtections + listOf(
             LcpFallbackContentProtection(mediaTypeRetriever),
-            AdeptFallbackContentProtection(mediaTypeRetriever)
+            AdeptFallbackContentProtection()
         )
 
     public suspend fun retrieve(asset: Asset): ContentProtection.Scheme? =

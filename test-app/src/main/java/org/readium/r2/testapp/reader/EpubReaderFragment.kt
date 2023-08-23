@@ -102,7 +102,11 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             this,
             FragmentResultListener { _, result ->
                 menuSearch.collapseActionView()
-                BundleCompat.getParcelable(result, SearchFragment::class.java.name, Locator::class.java)?.let {
+                BundleCompat.getParcelable(
+                    result,
+                    SearchFragment::class.java.name,
+                    Locator::class.java
+                )?.let {
                     navigator.go(it)
                 }
             }
@@ -120,7 +124,12 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
 
         if (savedInstanceState == null) {
             childFragmentManager.commitNow {
-                add(R.id.fragment_reader_container, EpubNavigatorFragment::class.java, Bundle(), NAVIGATOR_FRAGMENT_TAG)
+                add(
+                    R.id.fragment_reader_container,
+                    EpubNavigatorFragment::class.java,
+                    Bundle(),
+                    NAVIGATOR_FRAGMENT_TAG
+                )
             }
         }
         navigator = childFragmentManager.findFragmentByTag(NAVIGATOR_FRAGMENT_TAG) as EpubNavigatorFragment
@@ -166,11 +175,10 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                             return true
                         }
                     }
-                    return true
+                    return false
                 }
             },
-            viewLifecycleOwner,
-            Lifecycle.State.RESUMED
+            viewLifecycleOwner
         )
     }
 
@@ -189,7 +197,7 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
                 Decoration(
                     id = "page-$index",
                     locator = locator,
-                    style = DecorationStylePageNumber(label = label),
+                    style = DecorationStylePageNumber(label = label)
                 )
             }
 
@@ -242,7 +250,8 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
             menuSearchView.setQuery("", false)
 
             (activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager)?.showSoftInput(
-                this.view, 0
+                this.view,
+                0
             )
         }
     }
@@ -250,7 +259,12 @@ class EpubReaderFragment : VisualReaderFragment(), EpubNavigatorFragment.Listene
     private fun showSearchFragment() {
         childFragmentManager.commit {
             childFragmentManager.findFragmentByTag(SEARCH_FRAGMENT_TAG)?.let { remove(it) }
-            add(R.id.fragment_reader_container, SearchFragment::class.java, Bundle(), SEARCH_FRAGMENT_TAG)
+            add(
+                R.id.fragment_reader_container,
+                SearchFragment::class.java,
+                Bundle(),
+                SEARCH_FRAGMENT_TAG
+            )
             hide(navigator)
             addToBackStack(SEARCH_FRAGMENT_TAG)
         }

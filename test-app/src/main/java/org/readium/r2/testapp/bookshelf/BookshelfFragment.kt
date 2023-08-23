@@ -54,7 +54,14 @@ class BookshelfFragment : Fragment() {
         bookshelfViewModel.channel.receive(viewLifecycleOwner) { handleEvent(it) }
 
         bookshelfAdapter = BookshelfAdapter(
-            onBookClick = { book -> book.id?.let { bookshelfViewModel.openPublication(it, requireActivity()) } },
+            onBookClick = { book ->
+                book.id?.let {
+                    bookshelfViewModel.openPublication(
+                        it,
+                        requireActivity()
+                    )
+                }
+            },
             onBookLongClick = { book -> confirmDeleteBook(book) }
         )
 
@@ -151,7 +158,10 @@ class BookshelfFragment : Fragment() {
                 }
 
                 is BookshelfViewModel.Event.LaunchReader -> {
-                    val intent = ReaderActivityContract().createIntent(requireContext(), event.arguments)
+                    val intent = ReaderActivityContract().createIntent(
+                        requireContext(),
+                        event.arguments
+                    )
                     startActivity(intent)
                     null
                 }

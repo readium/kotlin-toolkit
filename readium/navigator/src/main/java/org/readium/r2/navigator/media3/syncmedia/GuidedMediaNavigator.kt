@@ -23,7 +23,7 @@ import org.readium.r2.shared.util.Href
 
 @ExperimentalReadiumApi
 public class GuidedMediaNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>>(
-    private val audioNavigator: AudioNavigator<S, P>,
+    private val audioNavigator: AudioNavigator<S, P>
 ) :
     MediaNavigator<GuidedMediaNavigator.Location, GuidedMediaNavigator.Playback, GuidedMediaNavigator.ReadingOrder>,
     TimeBasedMediaNavigator<GuidedMediaNavigator.Location, GuidedMediaNavigator.Playback, GuidedMediaNavigator.ReadingOrder>,
@@ -40,7 +40,7 @@ public class GuidedMediaNavigator<S : Configurable.Settings, P : Configurable.Pr
         override val utterance: String,
         override val range: IntRange?,
         override val utteranceLocator: Locator,
-        override val tokenLocator: Locator?,
+        override val tokenLocator: Locator?
     ) : TimeBasedMediaNavigator.Location,
         TextAwareMediaNavigator.Location
 
@@ -51,7 +51,7 @@ public class GuidedMediaNavigator<S : Configurable.Settings, P : Configurable.Pr
         override val offset: Duration,
         override val buffered: Duration?,
         override val utterance: String,
-        override val range: IntRange?,
+        override val range: IntRange?
     ) : TimeBasedMediaNavigator.Playback, TextAwareMediaNavigator.Playback
 
     public data class ReadingOrder(

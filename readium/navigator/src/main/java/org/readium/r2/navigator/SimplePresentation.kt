@@ -16,5 +16,5 @@ import org.readium.r2.shared.InternalReadiumApi
 public data class SimplePresentation(
     override val readingProgression: ReadingProgression,
     override val scroll: Boolean,
-    override val axis: Axis,
+    override val axis: Axis
 ) : VisualNavigator.Presentation

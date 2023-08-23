@@ -84,7 +84,12 @@ public class ImageNavigatorFragment private constructor(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         childFragmentManager.fragmentFactory = createFragmentFactory {
-            R2CbzPageFragment(publication) { x, y -> inputListener.onTap(this, TapEvent(PointF(x, y))) }
+            R2CbzPageFragment(publication) { x, y ->
+                inputListener.onTap(
+                    this,
+                    TapEvent(PointF(x, y))
+                )
+            }
         }
         super.onCreate(savedInstanceState)
     }
@@ -98,7 +103,10 @@ public class ImageNavigatorFragment private constructor(
         _binding = ReadiumNavigatorViewpagerBinding.inflate(inflater, container, false)
         val view = binding.root
 
-        preferences = requireContext().getSharedPreferences("org.readium.r2.settings", Context.MODE_PRIVATE)
+        preferences = requireContext().getSharedPreferences(
+            "org.readium.r2.settings",
+            Context.MODE_PRIVATE
+        )
         resourcePager = binding.resourcePager
         resourcePager.publicationType = R2ViewPager.PublicationType.CBZ
 
@@ -148,13 +156,21 @@ public class ImageNavigatorFragment private constructor(
         _binding = null
     }
 
-    @Deprecated("Use goForward instead", replaceWith = ReplaceWith("goForward()"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use goForward instead",
+        replaceWith = ReplaceWith("goForward()"),
+        level = DeprecationLevel.ERROR
+    )
     @Suppress("UNUSED_PARAMETER")
     public fun nextResource(v: View?) {
         goForward()
     }
 
-    @Deprecated("Use goBackward instead", replaceWith = ReplaceWith("goBackward()"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use goBackward instead",
+        replaceWith = ReplaceWith("goBackward()"),
+        level = DeprecationLevel.ERROR
+    )
     @Suppress("UNUSED_PARAMETER")
     public fun previousResource(v: View?) {
         goBackward()

@@ -62,9 +62,13 @@ public class EpubPreferencesEditor internal constructor(
     public val backgroundColor: Preference<Color> =
         PreferenceDelegate(
             getValue = { preferences.backgroundColor },
-            getEffectiveValue = { state.settings.backgroundColor ?: Color((theme.value ?: theme.effectiveValue).backgroundColor) },
+            getEffectiveValue = {
+                state.settings.backgroundColor ?: Color(
+                    (theme.value ?: theme.effectiveValue).backgroundColor
+                )
+            },
             getIsEffective = { preferences.backgroundColor != null },
-            updateValue = { value -> updateValues { it.copy(backgroundColor = value) } },
+            updateValue = { value -> updateValues { it.copy(backgroundColor = value) } }
         )
 
     /**
@@ -80,7 +84,7 @@ public class EpubPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.columnCount },
             getIsEffective = { layout == EpubLayout.REFLOWABLE && !state.settings.scroll },
             updateValue = { value -> updateValues { it.copy(columnCount = value) } },
-            supportedValues = listOf(ColumnCount.AUTO, ColumnCount.ONE, ColumnCount.TWO),
+            supportedValues = listOf(ColumnCount.AUTO, ColumnCount.ONE, ColumnCount.TWO)
         )
 
     /**
@@ -111,7 +115,7 @@ public class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(fontSize = value) } },
             supportedRange = 0.1..5.0,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = percentFormatter(),
+            valueFormatter = percentFormatter()
         )
 
     /**
@@ -149,7 +153,7 @@ public class EpubPreferencesEditor internal constructor(
                     ?: (state.settings.textAlign == TextAlign.JUSTIFY)
             },
             getIsEffective = ::isHyphensEffective,
-            updateValue = { value -> updateValues { it.copy(hyphens = value) } },
+            updateValue = { value -> updateValues { it.copy(hyphens = value) } }
         )
 
     /**
@@ -165,7 +169,7 @@ public class EpubPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.imageFilter },
             getIsEffective = { state.settings.theme == Theme.DARK },
             updateValue = { value -> updateValues { it.copy(imageFilter = value) } },
-            supportedValues = listOf(ImageFilter.DARKEN, ImageFilter.INVERT),
+            supportedValues = listOf(ImageFilter.DARKEN, ImageFilter.INVERT)
         )
 
     /**
@@ -178,7 +182,7 @@ public class EpubPreferencesEditor internal constructor(
             getValue = { preferences.language },
             getEffectiveValue = { state.settings.language },
             getIsEffective = { true },
-            updateValue = { value -> updateValues { it.copy(language = value) } },
+            updateValue = { value -> updateValues { it.copy(language = value) } }
         )
 
     /**
@@ -197,7 +201,7 @@ public class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(letterSpacing = value) } },
             supportedRange = 0.0..1.0,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = percentFormatter(),
+            valueFormatter = percentFormatter()
         )
 
     /**
@@ -213,7 +217,7 @@ public class EpubPreferencesEditor internal constructor(
             getValue = { preferences.ligatures },
             getEffectiveValue = { state.settings.ligatures ?: false },
             getIsEffective = ::isLigaturesEffective,
-            updateValue = { value -> updateValues { it.copy(ligatures = value) } },
+            updateValue = { value -> updateValues { it.copy(ligatures = value) } }
         )
 
     /**
@@ -231,7 +235,7 @@ public class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(lineHeight = value) } },
             supportedRange = 1.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = { it.format(5) },
+            valueFormatter = { it.format(5) }
         )
 
     /**
@@ -247,7 +251,7 @@ public class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(pageMargins = value) } },
             supportedRange = 0.0..4.0,
             progressionStrategy = DoubleIncrement(0.3),
-            valueFormatter = { it.format(5) },
+            valueFormatter = { it.format(5) }
         )
 
     /**
@@ -266,7 +270,7 @@ public class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(paragraphIndent = value) } },
             supportedRange = 0.0..3.0,
             progressionStrategy = DoubleIncrement(0.2),
-            valueFormatter = percentFormatter(),
+            valueFormatter = percentFormatter()
         )
 
     /**
@@ -284,7 +288,7 @@ public class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(paragraphSpacing = value) } },
             supportedRange = 0.0..2.0,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = percentFormatter(),
+            valueFormatter = percentFormatter()
         )
 
     /**
@@ -298,7 +302,7 @@ public class EpubPreferencesEditor internal constructor(
             getValue = { preferences.publisherStyles },
             getEffectiveValue = { state.settings.publisherStyles },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
-            updateValue = { value -> updateValues { it.copy(publisherStyles = value) } },
+            updateValue = { value -> updateValues { it.copy(publisherStyles = value) } }
         )
 
     /**
@@ -312,7 +316,7 @@ public class EpubPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.readingProgression },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(readingProgression = value) } },
-            supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL),
+            supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL)
         )
 
     /**
@@ -326,7 +330,7 @@ public class EpubPreferencesEditor internal constructor(
             getValue = { preferences.scroll },
             getEffectiveValue = { state.settings.scroll },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
-            updateValue = { value -> updateValues { it.copy(scroll = value) } },
+            updateValue = { value -> updateValues { it.copy(scroll = value) } }
         )
 
     /**
@@ -341,7 +345,7 @@ public class EpubPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.spread },
             getIsEffective = { layout == EpubLayout.FIXED },
             updateValue = { value -> updateValues { it.copy(spread = value) } },
-            supportedValues = listOf(Spread.NEVER, Spread.ALWAYS),
+            supportedValues = listOf(Spread.NEVER, Spread.ALWAYS)
         )
 
     /**
@@ -358,7 +362,12 @@ public class EpubPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.textAlign },
             getIsEffective = ::isTextAlignEffective,
             updateValue = { value -> updateValues { it.copy(textAlign = value) } },
-            supportedValues = listOf(TextAlign.START, TextAlign.LEFT, TextAlign.RIGHT, TextAlign.JUSTIFY),
+            supportedValues = listOf(
+                TextAlign.START,
+                TextAlign.LEFT,
+                TextAlign.RIGHT,
+                TextAlign.JUSTIFY
+            )
         )
 
     /**
@@ -370,7 +379,11 @@ public class EpubPreferencesEditor internal constructor(
     public val textColor: Preference<Color> =
         PreferenceDelegate(
             getValue = { preferences.textColor },
-            getEffectiveValue = { state.settings.textColor ?: Color((theme.value ?: theme.effectiveValue).contentColor) },
+            getEffectiveValue = {
+                state.settings.textColor ?: Color(
+                    (theme.value ?: theme.effectiveValue).contentColor
+                )
+            },
             getIsEffective = { layout == EpubLayout.REFLOWABLE && preferences.textColor != null },
             updateValue = { value -> updateValues { it.copy(textColor = value) } }
         )
@@ -399,7 +412,7 @@ public class EpubPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.theme },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
             updateValue = { value -> updateValues { it.copy(theme = value) } },
-            supportedValues = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA),
+            supportedValues = listOf(Theme.LIGHT, Theme.DARK, Theme.SEPIA)
         )
 
     /**
@@ -417,7 +430,7 @@ public class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(typeScale = value) } },
             valueFormatter = { it.format(5) },
             supportedRange = 1.0..2.0,
-            progressionStrategy = StepsProgression(1.0, 1.067, 1.125, 1.2, 1.25, 1.333, 1.414, 1.5, 1.618),
+            progressionStrategy = StepsProgression(1.0, 1.067, 1.125, 1.2, 1.25, 1.333, 1.414, 1.5, 1.618)
         )
 
     /**
@@ -431,7 +444,7 @@ public class EpubPreferencesEditor internal constructor(
             getValue = { preferences.verticalText },
             getEffectiveValue = { state.settings.verticalText },
             getIsEffective = { layout == EpubLayout.REFLOWABLE },
-            updateValue = { value -> updateValues { it.copy(verticalText = value) } },
+            updateValue = { value -> updateValues { it.copy(verticalText = value) } }
         )
 
     /**
@@ -449,7 +462,7 @@ public class EpubPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(wordSpacing = value) } },
             supportedRange = 0.0..1.0,
             progressionStrategy = DoubleIncrement(0.1),
-            valueFormatter = percentFormatter(),
+            valueFormatter = percentFormatter()
         )
 
     private fun percentFormatter(): (Double) -> String =

@@ -26,7 +26,12 @@ public class LcpPassphraseAuthentication(
         sender: Any?
     ): String? {
         if (reason != LcpAuthenticating.AuthenticationReason.PassphraseNotFound) {
-            return fallback?.retrievePassphrase(license, reason, allowUserInteraction = allowUserInteraction, sender = sender)
+            return fallback?.retrievePassphrase(
+                license,
+                reason,
+                allowUserInteraction = allowUserInteraction,
+                sender = sender
+            )
         }
 
         return passphrase

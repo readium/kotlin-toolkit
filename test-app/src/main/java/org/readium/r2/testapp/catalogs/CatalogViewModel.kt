@@ -17,9 +17,9 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.testapp.Bookshelf
 import org.readium.r2.testapp.domain.model.Catalog
@@ -28,11 +28,11 @@ import timber.log.Timber
 
 class CatalogViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val app get() =
-        getApplication<org.readium.r2.testapp.Application>()
-
     val detailChannel = EventChannel(Channel<Event.DetailEvent>(Channel.BUFFERED), viewModelScope)
     val eventChannel = EventChannel(Channel<Event.FeedEvent>(Channel.BUFFERED), viewModelScope)
+
+    lateinit var publication: Publication
+    private val app = getApplication<org.readium.r2.testapp.Application>()
 
     init {
         app.bookshelf.channel.receiveAsFlow()
@@ -40,17 +40,15 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
             .launchIn(viewModelScope)
     }
 
-    lateinit var publication: Publication
-
     fun parseCatalog(catalog: Catalog) = viewModelScope.launch {
         var parseRequest: Try<ParseData, Exception>? = null
         catalog.href.let {
             val request = HttpRequest(it)
             try {
                 parseRequest = if (catalog.type == 1) {
-                    OPDS1Parser.parseRequest(request)
+                    OPDS1Parser.parseRequest(request, app.readium.httpClient)
                 } else {
-                    OPDS2Parser.parseRequest(request)
+                    OPDS2Parser.parseRequest(request, app.readium.httpClient)
                 }
             } catch (e: MalformedURLException) {
                 eventChannel.send(Event.FeedEvent.CatalogParseFailed)
@@ -75,6 +73,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                 val errorMessage = event.error.getUserMessage(app)
                 detailChannel.send(Event.DetailEvent.ImportPublicationFailed(errorMessage))
             }
+
             Bookshelf.Event.ImportPublicationSuccess -> {
                 detailChannel.send(Event.DetailEvent.ImportPublicationSuccess)
             }

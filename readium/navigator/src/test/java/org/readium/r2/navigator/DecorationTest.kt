@@ -18,19 +18,19 @@ class DecorationTest {
             id = "1",
             locator = Locator("chapter.html", "text/html"),
             style = Decoration.Style.Highlight(tint = Color.RED),
-            extras = mapOf("param" to "value"),
+            extras = mapOf("param" to "value")
         )
         val d1b = Decoration(
             id = "1",
             locator = Locator("chapter.html", "text/html"),
             style = Decoration.Style.Highlight(tint = Color.RED),
-            extras = mapOf("param" to "value"),
+            extras = mapOf("param" to "value")
         )
         val d2 = Decoration(
             id = "2",
             locator = Locator("chapter2.html", "text/html"),
             style = Decoration.Style.Highlight(tint = Color.RED),
-            extras = mapOf("param" to "value"),
+            extras = mapOf("param" to "value")
         )
 
         assertTrue { d1a == d1a }

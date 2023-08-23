@@ -38,11 +38,11 @@ public class LicenseDocument(public val data: ByteArray) {
     public val json: JSONObject
 
     public enum class Rel(public val value: String) {
-        hint("hint"),
-        publication("publication"),
-        self("self"),
-        support("support"),
-        status("status");
+        Hint("hint"),
+        Publication("publication"),
+        Self("self"),
+        Support("support"),
+        Status("status");
 
         @Deprecated("Use [value] instead", ReplaceWith("value"), level = DeprecationLevel.ERROR)
         public val rawValue: String get() = value
@@ -69,7 +69,7 @@ public class LicenseDocument(public val data: ByteArray) {
         user = User(json.optJSONObject("user") ?: JSONObject())
         rights = Rights(json.optJSONObject("rights") ?: JSONObject())
 
-        if (link(Rel.hint) == null || link(Rel.publication) == null) {
+        if (link(Rel.Hint) == null || link(Rel.Publication) == null) {
             throw LcpException.Parsing.LicenseDocument
         }
     }

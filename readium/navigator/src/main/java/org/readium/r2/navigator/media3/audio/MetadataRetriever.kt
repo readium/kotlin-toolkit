@@ -15,12 +15,13 @@ import java.io.IOException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.shared.error.getOrThrow
-import org.readium.r2.shared.fetcher.Fetcher
+import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.getOrThrow
 
 @RequiresApi(Build.VERSION_CODES.M)
 internal class MetadataRetriever(
-    resource: Fetcher.Resource
+    resource: Resource
 ) {
 
     private val retriever: MediaMetadataRetriever =
@@ -36,11 +37,13 @@ internal class MetadataRetriever(
             ?.milliseconds
 
     fun close() {
-        retriever.close()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            tryOrLog { retriever.close() }
+        }
     }
 
-    class ResourceMediaDataSource(
-        private val resource: Fetcher.Resource
+    private class ResourceMediaDataSource(
+        private val resource: Resource
     ) : MediaDataSource() {
 
         override fun readAt(position: Long, buffer: ByteArray, offset: Int, size: Int): Int {

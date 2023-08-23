@@ -47,7 +47,11 @@ internal data class ReadiumCss(
     private fun injectStyles(content: StringBuilder) {
         val hasStyles = content.hasStyles()
         val assetsBaseHref = assetsBaseHref.removeSuffix("/")
-        val stylesheetsFolder = assetsBaseHref + "/readium/readium-css/" + (layout.stylesheets.folder?.plus("/") ?: "")
+        val stylesheetsFolder = assetsBaseHref + "/readium/readium-css/" + (
+            layout.stylesheets.folder?.plus(
+                "/"
+            ) ?: ""
+            )
 
         val headBeforeIndex = content.indexForOpeningTag("head")
         content.insert(
@@ -71,7 +75,7 @@ internal data class ReadiumCss(
                     :root[style], :root { overflow: visible !important; }
                     :root[style] > body, :root > body { overflow: visible !important; }
                 </style>
-            """.trimMargin()
+                    """.trimMargin()
                 )
 
                 if (!hasStyles) {
@@ -142,7 +146,9 @@ internal data class ReadiumCss(
     private fun CharSequence.hasStyles(): Boolean {
         return indexOf("<link ", 0, true) != -1 ||
             indexOf(" style=", 0, true) != -1 ||
-            Regex("<style.*?>", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL)).containsMatchIn(this)
+            Regex("<style.*?>", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL)).containsMatchIn(
+                this
+            )
     }
 
     private fun stylesheetLink(href: String): String =
@@ -206,7 +212,10 @@ internal data class ReadiumCss(
 
         val body = document.body()
         if (body.hasLang()) {
-            content.insert(content.indexForTagAttributes("html"), " xml:lang=\"${body.lang() ?: language}\"")
+            content.insert(
+                content.indexForTagAttributes("html"),
+                " xml:lang=\"${body.lang() ?: language}\""
+            )
         } else {
             val injectable = " xml:lang=\"$language\""
             content.insert(content.indexForTagAttributes("html"), injectable)
@@ -234,4 +243,7 @@ internal data class ReadiumCss(
             ) + tag.length + 1
 }
 
-private val dirRegex = Regex("""(<(?:html|body)[^\>]*)\s+dir=[\"']\w*[\"']""", setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE))
+private val dirRegex = Regex(
+    """(<(?:html|body)[^\>]*)\s+dir=[\"']\w*[\"']""",
+    setOf(RegexOption.IGNORE_CASE, RegexOption.MULTILINE)
+)

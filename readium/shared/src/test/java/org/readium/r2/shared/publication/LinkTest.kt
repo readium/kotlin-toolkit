@@ -54,7 +54,7 @@ class LinkTest {
         assertEquals(
             Link(
                 href = "http://href",
-                type = "application/pdf",
+                mediaType = MediaType.PDF,
                 templated = true,
                 title = "Link Title",
                 rels = setOf("publication", "cover"),
@@ -228,7 +228,7 @@ class LinkTest {
             ),
             Link(
                 href = "http://href",
-                type = "application/pdf",
+                mediaType = MediaType.PDF,
                 templated = true,
                 title = "Link Title",
                 rels = setOf("publication", "cover"),
@@ -265,13 +265,9 @@ class LinkTest {
         )
     }
 
-    @Test fun `get unknown media type`() {
-        assertEquals(MediaType.BINARY, Link(href = "file").mediaType)
-    }
-
     @Test fun `get media type from type`() {
-        assertEquals(MediaType.EPUB, Link(href = "file", type = "application/epub+zip").mediaType)
-        assertEquals(MediaType.PDF, Link(href = "file", type = "application/pdf").mediaType)
+        assertEquals(MediaType.EPUB, Link(href = "file", mediaType = MediaType.EPUB).mediaType)
+        assertEquals(MediaType.PDF, Link(href = "file", mediaType = MediaType.PDF).mediaType)
     }
 
     @Test
@@ -323,7 +319,7 @@ class LinkTest {
     fun `Make a copy after adding the given {properties}`() {
         val link = Link(
             href = "http://href",
-            type = "application/pdf",
+            mediaType = MediaType.PDF,
             templated = true,
             title = "Link Title",
             rels = setOf("publication", "cover"),

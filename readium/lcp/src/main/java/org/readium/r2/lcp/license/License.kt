@@ -25,11 +25,11 @@ import org.readium.r2.lcp.service.DeviceService
 import org.readium.r2.lcp.service.LcpClient
 import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.getOrElse
-import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.toIso8601String
 import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
@@ -47,7 +47,9 @@ internal class License(
     override val status: StatusDocument?
         get() = documents.status
 
-    override suspend fun decrypt(data: ByteArray): Try<ByteArray, LcpException> = withContext(Dispatchers.Default) {
+    override suspend fun decrypt(data: ByteArray): Try<ByteArray, LcpException> = withContext(
+        Dispatchers.Default
+    ) {
         try {
             // LCP lib crashes if we call decrypt on an empty ByteArray
             if (data.isEmpty()) {
@@ -132,13 +134,12 @@ internal class License(
     }
 
     override val canRenewLoan: Boolean
-        get() = status?.link(StatusDocument.Rel.renew) != null
+        get() = status?.link(StatusDocument.Rel.Renew) != null
 
     override val maxRenewDate: Date?
         get() = status?.potentialRights?.end
 
     override suspend fun renewLoan(listener: LcpLicense.RenewListener, prefersWebPage: Boolean): Try<Date?, LcpException> {
-
         // Finds the renew link according to `prefersWebPage`.
         fun findRenewLink(): Link? {
             val status = documents.status ?: return null
@@ -151,20 +152,22 @@ internal class License(
             }
 
             for (type in types) {
-                return status.link(StatusDocument.Rel.renew, type = type)
+                return status.link(StatusDocument.Rel.Renew, type = type)
                     ?: continue
             }
 
             // Fallback on the first renew link with no media type set and assume it's a PUT action.
-            return status.linkWithNoType(StatusDocument.Rel.renew)
+            return status.linkWithNoType(StatusDocument.Rel.Renew)
         }
 
         // Programmatically renew the loan with a PUT request.
         suspend fun renewProgrammatically(link: Link): ByteArray {
             val endDate =
-                if (link.templateParameters.contains("end"))
+                if (link.templateParameters.contains("end")) {
                     listener.preferredEndDate(maxRenewDate)
-                else null
+                } else {
+                    null
+                }
 
             val parameters = this.device.asQueryParameters.toMutableMap()
             if (endDate != null) {
@@ -177,7 +180,9 @@ internal class License(
                 .getOrElse { error ->
                     when (error.status) {
                         HttpURLConnection.HTTP_BAD_REQUEST -> throw LcpException.Renew.RenewFailed
-                        HttpURLConnection.HTTP_FORBIDDEN -> throw LcpException.Renew.InvalidRenewalPeriod(maxRenewDate = this.maxRenewDate)
+                        HttpURLConnection.HTTP_FORBIDDEN -> throw LcpException.Renew.InvalidRenewalPeriod(
+                            maxRenewDate = this.maxRenewDate
+                        )
                         else -> throw LcpException.Renew.UnexpectedServerError
                     }
                 }
@@ -189,10 +194,16 @@ internal class License(
             listener.openWebPage(link.url)
 
             val statusURL = tryOrNull {
-                license.url(LicenseDocument.Rel.status, preferredType = MediaType.LCP_STATUS_DOCUMENT)
+                license.url(
+                    LicenseDocument.Rel.Status,
+                    preferredType = MediaType.LCP_STATUS_DOCUMENT
+                )
             } ?: throw LcpException.LicenseInteractionNotAvailable
 
-            return network.fetch(statusURL.toString(), headers = mapOf("Accept" to MediaType.LCP_STATUS_DOCUMENT.toString())).getOrThrow()
+            return network.fetch(
+                statusURL.toString(),
+                headers = mapOf("Accept" to MediaType.LCP_STATUS_DOCUMENT.toString())
+            ).getOrThrow()
         }
 
         try {
@@ -218,13 +229,17 @@ internal class License(
     }
 
     override val canReturnPublication: Boolean
-        get() = status?.link(StatusDocument.Rel.`return`) != null
+        get() = status?.link(StatusDocument.Rel.Return) != null
 
     override suspend fun returnPublication(): Try<Unit, LcpException> {
         try {
             val status = this.documents.status
             val url = try {
-                status?.url(StatusDocument.Rel.`return`, preferredType = null, parameters = device.asQueryParameters)
+                status?.url(
+                    StatusDocument.Rel.Return,
+                    preferredType = null,
+                    parameters = device.asQueryParameters
+                )
             } catch (e: Throwable) {
                 null
             }

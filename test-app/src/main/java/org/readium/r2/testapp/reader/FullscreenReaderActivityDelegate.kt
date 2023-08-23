@@ -22,11 +22,10 @@ import org.readium.r2.testapp.utils.showSystemUi
 class FullscreenReaderActivityDelegate(
     private val activity: AppCompatActivity,
     private val readerFragment: VisualReaderFragment,
-    private val binding: ActivityReaderBinding,
+    private val binding: ActivityReaderBinding
 ) : DefaultLifecycleObserver {
 
     override fun onCreate(owner: LifecycleOwner) {
-
         // Without this, activity_reader_container receives the insets only once,
         // although we need a call every time the reader is hidden
         activity.window.decorView.setOnApplyWindowInsetsListener { view, insets ->
@@ -49,19 +48,21 @@ class FullscreenReaderActivityDelegate(
     }
 
     private fun updateSystemUiVisibility() {
-        if (readerFragment.isHidden)
+        if (readerFragment.isHidden) {
             activity.showSystemUi()
-        else
+        } else {
             readerFragment.updateSystemUiVisibility()
+        }
 
         // Seems to be required to adjust padding when transitioning from the outlines to the screen reader
         binding.activityContainer.requestApplyInsets()
     }
 
     private fun updateSystemUiPadding(container: View, insets: WindowInsets) {
-        if (readerFragment.isHidden)
+        if (readerFragment.isHidden) {
             container.padSystemUi(insets, activity)
-        else
+        } else {
             container.clearPadding()
+        }
     }
 }

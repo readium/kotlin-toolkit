@@ -7,13 +7,14 @@
 package org.readium.r2.streamer.parser.image
 
 import java.io.File
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
+import org.readium.r2.streamer.extensions.toLink
 import org.readium.r2.streamer.parser.PublicationParser
 
 /**
@@ -28,21 +29,20 @@ public class ImageParser : PublicationParser {
         asset: PublicationParser.Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
-
-        if (!asset.mediaType.matches(MediaType.CBZ) && !asset.mediaType.isBitmap)
+        if (!asset.mediaType.matches(MediaType.CBZ) && !asset.mediaType.isBitmap) {
             return Try.failure(PublicationParser.Error.FormatNotSupported())
+        }
 
         val readingOrder =
             if (asset.mediaType.matches(MediaType.CBZ)) {
-                asset.fetcher.links()
-                    .filter { !File(it.href).isHiddenOrThumbs && it.mediaType.isBitmap }
-                    .sortedBy(Link::href)
-                    .toMutableList()
+                (asset.container.entries() ?: emptySet())
+                    .filter { !File(it.path).isHiddenOrThumbs && it.mediaType().getOrNull()?.isBitmap == true }
+                    .sortedBy { it.path }
             } else {
-                listOfNotNull(
-                    asset.fetcher.links().firstOrNull()
-                ).toMutableList()
+                listOfNotNull(asset.container.entries()?.firstOrNull())
             }
+                .map { it.toLink() }
+                .toMutableList()
 
         if (readingOrder.isEmpty()) {
             return Try.failure(
@@ -50,22 +50,20 @@ public class ImageParser : PublicationParser {
             )
         }
 
-        val title = asset.fetcher.guessTitle() ?: asset.name
-
         // First valid resource is the cover.
         readingOrder[0] = readingOrder[0].copy(rels = setOf("cover"))
 
         val manifest = Manifest(
             metadata = Metadata(
                 conformsTo = setOf(Publication.Profile.DIVINA),
-                localizedTitle = LocalizedString(title)
+                localizedTitle = asset.container.guessTitle()?.let { LocalizedString(it) }
             ),
             readingOrder = readingOrder
         )
 
         val publicationBuilder = Publication.Builder(
             manifest = manifest,
-            fetcher = asset.fetcher,
+            container = asset.container,
             servicesBuilder = Publication.ServicesBuilder(
                 positions = PerResourcePositionsService.createFactory(fallbackMediaType = "image/*")
             )

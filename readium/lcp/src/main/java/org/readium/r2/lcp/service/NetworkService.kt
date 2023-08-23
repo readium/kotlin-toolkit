@@ -20,15 +20,19 @@ import kotlin.time.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.LcpException
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.util.http.retrieve
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.http.invoke
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import timber.log.Timber
 
 internal typealias URLParameters = Map<String, String?>
 
-internal class NetworkException(val status: Int?, cause: Throwable? = null) : Exception("Network failure with status $status", cause)
+internal class NetworkException(val status: Int?, cause: Throwable? = null) : Exception(
+    "Network failure with status $status",
+    cause
+)
 
 internal class NetworkService(
     private val mediaTypeRetriever: MediaTypeRetriever
@@ -51,7 +55,9 @@ internal class NetworkService(
         withContext(Dispatchers.IO) {
             try {
                 @Suppress("NAME_SHADOWING")
-                val url = URL(Uri.parse(url).buildUpon().appendQueryParameters(parameters).build().toString())
+                val url = URL(
+                    Uri.parse(url).buildUpon().appendQueryParameters(parameters).build().toString()
+                )
 
                 val connection = url.openConnection() as HttpURLConnection
                 connection.requestMethod = method.value
@@ -133,10 +139,7 @@ internal class NetworkService(
                 }
             }
 
-            mediaTypeRetriever.retrieve(
-                connection = connection,
-                mediaType = mediaType
-            )
+            mediaTypeRetriever.retrieve(MediaTypeHints(connection, mediaType = mediaType))
         } catch (e: Exception) {
             Timber.e(e)
             throw LcpException.Network(e)

@@ -79,7 +79,11 @@ public data class DomRange(
                 val cssSelector = json?.optNullableString("cssSelector")
                 val textNodeIndex = json?.optPositiveInt("textNodeIndex")
                 if (cssSelector == null || textNodeIndex == null) {
-                    warnings?.log(Point::class.java, "[cssSelector] and [textNodeIndex] are required", json)
+                    warnings?.log(
+                        Point::class.java,
+                        "[cssSelector] and [textNodeIndex] are required",
+                        json
+                    )
                     return null
                 }
 
@@ -95,7 +99,11 @@ public data class DomRange(
             }
         }
 
-        @Deprecated("Renamed into [charOffset]", ReplaceWith("charOffset"), level = DeprecationLevel.ERROR)
+        @Deprecated(
+            "Renamed into [charOffset]",
+            ReplaceWith("charOffset"),
+            level = DeprecationLevel.ERROR
+        )
         val offset: Long? get() = charOffset?.toLong()
     }
 

@@ -67,7 +67,13 @@ class XmlParserTest {
             "meta",
             "",
             "fr",
-            mapOf("" to mapOf("refines" to "#title", "property" to "alternate-script", "xml:lang" to "fr")),
+            mapOf(
+                "" to mapOf(
+                    "refines" to "#title",
+                    "property" to "alternate-script",
+                    "xml:lang" to "fr"
+                )
+            ),
             listOf(TextNode("Moby Dick"))
         )
         val expectedCreator = ElementNode(

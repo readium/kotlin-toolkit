@@ -68,7 +68,9 @@ internal class AudioFocusManager(
     @MustBeDocumented
     @Retention(AnnotationRetention.SOURCE)
     @IntDef(
-        PLAYER_COMMAND_DO_NOT_PLAY, PLAYER_COMMAND_WAIT_FOR_CALLBACK, PLAYER_COMMAND_PLAY_WHEN_READY
+        PLAYER_COMMAND_DO_NOT_PLAY,
+        PLAYER_COMMAND_WAIT_FOR_CALLBACK,
+        PLAYER_COMMAND_PLAY_WHEN_READY
     )
     annotation class PlayerCommand
 
@@ -218,12 +220,13 @@ internal class AudioFocusManager(
     private fun requestAudioFocusV26(): Int {
         if (!::audioFocusRequest.isInitialized || rebuildAudioFocusRequest) {
             val builder =
-                if (!::audioFocusRequest.isInitialized)
+                if (!::audioFocusRequest.isInitialized) {
                     AudioFocusRequest.Builder(focusGainToRequest)
-                else
+                } else {
                     AudioFocusRequest.Builder(
                         audioFocusRequest
                     )
+                }
             val willPauseWhenDucked = willPauseWhenDucked()
             audioFocusRequest = builder
                 .setAudioAttributes(
@@ -259,10 +262,11 @@ internal class AudioFocusManager(
         }
         this.audioFocusState = audioFocusState
         val volumeMultiplier =
-            if (audioFocusState == AUDIO_FOCUS_STATE_LOSS_TRANSIENT_DUCK)
+            if (audioFocusState == AUDIO_FOCUS_STATE_LOSS_TRANSIENT_DUCK) {
                 VOLUME_MULTIPLIER_DUCK
-            else
+            } else {
                 VOLUME_MULTIPLIER_DEFAULT
+            }
         if (this.volumeMultiplier == volumeMultiplier) {
             return
         }
@@ -382,38 +386,42 @@ internal class AudioFocusManager(
                 // Don't handle audio focus. It may be either video only contents or developers
                 // want to have more finer grained control. (e.g. adding audio focus listener)
                 AUDIOFOCUS_NONE
-            } else when (audioAttributes.usage) {
-                C.USAGE_VOICE_COMMUNICATION_SIGNALLING -> AUDIOFOCUS_NONE
-                C.USAGE_GAME, C.USAGE_MEDIA -> AUDIOFOCUS_GAIN
-                C.USAGE_UNKNOWN -> {
-                    Log.w(
-                        TAG,
-                        "Specify a proper usage in the audio attributes for audio focus" +
-                            " handling. Using AUDIOFOCUS_GAIN by default."
-                    )
-                    AUDIOFOCUS_GAIN
-                }
-                C.USAGE_ALARM, C.USAGE_VOICE_COMMUNICATION -> AUDIOFOCUS_GAIN_TRANSIENT
-                C.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE, C.USAGE_ASSISTANCE_SONIFICATION,
-                C.USAGE_NOTIFICATION, C.USAGE_NOTIFICATION_COMMUNICATION_DELAYED,
-                C.USAGE_NOTIFICATION_COMMUNICATION_INSTANT, C.USAGE_NOTIFICATION_COMMUNICATION_REQUEST,
-                C.USAGE_NOTIFICATION_EVENT, C.USAGE_NOTIFICATION_RINGTONE ->
-                    AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
-                C.USAGE_ASSISTANT ->
-                    if (Util.SDK_INT >= 19) {
-                        AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE
-                    } else {
-                        AUDIOFOCUS_GAIN_TRANSIENT
+            } else {
+                when (audioAttributes.usage) {
+                    C.USAGE_VOICE_COMMUNICATION_SIGNALLING -> AUDIOFOCUS_NONE
+                    C.USAGE_GAME, C.USAGE_MEDIA -> AUDIOFOCUS_GAIN
+                    C.USAGE_UNKNOWN -> {
+                        Log.w(
+                            TAG,
+                            "Specify a proper usage in the audio attributes for audio focus" +
+                                " handling. Using AUDIOFOCUS_GAIN by default."
+                        )
+                        AUDIOFOCUS_GAIN
                     }
-                C.USAGE_ASSISTANCE_ACCESSIBILITY -> {
-                    if (audioAttributes.contentType == C.AUDIO_CONTENT_TYPE_SPEECH) {
-                        // Voice shouldn't be interrupted by other playback.
-                        AUDIOFOCUS_GAIN_TRANSIENT
-                    } else AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
-                }
-                else -> {
-                    Log.w(TAG, "Unidentified audio usage: " + audioAttributes.usage)
-                    AUDIOFOCUS_NONE
+                    C.USAGE_ALARM, C.USAGE_VOICE_COMMUNICATION -> AUDIOFOCUS_GAIN_TRANSIENT
+                    C.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE, C.USAGE_ASSISTANCE_SONIFICATION,
+                    C.USAGE_NOTIFICATION, C.USAGE_NOTIFICATION_COMMUNICATION_DELAYED,
+                    C.USAGE_NOTIFICATION_COMMUNICATION_INSTANT, C.USAGE_NOTIFICATION_COMMUNICATION_REQUEST,
+                    C.USAGE_NOTIFICATION_EVENT, C.USAGE_NOTIFICATION_RINGTONE ->
+                        AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
+                    C.USAGE_ASSISTANT ->
+                        if (Util.SDK_INT >= 19) {
+                            AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE
+                        } else {
+                            AUDIOFOCUS_GAIN_TRANSIENT
+                        }
+                    C.USAGE_ASSISTANCE_ACCESSIBILITY -> {
+                        if (audioAttributes.contentType == C.AUDIO_CONTENT_TYPE_SPEECH) {
+                            // Voice shouldn't be interrupted by other playback.
+                            AUDIOFOCUS_GAIN_TRANSIENT
+                        } else {
+                            AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK
+                        }
+                    }
+                    else -> {
+                        Log.w(TAG, "Unidentified audio usage: " + audioAttributes.usage)
+                        AUDIOFOCUS_NONE
+                    }
                 }
             }
         }

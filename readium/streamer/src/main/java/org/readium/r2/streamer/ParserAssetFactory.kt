@@ -10,64 +10,62 @@ import java.io.File
 import java.nio.charset.Charset
 import org.json.JSONObject
 import org.readium.r2.shared.asset.Asset
-import org.readium.r2.shared.error.*
-import org.readium.r2.shared.fetcher.ContainerFetcher
-import org.readium.r2.shared.fetcher.ResourceFetcher
-import org.readium.r2.shared.fetcher.RoutingFetcher
-import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.ResourceContainer
+import org.readium.r2.shared.resource.RoutingContainer
+import org.readium.r2.shared.resource.StringResource
+import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.ThrowableError
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.http.HttpClient
-import org.readium.r2.shared.util.http.HttpFetcher
+import org.readium.r2.shared.util.http.HttpContainer
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.streamer.parser.PublicationParser
 
 internal class ParserAssetFactory(
     private val httpClient: HttpClient,
-    private val mediaTypeRetriever: MediaTypeRetriever,
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) {
 
     suspend fun createParserAsset(
-        asset: Asset,
+        asset: Asset
     ): Try<PublicationParser.Asset, Publication.OpeningException> {
         return when (asset) {
             is Asset.Container ->
-                Try.success(
-                    createParserAssetForContainer(asset.container, asset.mediaType, asset.name)
-                )
+                createParserAssetForContainer(asset)
             is Asset.Resource ->
-                createParserAssetForResource(asset.resource, asset.mediaType, asset.name)
+                createParserAssetForResource(asset)
         }
     }
 
     private fun createParserAssetForContainer(
-        container: Container,
-        mediaType: MediaType,
-        assetName: String
-    ): PublicationParser.Asset {
-        val fetcher = ContainerFetcher(container, mediaTypeRetriever)
-        return PublicationParser.Asset(assetName, mediaType, fetcher)
-    }
+        asset: Asset.Container
+    ): Try<PublicationParser.Asset, Publication.OpeningException> =
+        Try.success(
+            PublicationParser.Asset(
+                mediaType = asset.mediaType,
+                container = asset.container
+            )
+        )
 
     private suspend fun createParserAssetForResource(
-        resource: Resource,
-        mediaType: MediaType,
-        assetName: String
+        asset: Asset.Resource
     ): Try<PublicationParser.Asset, Publication.OpeningException> =
-        if (mediaType.isRwpm) {
-            createParserAssetForManifest(resource, assetName)
+        if (asset.mediaType.isRwpm) {
+            createParserAssetForManifest(asset)
         } else {
-            createParserAssetForContent(resource, mediaType, assetName)
+            createParserAssetForContent(asset)
         }
 
     private suspend fun createParserAssetForManifest(
-        resource: Resource,
-        assetName: String
+        asset: Asset.Resource
     ): Try<PublicationParser.Asset, Publication.OpeningException> {
-        val manifest = resource.readAsRwpm(packaged = false)
+        val manifest = asset.resource.readAsRwpm(packaged = false)
             .mapFailure { Publication.OpeningException.ParsingFailed(ThrowableError(it)) }
             .getOrElse { return Try.failure(it) }
 
@@ -81,36 +79,42 @@ internal class ParserAssetFactory(
 
         if (!baseUrl.startsWith("http")) {
             return Try.failure(
-                Publication.OpeningException.UnsupportedAsset("Self link doesn't use the HTTP(S) scheme.")
+                Publication.OpeningException.UnsupportedAsset(
+                    "Self link doesn't use the HTTP(S) scheme."
+                )
             )
         }
 
-        val link = Link(
-            href = "/manifest.json",
-            type = MediaType.READIUM_WEBPUB_MANIFEST.toString()
-        )
-
-        val fetcher =
-            RoutingFetcher(
-                local = ResourceFetcher(link, resource),
-                remote = HttpFetcher(httpClient, baseUrl)
+        val container =
+            RoutingContainer(
+                local = ResourceContainer(
+                    path = "/manifest.json",
+                    resource = StringResource(manifest.toJSON().toString(), asset.mediaType)
+                ),
+                remote = HttpContainer(httpClient, baseUrl)
             )
 
         return Try.success(
-            PublicationParser.Asset(assetName, MediaType.READIUM_WEBPUB, fetcher)
+            PublicationParser.Asset(
+                mediaType = MediaType.READIUM_WEBPUB,
+                container = container
+            )
         )
     }
 
     private fun createParserAssetForContent(
-        resource: Resource,
-        mediaType: MediaType,
-        assetName: String
+        asset: Asset.Resource
     ): Try<PublicationParser.Asset, Publication.OpeningException> {
-        val link = Link(href = "/$assetName", type = mediaType.toString())
-        val fetcher = ResourceFetcher(link, resource)
+        // Historically, the reading order of a standalone file contained a single link with the
+        // HREF "/$assetName". This was fragile if the asset named changed, or was different on
+        // other devices. To avoid this, we now use a single link with the HREF ".".
+        val container = ResourceContainer(".", asset.resource)
 
         return Try.success(
-            PublicationParser.Asset(assetName, mediaType, fetcher)
+            PublicationParser.Asset(
+                mediaType = asset.mediaType,
+                container = container
+            )
         )
     }
 
@@ -119,7 +123,11 @@ internal class ParserAssetFactory(
             val bytes = read().getOrThrow()
             val string = String(bytes, Charset.defaultCharset())
             val json = JSONObject(string)
-            val manifest = Manifest.fromJSON(json, packaged = packaged)
+            val manifest = Manifest.fromJSON(
+                json,
+                packaged = packaged,
+                mediaTypeRetriever = mediaTypeRetriever
+            )
                 ?: throw Exception("Failed to parse the RWPM Manifest")
             Try.success(manifest)
         } catch (e: Exception) {

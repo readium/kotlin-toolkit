@@ -67,19 +67,25 @@ class UserPreferencesViewModel<S : Configurable.Settings, P : Configurable.Prefe
             when (readerInitData) {
                 is EpubReaderInitData -> with(readerInitData) {
                     UserPreferencesViewModel<EpubSettings, EpubPreferences>(
-                        viewModelScope, bookId, preferencesManager,
+                        viewModelScope,
+                        bookId,
+                        preferencesManager,
                         createPreferencesEditor = navigatorFactory::createPreferencesEditor
                     )
                 }
                 is PdfReaderInitData -> with(readerInitData) {
                     UserPreferencesViewModel<PdfiumSettings, PdfiumPreferences>(
-                        viewModelScope, bookId, preferencesManager,
+                        viewModelScope,
+                        bookId,
+                        preferencesManager,
                         createPreferencesEditor = navigatorFactory::createPreferencesEditor
                     )
                 }
                 is MediaReaderInitData -> with(readerInitData) {
                     UserPreferencesViewModel<ExoPlayerSettings, ExoPlayerPreferences>(
-                        viewModelScope, bookId, preferencesManager,
+                        viewModelScope,
+                        bookId,
+                        preferencesManager,
                         createPreferencesEditor = navigatorFactory::createAudioPreferencesEditor
                     )
                 }

@@ -21,6 +21,7 @@ import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * Holds the metadata of a Readium publication, as described in the Readium Web Publication Manifest.
@@ -68,9 +69,9 @@ public data class Manifest(
     public fun linkWithHref(href: String): Link? {
         fun List<Link>.deepLinkWithHref(href: String): Link? {
             for (l in this) {
-                if (l.href == href)
+                if (l.href == href) {
                     return l
-                else {
+                } else {
                     l.alternates.deepLinkWithHref(href)?.let { return it }
                     l.children.deepLinkWithHref(href)?.let { return it }
                 }
@@ -111,7 +112,7 @@ public data class Manifest(
         val components = link.href.split("#", limit = 2)
         val href = components.firstOrNull() ?: link.href
         val resourceLink = linkWithHref(href) ?: return null
-        val type = resourceLink.type ?: return null
+        val type = resourceLink.mediaType?.toString() ?: return null
         val fragment = components.getOrNull(1)
 
         return Locator(
@@ -155,47 +156,89 @@ public data class Manifest(
         public fun fromJSON(
             json: JSONObject?,
             packaged: Boolean = false,
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             warnings: WarningLogger? = null
         ): Manifest? {
             json ?: return null
 
             val baseUrl =
-                if (packaged)
+                if (packaged) {
                     "/"
-                else
-                    Link.fromJSONArray(json.optJSONArray("links"), warnings = warnings)
+                } else {
+                    Link.fromJSONArray(
+                        json.optJSONArray("links"),
+                        mediaTypeRetriever,
+                        warnings = warnings
+                    )
                         .firstWithRel("self")
                         ?.href
                         ?.toUrlOrNull()
                         ?.removeLastComponent()
                         ?.toString()
                         ?: "/"
+                }
 
             val normalizeHref = { href: String -> Href(href, baseUrl).string }
 
             val context = json.optStringsFromArrayOrSingle("@context", remove = true)
 
-            val metadata = Metadata.fromJSON(json.remove("metadata") as? JSONObject, normalizeHref, warnings)
+            val metadata = Metadata.fromJSON(
+                json.remove("metadata") as? JSONObject,
+                mediaTypeRetriever,
+                normalizeHref,
+                warnings
+            )
             if (metadata == null) {
                 warnings?.log(Manifest::class.java, "[metadata] is required", json)
                 return null
             }
 
-            val links = Link.fromJSONArray(json.remove("links") as? JSONArray, normalizeHref, warnings)
-                .map { if (!packaged || "self" !in it.rels) it else it.copy(rels = it.rels - "self" + "alternate") }
+            val links = Link.fromJSONArray(
+                json.remove("links") as? JSONArray,
+                mediaTypeRetriever,
+                normalizeHref,
+                warnings
+            )
+                .map {
+                    if (packaged && "self" in it.rels) {
+                        it.copy(rels = it.rels - "self" + "alternate")
+                    } else {
+                        it
+                    }
+                }
 
             // [readingOrder] used to be [spine], so we parse [spine] as a fallback.
             val readingOrderJSON = (json.remove("readingOrder") ?: json.remove("spine")) as? JSONArray
-            val readingOrder = Link.fromJSONArray(readingOrderJSON, normalizeHref, warnings)
-                .filter { it.type != null }
+            val readingOrder = Link.fromJSONArray(
+                readingOrderJSON,
+                mediaTypeRetriever,
+                normalizeHref,
+                warnings
+            )
+                .filter { it.mediaType != null }
 
-            val resources = Link.fromJSONArray(json.remove("resources") as? JSONArray, normalizeHref, warnings)
-                .filter { it.type != null }
+            val resources = Link.fromJSONArray(
+                json.remove("resources") as? JSONArray,
+                mediaTypeRetriever,
+                normalizeHref,
+                warnings
+            )
+                .filter { it.mediaType != null }
 
-            val tableOfContents = Link.fromJSONArray(json.remove("toc") as? JSONArray, normalizeHref, warnings)
+            val tableOfContents = Link.fromJSONArray(
+                json.remove("toc") as? JSONArray,
+                mediaTypeRetriever,
+                normalizeHref,
+                warnings
+            )
 
             // Parses subcollections from the remaining JSON properties.
-            val subcollections = PublicationCollection.collectionsFromJSON(json, normalizeHref, warnings)
+            val subcollections = PublicationCollection.collectionsFromJSON(
+                json,
+                mediaTypeRetriever,
+                normalizeHref,
+                warnings
+            )
 
             return Manifest(
                 context = context,

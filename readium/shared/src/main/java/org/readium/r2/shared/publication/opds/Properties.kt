@@ -10,7 +10,11 @@
 package org.readium.r2.shared.publication.opds
 
 import org.json.JSONObject
-import org.readium.r2.shared.opds.*
+import org.readium.r2.shared.opds.Acquisition
+import org.readium.r2.shared.opds.Availability
+import org.readium.r2.shared.opds.Copies
+import org.readium.r2.shared.opds.Holds
+import org.readium.r2.shared.opds.Price
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 
@@ -46,7 +50,11 @@ public val Properties.indirectAcquisitions: List<Acquisition>
         }
         ?: emptyList()
 
-@Deprecated("Use [indirectAcquisitions] instead.", ReplaceWith("indirectAcquisitions"), level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Use [indirectAcquisitions] instead.",
+    ReplaceWith("indirectAcquisitions"),
+    level = DeprecationLevel.ERROR
+)
 public val Properties.indirectAcquisition: List<Acquisition>
     get() = indirectAcquisitions
 

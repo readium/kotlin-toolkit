@@ -16,7 +16,7 @@ import org.readium.r2.shared.publication.Publication
 public class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.Preferences<P>,
     E : PreferencesEditor<P>> private constructor(
     private val publication: Publication,
-    private val audioEngineProvider: AudioEngineProvider<S, P, E>,
+    private val audioEngineProvider: AudioEngineProvider<S, P, E>
 ) {
 
     public companion object {
@@ -25,7 +25,7 @@ public class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.P
         public suspend operator fun <S : Configurable.Settings, P : Configurable.Preferences<P>,
             E : PreferencesEditor<P>> invoke(
             publication: Publication,
-            audioEngineProvider: AudioEngineProvider<S, P, E>,
+            audioEngineProvider: AudioEngineProvider<S, P, E>
         ): AudioNavigatorFactory<S, P, E>? {
             if (!publication.conformsTo(Publication.Profile.AUDIOBOOK)) {
                 return null
@@ -36,24 +36,25 @@ public class AudioNavigatorFactory<S : Configurable.Settings, P : Configurable.P
             }
 
             return AudioNavigatorFactory(
-                publication, audioEngineProvider
+                publication,
+                audioEngineProvider
             )
         }
     }
 
     public suspend fun createNavigator(
         initialLocator: Locator? = null,
-        initialPreferences: P? = null,
+        initialPreferences: P? = null
     ): AudioNavigator<S, P>? {
         return AudioNavigator(
             publication = publication,
             audioEngineProvider = audioEngineProvider,
             initialLocator = initialLocator,
-            initialPreferences = initialPreferences,
+            initialPreferences = initialPreferences
         )
     }
 
     public fun createAudioPreferencesEditor(
-        currentPreferences: P,
+        currentPreferences: P
     ): E = audioEngineProvider.createPreferenceEditor(publication, currentPreferences)
 }

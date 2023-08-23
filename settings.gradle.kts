@@ -24,7 +24,7 @@ pluginManagement {
         id("org.jetbrains.dokka") version ("1.8.20")
         id("org.jetbrains.kotlin.android") version ("1.9.0")
         id("org.jetbrains.kotlin.plugin.serialization") version ("1.9.0")
-        id("org.jlleitschuh.gradle.ktlint") version ("11.0.0")
+        id("org.jlleitschuh.gradle.ktlint") version ("11.5.1")
         // Make sure to align with the Kotlin version.
         // See https://github.com/google/ksp/releases
         id("com.google.devtools.ksp") version ("1.9.0-1.0.12")

@@ -11,8 +11,8 @@ import java.nio.charset.Charset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.flatMap
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -85,12 +85,12 @@ public suspend fun HttpClient.fetchJSONObject(request: HttpRequest): HttpTry<JSO
 
 public class HttpStreamResponse(
     public val response: HttpResponse,
-    public val body: InputStream,
+    public val body: InputStream
 )
 
 public class HttpFetchResponse(
     public val response: HttpResponse,
-    public val body: ByteArray,
+    public val body: ByteArray
 )
 
 /**
@@ -108,7 +108,7 @@ public data class HttpResponse(
     val url: String,
     val statusCode: Int,
     val headers: Map<String, List<String>>,
-    val mediaType: MediaType,
+    val mediaType: MediaType
 ) {
 
     private val httpHeaders = HttpHeaders(headers)

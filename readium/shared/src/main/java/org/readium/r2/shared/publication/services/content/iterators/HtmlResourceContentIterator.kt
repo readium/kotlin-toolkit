@@ -15,17 +15,25 @@ import org.jsoup.parser.Parser
 import org.jsoup.select.NodeTraversor
 import org.jsoup.select.NodeVisitor
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.tryOrNull
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.services.content.Content
-import org.readium.r2.shared.publication.services.content.Content.*
+import org.readium.r2.shared.publication.services.content.Content.Attribute
+import org.readium.r2.shared.publication.services.content.Content.AttributeKey
+import org.readium.r2.shared.publication.services.content.Content.AudioElement
+import org.readium.r2.shared.publication.services.content.Content.ImageElement
+import org.readium.r2.shared.publication.services.content.Content.TextElement
+import org.readium.r2.shared.publication.services.content.Content.VideoElement
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
 
@@ -43,7 +51,7 @@ import org.readium.r2.shared.util.use
  */
 @ExperimentalReadiumApi
 public class HtmlResourceContentIterator internal constructor(
-    private val resource: Fetcher.Resource,
+    private val resource: Resource,
     private val totalProgressionRange: ClosedRange<Double>?,
     private val locator: Locator,
     private val beforeMaxLength: Int = 50
@@ -54,10 +62,10 @@ public class HtmlResourceContentIterator internal constructor(
             manifest: Manifest,
             servicesHolder: PublicationServicesHolder,
             readingOrderIndex: Int,
-            resource: Fetcher.Resource,
+            resource: Resource,
             locator: Locator
         ): Content.Iterator? {
-            if (!resource.link().mediaType.matchesAny(MediaType.HTML, MediaType.XHTML)) {
+            if (resource.mediaType().getOrNull()?.matchesAny(MediaType.HTML, MediaType.XHTML) != true) {
                 return null
             }
 
@@ -106,7 +114,9 @@ public class HtmlResourceContentIterator internal constructor(
         currentElement
             ?.takeIf { it.delta == -1 }?.element
             ?.also { currentElement = null }
-            ?: throw IllegalStateException("Called previous() without a successful call to hasPrevious() first")
+            ?: throw IllegalStateException(
+                "Called previous() without a successful call to hasPrevious() first"
+            )
 
     override suspend fun hasNext(): Boolean {
         if (currentElement?.delta == +1) return true
@@ -126,7 +136,9 @@ public class HtmlResourceContentIterator internal constructor(
         currentElement
             ?.takeIf { it.delta == +1 }?.element
             ?.also { currentElement = null }
-            ?: throw IllegalStateException("Called next() without a successful call to hasNext() first")
+            ?: throw IllegalStateException(
+                "Called next() without a successful call to hasNext() first"
+            )
 
     private var currentIndex: Int? = null
 
@@ -198,7 +210,7 @@ public class HtmlResourceContentIterator internal constructor(
      */
     public data class ParsedElements(
         val elements: List<Content.Element>,
-        val startIndex: Int,
+        val startIndex: Int
     )
 
     private class ContentParser(
@@ -209,8 +221,11 @@ public class HtmlResourceContentIterator internal constructor(
 
         fun result() = ParsedElements(
             elements = elements,
-            startIndex = if (baseLocator.locations.progression == 1.0) elements.size
-            else startIndex
+            startIndex = if (baseLocator.locations.progression == 1.0) {
+                elements.size
+            } else {
+                startIndex
+            }
         )
 
         private val elements = mutableListOf<Content.Element>()
@@ -218,16 +233,22 @@ public class HtmlResourceContentIterator internal constructor(
 
         /** Segments accumulated for the current element. */
         private val segmentsAcc = mutableListOf<TextElement.Segment>()
+
         /** Text since the beginning of the current segment, after coalescing whitespaces. */
         private var textAcc = StringBuilder()
+
         /** Text content since the beginning of the resource, including whitespaces. */
         private var wholeRawTextAcc: String? = null
+
         /** Text content since the beginning of the current element, including whitespaces. */
         private var elementRawTextAcc: String = ""
+
         /** Text content since the beginning of the current segment, including whitespaces. */
         private var rawTextAcc: String = ""
+
         /** Language of the current segment. */
         private var currentLanguage: String? = null
+
         /** CSS selector of the current element. */
         private var currentCssSelector: String? = null
 
@@ -288,7 +309,10 @@ public class HtmlResourceContentIterator internal constructor(
                                 val sources = node.select("source")
                                     .mapNotNull { source ->
                                         source.srcRelativeToHref(baseLocator.href)?.let { href ->
-                                            Link(href = href, type = source.attr("type").takeUnless { it.isBlank() })
+                                            Link(
+                                                href = href,
+                                                mediaType = MediaType(source.attr("type"))
+                                            )
                                         }
                                     }
 
@@ -297,8 +321,20 @@ public class HtmlResourceContentIterator internal constructor(
 
                         if (link != null) {
                             when (tag) {
-                                "audio" -> elements.add(AudioElement(locator = elementLocator, embeddedLink = link, attributes = emptyList()))
-                                "video" -> elements.add(VideoElement(locator = elementLocator, embeddedLink = link, attributes = emptyList()))
+                                "audio" -> elements.add(
+                                    AudioElement(
+                                        locator = elementLocator,
+                                        embeddedLink = link,
+                                        attributes = emptyList()
+                                    )
+                                )
+                                "video" -> elements.add(
+                                    VideoElement(
+                                        locator = elementLocator,
+                                        embeddedLink = link,
+                                        attributes = emptyList()
+                                    )
+                                )
                                 else -> {}
                             }
                         }
@@ -410,7 +446,7 @@ public class HtmlResourceContentIterator internal constructor(
                             currentLanguage?.let {
                                 add(Attribute(AttributeKey.LANGUAGE, Language(it)))
                             }
-                        },
+                        }
                     )
                 )
             }
@@ -430,7 +466,10 @@ private fun Locator.Text.Companion.trimmingText(text: String, before: String?): 
     val trailingWhitespace = text.takeLastWhile { it.isWhitespace() }
     return Locator.Text(
         before = ((before ?: "") + leadingWhitespace).takeUnless { it.isBlank() },
-        highlight = text.substring(leadingWhitespace.length, text.length - trailingWhitespace.length),
+        highlight = text.substring(
+            leadingWhitespace.length,
+            text.length - trailingWhitespace.length
+        ),
         after = trailingWhitespace.takeUnless { it.isBlank() }
     )
 }

@@ -20,7 +20,7 @@ public object EpubSharedPreferencesFilter : PreferencesFilter<EpubPreferences> {
             readingProgression = null,
             language = null,
             spread = null,
-            verticalText = null,
+            verticalText = null
         )
 }
 
@@ -35,6 +35,6 @@ public object EpubPublicationPreferencesFilter : PreferencesFilter<EpubPreferenc
             readingProgression = preferences.readingProgression,
             language = preferences.language,
             spread = preferences.spread,
-            verticalText = preferences.verticalText,
+            verticalText = preferences.verticalText
         )
 }

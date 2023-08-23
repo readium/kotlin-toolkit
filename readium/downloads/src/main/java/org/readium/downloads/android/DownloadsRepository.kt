@@ -18,7 +18,9 @@ import kotlinx.coroutines.flow.map
 import org.json.JSONArray
 import org.json.JSONObject
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "readium-downloads-android")
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
+    name = "readium-downloads-android"
+)
 
 private val downloadIdsKey: Preferences.Key<String> = stringPreferencesKey("downloadIds")
 

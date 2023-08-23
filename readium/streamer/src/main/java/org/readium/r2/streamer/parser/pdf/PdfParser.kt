@@ -9,14 +9,15 @@ package org.readium.r2.streamer.parser.pdf
 import android.content.Context
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.PdfSupport
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.publication.services.InMemoryCacheService
 import org.readium.r2.shared.publication.services.InMemoryCoverService
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.toLinks
+import org.readium.r2.streamer.extensions.toLink
 import org.readium.r2.streamer.parser.PublicationParser
 
 /**
@@ -35,26 +36,27 @@ public class PdfParser(
         asset: PublicationParser.Asset,
         warnings: WarningLogger?
     ): Try<Publication.Builder, PublicationParser.Error> {
-        if (asset.mediaType != MediaType.PDF)
+        if (asset.mediaType != MediaType.PDF) {
             return Try.failure(PublicationParser.Error.FormatNotSupported())
+        }
 
-        val fileHref = asset.fetcher.links().firstOrNull()?.href
+        val resource = asset.container.entries()?.firstOrNull()
             ?: return Try.failure(
                 PublicationParser.Error.ParsingFailed("No PDF found in the publication.")
             )
-        val document = pdfFactory.open(asset.fetcher.get(fileHref), password = null)
-        val tableOfContents = document.outline.toLinks(fileHref)
+        val document = pdfFactory.open(resource, password = null)
+        val tableOfContents = document.outline.toLinks(resource.path)
 
         val manifest = Manifest(
             metadata = Metadata(
                 identifier = document.identifier,
                 conformsTo = setOf(Publication.Profile.PDF),
-                localizedTitle = LocalizedString(document.title?.ifBlank { null } ?: asset.name),
+                localizedTitle = document.title?.ifBlank { null }?.let { LocalizedString(it) },
                 authors = listOfNotNull(document.author).map { Contributor(name = it) },
                 readingProgression = document.readingProgression,
-                numberOfPages = document.pageCount,
+                numberOfPages = document.pageCount
             ),
-            readingOrder = listOf(Link(href = fileHref, type = MediaType.PDF.toString())),
+            readingOrder = listOf(resource.toLink(MediaType.PDF)),
             tableOfContents = tableOfContents
         )
 
@@ -64,7 +66,7 @@ public class PdfParser(
             cover = document.cover(context)?.let { InMemoryCoverService.createFactory(it) }
         )
 
-        val publicationBuilder = Publication.Builder(manifest, asset.fetcher, servicesBuilder)
+        val publicationBuilder = Publication.Builder(manifest, asset.container, servicesBuilder)
 
         return Try.success(publicationBuilder)
     }

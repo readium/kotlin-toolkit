@@ -6,9 +6,9 @@
 
 package org.readium.r2.shared.util.http
 
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.isHttp
 
@@ -21,7 +21,7 @@ public class HttpResourceFactory(
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
         }
 
-        val resource = HttpResource(httpClient, url.toString())
+        val resource = HttpResource(httpClient, url)
         return Try.success(resource)
     }
 }

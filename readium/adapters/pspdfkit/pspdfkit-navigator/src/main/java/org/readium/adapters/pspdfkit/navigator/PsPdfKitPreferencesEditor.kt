@@ -33,7 +33,7 @@ import org.readium.r2.shared.publication.Metadata
 public class PsPdfKitPreferencesEditor internal constructor(
     initialPreferences: PsPdfKitPreferences,
     publicationMetadata: Metadata,
-    defaults: PsPdfKitDefaults,
+    defaults: PsPdfKitDefaults
 ) : PreferencesEditor<PsPdfKitPreferences> {
 
     private data class State(
@@ -66,7 +66,7 @@ public class PsPdfKitPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.fit },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(fit = value) } },
-            supportedValues = listOf(Fit.CONTAIN, Fit.WIDTH),
+            supportedValues = listOf(Fit.CONTAIN, Fit.WIDTH)
         )
 
     /**
@@ -81,7 +81,7 @@ public class PsPdfKitPreferencesEditor internal constructor(
             getValue = { preferences.offsetFirstPage },
             getEffectiveValue = { state.settings.offsetFirstPage },
             getIsEffective = { !state.settings.scroll && state.settings.spread != Spread.NEVER },
-            updateValue = { value -> updateValues { it.copy(offsetFirstPage = value) } },
+            updateValue = { value -> updateValues { it.copy(offsetFirstPage = value) } }
         )
 
     /**
@@ -95,7 +95,7 @@ public class PsPdfKitPreferencesEditor internal constructor(
             updateValue = { value -> updateValues { it.copy(pageSpacing = value) } },
             supportedRange = 0.0..50.0,
             progressionStrategy = DoubleIncrement(5.0),
-            valueFormatter = { "${it.format(1)} dp" },
+            valueFormatter = { "${it.format(1)} dp" }
         )
 
     /**
@@ -107,7 +107,7 @@ public class PsPdfKitPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.readingProgression },
             getIsEffective = { true },
             updateValue = { value -> updateValues { it.copy(readingProgression = value) } },
-            supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL),
+            supportedValues = listOf(ReadingProgression.LTR, ReadingProgression.RTL)
         )
 
     /**
@@ -118,7 +118,7 @@ public class PsPdfKitPreferencesEditor internal constructor(
             getValue = { preferences.scroll },
             getEffectiveValue = { state.settings.scroll },
             getIsEffective = { true },
-            updateValue = { value -> updateValues { it.copy(scroll = value) } },
+            updateValue = { value -> updateValues { it.copy(scroll = value) } }
         )
 
     /**
@@ -132,7 +132,7 @@ public class PsPdfKitPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.scrollAxis },
             getIsEffective = { state.settings.scroll },
             updateValue = { value -> updateValues { it.copy(scrollAxis = value) } },
-            supportedValues = listOf(Axis.VERTICAL, Axis.HORIZONTAL),
+            supportedValues = listOf(Axis.VERTICAL, Axis.HORIZONTAL)
         )
 
     /**
@@ -146,7 +146,7 @@ public class PsPdfKitPreferencesEditor internal constructor(
             getEffectiveValue = { state.settings.spread },
             getIsEffective = { !state.settings.scroll },
             updateValue = { value -> updateValues { it.copy(spread = value) } },
-            supportedValues = listOf(Spread.AUTO, Spread.NEVER, Spread.ALWAYS),
+            supportedValues = listOf(Spread.AUTO, Spread.NEVER, Spread.ALWAYS)
         )
 
     private fun updateValues(updater: (PsPdfKitPreferences) -> PsPdfKitPreferences) {

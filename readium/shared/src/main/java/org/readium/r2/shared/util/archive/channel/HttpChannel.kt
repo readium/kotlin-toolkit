@@ -12,12 +12,12 @@ import java.nio.ByteBuffer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.readSafe
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.channel.jvm.NonWritableChannelException
 import org.readium.r2.shared.util.archive.channel.jvm.SeekableByteChannel
+import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpException
 import org.readium.r2.shared.util.http.HttpRequest
@@ -43,8 +43,9 @@ internal class HttpChannel(
     private lateinit var _headResponse: Try<HttpResponse, HttpException>
 
     private suspend fun headResponse(): Try<HttpResponse, HttpException> {
-        if (::_headResponse.isInitialized)
+        if (::_headResponse.isInitialized) {
             return _headResponse
+        }
 
         _headResponse = client.fetch(HttpRequest(url, method = HttpRequest.Method.HEAD))
             .map { it.response }

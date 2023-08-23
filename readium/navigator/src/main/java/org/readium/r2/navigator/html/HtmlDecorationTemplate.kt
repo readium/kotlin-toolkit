@@ -41,7 +41,7 @@ public data class HtmlDecorationTemplate(
     val layout: Layout,
     val width: Width = Width.WRAP,
     val element: (Decoration) -> String = { "<div/>" },
-    val stylesheet: String? = null,
+    val stylesheet: String? = null
 ) : JSONable {
 
     /**
@@ -52,6 +52,7 @@ public data class HtmlDecorationTemplate(
     public enum class Layout(public val value: String) : Parcelable {
         /** A single HTML element covering the smallest region containing all CSS border boxes. */
         BOUNDS("bounds"),
+
         /** One HTML element for each CSS border box (e.g. line of text). */
         BOXES("boxes");
     }
@@ -63,10 +64,13 @@ public data class HtmlDecorationTemplate(
     public enum class Width(public val value: String) : Parcelable {
         /** Smallest width fitting the CSS border box. */
         WRAP("wrap"),
+
         /** Fills the bounds layout. */
         BOUNDS("bounds"),
+
         /** Fills the anchor page, useful for dual page. */
         VIEWPORT("viewport"),
+
         /** Fills the whole viewport. */
         PAGE("page");
     }
@@ -93,7 +97,13 @@ public data class HtmlDecorationTemplate(
             cornerRadius: Int,
             alpha: Double
         ): HtmlDecorationTemplate =
-            createTemplate(asHighlight = true, defaultTint = defaultTint, lineWeight = lineWeight, cornerRadius = cornerRadius, alpha = alpha)
+            createTemplate(
+                asHighlight = true,
+                defaultTint = defaultTint,
+                lineWeight = lineWeight,
+                cornerRadius = cornerRadius,
+                alpha = alpha
+            )
 
         /** Creates a new decoration template for the underline style. */
         public fun underline(
@@ -102,7 +112,13 @@ public data class HtmlDecorationTemplate(
             cornerRadius: Int,
             alpha: Double
         ): HtmlDecorationTemplate =
-            createTemplate(asHighlight = false, defaultTint = defaultTint, lineWeight = lineWeight, cornerRadius = cornerRadius, alpha = alpha)
+            createTemplate(
+                asHighlight = false,
+                defaultTint = defaultTint,
+                lineWeight = lineWeight,
+                cornerRadius = cornerRadius,
+                alpha = alpha
+            )
 
         /**
          * @param asHighlight When true, the non active style is of an highlight. Otherwise, it is
@@ -185,8 +201,24 @@ public class HtmlDecorationTemplates private constructor(
             cornerRadius: Int = 3,
             alpha: Double = 0.3
         ): HtmlDecorationTemplates = HtmlDecorationTemplates {
-            set(Style.Highlight::class, HtmlDecorationTemplate.highlight(defaultTint = defaultTint, lineWeight = lineWeight, cornerRadius = cornerRadius, alpha = alpha))
-            set(Style.Underline::class, HtmlDecorationTemplate.underline(defaultTint = defaultTint, lineWeight = lineWeight, cornerRadius = cornerRadius, alpha = alpha))
+            set(
+                Style.Highlight::class,
+                HtmlDecorationTemplate.highlight(
+                    defaultTint = defaultTint,
+                    lineWeight = lineWeight,
+                    cornerRadius = cornerRadius,
+                    alpha = alpha
+                )
+            )
+            set(
+                Style.Underline::class,
+                HtmlDecorationTemplate.underline(
+                    defaultTint = defaultTint,
+                    lineWeight = lineWeight,
+                    cornerRadius = cornerRadius,
+                    alpha = alpha
+                )
+            )
         }
     }
 }

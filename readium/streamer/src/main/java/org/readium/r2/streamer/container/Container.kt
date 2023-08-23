@@ -25,27 +25,64 @@ import java.io.InputStream
  *
  * @func dataInputStream : return the InputStream of content
  */
-@Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+@Deprecated(
+    "Use [publication.get()] to access publication content.",
+    level = DeprecationLevel.ERROR
+)
 public interface Container {
-    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [publication.get()] to access publication content.",
+        level = DeprecationLevel.ERROR
+    )
     public fun data(relativePath: String): ByteArray
-    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+
+    @Deprecated(
+        "Use [publication.get()] to access publication content.",
+        level = DeprecationLevel.ERROR
+    )
     public fun dataLength(relativePath: String): Long
-    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+
+    @Deprecated(
+        "Use [publication.get()] to access publication content.",
+        level = DeprecationLevel.ERROR
+    )
     public fun dataInputStream(relativePath: String): InputStream
 }
 
 public sealed class ContainerError : Exception() {
-    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Use [publication.get()] to access publication content.",
+        level = DeprecationLevel.ERROR
+    )
     public object streamInitFailed : ContainerError()
-    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+
+    @Deprecated(
+        "Use [publication.get()] to access publication content.",
+        level = DeprecationLevel.ERROR
+    )
     public object fileNotFound : ContainerError()
-    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+
+    @Deprecated(
+        "Use [publication.get()] to access publication content.",
+        level = DeprecationLevel.ERROR
+    )
     public object fileError : ContainerError()
-    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+
+    @Deprecated(
+        "Use [publication.get()] to access publication content.",
+        level = DeprecationLevel.ERROR
+    )
     public data class missingFile(public val path: String) : ContainerError()
-    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+
+    @Deprecated(
+        "Use [publication.get()] to access publication content.",
+        level = DeprecationLevel.ERROR
+    )
     public data class xmlParse(public val underlyingError: Error) : ContainerError()
-    @Deprecated("Use [publication.get()] to access publication content.", level = DeprecationLevel.ERROR)
+
+    @Deprecated(
+        "Use [publication.get()] to access publication content.",
+        level = DeprecationLevel.ERROR
+    )
     public data class missingLink(public val title: String?) : ContainerError()
 }

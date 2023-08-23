@@ -20,13 +20,16 @@ import org.readium.downloads.DownloadManager
 import org.readium.downloads.DownloadManagerProvider
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
-import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import timber.log.Timber
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "readium-lcp-licenses")
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
+    name = "readium-lcp-licenses"
+)
 
 private val licensesKey: Preferences.Key<String> = stringPreferencesKey("licenses")
 
@@ -103,6 +106,9 @@ public class LcpPublicationRetriever(
     private val downloadManager: DownloadManager =
         downloadManagerProvider.createDownloadManager(DownloadListener())
 
+    private val formatRegistry: FormatRegistry =
+        FormatRegistry()
+
     private val licenses: Flow<Map<Long, String>> =
         context.dataStore.data
             .map { data -> data[licensesKey]!! }
@@ -143,9 +149,9 @@ public class LcpPublicationRetriever(
         downloadTitle: String,
         downloadDescription: String
     ): RequestId {
-        val link = license.link(LicenseDocument.Rel.publication)
+        val link = license.link(LicenseDocument.Rel.Publication)
         val url = link?.url
-            ?: throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.publication.value)
+            ?: throw LcpException.Parsing.Url(rel = LicenseDocument.Rel.Publication.value)
 
         val requestId = downloadManager.submit(
             DownloadManager.Request(
@@ -165,7 +171,7 @@ public class LcpPublicationRetriever(
         val license = LicenseDocument(licenses.first()[id]!!.toByteArray())
         removeLicense(id)
 
-        val link = license.link(LicenseDocument.Rel.publication)!!
+        val link = license.link(LicenseDocument.Rel.Publication)!!
 
         val mediaType = mediaTypeRetriever.retrieve(mediaType = link.type)
             ?: MediaType.EPUB
@@ -178,7 +184,7 @@ public class LcpPublicationRetriever(
 
         return LcpService.AcquiredPublication(
             localFile = file,
-            suggestedFilename = "${license.id}.${mediaType.fileExtension}",
+            suggestedFilename = "${license.id}.${formatRegistry.fileExtension(mediaType) ?: "epub"}",
             mediaType = mediaType,
             licenseDocument = license
         )

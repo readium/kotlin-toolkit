@@ -10,14 +10,15 @@ import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 internal class ResourceAdapter(
-    private val epubVersion: Double,
     private val spine: Spine,
     private val manifest: List<Item>,
     private val encryptionData: Map<String, Encryption>,
     private val coverId: String?,
-    private val durationById: Map<String, Double?>
+    private val durationById: Map<String, Double?>,
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) {
     data class Links(
         val readingOrder: List<Link>,
@@ -34,7 +35,13 @@ internal class ResourceAdapter(
 
     fun adapt(): Links {
         val readingOrderIds = spine.itemrefs.filter { it.linear }.map { it.idref }
-        val readingOrder = readingOrderIds.mapNotNull { id -> itemById[id]?.let { item -> computeLink(item) } }
+        val readingOrder = readingOrderIds.mapNotNull { id ->
+            itemById[id]?.let { item ->
+                computeLink(
+                    item
+                )
+            }
+        }
         val readingOrderAllIds = computeIdsWithFallbacks(readingOrderIds)
         val resourceItems = manifest.filterNot { it.id in readingOrderAllIds }
         val resources = resourceItems.map { computeLink(it) }
@@ -64,7 +71,7 @@ internal class ResourceAdapter(
 
         return Link(
             href = item.href,
-            type = item.mediaType,
+            mediaType = mediaTypeRetriever.retrieve(item.mediaType),
             duration = durationById[item.id],
             rels = rels,
             properties = properties,
@@ -98,13 +105,15 @@ internal class ResourceAdapter(
 
     /** Compute alternate links for [item], checking for an infinite recursion */
     private fun computeAlternates(item: Item, fallbackChain: Set<String>): List<Link> {
-
         val fallback = item.fallback?.let { id ->
-            if (id in fallbackChain) null else
+            if (id in fallbackChain) {
+                null
+            } else {
                 itemById[id]?.let {
                     val updatedChain = if (item.id != null) fallbackChain + item.id else fallbackChain
                     computeLink(it, updatedChain)
                 }
+            }
         }
         val mediaOverlays = item.mediaOverlay?.let { id ->
             itemById[id]?.let {

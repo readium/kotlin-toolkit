@@ -30,7 +30,7 @@ public class HttpRequest(
     public val extras: Bundle = Bundle(),
     public val connectTimeout: Duration? = null,
     public val readTimeout: Duration? = null,
-    public val allowUserInteraction: Boolean = false,
+    public val allowUserInteraction: Boolean = false
 ) : Serializable {
 
     /** Supported HTTP methods. */
@@ -68,7 +68,7 @@ public class HttpRequest(
         public var extras: Bundle = Bundle(),
         public var connectTimeout: Duration? = null,
         public var readTimeout: Duration? = null,
-        public var allowUserInteraction: Boolean = false,
+        public var allowUserInteraction: Boolean = false
     ) {
 
         public var url: String
@@ -136,7 +136,7 @@ public class HttpRequest(
             extras = extras,
             connectTimeout = connectTimeout,
             readTimeout = readTimeout,
-            allowUserInteraction = allowUserInteraction,
+            allowUserInteraction = allowUserInteraction
         )
     }
 }

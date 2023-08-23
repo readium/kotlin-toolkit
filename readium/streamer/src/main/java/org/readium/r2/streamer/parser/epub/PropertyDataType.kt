@@ -40,8 +40,9 @@ internal fun resolveProperty(
         defaultVocab.iri + splitted[0]
     } else if (splitted.size == 2 && prefixMap[splitted[0]] != null) {
         prefixMap[splitted[0]] + splitted[1]
-    } else
+    } else {
         property
+    }
 }
 
 internal fun parsePrefixes(prefixes: String): Map<String, String> =

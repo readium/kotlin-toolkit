@@ -97,9 +97,11 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
             pdfEngineProvider: PdfEngineProvider<S, P, E>
         ): FragmentFactory = createFragmentFactory {
             PdfNavigatorFragment(
-                publication, initialLocator,
+                publication,
+                initialLocator,
                 preferences ?: pdfEngineProvider.createEmptyPreferences(),
-                listener, pdfEngineProvider
+                listener,
+                pdfEngineProvider
             )
         }
     }
@@ -109,7 +111,7 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
 
         require(
             publication.readingOrder.count() == 1 &&
-                publication.readingOrder.first().mediaType.matches(MediaType.PDF)
+                publication.readingOrder.first().mediaType?.matches(MediaType.PDF) == true
         ) { "[PdfNavigatorFragment] currently supports only publications with a single PDF for reading order" }
     }
 
@@ -119,7 +121,7 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
             publication,
             initialLocator,
             initialPreferences = initialPreferences,
-            pdfEngineProvider = pdfEngineProvider,
+            pdfEngineProvider = pdfEngineProvider
         )
     }
 
@@ -174,7 +176,7 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
     }
 
     private suspend fun createPdfDocumentFragment(locator: Locator, settings: S): PdfDocumentFragment<S>? {
-        val link = publication.linkWithHref(locator.href) ?: return null
+        val link = viewModel.findLink(locator) ?: return null
 
         return try {
             val pageIndex = (locator.locations.page ?: 1) - 1

@@ -16,7 +16,7 @@ public open class PreferenceDelegate<T>(
     private val getValue: () -> T?,
     private val getEffectiveValue: () -> T,
     private val getIsEffective: () -> Boolean,
-    private val updateValue: (T?) -> Unit,
+    private val updateValue: (T?) -> Unit
 ) : Preference<T> {
 
     override val value: T?
@@ -39,7 +39,7 @@ public class EnumPreferenceDelegate<T>(
     getEffectiveValue: () -> T,
     getIsEffective: () -> Boolean,
     updateValue: (T?) -> Unit,
-    override val supportedValues: List<T>,
+    override val supportedValues: List<T>
 ) : PreferenceDelegate<T>(getValue, getEffectiveValue, getIsEffective, updateValue),
     EnumPreference<T> {
 
@@ -57,7 +57,7 @@ public class RangePreferenceDelegate<T : Comparable<T>>(
     updateValue: (T?) -> Unit,
     private val valueFormatter: (T) -> String,
     override val supportedRange: ClosedRange<T>,
-    private val progressionStrategy: ProgressionStrategy<T>,
+    private val progressionStrategy: ProgressionStrategy<T>
 ) : PreferenceDelegate<T>(getValue, getEffectiveValue, getIsEffective, updateValue),
     RangePreference<T> {
 

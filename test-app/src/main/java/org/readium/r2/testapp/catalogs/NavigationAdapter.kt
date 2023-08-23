@@ -27,7 +27,9 @@ class NavigationAdapter(val type: Int) :
     ): ViewHolder {
         return ViewHolder(
             ItemRecycleButtonBinding.inflate(
-                LayoutInflater.from(parent.context), parent, false
+                LayoutInflater.from(parent.context),
+                parent,
+                false
             )
         )
     }

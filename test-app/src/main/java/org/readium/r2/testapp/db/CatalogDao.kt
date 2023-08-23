@@ -28,7 +28,9 @@ interface CatalogDao {
      * Retrieve list of Catalog models based on Catalog model
      * @return List of Catalog models as LiveData
      */
-    @Query("SELECT * FROM " + Catalog.TABLE_NAME + " WHERE " + Catalog.TITLE + " = :title AND " + Catalog.HREF + " = :href AND " + Catalog.TYPE + " = :type")
+    @Query(
+        "SELECT * FROM " + Catalog.TABLE_NAME + " WHERE " + Catalog.TITLE + " = :title AND " + Catalog.HREF + " = :href AND " + Catalog.TYPE + " = :type"
+    )
     fun getCatalogModels(title: String, href: String, type: Int): LiveData<List<Catalog>>
 
     /**

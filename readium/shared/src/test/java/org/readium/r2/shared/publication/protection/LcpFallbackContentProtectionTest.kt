@@ -13,6 +13,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -88,9 +89,8 @@ class LcpFallbackContentProtectionTest {
     }
 
     private fun supports(mediaType: MediaType, resources: Map<String, String>): Boolean = runBlocking {
-        LcpFallbackContentProtection().supports(
+        LcpFallbackContentProtection(MediaTypeRetriever()).supports(
             Asset.Container(
-                name = "fake name",
                 mediaType = mediaType,
                 exploded = false,
                 container = TestContainer(resources)

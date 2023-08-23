@@ -46,7 +46,7 @@ class NaiveTextTokenizerTest {
         assertContentEquals(
             listOf(
                 "Alice said, looking above: \"and what is the use of a book?\".",
-                "So she was considering (as well as she could), whether making a daisy-chain would be worth the trouble\nIn the end, she went ahead.",
+                "So she was considering (as well as she could), whether making a daisy-chain would be worth the trouble\nIn the end, she went ahead."
             ),
             tokenizer.tokenize(source)
                 .map { source.substring(it) }

@@ -22,7 +22,9 @@ object OutlineContract {
         Bundle().apply { putParcelable(DESTINATION_KEY, locator) }
 
     fun parseResult(result: Bundle): Result {
-        val destination = requireNotNull(BundleCompat.getParcelable(result, DESTINATION_KEY, Locator::class.java))
+        val destination = requireNotNull(
+            BundleCompat.getParcelable(result, DESTINATION_KEY, Locator::class.java)
+        )
         return Result(destination)
     }
 }

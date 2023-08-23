@@ -133,11 +133,16 @@ public data class EpubPreferences(
             context: Context,
             sharedPreferencesName: String = "org.readium.r2.settings",
             fontFamilies: List<String> = listOf(
-                "Original", "PT Serif", "Roboto", "Source Sans Pro", "Vollkorn", "OpenDyslexic",
-                "AccessibleDfA", "IA Writer Duospace"
+                "Original",
+                "PT Serif",
+                "Roboto",
+                "Source Sans Pro",
+                "Vollkorn",
+                "OpenDyslexic",
+                "AccessibleDfA",
+                "IA Writer Duospace"
             )
         ): EpubPreferences {
-
             val sp: SharedPreferences =
                 context.getSharedPreferences(sharedPreferencesName, Context.MODE_PRIVATE)
 

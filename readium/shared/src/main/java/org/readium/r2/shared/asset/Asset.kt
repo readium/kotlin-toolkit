@@ -6,6 +6,8 @@
 
 package org.readium.r2.shared.asset
 
+import org.readium.r2.shared.resource.Container as SharedContainer
+import org.readium.r2.shared.resource.Resource as SharedResource
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -14,19 +16,14 @@ import org.readium.r2.shared.util.mediatype.MediaType
 public sealed class Asset {
 
     /**
-     * Name of the asset, e.g. a filename.
+     * Type of the asset source.
      */
-    public abstract val name: String
+    public abstract val assetType: AssetType
 
     /**
      * Media type of the asset.
      */
     public abstract val mediaType: MediaType
-
-    /**
-     * Type of the asset source.
-     */
-    public abstract val assetType: AssetType
 
     /**
      * Releases in-memory resources related to this asset.
@@ -36,14 +33,12 @@ public sealed class Asset {
     /**
      * A single resource asset.
      *
-     * @param name Name of the asset.
      * @param mediaType Media type of the asset.
      * @param resource Opened resource to access the asset.
      */
     public class Resource(
-        override val name: String,
         override val mediaType: MediaType,
-        public val resource: org.readium.r2.shared.resource.Resource
+        public val resource: SharedResource
     ) : Asset() {
 
         override val assetType: AssetType =
@@ -57,23 +52,22 @@ public sealed class Asset {
     /**
      * A container asset providing access to several resources.
      *
-     * @param name Name of the asset.
      * @param mediaType Media type of the asset.
      * @param exploded If this container is an exploded or packaged container.
      * @param container Opened container to access asset resources.
      */
     public class Container(
-        override val name: String,
         override val mediaType: MediaType,
         exploded: Boolean,
-        public val container: org.readium.r2.shared.resource.Container
+        public val container: SharedContainer
     ) : Asset() {
 
         override val assetType: AssetType =
-            if (exploded)
+            if (exploded) {
                 AssetType.Directory
-            else
+            } else {
                 AssetType.Archive
+            }
 
         override suspend fun close() {
             container.close()

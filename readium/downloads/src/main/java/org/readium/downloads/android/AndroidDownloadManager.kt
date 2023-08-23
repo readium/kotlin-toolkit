@@ -57,7 +57,13 @@ public class AndroidDownloadManager(
     public override suspend fun submit(request: DownloadManager.Request): DownloadManager.RequestId {
         val uri = Uri.parse(request.url.toString())
         val filename = filenameForUri(uri.toString())
-        val androidRequest = createRequest(uri, filename, request.headers, request.title, request.description)
+        val androidRequest = createRequest(
+            uri,
+            filename,
+            request.headers,
+            request.title,
+            request.description
+        )
         val downloadId = downloadManager.enqueue(androidRequest)
         downloadsRepository.addId(name, downloadId)
         return DownloadManager.RequestId(downloadId)

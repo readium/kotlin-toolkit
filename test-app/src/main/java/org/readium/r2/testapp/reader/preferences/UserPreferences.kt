@@ -123,7 +123,7 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
                             theme = editor.theme,
                             typeScale = editor.typeScale,
                             verticalText = editor.verticalText,
-                            wordSpacing = editor.wordSpacing,
+                            wordSpacing = editor.wordSpacing
                         )
                     EpubLayout.FIXED ->
                         FixedLayoutUserPreferences(
@@ -131,7 +131,7 @@ private fun <P : Configurable.Preferences<P>, E : PreferencesEditor<P>> UserPref
                             backgroundColor = editor.backgroundColor,
                             language = editor.language,
                             readingProgression = editor.readingProgression,
-                            spread = editor.spread,
+                            spread = editor.spread
                         )
                 }
             is TtsPreferencesEditor ->
@@ -265,7 +265,7 @@ private fun FixedLayoutUserPreferences(
         ButtonGroupItem(
             title = "Spread",
             preference = spread,
-            commit = commit,
+            commit = commit
         ) { value ->
             when (value) {
                 Spread.AUTO -> "Auto"
@@ -337,7 +337,7 @@ private fun ReflowableUserPreferences(
     theme: EnumPreference<Theme>? = null,
     typeScale: RangePreference<Double>? = null,
     verticalText: Preference<Boolean>? = null,
-    wordSpacing: RangePreference<Double>? = null,
+    wordSpacing: RangePreference<Double>? = null
 ) {
     if (language != null || readingProgression != null || verticalText != null) {
         if (language != null) {
@@ -368,7 +368,6 @@ private fun ReflowableUserPreferences(
     }
 
     if (scroll != null || columnCount != null || pageMargins != null) {
-
         if (scroll != null) {
             SwitchItem(
                 title = "Scroll",
@@ -381,7 +380,7 @@ private fun ReflowableUserPreferences(
             ButtonGroupItem(
                 title = "Columns",
                 preference = columnCount,
-                commit = commit,
+                commit = commit
             ) { value ->
                 when (value) {
                     ColumnCount.AUTO -> "Auto"
@@ -403,7 +402,6 @@ private fun ReflowableUserPreferences(
     }
 
     if (theme != null || textColor != null || imageFilter != null) {
-
         if (theme != null) {
             ButtonGroupItem(
                 title = "Theme",
@@ -505,7 +503,7 @@ private fun ReflowableUserPreferences(
         SwitchItem(
             title = "Publisher styles",
             preference = publisherStyles,
-            commit = commit,
+            commit = commit
         )
 
         if (!(publisherStyles.value ?: publisherStyles.effectiveValue)) {
@@ -603,7 +601,7 @@ private fun Divider() {
 private fun PresetsMenuButton(
     presets: List<Preset>,
     clear: () -> Unit,
-    commit: () -> Unit,
+    commit: () -> Unit
 ) {
     if (presets.isEmpty()) return
 

@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.error
+package org.readium.r2.shared.util
 
 /**
  * Describes an error.
@@ -42,7 +42,7 @@ public class ThrowableError(
  * A basic [Error] implementation with a message.
  */
 public class MessageError(
-    override val message: String,
+    override val message: String
 ) : Error {
 
     override val cause: Error? = null

@@ -8,10 +8,12 @@ package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 internal class MetadataParser(
-    private val epubVersion: Double,
-    private val prefixMap: Map<String, String>
+    private val prefixMap: Map<String, String>,
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) {
 
     fun parse(document: ElementNode, filePath: String): List<MetadataItem>? {
@@ -39,7 +41,13 @@ internal class MetadataParser(
         val relAttr = element.getAttr("rel").orEmpty()
         val rel = parseProperties(relAttr).map { resolveProperty(it, prefixMap, DEFAULT_VOCAB.LINK) }
         val propAttr = element.getAttr("properties").orEmpty()
-        val properties = parseProperties(propAttr).map { resolveProperty(it, prefixMap, DEFAULT_VOCAB.LINK) }
+        val properties = parseProperties(propAttr).map {
+            resolveProperty(
+                it,
+                prefixMap,
+                DEFAULT_VOCAB.LINK
+            )
+        }
         val mediaType = element.getAttr("media-type")
         val refines = element.getAttr("refines")?.removePrefix("#")
         return MetadataItem.Link(
@@ -47,7 +55,7 @@ internal class MetadataParser(
             refines = refines,
             href = Href(href, baseHref = filePath).string,
             rels = rel.toSet(),
-            mediaType = mediaType,
+            mediaType = mediaTypeRetriever.retrieve(mediaType),
             properties = properties
         )
     }
@@ -73,7 +81,12 @@ internal class MetadataParser(
                 ?: return null
             val resolvedProp = resolveProperty(propName, prefixMap, DEFAULT_VOCAB.META)
             val resolvedScheme =
-                element.getAttr("scheme")?.trim()?.ifEmpty { null }?.let { resolveProperty(it, prefixMap) }
+                element.getAttr("scheme")?.trim()?.ifEmpty { null }?.let {
+                    resolveProperty(
+                        it,
+                        prefixMap
+                    )
+                }
             val refines = element.getAttr("refines")?.removePrefix("#")
             MetadataItem.Meta(
                 id = element.id,
@@ -90,7 +103,11 @@ internal class MetadataParser(
         val propValue = element.text?.trim()?.ifEmpty { null } ?: return null
         val propName = Vocabularies.DCTERMS + element.name
         return when (element.name) {
-            "creator", "contributor", "publisher" -> contributorWithLegacyAttr(element, propName, propValue)
+            "creator", "contributor", "publisher" -> contributorWithLegacyAttr(
+                element,
+                propName,
+                propValue
+            )
             "date" -> dateWithLegacyAttr(element, propName, propValue)
             else -> MetadataItem.Meta(
                 id = element.id,
@@ -141,6 +158,7 @@ internal class MetadataParser(
     private fun resolveItemsHierarchy(items: List<MetadataItem>): List<MetadataItem> {
         val metadataIds = items.mapNotNull { it.id }
         val rootExpr = items.filter { it.refines == null || it.refines !in metadataIds }
+
         @Suppress("Unchecked_cast")
         val exprByRefines = items.groupBy(MetadataItem::refines) as Map<String, List<MetadataItem.Meta>>
         return rootExpr.map { computeMetadataItem(it, exprByRefines, emptySet()) }
@@ -175,8 +193,8 @@ internal sealed class MetadataItem {
         override val children: List<MetadataItem> = emptyList(),
         val href: String,
         val rels: Set<String>,
-        val mediaType: String?,
-        val properties: List<String> = emptyList(),
+        val mediaType: MediaType?,
+        val properties: List<String> = emptyList()
     ) : MetadataItem()
 
     data class Meta(
@@ -186,6 +204,6 @@ internal sealed class MetadataItem {
         val property: String,
         val value: String,
         val lang: String,
-        val scheme: String? = null,
+        val scheme: String? = null
     ) : MetadataItem()
 }

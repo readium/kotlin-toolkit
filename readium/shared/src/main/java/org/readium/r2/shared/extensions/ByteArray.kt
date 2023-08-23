@@ -47,3 +47,14 @@ public fun ByteArray.md5(): String? =
         Timber.e(e)
         null
     }
+
+internal fun ByteArray.read(range: LongRange?): ByteArray {
+    range ?: return this
+
+    @Suppress("NAME_SHADOWING")
+    val range = range
+        .coerceIn(0L until size)
+        .requireLengthFitInt()
+
+    return sliceArray(range.map(Long::toInt))
+}

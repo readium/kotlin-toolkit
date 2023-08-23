@@ -7,7 +7,7 @@
 package org.readium.downloads
 
 import android.net.Uri
-import org.readium.r2.shared.error.Error
+import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.Url
 
 public interface DownloadManager {
@@ -16,15 +16,15 @@ public interface DownloadManager {
         val url: Url,
         val headers: Map<String, List<String>>,
         val title: String,
-        val description: String,
+        val description: String
     )
 
     @JvmInline
     public value class RequestId(public val value: Long)
 
-    public sealed class Error : org.readium.r2.shared.error.Error {
+    public sealed class Error : org.readium.r2.shared.util.Error {
 
-        override val cause: org.readium.r2.shared.error.Error? =
+        override val cause: org.readium.r2.shared.util.Error? =
             null
 
         public data object NotFound : Error() {

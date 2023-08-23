@@ -13,6 +13,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.mediatype.MediaType
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LocatorServiceTest {
@@ -22,19 +23,27 @@ class LocatorServiceTest {
     fun `locate from Locator`() = runTest {
         val service = createService(
             readingOrder = listOf(
-                Link(href = "chap1", type = "application/xml"),
-                Link(href = "chap2", type = "application/xml"),
-                Link(href = "chap3", type = "application/xml")
+                Link(href = "chap1", mediaType = MediaType.XML),
+                Link(href = "chap2", mediaType = MediaType.XML),
+                Link(href = "chap3", mediaType = MediaType.XML)
             )
         )
-        val locator = Locator(href = "chap2", type = "text/html", text = Locator.Text(highlight = "Highlight"))
+        val locator = Locator(
+            href = "chap2",
+            type = "text/html",
+            text = Locator.Text(highlight = "Highlight")
+        )
         assertEquals(locator, service.locate(locator))
     }
 
     @Test
     fun `locate from Locator with empty reading order`() = runTest {
         val service = createService(readingOrder = emptyList())
-        val locator = Locator(href = "chap2", type = "text/html", text = Locator.Text(highlight = "Highlight"))
+        val locator = Locator(
+            href = "chap2",
+            type = "text/html",
+            text = Locator.Text(highlight = "Highlight")
+        )
         assertNull(service.locate(locator))
     }
 
@@ -42,11 +51,15 @@ class LocatorServiceTest {
     fun `locate from Locator not found`() = runTest {
         val service = createService(
             readingOrder = listOf(
-                Link(href = "chap1", type = "application/xml"),
-                Link(href = "chap3", type = "application/xml")
+                Link(href = "chap1", mediaType = MediaType.XML),
+                Link(href = "chap3", mediaType = MediaType.XML)
             )
         )
-        val locator = Locator(href = "chap2", type = "text/html", text = Locator.Text(highlight = "Highlight"))
+        val locator = Locator(
+            href = "chap2",
+            type = "text/html",
+            text = Locator.Text(highlight = "Highlight")
+        )
         assertNull(service.locate(locator))
     }
 

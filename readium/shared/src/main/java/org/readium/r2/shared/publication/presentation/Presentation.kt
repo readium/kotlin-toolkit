@@ -102,10 +102,17 @@ public data class Presentation(
     @Parcelize
     @Serializable
     public enum class Fit(public val value: String) : Parcelable {
-        @SerialName("width") WIDTH("width"),
-        @SerialName("height") HEIGHT("height"),
-        @SerialName("contain") CONTAIN("contain"),
-        @SerialName("cover") COVER("cover");
+        @SerialName("width")
+        WIDTH("width"),
+
+        @SerialName("height")
+        HEIGHT("height"),
+
+        @SerialName("contain")
+        CONTAIN("contain"),
+
+        @SerialName("cover")
+        COVER("cover");
 
         public companion object : MapCompanion<String, Fit>(values(), Fit::value) {
 
@@ -122,9 +129,14 @@ public data class Presentation(
     @Parcelize
     @Serializable
     public enum class Orientation(public val value: String) : Parcelable {
-        @SerialName("auto") AUTO("auto"),
-        @SerialName("landscape") LANDSCAPE("landscape"),
-        @SerialName("portrait") PORTRAIT("portrait");
+        @SerialName("auto")
+        AUTO("auto"),
+
+        @SerialName("landscape")
+        LANDSCAPE("landscape"),
+
+        @SerialName("portrait")
+        PORTRAIT("portrait");
 
         public companion object : MapCompanion<String, Orientation>(values(), Orientation::value) {
 
@@ -133,11 +145,25 @@ public data class Presentation(
              */
             public val DEFAULT: Orientation = AUTO
 
-            @Deprecated("Renamed to [AUTO]", ReplaceWith("Orientation.AUTO"), level = DeprecationLevel.ERROR)
+            @Deprecated(
+                "Renamed to [AUTO]",
+                ReplaceWith("Orientation.AUTO"),
+                level = DeprecationLevel.ERROR
+            )
             public val Auto: Orientation = AUTO
-            @Deprecated("Renamed to [LANDSCAPE]", ReplaceWith("Orientation.LANDSCAPE"), level = DeprecationLevel.ERROR)
+
+            @Deprecated(
+                "Renamed to [LANDSCAPE]",
+                ReplaceWith("Orientation.LANDSCAPE"),
+                level = DeprecationLevel.ERROR
+            )
             public val Landscape: Orientation = LANDSCAPE
-            @Deprecated("Renamed to [PORTRAIT]", ReplaceWith("Orientation.PORTRAIT"), level = DeprecationLevel.ERROR)
+
+            @Deprecated(
+                "Renamed to [PORTRAIT]",
+                ReplaceWith("Orientation.PORTRAIT"),
+                level = DeprecationLevel.ERROR
+            )
             public val Portrait: Orientation = PORTRAIT
         }
     }
@@ -148,9 +174,14 @@ public data class Presentation(
     @Parcelize
     @Serializable
     public enum class Overflow(public val value: String) : Parcelable {
-        @SerialName("auto") AUTO("auto"),
-        @SerialName("paginated") PAGINATED("paginated"),
-        @SerialName("scrolled") SCROLLED("scrolled");
+        @SerialName("auto")
+        AUTO("auto"),
+
+        @SerialName("paginated")
+        PAGINATED("paginated"),
+
+        @SerialName("scrolled")
+        SCROLLED("scrolled");
 
         public companion object : MapCompanion<String, Overflow>(values(), Overflow::value) {
 
@@ -159,11 +190,25 @@ public data class Presentation(
              */
             public val DEFAULT: Overflow = AUTO
 
-            @Deprecated("Renamed to [PAGINATED]", ReplaceWith("Overflow.PAGINATED"), level = DeprecationLevel.ERROR)
+            @Deprecated(
+                "Renamed to [PAGINATED]",
+                ReplaceWith("Overflow.PAGINATED"),
+                level = DeprecationLevel.ERROR
+            )
             public val Paginated: Overflow = PAGINATED
-            @Deprecated("Use [presentation.continuous] instead", ReplaceWith("presentation.continuous"), level = DeprecationLevel.ERROR)
+
+            @Deprecated(
+                "Use [presentation.continuous] instead",
+                ReplaceWith("presentation.continuous"),
+                level = DeprecationLevel.ERROR
+            )
             public val Continuous: Overflow = SCROLLED
-            @Deprecated("Renamed to [SCROLLED]", ReplaceWith("Overflow.SCROLLED"), level = DeprecationLevel.ERROR)
+
+            @Deprecated(
+                "Renamed to [SCROLLED]",
+                ReplaceWith("Overflow.SCROLLED"),
+                level = DeprecationLevel.ERROR
+            )
             public val Document: Overflow = SCROLLED
         }
     }
@@ -175,9 +220,14 @@ public data class Presentation(
     @Parcelize
     @Serializable
     public enum class Page(public val value: String) : Parcelable {
-        @SerialName("left") LEFT("left"),
-        @SerialName("right") RIGHT("right"),
-        @SerialName("center") CENTER("center");
+        @SerialName("left")
+        LEFT("left"),
+
+        @SerialName("right")
+        RIGHT("right"),
+
+        @SerialName("center")
+        CENTER("center");
 
         public companion object : MapCompanion<String, Page>(values(), Page::value)
     }
@@ -189,10 +239,17 @@ public data class Presentation(
     @Parcelize
     @Serializable
     public enum class Spread(public val value: String) : Parcelable {
-        @SerialName("auto") AUTO("auto"),
-        @SerialName("both") BOTH("both"),
-        @SerialName("none") NONE("none"),
-        @SerialName("landscape") LANDSCAPE("landscape");
+        @SerialName("auto")
+        AUTO("auto"),
+
+        @SerialName("both")
+        BOTH("both"),
+
+        @SerialName("none")
+        NONE("none"),
+
+        @SerialName("landscape")
+        LANDSCAPE("landscape");
 
         public companion object : MapCompanion<String, Spread>(values(), Spread::value) {
 
@@ -201,15 +258,39 @@ public data class Presentation(
              */
             public val DEFAULT: Spread = AUTO
 
-            @Deprecated("Renamed to [AUTO]", ReplaceWith("Spread.AUTO"), level = DeprecationLevel.ERROR)
+            @Deprecated(
+                "Renamed to [AUTO]",
+                ReplaceWith("Spread.AUTO"),
+                level = DeprecationLevel.ERROR
+            )
             public val Auto: Spread = AUTO
-            @Deprecated("Renamed to [LANDSCAPE]", ReplaceWith("Spread.LANDSCAPE"), level = DeprecationLevel.ERROR)
+
+            @Deprecated(
+                "Renamed to [LANDSCAPE]",
+                ReplaceWith("Spread.LANDSCAPE"),
+                level = DeprecationLevel.ERROR
+            )
             public val Landscape: Spread = LANDSCAPE
-            @Deprecated("Renamed to [BOTH]", ReplaceWith("Spread.BOTH"), level = DeprecationLevel.ERROR)
+
+            @Deprecated(
+                "Renamed to [BOTH]",
+                ReplaceWith("Spread.BOTH"),
+                level = DeprecationLevel.ERROR
+            )
             public val Portrait: Spread = BOTH
-            @Deprecated("Renamed to [BOTH]", ReplaceWith("Spread.BOTH"), level = DeprecationLevel.ERROR)
+
+            @Deprecated(
+                "Renamed to [BOTH]",
+                ReplaceWith("Spread.BOTH"),
+                level = DeprecationLevel.ERROR
+            )
             public val Both: Spread = BOTH
-            @Deprecated("Renamed to [NONE]", ReplaceWith("Spread.NONE"), level = DeprecationLevel.ERROR)
+
+            @Deprecated(
+                "Renamed to [NONE]",
+                ReplaceWith("Spread.NONE"),
+                level = DeprecationLevel.ERROR
+            )
             public val None: Spread = NONE
         }
     }

@@ -6,24 +6,38 @@
 
 package org.readium.r2.shared.resource
 
-import android.content.ContentResolver
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.RandomAccessFile
 import java.nio.channels.Channels
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.extensions.read
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.getOrThrow
+import org.readium.r2.shared.util.isFile
 import org.readium.r2.shared.util.isLazyInitialized
+import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeHints
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * A [Resource] to access a [file].
  */
-public class FileResource(override val file: File) : Resource {
+public class FileResource private constructor(
+    private val file: File,
+    private val mediaType: MediaType?,
+    private val mediaTypeRetriever: MediaTypeRetriever?
+) : Resource {
+
+    public constructor(file: File, mediaType: MediaType) : this(file, mediaType, null)
+
+    public constructor(file: File, mediaTypeRetriever: MediaTypeRetriever) : this(
+        file,
+        null,
+        mediaTypeRetriever
+    )
 
     private val randomAccessFile by lazy {
         ResourceTry.catching {
@@ -31,8 +45,19 @@ public class FileResource(override val file: File) : Resource {
         }
     }
 
-    override suspend fun name(): ResourceTry<String?> =
-        ResourceTry.success(file.name)
+    override val source: Url? = Url("file://${file.path}")
+
+    override suspend fun properties(): ResourceTry<Resource.Properties> =
+        ResourceTry.success(Resource.Properties())
+
+    override suspend fun mediaType(): ResourceTry<MediaType> = Try.success(
+        mediaType
+            ?: mediaTypeRetriever?.retrieve(
+                hints = MediaTypeHints(fileExtension = file.extension),
+                content = ResourceMediaTypeSnifferContent(this)
+            )
+            ?: MediaType.BINARY
+    )
 
     override suspend fun close() {
         withContext(Dispatchers.IO) {
@@ -83,10 +108,11 @@ public class FileResource(override val file: File) : Resource {
 
     private val metadataLength: Long? =
         tryOrNull {
-            if (file.isFile)
+            if (file.isFile) {
                 file.length()
-            else
+            } else {
                 null
+            }
         }
 
     private inline fun <T> Try.Companion.catching(closure: () -> T): ResourceTry<T> =
@@ -106,10 +132,12 @@ public class FileResource(override val file: File) : Resource {
         "${javaClass.simpleName}(${file.path})"
 }
 
-public class FileResourceFactory : ResourceFactory {
+public class FileResourceFactory(
+    private val mediaTypeRetriever: MediaTypeRetriever
+) : ResourceFactory {
 
     override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
-        if (url.scheme != ContentResolver.SCHEME_FILE) {
+        if (!url.isFile()) {
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
         }
 
@@ -123,6 +151,6 @@ public class FileResourceFactory : ResourceFactory {
             return Try.failure(ResourceFactory.Error.Forbidden(e))
         }
 
-        return Try.success(FileResource(file))
+        return Try.success(FileResource(file, mediaTypeRetriever))
     }
 }

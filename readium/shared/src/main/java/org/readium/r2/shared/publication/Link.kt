@@ -15,12 +15,18 @@ import kotlinx.parcelize.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.extensions.*
+import org.readium.r2.shared.extensions.optNullableString
+import org.readium.r2.shared.extensions.optPositiveDouble
+import org.readium.r2.shared.extensions.optPositiveInt
+import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
+import org.readium.r2.shared.extensions.parseObjects
+import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.URITemplate
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
  * Function used to recursively transform the href of a [Link] when parsing its JSON
@@ -39,7 +45,7 @@ public val LinkHrefNormalizerIdentity: LinkHrefNormalizer = { it }
  * https://readium.org/webpub-manifest/schema/link.schema.json
  *
  * @param href URI or URI template of the linked resource.
- * @param type MIME type of the linked resource.
+ * @param mediaType Media type of the linked resource.
  * @param templated Indicates that a URI template is used in href.
  * @param title Title of the linked resource.
  * @param rels Relation between the linked resource and its containing collection.
@@ -56,7 +62,7 @@ public val LinkHrefNormalizerIdentity: LinkHrefNormalizer = { it }
 @Parcelize
 public data class Link(
     val href: String,
-    val type: String? = null,
+    val mediaType: MediaType? = null,
     val templated: Boolean = false,
     val title: String? = null,
     val rels: Set<String> = setOf(),
@@ -70,19 +76,16 @@ public data class Link(
     val children: List<Link> = listOf()
 ) : JSONable, Parcelable {
 
-    /** Media type of the linked resource. */
-    val mediaType: MediaType get() =
-        type?.let { MediaType.parse(it) } ?: MediaType.BINARY
-
     /**
      * List of URI template parameter keys, if the [Link] is templated.
      */
     @IgnoredOnParcel
     val templateParameters: List<String> by lazy {
-        if (!templated)
+        if (!templated) {
             emptyList()
-        else
+        } else {
             URITemplate(href).parameters
+        }
     }
 
     /**
@@ -112,7 +115,7 @@ public data class Link(
      */
     override fun toJSON(): JSONObject = JSONObject().apply {
         put("href", href)
-        put("type", type)
+        put("type", mediaType?.toString())
         put("templated", templated)
         put("title", title)
         putIfNotEmpty("rel", rels)
@@ -142,6 +145,7 @@ public data class Link(
          */
         public fun fromJSON(
             json: JSONObject?,
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): Link? {
@@ -153,7 +157,8 @@ public data class Link(
 
             return Link(
                 href = normalizeHref(href),
-                type = json.optNullableString("type"),
+                mediaType = json.optNullableString("type")
+                    ?.let { mediaTypeRetriever.retrieve(it) },
                 templated = json.optBoolean("templated", false),
                 title = json.optNullableString("title"),
                 rels = json.optStringsFromArrayOrSingle("rel").toSet(),
@@ -163,8 +168,16 @@ public data class Link(
                 bitrate = json.optPositiveDouble("bitrate"),
                 duration = json.optPositiveDouble("duration"),
                 languages = json.optStringsFromArrayOrSingle("language"),
-                alternates = fromJSONArray(json.optJSONArray("alternate"), normalizeHref),
-                children = fromJSONArray(json.optJSONArray("children"), normalizeHref)
+                alternates = fromJSONArray(
+                    json.optJSONArray("alternate"),
+                    mediaTypeRetriever,
+                    normalizeHref
+                ),
+                children = fromJSONArray(
+                    json.optJSONArray("children"),
+                    mediaTypeRetriever,
+                    normalizeHref
+                )
             )
         }
 
@@ -176,16 +189,30 @@ public data class Link(
          */
         public fun fromJSONArray(
             json: JSONArray?,
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): List<Link> {
-            return json.parseObjects { fromJSON(it as? JSONObject, normalizeHref, warnings) }
+            return json.parseObjects {
+                fromJSON(
+                    it as? JSONObject,
+                    mediaTypeRetriever,
+                    normalizeHref,
+                    warnings
+                )
+            }
         }
     }
 
+    @Deprecated(
+        "Use [mediaType.toString()] instead",
+        ReplaceWith("mediaType.toString()"),
+        level = DeprecationLevel.ERROR
+    )
+    val type: String? get() = throw NotImplementedError()
+
     @Deprecated("Use [type] instead", ReplaceWith("type"), level = DeprecationLevel.ERROR)
-    val typeLink: String?
-        get() = type
+    val typeLink: String? get() = throw NotImplementedError()
 
     @Deprecated("Use [rels] instead.", ReplaceWith("rels"), level = DeprecationLevel.ERROR)
     val rel: List<String>
@@ -218,49 +245,49 @@ public fun List<Link>.filterByRel(rel: String): List<Link> = filter { it.rels.co
  * Finds the first link matching the given media type.
  */
 public fun List<Link>.firstWithMediaType(mediaType: MediaType): Link? = firstOrNull {
-    it.mediaType.matches(mediaType)
+    mediaType.matches(it.mediaType)
 }
 
 /**
  * Finds all the links matching the given media type.
  */
 public fun List<Link>.filterByMediaType(mediaType: MediaType): List<Link> = filter {
-    it.mediaType.matches(mediaType)
+    mediaType.matches(it.mediaType)
 }
 
 /**
  * Finds all the links matching any of the given media types.
  */
 public fun List<Link>.filterByMediaTypes(mediaTypes: List<MediaType>): List<Link> = filter {
-    mediaTypes.any { mediaType -> mediaType.matches(it.type) }
+    mediaTypes.any { mediaType -> mediaType.matches(it.mediaType) }
 }
 
 /**
  * Returns whether all the resources in the collection are bitmaps.
  */
 public val List<Link>.allAreBitmap: Boolean get() = isNotEmpty() && all {
-    it.mediaType.isBitmap
+    it.mediaType?.isBitmap ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are audio clips.
  */
 public val List<Link>.allAreAudio: Boolean get() = isNotEmpty() && all {
-    it.mediaType.isAudio
+    it.mediaType?.isAudio ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are video clips.
  */
 public val List<Link>.allAreVideo: Boolean get() = isNotEmpty() && all {
-    it.mediaType.isVideo
+    it.mediaType?.isVideo ?: false
 }
 
 /**
  * Returns whether all the resources in the collection are HTML documents.
  */
 public val List<Link>.allAreHtml: Boolean get() = isNotEmpty() && all {
-    it.mediaType.isHtml
+    it.mediaType?.isHtml ?: false
 }
 
 /**
@@ -275,4 +302,17 @@ public fun List<Link>.allMatchMediaType(mediaType: MediaType): Boolean = isNotEm
  */
 public fun List<Link>.allMatchMediaTypes(mediaTypes: List<MediaType>): Boolean = isNotEmpty() && all {
     mediaTypes.any { mediaType -> mediaType.matches(it.mediaType) }
+}
+
+/**
+ * Returns a list of `Link` after flattening the `children` and `alternates` links of the receiver.
+ */
+public fun List<Link>.flatten(): List<Link> {
+    fun Link.flatten(): List<Link> {
+        val children = children.flatten()
+        val alternates = alternates.flatten()
+        return listOf(this) + children.flatten() + alternates.flatten()
+    }
+
+    return flatMap { it.flatten() }
 }

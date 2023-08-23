@@ -8,19 +8,18 @@ package org.readium.r2.shared.resource
 
 import android.content.ContentResolver
 import android.net.Uri
-import android.provider.OpenableColumns
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.error.Try
 import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.extensions.read
-import org.readium.r2.shared.extensions.readFully
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUri
+import org.readium.r2.shared.util.toUrl
 
 /**
  * Creates [ContentResource]s.
@@ -45,33 +44,18 @@ public class ContentResourceFactory(
  */
 public class ContentResource(
     private val uri: Uri,
-    private val contentResolver: ContentResolver,
+    private val contentResolver: ContentResolver
 ) : Resource {
 
     private lateinit var _length: ResourceTry<Long>
 
-    override suspend fun name(): ResourceTry<String?> {
-        val cursor = contentResolver
-            .query(uri, null, null, null, null)
-            ?: return ResourceTry.failure(Resource.Exception.NotFound())
+    override val source: Url? = uri.toUrl()
 
-        @Suppress("Name_shadowing")
-        cursor.use { cursor ->
-            if (!cursor.moveToFirst()) {
-                return ResourceTry.failure(Resource.Exception.NotFound())
-            }
-            val columnIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                .takeUnless { it == -1 }
-                ?: return Try.success(uri.lastPathSegment)
+    override suspend fun properties(): ResourceTry<Resource.Properties> =
+        ResourceTry.success(Resource.Properties())
 
-            tryOrNull { cursor.getString(columnIndex) }
-                ?.let { return Try.success(it) }
-                ?: return Try.success(uri.lastPathSegment)
-        }
-    }
-
-    override suspend fun mediaType(): ResourceTry<String?> =
-        Try.success(contentResolver.getType(uri))
+    override suspend fun mediaType(): ResourceTry<MediaType> =
+        Try.success(contentResolver.getType(uri)?.let { MediaType(it) } ?: MediaType.BINARY)
 
     override suspend fun close() {
     }

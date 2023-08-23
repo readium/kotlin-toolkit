@@ -27,7 +27,12 @@ import org.readium.r2.shared.publication.Locator
 @Entity(
     tableName = "highlights",
     foreignKeys = [
-        ForeignKey(entity = Book::class, parentColumns = [Book.ID], childColumns = [Highlight.BOOK_ID], onDelete = ForeignKey.CASCADE)
+        ForeignKey(
+            entity = Book::class,
+            parentColumns = [Book.ID],
+            childColumns = [Highlight.BOOK_ID],
+            onDelete = ForeignKey.CASCADE
+        )
     ],
     indices = [Index(value = [Highlight.BOOK_ID])]
 )
@@ -42,7 +47,8 @@ data class Highlight(
     @ColumnInfo(name = STYLE)
     var style: Style,
     @ColumnInfo(name = TINT, defaultValue = "0")
-    @ColorInt var tint: Int,
+    @ColorInt
+    var tint: Int,
     @ColumnInfo(name = HREF)
     var href: String,
     @ColumnInfo(name = TYPE)
@@ -56,7 +62,7 @@ data class Highlight(
     @ColumnInfo(name = TEXT, defaultValue = "{}")
     var text: Locator.Text = Locator.Text(),
     @ColumnInfo(name = ANNOTATION, defaultValue = "")
-    var annotation: String = "",
+    var annotation: String = ""
 ) {
 
     constructor(
@@ -84,7 +90,7 @@ data class Highlight(
         type = type,
         title = title,
         locations = locations,
-        text = text,
+        text = text
     )
 
     enum class Style(val value: String) {
@@ -121,16 +127,23 @@ data class Highlight(
 class HighlightConverters {
     @TypeConverter
     fun styleFromString(value: String?): Highlight.Style = Highlight.Style.getOrDefault(value)
+
     @TypeConverter
     fun styleToString(style: Highlight.Style): String = style.value
 
     @TypeConverter
-    fun textFromString(value: String?): Locator.Text = Locator.Text.fromJSON(value?.let { JSONObject(it) })
+    fun textFromString(value: String?): Locator.Text = Locator.Text.fromJSON(
+        value?.let { JSONObject(it) }
+    )
+
     @TypeConverter
     fun textToString(text: Locator.Text): String = text.toJSON().toString()
 
     @TypeConverter
-    fun locationsFromString(value: String?): Locator.Locations = Locator.Locations.fromJSON(value?.let { JSONObject(it) })
+    fun locationsFromString(value: String?): Locator.Locations = Locator.Locations.fromJSON(
+        value?.let { JSONObject(it) }
+    )
+
     @TypeConverter
     fun locationsToString(text: Locator.Locations): String = text.toJSON().toString()
 }

@@ -41,13 +41,14 @@ public suspend inline fun <T : SuspendingCloseable?, R> T.use(block: (T) -> R): 
         exception = e
         throw e
     } finally {
-        if (exception == null)
+        if (exception == null) {
             this?.close()
-        else
+        } else {
             try {
                 this?.close()
             } catch (closeException: Throwable) {
                 exception.addSuppressed(closeException)
             }
+        }
     }
 }

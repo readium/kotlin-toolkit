@@ -26,7 +26,7 @@ import org.readium.r2.testapp.utils.extensions.authorName
 import org.readium.r2.testapp.utils.tryOrLog
 
 class BookRepository(
-    private val booksDao: BooksDao,
+    private val booksDao: BooksDao
 ) {
     fun books(): LiveData<List<Book>> = booksDao.getAllBooks()
 
@@ -40,7 +40,6 @@ class BookRepository(
         val bookmark = Bookmark(
             creation = DateTime().toDate().time,
             bookId = bookId,
-            publicationId = publication.metadata.identifier ?: publication.metadata.title,
             resourceIndex = resource.toLong(),
             resourceHref = locator.href,
             resourceType = locator.type,

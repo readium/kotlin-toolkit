@@ -21,6 +21,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.readAsString
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -109,7 +110,10 @@ class PerResourcePositionsServiceTest {
 
     @Test
     fun `Positions from an empty {readingOrder}`() {
-        val service = PerResourcePositionsService(readingOrder = emptyList(), fallbackMediaType = "")
+        val service = PerResourcePositionsService(
+            readingOrder = emptyList(),
+            fallbackMediaType = ""
+        )
 
         Assert.assertEquals(0, runBlocking { service.positions().size })
     }
@@ -117,7 +121,7 @@ class PerResourcePositionsServiceTest {
     @Test
     fun `Positions from a {readingOrder} with one resource`() {
         val service = PerResourcePositionsService(
-            readingOrder = listOf(Link(href = "res", type = "image/png")),
+            readingOrder = listOf(Link(href = "res", mediaType = MediaType.PNG)),
             fallbackMediaType = ""
         )
 
@@ -141,8 +145,8 @@ class PerResourcePositionsServiceTest {
         val service = PerResourcePositionsService(
             readingOrder = listOf(
                 Link(href = "res"),
-                Link(href = "chap1", type = "image/png"),
-                Link(href = "chap2", type = "image/png", title = "Chapter 2")
+                Link(href = "chap1", mediaType = MediaType.PNG),
+                Link(href = "chap2", mediaType = MediaType.PNG, title = "Chapter 2")
             ),
             fallbackMediaType = ""
         )

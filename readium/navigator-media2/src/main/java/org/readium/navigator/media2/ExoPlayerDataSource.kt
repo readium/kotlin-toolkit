@@ -18,21 +18,29 @@ import com.google.android.exoplayer2.upstream.DataSpec
 import com.google.android.exoplayer2.upstream.TransferListener
 import java.io.IOException
 import kotlinx.coroutines.runBlocking
-import org.readium.r2.shared.error.getOrThrow
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.buffered
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.resource.buffered
+import org.readium.r2.shared.util.getOrThrow
 
-public sealed class ExoPlayerDataSourceException(message: String, cause: Throwable?) : IOException(message, cause) {
+public sealed class ExoPlayerDataSourceException(message: String, cause: Throwable?) : IOException(
+    message,
+    cause
+) {
     public class NotOpened(message: String) : ExoPlayerDataSourceException(message, null)
     public class NotFound(message: String) : ExoPlayerDataSourceException(message, null)
-    public class ReadFailed(uri: Uri, offset: Int, readLength: Int, cause: Throwable) : ExoPlayerDataSourceException("Failed to read $readLength bytes of URI $uri at offset $offset.", cause)
+    public class ReadFailed(uri: Uri, offset: Int, readLength: Int, cause: Throwable) : ExoPlayerDataSourceException(
+        "Failed to read $readLength bytes of URI $uri at offset $offset.",
+        cause
+    )
 }
 
 /**
  * An ExoPlayer's [DataSource] which retrieves resources from a [Publication].
  */
-public class ExoPlayerDataSource internal constructor(private val publication: Publication) : BaseDataSource(/* isNetwork = */ true) {
+public class ExoPlayerDataSource internal constructor(private val publication: Publication) : BaseDataSource(/* isNetwork = */
+    true
+) {
 
     public class Factory(
         private val publication: Publication,
@@ -48,16 +56,18 @@ public class ExoPlayerDataSource internal constructor(private val publication: P
     }
 
     private data class OpenedResource(
-        val resource: Fetcher.Resource,
+        val resource: Resource,
         val uri: Uri,
-        var position: Long,
+        var position: Long
     )
 
     private var openedResource: OpenedResource? = null
 
     override fun open(dataSpec: DataSpec): Long {
         val link = publication.linkWithHref(dataSpec.uri.toString())
-            ?: throw ExoPlayerDataSourceException.NotFound("Can't find a [Link] for URI: ${dataSpec.uri}. Make sure you only request resources declared in the manifest.")
+            ?: throw ExoPlayerDataSourceException.NotFound(
+                "Can't find a [Link] for URI: ${dataSpec.uri}. Make sure you only request resources declared in the manifest."
+            )
 
         val resource = publication.get(link)
             // Significantly improves performances, in particular with deflated ZIP entries.
@@ -66,7 +76,7 @@ public class ExoPlayerDataSource internal constructor(private val publication: P
         openedResource = OpenedResource(
             resource = resource,
             uri = dataSpec.uri,
-            position = dataSpec.position,
+            position = dataSpec.position
         )
 
         val bytesToRead =
@@ -84,7 +94,7 @@ public class ExoPlayerDataSource internal constructor(private val publication: P
     /** Cached content lengths indexed by their URL. */
     private var cachedLengths: MutableMap<String, Long> = mutableMapOf()
 
-    private fun contentLengthOf(uri: Uri, resource: Fetcher.Resource): Long? {
+    private fun contentLengthOf(uri: Uri, resource: Resource): Long? {
         cachedLengths[uri.toString()]?.let { return it }
 
         val length = runBlocking { resource.length() }.getOrNull()
@@ -99,7 +109,9 @@ public class ExoPlayerDataSource internal constructor(private val publication: P
             return 0
         }
 
-        val openedResource = openedResource ?: throw ExoPlayerDataSourceException.NotOpened("No opened resource to read from. Did you call open()?")
+        val openedResource = openedResource ?: throw ExoPlayerDataSourceException.NotOpened(
+            "No opened resource to read from. Did you call open()?"
+        )
 
         try {
             val data = runBlocking {

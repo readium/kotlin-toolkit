@@ -12,7 +12,7 @@ import androidx.media2.common.SessionPlayer
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
-import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.util.Try
 
 internal enum class SessionPlayerState {
     Idle,
@@ -106,7 +106,7 @@ internal data class ItemState(
     val index: Int,
     val position: Duration,
     val buffered: Duration,
-    val duration: Duration?,
+    val duration: Duration?
 )
 
 @OptIn(ExperimentalTime::class)
@@ -149,10 +149,11 @@ internal val SessionPlayer.currentDuration: Duration?
 
 @ExperimentalTime
 private fun msToDuration(ms: Long): Duration? =
-    if (ms == SessionPlayer.UNKNOWN_TIME)
+    if (ms == SessionPlayer.UNKNOWN_TIME) {
         null
-    else
+    } else {
         ms.milliseconds
+    }
 
 @ExperimentalTime
 internal val MediaMetadata.duration: Duration?

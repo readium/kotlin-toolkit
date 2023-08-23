@@ -179,8 +179,9 @@ internal class TtsContentIterator(
      */
     private fun Content.Element.utterances(): List<Utterance> {
         fun utterance(text: String, locator: Locator, language: Language? = null): Utterance? {
-            if (!text.any { it.isLetterOrDigit() })
+            if (!text.any { it.isLetterOrDigit() }) {
                 return null
+            }
 
             val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
                 ?: throw IllegalStateException("Content Element cannot be found in readingOrder.")
@@ -191,7 +192,7 @@ internal class TtsContentIterator(
                 text = text,
                 textBefore = locator.text.before,
                 textAfter = locator.text.after,
-                language = language,
+                language = language
             )
         }
 

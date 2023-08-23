@@ -56,10 +56,11 @@ class BookshelfViewModel(application: Application) : AndroidViewModel(applicatio
                 for (element in samples) {
                     val file =
                         app.assets.open("Samples/$element").copyToTempFile(app.storageDir)
-                    if (file != null)
+                    if (file != null) {
                         app.bookshelf.addLocalBook(file)
-                    else if (BuildConfig.DEBUG)
+                    } else if (BuildConfig.DEBUG) {
                         error("Unable to load sample into the library")
+                    }
                 }
                 preferences.edit().putBoolean("samples", true).apply()
             }

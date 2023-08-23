@@ -20,8 +20,8 @@ private fun Activity.isSystemUiVisible(): Boolean {
 }
 
 // Using ViewCompat and WindowInsetsCompat does not work properly in all versions of Android
-@Suppress("DEPRECATION")
 /** Enable fullscreen or immersive mode. */
+@Suppress("DEPRECATION")
 fun Activity.hideSystemUi() {
     this.window.decorView.systemUiVisibility = (
         View.SYSTEM_UI_FLAG_IMMERSIVE
@@ -34,8 +34,8 @@ fun Activity.hideSystemUi() {
 }
 
 // Using ViewCompat and WindowInsetsCompat does not work properly in all versions of Android
-@Suppress("DEPRECATION")
 /** Disable fullscreen or immersive mode. */
+@Suppress("DEPRECATION")
 fun Activity.showSystemUi() {
     this.window.decorView.systemUiVisibility = (
         View.SYSTEM_UI_FLAG_LAYOUT_STABLE

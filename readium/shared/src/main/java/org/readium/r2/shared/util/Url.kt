@@ -8,6 +8,8 @@ package org.readium.r2.shared.util
 
 import android.net.Uri
 import java.io.File
+import java.net.URL
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
 
 /**
@@ -47,11 +49,18 @@ public value class Url private constructor(internal val uri: Uri) {
                 requireNotNull(uri.path)
                 Url(uri)
             }
+
+        @InternalReadiumApi
+        public operator fun invoke(url: URL): Url =
+            Url(Uri.parse(url.toString()))
     }
 }
 
 public fun Url.isFile(): Boolean =
     scheme == "file"
+
+public fun Url.toFile(): File? =
+    if (isFile()) File(path) else null
 
 public fun Url.isHttp(): Boolean =
     scheme == "http" || scheme == "https"

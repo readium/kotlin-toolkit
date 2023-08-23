@@ -11,20 +11,23 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import java.util.*
 import org.readium.r2.lcp.LcpLicense
-import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.util.Try
 
 class LcpManagementViewModel(
     private val lcpLicense: LcpLicense,
-    private val renewListener: LcpLicense.RenewListener,
+    private val renewListener: LcpLicense.RenewListener
 ) : DrmManagementViewModel() {
 
     class Factory(
         private val lcpLicense: LcpLicense,
-        private val renewListener: LcpLicense.RenewListener,
+        private val renewListener: LcpLicense.RenewListener
     ) : ViewModelProvider.NewInstanceFactory() {
 
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            modelClass.getDeclaredConstructor(LcpLicense::class.java, LcpLicense.RenewListener::class.java)
+            modelClass.getDeclaredConstructor(
+                LcpLicense::class.java,
+                LcpLicense.RenewListener::class.java
+            )
                 .newInstance(lcpLicense, renewListener)
     }
 

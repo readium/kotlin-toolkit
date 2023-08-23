@@ -13,7 +13,10 @@ import android.content.Context
 import org.nanohttpd.router.RouterNanoHTTPD
 
 @Suppress("Unused_parameter")
-@Deprecated("The HTTP server is not needed anymore (see migration guide)", level = DeprecationLevel.ERROR)
+@Deprecated(
+    "The HTTP server is not needed anymore (see migration guide)",
+    level = DeprecationLevel.ERROR
+)
 public class Server(
     port: Int,
     context: Context,
@@ -21,9 +24,12 @@ public class Server(
 )
 
 @Suppress("Unused_parameter")
-@Deprecated("The HTTP server is not needed anymore (see migration guide)", level = DeprecationLevel.ERROR)
+@Deprecated(
+    "The HTTP server is not needed anymore (see migration guide)",
+    level = DeprecationLevel.ERROR
+)
 public abstract class AbstractServer(
     port: Int,
     context: Context,
-    enableReadiumNavigatorSupport: Boolean = true,
+    enableReadiumNavigatorSupport: Boolean = true
 ) : RouterNanoHTTPD("127.0.0.1", port)

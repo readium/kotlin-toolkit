@@ -9,6 +9,7 @@ package org.readium.r2.streamer.parser.epub
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.ReadingProgression
 import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 internal data class PackageDocument(
     val path: String,
@@ -20,11 +21,11 @@ internal data class PackageDocument(
 ) {
 
     companion object {
-        fun parse(document: ElementNode, filePath: String): PackageDocument? {
+        fun parse(document: ElementNode, filePath: String, mediaTypeRetriever: MediaTypeRetriever): PackageDocument? {
             val packagePrefixes = document.getAttr("prefix")?.let { parsePrefixes(it) }.orEmpty()
             val prefixMap = PACKAGE_RESERVED_PREFIXES + packagePrefixes // prefix element overrides reserved prefixes
             val epubVersion = document.getAttr("version")?.toDoubleOrNull() ?: 1.2
-            val metadata = MetadataParser(epubVersion, prefixMap).parse(document, filePath)
+            val metadata = MetadataParser(prefixMap, mediaTypeRetriever).parse(document, filePath)
                 ?: return null
             val manifestElement = document.getFirst("manifest", Namespaces.OPF)
                 ?: return null
@@ -57,7 +58,13 @@ internal data class Item(
             val href = element.getAttr("href")?.let { Href(it, baseHref = filePath).string }
                 ?: return null
             val propAttr = element.getAttr("properties").orEmpty()
-            val properties = parseProperties(propAttr).map { resolveProperty(it, prefixMap, DEFAULT_VOCAB.ITEM) }
+            val properties = parseProperties(propAttr).map {
+                resolveProperty(
+                    it,
+                    prefixMap,
+                    DEFAULT_VOCAB.ITEM
+                )
+            }
             return Item(
                 href = href,
                 id = element.id,
@@ -77,7 +84,12 @@ internal data class Spine(
 ) {
     companion object {
         fun parse(element: ElementNode, prefixMap: Map<String, String>, epubVersion: Double): Spine {
-            val itemrefs = element.get("itemref", Namespaces.OPF).mapNotNull { Itemref.parse(it, prefixMap) }
+            val itemrefs = element.get("itemref", Namespaces.OPF).mapNotNull {
+                Itemref.parse(
+                    it,
+                    prefixMap
+                )
+            }
             val pageProgressionDirection = when (element.getAttr("page-progression-direction")) {
                 "rtl" -> ReadingProgression.RTL
                 "ltr" -> ReadingProgression.LTR

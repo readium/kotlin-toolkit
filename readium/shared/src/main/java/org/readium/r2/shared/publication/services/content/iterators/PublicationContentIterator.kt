@@ -7,13 +7,19 @@
 package org.readium.r2.shared.publication.services.content.iterators
 
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.Link
+import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.PublicationServicesHolder
+import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.services.content.Content
+import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Either
 
 /**
- * Creates a [Content.Iterator] instance for the [Fetcher.Resource], starting from the given [Locator].
+ * Creates a [Content.Iterator] instance for the [Resource], starting from the
+ * given [Locator].
  *
  * Returns null if the resource media type is not supported.
  */
@@ -29,7 +35,7 @@ public fun interface ResourceContentIteratorFactory {
         manifest: Manifest,
         servicesHolder: PublicationServicesHolder,
         readingOrderIndex: Int,
-        resource: Fetcher.Resource,
+        resource: Resource,
         locator: Locator
     ): Content.Iterator?
 }
@@ -47,7 +53,7 @@ public fun interface ResourceContentIteratorFactory {
 @ExperimentalReadiumApi
 public class PublicationContentIterator(
     private val manifest: Manifest,
-    private val fetcher: Fetcher,
+    private val container: Container,
     private val services: PublicationServicesHolder,
     private val startLocator: Locator?,
     private val resourceContentIteratorFactories: List<ResourceContentIteratorFactory>
@@ -80,7 +86,9 @@ public class PublicationContentIterator(
     override fun previous(): Content.Element =
         currentElement
             ?.takeIf { it.direction == Direction.Backward }?.element
-            ?: throw IllegalStateException("Called previous() without a successful call to hasPrevious() first")
+            ?: throw IllegalStateException(
+                "Called previous() without a successful call to hasPrevious() first"
+            )
 
     override suspend fun hasNext(): Boolean {
         currentElement = nextIn(Direction.Forward)
@@ -90,7 +98,9 @@ public class PublicationContentIterator(
     override fun next(): Content.Element =
         currentElement
             ?.takeIf { it.direction == Direction.Forward }?.element
-            ?: throw IllegalStateException("Called next() without a successful call to hasNext() first")
+            ?: throw IllegalStateException(
+                "Called next() without a successful call to hasNext() first"
+            )
 
     private suspend fun nextIn(direction: Direction): ElementInDirection? {
         val iterator = currentIterator() ?: return null
@@ -154,7 +164,7 @@ public class PublicationContentIterator(
     private suspend fun loadIteratorAt(index: Int, location: LocatorOrProgression): IndexedIterator? {
         val link = manifest.readingOrder[index]
         val locator = location.toLocator(link) ?: return null
-        val resource = fetcher.get(link)
+        val resource = container.get(link.href)
 
         return resourceContentIteratorFactories
             .firstNotNullOfOrNull { factory ->

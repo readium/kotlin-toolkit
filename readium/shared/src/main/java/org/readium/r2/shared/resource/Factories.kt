@@ -6,10 +6,10 @@
 
 package org.readium.r2.shared.resource
 
-import org.readium.r2.shared.error.ThrowableError
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.tryRecover
+import org.readium.r2.shared.util.ThrowableError
+import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.tryRecover
 
 /**
  * A factory to read [Resource]s from [Url]s.
@@ -19,14 +19,17 @@ import org.readium.r2.shared.util.Url
  */
 public fun interface ResourceFactory {
 
-    public sealed class Error : org.readium.r2.shared.error.Error {
+    public sealed class Error : org.readium.r2.shared.util.Error {
 
         public class SchemeNotSupported(
             public val scheme: String,
-            override val cause: org.readium.r2.shared.error.Error? = null
+            override val cause: org.readium.r2.shared.util.Error? = null
         ) : Error() {
 
-            public constructor(scheme: String, exception: Exception) : this(scheme, ThrowableError(exception))
+            public constructor(scheme: String, exception: Exception) : this(
+                scheme,
+                ThrowableError(exception)
+            )
 
             override val message: String =
                 "Url scheme $scheme is not supported."
@@ -34,17 +37,20 @@ public fun interface ResourceFactory {
 
         public class NotAResource(
             public val url: Url,
-            override val cause: org.readium.r2.shared.error.Error? = null
+            override val cause: org.readium.r2.shared.util.Error? = null
         ) : Error() {
 
-            public constructor(url: Url, exception: Exception) : this(url, ThrowableError(exception))
+            public constructor(url: Url, exception: Exception) : this(
+                url,
+                ThrowableError(exception)
+            )
 
             override val message: String =
                 "No resource found at url $url."
         }
 
         public class Forbidden(
-            override val cause: org.readium.r2.shared.error.Error
+            override val cause: org.readium.r2.shared.util.Error
         ) : Error() {
 
             public constructor(exception: Exception) : this(ThrowableError(exception))
@@ -65,14 +71,17 @@ public fun interface ResourceFactory {
  */
 public fun interface ContainerFactory {
 
-    public sealed class Error : org.readium.r2.shared.error.Error {
+    public sealed class Error : org.readium.r2.shared.util.Error {
 
         public class SchemeNotSupported(
             public val scheme: String,
-            override val cause: org.readium.r2.shared.error.Error? = null
+            override val cause: org.readium.r2.shared.util.Error? = null
         ) : Error() {
 
-            public constructor(scheme: String, exception: Exception) : this(scheme, ThrowableError(exception))
+            public constructor(scheme: String, exception: Exception) : this(
+                scheme,
+                ThrowableError(exception)
+            )
 
             override val message: String =
                 "Url scheme $scheme is not supported."
@@ -80,17 +89,20 @@ public fun interface ContainerFactory {
 
         public class NotAContainer(
             public val url: Url,
-            override val cause: org.readium.r2.shared.error.Error? = null
+            override val cause: org.readium.r2.shared.util.Error? = null
         ) : Error() {
 
-            public constructor(url: Url, exception: Exception) : this(url, ThrowableError(exception))
+            public constructor(url: Url, exception: Exception) : this(
+                url,
+                ThrowableError(exception)
+            )
 
             override val message: String =
                 "No container found at url $url."
         }
 
         public class Forbidden(
-            override val cause: org.readium.r2.shared.error.Error
+            override val cause: org.readium.r2.shared.util.Error
         ) : Error() {
 
             public constructor(exception: Exception) : this(ThrowableError(exception))
@@ -110,10 +122,10 @@ public fun interface ContainerFactory {
  */
 public fun interface ArchiveFactory {
 
-    public sealed class Error : org.readium.r2.shared.error.Error {
+    public sealed class Error : org.readium.r2.shared.util.Error {
 
         public class FormatNotSupported(
-            override val cause: org.readium.r2.shared.error.Error? = null
+            override val cause: org.readium.r2.shared.util.Error? = null
         ) : Error() {
 
             public constructor(exception: Exception) : this(ThrowableError(exception))
@@ -123,7 +135,7 @@ public fun interface ArchiveFactory {
         }
 
         public class PasswordsNotSupported(
-            override val cause: org.readium.r2.shared.error.Error? = null
+            override val cause: org.readium.r2.shared.util.Error? = null
         ) : Error() {
 
             public constructor(exception: Exception) : this(ThrowableError(exception))
@@ -133,11 +145,14 @@ public fun interface ArchiveFactory {
         }
 
         public class ResourceReading(
-            override val cause: org.readium.r2.shared.error.Error?,
+            override val cause: org.readium.r2.shared.util.Error?,
             public val resourceException: Resource.Exception
         ) : Error() {
 
-            public constructor(exception: Resource.Exception) : this(ThrowableError(exception), exception)
+            public constructor(exception: Resource.Exception) : this(
+                ThrowableError(exception),
+                exception
+            )
 
             override val message: String =
                 "An error occurred while attempting to read the resource."
@@ -159,10 +174,11 @@ public class CompositeArchiveFactory(
     override suspend fun create(resource: Resource, password: String?): Try<Container, ArchiveFactory.Error> {
         return primaryFactory.create(resource, password)
             .tryRecover { error ->
-                if (error is ArchiveFactory.Error.FormatNotSupported)
+                if (error is ArchiveFactory.Error.FormatNotSupported) {
                     fallbackFactory.create(resource, password)
-                else
+                } else {
                     Try.failure(error)
+                }
             }
     }
 }
@@ -179,10 +195,11 @@ public class CompositeResourceFactory(
     override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
         return primaryFactory.create(url)
             .tryRecover { error ->
-                if (error is ResourceFactory.Error.SchemeNotSupported)
+                if (error is ResourceFactory.Error.SchemeNotSupported) {
                     fallbackFactory.create(url)
-                else
+                } else {
                     Try.failure(error)
+                }
             }
     }
 }
@@ -199,10 +216,11 @@ public class CompositeContainerFactory(
     override suspend fun create(url: Url): Try<Container, ContainerFactory.Error> {
         return primaryFactory.create(url)
             .tryRecover { error ->
-                if (error is ContainerFactory.Error.SchemeNotSupported)
+                if (error is ContainerFactory.Error.SchemeNotSupported) {
                     fallbackFactory.create(url)
-                else
+                } else {
                     Try.failure(error)
+                }
             }
     }
 }

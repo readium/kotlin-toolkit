@@ -10,35 +10,55 @@
 package org.readium.r2.lcp
 
 import java.io.IOException
-import org.readium.r2.shared.error.Try
-import org.readium.r2.shared.error.getOrElse
-import org.readium.r2.shared.error.getOrThrow
 import org.readium.r2.shared.extensions.coerceFirstNonNegative
 import org.readium.r2.shared.extensions.inflate
 import org.readium.r2.shared.extensions.requireLengthFitInt
-import org.readium.r2.shared.fetcher.*
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.encryption.encryption
+import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.resource.Container
+import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.resource.TransformingResource
+import org.readium.r2.shared.resource.flatMap
+import org.readium.r2.shared.resource.flatMapCatching
+import org.readium.r2.shared.resource.mapCatching
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.getOrElse
+import org.readium.r2.shared.util.getOrThrow
 
 /**
  * Decrypts a resource protected with LCP.
  */
-internal class LcpDecryptor(val license: LcpLicense?) {
+internal class LcpDecryptor(
+    val license: LcpLicense?,
+    var encryptionData: Map<String, Encryption> = emptyMap()
+) {
 
-    fun transform(resource: Fetcher.Resource): Fetcher.Resource = LazyResource {
-        // Checks if the resource is encrypted and whether the encryption schemes of the resource
-        // and the DRM license are the same.
-        val link = resource.link()
-        val encryption = link.properties.encryption
-        if (encryption == null || encryption.scheme != "http://readium.org/2014/01/lcp")
-            return@LazyResource resource
+    fun transform(resource: Resource): Resource {
+        if (resource !is Container.Entry) {
+            return resource
+        }
 
-        when {
-            license == null -> FailureResource(link, Resource.Exception.Forbidden())
-            link.isDeflated || !link.isCbcEncrypted -> FullLcpResource(resource, license)
-            else -> CbcLcpResource(resource, license)
+        return resource.flatMap {
+            val encryption = encryptionData[resource.path]
+
+            // Checks if the resource is encrypted and whether the encryption schemes of the resource
+            // and the DRM license are the same.
+            if (encryption == null || encryption.scheme != "http://readium.org/2014/01/lcp") {
+                return@flatMap resource
+            }
+
+            when {
+                license == null -> FailureResource(Resource.Exception.Forbidden())
+                encryption.isDeflated || !encryption.isCbcEncrypted -> FullLcpResource(
+                    resource,
+                    encryption,
+                    license
+                )
+
+                else -> CbcLcpResource(resource, encryption, license)
+            }
         }
     }
 
@@ -49,16 +69,16 @@ internal class LcpDecryptor(val license: LcpLicense?) {
      * resource, for example when the resource is deflated before encryption.
      */
     private class FullLcpResource(
-        resource: Fetcher.Resource,
+        resource: Resource,
+        private val encryption: Encryption,
         private val license: LcpLicense
     ) : TransformingResource(resource) {
 
         override suspend fun transform(data: ResourceTry<ByteArray>): ResourceTry<ByteArray> =
-            license.decryptFully(data, resource.link().isDeflated)
+            license.decryptFully(data, encryption.isDeflated)
 
         override suspend fun length(): ResourceTry<Long> =
-            resource.link().properties.encryption?.originalLength
-                ?.let { Try.success(it) }
+            encryption.originalLength?.let { Try.success(it) }
                 ?: super.length()
     }
 
@@ -68,9 +88,12 @@ internal class LcpDecryptor(val license: LcpLicense?) {
      * Supports random access for byte range requests, but the resource MUST NOT be deflated.
      */
     private class CbcLcpResource(
-        private val resource: Fetcher.Resource,
+        private val resource: Resource,
+        private val encryption: Encryption,
         private val license: LcpLicense
-    ) : Fetcher.Resource {
+    ) : Resource by resource {
+
+        override val source: Url? = null
 
         private class Cache(
             var startIndex: Int? = null,
@@ -90,15 +113,13 @@ internal class LcpDecryptor(val license: LcpLicense?) {
         */
         private val _cache: Cache = Cache()
 
-        override suspend fun link(): Link = resource.link()
-
         /** Plain text size. */
         override suspend fun length(): ResourceTry<Long> {
-            if (::_length.isInitialized)
+            if (::_length.isInitialized) {
                 return _length
+            }
 
-            _length = resource.link().properties.encryption?.originalLength
-                ?.let { Try.success(it) }
+            _length = encryption.originalLength?.let { Try.success(it) }
                 ?: lengthFromPadding()
 
             return _length
@@ -114,7 +135,12 @@ internal class LcpDecryptor(val license: LcpLicense?) {
                 resource.read(readOffset..length)
                     .mapCatching { bytes ->
                         val decryptedBytes = license.decrypt(bytes)
-                            .getOrElse { throw Exception("Can't decrypt trailing size of CBC-encrypted stream", it) }
+                            .getOrElse {
+                                throw Exception(
+                                    "Can't decrypt trailing size of CBC-encrypted stream",
+                                    it
+                                )
+                            }
                         check(decryptedBytes.size == AES_BLOCK_SIZE)
 
                         return@mapCatching length -
@@ -124,16 +150,18 @@ internal class LcpDecryptor(val license: LcpLicense?) {
             }
 
         override suspend fun read(range: LongRange?): ResourceTry<ByteArray> {
-            if (range == null)
+            if (range == null) {
                 return license.decryptFully(resource.read(), isDeflated = false)
+            }
 
             @Suppress("NAME_SHADOWING")
             val range = range
                 .coerceFirstNonNegative()
                 .requireLengthFitInt()
 
-            if (range.isEmpty())
+            if (range.isEmpty()) {
                 return Try.success(ByteArray(0))
+            }
 
             return resource.length().flatMapCatching { encryptedLength ->
                 // encrypted data is shifted by AES_BLOCK_SIZE because of IV and
@@ -150,7 +178,12 @@ internal class LcpDecryptor(val license: LcpLicense?) {
                     }
 
                     val bytes = license.decrypt(encryptedData)
-                        .getOrElse { throw IOException("Can't decrypt the content at: ${link().href}", it) }
+                        .getOrElse {
+                            throw IOException(
+                                "Can't decrypt the content for resource with key: ${resource.source}",
+                                it
+                            )
+                        }
 
                     // exclude the bytes added to match a multiple of AES_BLOCK_SIZE
                     val sliceStart = (range.first - encryptedStart).toInt()
@@ -159,12 +192,13 @@ internal class LcpDecryptor(val license: LcpLicense?) {
                     val lastBlockRead = encryptedLength - encryptedEndExclusive <= AES_BLOCK_SIZE
 
                     val rangeLength =
-                        if (lastBlockRead)
-                        // use decrypted length to ensure range.last doesn't exceed decrypted length - 1
+                        if (lastBlockRead) {
+                            // use decrypted length to ensure range.last doesn't exceed decrypted length - 1
                             range.last.coerceAtMost(length().getOrThrow() - 1) - range.first + 1
-                        else
-                        // the last block won't be read, so there's no need to compute length
+                        } else {
+                            // the last block won't be read, so there's no need to compute length
                             range.last - range.first + 1
+                        }
 
                     // keep only enough bytes to fit the length corrected request in order to never include padding
                     val sliceEnd = sliceStart + rangeLength.toInt()
@@ -192,8 +226,6 @@ internal class LcpDecryptor(val license: LcpLicense?) {
             }
         }
 
-        override suspend fun close() = resource.close()
-
         companion object {
             private const val AES_BLOCK_SIZE = 16 // bytes
         }
@@ -206,8 +238,9 @@ private suspend fun LcpLicense.decryptFully(data: ResourceTry<ByteArray>, isDefl
         var bytes = decrypt(encryptedData)
             .getOrElse { throw Exception("Failed to decrypt the resource", it) }
 
-        if (bytes.isEmpty())
+        if (bytes.isEmpty()) {
             throw IllegalStateException("Lcp.nativeDecrypt returned an empty ByteArray")
+        }
 
         // Removes the padding.
         val padding = bytes.last().toInt()
@@ -221,11 +254,11 @@ private suspend fun LcpLicense.decryptFully(data: ResourceTry<ByteArray>, isDefl
         bytes
     }
 
-private val Link.isDeflated: Boolean get() =
-    properties.encryption?.compression?.lowercase(java.util.Locale.ROOT) == "deflate"
+private val Encryption.isDeflated: Boolean get() =
+    compression?.lowercase(java.util.Locale.ROOT) == "deflate"
 
-private val Link.isCbcEncrypted: Boolean get() =
-    properties.encryption?.algorithm == "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
+private val Encryption.isCbcEncrypted: Boolean get() =
+    algorithm == "http://www.w3.org/2001/04/xmlenc#aes256-cbc"
 
 private fun Long.ceilMultipleOf(divisor: Long) =
     divisor * (this / divisor + if (this % divisor == 0L) 0 else 1)

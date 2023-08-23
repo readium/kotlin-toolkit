@@ -11,19 +11,23 @@ import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.error.MessageError
-import org.readium.r2.shared.error.Try
+import org.readium.r2.shared.util.MessageError
+import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.toFile
 
-public class DefaultArchiveFactory : ArchiveFactory {
+public class DefaultArchiveFactory(
+    private val mediaTypeRetriever: MediaTypeRetriever
+) : ArchiveFactory {
 
     override suspend fun create(resource: Resource, password: String?): Try<Container, ArchiveFactory.Error> {
         if (password != null) {
             return Try.failure(ArchiveFactory.Error.PasswordsNotSupported())
         }
 
-        return resource.file
+        return resource.source?.toFile()
             ?.let { open(it) }
-            ?: Try.failure(
+            ?: Try.Failure(
                 ArchiveFactory.Error.FormatNotSupported(
                     MessageError("Resource not supported because file cannot be directly access.")
                 )
@@ -34,7 +38,7 @@ public class DefaultArchiveFactory : ArchiveFactory {
     internal suspend fun open(file: File): Try<Container, ArchiveFactory.Error> =
         withContext(Dispatchers.IO) {
             try {
-                val archive = JavaZipContainer(ZipFile(file), file)
+                val archive = JavaZipContainer(ZipFile(file), file, mediaTypeRetriever)
                 Try.success(archive)
             } catch (e: ZipException) {
                 Try.failure(ArchiveFactory.Error.FormatNotSupported(e))

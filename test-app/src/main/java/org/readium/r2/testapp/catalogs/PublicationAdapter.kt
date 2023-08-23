@@ -33,7 +33,6 @@ class PublicationAdapter(
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
-
         val publication = getItem(position)
 
         viewHolder.bind(publication)

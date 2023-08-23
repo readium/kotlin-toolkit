@@ -14,13 +14,15 @@ import android.graphics.BitmapFactory
 import android.util.Size
 import org.readium.r2.shared.extensions.scaleToFit
 import org.readium.r2.shared.extensions.toPng
-import org.readium.r2.shared.fetcher.BytesResource
-import org.readium.r2.shared.fetcher.FailureResource
-import org.readium.r2.shared.fetcher.Fetcher
-import org.readium.r2.shared.fetcher.LazyResource
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
+import org.readium.r2.shared.resource.BytesResource
+import org.readium.r2.shared.resource.FailureResource
+import org.readium.r2.shared.resource.LazyResource
+import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * Provides an easy access to a bitmap version of the publication cover.
@@ -90,7 +92,7 @@ public abstract class GeneratedCoverService : CoverService {
 
     private val coverLink = Link(
         href = "/~readium/cover",
-        type = "image/png",
+        mediaType = MediaType.PNG,
         rels = setOf("cover")
     )
 
@@ -98,21 +100,20 @@ public abstract class GeneratedCoverService : CoverService {
 
     abstract override suspend fun cover(): Bitmap
 
-    override fun get(link: Link): Fetcher.Resource? {
-        if (link.href != coverLink.href)
+    override fun get(link: Link): Resource? {
+        if (link.href != coverLink.href) {
             return null
+        }
 
-        return LazyResource {
+        return LazyResource(source = Url(link.href)) {
             val cover = cover()
             val png = cover.toPng()
 
             if (png == null) {
                 val error = Exception("Unable to convert cover to PNG.")
-                FailureResource(coverLink, error)
+                FailureResource(error)
             } else {
-                @Suppress("NAME_SHADOWING")
-                val link = coverLink.copy(width = cover.width, height = cover.height)
-                BytesResource(link, png)
+                BytesResource(png, url = Url(coverLink.href), mediaType = MediaType.PNG)
             }
         }
     }
@@ -124,7 +125,13 @@ public abstract class GeneratedCoverService : CoverService {
 public class InMemoryCoverService internal constructor(private val cover: Bitmap) : GeneratedCoverService() {
 
     public companion object {
-        public fun createFactory(cover: Bitmap?): ServiceFactory = { cover?.let { InMemoryCoverService(it) } }
+        public fun createFactory(cover: Bitmap?): ServiceFactory = {
+            cover?.let {
+                InMemoryCoverService(
+                    it
+                )
+            }
+        }
     }
 
     override suspend fun cover(): Bitmap = cover
