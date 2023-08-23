@@ -155,28 +155,23 @@ public data class Manifest(
          */
         public fun fromJSON(
             json: JSONObject?,
-            packaged: Boolean = false,
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
             warnings: WarningLogger? = null
         ): Manifest? {
             json ?: return null
 
             val baseUrl =
-                if (packaged) {
-                    "/"
-                } else {
-                    Link.fromJSONArray(
-                        json.optJSONArray("links"),
-                        mediaTypeRetriever,
-                        warnings = warnings
-                    )
-                        .firstWithRel("self")
-                        ?.href
-                        ?.toUrlOrNull()
-                        ?.removeLastComponent()
-                        ?.toString()
-                        ?: "/"
-                }
+                Link.fromJSONArray(
+                    json.optJSONArray("links"),
+                    mediaTypeRetriever,
+                    warnings = warnings
+                )
+                    .firstWithRel("self")
+                    ?.href
+                    ?.toUrlOrNull()
+                    ?.removeLastComponent()
+                    ?.toString()
+                    ?: "/"
 
             val normalizeHref = { href: String -> Href(href, baseUrl).string }
 
@@ -199,13 +194,6 @@ public data class Manifest(
                 normalizeHref,
                 warnings
             )
-                .map {
-                    if (packaged && "self" in it.rels) {
-                        it.copy(rels = it.rels - "self" + "alternate")
-                    } else {
-                        it
-                    }
-                }
 
             // [readingOrder] used to be [spine], so we parse [spine] as a fallback.
             val readingOrderJSON = (json.remove("readingOrder") ?: json.remove("spine")) as? JSONArray

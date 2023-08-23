@@ -15,7 +15,6 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceContainer
 import org.readium.r2.shared.resource.RoutingContainer
-import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
@@ -65,7 +64,7 @@ internal class ParserAssetFactory(
     private suspend fun createParserAssetForManifest(
         asset: Asset.Resource
     ): Try<PublicationParser.Asset, Publication.OpeningException> {
-        val manifest = asset.resource.readAsRwpm(packaged = false)
+        val manifest = asset.resource.readAsRwpm()
             .mapFailure { Publication.OpeningException.ParsingFailed(ThrowableError(it)) }
             .getOrElse { return Try.failure(it) }
 
@@ -87,10 +86,7 @@ internal class ParserAssetFactory(
 
         val container =
             RoutingContainer(
-                local = ResourceContainer(
-                    path = "/manifest.json",
-                    resource = StringResource(manifest.toJSON().toString(), asset.mediaType)
-                ),
+                local = ResourceContainer(path = "/manifest.json", asset.resource),
                 remote = HttpContainer(httpClient, baseUrl)
             )
 
@@ -118,14 +114,13 @@ internal class ParserAssetFactory(
         )
     }
 
-    private suspend fun Resource.readAsRwpm(packaged: Boolean): Try<Manifest, Exception> =
+    private suspend fun Resource.readAsRwpm(): Try<Manifest, Exception> =
         try {
             val bytes = read().getOrThrow()
             val string = String(bytes, Charset.defaultCharset())
             val json = JSONObject(string)
             val manifest = Manifest.fromJSON(
                 json,
-                packaged = packaged,
                 mediaTypeRetriever = mediaTypeRetriever
             )
                 ?: throw Exception("Failed to parse the RWPM Manifest")
