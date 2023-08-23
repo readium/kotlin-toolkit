@@ -65,7 +65,7 @@ internal class ParserAssetFactory(
     private suspend fun createParserAssetForManifest(
         asset: Asset.Resource
     ): Try<PublicationParser.Asset, Publication.OpeningException> {
-        val manifest = asset.resource.readAsRwpm(packaged = false)
+        val manifest = asset.resource.readAsRwpm()
             .mapFailure { Publication.OpeningException.ParsingFailed(ThrowableError(it)) }
             .getOrElse { return Try.failure(it) }
 
@@ -118,14 +118,13 @@ internal class ParserAssetFactory(
         )
     }
 
-    private suspend fun Resource.readAsRwpm(packaged: Boolean): Try<Manifest, Exception> =
+    private suspend fun Resource.readAsRwpm(): Try<Manifest, Exception> =
         try {
             val bytes = read().getOrThrow()
             val string = String(bytes, Charset.defaultCharset())
             val json = JSONObject(string)
             val manifest = Manifest.fromJSON(
                 json,
-                packaged = packaged,
                 mediaTypeRetriever = mediaTypeRetriever
             )
                 ?: throw Exception("Failed to parse the RWPM Manifest")

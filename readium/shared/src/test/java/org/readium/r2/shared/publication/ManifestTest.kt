@@ -268,53 +268,12 @@ class ManifestTest {
     }
 
     @Test
-    fun `self link is replaced when parsing a package`() {
-        assertEquals(
-            Manifest(
-                metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = setOf("alternate")))
-            ),
-            Manifest.fromJSON(
-                JSONObject(
-                    """{
-                "metadata": {"title": "Title"},
-                "links": [
-                    {"href": "/manifest.json", "rel": ["self"], "templated": false}
-                ]
-                }"""
-                ),
-                packaged = true
-            )
-        )
-    }
-
-    @Test
-    fun `self link is kept when parsing a remote manifest`() {
-        assertEquals(
-            Manifest(
-                metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "/manifest.json", rels = setOf("self")))
-            ),
-            Manifest.fromJSON(
-                JSONObject(
-                    """{
-                "metadata": {"title": "Title"},
-                "links": [
-                    {"href": "/manifest.json", "rel": ["self"]}
-                ]
-                }"""
-                )
-            )
-        )
-    }
-
-    @Test
-    fun `href are resolved to root when parsing a package`() {
+    fun `href are resolved to root with a relative self link`() {
         val json = JSONObject(
             """{
             "metadata": {"title": "Title"},
             "links": [
-                {"href": "http://example.com/manifest.json", "rel": ["self"], "templated": false}
+                {"href": "manifest.json", "rel": ["self"], "templated": false}
             ],
             "readingOrder": [
                 {"href": "chap1.html", "type": "text/html", "templated": false}
@@ -324,7 +283,7 @@ class ManifestTest {
 
         assertEquals(
             "/chap1.html",
-            Manifest.fromJSON(json, packaged = true)?.readingOrder?.first()?.href
+            Manifest.fromJSON(json)?.readingOrder?.first()?.href
         )
     }
 
