@@ -15,7 +15,6 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceContainer
 import org.readium.r2.shared.resource.RoutingContainer
-import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
@@ -87,10 +86,7 @@ internal class ParserAssetFactory(
 
         val container =
             RoutingContainer(
-                local = ResourceContainer(
-                    path = "/manifest.json",
-                    resource = StringResource(manifest.toJSON().toString(), asset.mediaType)
-                ),
+                local = ResourceContainer(path = "/manifest.json", asset.resource),
                 remote = HttpContainer(httpClient, baseUrl)
             )
 
