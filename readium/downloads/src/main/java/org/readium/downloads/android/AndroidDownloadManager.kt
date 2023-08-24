@@ -39,11 +39,11 @@ public class AndroidDownloadManager(
 
     private val progressJob: Job = coroutineScope.launch {
         while (true) {
+            val ids = downloadsRepository.idsForName(name)
             val cursor = downloadManager.query(
                 SystemDownloadManager.Query()
-                    .setFilterById(*downloadsRepository.idsForName(name).toLongArray())
             )
-            notify(cursor)
+            notify(cursor, ids)
             delay((1.0 / refreshRate.value).seconds)
         }
     }
@@ -113,11 +113,15 @@ public class AndroidDownloadManager(
         return this
     }
 
-    private suspend fun notify(cursor: Cursor) = cursor.use {
+    private suspend fun notify(cursor: Cursor, ids: List<Long>) = cursor.use {
         while (cursor.moveToNext()) {
             val facade = DownloadCursorFacade(cursor)
 
             val id = DownloadManager.RequestId(facade.id)
+
+            if (id.value !in ids) {
+                continue
+            }
 
             when (facade.status) {
                 SystemDownloadManager.STATUS_FAILED -> {

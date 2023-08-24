@@ -8,6 +8,7 @@ package org.readium.r2.testapp
 
 import android.content.Context
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
+import org.readium.downloads.android.AndroidDownloadManagerProvider
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -66,12 +67,18 @@ class Readium(context: Context) {
         context.contentResolver
     )
 
+    val downloadManagerProvider = AndroidDownloadManagerProvider(context)
+
     /**
      * The LCP service decrypts LCP-protected publication and acquire publications from a
      * license file.
      */
-    val lcpService = LcpService(context, assetRetriever, mediaTypeRetriever)
-        ?.let { Try.success(it) }
+    val lcpService = LcpService(
+        context,
+        assetRetriever,
+        mediaTypeRetriever,
+        downloadManagerProvider
+    )?.let { Try.success(it) }
         ?: Try.failure(UserException("liblcp is missing on the classpath"))
 
     private val contentProtections = listOfNotNull(

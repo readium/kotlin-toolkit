@@ -25,7 +25,7 @@ import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.util.mediatype.MediaType
 
-public class LicenseDocument(public val data: ByteArray) {
+public class LicenseDocument internal constructor(public val json: JSONObject) {
     public val provider: String
     public val id: String
     public val issued: Date
@@ -35,7 +35,15 @@ public class LicenseDocument(public val data: ByteArray) {
     public val user: User
     public val rights: Rights
     public val signature: Signature
-    public val json: JSONObject
+    public val data: ByteArray
+
+    public constructor(data: ByteArray) : this(
+        try {
+            JSONObject(data.toString(Charset.defaultCharset()))
+        } catch (e: Exception) {
+            throw LcpException.Parsing.MalformedJSON
+        }
+    )
 
     public enum class Rel(public val value: String) {
         Hint("hint"),
@@ -53,12 +61,7 @@ public class LicenseDocument(public val data: ByteArray) {
     }
 
     init {
-        try {
-            json = JSONObject(data.toString(Charset.defaultCharset()))
-        } catch (e: Exception) {
-            throw LcpException.Parsing.MalformedJSON
-        }
-
+        data = json.toString().toByteArray(Charset.defaultCharset())
         provider = json.optNullableString("provider") ?: throw LcpException.Parsing.LicenseDocument
         id = json.optNullableString("id") ?: throw LcpException.Parsing.LicenseDocument
         issued = json.optNullableString("issued")?.iso8601ToDate() ?: throw LcpException.Parsing.LicenseDocument

@@ -30,8 +30,8 @@ internal class DownloadsRepository(
 
     private val downloadIds: Flow<Map<String, List<Long>>> =
         context.dataStore.data
-            .map { data -> data[downloadIdsKey]!! }
-            .map { string -> string.toData() }
+            .map { data -> data[downloadIdsKey] }
+            .map { string -> string?.toData().orEmpty() }
 
     suspend fun addId(name: String, id: Long) {
         context.dataStore.edit { data ->

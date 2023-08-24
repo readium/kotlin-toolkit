@@ -6,14 +6,17 @@
 
 package org.readium.r2.testapp
 
-import android.content.*
+import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.android.material.color.DynamicColors
 import java.io.File
-import java.util.*
-import kotlinx.coroutines.*
+import java.util.Properties
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.async
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.db.BookDatabase
 import org.readium.r2.testapp.reader.ReaderRepository
@@ -66,8 +69,8 @@ class Application : android.app.Application() {
                 readium.publicationFactory,
                 readium.assetRetriever,
                 readium.protectionRetriever,
-                readium.httpClient,
-                readium.formatRegistry
+                readium.formatRegistry,
+                readium.downloadManagerProvider
             )
 
         readerRepository =
