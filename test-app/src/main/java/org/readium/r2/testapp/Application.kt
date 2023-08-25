@@ -18,7 +18,9 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import org.readium.r2.testapp.BuildConfig.DEBUG
-import org.readium.r2.testapp.db.BookDatabase
+import org.readium.r2.testapp.data.BookRepository
+import org.readium.r2.testapp.data.db.BookDatabase
+import org.readium.r2.testapp.domain.Bookshelf
 import org.readium.r2.testapp.reader.ReaderRepository
 import timber.log.Timber
 

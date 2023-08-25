@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.domain
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -42,7 +42,10 @@ import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.PublicationFactory
-import org.readium.r2.testapp.db.DownloadDatabase
+import org.readium.r2.testapp.PublicationError
+import org.readium.r2.testapp.R
+import org.readium.r2.testapp.data.BookRepository
+import org.readium.r2.testapp.data.db.DownloadDatabase
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
 import org.readium.r2.testapp.utils.extensions.moveTo
 import org.readium.r2.testapp.utils.tryOrNull

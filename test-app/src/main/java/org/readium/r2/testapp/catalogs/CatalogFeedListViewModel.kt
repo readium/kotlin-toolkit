@@ -19,8 +19,9 @@ import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
-import org.readium.r2.testapp.db.BookDatabase
-import org.readium.r2.testapp.domain.model.Catalog
+import org.readium.r2.testapp.data.CatalogRepository
+import org.readium.r2.testapp.data.db.BookDatabase
+import org.readium.r2.testapp.data.model.Catalog
 import org.readium.r2.testapp.utils.EventChannel
 
 class CatalogFeedListViewModel(application: Application) : AndroidViewModel(application) {

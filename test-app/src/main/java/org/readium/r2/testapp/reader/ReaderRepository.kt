@@ -28,9 +28,9 @@ import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.testapp.BookRepository
 import org.readium.r2.testapp.PublicationError
 import org.readium.r2.testapp.Readium
+import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.reader.preferences.AndroidTtsPreferencesManagerFactory
 import org.readium.r2.testapp.reader.preferences.EpubPreferencesManagerFactory
 import org.readium.r2.testapp.reader.preferences.ExoPlayerPreferencesManagerFactory

@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.testapp.db
+package org.readium.r2.testapp.data.db
 
 import androidx.annotation.ColorInt
 import androidx.lifecycle.LiveData
@@ -13,9 +13,9 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
-import org.readium.r2.testapp.domain.model.Book
-import org.readium.r2.testapp.domain.model.Bookmark
-import org.readium.r2.testapp.domain.model.Highlight
+import org.readium.r2.testapp.data.model.Book
+import org.readium.r2.testapp.data.model.Bookmark
+import org.readium.r2.testapp.data.model.Highlight
 
 @Dao
 interface BooksDao {

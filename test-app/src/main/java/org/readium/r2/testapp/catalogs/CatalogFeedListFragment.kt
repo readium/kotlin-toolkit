@@ -23,8 +23,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import org.readium.r2.testapp.R
+import org.readium.r2.testapp.data.model.Catalog
 import org.readium.r2.testapp.databinding.FragmentCatalogFeedListBinding
-import org.readium.r2.testapp.domain.model.Catalog
 import org.readium.r2.testapp.utils.viewLifecycle
 
 class CatalogFeedListFragment : Fragment() {

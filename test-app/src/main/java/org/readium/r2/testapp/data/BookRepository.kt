@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.data
 
 import androidx.annotation.ColorInt
 import androidx.lifecycle.LiveData
@@ -18,10 +18,10 @@ import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.testapp.db.BooksDao
-import org.readium.r2.testapp.domain.model.Book
-import org.readium.r2.testapp.domain.model.Bookmark
-import org.readium.r2.testapp.domain.model.Highlight
+import org.readium.r2.testapp.data.db.BooksDao
+import org.readium.r2.testapp.data.model.Book
+import org.readium.r2.testapp.data.model.Bookmark
+import org.readium.r2.testapp.data.model.Highlight
 import org.readium.r2.testapp.utils.extensions.authorName
 import org.readium.r2.testapp.utils.tryOrLog
 

@@ -28,8 +28,8 @@ import org.readium.r2.testapp.MainActivity
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.bookshelf.BookshelfFragment
 import org.readium.r2.testapp.catalogs.CatalogFeedListAdapter.Companion.CATALOGFEED
+import org.readium.r2.testapp.data.model.Catalog
 import org.readium.r2.testapp.databinding.FragmentCatalogBinding
-import org.readium.r2.testapp.domain.model.Catalog
 import org.readium.r2.testapp.opds.GridAutoFitLayoutManager
 import org.readium.r2.testapp.utils.viewLifecycle
 

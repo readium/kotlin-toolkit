@@ -4,11 +4,11 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.testapp.catalogs
+package org.readium.r2.testapp.data
 
 import androidx.lifecycle.LiveData
-import org.readium.r2.testapp.db.CatalogDao
-import org.readium.r2.testapp.domain.model.Catalog
+import org.readium.r2.testapp.data.db.CatalogDao
+import org.readium.r2.testapp.data.model.Catalog
 
 class CatalogRepository(private val catalogDao: CatalogDao) {
 

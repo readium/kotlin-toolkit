@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.domain
 
 import android.net.Uri
 import java.net.URL
@@ -19,8 +19,8 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.testapp.db.DownloadsDao
-import org.readium.r2.testapp.domain.model.Download
+import org.readium.r2.testapp.data.db.DownloadsDao
+import org.readium.r2.testapp.data.model.Download
 
 class OpdsDownloader(
     private val downloadsDao: DownloadsDao,

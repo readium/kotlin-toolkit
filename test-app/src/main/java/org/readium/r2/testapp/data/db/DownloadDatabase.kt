@@ -1,35 +1,35 @@
 /*
- * Copyright 2021 Readium Foundation. All rights reserved.
+ * Copyright 2023 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.testapp.db
+package org.readium.r2.testapp.data.db
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import org.readium.r2.testapp.data.model.Download
+import org.readium.r2.testapp.data.model.HighlightConverters
 import org.readium.r2.testapp.domain.model.*
 
 @Database(
-    entities = [Book::class, Bookmark::class, Highlight::class, Catalog::class],
+    entities = [Download::class],
     version = 1,
     exportSchema = false
 )
 @TypeConverters(HighlightConverters::class)
-abstract class BookDatabase : RoomDatabase() {
+abstract class DownloadDatabase : RoomDatabase() {
 
-    abstract fun booksDao(): BooksDao
-
-    abstract fun catalogDao(): CatalogDao
+    abstract fun downloadsDao(): DownloadsDao
 
     companion object {
         @Volatile
-        private var INSTANCE: BookDatabase? = null
+        private var INSTANCE: DownloadDatabase? = null
 
-        fun getDatabase(context: Context): BookDatabase {
+        fun getDatabase(context: Context): DownloadDatabase {
             val tempInstance = INSTANCE
             if (tempInstance != null) {
                 return tempInstance
@@ -37,8 +37,8 @@ abstract class BookDatabase : RoomDatabase() {
             synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
-                    BookDatabase::class.java,
-                    "books_database"
+                    DownloadDatabase::class.java,
+                    "downloads_database"
                 ).build()
                 INSTANCE = instance
                 return instance

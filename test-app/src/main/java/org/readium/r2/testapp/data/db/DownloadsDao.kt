@@ -4,13 +4,13 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.testapp.db
+package org.readium.r2.testapp.data.db
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import org.readium.r2.testapp.domain.model.Download
+import org.readium.r2.testapp.data.model.Download
 
 @Dao
 interface DownloadsDao {

@@ -20,9 +20,9 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.util.Url
-import org.readium.r2.testapp.Bookshelf
 import org.readium.r2.testapp.BuildConfig
-import org.readium.r2.testapp.domain.model.Book
+import org.readium.r2.testapp.data.model.Book
+import org.readium.r2.testapp.domain.Bookshelf
 import org.readium.r2.testapp.reader.ReaderActivityContract
 import org.readium.r2.testapp.utils.EventChannel
 import org.readium.r2.testapp.utils.extensions.copyToTempFile

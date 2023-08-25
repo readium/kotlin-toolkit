@@ -21,8 +21,8 @@ import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.HttpRequest
-import org.readium.r2.testapp.Bookshelf
-import org.readium.r2.testapp.domain.model.Catalog
+import org.readium.r2.testapp.data.model.Catalog
+import org.readium.r2.testapp.domain.Bookshelf
 import org.readium.r2.testapp.utils.EventChannel
 import timber.log.Timber
 

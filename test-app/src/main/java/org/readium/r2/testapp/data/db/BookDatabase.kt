@@ -1,33 +1,40 @@
 /*
- * Copyright 2023 Readium Foundation. All rights reserved.
+ * Copyright 2021 Readium Foundation. All rights reserved.
  * Use of this source code is governed by the BSD-style license
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.testapp.db
+package org.readium.r2.testapp.data.db
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import org.readium.r2.testapp.data.model.Book
+import org.readium.r2.testapp.data.model.Bookmark
+import org.readium.r2.testapp.data.model.Catalog
+import org.readium.r2.testapp.data.model.Highlight
+import org.readium.r2.testapp.data.model.HighlightConverters
 import org.readium.r2.testapp.domain.model.*
 
 @Database(
-    entities = [Download::class],
+    entities = [Book::class, Bookmark::class, Highlight::class, Catalog::class],
     version = 1,
     exportSchema = false
 )
 @TypeConverters(HighlightConverters::class)
-abstract class DownloadDatabase : RoomDatabase() {
+abstract class BookDatabase : RoomDatabase() {
 
-    abstract fun downloadsDao(): DownloadsDao
+    abstract fun booksDao(): BooksDao
+
+    abstract fun catalogDao(): CatalogDao
 
     companion object {
         @Volatile
-        private var INSTANCE: DownloadDatabase? = null
+        private var INSTANCE: BookDatabase? = null
 
-        fun getDatabase(context: Context): DownloadDatabase {
+        fun getDatabase(context: Context): BookDatabase {
             val tempInstance = INSTANCE
             if (tempInstance != null) {
                 return tempInstance
@@ -35,8 +42,8 @@ abstract class DownloadDatabase : RoomDatabase() {
             synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
-                    DownloadDatabase::class.java,
-                    "downloads_database"
+                    BookDatabase::class.java,
+                    "books_database"
                 ).build()
                 INSTANCE = instance
                 return instance
