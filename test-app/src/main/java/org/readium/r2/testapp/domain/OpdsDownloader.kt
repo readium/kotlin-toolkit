@@ -19,11 +19,10 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.MediaType
-import org.readium.r2.testapp.data.db.DownloadsDao
-import org.readium.r2.testapp.data.model.Download
+import org.readium.r2.testapp.data.DownloadRepository
 
 class OpdsDownloader(
-    private val downloadsDao: DownloadsDao,
+    private val downloadRepository: DownloadRepository,
     private val downloadManagerProvider: DownloadManagerProvider,
     private val listener: Listener
 ) {
@@ -49,8 +48,8 @@ class OpdsDownloader(
     private inner class DownloadListener : DownloadManager.Listener {
         override fun onDownloadCompleted(requestId: DownloadManager.RequestId, destUri: Uri) {
             coroutineScope.launch {
-                val cover = downloadsDao.get(managerName, requestId.value)!!.extra
-                downloadsDao.delete(managerName, requestId.value)
+                val cover = downloadRepository.getOpdsDownloadCover(managerName, requestId.value)
+                downloadRepository.removeDownload(managerName, requestId.value)
                 listener.onDownloadCompleted(destUri.path!!, cover)
             }
         }
@@ -98,8 +97,11 @@ class OpdsDownloader(
                 "Downloading"
             )
         )
-        val download = Download(managerName, requestId.value, coverUrl)
-        downloadsDao.insert(download)
+        downloadRepository.insertOpdsDownload(
+            manager = managerName,
+            id = requestId.value,
+            cover = coverUrl
+        )
     }
 
     private fun getDownloadURL(publication: Publication): Try<URL, Exception> =

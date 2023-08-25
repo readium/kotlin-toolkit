@@ -95,7 +95,7 @@
 
     <string name="import_publication_unexpected_io_exception">Unable to add publication due to an unexpected error on your device</string>
     <string name="import_publication_download_failed">Publication download failed.</string>
-    <string name="import_publication_no_acquisition">Publication download failed.</string>
+    <string name="import_publication_no_acquisition">Acquisition is not possible.</string>
 
     <string name="import_publication_success">Publication added to your library</string>
     <string name="import_publication_unable_add_pub_database">Unable to add publication to the database</string>

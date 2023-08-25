@@ -45,7 +45,7 @@ import org.readium.r2.streamer.PublicationFactory
 import org.readium.r2.testapp.PublicationError
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.BookRepository
-import org.readium.r2.testapp.data.db.DownloadDatabase
+import org.readium.r2.testapp.data.DownloadRepository
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
 import org.readium.r2.testapp.utils.extensions.moveTo
 import org.readium.r2.testapp.utils.tryOrNull
@@ -54,6 +54,7 @@ import timber.log.Timber
 class Bookshelf(
     private val context: Context,
     private val bookRepository: BookRepository,
+    private val downloadRepository: DownloadRepository,
     private val storageDir: File,
     private val lcpService: Try<LcpService, UserException>,
     private val publicationFactory: PublicationFactory,
@@ -125,9 +126,8 @@ class Bookshelf(
         File(storageDir, "covers/")
             .apply { if (!exists()) mkdirs() }
 
-    private val opdsDownloader =
-        DownloadDatabase.getDatabase(context).downloadsDao()
-            .let { dao -> OpdsDownloader(dao, downloadManagerProvider, OpdsDownloaderListener()) }
+    private val opdsDownloader: OpdsDownloader =
+        OpdsDownloader(downloadRepository, downloadManagerProvider, OpdsDownloaderListener())
 
     private inner class OpdsDownloaderListener : OpdsDownloader.Listener {
         override fun onDownloadCompleted(publication: String, cover: String?) {

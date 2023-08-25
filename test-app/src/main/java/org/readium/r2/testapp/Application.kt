@@ -19,7 +19,9 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.async
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.data.BookRepository
+import org.readium.r2.testapp.data.DownloadRepository
 import org.readium.r2.testapp.data.db.BookDatabase
+import org.readium.r2.testapp.data.db.DownloadDatabase
 import org.readium.r2.testapp.domain.Bookshelf
 import org.readium.r2.testapp.reader.ReaderRepository
 import timber.log.Timber
@@ -32,6 +34,9 @@ class Application : android.app.Application() {
     lateinit var storageDir: File
 
     lateinit var bookRepository: BookRepository
+        private set
+
+    lateinit var downloadRepository: DownloadRepository
         private set
 
     lateinit var bookshelf: Bookshelf
@@ -62,10 +67,15 @@ class Application : android.app.Application() {
             BookDatabase.getDatabase(this).booksDao()
                 .let { dao -> BookRepository(dao) }
 
+        downloadRepository =
+            DownloadDatabase.getDatabase(this).downloadsDao()
+                .let { dao -> DownloadRepository(dao) }
+
         bookshelf =
             Bookshelf(
                 applicationContext,
                 bookRepository,
+                downloadRepository,
                 storageDir,
                 readium.lcpService,
                 readium.publicationFactory,
