@@ -136,7 +136,11 @@ class Bookshelf(
             .apply { if (!exists()) mkdirs() }
 
     private val opdsDownloader: OpdsDownloader =
-        OpdsDownloader(downloadRepository, downloadManagerProvider, OpdsDownloaderListener())
+        OpdsDownloader(
+            downloadRepository,
+            downloadManagerProvider,
+            OpdsDownloaderListener()
+        )
 
     private inner class OpdsDownloaderListener : OpdsDownloader.Listener {
         override fun onDownloadCompleted(publication: File, cover: String?) {
@@ -200,12 +204,15 @@ class Bookshelf(
     suspend fun copyPublicationToAppStorage(
         contentUri: Uri
     ) {
-        contentUri.copyToTempFile(context, storageDir)
+        val tempFile = contentUri.copyToTempFile(context, storageDir)
             .getOrElse {
                 channel.send(
                     Event.ImportPublicationError(ImportError.ImportBookFailed(it))
                 )
+                return
             }
+
+        addLocalBook(tempFile)
     }
 
     suspend fun downloadPublicationFromOpds(

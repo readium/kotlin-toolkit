@@ -27,6 +27,7 @@ class MainViewModel(
 
     val channel: EventChannel<Event> =
         EventChannel(Channel(Channel.BUFFERED), viewModelScope)
+
     init {
         app.bookshelf.channel.receiveAsFlow()
             .onEach { sendImportFeedback(it) }

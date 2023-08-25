@@ -153,6 +153,10 @@ public class LcpPublicationRetriever(
         }
     }
 
+    public suspend fun close() {
+        downloadManager.close()
+    }
+
     private suspend fun fetchPublication(
         license: LicenseDocument,
         downloadTitle: String,

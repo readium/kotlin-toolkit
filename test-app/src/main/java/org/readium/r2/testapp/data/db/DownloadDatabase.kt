@@ -10,7 +10,6 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
 import org.readium.r2.testapp.data.model.*
 import org.readium.r2.testapp.data.model.Download
 
@@ -19,7 +18,6 @@ import org.readium.r2.testapp.data.model.Download
     version = 1,
     exportSchema = false
 )
-@TypeConverters(HighlightConverters::class)
 abstract class DownloadDatabase : RoomDatabase() {
 
     abstract fun downloadsDao(): DownloadsDao
