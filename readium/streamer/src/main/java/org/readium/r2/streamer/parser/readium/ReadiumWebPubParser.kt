@@ -44,7 +44,6 @@ public class ReadiumWebPubParser(
 
         val manifest = Manifest.fromJSON(
             manifestJson,
-            packaged = true,
             mediaTypeRetriever = mediaTypeRetriever
         )
             ?: return Try.failure(

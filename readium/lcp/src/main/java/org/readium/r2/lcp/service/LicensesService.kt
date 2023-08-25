@@ -36,6 +36,7 @@ import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import timber.log.Timber
@@ -276,12 +277,5 @@ internal class LicensesService(
     }
 
     private val MediaType.fileExtension: String get() =
-        when {
-            matches(MediaType.DIVINA) -> "divina"
-            matches(MediaType.EPUB) -> "epub"
-            matches(MediaType.LCP_PROTECTED_PDF) -> "pdf"
-            matches(MediaType.READIUM_AUDIOBOOK) -> "audiobook"
-            matches(MediaType.READIUM_WEBPUB) -> "webpub"
-            else -> "epub"
-        }
+        FormatRegistry().fileExtension(this) ?: "epub"
 }
