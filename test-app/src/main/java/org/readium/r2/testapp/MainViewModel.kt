@@ -32,7 +32,7 @@ class MainViewModel(
             .onEach { sendImportFeedback(it) }
             .launchIn(viewModelScope)
     }
-    fun importPublicationFromUri(uri: Uri) =
+    fun copyPublicationToAppStorage(uri: Uri) =
         viewModelScope.launch {
             app.bookshelf.copyPublicationToAppStorage(uri)
         }

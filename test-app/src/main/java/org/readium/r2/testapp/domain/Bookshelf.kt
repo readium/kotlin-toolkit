@@ -120,7 +120,7 @@ class Bookshelf(
     }
 
     sealed class Event {
-        object ImportPublicationSuccess :
+        data object ImportPublicationSuccess :
             Event()
 
         class ImportPublicationError(
@@ -139,9 +139,9 @@ class Bookshelf(
         OpdsDownloader(downloadRepository, downloadManagerProvider, OpdsDownloaderListener())
 
     private inner class OpdsDownloaderListener : OpdsDownloader.Listener {
-        override fun onDownloadCompleted(publication: String, cover: String?) {
+        override fun onDownloadCompleted(publication: File, cover: String?) {
             coroutineScope.launch {
-                addLocalBook(File(publication), cover)
+                addLocalBook(publication, cover)
             }
         }
 
@@ -201,11 +201,14 @@ class Bookshelf(
         contentUri: Uri
     ) {
         contentUri.copyToTempFile(context, storageDir)
-            .mapFailure { ImportError.ImportBookFailed(it) }
-            .map { addLocalBook(it) }
+            .getOrElse {
+                channel.send(
+                    Event.ImportPublicationError(ImportError.ImportBookFailed(it))
+                )
+            }
     }
 
-    suspend fun importOpdsPublication(
+    suspend fun downloadPublicationFromOpds(
         publication: Publication
     ) {
         opdsDownloader.download(publication)
@@ -223,15 +226,7 @@ class Bookshelf(
     ) {
         val asset = assetRetriever.retrieve(url)
             ?: run {
-                channel.send(
-                    Event.ImportPublicationError(
-                        ImportError.PublicationError(
-                            PublicationError.UnsupportedPublication(
-                                Publication.OpeningException.UnsupportedAsset()
-                            )
-                        )
-                    )
-                )
+                channel.send(mediaTypeNotSupportedEvent())
                 return
             }
 
@@ -246,17 +241,7 @@ class Bookshelf(
     ) {
         val asset = assetRetriever.retrieve(url)
             ?: run {
-                channel.send(
-                    Event.ImportPublicationError(
-                        ImportError.PublicationError(
-                            PublicationError.UnsupportedPublication(
-                                Publication.OpeningException.UnsupportedAsset(
-                                    "Unsupported media type"
-                                )
-                            )
-                        )
-                    )
-                )
+                channel.send(mediaTypeNotSupportedEvent())
                 return
             }
 
@@ -271,15 +256,7 @@ class Bookshelf(
     ) {
         val sourceAsset = assetRetriever.retrieve(tempFile)
             ?: run {
-                channel.send(
-                    Event.ImportPublicationError(
-                        ImportError.PublicationError(
-                            PublicationError.UnsupportedPublication(
-                                Publication.OpeningException.UnsupportedAsset()
-                            )
-                        )
-                    )
-                )
+                channel.send(mediaTypeNotSupportedEvent())
                 return
             }
 
@@ -320,6 +297,17 @@ class Bookshelf(
             channel.send(Event.ImportPublicationError(it))
         }
     }
+
+    private fun mediaTypeNotSupportedEvent(): Event.ImportPublicationError =
+        Event.ImportPublicationError(
+            ImportError.PublicationError(
+                PublicationError.UnsupportedPublication(
+                    Publication.OpeningException.UnsupportedAsset(
+                        "Unsupported media type"
+                    )
+                )
+            )
+        )
 
     private suspend fun acquireLcpPublication(licenceAsset: Asset.Resource) {
         val lcpRetriever = lcpPublicationRetriever
@@ -444,6 +432,6 @@ class Bookshelf(
         if (url.scheme == "file") {
             tryOrLog { File(url.path).delete() }
         }
-        File(book.cover).delete()
+        tryOrLog { File(book.cover).delete() }
     }
 }

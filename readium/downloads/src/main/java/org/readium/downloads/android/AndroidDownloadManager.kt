@@ -10,7 +10,7 @@ import android.app.DownloadManager as SystemDownloadManager
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
-import java.util.Locale
+import java.io.File
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -19,6 +19,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.readium.downloads.DownloadManager
 import org.readium.r2.shared.units.Hz
+import org.readium.r2.shared.util.toUri
 
 public class AndroidDownloadManager(
     private val context: Context,
@@ -40,9 +41,7 @@ public class AndroidDownloadManager(
     private val progressJob: Job = coroutineScope.launch {
         while (true) {
             val ids = downloadsRepository.idsForName(name)
-            val cursor = downloadManager.query(
-                SystemDownloadManager.Query()
-            )
+            val cursor = downloadManager.query(SystemDownloadManager.Query())
             notify(cursor, ids)
             delay((1.0 / refreshRate.value).seconds)
         }
@@ -55,11 +54,9 @@ public class AndroidDownloadManager(
         DownloadsRepository(context)
 
     public override suspend fun submit(request: DownloadManager.Request): DownloadManager.RequestId {
-        val uri = Uri.parse(request.url.toString())
-        val filename = filenameForUri(uri.toString())
         val androidRequest = createRequest(
-            uri,
-            filename,
+            request.url.toUri(),
+            request.url.filename,
             request.headers,
             request.title,
             request.description
@@ -69,23 +66,19 @@ public class AndroidDownloadManager(
         return DownloadManager.RequestId(downloadId)
     }
 
-    private fun filenameForUri(uri: String): String =
-        uri.substring(uri.lastIndexOf('/') + 1)
-            .let { it.substring(0, 1).uppercase(Locale.getDefault()) + it.substring(1) }
-
     private fun createRequest(
         uri: Uri,
         filename: String,
         headers: Map<String, List<String>>,
         title: String,
-        description: String
+        description: String?
     ): SystemDownloadManager.Request =
         SystemDownloadManager.Request(uri)
             .setNotificationVisibility(SystemDownloadManager.Request.VISIBILITY_VISIBLE)
             .setDestination(filename)
             .setHeaders(headers)
             .setTitle(title)
-            .setDescription(description)
+            .apply { description?.let { setDescription(it) } }
             .setAllowedOverMetered(true)
             .setAllowedOverRoaming(true)
 
@@ -116,7 +109,6 @@ public class AndroidDownloadManager(
     private suspend fun notify(cursor: Cursor, ids: List<Long>) = cursor.use {
         while (cursor.moveToNext()) {
             val facade = DownloadCursorFacade(cursor)
-
             val id = DownloadManager.RequestId(facade.id)
 
             if (id.value !in ids) {
@@ -132,7 +124,7 @@ public class AndroidDownloadManager(
                 SystemDownloadManager.STATUS_PENDING -> {}
                 SystemDownloadManager.STATUS_SUCCESSFUL -> {
                     val destUri = Uri.parse(facade.localUri!!)
-                    listener.onDownloadCompleted(id, destUri)
+                    listener.onDownloadCompleted(id, File(destUri.path!!))
                     downloadManager.remove(id.value)
                     downloadsRepository.removeId(name, id.value)
                 }

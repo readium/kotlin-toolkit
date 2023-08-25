@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         intent.data?.let {
-            viewModel.importPublicationFromUri(it)
+            viewModel.copyPublicationToAppStorage(it)
         }
 
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
@@ -62,12 +62,10 @@ class MainActivity : AppCompatActivity() {
                     event.errorMessage
                 }
             }
-        message.let {
-            Snackbar.make(
-                findViewById(android.R.id.content),
-                it,
-                Snackbar.LENGTH_LONG
-            ).show()
-        }
+        Snackbar.make(
+            findViewById(android.R.id.content),
+            message,
+            Snackbar.LENGTH_LONG
+        ).show()
     }
 }

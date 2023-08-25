@@ -6,7 +6,7 @@
 
 package org.readium.r2.testapp.domain
 
-import android.net.Uri
+import java.io.File
 import java.net.URL
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -29,7 +29,7 @@ class OpdsDownloader(
 
     interface Listener {
 
-        fun onDownloadCompleted(publication: String, cover: String?)
+        fun onDownloadCompleted(publication: File, cover: String?)
 
         fun onDownloadFailed(error: DownloadManager.Error)
     }
@@ -46,11 +46,11 @@ class OpdsDownloader(
     )
 
     private inner class DownloadListener : DownloadManager.Listener {
-        override fun onDownloadCompleted(requestId: DownloadManager.RequestId, destUri: Uri) {
+        override fun onDownloadCompleted(requestId: DownloadManager.RequestId, file: File) {
             coroutineScope.launch {
                 val cover = downloadRepository.getOpdsDownloadCover(managerName, requestId.value)
                 downloadRepository.removeDownload(managerName, requestId.value)
-                listener.onDownloadCompleted(destUri.path!!, cover)
+                listener.onDownloadCompleted(file, cover)
             }
         }
 
@@ -92,9 +92,9 @@ class OpdsDownloader(
         val requestId = downloadManager.submit(
             DownloadManager.Request(
                 Url(publicationUrl)!!,
-                emptyMap(),
-                publicationTitle ?: "Untitled publication",
-                "Downloading"
+                title = publicationTitle ?: "Untitled publication",
+                description = "Downloading",
+                headers = emptyMap()
             )
         )
         downloadRepository.insertOpdsDownload(

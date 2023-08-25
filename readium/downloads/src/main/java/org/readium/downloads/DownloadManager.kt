@@ -6,17 +6,16 @@
 
 package org.readium.downloads
 
-import android.net.Uri
-import org.readium.r2.shared.util.Error
+import java.io.File
 import org.readium.r2.shared.util.Url
 
 public interface DownloadManager {
 
     public data class Request(
         val url: Url,
-        val headers: Map<String, List<String>>,
         val title: String,
-        val description: String
+        val description: String? = null,
+        val headers: Map<String, List<String>> = emptyMap()
     )
 
     @JvmInline
@@ -48,7 +47,7 @@ public interface DownloadManager {
         public data object Forbidden : Error() {
 
             override val message: String =
-                "Access to the resource was denied"
+                "Access to the resource was denied."
         }
 
         public data object DeviceNotFound : Error() {
@@ -96,7 +95,7 @@ public interface DownloadManager {
 
     public interface Listener {
 
-        public fun onDownloadCompleted(requestId: RequestId, destUri: Uri)
+        public fun onDownloadCompleted(requestId: RequestId, file: File)
 
         public fun onDownloadProgressed(requestId: RequestId, downloaded: Long, total: Long)
 

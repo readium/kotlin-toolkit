@@ -8,6 +8,7 @@ package org.readium.r2.testapp
 
 import android.content.Context
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
+import org.readium.downloads.android.AndroidDownloadManager
 import org.readium.downloads.android.AndroidDownloadManagerProvider
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.navigator.preferences.FontFamily
@@ -67,7 +68,10 @@ class Readium(context: Context) {
         context.contentResolver
     )
 
-    val downloadManagerProvider = AndroidDownloadManagerProvider(context)
+    val downloadManagerProvider = AndroidDownloadManagerProvider(
+        context = context,
+        destStorage = AndroidDownloadManager.Storage.App
+    )
 
     /**
      * The LCP service decrypts LCP-protected publication and acquire publications from a

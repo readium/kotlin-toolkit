@@ -53,7 +53,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun downloadPublication(publication: Publication) = viewModelScope.launch {
-        app.bookshelf.importOpdsPublication(publication)
+        app.bookshelf.downloadPublicationFromOpds(publication)
     }
 
     sealed class Event {

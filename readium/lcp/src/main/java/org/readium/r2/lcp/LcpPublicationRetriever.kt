@@ -1,7 +1,6 @@
 package org.readium.r2.lcp
 
 import android.content.Context
-import android.net.Uri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -27,7 +26,6 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
-import timber.log.Timber
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
     name = "readium-lcp-licenses"
@@ -38,7 +36,7 @@ private val licensesKey: Preferences.Key<String> = stringPreferencesKey("license
 public class LcpPublicationRetriever(
     private val context: Context,
     private val listener: Listener,
-    private val downloadManagerProvider: DownloadManagerProvider,
+    downloadManagerProvider: DownloadManagerProvider,
     private val mediaTypeRetriever: MediaTypeRetriever
 ) {
 
@@ -71,15 +69,15 @@ public class LcpPublicationRetriever(
 
         override fun onDownloadCompleted(
             requestId: DownloadManager.RequestId,
-            destUri: Uri
+            file: File
         ) {
             coroutineScope.launch {
                 val lcpRequestId = RequestId(requestId.value)
                 val acquisition = onDownloadCompleted(
                     requestId.value,
-                    Url(destUri.toString())!!
+                    file
                 ).getOrElse {
-                    tryOrLog { File(destUri.path!!).delete() }
+                    tryOrLog { file.delete() }
                     listener.onAcquisitionFailed(lcpRequestId, LcpException.wrap(it))
                     return@launch
                 }
@@ -128,16 +126,16 @@ public class LcpPublicationRetriever(
     public suspend fun retrieve(
         license: ByteArray,
         downloadTitle: String,
-        downloadDescription: String
+        downloadDescription: String? = null
     ): Try<RequestId, LcpException> {
         return try {
             val licenseDocument = LicenseDocument(license)
-            Timber.d("license ${licenseDocument.json}")
-            fetchPublication(
+            val requestId = fetchPublication(
                 licenseDocument,
                 downloadTitle,
                 downloadDescription
-            ).let { Try.success(it) }
+            )
+            Try.success(requestId)
         } catch (e: Exception) {
             Try.failure(LcpException.wrap(e))
         }
@@ -158,7 +156,7 @@ public class LcpPublicationRetriever(
     private suspend fun fetchPublication(
         license: LicenseDocument,
         downloadTitle: String,
-        downloadDescription: String
+        downloadDescription: String?
     ): RequestId {
         val link = license.link(LicenseDocument.Rel.Publication)
         val url = link?.url
@@ -166,10 +164,10 @@ public class LcpPublicationRetriever(
 
         val requestId = downloadManager.submit(
             DownloadManager.Request(
-                Url(url.toString())!!,
-                emptyMap(),
-                downloadTitle,
-                downloadDescription
+                url = Url(url.toString())!!,
+                title = downloadTitle,
+                description = downloadDescription,
+                headers = emptyMap()
             )
         )
 
@@ -180,7 +178,7 @@ public class LcpPublicationRetriever(
 
     private suspend fun onDownloadCompleted(
         id: Long,
-        dest: Url
+        file: File
     ): Try<LcpService.AcquiredPublication, Exception> {
         val licenses = licenses.first()
         val license = LicenseDocument(licenses[id]!!)
@@ -190,8 +188,6 @@ public class LcpPublicationRetriever(
 
         val mediaType = mediaTypeRetriever.retrieve(mediaType = link.type)
             ?: MediaType.EPUB
-
-        val file = File(dest.path)
 
         try {
             // Saves the License Document into the downloaded publication

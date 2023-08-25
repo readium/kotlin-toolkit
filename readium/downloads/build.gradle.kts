@@ -37,9 +37,7 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android.txt"))
         }
     }
-    buildFeatures {
-        viewBinding = true
-    }
+
     namespace = "org.readium.downloads"
 }
 
