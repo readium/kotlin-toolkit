@@ -4,13 +4,14 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.testapp
+package org.readium.r2.testapp.domain
 
 import androidx.annotation.StringRes
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Error
+import org.readium.r2.testapp.R
 
 sealed class PublicationError(@StringRes userMessageId: Int) : UserException(userMessageId) {
 

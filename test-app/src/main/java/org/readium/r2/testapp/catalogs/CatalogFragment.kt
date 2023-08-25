@@ -49,7 +49,7 @@ class CatalogFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        catalogViewModel.eventChannel.receive(this) { handleEvent(it) }
+        catalogViewModel.channel.receive(this) { handleEvent(it) }
 
         catalog = arguments?.let { BundleCompat.getParcelable(it, CATALOGFEED, Catalog::class.java) }!!
         binding = FragmentCatalogBinding.inflate(inflater, container, false)
@@ -130,9 +130,9 @@ class CatalogFragment : Fragment() {
         )
     }
 
-    private fun handleEvent(event: CatalogViewModel.Event.FeedEvent) {
+    private fun handleEvent(event: CatalogViewModel.Event) {
         when (event) {
-            is CatalogViewModel.Event.FeedEvent.CatalogParseFailed -> {
+            is CatalogViewModel.Event.CatalogParseFailed -> {
                 Snackbar.make(
                     requireView(),
                     getString(R.string.failed_parsing_catalog),
@@ -140,7 +140,7 @@ class CatalogFragment : Fragment() {
                 ).show()
             }
 
-            is CatalogViewModel.Event.FeedEvent.CatalogParseSuccess -> {
+            is CatalogViewModel.Event.CatalogParseSuccess -> {
                 facets = event.result.feed?.facets ?: mutableListOf()
 
                 if (facets.size > 0) {

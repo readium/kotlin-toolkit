@@ -42,21 +42,22 @@ import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUrl
 import org.readium.r2.streamer.PublicationFactory
-import org.readium.r2.testapp.PublicationError
 import org.readium.r2.testapp.R
 import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.data.DownloadRepository
+import org.readium.r2.testapp.data.model.Book
 import org.readium.r2.testapp.utils.extensions.copyToTempFile
 import org.readium.r2.testapp.utils.extensions.moveTo
+import org.readium.r2.testapp.utils.tryOrLog
 import org.readium.r2.testapp.utils.tryOrNull
 import timber.log.Timber
 
 class Bookshelf(
     private val context: Context,
     private val bookRepository: BookRepository,
-    private val downloadRepository: DownloadRepository,
+    downloadRepository: DownloadRepository,
     private val storageDir: File,
-    private val lcpService: Try<LcpService, UserException>,
+    lcpService: Try<LcpService, UserException>,
     private val publicationFactory: PublicationFactory,
     private val assetRetriever: AssetRetriever,
     private val protectionRetriever: ContentProtectionSchemeRetriever,
@@ -86,11 +87,19 @@ class Bookshelf(
 
                 operator fun invoke(
                     error: AssetRetriever.Error
-                ): ImportError = PublicationError(org.readium.r2.testapp.PublicationError(error))
+                ): ImportError = PublicationError(
+                    org.readium.r2.testapp.domain.PublicationError(
+                        error
+                    )
+                )
 
                 operator fun invoke(
                     error: Publication.OpeningException
-                ): ImportError = PublicationError(org.readium.r2.testapp.PublicationError(error))
+                ): ImportError = PublicationError(
+                    org.readium.r2.testapp.domain.PublicationError(
+                        error
+                    )
+                )
             }
         }
 
@@ -188,7 +197,7 @@ class Bookshelf(
     val channel: Channel<Event> =
         Channel(Channel.BUFFERED)
 
-    suspend fun importBook(
+    suspend fun copyPublicationToAppStorage(
         contentUri: Uri
     ) {
         contentUri.copyToTempFile(context, storageDir)
@@ -209,7 +218,7 @@ class Bookshelf(
             }
     }
 
-    suspend fun addRemoteBook(
+    suspend fun addPublicationFromTheWeb(
         url: Url
     ) {
         val asset = assetRetriever.retrieve(url)
@@ -231,7 +240,7 @@ class Bookshelf(
             .onFailure { channel.send(Event.ImportPublicationError(it)) }
     }
 
-    suspend fun addSharedStorageBook(
+    suspend fun addPublicationFromSharedStorage(
         url: Url,
         coverUrl: String? = null
     ) {
@@ -379,7 +388,7 @@ class Bookshelf(
                     return Try.failure(ImportError.ImportBookFailed(e))
                 }
 
-            val id = bookRepository.insertBookIntoDatabase(
+            val id = bookRepository.insertBook(
                 url.toString(),
                 asset.mediaType,
                 asset.assetType,
@@ -427,4 +436,14 @@ class Bookshelf(
                 null
             }
         }
+
+    suspend fun deleteBook(book: Book) {
+        val id = book.id!!
+        bookRepository.deleteBook(id)
+        val url = Url(book.href)!!
+        if (url.scheme == "file") {
+            tryOrLog { File(url.path).delete() }
+        }
+        File(book.cover).delete()
+    }
 }

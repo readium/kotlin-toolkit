@@ -8,7 +8,6 @@ package org.readium.r2.testapp.data
 
 import androidx.annotation.ColorInt
 import androidx.lifecycle.LiveData
-import java.io.File
 import kotlinx.coroutines.flow.Flow
 import org.joda.time.DateTime
 import org.readium.r2.shared.asset.AssetType
@@ -16,14 +15,12 @@ import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.protection.ContentProtection
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.testapp.data.db.BooksDao
 import org.readium.r2.testapp.data.model.Book
 import org.readium.r2.testapp.data.model.Bookmark
 import org.readium.r2.testapp.data.model.Highlight
 import org.readium.r2.testapp.utils.extensions.authorName
-import org.readium.r2.testapp.utils.tryOrLog
 
 class BookRepository(
     private val booksDao: BooksDao
@@ -81,7 +78,7 @@ class BookRepository(
         booksDao.updateHighlightStyle(id, style, tint)
     }
 
-    suspend fun insertBookIntoDatabase(
+    suspend fun insertBook(
         href: String,
         mediaType: MediaType,
         assetType: AssetType,
@@ -104,16 +101,6 @@ class BookRepository(
         return booksDao.insertBook(book)
     }
 
-    private suspend fun deleteBookFromDatabase(id: Long) =
+    suspend fun deleteBook(id: Long) =
         booksDao.deleteBook(id)
-
-    suspend fun deleteBook(book: Book) {
-        val id = book.id!!
-        val url = Url(book.href)!!
-        if (url.scheme == "file") {
-            tryOrLog { File(url.path).delete() }
-        }
-        File(book.cover).delete()
-        deleteBookFromDatabase(id)
-    }
 }
