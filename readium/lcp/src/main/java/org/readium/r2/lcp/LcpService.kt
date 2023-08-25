@@ -17,7 +17,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.downloads.DownloadManagerProvider
-import org.readium.downloads.android.AndroidDownloadManagerProvider
 import org.readium.r2.lcp.auth.LcpDialogAuthentication
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.lcp.persistence.LcpDatabase
@@ -117,7 +116,14 @@ public interface LcpService {
         sender: Any?
     ): Try<LcpLicense, LcpException>
 
+    /**
+     * Creates a [LcpPublicationRetriever] instance which can be used to acquire a protected
+     * publication from standalone LCPL's bytes.
+     *
+     * @param listener listener to implement to be notified about the status of the download.
+     */
     public fun publicationRetriever(
+        downloadManagerProvider: DownloadManagerProvider,
         listener: LcpPublicationRetriever.Listener
     ): LcpPublicationRetriever
 
@@ -163,9 +169,7 @@ public interface LcpService {
         public operator fun invoke(
             context: Context,
             assetRetriever: AssetRetriever,
-            mediaTypeRetriever: MediaTypeRetriever,
-            downloadManagerProvider: DownloadManagerProvider =
-                AndroidDownloadManagerProvider(context)
+            mediaTypeRetriever: MediaTypeRetriever
         ): LcpService? {
             if (!LcpClient.isAvailable()) {
                 return null
@@ -191,8 +195,7 @@ public interface LcpService {
                 passphrases = passphrases,
                 context = context,
                 assetRetriever = assetRetriever,
-                mediaTypeRetriever = mediaTypeRetriever,
-                downloadManagerProvider = downloadManagerProvider
+                mediaTypeRetriever = mediaTypeRetriever
             )
         }
 

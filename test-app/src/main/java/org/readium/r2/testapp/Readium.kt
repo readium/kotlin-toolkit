@@ -76,8 +76,7 @@ class Readium(context: Context) {
     val lcpService = LcpService(
         context,
         assetRetriever,
-        mediaTypeRetriever,
-        downloadManagerProvider
+        mediaTypeRetriever
     )?.let { Try.success(it) }
         ?: Try.failure(UserException("liblcp is missing on the classpath"))
 

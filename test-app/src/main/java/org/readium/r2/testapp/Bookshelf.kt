@@ -144,8 +144,11 @@ class Bookshelf(
         }
     }
 
-    val lcpPublicationRetriever = lcpService.map {
-        it.publicationRetriever(LcpRetrieverListener())
+    private val lcpPublicationRetriever = lcpService.map {
+        it.publicationRetriever(
+            downloadManagerProvider,
+            LcpRetrieverListener()
+        )
     }
 
     private inner class LcpRetrieverListener : LcpPublicationRetriever.Listener {

@@ -48,8 +48,7 @@ internal class LicensesService(
     private val passphrases: PassphrasesService,
     private val context: Context,
     private val assetRetriever: AssetRetriever,
-    private val mediaTypeRetriever: MediaTypeRetriever,
-    private val downloadManagerProvider: DownloadManagerProvider
+    private val mediaTypeRetriever: MediaTypeRetriever
 ) : LcpService, CoroutineScope by MainScope() {
 
     override suspend fun isLcpProtected(file: File): Boolean {
@@ -75,6 +74,7 @@ internal class LicensesService(
         LcpContentProtection(this, authentication, assetRetriever)
 
     override fun publicationRetriever(
+        downloadManagerProvider: DownloadManagerProvider,
         listener: LcpPublicationRetriever.Listener
     ): LcpPublicationRetriever {
         return LcpPublicationRetriever(
@@ -205,7 +205,7 @@ internal class LicensesService(
             } catch (error: Error) {
                 Timber.d("Failed to add the LCP License to the local database: $error")
             }
-            if (!licenseDocument.data.contentEquals(initialData)) {
+            if (!licenseDocument.toByteArray().contentEquals(initialData)) {
                 try {
                     container.write(licenseDocument)
                     Timber.d("licenseDocument ${licenseDocument.json}")
