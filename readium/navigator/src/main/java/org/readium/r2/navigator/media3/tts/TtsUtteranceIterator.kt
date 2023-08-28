@@ -24,17 +24,16 @@ import org.readium.r2.shared.util.tokenizer.TextTokenizer
  *
  * Not thread-safe.
  */
-internal class TtsContentIterator(
+internal class TtsUtteranceIterator(
     private val publication: Publication,
     private val tokenizerFactory: (language: Language?) -> TextTokenizer,
     initialLocator: Locator?
 ) {
     data class Utterance(
+        val utterance: String,
         val resourceIndex: Int,
         val locations: Locator.Locations,
-        val text: String,
-        val textBefore: String?,
-        val textAfter: String?,
+        val text: Locator.Text,
         val language: Language?
     )
 
@@ -109,14 +108,14 @@ internal class TtsContentIterator(
     /**
      * Advances to the previous item and returns it, or null if we reached the beginning.
      */
-    suspend fun previousUtterance(): Utterance? =
-        nextUtterance(Direction.Backward)
+    suspend fun previous(): Utterance? =
+        next(Direction.Backward)
 
     /**
      * Advances to the next item and returns it, or null if we reached the end.
      */
-    suspend fun nextUtterance(): Utterance? =
-        nextUtterance(Direction.Forward)
+    suspend fun next(): Utterance? =
+        next(Direction.Forward)
 
     private enum class Direction {
         Forward, Backward;
@@ -126,10 +125,10 @@ internal class TtsContentIterator(
      * Gets the next utterance in the given [direction], or null when reaching the beginning or the
      * end.
      */
-    private suspend fun nextUtterance(direction: Direction): Utterance? {
+    private suspend fun next(direction: Direction): Utterance? {
         val utterance = utterances.nextIn(direction)
         if (utterance == null && loadNextUtterances(direction)) {
-            return nextUtterance(direction)
+            return next(direction)
         }
         return utterance
     }
@@ -167,7 +166,7 @@ internal class TtsContentIterator(
      */
     private fun Content.Element.tokenize(): List<Content.Element> {
         val contentTokenizer = TextContentTokenizer(
-            language = this@TtsContentIterator.language,
+            language = this@TtsUtteranceIterator.language,
             textTokenizerFactory = tokenizerFactory,
             overrideContentLanguage = overrideContentLanguage
         )
@@ -187,11 +186,10 @@ internal class TtsContentIterator(
                 ?: throw IllegalStateException("Content Element cannot be found in readingOrder.")
 
             return Utterance(
+                utterance = text,
                 resourceIndex = resourceIndex,
                 locations = locator.locations,
-                text = text,
-                textBefore = locator.text.before,
-                textAfter = locator.text.after,
+                text = locator.text,
                 language = language
             )
         }
