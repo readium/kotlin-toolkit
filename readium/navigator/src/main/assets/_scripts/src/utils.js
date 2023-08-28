@@ -4,19 +4,19 @@
 //  available in the top-level LICENSE file of the project.
 //
 
-import {TextQuoteAnchor} from './vendor/hypothesis/anchoring/types';
+import { TextQuoteAnchor } from "./vendor/hypothesis/anchoring/types";
 
 // Catch JS errors to log them in the app.
 window.addEventListener(
-  'error',
+  "error",
   function (event) {
     Android.logError(event.message, event.filename, event.lineno);
   },
-  false,
+  false
 );
 
 window.addEventListener(
-  'load',
+  "load",
   function () {
     const observer = new ResizeObserver(() => {
       onViewportWidthChanged();
@@ -24,7 +24,7 @@ window.addEventListener(
     });
     observer.observe(document.body);
   },
-  false,
+  false
 );
 
 /**
@@ -32,7 +32,7 @@ window.addEventListener(
  * turning issues. To fix this, we insert a blank virtual column at the end of the resource.
  */
 function appendVirtualColumnIfNeeded() {
-  const id = 'readium-virtual-page';
+  const id = "readium-virtual-page";
   var virtualCol = document.getElementById(id);
   if (isScrollModeEnabled() || getColumnCountPerScreen() != 2) {
     if (virtualCol) {
@@ -46,10 +46,10 @@ function appendVirtualColumnIfNeeded() {
       if (virtualCol) {
         virtualCol.remove();
       } else {
-        virtualCol = document.createElement('div');
-        virtualCol.setAttribute('id', id);
-        virtualCol.style.breakBefore = 'column';
-        virtualCol.innerHTML = '&#8203;'; // zero-width space
+        virtualCol = document.createElement("div");
+        virtualCol.setAttribute("id", id);
+        virtualCol.style.breakBefore = "column";
+        virtualCol.innerHTML = "&#8203;"; // zero-width space
         document.body.appendChild(virtualCol);
       }
     }
@@ -67,8 +67,8 @@ function onViewportWidthChanged() {
   var width = Android.getViewportWidth();
   pageWidth = width / window.devicePixelRatio;
   setProperty(
-    '--RS__viewportWidth',
-    'calc(' + width + 'px / ' + window.devicePixelRatio + ')',
+    "--RS__viewportWidth",
+    "calc(" + width + "px / " + window.devicePixelRatio + ")"
   );
 
   appendVirtualColumnIfNeeded();
@@ -78,21 +78,21 @@ export function getColumnCountPerScreen() {
   return parseInt(
     window
       .getComputedStyle(document.documentElement)
-      .getPropertyValue('column-count'),
+      .getPropertyValue("column-count")
   );
 }
 
 export function isScrollModeEnabled() {
   const style = document.documentElement.style;
   return (
-    style.getPropertyValue('--USER__view').trim() == 'readium-scroll-on' ||
+    style.getPropertyValue("--USER__view").trim() == "readium-scroll-on" ||
     // FIXME: Will need to be removed in Readium 3.0, --USER__scroll was incorrect.
-    style.getPropertyValue('--USER__scroll').trim() == 'readium-scroll-on'
+    style.getPropertyValue("--USER__scroll").trim() == "readium-scroll-on"
   );
 }
 
 export function isRTL() {
-  return document.body.dir.toLowerCase() == 'rtl';
+  return document.body.dir.toLowerCase() == "rtl";
 }
 
 // Scroll to the given TagId in document and snap.
@@ -109,7 +109,7 @@ export function scrollToId(id) {
 export function scrollToPosition(position) {
   //        Android.log("scrollToPosition " + position);
   if (position < 0 || position > 1) {
-    throw 'scrollToPosition() must be given a position from 0.0 to  1.0';
+    throw "scrollToPosition() must be given a position from 0.0 to  1.0";
   }
 
   let offset;
@@ -130,7 +130,7 @@ export function scrollToPosition(position) {
 // The expected text argument is a Locator Text object, as defined here:
 // https://readium.org/architecture/models/locators/
 export function scrollToText(text) {
-  let range = rangeFromLocator({text});
+  let range = rangeFromLocator({ text });
   if (!range) {
     return false;
   }
@@ -147,7 +147,7 @@ function scrollToRect(rect) {
     document.scrollingElement.scrollTop = rect.top + window.scrollY;
   } else {
     document.scrollingElement.scrollLeft = snapOffset(
-      rect.left + window.scrollX,
+      rect.left + window.scrollX
     );
   }
 
@@ -169,7 +169,7 @@ export function scrollToEnd() {
   if (!isScrollModeEnabled()) {
     var factor = isRTL() ? -1 : 1;
     document.scrollingElement.scrollLeft = snapOffset(
-      document.scrollingElement.scrollWidth * factor,
+      document.scrollingElement.scrollWidth * factor
     );
   } else {
     document.scrollingElement.scrollTop = document.body.scrollHeight;
@@ -198,7 +198,7 @@ export function scrollRight() {
 function scrollToOffset(offset) {
   //        Android.log("scrollToOffset " + offset);
   if (isScrollModeEnabled()) {
-    throw 'Called scrollToOffset() with scroll mode enabled. This can only be used in paginated mode.';
+    throw "Called scrollToOffset() with scroll mode enabled. This can only be used in paginated mode.";
   }
 
   var currentOffset = window.scrollX;
@@ -287,13 +287,13 @@ export function setCSSProperties(properties) {
 
 // For setting user setting.
 export function setProperty(key, value) {
-  if (value === null || value === '') {
+  if (value === null || value === "") {
     removeProperty(key);
   } else {
     var root = document.documentElement;
     // The `!important` annotation is added with `setProperty()` because if it's part of the
     // `value`, it will be ignored by the Web View.
-    root.style.setProperty(key, value, 'important');
+    root.style.setProperty(key, value, "important");
   }
 }
 
@@ -307,10 +307,10 @@ export function removeProperty(key) {
 /// Toolkit
 
 export function log() {
-  var message = Array.prototype.slice.call(arguments).join(' ');
+  var message = Array.prototype.slice.call(arguments).join(" ");
   Android.log(message);
 }
 
 export function logError(message) {
-  Android.logError(message, '', 0);
+  Android.logError(message, "", 0);
 }
