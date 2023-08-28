@@ -24,13 +24,13 @@ import org.readium.r2.shared.extensions.tryOrNull
 import org.readium.r2.shared.publication.Locator
 
 /**
- * Plays the content from a [TtsContentIterator] with a [TtsEngine].
+ * Plays the content from a [TtsUtteranceIterator] with a [TtsEngine].
  */
 @ExperimentalReadiumApi
 internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     E : TtsEngine.Error, V : TtsEngine.Voice> private constructor(
     private val engineFacade: TtsEngineFacade<S, P, E, V>,
-    private val contentIterator: TtsContentIterator,
+    private val contentIterator: TtsUtteranceIterator,
     initialWindow: UtteranceWindow,
     initialPreferences: P
 ) : Configurable<S, P> {
@@ -40,7 +40,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         suspend operator fun <S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             E : TtsEngine.Error, V : TtsEngine.Voice> invoke(
             engine: TtsEngine<S, P, E, V>,
-            contentIterator: TtsContentIterator,
+            contentIterator: TtsUtteranceIterator,
             initialPreferences: P
         ): TtsPlayer<S, P, E, V>? {
             val initialContext = tryOrNull { contentIterator.startContext() }
@@ -59,23 +59,23 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             )
         }
 
-        private suspend fun TtsContentIterator.startContext(): UtteranceWindow? {
-            val previousUtterance = previousUtterance()
-            val currentUtterance = nextUtterance()
+        private suspend fun TtsUtteranceIterator.startContext(): UtteranceWindow? {
+            val previousUtterance = previous()
+            val currentUtterance = next()
 
             val startWindow = if (currentUtterance != null) {
                 UtteranceWindow(
                     previousUtterance = previousUtterance,
                     currentUtterance = currentUtterance,
-                    nextUtterance = nextUtterance(),
+                    nextUtterance = next(),
                     ended = false
                 )
             } else {
                 val actualCurrentUtterance = previousUtterance ?: return null
-                val actualPreviousUtterance = previousUtterance()
+                val actualPreviousUtterance = previous()
 
                 // Go back to the end of the iterator.
-                nextUtterance()
+                next()
 
                 UtteranceWindow(
                     previousUtterance = actualPreviousUtterance,
@@ -129,15 +129,14 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         data class Position(
             val resourceIndex: Int,
             val locations: Locator.Locations,
-            val textBefore: String?,
-            val textAfter: String?
+            val text: Locator.Text
         )
     }
 
     private data class UtteranceWindow(
-        val previousUtterance: TtsContentIterator.Utterance?,
-        val currentUtterance: TtsContentIterator.Utterance,
-        val nextUtterance: TtsContentIterator.Utterance?,
+        val previousUtterance: TtsUtteranceIterator.Utterance?,
+        val currentUtterance: TtsUtteranceIterator.Utterance,
+        val nextUtterance: TtsUtteranceIterator.Utterance?,
         val ended: Boolean = false
     )
 
@@ -411,19 +410,19 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         val previousUtterance =
             try {
                 // Get previously currentUtterance once more
-                contentIterator.previousUtterance()
+                contentIterator.previous()
 
                 // Get previously previousUtterance once more
-                contentIterator.previousUtterance()
+                contentIterator.previous()
 
                 // Get new previous utterance
-                val previousUtterance = contentIterator.previousUtterance()
+                val previousUtterance = contentIterator.previous()
 
                 // Go to currentUtterance position
-                contentIterator.nextUtterance()
+                contentIterator.next()
 
                 // Go to nextUtterance position
-                contentIterator.nextUtterance()
+                contentIterator.next()
 
                 previousUtterance
             } catch (e: Exception) {
@@ -448,7 +447,7 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         }
 
         val nextUtterance = try {
-            contentIterator.nextUtterance()
+            contentIterator.next()
         } catch (e: Exception) {
             onContentError(e)
             return
@@ -498,8 +497,8 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         playContinuous()
     }
 
-    private suspend fun speakUtterance(utterance: TtsContentIterator.Utterance): E? =
-        engineFacade.speak(utterance.text, utterance.language, ::onRangeChanged)
+    private suspend fun speakUtterance(utterance: TtsUtteranceIterator.Utterance): E? =
+        engineFacade.speak(utterance.utterance, utterance.language, ::onRangeChanged)
 
     private fun onEngineError(error: E) {
         playbackMutable.value = playbackMutable.value.copy(
@@ -535,15 +534,14 @@ internal class TtsPlayer<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     private fun isPlaying() =
         playbackMutable.value.playWhenReady && playback.value.state == State.Ready
 
-    private fun TtsContentIterator.Utterance.ttsPlayerUtterance(): Utterance =
+    private fun TtsUtteranceIterator.Utterance.ttsPlayerUtterance(): Utterance =
         Utterance(
-            text = text,
+            text = utterance,
             range = null,
             position = Utterance.Position(
                 resourceIndex = resourceIndex,
                 locations = locations,
-                textAfter = textAfter,
-                textBefore = textBefore
+                text = text
             )
         )
 }

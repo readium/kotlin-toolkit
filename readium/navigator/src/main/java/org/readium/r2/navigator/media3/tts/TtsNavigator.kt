@@ -68,7 +68,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
                     ?: ttsEngineProvider.createEmptyPreferences()
 
             val contentIterator =
-                TtsContentIterator(publication, tokenizerFactory, initialLocator)
+                TtsUtteranceIterator(publication, tokenizerFactory, initialLocator)
 
             val ttsEngine =
                 ttsEngineProvider.createEngine(publication, actualInitialPreferences)
@@ -279,28 +279,24 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     private fun TtsPlayer.Utterance.toPosition(): Location {
         val currentLink = publication.readingOrder[position.resourceIndex]
 
-        val utteranceHighlight = publication
+        val utteranceLocator = publication
             .locatorFromLink(currentLink)!!
             .copy(
                 locations = position.locations,
-                text = Locator.Text(
-                    highlight = text,
-                    before = position.textBefore,
-                    after = position.textAfter
-                )
+                text = position.text
             )
 
-        val tokenHighlight = range
-            ?.let { utteranceHighlight.copy(text = utteranceHighlight.text.substring(it)) }
+        val tokenLocator = range
+            ?.let { utteranceLocator.copy(text = utteranceLocator.text.substring(it)) }
 
         return Location(
             href = Href(currentLink.href),
-            textBefore = position.textBefore,
-            textAfter = position.textAfter,
+            textBefore = position.text.before,
+            textAfter = position.text.after,
             utterance = text,
             range = range,
-            utteranceLocator = utteranceHighlight,
-            tokenLocator = tokenHighlight
+            utteranceLocator = utteranceLocator,
+            tokenLocator = tokenLocator
         )
     }
 }
