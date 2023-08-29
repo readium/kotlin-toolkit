@@ -6,12 +6,15 @@
 
 package org.readium.r2.navigator.epub
 
+import java.util.Collections
+import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
+import org.readium.r2.shared.publication.services.positionsByReadingOrder
 
 /**
  * Factory of the EPUB navigator and related components.
@@ -38,8 +41,8 @@ class EpubNavigatorFactory(
         publication.metadata.presentation.layout ?: EpubLayout.REFLOWABLE
 
     fun createFragmentFactory(
-        readingOrder: List<Link> = publication.readingOrder,
         initialLocator: Locator?,
+        readingOrder: List<Link>? = null,
         initialPreferences: EpubPreferences = EpubPreferences(),
         listener: EpubNavigatorFragment.Listener? = null,
         paginationListener: EpubNavigatorFragment.PaginationListener? = null,
@@ -47,9 +50,11 @@ class EpubNavigatorFactory(
     ) = org.readium.r2.navigator.util.createFragmentFactory {
         EpubNavigatorFragment(
             publication = publication,
-            readingOrder = readingOrder,
             baseUrl = null,
             initialLocator = initialLocator,
+            readingOrder = readingOrder ?: publication.readingOrder,
+            positionsByReadingOrder = if (readingOrder == null)
+                Collections.emptyList() else runBlocking { publication.positionsByReadingOrder() },
             initialPreferences = initialPreferences,
             listener = listener,
             paginationListener = paginationListener,

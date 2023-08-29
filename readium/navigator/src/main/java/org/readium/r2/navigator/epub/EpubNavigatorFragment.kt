@@ -67,6 +67,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
+import java.util.Collections
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
@@ -89,9 +90,10 @@ typealias JavascriptInterfaceFactory = (resource: Link) -> Any?
 @OptIn(ExperimentalDecorator::class, ExperimentalReadiumApi::class, DelicateReadiumApi::class)
 class EpubNavigatorFragment internal constructor(
     override val publication: Publication,
-    private val readingOrder: List<Link>,
     private val baseUrl: String?,
     private val initialLocator: Locator?,
+    private val readingOrder: List<Link>,
+    private val positionsByReadingOrder: List<List<Locator>>,
     private val initialPreferences: EpubPreferences,
     internal val listener: Listener?,
     internal val paginationListener: PaginationListener?,
@@ -275,7 +277,6 @@ class EpubNavigatorFragment internal constructor(
         )
     }
 
-    internal lateinit var positionsByReadingOrder: List<List<Locator>>
     internal lateinit var positions: List<Locator>
     lateinit var resourcePager: R2ViewPager
 
@@ -307,9 +308,7 @@ class EpubNavigatorFragment internal constructor(
         _binding = ActivityR2ViewpagerBinding.inflate(inflater, container, false)
         val view = binding.root
 
-        // FIXME: If readingOrder is provided as input to the fragment, we might not want
-        // to map through the publication's readingOrder:
-        positionsByReadingOrder = runBlocking { publication.positionsByReadingOrder() }
+        // If we have a custom reading order we have to skip calculating positions.
         positions = positionsByReadingOrder.flatten()
         publicationIdentifier = publication.metadata.identifier ?: publication.metadata.title
 
@@ -1038,14 +1037,15 @@ class EpubNavigatorFragment internal constructor(
          * if you use a local HTTP server.
          * @param initialLocator The first location which should be visible when rendering the
          * publication. Can be used to restore the last reading location.
+         * @param readingOrder custom reading order
          * @param listener Optional listener to implement to observe events, such as user taps.
          * @param config Additional configuration.
          */
         fun createFactory(
             publication: Publication,
-            readingOrder: List<Link> = publication.readingOrder,
             baseUrl: String? = null,
             initialLocator: Locator? = null,
+            readingOrder: List<Link>? = null,
             listener: Listener? = null,
             paginationListener: PaginationListener? = null,
             config: Configuration = Configuration(),
@@ -1053,7 +1053,11 @@ class EpubNavigatorFragment internal constructor(
         ): FragmentFactory =
             createFragmentFactory {
                 EpubNavigatorFragment(
-                    publication, readingOrder, baseUrl, initialLocator, initialPreferences,
+                    publication, baseUrl, initialLocator,
+                    readingOrder = readingOrder ?: publication.readingOrder,
+                    positionsByReadingOrder = if (readingOrder == null)
+                        Collections.emptyList() else runBlocking { publication.positionsByReadingOrder() },
+                    initialPreferences,
                     listener, paginationListener,
                     epubLayout = publication.metadata.presentation.layout ?: EpubLayout.REFLOWABLE,
                     defaults = EpubDefaults(),
