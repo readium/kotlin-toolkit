@@ -592,7 +592,6 @@ class EpubNavigatorFragment internal constructor(
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
         val locator = publication.locatorFromLink(link) ?: return false
         return go(locator, animated, completion)
-        return false
     }
 
     private fun run(commands: List<RunScriptCommand>) {
