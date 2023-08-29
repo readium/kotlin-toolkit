@@ -86,17 +86,6 @@ interface Navigator {
          * continuous and discontinuous moves.
          */
         fun onJumpToLocator(locator: Locator) {}
-
-        /**
-         * Called when a link to an internal resource was clicked in the navigator.
-         *
-         * You can use this callback to perform custom navigation like opening a new window
-         * or other operations.
-         *
-         * By returning false the navigator wont try to open the link itself and it is up
-         * to the calling app to decide how to display the link.
-         */
-        fun shouldJumpToLink(link: Link): Boolean { return true }
     }
 
     @Deprecated("Use [currentLocator.value] instead", ReplaceWith("currentLocator.value"))
@@ -157,6 +146,17 @@ interface VisualNavigator : Navigator {
          * The [point] is relative to the navigator's view.
          */
         fun onTap(point: PointF): Boolean = false
+
+        /**
+         * Called when a link to an internal resource was clicked in the navigator.
+         *
+         * You can use this callback to perform custom navigation like opening a new window
+         * or other operations.
+         *
+         * By returning false the navigator wont try to open the link itself and it is up
+         * to the calling app to decide how to display the link.
+         */
+        fun onShouldJumpToLink(link: Link): Boolean { return true }
 
         /**
          * Called when the user starts dragging the content, but nothing handled the event
