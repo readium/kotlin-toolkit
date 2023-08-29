@@ -269,6 +269,7 @@ class EpubNavigatorFragment internal constructor(
             requireActivity().application, publication,
             baseUrl = baseUrl, config = this.config,
             initialPreferences = initialPreferences,
+            listener = listener,
             layout = epubLayout,
             defaults = defaults
         )
@@ -589,10 +590,8 @@ class EpubNavigatorFragment internal constructor(
     }
 
     override fun go(link: Link, animated: Boolean, completion: () -> Unit): Boolean {
-        if (listener?.shouldJumpToLink(link) == true) {
-            val locator = publication.locatorFromLink(link) ?: return false
-            return go(locator, animated, completion)
-        }
+        val locator = publication.locatorFromLink(link) ?: return false
+        return go(locator, animated, completion)
         return false
     }
 

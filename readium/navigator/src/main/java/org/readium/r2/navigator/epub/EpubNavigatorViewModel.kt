@@ -52,6 +52,7 @@ internal class EpubNavigatorViewModel(
     val config: EpubNavigatorFragment.Configuration,
     initialPreferences: EpubPreferences,
     val layout: EpubLayout,
+    val listener: VisualNavigator.Listener?,
     private val defaults: EpubDefaults,
     baseUrl: String?,
     private val server: WebViewServer?,
@@ -205,7 +206,9 @@ internal class EpubNavigatorViewModel(
         val href = url.toString()
         val link = internalLinkFromUrl(href)
         if (link != null) {
-            _events.send(Event.GoTo(link))
+            if (listener?.onShouldJumpToLink(link) == true) {
+                _events.send(Event.GoTo(link))
+            }
         } else {
             _events.send(Event.OpenExternalLink(url))
         }
@@ -384,12 +387,13 @@ internal class EpubNavigatorViewModel(
             publication: Publication,
             baseUrl: String?,
             layout: EpubLayout,
+            listener: VisualNavigator.Listener?,
             defaults: EpubDefaults,
             config: EpubNavigatorFragment.Configuration,
             initialPreferences: EpubPreferences
         ) = createViewModelFactory {
             EpubNavigatorViewModel(
-                application, publication, config, initialPreferences, layout,
+                application, publication, config, initialPreferences, layout, listener,
                 defaults = defaults,
                 baseUrl = baseUrl,
                 server = if (baseUrl != null) null
