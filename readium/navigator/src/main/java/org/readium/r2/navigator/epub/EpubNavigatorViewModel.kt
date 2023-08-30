@@ -76,7 +76,7 @@ internal class EpubNavigatorViewModel(
     }
 
     sealed class Event {
-        data class OpenInternalLink(val target: Link) : Event()
+        data class GoTo(val target: Link) : Event()
         data class OpenExternalLink(val url: Uri) : Event()
         /** Refreshes all the resources in the view pager. */
         object InvalidateViewPager : Event()
@@ -205,7 +205,7 @@ internal class EpubNavigatorViewModel(
         val href = url.toString()
         val link = internalLinkFromUrl(href)
         if (link != null) {
-            _events.send(Event.OpenInternalLink(link))
+            _events.send(Event.GoTo(link))
         } else {
             _events.send(Event.OpenExternalLink(url))
         }
