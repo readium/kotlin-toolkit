@@ -13,6 +13,8 @@ import java.net.IDN
 import java.net.URI
 import java.net.URL
 import org.readium.r2.shared.extensions.addPrefix
+import org.readium.r2.shared.extensions.addSuffix
+import org.readium.r2.shared.extensions.tryOrLog
 import timber.log.Timber
 
 /**
@@ -33,11 +35,11 @@ public value class Href private constructor(
          */
         public operator fun invoke(href: String, baseHref: String? = null): Href {
             @Suppress("Name_Shadowing")
-            val baseHref: String = (baseHref?.takeUnless { it.isBlank() } ?: "/")
+            val baseHref: String = (baseHref?.takeUnless { it.isBlank() } ?: "")
                 .removePercentEncoding()
 
             @Suppress("Name_Shadowing")
-            val href = href.removePercentEncoding()
+            var href = href.removePercentEncoding()
 
             // HREF is just an anchor inside the base.
             if (href.isBlank() || href.startsWith("#")) {
@@ -54,25 +56,30 @@ public value class Href private constructor(
                 ?: href.indexOf("#").takeIf { it != -1 }
                 ?: (href.lastIndex + 1)
 
-            return try {
-                val baseUri = URI.create(baseHref.percentEncodedPath())
-                if (baseUri.scheme?.lowercase() == "file") {
-                    return if (href.startsWith("/")) {
-                        Href("file://$href")
-                    } else {
-                        Href("file://" + File(baseUri.path, href).canonicalPath)
+            tryOrLog {
+                if (baseHref != "") {
+                    val baseUri = URI.create(baseHref.percentEncodedPath())
+                    if (baseUri.scheme?.lowercase() == "file") {
+                        return if (href.startsWith("/")) {
+                            Href("file://$href")
+                        } else {
+                            Href("file://" + File(baseUri.path, href).canonicalPath)
+                        }
                     }
-                }
 
-                val path = href.substring(0, splitIndex)
-                val suffix = href.substring(splitIndex)
-                val uri = baseUri.resolve(path.percentEncodedPath())
-                val url = (if (uri.scheme != null) uri.toString() else uri.path) + suffix
-                return Href(url.removePercentEncoding())
-            } catch (e: Exception) {
-                Timber.e(e)
-                Href("$baseHref/$href")
+                    val path = href.substring(0, splitIndex)
+                    val suffix = href.substring(splitIndex)
+                    val uri = baseUri.resolve(path.percentEncodedPath())
+                    val url = (if (uri.scheme != null) uri.toString() else uri.path) + suffix
+                    return Href(url.removePercentEncoding())
+                }
             }
+
+            if (baseHref != "") {
+                href = baseHref.addSuffix("/") + href.removePrefix("/")
+            }
+
+            return Href(href)
         }
 
         private fun String.removePercentEncoding(): String =

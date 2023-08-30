@@ -61,7 +61,7 @@ internal class WebViewServer(
         return when {
             path.startsWith("/publication/") -> {
                 servePublicationResource(
-                    href = path.removePrefix("/publication"),
+                    href = path.removePrefix("/publication/"),
                     range = HttpHeaders(request.requestHeaders).range,
                     css = css
                 )

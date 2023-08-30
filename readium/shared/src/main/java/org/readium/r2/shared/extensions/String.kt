@@ -46,7 +46,19 @@ public fun String.addPrefix(prefix: CharSequence): String {
     if (startsWith(prefix)) {
         return this
     }
-    return "$prefix$this"
+    return prefix.toString() + this
+}
+
+/**
+ * If this string ends with the given [suffix], returns this string.
+ * Otherwise, returns a copy of this string after adding the [suffix].
+ */
+@InternalReadiumApi
+public fun String.addSuffix(suffix: CharSequence): String {
+    if (endsWith(suffix)) {
+        return this
+    }
+    return this + suffix
 }
 
 internal enum class HashAlgorithm(val key: String) {

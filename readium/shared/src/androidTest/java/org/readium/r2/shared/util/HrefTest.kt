@@ -18,7 +18,7 @@ class HrefTest {
         assertEquals("/folder/", Href("", "/folder/").string)
         assertEquals("/", Href("/", "/folder/").string)
 
-        assertEquals("/foo/bar.txt", Href("foo/bar.txt", "").string)
+        assertEquals("foo/bar.txt", Href("foo/bar.txt", "").string)
         assertEquals("/foo/bar.txt", Href("foo/bar.txt", "/").string)
         assertEquals("/foo/bar.txt", Href("foo/bar.txt", "/file.txt").string)
         assertEquals("/foo/bar.txt", Href("foo/bar.txt", "/folder").string)
@@ -73,7 +73,6 @@ class HrefTest {
             Href("/foo/bar.txt", "file:///root/folder/").string
         )
 
-        assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "").string)
         assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "/").string)
         assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "/file.txt").string)
         assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "/folder").string)
@@ -104,7 +103,7 @@ class HrefTest {
             Href("../foo/bar.txt", "file:///root/folder/").string
         )
 
-        assertEquals("/bar.txt", Href("foo/../bar.txt", "").string)
+        assertEquals("bar.txt", Href("foo/../bar.txt", "").string)
         assertEquals("/bar.txt", Href("foo/../bar.txt", "/").string)
         assertEquals("/bar.txt", Href("foo/../bar.txt", "/file.txt").string)
         assertEquals("/bar.txt", Href("foo/../bar.txt", "/folder").string)
@@ -192,7 +191,7 @@ class HrefTest {
         )
 
         // HREF that is just an anchor
-        assertEquals("/#anchor", Href("#anchor", "").string)
+        assertEquals("#anchor", Href("#anchor", "").string)
         assertEquals("/#anchor", Href("#anchor", "/").string)
         assertEquals("/file.txt#anchor", Href("#anchor", "/file.txt").string)
         assertEquals("/folder#anchor", Href("#anchor", "/folder").string)
@@ -223,7 +222,7 @@ class HrefTest {
         )
 
         // HREF containing spaces.
-        assertEquals("/foo bar.txt", Href("foo bar.txt", "").string)
+        assertEquals("foo bar.txt", Href("foo bar.txt", "").string)
         assertEquals("/foo bar.txt", Href("foo bar.txt", "/").string)
         assertEquals("/foo bar.txt", Href("foo bar.txt", "/file.txt").string)
         assertEquals("/foo bar.txt", Href("foo bar.txt", "/base folder").string)
@@ -322,7 +321,7 @@ class HrefTest {
         assertEquals("/folder/", Href("", "/folder/").percentEncodedString)
         assertEquals("/", Href("/", "/folder/").percentEncodedString)
 
-        assertEquals("/foo/bar.txt", Href("foo/bar.txt", "").percentEncodedString)
+        assertEquals("foo/bar.txt", Href("foo/bar.txt", "").percentEncodedString)
         assertEquals("/foo/bar.txt", Href("foo/bar.txt", "/").percentEncodedString)
         assertEquals(
             "/foo/bar.txt",
@@ -418,7 +417,6 @@ class HrefTest {
             Href("/foo/bar.txt", "file:///root/folder/").percentEncodedString
         )
 
-        assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "").percentEncodedString)
         assertEquals(
             "/foo/bar.txt",
             Href("../foo/bar.txt", "/").percentEncodedString
@@ -470,7 +468,7 @@ class HrefTest {
             Href("../foo/bar.txt", "file:///root/folder/").percentEncodedString
         )
 
-        assertEquals("/bar.txt", Href("foo/../bar.txt", "").percentEncodedString)
+        assertEquals("bar.txt", Href("foo/../bar.txt", "").percentEncodedString)
         assertEquals("/bar.txt", Href("foo/../bar.txt", "/").percentEncodedString)
         assertEquals(
             "/bar.txt",
@@ -594,7 +592,7 @@ class HrefTest {
         )
 
         // HREF that is just an anchor
-        assertEquals("/#anchor", Href("#anchor", "").percentEncodedString)
+        assertEquals("#anchor", Href("#anchor", "").percentEncodedString)
         assertEquals("/#anchor", Href("#anchor", "/").percentEncodedString)
         assertEquals(
             "/file.txt#anchor",
@@ -637,7 +635,7 @@ class HrefTest {
         )
 
         // HREF containing spaces.
-        assertEquals("/foo%20bar.txt", Href("foo bar.txt", "").percentEncodedString)
+        assertEquals("foo%20bar.txt", Href("foo bar.txt", "").percentEncodedString)
         assertEquals("/foo%20bar.txt", Href("foo bar.txt", "/").percentEncodedString)
         assertEquals(
             "/foo%20bar.txt",

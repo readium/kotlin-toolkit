@@ -201,7 +201,7 @@ internal class EpubNavigatorViewModel(
 
         val href = url.removePrefix(baseUrl)
         return publication.linkWithHref(href)
-            // Query parameters must be kept as they might be relevant for the fetcher.
+            // Query parameters must be kept as they might be relevant for the container.
             ?.copy(href = href)
     }
 
