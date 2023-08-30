@@ -280,10 +280,7 @@ public class Publication(
             ),
             level = DeprecationLevel.ERROR
         )
-        public fun fromJSON(
-            json: JSONObject?,
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity
-        ): Publication? {
+        public fun fromJSON(json: JSONObject?): Publication? {
             throw NotImplementedError()
         }
     }

@@ -29,18 +29,6 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 /**
- * Function used to recursively transform the href of a [Link] when parsing its JSON
- * representation.
- */
-
-public typealias LinkHrefNormalizer = (String) -> String
-
-/**
- * Default href normalizer for [Link], doing nothing.
- */
-public val LinkHrefNormalizerIdentity: LinkHrefNormalizer = { it }
-
-/**
  * Link Object for the Readium Web Publication Manifest.
  * https://readium.org/webpub-manifest/schema/link.schema.json
  *
@@ -139,14 +127,12 @@ public data class Link(
 
         /**
          * Creates an [Link] from its RWPM JSON representation.
-         * It's [href] and its children's recursively will be normalized using the provided
-         * [normalizeHref] closure.
+         *
          * If the link can't be parsed, a warning will be logged with [warnings].
          */
         public fun fromJSON(
             json: JSONObject?,
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): Link? {
             val href = json?.optNullableString("href")
@@ -156,7 +142,7 @@ public data class Link(
             }
 
             return Link(
-                href = normalizeHref(href),
+                href = href,
                 mediaType = json.optNullableString("type")
                     ?.let { mediaTypeRetriever.retrieve(it) },
                 templated = json.optBoolean("templated", false),
@@ -170,34 +156,29 @@ public data class Link(
                 languages = json.optStringsFromArrayOrSingle("language"),
                 alternates = fromJSONArray(
                     json.optJSONArray("alternate"),
-                    mediaTypeRetriever,
-                    normalizeHref
+                    mediaTypeRetriever
                 ),
                 children = fromJSONArray(
                     json.optJSONArray("children"),
-                    mediaTypeRetriever,
-                    normalizeHref
+                    mediaTypeRetriever
                 )
             )
         }
 
         /**
          * Creates a list of [Link] from its RWPM JSON representation.
-         * It's [href] and its children's recursively will be normalized using the provided
-         * [normalizeHref] closure.
+         *
          * If a link can't be parsed, a warning will be logged with [warnings].
          */
         public fun fromJSONArray(
             json: JSONArray?,
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): List<Link> {
             return json.parseObjects {
                 fromJSON(
                     it as? JSONObject,
                     mediaTypeRetriever,
-                    normalizeHref,
                     warnings
                 )
             }

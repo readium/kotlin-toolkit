@@ -72,14 +72,11 @@ public data class Subject(
          * Parses a [Subject] from its RWPM JSON representation.
          *
          * A subject can be parsed from a single string, or a full-fledged object.
-         * The [links]' href and their children's will be normalized recursively using the
-         * provided [normalizeHref] closure.
          * If the subject can't be parsed, a warning will be logged with [warnings].
          */
         public fun fromJSON(
             json: Any?,
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): Subject? {
             json ?: return null
@@ -103,7 +100,6 @@ public data class Subject(
                 links = Link.fromJSONArray(
                     jsonObject.optJSONArray("links"),
                     mediaTypeRetriever,
-                    normalizeHref,
                     warnings
                 )
             )
@@ -112,14 +108,11 @@ public data class Subject(
         /**
          * Creates a list of [Subject] from its RWPM JSON representation.
          *
-         * The [links]' href and their children's will be normalized recursively using the
-         * provided [normalizeHref] closure.
          * If a subject can't be parsed, a warning will be logged with [warnings].
          */
         public fun fromJSONArray(
             json: Any?,
             mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever(),
-            normalizeHref: LinkHrefNormalizer = LinkHrefNormalizerIdentity,
             warnings: WarningLogger? = null
         ): List<Subject> {
             return when (json) {
@@ -128,13 +121,12 @@ public data class Subject(
                         fromJSON(
                             it,
                             mediaTypeRetriever,
-                            normalizeHref,
                             warnings
                         )
                     }
 
                 is JSONArray ->
-                    json.parseObjects { fromJSON(it, mediaTypeRetriever, normalizeHref, warnings) }
+                    json.parseObjects { fromJSON(it, mediaTypeRetriever, warnings) }
 
                 else -> emptyList()
             }

@@ -160,27 +160,11 @@ public data class Manifest(
         ): Manifest? {
             json ?: return null
 
-            val baseUrl =
-                Link.fromJSONArray(
-                    json.optJSONArray("links"),
-                    mediaTypeRetriever,
-                    warnings = warnings
-                )
-                    .firstWithRel("self")
-                    ?.href
-                    ?.toUrlOrNull()
-                    ?.removeLastComponent()
-                    ?.toString()
-                    ?: "/"
-
-            val normalizeHref = { href: String -> Href(href, baseUrl).string }
-
             val context = json.optStringsFromArrayOrSingle("@context", remove = true)
 
             val metadata = Metadata.fromJSON(
                 json.remove("metadata") as? JSONObject,
                 mediaTypeRetriever,
-                normalizeHref,
                 warnings
             )
             if (metadata == null) {
@@ -191,7 +175,6 @@ public data class Manifest(
             val links = Link.fromJSONArray(
                 json.remove("links") as? JSONArray,
                 mediaTypeRetriever,
-                normalizeHref,
                 warnings
             )
 
@@ -200,7 +183,6 @@ public data class Manifest(
             val readingOrder = Link.fromJSONArray(
                 readingOrderJSON,
                 mediaTypeRetriever,
-                normalizeHref,
                 warnings
             )
                 .filter { it.mediaType != null }
@@ -208,7 +190,6 @@ public data class Manifest(
             val resources = Link.fromJSONArray(
                 json.remove("resources") as? JSONArray,
                 mediaTypeRetriever,
-                normalizeHref,
                 warnings
             )
                 .filter { it.mediaType != null }
@@ -216,7 +197,6 @@ public data class Manifest(
             val tableOfContents = Link.fromJSONArray(
                 json.remove("toc") as? JSONArray,
                 mediaTypeRetriever,
-                normalizeHref,
                 warnings
             )
 
@@ -224,7 +204,6 @@ public data class Manifest(
             val subcollections = PublicationCollection.collectionsFromJSON(
                 json,
                 mediaTypeRetriever,
-                normalizeHref,
                 warnings
             )
 
