@@ -50,7 +50,6 @@ public class EpubParser(
 
         val opfPath = getRootFilePath(asset.container)
             .getOrElse { return Try.failure(it) }
-            .addPrefix("/")
         val opfXmlDocument = asset.container.get(opfPath).readAsXml()
             .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
         val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath, mediaTypeRetriever)
@@ -92,7 +91,7 @@ public class EpubParser(
     }
 
     private suspend fun getRootFilePath(container: Container): Try<String, PublicationParser.Error> =
-        container.get("/META-INF/container.xml")
+        container.get("META-INF/container.xml")
             .use { it.readAsXml() }
             .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
             .getFirst("rootfiles", Namespaces.OPC)
@@ -102,7 +101,7 @@ public class EpubParser(
             ?: Try.failure(PublicationParser.Error.ParsingFailed("Cannot successfully parse OPF."))
 
     private suspend fun parseEncryptionData(container: Container): Map<String, Encryption> =
-        container.readAsXmlOrNull("/META-INF/encryption.xml")
+        container.readAsXmlOrNull("META-INF/encryption.xml")
             ?.let { EncryptionParser.parse(it) }
             ?: emptyMap()
 
@@ -142,8 +141,8 @@ public class EpubParser(
 
     private suspend fun parseDisplayOptions(container: Container): Map<String, String> {
         val displayOptionsXml =
-            container.readAsXmlOrNull("/META-INF/com.apple.ibooks.display-options.xml")
-                ?: container.readAsXmlOrNull("/META-INF/com.kobobooks.display-options.xml")
+            container.readAsXmlOrNull("META-INF/com.apple.ibooks.display-options.xml")
+                ?: container.readAsXmlOrNull("META-INF/com.kobobooks.display-options.xml")
 
         return displayOptionsXml?.getFirst("platform", "")
             ?.get("option", "")

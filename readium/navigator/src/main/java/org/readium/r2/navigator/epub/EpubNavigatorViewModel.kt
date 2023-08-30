@@ -174,7 +174,7 @@ internal class EpubNavigatorViewModel(
                 href
             } else {
                 Href(
-                    href = href.removePrefix("/"),
+                    href = href,
                     baseHref = baseUrl
                 ).percentEncodedString
             }
@@ -199,7 +199,7 @@ internal class EpubNavigatorViewModel(
     fun internalLinkFromUrl(url: String): Link? {
         if (!url.startsWith(baseUrl)) return null
 
-        val href = url.removePrefix(baseUrl).addPrefix("/")
+        val href = url.removePrefix(baseUrl)
         return publication.linkWithHref(href)
             // Query parameters must be kept as they might be relevant for the fetcher.
             ?.copy(href = href)

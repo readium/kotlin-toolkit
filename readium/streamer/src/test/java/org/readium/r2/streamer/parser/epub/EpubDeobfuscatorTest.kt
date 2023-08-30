@@ -41,7 +41,7 @@ class EpubDeobfuscatorTest {
     }
 
     private val font = requireNotNull(
-        container.get("/cut-cut.woff").readBlocking().getOrNull()
+        container.get("cut-cut.woff").readBlocking().getOrNull()
     )
 
     private fun deobfuscate(path: String, algorithm: String?): Resource {

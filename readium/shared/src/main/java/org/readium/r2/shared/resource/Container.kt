@@ -20,9 +20,7 @@ public interface Container : SuspendingCloseable {
     public interface Entry : Resource {
 
         /**
-         * Absolute path to the entry in the archive.
-         *
-         * It MUST start with /.
+         * Entry path relative to the root of the archive.
          */
         public val path: String
     }

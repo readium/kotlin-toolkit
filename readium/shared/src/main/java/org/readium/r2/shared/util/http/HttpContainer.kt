@@ -31,7 +31,7 @@ public class HttpContainer(
     override suspend fun entries(): Set<Container.Entry>? = null
 
     override fun get(path: String): Container.Entry {
-        val url = Href(path.removePrefix("/"), baseHref = baseUrl ?: "/").toUrl()
+        val url = Href(path, baseHref = baseUrl ?: "/").toUrl()
 
         return if (url == null || !url.isHttp()) {
             val cause = IllegalArgumentException("Invalid HREF: $path, produced URL: $url")

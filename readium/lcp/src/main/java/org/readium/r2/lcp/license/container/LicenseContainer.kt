@@ -65,9 +65,9 @@ internal fun createLicenseContainer(
     mediaType: MediaType
 ): LicenseContainer {
     val licensePath = when (mediaType) {
-        MediaType.EPUB -> LICENSE_IN_EPUB.addPrefix("/")
+        MediaType.EPUB -> LICENSE_IN_EPUB
         // Assuming it's a Readium WebPub package (e.g. audiobook, LCPDF, etc.) as a fallback
-        else -> LICENSE_IN_RPF.addPrefix("/")
+        else -> LICENSE_IN_RPF
     }
     return ContainerLicenseContainer(container, licensePath)
 }

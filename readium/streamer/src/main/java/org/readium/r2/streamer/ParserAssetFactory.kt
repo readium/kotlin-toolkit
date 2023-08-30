@@ -86,7 +86,7 @@ internal class ParserAssetFactory(
 
         val container =
             RoutingContainer(
-                local = ResourceContainer(path = "/manifest.json", asset.resource),
+                local = ResourceContainer(path = "manifest.json", asset.resource),
                 remote = HttpContainer(httpClient, baseUrl)
             )
 

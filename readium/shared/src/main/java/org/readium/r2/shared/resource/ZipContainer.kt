@@ -115,7 +115,7 @@ internal class JavaZipContainer(
     private inner class Entry(private val entry: ZipEntry) : Container.Entry {
 
         override val path: String =
-            entry.name.addPrefix("/")
+            entry.name
 
         override val source: Url? = null
 
@@ -218,7 +218,7 @@ internal class JavaZipContainer(
             .toSet()
 
     override fun get(path: String): Container.Entry =
-        archive.getEntry(path.removePrefix("/"))
+        archive.getEntry(path)
             ?.let { Entry(it) }
             ?: FailureEntry(path)
 

@@ -78,9 +78,9 @@ class ImageParserTest {
         val builder = parser.parseBlocking(cbzAsset)
         assertNotNull(builder)
         val readingOrder = builder!!.manifest.readingOrder
-            .map { it.href.removePrefix("/Cory Doctorow's Futuristic Tales of the Here and Now") }
+            .map { it.href.removePrefix("Cory Doctorow's Futuristic Tales of the Here and Now/") }
         assertThat(readingOrder)
-            .containsExactly("/a-fc.jpg", "/x-002.jpg", "/x-003.jpg", "/x-004.jpg")
+            .containsExactly("a-fc.jpg", "x-002.jpg", "x-003.jpg", "x-004.jpg")
     }
 
     @Test
@@ -89,7 +89,7 @@ class ImageParserTest {
         assertNotNull(builder)
         with(builder!!.manifest.readingOrder) {
             assertEquals(
-                "/Cory Doctorow's Futuristic Tales of the Here and Now/a-fc.jpg",
+                "Cory Doctorow's Futuristic Tales of the Here and Now/a-fc.jpg",
                 firstWithRel("cover")?.href
             )
         }

@@ -38,7 +38,7 @@ class ContainerEntryTest {
     @Test
     fun `pathCommonFirstComponent is null when files are in the root`() {
         assertNull(
-            listOf(Entry("/im1.jpg"), Entry("/im2.jpg"), Entry("/toc.xml"))
+            listOf(Entry("im1.jpg"), Entry("im2.jpg"), Entry("toc.xml"))
                 .pathCommonFirstComponent()
         )
     }
@@ -46,7 +46,7 @@ class ContainerEntryTest {
     @Test
     fun `pathCommonFirstComponent is null when files are in different directories`() {
         assertNull(
-            listOf(Entry("/dir1/im1.jpg"), Entry("/dir2/im2.jpg"), Entry("/toc.xml"))
+            listOf(Entry("dir1/im1.jpg"), Entry("dir2/im2.jpg"), Entry("toc.xml"))
                 .pathCommonFirstComponent()
         )
     }
@@ -55,7 +55,7 @@ class ContainerEntryTest {
     fun `pathCommonFirstComponent is correct when there is only one file in the root`() {
         assertEquals(
             "im1.jpg",
-            listOf(Entry("/im1.jpg")).pathCommonFirstComponent()?.name
+            listOf(Entry("im1.jpg")).pathCommonFirstComponent()?.name
         )
     }
 
@@ -64,9 +64,9 @@ class ContainerEntryTest {
         assertEquals(
             "root",
             listOf(
-                Entry("/root/im1.jpg"),
-                Entry("/root/im2.jpg"),
-                Entry("/root/xml/toc.xml")
+                Entry("root/im1.jpg"),
+                Entry("root/im2.jpg"),
+                Entry("root/xml/toc.xml")
             ).pathCommonFirstComponent()?.name
         )
     }

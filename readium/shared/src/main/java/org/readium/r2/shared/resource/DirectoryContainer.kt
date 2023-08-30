@@ -30,7 +30,7 @@ internal class DirectoryContainer(
         Container.Entry, Resource by FileResource(file, mediaTypeRetriever) {
 
         override val path: String =
-            file.relativeTo(root).path.addPrefix("/")
+            file.relativeTo(root).path
 
         override suspend fun close() {}
     }
@@ -39,7 +39,7 @@ internal class DirectoryContainer(
         entries.map { FileEntry(it) }.toSet()
 
     override fun get(path: String): Container.Entry {
-        val file = File(root, path.removePrefix("/"))
+        val file = File(root, path)
 
         return if (!root.isParentOf(file)) {
             FailureResource(Resource.Exception.NotFound()).toEntry(path)

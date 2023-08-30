@@ -30,7 +30,7 @@ internal suspend fun Container.guessTitle(): String? {
     val firstEntry = entries.firstOrNull() ?: return null
     val commonFirstComponent = entries.pathCommonFirstComponent() ?: return null
 
-    if (commonFirstComponent.name == firstEntry.path.removePrefix("/")) {
+    if (commonFirstComponent.name == firstEntry.path) {
         return null
     }
 
@@ -39,7 +39,7 @@ internal suspend fun Container.guessTitle(): String? {
 
 /** Returns a [File] to the directory containing all paths, if there is such a directory. */
 internal fun Iterable<Container.Entry>.pathCommonFirstComponent(): File? =
-    map { it.path.removePrefix("/").substringBefore("/") }
+    map { it.path.substringBefore("/") }
         .distinct()
         .takeIf { it.size == 1 }
         ?.firstOrNull()

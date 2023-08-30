@@ -62,8 +62,8 @@ public class AdeptFallbackContentProtection : ContentProtection {
         if (!asset.mediaType.matches(MediaType.EPUB)) {
             return false
         }
-        val rightsXml = asset.container.get("/META-INF/rights.xml").readAsXmlOrNull()
-        val encryptionXml = asset.container.get("/META-INF/encryption.xml").readAsXmlOrNull()
+        val rightsXml = asset.container.get("META-INF/rights.xml").readAsXmlOrNull()
+        val encryptionXml = asset.container.get("META-INF/encryption.xml").readAsXmlOrNull()
 
         return encryptionXml != null && (
             rightsXml?.namespace == "http://ns.adobe.com/adept" ||

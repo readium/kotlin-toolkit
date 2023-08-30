@@ -42,7 +42,7 @@ internal class ChannelZipContainer(
 
     private inner class Entry(private val entry: ZipArchiveEntry) : Container.Entry {
 
-        override val path: String = entry.name.addPrefix("/")
+        override val path: String = entry.name
 
         override val source: Url? get() = null
 
@@ -149,7 +149,7 @@ internal class ChannelZipContainer(
             .toSet()
 
     override fun get(path: String): Container.Entry =
-        archive.getEntry(path.removePrefix("/"))
+        archive.getEntry(path)
             ?.takeUnless { it.isDirectory }
             ?.let { Entry(it) }
             ?: FailureEntry(path)
