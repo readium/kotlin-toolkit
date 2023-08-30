@@ -308,7 +308,6 @@ class EpubNavigatorFragment internal constructor(
         _binding = ActivityR2ViewpagerBinding.inflate(inflater, container, false)
         val view = binding.root
 
-        // If we have a custom reading order we have to skip calculating positions.
         positions = positionsByReadingOrder.flatten()
         publicationIdentifier = publication.metadata.identifier ?: publication.metadata.title
 
