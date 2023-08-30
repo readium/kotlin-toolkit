@@ -490,7 +490,7 @@ class EpubNavigatorFragment internal constructor(
             is EpubNavigatorViewModel.Event.RunScript -> {
                 run(event.command)
             }
-            is EpubNavigatorViewModel.Event.GoTo -> {
+            is EpubNavigatorViewModel.Event.OpenInternalLink -> {
                 go(event.target)
             }
             EpubNavigatorViewModel.Event.InvalidateViewPager -> {
