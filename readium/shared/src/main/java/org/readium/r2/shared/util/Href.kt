@@ -67,7 +67,7 @@ public value class Href private constructor(
                 val path = href.substring(0, splitIndex)
                 val suffix = href.substring(splitIndex)
                 val uri = baseUri.resolve(path.percentEncodedPath())
-                val url = (if (uri.scheme != null) uri.toString() else uri.path.addPrefix("/")) + suffix
+                val url = (if (uri.scheme != null) uri.toString() else uri.path) + suffix
                 return Href(url.removePercentEncoding())
             } catch (e: Exception) {
                 Timber.e(e)
@@ -129,7 +129,7 @@ public value class Href private constructor(
             return result
         } catch (e: Exception) {
             Timber.e(e)
-            href
+            href.percentEncodedPath()
         }
     }
 

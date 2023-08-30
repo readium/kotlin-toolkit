@@ -23,6 +23,9 @@ class HrefTest {
         assertEquals("/foo/bar.txt", Href("foo/bar.txt", "/file.txt").string)
         assertEquals("/foo/bar.txt", Href("foo/bar.txt", "/folder").string)
         assertEquals("/folder/foo/bar.txt", Href("foo/bar.txt", "/folder/").string)
+        assertEquals("foo/bar.txt", Href("foo/bar.txt", "file.txt").string)
+        assertEquals("foo/bar.txt", Href("foo/bar.txt", "folder").string)
+        assertEquals("folder/foo/bar.txt", Href("foo/bar.txt", "folder/").string)
         assertEquals(
             "http://example.com/folder/foo/bar.txt",
             Href("foo/bar.txt", "http://example.com/folder/file.txt").string
@@ -75,6 +78,7 @@ class HrefTest {
         assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "/file.txt").string)
         assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "/folder").string)
         assertEquals("/foo/bar.txt", Href("../foo/bar.txt", "/folder/").string)
+        assertEquals("foo/bar.txt", Href("../foo/bar.txt", "folder/").string)
         assertEquals(
             "http://example.com/foo/bar.txt",
             Href("../foo/bar.txt", "http://example.com/folder/file.txt").string
@@ -105,6 +109,9 @@ class HrefTest {
         assertEquals("/bar.txt", Href("foo/../bar.txt", "/file.txt").string)
         assertEquals("/bar.txt", Href("foo/../bar.txt", "/folder").string)
         assertEquals("/folder/bar.txt", Href("foo/../bar.txt", "/folder/").string)
+        assertEquals("bar.txt", Href("foo/../bar.txt", "file.txt").string)
+        assertEquals("bar.txt", Href("foo/../bar.txt", "folder").string)
+        assertEquals("folder/bar.txt", Href("foo/../bar.txt", "folder/").string)
         assertEquals(
             "http://example.com/folder/bar.txt",
             Href("foo/../bar.txt", "http://example.com/folder/file.txt").string
@@ -229,7 +236,7 @@ class HrefTest {
             Href("foo bar.txt", "/base folder/file.txt").string
         )
         assertEquals(
-            "/base folder/foo bar.txt",
+            "base folder/foo bar.txt",
             Href("foo bar.txt", "base folder/file.txt").string
         )
 
@@ -330,6 +337,18 @@ class HrefTest {
             Href("foo/bar.txt", "/folder/").percentEncodedString
         )
         assertEquals(
+            "foo/bar.txt",
+            Href("foo/bar.txt", "file.txt").percentEncodedString
+        )
+        assertEquals(
+            "foo/bar.txt",
+            Href("foo/bar.txt", "folder").percentEncodedString
+        )
+        assertEquals(
+            "folder/foo/bar.txt",
+            Href("foo/bar.txt", "folder/").percentEncodedString
+        )
+        assertEquals(
             "http://example.com/folder/foo/bar.txt",
             Href(
                 "foo/bar.txt",
@@ -366,6 +385,10 @@ class HrefTest {
         assertEquals(
             "/foo/bar.txt",
             Href("/foo/bar.txt", "/folder/").percentEncodedString
+        )
+        assertEquals(
+            "/foo/bar.txt",
+            Href("/foo/bar.txt", "folder/").percentEncodedString
         )
         assertEquals(
             "http://example.com/foo/bar.txt",
@@ -413,6 +436,10 @@ class HrefTest {
             Href("../foo/bar.txt", "/folder/").percentEncodedString
         )
         assertEquals(
+            "foo/bar.txt",
+            Href("../foo/bar.txt", "folder/").percentEncodedString
+        )
+        assertEquals(
             "http://example.com/foo/bar.txt",
             Href(
                 "../foo/bar.txt",
@@ -456,6 +483,18 @@ class HrefTest {
         assertEquals(
             "/folder/bar.txt",
             Href("foo/../bar.txt", "/folder/").percentEncodedString
+        )
+        assertEquals(
+            "bar.txt",
+            Href("foo/../bar.txt", "file.txt").percentEncodedString
+        )
+        assertEquals(
+            "bar.txt",
+            Href("foo/../bar.txt", "folder").percentEncodedString
+        )
+        assertEquals(
+            "folder/bar.txt",
+            Href("foo/../bar.txt", "folder/").percentEncodedString
         )
         assertEquals(
             "http://example.com/folder/bar.txt",
@@ -617,7 +656,7 @@ class HrefTest {
             Href("foo bar.txt", "/base folder/file.txt").percentEncodedString
         )
         assertEquals(
-            "/base%20folder/foo%20bar.txt",
+            "base%20folder/foo%20bar.txt",
             Href("foo bar.txt", "base folder/file.txt").percentEncodedString
         )
 

@@ -338,7 +338,7 @@ class MetadataMiscTest {
     @Test
     fun `Cover link is rightly identified`() {
         val expected = SharedLink(
-            href = "/OEBPS/cover.jpg",
+            href = "OEBPS/cover.jpg",
             mediaType = MediaType.JPEG,
             rels = setOf("cover")
         )

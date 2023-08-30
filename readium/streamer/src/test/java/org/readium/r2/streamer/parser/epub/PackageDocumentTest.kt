@@ -144,11 +144,11 @@ class LinkTest {
     fun `readingOrder is rightly computed`() {
         assertThat(resourcesPub.readingOrder).containsExactly(
             Link(
-                href = "/titlepage.xhtml",
+                href = "titlepage.xhtml",
                 mediaType = MediaType.XHTML
             ),
             Link(
-                href = "/OEBPS/chapter01.xhtml",
+                href = "OEBPS/chapter01.xhtml",
                 mediaType = MediaType.XHTML
             )
         )
@@ -158,42 +158,42 @@ class LinkTest {
     fun `resources are rightly computed`() {
         assertThat(resourcesPub.resources).containsExactlyInAnyOrder(
             Link(
-                href = "/OEBPS/fonts/MinionPro.otf",
+                href = "OEBPS/fonts/MinionPro.otf",
                 mediaType = MediaType("application/vnd.ms-opentype")!!
             ),
             Link(
-                href = "/OEBPS/nav.xhtml",
+                href = "OEBPS/nav.xhtml",
                 mediaType = MediaType.XHTML,
                 rels = setOf("contents")
             ),
             Link(
-                href = "/style.css",
+                href = "style.css",
                 mediaType = MediaType.CSS
             ),
             Link(
-                href = "/OEBPS/chapter01.smil",
+                href = "OEBPS/chapter01.smil",
                 mediaType = MediaType.SMIL
             ),
             Link(
-                href = "/OEBPS/chapter02.smil",
+                href = "OEBPS/chapter02.smil",
                 mediaType = MediaType.SMIL,
                 duration = 1949.0
             ),
             Link(
-                href = "/OEBPS/images/alice01a.png",
+                href = "OEBPS/images/alice01a.png",
                 mediaType = MediaType.PNG,
                 rels = setOf("cover")
             ),
             Link(
-                href = "/OEBPS/images/alice02a.gif",
+                href = "OEBPS/images/alice02a.gif",
                 mediaType = MediaType.GIF
             ),
             Link(
-                href = "/OEBPS/chapter02.xhtml",
+                href = "OEBPS/chapter02.xhtml",
                 mediaType = MediaType.XHTML
             ),
             Link(
-                href = "/OEBPS/nomediatype.txt"
+                href = "OEBPS/nomediatype.txt"
             )
         )
     }
@@ -204,15 +204,15 @@ class LinkMiscTest {
     fun `Fallbacks are mapped to alternates`() {
         assertThat(parsePackageDocument("package/fallbacks.opf")).isEqualTo(
             Link(
-                href = "/OEBPS/chap1_docbook.xml",
+                href = "OEBPS/chap1_docbook.xml",
                 mediaType = MediaType("application/docbook+xml")!!,
                 alternates = listOf(
                     Link(
-                        href = "/OEBPS/chap1.xml",
+                        href = "OEBPS/chap1.xml",
                         mediaType = MediaType("application/z3998-auth+xml")!!,
                         alternates = listOf(
                             Link(
-                                href = "/OEBPS/chap1.xhtml",
+                                href = "OEBPS/chap1.xhtml",
                                 mediaType = MediaType.XHTML
                             )
                         )
