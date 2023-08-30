@@ -67,7 +67,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
-import java.util.Collections
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
@@ -92,8 +91,7 @@ class EpubNavigatorFragment internal constructor(
     override val publication: Publication,
     private val baseUrl: String?,
     private val initialLocator: Locator?,
-    private val readingOrder: List<Link>,
-    private val positionsByReadingOrder: List<List<Locator>>,
+    private val readingOrder: List<Link>?,
     private val initialPreferences: EpubPreferences,
     internal val listener: Listener?,
     internal val paginationListener: PaginationListener?,
@@ -277,6 +275,10 @@ class EpubNavigatorFragment internal constructor(
         )
     }
 
+    private val positionsByReadingOrder: List<List<Locator>> =
+        if (readingOrder == null) emptyList()
+        else runBlocking { publication.positionsByReadingOrder() }
+
     internal lateinit var positions: List<Locator>
     lateinit var resourcePager: R2ViewPager
 
@@ -313,7 +315,7 @@ class EpubNavigatorFragment internal constructor(
 
         when (viewModel.layout) {
             EpubLayout.REFLOWABLE -> {
-                resourcesSingle = readingOrder.mapIndexed { index, link ->
+                resourcesSingle = (readingOrder ?: publication.readingOrder).mapIndexed { index, link ->
                     PageResource.EpubReflowable(
                         link = link,
                         url = viewModel.urlTo(link),
@@ -330,7 +332,7 @@ class EpubNavigatorFragment internal constructor(
                 var doublePageLeft: Link? = null
                 var doublePageRight: Link? = null
 
-                for ((index, link) in readingOrder.withIndex()) {
+                for ((index, link) in (readingOrder ?: publication.readingOrder).withIndex()) {
                     val url = viewModel.urlTo(link)
                     resourcesSingle.add(PageResource.EpubFxl(leftLink = link, leftUrl = url))
 
@@ -882,7 +884,7 @@ class EpubNavigatorFragment internal constructor(
         locatorToResourceAtIndex(resourcePager.currentItem + 1)
 
     private fun locatorToResourceAtIndex(index: Int): Locator? =
-        readingOrder.getOrNull(index)
+        (readingOrder ?: publication.readingOrder).getOrNull(index)
             ?.let { publication.locatorFromLink(it) }
 
     private val r2PagerAdapter: R2PagerAdapter?
@@ -920,7 +922,7 @@ class EpubNavigatorFragment internal constructor(
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
     private val _currentLocator = MutableStateFlow(
         initialLocator
-            ?: requireNotNull(publication.locatorFromLink(readingOrder.first()))
+            ?: requireNotNull(publication.locatorFromLink((readingOrder ?: publication.readingOrder).first()))
     )
 
     /**
@@ -931,7 +933,7 @@ class EpubNavigatorFragment internal constructor(
     override suspend fun firstVisibleElementLocator(): Locator? {
         if (!::resourcePager.isInitialized) return null
 
-        val resource = readingOrder[resourcePager.currentItem]
+        val resource = (readingOrder ?: publication.readingOrder)[resourcePager.currentItem]
         return currentReflowablePageFragment?.webView?.findFirstVisibleLocator()
             ?.copy(
                 href = resource.href,
@@ -1052,11 +1054,7 @@ class EpubNavigatorFragment internal constructor(
         ): FragmentFactory =
             createFragmentFactory {
                 EpubNavigatorFragment(
-                    publication, baseUrl, initialLocator,
-                    readingOrder = readingOrder ?: publication.readingOrder,
-                    positionsByReadingOrder = if (readingOrder == null)
-                        Collections.emptyList() else runBlocking { publication.positionsByReadingOrder() },
-                    initialPreferences,
+                    publication, baseUrl, initialLocator, readingOrder, initialPreferences,
                     listener, paginationListener,
                     epubLayout = publication.metadata.presentation.layout ?: EpubLayout.REFLOWABLE,
                     defaults = EpubDefaults(),
