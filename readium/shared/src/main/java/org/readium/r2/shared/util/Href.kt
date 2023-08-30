@@ -13,6 +13,7 @@ import java.net.IDN
 import java.net.URI
 import java.net.URL
 import org.readium.r2.shared.extensions.addPrefix
+import org.readium.r2.shared.extensions.tryOrLog
 import timber.log.Timber
 
 /**
@@ -36,42 +37,39 @@ public value class Href private constructor(
             val baseHref: String = (baseHref?.takeUnless { it.isBlank() } ?: "/")
                 .removePercentEncoding()
 
-            @Suppress("Name_Shadowing")
-            val href = href.removePercentEncoding()
-
-            // HREF is just an anchor inside the base.
-            if (href.isBlank() || href.startsWith("#")) {
-                return Href(baseHref + href)
-            }
-
-            // HREF is already absolute.
-            if (Uri.parse(href).isAbsolute) {
-                return Href(href)
-            }
-
-            // Isolates the path from the anchor/query portion, which would be lost otherwise.
+            // Isolates the path from the anchor/query portion, which should not be percent decoded.
             val splitIndex = href.indexOf("?").takeIf { it != -1 }
                 ?: href.indexOf("#").takeIf { it != -1 }
                 ?: (href.lastIndex + 1)
 
+            val path = href.substring(0, splitIndex).removePercentEncoding()
+            val suffix = href.substring(splitIndex)
+
+            if (path.isBlank()) {
+                return Href(baseHref + suffix)
+            }
+
+            // HREF is already absolute.
+            if (Uri.parse(path).isAbsolute) {
+                return Href(path + suffix)
+            }
+
             return try {
                 val baseUri = URI.create(baseHref.percentEncodedPath())
                 if (baseUri.scheme?.lowercase() == "file") {
-                    return if (href.startsWith("/")) {
-                        Href("file://$href")
+                    return if (path.startsWith("/")) {
+                        Href("file://$path$suffix")
                     } else {
-                        Href("file://" + File(baseUri.path, href).canonicalPath)
+                        Href("file://" + File(baseUri.path, path).canonicalPath + suffix)
                     }
                 }
 
-                val path = href.substring(0, splitIndex)
-                val suffix = href.substring(splitIndex)
                 val uri = baseUri.resolve(path.percentEncodedPath())
-                val url = (if (uri.scheme != null) uri.toString() else uri.path.addPrefix("/")) + suffix
-                return Href(url.removePercentEncoding())
+                val url = (if (uri.scheme != null) uri.toString() else uri.path.addPrefix("/"))
+                return Href(url.removePercentEncoding() + suffix)
             } catch (e: Exception) {
                 Timber.e(e)
-                Href("$baseHref/$href")
+                Href("$baseHref/$path$suffix")
             }
         }
 
@@ -111,7 +109,7 @@ public value class Href private constructor(
             href = href.addPrefix("file://")
         }
 
-        return try {
+        tryOrLog {
             val url = URL(href)
             val uri = URI(
                 url.protocol,
@@ -119,18 +117,16 @@ public value class Href private constructor(
                 IDN.toASCII(url.host),
                 url.port,
                 url.path,
-                url.query,
-                url.ref
+                url.query?.removePercentEncoding(),
+                url.ref?.removePercentEncoding()
             )
-            var result = uri.toASCIIString()
-            if (!hasScheme) {
-                result = result.removePrefix("file://")
-            }
-            return result
-        } catch (e: Exception) {
-            Timber.e(e)
-            href
+            href = uri.toASCIIString()
         }
+
+        if (!hasScheme) {
+            href = href.removePrefix("file://")
+        }
+        return href
     }
 
     /** Returns the query parameters present in this HREF, in the order they appear. */

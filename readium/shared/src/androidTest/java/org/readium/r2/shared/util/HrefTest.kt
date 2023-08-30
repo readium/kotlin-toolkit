@@ -279,15 +279,15 @@ class HrefTest {
             Href("/foo%20bar.txt?query=param#anchor", "http://example.com/").string
         )
         assertEquals(
-            "http://absolute.com/foo bar.txt?query=param#Hello world £500",
+            "http://absolute.com/foo bar.txt?query=Hello%20world#Hello%20world%20%C2%A3500",
             Href(
-                "http://absolute.com/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
+                "http://absolute.com/foo%20bar.txt?query=Hello%20world#Hello%20world%20%C2%A3500",
                 "/"
             ).string
         )
         assertEquals(
-            "http://absolute.com/foo bar.txt?query=param#Hello world £500",
-            Href("http://absolute.com/foo bar.txt?query=param#Hello world £500", "/").string
+            "http://absolute.com/foo bar.txt?query=Hello world#Hello world £500",
+            Href("http://absolute.com/foo bar.txt?query=Hello world#Hello world £500", "/").string
         )
         assertEquals(
             "file:///foo bar.txt?query=param#anchor",
@@ -298,15 +298,15 @@ class HrefTest {
             Href("/foo%20bar.txt?query=param#anchor", "file:///root/").string
         )
         assertEquals(
-            "file:///root/foo bar.txt?query=param#Hello world £500",
+            "file:///root/foo bar.txt?query=Hello%20world#Hello%20world%20%C2%A3500",
             Href(
-                "file:///root/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
+                "file:///root/foo%20bar.txt?query=Hello%20world#Hello%20world%20%C2%A3500",
                 "/"
             ).string
         )
         assertEquals(
-            "file:///root/foo bar.txt?query=param#Hello world £500",
-            Href("file:///root/foo bar.txt?query=param#Hello world £500", "/").string
+            "file:///root/foo bar.txt?query=Hello world#Hello world £500",
+            Href("file:///root/foo bar.txt?query=Hello world#Hello world £500", "/").string
         )
     }
 
@@ -676,15 +676,15 @@ class HrefTest {
             Href("/foo%20bar.txt?query=param#anchor", "http://example.com/").percentEncodedString
         )
         assertEquals(
-            "http://absolute.com/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
+            "http://absolute.com/foo%20bar.txt?query=Hello%20world#Hello%20world%20%C2%A3500",
             Href(
-                "http://absolute.com/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
+                "http://absolute.com/foo%20bar.txt?query=Hello%20world#Hello%20world%20%C2%A3500",
                 "/"
             ).percentEncodedString
         )
         assertEquals(
-            "http://absolute.com/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
-            Href("http://absolute.com/foo bar.txt?query=param#Hello world £500", "/").percentEncodedString
+            "http://absolute.com/foo%20bar.txt?query=Hello%20world#Hello%20world%20%C2%A3500",
+            Href("http://absolute.com/foo bar.txt?query=Hello world#Hello world £500", "/").percentEncodedString
         )
         assertEquals(
             "file:///foo%20bar.txt?query=param#anchor",
@@ -701,15 +701,15 @@ class HrefTest {
             ).percentEncodedString
         )
         assertEquals(
-            "file:///root/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
+            "file:///root/foo%20bar.txt?query=Hello%20world#Hello%20world%20%C2%A3500",
             Href(
-                "file:///root/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
+                "file:///root/foo%20bar.txt?query=Hello%20world#Hello%20world%20%C2%A3500",
                 "/"
             ).percentEncodedString
         )
         assertEquals(
-            "file:///root/foo%20bar.txt?query=param#Hello%20world%20%C2%A3500",
-            Href("file:///root/foo bar.txt?query=param#Hello world £500", "/").percentEncodedString
+            "file:///root/foo%20bar.txt?query=Hello%20world#Hello%20world%20%C2%A3500",
+            Href("file:///root/foo bar.txt?query=Hello world#Hello world £500", "/").percentEncodedString
         )
     }
 
