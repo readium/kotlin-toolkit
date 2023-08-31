@@ -14,7 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.readium.r2.shared.JSONable
-import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.optNullableBoolean
 import org.readium.r2.shared.extensions.optNullableLong
 import org.readium.r2.shared.extensions.readFully

@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.readium.r2.navigator.R
 import org.readium.r2.navigator.VisualNavigator
+import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.navigator.extensions.page
 import org.readium.r2.navigator.input.CompositeInputListener
 import org.readium.r2.navigator.input.InputListener
@@ -119,7 +120,7 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
         PdfNavigatorViewModel.createFactory(
             requireActivity().application,
             publication,
-            initialLocator,
+            initialLocator?.let { publication.normalizeLocator(it) },
             initialPreferences = initialPreferences,
             pdfEngineProvider = pdfEngineProvider
         )
@@ -224,6 +225,8 @@ public class PdfNavigatorFragment<S : Configurable.Settings, P : Configurable.Pr
         get() = viewModel.currentLocator
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+        @Suppress("NAME_SHADOWING")
+        val locator = publication.normalizeLocator(locator)
         listener?.onJumpToLocator(locator)
         val pageNumber = locator.locations.page ?: locator.locations.position ?: 1
         return goToPageIndex(pageNumber - 1, animated, completion)

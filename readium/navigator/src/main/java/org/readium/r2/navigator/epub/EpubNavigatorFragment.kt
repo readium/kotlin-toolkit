@@ -57,6 +57,7 @@ import org.readium.r2.navigator.epub.css.FontFamilyDeclaration
 import org.readium.r2.navigator.epub.css.MutableFontFamilyDeclaration
 import org.readium.r2.navigator.epub.css.RsProperties
 import org.readium.r2.navigator.epub.css.buildFontFamilyDeclaration
+import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.navigator.extensions.optRectF
 import org.readium.r2.navigator.extensions.positionsByResource
 import org.readium.r2.navigator.html.HtmlDecorationTemplates
@@ -571,6 +572,9 @@ public class EpubNavigatorFragment internal constructor(
     }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+        @Suppress("NAME_SHADOWING")
+        val locator = publication.normalizeLocator(locator)
+
         listener?.onJumpToLocator(locator)
 
         val href = locator.href
@@ -718,6 +722,10 @@ public class EpubNavigatorFragment internal constructor(
     }
 
     override suspend fun applyDecorations(decorations: List<Decoration>, group: String) {
+        @Suppress("NAME_SHADOWING")
+        val decorations = decorations
+            .map { it.copy(locator = publication.normalizeLocator(it.locator)) }
+
         run(viewModel.applyDecorations(decorations, group))
     }
 
@@ -939,7 +947,7 @@ public class EpubNavigatorFragment internal constructor(
 
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
     private val _currentLocator = MutableStateFlow(
-        initialLocator
+        initialLocator?.let { publication.normalizeLocator(it) }
             ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
     )
 

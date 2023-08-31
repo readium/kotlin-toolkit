@@ -27,6 +27,7 @@ import org.readium.r2.navigator.SimplePresentation
 import org.readium.r2.navigator.VisualNavigator
 import org.readium.r2.navigator.databinding.ReadiumNavigatorViewpagerBinding
 import org.readium.r2.navigator.extensions.layoutDirectionIsRTL
+import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.navigator.input.CompositeInputListener
 import org.readium.r2.navigator.input.InputListener
 import org.readium.r2.navigator.input.KeyInterceptorView
@@ -72,7 +73,7 @@ public class ImageNavigatorFragment private constructor(
 
     override val currentLocator: StateFlow<Locator> get() = _currentLocator
     private val _currentLocator = MutableStateFlow(
-        initialLocator
+        initialLocator?.let { publication.normalizeLocator(it) }
             ?: requireNotNull(publication.locatorFromLink(publication.readingOrder.first()))
     )
 
@@ -185,6 +186,9 @@ public class ImageNavigatorFragment private constructor(
     }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+        @Suppress("NAME_SHADOWING")
+        val locator = publication.normalizeLocator(locator)
+
         val resourceIndex = publication.readingOrder.indexOfFirstWithHref(locator.href)
             ?: return false
 

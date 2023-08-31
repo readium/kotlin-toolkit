@@ -14,6 +14,7 @@ import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.StateFlow
+import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.navigator.extensions.sum
 import org.readium.r2.navigator.extensions.time
 import org.readium.r2.navigator.media3.api.Media3Adapter
@@ -66,8 +67,9 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
 
             val actualReadingOrder = ReadingOrder(totalDuration, items)
 
-            val actualInitialLocator = initialLocator
-                ?: publication.locatorFromLink(publication.readingOrder[0])!!
+            val actualInitialLocator =
+                initialLocator?.let { publication.normalizeLocator(it) }
+                    ?: publication.locatorFromLink(publication.readingOrder[0])!!
 
             val audioEngine =
                 audioEngineProvider.createEngine(
@@ -206,6 +208,8 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
         audioEngine.asPlayer()
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
+        @Suppress("NAME_SHADOWING")
+        val locator = publication.normalizeLocator(locator)
         val itemIndex = readingOrder.items.indexOfFirst { it.href.string == locator.href }
             .takeUnless { it == -1 }
             ?: return false

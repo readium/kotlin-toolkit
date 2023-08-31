@@ -13,6 +13,7 @@ import androidx.media3.common.Player
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.StateFlow
+import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.navigator.media3.api.Media3Adapter
 import org.readium.r2.navigator.media3.api.MediaMetadataProvider
 import org.readium.r2.navigator.media3.api.MediaNavigator
@@ -62,6 +63,10 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             if (publication.findService(ContentService::class) == null) {
                 return null
             }
+
+            @Suppress("NAME_SHADOWING")
+            val initialLocator =
+                initialLocator?.let { publication.normalizeLocator(it) }
 
             val actualInitialPreferences =
                 initialPreferences
@@ -197,7 +202,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     }
 
     public fun go(locator: Locator) {
-        player.go(locator)
+        player.go(publication.normalizeLocator(locator))
     }
 
     override fun goToPreviousUtterance() {
@@ -227,7 +232,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         location.mapStateIn(coroutineScope) { it.tokenLocator ?: it.utteranceLocator }
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
-        player.go(locator)
+        player.go(publication.normalizeLocator(locator))
         return true
     }
 

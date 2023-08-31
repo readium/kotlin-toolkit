@@ -7,7 +7,6 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.encryption.Encryption

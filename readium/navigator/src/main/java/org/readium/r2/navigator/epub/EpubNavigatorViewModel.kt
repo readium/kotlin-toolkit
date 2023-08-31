@@ -29,7 +29,6 @@ import org.readium.r2.navigator.preferences.*
 import org.readium.r2.navigator.util.createViewModelFactory
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication

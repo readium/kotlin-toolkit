@@ -10,7 +10,6 @@ import android.content.ContentResolver
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.extensions.isParentOf
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.util.Try

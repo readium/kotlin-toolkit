@@ -20,6 +20,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.readium.r2.navigator.ExperimentalAudiobook
 import org.readium.r2.navigator.MediaNavigator
+import org.readium.r2.navigator.extensions.normalizeLocator
 import org.readium.r2.navigator.extensions.sum
 import org.readium.r2.navigator.media.extensions.elapsedPosition
 import org.readium.r2.navigator.media.extensions.id
@@ -181,6 +182,9 @@ public class MediaSessionNavigator(
 
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         if (!isActive) return false
+
+        @Suppress("NAME_SHADOWING")
+        val locator = publication.normalizeLocator(locator)
 
         listener?.onJumpToLocator(locator)
 
