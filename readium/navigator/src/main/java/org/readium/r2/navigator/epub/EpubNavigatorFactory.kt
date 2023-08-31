@@ -52,7 +52,7 @@ class EpubNavigatorFactory(
             publication = publication,
             baseUrl = null,
             initialLocator = initialLocator,
-            readingOrder = readingOrder ?: publication.readingOrder,
+            readingOrder = readingOrder
             initialPreferences = initialPreferences,
             listener = listener,
             paginationListener = paginationListener,
