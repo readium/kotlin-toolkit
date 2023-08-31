@@ -10,6 +10,7 @@ import java.io.File
 import java.nio.charset.Charset
 import org.json.JSONObject
 import org.readium.r2.shared.asset.Asset
+import org.readium.r2.shared.extensions.addPrefix
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Resource
@@ -22,13 +23,15 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpContainer
+import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.streamer.parser.PublicationParser
 
 internal class ParserAssetFactory(
     private val httpClient: HttpClient,
-    private val mediaTypeRetriever: MediaTypeRetriever
+    private val mediaTypeRetriever: MediaTypeRetriever,
+    private val formatRegistry: FormatRegistry
 ) {
 
     suspend fun createParserAsset(
@@ -103,8 +106,10 @@ internal class ParserAssetFactory(
     ): Try<PublicationParser.Asset, Publication.OpeningException> {
         // Historically, the reading order of a standalone file contained a single link with the
         // HREF "/$assetName". This was fragile if the asset named changed, or was different on
-        // other devices. To avoid this, we now use a single link with the HREF ".".
-        val container = ResourceContainer(".", asset.resource)
+        // other devices. To avoid this, we now use a single link with the HREF
+        // "publication.extension".
+        val extension = formatRegistry.fileExtension(asset.mediaType)?.addPrefix(".") ?: ""
+        val container = ResourceContainer("publication$extension", asset.resource)
 
         return Try.success(
             PublicationParser.Asset(

@@ -19,6 +19,7 @@ import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.logging.WarningLogger
+import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.streamer.parser.PublicationParser
@@ -53,6 +54,7 @@ public class PublicationFactory(
     parsers: List<PublicationParser> = emptyList(),
     ignoreDefaultParsers: Boolean = false,
     contentProtections: List<ContentProtection>,
+    formatRegistry: FormatRegistry,
     mediaTypeRetriever: MediaTypeRetriever,
     httpClient: HttpClient,
     pdfFactory: PdfDocumentFactory<*>?,
@@ -69,6 +71,7 @@ public class PublicationFactory(
             return PublicationFactory(
                 context = context,
                 contentProtections = contentProtections,
+                formatRegistry = FormatRegistry(),
                 mediaTypeRetriever = mediaTypeRetriever,
                 httpClient = DefaultHttpClient(mediaTypeRetriever),
                 pdfFactory = null,
@@ -97,7 +100,7 @@ public class PublicationFactory(
         if (!ignoreDefaultParsers) defaultParsers else emptyList()
 
     private val parserAssetFactory: ParserAssetFactory =
-        ParserAssetFactory(httpClient, mediaTypeRetriever)
+        ParserAssetFactory(httpClient, mediaTypeRetriever, formatRegistry)
 
     /**
      * Opens a [Publication] from the given asset.
