@@ -88,7 +88,7 @@ internal class JavaZipContainer(
 
     private inner class FailureEntry(override val path: String) : Container.Entry {
 
-        override val source: Url? = null
+        override val source: Url.Absolute? = null
 
         override suspend fun mediaType(): ResourceTry<MediaType> =
             Try.success(
@@ -116,7 +116,7 @@ internal class JavaZipContainer(
         override val path: String =
             entry.name
 
-        override val source: Url? = null
+        override val source: Url.Absolute? = null
 
         override suspend fun mediaType(): ResourceTry<MediaType> =
             Try.success(
@@ -208,7 +208,7 @@ internal class JavaZipContainer(
         }
     }
 
-    override val source: Url = file.toUrl()
+    override val source: Url.Absolute = file.toUrl()
 
     override suspend fun entries(): Set<Container.Entry> =
         archive.entries().toList()

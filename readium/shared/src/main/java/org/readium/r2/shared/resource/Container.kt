@@ -28,7 +28,7 @@ public interface Container : SuspendingCloseable {
     /**
      * Direct source to this container, when available.
      */
-    public val source: Url? get() = null
+    public val source: Url.Absolute? get() = null
 
     /**
      * List of all the container entries of null if such a list is not available.

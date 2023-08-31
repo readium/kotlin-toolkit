@@ -6,7 +6,6 @@
 
 package org.readium.r2.shared.resource
 
-import android.content.ContentResolver
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -54,8 +53,8 @@ public class DirectoryContainerFactory(
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : ContainerFactory {
 
-    override suspend fun create(url: Url): Try<Container, ContainerFactory.Error> {
-        if (url.scheme != ContentResolver.SCHEME_FILE) {
+    override suspend fun create(url: Url.Absolute): Try<Container, ContainerFactory.Error> {
+        if (url.isFile) {
             return Try.failure(ContainerFactory.Error.SchemeNotSupported(url.scheme))
         }
 

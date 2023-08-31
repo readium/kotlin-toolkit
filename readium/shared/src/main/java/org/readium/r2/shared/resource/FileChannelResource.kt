@@ -19,7 +19,7 @@ import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 internal class FileChannelResource(
-    override val source: Url?,
+    override val source: Url.Absolute?,
     private val file: File?,
     private val channel: FileChannel
 ) : Resource {

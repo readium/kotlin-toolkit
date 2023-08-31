@@ -497,7 +497,7 @@ class EpubPositionsServiceTest {
                 return object : Container.Entry {
                     override val path: String = path
 
-                    override val source: Url? = null
+                    override val source: Url.Absolute? = null
 
                     override suspend fun mediaType(): ResourceTry<MediaType> =
                         Try.success(item.link.mediaType ?: MediaType.BINARY)

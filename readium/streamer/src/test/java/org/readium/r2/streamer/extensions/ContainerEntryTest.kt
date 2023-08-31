@@ -21,7 +21,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 class ContainerEntryTest {
 
     class Entry(override val path: String) : Container.Entry {
-        override val source: Url? = null
+        override val source: Url.Absolute? = null
         override suspend fun mediaType(): ResourceTry<MediaType> =
             throw NotImplementedError()
         override suspend fun properties(): ResourceTry<Resource.Properties> =

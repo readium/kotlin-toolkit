@@ -24,7 +24,6 @@ import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -265,10 +264,7 @@ private sealed class RouteHandler {
         override fun acceptRequest(link: Link): Boolean = link.href == this.link.href
 
         override fun handleRequest(link: Link, service: ContentProtectionService): Resource =
-            StringResource(
-                url = Url(link.href),
-                mediaType = mediaType
-            ) {
+            StringResource(mediaType = mediaType) {
                 Try.success(
                     JSONObject().apply {
                         put("isRestricted", service.isRestricted)

@@ -16,7 +16,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 /** Provides access to an external URL. */
 public class HttpResource(
     private val client: HttpClient,
-    override val source: Url,
+    override val source: Url.Absolute,
     private val maxSkipBytes: Long = MAX_SKIP_BYTES
 ) : Resource {
 

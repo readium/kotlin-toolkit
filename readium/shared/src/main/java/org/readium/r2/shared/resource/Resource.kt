@@ -32,7 +32,7 @@ public interface Resource : SuspendingCloseable {
     /**
      * URL locating this resource, if any.
      */
-    public val source: Url?
+    public val source: Url.Absolute?
 
     /**
      * Returns the resource media type if known.
@@ -153,7 +153,7 @@ public class FailureResource(
 
     internal constructor(cause: Throwable) : this(Resource.Exception.wrap(cause))
 
-    override val source: Url? = null
+    override val source: Url.Absolute? = null
     override suspend fun mediaType(): ResourceTry<MediaType> = Try.failure(error)
     override suspend fun properties(): ResourceTry<Resource.Properties> = Try.failure(error)
     override suspend fun length(): ResourceTry<Long> = Try.failure(error)

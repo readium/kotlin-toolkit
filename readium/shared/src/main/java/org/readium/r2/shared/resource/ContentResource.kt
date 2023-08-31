@@ -28,8 +28,8 @@ public class ContentResourceFactory(
     private val contentResolver: ContentResolver
 ) : ResourceFactory {
 
-    override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
-        if (url.scheme != ContentResolver.SCHEME_CONTENT) {
+    override suspend fun create(url: Url.Absolute): Try<Resource, ResourceFactory.Error> {
+        if (url.isContent) {
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
         }
 
@@ -49,7 +49,7 @@ public class ContentResource(
 
     private lateinit var _length: ResourceTry<Long>
 
-    override val source: Url? = uri.toUrl()
+    override val source: Url.Absolute? = uri.toUrl() as? Url.Absolute
 
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         ResourceTry.success(Resource.Properties())

@@ -25,7 +25,6 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.getOrElse
-import org.readium.r2.shared.util.toFile
 
 internal class LcpContentProtection(
     private val lcpService: LcpService,
@@ -145,7 +144,7 @@ internal class LcpContentProtection(
                 }
 
         val link = checkNotNull(licenseDoc.link(LicenseDocument.Rel.Publication))
-        val url = Url(link.url.toString())
+        val url = (Url(link.url.toString()) as? Url.Absolute)
             ?: return Try.failure(
                 Publication.OpeningException.ParsingFailed(
                     ThrowableError(

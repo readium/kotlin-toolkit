@@ -8,68 +8,201 @@ package org.readium.r2.shared.util
 
 import android.net.Uri
 import java.io.File
+import java.net.URI
 import java.net.URL
-import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.tryOrNull
 
 /**
  * A Uniform Resource Locator.
+ *
+ * https://url.spec.whatwg.org/
  */
-@JvmInline
-public value class Url private constructor(internal val uri: Uri) {
+public sealed class Url private constructor(internal val uri: Uri) {
 
-    public val scheme: String
-        get() = uri.scheme!!
+    public companion object {
 
-    public val authority: String
-        get() = uri.authority!!
+        /**
+         * Creates a [Url] from its encoded string representation.
+         */
+        public operator fun invoke(url: String): Url? =
+            tryOrNull {
+                if (url.isBlank()) {
+                    return null
+                }
+                invoke(Uri.parse(url))
+            }
 
+        internal operator fun invoke(uri: Uri): Url? =
+            tryOrNull {
+                require(uri.isHierarchical)
+                requireNotNull(uri.path)
+
+                if (uri.isAbsolute) {
+                    Absolute(uri)
+                } else {
+                    Relative(uri)
+                }
+            }
+    }
+
+    init {
+        // Refuse URI like mailto:nobody@google.com
+        require(uri.isHierarchical)
+        requireNotNull(uri.path)
+    }
+
+    /**
+     * Decoded path segments identifying a location.
+     */
     public val path: String
         get() = uri.path!!
 
-    public val filename: String
-        get() = File(path).name
+    /**
+     * Decoded filename portion of the URL path.
+     */
+    public val filename: String?
+        get() = if (path.endsWith("/")) {
+            null
+        } else {
+            uri.lastPathSegment
+        }
 
+    /**
+     * Extension of the filename portion of the URL path.
+     */
     public val extension: String?
-        get() = File(path).extension
-            .takeIf { it.isNotEmpty() }
+        get() = filename?.substringAfterLast('.', "")
+            ?.takeIf { it.isNotEmpty() }
+
+    /**
+     * Resolves the given relative [url] to this URL.
+     */
+    public open fun resolve(url: Url): Url =
+        when (url) {
+            is Absolute -> url
+            is Relative -> checkNotNull(URI(toString()).resolve(url.toString()).toUrl())
+        }
+
+    /**
+     * Represents an absolute Uniform Resource Locator.
+     */
+    public class Absolute internal constructor(uri: Uri) : Url(uri) {
+
+        init {
+            require(uri.isAbsolute)
+        }
+
+        public override fun resolve(url: Url): Absolute =
+            super.resolve(url) as Absolute
+
+        /**
+         * Identifies the type of URL.
+         */
+        public val scheme: Scheme
+            get() = Scheme(uri.scheme!!)
+
+        /**
+         * Indicates whether this URL points to a HTTP resource.
+         */
+        public val isHttp: Boolean get() =
+            scheme.isHttp
+
+        /**
+         * Indicates whether this URL points to a file.
+         */
+        public val isFile: Boolean get() =
+            scheme.isFile
+
+        /**
+         * Indicates whether this URL points to an Android content resource.
+         */
+        public val isContent: Boolean get() =
+            scheme.isContent
+
+        /**
+         * Converts the URL to a [File], if it's a file URL.
+         */
+        public fun toFile(): File? =
+            if (isFile) File(path) else null
+    }
+
+    /**
+     * Represents a relative Uniform Resource Locator.
+     */
+    public class Relative internal constructor(uri: Uri) : Url(uri) {
+        init {
+            require(uri.isRelative)
+        }
+    }
 
     override fun toString(): String =
         uri.toString()
 
-    public companion object {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
 
-        public operator fun invoke(url: String): Url? =
-            invoke(Uri.parse(url))
+        other as Url
 
-        internal operator fun invoke(uri: Uri): Url? =
-            tryOrNull {
-                requireNotNull(uri.scheme)
-                requireNotNull(uri.authority)
-                requireNotNull(uri.path)
-                Url(uri)
-            }
+        if (uri.toString() != other.uri.toString()) return false
 
-        @InternalReadiumApi
-        public operator fun invoke(url: URL): Url =
-            Url(Uri.parse(url.toString()))
+        return true
+    }
+
+    override fun hashCode(): Int =
+        uri.toString().hashCode()
+
+    /**
+     * A URL scheme, e.g. http or file.
+     */
+    @JvmInline
+    public value class Scheme private constructor(public val value: String) {
+
+        public companion object {
+            public operator fun invoke(scheme: String): Scheme =
+                Scheme(scheme.lowercase())
+        }
+
+        override fun toString(): String = value
+
+        public val isFile: Boolean
+            get() = value == "file"
+
+        public val isHttp: Boolean
+            get() = value == "http" || value == "https"
+
+        public val isContent: Boolean
+            get() = value == "content"
     }
 }
 
-public fun Url.isFile(): Boolean =
-    scheme == "file"
-
-public fun Url.toFile(): File? =
-    if (isFile()) File(path) else null
-
-public fun Url.isHttp(): Boolean =
-    scheme == "http" || scheme == "https"
-
-public fun File.toUrl(): Url =
-    Url(Uri.fromFile(this))!!
+public fun File.toUrl(): Url.Absolute =
+    Url(Uri.fromFile(this)) as Url.Absolute
 
 public fun Uri.toUrl(): Url? =
-    Url.invoke(this)
+    Url(this)
 
 public fun Url.toUri(): Uri =
     uri
+
+private fun Url.toURL(): URL =
+    URL(toString())
+
+public fun URL.toUrl(): Url? =
+    Url(Uri.parse(toString()).addFileAuthority())
+
+public fun URI.toUrl(): Url? =
+    Url(Uri.parse(toString()).addFileAuthority())
+
+/**
+ * [URL] and [URI] can return a file URL without the empty authority, which is invalid.
+ *
+ * This method adds the empty authority if needed, for example:
+ * `file:/path/to/file` becomes `file:///path/to/file`
+ */
+private fun Uri.addFileAuthority(): Uri =
+    if (scheme?.lowercase() != "file" || authority != null) {
+        this
+    } else {
+        buildUpon().authority("").build()
+    }

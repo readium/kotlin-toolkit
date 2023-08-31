@@ -22,11 +22,11 @@ public fun interface ResourceFactory {
     public sealed class Error : org.readium.r2.shared.util.Error {
 
         public class SchemeNotSupported(
-            public val scheme: String,
+            public val scheme: Url.Scheme,
             override val cause: org.readium.r2.shared.util.Error? = null
         ) : Error() {
 
-            public constructor(scheme: String, exception: Exception) : this(
+            public constructor(scheme: Url.Scheme, exception: Exception) : this(
                 scheme,
                 ThrowableError(exception)
             )
@@ -36,11 +36,11 @@ public fun interface ResourceFactory {
         }
 
         public class NotAResource(
-            public val url: Url,
+            public val url: Url.Absolute,
             override val cause: org.readium.r2.shared.util.Error? = null
         ) : Error() {
 
-            public constructor(url: Url, exception: Exception) : this(
+            public constructor(url: Url.Absolute, exception: Exception) : this(
                 url,
                 ThrowableError(exception)
             )
@@ -60,7 +60,7 @@ public fun interface ResourceFactory {
         }
     }
 
-    public suspend fun create(url: Url): Try<Resource, Error>
+    public suspend fun create(url: Url.Absolute): Try<Resource, Error>
 }
 
 /**
@@ -74,11 +74,11 @@ public fun interface ContainerFactory {
     public sealed class Error : org.readium.r2.shared.util.Error {
 
         public class SchemeNotSupported(
-            public val scheme: String,
+            public val scheme: Url.Scheme,
             override val cause: org.readium.r2.shared.util.Error? = null
         ) : Error() {
 
-            public constructor(scheme: String, exception: Exception) : this(
+            public constructor(scheme: Url.Scheme, exception: Exception) : this(
                 scheme,
                 ThrowableError(exception)
             )
@@ -112,7 +112,7 @@ public fun interface ContainerFactory {
         }
     }
 
-    public suspend fun create(url: Url): Try<Container, Error>
+    public suspend fun create(url: Url.Absolute): Try<Container, Error>
 }
 
 /**
@@ -192,7 +192,7 @@ public class CompositeResourceFactory(
     private val fallbackFactory: ResourceFactory
 ) : ResourceFactory {
 
-    override suspend fun create(url: Url): Try<Resource, ResourceFactory.Error> {
+    override suspend fun create(url: Url.Absolute): Try<Resource, ResourceFactory.Error> {
         return primaryFactory.create(url)
             .tryRecover { error ->
                 if (error is ResourceFactory.Error.SchemeNotSupported) {
@@ -213,7 +213,7 @@ public class CompositeContainerFactory(
     private val fallbackFactory: ContainerFactory
 ) : ContainerFactory {
 
-    override suspend fun create(url: Url): Try<Container, ContainerFactory.Error> {
+    override suspend fun create(url: Url.Absolute): Try<Container, ContainerFactory.Error> {
         return primaryFactory.create(url)
             .tryRecover { error ->
                 if (error is ContainerFactory.Error.SchemeNotSupported) {

@@ -22,6 +22,7 @@ import org.readium.r2.shared.lengthBlocking
 import org.readium.r2.shared.readBlocking
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
+import org.readium.r2.shared.util.toUrl
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 
@@ -29,8 +30,8 @@ import org.robolectric.Shadows
 class DirectoryContainerTest {
 
     private val directory = assertNotNull(
-        DirectoryContainerTest::class.java.getResource("directory")
-    ).let { Url(it) }
+        DirectoryContainerTest::class.java.getResource("directory")?.toUrl()
+    ) as Url.Absolute
 
     private fun sut(): Container = runBlocking {
         assertNotNull(

@@ -31,7 +31,7 @@ class TestContainer(resources: Map<String, String> = emptyMap()) : Container {
         override val path: String
     ) : Container.Entry {
 
-        override val source: Url? = null
+        override val source: Url.Absolute? = null
 
         override suspend fun mediaType(): ResourceTry<MediaType> =
             Try.failure(Resource.Exception.NotFound())

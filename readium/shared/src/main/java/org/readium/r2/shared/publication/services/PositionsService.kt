@@ -25,7 +25,6 @@ import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 private val positionsMediaType =
@@ -59,7 +58,6 @@ public interface PositionsService : Publication.Service {
         }
 
         return StringResource(
-            url = Url(positionsLink.href),
             mediaType = positionsMediaType
         ) {
             val positions = positions()

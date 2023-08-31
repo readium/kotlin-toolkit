@@ -61,11 +61,11 @@ public class AssetRetriever(
     public sealed class Error : org.readium.r2.shared.util.Error {
 
         public class SchemeNotSupported(
-            public val scheme: String,
+            public val scheme: Url.Scheme,
             override val cause: org.readium.r2.shared.util.Error?
         ) : Error() {
 
-            public constructor(scheme: String, exception: Exception) :
+            public constructor(scheme: Url.Scheme, exception: Exception) :
                 this(scheme, ThrowableError(exception))
 
             override val message: String =
@@ -73,11 +73,11 @@ public class AssetRetriever(
         }
 
         public class NotFound(
-            public val url: Url,
+            public val url: Url.Absolute,
             override val cause: org.readium.r2.shared.util.Error?
         ) : Error() {
 
-            public constructor(url: Url, exception: Exception) :
+            public constructor(url: Url.Absolute, exception: Exception) :
                 this(url, ThrowableError(exception))
 
             override val message: String =
@@ -107,11 +107,11 @@ public class AssetRetriever(
         }
 
         public class Forbidden(
-            public val url: Url,
+            public val url: Url.Absolute,
             override val cause: org.readium.r2.shared.util.Error
         ) : Error() {
 
-            public constructor(url: Url, exception: Exception) :
+            public constructor(url: Url.Absolute, exception: Exception) :
                 this(url, ThrowableError(exception))
 
             override val message: String =
@@ -156,7 +156,7 @@ public class AssetRetriever(
      * Retrieves an asset from a known media and asset type.
      */
     public suspend fun retrieve(
-        url: Url,
+        url: Url.Absolute,
         mediaType: MediaType,
         assetType: AssetType
     ): Try<Asset, Error> {
@@ -173,7 +173,7 @@ public class AssetRetriever(
     }
 
     private suspend fun retrieveArchiveAsset(
-        url: Url,
+        url: Url.Absolute,
         mediaType: MediaType
     ): Try<Asset.Container, Error> {
         return retrieveResource(url)
@@ -194,7 +194,7 @@ public class AssetRetriever(
     }
 
     private suspend fun retrieveDirectoryAsset(
-        url: Url,
+        url: Url.Absolute,
         mediaType: MediaType
     ): Try<Asset.Container, Error> {
         return containerFactory.create(url)
@@ -214,7 +214,7 @@ public class AssetRetriever(
     }
 
     private suspend fun retrieveResourceAsset(
-        url: Url,
+        url: Url.Absolute,
         mediaType: MediaType
     ): Try<Asset.Resource, Error> {
         return retrieveResource(url)
@@ -222,7 +222,7 @@ public class AssetRetriever(
     }
 
     private suspend fun retrieveResource(
-        url: Url
+        url: Url.Absolute
     ): Try<Resource, Error> {
         return resourceFactory.create(url)
             .mapFailure { error ->
@@ -237,7 +237,7 @@ public class AssetRetriever(
             }
     }
 
-    private fun Resource.Exception.wrap(url: Url): Error =
+    private fun Resource.Exception.wrap(url: Url.Absolute): Error =
         when (this) {
             is Resource.Exception.Forbidden ->
                 Error.Forbidden(url, this)
@@ -274,6 +274,8 @@ public class AssetRetriever(
      * Retrieves an asset from a [Url].
      */
     public suspend fun retrieve(url: Url): Asset? {
+        if (url !is Url.Absolute) return null
+
         val resource = resourceFactory
             .create(url)
             .getOrElse { error ->
@@ -293,7 +295,7 @@ public class AssetRetriever(
     }
 
     private suspend fun retrieve(
-        url: Url,
+        url: Url.Absolute,
         container: Container,
         exploded: Boolean
     ): Asset? {
@@ -302,14 +304,14 @@ public class AssetRetriever(
         return Asset.Container(mediaType, exploded = exploded, container = container)
     }
 
-    private suspend fun retrieve(url: Url, resource: Resource): Asset? {
+    private suspend fun retrieve(url: Url.Absolute, resource: Resource): Asset? {
         val mediaType = retrieveMediaType(url, Either(resource))
             ?: return null
         return Asset.Resource(mediaType, resource = resource)
     }
 
     private suspend fun retrieveMediaType(
-        url: Url,
+        url: Url.Absolute,
         asset: Either<Resource, Container>
     ): MediaType? {
         suspend fun retrieve(hints: MediaTypeHints): MediaType? =
@@ -329,7 +331,7 @@ public class AssetRetriever(
         // otherwise it will detect JSON, XML or ZIP formats before we have a chance of sniffing
         // their content (for example, for RWPM).
 
-        if (url.scheme == ContentResolver.SCHEME_CONTENT) {
+        if (url.isContent) {
             val contentHints = MediaTypeHints(
                 mediaType = contentResolver.getType(url.uri)
                     ?.let { MediaType(it)!! }

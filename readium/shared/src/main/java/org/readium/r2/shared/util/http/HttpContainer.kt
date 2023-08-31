@@ -11,7 +11,7 @@ import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.toEntry
 import org.readium.r2.shared.util.Href
-import org.readium.r2.shared.util.isHttp
+import org.readium.r2.shared.util.Url
 import timber.log.Timber
 
 /**
@@ -31,9 +31,9 @@ public class HttpContainer(
     override suspend fun entries(): Set<Container.Entry>? = null
 
     override fun get(path: String): Container.Entry {
-        val url = Href(path, baseHref = baseUrl ?: "/").toUrl()
+        val url = Href(path, baseHref = baseUrl ?: "/").toUrl() as? Url.Absolute
 
-        return if (url == null || !url.isHttp()) {
+        return if (url == null || !url.isHttp) {
             val cause = IllegalArgumentException("Invalid HREF: $path, produced URL: $url")
             Timber.e(cause)
             FailureResource(Resource.Exception.BadRequest(cause = cause))

@@ -18,7 +18,6 @@ import org.readium.r2.shared.publication.services.content.Content.TextElement
 import org.readium.r2.shared.publication.services.content.Content.TextElement.Segment
 import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.util.Language
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -181,7 +180,7 @@ class HtmlResourceContentIteratorTest {
         totalProgressionRange: ClosedRange<Double>? = null
     ): HtmlResourceContentIterator =
         HtmlResourceContentIterator(
-            StringResource(html, MediaType.HTML, Url(link.href)),
+            StringResource(html, MediaType.HTML),
             totalProgressionRange = totalProgressionRange,
             startLocator
         )

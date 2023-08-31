@@ -96,7 +96,7 @@ class ReaderRepository(
         val book = checkNotNull(bookRepository.get(bookId)) { "Cannot find book in database." }
 
         val asset = readium.assetRetriever.retrieve(
-            Url(book.href)!!,
+            Url(book.href) as Url.Absolute,
             book.mediaType,
             book.assetType
         ).getOrElse { return Try.failure(OpeningError.PublicationError(it)) }

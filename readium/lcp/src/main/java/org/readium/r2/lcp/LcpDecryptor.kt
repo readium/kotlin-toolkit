@@ -93,7 +93,7 @@ internal class LcpDecryptor(
         private val license: LcpLicense
     ) : Resource by resource {
 
-        override val source: Url? = null
+        override val source: Url.Absolute? = null
 
         private class Cache(
             var startIndex: Int? = null,

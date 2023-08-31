@@ -39,7 +39,7 @@ public abstract class TransformingResource(
             }
     }
 
-    override val source: Url? = null
+    override val source: Url.Absolute? = null
 
     private lateinit var _bytes: ResourceTry<ByteArray>
 

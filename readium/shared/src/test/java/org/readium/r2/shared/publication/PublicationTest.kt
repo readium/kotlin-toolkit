@@ -24,7 +24,6 @@ import org.readium.r2.shared.resource.EmptyContainer
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.resource.readAsString
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -385,7 +384,7 @@ class PublicationTest {
             override fun get(link: Link): Resource? {
                 assertFalse(link.templated)
                 assertEquals("param1=a&param2=b", link.href.substringAfter("?"))
-                return StringResource("test passed", MediaType.TEXT, url = Url(link.href))
+                return StringResource("test passed", MediaType.TEXT)
             }
         }
 

@@ -21,7 +21,6 @@ import org.readium.r2.shared.resource.BytesResource
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.LazyResource
 import org.readium.r2.shared.resource.Resource
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -105,7 +104,7 @@ public abstract class GeneratedCoverService : CoverService {
             return null
         }
 
-        return LazyResource(source = Url(link.href)) {
+        return LazyResource {
             val cover = cover()
             val png = cover.toPng()
 
@@ -113,7 +112,7 @@ public abstract class GeneratedCoverService : CoverService {
                 val error = Exception("Unable to convert cover to PNG.")
                 FailureResource(error)
             } else {
-                BytesResource(png, url = Url(coverLink.href), mediaType = MediaType.PNG)
+                BytesResource(png, mediaType = MediaType.PNG)
             }
         }
     }

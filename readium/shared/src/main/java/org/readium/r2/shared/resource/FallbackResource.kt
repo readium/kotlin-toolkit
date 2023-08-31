@@ -17,7 +17,7 @@ public class FallbackResource(
     private val fallbackResourceFactory: (Resource.Exception) -> Resource?
 ) : Resource {
 
-    override val source: Url? = null
+    override val source: Url.Absolute? = null
 
     override suspend fun mediaType(): ResourceTry<MediaType> =
         withResource { mediaType() }

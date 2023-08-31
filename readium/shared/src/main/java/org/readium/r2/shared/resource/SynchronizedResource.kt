@@ -22,7 +22,7 @@ public class SynchronizedResource(
 
     private val mutex = Mutex()
 
-    override val source: Url? get() = resource.source
+    override val source: Url.Absolute? get() = resource.source
 
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         mutex.withLock { resource.properties() }
