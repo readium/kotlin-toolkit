@@ -21,17 +21,19 @@ internal class DownloadCursorFacade(
     val localUri: String? = cursor
         .getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)
         .also { require(it != -1) }
-        .let { cursor.getString(it) }
+        .takeUnless { cursor.isNull(it) }
+        ?.let { cursor.getString(it) }
 
     val status: Int = cursor
         .getColumnIndex(DownloadManager.COLUMN_STATUS)
         .also { require(it != -1) }
         .let { cursor.getInt(it) }
 
-    val total: Long = cursor
+    val expected: Long? = cursor
         .getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
         .also { require(it != -1) }
-        .let { cursor.getLong(it) }
+        .takeUnless { cursor.isNull(it) }
+        ?.let { cursor.getLong(it) }
 
     val downloadedSoFar: Long = cursor
         .getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)

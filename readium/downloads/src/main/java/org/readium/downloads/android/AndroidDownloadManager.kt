@@ -15,13 +15,14 @@ import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.readium.downloads.DownloadManager
 import org.readium.r2.shared.units.Hz
 import org.readium.r2.shared.util.toUri
 
-public class AndroidDownloadManager(
+public class AndroidDownloadManager internal constructor(
     private val context: Context,
     private val name: String,
     private val destStorage: Storage,
@@ -38,28 +39,31 @@ public class AndroidDownloadManager(
     private val coroutineScope: CoroutineScope =
         MainScope()
 
-    private val progressJob: Job = coroutineScope.launch {
-        while (true) {
-            val ids = downloadsRepository.idsForName(name)
-            val cursor = downloadManager.query(SystemDownloadManager.Query())
-            notify(cursor, ids)
-            delay((1.0 / refreshRate.value).seconds)
-        }
-    }
-
     private val downloadManager: SystemDownloadManager =
         context.getSystemService(Context.DOWNLOAD_SERVICE) as SystemDownloadManager
 
     private val downloadsRepository: DownloadsRepository =
         DownloadsRepository(context)
 
+    private var observeProgressJob: Job? =
+        null
+
+    init {
+        coroutineScope.launch {
+            if (downloadsRepository.hasDownloadsOngoing()) {
+                startObservingProgress()
+            }
+        }
+    }
+
     public override suspend fun submit(request: DownloadManager.Request): DownloadManager.RequestId {
+        startObservingProgress()
         val androidRequest = createRequest(
-            request.url.toUri(),
-            request.url.filename,
-            request.headers,
-            request.title,
-            request.description
+            uri = request.url.toUri(),
+            filename = request.url.filename,
+            headers = request.headers,
+            title = request.title,
+            description = request.description
         )
         val downloadId = downloadManager.enqueue(androidRequest)
         downloadsRepository.addId(name, downloadId)
@@ -106,6 +110,26 @@ public class AndroidDownloadManager(
         return this
     }
 
+    private fun startObservingProgress() {
+        if (observeProgressJob != null) {
+            return
+        }
+
+        observeProgressJob = coroutineScope.launch {
+            while (true) {
+                val ids = downloadsRepository.idsForName(name)
+                val cursor = downloadManager.query(SystemDownloadManager.Query())
+                notify(cursor, ids)
+                delay((1.0 / refreshRate.value).seconds)
+            }
+        }
+    }
+
+    private fun stopObservingProgress() {
+        observeProgressJob?.cancel()
+        observeProgressJob = null
+    }
+
     private suspend fun notify(cursor: Cursor, ids: List<Long>) = cursor.use {
         while (cursor.moveToNext()) {
             val facade = DownloadCursorFacade(cursor)
@@ -119,6 +143,10 @@ public class AndroidDownloadManager(
                 SystemDownloadManager.STATUS_FAILED -> {
                     listener.onDownloadFailed(id, mapErrorCode(facade.reason!!))
                     downloadManager.remove(id.value)
+                    downloadsRepository.removeId(name, id.value)
+                    if (!downloadsRepository.hasDownloadsOngoing()) {
+                        stopObservingProgress()
+                    }
                 }
                 SystemDownloadManager.STATUS_PAUSED -> {}
                 SystemDownloadManager.STATUS_PENDING -> {}
@@ -127,12 +155,13 @@ public class AndroidDownloadManager(
                     listener.onDownloadCompleted(id, File(destUri.path!!))
                     downloadManager.remove(id.value)
                     downloadsRepository.removeId(name, id.value)
+                    if (!downloadsRepository.hasDownloadsOngoing()) {
+                        stopObservingProgress()
+                    }
                 }
                 SystemDownloadManager.STATUS_RUNNING -> {
-                    val total = facade.total
-                    if (total > 0) {
-                        listener.onDownloadProgressed(id, facade.downloadedSoFar, total)
-                    }
+                    val expected = facade.expected
+                    listener.onDownloadProgressed(id, facade.downloadedSoFar, expected)
                 }
             }
         }
@@ -169,6 +198,6 @@ public class AndroidDownloadManager(
         }
 
     public override suspend fun close() {
-        progressJob.cancel()
+        coroutineScope.cancel()
     }
 }

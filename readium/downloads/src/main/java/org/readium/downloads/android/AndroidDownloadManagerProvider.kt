@@ -16,7 +16,6 @@ import org.readium.r2.shared.units.hz
 public class AndroidDownloadManagerProvider(
     private val context: Context,
     private val destStorage: AndroidDownloadManager.Storage = AndroidDownloadManager.Storage.App,
-    private val dirType: String = Environment.DIRECTORY_DOWNLOADS,
     private val refreshRate: Hz = 0.1.hz
 ) : DownloadManagerProvider {
 
@@ -28,7 +27,7 @@ public class AndroidDownloadManagerProvider(
             context,
             name,
             destStorage,
-            dirType,
+            Environment.DIRECTORY_DOWNLOADS,
             refreshRate,
             listener
         )

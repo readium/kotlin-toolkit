@@ -180,7 +180,7 @@ class Bookshelf(
         override fun onAcquisitionProgressed(
             requestId: LcpPublicationRetriever.RequestId,
             downloaded: Long,
-            total: Long
+            expected: Long?
         ) {
         }
 

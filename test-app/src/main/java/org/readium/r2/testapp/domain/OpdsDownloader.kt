@@ -57,7 +57,7 @@ class OpdsDownloader(
         override fun onDownloadProgressed(
             requestId: DownloadManager.RequestId,
             downloaded: Long,
-            total: Long
+            expected: Long?
         ) {
         }
 

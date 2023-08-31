@@ -97,7 +97,7 @@ public interface DownloadManager {
 
         public fun onDownloadCompleted(requestId: RequestId, file: File)
 
-        public fun onDownloadProgressed(requestId: RequestId, downloaded: Long, total: Long)
+        public fun onDownloadProgressed(requestId: RequestId, downloaded: Long, expected: Long?)
 
         public fun onDownloadFailed(requestId: RequestId, error: Error)
     }

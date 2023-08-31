@@ -20,14 +20,14 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
 import org.readium.r2.testapp.data.CatalogRepository
-import org.readium.r2.testapp.data.db.BookDatabase
+import org.readium.r2.testapp.data.db.AppDatabase
 import org.readium.r2.testapp.data.model.Catalog
 import org.readium.r2.testapp.utils.EventChannel
 
 class CatalogFeedListViewModel(application: Application) : AndroidViewModel(application) {
 
     private val httpClient = getApplication<org.readium.r2.testapp.Application>().readium.httpClient
-    private val catalogDao = BookDatabase.getDatabase(application).catalogDao()
+    private val catalogDao = AppDatabase.getDatabase(application).catalogDao()
     private val repository = CatalogRepository(catalogDao)
     val eventChannel = EventChannel(Channel<Event>(Channel.BUFFERED), viewModelScope)
 

@@ -12,6 +12,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import java.util.LinkedList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -30,13 +31,12 @@ internal class DownloadsRepository(
 
     private val downloadIds: Flow<Map<String, List<Long>>> =
         context.dataStore.data
-            .map { data -> data[downloadIdsKey] }
-            .map { string -> string?.toData().orEmpty() }
+            .map { data -> data.ids }
 
     suspend fun addId(name: String, id: Long) {
         context.dataStore.edit { data ->
-            val current = downloadIds.first()
-            val currentThisName = downloadIds.first()[name].orEmpty()
+            val current = data.ids
+            val currentThisName = current[name].orEmpty()
             val newEntryThisName = name to (currentThisName + id)
             data[downloadIdsKey] = (current + newEntryThisName).toJson()
         }
@@ -44,8 +44,8 @@ internal class DownloadsRepository(
 
     suspend fun removeId(name: String, id: Long) {
         context.dataStore.edit { data ->
-            val current = downloadIds.first()
-            val currentThisName = downloadIds.first()[name].orEmpty()
+            val current = data.ids
+            val currentThisName = current[name].orEmpty()
             val newEntryThisName = name to (currentThisName - id)
             data[downloadIdsKey] = (current + newEntryThisName).toJson()
         }
@@ -55,30 +55,37 @@ internal class DownloadsRepository(
         return downloadIds.first()[name].orEmpty()
     }
 
+    suspend fun hasDownloadsOngoing(): Boolean =
+        downloadIds.first().values.flatten().isNotEmpty()
+
+    private val Preferences.ids: Map<String, List<Long>>
+        get() = get(downloadIdsKey)?.toData().orEmpty()
+
     private fun Map<String, List<Long>>.toJson(): String {
-        val strings = map { idsToJson(it.key, it.value) }
-        val array = JSONArray(strings)
-        return array.toString()
+        val jsonObject = JSONObject()
+        for ((name, ids) in this.entries) {
+            jsonObject.put(name, JSONArray(ids))
+        }
+        return jsonObject.toString()
     }
 
     private fun String.toData(): Map<String, List<Long>> {
-        val array = JSONArray(this)
-        val objects = (0 until array.length()).map { array.getJSONObject(it) }
-        return objects.associate { jsonToIds(it) }
+        val jsonObject = JSONObject(this)
+        val names = jsonObject.keys().iterator().toList()
+        return names.associateWith { jsonToIds(jsonObject.getJSONArray(it)) }
     }
 
-    private fun idsToJson(name: String, downloads: List<Long>): JSONObject =
-        JSONObject()
-            .put("name", name)
-            .put("downloads", JSONArray(downloads))
-
-    private fun jsonToIds(jsonObject: JSONObject): Pair<String, List<Long>> {
-        val name = jsonObject.getString("name")
-        val downloads = jsonObject.getJSONArray("downloads")
-        val downloadList = mutableListOf<Long>()
-        for (i in 0 until downloads.length()) {
-            downloadList.add(downloads.getLong(i))
+    private fun jsonToIds(jsonArray: JSONArray): List<Long> {
+        val list = mutableListOf<Long>()
+        for (i in 0 until jsonArray.length()) {
+            list.add(jsonArray.getLong(i))
         }
-        return name to downloadList
+        return list
     }
+
+    private fun <T> Iterator<T>.toList(): List<T> =
+        LinkedList<T>().apply {
+            while (hasNext())
+                this += next()
+        }.toMutableList()
 }

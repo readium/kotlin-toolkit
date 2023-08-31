@@ -20,8 +20,7 @@ import kotlinx.coroutines.async
 import org.readium.r2.testapp.BuildConfig.DEBUG
 import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.data.DownloadRepository
-import org.readium.r2.testapp.data.db.BookDatabase
-import org.readium.r2.testapp.data.db.DownloadDatabase
+import org.readium.r2.testapp.data.db.AppDatabase
 import org.readium.r2.testapp.domain.Bookshelf
 import org.readium.r2.testapp.reader.ReaderRepository
 import timber.log.Timber
@@ -64,11 +63,11 @@ class Application : android.app.Application() {
          * Initializing repositories
          */
         bookRepository =
-            BookDatabase.getDatabase(this).booksDao()
+            AppDatabase.getDatabase(this).booksDao()
                 .let { dao -> BookRepository(dao) }
 
         downloadRepository =
-            DownloadDatabase.getDatabase(this).downloadsDao()
+            AppDatabase.getDatabase(this).downloadsDao()
                 .let { dao -> DownloadRepository(dao) }
 
         bookshelf =

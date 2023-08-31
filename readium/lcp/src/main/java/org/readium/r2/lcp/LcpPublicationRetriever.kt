@@ -53,7 +53,7 @@ public class LcpPublicationRetriever(
         public fun onAcquisitionProgressed(
             requestId: RequestId,
             downloaded: Long,
-            total: Long
+            expected: Long?
         )
 
         public fun onAcquisitionFailed(
@@ -89,12 +89,12 @@ public class LcpPublicationRetriever(
         override fun onDownloadProgressed(
             requestId: DownloadManager.RequestId,
             downloaded: Long,
-            total: Long
+            expected: Long?
         ) {
             listener.onAcquisitionProgressed(
                 RequestId(requestId.value),
                 downloaded,
-                total
+                expected
             )
         }
 
@@ -120,8 +120,7 @@ public class LcpPublicationRetriever(
 
     private val licenses: Flow<Map<Long, JSONObject>> =
         context.dataStore.data
-            .map { data -> data[licensesKey] }
-            .map { json -> json?.toLicenses().orEmpty() }
+            .map { data -> data.licenses }
 
     public suspend fun retrieve(
         license: ByteArray,
@@ -168,7 +167,7 @@ public class LcpPublicationRetriever(
 
         val requestId = downloadManager.submit(
             DownloadManager.Request(
-                url = Url(url.toString())!!,
+                url = Url(url),
                 title = downloadTitle,
                 description = downloadDescription,
                 headers = emptyMap()
@@ -214,17 +213,20 @@ public class LcpPublicationRetriever(
     private suspend fun persistLicense(id: Long, license: JSONObject) {
         context.dataStore.edit { data ->
             val newEntry = id to license
-            val licenses = licenses.first() + newEntry
+            val licenses = data.licenses + newEntry
             data[licensesKey] = licenses.toJson()
         }
     }
 
     private suspend fun removeLicense(id: Long) {
         context.dataStore.edit { data ->
-            val licenses = licenses.first() - id
+            val licenses = data.licenses - id
             data[licensesKey] = licenses.toJson()
         }
     }
+
+    private val Preferences.licenses: Map<Long, JSONObject>
+        get() = get(licensesKey)?.toLicenses().orEmpty()
 
     private fun licenseToJson(id: Long, license: JSONObject): JSONObject =
         JSONObject()

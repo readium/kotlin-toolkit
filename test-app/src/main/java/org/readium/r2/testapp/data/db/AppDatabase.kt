@@ -18,22 +18,24 @@ import org.readium.r2.testapp.data.model.Catalog
 import org.readium.r2.testapp.data.model.Highlight
 
 @Database(
-    entities = [Book::class, Bookmark::class, Highlight::class, Catalog::class],
+    entities = [Book::class, Bookmark::class, Highlight::class, Catalog::class, Download::class],
     version = 1,
     exportSchema = false
 )
 @TypeConverters(HighlightConverters::class)
-abstract class BookDatabase : RoomDatabase() {
+abstract class AppDatabase : RoomDatabase() {
 
     abstract fun booksDao(): BooksDao
 
     abstract fun catalogDao(): CatalogDao
 
+    abstract fun downloadsDao(): DownloadsDao
+
     companion object {
         @Volatile
-        private var INSTANCE: BookDatabase? = null
+        private var INSTANCE: AppDatabase? = null
 
-        fun getDatabase(context: Context): BookDatabase {
+        fun getDatabase(context: Context): AppDatabase {
             val tempInstance = INSTANCE
             if (tempInstance != null) {
                 return tempInstance
@@ -41,8 +43,8 @@ abstract class BookDatabase : RoomDatabase() {
             synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
-                    BookDatabase::class.java,
-                    "books_database"
+                    AppDatabase::class.java,
+                    "database"
                 ).build()
                 INSTANCE = instance
                 return instance
