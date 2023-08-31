@@ -276,7 +276,7 @@ class EpubNavigatorFragment internal constructor(
     }
 
     private val positionsByReadingOrder: List<List<Locator>> =
-        if (readingOrder == null) emptyList()
+        if (readingOrder != null) emptyList()
         else runBlocking { publication.positionsByReadingOrder() }
 
     internal lateinit var positions: List<Locator>
