@@ -53,8 +53,6 @@ class EpubNavigatorFactory(
             baseUrl = null,
             initialLocator = initialLocator,
             readingOrder = readingOrder ?: publication.readingOrder,
-            positionsByReadingOrder = if (readingOrder == null)
-                Collections.emptyList() else runBlocking { publication.positionsByReadingOrder() },
             initialPreferences = initialPreferences,
             listener = listener,
             paginationListener = paginationListener,
