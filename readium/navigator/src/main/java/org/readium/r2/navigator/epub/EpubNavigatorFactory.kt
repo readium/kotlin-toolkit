@@ -6,15 +6,12 @@
 
 package org.readium.r2.navigator.epub
 
-import java.util.Collections
-import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
-import org.readium.r2.shared.publication.services.positionsByReadingOrder
 
 /**
  * Factory of the EPUB navigator and related components.
