@@ -25,6 +25,8 @@ All notable changes to this project will be documented in this file. Take a look
 ### Changed
 
 * Readium resources are now prefixed with `readium_`. Take care of updating any overridden resource by following [the migration guide](docs/migration-guide.md#300).
+* `Link` and `Locator`'s `href` do not start with a `/` for packaged publications anymore.
+    * To ensure backward-compatibility, `href` starting with a `/` are still supported. But you may want to update the locators persisted in your database to drop the `/` prefix for packaged publications.
 
 #### Shared
 
