@@ -121,11 +121,12 @@ public class Publication(
         get() = _manifest.toJSON().toString().replace("\\/", "/")
 
     /**
-     * The URL where this publication is served, computed from the [Link] with `self` relation.
+     * The URL from which the publication resources are relative to, computed from the [Link] with
+     * `self` relation.
      */
     public val baseUrl: Url?
         get() = links.firstWithRel("self")
-            ?.href?.toUrl()?.removeFilename()
+            ?.href?.toUrl()
 
     /**
      * Returns whether this publication conforms to the given Readium Web Publication Profile.
@@ -142,7 +143,7 @@ public class Publication(
      * If there's no match, tries again after removing any query parameter and anchor from the
      * given [href].
      */
-    public fun linkWithHref(href: Url): Link? = _manifest.linkWithHref(href.toString())
+    public fun linkWithHref(href: Url): Link? = _manifest.linkWithHref(href)
 
     /**
      * Finds the first [Link] having the given [rel] in the publications's links.

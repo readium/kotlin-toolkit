@@ -13,6 +13,7 @@ import java.io.File
 import java.net.URI
 import java.net.URL
 import kotlinx.parcelize.Parcelize
+import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.extensions.percentEncodedPath
 import org.readium.r2.shared.extensions.tryOrNull
 
@@ -74,18 +75,6 @@ public sealed class Url : Parcelable {
         }
 
     /**
-     * Remove the filename portion of the URL path.
-     */
-    public fun removeFilename(): Url {
-        if (path.endsWith("/")) {
-            return this
-        }
-        val filename = uri.lastPathSegment ?: return this
-
-        return checkNotNull(invoke(uri.buildUpon().path(path.removeSuffix(filename)).build()))
-    }
-
-    /**
      * Extension of the filename portion of the URL path.
      */
     public val extension: String?
@@ -123,6 +112,7 @@ public sealed class Url : Parcelable {
     /**
      * Returns the decoded query parameters present in this URL, in the order they appear.
      */
+    @InternalReadiumApi
     public val query: Query get() =
         Query(
             UrlQuerySanitizer(removeFragment().toString()).parameterList
@@ -163,6 +153,11 @@ public sealed class Url : Parcelable {
 
     /**
      * Resolves the given [url] to this URL.
+     *
+     * For example:
+     *     this = "http://example.com/foo/"
+     *     url = "bar/baz"
+     *     result = "http://example.com/foo/bar/baz"
      */
     public open fun resolve(url: Url): Url =
         when (url) {

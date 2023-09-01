@@ -23,23 +23,22 @@ class UrlTest {
 
     @Test
     fun createFromRelativePath() {
-        assertEquals(
-            AbsoluteUrl(
-                Uri.parse(
-                    "file:///data/user/0/org.readium.r2reader/files/e67577ba-788a-48cb-92a8-bbc49fd38a78.json"
-                )
-            ),
-            Url(
-                "file:///data/user/0/org.readium.r2reader/files/e67577ba-788a-48cb-92a8-bbc49fd38a78.json"
-            )
-        )
-
         assertEquals(RelativeUrl(Uri.parse("/foo/bar")), Url("/foo/bar"))
         assertEquals(RelativeUrl(Uri.parse("foo/bar")), Url("foo/bar"))
         assertEquals(RelativeUrl(Uri.parse("../bar")), Url("../bar"))
 
         // Used in the EPUB parser
         assertEquals(RelativeUrl(Uri.parse("#")), Url("#"))
+    }
+
+    @Test
+    fun createFromFragmentOnly() {
+        assertEquals(RelativeUrl(Uri.parse("#fragment")), Url("#fragment"))
+    }
+
+    @Test
+    fun createFromQueryOnly() {
+        assertEquals(RelativeUrl(Uri.parse("?query=param")), Url("?query=param"))
     }
 
     @Test
@@ -210,6 +209,56 @@ class UrlTest {
         base = Url("/foo/bar")!!
         assertEquals(Url("/foo/quz/baz")!!, base.resolve(Url("quz/baz")!!))
         assertEquals(Url("/quz/baz")!!, base.resolve(Url("/quz/baz")!!))
+    }
+
+    @Test
+    fun relativizeHttpUrl() {
+        var base = Url("http://example.com/foo")!!
+        assertEquals(Url("quz/baz")!!, base.relativize(Url("http://example.com/foo/quz/baz")!!))
+        assertEquals(Url("#fragment")!!, base.relativize(Url("http://example.com/foo#fragment")!!))
+        assertEquals(Url("#fragment")!!, base.relativize(Url("http://example.com/foo/#fragment")!!))
+        assertEquals(Url("file:///foo/bar")!!, base.relativize(Url("file:///foo/bar")!!))
+
+        // With trailing slash
+        base = Url("http://example.com/foo/")!!
+        assertEquals(Url("quz/baz")!!, base.relativize(Url("http://example.com/foo/quz/baz")!!))
+    }
+
+    @Test
+    fun relativizeFileUrl() {
+        var base = Url("file:///root/foo")!!
+        assertEquals(Url("quz/baz")!!, base.relativize(Url("file:///root/foo/quz/baz")!!))
+        assertEquals(
+            Url("http://example.com/foo/bar")!!,
+            base.relativize(Url("http://example.com/foo/bar")!!)
+        )
+
+        // With trailing slash
+        base = Url("file:///root/foo/")!!
+        assertEquals(Url("quz/baz")!!, base.relativize(Url("file:///root/foo/quz/baz")!!))
+    }
+
+    @Test
+    fun relativizeTwoRelativeUrls() {
+        var base = Url("foo")!!
+        assertEquals(Url("quz/baz")!!, base.relativize(Url("foo/quz/baz")!!))
+        assertEquals(Url("quz/baz")!!, base.relativize(Url("quz/baz")!!))
+        assertEquals(Url("/quz/baz")!!, base.relativize(Url("/quz/baz")!!))
+        assertEquals(Url("#fragment")!!, base.relativize(Url("foo#fragment")!!))
+        assertEquals(Url("#fragment")!!, base.relativize(Url("foo/#fragment")!!))
+        assertEquals(
+            Url("http://example.com/foo/bar")!!,
+            base.relativize(Url("http://example.com/foo/bar")!!)
+        )
+
+        // With trailing slash
+        base = Url("foo/")!!
+        assertEquals(Url("quz/baz")!!, base.relativize(Url("foo/quz/baz")!!))
+
+        // With starting slash
+        base = Url("/foo")!!
+        assertEquals(Url("quz/baz")!!, base.relativize(Url("/foo/quz/baz")!!))
+        assertEquals(Url("/quz/baz")!!, base.relativize(Url("/quz/baz")!!))
     }
 
     @Test

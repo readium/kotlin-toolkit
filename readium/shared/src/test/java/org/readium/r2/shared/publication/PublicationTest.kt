@@ -126,25 +126,13 @@ class PublicationTest {
             )
         )
         assertEquals(
-            Url("http://domain.com/path/")!!,
+            Url("http://domain.com/path/manifest.json")!!,
             publication.baseUrl
         )
     }
 
     @Test fun `get {baseUrl} when missing`() {
         assertNull(createPublication().baseUrl)
-    }
-
-    @Test fun `get {baseUrl} when it's a root`() {
-        val publication = createPublication(
-            links = listOf(
-                Link(href = urlHref("http://domain.com/manifest.json"), rels = setOf("self"))
-            )
-        )
-        assertEquals(
-            Url("http://domain.com/")!!,
-            publication.baseUrl
-        )
     }
 
     @Test fun `conforms to the given profile`() {

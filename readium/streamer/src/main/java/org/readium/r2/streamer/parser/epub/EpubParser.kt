@@ -66,7 +66,7 @@ public class EpubParser(
         var container = asset.container
         manifest.metadata.identifier?.let { id ->
             val deobfuscator = EpubDeobfuscator(id) { url ->
-                manifest.linkWithHref(url.toString())
+                manifest.linkWithHref(url)
                     ?.properties?.encryption
             }
 

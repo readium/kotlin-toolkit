@@ -16,6 +16,7 @@ import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
 import org.readium.r2.shared.extensions.putIfNotEmpty
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -63,10 +64,10 @@ public data class Manifest(
      * If there's no match, tries again after removing any query parameter and anchor from the
      * given [href].
      */
-    public fun linkWithHref(href: String): Link? {
-        fun List<Link>.deepLinkWithHref(href: String): Link? {
+    public fun linkWithHref(href: Url): Link? {
+        fun List<Link>.deepLinkWithHref(href: Url): Link? {
             for (l in this) {
-                if (l.href.toString() == href) {
+                if (l.href.toUrl() == href) {
                     return l
                 } else {
                     l.alternates.deepLinkWithHref(href)?.let { return it }
@@ -76,14 +77,14 @@ public data class Manifest(
             return null
         }
 
-        fun find(href: String): Link? {
+        fun find(href: Url): Link? {
             return readingOrder.deepLinkWithHref(href)
                 ?: resources.deepLinkWithHref(href)
                 ?: links.deepLinkWithHref(href)
         }
 
         return find(href)
-            ?: find(href.takeWhile { it !in "#?" })
+            ?: find(href.removeFragment().removeQuery())
     }
 
     /**
@@ -110,7 +111,7 @@ public data class Manifest(
         val fragment = url.fragment
         url = url.removeFragment()
 
-        val resourceLink = linkWithHref(url.toString()) ?: return null
+        val resourceLink = linkWithHref(url) ?: return null
         val type = resourceLink.mediaType?.toString() ?: return null
 
         return Locator(
