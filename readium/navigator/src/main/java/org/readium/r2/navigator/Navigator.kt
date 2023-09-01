@@ -136,6 +136,18 @@ interface VisualNavigator : Navigator {
     }
 
     interface Listener : Navigator.Listener {
+
+        /**
+         * Called when a link to an internal resource was clicked in the navigator.
+         *
+         * You can use this callback to perform custom navigation like opening a new window
+         * or other operations.
+         *
+         * By returning false the navigator wont try to open the link itself and it is up
+         * to the calling app to decide how to display the link.
+         */
+        fun shouldJumpToLink(link: Link): Boolean { return true }
+
         /**
          * Called when the user tapped the content, but nothing handled the event internally (eg.
          * by following an internal link).

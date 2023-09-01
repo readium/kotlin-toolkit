@@ -270,6 +270,7 @@ class EpubNavigatorFragment internal constructor(
             requireActivity().application, publication,
             baseUrl = baseUrl, config = this.config,
             initialPreferences = initialPreferences,
+            listener = listener,
             layout = epubLayout,
             defaults = defaults
         )
@@ -494,7 +495,7 @@ class EpubNavigatorFragment internal constructor(
             is EpubNavigatorViewModel.Event.RunScript -> {
                 run(event.command)
             }
-            is EpubNavigatorViewModel.Event.GoTo -> {
+            is EpubNavigatorViewModel.Event.OpenInternalLink -> {
                 go(event.target)
             }
             EpubNavigatorViewModel.Event.InvalidateViewPager -> {
@@ -1040,7 +1041,8 @@ class EpubNavigatorFragment internal constructor(
          * if you use a local HTTP server.
          * @param initialLocator The first location which should be visible when rendering the
          * publication. Can be used to restore the last reading location.
-         * @param readingOrder custom reading order
+         * @param readingOrder Custom order of resources to display. Used for example to display a
+         * non-linear resource on its own.
          * @param listener Optional listener to implement to observe events, such as user taps.
          * @param config Additional configuration.
          */
