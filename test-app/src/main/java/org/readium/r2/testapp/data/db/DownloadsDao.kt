@@ -21,11 +21,11 @@ interface DownloadsDao {
         "DELETE FROM " + Download.TABLE_NAME +
             " WHERE " + Download.ID + " = :id" + " AND " + Download.MANAGER + " = :manager"
     )
-    suspend fun delete(manager: String, id: Long)
+    suspend fun delete(manager: String, id: String)
 
     @Query(
         "SELECT * FROM " + Download.TABLE_NAME +
             " WHERE " + Download.ID + " = :id" + " AND " + Download.MANAGER + " = :manager"
     )
-    suspend fun get(manager: String, id: Long): Download?
+    suspend fun get(manager: String, id: String): Download?
 }

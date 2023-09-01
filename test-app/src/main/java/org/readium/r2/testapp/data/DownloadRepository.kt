@@ -15,7 +15,7 @@ class DownloadRepository(
 
     suspend fun insertOpdsDownload(
         manager: String,
-        id: Long,
+        id: String,
         cover: String?
     ) {
         downloadsDao.insert(
@@ -25,14 +25,14 @@ class DownloadRepository(
 
     suspend fun getOpdsDownloadCover(
         manager: String,
-        id: Long
+        id: String
     ): String? {
         return downloadsDao.get(manager, id)!!.extra
     }
 
     suspend fun removeDownload(
         manager: String,
-        id: Long
+        id: String
     ) {
         downloadsDao.delete(manager, id)
     }

@@ -41,7 +41,7 @@ public class LcpPublicationRetriever(
 ) {
 
     @JvmInline
-    public value class RequestId(public val value: Long)
+    public value class RequestId(public val value: String)
 
     public interface Listener {
 
@@ -73,7 +73,7 @@ public class LcpPublicationRetriever(
         ) {
             coroutineScope.launch {
                 val lcpRequestId = RequestId(requestId.value)
-                val acquisition = onDownloadCompleted(
+                val acquisition = onDownloadCompletedImpl(
                     requestId.value,
                     file
                 ).getOrElse {
@@ -118,7 +118,7 @@ public class LcpPublicationRetriever(
     private val formatRegistry: FormatRegistry =
         FormatRegistry()
 
-    private val licenses: Flow<Map<Long, JSONObject>> =
+    private val licenses: Flow<Map<String, JSONObject>> =
         context.dataStore.data
             .map { data -> data.licenses }
 
@@ -156,6 +156,10 @@ public class LcpPublicationRetriever(
         downloadManager.close()
     }
 
+    public suspend fun cancel(requestId: RequestId) {
+        downloadManager.cancel(DownloadManager.RequestId(requestId.value))
+    }
+
     private suspend fun fetchPublication(
         license: LicenseDocument,
         downloadTitle: String,
@@ -179,8 +183,8 @@ public class LcpPublicationRetriever(
         return RequestId(requestId.value)
     }
 
-    private suspend fun onDownloadCompleted(
-        id: Long,
+    private suspend fun onDownloadCompletedImpl(
+        id: String,
         file: File
     ): Try<LcpService.AcquiredPublication, Exception> {
         val licenses = licenses.first()
@@ -210,7 +214,7 @@ public class LcpPublicationRetriever(
         return Try.success(acquiredPublication)
     }
 
-    private suspend fun persistLicense(id: Long, license: JSONObject) {
+    private suspend fun persistLicense(id: String, license: JSONObject) {
         context.dataStore.edit { data ->
             val newEntry = id to license
             val licenses = data.licenses + newEntry
@@ -218,31 +222,31 @@ public class LcpPublicationRetriever(
         }
     }
 
-    private suspend fun removeLicense(id: Long) {
+    private suspend fun removeLicense(id: String) {
         context.dataStore.edit { data ->
             val licenses = data.licenses - id
             data[licensesKey] = licenses.toJson()
         }
     }
 
-    private val Preferences.licenses: Map<Long, JSONObject>
+    private val Preferences.licenses: Map<String, JSONObject>
         get() = get(licensesKey)?.toLicenses().orEmpty()
 
-    private fun licenseToJson(id: Long, license: JSONObject): JSONObject =
+    private fun licenseToJson(id: String, license: JSONObject): JSONObject =
         JSONObject()
             .put("id", id)
             .put("license", license)
 
-    private fun jsonToLicense(jsonObject: JSONObject): Pair<Long, JSONObject> =
-        jsonObject.getLong("id") to jsonObject.getJSONObject("license")
+    private fun jsonToLicense(jsonObject: JSONObject): Pair<String, JSONObject> =
+        jsonObject.getString("id") to jsonObject.getJSONObject("license")
 
-    private fun Map<Long, JSONObject>.toJson(): String {
+    private fun Map<String, JSONObject>.toJson(): String {
         val jsonObjects = map { licenseToJson(it.key, it.value) }
         val array = JSONArray(jsonObjects)
         return array.toString()
     }
 
-    private fun String.toLicenses(): Map<Long, JSONObject> {
+    private fun String.toLicenses(): Map<String, JSONObject> {
         val array = JSONArray(this)
         val objects = (0 until array.length()).map { array.getJSONObject(it) }
         return objects.associate { jsonToLicense(it) }

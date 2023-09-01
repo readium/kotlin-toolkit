@@ -11,6 +11,7 @@ import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import java.io.File
+import java.util.UUID
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -58,16 +59,28 @@ public class AndroidDownloadManager internal constructor(
 
     public override suspend fun submit(request: DownloadManager.Request): DownloadManager.RequestId {
         startObservingProgress()
+        val dottedExtension = request.url.extension
+            ?.let { ".$it" }
+            .orEmpty()
         val androidRequest = createRequest(
             uri = request.url.toUri(),
-            filename = request.url.filename,
+            filename = "${UUID.randomUUID()}$dottedExtension}",
             headers = request.headers,
             title = request.title,
             description = request.description
         )
         val downloadId = downloadManager.enqueue(androidRequest)
         downloadsRepository.addId(name, downloadId)
-        return DownloadManager.RequestId(downloadId)
+        return DownloadManager.RequestId(downloadId.toString())
+    }
+
+    public override suspend fun cancel(requestId: DownloadManager.RequestId) {
+        val longId = requestId.value.toLong()
+        downloadManager.remove()
+        downloadsRepository.removeId(name, longId)
+        if (!downloadsRepository.hasDownloadsOngoing()) {
+            stopObservingProgress()
+        }
     }
 
     private fun createRequest(
@@ -133,17 +146,17 @@ public class AndroidDownloadManager internal constructor(
     private suspend fun notify(cursor: Cursor, ids: List<Long>) = cursor.use {
         while (cursor.moveToNext()) {
             val facade = DownloadCursorFacade(cursor)
-            val id = DownloadManager.RequestId(facade.id)
+            val id = DownloadManager.RequestId(facade.id.toString())
 
-            if (id.value !in ids) {
+            if (facade.id !in ids) {
                 continue
             }
 
             when (facade.status) {
                 SystemDownloadManager.STATUS_FAILED -> {
                     listener.onDownloadFailed(id, mapErrorCode(facade.reason!!))
-                    downloadManager.remove(id.value)
-                    downloadsRepository.removeId(name, id.value)
+                    downloadManager.remove(facade.id)
+                    downloadsRepository.removeId(name, facade.id)
                     if (!downloadsRepository.hasDownloadsOngoing()) {
                         stopObservingProgress()
                     }
@@ -153,8 +166,8 @@ public class AndroidDownloadManager internal constructor(
                 SystemDownloadManager.STATUS_SUCCESSFUL -> {
                     val destUri = Uri.parse(facade.localUri!!)
                     listener.onDownloadCompleted(id, File(destUri.path!!))
-                    downloadManager.remove(id.value)
-                    downloadsRepository.removeId(name, id.value)
+                    downloadManager.remove(facade.id)
+                    downloadsRepository.removeId(name, facade.id)
                     if (!downloadsRepository.hasDownloadsOngoing()) {
                         stopObservingProgress()
                     }
@@ -170,31 +183,31 @@ public class AndroidDownloadManager internal constructor(
     private fun mapErrorCode(code: Int): DownloadManager.Error =
         when (code) {
             401, 403 ->
-                DownloadManager.Error.Forbidden
+                DownloadManager.Error.Forbidden()
             404 ->
-                DownloadManager.Error.NotFound
+                DownloadManager.Error.NotFound()
             500, 501 ->
-                DownloadManager.Error.Server
+                DownloadManager.Error.Server()
             502, 503, 504 ->
-                DownloadManager.Error.Unreachable
+                DownloadManager.Error.Unreachable()
             SystemDownloadManager.ERROR_CANNOT_RESUME ->
-                DownloadManager.Error.CannotResume
+                DownloadManager.Error.CannotResume()
             SystemDownloadManager.ERROR_DEVICE_NOT_FOUND ->
-                DownloadManager.Error.DeviceNotFound
+                DownloadManager.Error.DeviceNotFound()
             SystemDownloadManager.ERROR_FILE_ERROR ->
-                DownloadManager.Error.FileError
+                DownloadManager.Error.FileError()
             SystemDownloadManager.ERROR_HTTP_DATA_ERROR ->
-                DownloadManager.Error.HttpData
+                DownloadManager.Error.HttpData()
             SystemDownloadManager.ERROR_INSUFFICIENT_SPACE ->
-                DownloadManager.Error.InsufficientSpace
+                DownloadManager.Error.InsufficientSpace()
             SystemDownloadManager.ERROR_TOO_MANY_REDIRECTS ->
-                DownloadManager.Error.TooManyRedirects
+                DownloadManager.Error.TooManyRedirects()
             SystemDownloadManager.ERROR_UNHANDLED_HTTP_CODE ->
-                DownloadManager.Error.Unknown
+                DownloadManager.Error.Unknown()
             SystemDownloadManager.ERROR_UNKNOWN ->
-                DownloadManager.Error.Unknown
+                DownloadManager.Error.Unknown()
             else ->
-                DownloadManager.Error.Unknown
+                DownloadManager.Error.Unknown()
         }
 
     public override suspend fun close() {

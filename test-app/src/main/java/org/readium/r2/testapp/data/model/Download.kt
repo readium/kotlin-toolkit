@@ -14,7 +14,7 @@ data class Download(
     @ColumnInfo(name = MANAGER)
     val manager: String,
     @ColumnInfo(name = ID)
-    val id: Long,
+    val id: String,
     @ColumnInfo(name = EXTRA)
     val extra: String? = null,
     @ColumnInfo(name = CREATION_DATE, defaultValue = "CURRENT_TIMESTAMP")

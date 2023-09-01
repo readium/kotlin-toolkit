@@ -19,78 +19,56 @@ public interface DownloadManager {
     )
 
     @JvmInline
-    public value class RequestId(public val value: Long)
+    public value class RequestId(public val value: String)
 
-    public sealed class Error : org.readium.r2.shared.util.Error {
+    public sealed class Error(
+        override val message: String,
+        override val cause: org.readium.r2.shared.util.Error? = null
+    ) : org.readium.r2.shared.util.Error {
 
-        override val cause: org.readium.r2.shared.util.Error? =
-            null
+        public class NotFound(
+            cause: org.readium.r2.shared.util.Error? = null
+        ) : Error("File not found.", cause)
 
-        public data object NotFound : Error() {
+        public class Unreachable(
+            cause: org.readium.r2.shared.util.Error? = null
+        ) : Error("Server is not reachable.", cause)
 
-            override val message: String =
-                "File not found."
-        }
+        public class Server(
+            cause: org.readium.r2.shared.util.Error? = null
+        ) : Error("An error occurred on the server-side.", cause)
 
-        public data object Unreachable : Error() {
+        public class Forbidden(
+            cause: org.readium.r2.shared.util.Error? = null
+        ) : Error("Access to the resource was denied.", cause)
 
-            override val message: String =
-                "Server is not reachable."
-        }
+        public class DeviceNotFound(
+            cause: org.readium.r2.shared.util.Error? = null
+        ) : Error("The storage device is missing.", cause)
 
-        public data object Server : Error() {
+        public class CannotResume(
+            cause: org.readium.r2.shared.util.Error? = null
+        ) : Error("Download couldn't be resumed.", cause)
 
-            override val message: String =
-                "An error occurred on the server-side."
-        }
+        public class InsufficientSpace(
+            cause: org.readium.r2.shared.util.Error? = null
+        ) : Error("There is not enough space to complete the download.", cause)
 
-        public data object Forbidden : Error() {
+        public class FileError(
+            cause: org.readium.r2.shared.util.Error? = null
+        ) : Error("IO error on the local device.", cause)
 
-            override val message: String =
-                "Access to the resource was denied."
-        }
+        public class HttpData(
+            cause: org.readium.r2.shared.util.Error? = null
+        ) : Error("A data error occurred at the HTTP level.", cause)
 
-        public data object DeviceNotFound : Error() {
+        public class TooManyRedirects(
+            cause: org.readium.r2.shared.util.Error? = null
+        ) : Error("Too many redirects.", cause)
 
-            override val message: String =
-                "The storage device is missing."
-        }
-
-        public data object CannotResume : Error() {
-
-            override val message: String =
-                "Download couldn't be resumed."
-        }
-
-        public data object InsufficientSpace : Error() {
-
-            override val message: String =
-                "There is not enough space to complete the download."
-        }
-
-        public data object FileError : Error() {
-
-            override val message: String =
-                "IO error on the local device."
-        }
-
-        public data object HttpData : Error() {
-
-            override val message: String =
-                "A data error occurred at the HTTP level."
-        }
-
-        public data object TooManyRedirects : Error() {
-
-            override val message: String =
-                "Too many redirects."
-        }
-
-        public data object Unknown : Error() {
-
-            override val message: String =
-                "An unknown error occurred."
-        }
+        public class Unknown(
+            cause: org.readium.r2.shared.util.Error? = null
+        ) : Error("An unknown error occurred.", cause)
     }
 
     public interface Listener {
@@ -103,6 +81,8 @@ public interface DownloadManager {
     }
 
     public suspend fun submit(request: Request): RequestId
+
+    public suspend fun cancel(requestId: RequestId)
 
     public suspend fun close()
 }
