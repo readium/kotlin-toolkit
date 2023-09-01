@@ -13,6 +13,7 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optNullableDouble
 import org.readium.r2.shared.extensions.optNullableString
@@ -73,6 +74,12 @@ public data class Contributor(
         put("position", position)
         putIfNotEmpty("links", links)
     }
+
+    @ExperimentalReadiumApi
+    public fun copy(transformer: ManifestTransformer): Contributor =
+        copy(
+            links = links.copy(transformer)
+        )
 
     public companion object {
 
@@ -150,3 +157,7 @@ public data class Contributor(
     val multilanguageName: LocalizedString
         get() = localizedName
 }
+
+@ExperimentalReadiumApi
+public fun List<Contributor>.copy(transformer: ManifestTransformer): List<Contributor> =
+    map { it.copy(transformer) }

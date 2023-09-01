@@ -14,6 +14,7 @@ import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import org.json.JSONArray
 import org.json.JSONObject
+import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.optNullableString
 import org.readium.r2.shared.extensions.optPositiveDouble
@@ -121,6 +122,16 @@ public data class Link(
      */
     public fun addProperties(properties: Map<String, Any>): Link =
         copy(properties = this.properties.add(properties))
+
+    @ExperimentalReadiumApi
+    public fun copy(transformer: ManifestTransformer): Link =
+        transformer.transform(
+            copy(
+                href = href.copy(transformer),
+                alternates = alternates.copy(transformer),
+                children = children.copy(transformer)
+            )
+        )
 
     public companion object {
 
@@ -304,3 +315,7 @@ public fun List<Link>.flatten(): List<Link> {
 
     return flatMap { it.flatten() }
 }
+
+@ExperimentalReadiumApi
+public fun List<Link>.copy(transformer: ManifestTransformer): List<Link> =
+    map { it.copy(transformer) }
