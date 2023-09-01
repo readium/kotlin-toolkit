@@ -112,7 +112,7 @@ public class LcpPublicationRetriever(
     private val downloadManager: DownloadManager =
         downloadManagerProvider.createDownloadManager(
             DownloadListener(),
-            "~readium-lcp-publication-retriever"
+            "org.readium.lcp.LcpPublicationRetriever"
         )
 
     private val formatRegistry: FormatRegistry =

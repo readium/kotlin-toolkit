@@ -59,12 +59,10 @@ public class AndroidDownloadManager internal constructor(
 
     public override suspend fun submit(request: DownloadManager.Request): DownloadManager.RequestId {
         startObservingProgress()
-        val dottedExtension = request.url.extension
-            ?.let { ".$it" }
-            .orEmpty()
+
         val androidRequest = createRequest(
             uri = request.url.toUri(),
-            filename = "${UUID.randomUUID()}$dottedExtension}",
+            filename = generateFileName(extension = request.url.extension),
             headers = request.headers,
             title = request.title,
             description = request.description
@@ -72,6 +70,13 @@ public class AndroidDownloadManager internal constructor(
         val downloadId = downloadManager.enqueue(androidRequest)
         downloadsRepository.addId(name, downloadId)
         return DownloadManager.RequestId(downloadId.toString())
+    }
+
+    private fun generateFileName(extension: String?): String {
+        val dottedExtension = extension
+            ?.let { ".$it" }
+            .orEmpty()
+        return "${UUID.randomUUID()}$dottedExtension}"
     }
 
     public override suspend fun cancel(requestId: DownloadManager.RequestId) {
@@ -165,7 +170,13 @@ public class AndroidDownloadManager internal constructor(
                 SystemDownloadManager.STATUS_PENDING -> {}
                 SystemDownloadManager.STATUS_SUCCESSFUL -> {
                     val destUri = Uri.parse(facade.localUri!!)
-                    listener.onDownloadCompleted(id, File(destUri.path!!))
+                    val destFile = File(destUri.path!!)
+                    val newDest = File(destFile.parent, generateFileName(destFile.extension))
+                    if (destFile.renameTo(newDest)) {
+                        listener.onDownloadCompleted(id, newDest)
+                    } else {
+                        listener.onDownloadFailed(id, DownloadManager.Error.FileError())
+                    }
                     downloadManager.remove(facade.id)
                     downloadsRepository.removeId(name, facade.id)
                     if (!downloadsRepository.hasDownloadsOngoing()) {
