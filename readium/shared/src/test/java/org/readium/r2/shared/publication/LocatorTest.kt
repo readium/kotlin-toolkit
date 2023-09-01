@@ -25,7 +25,7 @@ class LocatorTest {
 
     @Test fun `parse {Locator} minimal JSON`() {
         assertEquals(
-            Locator(href = Url("http://locator")!!, type = "text/html"),
+            Locator(href = Url("http://locator")!!, mediaType = MediaType.HTML),
             Locator.fromJSON(
                 JSONObject(
                     """{
@@ -41,7 +41,7 @@ class LocatorTest {
         assertEquals(
             Locator(
                 href = Url("http://locator")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 title = "My Locator",
                 locations = Locator.Locations(position = 42),
                 text = Locator.Text(highlight = "Excerpt")
@@ -80,7 +80,7 @@ class LocatorTest {
                 "type": "text/html"
             }"""
             ),
-            Locator(href = Url("http://locator")!!, type = "text/html").toJSON()
+            Locator(href = Url("http://locator")!!, mediaType = MediaType.HTML).toJSON()
         )
     }
 
@@ -101,7 +101,7 @@ class LocatorTest {
             ),
             Locator(
                 href = Url("http://locator")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 title = "My Locator",
                 locations = Locator.Locations(position = 42),
                 text = Locator.Text(highlight = "Excerpt")
@@ -113,7 +113,7 @@ class LocatorTest {
         assertEquals(
             Locator(
                 href = Url("http://locator")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations(
                     fragments = listOf("p=4", "frag34"),
                     progression = 0.74,
@@ -124,7 +124,7 @@ class LocatorTest {
             ),
             Locator(
                 href = Url("http://locator")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations(position = 42, progression = 2.0)
             ).copyWithLocations(
                 fragments = listOf("p=4", "frag34"),
@@ -139,12 +139,12 @@ class LocatorTest {
         assertEquals(
             Locator(
                 href = Url("http://locator")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations()
             ),
             Locator(
                 href = Url("http://locator")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations(position = 42, progression = 2.0)
             ).copyWithLocations(
                 fragments = emptyList(),
@@ -381,7 +381,7 @@ class LocatorCollectionTest {
                 locators = listOf(
                     Locator(
                         href = Url("/978-1503222687/chap7.html")!!,
-                        type = "application/xhtml+xml",
+                        mediaType = MediaType.XHTML,
                         locations = Locator.Locations(
                             fragments = listOf(":~:text=riddle,-yet%3F'"),
                             progression = 0.43
@@ -394,7 +394,7 @@ class LocatorCollectionTest {
                     ),
                     Locator(
                         href = Url("/978-1503222687/chap7.html")!!,
-                        type = "application/xhtml+xml",
+                        mediaType = MediaType.XHTML,
                         locations = Locator.Locations(
                             fragments = listOf(":~:text=in%20asking-,riddles"),
                             progression = 0.47
@@ -549,7 +549,7 @@ class LocatorCollectionTest {
                 locators = listOf(
                     Locator(
                         href = Url("/978-1503222687/chap7.html")!!,
-                        type = "application/xhtml+xml",
+                        mediaType = MediaType.XHTML,
                         locations = Locator.Locations(
                             fragments = listOf(":~:text=riddle,-yet%3F'"),
                             progression = 0.43
@@ -562,7 +562,7 @@ class LocatorCollectionTest {
                     ),
                     Locator(
                         href = Url("/978-1503222687/chap7.html")!!,
-                        type = "application/xhtml+xml",
+                        mediaType = MediaType.XHTML,
                         locations = Locator.Locations(
                             fragments = listOf(":~:text=in%20asking-,riddles"),
                             progression = 0.47

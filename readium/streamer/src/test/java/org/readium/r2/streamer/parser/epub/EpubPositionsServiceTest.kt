@@ -52,7 +52,7 @@ class EpubPositionsServiceTest {
             listOf(
                 Locator(
                     href = Url("res")!!,
-                    type = "application/xml",
+                    mediaType = MediaType.XML,
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 1,
@@ -70,7 +70,7 @@ class EpubPositionsServiceTest {
             readingOrder = listOf(
                 ReadingOrderItem("res", length = 1),
                 ReadingOrderItem("chap1", length = 2, MediaType.XML),
-                ReadingOrderItem("chap2", length = 2, MediaType.HTML, title = "Chapter 2")
+                ReadingOrderItem("chap2", length = 2, MediaType.XHTML, title = "Chapter 2")
             )
         )
 
@@ -78,7 +78,7 @@ class EpubPositionsServiceTest {
             listOf(
                 Locator(
                     href = Url("res")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 1,
@@ -87,7 +87,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap1")!!,
-                    type = "application/xml",
+                    mediaType = MediaType.XML,
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 2,
@@ -96,7 +96,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap2")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     title = "Chapter 2",
                     locations = Locator.Locations(
                         progression = 0.0,
@@ -122,7 +122,7 @@ class EpubPositionsServiceTest {
             listOf(
                 Locator(
                     href = Url("chap1")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 1,
@@ -131,7 +131,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap2")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 2,
@@ -150,7 +150,7 @@ class EpubPositionsServiceTest {
             readingOrder = listOf(
                 ReadingOrderItem("res", length = 10000),
                 ReadingOrderItem("chap1", length = 20000, MediaType.XML),
-                ReadingOrderItem("chap2", length = 40000, MediaType.HTML, title = "Chapter 2")
+                ReadingOrderItem("chap2", length = 40000, MediaType.XHTML, title = "Chapter 2")
             )
         )
 
@@ -158,7 +158,7 @@ class EpubPositionsServiceTest {
             listOf(
                 Locator(
                     href = Url("res")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 1,
@@ -167,7 +167,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap1")!!,
-                    type = "application/xml",
+                    mediaType = MediaType.XML,
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 2,
@@ -176,7 +176,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap2")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     title = "Chapter 2",
                     locations = Locator.Locations(
                         progression = 0.0,
@@ -196,7 +196,7 @@ class EpubPositionsServiceTest {
             readingOrder = listOf(
                 ReadingOrderItem("chap1", length = 0),
                 ReadingOrderItem("chap2", length = 49, MediaType.XML),
-                ReadingOrderItem("chap3", length = 50, MediaType.HTML, title = "Chapter 3"),
+                ReadingOrderItem("chap3", length = 50, MediaType.XHTML, title = "Chapter 3"),
                 ReadingOrderItem("chap4", length = 51),
                 ReadingOrderItem("chap5", length = 120)
             ),
@@ -209,7 +209,7 @@ class EpubPositionsServiceTest {
             listOf(
                 Locator(
                     href = Url("chap1")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 1,
@@ -218,7 +218,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap2")!!,
-                    type = "application/xml",
+                    mediaType = MediaType.XML,
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 2,
@@ -227,7 +227,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap3")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     title = "Chapter 3",
                     locations = Locator.Locations(
                         progression = 0.0,
@@ -237,7 +237,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap4")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 4,
@@ -246,7 +246,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap4")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 0.5,
                         position = 5,
@@ -255,7 +255,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap5")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 6,
@@ -264,7 +264,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap5")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 1.0 / 3.0,
                         position = 7,
@@ -273,7 +273,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap5")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 2.0 / 3.0,
                         position = 8,
@@ -302,7 +302,7 @@ class EpubPositionsServiceTest {
             listOf(
                 Locator(
                     href = Url("chap1")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 1,
@@ -311,7 +311,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap1")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 0.5,
                         position = 2,
@@ -341,7 +341,7 @@ class EpubPositionsServiceTest {
             listOf(
                 Locator(
                     href = Url("chap1")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 1,
@@ -350,7 +350,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap2")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 2,
@@ -359,7 +359,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap2")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 0.5,
                         position = 3,
@@ -368,7 +368,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap3")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 4,
@@ -398,7 +398,7 @@ class EpubPositionsServiceTest {
                 listOf(
                     Locator(
                         href = Url("chap1")!!,
-                        type = "text/html",
+                        mediaType = MediaType.XHTML,
                         locations = Locator.Locations(
                             progression = 0.0,
                             position = 1,
@@ -409,7 +409,7 @@ class EpubPositionsServiceTest {
                 listOf(
                     Locator(
                         href = Url("chap2")!!,
-                        type = "text/html",
+                        mediaType = MediaType.XHTML,
                         locations = Locator.Locations(
                             progression = 0.0,
                             position = 2,
@@ -418,7 +418,7 @@ class EpubPositionsServiceTest {
                     ),
                     Locator(
                         href = Url("chap2")!!,
-                        type = "text/html",
+                        mediaType = MediaType.XHTML,
                         locations = Locator.Locations(
                             progression = 0.5,
                             position = 3,
@@ -448,7 +448,7 @@ class EpubPositionsServiceTest {
             listOf(
                 Locator(
                     href = Url("chap1")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 1,
@@ -457,7 +457,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap2")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 0.0,
                         position = 2,
@@ -466,7 +466,7 @@ class EpubPositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap2")!!,
-                    type = "text/html",
+                    mediaType = MediaType.XHTML,
                     locations = Locator.Locations(
                         progression = 0.5,
                         position = 3,

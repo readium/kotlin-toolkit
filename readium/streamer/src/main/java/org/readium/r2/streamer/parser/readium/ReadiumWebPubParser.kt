@@ -72,7 +72,9 @@ public class ReadiumWebPubParser(
                     positionsServiceFactory = pdfFactory?.let { LcpdfPositionsService.create(it) }
 
                 MediaType.DIVINA ->
-                    positionsServiceFactory = PerResourcePositionsService.createFactory("image/*")
+                    positionsServiceFactory = PerResourcePositionsService.createFactory(
+                        MediaType("image/*")!!
+                    )
 
                 MediaType.READIUM_AUDIOBOOK, MediaType.LCP_PROTECTED_AUDIOBOOK ->
                     locatorServiceFactory = AudioLocatorService.createFactory()

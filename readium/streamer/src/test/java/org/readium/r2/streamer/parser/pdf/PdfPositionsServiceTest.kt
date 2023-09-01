@@ -15,6 +15,7 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.urlHref
 import org.robolectric.RobolectricTestRunner
 
@@ -37,7 +38,7 @@ class PdfPositionsServiceTest {
                 listOf(
                     Locator(
                         href = Url("publication.pdf")!!,
-                        type = "application/pdf",
+                        mediaType = MediaType.PDF,
                         locations = Locator.Locations(
                             fragments = listOf("page=1"),
                             progression = 0.0,
@@ -62,7 +63,7 @@ class PdfPositionsServiceTest {
                 listOf(
                     Locator(
                         href = Url("publication.pdf")!!,
-                        type = "application/pdf",
+                        mediaType = MediaType.PDF,
                         locations = Locator.Locations(
                             fragments = listOf("page=1"),
                             progression = 0.0,
@@ -72,7 +73,7 @@ class PdfPositionsServiceTest {
                     ),
                     Locator(
                         href = Url("publication.pdf")!!,
-                        type = "application/pdf",
+                        mediaType = MediaType.PDF,
                         locations = Locator.Locations(
                             fragments = listOf("page=2"),
                             progression = 1.0 / 3.0,
@@ -82,7 +83,7 @@ class PdfPositionsServiceTest {
                     ),
                     Locator(
                         href = Url("publication.pdf")!!,
-                        type = "application/pdf",
+                        mediaType = MediaType.PDF,
                         locations = Locator.Locations(
                             fragments = listOf("page=3"),
                             progression = 2.0 / 3.0,

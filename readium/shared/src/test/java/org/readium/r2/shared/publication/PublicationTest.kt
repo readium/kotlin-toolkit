@@ -61,13 +61,13 @@ class PublicationTest {
 
     @Test fun `get the {positions} computed from the {PositionsService}`() {
         assertEquals(
-            listOf(Locator(href = Url("locator")!!, type = "")),
+            listOf(Locator(href = Url("locator")!!, mediaType = MediaType.HTML)),
             createPublication(
                 servicesBuilder = Publication.ServicesBuilder(
                     positions = {
                         object : PositionsService {
                             override suspend fun positionsByReadingOrder(): List<List<Locator>> = listOf(
-                                listOf(Locator(href = Url("locator")!!, type = ""))
+                                listOf(Locator(href = Url("locator")!!, mediaType = MediaType.HTML))
                             )
                         }
                     }
@@ -80,11 +80,11 @@ class PublicationTest {
         assertEquals(
             listOf(
                 listOf(
-                    Locator(href = Url("res1")!!, type = "text/html", title = "Loc A"),
-                    Locator(href = Url("res1")!!, type = "text/html", title = "Loc B")
+                    Locator(href = Url("res1")!!, mediaType = MediaType.HTML, title = "Loc A"),
+                    Locator(href = Url("res1")!!, mediaType = MediaType.HTML, title = "Loc B")
                 ),
                 listOf(
-                    Locator(href = Url("res2")!!, type = "text/html", title = "Loc B")
+                    Locator(href = Url("res2")!!, mediaType = MediaType.HTML, title = "Loc B")
                 )
             ),
             createPublication(
@@ -95,19 +95,19 @@ class PublicationTest {
                                 listOf(
                                     Locator(
                                         href = Url("res1")!!,
-                                        type = "text/html",
+                                        mediaType = MediaType.HTML,
                                         title = "Loc A"
                                     ),
                                     Locator(
                                         href = Url("res1")!!,
-                                        type = "text/html",
+                                        mediaType = MediaType.HTML,
                                         title = "Loc B"
                                     )
                                 ),
                                 listOf(
                                     Locator(
                                         href = Url("res2")!!,
-                                        type = "text/html",
+                                        mediaType = MediaType.HTML,
                                         title = "Loc B"
                                     )
                                 )

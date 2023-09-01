@@ -28,7 +28,7 @@ import org.robolectric.RobolectricTestRunner
 class HtmlResourceContentIteratorTest {
 
     private val link = Link(href = urlHref("/dir/res.xhtml"), mediaType = MediaType.XHTML)
-    private val locator = Locator(href = Url("/dir/res.xhtml")!!, type = "application/xhtml+xml")
+    private val locator = Locator(href = Url("/dir/res.xhtml")!!, mediaType = MediaType.XHTML)
 
     private val html = """
         <?xml version="1.0" encoding="UTF-8"?>

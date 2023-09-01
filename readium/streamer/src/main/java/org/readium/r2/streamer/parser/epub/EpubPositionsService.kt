@@ -190,7 +190,7 @@ public class EpubPositionsService(
     ): Locator =
         Locator(
             href = href,
-            type = (type ?: MediaType.HTML).toString(),
+            mediaType = type ?: MediaType.XHTML,
             title = title,
             locations = Locator.Locations(
                 progression = progression,

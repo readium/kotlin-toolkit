@@ -114,7 +114,7 @@ public var Publication.ServicesBuilder.positionsServiceFactory: ServiceFactory?
  */
 public class PerResourcePositionsService(
     private val readingOrder: List<Link>,
-    private val fallbackMediaType: String
+    private val fallbackMediaType: MediaType
 ) : PositionsService {
 
     override suspend fun positionsByReadingOrder(): List<List<Locator>> {
@@ -126,7 +126,7 @@ public class PerResourcePositionsService(
             listOf(
                 Locator(
                     href = url,
-                    type = link.mediaType?.toString() ?: fallbackMediaType,
+                    mediaType = link.mediaType ?: fallbackMediaType,
                     title = link.title,
                     locations = Locator.Locations(
                         position = index + 1,
@@ -139,7 +139,7 @@ public class PerResourcePositionsService(
 
     public companion object {
 
-        public fun createFactory(fallbackMediaType: String): (Publication.Service.Context) -> PerResourcePositionsService = {
+        public fun createFactory(fallbackMediaType: MediaType): (Publication.Service.Context) -> PerResourcePositionsService = {
             PerResourcePositionsService(
                 readingOrder = it.manifest.readingOrder,
                 fallbackMediaType = fallbackMediaType

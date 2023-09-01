@@ -13,6 +13,7 @@ import androidx.room.PrimaryKey
 import org.json.JSONObject
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 
 @Entity(
     tableName = Bookmark.TABLE_NAME,
@@ -48,7 +49,7 @@ data class Bookmark(
     val locator
         get() = Locator(
             href = Url(resourceHref)!!,
-            type = resourceType,
+            mediaType = MediaType(resourceType) ?: MediaType.BINARY,
             title = resourceTitle,
             locations = Locator.Locations.fromJSON(JSONObject(location)),
             text = Locator.Text.fromJSON(JSONObject(locatorText))

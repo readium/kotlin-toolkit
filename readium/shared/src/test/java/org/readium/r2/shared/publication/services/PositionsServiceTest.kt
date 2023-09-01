@@ -35,7 +35,7 @@ class PositionsServiceTest {
             listOf(
                 Locator(
                     href = Url("res")!!,
-                    type = "application/xml",
+                    mediaType = MediaType.XML,
                     locations = Locator.Locations(
                         position = 1,
                         totalProgression = 0.0
@@ -45,7 +45,7 @@ class PositionsServiceTest {
             listOf(
                 Locator(
                     href = Url("chap1")!!,
-                    type = "image/png",
+                    mediaType = MediaType.PNG,
                     locations = Locator.Locations(
                         position = 2,
                         totalProgression = 1.0 / 4.0
@@ -55,7 +55,7 @@ class PositionsServiceTest {
             listOf(
                 Locator(
                     href = Url("chap2")!!,
-                    type = "image/png",
+                    mediaType = MediaType.PNG,
                     title = "Chapter 2",
                     locations = Locator.Locations(
                         position = 3,
@@ -64,7 +64,7 @@ class PositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap2")!!,
-                    type = "image/png",
+                    mediaType = MediaType.PNG,
                     title = "Chapter 2.5",
                     locations = Locator.Locations(
                         position = 4,
@@ -115,7 +115,7 @@ class PerResourcePositionsServiceTest {
     fun `Positions from an empty {readingOrder}`() {
         val service = PerResourcePositionsService(
             readingOrder = emptyList(),
-            fallbackMediaType = ""
+            fallbackMediaType = MediaType.BINARY
         )
 
         Assert.assertEquals(0, runBlocking { service.positions().size })
@@ -125,14 +125,14 @@ class PerResourcePositionsServiceTest {
     fun `Positions from a {readingOrder} with one resource`() {
         val service = PerResourcePositionsService(
             readingOrder = listOf(Link(href = urlHref("res"), mediaType = MediaType.PNG)),
-            fallbackMediaType = ""
+            fallbackMediaType = MediaType.BINARY
         )
 
         Assert.assertEquals(
             listOf(
                 Locator(
                     href = Url("res")!!,
-                    type = "image/png",
+                    mediaType = MediaType.PNG,
                     locations = Locator.Locations(
                         position = 1,
                         totalProgression = 0.0
@@ -151,14 +151,14 @@ class PerResourcePositionsServiceTest {
                 Link(href = urlHref("chap1"), mediaType = MediaType.PNG),
                 Link(href = urlHref("chap2"), mediaType = MediaType.PNG, title = "Chapter 2")
             ),
-            fallbackMediaType = ""
+            fallbackMediaType = MediaType.BINARY
         )
 
         Assert.assertEquals(
             listOf(
                 Locator(
                     href = Url("res")!!,
-                    type = "",
+                    mediaType = MediaType.BINARY,
                     locations = Locator.Locations(
                         position = 1,
                         totalProgression = 0.0
@@ -166,7 +166,7 @@ class PerResourcePositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap1")!!,
-                    type = "image/png",
+                    mediaType = MediaType.PNG,
                     locations = Locator.Locations(
                         position = 2,
                         totalProgression = 1.0 / 3.0
@@ -174,7 +174,7 @@ class PerResourcePositionsServiceTest {
                 ),
                 Locator(
                     href = Url("chap2")!!,
-                    type = "image/png",
+                    mediaType = MediaType.PNG,
                     title = "Chapter 2",
                     locations = Locator.Locations(
                         position = 3,
@@ -192,14 +192,14 @@ class PerResourcePositionsServiceTest {
             readingOrder = listOf(
                 Link(href = urlHref("res"))
             ),
-            fallbackMediaType = "image/*"
+            fallbackMediaType = MediaType("image/*")!!
         )
 
         Assert.assertEquals(
             listOf(
                 Locator(
                     href = Url("res")!!,
-                    type = "image/*",
+                    mediaType = MediaType("image/*")!!,
                     locations = Locator.Locations(
                         position = 1,
                         totalProgression = 0.0

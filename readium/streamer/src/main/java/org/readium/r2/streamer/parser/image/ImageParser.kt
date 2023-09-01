@@ -67,7 +67,9 @@ public class ImageParser : PublicationParser {
             manifest = manifest,
             container = asset.container,
             servicesBuilder = Publication.ServicesBuilder(
-                positions = PerResourcePositionsService.createFactory(fallbackMediaType = "image/*")
+                positions = PerResourcePositionsService.createFactory(
+                    fallbackMediaType = MediaType("image/*")!!
+                )
             )
         )
 

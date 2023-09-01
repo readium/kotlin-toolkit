@@ -84,7 +84,7 @@ class BookRepository(
             bookId = bookId,
             resourceIndex = resource.toLong(),
             resourceHref = locator.href.toString(),
-            resourceType = locator.type,
+            resourceType = locator.mediaType.toString(),
             resourceTitle = locator.title.orEmpty(),
             location = locator.locations.toJSON().toString(),
             locatorText = Locator.Text().toJSON().toString()

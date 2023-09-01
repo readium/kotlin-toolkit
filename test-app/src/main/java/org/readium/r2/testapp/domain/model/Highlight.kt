@@ -11,6 +11,7 @@ import androidx.room.*
 import org.json.JSONObject
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
  * @param id Primary key, auto-incremented
@@ -78,7 +79,7 @@ data class Highlight(
             style = style,
             tint = tint,
             href = locator.href.toString(),
-            type = locator.type,
+            type = locator.mediaType.toString(),
             title = locator.title,
             totalProgression = locator.locations.totalProgression ?: 0.0,
             locations = locator.locations,
@@ -88,7 +89,7 @@ data class Highlight(
 
     val locator: Locator get() = Locator(
         href = Url(href)!!,
-        type = type,
+        mediaType = MediaType(type) ?: MediaType.BINARY,
         title = title,
         locations = locations,
         text = text

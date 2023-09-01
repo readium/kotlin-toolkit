@@ -112,11 +112,11 @@ public data class Manifest(
         url = url.removeFragment()
 
         val resourceLink = linkWithHref(url) ?: return null
-        val type = resourceLink.mediaType?.toString() ?: return null
+        val mediaType = resourceLink.mediaType ?: return null
 
         return Locator(
             href = url,
-            type = type,
+            mediaType = mediaType,
             title = resourceLink.title ?: link.title,
             locations = Locator.Locations(
                 fragments = listOfNotNull(fragment),

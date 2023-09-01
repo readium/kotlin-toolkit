@@ -33,7 +33,7 @@ class LocatorServiceTest {
         )
         val locator = Locator(
             href = Url("chap2")!!,
-            type = "text/html",
+            mediaType = MediaType.HTML,
             text = Locator.Text(highlight = "Highlight")
         )
         assertEquals(locator, service.locate(locator))
@@ -44,7 +44,7 @@ class LocatorServiceTest {
         val service = createService(readingOrder = emptyList())
         val locator = Locator(
             href = Url("chap2")!!,
-            type = "text/html",
+            mediaType = MediaType.HTML,
             text = Locator.Text(highlight = "Highlight")
         )
         assertNull(service.locate(locator))
@@ -60,7 +60,7 @@ class LocatorServiceTest {
         )
         val locator = Locator(
             href = Url("chap2")!!,
-            type = "text/html",
+            mediaType = MediaType.HTML,
             text = Locator.Text(highlight = "Highlight")
         )
         assertNull(service.locate(locator))
@@ -73,7 +73,7 @@ class LocatorServiceTest {
         assertEquals(
             Locator(
                 href = Url("chap1")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations(
                     progression = 0.0,
                     totalProgression = 0.0,
@@ -86,7 +86,7 @@ class LocatorServiceTest {
         assertEquals(
             Locator(
                 href = Url("chap3")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 title = "Chapter 3",
                 locations = Locator.Locations(
                     progression = 0.0,
@@ -103,7 +103,7 @@ class LocatorServiceTest {
         assertEquals(
             Locator(
                 href = Url("chap4")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations(
                     progression = (0.4 - chap4FirstTotalProg) / (chap5FirstTotalProg - chap4FirstTotalProg),
                     totalProgression = 0.4,
@@ -116,7 +116,7 @@ class LocatorServiceTest {
         assertEquals(
             Locator(
                 href = Url("chap4")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations(
                     progression = (0.55 - chap4FirstTotalProg) / (chap5FirstTotalProg - chap4FirstTotalProg),
                     totalProgression = 0.55,
@@ -129,7 +129,7 @@ class LocatorServiceTest {
         assertEquals(
             Locator(
                 href = Url("chap5")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations(
                     progression = (0.9 - chap5FirstTotalProg) / (1.0 - chap5FirstTotalProg),
                     totalProgression = 0.9,
@@ -142,7 +142,7 @@ class LocatorServiceTest {
         assertEquals(
             Locator(
                 href = Url("chap5")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations(
                     progression = 1.0,
                     totalProgression = 1.0,
@@ -178,7 +178,7 @@ class LocatorServiceTest {
         listOf(
             Locator(
                 href = Url("chap1")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations(
                     progression = 0.0,
                     position = 1,
@@ -189,7 +189,7 @@ class LocatorServiceTest {
         listOf(
             Locator(
                 href = Url("chap2")!!,
-                type = "application/xml",
+                mediaType = MediaType.XML,
                 locations = Locator.Locations(
                     progression = 0.0,
                     position = 2,
@@ -200,7 +200,7 @@ class LocatorServiceTest {
         listOf(
             Locator(
                 href = Url("chap3")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 title = "Chapter 3",
                 locations = Locator.Locations(
                     progression = 0.0,
@@ -212,7 +212,7 @@ class LocatorServiceTest {
         listOf(
             Locator(
                 href = Url("chap4")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations(
                     progression = 0.0,
                     position = 4,
@@ -221,7 +221,7 @@ class LocatorServiceTest {
             ),
             Locator(
                 href = Url("chap4")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations(
                     progression = 0.5,
                     position = 5,
@@ -232,7 +232,7 @@ class LocatorServiceTest {
         listOf(
             Locator(
                 href = Url("chap5")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations(
                     progression = 0.0,
                     position = 6,
@@ -241,7 +241,7 @@ class LocatorServiceTest {
             ),
             Locator(
                 href = Url("chap5")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations(
                     progression = 1.0 / 3.0,
                     position = 7,
@@ -250,7 +250,7 @@ class LocatorServiceTest {
             ),
             Locator(
                 href = Url("chap5")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations(
                     progression = 2.0 / 3.0,
                     position = 8,

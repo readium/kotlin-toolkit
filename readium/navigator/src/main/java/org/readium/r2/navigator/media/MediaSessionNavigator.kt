@@ -30,6 +30,7 @@ import org.readium.r2.navigator.media.extensions.resourceHref
 import org.readium.r2.navigator.media.extensions.toPlaybackState
 import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.mediatype.MediaType
 import timber.log.Timber
 
 /**
@@ -155,7 +156,9 @@ public class MediaSessionNavigator(
 
     // Navigator
 
-    private val _currentLocator = MutableStateFlow(Locator(href = Url("#")!!, type = ""))
+    private val _currentLocator = MutableStateFlow(
+        Locator(href = Url("#")!!, mediaType = MediaType.BINARY)
+    )
     override val currentLocator: StateFlow<Locator> get() = _currentLocator.asStateFlow()
 
     /**

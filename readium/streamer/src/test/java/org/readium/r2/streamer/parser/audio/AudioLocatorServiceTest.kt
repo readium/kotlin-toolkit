@@ -32,7 +32,7 @@ class AudioLocatorServiceTest {
 
         val locator = Locator(
             Url("l1")!!,
-            type = "audio/mpeg",
+            mediaType = MediaType.MP3,
             locations = Locator.Locations(totalProgression = 0.53)
         )
         assertEquals(locator, service.locate(locator))
@@ -49,7 +49,7 @@ class AudioLocatorServiceTest {
 
         val locator = Locator(
             Url("l3")!!,
-            type = "audio/mpeg",
+            mediaType = MediaType.MP3,
             locations = Locator.Locations(totalProgression = 0.53)
         )
         assertNull(service.locate(locator))
@@ -67,7 +67,7 @@ class AudioLocatorServiceTest {
         assertEquals(
             Locator(
                 Url("l1")!!,
-                type = "audio/mpeg",
+                mediaType = MediaType.MP3,
                 locations = Locator.Locations(
                     fragments = listOf("t=98"),
                     progression = 98 / 100.0,
@@ -77,7 +77,7 @@ class AudioLocatorServiceTest {
             service.locate(
                 Locator(
                     Url("wrong")!!,
-                    type = "audio/mpeg",
+                    mediaType = MediaType.MP3,
                     locations = Locator.Locations(totalProgression = 0.49)
                 )
             )
@@ -86,7 +86,7 @@ class AudioLocatorServiceTest {
         assertEquals(
             Locator(
                 Url("l2")!!,
-                type = "audio/mpeg",
+                mediaType = MediaType.MP3,
                 locations = Locator.Locations(
                     fragments = listOf("t=0"),
                     progression = 0.0,
@@ -96,7 +96,7 @@ class AudioLocatorServiceTest {
             service.locate(
                 Locator(
                     Url("wrong")!!,
-                    type = "audio/mpeg",
+                    mediaType = MediaType.MP3,
                     locations = Locator.Locations(totalProgression = 0.5)
                 )
             )
@@ -105,7 +105,7 @@ class AudioLocatorServiceTest {
         assertEquals(
             Locator(
                 Url("l2")!!,
-                type = "audio/mpeg",
+                mediaType = MediaType.MP3,
                 locations = Locator.Locations(
                     fragments = listOf("t=2"),
                     progression = 0.02,
@@ -115,7 +115,7 @@ class AudioLocatorServiceTest {
             service.locate(
                 Locator(
                     Url("wrong")!!,
-                    type = "audio/mpeg",
+                    mediaType = MediaType.MP3,
                     locations = Locator.Locations(totalProgression = 0.51)
                 )
             )
@@ -134,7 +134,7 @@ class AudioLocatorServiceTest {
         assertEquals(
             Locator(
                 Url("l1")!!,
-                type = "audio/mpeg",
+                mediaType = MediaType.MP3,
                 title = "Title",
                 locations = Locator.Locations(
                     fragments = listOf("t=80"),
@@ -146,7 +146,7 @@ class AudioLocatorServiceTest {
             service.locate(
                 Locator(
                     Url("wrong")!!,
-                    type = "wrong-type",
+                    mediaType = MediaType.BINARY,
                     title = "Title",
                     locations = Locator.Locations(
                         fragments = listOf("ignored"),
@@ -173,7 +173,7 @@ class AudioLocatorServiceTest {
         assertEquals(
             Locator(
                 Url("l1")!!,
-                type = "audio/mpeg",
+                mediaType = MediaType.MP3,
                 locations = Locator.Locations(
                     fragments = listOf("t=0"),
                     progression = 0.0,
@@ -186,7 +186,7 @@ class AudioLocatorServiceTest {
         assertEquals(
             Locator(
                 Url("l1")!!,
-                type = "audio/mpeg",
+                mediaType = MediaType.MP3,
                 locations = Locator.Locations(
                     fragments = listOf("t=98"),
                     progression = 98 / 100.0,
@@ -199,7 +199,7 @@ class AudioLocatorServiceTest {
         assertEquals(
             Locator(
                 Url("l2")!!,
-                type = "audio/mpeg",
+                mediaType = MediaType.MP3,
                 locations = Locator.Locations(
                     fragments = listOf("t=0"),
                     progression = 0.0,
@@ -212,7 +212,7 @@ class AudioLocatorServiceTest {
         assertEquals(
             Locator(
                 Url("l2")!!,
-                type = "audio/mpeg",
+                mediaType = MediaType.MP3,
                 locations = Locator.Locations(
                     fragments = listOf("t=2"),
                     progression = 0.02,
@@ -225,7 +225,7 @@ class AudioLocatorServiceTest {
         assertEquals(
             Locator(
                 Url("l2")!!,
-                type = "audio/mpeg",
+                mediaType = MediaType.MP3,
                 locations = Locator.Locations(
                     fragments = listOf("t=100"),
                     progression = 1.0,

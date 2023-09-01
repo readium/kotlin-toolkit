@@ -970,7 +970,7 @@ public class EpubNavigatorFragment internal constructor(
             currentReflowablePageFragment?.webView?.findFirstVisibleLocator()
                 ?.copy(
                     href = href,
-                    type = (resource.mediaType ?: MediaType.XHTML).toString()
+                    mediaType = resource.mediaType ?: MediaType.XHTML
                 )
         }
     }
@@ -1042,7 +1042,7 @@ public class EpubNavigatorFragment internal constructor(
 
             val currentLocator = Locator(
                 href = (link.href as UrlHref).url,
-                type = (link.mediaType ?: MediaType.XHTML).toString(),
+                mediaType = link.mediaType ?: MediaType.XHTML,
                 title = tableOfContentsTitleByHref[link.href] ?: positionLocator?.title ?: link.title,
                 locations = (positionLocator?.locations ?: Locator.Locations()).copy(
                     progression = progression

@@ -301,7 +301,7 @@ class ManifestTest {
         Assert.assertEquals(
             Locator(
                 href = Url("href")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 title = "Resource",
                 locations = Locator.Locations(progression = 0.0)
             ),
@@ -319,7 +319,7 @@ class ManifestTest {
         Assert.assertEquals(
             Locator(
                 href = Url("href1")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations(progression = 0.0)
             ),
             manifest.locatorFromLink(Link(href = urlHref("href1")))
@@ -327,7 +327,7 @@ class ManifestTest {
         Assert.assertEquals(
             Locator(
                 href = Url("href2")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations(progression = 0.0)
             ),
             manifest.locatorFromLink(Link(href = urlHref("href2")))
@@ -335,7 +335,7 @@ class ManifestTest {
         Assert.assertEquals(
             Locator(
                 href = Url("href3")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 locations = Locator.Locations(progression = 0.0)
             ),
             manifest.locatorFromLink(Link(href = urlHref("href3")))
@@ -352,7 +352,7 @@ class ManifestTest {
         Assert.assertEquals(
             Locator(
                 href = Url("href")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 title = "Resource",
                 locations = Locator.Locations(fragments = listOf("page=42"))
             ),
@@ -370,7 +370,7 @@ class ManifestTest {
         Assert.assertEquals(
             Locator(
                 href = Url("href")!!,
-                type = "text/html",
+                mediaType = MediaType.HTML,
                 title = "My link",
                 locations = Locator.Locations(fragments = listOf("page=42"))
             ),

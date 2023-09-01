@@ -46,7 +46,7 @@ internal class PdfPositionsService(
                 val progression = (position - 1) / pageCount.toDouble()
                 Locator(
                     href = url,
-                    type = (link.mediaType ?: MediaType.PDF).toString(),
+                    mediaType = link.mediaType ?: MediaType.PDF,
                     locations = Locator.Locations(
                         fragments = listOf("page=$position"),
                         progression = progression,
