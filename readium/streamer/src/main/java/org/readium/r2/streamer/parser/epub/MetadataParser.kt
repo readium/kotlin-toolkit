@@ -7,9 +7,9 @@
 package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.parser.xml.ElementNode
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.publication.Href
+import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 

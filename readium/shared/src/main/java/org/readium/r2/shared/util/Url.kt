@@ -162,7 +162,7 @@ public sealed class Url : Parcelable {
         }
 
     /**
-     * Resolves the given relative [url] to this URL.
+     * Resolves the given [url] to this URL.
      */
     public open fun resolve(url: Url): Url =
         when (url) {

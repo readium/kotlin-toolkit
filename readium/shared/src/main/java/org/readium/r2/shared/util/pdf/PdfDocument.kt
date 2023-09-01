@@ -18,11 +18,11 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ReadingProgression
+import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.publication.services.cacheService
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.cache.Cache
 import org.readium.r2.shared.util.mediatype.MediaType
 

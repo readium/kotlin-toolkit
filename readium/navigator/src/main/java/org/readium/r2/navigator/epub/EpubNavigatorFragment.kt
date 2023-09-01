@@ -77,19 +77,19 @@ import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.DelicateReadiumApi
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ReadingProgression as PublicationReadingProgression
+import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.AbsoluteUrl
-import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.launchWebBrowser
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUri

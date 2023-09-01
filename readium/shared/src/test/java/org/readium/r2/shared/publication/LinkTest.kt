@@ -16,9 +16,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.toJSON
-import org.readium.r2.shared.util.TemplatedHref
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 

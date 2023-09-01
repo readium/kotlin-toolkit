@@ -25,7 +25,6 @@ import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.urlHref
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 

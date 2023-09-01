@@ -16,6 +16,7 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.resource.ArchiveProperties
@@ -26,7 +27,6 @@ import org.readium.r2.shared.resource.archive
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 

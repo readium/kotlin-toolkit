@@ -31,11 +31,11 @@ import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.UrlHref
 
 internal enum class DualPage {
     AUTO, OFF, ON

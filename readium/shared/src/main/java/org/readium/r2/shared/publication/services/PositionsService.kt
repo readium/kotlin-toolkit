@@ -19,6 +19,7 @@ import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ServiceFactory
+import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.publication.firstWithMediaType
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.StringResource
@@ -26,7 +27,6 @@ import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.mediatype.MediaType
 
 private val positionsMediaType =

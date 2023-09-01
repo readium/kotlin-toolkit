@@ -18,14 +18,14 @@ import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ServiceFactory
+import org.readium.r2.shared.publication.TemplatedHref
+import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.StringResource
-import org.readium.r2.shared.util.TemplatedHref
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**

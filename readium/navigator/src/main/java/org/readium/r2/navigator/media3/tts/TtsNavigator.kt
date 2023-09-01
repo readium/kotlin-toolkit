@@ -26,10 +26,10 @@ import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
+import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.publication.services.content.ContentService
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.tokenizer.TextTokenizer
 
 /**

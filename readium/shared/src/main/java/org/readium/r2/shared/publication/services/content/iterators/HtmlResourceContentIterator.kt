@@ -20,6 +20,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.PublicationServicesHolder
+import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.publication.services.content.Content.Attribute
@@ -33,7 +34,6 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.util.Language
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use

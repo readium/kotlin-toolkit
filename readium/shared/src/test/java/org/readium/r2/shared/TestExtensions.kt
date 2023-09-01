@@ -6,9 +6,9 @@
 
 package org.readium.r2.shared
 
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.publication.Href
+import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.UrlHref
 
 fun urlHref(url: String): Href =
     UrlHref(Url(url)!!)

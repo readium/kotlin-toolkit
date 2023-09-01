@@ -19,13 +19,13 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.readBlocking
 import org.readium.r2.shared.resource.FileResource
 import org.readium.r2.shared.resource.ResourceContainer
 import org.readium.r2.shared.urlHref
 import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.toUrl
 import org.robolectric.RobolectricTestRunner

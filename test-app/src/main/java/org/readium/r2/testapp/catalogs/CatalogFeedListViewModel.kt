@@ -9,7 +9,6 @@ package org.readium.r2.testapp.catalogs
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import java.net.URL
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import org.json.JSONObject

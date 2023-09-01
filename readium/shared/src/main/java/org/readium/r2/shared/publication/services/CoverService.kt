@@ -17,12 +17,12 @@ import org.readium.r2.shared.extensions.toPng
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.ServiceFactory
+import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.resource.BytesResource
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.LazyResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**

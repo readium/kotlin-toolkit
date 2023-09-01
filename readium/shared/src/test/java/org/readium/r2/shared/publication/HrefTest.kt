@@ -4,11 +4,12 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.r2.shared.util
+package org.readium.r2.shared.publication
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.util.Url
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)

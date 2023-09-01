@@ -9,9 +9,9 @@ package org.readium.r2.streamer.parser.epub
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Properties
+import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
 internal class ResourceAdapter(

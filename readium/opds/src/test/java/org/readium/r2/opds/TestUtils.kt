@@ -14,9 +14,9 @@ import java.net.URL
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.publication.Href
+import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.UrlHref
 
 /**
  * Asserts that two [JSONObject] are equal.

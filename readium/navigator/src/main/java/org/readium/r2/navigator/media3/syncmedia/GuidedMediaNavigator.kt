@@ -16,10 +16,10 @@ import org.readium.r2.navigator.media3.api.TimeBasedMediaNavigator
 import org.readium.r2.navigator.media3.audio.AudioNavigator
 import org.readium.r2.navigator.preferences.Configurable
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Href
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi

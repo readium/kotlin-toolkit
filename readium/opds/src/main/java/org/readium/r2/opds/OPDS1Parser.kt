@@ -16,10 +16,10 @@ import org.readium.r2.shared.opds.*
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
-import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
