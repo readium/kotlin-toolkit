@@ -29,6 +29,7 @@ public class AndroidDownloadManager internal constructor(
     private val destStorage: Storage,
     private val dirType: String,
     private val refreshRate: Hz,
+    private val allowDownloadsOverMetered: Boolean,
     private val listener: DownloadManager.Listener
 ) : DownloadManager {
 

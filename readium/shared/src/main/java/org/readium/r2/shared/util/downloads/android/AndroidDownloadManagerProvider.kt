@@ -16,7 +16,8 @@ import org.readium.r2.shared.util.downloads.DownloadManagerProvider
 public class AndroidDownloadManagerProvider(
     private val context: Context,
     private val destStorage: AndroidDownloadManager.Storage = AndroidDownloadManager.Storage.App,
-    private val refreshRate: Hz = 0.1.hz
+    private val refreshRate: Hz = 0.1.hz,
+    private val allowDownloadsOverMetered: Boolean = true
 ) : DownloadManagerProvider {
 
     override fun createDownloadManager(
@@ -29,6 +30,7 @@ public class AndroidDownloadManagerProvider(
             destStorage,
             Environment.DIRECTORY_DOWNLOADS,
             refreshRate,
+            allowDownloadsOverMetered,
             listener
         )
     }
