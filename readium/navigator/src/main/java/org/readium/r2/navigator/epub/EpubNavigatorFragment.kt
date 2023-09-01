@@ -1041,7 +1041,8 @@ class EpubNavigatorFragment internal constructor(
          * if you use a local HTTP server.
          * @param initialLocator The first location which should be visible when rendering the
          * publication. Can be used to restore the last reading location.
-         * @param readingOrder custom reading order
+         * @param readingOrder Custom order of resources to display. Used for example to display a
+         * non-linear resource on its own.
          * @param listener Optional listener to implement to observe events, such as user taps.
          * @param config Additional configuration.
          */
