@@ -15,6 +15,8 @@ import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
+import org.readium.r2.shared.urlHref
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -47,12 +49,19 @@ class ManifestTest {
             Manifest(
                 context = listOf("https://readium.org/webpub-manifest/context.jsonld"),
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "manifest.json", rels = setOf("self"))),
-                readingOrder = listOf(Link(href = "chap1.html", mediaType = MediaType.HTML)),
-                resources = listOf(Link(href = "image.png", mediaType = MediaType.PNG)),
-                tableOfContents = listOf(Link(href = "cover.html"), Link(href = "chap1.html")),
+                links = listOf(Link(href = urlHref("manifest.json"), rels = setOf("self"))),
+                readingOrder = listOf(
+                    Link(href = urlHref("chap1.html"), mediaType = MediaType.HTML)
+                ),
+                resources = listOf(Link(href = urlHref("image.png"), mediaType = MediaType.PNG)),
+                tableOfContents = listOf(
+                    Link(href = urlHref("cover.html")),
+                    Link(href = urlHref("chap1.html"))
+                ),
                 subcollections = mapOf(
-                    "sub" to listOf(PublicationCollection(links = listOf(Link(href = "sublink"))))
+                    "sub" to listOf(
+                        PublicationCollection(links = listOf(Link(href = urlHref("sublink"))))
+                    )
                 )
             ),
             Manifest.fromJSON(
@@ -90,8 +99,10 @@ class ManifestTest {
             Manifest(
                 context = listOf("context1", "context2"),
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "manifest.json", rels = setOf("self"))),
-                readingOrder = listOf(Link(href = "chap1.html", mediaType = MediaType.HTML))
+                links = listOf(Link(href = urlHref("manifest.json"), rels = setOf("self"))),
+                readingOrder = listOf(
+                    Link(href = urlHref("chap1.html"), mediaType = MediaType.HTML)
+                )
             ),
             Manifest.fromJSON(
                 JSONObject(
@@ -134,8 +145,10 @@ class ManifestTest {
         assertEquals(
             Manifest(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "manifest.json", rels = setOf("self"))),
-                readingOrder = listOf(Link(href = "chap1.html", mediaType = MediaType.HTML))
+                links = listOf(Link(href = urlHref("manifest.json"), rels = setOf("self"))),
+                readingOrder = listOf(
+                    Link(href = urlHref("chap1.html"), mediaType = MediaType.HTML)
+                )
             ),
             Manifest.fromJSON(
                 JSONObject(
@@ -158,8 +171,10 @@ class ManifestTest {
         assertEquals(
             Manifest(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "manifest.json", rels = setOf("self"))),
-                readingOrder = listOf(Link(href = "chap1.html", mediaType = MediaType.HTML))
+                links = listOf(Link(href = urlHref("manifest.json"), rels = setOf("self"))),
+                readingOrder = listOf(
+                    Link(href = urlHref("chap1.html"), mediaType = MediaType.HTML)
+                )
             ),
             Manifest.fromJSON(
                 JSONObject(
@@ -183,9 +198,11 @@ class ManifestTest {
         assertEquals(
             Manifest(
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "manifest.json", rels = setOf("self"))),
-                readingOrder = listOf(Link(href = "chap1.html", mediaType = MediaType.HTML)),
-                resources = listOf(Link(href = "withtype", mediaType = MediaType.HTML))
+                links = listOf(Link(href = urlHref("manifest.json"), rels = setOf("self"))),
+                readingOrder = listOf(
+                    Link(href = urlHref("chap1.html"), mediaType = MediaType.HTML)
+                ),
+                resources = listOf(Link(href = urlHref("withtype"), mediaType = MediaType.HTML))
             ),
             Manifest.fromJSON(
                 JSONObject(
@@ -256,12 +273,19 @@ class ManifestTest {
             Manifest(
                 context = listOf("https://readium.org/webpub-manifest/context.jsonld"),
                 metadata = Metadata(localizedTitle = LocalizedString("Title")),
-                links = listOf(Link(href = "manifest.json", rels = setOf("self"))),
-                readingOrder = listOf(Link(href = "chap1.html", mediaType = MediaType.HTML)),
-                resources = listOf(Link(href = "image.png", mediaType = MediaType.PNG)),
-                tableOfContents = listOf(Link(href = "cover.html"), Link(href = "chap1.html")),
+                links = listOf(Link(href = urlHref("manifest.json"), rels = setOf("self"))),
+                readingOrder = listOf(
+                    Link(href = urlHref("chap1.html"), mediaType = MediaType.HTML)
+                ),
+                resources = listOf(Link(href = urlHref("image.png"), mediaType = MediaType.PNG)),
+                tableOfContents = listOf(
+                    Link(href = urlHref("cover.html")),
+                    Link(href = urlHref("chap1.html"))
+                ),
                 subcollections = mapOf(
-                    "sub" to listOf(PublicationCollection(links = listOf(Link(href = "sublink"))))
+                    "sub" to listOf(
+                        PublicationCollection(links = listOf(Link(href = urlHref("sublink"))))
+                    )
                 )
             ).toJSON()
         )
@@ -271,50 +295,50 @@ class ManifestTest {
         val manifest = Manifest(
             metadata = Metadata(localizedTitle = LocalizedString()),
             readingOrder = listOf(
-                Link(href = "href", mediaType = MediaType.HTML, title = "Resource")
+                Link(href = urlHref("href"), mediaType = MediaType.HTML, title = "Resource")
             )
         )
         Assert.assertEquals(
             Locator(
-                href = "href",
+                href = Url("href")!!,
                 type = "text/html",
                 title = "Resource",
                 locations = Locator.Locations(progression = 0.0)
             ),
-            manifest.locatorFromLink(Link(href = "href"))
+            manifest.locatorFromLink(Link(href = urlHref("href")))
         )
     }
 
     @Test fun `get a {Locator} from a link in the reading order, resources or links`() {
         val manifest = Manifest(
             metadata = Metadata(localizedTitle = LocalizedString()),
-            readingOrder = listOf(Link(href = "href1", mediaType = MediaType.HTML)),
-            resources = listOf(Link(href = "href2", mediaType = MediaType.HTML)),
-            links = listOf(Link(href = "href3", mediaType = MediaType.HTML))
+            readingOrder = listOf(Link(href = urlHref("href1"), mediaType = MediaType.HTML)),
+            resources = listOf(Link(href = urlHref("href2"), mediaType = MediaType.HTML)),
+            links = listOf(Link(href = urlHref("href3"), mediaType = MediaType.HTML))
         )
         Assert.assertEquals(
             Locator(
-                href = "href1",
+                href = Url("href1")!!,
                 type = "text/html",
                 locations = Locator.Locations(progression = 0.0)
             ),
-            manifest.locatorFromLink(Link(href = "href1"))
+            manifest.locatorFromLink(Link(href = urlHref("href1")))
         )
         Assert.assertEquals(
             Locator(
-                href = "href2",
+                href = Url("href2")!!,
                 type = "text/html",
                 locations = Locator.Locations(progression = 0.0)
             ),
-            manifest.locatorFromLink(Link(href = "href2"))
+            manifest.locatorFromLink(Link(href = urlHref("href2")))
         )
         Assert.assertEquals(
             Locator(
-                href = "href3",
+                href = Url("href3")!!,
                 type = "text/html",
                 locations = Locator.Locations(progression = 0.0)
             ),
-            manifest.locatorFromLink(Link(href = "href3"))
+            manifest.locatorFromLink(Link(href = urlHref("href3")))
         )
     }
 
@@ -322,18 +346,18 @@ class ManifestTest {
         val manifest = Manifest(
             metadata = Metadata(localizedTitle = LocalizedString()),
             readingOrder = listOf(
-                Link(href = "href", mediaType = MediaType.HTML, title = "Resource")
+                Link(href = urlHref("href"), mediaType = MediaType.HTML, title = "Resource")
             )
         )
         Assert.assertEquals(
             Locator(
-                href = "href",
+                href = Url("href")!!,
                 type = "text/html",
                 title = "Resource",
                 locations = Locator.Locations(fragments = listOf("page=42"))
             ),
             manifest.locatorFromLink(
-                Link(href = "href#page=42", mediaType = MediaType.XML, title = "My link")
+                Link(href = urlHref("href#page=42"), mediaType = MediaType.XML, title = "My link")
             )
         )
     }
@@ -341,17 +365,17 @@ class ManifestTest {
     @Test fun `get a {Locator} falling back on the {Link} title`() {
         val manifest = Manifest(
             metadata = Metadata(localizedTitle = LocalizedString()),
-            readingOrder = listOf(Link(href = "href", mediaType = MediaType.HTML))
+            readingOrder = listOf(Link(href = urlHref("href"), mediaType = MediaType.HTML))
         )
         Assert.assertEquals(
             Locator(
-                href = "href",
+                href = Url("href")!!,
                 type = "text/html",
                 title = "My link",
                 locations = Locator.Locations(fragments = listOf("page=42"))
             ),
             manifest.locatorFromLink(
-                Link(href = "href#page=42", mediaType = MediaType.XML, title = "My link")
+                Link(href = urlHref("href#page=42"), mediaType = MediaType.XML, title = "My link")
             )
         )
     }
@@ -359,8 +383,8 @@ class ManifestTest {
     @Test fun `get a {Locator} from a {Link} not found in the manifest`() {
         val manifest = Manifest(
             metadata = Metadata(localizedTitle = LocalizedString()),
-            readingOrder = listOf(Link(href = "href", mediaType = MediaType.HTML))
+            readingOrder = listOf(Link(href = urlHref("href"), mediaType = MediaType.HTML))
         )
-        Assert.assertNull(manifest.locatorFromLink(Link(href = "notfound")))
+        Assert.assertNull(manifest.locatorFromLink(Link(href = urlHref("notfound"))))
     }
 }

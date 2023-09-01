@@ -10,6 +10,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.Fixtures
 import org.readium.r2.shared.resource.DefaultArchiveFactory
+import org.readium.r2.shared.util.Url
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 
@@ -502,10 +503,10 @@ class MediaTypeRetrieverTest {
             hints,
             content = object : ContainerMediaTypeSnifferContent {
                 override suspend fun entries(): Set<String>? =
-                    archive.entries()?.map { it.path }?.toSet()
+                    archive.entries()?.map { it.url.toString() }?.toSet()
 
                 override suspend fun read(path: String, range: LongRange?): ByteArray? =
-                    archive.get(path).read(range).getOrNull()
+                    archive.get(Url(path)!!).read(range).getOrNull()
             }
         )
     }

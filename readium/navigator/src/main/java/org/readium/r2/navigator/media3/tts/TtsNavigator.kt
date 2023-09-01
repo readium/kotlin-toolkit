@@ -27,8 +27,9 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.content.ContentService
-import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.tokenizer.TextTokenizer
 
 /**
@@ -135,7 +136,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     }
 
     public data class Location(
-        override val href: Href,
+        override val href: Url,
         override val utterance: String,
         override val range: IntRange?,
         override val textBefore: String?,
@@ -157,7 +158,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
     ) : TextAwareMediaNavigator.ReadingOrder {
 
         public data class Item(
-            val href: Href
+            val href: Url
         ) : TextAwareMediaNavigator.ReadingOrder.Item
     }
 
@@ -180,7 +181,11 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     override val readingOrder: ReadingOrder =
         ReadingOrder(
-            items = publication.readingOrder.map { ReadingOrder.Item(Href(it.href)) }
+            items = publication.readingOrder.mapNotNull {
+                ReadingOrder.Item(
+                    href = it.href.toUrl() ?: return@mapNotNull null
+                )
+            }
         )
 
     override val playback: StateFlow<Playback> =
@@ -283,6 +288,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
 
     private fun TtsPlayer.Utterance.toPosition(): Location {
         val currentLink = publication.readingOrder[position.resourceIndex]
+        val url = (currentLink.href as UrlHref).url
 
         val utteranceLocator = publication
             .locatorFromLink(currentLink)!!
@@ -295,7 +301,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
             ?.let { utteranceLocator.copy(text = utteranceLocator.text.substring(it)) }
 
         return Location(
-            href = Href(currentLink.href),
+            href = url,
             textBefore = position.text.before,
             textAfter = position.text.after,
             utterance = text,

@@ -48,7 +48,7 @@ class PublicationDetailFragment : Fragment() {
         (activity as MainActivity).supportActionBar?.title = publication?.metadata?.title
 
         publication?.images?.firstOrNull()
-            ?.let { Picasso.get().load(it.href) }
+            ?.let { Picasso.get().load(it.href.toString()) }
             ?.into(binding.catalogDetailCoverImage)
 
         binding.catalogDetailDescriptionText.text = publication?.metadata?.description

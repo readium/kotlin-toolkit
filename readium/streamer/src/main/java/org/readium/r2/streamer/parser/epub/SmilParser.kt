@@ -9,7 +9,7 @@ package org.readium.r2.streamer.parser.epub
 import org.readium.r2.shared.MediaOverlayNode
 import org.readium.r2.shared.MediaOverlays
 import org.readium.r2.shared.parser.xml.ElementNode
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
 
 internal object SmilParser {
     /* According to https://www.w3.org/publishing/epub3/epub-mediaoverlays.html#sec-overlays-content-conf
@@ -19,12 +19,12 @@ internal object SmilParser {
        one EPUB Content Document by means of its attribute epub:textref
     */
 
-    fun parse(document: ElementNode, filePath: String): MediaOverlays? {
+    fun parse(document: ElementNode, filePath: Url): MediaOverlays? {
         val body = document.getFirst("body", Namespaces.SMIL) ?: return null
         return parseSeq(body, filePath)?.let { MediaOverlays(it) }
     }
 
-    private fun parseSeq(node: ElementNode, filePath: String): List<MediaOverlayNode>? {
+    private fun parseSeq(node: ElementNode, filePath: Url): List<MediaOverlayNode>? {
         val children: MutableList<MediaOverlayNode> = mutableListOf()
         for (child in node.getAll()) {
             if (child.name == "par" && child.namespace == Namespaces.SMIL) {
@@ -39,36 +39,43 @@ internal object SmilParser {
        - the seq element has an textref attribute (this is mandatory according to the EPUB spec)
        */
         val textref = node.getAttrNs("textref", Namespaces.OPS)
+            ?.let { Url(it) }
         val audioFiles = children.mapNotNull(MediaOverlayNode::audioFile)
         return if (textref != null && audioFiles.distinct().size == 1) { // hierarchy
-            val normalizedTextref = Href(textref, baseHref = filePath).string
+            val normalizedTextref = filePath.resolve(textref)
             listOf(mediaOverlayFromChildren(normalizedTextref, children))
         } else {
             children
         }
     }
 
-    private fun parsePar(node: ElementNode, filePath: String): MediaOverlayNode? {
-        val text = node.getFirst("text", Namespaces.SMIL)?.getAttr("src") ?: return null
-        val audio = node.getFirst("audio", Namespaces.SMIL)?.let { audioNode ->
-            val src = audioNode.getAttr("src")
-            val begin = audioNode.getAttr("clipBegin")?.let { ClockValueParser.parse(it) } ?: ""
-            val end = audioNode.getAttr("clipEnd")?.let { ClockValueParser.parse(it) } ?: ""
-            "$src#t=$begin,$end"
-        }
+    private fun parsePar(node: ElementNode, filePath: Url): MediaOverlayNode? {
+        val text = node.getFirst("text", Namespaces.SMIL)
+            ?.getAttr("src")
+            ?.let { Url(it) }
+            ?: return null
+        val audio = node.getFirst("audio", Namespaces.SMIL)
+            ?.let { audioNode ->
+                val src = audioNode.getAttr("src")
+                val begin = audioNode.getAttr("clipBegin")?.let { ClockValueParser.parse(it) } ?: ""
+                val end = audioNode.getAttr("clipEnd")?.let { ClockValueParser.parse(it) } ?: ""
+                "$src#t=$begin,$end"
+            }
+            ?.let { Url(it) }
+
         return MediaOverlayNode(
-            Href(text, baseHref = filePath).string,
-            Href(audio ?: "", baseHref = filePath).string
+            filePath.resolve(text),
+            audio?.let { filePath.resolve(audio) }
         )
     }
 
-    private fun mediaOverlayFromChildren(text: String, children: List<MediaOverlayNode>): MediaOverlayNode {
+    private fun mediaOverlayFromChildren(text: Url, children: List<MediaOverlayNode>): MediaOverlayNode {
         require(children.isNotEmpty() && children.mapNotNull { it.audioFile }.distinct().size <= 1)
         val audioChildren = children.mapNotNull { if (it.audioFile != null) it else null }
         val file = audioChildren.first().audioFile
         val start = audioChildren.first().clip.start ?: ""
         val end = audioChildren.last().clip.end ?: ""
-        val audio = "$file#t=$start,$end"
+        val audio = Url("$file#t=$start,$end")
         return MediaOverlayNode(text, audio, children, listOf("section"))
     }
 }

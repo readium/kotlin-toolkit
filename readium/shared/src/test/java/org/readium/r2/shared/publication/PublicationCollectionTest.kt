@@ -15,6 +15,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
+import org.readium.r2.shared.urlHref
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -23,7 +24,7 @@ class PublicationCollectionTest {
     @Test fun `parse minimal JSON`() {
         assertEquals(
             PublicationCollection(
-                links = listOf(Link(href = "/link"))
+                links = listOf(Link(href = urlHref("/link")))
             ),
             PublicationCollection.fromJSON(
                 JSONObject(
@@ -40,17 +41,22 @@ class PublicationCollectionTest {
         assertEquals(
             PublicationCollection(
                 metadata = mapOf("metadata1" to "value"),
-                links = listOf(Link(href = "/link")),
+                links = listOf(Link(href = urlHref("/link"))),
                 subcollections = mapOf(
-                    "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
+                    "sub1" to listOf(
+                        PublicationCollection(links = listOf(Link(href = urlHref("/sublink"))))
+                    ),
                     "sub2" to listOf(
                         PublicationCollection(
-                            links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))
+                            links = listOf(
+                                Link(href = urlHref("/sublink1")),
+                                Link(href = urlHref("/sublink2"))
+                            )
                         )
                     ),
                     "sub3" to listOf(
-                        PublicationCollection(links = listOf(Link(href = "/sublink3"))),
-                        PublicationCollection(links = listOf(Link(href = "/sublink4")))
+                        PublicationCollection(links = listOf(Link(href = urlHref("/sublink3")))),
+                        PublicationCollection(links = listOf(Link(href = urlHref("/sublink4"))))
                     )
                 )
             ),
@@ -97,15 +103,20 @@ class PublicationCollectionTest {
     @Test fun `parse multiple JSON collections`() {
         assertEquals(
             mapOf(
-                "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
+                "sub1" to listOf(
+                    PublicationCollection(links = listOf(Link(href = urlHref("/sublink"))))
+                ),
                 "sub2" to listOf(
                     PublicationCollection(
-                        links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))
+                        links = listOf(
+                            Link(href = urlHref("/sublink1")),
+                            Link(href = urlHref("/sublink2"))
+                        )
                     )
                 ),
                 "sub3" to listOf(
-                    PublicationCollection(links = listOf(Link(href = "/sublink3"))),
-                    PublicationCollection(links = listOf(Link(href = "/sublink4")))
+                    PublicationCollection(links = listOf(Link(href = urlHref("/sublink3")))),
+                    PublicationCollection(links = listOf(Link(href = urlHref("/sublink4"))))
                 )
             ),
             PublicationCollection.collectionsFromJSON(
@@ -146,7 +157,7 @@ class PublicationCollectionTest {
                 "links": [{"href": "/link", "templated": false}]
             }"""
             ),
-            PublicationCollection(links = listOf(Link(href = "/link"))).toJSON()
+            PublicationCollection(links = listOf(Link(href = urlHref("/link")))).toJSON()
         )
     }
 
@@ -191,17 +202,22 @@ class PublicationCollectionTest {
             ),
             PublicationCollection(
                 metadata = mapOf("metadata1" to "value"),
-                links = listOf(Link(href = "/link")),
+                links = listOf(Link(href = urlHref("/link"))),
                 subcollections = mapOf(
-                    "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
+                    "sub1" to listOf(
+                        PublicationCollection(links = listOf(Link(href = urlHref("/sublink"))))
+                    ),
                     "sub2" to listOf(
                         PublicationCollection(
-                            links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))
+                            links = listOf(
+                                Link(href = urlHref("/sublink1")),
+                                Link(href = urlHref("/sublink2"))
+                            )
                         )
                     ),
                     "sub3" to listOf(
-                        PublicationCollection(links = listOf(Link(href = "/sublink3"))),
-                        PublicationCollection(links = listOf(Link(href = "/sublink4")))
+                        PublicationCollection(links = listOf(Link(href = urlHref("/sublink3")))),
+                        PublicationCollection(links = listOf(Link(href = urlHref("/sublink4"))))
                     )
                 )
             ).toJSON()
@@ -242,15 +258,20 @@ class PublicationCollectionTest {
             }"""
             ),
             mapOf(
-                "sub1" to listOf(PublicationCollection(links = listOf(Link(href = "/sublink")))),
+                "sub1" to listOf(
+                    PublicationCollection(links = listOf(Link(href = urlHref("/sublink"))))
+                ),
                 "sub2" to listOf(
                     PublicationCollection(
-                        links = listOf(Link(href = "/sublink1"), Link(href = "/sublink2"))
+                        links = listOf(
+                            Link(href = urlHref("/sublink1")),
+                            Link(href = urlHref("/sublink2"))
+                        )
                     )
                 ),
                 "sub3" to listOf(
-                    PublicationCollection(links = listOf(Link(href = "/sublink3"))),
-                    PublicationCollection(links = listOf(Link(href = "/sublink4")))
+                    PublicationCollection(links = listOf(Link(href = urlHref("/sublink3")))),
+                    PublicationCollection(links = listOf(Link(href = urlHref("/sublink4"))))
                 )
             ).toJSONObject()
         )

@@ -66,7 +66,7 @@ public data class Manifest(
     public fun linkWithHref(href: String): Link? {
         fun List<Link>.deepLinkWithHref(href: String): Link? {
             for (l in this) {
-                if (l.href == href) {
+                if (l.href.toString() == href) {
                     return l
                 } else {
                     l.alternates.deepLinkWithHref(href)?.let { return it }
@@ -106,14 +106,15 @@ public data class Manifest(
      * Returns null if the resource is not found in this manifest.
      */
     public fun locatorFromLink(link: Link): Locator? {
-        val components = link.href.split("#", limit = 2)
-        val href = components.firstOrNull() ?: link.href
-        val resourceLink = linkWithHref(href) ?: return null
+        var url = link.href.toUrl() ?: return null
+        val fragment = url.fragment
+        url = url.removeFragment()
+
+        val resourceLink = linkWithHref(url.toString()) ?: return null
         val type = resourceLink.mediaType?.toString() ?: return null
-        val fragment = components.getOrNull(1)
 
         return Locator(
-            href = href,
+            href = url,
             type = type,
             title = resourceLink.title ?: link.title,
             locations = Locator.Locations(

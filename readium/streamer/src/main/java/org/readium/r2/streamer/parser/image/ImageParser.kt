@@ -6,8 +6,10 @@
 
 package org.readium.r2.streamer.parser.image
 
-import java.io.File
-import org.readium.r2.shared.publication.*
+import org.readium.r2.shared.publication.LocalizedString
+import org.readium.r2.shared.publication.Manifest
+import org.readium.r2.shared.publication.Metadata
+import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.PerResourcePositionsService
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.logging.WarningLogger
@@ -36,8 +38,8 @@ public class ImageParser : PublicationParser {
         val readingOrder =
             if (asset.mediaType.matches(MediaType.CBZ)) {
                 (asset.container.entries() ?: emptySet())
-                    .filter { !File(it.path).isHiddenOrThumbs && it.mediaType().getOrNull()?.isBitmap == true }
-                    .sortedBy { it.path }
+                    .filter { !it.url.isHiddenOrThumbs && it.mediaType().getOrNull()?.isBitmap == true }
+                    .sortedBy { it.url.toString() }
             } else {
                 listOfNotNull(asset.container.entries()?.firstOrNull())
             }

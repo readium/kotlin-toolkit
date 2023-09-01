@@ -9,7 +9,6 @@
 
 package org.readium.r2.opds
 
-import java.net.URL
 import org.joda.time.DateTime
 import org.json.JSONArray
 import org.json.JSONObject
@@ -22,6 +21,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpClient
 import org.readium.r2.shared.util.http.HttpRequest
@@ -45,22 +45,20 @@ public class OPDS2Parser {
         public suspend fun parseUrlString(
             url: String,
             client: HttpClient = DefaultHttpClient(MediaTypeRetriever())
-        ): Try<ParseData, Exception> {
-            return client.fetchWithDecoder(HttpRequest(url)) {
-                this.parse(it.body, URL(url))
-            }
-        }
+        ): Try<ParseData, Exception> =
+            parseRequest(HttpRequest(url), client)
 
         public suspend fun parseRequest(
             request: HttpRequest,
             client: HttpClient = DefaultHttpClient(MediaTypeRetriever())
         ): Try<ParseData, Exception> {
             return client.fetchWithDecoder(request) {
-                this.parse(it.body, URL(request.url))
+                val url = Url(request.url) ?: throw Exception("Invalid URL")
+                this.parse(it.body, url)
             }
         }
 
-        public fun parse(jsonData: ByteArray, url: URL): ParseData {
+        public fun parse(jsonData: ByteArray, url: Url): ParseData {
             return if (isFeed(jsonData)) {
                 ParseData(parseFeed(jsonData, url), null, 2)
             } else {
@@ -85,7 +83,7 @@ public class OPDS2Parser {
                     )
             }
 
-        private fun parseFeed(jsonData: ByteArray, url: URL): Feed {
+        private fun parseFeed(jsonData: ByteArray, url: Url): Feed {
             val topLevelDict = JSONObject(String(jsonData))
             val metadataDict: JSONObject = topLevelDict.getJSONObject("metadata")
                 ?: throw Exception(OPDS2ParserError.MetadataNotFound.name)

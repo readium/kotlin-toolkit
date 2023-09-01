@@ -20,6 +20,7 @@ import org.readium.r2.shared.resource.ArchiveFactory
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
 import org.readium.r2.shared.resource.TransformingContainer
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -106,7 +107,10 @@ internal class LcpContentProtection(
             onCreatePublication = {
                 decryptor.encryptionData = (manifest.readingOrder + manifest.resources + manifest.links)
                     .flatten()
-                    .mapNotNull { it.properties.encryption?.let { enc -> it.href to enc } }
+                    .mapNotNull {
+                        val url = it.href.toUrl() ?: return@mapNotNull null
+                        it.properties.encryption?.let { enc -> url to enc }
+                    }
                     .toMap()
 
                 servicesBuilder.contentProtectionServiceFactory = serviceFactory
@@ -144,7 +148,7 @@ internal class LcpContentProtection(
                 }
 
         val link = checkNotNull(licenseDoc.link(LicenseDocument.Rel.Publication))
-        val url = (Url(link.url.toString()) as? Url.Absolute)
+        val url = (Url(link.url.toString()) as? AbsoluteUrl)
             ?: return Try.failure(
                 Publication.OpeningException.ParsingFailed(
                     ThrowableError(

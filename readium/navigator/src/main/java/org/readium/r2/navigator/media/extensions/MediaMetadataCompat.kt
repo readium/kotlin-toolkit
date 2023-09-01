@@ -8,6 +8,7 @@ package org.readium.r2.navigator.media.extensions
 
 import android.support.v4.media.MediaMetadataCompat
 import org.readium.r2.navigator.extensions.splitAt
+import org.readium.r2.shared.util.Url
 
 internal val MediaMetadataCompat.id: String? get() =
     getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID)
@@ -15,5 +16,5 @@ internal val MediaMetadataCompat.id: String? get() =
 internal val MediaMetadataCompat.publicationId: String? get() =
     id?.splitAt("#")?.first
 
-internal val MediaMetadataCompat.resourceHref: String? get() =
-    id?.splitAt("#")?.second
+internal val MediaMetadataCompat.resourceHref: Url? get() =
+    id?.splitAt("#")?.second?.let { Url(it) }

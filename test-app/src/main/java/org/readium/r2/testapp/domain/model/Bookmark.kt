@@ -12,6 +12,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import org.json.JSONObject
 import org.readium.r2.shared.publication.Locator
+import org.readium.r2.shared.util.Url
 
 @Entity(
     tableName = Bookmark.TABLE_NAME,
@@ -46,7 +47,7 @@ data class Bookmark(
 
     val locator
         get() = Locator(
-            href = resourceHref,
+            href = Url(resourceHref)!!,
             type = resourceType,
             title = resourceTitle,
             locations = Locator.Locations.fromJSON(JSONObject(location)),

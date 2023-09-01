@@ -55,6 +55,8 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationId
 import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.toUri
 import timber.log.Timber
 
 /**
@@ -173,8 +175,10 @@ public class ExoMediaPlayer(
 
     private fun prepareTracklist() {
         player.setMediaItems(
-            publication.readingOrder.map { link ->
-                MediaItem.fromUri(link.href)
+            publication.readingOrder.mapNotNull { link ->
+                link.href.toUrl()?.let {
+                    MediaItem.fromUri(it.toUri())
+                }
             }
         )
         player.prepare()
@@ -205,6 +209,7 @@ public class ExoMediaPlayer(
 
             if (resourceException != null) {
                 player.currentMediaItem?.mediaId
+                    ?.let { Url(it) }
                     ?.let { href -> publication.linkWithHref(href) }
                     ?.let { link ->
                         listener?.onResourceLoadFailed(link, resourceException)

@@ -9,17 +9,18 @@ package org.readium.r2.streamer.parser.epub
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.encryption.Encryption
 import org.readium.r2.shared.publication.protection.ContentProtection
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
 
 internal object EncryptionParser {
-    fun parse(document: ElementNode): Map<String, Encryption> =
+    fun parse(document: ElementNode): Map<Url, Encryption> =
         document.get("EncryptedData", Namespaces.ENC)
             .mapNotNull { parseEncryptedData(it) }
             .toMap()
 
-    private fun parseEncryptedData(node: ElementNode): Pair<String, Encryption>? {
+    private fun parseEncryptedData(node: ElementNode): Pair<Url, Encryption>? {
         val resourceURI = node.getFirst("CipherData", Namespaces.ENC)
             ?.getFirst("CipherReference", Namespaces.ENC)?.getAttr("URI")
+            ?.let { Url(it) }
             ?: return null
         val retrievalMethod = node.getFirst("KeyInfo", Namespaces.SIG)
             ?.getFirst("RetrievalMethod", Namespaces.SIG)?.getAttr("URI")
@@ -43,7 +44,7 @@ internal object EncryptionParser {
             compression = compressionMethod,
             originalLength = originalLength
         )
-        return Pair(Href(resourceURI).string, enc)
+        return Pair(resourceURI, enc)
     }
 
     private fun parseEncryptionProperties(encryptionProperties: ElementNode): Pair<Long, String>? {

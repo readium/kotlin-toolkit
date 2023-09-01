@@ -13,7 +13,6 @@ import java.util.Locale
 import org.json.JSONObject
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.extensions.putIfNotEmpty
-import org.readium.r2.shared.extensions.queryParameters
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Publication
@@ -23,7 +22,10 @@ import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.StringResource
+import org.readium.r2.shared.util.TemplatedHref
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -67,8 +69,9 @@ public interface ContentProtectionService : Publication.Service {
         get() = RouteHandler.links
 
     override fun get(link: Link): Resource? {
-        val route = RouteHandler.route(link) ?: return null
-        return route.handleRequest(link, this)
+        val url = link.href.toUrl() ?: return null
+        val route = RouteHandler.route(url) ?: return null
+        return route.handleRequest(url, this)
     }
 
     /**
@@ -243,27 +246,29 @@ private sealed class RouteHandler {
 
         val links = handlers.map { it.link }
 
-        fun route(link: Link): RouteHandler? = handlers.firstOrNull { it.acceptRequest(link) }
+        fun route(url: Url): RouteHandler? = handlers.firstOrNull { it.acceptRequest(url) }
     }
 
     abstract val link: Link
 
-    abstract fun acceptRequest(link: Link): Boolean
+    abstract fun acceptRequest(url: Url): Boolean
 
-    abstract fun handleRequest(link: Link, service: ContentProtectionService): Resource
+    abstract fun handleRequest(url: Url, service: ContentProtectionService): Resource
 
     object ContentProtectionHandler : RouteHandler() {
 
+        private val path = "/~readium/content-protection"
         private val mediaType = MediaType("application/vnd.readium.content-protection+json")!!
 
         override val link = Link(
-            href = "/~readium/content-protection",
+            href = UrlHref(Url(path)!!),
             mediaType = mediaType
         )
 
-        override fun acceptRequest(link: Link): Boolean = link.href == this.link.href
+        override fun acceptRequest(url: Url): Boolean =
+            url.path == path
 
-        override fun handleRequest(link: Link, service: ContentProtectionService): Resource =
+        override fun handleRequest(url: Url, service: ContentProtectionService): Resource =
             StringResource(mediaType = mediaType) {
                 Try.success(
                     JSONObject().apply {
@@ -279,30 +284,27 @@ private sealed class RouteHandler {
     object RightsCopyHandler : RouteHandler() {
 
         private val mediaType = MediaType("application/vnd.readium.rights.copy+json")!!
+        private val path = "/~readium/rights/copy"
 
         override val link: Link = Link(
-            href = "/~readium/rights/copy{?text,peek}",
-            mediaType = mediaType,
-            templated = true
+            href = TemplatedHref("$path{?text,peek}"),
+            mediaType = mediaType
         )
 
-        override fun acceptRequest(link: Link): Boolean = link.href.startsWith(
-            "/~readium/rights/copy"
-        )
+        override fun acceptRequest(url: Url): Boolean =
+            url.path == path
 
-        override fun handleRequest(link: Link, service: ContentProtectionService): Resource {
-            val parameters = link.href.queryParameters()
-            val text = parameters["text"]
+        override fun handleRequest(url: Url, service: ContentProtectionService): Resource {
+            val query = url.query
+            val text = query.firstNamedOrNull("text")
                 ?: return FailureResource(
                     Resource.Exception.BadRequest(
-                        parameters,
                         IllegalArgumentException("'text' parameter is required")
                     )
                 )
-            val peek = (parameters["peek"] ?: "false").toBooleanOrNull()
+            val peek = (query.firstNamedOrNull("peek") ?: "false").toBooleanOrNull()
                 ?: return FailureResource(
                     Resource.Exception.BadRequest(
-                        parameters,
                         IllegalArgumentException("if present, 'peek' must be true or false")
                     )
                 )
@@ -320,23 +322,21 @@ private sealed class RouteHandler {
     object RightsPrintHandler : RouteHandler() {
 
         private val mediaType = MediaType("application/vnd.readium.rights.print+json")!!
+        private val path = "/~readium/rights/print"
 
         override val link = Link(
-            href = "/~readium/rights/print{?pageCount,peek}",
-            mediaType = mediaType,
-            templated = true
+            href = TemplatedHref("$path{?pageCount,peek}"),
+            mediaType = mediaType
         )
 
-        override fun acceptRequest(link: Link): Boolean = link.href.startsWith(
-            "/~readium/rights/print"
-        )
+        override fun acceptRequest(url: Url): Boolean =
+            url.path == path
 
-        override fun handleRequest(link: Link, service: ContentProtectionService): Resource {
-            val parameters = link.href.queryParameters()
-            val pageCountString = parameters["pageCount"]
+        override fun handleRequest(url: Url, service: ContentProtectionService): Resource {
+            val query = url.query
+            val pageCountString = query.firstNamedOrNull("pageCount")
                 ?: return FailureResource(
                     Resource.Exception.BadRequest(
-                        parameters,
                         IllegalArgumentException("'pageCount' parameter is required")
                     )
                 )
@@ -344,14 +344,12 @@ private sealed class RouteHandler {
             val pageCount = pageCountString.toIntOrNull()?.takeIf { it >= 0 }
                 ?: return FailureResource(
                     Resource.Exception.BadRequest(
-                        parameters,
                         IllegalArgumentException("'pageCount' must be a positive integer")
                     )
                 )
-            val peek = (parameters["peek"] ?: "false").toBooleanOrNull()
+            val peek = (query.firstNamedOrNull("peek") ?: "false").toBooleanOrNull()
                 ?: return FailureResource(
                     Resource.Exception.BadRequest(
-                        parameters,
                         IllegalArgumentException("if present, 'peek' must be true or false")
                     )
                 )

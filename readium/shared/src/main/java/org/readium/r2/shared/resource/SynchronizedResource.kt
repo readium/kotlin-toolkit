@@ -8,7 +8,7 @@ package org.readium.r2.shared.resource
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -22,7 +22,7 @@ public class SynchronizedResource(
 
     private val mutex = Mutex()
 
-    override val source: Url.Absolute? get() = resource.source
+    override val source: AbsoluteUrl? get() = resource.source
 
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         mutex.withLock { resource.properties() }

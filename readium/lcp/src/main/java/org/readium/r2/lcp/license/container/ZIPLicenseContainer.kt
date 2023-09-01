@@ -13,13 +13,14 @@ import java.io.File
 import java.util.zip.ZipFile
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.license.model.LicenseDocument
+import org.readium.r2.shared.util.Url
 import org.zeroturnaround.zip.ZipUtil
 
 /**
  * Access to a License Document stored in a ZIP archive.
  */
 internal class ZIPLicenseContainer(
-    private val zip: String,
+    private val zip: File,
     private val pathInZIP: String
 ) : LicenseContainer {
 
@@ -32,30 +33,29 @@ internal class ZIPLicenseContainer(
         val entry = try {
             archive.getEntry(pathInZIP)
         } catch (e: Exception) {
-            throw LcpException.Container.FileNotFound(pathInZIP)
+            throw LcpException.Container.FileNotFound(Url.fromDecodedPath(pathInZIP))
         }
 
         return try {
             archive.getInputStream(entry).readBytes()
         } catch (e: Exception) {
-            throw LcpException.Container.ReadFailed(pathInZIP)
+            throw LcpException.Container.ReadFailed(Url.fromDecodedPath(pathInZIP))
         }
     }
 
     override fun write(license: LicenseDocument) {
         try {
-            val source = File(zip)
-            val tmpZip = File("$zip.tmp")
+            val tmpZip = File("${zip.path}.tmp")
             tmpZip.delete()
-            source.copyTo(tmpZip)
-            source.delete()
+            zip.copyTo(tmpZip)
+            zip.delete()
             if (ZipUtil.containsEntry(tmpZip, pathInZIP)) {
                 ZipUtil.removeEntry(tmpZip, pathInZIP)
             }
-            ZipUtil.addEntry(tmpZip, pathInZIP, license.data, source)
+            ZipUtil.addEntry(tmpZip, pathInZIP, license.data, zip)
             tmpZip.delete()
         } catch (e: Exception) {
-            throw LcpException.Container.WriteFailed(pathInZIP)
+            throw LcpException.Container.WriteFailed(Url.fromDecodedPath(pathInZIP))
         }
     }
 }

@@ -12,7 +12,6 @@ package org.readium.r2.shared.publication.services
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Size
-import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -23,7 +22,12 @@ import org.readium.r2.shared.publication.*
 import org.readium.r2.shared.readBlocking
 import org.readium.r2.shared.resource.FileResource
 import org.readium.r2.shared.resource.ResourceContainer
+import org.readium.r2.shared.urlHref
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.toUrl
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -31,7 +35,7 @@ class CoverServiceTest {
 
     private val coverBytes: ByteArray
     private val coverBitmap: Bitmap
-    private val coverPath: String
+    private val coverPath: Url
     private val coverLink: Link
     private val publication: Publication
 
@@ -40,8 +44,13 @@ class CoverServiceTest {
         assertNotNull(cover)
         coverBytes = cover.readBytes()
         coverBitmap = BitmapFactory.decodeByteArray(coverBytes, 0, coverBytes.size)
-        coverPath = cover.path
-        coverLink = Link(href = coverPath, mediaType = MediaType.JPEG, width = 598, height = 800)
+        coverPath = cover.toUrl() as AbsoluteUrl
+        coverLink = Link(
+            href = UrlHref(coverPath),
+            mediaType = MediaType.JPEG,
+            width = 598,
+            height = 800
+        )
 
         publication = Publication(
             manifest = Manifest(
@@ -49,12 +58,12 @@ class CoverServiceTest {
                     localizedTitle = LocalizedString("title")
                 ),
                 resources = listOf(
-                    Link(href = coverPath, rels = setOf("cover"))
+                    Link(href = UrlHref(coverPath), rels = setOf("cover"))
                 )
             ),
             container = ResourceContainer(
                 coverPath,
-                FileResource(File(coverPath), mediaType = MediaType.JPEG)
+                FileResource(coverPath.toFile()!!, mediaType = MediaType.JPEG)
             )
         )
     }
@@ -62,7 +71,7 @@ class CoverServiceTest {
     @Test
     fun `get works fine`() = runBlocking {
         val service = InMemoryCoverService(coverBitmap)
-        val res = service.get(Link("/~readium/cover", rels = setOf("cover")))
+        val res = service.get(Link(urlHref("/~readium/cover"), rels = setOf("cover")))
         assertNotNull(res)
 
         val bytes = res.readBlocking().getOrNull()

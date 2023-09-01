@@ -8,6 +8,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.util.Url.Query
+import org.readium.r2.shared.util.Url.QueryParameter
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -21,18 +23,32 @@ class UrlTest {
 
     @Test
     fun createFromRelativePath() {
-        assertEquals(Url.Relative(Uri.parse("/foo/bar")), Url("/foo/bar"))
-        assertEquals(Url.Relative(Uri.parse("foo/bar")), Url("foo/bar"))
-        assertEquals(Url.Relative(Uri.parse("../bar")), Url("../bar"))
+        assertEquals(
+            AbsoluteUrl(
+                Uri.parse(
+                    "file:///data/user/0/org.readium.r2reader/files/e67577ba-788a-48cb-92a8-bbc49fd38a78.json"
+                )
+            ),
+            Url(
+                "file:///data/user/0/org.readium.r2reader/files/e67577ba-788a-48cb-92a8-bbc49fd38a78.json"
+            )
+        )
+
+        assertEquals(RelativeUrl(Uri.parse("/foo/bar")), Url("/foo/bar"))
+        assertEquals(RelativeUrl(Uri.parse("foo/bar")), Url("foo/bar"))
+        assertEquals(RelativeUrl(Uri.parse("../bar")), Url("../bar"))
+
+        // Used in the EPUB parser
+        assertEquals(RelativeUrl(Uri.parse("#")), Url("#"))
     }
 
     @Test
     fun createFromAbsoluteUrl() {
         assertEquals(
-            Url.Absolute(Uri.parse("http://example.com/foo")),
+            AbsoluteUrl(Uri.parse("http://example.com/foo")),
             Url("http://example.com/foo")
         )
-        assertEquals(Url.Absolute(Uri.parse("file:///foo/bar")), Url("file:///foo/bar"))
+        assertEquals(AbsoluteUrl(Uri.parse("file:///foo/bar")), Url("file:///foo/bar"))
     }
 
     @Test
@@ -98,28 +114,46 @@ class UrlTest {
         assertEquals("%bar", Url("http://example.com/foo.%25bar")?.extension)
     }
 
-    // Absolute URLs
+    @Test
+    fun getQueryParameters() {
+        assertEquals(Query(emptyList()), Url("http://domain.com/path")!!.query)
+        assertEquals(
+            Query(listOf(QueryParameter(name = "query", value = "param"))),
+            Url("http://domain.com/path?query=param#anchor")!!.query
+        )
+        assertEquals(
+            Query(
+                listOf(
+                    QueryParameter(name = "query", value = "param"),
+                    QueryParameter(name = "fruit", value = "banana"),
+                    QueryParameter(name = "query", value = "other"),
+                    QueryParameter(name = "empty", value = null)
+                )
+            ),
+            Url("http://domain.com/path?query=param&fruit=banana&query=other&empty")!!.query
+        )
+    }
 
     @Test
     fun getScheme() {
-        assertEquals(Url.Scheme("content"), (Url("content:///foo/bar") as? Url.Absolute)?.scheme)
-        assertEquals(Url.Scheme("content"), (Url("CONTENT:///foo/bar") as? Url.Absolute)?.scheme)
-        assertEquals(Url.Scheme("file"), (Url("file:///foo/bar") as? Url.Absolute)?.scheme)
-        assertEquals(Url.Scheme("http"), (Url("http://example.com/foo") as? Url.Absolute)?.scheme)
-        assertEquals(Url.Scheme("https"), (Url("https://example.com/foo") as? Url.Absolute)?.scheme)
+        assertEquals(Url.Scheme("content"), (Url("content:///foo/bar") as? AbsoluteUrl)?.scheme)
+        assertEquals(Url.Scheme("content"), (Url("CONTENT:///foo/bar") as? AbsoluteUrl)?.scheme)
+        assertEquals(Url.Scheme("file"), (Url("file:///foo/bar") as? AbsoluteUrl)?.scheme)
+        assertEquals(Url.Scheme("http"), (Url("http://example.com/foo") as? AbsoluteUrl)?.scheme)
+        assertEquals(Url.Scheme("https"), (Url("https://example.com/foo") as? AbsoluteUrl)?.scheme)
     }
 
     @Test
     fun testScheme() {
-        assertEquals(true, (Url("content:///foo/bar") as? Url.Absolute)?.isContent)
-        assertEquals(false, (Url("content:///foo/bar") as? Url.Absolute)?.isHttp)
+        assertEquals(true, (Url("content:///foo/bar") as? AbsoluteUrl)?.isContent)
+        assertEquals(false, (Url("content:///foo/bar") as? AbsoluteUrl)?.isHttp)
 
-        assertEquals(true, (Url("file:///foo/bar") as? Url.Absolute)?.isFile)
-        assertEquals(false, (Url("file:///foo/bar") as? Url.Absolute)?.isContent)
+        assertEquals(true, (Url("file:///foo/bar") as? AbsoluteUrl)?.isFile)
+        assertEquals(false, (Url("file:///foo/bar") as? AbsoluteUrl)?.isContent)
 
-        assertEquals(true, (Url("http://example.com/foo") as? Url.Absolute)?.isHttp)
-        assertEquals(true, (Url("https://example.com/foo") as? Url.Absolute)?.isHttp)
-        assertEquals(false, (Url("http://example.com/foo") as? Url.Absolute)?.isFile)
+        assertEquals(true, (Url("http://example.com/foo") as? AbsoluteUrl)?.isHttp)
+        assertEquals(true, (Url("https://example.com/foo") as? AbsoluteUrl)?.isHttp)
+        assertEquals(false, (Url("http://example.com/foo") as? AbsoluteUrl)?.isFile)
     }
 
     @Test
@@ -128,6 +162,7 @@ class UrlTest {
         assertEquals(Url("http://example.com/foo/quz/baz")!!, base.resolve(Url("quz/baz")!!))
         assertEquals(Url("http://example.com/quz/baz")!!, base.resolve(Url("../quz/baz")!!))
         assertEquals(Url("http://example.com/quz/baz")!!, base.resolve(Url("/quz/baz")!!))
+        assertEquals(Url("http://example.com/foo/bar#fragment")!!, base.resolve(Url("#fragment")!!))
         assertEquals(Url("file:///foo/bar")!!, base.resolve(Url("file:///foo/bar")!!))
 
         // With trailing slash
@@ -160,6 +195,7 @@ class UrlTest {
         assertEquals(Url("foo/quz/baz")!!, base.resolve(Url("quz/baz")!!))
         assertEquals(Url("quz/baz")!!, base.resolve(Url("../quz/baz")!!))
         assertEquals(Url("/quz/baz")!!, base.resolve(Url("/quz/baz")!!))
+        assertEquals(Url("foo/bar#fragment")!!, base.resolve(Url("#fragment")!!))
         assertEquals(
             Url("http://example.com/foo/bar")!!,
             base.resolve(Url("http://example.com/foo/bar")!!)
@@ -178,31 +214,31 @@ class UrlTest {
 
     @Test
     fun fromFile() {
-        assertEquals(Url.Absolute(Uri.parse("file:///tmp/test.txt")), File("/tmp/test.txt").toUrl())
+        assertEquals(AbsoluteUrl(Uri.parse("file:///tmp/test.txt")), File("/tmp/test.txt").toUrl())
     }
 
     @Test
     fun toFile() {
         assertEquals(
             File("/tmp/test.txt"),
-            (Url("file:///tmp/test.txt") as? Url.Absolute)?.toFile()
+            (Url("file:///tmp/test.txt") as? AbsoluteUrl)?.toFile()
         )
     }
 
     @Test
     fun fromURI() {
-        assertEquals(Url.Relative(Uri.parse("foo/bar")), URI("foo/bar").toUrl())
-        assertEquals(Url.Relative(Uri.parse("/foo/bar")), URI("/foo/bar").toUrl())
+        assertEquals(RelativeUrl(Uri.parse("foo/bar")), URI("foo/bar").toUrl())
+        assertEquals(RelativeUrl(Uri.parse("/foo/bar")), URI("/foo/bar").toUrl())
         assertEquals(
-            Url.Absolute(Uri.parse("http://example.com/foo/bar")),
+            AbsoluteUrl(Uri.parse("http://example.com/foo/bar")),
             URI("http://example.com/foo/bar").toUrl()
         )
         assertEquals(
-            Url.Absolute(Uri.parse("file:///tmp/test.txt")),
+            AbsoluteUrl(Uri.parse("file:///tmp/test.txt")),
             URI("file:///tmp/test.txt").toUrl()
         )
         assertEquals(
-            Url.Absolute(Uri.parse("file:///tmp/test.txt")),
+            AbsoluteUrl(Uri.parse("file:///tmp/test.txt")),
             URI("file:/tmp/test.txt").toUrl()
         )
     }
@@ -210,16 +246,50 @@ class UrlTest {
     @Test
     fun fromURL() {
         assertEquals(
-            Url.Absolute(Uri.parse("http://example.com/foo/bar")),
+            AbsoluteUrl(Uri.parse("http://example.com/foo/bar")),
             URL("http://example.com/foo/bar").toUrl()
         )
         assertEquals(
-            Url.Absolute(Uri.parse("file:///tmp/test.txt")),
+            AbsoluteUrl(Uri.parse("file:///tmp/test.txt")),
             URL("file:///tmp/test.txt").toUrl()
         )
         assertEquals(
-            Url.Absolute(Uri.parse("file:///tmp/test.txt")),
+            AbsoluteUrl(Uri.parse("file:///tmp/test.txt")),
             URL("file:/tmp/test.txt").toUrl()
         )
+    }
+
+    @Test
+    fun getFirstParameterNamedX() {
+        val params = Query(
+            listOf(
+                QueryParameter(name = "query", value = "param"),
+                QueryParameter(name = "fruit", value = "banana"),
+                QueryParameter(name = "query", value = "other"),
+                QueryParameter(name = "empty", value = null)
+            )
+        )
+
+        assertEquals(params.firstNamedOrNull("query"), "param")
+        assertEquals(params.firstNamedOrNull("fruit"), "banana")
+        assertNull(params.firstNamedOrNull("empty"))
+        assertNull(params.firstNamedOrNull("not-found"))
+    }
+
+    @Test
+    fun getAllParametersNamedX() {
+        val params = Query(
+            listOf(
+                QueryParameter(name = "query", value = "param"),
+                QueryParameter(name = "fruit", value = "banana"),
+                QueryParameter(name = "query", value = "other"),
+                QueryParameter(name = "empty", value = null)
+            )
+        )
+
+        assertEquals(params.allNamed("query"), listOf("param", "other"))
+        assertEquals(params.allNamed("fruit"), listOf("banana"))
+        assertEquals(params.allNamed("empty"), emptyList<String>())
+        assertEquals(params.allNamed("not-found"), emptyList<String>())
     }
 }

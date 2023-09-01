@@ -19,6 +19,8 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceMediaTypeSnifferContent
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.archive
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.channel.compress.archivers.zip.ZipArchiveEntry
@@ -36,14 +38,15 @@ internal class ChannelZipContainer(
 ) : Container {
 
     private inner class FailureEntry(
-        override val path: String
+        override val url: Url
     ) : Container.Entry, Resource by FailureResource(Resource.Exception.NotFound())
 
-    private inner class Entry(private val entry: ZipArchiveEntry) : Container.Entry {
+    private inner class Entry(
+        override val url: Url,
+        private val entry: ZipArchiveEntry
+    ) : Container.Entry {
 
-        override val path: String = entry.name
-
-        override val source: Url.Absolute? get() = null
+        override val source: AbsoluteUrl? get() = null
 
         override suspend fun properties(): ResourceTry<Resource.Properties> =
             ResourceTry.success(
@@ -59,7 +62,7 @@ internal class ChannelZipContainer(
         override suspend fun mediaType(): ResourceTry<MediaType> =
             Try.success(
                 mediaTypeRetriever.retrieve(
-                    hints = MediaTypeHints(fileExtension = File(path).extension),
+                    hints = MediaTypeHints(fileExtension = url.extension),
                     content = ResourceMediaTypeSnifferContent(this)
                 ) ?: MediaType.BINARY
             )
@@ -144,14 +147,17 @@ internal class ChannelZipContainer(
     override suspend fun entries(): Set<Container.Entry> =
         archive.entries.toList()
             .filterNot { it.isDirectory }
-            .mapNotNull { Entry(it) }
+            .map {
+                Entry(Url.fromDecodedPath(it.name), it)
+            }
             .toSet()
 
-    override fun get(path: String): Container.Entry =
-        archive.getEntry(path)
+    override fun get(url: Url): Container.Entry =
+        (url as? RelativeUrl)?.path
+            ?.let { archive.getEntry(it) }
             ?.takeUnless { it.isDirectory }
-            ?.let { Entry(it) }
-            ?: FailureEntry(path)
+            ?.let { Entry(url, it) }
+            ?: FailureEntry(url)
 
     override suspend fun close() {
         withContext(Dispatchers.IO) {

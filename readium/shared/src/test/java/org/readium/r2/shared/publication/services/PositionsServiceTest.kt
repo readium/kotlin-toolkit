@@ -21,6 +21,8 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.readAsString
+import org.readium.r2.shared.urlHref
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -32,7 +34,7 @@ class PositionsServiceTest {
         val positions = listOf(
             listOf(
                 Locator(
-                    href = "res",
+                    href = Url("res")!!,
                     type = "application/xml",
                     locations = Locator.Locations(
                         position = 1,
@@ -42,7 +44,7 @@ class PositionsServiceTest {
             ),
             listOf(
                 Locator(
-                    href = "chap1",
+                    href = Url("chap1")!!,
                     type = "image/png",
                     locations = Locator.Locations(
                         position = 2,
@@ -52,7 +54,7 @@ class PositionsServiceTest {
             ),
             listOf(
                 Locator(
-                    href = "chap2",
+                    href = Url("chap2")!!,
                     type = "image/png",
                     title = "Chapter 2",
                     locations = Locator.Locations(
@@ -61,7 +63,7 @@ class PositionsServiceTest {
                     )
                 ),
                 Locator(
-                    href = "chap2",
+                    href = Url("chap2")!!,
                     type = "image/png",
                     title = "Chapter 2.5",
                     locations = Locator.Locations(
@@ -76,7 +78,7 @@ class PositionsServiceTest {
             override suspend fun positionsByReadingOrder(): List<List<Locator>> = positions
         }
 
-        val json = service.get(Link("/~readium/positions"))
+        val json = service.get(Link(urlHref("/~readium/positions")))
             ?.let { runBlocking { it.readAsString() } }
             ?.getOrNull()
             ?.let { JSONObject(it) }
@@ -106,6 +108,7 @@ class PositionsServiceTest {
     }
 }
 
+@RunWith(RobolectricTestRunner::class)
 class PerResourcePositionsServiceTest {
 
     @Test
@@ -121,14 +124,14 @@ class PerResourcePositionsServiceTest {
     @Test
     fun `Positions from a {readingOrder} with one resource`() {
         val service = PerResourcePositionsService(
-            readingOrder = listOf(Link(href = "res", mediaType = MediaType.PNG)),
+            readingOrder = listOf(Link(href = urlHref("res"), mediaType = MediaType.PNG)),
             fallbackMediaType = ""
         )
 
         Assert.assertEquals(
             listOf(
                 Locator(
-                    href = "res",
+                    href = Url("res")!!,
                     type = "image/png",
                     locations = Locator.Locations(
                         position = 1,
@@ -144,9 +147,9 @@ class PerResourcePositionsServiceTest {
     fun `Positions from a {readingOrder} with a few resources`() {
         val service = PerResourcePositionsService(
             readingOrder = listOf(
-                Link(href = "res"),
-                Link(href = "chap1", mediaType = MediaType.PNG),
-                Link(href = "chap2", mediaType = MediaType.PNG, title = "Chapter 2")
+                Link(href = urlHref("res")),
+                Link(href = urlHref("chap1"), mediaType = MediaType.PNG),
+                Link(href = urlHref("chap2"), mediaType = MediaType.PNG, title = "Chapter 2")
             ),
             fallbackMediaType = ""
         )
@@ -154,7 +157,7 @@ class PerResourcePositionsServiceTest {
         Assert.assertEquals(
             listOf(
                 Locator(
-                    href = "res",
+                    href = Url("res")!!,
                     type = "",
                     locations = Locator.Locations(
                         position = 1,
@@ -162,7 +165,7 @@ class PerResourcePositionsServiceTest {
                     )
                 ),
                 Locator(
-                    href = "chap1",
+                    href = Url("chap1")!!,
                     type = "image/png",
                     locations = Locator.Locations(
                         position = 2,
@@ -170,7 +173,7 @@ class PerResourcePositionsServiceTest {
                     )
                 ),
                 Locator(
-                    href = "chap2",
+                    href = Url("chap2")!!,
                     type = "image/png",
                     title = "Chapter 2",
                     locations = Locator.Locations(
@@ -187,7 +190,7 @@ class PerResourcePositionsServiceTest {
     fun `{type} fallbacks on the given media type`() {
         val services = PerResourcePositionsService(
             readingOrder = listOf(
-                Link(href = "res")
+                Link(href = urlHref("res"))
             ),
             fallbackMediaType = "image/*"
         )
@@ -195,7 +198,7 @@ class PerResourcePositionsServiceTest {
         Assert.assertEquals(
             listOf(
                 Locator(
-                    href = "res",
+                    href = Url("res")!!,
                     type = "image/*",
                     locations = Locator.Locations(
                         position = 1,

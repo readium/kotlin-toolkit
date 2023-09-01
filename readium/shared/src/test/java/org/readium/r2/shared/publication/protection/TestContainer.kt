@@ -10,28 +10,29 @@ import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.StringResource
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
-class TestContainer(resources: Map<String, String> = emptyMap()) : Container {
+class TestContainer(resources: Map<Url, String> = emptyMap()) : Container {
 
-    private val entries: Map<String, Entry> =
+    private val entries: Map<Url, Entry> =
         resources.mapValues { Entry(it.key, StringResource(it.value, MediaType.TEXT)) }
 
     override suspend fun entries(): Set<Container.Entry> =
         entries.values.toSet()
 
-    override fun get(path: String): Container.Entry =
-        entries[path] ?: NotFoundEntry(path)
+    override fun get(url: Url): Container.Entry =
+        entries[url] ?: NotFoundEntry(url)
 
     override suspend fun close() {}
 
     private class NotFoundEntry(
-        override val path: String
+        override val url: Url
     ) : Container.Entry {
 
-        override val source: Url.Absolute? = null
+        override val source: AbsoluteUrl? = null
 
         override suspend fun mediaType(): ResourceTry<MediaType> =
             Try.failure(Resource.Exception.NotFound())
@@ -50,7 +51,7 @@ class TestContainer(resources: Map<String, String> = emptyMap()) : Container {
     }
 
     private class Entry(
-        override val path: String,
+        override val url: Url,
         private val resource: StringResource
     ) : Resource by resource, Container.Entry
 }

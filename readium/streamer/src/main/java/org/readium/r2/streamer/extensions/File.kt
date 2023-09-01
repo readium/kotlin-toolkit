@@ -10,13 +10,6 @@
 package org.readium.r2.streamer.extensions
 
 import java.io.File
-import java.util.*
-
-internal val File.lowercasedExtension: String
-    get() = extension.lowercase(Locale.getDefault())
-
-internal val File.isHiddenOrThumbs: Boolean
-    get() = name.let { it.startsWith(".") || it == "Thumbs.db" }
 
 /**
  * Returns a [File] to the first component of the [File]'s path,

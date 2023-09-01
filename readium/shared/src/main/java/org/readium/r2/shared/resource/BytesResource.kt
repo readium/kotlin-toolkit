@@ -8,12 +8,12 @@ package org.readium.r2.shared.resource
 
 import kotlinx.coroutines.runBlocking
 import org.readium.r2.shared.extensions.read
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 public sealed class BaseBytesResource(
-    override val source: Url.Absolute?,
+    override val source: AbsoluteUrl?,
     private val mediaType: MediaType,
     private val properties: Resource.Properties,
     protected val bytes: suspend () -> Try<ByteArray, Resource.Exception>
@@ -47,7 +47,7 @@ public sealed class BaseBytesResource(
 
 /** Creates a Resource serving a [ByteArray]. */
 public class BytesResource(
-    url: Url.Absolute? = null,
+    url: AbsoluteUrl? = null,
     mediaType: MediaType,
     properties: Resource.Properties = Resource.Properties(),
     bytes: suspend () -> ResourceTry<ByteArray>
@@ -56,7 +56,7 @@ public class BytesResource(
     public constructor(
         bytes: ByteArray,
         mediaType: MediaType,
-        url: Url.Absolute? = null,
+        url: AbsoluteUrl? = null,
         properties: Resource.Properties = Resource.Properties()
     ) :
         this(url = url, mediaType = mediaType, properties = properties, { Try.success(bytes) })
@@ -67,7 +67,7 @@ public class BytesResource(
 
 /** Creates a Resource serving a [String]. */
 public class StringResource(
-    url: Url.Absolute? = null,
+    url: AbsoluteUrl? = null,
     mediaType: MediaType,
     properties: Resource.Properties = Resource.Properties(),
     string: suspend () -> ResourceTry<String>
@@ -81,7 +81,7 @@ public class StringResource(
     public constructor(
         string: String,
         mediaType: MediaType,
-        url: Url.Absolute? = null,
+        url: AbsoluteUrl? = null,
         properties: Resource.Properties = Resource.Properties()
     ) :
         this(url = url, mediaType = mediaType, properties = properties, { Try.success(string) })

@@ -15,9 +15,7 @@ import kotlin.reflect.KClass
 import kotlinx.parcelize.Parcelize
 import org.json.JSONObject
 import org.readium.r2.shared.*
-import org.readium.r2.shared.BuildConfig.DEBUG
 import org.readium.r2.shared.extensions.*
-import org.readium.r2.shared.extensions.removeLastComponent
 import org.readium.r2.shared.publication.epub.listOfAudioClips
 import org.readium.r2.shared.publication.epub.listOfVideoClips
 import org.readium.r2.shared.publication.services.CacheService
@@ -38,6 +36,7 @@ import org.readium.r2.shared.util.Closeable
 import org.readium.r2.shared.util.Error
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 internal typealias ServiceFactory = (Publication.Service.Context) -> Publication.Service?
@@ -124,10 +123,9 @@ public class Publication(
     /**
      * The URL where this publication is served, computed from the [Link] with `self` relation.
      */
-
-    public val baseUrl: URL?
+    public val baseUrl: Url?
         get() = links.firstWithRel("self")
-            ?.let { it.href.toUrlOrNull()?.removeLastComponent() }
+            ?.href?.toUrl()?.removeFilename()
 
     /**
      * Returns whether this publication conforms to the given Readium Web Publication Profile.
@@ -144,7 +142,7 @@ public class Publication(
      * If there's no match, tries again after removing any query parameter and anchor from the
      * given [href].
      */
-    public fun linkWithHref(href: String): Link? = _manifest.linkWithHref(href)
+    public fun linkWithHref(href: Url): Link? = _manifest.linkWithHref(href.toString())
 
     /**
      * Finds the first [Link] having the given [rel] in the publications's links.
@@ -167,15 +165,17 @@ public class Publication(
      * Returns the resource targeted by the given non-templated [link].
      */
     public fun get(link: Link): Resource {
-        if (DEBUG) { require(!link.templated) { "You must expand templated links before calling [Publication.get]" } }
+        val url = requireNotNull(link.href.toUrl()) {
+            "You must expand templated links before calling [Publication.get]"
+        }
 
         services.services.forEach { service -> service.get(link)?.let { return it } }
 
-        return container.get(link.href)
+        return container.get(url)
             .fallback { error ->
                 if (error is Resource.Exception.NotFound) {
                     // Try again after removing query and fragment.
-                    container.get(link.href.takeWhile { it !in "#?" })
+                    container.get(url.removeQuery().removeFragment())
                 } else {
                     null
                 }
@@ -597,10 +597,11 @@ public class Publication(
         ReplaceWith("linkWithHref(href)"),
         level = DeprecationLevel.ERROR
     )
-    public fun resource(href: String): Link? = linkWithHref(href)
+    @Suppress("UNUSED_PARAMETER")
+    public fun resource(href: String): Link? = throw NotImplementedError()
 
     @Deprecated("Refactored as a property", ReplaceWith("baseUrl"), level = DeprecationLevel.ERROR)
-    public fun baseUrl(): URL? = baseUrl
+    public fun baseUrl(): URL? = throw NotImplementedError()
 
     @Deprecated(
         "Renamed [subcollections]",
@@ -624,7 +625,8 @@ public class Publication(
         ReplaceWith("linkWithHref(href)"),
         level = DeprecationLevel.ERROR
     )
-    public fun resourceWithHref(href: String): Link? = linkWithHref(href)
+    @Suppress("UNUSED_PARAMETER")
+    public fun resourceWithHref(href: String): Link? = throw NotImplementedError()
 
     @Deprecated(
         "Use a [ServiceFactory] for a [PositionsService] instead.",

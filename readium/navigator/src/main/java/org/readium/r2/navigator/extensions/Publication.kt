@@ -14,13 +14,11 @@ import org.readium.r2.shared.InternalReadiumApi
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.services.positions
+import org.readium.r2.shared.util.Url
 
 // These extensions will be removed in the next release, with `PositionsService`.
 
-internal val Publication.positionsSync: List<Locator>
-    get() = runBlocking { positions() }
-
-internal val Publication.positionsByResource: Map<String, List<Locator>>
+internal val Publication.positionsByResource: Map<Url, List<Locator>>
     get() = runBlocking { positions().groupBy { it.href } }
 
 /**
@@ -34,5 +32,8 @@ public fun Publication.normalizeLocator(locator: Locator): Locator {
         return locator
     }
 
-    return locator.copy(href = locator.href.removePrefix("/"))
+    return locator.copy(
+        href = Url(locator.href.toString().removePrefix("/"))
+            ?: return locator
+    )
 }

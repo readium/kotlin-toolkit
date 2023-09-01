@@ -20,6 +20,7 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
 
 @ExperimentalReadiumApi
 public class GuidedMediaNavigator<S : Configurable.Settings, P : Configurable.Preferences<P>>(
@@ -32,7 +33,7 @@ public class GuidedMediaNavigator<S : Configurable.Settings, P : Configurable.Pr
     Configurable<S, P> {
 
     public data class Location(
-        override val href: Href,
+        override val href: Url,
         override val offset: Duration,
         val fragment: String,
         override val textBefore: String?,

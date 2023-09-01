@@ -16,9 +16,9 @@ import org.readium.r2.shared.R
 import org.readium.r2.shared.UserException
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.mediatype.MediaType
 
@@ -32,7 +32,7 @@ public interface Resource : SuspendingCloseable {
     /**
      * URL locating this resource, if any.
      */
-    public val source: Url.Absolute?
+    public val source: AbsoluteUrl?
 
     /**
      * Returns the resource media type if known.
@@ -87,10 +87,7 @@ public interface Resource : SuspendingCloseable {
     ) {
 
         /** Equivalent to a 400 HTTP error. */
-        public class BadRequest(
-            public val parameters: Map<String, String> = emptyMap(),
-            cause: Throwable? = null
-        ) :
+        public class BadRequest(cause: Throwable? = null) :
             Exception(R.string.readium_shared_resource_exception_bad_request, cause)
 
         /** Equivalent to a 404 HTTP error. */
@@ -153,7 +150,7 @@ public class FailureResource(
 
     internal constructor(cause: Throwable) : this(Resource.Exception.wrap(cause))
 
-    override val source: Url.Absolute? = null
+    override val source: AbsoluteUrl? = null
     override suspend fun mediaType(): ResourceTry<MediaType> = Try.failure(error)
     override suspend fun properties(): ResourceTry<Resource.Properties> = Try.failure(error)
     override suspend fun length(): ResourceTry<Long> = Try.failure(error)

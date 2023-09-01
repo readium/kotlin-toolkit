@@ -17,6 +17,7 @@ import org.json.JSONObject
 import org.readium.r2.shared.JSONable
 import org.readium.r2.shared.extensions.*
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.logging.log
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -35,7 +36,7 @@ import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
  */
 @Parcelize
 public data class Locator(
-    val href: String,
+    val href: Url,
     val type: String,
     val title: String? = null,
     val locations: Locations = Locations(),
@@ -174,7 +175,7 @@ public data class Locator(
     )
 
     override fun toJSON(): JSONObject = JSONObject().apply {
-        put("href", href)
+        put("href", href.toString())
         put("type", type)
         put("title", title)
         putIfNotEmpty("locations", locations)
@@ -191,8 +192,13 @@ public data class Locator(
                 return null
             }
 
+            val url = Url(href) ?: run {
+                warnings?.log(Locator::class.java, "[href] is not a valid URL", json)
+                return null
+            }
+
             return Locator(
-                href = href,
+                href = url,
                 type = type,
                 title = json.optNullableString("title"),
                 locations = Locations.fromJSON(json.optJSONObject("locations")),

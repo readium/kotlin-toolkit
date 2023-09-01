@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import org.readium.r2.navigator.Navigator
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Closeable
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
 
 /**
  * A [Navigator] which can play multimedia content.
@@ -27,7 +27,7 @@ public interface MediaNavigator<
      */
     public interface Location {
 
-        public val href: Href
+        public val href: Url
     }
 
     /**

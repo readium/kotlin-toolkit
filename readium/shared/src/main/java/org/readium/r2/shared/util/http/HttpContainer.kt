@@ -10,7 +10,7 @@ import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.toEntry
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import timber.log.Timber
 
@@ -21,26 +21,28 @@ import timber.log.Timber
  * byte range requests are open-ended and reused. This helps to avoid issuing too many requests.
  *
  * @param client HTTP client used to perform HTTP requests.
- * @param baseUrl Base URL from which relative HREF are served.
+ * @param baseUrl Base URL from which relative URLs are served.
  */
 public class HttpContainer(
     private val client: HttpClient,
-    private val baseUrl: String? = null
+    private val baseUrl: Url? = null
 ) : Container {
 
     override suspend fun entries(): Set<Container.Entry>? = null
 
-    override fun get(path: String): Container.Entry {
-        val url = Href(path, baseHref = baseUrl ?: "/").toUrl() as? Url.Absolute
+    override fun get(url: Url): Container.Entry {
+        val absoluteUrl = (baseUrl?.resolve(url) ?: url) as? AbsoluteUrl
 
-        return if (url == null || !url.isHttp) {
-            val cause = IllegalArgumentException("Invalid HREF: $path, produced URL: $url")
+        return if (absoluteUrl == null || !absoluteUrl.isHttp) {
+            val cause = IllegalArgumentException(
+                "Invalid URL: $url, produced absolute URL: $absoluteUrl"
+            )
             Timber.e(cause)
             FailureResource(Resource.Exception.BadRequest(cause = cause))
         } else {
-            HttpResource(client, url)
+            HttpResource(client, absoluteUrl)
         }
-            .toEntry(path)
+            .toEntry(url)
     }
 
     override suspend fun close() {}

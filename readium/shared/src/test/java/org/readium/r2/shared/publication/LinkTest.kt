@@ -16,36 +16,18 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.util.TemplatedHref
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class LinkTest {
 
-    @Test fun `templateParameters works fine`() {
-        val href = "/url{?x,hello,y}name{z,y,w}"
-        assertEquals(
-            listOf("x", "hello", "y", "z", "w"),
-            Link(href = href, templated = true).templateParameters
-        )
-    }
-
-    @Test fun `expand works fine`() {
-        val href = "/url{?x,hello,y}name"
-        val parameters = mapOf(
-            "x" to "aaa",
-            "hello" to "Hello, world",
-            "y" to "b"
-        )
-        assertEquals(
-            Link(href = "/url?x=aaa&hello=Hello,%20world&y=bname", templated = false),
-            Link(href = href, templated = true).expandTemplate(parameters)
-        )
-    }
-
     @Test fun `parse minimal JSON`() {
         assertEquals(
-            Link(href = "http://href"),
+            Link(href = UrlHref(Url("http://href")!!)),
             Link.fromJSON(JSONObject("{'href': 'http://href'}"))
         )
     }
@@ -53,9 +35,8 @@ class LinkTest {
     @Test fun `parse full JSON`() {
         assertEquals(
             Link(
-                href = "http://href",
+                href = UrlHref(Url("http://href")!!),
                 mediaType = MediaType.PDF,
-                templated = true,
                 title = "Link Title",
                 rels = setOf("publication", "cover"),
                 properties = Properties(otherProperties = mapOf("orientation" to "landscape")),
@@ -65,12 +46,12 @@ class LinkTest {
                 duration = 45.6,
                 languages = listOf("fr"),
                 alternates = listOf(
-                    Link(href = "/alternate1"),
-                    Link(href = "/alternate2")
+                    Link(href = UrlHref(Url("/alternate1")!!)),
+                    Link(href = UrlHref(Url("/alternate2")!!))
                 ),
                 children = listOf(
-                    Link(href = "http://child1"),
-                    Link(href = "http://child2")
+                    Link(href = UrlHref(Url("http://child1")!!)),
+                    Link(href = UrlHref(Url("http://child2")!!))
                 )
             ),
             Link.fromJSON(
@@ -78,7 +59,7 @@ class LinkTest {
                     """{
                 "href": "http://href",
                 "type": "application/pdf",
-                "templated": true,
+                "templated": false,
                 "title": "Link Title",
                 "rel": ["publication", "cover"],
                 "properties": {
@@ -110,24 +91,29 @@ class LinkTest {
     @Test fun `parse JSON {rel} as single string`() {
         assertEquals(
             Link.fromJSON(JSONObject("{'href': 'a', 'rel': 'publication'}")),
-            Link(href = "a", rels = setOf("publication"))
+            Link(href = UrlHref(Url("a")!!), rels = setOf("publication"))
         )
     }
 
     @Test fun `parse JSON {templated} defaults to false`() {
         val link = Link.fromJSON(JSONObject("{'href': 'a'}"))!!
-        assertFalse(link.templated)
+        assertEquals(UrlHref(Url("a")!!), link.href)
     }
 
     @Test fun `parse JSON {templated} as false when null`() {
         val link = Link.fromJSON(JSONObject("{'href': 'a', 'templated': null}"))!!
-        assertFalse(link.templated)
+        assertEquals(UrlHref(Url("a")!!), link.href)
+    }
+
+    @Test fun `parse JSON {templated} when true`() {
+        val link = Link.fromJSON(JSONObject("{'href': 'a', 'templated': true}"))!!
+        assertEquals(TemplatedHref("a"), link.href)
     }
 
     @Test fun `parse JSON multiple languages`() {
         assertEquals(
             Link.fromJSON(JSONObject("{'href': 'a', 'language': ['fr', 'en']}")),
-            Link(href = "a", languages = listOf("fr", "en"))
+            Link(href = UrlHref(Url("a")!!), languages = listOf("fr", "en"))
         )
     }
 
@@ -158,8 +144,8 @@ class LinkTest {
     @Test fun `parse JSON array`() {
         assertEquals(
             listOf(
-                Link(href = "http://child1"),
-                Link(href = "http://child2")
+                Link(href = UrlHref(Url("http://child1")!!)),
+                Link(href = UrlHref(Url("http://child2")!!))
             ),
             Link.fromJSONArray(
                 JSONArray(
@@ -179,7 +165,7 @@ class LinkTest {
     @Test fun `parse JSON array ignores invalid links`() {
         assertEquals(
             listOf(
-                Link(href = "http://child2")
+                Link(href = UrlHref(Url("http://child2")!!))
             ),
             Link.fromJSONArray(
                 JSONArray(
@@ -195,7 +181,7 @@ class LinkTest {
     @Test fun `get minimal JSON`() {
         assertJSONEquals(
             JSONObject("{'href': 'http://href', 'templated': false}"),
-            Link(href = "http://href").toJSON()
+            Link(href = UrlHref(Url("http://href")!!)).toJSON()
         )
     }
 
@@ -227,9 +213,8 @@ class LinkTest {
             }"""
             ),
             Link(
-                href = "http://href",
+                href = TemplatedHref("http://href"),
                 mediaType = MediaType.PDF,
-                templated = true,
                 title = "Link Title",
                 rels = setOf("publication", "cover"),
                 properties = Properties(otherProperties = mapOf("orientation" to "landscape")),
@@ -239,12 +224,12 @@ class LinkTest {
                 duration = 45.6,
                 languages = listOf("fr"),
                 alternates = listOf(
-                    Link(href = "/alternate1"),
-                    Link(href = "/alternate2")
+                    Link(href = UrlHref(Url("/alternate1")!!)),
+                    Link(href = UrlHref(Url("/alternate2")!!))
                 ),
                 children = listOf(
-                    Link(href = "http://child1"),
-                    Link(href = "http://child2")
+                    Link(href = UrlHref(Url("http://child1")!!)),
+                    Link(href = UrlHref(Url("http://child2")!!))
                 )
             ).toJSON()
         )
@@ -259,68 +244,28 @@ class LinkTest {
             ]"""
             ),
             listOf(
-                Link(href = "http://child1"),
-                Link(href = "http://child2")
+                Link(href = UrlHref(Url("http://child1")!!)),
+                Link(href = UrlHref(Url("http://child2")!!))
             ).toJSON()
         )
     }
 
     @Test fun `get media type from type`() {
-        assertEquals(MediaType.EPUB, Link(href = "file", mediaType = MediaType.EPUB).mediaType)
-        assertEquals(MediaType.PDF, Link(href = "file", mediaType = MediaType.PDF).mediaType)
-    }
-
-    @Test
-    fun `to URL relative to base URL`() {
         assertEquals(
-            "http://host/folder/file.html",
-            Link("folder/file.html").toUrl("http://host/")
+            MediaType.EPUB,
+            Link(href = UrlHref(Url("file")!!), mediaType = MediaType.EPUB).mediaType
         )
-    }
-
-    @Test
-    fun `to URL relative to base URL with root prefix`() {
         assertEquals(
-            "http://host/folder/file.html",
-            Link("/file.html").toUrl("http://host/folder/")
-        )
-    }
-
-    @Test
-    fun `to URL relative to null`() {
-        assertEquals(
-            "/folder/file.html",
-            Link("folder/file.html").toUrl(null)
-        )
-    }
-
-    @Test
-    fun `to URL with invalid HREF`() {
-        assertNull(Link("").toUrl("http://test.com"))
-    }
-
-    @Test
-    fun `to URL with absolute HREF`() {
-        assertEquals(
-            "http://test.com/folder/file.html",
-            Link("http://test.com/folder/file.html").toUrl("http://host/")
-        )
-    }
-
-    @Test
-    fun `to URL with HREF containing invalid characters`() {
-        assertEquals(
-            "http://host/folder/Cory%20Doctorow's/a-fc.jpg",
-            Link("/Cory Doctorow's/a-fc.jpg").toUrl("http://host/folder/")
+            MediaType.PDF,
+            Link(href = UrlHref(Url("file")!!), mediaType = MediaType.PDF).mediaType
         )
     }
 
     @Test
     fun `Make a copy after adding the given {properties}`() {
         val link = Link(
-            href = "http://href",
+            href = TemplatedHref("http://href"),
             mediaType = MediaType.PDF,
-            templated = true,
             title = "Link Title",
             rels = setOf("publication", "cover"),
             properties = Properties(otherProperties = mapOf("orientation" to "landscape")),
@@ -330,12 +275,12 @@ class LinkTest {
             duration = 45.6,
             languages = listOf("fr"),
             alternates = listOf(
-                Link(href = "/alternate1"),
-                Link(href = "/alternate2")
+                Link(href = UrlHref(Url("/alternate1")!!)),
+                Link(href = UrlHref(Url("/alternate2")!!))
             ),
             children = listOf(
-                Link(href = "http://child1"),
-                Link(href = "http://child2")
+                Link(href = UrlHref(Url("http://child1")!!)),
+                Link(href = UrlHref(Url("http://child2")!!))
             )
         )
 
@@ -372,15 +317,17 @@ class LinkTest {
 
     @Test
     fun `Find the first index of the {Link} with the given {href} in a list of {Link}`() {
-        assertNull(listOf(Link(href = "href")).indexOfFirstWithHref("foobar"))
+        assertNull(
+            listOf(Link(href = UrlHref(Url("href")!!))).indexOfFirstWithHref(Url("foobar")!!)
+        )
 
         assertEquals(
             1,
             listOf(
-                Link(href = "href1"),
-                Link(href = "href2"),
-                Link(href = "href2") // duplicated on purpose
-            ).indexOfFirstWithHref("href2")
+                Link(href = UrlHref(Url("href1")!!)),
+                Link(href = UrlHref(Url("href2")!!)),
+                Link(href = UrlHref(Url("href2")!!)) // duplicated on purpose
+            ).indexOfFirstWithHref(Url("href2")!!)
         )
     }
 }

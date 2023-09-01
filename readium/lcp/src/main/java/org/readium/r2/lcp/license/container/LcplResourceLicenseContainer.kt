@@ -29,6 +29,6 @@ internal class LcplResourceLicenseContainer(private val resource: Resource) : Li
         }
 
     override fun write(license: LicenseDocument) {
-        throw LcpException.Container.WriteFailed("")
+        throw LcpException.Container.WriteFailed(null)
     }
 }

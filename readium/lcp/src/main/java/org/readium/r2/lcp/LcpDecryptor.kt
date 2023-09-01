@@ -22,6 +22,7 @@ import org.readium.r2.shared.resource.TransformingResource
 import org.readium.r2.shared.resource.flatMap
 import org.readium.r2.shared.resource.flatMapCatching
 import org.readium.r2.shared.resource.mapCatching
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
@@ -32,7 +33,7 @@ import org.readium.r2.shared.util.getOrThrow
  */
 internal class LcpDecryptor(
     val license: LcpLicense?,
-    var encryptionData: Map<String, Encryption> = emptyMap()
+    var encryptionData: Map<Url, Encryption> = emptyMap()
 ) {
 
     fun transform(resource: Resource): Resource {
@@ -41,7 +42,7 @@ internal class LcpDecryptor(
         }
 
         return resource.flatMap {
-            val encryption = encryptionData[resource.path]
+            val encryption = encryptionData[resource.url]
 
             // Checks if the resource is encrypted and whether the encryption schemes of the resource
             // and the DRM license are the same.
@@ -93,7 +94,7 @@ internal class LcpDecryptor(
         private val license: LcpLicense
     ) : Resource by resource {
 
-        override val source: Url.Absolute? = null
+        override val source: AbsoluteUrl? = null
 
         private class Cache(
             var startIndex: Int? = null,

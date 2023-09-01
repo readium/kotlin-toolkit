@@ -45,7 +45,7 @@ public class PdfParser(
                 PublicationParser.Error.ParsingFailed("No PDF found in the publication.")
             )
         val document = pdfFactory.open(resource, password = null)
-        val tableOfContents = document.outline.toLinks(resource.path)
+        val tableOfContents = document.outline.toLinks(resource.url)
 
         val manifest = Manifest(
             metadata = Metadata(

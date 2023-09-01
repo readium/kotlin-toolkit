@@ -17,6 +17,7 @@ import org.readium.r2.opds.OPDS1Parser
 import org.readium.r2.opds.OPDS2Parser
 import org.readium.r2.shared.opds.ParseData
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.http.HttpRequest
 import org.readium.r2.shared.util.http.fetchWithDecoder
 import org.readium.r2.testapp.db.BookDatabase
@@ -41,7 +42,7 @@ class CatalogFeedListViewModel(application: Application) : AndroidViewModel(appl
     }
 
     fun parseCatalog(url: String, title: String) = viewModelScope.launch {
-        val parseData = parseURL(URL(url))
+        val parseData = parseURL(url)
         parseData.onSuccess { data ->
             val catalog = Catalog(
                 title = title,
@@ -55,7 +56,10 @@ class CatalogFeedListViewModel(application: Application) : AndroidViewModel(appl
         }
     }
 
-    private suspend fun parseURL(url: URL): Try<ParseData, Exception> {
+    private suspend fun parseURL(urlString: String): Try<ParseData, Exception> {
+        val url = Url(urlString)
+            ?: return Try.failure(IllegalArgumentException("Invalid URL"))
+
         return httpClient.fetchWithDecoder(HttpRequest(url.toString())) {
             val result = it.body
             if (isJson(result)) {

@@ -19,6 +19,7 @@ import org.readium.r2.shared.publication.services.PositionsService
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.archive
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.use
 
@@ -148,35 +149,52 @@ public class EpubPositionsService(
         return positions
     }
 
-    private fun createFixed(link: Link, startPosition: Int) = listOf(
-        createLocator(
-            link,
-            progression = 0.0,
-            position = startPosition + 1
+    private fun createFixed(link: Link, startPosition: Int): List<Locator> {
+        val url = link.href.toUrl() ?: return emptyList()
+
+        return listOf(
+            createLocator(
+                href = url,
+                type = link.mediaType,
+                title = link.title,
+                progression = 0.0,
+                position = startPosition + 1
+            )
         )
-    )
+    }
 
     private suspend fun createReflowable(link: Link, startPosition: Int, container: Container): List<Locator> {
-        val positionCount = container.get(link.href).use { resource ->
+        val url = link.href.toUrl() ?: return emptyList()
+
+        val positionCount = container.get(url).use { resource ->
             reflowableStrategy.positionCount(link, resource)
         }
 
-        return (1..positionCount).map { position ->
+        return (1..positionCount).mapNotNull { position ->
             createLocator(
-                link,
+                href = url,
+                type = link.mediaType,
+                title = link.title,
                 progression = (position - 1) / positionCount.toDouble(),
                 position = startPosition + position
             )
         }
     }
 
-    private fun createLocator(link: Link, progression: Double, position: Int) = Locator(
-        href = link.href,
-        type = (link.mediaType ?: MediaType.HTML).toString(),
-        title = link.title,
-        locations = Locator.Locations(
-            progression = progression,
-            position = position
+    private fun createLocator(
+        href: Url,
+        type: MediaType?,
+        title: String?,
+        progression: Double,
+        position: Int
+    ): Locator =
+        Locator(
+            href = href,
+            type = (type ?: MediaType.HTML).toString(),
+            title = title,
+            locations = Locator.Locations(
+                progression = progression,
+                position = position
+            )
         )
-    )
 }

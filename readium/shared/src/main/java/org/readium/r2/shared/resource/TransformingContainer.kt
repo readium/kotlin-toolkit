@@ -6,6 +6,8 @@
 
 package org.readium.r2.shared.resource
 
+import org.readium.r2.shared.util.Url
+
 /**
  * Implements the transformation of a Resource. It can be used, for example, to decrypt,
  * deobfuscate, inject CSS or JavaScript, correct content – e.g. adding a missing dir="rtl" in an
@@ -30,12 +32,12 @@ public class TransformingContainer(
     override suspend fun entries(): Set<Container.Entry>? =
         container.entries()
 
-    override fun get(path: String): Container.Entry =
+    override fun get(url: Url): Container.Entry =
         transformers
-            .fold(container.get(path) as Resource) { acc, transformer ->
+            .fold(container.get(url) as Resource) { acc, transformer ->
                 transformer(acc)
             }
-            .toEntry(path)
+            .toEntry(url)
 
     override suspend fun close() {
         container.close()

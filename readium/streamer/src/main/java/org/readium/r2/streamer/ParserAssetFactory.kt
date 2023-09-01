@@ -6,7 +6,6 @@
 
 package org.readium.r2.streamer
 
-import java.io.File
 import java.nio.charset.Charset
 import org.json.JSONObject
 import org.readium.r2.shared.asset.Asset
@@ -16,9 +15,11 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceContainer
 import org.readium.r2.shared.resource.RoutingContainer
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.MessageError
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.http.HttpClient
@@ -72,14 +73,22 @@ internal class ParserAssetFactory(
             .getOrElse { return Try.failure(it) }
 
         val baseUrl =
-            manifest.linkWithRel("self")?.let { File(it.href).parent }
+            manifest.linkWithRel("self")?.href?.toUrl()?.removeFilename()
                 ?: return Try.failure(
                     Publication.OpeningException.ParsingFailed(
                         MessageError("No self link in the manifest.")
                     )
                 )
 
-        if (!baseUrl.startsWith("http")) {
+        if (baseUrl !is AbsoluteUrl) {
+            return Try.failure(
+                Publication.OpeningException.ParsingFailed(
+                    MessageError("Self link is not absolute.")
+                )
+            )
+        }
+
+        if (!baseUrl.isHttp) {
             return Try.failure(
                 Publication.OpeningException.UnsupportedAsset(
                     "Self link doesn't use the HTTP(S) scheme."
@@ -89,7 +98,10 @@ internal class ParserAssetFactory(
 
         val container =
             RoutingContainer(
-                local = ResourceContainer(path = "manifest.json", asset.resource),
+                local = ResourceContainer(
+                    url = Url.fromDecodedPath("manifest.json"),
+                    asset.resource
+                ),
                 remote = HttpContainer(httpClient, baseUrl)
             )
 
@@ -109,7 +121,10 @@ internal class ParserAssetFactory(
         // other devices. To avoid this, we now use a single link with the HREF
         // "publication.extension".
         val extension = formatRegistry.fileExtension(asset.mediaType)?.addPrefix(".") ?: ""
-        val container = ResourceContainer("publication$extension", asset.resource)
+        val container = ResourceContainer(
+            Url.fromDecodedPath("publication$extension"),
+            asset.resource
+        )
 
         return Try.success(
             PublicationParser.Asset(

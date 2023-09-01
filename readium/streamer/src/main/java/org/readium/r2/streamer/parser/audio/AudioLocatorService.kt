@@ -46,11 +46,12 @@ public class AudioLocatorService(private val readingOrder: List<Link>) : Locator
 
         val (link, resourcePosition) = readingOrderItemAtPosition(positionInPublication)
             ?: return null
+        val href = link.href.toUrl() ?: return null
 
         val positionInResource = positionInPublication - resourcePosition
 
         return Locator(
-            href = link.href,
+            href = href,
             type = (link.mediaType ?: MediaType.BINARY).toString(),
             locations = Locator.Locations(
                 fragments = listOf("t=${positionInResource.toInt()}"),

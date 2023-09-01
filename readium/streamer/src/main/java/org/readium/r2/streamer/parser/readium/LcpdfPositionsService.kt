@@ -10,6 +10,7 @@
 package org.readium.r2.streamer.parser.readium
 
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
@@ -18,7 +19,6 @@ import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.pdf.PdfDocument
 import org.readium.r2.shared.util.pdf.PdfDocumentFactory
 import org.readium.r2.shared.util.pdf.cachedIn
-import timber.log.Timber
 
 /**
  * Creates the [positions] for an LCP protected PDF [Publication] from its reading order and
@@ -71,7 +71,8 @@ internal class LcpdfPositionsService(
         totalPageCount: Int,
         startPosition: Int
     ): List<Locator> {
-        if (pageCount <= 0 || totalPageCount <= 0) {
+        val url = link.href.toUrl()
+        if (url == null || pageCount <= 0 || totalPageCount <= 0) {
             return emptyList()
         }
 
@@ -80,7 +81,7 @@ internal class LcpdfPositionsService(
             val progression = (position - 1) / pageCount.toDouble()
             val totalProgression = (startPosition + position - 1) / totalPageCount.toDouble()
             Locator(
-                href = link.href,
+                href = url,
                 type = (link.mediaType ?: MediaType.PDF).toString(),
                 locations = Locator.Locations(
                     fragments = listOf("page=$position"),
@@ -92,15 +93,15 @@ internal class LcpdfPositionsService(
         }
     }
 
-    private suspend fun openPdfAt(link: Link): PdfDocument? =
-        try {
+    private suspend fun openPdfAt(link: Link): PdfDocument? {
+        val url = link.href.toUrl() ?: return null
+
+        return tryOrLog {
             pdfFactory
                 .cachedIn(context.services)
-                .open(context.container.get(link.href), password = null)
-        } catch (e: Exception) {
-            Timber.e(e)
-            null
+                .open(context.container.get(url), password = null)
         }
+    }
 
     companion object {
 

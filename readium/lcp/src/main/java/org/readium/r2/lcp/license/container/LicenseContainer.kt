@@ -15,6 +15,7 @@ import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 private const val LICENSE_IN_EPUB = "META-INF/license.lcpl"
@@ -35,10 +36,10 @@ internal fun createLicenseContainer(
     mediaType: MediaType
 ): LicenseContainer =
     when (mediaType) {
-        MediaType.EPUB -> ZIPLicenseContainer(file.path, LICENSE_IN_EPUB)
-        MediaType.LCP_LICENSE_DOCUMENT -> LCPLLicenseContainer(file.path)
+        MediaType.EPUB -> ZIPLicenseContainer(file, LICENSE_IN_EPUB)
+        MediaType.LCP_LICENSE_DOCUMENT -> LCPLLicenseContainer(file)
         // Assuming it's a Readium WebPub package (e.g. audiobook, LCPDF, etc.) as a fallback
-        else -> ZIPLicenseContainer(file.path, LICENSE_IN_RPF)
+        else -> ZIPLicenseContainer(file, LICENSE_IN_RPF)
     }
 
 internal fun createLicenseContainer(
@@ -68,5 +69,5 @@ internal fun createLicenseContainer(
         // Assuming it's a Readium WebPub package (e.g. audiobook, LCPDF, etc.) as a fallback
         else -> LICENSE_IN_RPF
     }
-    return ContainerLicenseContainer(container, licensePath)
+    return ContainerLicenseContainer(container, Url.fromDecodedPath(licensePath))
 }

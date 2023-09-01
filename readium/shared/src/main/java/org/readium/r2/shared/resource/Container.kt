@@ -6,6 +6,7 @@
 
 package org.readium.r2.shared.resource
 
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.SuspendingCloseable
 import org.readium.r2.shared.util.Url
 
@@ -20,15 +21,15 @@ public interface Container : SuspendingCloseable {
     public interface Entry : Resource {
 
         /**
-         * Entry path relative to the root of the archive.
+         * URL used to access the resource in the container.
          */
-        public val path: String
+        public val url: Url
     }
 
     /**
      * Direct source to this container, when available.
      */
-    public val source: Url.Absolute? get() = null
+    public val source: AbsoluteUrl? get() = null
 
     /**
      * List of all the container entries of null if such a list is not available.
@@ -36,12 +37,12 @@ public interface Container : SuspendingCloseable {
     public suspend fun entries(): Set<Entry>?
 
     /**
-     * Returns the [Entry] at the given [path].
+     * Returns the [Entry] at the given [url].
      *
      * A [Entry] is always returned, since for some cases we can't know if it exists before actually
      * fetching it, such as HTTP. Therefore, errors are handled at the Entry level.
      */
-    public fun get(path: String): Entry
+    public fun get(url: Url): Entry
 }
 
 /** A [Container] providing no resources at all. */
@@ -49,22 +50,22 @@ public class EmptyContainer : Container {
 
     override suspend fun entries(): Set<Container.Entry> = emptySet()
 
-    override fun get(path: String): Container.Entry =
-        FailureResource(Resource.Exception.NotFound()).toEntry(path)
+    override fun get(url: Url): Container.Entry =
+        FailureResource(Resource.Exception.NotFound()).toEntry(url)
 
     override suspend fun close() {}
 }
 
 /** A [Container] for a single [Resource]. */
-public class ResourceContainer(path: String, resource: Resource) : Container {
+public class ResourceContainer(url: Url, resource: Resource) : Container {
 
-    private val entry = resource.toEntry(path)
+    private val entry = resource.toEntry(url)
 
     override suspend fun entries(): Set<Container.Entry> = setOf(entry)
 
-    override fun get(path: String): Container.Entry {
-        if (path.takeWhile { it !in "#?" } != entry.path) {
-            return FailureResource(Resource.Exception.NotFound()).toEntry(path)
+    override fun get(url: Url): Container.Entry {
+        if (url.removeFragment().removeQuery() != entry.url) {
+            return FailureResource(Resource.Exception.NotFound()).toEntry(url)
         }
 
         return entry
@@ -76,7 +77,7 @@ public class ResourceContainer(path: String, resource: Resource) : Container {
 }
 
 /** Convenience helper to wrap a [Resource] and a [path] into a [Container.Entry]. */
-internal fun Resource.toEntry(path: String): Container.Entry =
+internal fun Resource.toEntry(url: Url): Container.Entry =
     object : Container.Entry, Resource by this {
-        override val path: String = path
+        override val url: Url = url
     }

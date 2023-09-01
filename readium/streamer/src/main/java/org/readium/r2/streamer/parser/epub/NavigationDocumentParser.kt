@@ -8,11 +8,12 @@ package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.UrlHref
 
 internal object NavigationDocumentParser {
 
-    fun parse(document: ElementNode, filePath: String): Map<String, List<Link>> {
+    fun parse(document: ElementNode, filePath: Url): Map<String, List<Link>> {
         val docPrefixes = document.getAttrNs("prefix", Namespaces.OPS)
             ?.let { parsePrefixes(it) }.orEmpty()
         val prefixMap = CONTENT_RESERVED_PREFIXES + docPrefixes // prefix element overrides reserved prefixes
@@ -36,7 +37,7 @@ internal object NavigationDocumentParser {
 
     private fun parseNavElement(
         nav: ElementNode,
-        filePath: String,
+        filePath: Url,
         prefixMap: Map<String, String>
     ): Pair<List<String>, List<Link>>? {
         val typeAttr = nav.getAttrNs("type", Namespaces.OPS) ?: return null
@@ -51,10 +52,10 @@ internal object NavigationDocumentParser {
         return if (types.isNotEmpty() && !links.isNullOrEmpty()) Pair(types, links) else null
     }
 
-    private fun parseOlElement(element: ElementNode, filePath: String): List<Link> =
+    private fun parseOlElement(element: ElementNode, filePath: Url): List<Link> =
         element.get("li", Namespaces.XHTML).mapNotNull { parseLiElement(it, filePath) }
 
-    private fun parseLiElement(element: ElementNode, filePath: String): Link? {
+    private fun parseLiElement(element: ElementNode, filePath: Url): Link? {
         val first = element.getAll().firstOrNull() ?: return null // should be <a>,  <span>, or <ol>
         val title = if (first.name == "ol") {
             ""
@@ -64,23 +65,20 @@ internal object NavigationDocumentParser {
                 " "
             ).trim()
         }
-        val rawHref = first.getAttr("href")
-        val href = if (first.name == "a" && !rawHref.isNullOrBlank()) {
-            Href(
-                rawHref,
-                baseHref = filePath
-            ).string
+        val rawHref = first.getAttr("href")?.let { Url(it) }
+        val href = if (first.name == "a" && rawHref != null) {
+            filePath.resolve(rawHref)
         } else {
-            "#"
+            Url("#")!!
         }
         val children = element.getFirst("ol", Namespaces.XHTML)?.let { parseOlElement(it, filePath) }.orEmpty()
 
-        return if (children.isEmpty() && (href == "#" || title == "")) {
+        return if (children.isEmpty() && (href.toString() == "#" || title == "")) {
             null
         } else {
             Link(
                 title = title,
-                href = href,
+                href = UrlHref(href),
                 children = children
             )
         }

@@ -8,14 +8,14 @@ package org.readium.r2.shared.util.http
 
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceFactory
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
 
 public class HttpResourceFactory(
     private val httpClient: HttpClient
 ) : ResourceFactory {
 
-    override suspend fun create(url: Url.Absolute): Try<Resource, ResourceFactory.Error> {
+    override suspend fun create(url: AbsoluteUrl): Try<Resource, ResourceFactory.Error> {
         if (!url.isHttp) {
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
         }

@@ -8,7 +8,7 @@ package org.readium.r2.shared.resource
 
 import org.readium.r2.shared.extensions.coerceIn
 import org.readium.r2.shared.extensions.requireLengthFitInt
-import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.flatMap
 
 /**
@@ -39,7 +39,7 @@ public abstract class TransformingResource(
             }
     }
 
-    override val source: Url.Absolute? = null
+    override val source: AbsoluteUrl? = null
 
     private lateinit var _bytes: ResourceTry<ByteArray>
 

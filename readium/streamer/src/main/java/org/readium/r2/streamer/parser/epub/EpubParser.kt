@@ -17,8 +17,8 @@ import org.readium.r2.shared.publication.services.search.StringSearchService
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.TransformingContainer
 import org.readium.r2.shared.resource.readAsXml
-import org.readium.r2.shared.util.Href
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -49,7 +49,8 @@ public class EpubParser(
 
         val opfPath = getRootFilePath(asset.container)
             .getOrElse { return Try.failure(it) }
-        val opfXmlDocument = asset.container.get(opfPath).readAsXml()
+        val opfResource = asset.container.get(opfPath)
+        val opfXmlDocument = opfResource.readAsXml()
             .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
         val packageDocument = PackageDocument.parse(opfXmlDocument, opfPath, mediaTypeRetriever)
             ?: return Try.failure(PublicationParser.Error.ParsingFailed("Invalid OPF file."))
@@ -89,17 +90,19 @@ public class EpubParser(
         return Try.success(builder)
     }
 
-    private suspend fun getRootFilePath(container: Container): Try<String, PublicationParser.Error> =
-        container.get("META-INF/container.xml")
+    private suspend fun getRootFilePath(container: Container): Try<Url, PublicationParser.Error> =
+        container
+            .get(Url.fromDecodedPath("META-INF/container.xml"))
             .use { it.readAsXml() }
             .getOrElse { return Try.failure(PublicationParser.Error.IO(it)) }
             .getFirst("rootfiles", Namespaces.OPC)
             ?.getFirst("rootfile", Namespaces.OPC)
             ?.getAttr("full-path")
+            ?.let { Url(it) }
             ?.let { Try.success(it) }
             ?: Try.failure(PublicationParser.Error.ParsingFailed("Cannot successfully parse OPF."))
 
-    private suspend fun parseEncryptionData(container: Container): Map<String, Encryption> =
+    private suspend fun parseEncryptionData(container: Container): Map<Url, Encryption> =
         container.readAsXmlOrNull("META-INF/encryption.xml")
             ?.let { EncryptionParser.parse(it) }
             ?: emptyMap()
@@ -116,7 +119,7 @@ public class EpubParser(
         packageDocument.manifest
             .firstOrNull { it.properties.contains(Vocabularies.ITEM + "nav") }
             ?.let { navItem ->
-                val navPath = Href(navItem.href, baseHref = packageDocument.path).string
+                val navPath = packageDocument.path.resolve(navItem.href)
                 container.readAsXmlOrNull(navPath)
                     ?.let { NavigationDocumentParser.parse(it, navPath) }
             }
@@ -132,7 +135,7 @@ public class EpubParser(
 
         return ncxItem
             ?.let {
-                val ncxPath = Href(ncxItem.href, baseHref = packageDocument.path).string
+                val ncxPath = packageDocument.path.resolve(it.href)
                 container.readAsXmlOrNull(ncxPath)?.let { NcxParser.parse(it, ncxPath) }
             }
             ?.takeUnless { it.isEmpty() }

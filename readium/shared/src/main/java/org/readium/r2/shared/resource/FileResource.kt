@@ -13,8 +13,8 @@ import java.nio.channels.Channels
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.*
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.isLazyInitialized
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -45,7 +45,7 @@ public class FileResource private constructor(
         }
     }
 
-    override val source: Url.Absolute = file.toUrl()
+    override val source: AbsoluteUrl = file.toUrl()
 
     override suspend fun properties(): ResourceTry<Resource.Properties> =
         ResourceTry.success(Resource.Properties())
@@ -136,7 +136,7 @@ public class FileResourceFactory(
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : ResourceFactory {
 
-    override suspend fun create(url: Url.Absolute): Try<Resource, ResourceFactory.Error> {
+    override suspend fun create(url: AbsoluteUrl): Try<Resource, ResourceFactory.Error> {
         if (!url.isFile) {
             return Try.failure(ResourceFactory.Error.SchemeNotSupported(url.scheme))
         }

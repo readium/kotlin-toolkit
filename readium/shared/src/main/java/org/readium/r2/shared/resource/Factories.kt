@@ -6,6 +6,7 @@
 
 package org.readium.r2.shared.resource
 
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.ThrowableError
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -36,11 +37,11 @@ public fun interface ResourceFactory {
         }
 
         public class NotAResource(
-            public val url: Url.Absolute,
+            public val url: AbsoluteUrl,
             override val cause: org.readium.r2.shared.util.Error? = null
         ) : Error() {
 
-            public constructor(url: Url.Absolute, exception: Exception) : this(
+            public constructor(url: AbsoluteUrl, exception: Exception) : this(
                 url,
                 ThrowableError(exception)
             )
@@ -60,7 +61,7 @@ public fun interface ResourceFactory {
         }
     }
 
-    public suspend fun create(url: Url.Absolute): Try<Resource, Error>
+    public suspend fun create(url: AbsoluteUrl): Try<Resource, Error>
 }
 
 /**
@@ -112,7 +113,7 @@ public fun interface ContainerFactory {
         }
     }
 
-    public suspend fun create(url: Url.Absolute): Try<Container, Error>
+    public suspend fun create(url: AbsoluteUrl): Try<Container, Error>
 }
 
 /**
@@ -192,7 +193,7 @@ public class CompositeResourceFactory(
     private val fallbackFactory: ResourceFactory
 ) : ResourceFactory {
 
-    override suspend fun create(url: Url.Absolute): Try<Resource, ResourceFactory.Error> {
+    override suspend fun create(url: AbsoluteUrl): Try<Resource, ResourceFactory.Error> {
         return primaryFactory.create(url)
             .tryRecover { error ->
                 if (error is ResourceFactory.Error.SchemeNotSupported) {
@@ -213,7 +214,7 @@ public class CompositeContainerFactory(
     private val fallbackFactory: ContainerFactory
 ) : ContainerFactory {
 
-    override suspend fun create(url: Url.Absolute): Try<Container, ContainerFactory.Error> {
+    override suspend fun create(url: AbsoluteUrl): Try<Container, ContainerFactory.Error> {
         return primaryFactory.create(url)
             .tryRecover { error ->
                 if (error is ContainerFactory.Error.SchemeNotSupported) {

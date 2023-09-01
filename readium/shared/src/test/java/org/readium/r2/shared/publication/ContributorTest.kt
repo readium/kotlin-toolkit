@@ -17,6 +17,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.assertJSONEquals
 import org.readium.r2.shared.toJSON
+import org.readium.r2.shared.urlHref
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -45,8 +46,8 @@ class ContributorTest {
                 roles = setOf("bassist"),
                 position = 4.0,
                 links = listOf(
-                    Link(href = "http://link1"),
-                    Link(href = "http://link2")
+                    Link(href = urlHref("http://link1")),
+                    Link(href = urlHref("http://link2"))
                 )
             ),
             Contributor.fromJSON(
@@ -217,8 +218,8 @@ class ContributorTest {
                 roles = setOf("bassist"),
                 position = 4.0,
                 links = listOf(
-                    Link(href = "http://link1"),
-                    Link(href = "http://link2")
+                    Link(href = urlHref("http://link1")),
+                    Link(href = urlHref("http://link2"))
                 )
             ).toJSON()
         )

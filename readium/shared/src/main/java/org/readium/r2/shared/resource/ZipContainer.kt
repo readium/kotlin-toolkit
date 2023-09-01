@@ -19,6 +19,8 @@ import org.readium.r2.shared.extensions.optNullableLong
 import org.readium.r2.shared.extensions.readFully
 import org.readium.r2.shared.extensions.toMap
 import org.readium.r2.shared.extensions.tryOrLog
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
@@ -86,14 +88,14 @@ internal class JavaZipContainer(
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : Container {
 
-    private inner class FailureEntry(override val path: String) : Container.Entry {
+    private inner class FailureEntry(override val url: Url) : Container.Entry {
 
-        override val source: Url.Absolute? = null
+        override val source: AbsoluteUrl? = null
 
         override suspend fun mediaType(): ResourceTry<MediaType> =
             Try.success(
                 mediaTypeRetriever.retrieve(
-                    hints = MediaTypeHints(fileExtension = File(path).extension),
+                    hints = MediaTypeHints(fileExtension = url.extension),
                     content = ResourceMediaTypeSnifferContent(this)
                 ) ?: MediaType.BINARY
             )
@@ -111,17 +113,14 @@ internal class JavaZipContainer(
         }
     }
 
-    private inner class Entry(private val entry: ZipEntry) : Container.Entry {
+    private inner class Entry(override val url: Url, private val entry: ZipEntry) : Container.Entry {
 
-        override val path: String =
-            entry.name
-
-        override val source: Url.Absolute? = null
+        override val source: AbsoluteUrl? = null
 
         override suspend fun mediaType(): ResourceTry<MediaType> =
             Try.success(
                 mediaTypeRetriever.retrieve(
-                    hints = MediaTypeHints(fileExtension = File(path).extension),
+                    hints = MediaTypeHints(fileExtension = url.extension),
                     content = ResourceMediaTypeSnifferContent(this)
                 ) ?: MediaType.BINARY
             )
@@ -208,18 +207,21 @@ internal class JavaZipContainer(
         }
     }
 
-    override val source: Url.Absolute = file.toUrl()
+    override val source: AbsoluteUrl = file.toUrl()
 
     override suspend fun entries(): Set<Container.Entry> =
         archive.entries().toList()
             .filterNot { it.isDirectory }
-            .mapNotNull { Entry(it) }
+            .map {
+                Entry(Url.fromDecodedPath(it.name), it)
+            }
             .toSet()
 
-    override fun get(path: String): Container.Entry =
-        archive.getEntry(path)
-            ?.let { Entry(it) }
-            ?: FailureEntry(path)
+    override fun get(url: Url): Container.Entry =
+        (url as? RelativeUrl)?.path
+            ?.let { archive.getEntry(it) }
+            ?.let { Entry(url, it) }
+            ?: FailureEntry(url)
 
     override suspend fun close() {
         tryOrLog {

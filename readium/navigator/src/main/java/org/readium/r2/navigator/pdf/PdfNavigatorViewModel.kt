@@ -70,7 +70,7 @@ internal class PdfNavigatorViewModel<S : Configurable.Settings, P : Configurable
      */
     private val isPDFFile: Boolean =
         publication.readingOrder.count() == 1 &&
-            publication.readingOrder[0].href == "publication.pdf"
+            publication.readingOrder[0].href.toString() == "publication.pdf"
 
     companion object {
         fun <S : Configurable.Settings, P : Configurable.Preferences<P>, E : PreferencesEditor<P>> createFactory(

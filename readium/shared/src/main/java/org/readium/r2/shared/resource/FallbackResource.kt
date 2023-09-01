@@ -6,7 +6,7 @@
 
 package org.readium.r2.shared.resource
 
-import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -17,7 +17,7 @@ public class FallbackResource(
     private val fallbackResourceFactory: (Resource.Exception) -> Resource?
 ) : Resource {
 
-    override val source: Url.Absolute? = null
+    override val source: AbsoluteUrl? = null
 
     override suspend fun mediaType(): ResourceTry<MediaType> =
         withResource { mediaType() }

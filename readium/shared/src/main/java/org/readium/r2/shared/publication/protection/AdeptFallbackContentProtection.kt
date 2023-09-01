@@ -15,6 +15,7 @@ import org.readium.r2.shared.publication.services.contentProtectionServiceFactor
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.readAsXml
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -62,8 +63,12 @@ public class AdeptFallbackContentProtection : ContentProtection {
         if (!asset.mediaType.matches(MediaType.EPUB)) {
             return false
         }
-        val rightsXml = asset.container.get("META-INF/rights.xml").readAsXmlOrNull()
-        val encryptionXml = asset.container.get("META-INF/encryption.xml").readAsXmlOrNull()
+
+        val rightsXml = asset.container.get(Url.fromDecodedPath("META-INF/rights.xml"))
+            .readAsXmlOrNull()
+
+        val encryptionXml = asset.container.get(Url.fromDecodedPath("META-INF/encryption.xml"))
+            .readAsXmlOrNull()
 
         return encryptionXml != null && (
             rightsXml?.namespace == "http://ns.adobe.com/adept" ||

@@ -45,12 +45,14 @@ class PublicationAdapter(
             binding.catalogListTitleText.text = publication.metadata.title
 
             publication.linkWithRel("http://opds-spec.org/image/thumbnail")?.let { link ->
-                Picasso.get().load(link.href)
+                Picasso.get().load(link.href.toString())
                     .into(binding.catalogListCoverImage)
             } ?: run {
                 if (publication.images.isNotEmpty()) {
                     Picasso.get()
-                        .load(publication.images.first().href).into(binding.catalogListCoverImage)
+                        .load(publication.images.first().href.toString()).into(
+                            binding.catalogListCoverImage
+                        )
                 }
             }
 

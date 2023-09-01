@@ -6,17 +6,16 @@
 
 package org.readium.r2.streamer.parser.audio
 
-import java.io.File
 import org.readium.r2.shared.publication.LocalizedString
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.Metadata
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.logging.WarningLogger
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.streamer.extensions.guessTitle
 import org.readium.r2.streamer.extensions.isHiddenOrThumbs
-import org.readium.r2.streamer.extensions.lowercasedExtension
 import org.readium.r2.streamer.extensions.toLink
 import org.readium.r2.streamer.parser.PublicationParser
 
@@ -39,8 +38,8 @@ public class AudioParser : PublicationParser {
         val readingOrder =
             if (asset.mediaType.matches(MediaType.ZAB)) {
                 (asset.container.entries() ?: emptySet())
-                    .filter { entry -> zabCanContain(entry.path) }
-                    .sortedBy { it.path }
+                    .filter { entry -> zabCanContain(entry.url) }
+                    .sortedBy { it.url.toString() }
                     .toMutableList()
             } else {
                 listOfNotNull(
@@ -73,10 +72,8 @@ public class AudioParser : PublicationParser {
         return Try.success(publicationBuilder)
     }
 
-    private fun zabCanContain(href: String): Boolean =
-        with(File(href)) {
-            lowercasedExtension in audioExtensions && !isHiddenOrThumbs
-        }
+    private fun zabCanContain(url: Url): Boolean =
+        url.extension?.lowercase() in audioExtensions && !url.isHiddenOrThumbs
 
     private val audioExtensions = listOf(
         "aac", "aiff", "alac", "flac", "m4a", "m4b", "mp3",

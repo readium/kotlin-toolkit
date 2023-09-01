@@ -14,6 +14,7 @@ import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.navigator.preferences.ReadingProgression
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.Url
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
@@ -28,7 +29,7 @@ class ReadiumCssTest {
                 stylesheets = Layout.Stylesheets.Default,
                 readingProgression = ReadingProgression.LTR
             ),
-            assetsBaseHref = "/assets/"
+            assetsBaseHref = Url("/assets/")!!
         )
         assertEquals(
             """
@@ -73,7 +74,7 @@ class ReadiumCssTest {
                 stylesheets = Layout.Stylesheets.Default,
                 readingProgression = ReadingProgression.LTR
             ),
-            assetsBaseHref = "/assets/"
+            assetsBaseHref = Url("/assets/")!!
         )
         assertEquals(
             """
@@ -118,7 +119,7 @@ class ReadiumCssTest {
                 stylesheets = Layout.Stylesheets.Default,
                 readingProgression = ReadingProgression.LTR
             ),
-            assetsBaseHref = "/assets/"
+            assetsBaseHref = Url("/assets/")!!
         )
         assertEquals(
             """
@@ -149,7 +150,7 @@ class ReadiumCssTest {
                 stylesheets = Layout.Stylesheets.Default,
                 readingProgression = ReadingProgression.LTR
             ),
-            assetsBaseHref = "/assets/"
+            assetsBaseHref = Url("/assets/")!!
         )
         assertEquals(
             """
@@ -180,7 +181,7 @@ class ReadiumCssTest {
                 stylesheets = Layout.Stylesheets.Default,
                 readingProgression = ReadingProgression.LTR
             ),
-            assetsBaseHref = "/assets/"
+            assetsBaseHref = Url("/assets/")!!
         )
         assertEquals(
             """
@@ -224,7 +225,7 @@ class ReadiumCssTest {
                 stylesheets = Layout.Stylesheets.Default,
                 readingProgression = ReadingProgression.LTR
             ),
-            assetsBaseHref = "/assets/"
+            assetsBaseHref = Url("/assets/")!!
         )
         // A <link> tag is considered styled.
         assertFalse(
@@ -282,7 +283,7 @@ class ReadiumCssTest {
                 stylesheets = Layout.Stylesheets.Rtl,
                 readingProgression = ReadingProgression.LTR
             ),
-            assetsBaseHref = "/assets/"
+            assetsBaseHref = Url("/assets/")!!
         )
         assertEquals(
             """
@@ -327,7 +328,7 @@ class ReadiumCssTest {
                 stylesheets = Layout.Stylesheets.CjkHorizontal,
                 readingProgression = ReadingProgression.LTR
             ),
-            assetsBaseHref = "/assets/"
+            assetsBaseHref = Url("/assets/")!!
         )
         assertEquals(
             """
@@ -373,7 +374,7 @@ class ReadiumCssTest {
                 stylesheets = Layout.Stylesheets.CjkVertical,
                 readingProgression = ReadingProgression.LTR
             ),
-            assetsBaseHref = "/assets/"
+            assetsBaseHref = Url("/assets/")!!
         )
         assertEquals(
             """
@@ -418,7 +419,7 @@ class ReadiumCssTest {
                 stylesheets = Layout.Stylesheets.Default,
                 readingProgression = ReadingProgression.LTR
             ),
-            assetsBaseHref = "/assets/"
+            assetsBaseHref = Url("/assets/")!!
         )
         assertEquals(
             """
@@ -463,7 +464,7 @@ class ReadiumCssTest {
                 stylesheets = Layout.Stylesheets.Default,
                 readingProgression = ReadingProgression.LTR
             ),
-            assetsBaseHref = "/assets/"
+            assetsBaseHref = Url("/assets/")!!
         )
         assertEquals(
             """
@@ -508,7 +509,7 @@ class ReadiumCssTest {
                 stylesheets = Layout.Stylesheets.Default,
                 readingProgression = ReadingProgression.LTR
             ),
-            assetsBaseHref = "/assets/"
+            assetsBaseHref = Url("/assets/")!!
         )
         assertEquals(
             """
@@ -553,7 +554,7 @@ class ReadiumCssTest {
                 stylesheets = Layout.Stylesheets.Default,
                 readingProgression = ReadingProgression.LTR
             ),
-            assetsBaseHref = "/assets/"
+            assetsBaseHref = Url("/assets/")!!
         )
         assertEquals(
             """
@@ -610,7 +611,7 @@ class ReadiumCssTest {
                 FontFamily.SANS_SERIF,
                 FontFamily.SERIF
             ),
-            assetsBaseHref = "/assets/"
+            assetsBaseHref = Url("/assets/")!!
         )
         assertEquals(
             """
@@ -660,7 +661,7 @@ class ReadiumCssTest {
                 stylesheets = Layout.Stylesheets.Default,
                 readingProgression = ReadingProgression.LTR
             ),
-            assetsBaseHref = "/assets/"
+            assetsBaseHref = Url("/assets/")!!
         )
         assertEquals(
             """

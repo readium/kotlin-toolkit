@@ -15,11 +15,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.encryption.Encryption
+import org.readium.r2.shared.util.Url
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class EncryptionParserTest {
-    fun parseEncryption(path: String): Map<String, Encryption> {
+    fun parseEncryption(path: String): Map<Url, Encryption> {
         val res = EncryptionParserTest::class.java.getResourceAsStream(path)
         checkNotNull(res)
         val document = XmlParser().parse(res)
@@ -27,7 +28,7 @@ class EncryptionParserTest {
     }
 
     val lcpChap1 = entry(
-        "/OEBPS/xhtml/chapter01.xhtml",
+        Url("OEBPS/xhtml/chapter01.xhtml")!!,
         Encryption(
             algorithm = "http://www.w3.org/2001/04/xmlenc#aes256-cbc",
             compression = "deflate",
@@ -38,7 +39,7 @@ class EncryptionParserTest {
     )
 
     val lcpChap2 = entry(
-        "/OEBPS/xhtml/chapter02.xhtml",
+        Url("OEBPS/xhtml/chapter02.xhtml")!!,
         Encryption(
             algorithm = "http://www.w3.org/2001/04/xmlenc#aes256-cbc",
             compression = "none",
@@ -68,7 +69,7 @@ class EncryptionParserTest {
     fun `Check EncryptionParser with unknown retrieval method`() {
         assertThat(parseEncryption("encryption/encryption-unknown-method.xml")).contains(
             entry(
-                "/OEBPS/xhtml/chapter.xhtml",
+                Url("OEBPS/xhtml/chapter.xhtml")!!,
                 Encryption(
                     algorithm = "http://www.w3.org/2001/04/xmlenc#kw-aes128",
                     compression = "deflate",
@@ -78,7 +79,7 @@ class EncryptionParserTest {
                 )
             ),
             entry(
-                "/OEBPS/images/image.jpeg",
+                Url("OEBPS/images/image.jpeg")!!,
                 Encryption(
                     algorithm = "http://www.w3.org/2001/04/xmlenc#kw-aes128",
                     compression = null,

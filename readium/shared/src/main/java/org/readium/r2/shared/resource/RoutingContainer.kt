@@ -6,6 +6,7 @@
 
 package org.readium.r2.shared.resource
 
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 
 /**
@@ -25,7 +26,7 @@ public class RoutingContainer(private val routes: List<Route>) : Container {
      */
     public class Route(
         public val container: Container,
-        public val accepts: (String) -> Boolean = { true }
+        public val accepts: (Url) -> Boolean = { true }
     )
 
     public constructor(local: Container, remote: Container) :
@@ -39,16 +40,18 @@ public class RoutingContainer(private val routes: List<Route>) : Container {
     override suspend fun entries(): Set<Container.Entry>? =
         null // We can't guarantee the list of entries is exhaustive, so we return null
 
-    override fun get(path: String): Container.Entry =
-        routes.firstOrNull { it.accepts(path) }?.container?.get(path)
-            ?: FailureResource(Resource.Exception.NotFound()).toEntry(path)
+    override fun get(url: Url): Container.Entry =
+        routes.firstOrNull { it.accepts(url) }?.container?.get(url)
+            ?: FailureResource(Resource.Exception.NotFound()).toEntry(url)
 
     override suspend fun close() {
         routes.forEach { it.container.close() }
     }
 }
 
-private fun isLocal(path: String): Boolean {
-    val url = Url(path) as? Url.Absolute ?: return true
+private fun isLocal(url: Url): Boolean {
+    if (url !is AbsoluteUrl) {
+        return true
+    }
     return !url.isHttp
 }

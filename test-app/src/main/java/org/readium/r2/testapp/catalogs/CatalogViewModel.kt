@@ -71,7 +71,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
                     assetRetriever = app.readium.assetRetriever
                 )
             }.flatMap {
-                val opdsCover = publication.images.firstOrNull()?.href
+                val opdsCover = publication.images.firstOrNull()?.href?.toUrl()
                 app.bookRepository.addLocalBook(dest, opdsCover)
             }.onSuccess {
                 detailChannel.send(Event.DetailEvent.ImportPublicationSuccess)
@@ -85,7 +85,7 @@ class CatalogViewModel(application: Application) : AndroidViewModel(application)
             .firstOrNull { it.mediaType?.isPublication == true || it.mediaType == MediaType.LCP_LICENSE_DOCUMENT }
             ?.let {
                 try {
-                    Try.success(URL(it.href))
+                    Try.success(URL(it.href.toString()))
                 } catch (e: Exception) {
                     Try.failure(e)
                 }

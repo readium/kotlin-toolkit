@@ -8,6 +8,7 @@ package org.readium.r2.navigator.epub.css
 
 import org.readium.r2.shared.ExperimentalReadiumApi
 import org.readium.r2.shared.util.Either
+import org.readium.r2.shared.util.Url
 
 /**
  * Build a declaration for [fontFamily] using [builderAction].
@@ -47,14 +48,14 @@ internal data class FontFaceDeclaration(
     var fontWeight: Either<FontWeight, ClosedRange<Int>>? = null
 ) {
 
-    fun links(urlNormalizer: (String) -> String): List<String> =
+    fun links(urlNormalizer: (Url) -> Url): List<String> =
         sources
             .filter { it.preload }
             .map {
                 """<link rel="preload" href="${urlNormalizer(it.href)}" as="font" crossorigin="" />"""
             }
 
-    fun toCss(urlNormalizer: (String) -> String): String {
+    fun toCss(urlNormalizer: (Url) -> Url): String {
         val descriptors = buildMap {
             set("font-family", """"$fontFamily"""")
 
@@ -89,7 +90,7 @@ internal data class FontFaceDeclaration(
  * `<link rel="preload">`.
  */
 internal data class FontFaceSource(
-    val href: String,
+    val href: Url,
     val preload: Boolean = false
 )
 
@@ -128,10 +129,21 @@ public data class MutableFontFaceDeclaration internal constructor(
     /**
      * Add a source for the font face.
      *
+     * @param path Path to the font file.
      * @param preload Indicates whether this source will be declared for preloading in the HTML
      * using `<link rel="preload">`.
      */
-    public fun addSource(href: String, preload: Boolean = false) {
+    public fun addSource(path: String, preload: Boolean = false) {
+        addSource(Url.fromDecodedPath(path), preload = preload)
+    }
+
+    /**
+     * Add a source for the font face.
+     *
+     * @param preload Indicates whether this source will be declared for preloading in the HTML
+     * using `<link rel="preload">`.
+     */
+    public fun addSource(href: Url, preload: Boolean = false) {
         this.sources.add(FontFaceSource(href = href, preload = preload))
     }
 

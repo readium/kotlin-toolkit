@@ -26,7 +26,7 @@ import org.readium.r2.shared.extensions.mapStateIn
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
 import timber.log.Timber
 
 @ExperimentalReadiumApi
@@ -54,10 +54,10 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
                 return null
             }
 
-            val items = readingOrder.map {
+            val items = readingOrder.mapNotNull {
                 ReadingOrder.Item(
-                    Href(it.href),
-                    duration(it, publication)
+                    href = it.href.toUrl() ?: return@mapNotNull null,
+                    duration = duration(it, publication)
                 )
             }
             val totalDuration = publication.metadata.duration?.seconds
@@ -97,7 +97,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
     }
 
     public data class Location(
-        override val href: Href,
+        override val href: Url,
         override val offset: Duration
     ) : TimeBasedMediaNavigator.Location
 
@@ -107,7 +107,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
     ) : TimeBasedMediaNavigator.ReadingOrder {
 
         public data class Item(
-            val href: Href,
+            val href: Url,
             override val duration: Duration?
         ) : TimeBasedMediaNavigator.ReadingOrder.Item
     }
@@ -137,7 +137,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
     override val currentLocator: StateFlow<Locator> =
         audioEngine.playback.mapStateIn(coroutineScope) { playback ->
             val currentItem = readingOrder.items[playback.index]
-            val link = requireNotNull(publication.linkWithHref(currentItem.href.string))
+            val link = requireNotNull(publication.linkWithHref(currentItem.href))
             val item = readingOrder.items[playback.index]
             val itemStartPosition = readingOrder.items
                 .slice(0 until playback.index)
@@ -210,7 +210,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
     override fun go(locator: Locator, animated: Boolean, completion: () -> Unit): Boolean {
         @Suppress("NAME_SHADOWING")
         val locator = publication.normalizeLocator(locator)
-        val itemIndex = readingOrder.items.indexOfFirst { it.href.string == locator.href }
+        val itemIndex = readingOrder.items.indexOfFirst { it.href == locator.href }
             .takeUnless { it == -1 }
             ?: return false
         val position = locator.locations.time ?: Duration.ZERO

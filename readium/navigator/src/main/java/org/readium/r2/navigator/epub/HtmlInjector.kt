@@ -15,7 +15,9 @@ import org.readium.r2.shared.publication.services.isProtected
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
 import org.readium.r2.shared.resource.TransformingResource
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.getOrElse
 import timber.log.Timber
 
@@ -28,7 +30,7 @@ import timber.log.Timber
 internal fun Resource.injectHtml(
     publication: Publication,
     css: ReadiumCss,
-    baseHref: String,
+    baseHref: AbsoluteUrl,
     disableSelectionWhenProtected: Boolean
 ): Resource =
     TransformingResource(this) { bytes ->
@@ -42,12 +44,17 @@ internal fun Resource.injectHtml(
         var content = bytes.toString(mediaType.charset ?: Charsets.UTF_8).trim()
         val injectables = mutableListOf<String>()
 
-        val baseUri = baseHref.removeSuffix("/")
         if (publication.metadata.presentation.layout == EpubLayout.REFLOWABLE) {
             content = css.injectHtml(content)
-            injectables.add(script("$baseUri/readium/scripts/readium-reflowable.js"))
+            injectables.add(
+                script(
+                    baseHref.resolve(Url.fromDecodedPath("readium/scripts/readium-reflowable.js"))
+                )
+            )
         } else {
-            injectables.add(script("$baseUri/readium/scripts/readium-fixed.js"))
+            injectables.add(
+                script(baseHref.resolve(Url.fromDecodedPath("readium/scripts/readium-fixed.js")))
+            )
         }
 
         // Disable the text selection if the publication is protected.
@@ -77,5 +84,5 @@ internal fun Resource.injectHtml(
         Try.success(content.toByteArray())
     }
 
-private fun script(src: String): String =
+private fun script(src: Url): String =
     """<script type="text/javascript" src="$src"></script>"""

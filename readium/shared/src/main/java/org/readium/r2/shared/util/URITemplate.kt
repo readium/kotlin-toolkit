@@ -10,6 +10,7 @@
 package org.readium.r2.shared.util
 
 import org.readium.r2.shared.InternalReadiumApi
+import org.readium.r2.shared.extensions.percentEncodedQuery
 
 /**
  * A lightweight implementation of URI Template (RFC 6570).
@@ -42,7 +43,7 @@ public data class URITemplate(val uri: String) {
         // because it could contain some legitimate +-as-space characters.
         @Suppress("NAME_SHADOWING")
         val parameters = parameters.mapValues {
-            it.value.replace("+", "~~+~~")
+            it.value.percentEncodedQuery().replace("+", "~~+~~")
         }
 
         fun expandSimpleString(string: String, parameters: Map<String, String>): String =
@@ -61,7 +62,7 @@ public data class URITemplate(val uri: String) {
             }
         }
 
-        return Href(expanded).percentEncodedString
+        return expanded
             .replace("~~%20~~", "%2B")
             .replace("~~+~~", "%2B")
     }

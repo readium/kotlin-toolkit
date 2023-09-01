@@ -34,6 +34,7 @@ import org.readium.r2.shared.publication.indexOfFirstWithHref
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
 import org.readium.r2.shared.publication.services.cover
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.flatMap
@@ -82,7 +83,7 @@ class BookRepository(
             creation = DateTime().toDate().time,
             bookId = bookId,
             resourceIndex = resource.toLong(),
-            resourceHref = locator.href,
+            resourceHref = locator.href.toString(),
             resourceType = locator.type,
             resourceTitle = locator.title.orEmpty(),
             location = locator.locations.toJSON().toString(),
@@ -210,7 +211,7 @@ class BookRepository(
 
     suspend fun addSharedStorageBook(
         url: Url,
-        coverUrl: String? = null
+        coverUrl: Url? = null
     ): Try<Unit, ImportError> {
         val asset = assetRetriever.retrieve(url)
             ?: return Try.failure(
@@ -226,7 +227,7 @@ class BookRepository(
 
     suspend fun addLocalBook(
         tempFile: File,
-        coverUrl: String? = null
+        coverUrl: Url? = null
     ): Try<Unit, ImportError> {
         val sourceAsset = assetRetriever.retrieve(tempFile)
             ?: return Try.failure(
@@ -296,7 +297,7 @@ class BookRepository(
     private suspend fun addBook(
         url: Url,
         asset: Asset,
-        coverUrl: String? = null
+        coverUrl: Url? = null
     ): Try<Unit, ImportError> {
         val drmScheme =
             protectionRetriever.retrieve(asset)
@@ -307,7 +308,7 @@ class BookRepository(
             allowUserInteraction = false
         ).onSuccess { publication ->
             val coverBitmap: Bitmap? = coverUrl
-                ?.let { getBitmapFromURL(it) }
+                ?.let { getBitmapFromURL(it.toString()) }
                 ?: publication.cover()
             val coverFile =
                 try {
@@ -367,7 +368,7 @@ class BookRepository(
 
     suspend fun deleteBook(book: Book) {
         val id = book.id!!
-        val url = Url(book.href) as Url.Absolute
+        val url = Url(book.href) as AbsoluteUrl
         if (url.isFile) {
             tryOrLog { File(url.path).delete() }
         }

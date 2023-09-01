@@ -11,6 +11,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.shared.extensions.isParentOf
 import org.readium.r2.shared.extensions.tryOr
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.RelativeUrl
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -24,25 +26,28 @@ internal class DirectoryContainer(
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : Container {
 
-    private inner class FileEntry(file: File) :
+    private inner class FileEntry(override val url: Url, file: File) :
         Container.Entry, Resource by FileResource(file, mediaTypeRetriever) {
-
-        override val path: String =
-            file.relativeTo(root).path
 
         override suspend fun close() {}
     }
 
     override suspend fun entries(): Set<Container.Entry> =
-        entries.map { FileEntry(it) }.toSet()
+        entries.map {
+            FileEntry(
+                url = Url.fromDecodedPath(it.relativeTo(root).path),
+                file = it
+            )
+        }.toSet()
 
-    override fun get(path: String): Container.Entry {
-        val file = File(root, path)
+    override fun get(url: Url): Container.Entry {
+        val file = (url as? RelativeUrl)
+            ?.let { File(root, it.path) }
 
-        return if (!root.isParentOf(file)) {
-            FailureResource(Resource.Exception.NotFound()).toEntry(path)
+        return if (file == null || !root.isParentOf(file)) {
+            FailureResource(Resource.Exception.NotFound()).toEntry(url)
         } else {
-            FileEntry(file)
+            FileEntry(url, file)
         }
     }
 
@@ -53,8 +58,8 @@ public class DirectoryContainerFactory(
     private val mediaTypeRetriever: MediaTypeRetriever
 ) : ContainerFactory {
 
-    override suspend fun create(url: Url.Absolute): Try<Container, ContainerFactory.Error> {
-        if (url.isFile) {
+    override suspend fun create(url: AbsoluteUrl): Try<Container, ContainerFactory.Error> {
+        if (!url.isFile) {
             return Try.failure(ContainerFactory.Error.SchemeNotSupported(url.scheme))
         }
 

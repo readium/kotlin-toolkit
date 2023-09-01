@@ -86,8 +86,14 @@ import org.readium.r2.shared.publication.presentation.presentation
 import org.readium.r2.shared.publication.services.isRestricted
 import org.readium.r2.shared.publication.services.positionsByReadingOrder
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.AbsoluteUrl
+import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.launchWebBrowser
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.toUri
+import org.readium.r2.shared.util.toUrl
 
 /**
  * Factory for a [JavascriptInterface] which will be injected in the web views.
@@ -520,7 +526,7 @@ public class EpubNavigatorFragment internal constructor(
                 invalidateResourcePager()
             }
             is EpubNavigatorViewModel.Event.OpenExternalLink -> {
-                launchWebBrowser(requireContext(), event.url)
+                launchWebBrowser(requireContext(), event.url.toUri())
             }
         }
     }
@@ -577,17 +583,17 @@ public class EpubNavigatorFragment internal constructor(
 
         listener?.onJumpToLocator(locator)
 
-        val href = locator.href
-            // Remove anchor
-            .substringBefore("#")
+        val href = locator.href.removeFragment()
 
         fun setCurrent(resources: List<PageResource>) {
             val page = resources.withIndex().firstOrNull { (_, res) ->
                 when (res) {
                     is PageResource.EpubReflowable ->
-                        res.link.href == href
+                        res.link.href.toUrl() == href
                     is PageResource.EpubFxl ->
-                        res.leftUrl?.endsWith(href) == true || res.rightUrl?.endsWith(href) == true
+                        res.leftUrl?.toString()?.endsWith(href.toString()) == true || res.rightUrl?.toString()?.endsWith(
+                            href.toString()
+                        ) == true
                     else -> false
                 }
             } ?: return
@@ -807,7 +813,7 @@ public class EpubNavigatorFragment internal constructor(
          * Prevents opening external links in the web view and handles internal links.
          */
         override fun shouldOverrideUrlLoading(webView: WebView, request: WebResourceRequest): Boolean {
-            val url = request.url ?: return false
+            val url = (request.url.toUrl() as? AbsoluteUrl) ?: return false
             viewModel.navigateToUrl(url)
             return true
         }
@@ -815,7 +821,7 @@ public class EpubNavigatorFragment internal constructor(
         override fun shouldInterceptRequest(webView: WebView, request: WebResourceRequest): WebResourceResponse? =
             viewModel.shouldInterceptRequest(request)
 
-        override fun resourceAtUrl(url: String): Resource? =
+        override fun resourceAtUrl(url: Url): Resource? =
             viewModel.internalLinkFromUrl(url)
                 ?.let { publication.get(it) }
     }
@@ -933,12 +939,12 @@ public class EpubNavigatorFragment internal constructor(
      * Returns the reflowable page fragment matching the given href, if it is already loaded in the
      * view pager.
      */
-    private fun loadedFragmentForHref(href: String): R2EpubPageFragment? {
+    private fun loadedFragmentForHref(href: Url): R2EpubPageFragment? {
         val adapter = r2PagerAdapter ?: return null
         adapter.mFragments.forEach { _, fragment ->
             val pageFragment = fragment as? R2EpubPageFragment ?: return@forEach
             val link = pageFragment.link ?: return@forEach
-            if (link.href == href) {
+            if (link.href.toUrl() == href) {
                 return pageFragment
             }
         }
@@ -960,11 +966,13 @@ public class EpubNavigatorFragment internal constructor(
         if (!::resourcePager.isInitialized) return null
 
         val resource = publication.readingOrder[resourcePager.currentItem]
-        return currentReflowablePageFragment?.webView?.findFirstVisibleLocator()
-            ?.copy(
-                href = resource.href,
-                type = (resource.mediaType ?: MediaType.XHTML).toString()
-            )
+        return resource.href.toUrl()?.let { href ->
+            currentReflowablePageFragment?.webView?.findFirstVisibleLocator()
+                ?.copy(
+                    href = href,
+                    type = (resource.mediaType ?: MediaType.XHTML).toString()
+                )
+        }
     }
 
     /**
@@ -976,9 +984,9 @@ public class EpubNavigatorFragment internal constructor(
     /**
      * Mapping between reading order hrefs and the table of contents title.
      */
-    private val tableOfContentsTitleByHref: Map<String, String> by lazy {
-        fun fulfill(linkList: List<Link>): MutableMap<String, String> {
-            var result: MutableMap<String, String> = mutableMapOf()
+    private val tableOfContentsTitleByHref: Map<Href, String> by lazy {
+        fun fulfill(linkList: List<Link>): MutableMap<Href, String> {
+            var result: MutableMap<Href, String> = mutableMapOf()
 
             for (link in linkList) {
                 val title = link.title ?: ""
@@ -989,7 +997,7 @@ public class EpubNavigatorFragment internal constructor(
 
                 val subResult = fulfill(link.children)
 
-                result = (subResult + result) as MutableMap<String, String>
+                result = (subResult + result) as MutableMap<Href, String>
             }
 
             return result
@@ -1027,13 +1035,13 @@ public class EpubNavigatorFragment internal constructor(
                     "Expected EpubFxl or EpubReflowable page resources"
                 )
             }
-            val positionLocator = publication.positionsByResource[link.href]?.let { positions ->
+            val positionLocator = publication.positionsByResource[link.href.toUrl()]?.let { positions ->
                 val index = ceil(progression * (positions.size - 1)).toInt()
                 positions.getOrNull(index)
             }
 
             val currentLocator = Locator(
-                href = link.href,
+                href = (link.href as UrlHref).url,
                 type = (link.mediaType ?: MediaType.XHTML).toString(),
                 title = tableOfContentsTitleByHref[link.href] ?: positionLocator?.title ?: link.title,
                 locations = (positionLocator?.locations ?: Locator.Locations()).copy(
@@ -1086,7 +1094,7 @@ public class EpubNavigatorFragment internal constructor(
         /**
          * Returns a URL to the application asset at [path], served in the web views.
          */
-        public fun assetUrl(path: String): String =
+        public fun assetUrl(path: String): Url =
             WebViewServer.assetUrl(path)
     }
 }

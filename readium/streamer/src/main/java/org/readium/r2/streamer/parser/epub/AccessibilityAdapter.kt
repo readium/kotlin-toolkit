@@ -65,7 +65,7 @@ internal class AccessibilityAdapter {
                 Vocabularies.DCTERMS + "conformsTo"
             )
         ) {
-            accessibilityProfileFromString(item.href)
+            accessibilityProfileFromString(item.href.toString())
         } else {
             null
         }
@@ -109,7 +109,7 @@ internal class AccessibilityAdapter {
             remainingItems
                 .takeFirstWithRel(Vocabularies.A11Y + "certifierReport")
                 .let { remainingItems = it.second; it.first }
-                ?.let { certification = certification.copy(report = it.href) }
+                ?.let { certification = certification.copy(report = it.href.toString()) }
         }
 
         return if (remainingItems.size == items.size) {
@@ -131,7 +131,7 @@ internal class AccessibilityAdapter {
         return Accessibility.Certification(
             certifiedBy = value,
             credential = credential,
-            report = report
+            report = report?.toString()
         )
     }
 

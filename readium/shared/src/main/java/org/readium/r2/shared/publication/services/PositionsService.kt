@@ -25,13 +25,15 @@ import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.resource.readAsString
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.mediatype.MediaType
 
 private val positionsMediaType =
     MediaType("application/vnd.readium.position-list+json")!!
 
 private val positionsLink = Link(
-    href = "/~readium/positions",
+    href = UrlHref(Url("/~readium/positions")!!),
     mediaType = positionsMediaType
 )
 
@@ -95,7 +97,7 @@ public suspend fun PublicationServicesHolder.positions(): List<Locator> {
     ReplaceWith("positionsByReadingOrder"),
     level = DeprecationLevel.ERROR
 )
-public val Publication.positionsByResource: Map<String, List<Locator>>
+public val Publication.positionsByResource: Map<Url, List<Locator>>
     get() = runBlocking { positions().groupBy { it.href } }
 
 /** Factory to build a [PositionsService] */
@@ -119,9 +121,11 @@ public class PerResourcePositionsService(
         val pageCount = readingOrder.size
 
         return readingOrder.mapIndexed { index, link ->
+            val url = link.href.toUrl() ?: return@mapIndexed emptyList()
+
             listOf(
                 Locator(
-                    href = link.href,
+                    href = url,
                     type = link.mediaType?.toString() ?: fallbackMediaType,
                     title = link.title,
                     locations = Locator.Locations(
@@ -165,7 +169,7 @@ internal class WebPositionsService(
 
     override suspend fun positionsByReadingOrder(): List<List<Locator>> {
         val locators = positions().groupBy(Locator::href)
-        return manifest.readingOrder.map { locators[it.href].orEmpty() }
+        return manifest.readingOrder.map { locators[it.href.toUrl()].orEmpty() }
     }
 
     private suspend fun computePositions(): List<Locator> =

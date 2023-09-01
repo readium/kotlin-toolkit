@@ -22,8 +22,10 @@ import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceInputStream
 import org.readium.r2.shared.resource.StringResource
 import org.readium.r2.shared.resource.fallback
-import org.readium.r2.shared.util.Href
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.http.HttpHeaders
 import org.readium.r2.shared.util.http.HttpRange
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -39,11 +41,11 @@ internal class WebViewServer(
     private val disableSelectionWhenProtected: Boolean
 ) {
     companion object {
-        const val publicationBaseHref = "https://readium/publication/"
-        const val assetsBaseHref = "https://readium/assets/"
+        val publicationBaseHref = Url("https://readium/publication/") as AbsoluteUrl
+        val assetsBaseHref = Url("https://readium/assets/") as AbsoluteUrl
 
-        fun assetUrl(path: String): String =
-            Href(path, baseHref = assetsBaseHref).percentEncodedString
+        fun assetUrl(path: String): Url =
+            assetsBaseHref.resolve(Url.fromDecodedPath(path))
     }
 
     private val assetManager: AssetManager = application.assets
@@ -61,7 +63,7 @@ internal class WebViewServer(
         return when {
             path.startsWith("/publication/") -> {
                 servePublicationResource(
-                    href = path.removePrefix("/publication/"),
+                    href = Url.fromDecodedPath(path.removePrefix("/publication/")),
                     range = HttpHeaders(request.requestHeaders).range,
                     css = css
                 )
@@ -78,15 +80,16 @@ internal class WebViewServer(
      *
      * If the [Resource] is an HTML document, injects the required JavaScript and CSS files.
      */
-    private fun servePublicationResource(href: String, range: HttpRange?, css: ReadiumCss): WebResourceResponse {
+    private fun servePublicationResource(href: Url, range: HttpRange?, css: ReadiumCss): WebResourceResponse {
         val link = publication.linkWithHref(href)
             // Query parameters must be kept as they might be relevant for the fetcher.
-            ?.copy(href = href)
-            ?: Link(href = href)
+            ?.copy(href = UrlHref(href))
+            ?: Link(href = UrlHref(href))
 
         // Drop anchor because it is meant to be interpreted by the client.
-        val linkWithoutAnchor = link
-            .copy(href.takeWhile { it != '#' })
+        val linkWithoutAnchor = link.copy(
+            href = UrlHref(href.removeFragment())
+        )
 
         var resource = publication.get(linkWithoutAnchor)
             .fallback { errorResource(link, error = it) }
@@ -138,7 +141,7 @@ internal class WebViewServer(
                         .open("readium/error.xhtml").bufferedReader()
                         .use { it.readText() }
                         .replace("\${error}", error.getUserMessage(application))
-                        .replace("\${href}", link.href)
+                        .replace("\${href}", link.href.toString())
                 )
             }
         }

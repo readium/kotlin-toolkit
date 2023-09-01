@@ -12,16 +12,21 @@ package org.readium.r2.streamer.extensions
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.readium.r2.shared.resource.Container
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class ContainerEntryTest {
 
-    class Entry(override val path: String) : Container.Entry {
-        override val source: Url.Absolute? = null
+    class Entry(path: String) : Container.Entry {
+        override val url: Url = Url(path)!!
+        override val source: AbsoluteUrl? = null
         override suspend fun mediaType(): ResourceTry<MediaType> =
             throw NotImplementedError()
         override suspend fun properties(): ResourceTry<Resource.Properties> =

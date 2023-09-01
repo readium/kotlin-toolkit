@@ -21,6 +21,8 @@ import org.readium.r2.shared.resource.BytesResource
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.LazyResource
 import org.readium.r2.shared.resource.Resource
+import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.UrlHref
 import org.readium.r2.shared.util.mediatype.MediaType
 
 /**
@@ -90,7 +92,7 @@ public var Publication.ServicesBuilder.coverServiceFactory: ServiceFactory?
 public abstract class GeneratedCoverService : CoverService {
 
     private val coverLink = Link(
-        href = "/~readium/cover",
+        href = UrlHref(Url("/~readium/cover")!!),
         mediaType = MediaType.PNG,
         rels = setOf("cover")
     )

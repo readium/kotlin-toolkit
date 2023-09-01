@@ -18,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
 import org.readium.r2.shared.util.getOrThrow
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -70,7 +71,7 @@ class ZipContainerTest(val sut: suspend () -> Container) {
     @Test
     fun `Entry list is correct`(): Unit = runBlocking {
         sut().use { container ->
-            assertThat(container.entries()?.map { it.path })
+            assertThat(container.entries()?.map { it.url.toString() })
                 .contains(
                     "mimetype",
                     "EPUB/cover.xhtml",
@@ -89,14 +90,14 @@ class ZipContainerTest(val sut: suspend () -> Container) {
     @Test
     fun `Attempting to read a missing entry throws`(): Unit = runBlocking {
         sut().use { container ->
-            assertFails { container.get("unknown").read().getOrThrow() }
+            assertFails { container.get(Url("unknown")!!).read().getOrThrow() }
         }
     }
 
     @Test
     fun `Fully reading an entry works well`(): Unit = runBlocking {
         sut().use { container ->
-            val bytes = container.get("mimetype").read().getOrThrow()
+            val bytes = container.get(Url("mimetype")!!).read().getOrThrow()
             assertEquals("application/epub+zip", bytes.toString(StandardCharsets.UTF_8))
         }
     }
@@ -104,7 +105,7 @@ class ZipContainerTest(val sut: suspend () -> Container) {
     @Test
     fun `Reading a range of an entry works well`(): Unit = runBlocking {
         sut().use { container ->
-            val bytes = container.get("mimetype").read(0..10L).getOrThrow()
+            val bytes = container.get(Url("mimetype")!!).read(0..10L).getOrThrow()
             assertEquals("application", bytes.toString(StandardCharsets.UTF_8))
             assertEquals(11, bytes.size)
         }
@@ -113,7 +114,7 @@ class ZipContainerTest(val sut: suspend () -> Container) {
     @Test
     fun `Out of range indexes are clamped to the available length`(): Unit = runBlocking {
         sut().use { container ->
-            val bytes = container.get("mimetype").read(-5..60L).getOrThrow()
+            val bytes = container.get(Url("mimetype")!!).read(-5..60L).getOrThrow()
             assertEquals("application/epub+zip", bytes.toString(StandardCharsets.UTF_8))
             assertEquals(20, bytes.size)
         }
@@ -122,7 +123,7 @@ class ZipContainerTest(val sut: suspend () -> Container) {
     @Test
     fun `Decreasing ranges are understood as empty ones`(): Unit = runBlocking {
         sut().use { container ->
-            val bytes = container.get("mimetype").read(60..20L).getOrThrow()
+            val bytes = container.get(Url("mimetype")!!).read(60..20L).getOrThrow()
             assertEquals("", bytes.toString(StandardCharsets.UTF_8))
             assertEquals(0, bytes.size)
         }
@@ -131,7 +132,7 @@ class ZipContainerTest(val sut: suspend () -> Container) {
     @Test
     fun `Computing size works well`(): Unit = runBlocking {
         sut().use { container ->
-            val size = container.get("mimetype").length().getOrThrow()
+            val size = container.get(Url("mimetype")!!).length().getOrThrow()
             assertEquals(20L, size)
         }
     }

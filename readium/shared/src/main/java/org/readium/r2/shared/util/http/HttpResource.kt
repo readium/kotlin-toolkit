@@ -7,8 +7,8 @@ import org.readium.r2.shared.extensions.read
 import org.readium.r2.shared.extensions.tryOrLog
 import org.readium.r2.shared.resource.Resource
 import org.readium.r2.shared.resource.ResourceTry
+import org.readium.r2.shared.util.AbsoluteUrl
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.flatMap
 import org.readium.r2.shared.util.io.CountingInputStream
 import org.readium.r2.shared.util.mediatype.MediaType
@@ -16,7 +16,7 @@ import org.readium.r2.shared.util.mediatype.MediaType
 /** Provides access to an external URL. */
 public class HttpResource(
     private val client: HttpClient,
-    override val source: Url.Absolute,
+    override val source: AbsoluteUrl,
     private val maxSkipBytes: Long = MAX_SKIP_BYTES
 ) : Resource {
 

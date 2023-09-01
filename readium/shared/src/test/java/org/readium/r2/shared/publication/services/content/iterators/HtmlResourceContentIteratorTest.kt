@@ -17,7 +17,9 @@ import org.readium.r2.shared.publication.services.content.Content.AttributeKey.C
 import org.readium.r2.shared.publication.services.content.Content.TextElement
 import org.readium.r2.shared.publication.services.content.Content.TextElement.Segment
 import org.readium.r2.shared.resource.StringResource
+import org.readium.r2.shared.urlHref
 import org.readium.r2.shared.util.Language
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.robolectric.RobolectricTestRunner
 
@@ -25,8 +27,8 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class HtmlResourceContentIteratorTest {
 
-    private val link = Link(href = "/dir/res.xhtml", mediaType = MediaType.XHTML)
-    private val locator = Locator(href = "/dir/res.xhtml", type = "application/xhtml+xml")
+    private val link = Link(href = urlHref("/dir/res.xhtml"), mediaType = MediaType.XHTML)
+    private val locator = Locator(href = Url("/dir/res.xhtml")!!, type = "application/xhtml+xml")
 
     private val html = """
         <?xml version="1.0" encoding="UTF-8"?>
@@ -381,7 +383,7 @@ class HtmlResourceContentIteratorTest {
                         progression = 0.0,
                         selector = "html > body > img:nth-child(1)"
                     ),
-                    embeddedLink = Link(href = "/dir/image.png"),
+                    embeddedLink = Link(href = urlHref("/dir/image.png")),
                     caption = null,
                     attributes = emptyList()
                 ),
@@ -390,7 +392,7 @@ class HtmlResourceContentIteratorTest {
                         progression = 0.5,
                         selector = "html > body > img:nth-child(2)"
                     ),
-                    embeddedLink = Link(href = "/cover.jpg"),
+                    embeddedLink = Link(href = urlHref("/cover.jpg")),
                     caption = null,
                     attributes = listOf(Attribute(ACCESSIBILITY_LABEL, "Accessibility description"))
                 )
@@ -421,7 +423,7 @@ class HtmlResourceContentIteratorTest {
                         progression = 0.0,
                         selector = "html > body > audio:nth-child(1)"
                     ),
-                    embeddedLink = Link(href = "/dir/audio.mp3"),
+                    embeddedLink = Link(href = urlHref("/dir/audio.mp3")),
                     attributes = emptyList()
                 ),
                 Content.AudioElement(
@@ -430,10 +432,10 @@ class HtmlResourceContentIteratorTest {
                         selector = "html > body > audio:nth-child(2)"
                     ),
                     embeddedLink = Link(
-                        href = "/dir/audio.mp3",
+                        href = urlHref("/dir/audio.mp3"),
                         mediaType = MediaType.MP3,
                         alternates = listOf(
-                            Link(href = "/dir/audio.ogg", mediaType = MediaType.OGG)
+                            Link(href = urlHref("/dir/audio.ogg"), mediaType = MediaType.OGG)
                         )
                     ),
                     attributes = emptyList()
@@ -465,7 +467,7 @@ class HtmlResourceContentIteratorTest {
                         progression = 0.0,
                         selector = "html > body > video:nth-child(1)"
                     ),
-                    embeddedLink = Link(href = "/dir/video.mp4"),
+                    embeddedLink = Link(href = urlHref("/dir/video.mp4")),
                     attributes = emptyList()
                 ),
                 Content.VideoElement(
@@ -474,10 +476,13 @@ class HtmlResourceContentIteratorTest {
                         selector = "html > body > video:nth-child(2)"
                     ),
                     embeddedLink = Link(
-                        href = "/dir/video.mp4",
+                        href = urlHref("/dir/video.mp4"),
                         mediaType = MediaType("video/mp4")!!,
                         alternates = listOf(
-                            Link(href = "/dir/video.m4v", mediaType = MediaType("video/x-m4v")!!)
+                            Link(
+                                href = urlHref("/dir/video.m4v"),
+                                mediaType = MediaType("video/x-m4v")!!
+                            )
                         )
                     ),
                     attributes = emptyList()
