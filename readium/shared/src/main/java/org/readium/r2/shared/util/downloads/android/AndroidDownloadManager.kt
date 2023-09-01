@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.downloads.android
+package org.readium.r2.shared.util.downloads.android
 
 import android.app.DownloadManager as SystemDownloadManager
 import android.content.Context
@@ -19,8 +19,8 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.readium.downloads.DownloadManager
 import org.readium.r2.shared.units.Hz
+import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.toUri
 
 public class AndroidDownloadManager internal constructor(

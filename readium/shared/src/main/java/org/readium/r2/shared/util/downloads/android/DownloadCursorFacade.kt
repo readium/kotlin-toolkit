@@ -4,7 +4,7 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.downloads.android
+package org.readium.r2.shared.util.downloads.android
 
 import android.app.DownloadManager
 import android.database.Cursor

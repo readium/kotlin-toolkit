@@ -56,6 +56,7 @@ apply(from = "$rootDir/scripts/publish-module.gradle")
 dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.browser)
+    implementation(libs.androidx.datastore.preferences)
     implementation(libs.timber)
     implementation(libs.joda.time)
     implementation(libs.kotlin.reflect)

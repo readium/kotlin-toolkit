@@ -8,8 +8,6 @@ package org.readium.r2.testapp
 
 import android.content.Context
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
-import org.readium.downloads.android.AndroidDownloadManager
-import org.readium.downloads.android.AndroidDownloadManagerProvider
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
@@ -24,6 +22,8 @@ import org.readium.r2.shared.resource.DirectoryContainerFactory
 import org.readium.r2.shared.resource.FileResourceFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
+import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
+import org.readium.r2.shared.util.downloads.android.AndroidDownloadManagerProvider
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpResourceFactory
 import org.readium.r2.shared.util.mediatype.FormatRegistry

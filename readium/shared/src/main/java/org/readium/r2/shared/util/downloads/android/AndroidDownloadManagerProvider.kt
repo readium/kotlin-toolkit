@@ -4,14 +4,14 @@
  * available in the top-level LICENSE file of the project.
  */
 
-package org.readium.downloads.android
+package org.readium.r2.shared.util.downloads.android
 
 import android.content.Context
 import android.os.Environment
-import org.readium.downloads.DownloadManager
-import org.readium.downloads.DownloadManagerProvider
 import org.readium.r2.shared.units.Hz
 import org.readium.r2.shared.units.hz
+import org.readium.r2.shared.util.downloads.DownloadManager
+import org.readium.r2.shared.util.downloads.DownloadManagerProvider
 
 public class AndroidDownloadManagerProvider(
     private val context: Context,

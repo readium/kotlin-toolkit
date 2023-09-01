@@ -23,8 +23,6 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.readium.downloads.DownloadManager
-import org.readium.downloads.DownloadManagerProvider
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpPublicationRetriever
 import org.readium.r2.lcp.LcpService
@@ -37,6 +35,8 @@ import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetri
 import org.readium.r2.shared.publication.services.cover
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
+import org.readium.r2.shared.util.downloads.DownloadManager
+import org.readium.r2.shared.util.downloads.DownloadManagerProvider
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
