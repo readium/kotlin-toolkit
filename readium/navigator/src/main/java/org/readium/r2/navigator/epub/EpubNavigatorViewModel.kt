@@ -206,7 +206,7 @@ internal class EpubNavigatorViewModel(
         val href = url.toString()
         val link = internalLinkFromUrl(href)
         if (link != null) {
-            if (listener?.onShouldJumpToLink(link) == true) {
+            if (listener?.shouldJumpToLink(link) == true) {
                 _events.send(Event.OpenInternalLink(link))
             }
         } else {

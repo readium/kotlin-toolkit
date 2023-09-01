@@ -136,16 +136,6 @@ interface VisualNavigator : Navigator {
     }
 
     interface Listener : Navigator.Listener {
-        /**
-         * Called when the user tapped the content, but nothing handled the event internally (eg.
-         * by following an internal link).
-         *
-         * Can be used in the reading app to toggle the navigation bars, or switch to the
-         * previous/next page if the tapped occurred on the edges.
-         *
-         * The [point] is relative to the navigator's view.
-         */
-        fun onTap(point: PointF): Boolean = false
 
         /**
          * Called when a link to an internal resource was clicked in the navigator.
@@ -156,7 +146,18 @@ interface VisualNavigator : Navigator {
          * By returning false the navigator wont try to open the link itself and it is up
          * to the calling app to decide how to display the link.
          */
-        fun onShouldJumpToLink(link: Link): Boolean { return true }
+        fun shouldJumpToLink(link: Link): Boolean { return true }
+
+        /**
+         * Called when the user tapped the content, but nothing handled the event internally (eg.
+         * by following an internal link).
+         *
+         * Can be used in the reading app to toggle the navigation bars, or switch to the
+         * previous/next page if the tapped occurred on the edges.
+         *
+         * The [point] is relative to the navigator's view.
+         */
+        fun onTap(point: PointF): Boolean = false
 
         /**
          * Called when the user starts dragging the content, but nothing handled the event
