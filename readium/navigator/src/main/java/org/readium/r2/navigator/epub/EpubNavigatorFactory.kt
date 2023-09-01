@@ -7,6 +7,7 @@
 package org.readium.r2.navigator.epub
 
 import org.readium.r2.shared.ExperimentalReadiumApi
+import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.epub.EpubLayout
@@ -38,6 +39,7 @@ class EpubNavigatorFactory(
 
     fun createFragmentFactory(
         initialLocator: Locator?,
+        readingOrder: List<Link>? = null,
         initialPreferences: EpubPreferences = EpubPreferences(),
         listener: EpubNavigatorFragment.Listener? = null,
         paginationListener: EpubNavigatorFragment.PaginationListener? = null,
@@ -47,6 +49,7 @@ class EpubNavigatorFactory(
             publication = publication,
             baseUrl = null,
             initialLocator = initialLocator,
+            readingOrder = readingOrder,
             initialPreferences = initialPreferences,
             listener = listener,
             paginationListener = paginationListener,
