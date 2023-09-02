@@ -13,8 +13,6 @@ import android.content.Context
 import java.io.File
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.auth.LcpDialogAuthentication
 import org.readium.r2.lcp.license.model.LicenseDocument
@@ -55,9 +53,18 @@ public interface LcpService {
      * Acquires a protected publication from a standalone LCPL's bytes.
      *
      * You can cancel the on-going acquisition by cancelling its parent coroutine context.
-     *
+     *    @Deprecated(
+     "Use a LcpPublicationRetriever instead.",
+     ReplaceWith("publicationRetriever()"),
+     level = DeprecationLevel.ERROR
+     )
      * @param onProgress Callback to follow the acquisition progress from 0.0 to 1.0.
      */
+    @Deprecated(
+        "Use a LcpPublicationRetriever instead.",
+        ReplaceWith("publicationRetriever()"),
+        level = DeprecationLevel.ERROR
+    )
     public suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit = {}): Try<AcquiredPublication, LcpException>
 
     /**
@@ -67,14 +74,15 @@ public interface LcpService {
      *
      * @param onProgress Callback to follow the acquisition progress from 0.0 to 1.0.
      */
+    @Deprecated(
+        "Use a LcpPublicationRetriever instead.",
+        ReplaceWith("publicationRetriever()"),
+        level = DeprecationLevel.ERROR
+    )
     public suspend fun acquirePublication(lcpl: File, onProgress: (Double) -> Unit = {}): Try<AcquiredPublication, LcpException> = withContext(
         Dispatchers.IO
     ) {
-        try {
-            acquirePublication(lcpl.readBytes(), onProgress)
-        } catch (e: Exception) {
-            Try.failure(LcpException.wrap(e))
-        }
+        throw NotImplementedError()
     }
 
     /**
@@ -120,10 +128,12 @@ public interface LcpService {
      * Creates a [LcpPublicationRetriever] instance which can be used to acquire a protected
      * publication from standalone LCPL's bytes.
      *
-     * @param listener listener to implement to be notified about the status of the download.
+     * You should use only one instance of [LcpPublicationRetriever] in your app. If you don't,
+     * behaviour is undefined.
+     *
+     * @param listener listener to implement to be notified about the status of the downloads.
      */
     public fun publicationRetriever(
-        downloadManagerProvider: DownloadManagerProvider,
         listener: LcpPublicationRetriever.Listener
     ): LcpPublicationRetriever
 
@@ -169,7 +179,8 @@ public interface LcpService {
         public operator fun invoke(
             context: Context,
             assetRetriever: AssetRetriever,
-            mediaTypeRetriever: MediaTypeRetriever
+            mediaTypeRetriever: MediaTypeRetriever,
+            downloadManagerProvider: DownloadManagerProvider
         ): LcpService? {
             if (!LcpClient.isAvailable()) {
                 return null
@@ -195,7 +206,8 @@ public interface LcpService {
                 passphrases = passphrases,
                 context = context,
                 assetRetriever = assetRetriever,
-                mediaTypeRetriever = mediaTypeRetriever
+                mediaTypeRetriever = mediaTypeRetriever,
+                downloadManagerProvider = downloadManagerProvider
             )
         }
 
@@ -219,11 +231,7 @@ public interface LcpService {
         authentication: LcpAuthenticating?,
         completion: (AcquiredPublication?, LcpException?) -> Unit
     ) {
-        GlobalScope.launch {
-            acquirePublication(lcpl)
-                .onSuccess { completion(it, null) }
-                .onFailure { completion(null, it) }
-        }
+        throw NotImplementedError()
     }
 
     @Deprecated(

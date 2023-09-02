@@ -62,7 +62,7 @@ class Bookshelf(
     private val assetRetriever: AssetRetriever,
     private val protectionRetriever: ContentProtectionSchemeRetriever,
     private val formatRegistry: FormatRegistry,
-    private val downloadManagerProvider: DownloadManagerProvider
+    downloadManagerProvider: DownloadManagerProvider
 ) {
     sealed class ImportError(
         content: Content,
@@ -162,7 +162,6 @@ class Bookshelf(
 
     private val lcpPublicationRetriever = lcpService.map {
         it.publicationRetriever(
-            downloadManagerProvider,
             LcpRetrieverListener()
         )
     }

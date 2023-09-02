@@ -49,7 +49,8 @@ internal class LicensesService(
     private val passphrases: PassphrasesService,
     private val context: Context,
     private val assetRetriever: AssetRetriever,
-    private val mediaTypeRetriever: MediaTypeRetriever
+    private val mediaTypeRetriever: MediaTypeRetriever,
+    private val downloadManagerProvider: DownloadManagerProvider
 ) : LcpService, CoroutineScope by MainScope() {
 
     override suspend fun isLcpProtected(file: File): Boolean {
@@ -75,7 +76,6 @@ internal class LicensesService(
         LcpContentProtection(this, authentication, assetRetriever)
 
     override fun publicationRetriever(
-        downloadManagerProvider: DownloadManagerProvider,
         listener: LcpPublicationRetriever.Listener
     ): LcpPublicationRetriever {
         return LcpPublicationRetriever(
@@ -86,6 +86,11 @@ internal class LicensesService(
         )
     }
 
+    @Deprecated(
+        "Use a LcpPublicationRetriever instead.",
+        ReplaceWith("publicationRetriever()"),
+        level = DeprecationLevel.ERROR
+    )
     override suspend fun acquirePublication(lcpl: ByteArray, onProgress: (Double) -> Unit): Try<LcpService.AcquiredPublication, LcpException> =
         try {
             val licenseDocument = LicenseDocument(lcpl)
