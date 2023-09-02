@@ -7,59 +7,42 @@
 package org.readium.r2.shared.util.downloads.android
 
 import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
+import java.io.File
 import java.util.LinkedList
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import org.json.JSONArray
 import org.json.JSONObject
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
-    name = "readium-downloads-android"
-)
-
-private val downloadIdsKey: Preferences.Key<String> = stringPreferencesKey("downloadIds")
-
 internal class DownloadsRepository(
-    private val context: Context
+    context: Context
 ) {
 
-    private val downloadIds: Flow<Map<String, List<Long>>> =
-        context.dataStore.data
-            .map { data -> data.ids }
+    private val storageDir: File =
+        File(context.noBackupFilesDir, DownloadsRepository::class.qualifiedName!!)
+            .also { if (!it.exists()) it.mkdirs() }
 
-    suspend fun addId(name: String, id: Long) {
-        context.dataStore.edit { data ->
-            val current = data.ids
-            val currentThisName = current[name].orEmpty()
-            val newEntryThisName = name to (currentThisName + id)
-            data[downloadIdsKey] = (current + newEntryThisName).toJson()
-        }
+    private val storageFile: File =
+        File(storageDir, "downloads.json")
+            .also { if (!it.exists()) { it.writeText("{}", Charsets.UTF_8) } }
+
+    private var snapshot: MutableMap<String, List<Long>> =
+        storageFile.readText(Charsets.UTF_8).toData().toMutableMap()
+
+    fun addId(name: String, id: Long) {
+        snapshot[name] = snapshot[name].orEmpty() + id
+        storageFile.writeText(snapshot.toJson(), Charsets.UTF_8)
     }
 
-    suspend fun removeId(name: String, id: Long) {
-        context.dataStore.edit { data ->
-            val current = data.ids
-            val currentThisName = current[name].orEmpty()
-            val newEntryThisName = name to (currentThisName - id)
-            data[downloadIdsKey] = (current + newEntryThisName).toJson()
-        }
+    fun removeId(name: String, id: Long) {
+        snapshot[name] = snapshot[name].orEmpty() - id
+        storageFile.writeText(snapshot.toJson(), Charsets.UTF_8)
     }
 
-    suspend fun idsForName(name: String): List<Long> {
-        return downloadIds.first()[name].orEmpty()
+    fun idsForName(name: String): List<Long> {
+        return snapshot[name].orEmpty()
     }
 
-    suspend fun hasDownloadsOngoing(): Boolean =
-        downloadIds.first().values.flatten().isNotEmpty()
-
-    private val Preferences.ids: Map<String, List<Long>>
-        get() = get(downloadIdsKey)?.toData().orEmpty()
+    fun hasDownloads(): Boolean =
+        snapshot.values.flatten().isNotEmpty()
 
     private fun Map<String, List<Long>>.toJson(): String {
         val jsonObject = JSONObject()

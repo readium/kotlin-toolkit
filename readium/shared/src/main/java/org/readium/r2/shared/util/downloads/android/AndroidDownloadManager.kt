@@ -52,7 +52,7 @@ public class AndroidDownloadManager internal constructor(
 
     init {
         coroutineScope.launch {
-            if (downloadsRepository.hasDownloadsOngoing()) {
+            if (downloadsRepository.hasDownloads()) {
                 startObservingProgress()
             }
         }
@@ -84,7 +84,7 @@ public class AndroidDownloadManager internal constructor(
         val longId = requestId.value.toLong()
         downloadManager.remove()
         downloadsRepository.removeId(name, longId)
-        if (!downloadsRepository.hasDownloadsOngoing()) {
+        if (!downloadsRepository.hasDownloads()) {
             stopObservingProgress()
         }
     }
@@ -102,8 +102,7 @@ public class AndroidDownloadManager internal constructor(
             .setHeaders(headers)
             .setTitle(title)
             .apply { description?.let { setDescription(it) } }
-            .setAllowedOverMetered(true)
-            .setAllowedOverRoaming(true)
+            .setAllowedOverMetered(allowDownloadsOverMetered)
 
     private fun SystemDownloadManager.Request.setHeaders(
         headers: Map<String, List<String>>
@@ -163,7 +162,7 @@ public class AndroidDownloadManager internal constructor(
                     listener.onDownloadFailed(id, mapErrorCode(facade.reason!!))
                     downloadManager.remove(facade.id)
                     downloadsRepository.removeId(name, facade.id)
-                    if (!downloadsRepository.hasDownloadsOngoing()) {
+                    if (!downloadsRepository.hasDownloads()) {
                         stopObservingProgress()
                     }
                 }
@@ -180,7 +179,7 @@ public class AndroidDownloadManager internal constructor(
                     }
                     downloadManager.remove(facade.id)
                     downloadsRepository.removeId(name, facade.id)
-                    if (!downloadsRepository.hasDownloadsOngoing()) {
+                    if (!downloadsRepository.hasDownloads()) {
                         stopObservingProgress()
                     }
                 }

@@ -1,20 +1,13 @@
+/*
+ * Copyright 2023 Readium Foundation. All rights reserved.
+ * Use of this source code is governed by the BSD-style license
+ * available in the top-level LICENSE file of the project.
+ */
+
 package org.readium.r2.lcp
 
 import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
 import java.io.File
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONObject
 import org.readium.r2.lcp.license.container.createLicenseContainer
 import org.readium.r2.lcp.license.model.LicenseDocument
 import org.readium.r2.shared.extensions.tryOrLog
@@ -22,19 +15,12 @@ import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.downloads.DownloadManagerProvider
-import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
-    name = "readium-lcp-licenses"
-)
-
-private val licensesKey: Preferences.Key<String> = stringPreferencesKey("licenses")
-
 public class LcpPublicationRetriever(
-    private val context: Context,
+    context: Context,
     private val listener: Listener,
     downloadManagerProvider: DownloadManagerProvider,
     private val mediaTypeRetriever: MediaTypeRetriever
@@ -64,26 +50,38 @@ public class LcpPublicationRetriever(
 
     private inner class DownloadListener : DownloadManager.Listener {
 
-        private val coroutineScope: CoroutineScope =
-            MainScope()
-
         override fun onDownloadCompleted(
             requestId: DownloadManager.RequestId,
             file: File
         ) {
-            coroutineScope.launch {
-                val lcpRequestId = RequestId(requestId.value)
-                val acquisition = onDownloadCompletedImpl(
-                    requestId.value,
-                    file
-                ).getOrElse {
-                    tryOrLog { file.delete() }
-                    listener.onAcquisitionFailed(lcpRequestId, LcpException.wrap(it))
-                    return@launch
-                }
+            val lcpRequestId = RequestId(requestId.value)
 
-                listener.onAcquisitionCompleted(lcpRequestId, acquisition)
+            val license = LicenseDocument(downloadsRepository.retrieveLicense(requestId.value)!!)
+            downloadsRepository.removeDownload(requestId.value)
+
+            val link = license.link(LicenseDocument.Rel.Publication)!!
+
+            val mediaType = mediaTypeRetriever.retrieve(mediaType = link.type)
+                ?: MediaType.EPUB
+
+            try {
+                // Saves the License Document into the downloaded publication
+                val container = createLicenseContainer(file, mediaType)
+                container.write(license)
+            } catch (e: Exception) {
+                tryOrLog { file.delete() }
+                listener.onAcquisitionFailed(lcpRequestId, LcpException.wrap(e))
+                return
             }
+
+            val acquiredPublication = LcpService.AcquiredPublication(
+                localFile = file,
+                suggestedFilename = "${license.id}.${formatRegistry.fileExtension(mediaType) ?: "epub"}",
+                mediaType = mediaType,
+                licenseDocument = license
+            )
+
+            listener.onAcquisitionCompleted(lcpRequestId, acquiredPublication)
         }
 
         override fun onDownloadProgressed(
@@ -112,15 +110,14 @@ public class LcpPublicationRetriever(
     private val downloadManager: DownloadManager =
         downloadManagerProvider.createDownloadManager(
             DownloadListener(),
-            "org.readium.lcp.LcpPublicationRetriever"
+            LcpPublicationRetriever::class.qualifiedName!!
         )
 
     private val formatRegistry: FormatRegistry =
         FormatRegistry()
 
-    private val licenses: Flow<Map<String, JSONObject>> =
-        context.dataStore.data
-            .map { data -> data.licenses }
+    private val downloadsRepository: LcpDownloadsRepository =
+        LcpDownloadsRepository(context)
 
     public suspend fun retrieve(
         license: ByteArray,
@@ -158,6 +155,7 @@ public class LcpPublicationRetriever(
 
     public suspend fun cancel(requestId: RequestId) {
         downloadManager.cancel(DownloadManager.RequestId(requestId.value))
+        downloadsRepository.removeDownload(requestId.value)
     }
 
     private suspend fun fetchPublication(
@@ -178,77 +176,7 @@ public class LcpPublicationRetriever(
             )
         )
 
-        persistLicense(requestId.value, license.json)
-
+        downloadsRepository.addDownload(requestId.value, license.json)
         return RequestId(requestId.value)
-    }
-
-    private suspend fun onDownloadCompletedImpl(
-        id: String,
-        file: File
-    ): Try<LcpService.AcquiredPublication, Exception> {
-        val licenses = licenses.first()
-        val license = LicenseDocument(licenses[id]!!)
-        removeLicense(id)
-
-        val link = license.link(LicenseDocument.Rel.Publication)!!
-
-        val mediaType = mediaTypeRetriever.retrieve(mediaType = link.type)
-            ?: MediaType.EPUB
-
-        try {
-            // Saves the License Document into the downloaded publication
-            val container = createLicenseContainer(file, mediaType)
-            container.write(license)
-        } catch (e: Exception) {
-            return Try.failure(e)
-        }
-
-        val acquiredPublication = LcpService.AcquiredPublication(
-            localFile = file,
-            suggestedFilename = "${license.id}.${formatRegistry.fileExtension(mediaType) ?: "epub"}",
-            mediaType = mediaType,
-            licenseDocument = license
-        )
-
-        return Try.success(acquiredPublication)
-    }
-
-    private suspend fun persistLicense(id: String, license: JSONObject) {
-        context.dataStore.edit { data ->
-            val newEntry = id to license
-            val licenses = data.licenses + newEntry
-            data[licensesKey] = licenses.toJson()
-        }
-    }
-
-    private suspend fun removeLicense(id: String) {
-        context.dataStore.edit { data ->
-            val licenses = data.licenses - id
-            data[licensesKey] = licenses.toJson()
-        }
-    }
-
-    private val Preferences.licenses: Map<String, JSONObject>
-        get() = get(licensesKey)?.toLicenses().orEmpty()
-
-    private fun licenseToJson(id: String, license: JSONObject): JSONObject =
-        JSONObject()
-            .put("id", id)
-            .put("license", license)
-
-    private fun jsonToLicense(jsonObject: JSONObject): Pair<String, JSONObject> =
-        jsonObject.getString("id") to jsonObject.getJSONObject("license")
-
-    private fun Map<String, JSONObject>.toJson(): String {
-        val jsonObjects = map { licenseToJson(it.key, it.value) }
-        val array = JSONArray(jsonObjects)
-        return array.toString()
-    }
-
-    private fun String.toLicenses(): Map<String, JSONObject> {
-        val array = JSONArray(this)
-        val objects = (0 until array.length()).map { array.getJSONObject(it) }
-        return objects.associate { jsonToLicense(it) }
     }
 }
