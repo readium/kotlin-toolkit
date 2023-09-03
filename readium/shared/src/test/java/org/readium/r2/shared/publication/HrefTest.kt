@@ -62,6 +62,18 @@ class HrefTest {
     }
 
     @Test
+    fun `get TemplatedHref parameters`() {
+        assertEquals(
+            listOf<String>(),
+            TemplatedHref("url").parameters
+        )
+        assertEquals(
+            listOf("x", "hello", "y"),
+            TemplatedHref("url{?x,hello,y}name").parameters
+        )
+    }
+
+    @Test
     fun getToString() {
         assertEquals("folder/chapter.xhtml", UrlHref(Url("folder/chapter.xhtml")!!).toString())
         assertEquals("url{?x,hello,y}name", TemplatedHref("url{?x,hello,y}name").toString())

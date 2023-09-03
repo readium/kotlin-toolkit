@@ -110,7 +110,7 @@ public class StatusDocument(public val data: ByteArray) {
             ?: linkWithNoType(rel)
             ?: throw LcpException.Parsing.Url(rel = rel.value)
 
-        return link.href(parameters)
+        return link.href(parameters = parameters)
             ?: throw LcpException.Parsing.Url(rel = rel.value)
     }
 

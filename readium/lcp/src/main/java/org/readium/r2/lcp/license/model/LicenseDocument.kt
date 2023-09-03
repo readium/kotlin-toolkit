@@ -89,7 +89,7 @@ public class LicenseDocument(public val data: ByteArray) {
             ?: links.firstWithRelAndNoType(rel.value)
             ?: throw LcpException.Parsing.Url(rel = rel.value)
 
-        return link.href(parameters)
+        return link.href(parameters = parameters)
             ?: throw LcpException.Parsing.Url(rel = rel.value)
     }
 

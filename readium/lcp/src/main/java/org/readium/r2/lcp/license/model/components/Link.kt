@@ -11,80 +11,81 @@
 package org.readium.r2.lcp.license.model.components
 
 import java.net.URL
-import org.json.JSONArray
 import org.json.JSONObject
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.service.URLParameters
-import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.util.URITemplate
+import org.readium.r2.shared.extensions.optNullableInt
+import org.readium.r2.shared.extensions.optNullableString
+import org.readium.r2.shared.extensions.optStringsFromArrayOrSingle
+import org.readium.r2.shared.publication.Href
+import org.readium.r2.shared.publication.TemplatedHref
+import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
+import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
-public data class Link(val json: JSONObject) {
-    private val rawHref: String
-    var rel: MutableList<String> = mutableListOf()
-    val title: String?
-    val type: String?
-    val templated: Boolean
-    val profile: String?
-    val length: Int?
-    val hash: String?
+public data class Link(
+    val href: Href,
+    val mediaType: MediaType? = null,
+    val title: String? = null,
+    val rels: Set<String> = setOf(),
+    val profile: String? = null,
+    val length: Int? = null,
+    val hash: String? = null
+) {
 
-    init {
+    public companion object {
+        public operator fun invoke(
+            json: JSONObject,
+            mediaTypeRetriever: MediaTypeRetriever = MediaTypeRetriever()
+        ): Link {
+            val href = json.optNullableString("href")
+                ?: throw LcpException.Parsing.Link
+            val templated = json.optBoolean("templated", false)
 
-        rawHref = if (json.has("href")) json.getString("href") else throw LcpException.Parsing.Link
-
-        if (json.has("rel")) {
-            val rel = json["rel"]
-            if (rel is String) {
-                this.rel.add(rel)
-            } else if (rel is JSONArray) {
-                for (i in 0 until rel.length()) {
-                    this.rel.add(rel[i].toString())
-                }
-            }
-        }
-
-        if (rel.isEmpty()) {
-            throw LcpException.Parsing.Link
-        }
-
-        title = if (json.has("title")) json.getString("title") else null
-        type = if (json.has("type")) json.getString("type") else null
-        templated = if (json.has("templated")) json.getBoolean("templated") else false
-        profile = if (json.has("profile")) json.getString("profile") else null
-        length = if (json.has("length")) json.getInt("length") else null
-        hash = if (json.has("hash")) json.getString("hash") else null
-    }
-
-    public fun href(parameters: URLParameters = emptyMap()): Url? {
-        if (!templated) {
-            return Url(rawHref)
-        }
-
-        val expandedHref = URITemplate(rawHref).expand(parameters.mapValues { it.value ?: "" })
-        return Url(expandedHref)
-    }
-
-    val mediaType: MediaType
-        get() = type?.let { MediaType(it) } ?: MediaType.BINARY
-
-    /**
-     * List of URI template parameter keys, if the [Link] is templated.
-     */
-    internal val templateParameters: List<String> by lazy {
-        if (!templated) {
-            emptyList()
-        } else {
-            URITemplate(rawHref).parameters
+            return Link(
+                href = if (templated) {
+                    TemplatedHref(href)
+                } else {
+                    Url(href)?.let { UrlHref(it) }
+                        ?: throw LcpException.Parsing.Link
+                },
+                mediaType = json.optNullableString("type")
+                    ?.let { mediaTypeRetriever.retrieve(it) },
+                title = json.optNullableString("title"),
+                rels = json.optStringsFromArrayOrSingle("rel").toSet()
+                    .takeIf { it.isNotEmpty() }
+                    ?: throw LcpException.Parsing.Link,
+                profile = json.optNullableString("profile"),
+                length = json.optNullableInt("length"),
+                hash = json.optNullableString("hash")
+            )
         }
     }
+
+    @Deprecated(
+        "Use [mediaType.toString()] instead",
+        ReplaceWith("mediaType.toString()"),
+        level = DeprecationLevel.ERROR
+    )
+    public val type: String? get() = throw NotImplementedError()
+
+    @Deprecated(
+        "Renamed `rels`",
+        ReplaceWith("rels"),
+        level = DeprecationLevel.ERROR
+    )
+    public val rel: List<String> get() = throw NotImplementedError()
 
     @Deprecated("Use `href()` instead", ReplaceWith("href()"), level = DeprecationLevel.ERROR)
-    public val url: URL =
-        throw NotImplementedError()
+    public val url: URL get() = throw NotImplementedError()
 
-    @Deprecated("Renamed `href`", ReplaceWith("href"), level = DeprecationLevel.ERROR)
+    @Deprecated(
+        "Renamed `href(parameters)`",
+        ReplaceWith("href(parameters = parameters)"),
+        level = DeprecationLevel.ERROR
+    )
+    @Suppress("UNUSED_PARAMETER")
     public fun url(parameters: URLParameters): URL =
         throw NotImplementedError()
 }

@@ -28,7 +28,7 @@ import org.readium.r2.shared.util.mediatype.MediaTypeHints
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 import timber.log.Timber
 
-internal typealias URLParameters = Map<String, String?>
+internal typealias URLParameters = Map<String, String>
 
 internal class NetworkException(val status: Int?, cause: Throwable? = null) : Exception(
     "Network failure with status $status",
@@ -89,16 +89,14 @@ internal class NetworkService(
     private fun Uri.Builder.appendQueryParameters(parameters: URLParameters): Uri.Builder =
         apply {
             for ((key, value) in parameters) {
-                if (value != null) {
-                    appendQueryParameter(key, value)
-                }
+                appendQueryParameter(key, value)
             }
         }
 
     suspend fun download(
         url: Url,
         destination: File,
-        mediaType: String? = null,
+        mediaType: MediaType? = null,
         onProgress: (Double) -> Unit
     ): MediaType? = withContext(Dispatchers.IO) {
         try {
@@ -140,7 +138,9 @@ internal class NetworkService(
                 }
             }
 
-            mediaTypeRetriever.retrieve(MediaTypeHints(connection, mediaType = mediaType))
+            mediaTypeRetriever.retrieve(
+                MediaTypeHints(connection, mediaType = mediaType.toString())
+            )
         } catch (e: Exception) {
             Timber.e(e)
             throw LcpException.Network(e)

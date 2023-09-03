@@ -64,6 +64,12 @@ public data class TemplatedHref(val template: String) : Href() {
     override fun toUrl(base: Url?, parameters: Map<String, String>): Url? =
         Url(URITemplate(template).expand(parameters))
             ?.let { base?.resolve(it) ?: it }
+
+    /**
+     * List of URI template parameter keys.
+     */
+    public val parameters: List<String> get() =
+        URITemplate(template).parameters
 }
 
 /**

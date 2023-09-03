@@ -27,6 +27,7 @@ import org.readium.r2.lcp.service.LicensesRepository
 import org.readium.r2.lcp.service.NetworkService
 import org.readium.r2.shared.extensions.toIso8601String
 import org.readium.r2.shared.extensions.tryOrNull
+import org.readium.r2.shared.publication.TemplatedHref
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.getOrElse
 import org.readium.r2.shared.util.getOrThrow
@@ -163,7 +164,7 @@ internal class License(
         // Programmatically renew the loan with a PUT request.
         suspend fun renewProgrammatically(link: Link): ByteArray {
             val endDate =
-                if (link.templateParameters.contains("end")) {
+                if ((link.href as? TemplatedHref)?.parameters?.contains("end") == true) {
                     listener.preferredEndDate(maxRenewDate)
                 } else {
                     null
@@ -174,7 +175,7 @@ internal class License(
                 parameters["end"] = endDate.toIso8601String()
             }
 
-            val url = link.href(parameters)
+            val url = link.href(parameters = parameters)
 
             return network.fetch(url.toString(), NetworkService.Method.PUT)
                 .getOrElse { error ->
@@ -213,7 +214,7 @@ internal class License(
                 ?: throw LcpException.LicenseInteractionNotAvailable
 
             val data =
-                if (link.mediaType.isHtml) {
+                if (link.mediaType?.isHtml == true) {
                     renewWithWebPage(link)
                 } else {
                     renewProgrammatically(link)

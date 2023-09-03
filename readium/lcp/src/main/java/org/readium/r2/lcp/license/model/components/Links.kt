@@ -28,13 +28,13 @@ public data class Links(val json: JSONArray) {
         links.firstOrNull { it.matches(rel, type) }
 
     internal fun firstWithRelAndNoType(rel: String): Link? =
-        links.firstOrNull { it.rel.contains(rel) && it.type == null }
+        links.firstOrNull { it.rels.contains(rel) && it.mediaType == null }
 
     public fun allWithRel(rel: String, type: MediaType? = null): List<Link> =
         links.filter { it.matches(rel, type) }
 
-    private fun Link.matches(rel: String, type: MediaType?): Boolean =
-        this.rel.contains(rel) && (type?.matches(this.type) ?: true)
+    private fun Link.matches(rel: String, mediaType: MediaType?): Boolean =
+        this.rels.contains(rel) && (mediaType?.matches(this.mediaType) ?: true)
 
     public operator fun get(rel: String): List<Link> = allWithRel(rel)
 }
