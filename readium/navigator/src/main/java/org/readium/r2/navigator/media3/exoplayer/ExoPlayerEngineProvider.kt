@@ -49,7 +49,7 @@ public class ExoPlayerEngineProvider(
             duration = publication.metadata.duration?.seconds,
             items = publication.readingOrder.mapIndexedNotNull { index, link ->
                 ExoPlayerEngine.Playlist.Item(
-                    url = link.href.toUrl() ?: return@mapIndexedNotNull null,
+                    url = link.href() ?: return@mapIndexedNotNull null,
                     mediaMetadata = metadataFactory.resourceMetadata(index),
                     duration = link.duration?.seconds
                 )

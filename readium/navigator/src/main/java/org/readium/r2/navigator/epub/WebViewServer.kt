@@ -84,7 +84,7 @@ internal class WebViewServer(
         val link = publication.linkWithHref(href)
             // Query parameters must be kept as they might be relevant for the fetcher.
             ?.copy(href = UrlHref(href))
-            ?: Link(href = UrlHref(href))
+            ?: Link(href = href)
 
         // Drop anchor because it is meant to be interpreted by the client.
         val linkWithoutAnchor = link.copy(

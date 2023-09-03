@@ -19,7 +19,6 @@ import org.readium.r2.shared.publication.Publication
 import org.readium.r2.shared.publication.PublicationServicesHolder
 import org.readium.r2.shared.publication.ServiceFactory
 import org.readium.r2.shared.publication.TemplatedHref
-import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.resource.FailureResource
 import org.readium.r2.shared.resource.Resource
@@ -69,7 +68,7 @@ public interface ContentProtectionService : Publication.Service {
         get() = RouteHandler.links
 
     override fun get(link: Link): Resource? {
-        val url = link.href.toUrl() ?: return null
+        val url = link.href() ?: return null
         val route = RouteHandler.route(url) ?: return null
         return route.handleRequest(url, this)
     }
@@ -261,7 +260,7 @@ private sealed class RouteHandler {
         private val mediaType = MediaType("application/vnd.readium.content-protection+json")!!
 
         override val link = Link(
-            href = UrlHref(Url(path)!!),
+            href = Url(path)!!,
             mediaType = mediaType
         )
 

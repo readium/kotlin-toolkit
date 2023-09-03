@@ -125,8 +125,16 @@ public class Publication(
      * `self` relation.
      */
     public val baseUrl: Url?
-        get() = links.firstWithRel("self")
-            ?.href?.toUrl()
+        get() = links.firstWithRel("self")?.href?.invoke()
+
+    /**
+     * Returns the URL to the resource represented by the given [link], relative to the
+     * publication's link with `self` relation.
+     *
+     * If the link HREF is a template, the [parameters] are used to expand it according to RFC 6570.
+     */
+    public fun url(link: Link, parameters: Map<String, String> = emptyMap()): Url? =
+        link.href(baseUrl, parameters = parameters)
 
     /**
      * Returns whether this publication conforms to the given Readium Web Publication Profile.
@@ -166,7 +174,7 @@ public class Publication(
      * Returns the resource targeted by the given non-templated [link].
      */
     public fun get(link: Link): Resource {
-        val url = requireNotNull(link.href.toUrl()) {
+        val url = requireNotNull(link.href()) {
             "You must expand templated links before calling [Publication.get]"
         }
 

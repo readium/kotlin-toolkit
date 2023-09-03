@@ -22,7 +22,18 @@ public sealed class Href : Parcelable {
      *
      * If the HREF is a template, the [parameters] are used to expand it according to RFC 6570.
      */
-    public abstract fun toUrl(base: Url? = null, parameters: Map<String, String> = emptyMap()): Url?
+    public abstract fun toUrl(
+        base: Url? = null,
+        parameters: Map<String, String> = emptyMap()
+    ): Url?
+
+    /**
+     * Syntactic sugar for [toUrl].
+     */
+    public operator fun invoke(
+        base: Url? = null,
+        parameters: Map<String, String> = emptyMap()
+    ): Url? = toUrl(base, parameters)
 
     @ExperimentalReadiumApi
     public fun copy(transformer: ManifestTransformer): Href =

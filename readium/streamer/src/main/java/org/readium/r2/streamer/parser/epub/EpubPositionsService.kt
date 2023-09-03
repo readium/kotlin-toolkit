@@ -150,7 +150,7 @@ public class EpubPositionsService(
     }
 
     private fun createFixed(link: Link, startPosition: Int): List<Locator> {
-        val url = link.href.toUrl() ?: return emptyList()
+        val url = link.href() ?: return emptyList()
 
         return listOf(
             createLocator(
@@ -164,7 +164,7 @@ public class EpubPositionsService(
     }
 
     private suspend fun createReflowable(link: Link, startPosition: Int, container: Container): List<Locator> {
-        val url = link.href.toUrl() ?: return emptyList()
+        val url = link.href() ?: return emptyList()
 
         val positionCount = container.get(url).use { resource ->
             reflowableStrategy.positionCount(link, resource)

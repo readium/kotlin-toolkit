@@ -17,10 +17,11 @@ import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.service.URLParameters
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.util.URITemplate
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 public data class Link(val json: JSONObject) {
-    val href: String
+    private val rawHref: String
     var rel: MutableList<String> = mutableListOf()
     val title: String?
     val type: String?
@@ -31,7 +32,7 @@ public data class Link(val json: JSONObject) {
 
     init {
 
-        href = if (json.has("href")) json.getString("href") else throw LcpException.Parsing.Link
+        rawHref = if (json.has("href")) json.getString("href") else throw LcpException.Parsing.Link
 
         if (json.has("rel")) {
             val rel = json["rel"]
@@ -56,17 +57,14 @@ public data class Link(val json: JSONObject) {
         hash = if (json.has("hash")) json.getString("hash") else null
     }
 
-    public fun url(parameters: URLParameters): URL {
+    public fun href(parameters: URLParameters = emptyMap()): Url? {
         if (!templated) {
-            return URL(href)
+            return Url(rawHref)
         }
 
-        val expandedHref = URITemplate(href).expand(parameters.mapValues { it.value ?: "" })
-        return URL(expandedHref)
+        val expandedHref = URITemplate(rawHref).expand(parameters.mapValues { it.value ?: "" })
+        return Url(expandedHref)
     }
-
-    val url: URL
-        get() = url(parameters = emptyMap())
 
     val mediaType: MediaType
         get() = type?.let { MediaType(it) } ?: MediaType.BINARY
@@ -78,7 +76,15 @@ public data class Link(val json: JSONObject) {
         if (!templated) {
             emptyList()
         } else {
-            URITemplate(href).parameters
+            URITemplate(rawHref).parameters
         }
     }
+
+    @Deprecated("Use `href()` instead", ReplaceWith("href()"), level = DeprecationLevel.ERROR)
+    public val url: URL =
+        throw NotImplementedError()
+
+    @Deprecated("Renamed `href`", ReplaceWith("href"), level = DeprecationLevel.ERROR)
+    public fun url(parameters: URLParameters): URL =
+        throw NotImplementedError()
 }

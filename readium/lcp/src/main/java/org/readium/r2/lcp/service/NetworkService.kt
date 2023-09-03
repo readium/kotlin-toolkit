@@ -21,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.readium.r2.lcp.LcpException
 import org.readium.r2.shared.util.Try
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.http.invoke
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeHints
@@ -95,13 +96,13 @@ internal class NetworkService(
         }
 
     suspend fun download(
-        url: URL,
+        url: Url,
         destination: File,
         mediaType: String? = null,
         onProgress: (Double) -> Unit
     ): MediaType? = withContext(Dispatchers.IO) {
         try {
-            val connection = url.openConnection() as HttpURLConnection
+            val connection = URL(url.toString()).openConnection() as HttpURLConnection
             if (connection.responseCode >= 400) {
                 throw LcpException.Network(NetworkException(connection.responseCode))
             }

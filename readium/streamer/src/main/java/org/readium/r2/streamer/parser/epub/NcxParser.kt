@@ -8,7 +8,6 @@ package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.util.Url
 
 internal object NcxParser {
@@ -31,7 +30,7 @@ internal object NcxParser {
             if (href == null || title.isNullOrBlank()) {
                 null
             } else {
-                Link(title = title, href = UrlHref(href))
+                Link(title = title, href = href)
             }
         }
 
@@ -49,7 +48,7 @@ internal object NcxParser {
         } else {
             Link(
                 title = title,
-                href = UrlHref(href ?: Url("#")!!),
+                href = href ?: Url("#")!!,
                 children = children
             )
         }

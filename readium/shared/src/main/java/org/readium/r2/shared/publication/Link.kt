@@ -63,6 +63,27 @@ public data class Link(
 ) : JSONable, Parcelable {
 
     /**
+     * Convenience constructor for a [Link] with a [Url] as [href].
+     */
+    public constructor(
+        href: Url,
+        mediaType: MediaType? = null,
+        title: String? = null,
+        rels: Set<String> = setOf(),
+        properties: Properties = Properties(),
+        alternates: List<Link> = listOf(),
+        children: List<Link> = listOf()
+    ) : this(
+        href = UrlHref(href),
+        mediaType = mediaType,
+        title = title,
+        rels = rels,
+        properties = properties,
+        alternates = alternates,
+        children = children
+    )
+
+    /**
      * List of URI template parameter keys, if the [Link] is templated.
      */
     @IgnoredOnParcel
@@ -76,8 +97,8 @@ public data class Link(
      * See RFC 6570 on URI template.
      */
     @Deprecated(
-        "Use `href.toUrl(parameters)` instead",
-        ReplaceWith("href.expandTemplate(parameters)"),
+        "Use `href(parameters)` instead",
+        ReplaceWith("href(parameters = parameters)"),
         level = DeprecationLevel.ERROR
     )
     @Suppress("UNUSED_PARAMETER")
@@ -90,8 +111,8 @@ public data class Link(
      * If the link's [href] is already absolute, the [baseUrl] is ignored.
      */
     @Deprecated(
-        "Use `baseUrl?.resolve(link.href)` instead",
-        ReplaceWith("baseUrl?.resolve(this.href)"),
+        "Use `href.toUrl(baseUr)` instead",
+        ReplaceWith("href.toUrl(baseUrl)"),
         level = DeprecationLevel.ERROR
     )
     @Suppress("UNUSED_PARAMETER")
@@ -222,13 +243,13 @@ public data class Link(
  * Returns the first [Link] with the given [href], or null if not found.
  */
 public fun List<Link>.indexOfFirstWithHref(href: Url): Int? =
-    indexOfFirst { it.href.toUrl() == href }
+    indexOfFirst { it.href() == href }
         .takeUnless { it == -1 }
 
 /**
  * Finds the first link matching the given HREF.
  */
-public fun List<Link>.firstWithHref(href: Url): Link? = firstOrNull { it.href.toUrl() == href }
+public fun List<Link>.firstWithHref(href: Url): Link? = firstOrNull { it.href() == href }
 
 /**
  * Finds the first link with the given relation.

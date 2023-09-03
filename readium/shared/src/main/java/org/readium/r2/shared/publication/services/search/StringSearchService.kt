@@ -115,7 +115,7 @@ public class StringSearchService(
 
                 val link = manifest.readingOrder[index]
                 val text =
-                    link.href.toUrl()
+                    link.href()
                         ?.let { container.get(it) }
                         ?.let { extractorFactory.createExtractor(it)?.extractText(it)?.getOrThrow() }
                 if (text == null) {
@@ -143,7 +143,7 @@ public class StringSearchService(
                 return emptyList()
             }
 
-            val resourceTitle = link.href.toUrl()?.let { manifest.tableOfContents.titleMatching(it) }
+            val resourceTitle = link.href()?.let { manifest.tableOfContents.titleMatching(it) }
             var resourceLocator = manifest.locatorFromLink(link) ?: return emptyList()
             resourceLocator = resourceLocator.copy(title = resourceTitle ?: resourceLocator.title)
             val locators = mutableListOf<Locator>()
@@ -353,7 +353,7 @@ private fun List<Link>.titleMatching(href: Url): String? {
 }
 
 private fun Link.titleMatching(targetHref: Url): String? {
-    if (href.toUrl()?.removeFragment() == targetHref) {
+    if (href()?.removeFragment() == targetHref) {
         return title
     }
     return children.titleMatching(targetHref)

@@ -56,7 +56,7 @@ public class AudioNavigator<S : Configurable.Settings, P : Configurable.Preferen
 
             val items = readingOrder.mapNotNull {
                 ReadingOrder.Item(
-                    href = it.href.toUrl() ?: return@mapNotNull null,
+                    href = it.href() ?: return@mapNotNull null,
                     duration = duration(it, publication)
                 )
             }

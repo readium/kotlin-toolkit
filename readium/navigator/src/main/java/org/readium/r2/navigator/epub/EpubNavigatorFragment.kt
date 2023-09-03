@@ -589,7 +589,7 @@ public class EpubNavigatorFragment internal constructor(
             val page = resources.withIndex().firstOrNull { (_, res) ->
                 when (res) {
                     is PageResource.EpubReflowable ->
-                        res.link.href.toUrl() == href
+                        res.link.href() == href
                     is PageResource.EpubFxl ->
                         res.leftUrl?.toString()?.endsWith(href.toString()) == true || res.rightUrl?.toString()?.endsWith(
                             href.toString()
@@ -944,7 +944,7 @@ public class EpubNavigatorFragment internal constructor(
         adapter.mFragments.forEach { _, fragment ->
             val pageFragment = fragment as? R2EpubPageFragment ?: return@forEach
             val link = pageFragment.link ?: return@forEach
-            if (link.href.toUrl() == href) {
+            if (link.href() == href) {
                 return pageFragment
             }
         }
@@ -966,7 +966,7 @@ public class EpubNavigatorFragment internal constructor(
         if (!::resourcePager.isInitialized) return null
 
         val resource = publication.readingOrder[resourcePager.currentItem]
-        return resource.href.toUrl()?.let { href ->
+        return resource.href()?.let { href ->
             currentReflowablePageFragment?.webView?.findFirstVisibleLocator()
                 ?.copy(
                     href = href,
@@ -1035,7 +1035,7 @@ public class EpubNavigatorFragment internal constructor(
                     "Expected EpubFxl or EpubReflowable page resources"
                 )
             }
-            val positionLocator = publication.positionsByResource[link.href.toUrl()]?.let { positions ->
+            val positionLocator = publication.positionsByResource[link.href()]?.let { positions ->
                 val index = ceil(progression * (positions.size - 1)).toInt()
                 positions.getOrNull(index)
             }

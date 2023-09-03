@@ -20,7 +20,6 @@ import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Manifest
 import org.readium.r2.shared.publication.PublicationServicesHolder
-import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.publication.html.cssSelector
 import org.readium.r2.shared.publication.services.content.Content
 import org.readium.r2.shared.publication.services.content.Content.Attribute
@@ -286,7 +285,7 @@ public class HtmlResourceContentIterator internal constructor(
                             elements.add(
                                 ImageElement(
                                     locator = elementLocator,
-                                    embeddedLink = Link(href = UrlHref(url)),
+                                    embeddedLink = Link(href = url),
                                     caption = null, // FIXME: Get the caption from figcaption
                                     attributes = buildList {
                                         val alt = node.attr("alt").takeIf { it.isNotBlank() }
@@ -305,13 +304,13 @@ public class HtmlResourceContentIterator internal constructor(
                         val url = node.srcRelativeToHref(baseLocator.href)
                         val link: Link? =
                             if (url != null) {
-                                Link(href = UrlHref(url))
+                                Link(href = url)
                             } else {
                                 val sources = node.select("source")
                                     .mapNotNull { source ->
                                         source.srcRelativeToHref(baseLocator.href)?.let { url ->
                                             Link(
-                                                href = UrlHref(url),
+                                                href = url,
                                                 mediaType = MediaType(source.attr("type"))
                                             )
                                         }

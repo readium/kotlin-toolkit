@@ -183,7 +183,7 @@ public class TtsNavigator<S : TtsEngine.Settings, P : TtsEngine.Preferences<P>,
         ReadingOrder(
             items = publication.readingOrder.mapNotNull {
                 ReadingOrder.Item(
-                    href = it.href.toUrl() ?: return@mapNotNull null
+                    href = it.href() ?: return@mapNotNull null
                 )
             }
         )

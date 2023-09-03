@@ -16,7 +16,6 @@ import org.junit.runner.RunWith
 import org.readium.r2.shared.publication.Link
 import org.readium.r2.shared.publication.Locator
 import org.readium.r2.shared.publication.Properties
-import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.publication.epub.EpubLayout
 import org.readium.r2.shared.publication.presentation.Presentation
 import org.readium.r2.shared.resource.ArchiveProperties
@@ -489,7 +488,7 @@ class EpubPositionsServiceTest {
         container = object : Container {
 
             private fun find(relativePath: Url): ReadingOrderItem? =
-                readingOrder.find { it.link.href.toUrl() == relativePath }
+                readingOrder.find { it.link.href() == relativePath }
 
             override suspend fun entries(): Set<Container.Entry>? = null
 
@@ -532,7 +531,7 @@ class EpubPositionsServiceTest {
         val layout: EpubLayout? = null
     ) {
         val link: Link = Link(
-            href = UrlHref(Url(href)!!),
+            href = Url(href)!!,
             mediaType = type,
             title = title,
             properties = Properties(

@@ -16,7 +16,6 @@ import org.readium.r2.shared.opds.*
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.parser.xml.XmlParser
 import org.readium.r2.shared.publication.*
-import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.toJSON
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.Url
@@ -103,7 +102,7 @@ public class OPDS1Parser {
                         }
                         if (href != null && (rel == "collection" || rel == "http://opds-spec.org/group")) {
                             collectionLink = Link(
-                                href = UrlHref(feed.href.resolve(href)),
+                                href = feed.href.resolve(href),
                                 title = link.getAttr("title"),
                                 rels = setOf("collection")
                             )
@@ -130,7 +129,7 @@ public class OPDS1Parser {
                         }
 
                         val newLink = Link(
-                            href = UrlHref(feed.href.resolve(href)),
+                            href = feed.href.resolve(href),
                             mediaType = mediaTypeRetriever.retrieve(
                                 mediaType = link.getAttr("type")
                             ),
@@ -163,7 +162,7 @@ public class OPDS1Parser {
                         otherProperties["numberOfItems"] = facetElementCount
                     }
                     val newLink = Link(
-                        href = UrlHref(href),
+                        href = href,
                         mediaType = type,
                         title = title,
                         rels = rels,
@@ -172,7 +171,7 @@ public class OPDS1Parser {
                     addFacet(feed, newLink, facetGroupName)
                 } else {
                     feed.links.add(
-                        Link(href = UrlHref(href), mediaType = type, title = title, rels = rels)
+                        Link(href = href, mediaType = type, title = title, rels = rels)
                     )
                 }
             }
@@ -277,7 +276,7 @@ public class OPDS1Parser {
                     }
 
                     Link(
-                        href = UrlHref(baseUrl.resolve(href)),
+                        href = baseUrl.resolve(href),
                         mediaType = mediaTypeRetriever.retrieve(element.getAttr("type")),
                         title = element.getAttr("title"),
                         rels = listOfNotNull(rel).toSet(),
@@ -337,7 +336,7 @@ public class OPDS1Parser {
                                     links = listOfNotNull(
                                         element.getFirst("uri", Namespaces.Atom)?.text
                                             ?.let { Url(it) }
-                                            ?.let { Link(href = UrlHref(it)) }
+                                            ?.let { Link(href = it) }
                                     )
                                 )
                             }

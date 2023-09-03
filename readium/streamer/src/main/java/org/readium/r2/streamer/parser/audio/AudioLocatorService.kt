@@ -46,7 +46,7 @@ public class AudioLocatorService(private val readingOrder: List<Link>) : Locator
 
         val (link, resourcePosition) = readingOrderItemAtPosition(positionInPublication)
             ?: return null
-        val href = link.href.toUrl() ?: return null
+        val href = link.href() ?: return null
 
         val positionInResource = positionInPublication - resourcePosition
 

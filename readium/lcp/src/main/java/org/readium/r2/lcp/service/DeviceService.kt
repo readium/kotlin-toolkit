@@ -70,7 +70,7 @@ internal class DeviceService(
             return null
         }
 
-        val url = link.url(asQueryParameters).toString()
+        val url = link.href(asQueryParameters).toString()
         val data = network.fetch(url, NetworkService.Method.POST, asQueryParameters)
             .getOrNull() ?: return null
 

@@ -108,7 +108,7 @@ internal class LcpContentProtection(
                 decryptor.encryptionData = (manifest.readingOrder + manifest.resources + manifest.links)
                     .flatten()
                     .mapNotNull {
-                        val url = it.href.toUrl() ?: return@mapNotNull null
+                        val url = it.href() ?: return@mapNotNull null
                         it.properties.encryption?.let { enc -> url to enc }
                     }
                     .toMap()
@@ -148,7 +148,7 @@ internal class LcpContentProtection(
                 }
 
         val link = checkNotNull(licenseDoc.link(LicenseDocument.Rel.Publication))
-        val url = (Url(link.url.toString()) as? AbsoluteUrl)
+        val url = (link.href() as? AbsoluteUrl)
             ?: return Try.failure(
                 Publication.OpeningException.ParsingFailed(
                     ThrowableError(

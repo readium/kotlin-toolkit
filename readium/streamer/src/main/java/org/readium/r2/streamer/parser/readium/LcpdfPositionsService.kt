@@ -71,7 +71,7 @@ internal class LcpdfPositionsService(
         totalPageCount: Int,
         startPosition: Int
     ): List<Locator> {
-        val url = link.href.toUrl()
+        val url = link.href()
         if (url == null || pageCount <= 0 || totalPageCount <= 0) {
             return emptyList()
         }
@@ -94,7 +94,7 @@ internal class LcpdfPositionsService(
     }
 
     private suspend fun openPdfAt(link: Link): PdfDocument? {
-        val url = link.href.toUrl() ?: return null
+        val url = link.href() ?: return null
 
         return tryOrLog {
             pdfFactory

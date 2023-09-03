@@ -9,7 +9,6 @@
 
 package org.readium.r2.lcp.license.model
 
-import java.net.URL
 import java.nio.charset.Charset
 import java.util.*
 import org.json.JSONObject
@@ -22,6 +21,7 @@ import org.readium.r2.lcp.service.URLParameters
 import org.readium.r2.shared.extensions.iso8601ToDate
 import org.readium.r2.shared.extensions.mapNotNull
 import org.readium.r2.shared.extensions.optNullableString
+import org.readium.r2.shared.util.Url
 import org.readium.r2.shared.util.mediatype.MediaType
 
 public class StatusDocument(public val data: ByteArray) {
@@ -105,12 +105,13 @@ public class StatusDocument(public val data: ByteArray) {
         rel: Rel,
         preferredType: MediaType? = null,
         parameters: URLParameters = emptyMap()
-    ): URL {
+    ): Url {
         val link = link(rel, preferredType)
             ?: linkWithNoType(rel)
             ?: throw LcpException.Parsing.Url(rel = rel.value)
 
-        return link.url(parameters)
+        return link.href(parameters)
+            ?: throw LcpException.Parsing.Url(rel = rel.value)
     }
 
     public fun events(type: Event.EventType): List<Event> =

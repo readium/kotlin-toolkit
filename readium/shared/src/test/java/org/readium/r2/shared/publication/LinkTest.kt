@@ -25,7 +25,7 @@ class LinkTest {
 
     @Test fun `parse minimal JSON`() {
         assertEquals(
-            Link(href = UrlHref(Url("http://href")!!)),
+            Link(href = Url("http://href")!!),
             Link.fromJSON(JSONObject("{'href': 'http://href'}"))
         )
     }
@@ -44,12 +44,12 @@ class LinkTest {
                 duration = 45.6,
                 languages = listOf("fr"),
                 alternates = listOf(
-                    Link(href = UrlHref(Url("/alternate1")!!)),
-                    Link(href = UrlHref(Url("/alternate2")!!))
+                    Link(href = Url("/alternate1")!!),
+                    Link(href = Url("/alternate2")!!)
                 ),
                 children = listOf(
-                    Link(href = UrlHref(Url("http://child1")!!)),
-                    Link(href = UrlHref(Url("http://child2")!!))
+                    Link(href = Url("http://child1")!!),
+                    Link(href = Url("http://child2")!!)
                 )
             ),
             Link.fromJSON(
@@ -89,7 +89,7 @@ class LinkTest {
     @Test fun `parse JSON {rel} as single string`() {
         assertEquals(
             Link.fromJSON(JSONObject("{'href': 'a', 'rel': 'publication'}")),
-            Link(href = UrlHref(Url("a")!!), rels = setOf("publication"))
+            Link(href = Url("a")!!, rels = setOf("publication"))
         )
     }
 
@@ -142,8 +142,8 @@ class LinkTest {
     @Test fun `parse JSON array`() {
         assertEquals(
             listOf(
-                Link(href = UrlHref(Url("http://child1")!!)),
-                Link(href = UrlHref(Url("http://child2")!!))
+                Link(href = Url("http://child1")!!),
+                Link(href = Url("http://child2")!!)
             ),
             Link.fromJSONArray(
                 JSONArray(
@@ -163,7 +163,7 @@ class LinkTest {
     @Test fun `parse JSON array ignores invalid links`() {
         assertEquals(
             listOf(
-                Link(href = UrlHref(Url("http://child2")!!))
+                Link(href = Url("http://child2")!!)
             ),
             Link.fromJSONArray(
                 JSONArray(
@@ -179,7 +179,7 @@ class LinkTest {
     @Test fun `get minimal JSON`() {
         assertJSONEquals(
             JSONObject("{'href': 'http://href', 'templated': false}"),
-            Link(href = UrlHref(Url("http://href")!!)).toJSON()
+            Link(href = Url("http://href")!!).toJSON()
         )
     }
 
@@ -222,12 +222,12 @@ class LinkTest {
                 duration = 45.6,
                 languages = listOf("fr"),
                 alternates = listOf(
-                    Link(href = UrlHref(Url("/alternate1")!!)),
-                    Link(href = UrlHref(Url("/alternate2")!!))
+                    Link(href = Url("/alternate1")!!),
+                    Link(href = Url("/alternate2")!!)
                 ),
                 children = listOf(
-                    Link(href = UrlHref(Url("http://child1")!!)),
-                    Link(href = UrlHref(Url("http://child2")!!))
+                    Link(href = Url("http://child1")!!),
+                    Link(href = Url("http://child2")!!)
                 )
             ).toJSON()
         )
@@ -242,8 +242,8 @@ class LinkTest {
             ]"""
             ),
             listOf(
-                Link(href = UrlHref(Url("http://child1")!!)),
-                Link(href = UrlHref(Url("http://child2")!!))
+                Link(href = Url("http://child1")!!),
+                Link(href = Url("http://child2")!!)
             ).toJSON()
         )
     }
@@ -251,11 +251,11 @@ class LinkTest {
     @Test fun `get media type from type`() {
         assertEquals(
             MediaType.EPUB,
-            Link(href = UrlHref(Url("file")!!), mediaType = MediaType.EPUB).mediaType
+            Link(href = Url("file")!!, mediaType = MediaType.EPUB).mediaType
         )
         assertEquals(
             MediaType.PDF,
-            Link(href = UrlHref(Url("file")!!), mediaType = MediaType.PDF).mediaType
+            Link(href = Url("file")!!, mediaType = MediaType.PDF).mediaType
         )
     }
 
@@ -273,12 +273,12 @@ class LinkTest {
             duration = 45.6,
             languages = listOf("fr"),
             alternates = listOf(
-                Link(href = UrlHref(Url("/alternate1")!!)),
-                Link(href = UrlHref(Url("/alternate2")!!))
+                Link(href = Url("/alternate1")!!),
+                Link(href = Url("/alternate2")!!)
             ),
             children = listOf(
-                Link(href = UrlHref(Url("http://child1")!!)),
-                Link(href = UrlHref(Url("http://child2")!!))
+                Link(href = Url("http://child1")!!),
+                Link(href = Url("http://child2")!!)
             )
         )
 
@@ -316,15 +316,15 @@ class LinkTest {
     @Test
     fun `Find the first index of the {Link} with the given {href} in a list of {Link}`() {
         assertNull(
-            listOf(Link(href = UrlHref(Url("href")!!))).indexOfFirstWithHref(Url("foobar")!!)
+            listOf(Link(href = Url("href")!!)).indexOfFirstWithHref(Url("foobar")!!)
         )
 
         assertEquals(
             1,
             listOf(
-                Link(href = UrlHref(Url("href1")!!)),
-                Link(href = UrlHref(Url("href2")!!)),
-                Link(href = UrlHref(Url("href2")!!)) // duplicated on purpose
+                Link(href = Url("href1")!!),
+                Link(href = Url("href2")!!),
+                Link(href = Url("href2")!!) // duplicated on purpose
             ).indexOfFirstWithHref(Url("href2")!!)
         )
     }

@@ -8,7 +8,6 @@ package org.readium.r2.streamer.parser.epub
 
 import org.readium.r2.shared.parser.xml.ElementNode
 import org.readium.r2.shared.publication.Link
-import org.readium.r2.shared.publication.UrlHref
 import org.readium.r2.shared.util.Url
 
 internal object NavigationDocumentParser {
@@ -78,7 +77,7 @@ internal object NavigationDocumentParser {
         } else {
             Link(
                 title = title,
-                href = UrlHref(href),
+                href = href,
                 children = children
             )
         }

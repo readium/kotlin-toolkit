@@ -80,7 +80,7 @@ class ImageParserTest {
         assertNotNull(builder)
         val base = Url.fromDecodedPath("Cory Doctorow's Futuristic Tales of the Here and Now/")
         val readingOrder = builder!!.manifest.readingOrder
-            .map { base.relativize(it.href.toUrl()!!).toString() }
+            .map { base.relativize(it.href()!!).toString() }
         assertThat(readingOrder)
             .containsExactly("a-fc.jpg", "x-002.jpg", "x-003.jpg", "x-004.jpg")
     }
@@ -92,7 +92,7 @@ class ImageParserTest {
         with(builder!!.manifest.readingOrder) {
             assertEquals(
                 Url.fromDecodedPath("Cory Doctorow's Futuristic Tales of the Here and Now/a-fc.jpg"),
-                firstWithRel("cover")?.href?.toUrl()
+                firstWithRel("cover")?.href?.invoke()
             )
         }
     }
