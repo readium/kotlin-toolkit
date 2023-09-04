@@ -30,7 +30,7 @@ import org.readium.r2.shared.asset.Asset
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.downloads.DownloadManagerProvider
+import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
 
@@ -128,14 +128,8 @@ public interface LcpService {
      * Creates a [LcpPublicationRetriever] instance which can be used to acquire a protected
      * publication from standalone LCPL's bytes.
      *
-     * You should use only one instance of [LcpPublicationRetriever] in your app. If you don't,
-     * behaviour is undefined.
-     *
-     * @param listener listener to implement to be notified about the status of the downloads.
      */
-    public fun publicationRetriever(
-        listener: LcpPublicationRetriever.Listener
-    ): LcpPublicationRetriever
+    public fun publicationRetriever(): LcpPublicationRetriever
 
     /**
      * Creates a [ContentProtection] instance which can be used with a Streamer to unlock
@@ -180,7 +174,7 @@ public interface LcpService {
             context: Context,
             assetRetriever: AssetRetriever,
             mediaTypeRetriever: MediaTypeRetriever,
-            downloadManagerProvider: DownloadManagerProvider
+            downloadManager: DownloadManager
         ): LcpService? {
             if (!LcpClient.isAvailable()) {
                 return null
@@ -207,7 +201,7 @@ public interface LcpService {
                 context = context,
                 assetRetriever = assetRetriever,
                 mediaTypeRetriever = mediaTypeRetriever,
-                downloadManagerProvider = downloadManagerProvider
+                downloadManager = downloadManager
             )
         }
 

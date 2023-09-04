@@ -22,8 +22,7 @@ import org.readium.r2.shared.util.http.HttpException
 import org.readium.r2.shared.util.http.HttpRequest
 
 public class ForegroundDownloadManager(
-    private val httpClient: HttpClient,
-    private val listener: DownloadManager.Listener
+    private val httpClient: HttpClient
 ) : DownloadManager {
 
     private val coroutineScope: CoroutineScope =
@@ -32,8 +31,15 @@ public class ForegroundDownloadManager(
     private val jobs: MutableMap<DownloadManager.RequestId, Job> =
         mutableMapOf()
 
-    override suspend fun submit(request: DownloadManager.Request): DownloadManager.RequestId {
+    private val listeners: MutableMap<DownloadManager.RequestId, MutableList<DownloadManager.Listener>> =
+        mutableMapOf()
+
+    public override fun submit(
+        request: DownloadManager.Request,
+        listener: DownloadManager.Listener
+    ): DownloadManager.RequestId {
         val requestId = DownloadManager.RequestId(UUID.randomUUID().toString())
+        listeners.getOrPut(requestId) { mutableListOf() }.add(listener)
         jobs[requestId] = coroutineScope.launch { doRequest(request, requestId) }
         return requestId
     }
@@ -50,6 +56,8 @@ public class ForegroundDownloadManager(
             ?.let { ".$it" }
             .orEmpty()
 
+        val listenersForId = listeners[id].orEmpty()
+
         when (response) {
             is Try.Success -> {
                 withContext(Dispatchers.IO) {
@@ -61,15 +69,17 @@ public class ForegroundDownloadManager(
                         dest.writeBytes(response.value.body)
                     } catch (e: Exception) {
                         val error = DownloadManager.Error.FileError(ThrowableError(e))
-                        listener.onDownloadFailed(id, error)
+                        listenersForId.forEach { it.onDownloadFailed(id, error) }
                     }
                 }
             }
             is Try.Failure -> {
                 val error = mapError(response.value)
-                listener.onDownloadFailed(id, error)
+                listenersForId.forEach { it.onDownloadFailed(id, error) }
             }
         }
+
+        listeners.remove(id)
     }
 
     private fun mapError(httpException: HttpException): DownloadManager.Error {
@@ -102,10 +112,17 @@ public class ForegroundDownloadManager(
         }
     }
 
-    override suspend fun cancel(requestId: DownloadManager.RequestId) {
+    public override fun cancel(requestId: DownloadManager.RequestId) {
         jobs.remove(requestId)?.cancel()
+        listeners.remove(requestId)
     }
 
-    override suspend fun close() {
+    public override fun register(
+        requestId: DownloadManager.RequestId,
+        listener: DownloadManager.Listener
+    ) {
+    }
+
+    public override fun close() {
     }
 }

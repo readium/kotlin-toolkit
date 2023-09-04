@@ -80,9 +80,11 @@ public interface DownloadManager {
         public fun onDownloadFailed(requestId: RequestId, error: Error)
     }
 
-    public suspend fun submit(request: Request): RequestId
+    public fun submit(request: Request, listener: Listener): RequestId
 
-    public suspend fun cancel(requestId: RequestId)
+    public fun register(requestId: RequestId, listener: Listener)
 
-    public suspend fun close()
+    public fun cancel(requestId: RequestId)
+
+    public fun close()
 }

@@ -25,6 +25,10 @@ internal class LcpDownloadsRepository(
     private val snapshot: MutableMap<String, JSONObject> =
         storageFile.readText(Charsets.UTF_8).toData().toMutableMap()
 
+    fun getIds(): List<String> {
+        return snapshot.keys.toList()
+    }
+
     fun addDownload(id: String, license: JSONObject) {
         snapshot[id] = license
         storageFile.writeText(snapshot.toJson(), Charsets.UTF_8)

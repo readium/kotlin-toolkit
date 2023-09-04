@@ -35,7 +35,7 @@ import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.extensions.tryOr
 import org.readium.r2.shared.publication.protection.ContentProtection
 import org.readium.r2.shared.util.Try
-import org.readium.r2.shared.util.downloads.DownloadManagerProvider
+import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.mediatype.FormatRegistry
 import org.readium.r2.shared.util.mediatype.MediaType
 import org.readium.r2.shared.util.mediatype.MediaTypeRetriever
@@ -50,7 +50,7 @@ internal class LicensesService(
     private val context: Context,
     private val assetRetriever: AssetRetriever,
     private val mediaTypeRetriever: MediaTypeRetriever,
-    private val downloadManagerProvider: DownloadManagerProvider
+    private val downloadManager: DownloadManager
 ) : LcpService, CoroutineScope by MainScope() {
 
     override suspend fun isLcpProtected(file: File): Boolean {
@@ -75,13 +75,10 @@ internal class LicensesService(
     ): ContentProtection =
         LcpContentProtection(this, authentication, assetRetriever)
 
-    override fun publicationRetriever(
-        listener: LcpPublicationRetriever.Listener
-    ): LcpPublicationRetriever {
+    override fun publicationRetriever(): LcpPublicationRetriever {
         return LcpPublicationRetriever(
             context,
-            listener,
-            downloadManagerProvider,
+            downloadManager,
             mediaTypeRetriever
         )
     }

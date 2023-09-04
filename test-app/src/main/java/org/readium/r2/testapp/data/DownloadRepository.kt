@@ -13,27 +13,52 @@ class DownloadRepository(
     private val downloadsDao: DownloadsDao
 ) {
 
-    suspend fun insertOpdsDownload(
-        manager: String,
+    suspend fun getLcpDownloads(): List<Download> {
+        return downloadsDao.getLcpDownloads()
+    }
+
+    suspend fun getOpdsDownloads(): List<Download> {
+        return downloadsDao.getOpdsDownloads()
+    }
+
+    suspend fun insertLcpDownload(
         id: String,
         cover: String?
     ) {
         downloadsDao.insert(
-            Download(manager = manager, id = id, extra = cover)
+            Download(id = id, type = Download.TYPE_LCP, extra = cover)
         )
     }
 
-    suspend fun getOpdsDownloadCover(
-        manager: String,
-        id: String
-    ): String? {
-        return downloadsDao.get(manager, id)!!.extra
+    suspend fun insertOpdsDownload(
+        id: String,
+        cover: String?
+    ) {
+        downloadsDao.insert(
+            Download(id = id, type = Download.TYPE_OPDS, extra = cover)
+        )
     }
 
-    suspend fun removeDownload(
-        manager: String,
+    suspend fun getLcpDownloadCover(
+        id: String
+    ): String? {
+        return downloadsDao.get(id, Download.TYPE_LCP)!!.extra
+    }
+    suspend fun getOpdsDownloadCover(
+        id: String
+    ): String? {
+        return downloadsDao.get(id, Download.TYPE_OPDS)!!.extra
+    }
+
+    suspend fun removeLcpDownload(
         id: String
     ) {
-        downloadsDao.delete(manager, id)
+        downloadsDao.delete(id, Download.TYPE_LCP)
+    }
+
+    suspend fun removeOpdsDownload(
+        id: String
+    ) {
+        downloadsDao.delete(id, Download.TYPE_OPDS)
     }
 }

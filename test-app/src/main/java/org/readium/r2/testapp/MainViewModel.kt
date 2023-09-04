@@ -35,7 +35,7 @@ class MainViewModel(
     }
     fun copyPublicationToAppStorage(uri: Uri) =
         viewModelScope.launch {
-            app.bookshelf.copyPublicationToAppStorage(uri)
+            app.bookshelf.importPublicationToAppStorage(uri)
         }
 
     private fun sendImportFeedback(event: Bookshelf.Event) {

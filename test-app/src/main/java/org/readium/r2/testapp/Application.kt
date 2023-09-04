@@ -22,6 +22,7 @@ import org.readium.r2.testapp.data.BookRepository
 import org.readium.r2.testapp.data.DownloadRepository
 import org.readium.r2.testapp.data.db.AppDatabase
 import org.readium.r2.testapp.domain.Bookshelf
+import org.readium.r2.testapp.domain.CoverStorage
 import org.readium.r2.testapp.reader.ReaderRepository
 import timber.log.Timber
 
@@ -70,18 +71,21 @@ class Application : android.app.Application() {
             AppDatabase.getDatabase(this).downloadsDao()
                 .let { dao -> DownloadRepository(dao) }
 
+        val coverStorage = CoverStorage(storageDir)
+
         bookshelf =
             Bookshelf(
                 applicationContext,
                 bookRepository,
                 downloadRepository,
                 storageDir,
-                readium.lcpService,
+                coverStorage,
                 readium.publicationFactory,
                 readium.assetRetriever,
                 readium.protectionRetriever,
                 readium.formatRegistry,
-                readium.downloadManagerProvider
+                readium.lcpService,
+                readium.downloadManager
             )
 
         readerRepository =

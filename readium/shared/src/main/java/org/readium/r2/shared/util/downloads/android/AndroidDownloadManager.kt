@@ -10,6 +10,7 @@ import android.app.DownloadManager as SystemDownloadManager
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
+import android.os.Environment
 import java.io.File
 import java.util.UUID
 import kotlin.time.Duration.Companion.seconds
@@ -20,18 +21,30 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.readium.r2.shared.units.Hz
+import org.readium.r2.shared.units.hz
 import org.readium.r2.shared.util.downloads.DownloadManager
 import org.readium.r2.shared.util.toUri
 
 public class AndroidDownloadManager internal constructor(
     private val context: Context,
-    private val name: String,
     private val destStorage: Storage,
     private val dirType: String,
     private val refreshRate: Hz,
-    private val allowDownloadsOverMetered: Boolean,
-    private val listener: DownloadManager.Listener
+    private val allowDownloadsOverMetered: Boolean
 ) : DownloadManager {
+
+    public constructor(
+        context: Context,
+        destStorage: Storage = Storage.App,
+        refreshRate: Hz = 0.1.hz,
+        allowDownloadsOverMetered: Boolean = true
+    ) : this(
+        context = context,
+        destStorage = destStorage,
+        dirType = Environment.DIRECTORY_DOWNLOADS,
+        refreshRate = refreshRate,
+        allowDownloadsOverMetered = allowDownloadsOverMetered
+    )
 
     public enum class Storage {
         App,
@@ -44,22 +57,28 @@ public class AndroidDownloadManager internal constructor(
     private val downloadManager: SystemDownloadManager =
         context.getSystemService(Context.DOWNLOAD_SERVICE) as SystemDownloadManager
 
-    private val downloadsRepository: DownloadsRepository =
-        DownloadsRepository(context)
-
     private var observeProgressJob: Job? =
         null
 
-    init {
-        coroutineScope.launch {
-            if (downloadsRepository.hasDownloads()) {
-                startObservingProgress()
-            }
+    private val listeners: MutableMap<DownloadManager.RequestId, MutableList<DownloadManager.Listener>> =
+        mutableMapOf()
+
+    public override fun register(
+        requestId: DownloadManager.RequestId,
+        listener: DownloadManager.Listener
+    ) {
+        listeners.getOrPut(requestId) { mutableListOf() }.add(listener)
+
+        if (observeProgressJob == null) {
+            maybeStartObservingProgress()
         }
     }
 
-    public override suspend fun submit(request: DownloadManager.Request): DownloadManager.RequestId {
-        startObservingProgress()
+    public override fun submit(
+        request: DownloadManager.Request,
+        listener: DownloadManager.Listener
+    ): DownloadManager.RequestId {
+        maybeStartObservingProgress()
 
         val androidRequest = createRequest(
             uri = request.url.toUri(),
@@ -69,8 +88,9 @@ public class AndroidDownloadManager internal constructor(
             description = request.description
         )
         val downloadId = downloadManager.enqueue(androidRequest)
-        downloadsRepository.addId(name, downloadId)
-        return DownloadManager.RequestId(downloadId.toString())
+        val requestId = DownloadManager.RequestId(downloadId.toString())
+        register(requestId, listener)
+        return requestId
     }
 
     private fun generateFileName(extension: String?): String {
@@ -80,12 +100,12 @@ public class AndroidDownloadManager internal constructor(
         return "${UUID.randomUUID()}$dottedExtension}"
     }
 
-    public override suspend fun cancel(requestId: DownloadManager.RequestId) {
+    public override fun cancel(requestId: DownloadManager.RequestId) {
         val longId = requestId.value.toLong()
-        downloadManager.remove()
-        downloadsRepository.removeId(name, longId)
-        if (!downloadsRepository.hasDownloads()) {
-            stopObservingProgress()
+        downloadManager.remove(longId)
+        listeners[requestId]?.clear()
+        if (!listeners.any { it.value.isNotEmpty() }) {
+            maybeStopObservingProgress()
         }
     }
 
@@ -128,64 +148,75 @@ public class AndroidDownloadManager internal constructor(
         return this
     }
 
-    private fun startObservingProgress() {
-        if (observeProgressJob != null) {
+    private fun maybeStartObservingProgress() {
+        if (observeProgressJob != null || listeners.all { it.value.isEmpty() }) {
             return
         }
 
         observeProgressJob = coroutineScope.launch {
             while (true) {
-                val ids = downloadsRepository.idsForName(name)
                 val cursor = downloadManager.query(SystemDownloadManager.Query())
-                notify(cursor, ids)
+                notify(cursor)
                 delay((1.0 / refreshRate.value).seconds)
             }
         }
     }
 
-    private fun stopObservingProgress() {
-        observeProgressJob?.cancel()
-        observeProgressJob = null
+    private fun maybeStopObservingProgress() {
+        if (listeners.all { it.value.isEmpty() }) {
+            observeProgressJob?.cancel()
+            observeProgressJob = null
+        }
     }
 
-    private suspend fun notify(cursor: Cursor, ids: List<Long>) = cursor.use {
+    private fun notify(cursor: Cursor) = cursor.use {
         while (cursor.moveToNext()) {
             val facade = DownloadCursorFacade(cursor)
             val id = DownloadManager.RequestId(facade.id.toString())
-
-            if (facade.id !in ids) {
-                continue
+            val listenersForId = listeners[id].orEmpty()
+            if (listenersForId.isNotEmpty()) {
+                notifyDownload(id, facade, listenersForId)
             }
+        }
+    }
 
-            when (facade.status) {
-                SystemDownloadManager.STATUS_FAILED -> {
-                    listener.onDownloadFailed(id, mapErrorCode(facade.reason!!))
-                    downloadManager.remove(facade.id)
-                    downloadsRepository.removeId(name, facade.id)
-                    if (!downloadsRepository.hasDownloads()) {
-                        stopObservingProgress()
+    private fun notifyDownload(
+        id: DownloadManager.RequestId,
+        facade: DownloadCursorFacade,
+        listenersForId: List<DownloadManager.Listener>
+    ) {
+        when (facade.status) {
+            SystemDownloadManager.STATUS_FAILED -> {
+                listenersForId.forEach {
+                    it.onDownloadFailed(id, mapErrorCode(facade.reason!!))
+                }
+                downloadManager.remove(facade.id)
+                listeners.remove(id)
+                maybeStopObservingProgress()
+            }
+            SystemDownloadManager.STATUS_PAUSED -> {}
+            SystemDownloadManager.STATUS_PENDING -> {}
+            SystemDownloadManager.STATUS_SUCCESSFUL -> {
+                val destUri = Uri.parse(facade.localUri!!)
+                val destFile = File(destUri.path!!)
+                val newDest = File(destFile.parent, generateFileName(destFile.extension))
+                if (destFile.renameTo(newDest)) {
+                    listenersForId.forEach {
+                        it.onDownloadCompleted(id, newDest)
+                    }
+                } else {
+                    listenersForId.forEach {
+                        it.onDownloadFailed(id, DownloadManager.Error.FileError())
                     }
                 }
-                SystemDownloadManager.STATUS_PAUSED -> {}
-                SystemDownloadManager.STATUS_PENDING -> {}
-                SystemDownloadManager.STATUS_SUCCESSFUL -> {
-                    val destUri = Uri.parse(facade.localUri!!)
-                    val destFile = File(destUri.path!!)
-                    val newDest = File(destFile.parent, generateFileName(destFile.extension))
-                    if (destFile.renameTo(newDest)) {
-                        listener.onDownloadCompleted(id, newDest)
-                    } else {
-                        listener.onDownloadFailed(id, DownloadManager.Error.FileError())
-                    }
-                    downloadManager.remove(facade.id)
-                    downloadsRepository.removeId(name, facade.id)
-                    if (!downloadsRepository.hasDownloads()) {
-                        stopObservingProgress()
-                    }
-                }
-                SystemDownloadManager.STATUS_RUNNING -> {
-                    val expected = facade.expected
-                    listener.onDownloadProgressed(id, facade.downloadedSoFar, expected)
+                downloadManager.remove(facade.id)
+                listeners.remove(id)
+                maybeStopObservingProgress()
+            }
+            SystemDownloadManager.STATUS_RUNNING -> {
+                val expected = facade.expected
+                listenersForId.forEach {
+                    it.onDownloadProgressed(id, facade.downloadedSoFar, expected)
                 }
             }
         }
@@ -221,7 +252,8 @@ public class AndroidDownloadManager internal constructor(
                 DownloadManager.Error.Unknown()
         }
 
-    public override suspend fun close() {
+    public override fun close() {
+        listeners.clear()
         coroutineScope.cancel()
     }
 }

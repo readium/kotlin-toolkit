@@ -19,13 +19,25 @@ interface DownloadsDao {
 
     @Query(
         "DELETE FROM " + Download.TABLE_NAME +
-            " WHERE " + Download.ID + " = :id" + " AND " + Download.MANAGER + " = :manager"
+            " WHERE " + Download.ID + " = :id AND " + Download.TYPE + " = :type"
     )
-    suspend fun delete(manager: String, id: String)
+    suspend fun delete(id: String, type: String)
 
     @Query(
         "SELECT * FROM " + Download.TABLE_NAME +
-            " WHERE " + Download.ID + " = :id" + " AND " + Download.MANAGER + " = :manager"
+            " WHERE " + Download.ID + " = :id AND " + Download.TYPE + " = :type"
     )
-    suspend fun get(manager: String, id: String): Download?
+    suspend fun get(id: String, type: String): Download?
+
+    @Query(
+        "SELECT * FROM " + Download.TABLE_NAME +
+            " WHERE " + Download.TYPE + " = '" + Download.TYPE_OPDS + "'"
+    )
+    suspend fun getOpdsDownloads(): List<Download>
+
+    @Query(
+        "SELECT * FROM " + Download.TABLE_NAME +
+            " WHERE " + Download.TYPE + " = '" + Download.TYPE_LCP + "'"
+    )
+    suspend fun getLcpDownloads(): List<Download>
 }

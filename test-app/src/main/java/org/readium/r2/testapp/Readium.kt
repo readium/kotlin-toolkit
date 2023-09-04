@@ -8,10 +8,10 @@ package org.readium.r2.testapp
 
 import android.content.Context
 import org.readium.adapters.pdfium.document.PdfiumDocumentFactory
+import org.readium.r2.lcp.LcpException
 import org.readium.r2.lcp.LcpService
 import org.readium.r2.navigator.preferences.FontFamily
 import org.readium.r2.shared.ExperimentalReadiumApi
-import org.readium.r2.shared.UserException
 import org.readium.r2.shared.asset.AssetRetriever
 import org.readium.r2.shared.publication.protection.ContentProtectionSchemeRetriever
 import org.readium.r2.shared.resource.CompositeArchiveFactory
@@ -23,7 +23,6 @@ import org.readium.r2.shared.resource.FileResourceFactory
 import org.readium.r2.shared.util.Try
 import org.readium.r2.shared.util.archive.channel.ChannelZipArchiveFactory
 import org.readium.r2.shared.util.downloads.android.AndroidDownloadManager
-import org.readium.r2.shared.util.downloads.android.AndroidDownloadManagerProvider
 import org.readium.r2.shared.util.http.DefaultHttpClient
 import org.readium.r2.shared.util.http.HttpResourceFactory
 import org.readium.r2.shared.util.mediatype.FormatRegistry
@@ -68,7 +67,7 @@ class Readium(context: Context) {
         context.contentResolver
     )
 
-    val downloadManagerProvider = AndroidDownloadManagerProvider(
+    val downloadManager = AndroidDownloadManager(
         context = context,
         destStorage = AndroidDownloadManager.Storage.App
     )
@@ -81,9 +80,9 @@ class Readium(context: Context) {
         context,
         assetRetriever,
         mediaTypeRetriever,
-        downloadManagerProvider
+        downloadManager
     )?.let { Try.success(it) }
-        ?: Try.failure(UserException("liblcp is missing on the classpath"))
+        ?: Try.failure(LcpException.Unknown(Exception("liblcp is missing on the classpath")))
 
     private val contentProtections = listOfNotNull(
         lcpService.getOrNull()?.contentProtection()
