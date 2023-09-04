@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="documentSelectorArray">
-        <item>Copy to app storage</item>
+        <item>Import to app storage</item>
         <item>Read from shared storage</item>
         <item>Stream from the Web</item>
     </string-array>

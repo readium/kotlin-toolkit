@@ -26,7 +26,7 @@ class MainViewModel(
         getApplication<org.readium.r2.testapp.Application>()
 
     val channel: EventChannel<Event> =
-        EventChannel(Channel(Channel.BUFFERED), viewModelScope)
+        EventChannel(Channel(Channel.UNLIMITED), viewModelScope)
 
     init {
         app.bookshelf.channel.receiveAsFlow()
